@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EnergyModelPage</class>
+ <widget class="QWizardPage" name="EnergyModelPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>300</width>
+    <height>228</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>WizardPage</string>
+  </property>
+  <widget class="QWidget" name="widget" native="true">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>90</y>
+     <width>131</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QRadioButton" name="Include">
+      <property name="text">
+       <string>Include</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QRadioButton" name="NotIncude">
+      <property name="text">
+       <string>Not Include</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="title" native="true">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>50</y>
+     <width>150</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QLabel" name="Label">
+      <property name="text">
+       <string>Energy Model</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="HelpButton">
+      <property name="toolTip">
+       <string>When a fluid flow is compressible, the fluid density varies with its pressure. Compressible flows are usually high speed flows with Mach numbers greater than about 0.3. Examples include aerodynamic applications such as flow over a wing or aircraft nacelle as well as industrial applications such as flow through high-performance valves.
+
+Incompressible flows do not have such a variation of density. 
+The key differentiation between compressible and incompressible is the velocity of the flow. A fluid such as air that is moving slower than Mach 0.3 is considered incompressible, even though it is a gas. A gas that is run through a compressor is not truly considered compressible (in the thermodynamic sense) unless its velocity exceeds Mach 0.3.</string>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border-radius: 20px;border-style:none</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="../../resource.qrc">
+        <normaloff>:/icons-white/help-circle-outline.svg</normaloff>:/icons-white/help-circle-outline.svg</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>25</width>
+        <height>25</height>
+       </size>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../../resource.qrc"/>
+ </resources>
+ <connections/>
+</ui>
