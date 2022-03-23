@@ -801,7 +801,6 @@
     <file alias="logo-vk.svg">resources/ionicons/logo-vk.svg</file>
     <file alias="logo-vue.svg">resources/ionicons/logo-vue.svg</file>
     <file alias="logo-web-component.svg">resources/ionicons/logo-web-component.svg</file>
-    <file alias="logo-wechat.svg">resources/ionicons/logo-wechat.svg</file>
     <file alias="logo-whatsapp.svg">resources/ionicons/logo-whatsapp.svg</file>
     <file alias="logo-windows.svg">resources/ionicons/logo-windows.svg</file>
     <file alias="logo-wordpress.svg">resources/ionicons/logo-wordpress.svg</file>
@@ -2135,7 +2134,6 @@
     <file alias="logo-vk.svg">resources/ioniconsWhite/logo-vk.svg</file>
     <file alias="logo-vue.svg">resources/ioniconsWhite/logo-vue.svg</file>
     <file alias="logo-web-component.svg">resources/ioniconsWhite/logo-web-component.svg</file>
-    <file alias="logo-wechat.svg">resources/ioniconsWhite/logo-wechat.svg</file>
     <file alias="logo-whatsapp.svg">resources/ioniconsWhite/logo-whatsapp.svg</file>
     <file alias="logo-windows.svg">resources/ioniconsWhite/logo-windows.svg</file>
     <file alias="logo-wordpress.svg">resources/ioniconsWhite/logo-wordpress.svg</file>
