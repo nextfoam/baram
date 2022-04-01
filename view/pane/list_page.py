@@ -11,5 +11,11 @@ class ListPage(PanePage):
     def init(self):
         self._ui.editList.clear()
 
-    def add(self, text):
+    def addText(self, text):
         self._ui.editList.addItem(text)
+
+    def setTitle(self, title):
+        self._ui.title.setText(title)
+
+    def currentRow(self):
+        return self._ui.editList.currentRow()

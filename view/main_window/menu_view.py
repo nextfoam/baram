@@ -72,7 +72,10 @@ class MenuView:
         self._ui.currentItemChanged.connect(slot)
 
     def paneOf(self, menuItem):
-        return menuItem.data(0, Qt.UserRole)
+        return menuItem.data(0, Qt.UserRole).pane
+
+    def currentPane(self):
+        return self.paneOf(self._ui.currentItem())
 
     def _loadMenu(self):
         for key, setup in self.MENU.items():

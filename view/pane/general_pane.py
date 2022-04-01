@@ -10,10 +10,11 @@ class GeneralPane(Pane):
         super().__init__()
 
     def create_page(self):
-        return GeneralPage()
+        self._ui = GeneralPage()
+        return self._ui
 
-    def load(self, ui):
-        ui.setModel("steady")
+    def load(self):
+        self._ui.setModel("steady")
 
     def save(self):
         pass

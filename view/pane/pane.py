@@ -14,12 +14,23 @@ class Pane:
     def index(self, index):
         self._index = index
 
+    @property
+    def ui(self):
+        return self._ui
+
+    @ui.setter
+    def ui(self, ui):
+        self._ui = ui
+
     # virtual
     def create_page(self):
         pass
 
+    def init(self):
+        self._ui.init()
+
     # virtual
-    def load(self, ui):
+    def load(self):
         pass
 
     # virtual

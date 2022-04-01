@@ -25,6 +25,8 @@ class MainWindow(QMainWindow):
         self._ui.actionExit.triggered.connect(self.close)
         self._ui.actionNew.triggered.connect(self.openWizard)
         self._menuView.connectCurrentItemChanged(self.changeForm)
+        self._ui.editList.itemDoubleClicked.connect(self.listPageItemEdit)
+        self._ui.edit.clicked.connect(self.listPageItemEdit)
 
     def openWizard(self, signal):
         self._wizard = CaseWizard()
@@ -33,15 +35,19 @@ class MainWindow(QMainWindow):
 
     def changeForm(self, current, previous):
         if previous is not None:
-            previousPane = self._menuView.paneOf(previous).pane
+            previousPane = self._menuView.paneOf(previous)
             previousPane.save()
 
-        currentPane = self._menuView.paneOf(current).pane
+        currentPane = self._menuView.paneOf(current)
         if currentPane.index < 0:
-            currentPane.index = self._formView.addPage(currentPane.create_page())
-        else:
-            self._formView.initPage(currentPane.index)
+            currentPane.index = self._formView.addPage(currentPane)
 
-        page = self._formView.page(currentPane.index)
-        currentPane.load(page)
+        currentPane.init()
+        currentPane.load()
         self._formView.changePane(currentPane.index)
+
+    def listPageItemEdit(self):
+        currentPane = self._menuView.currentPane()
+        currentPane.edit()
+        pass
+

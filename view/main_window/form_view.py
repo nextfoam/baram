@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from view.pane.empty_page import EmptyPage
+from view.pane.empty_pane import EmptyPane
 from view.pane.list_page import ListPage
+from view.pane.list_pane import ListPane
 
 
 class FormView:
+    _EMPTY_PAGE_INDEX = 0
+    _LIST_PAGE_INDEX = 1
+
     def __init__(self, stackedWidget, mainWindow):
         self._ui = stackedWidget
         self._emptyPage = EmptyPage(mainWindow)
@@ -15,14 +20,17 @@ class FormView:
         self._ui.setCurrentIndex(index)
 
     def page(self, index):
-        if index == 0:
-            return self._emptyPage
-        elif index == 1:
-            return self._listPage
         return self._ui.widget(index)
 
-    def addPage(self, page):
-        return self._ui.addWidget(page)
+    def addPage(self, pane):
+        if isinstance(pane, EmptyPane):
+            pane.ui = self._emptyPage
+            return self._EMPTY_PAGE_INDEX
+        elif isinstance(pane, ListPane):
+            pane.ui = self._listPage
+            return self._LIST_PAGE_INDEX
+        else:
+            return self._ui.addWidget(pane.create_page())
 
     def initPage(self, index):
         self.page(index).init()

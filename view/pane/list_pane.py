@@ -12,9 +12,13 @@ class ListPane(Pane):
         pass
 
     # virtual
-    def load(self, ui):
+    def load(self):
         pass
 
     # virtual
     def save(self):
+        pass
+
+    # virtual
+    def edit(self):
         pass

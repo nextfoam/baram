@@ -28,7 +28,7 @@ if __name__ == '__main__':
     file.open(QIODevice.ReadOnly | QIODevice.Text)
     stream = QTextStream(file)
 
-    app.setStyleSheet(app.styleSheet() + '\n' + stream.readAll())
+    #app.setStyleSheet(app.styleSheet() + '\n' + stream.readAll())
 
     window = MainWindow()
     window.show()
