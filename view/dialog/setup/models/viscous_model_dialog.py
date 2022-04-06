@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .viscous_model_dialog_ui import Ui_ViscousModelDialog
 from view.dialog.baram_dialog import BaramDialog
+from .viscous_model_dialog_ui import Ui_ViscousModelDialog
 
 
 class ViscousModelDialog(BaramDialog):

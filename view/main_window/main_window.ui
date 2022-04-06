@@ -103,6 +103,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="edit">
+              <property name="locale">
+               <locale language="English" country="UnitedStates"/>
+              </property>
               <property name="text">
                <string>Edit</string>
               </property>

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .pane_page import PanePage
+from view.dialog.pane_page import PanePage
 
 
 class ListPage(PanePage):

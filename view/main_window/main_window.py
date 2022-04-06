@@ -4,7 +4,7 @@
 from PySide6.QtWidgets import QMainWindow
 
 from view.case_wizard.case_wizard import CaseWizard
-from .form_view import FormView
+from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu_view import MenuView
 
@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         self._wizard = None
 
         self._menuView = MenuView(self._ui.menuView)
-        self._formView = FormView(self._ui.formView, self._ui)
+        self._contentView = ContentView(self._ui.formView, self._ui)
 
         self.connectSignalsSlots()
 
@@ -25,8 +25,6 @@ class MainWindow(QMainWindow):
         self._ui.actionExit.triggered.connect(self.close)
         self._ui.actionNew.triggered.connect(self.openWizard)
         self._menuView.connectCurrentItemChanged(self.changeForm)
-        self._ui.editList.itemDoubleClicked.connect(self.listPageItemEdit)
-        self._ui.edit.clicked.connect(self.listPageItemEdit)
 
     def openWizard(self, signal):
         self._wizard = CaseWizard()
@@ -35,19 +33,15 @@ class MainWindow(QMainWindow):
 
     def changeForm(self, current, previous):
         if previous is not None:
-            previousPane = self._menuView.paneOf(previous)
-            previousPane.save()
+            index = self._menuView.paneIndex(previous)
+            if index > 0:
+                previousPage = self._contentView.page(index)
+                previousPage.save()
 
-        currentPane = self._menuView.paneOf(current)
-        if currentPane.index < 0:
-            currentPane.index = self._formView.addPage(currentPane)
-
-        currentPane.init()
-        currentPane.load()
-        self._formView.changePane(currentPane.index)
-
-    def listPageItemEdit(self):
         currentPane = self._menuView.currentPane()
-        currentPane.edit()
-        pass
+        if currentPane.index < 0:
+            newPage = currentPane.createPage()
+            currentPane.index = self._contentView.addPage(newPage)
+            newPage.load()
 
+        self._contentView.changePane(currentPane.index)

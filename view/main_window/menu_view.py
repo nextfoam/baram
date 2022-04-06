@@ -2,69 +2,72 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtWidgets import QTreeWidgetItem
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QCoreApplication
 
-from view.pane.empty_pane import EmptyPane
-from view.pane.general_pane import GeneralPane
-from view.pane.models_pane import ModelsPane
+from view.dialog.setup.general.general_page import GeneralPage
+from view.dialog.setup.models.models_page import ModelsPage
 
 
 class MenuView:
-    MENU = {
-        "setup" : {
-            "text": "Setup",
-            "pane_class": EmptyPane,
-            "sub_menu": {
-                "general": {
-                    "text": "General",
-                    "pane_class": GeneralPane,
-                },
-                "models": {
-                    "text": "Models",
-                    "pane_class": ModelsPane,
-                },
-                "materials": {
-                    "text": "Materials",
-                    "pane_class": EmptyPane,
-                },
-                "cellZoneConditions": {
-                    "text": "Cell Zone Conditions",
-                    "pane_class": EmptyPane,
-                },
-                "boundayConditions": {
-                    "text": "Boundary Conditions",
-                    "pane_class": EmptyPane,
-                },
-                "dynamicMesh": {
-                    "text": "Dynamic Mesh",
-                    "pane_class": EmptyPane,
-                },
-                "referenceValues": {
-                    "text": "Reference Values",
-                    "pane_class": EmptyPane,
-                },
-            }
-        }
-    }
-
     class MenuItem:
         def __init__(self, setup):
-            self._pane = None
             self._text = setup["text"]
-            self._paneClass = setup["pane_class"]
+            self._pageClass = None
+            self._index = -1
+
+            if "page_class" in setup:
+                self._pageClass = setup["page_class"]
+            else:
+                self._index = 0
 
         @property
-        def paneClass(self):
-            return self._paneClass
+        def index(self):
+            return self._index
 
-        @property
-        def pane(self):
-            if self._pane is None:
-                self._pane = self._paneClass()
+        @index.setter
+        def index(self, index):
+            self._index = index
 
-            return self._pane
+        def createPage(self):
+            return self._pageClass()
 
     def __init__(self, tree):
+        self.MENU = {
+            "setup": {
+                "text": QCoreApplication.translate("MenuView", "Setup"),
+                "sub_menu": {
+                    "general": {
+                        "text": QCoreApplication.translate("MenuView", "General"),
+                        "page_class": GeneralPage,
+                    },
+                    "models": {
+                        "text": QCoreApplication.translate("MenuView", "Models"),
+                        "page_class": ModelsPage,
+                    },
+                    "materials": {
+                        "text": QCoreApplication.translate("MenuView", "Materials"),
+                        #"page_class": EmptyPage,
+                    },
+                    "cellZoneConditions": {
+                        "text": QCoreApplication.translate("MenuView", "Cell Zone Conditions"),
+                        #"page_class": EmptyPage,
+                    },
+                    "boundayConditions": {
+                        "text": QCoreApplication.translate("MenuView", "Boundary Conditions"),
+                        #"page_class": EmptyPage,
+                    },
+                    "dynamicMesh": {
+                        "text": QCoreApplication.translate("MenuView", "Dynamic Mesh"),
+                        #"page_class": EmptyPage,
+                    },
+                    "referenceValues": {
+                        "text": QCoreApplication.translate("MenuView", "Reference Values"),
+                        #"page_class": EmptyPage,
+                    },
+                }
+            }
+        }
+
         self._ui = tree
         self._loadMenu()
 
@@ -72,7 +75,10 @@ class MenuView:
         self._ui.currentItemChanged.connect(slot)
 
     def paneOf(self, menuItem):
-        return menuItem.data(0, Qt.UserRole).pane
+        return menuItem.data(0, Qt.UserRole)
+
+    def paneIndex(self, menuItem):
+        return self.paneOf(menuItem).index
 
     def currentPane(self):
         return self.paneOf(self._ui.currentItem())

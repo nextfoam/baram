@@ -10,15 +10,13 @@ class BaramDialog(QDialog):
         self._ui = ui
         self._ui.setupUi(self)
         self.connectSignalsSlots()
-        self.initUI()
 
-    # virtual
     def connectSignalsSlots(self):
         pass
 
-    # virtual
-    def initUI(self):
-        pass
+    def _setVisible(self, widgetList, visible):
+        for widget in widgetList:
+            widget.setVisible(visible)
 
     def _resizeDialog(self, widget):
         while widget is not None:
