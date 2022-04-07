@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="title">
      <property name="text">
-      <string>TextLabel</string>
+      <string>Models</string>
      </property>
     </widget>
    </item>

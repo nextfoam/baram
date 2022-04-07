@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from view.dialog.baram_dialog import BaramDialog
+from view.widgets.resizable_dialog import ResizableDialog
 from .viscous_model_dialog_ui import Ui_ViscousModelDialog
 
 
-class ViscousModelDialog(BaramDialog):
+class ViscousModelDialog(ResizableDialog):
     def __init__(self):
-        super().__init__(Ui_ViscousModelDialog())
+        super().__init__()
+        self._ui = Ui_ViscousModelDialog()
+        self._ui.setupUi(self)
+
+        self.connectSignalsSlots()
 
     def connectSignalsSlots(self):
         self._ui.laminar.toggled.connect(self.modelChanged)

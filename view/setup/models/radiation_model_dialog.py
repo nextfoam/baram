@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from view.dialog.baram_dialog import BaramDialog
+from view.widgets.resizable_dialog import ResizableDialog
 from .radiation_model_dialog_ui import Ui_RadiationModelDialog
 
 
-class RadiationModelDialog(BaramDialog):
+class RadiationModelDialog(ResizableDialog):
     def __init__(self):
-        super().__init__(Ui_RadiationModelDialog())
+        super().__init__()
+        self._ui = Ui_RadiationModelDialog()
+        self._ui.setupUi(self)
+
         self._doGroup = [
             self._ui.flowIterationsPerRadiationIterationLabel,
             self._ui.flowIterationsPerRadiationIteration,
@@ -20,6 +23,8 @@ class RadiationModelDialog(BaramDialog):
             self._ui.maximumNumberOfRadiationIterationsLabel,
             self._ui.maximumNumberOfRadiationIterations,
         ]
+
+        self.connectSignalsSlots()
 
     def connectSignalsSlots(self):
         self._ui.off.toggled.connect(self.modelChanged)

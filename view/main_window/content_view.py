@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from view.dialog.empty_page import EmptyPage
+from view.main_window.empty_page import EmptyPage
 
 
 class ContentView:

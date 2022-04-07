@@ -4,8 +4,8 @@
 from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import Qt, QCoreApplication
 
-from view.dialog.setup.general.general_page import GeneralPage
-from view.dialog.setup.models.models_page import ModelsPage
+from view.setup.general.general_page import GeneralPage
+from view.setup.models.models_page import ModelsPage
 
 
 class MenuView:

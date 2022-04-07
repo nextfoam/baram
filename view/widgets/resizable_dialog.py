@@ -4,15 +4,9 @@
 from PySide6.QtWidgets import QDialog
 
 
-class BaramDialog(QDialog):
-    def __init__(self, ui):
+class ResizableDialog(QDialog):
+    def __init__(self):
         super().__init__()
-        self._ui = ui
-        self._ui.setupUi(self)
-        self.connectSignalsSlots()
-
-    def connectSignalsSlots(self):
-        pass
 
     def _setVisible(self, widgetList, visible):
         for widget in widgetList:

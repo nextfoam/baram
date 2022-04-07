@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from view.dialog.pane_page import PanePage
-from view.dialog.setup.general.general_page_ui import Ui_GeneralPage
+from PySide6.QtWidgets import QWidget
+
+from view.setup.general.general_page_ui import Ui_GeneralPage
 
 
-class GeneralPage(PanePage):
+class GeneralPage(QWidget):
     def __init__(self):
-        super().__init__(Ui_GeneralPage())
+        super().__init__()
+        self._ui = Ui_GeneralPage()
+        self._ui.setupUi(self)
 
     def init(self):
         pass

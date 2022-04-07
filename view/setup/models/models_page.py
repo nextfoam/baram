@@ -3,16 +3,15 @@
 
 from enum import Enum, auto
 
-from PySide6.QtWidgets import QListWidgetItem
+from PySide6.QtWidgets import QWidget, QListWidgetItem
 
-from view.dialog.pane_page import PanePage
-from view.dialog.setup.models.models_page_ui import Ui_ModelsPage
+from view.setup.models.models_page_ui import Ui_ModelsPage
 from .multiphase_model_dialog import MultiphaseModelDialog
 from .viscous_model_dialog import ViscousModelDialog
 from .radiation_model_dialog import RadiationModelDialog
 
 
-class ModelsPage(PanePage):
+class ModelsPage(QWidget):
     class LIST_INDEX(Enum):
         MULTIPHASE_MODEL = 1000
         VISCOSE = auto()
@@ -20,7 +19,11 @@ class ModelsPage(PanePage):
         SPECIES = auto()
 
     def __init__(self):
-        super().__init__(Ui_ModelsPage())
+        super().__init__()
+        self._ui = Ui_ModelsPage()
+        self._ui.setupUi(self)
+
+        self.connectSignalsSlots()
 
     def connectSignalsSlots(self):
         self._ui.list.itemDoubleClicked.connect(self.edit)
