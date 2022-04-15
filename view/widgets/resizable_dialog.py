@@ -8,7 +8,7 @@ class ResizableDialog(QDialog):
     def __init__(self):
         super().__init__()
 
-    def _setVisible(self, widgetList, visible):
+    def _setGroupVisible(self, widgetList, visible):
         for widget in widgetList:
             widget.setVisible(visible)
 

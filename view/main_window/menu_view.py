@@ -68,11 +68,11 @@ class MenuView:
             }
         }
 
-        self._ui = tree
+        self._view = tree
         self._loadMenu()
 
     def connectCurrentItemChanged(self, slot):
-        self._ui.currentItemChanged.connect(slot)
+        self._view.currentItemChanged.connect(slot)
 
     def paneOf(self, menuItem):
         return menuItem.data(0, Qt.UserRole)
@@ -81,11 +81,11 @@ class MenuView:
         return self.paneOf(menuItem).index
 
     def currentPane(self):
-        return self.paneOf(self._ui.currentItem())
+        return self.paneOf(self._view.currentItem())
 
     def _loadMenu(self):
         for key, setup in self.MENU.items():
-            item = QTreeWidgetItem(self._ui)
+            item = QTreeWidgetItem(self._view)
             item.setText(0, setup["text"])
             item.setData(0, Qt.UserRole, self.MenuItem(setup))
             self._appendSubMenu(item, setup["sub_menu"])

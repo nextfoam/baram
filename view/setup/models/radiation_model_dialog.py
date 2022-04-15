@@ -33,6 +33,6 @@ class RadiationModelDialog(ResizableDialog):
 
     def modelChanged(self):
         self._ui.parametersWidget.setVisible(not self._ui.off.isChecked())
-        self._setVisible(self._doGroup, self._ui.DO.isChecked())
+        self._setGroupVisible(self._doGroup, self._ui.DO.isChecked())
         self._resizeDialog(self._ui.parametersGroup)
 
