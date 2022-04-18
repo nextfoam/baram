@@ -4,7 +4,7 @@
 import sys
 import os
 
-from PySide6.QtCore import QFile, QTextStream, QIODevice
+from PySide6.QtCore import QFile, QTextStream, QIODevice, QTranslator, QCoreApplication
 from PySide6.QtWidgets import QApplication
 
 # To render SVG files.
@@ -28,7 +28,11 @@ if __name__ == '__main__':
     file.open(QIODevice.ReadOnly | QIODevice.Text)
     stream = QTextStream(file)
 
-    app.setStyleSheet(app.styleSheet() + '\n' + stream.readAll())
+    #app.setStyleSheet(app.styleSheet() + '\n' + stream.readAll())
+
+    translator = QTranslator()
+    translator.load("lang_ko.qm")
+    QCoreApplication.installTranslator(translator)
 
     window = MainWindow()
     window.show()
