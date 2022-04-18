@@ -2,7 +2,7 @@
 <module version="4">
   <component name="FacetManager">
     <facet type="Python" name="Python">
-      <configuration sdkName="Python 3.10 (baram)" />
+      <configuration sdkName="Python 3.9 (baram)" />
     </facet>
   </component>
 </module>
