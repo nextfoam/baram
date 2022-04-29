@@ -31,6 +31,10 @@ class MeshDock(TabifiedDock):
         Show(mesh, self._renderView)
         Render()
 
+    def closeEvent(self, event):
+        self.hide()
+        event.ignore()
+
     def _setup(self):
         self.setWindowTitle(self.tr("Mesh"))
         self.setAllowedAreas(Qt.RightDockWidgetArea)

@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import Qt, QCoreApplication
 
 from view.setup.general.general_page import GeneralPage
+from view.setup.materials.material_page import MaterialPage
 from view.setup.models.models_page import ModelsPage
 
 
@@ -40,13 +41,13 @@ class MenuView:
                         "text": QCoreApplication.translate("MenuView", "General"),
                         "page_class": GeneralPage,
                     },
+                    "materials": {
+                        "text": QCoreApplication.translate("MenuView", "Materials"),
+                        "page_class": MaterialPage,
+                    },
                     "models": {
                         "text": QCoreApplication.translate("MenuView", "Models"),
                         "page_class": ModelsPage,
-                    },
-                    "materials": {
-                        "text": QCoreApplication.translate("MenuView", "Materials"),
-                        #"page_class": EmptyPage,
                     },
                     "cellZoneConditions": {
                         "text": QCoreApplication.translate("MenuView", "Cell Zone Conditions"),

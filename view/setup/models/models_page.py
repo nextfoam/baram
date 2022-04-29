@@ -57,7 +57,7 @@ class ModelsPage(QWidget):
             pass
 
     def _addModel(self, text, data, index):
-        modelItem = QListWidgetItem(text + "/" + data, self._ui.list, index.value)
+        QListWidgetItem(text + "/" + data, self._ui.list, index.value)
 
     def _getMultiphase(self):
         return "Off"
