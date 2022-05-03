@@ -30,25 +30,28 @@ class MainWindow(QMainWindow):
         self._addDockTabified(self._consoleDock)
         self._addDockTabified(self._meshDock)
 
-        self.connectSignalsSlots()
+        self._connectSignalsSlots()
 
-    def connectSignalsSlots(self):
+    def tabifyDock(self, dock):
+        self.tabifyDockWidget(self._emptyDock, dock)
+
+    def _connectSignalsSlots(self):
         self._ui.actionExit.triggered.connect(self.close)
-        self._ui.actionNew.triggered.connect(self.openWizard)
-        self._ui.actionLoad_Mesh.triggered.connect(self.loadMesh)
-        self._menuView.connectCurrentItemChanged(self.changeForm)
+        self._ui.actionNew.triggered.connect(self._openWizard)
+        self._ui.actionLoad_Mesh.triggered.connect(self._loadMesh)
+        self._menuView.connectCurrentItemChanged(self._changeForm)
 
-    def openWizard(self, signal):
+    def _openWizard(self, signal):
         self._wizard = CaseWizard()
 
         self._wizard.exec()
 
-    def loadMesh(self):
+    def _loadMesh(self):
         fileName = QFileDialog.getOpenFileName(self, self.tr("Open Mesh"), "", self.tr("OpenFOAM Mesh (*.foam)"))
         if fileName[0]:
             self._meshDock.showMesh(fileName[0])
 
-    def changeForm(self, current, previous):
+    def _changeForm(self, current, previous):
         if previous is not None:
             index = self._menuView.paneIndex(previous)
             if index > 0:
@@ -62,9 +65,6 @@ class MainWindow(QMainWindow):
             newPage.load()
 
         self._contentView.changePane(currentPane.index)
-
-    def tabifyDock(self, dock):
-        self.tabifyDockWidget(self._emptyDock, dock)
 
     def _addDockTabified(self, dock):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)

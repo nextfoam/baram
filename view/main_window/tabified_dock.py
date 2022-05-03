@@ -11,15 +11,15 @@ class TabifiedDock(QDockWidget):
 
         self._connectTabifySlots()
 
-    def dockTopLevelChanged(self, topLevel):
+    def _dockTopLevelChanged(self, topLevel):
         if not topLevel:
             self._mainWinow.tabifyDock(self)
 
-    def dockToggled(self, checked):
+    def _dockToggled(self, checked):
         if checked:
             self.show()
             self.raise_()
 
     def _connectTabifySlots(self):
-        self.topLevelChanged.connect(self.dockTopLevelChanged)
-        self.toggleViewAction().toggled.connect(self.dockToggled)
+        self.topLevelChanged.connect(self._dockTopLevelChanged)
+        self.toggleViewAction().toggled.connect(self._dockToggled)

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>258</width>
+    <width>279</width>
     <height>242</height>
    </rect>
   </property>
@@ -95,8 +95,8 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../../../resources.qrc">
-             <normaloff>:/icon/resources/ionicons/pencil.svg</normaloff>:/icon/resources/ionicons/pencil.svg</iconset>
+            <iconset resource="../../../resource.qrc">
+             <normaloff>:/icons/create-outline.svg</normaloff>:/icons/create-outline.svg</iconset>
            </property>
           </widget>
          </item>
@@ -112,8 +112,8 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../../../resources.qrc">
-             <normaloff>:/icon/resources/ionicons/trash-outline.svg</normaloff>:/icon/resources/ionicons/trash-outline.svg</iconset>
+            <iconset resource="../../../resource.qrc">
+             <normaloff>:/icons/trash-outline.svg</normaloff>:/icons/trash-outline.svg</iconset>
            </property>
           </widget>
          </item>
@@ -161,7 +161,7 @@
             <item>
              <widget class="QLabel" name="label_4">
               <property name="text">
-               <string>Specific Heat, Cp</string>
+               <string>Specific Heat, C&lt;sub&gt;P&lt;/sub&gt;</string>
               </property>
              </widget>
             </item>
@@ -185,7 +185,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QWidget" name="widget_4" native="true">
+          <widget class="QWidget" name="viscosistyWidget" native="true">
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
              <widget class="QLabel" name="label_7">
@@ -260,7 +260,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../../resources.qrc"/>
+  <include location="../../../resource.qrc"/>
  </resources>
  <connections/>
 </ui>

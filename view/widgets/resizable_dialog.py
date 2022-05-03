@@ -16,5 +16,3 @@ class ResizableDialog(QDialog):
         while widget is not None:
             widget.adjustSize()
             widget = widget.parent()
-
-
