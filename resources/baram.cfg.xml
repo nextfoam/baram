@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration version="1"  xmlns="http://www.example.org/baram">
+<configuration version="1" xmlns="http://www.example.org/baram">
     <general>
         <flowType>compressible</flowType>
         <timeTransient>false</timeTransient>
@@ -20,7 +20,7 @@
             </referencePressureLocation>
         </operatingConditions>
     </general>
-    
+
     <materials>
         <material id="1">
             <name>air</name>
@@ -87,7 +87,7 @@
             <emissivity>0.039</emissivity>
         </material>
     </materials>
-    
+
     <models>
         <multiphaseModels>
             <model>off</model>
@@ -107,13 +107,13 @@
         </turbulenceModels>
         <speciesModels>off</speciesModels>
     </models>
-    
+
     <cellZones>
     </cellZones>
-    
+
     <boundaryConditions>
     </boundaryConditions>
-    
+
     <numericalConditions>
         <pressureVelocityCouplingScheme>SIMPLE</pressureVelocityCouplingScheme>
         <discretizationSchemes>
@@ -159,14 +159,14 @@
             </limits>
         </advanced>
     </numericalConditions>
-    
+
     <monitors>
         <forces></forces>
         <points></points>
         <surfaces></surfaces>
         <volumes></volumes>
     </monitors>
-    
+
     <initialization>
         <initialValues>
             <velocity>
