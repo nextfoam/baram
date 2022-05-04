@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ViscousModelDialog</class>
- <widget class="QDialog" name="ViscousModelDialog">
+ <class>TurbulenceModelDialog</class>
+ <widget class="QDialog" name="TurbulenceModelDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>275</width>
-    <height>446</height>
+    <height>472</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,6 +66,13 @@
           <widget class="QRadioButton" name="kOmega">
            <property name="text">
             <string>k-omega</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="LES">
+           <property name="text">
+            <string>LES</string>
            </property>
           </widget>
          </item>
@@ -180,6 +187,12 @@
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -195,7 +208,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>ViscousModelDialog</receiver>
+   <receiver>TurbulenceModelDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -211,7 +224,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>ViscousModelDialog</receiver>
+   <receiver>TurbulenceModelDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

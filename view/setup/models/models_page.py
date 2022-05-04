@@ -7,14 +7,14 @@ from PySide6.QtWidgets import QWidget, QListWidgetItem
 
 from view.setup.models.models_page_ui import Ui_ModelsPage
 from .multiphase_model_dialog import MultiphaseModelDialog
-from .viscous_model_dialog import ViscousModelDialog
+from .turbulence_model_dialog import TurbulenceModelDialog
 from .radiation_model_dialog import RadiationModelDialog
 
 
 class ModelsPage(QWidget):
     class LIST_INDEX(Enum):
-        MULTIPHASE_MODEL = 1000
-        VISCOSE = auto()
+        MULTIPHASE_MODEL = QListWidgetItem.ItemType.UserType
+        TURBULANCE = auto()
         RADIATION = auto()
         SPECIES = auto()
 
@@ -23,30 +23,21 @@ class ModelsPage(QWidget):
         self._ui = Ui_ModelsPage()
         self._ui.setupUi(self)
 
-        self.connectSignalsSlots()
+        self._connectSignalsSlots()
 
-    def connectSignalsSlots(self):
-        self._ui.list.itemDoubleClicked.connect(self.edit)
-        self._ui.edit.clicked.connect(self.edit)
+    def _connectSignalsSlots(self):
+        self._ui.list.itemDoubleClicked.connect(self._edit)
+        self._ui.edit.clicked.connect(self._edit)
 
-    def load(self):
-        self._addModel(self.tr("Multiphase"), self._getMultiphase(), self.LIST_INDEX.MULTIPHASE_MODEL)
-        self._addModel(self.tr("Viscous"), self._getViscous(), self.LIST_INDEX.VISCOSE)
-        self._addModel(self.tr("Radiation"), self._getRadiation(), self.LIST_INDEX.RADIATION)
-        self._addModel(self.tr("Species"), self._getSpecies(), self.LIST_INDEX.SPECIES)
-
-    def save(self):
-        pass
-
-    def edit(self):
+    def _edit(self):
         type = self._ui.list.currentItem().type()
 
         if type == self.LIST_INDEX.MULTIPHASE_MODEL.value:
             dialog = MultiphaseModelDialog()
             dialog._ui.off.setChecked(True)
             dialog.exec()
-        elif type == self.LIST_INDEX.VISCOSE.value:
-            dialog = ViscousModelDialog()
+        elif type == self.LIST_INDEX.TURBULANCE.value:
+            dialog = TurbulenceModelDialog()
             dialog._ui.laminar.setChecked(True)
             dialog.exec()
         elif type == self.LIST_INDEX.RADIATION.value:
@@ -59,14 +50,11 @@ class ModelsPage(QWidget):
     def _addModel(self, text, data, index):
         QListWidgetItem(text + "/" + data, self._ui.list, index.value)
 
-    def _getMultiphase(self):
-        return "Off"
+    def load(self):
+        self._addModel(self.tr("Multiphase"), "Off", self.LIST_INDEX.MULTIPHASE_MODEL)
+        self._addModel(self.tr("Turbulence"), "Laminar", self.LIST_INDEX.TURBULANCE)
+        self._addModel(self.tr("Radiation"), "Off", self.LIST_INDEX.RADIATION)
+        self._addModel(self.tr("Species"), "Off", self.LIST_INDEX.SPECIES)
 
-    def _getViscous(self):
-        return "Off"
-
-    def _getRadiation(self):
-        return "Off"
-
-    def _getSpecies(self):
-        return "Off"
+    def save(self):
+        pass

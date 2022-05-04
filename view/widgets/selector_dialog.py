@@ -12,17 +12,15 @@ class SelectorDialog(QDialog):
         super().__init__()
         self._ui = Ui_SelectorDialog()
         self._ui.setupUi(self)
-        self._setup(label, items)
 
+        self._setup(label, items)
         self._connectSignalsSlots()
 
-    def itemSelected(self):
-        self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
-
     def selectedItem(self):
-        return self._ui.list.currentItem().data(Qt.UserRole)
+        return self._ui.list.currentItem().data(Qt.UserRole)[0]
 
     def showEvent(self, event):
+        self._ui.filter.clear()
         self._ui.list.clearSelection()
         self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         return super().showEvent(event)
@@ -32,11 +30,24 @@ class SelectorDialog(QDialog):
         if isinstance(items, dict):
             for key, value in items.items():
                 item = QListWidgetItem(value)
-                item.setData(Qt.UserRole, key)
+                item.setData(Qt.UserRole, [key, key.lower()])
                 self._ui.list.addItem(item)
         else:
-            self._ui.list.addItems(items)
+            for value in items:
+                item = QListWidgetItem(value)
+                item.setData(Qt.UserRole, [value, value.lower()])
+                self._ui.list.addItem(item)
 
     def _connectSignalsSlots(self):
-        self._ui.list.currentItemChanged.connect(self.itemSelected)
+        self._ui.filter.textChanged.connect(self._filterChanged)
+        self._ui.list.currentItemChanged.connect(self._itemSelected)
+        self._ui.list.itemDoubleClicked.connect(self.accept)
 
+    def _itemSelected(self):
+        self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+
+    def _filterChanged(self):
+        filter = self._ui.filter.text().lower()
+        for i in range(self._ui.list.count()):
+            item = self._ui.list.item(i)
+            item.setHidden(filter not in item.data(Qt.UserRole)[1])

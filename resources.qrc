@@ -1,7 +1,9 @@
 <RCC>
   <qresource prefix="icon">
     <file>resources/ionicons/trash-outline.svg</file>
+    <file>resources/ionicons/add-circle.svg</file>
     <file>resources/ionicons/add-circle-outline.svg</file>
     <file>resources/ionicons/pencil.svg</file>
+    <file>resources/ionicons/close.svg</file>
   </qresource>
 </RCC>

@@ -7,6 +7,7 @@ from view.setup.materials.material_card import MaterialCard
 from view.setup.materials.material_db import MaterialDB
 from view.setup.materials.material_page_ui import Ui_MaterialPage
 from view.widgets.selector_dialog import SelectorDialog
+from .material_dialog import MaterialDialog
 
 
 class MaterialPage(QWidget):
@@ -22,9 +23,6 @@ class MaterialPage(QWidget):
 
         self._connectSignalsSlots()
 
-    def init(self):
-        pass
-
     def load(self):
         self._cardListLayout.addStretch()
         self._addMaterial("Air")
@@ -32,12 +30,9 @@ class MaterialPage(QWidget):
     def save(self):
         pass
 
-    def add(self):
-        if self._addDialog.exec():
-            self._addMaterial(self._addDialog.selectedItem())
-
     def edit(self, card):
-        pass
+        dialog = MaterialDialog(MaterialDB.instance().getMaterial(card.name))
+        dialog.exec()
 
     def remove(self, card):
         confirm = QMessageBox.question(
@@ -47,7 +42,11 @@ class MaterialPage(QWidget):
             card.deleteLater()
 
     def _connectSignalsSlots(self):
-        self._ui.add.clicked.connect(self.add)
+        self._ui.add.clicked.connect(self._add)
+
+    def _add(self):
+        if self._addDialog.exec():
+            self._addMaterial(self._addDialog.selectedItem())
 
     def _addMaterial(self, name):
         self._cardListLayout.insertWidget(0, MaterialCard(self, MaterialDB.instance().getMaterial(name)))
