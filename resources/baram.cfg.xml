@@ -3,13 +3,13 @@
     <general>
         <flowType>compressible</flowType>
         <timeTransient>false</timeTransient>
-        <solverDensity>true</solverDensity>
+        <solverType>pressureBased</solverType>
         <operatingConditions>
-            <gravity disabled="true">
+            <gravity>
                 <direction>
-                    <x>0.0</x>
-                    <y>0.0</y>
-                    <z>0.0</z>
+                    <x>0</x>
+                    <y>0</y>
+                    <z>0</z>
                 </direction>
             </gravity>
             <pressure>101325</pressure>
@@ -132,36 +132,30 @@
             <turbulence>0.7</turbulence>
             <turbulenceFinal>1</turbulenceFinal>
         </underRelaxationFactors>
-        <maxIterationsPerTimeStep>1</maxIterationsPerTimeStep>
+        <maxIterationsPerTimeStep>20</maxIterationsPerTimeStep>
         <numberOfCorrectors>4</numberOfCorrectors>
         <convergenceCriteria>
             <pressure>
-                <absolute>0</absolute>
-                <relative>0</relative>
+                <absolute>0.001</absolute>
+                <relative>0.5</relative>
             </pressure>
             <momentum>
-                <absolute>0</absolute>
-                <relative>0</relative>
+                <absolute>0.001</absolute>
+                <relative>0.5</relative>
             </momentum>
             <energy>
-                <absolute>0</absolute>
-                <relative>0</relative>
+                <absolute>0.001</absolute>
+                <relative>0.5</relative>
             </energy>
             <turbulence>
-                <absolute>0</absolute>
-                <relative>0</relative>
+                <absolute>0.001</absolute>
+                <relative>0.5</relative>
             </turbulence>
         </convergenceCriteria>
         <advanced>
-            <subIterationConditions>
-                <tolerance>0</tolerance>
-                <relativeTolerance>0</relativeTolerance>
-                <minimumIteration>1</minimumIteration>
-                <maximumIteration>1</maximumIteration>
-            </subIterationConditions>
             <limits>
-                <minimumStaticTemperature>0</minimumStaticTemperature>
-                <maximumStaticTemperature>0</maximumStaticTemperature>
+                <minimumStaticTemperature>1</minimumStaticTemperature>
+                <maximumStaticTemperature>5000</maximumStaticTemperature>
             </limits>
         </advanced>
     </numericalConditions>
@@ -180,11 +174,11 @@
                 <y>0</y>
                 <z>0</z>
             </velocity>
-            <pressure>101325</pressure>
-            <temperature>288.15</temperature>
+            <pressure>0</pressure>
+            <temperature>300</temperature>
             <scaleOfVelocity>0</scaleOfVelocity>
-            <turbulentIntensity>0</turbulentIntensity>
-            <turbulentViscosity>0</turbulentViscosity>
+            <turbulentIntensity>10</turbulentIntensity>
+            <turbulentViscosity>10</turbulentViscosity>
         </initialValues>
     </initialization>
 
@@ -192,16 +186,15 @@
         <runConditions>
             <numberOfIterations>0</numberOfIterations>
             <timeSteppingMethod>fixed</timeSteppingMethod>
-            <timeStepSize>1</timeStepSize>
+            <timeStepSize>0.01</timeStepSize>
             <endTime>0</endTime>
             <reportIntervalSteps>1</reportIntervalSteps>
-            <reportIntervalSeconds>1</reportIntervalSeconds>
+            <reportIntervalSeconds>0.01</reportIntervalSeconds>
             <retainOnlyTheMostRecentFiles>false</retainOnlyTheMostRecentFiles>
             <maximumNumberOfDataFiles>1</maximumNumberOfDataFiles>
-            <dataWriteFormat>ascii</dataWriteFormat>
+            <dataWriteFormat>binary</dataWriteFormat>
             <dataWritePrecision>6</dataWritePrecision>
             <timePrecision>6</timePrecision>
-            <compressData>false</compressData>
         </runConditions>
         <parallel>
             <numberOfCores>1</numberOfCores>
