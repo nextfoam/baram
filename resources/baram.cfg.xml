@@ -27,17 +27,21 @@
             <phase>gas</phase>
             <density>
                 <specification>constant</specification>
-                <value>1.225</value>
+                <constant>1.225</constant>
             </density>
             <specificHeat>
                 <specification>constant</specification>
-                <value>1006</value>
-                <polynomial>0</polynomial>
+                <constant>1006</constant>
+                <polynomial>
+                    <coefficient>0</coefficient>
+                </polynomial>
             </specificHeat>
             <viscosity>
                 <specification>constant</specification>
-                <value>0.0000179</value>
-                <polynomial>0</polynomial>
+                <constant>0.0000179</constant>
+                <polynomial>
+                    <coefficient>0</coefficient>
+                </polynomial>
                 <sutherland>
                     <coefficient>0.00000146</coefficient>
                     <temperature>110.4</temperature>
@@ -45,8 +49,10 @@
             </viscosity>
             <thermalConductivity>
                 <specification>constant</specification>
-                <value>0.0245</value>
-                <polynomial>0</polynomial>
+                <constant>0.0245</constant>
+                <polynomial>
+                    <coefficient>0</coefficient>
+                </polynomial>
             </thermalConductivity>
             <molecularWeight>28.966</molecularWeight>
             <absorptionCoefficient>0</absorptionCoefficient>
@@ -59,17 +65,21 @@
             <phase>solid</phase>
             <density>
                 <specification>constant</specification>
-                <value>2707</value>
+                <constant>2707</constant>
             </density>
             <specificHeat>
                 <specification>constant</specification>
-                <value>896</value>
-                <polynomial>0</polynomial>
+                <constant>896</constant>
+                <polynomial>
+                    <coefficient>0</coefficient>
+                </polynomial>
             </specificHeat>
             <viscosity>
                 <specification>constant</specification>
-                <value>0</value>
-                <polynomial>0</polynomial>
+                <constant>0</constant>
+                <polynomial>
+                    <coefficient>0</coefficient>
+                </polynomial>
                 <sutherland>
                     <coefficient>0</coefficient>
                     <temperature>0</temperature>
@@ -77,8 +87,10 @@
             </viscosity>
             <thermalConductivity>
                 <specification>constant</specification>
-                <value>204</value>
-                <polynomial>0</polynomial>
+                <constant>204</constant>
+                <polynomial>
+                    <coefficient>0</coefficient>
+                </polynomial>
             </thermalConductivity>
             <molecularWeight>0</molecularWeight>
             <absorptionCoefficient>0</absorptionCoefficient>

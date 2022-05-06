@@ -4,21 +4,35 @@
 
     <!-- type definitions -->
 
+    <xs:complexType name="inputNumberType">
+        <xs:simpleContent>
+            <xs:extension base="xs:decimal">
+                <xs:attribute name="notation" default="decimal">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="scientific"/>
+                            <xs:enumeration value="decimal"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
     <xs:complexType name="vector">
         <xs:sequence>
-            <xs:element name="x" type="xs:decimal"/>
-            <xs:element name="y" type="xs:decimal"/>
-            <xs:element name="z" type="xs:decimal"/>
+            <xs:element name="x" type="inputNumberType"/>
+            <xs:element name="y" type="inputNumberType"/>
+            <xs:element name="z" type="inputNumberType"/>
         </xs:sequence>
     </xs:complexType>
 
-
     <xs:complexType name="temporalVector">
         <xs:sequence>
-            <xs:element name="t" type="xs:decimal"/>
-            <xs:element name="x" type="xs:decimal"/>
-            <xs:element name="y" type="xs:decimal"/>
-            <xs:element name="z" type="xs:decimal"/>
+            <xs:element name="t" type="inputNumberType"/>
+            <xs:element name="x" type="inputNumberType"/>
+            <xs:element name="y" type="inputNumberType"/>
+            <xs:element name="z" type="inputNumberType"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -52,16 +66,13 @@
                                 <xs:attribute name="disabled" type="xs:boolean" default="true"/>
                             </xs:complexType>
                         </xs:element>
-                        <xs:element name="pressure" type="xs:decimal"/>
+                        <xs:element name="pressure" type="inputNumberType"/>
                         <xs:element name="referencePressureLocation" type="vector"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-
-
         </xs:sequence>
     </xs:complexType>
-
 
     <xs:complexType name="materialType">
         <xs:sequence>
@@ -75,7 +86,6 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-
             <xs:element name="density">
                 <xs:complexType>
                     <xs:sequence>
@@ -87,13 +97,10 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-
-                        <xs:element name="value" type="xs:decimal"/>
+                        <xs:element name="constant" type="inputNumberType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-
-
             <xs:element name="specificHeat">
                 <xs:complexType>
                     <xs:sequence>
@@ -105,19 +112,17 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-
-                        <xs:element name="value" type="xs:decimal"/>
-
+                        <xs:element name="constant" type="inputNumberType"/>
                         <xs:element name="polynomial">
-                            <xs:simpleType>
-                                <xs:list itemType="xs:decimal"/>
-                            </xs:simpleType>
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="coefficient" type="inputNumberType" maxOccurs="unbounded"/>
+                                </xs:sequence>
+                            </xs:complexType>
                         </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-
-
             <xs:element name="viscosity">
                 <xs:complexType>
                     <xs:sequence>
@@ -130,27 +135,25 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-
-                        <xs:element name="value" type="xs:decimal"/>
-
+                        <xs:element name="constant" type="inputNumberType"/>
                         <xs:element name="polynomial">
-                            <xs:simpleType>
-                                <xs:list itemType="xs:decimal"/>
-                            </xs:simpleType>
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="coefficient" type="inputNumberType" maxOccurs="unbounded"/>
+                                </xs:sequence>
+                            </xs:complexType>
                         </xs:element>
-
                         <xs:element name="sutherland">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="coefficient" type="xs:decimal"/>
-                                    <xs:element name="temperature" type="xs:decimal"/>
+                                    <xs:element name="coefficient" type="inputNumberType"/>
+                                    <xs:element name="temperature" type="inputNumberType"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-
             <xs:element name="thermalConductivity">
                 <xs:complexType>
                     <xs:sequence>
@@ -162,27 +165,25 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-
-                        <xs:element name="value" type="xs:decimal"/>
-
+                        <xs:element name="constant" type="inputNumberType"/>
                         <xs:element name="polynomial">
-                            <xs:simpleType>
-                                <xs:list itemType="xs:decimal"/>
-                            </xs:simpleType>
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="coefficient" type="inputNumberType" maxOccurs="unbounded"/>
+                                </xs:sequence>
+                            </xs:complexType>
                         </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-
-            <xs:element name="molecularWeight" type="xs:decimal"/>
-            <xs:element name="absorptionCoefficient" type="xs:decimal"/>
-            <xs:element name="surfaceTension" type="xs:decimal"/>
-            <xs:element name="saturationPressure" type="xs:decimal"/>
-            <xs:element name="emissivity" type="xs:decimal"/>
+            <xs:element name="molecularWeight" type="inputNumberType"/>
+            <xs:element name="absorptionCoefficient" type="inputNumberType"/>
+            <xs:element name="surfaceTension" type="inputNumberType"/>
+            <xs:element name="saturationPressure" type="inputNumberType"/>
+            <xs:element name="emissivity" type="inputNumberType"/>
         </xs:sequence>
         <xs:attribute name="id" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
-
 
     <xs:complexType name="multiphaseModelsType">
         <xs:sequence>
@@ -196,7 +197,6 @@
             </xs:element>
         </xs:sequence>
     </xs:complexType>
-
     <xs:complexType name="turbulenceModelsType">
         <xs:sequence>
             <xs:element name="model">
@@ -239,7 +239,6 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-
             <xs:element name="k-omega">
                 <xs:complexType>
                     <xs:sequence>
@@ -256,10 +255,9 @@
         </xs:sequence>
     </xs:complexType>
 
-
     <xs:complexType name="mrfZoneType">
         <xs:sequence>
-            <xs:element name="rotatingSpeed" type="xs:decimal"/>
+            <xs:element name="rotatingSpeed" type="inputNumberType"/>
             <xs:element name="rotationAxisOrigin" type="vector"/>
             <xs:element name="rotationAxisDirection" type="vector"/>
             <xs:element name="staticBoundaries">
@@ -293,8 +291,8 @@
             <xs:element name="powerLaw">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="c0" type="xs:decimal"/>
-                        <xs:element name="c1" type="xs:decimal"/>
+                        <xs:element name="c0" type="inputNumberType"/>
+                        <xs:element name="c1" type="inputNumberType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -303,23 +301,21 @@
 
     <xs:complexType name="slidingMeshZoneType">
         <xs:sequence>
-            <xs:element name="rotatingSpeed" type="xs:decimal"/>
+            <xs:element name="rotatingSpeed" type="inputNumberType"/>
             <xs:element name="rotationAxisOrigin" type="vector"/>
             <xs:element name="rotationAxisDirection" type="vector"/>
         </xs:sequence>
     </xs:complexType>
 
-
     <xs:complexType name="actuatorDiskZoneType">
         <xs:sequence>
             <xs:element name="diskDirection" type="vector"/>
-            <xs:element name="powerCoefficient" type="xs:decimal"/>
-            <xs:element name="thrustCoefficient" type="xs:decimal"/>
-            <xs:element name="diskArea" type="xs:decimal"/>
+            <xs:element name="powerCoefficient" type="inputNumberType"/>
+            <xs:element name="thrustCoefficient" type="inputNumberType"/>
+            <xs:element name="diskArea" type="inputNumberType"/>
             <xs:element name="upstreamPoint" type="vector"/>
         </xs:sequence>
     </xs:complexType>
-
 
     <xs:complexType name="turbulenceBoundaryConditionType">
         <xs:sequence>
@@ -334,10 +330,10 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-                        <xs:element name="turbulentKineticEnergy" type="xs:decimal"/>
-                        <xs:element name="turbulentDissipationRate" type="xs:decimal"/>
-                        <xs:element name="turbulentIntensity" type="xs:decimal"/>
-                        <xs:element name="turbulentViscosityRatio" type="xs:decimal"/>
+                        <xs:element name="turbulentKineticEnergy" type="inputNumberType"/>
+                        <xs:element name="turbulentDissipationRate" type="inputNumberType"/>
+                        <xs:element name="turbulentIntensity" type="inputNumberType"/>
+                        <xs:element name="turbulentViscosityRatio" type="inputNumberType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -352,10 +348,10 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-                        <xs:element name="turbulentKineticEnergy" type="xs:decimal"/>
-                        <xs:element name="specificDissipationRate" type="xs:decimal"/>
-                        <xs:element name="turbulentIntensity" type="xs:decimal"/>
-                        <xs:element name="turbulentViscosityRatio" type="xs:decimal"/>
+                        <xs:element name="turbulentKineticEnergy" type="inputNumberType"/>
+                        <xs:element name="specificDissipationRate" type="inputNumberType"/>
+                        <xs:element name="turbulentIntensity" type="inputNumberType"/>
+                        <xs:element name="turbulentViscosityRatio" type="inputNumberType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -370,14 +366,13 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-                        <xs:element name="modifiedTurbulentViscosity" type="xs:decimal"/>
-                        <xs:element name="turbulentViscosityRatio" type="xs:decimal"/>
+                        <xs:element name="modifiedTurbulentViscosity" type="inputNumberType"/>
+                        <xs:element name="turbulentViscosityRatio" type="inputNumberType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
     </xs:complexType>
-
 
     <xs:complexType name="temperatureBoundaryConditionType">
         <xs:sequence>
@@ -390,7 +385,7 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-            <xs:element name="constant" type="xs:decimal"/>
+            <xs:element name="constant" type="inputNumberType"/>
             <xs:element name="spacialDistribution" type="xs:string"/> <!-- HDF5 Dataset -->
             <xs:element name="temporalDistribution">
                 <xs:complexType>
@@ -410,8 +405,8 @@
                                     <xs:element name="piece" maxOccurs="unbounded">
                                         <xs:complexType>
                                             <xs:sequence>
-                                                <xs:element name="t" type="xs:decimal"/>
-                                                <xs:element name="value" type="xs:decimal"/>
+                                                <xs:element name="t" type="inputNumberType"/>
+                                                <xs:element name="value" type="inputNumberType"/>
                                             </xs:sequence>
                                         </xs:complexType>
                                     </xs:element>
@@ -419,18 +414,18 @@
                             </xs:complexType>
                         </xs:element>
                         <xs:element name="polynomialDirectInput">
-                            <xs:simpleType>
-                                <xs:list itemType="xs:decimal"/>
-                            </xs:simpleType>
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="coefficient" type="inputNumberType" maxOccurs="unbounded"/>
+                                </xs:sequence>
+                            </xs:complexType>
                         </xs:element>
                         <xs:element name="file" type="xs:string"/> <!-- HDF5 Dataset -->
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-
         </xs:sequence>
     </xs:complexType>
-
 
     <xs:complexType name="velocityInletType">
         <xs:sequence>
@@ -497,7 +492,7 @@
                                             </xs:restriction>
                                         </xs:simpleType>
                                     </xs:element>
-                                    <xs:element name="magnitude" type="xs:decimal"/>
+                                    <xs:element name="constant" type="inputNumberType"/>
                                     <xs:element name="spacialDistribution" type="xs:string"/> <!-- HDF5 Dataset -->
                                     <xs:element name="temporalDistribution">
                                         <xs:complexType>
@@ -516,8 +511,9 @@
                                                             <xs:element name="piece" maxOccurs="unbounded">
                                                                 <xs:complexType>
                                                                     <xs:sequence>
-                                                                        <xs:element name="t" type="xs:decimal"/>
-                                                                        <xs:element name="magnitude" type="xs:decimal"/>
+                                                                        <xs:element name="t" type="inputNumberType"/>
+                                                                        <xs:element name="value"
+                                                                                    type="inputNumberType"/>
                                                                     </xs:sequence>
                                                                 </xs:complexType>
                                                             </xs:element>
@@ -553,8 +549,8 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-                        <xs:element name="volumeFlowRate" type="xs:decimal" default="0"/>
-                        <xs:element name="massFlowRate" type="xs:decimal" default="0"/>
+                        <xs:element name="volumeFlowRate" type="inputNumberType" default="0"/>
+                        <xs:element name="massFlowRate" type="inputNumberType" default="0"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -563,22 +559,20 @@
         </xs:sequence>
     </xs:complexType>
 
-
     <xs:complexType name="pressureInletType">
         <xs:sequence>
-            <xs:element name="pressure" type="xs:decimal" default="0"/>
+            <xs:element name="pressure" type="inputNumberType" default="0"/>
             <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
             <xs:element name="temperature" type="temperatureBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
-
     <xs:complexType name="pressureOutletType">
         <xs:sequence>
-            <xs:element name="totalPressure" type="xs:decimal" default="0"/>
+            <xs:element name="totalPressure" type="inputNumberType" default="0"/>
             <xs:element name="calculatedBackflow" type="xs:boolean" default="false"/>
             <xs:element name="backflowTurbulence" type="turbulenceBoundaryConditionType"/>
-            <xs:element name="backflowTotalTemperature" type="xs:decimal" default="288.15"/>
+            <xs:element name="backflowTotalTemperature" type="inputNumberType" default="288.15"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -586,42 +580,40 @@
         <xs:sequence>
             <xs:element name="flowDirection" type="vector"/>
             <xs:element name="groundNormalDirection" type="vector"/>
-            <xs:element name="referenceFlowSpeed" type="xs:decimal"/>
-            <xs:element name="referenceHeight" type="xs:decimal"/>
-            <xs:element name="surfaceRoughnessLength" type="xs:decimal"/>
+            <xs:element name="referenceFlowSpeed" type="inputNumberType"/>
+            <xs:element name="referenceHeight" type="inputNumberType"/>
+            <xs:element name="surfaceRoughnessLength" type="inputNumberType"/>
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="openChannelInletType">
         <xs:sequence>
-            <xs:element name="volumeFlowRate" type="xs:decimal"/>
+            <xs:element name="volumeFlowRate" type="inputNumberType"/>
             <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="openChannelOutletType">
         <xs:sequence>
-            <xs:element name="meanVelocity" type="xs:decimal"/>
+            <xs:element name="meanVelocity" type="inputNumberType"/>
             <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
-
 
     <xs:complexType name="freeStreamType">
         <xs:sequence>
             <xs:element name="streamVelocity" type="vector"/>
-            <xs:element name="pressure" type="xs:decimal"/>
+            <xs:element name="pressure" type="inputNumberType"/>
             <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
-
     <xs:complexType name="farFieldRiemannType">
         <xs:sequence>
             <xs:element name="flowDirection" type="vector"/>
-            <xs:element name="machNumber" type="xs:decimal"/>
-            <xs:element name="staticPressure" type="xs:decimal" default="101325"/>
-            <xs:element name="staticTemperature" type="xs:decimal" default="288.15"/>
+            <xs:element name="machNumber" type="inputNumberType"/>
+            <xs:element name="staticPressure" type="inputNumberType" default="101325"/>
+            <xs:element name="staticTemperature" type="inputNumberType" default="288.15"/>
             <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
@@ -629,29 +621,26 @@
     <xs:complexType name="subsonicInflowType">
         <xs:sequence>
             <xs:element name="flowDirection" type="vector"/>
-            <xs:element name="totalPressure" type="xs:decimal" default="101325"/>
-            <xs:element name="totalTemperature" type="xs:decimal" default="288.15"/>
+            <xs:element name="totalPressure" type="inputNumberType" default="101325"/>
+            <xs:element name="totalTemperature" type="inputNumberType" default="288.15"/>
             <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
-
     <xs:complexType name="subsonicOutflowType">
         <xs:sequence>
-            <xs:element name="staticPressure" type="xs:decimal" default="101325"/>
+            <xs:element name="staticPressure" type="inputNumberType" default="101325"/>
         </xs:sequence>
     </xs:complexType>
-
 
     <xs:complexType name="supersonicInflowType">
         <xs:sequence>
             <xs:element name="velocity" type="vector"/>
-            <xs:element name="staticPressure" type="xs:decimal" default="101325"/>
-            <xs:element name="staticTemperature" type="xs:decimal" default="288.15"/>
+            <xs:element name="staticPressure" type="inputNumberType" default="101325"/>
+            <xs:element name="staticTemperature" type="inputNumberType" default="288.15"/>
             <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
-
 
     <xs:complexType name="wallType">
         <xs:sequence>
@@ -680,7 +669,7 @@
                         <xs:element name="rotationalMovingWall">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="speed" type="xs:decimal"/>
+                                    <xs:element name="speed" type="inputNumberType"/>
                                     <xs:element name="rotationAxisOrigin" type="vector"/>
                                     <xs:element name="rotationAxisDirection" type="vector"/>
                                 </xs:sequence>
@@ -702,10 +691,10 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-                        <xs:element name="temperature" type="xs:decimal"/>
-                        <xs:element name="heatFlux" type="xs:decimal"/>
-                        <xs:element name="heatTransferCoefficient" type="xs:decimal"/>
-                        <xs:element name="freeStreamTemperature" type="xs:decimal"/>
+                        <xs:element name="temperature" type="inputNumberType"/>
+                        <xs:element name="heatFlux" type="inputNumberType"/>
+                        <xs:element name="heatTransferCoefficient" type="inputNumberType"/>
+                        <xs:element name="freeStreamTemperature" type="inputNumberType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -713,21 +702,24 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="wallEmissivity">
-                            <xs:simpleType>
-                                <xs:restriction base="xs:decimal">
-                                    <xs:minInclusive value="0"/>
-                                    <xs:maxInclusive value="1"/>
-                                </xs:restriction>
-                            </xs:simpleType>
+                            <xs:complexType>
+                                <xs:simpleContent>
+                                    <xs:restriction base="inputNumberType">
+                                        <xs:minInclusive value="0"/>
+                                        <xs:maxInclusive value="1"/>
+                                    </xs:restriction>
+                                </xs:simpleContent>
+                            </xs:complexType>
                         </xs:element>
-
                         <xs:element name="radiativeFluxRelaxation">
-                            <xs:simpleType>
-                                <xs:restriction base="xs:decimal">
-                                    <xs:minInclusive value="0"/>
-                                    <xs:maxInclusive value="1"/>
-                                </xs:restriction>
-                            </xs:simpleType>
+                            <xs:complexType>
+                                <xs:simpleContent>
+                                    <xs:restriction base="inputNumberType">
+                                        <xs:minInclusive value="0"/>
+                                        <xs:maxInclusive value="1"/>
+                                    </xs:restriction>
+                                </xs:simpleContent>
+                            </xs:complexType>
                         </xs:element>
                     </xs:sequence>
                 </xs:complexType>
@@ -735,10 +727,8 @@
         </xs:sequence>
     </xs:complexType>
 
-
     <xs:complexType name="interfaceType">
         <xs:sequence>
-
             <xs:element name="mode">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
@@ -749,51 +739,33 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-
             <xs:element name="coupledBoundary" type="xs:nonNegativeInteger"/>
-
             <xs:element name="rotationAxisOrigin" type="vector"/>
-
             <xs:element name="rotationAxisDirection" type="vector"/>
-
             <xs:element name="translationVector" type="vector"/>
-
         </xs:sequence>
     </xs:complexType>
-
 
     <xs:complexType name="porousJumpType">
         <xs:sequence>
-
-            <xs:element name="darcyCoefficient" type="xs:decimal"/>
-
-            <xs:element name="inertialCoefficient" type="xs:decimal"/>
-
-            <xs:element name="porousMediaThickness" type="xs:decimal"/>
-
+            <xs:element name="darcyCoefficient" type="inputNumberType"/>
+            <xs:element name="inertialCoefficient" type="inputNumberType"/>
+            <xs:element name="porousMediaThickness" type="inputNumberType"/>
         </xs:sequence>
     </xs:complexType>
-
 
     <xs:complexType name="cyclicType">
         <xs:sequence>
-
             <xs:element name="coupledBoundary" type="xs:nonNegativeInteger"/>
-
         </xs:sequence>
     </xs:complexType>
-
 
     <xs:complexType name="fanType">
         <xs:sequence>
-
             <xs:element name="file" type="xs:string"/> <!-- HDF5 Dataset -->
-
             <xs:element name="reverseDirection" type="xs:boolean"/>
-
         </xs:sequence>
     </xs:complexType>
-
 
     <xs:complexType name="boundaryConditionType">
         <xs:sequence>
@@ -840,62 +812,37 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-
             <xs:element name="velocityInlet" type="velocityInletType"/>
-
             <xs:element name="flowRateInlet" type="flowRateInletType"/>
-
             <xs:element name="pressureInlet" type="pressureInletType"/>
-
             <xs:element name="pressureOutlet" type="pressureOutletType"/>
-
             <xs:element name="ablInlet" type="ablInletType"/>
-
             <xs:element name="openChannelInlet" type="openChannelInletType"/>
-
             <xs:element name="openChannelOutlet" type="openChannelOutletType"/>
-
             <!-- no setting for "outflow" -->
             <!-- <xs:element name="outflow" type="outflowType" /> -->
-
             <xs:element name="freeStream" type="freeStreamType"/>
-
             <xs:element name="farFieldRiemann" type="farFieldRiemannType"/>
-
             <xs:element name="subsonicInflow" type="subsonicInflowType"/>
-
             <xs:element name="subsonicOutflow" type="subsonicOutflowType"/>
-
             <xs:element name="supersonicInflow" type="supersonicInflowType"/>
-
             <!-- no setting for supersonicOutflow -->
             <!-- <xs:element name="supersonicOutflow" type="supersonicOutflowType" /> -->
-
             <xs:element name="wall" type="wallType"/>
-
             <!-- no setting for thermoCoupledWall -->
             <!-- <xs:element name="thermoCoupledWall" type="thermoCoupledWallType" /> -->
-
             <!-- no setting for symmetry -->
             <!--  <xs:element name="symmetry" type="symmetryType" /> -->
-
             <xs:element name="interface" type="interfaceType"/>
-
             <xs:element name="porousJump" type="porousJumpType"/>
-
             <xs:element name="fan" type="fanType"/>
-
             <!-- no setting for empty -->
             <!-- <xs:element name="empty" type="emptyType" /> -->
-
             <xs:element name="cyclic" type="cyclicType"/>
-
             <!-- no setting for wedge -->
             <!-- <xs:element name="wedge" type="wedgeType" /> -->
-
         </xs:sequence>
     </xs:complexType>
-
 
     <xs:complexType name="numericalConditionsType">
         <xs:sequence>
@@ -907,8 +854,6 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-
-
             <xs:element name="discretizationSchemes">
                 <xs:complexType>
                     <xs:sequence>
@@ -947,75 +892,68 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-
-
             <xs:element name="underRelaxationFactors">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="pressure" type="xs:decimal" default="0.3"/>
-                        <xs:element name="pressureFinal" type="xs:decimal" default="1"/>
-                        <xs:element name="momentum" type="xs:decimal" default="0.7"/>
-                        <xs:element name="momentumFinal" type="xs:decimal" default="1"/>
-                        <xs:element name="energy" type="xs:decimal" default="0.9"/>
-                        <xs:element name="energyFinal" type="xs:decimal" default="1"/>
-                        <xs:element name="turbulence" type="xs:decimal" default="0.7"/>
-                        <xs:element name="turbulenceFinal" type="xs:decimal" default="1"/>
+                        <xs:element name="pressure" type="inputNumberType" default="0.3"/>
+                        <xs:element name="pressureFinal" type="inputNumberType" default="1"/>
+                        <xs:element name="momentum" type="inputNumberType" default="0.7"/>
+                        <xs:element name="momentumFinal" type="inputNumberType" default="1"/>
+                        <xs:element name="energy" type="inputNumberType" default="0.9"/>
+                        <xs:element name="energyFinal" type="inputNumberType" default="1"/>
+                        <xs:element name="turbulence" type="inputNumberType" default="0.7"/>
+                        <xs:element name="turbulenceFinal" type="inputNumberType" default="1"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-
-
             <xs:element name="maxIterationsPerTimeStep" type="xs:positiveInteger" default="20"/>
             <xs:element name="numberOfCorrectors" type="xs:positiveInteger" default="4"/>
-
             <xs:element name="convergenceCriteria">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="pressure">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="absolute" type="xs:decimal" default="0.001"/>
-                                    <xs:element name="relative" type="xs:decimal" default="0.5"/>
+                                    <xs:element name="absolute" type="inputNumberType" default="0.001"/>
+                                    <xs:element name="relative" type="inputNumberType" default="0.5"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
                         <xs:element name="momentum">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="absolute" type="xs:decimal" default="0.001"/>
-                                    <xs:element name="relative" type="xs:decimal" default="0.5"/>
+                                    <xs:element name="absolute" type="inputNumberType" default="0.001"/>
+                                    <xs:element name="relative" type="inputNumberType" default="0.5"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
                         <xs:element name="energy">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="absolute" type="xs:decimal" default="0.001"/>
-                                    <xs:element name="relative" type="xs:decimal" default="0.5"/>
+                                    <xs:element name="absolute" type="inputNumberType" default="0.001"/>
+                                    <xs:element name="relative" type="inputNumberType" default="0.5"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
                         <xs:element name="turbulence">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="absolute" type="xs:decimal" default="0.001"/>
-                                    <xs:element name="relative" type="xs:decimal" default="0.5"/>
+                                    <xs:element name="absolute" type="inputNumberType" default="0.001"/>
+                                    <xs:element name="relative" type="inputNumberType" default="0.5"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-
-
             <xs:element name="advanced">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="limits">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="minimumStaticTemperature" type="xs:decimal" default="1"/>
-                                    <xs:element name="maximumStaticTemperature" type="xs:decimal" default="5000"/>
+                                    <xs:element name="minimumStaticTemperature" type="inputNumberType" default="1"/>
+                                    <xs:element name="maximumStaticTemperature" type="inputNumberType" default="5000"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
@@ -1025,14 +963,13 @@
         </xs:sequence>
     </xs:complexType>
 
-
     <xs:complexType name="forceMonitorType">
         <xs:sequence>
             <xs:element name="name" type="xs:string"/>
-            <xs:element name="referenceArea" type="xs:decimal"/>
-            <xs:element name="referenceLength" type="xs:decimal"/>
-            <xs:element name="referenceVelocity" type="xs:decimal"/>
-            <xs:element name="referenceDensity" type="xs:decimal"/>
+            <xs:element name="referenceArea" type="inputNumberType"/>
+            <xs:element name="referenceLength" type="inputNumberType"/>
+            <xs:element name="referenceVelocity" type="inputNumberType"/>
+            <xs:element name="referenceDensity" type="inputNumberType"/>
             <xs:element name="dragDirection" type="vector"/>
             <xs:element name="liftDirection" type="vector"/>
             <xs:element name="pitchAxisDirection" type="vector"/>
@@ -1046,7 +983,6 @@
         <xs:attribute name="id" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
 
-
     <xs:complexType name="pointMonitorType">
         <xs:sequence>
             <xs:element name="name" type="xs:string"/>
@@ -1059,7 +995,6 @@
         </xs:sequence>
         <xs:attribute name="id" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
-
 
     <xs:complexType name="surfaceMonitorType">
         <xs:sequence>
@@ -1086,7 +1021,6 @@
         <xs:attribute name="id" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
 
-
     <xs:complexType name="volumeMonitorType">
         <xs:sequence>
             <xs:element name="name" type="xs:string"/>
@@ -1110,7 +1044,6 @@
         </xs:sequence>
         <xs:attribute name="id" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
-
 
     <!-- root element "configuration" -->
 
@@ -1176,15 +1109,10 @@
                                                             </xs:restriction>
                                                         </xs:simpleType>
                                                     </xs:element>
-
                                                     <xs:element name="mrf" type="mrfZoneType"/>
-
                                                     <xs:element name="porous" type="porousZoneType"/>
-
                                                     <xs:element name="slidingMesh" type="slidingMeshZoneType"/>
-
                                                     <xs:element name="actuatorDisk" type="actuatorDiskZoneType"/>
-
                                                     <xs:element name="sourceTerms">
                                                         <xs:complexType>
                                                             <xs:sequence>
@@ -1217,7 +1145,7 @@
                                                                                 </xs:simpleType>
                                                                             </xs:element>
                                                                             <xs:element name="constant"
-                                                                                        type="xs:decimal"/>
+                                                                                        type="inputNumberType"/>
                                                                             <xs:element
                                                                                     name="piecewiseLinearDirectInput">
                                                                                 <xs:complexType>
@@ -1227,10 +1155,10 @@
                                                                                             <xs:complexType>
                                                                                                 <xs:sequence>
                                                                                                     <xs:element name="t"
-                                                                                                                type="xs:decimal"/>
+                                                                                                                type="inputNumberType"/>
                                                                                                     <xs:element
                                                                                                             name="value"
-                                                                                                            type="xs:decimal"/>
+                                                                                                            type="inputNumberType"/>
                                                                                                 </xs:sequence>
                                                                                             </xs:complexType>
                                                                                         </xs:element>
@@ -1240,9 +1168,13 @@
                                                                             <xs:element name="piecewiseLinearFile"
                                                                                         type="xs:string"/> <!-- HDF5 Dataset -->
                                                                             <xs:element name="polynomialDirectInput">
-                                                                                <xs:simpleType>
-                                                                                    <xs:list itemType="xs:decimal"/>
-                                                                                </xs:simpleType>
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="coefficient"
+                                                                                                    type="inputNumberType"
+                                                                                                    maxOccurs="unbounded"/>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
                                                                             </xs:element>
                                                                         </xs:sequence>
                                                                         <xs:attribute name="disabled" type="xs:boolean"
@@ -1278,7 +1210,7 @@
                                                                                 </xs:simpleType>
                                                                             </xs:element>
                                                                             <xs:element name="constant"
-                                                                                        type="xs:decimal"/>
+                                                                                        type="inputNumberType"/>
                                                                             <xs:element
                                                                                     name="piecewiseLinearDirectInput">
                                                                                 <xs:complexType>
@@ -1288,10 +1220,10 @@
                                                                                             <xs:complexType>
                                                                                                 <xs:sequence>
                                                                                                     <xs:element name="t"
-                                                                                                                type="xs:decimal"/>
+                                                                                                                type="inputNumberType"/>
                                                                                                     <xs:element
                                                                                                             name="value"
-                                                                                                            type="xs:decimal"/>
+                                                                                                            type="inputNumberType"/>
                                                                                                 </xs:sequence>
                                                                                             </xs:complexType>
                                                                                         </xs:element>
@@ -1301,9 +1233,13 @@
                                                                             <xs:element name="piecewiseLinearFile"
                                                                                         type="xs:string"/> <!-- HDF5 Dataset -->
                                                                             <xs:element name="polynomialDirectInput">
-                                                                                <xs:simpleType>
-                                                                                    <xs:list itemType="xs:decimal"/>
-                                                                                </xs:simpleType>
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="coefficient"
+                                                                                                    type="inputNumberType"
+                                                                                                    maxOccurs="unbounded"/>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
                                                                             </xs:element>
                                                                         </xs:sequence>
                                                                         <xs:attribute name="disabled" type="xs:boolean"
@@ -1325,7 +1261,7 @@
                                                                                 </xs:simpleType>
                                                                             </xs:element>
                                                                             <xs:element name="constant"
-                                                                                        type="xs:decimal"/>
+                                                                                        type="inputNumberType"/>
                                                                         </xs:sequence>
                                                                         <xs:attribute name="disabled" type="xs:boolean"
                                                                                       default="true"/>
@@ -1346,7 +1282,7 @@
                                                                                 </xs:simpleType>
                                                                             </xs:element>
                                                                             <xs:element name="constant"
-                                                                                        type="xs:decimal"/>
+                                                                                        type="inputNumberType"/>
                                                                         </xs:sequence>
                                                                         <xs:attribute name="disabled" type="xs:boolean"
                                                                                       default="true"/>
@@ -1367,7 +1303,7 @@
                                                                                 </xs:simpleType>
                                                                             </xs:element>
                                                                             <xs:element name="constant"
-                                                                                        type="xs:decimal"/>
+                                                                                        type="inputNumberType"/>
                                                                         </xs:sequence>
                                                                         <xs:attribute name="disabled" type="xs:boolean"
                                                                                       default="true"/>
@@ -1388,7 +1324,7 @@
                                                                                 </xs:simpleType>
                                                                             </xs:element>
                                                                             <xs:element name="constant"
-                                                                                        type="xs:decimal"/>
+                                                                                        type="inputNumberType"/>
                                                                         </xs:sequence>
                                                                         <xs:attribute name="disabled" type="xs:boolean"
                                                                                       default="true"/>
@@ -1403,7 +1339,7 @@
                                                                 <xs:element name="xVelocity">
                                                                     <xs:complexType>
                                                                         <xs:simpleContent>
-                                                                            <xs:extension base="xs:decimal">
+                                                                            <xs:extension base="inputNumberType">
                                                                                 <xs:attribute name="disabled"
                                                                                               type="xs:boolean"
                                                                                               default="true"/>
@@ -1414,7 +1350,7 @@
                                                                 <xs:element name="yVelocity">
                                                                     <xs:complexType>
                                                                         <xs:simpleContent>
-                                                                            <xs:extension base="xs:decimal">
+                                                                            <xs:extension base="inputNumberType">
                                                                                 <xs:attribute name="disabled"
                                                                                               type="xs:boolean"
                                                                                               default="true"/>
@@ -1425,7 +1361,7 @@
                                                                 <xs:element name="zVelocity">
                                                                     <xs:complexType>
                                                                         <xs:simpleContent>
-                                                                            <xs:extension base="xs:decimal">
+                                                                            <xs:extension base="inputNumberType">
                                                                                 <xs:attribute name="disabled"
                                                                                               type="xs:boolean"
                                                                                               default="true"/>
@@ -1436,7 +1372,7 @@
                                                                 <xs:element name="temperature">
                                                                     <xs:complexType>
                                                                         <xs:simpleContent>
-                                                                            <xs:extension base="xs:nonNegativeInteger">
+                                                                            <xs:extension base="inputNumberType">
                                                                                 <xs:attribute name="disabled"
                                                                                               type="xs:boolean"
                                                                                               default="true"/>
@@ -1516,11 +1452,20 @@
                                 <xs:complexType>
                                     <xs:sequence>
                                         <xs:element name="velocity" type="vector"/>
-                                        <xs:element name="pressure" type="xs:decimal" default="0"/>
-                                        <xs:element name="temperature" type="xs:decimal" default="300"/>
-                                        <xs:element name="scaleOfVelocity" type="xs:decimal" default="0"/>
-                                        <xs:element name="turbulentIntensity" type="xs:decimal" default="10"/>
-                                        <xs:element name="turbulentViscosity" type="xs:decimal" default="10"/>
+                                        <xs:element name="pressure" type="inputNumberType" default="0"/>
+                                        <xs:element name="temperature" type="inputNumberType" default="300"/>
+                                        <xs:element name="scaleOfVelocity" type="inputNumberType" default="0"/>
+                                        <xs:element name="turbulentIntensity" default="10">
+                                            <xs:complexType>
+                                                <xs:simpleContent>
+                                                    <xs:restriction base="inputNumberType">
+                                                        <xs:minInclusive value="0"/>
+                                                        <xs:maxInclusive value="100"/>
+                                                    </xs:restriction>
+                                                </xs:simpleContent>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="turbulentViscosity" type="inputNumberType" default="10"/>
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
@@ -1544,21 +1489,14 @@
                                                 </xs:restriction>
                                             </xs:simpleType>
                                         </xs:element>
-
-                                        <xs:element name="timeStepSize" type="xs:decimal" default="0.01"/>
-
-                                        <xs:element name="endTime" type="xs:decimal" default="0"/>
-
+                                        <xs:element name="timeStepSize" type="inputNumberType" default="0.01"/>
+                                        <xs:element name="endTime" type="inputNumberType" default="0"/>
                                         <xs:element name="reportIntervalSteps" type="xs:positiveInteger" default="1"/>
-
-                                        <xs:element name="reportIntervalSeconds" type="xs:decimal" default="0.01"/>
-
+                                        <xs:element name="reportIntervalSeconds" type="inputNumberType" default="0.01"/>
                                         <xs:element name="retainOnlyTheMostRecentFiles" type="xs:boolean"
                                                     default="false"/>
-
                                         <xs:element name="maximumNumberOfDataFiles" type="xs:positiveInteger"
                                                     default="1"/>
-
                                         <xs:element name="dataWriteFormat" default="binary">
                                             <xs:simpleType>
                                                 <xs:restriction base="xs:string">
@@ -1591,11 +1529,8 @@
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
-
             </xs:sequence>
-
             <xs:attribute name="version" type="xs:positiveInteger" use="required"/>
         </xs:complexType>
     </xs:element>
-
 </xs:schema>
