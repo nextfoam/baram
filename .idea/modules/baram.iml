@@ -5,4 +5,8 @@
       <configuration sdkName="Python 3.9 (baram)" />
     </facet>
   </component>
+  <component name="PyDocumentationSettings">
+    <option name="format" value="GOOGLE" />
+    <option name="myDocStringFormat" value="Google" />
+  </component>
 </module>

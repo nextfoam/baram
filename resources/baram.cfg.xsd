@@ -15,6 +15,8 @@
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:attribute>
+                <xs:attribute name="mantissa" type="xs:string"/>
+                <xs:attribute name="exponent" type="xs:string"/>
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
