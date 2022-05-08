@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from threading import Lock
 from PySide6.QtCore import QFile, QIODevice
 
 from lxml import etree
@@ -13,12 +14,22 @@ import resource_rc
 ns = {'': 'http://www.example.org/baram'}
 xs = {'': 'http://www.w3.org/2001/XMLSchema'}
 
+_mutex = Lock()
 
-class CoreDB:
+
+class CoreDB(object):
     # XSD_PATH = u':/baram.cfg.xsd'
     # XML_PATH = u':/baram.cfg.xml'
     XSD_PATH = "../resources/baram.cfg.xsd"
     XML_PATH = '../resources/baram.cfg.xml'
+
+    _instance = None
+
+    def __new__(cls):
+        with _mutex:
+            if cls._instance is None:
+                cls._instance = super(CoreDB, cls).__new__(cls)
+        return cls._instance
 
     def __init__(self):
         self._modified = False
