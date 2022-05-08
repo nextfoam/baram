@@ -6,6 +6,7 @@ from PySide6.QtCore import QFile, QIODevice
 
 from lxml import etree
 import xmlschema
+import h5py
 
 # To use ".qrc" QT Resource files
 # noinspection PyUnresolvedReferences
@@ -18,10 +19,10 @@ _mutex = Lock()
 
 
 class CoreDB(object):
-    # XSD_PATH = u':/baram.cfg.xsd'
-    # XML_PATH = u':/baram.cfg.xml'
-    XSD_PATH = "../resources/baram.cfg.xsd"
-    XML_PATH = '../resources/baram.cfg.xml'
+    XSD_PATH = u':/baram.cfg.xsd'
+    XML_PATH = u':/baram.cfg.xml'
+    # XSD_PATH = "../resources/baram.cfg.xsd"
+    # XML_PATH = '../resources/baram.cfg.xml'
 
     _instance = None
 
@@ -33,6 +34,7 @@ class CoreDB(object):
 
     def __init__(self):
         self._modified = False
+        self._filePath = None
 
         xsdFile = QFile(self.XSD_PATH)
         xsdFile.open(QIODevice.ReadOnly)
@@ -48,8 +50,8 @@ class CoreDB(object):
 
         xsdTree = etree.fromstring(xsdBytes)
         schema = etree.XMLSchema(etree=xsdTree)
-        parser = etree.XMLParser(schema=schema)
-        self._root = etree.fromstring(xmlBytes, parser)
+        self._xmlParser = etree.XMLParser(schema=schema)
+        self._root = etree.fromstring(xmlBytes, self._xmlParser)
 
     def getValue(self, xpath: str) -> str:
         """Returns specified configuration value.
@@ -180,3 +182,49 @@ class CoreDB(object):
 
             element.text = value
             self._modified = True
+
+    def saveAs(self, path: str):
+        f = h5py.File(path, 'w')
+        try:
+            dt = h5py.string_dtype(encoding='utf-8')
+            ds = f.create_dataset('configuration', (1,), dtype=dt)
+            ds[0] = etree.tostring(self._root, xml_declaration=True,  encoding='UTF-8')
+
+            # ToDo: write the rest of data like uploaded polynomials
+
+        finally:
+            f.close()
+
+        self._filePath = path
+        self._modified = False
+
+    def save(self):
+        f = h5py.File(self._filePath, 'r+')
+        try:
+            ds = f['configuration']
+            if h5py.check_string_dtype(ds.dtype) is None:
+                raise ValueError
+
+            ds[0] = etree.tostring(self._root, xml_declaration=True,  encoding='UTF-8')
+
+            # ToDo: write the rest of data like uploaded polynomials
+        finally:
+            f.close()
+
+        self._modified = False
+
+    def load(self, path: str):
+        f = h5py.File(path, 'r')
+        try:
+            ds = f['configuration']
+            if h5py.check_string_dtype(ds.dtype) is None:
+                raise ValueError
+
+            root = etree.fromstring(ds[0], self._xmlParser)
+        finally:
+            f.close()
+
+        self._root = root
+        self._filePath = path
+        self._modified = False
+
