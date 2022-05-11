@@ -26,25 +26,29 @@ class ModelsPage(QWidget):
         self._connectSignalsSlots()
 
     def _connectSignalsSlots(self):
+        self._ui.list.currentItemChanged.connect(self._modelSelected)
         self._ui.list.itemDoubleClicked.connect(self._edit)
         self._ui.edit.clicked.connect(self._edit)
 
-    def _edit(self):
-        type = self._ui.list.currentItem().type()
+    def _modelSelected(self):
+        self._ui.edit.setEnabled(True)
 
-        if type == self.LIST_INDEX.MULTIPHASE_MODEL.value:
+    def _edit(self):
+        type_ = self._ui.list.currentItem().type()
+
+        if type_ == self.LIST_INDEX.MULTIPHASE_MODEL.value:
             dialog = MultiphaseModelDialog()
             dialog._ui.off.setChecked(True)
             dialog.exec()
-        elif type == self.LIST_INDEX.TURBULANCE.value:
+        elif type_ == self.LIST_INDEX.TURBULANCE.value:
             dialog = TurbulenceModelDialog()
             dialog._ui.laminar.setChecked(True)
             dialog.exec()
-        elif type == self.LIST_INDEX.RADIATION.value:
+        elif type_ == self.LIST_INDEX.RADIATION.value:
             dialog = RadiationModelDialog()
             dialog._ui.off.setChecked(True)
             dialog.exec()
-        elif type == self.LIST_INDEX.SPECIES.value:
+        elif type_ == self.LIST_INDEX.SPECIES.value:
             pass
 
     def _addModel(self, text, data, index):

@@ -28,7 +28,7 @@ class PolynomialDialog(QDialog):
 
         def _setupUI(self):
             self._layout = QHBoxLayout(self)
-            self._layout.setContentsMargins(9, 0, -1, 0)
+            self._layout.setContentsMargins(9, 0, 9, 0)
 
             self._value = QLineEdit(self)
             self._value.setEnabled(False)
@@ -74,12 +74,11 @@ class PolynomialDialog(QDialog):
             self._valueWidgets[i].setValue(self._valueWidgets[i + 1].value())
 
         self._valueWidgets.pop()
-        self._ui.formLayout.removeRow(count - 1)
+        self._ui.formLayout.removeRow(count)
         self._ui.newNo.setText(str(count))
 
     def _setup(self):
         self._ui.newNo.setText("1")
-        self._ui.add.setEnabled(False)
 
     def _connectSignalsSlots(self):
         self._ui.newValue.textChanged.connect(self._newValueChanged)
@@ -91,7 +90,7 @@ class PolynomialDialog(QDialog):
     def _addValue(self):
         index = len(self._valueWidgets)
         widget = self.ValueWidget(self, index, self._ui.newValue.text())
-        self._ui.formLayout.insertRow(index, self._ui.newNo.text(), widget)
+        self._ui.formLayout.insertRow(index + 1, self._ui.newNo.text(), widget)
         self._valueWidgets.append(widget)
 
         self._ui.newNo.setText(str(index + 2))

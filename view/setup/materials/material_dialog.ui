@@ -6,37 +6,42 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>472</height>
+    <width>377</width>
+    <height>654</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Material</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_8">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="material">
+     <property name="font">
+      <font>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="text">
       <string>TextLabel</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="propertiesGroup">
+    <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Properties</string>
+      <string>Density</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Densisty (kg/㎥)</string>
+         <string>Density</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QWidget" name="widget" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout">
+       <widget class="QWidget" name="widget_2" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -50,72 +55,60 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QWidget" name="widget_2" native="true">
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
-             <number>0</number>
-            </property>
-            <item>
-             <widget class="QComboBox" name="densityType">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <item>
-               <property name="text">
-                <string>constant</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>perfect gas</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="densityEdit">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Edit</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+          <widget class="QComboBox" name="densityType">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="constantDensity"/>
+          <widget class="QPushButton" name="densityEdit">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Edit</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Specific Heat, C&lt;sub&gt;P&lt;/sub&gt; (J/kg·K)</string>
+         <string>Value (kg/㎥)</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QWidget" name="widget_3" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_5">
+       <widget class="QLineEdit" name="constantDensity"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Specific Heat</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_3">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specific Heat, C&lt;span style=&quot; vertical-align:sub;&quot;&gt;P&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QWidget" name="widget_7" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -129,156 +122,153 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QWidget" name="widget_7" native="true">
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
-             <number>0</number>
-            </property>
-            <item>
-             <widget class="QComboBox" name="specificHeatType">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <item>
-               <property name="text">
-                <string>constant</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>polynomial</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="specificHeatEdit">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Edit</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+          <widget class="QComboBox" name="specificHeatType">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="constantSpecificHeat"/>
+          <widget class="QPushButton" name="specificHeatEdit">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Edit</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Value (J/kg·K)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="constantSpecificHeat"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="viscosityGroup">
+     <property name="title">
+      <string>Viscosity</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_4">
+      <item row="0" column="0">
        <widget class="QLabel" name="visocosityLabel">
         <property name="text">
-         <string>Viscosity (kg/m·s)</string>
+         <string>Viscosity</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QWidget" name="widget_9" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QComboBox" name="viscosityType">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>92</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="viscosityEdit">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Edit</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="visocosityLabel_2">
+        <property name="text">
+         <string>Value (kg/m·s)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="constantViscosity"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Sutherland Coefficient, C&lt;sub&gt;1&lt;/sub&gt;</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QWidget" name="viscosityFields" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_6">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QWidget" name="widget_9" native="true">
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
-             <number>0</number>
-            </property>
-            <item>
-             <widget class="QComboBox" name="viscosityType">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <item>
-               <property name="text">
-                <string>constant</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>sutherland</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>polynomial</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="viscosityEdit">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Edit</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="constantViscosity"/>
-         </item>
-        </layout>
-       </widget>
+       <widget class="QLineEdit" name="sutherlandCoefficient"/>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="thremalConductivityLabel">
+       <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Thermal Conductivity (W/m·K)</string>
+         <string>Sutherland Temperature, S (K)</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QWidget" name="thermalConductivityFields" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_7">
+       <widget class="QLineEdit" name="sutherlandTemperature"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_4">
+     <property name="title">
+      <string>Thermal Conductivity</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_5">
+      <item row="0" column="0">
+       <widget class="QLabel" name="thremalConductivityLabel">
+        <property name="text">
+         <string>Thermal Conductivity</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QWidget" name="widget_11" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -292,110 +282,95 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QWidget" name="widget_11" native="true">
-           <layout class="QHBoxLayout" name="horizontalLayout_7">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
-             <number>0</number>
-            </property>
-            <item>
-             <widget class="QComboBox" name="thermalConductivityType">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <item>
-               <property name="text">
-                <string>constant</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>polynomial</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="thermalConductivityEdit">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Edit</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+          <widget class="QComboBox" name="thermalConductivityType">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="constantThermalConductivity"/>
+          <widget class="QPushButton" name="thermalConductivityEdit">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Edit</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="1" column="0">
+       <widget class="QLabel" name="thremalConductivityLabel_2">
+        <property name="text">
+         <string>Value (W/m·K)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="constantThermalConductivity"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QFormLayout" name="formLayout_2">
+      <item row="0" column="0">
        <widget class="QLabel" name="molecularWeightLabel">
         <property name="text">
          <string>Molecular Weight</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="0" column="1">
        <widget class="QLineEdit" name="molecularWeight"/>
       </item>
-      <item row="5" column="0">
+      <item row="1" column="0">
        <widget class="QLabel" name="absorptionCoefficientLabel">
         <property name="text">
          <string>Absorption Coefficient</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="1" column="1">
        <widget class="QLineEdit" name="absorptionCoefficient"/>
       </item>
-      <item row="6" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="surfaceTensionLabel">
         <property name="text">
          <string>Surface Tension</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="2" column="1">
        <widget class="QLineEdit" name="surfaceTension"/>
       </item>
-      <item row="7" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="saturationPressureLabel">
         <property name="text">
          <string>Saturation Pressure</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="3" column="1">
        <widget class="QLineEdit" name="saturationPressure"/>
       </item>
-      <item row="8" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="emissivityLabel">
         <property name="text">
          <string>Emissivity</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
+      <item row="4" column="1">
        <widget class="QLineEdit" name="emissivity"/>
       </item>
      </layout>
