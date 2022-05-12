@@ -3,7 +3,7 @@ import unittest
 from coredb import coredb
 
 
-class TestPositiveInteger(unittest.TestCase):
+class TestEnumerationString(unittest.TestCase):
     def setUp(self):
         self.db = coredb.CoreDB()
         self.path = './/runConditions/timeSteppingMethod'

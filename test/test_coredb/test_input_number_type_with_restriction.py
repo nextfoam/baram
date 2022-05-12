@@ -12,16 +12,16 @@ class TestInputNumberTypeWithRestriction(unittest.TestCase):
         written = '10'
         self.db.setValue(self.path, written)
         read = self.db.getValue(self.path)
-        self.assertEqual('10.0', read)
+        self.assertEqual('10', read)
 
     def testValidScientificNotation(self):
-        written = '1.234E-5'
+        written = '1.234e-5'
         self.db.setValue(self.path, written)
         read = self.db.getValue(self.path)
         self.assertEqual(written, read)
 
     def testUnalignedScientificNotation(self):
-        written = '12.345E-6'
+        written = '12.345e-6'
         self.db.setValue(self.path, written)
         read = self.db.getValue(self.path)
         self.assertEqual(written, read)
@@ -36,6 +36,12 @@ class TestInputNumberTypeWithRestriction(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             self.db.setValue(self.path, written)
 
+    def testBigEScientificNotation(self):
+        written = '12.345E-6'
+        self.db.setValue(self.path, written)
+        read = self.db.getValue(self.path)
+        self.assertEqual(written.lower(), read)
+
     def testMalformedString(self):
         written = '10E'
         with self.assertRaises(ValueError) as context:
@@ -43,7 +49,7 @@ class TestInputNumberTypeWithRestriction(unittest.TestCase):
 
     def testNotationChange(self):
         # 1. Write in Scientific Notation
-        written = '1.234E1'
+        written = '1.234e1'
         self.db.setValue(self.path, written)
         read = self.db.getValue(self.path)
         self.assertEqual(written, read)
@@ -55,7 +61,7 @@ class TestInputNumberTypeWithRestriction(unittest.TestCase):
         self.assertEqual(written, read)
 
         # 3. Write in Scientific Notation again
-        written = '5.678E-1'
+        written = '5.678e-1'
         self.db.setValue(self.path, written)
         read = self.db.getValue(self.path)
         self.assertEqual(written, read)
