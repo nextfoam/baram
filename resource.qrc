@@ -1,8 +1,6 @@
 <RCC>
   <qresource prefix="/">
     <file alias="ElegantDark.qss">resources/ElegantDark.qss</file>
-    <file alias="baram.cfg.xml">resources/baram.cfg.xml</file>
-    <file alias="baram.cfg.xsd">resources/baram.cfg.xsd</file>
   </qresource>
   <qresource prefix="icons">
     <file alias="accessibility.svg">resources/ionicons/accessibility.svg</file>
