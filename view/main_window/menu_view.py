@@ -7,6 +7,7 @@ from PySide6.QtCore import Qt, QCoreApplication
 from view.setup.general.general_page import GeneralPage
 from view.setup.materials.material_page import MaterialPage
 from view.setup.models.models_page import ModelsPage
+from view.setup.cell_zone_conditions.cell_zone_conditions_page import CellZoneConditionsPage
 
 
 class MenuView:
@@ -51,7 +52,7 @@ class MenuView:
                     },
                     "cellZoneConditions": {
                         "text": QCoreApplication.translate("MenuView", "Cell Zone Conditions"),
-                        #"page_class": EmptyPage,
+                        "page_class": CellZoneConditionsPage,
                     },
                     "boundayConditions": {
                         "text": QCoreApplication.translate("MenuView", "Boundary Conditions"),

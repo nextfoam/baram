@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Viscous Model</string>
+   <string>Turbulence Model</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_7">
    <item>
