@@ -286,8 +286,27 @@ class CoreDB(object):
         self._xmlSchema.assertValid(self._xmlTree)
 
     def getRegions(self) -> list[str]:
-        regionNames = self._xmlTree.xpath(f'.//x:cellZones/x:region/x:name/text()', namespaces={'x': ns})
-        return [str(r) for r in regionNames]
+        names = self._xmlTree.xpath(f'.//x:cellZones/x:region/x:name/text()', namespaces={'x': ns})
+        return [str(r) for r in names]
+
+    def addCellZone(self, rname: str, zname: str):
+        zone = self._xmlTree.find(f'.//cellZones/region[name="{rname}"]/cellZone[name="{zname}"]', namespaces=nsmap)
+
+        if zone is not None:
+            raise FileExistsError
+
+        region = self._xmlTree.find(f'.//cellZones/region[name="{rname}"]', namespaces=nsmap)
+
+        zone = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
+        zone.find('name', namespaces=nsmap).text = zname
+
+        region.append(zone.getroot())
+
+        self._xmlSchema.assertValid(self._xmlTree)
+
+    def getCellZones(self, rname: str) -> list[str]:
+        names = self._xmlTree.xpath(f'.//x:cellZones/x:region[x:name="{rname}"]/x:cellZone/x:name/text()', namespaces={'x': ns})
+        return [str(r) for r in names]
 
     def saveAs(self, path: str):
         f = h5py.File(path, 'w')
