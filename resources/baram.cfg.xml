@@ -43,8 +43,7 @@
         <speciesModels>off</speciesModels>
     </models>
 
-    <cellZones>
-    </cellZones>
+    <cellZones></cellZones>
 
     <boundaryConditions>
     </boundaryConditions>

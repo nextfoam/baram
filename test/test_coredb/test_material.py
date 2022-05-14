@@ -7,17 +7,18 @@ class TestMaterial(unittest.TestCase):
     def setUp(self):
         self.db = coredb.CoreDB()
 
-    def testGetMaterialsEmpty(self):
+    def testGetMaterialsDefaultValue(self):
         materials = self.db.getMaterials()
-        self.assertEqual(len(materials), 0)
+        self.assertIn(('air', None, 'gas'), materials)
+        self.assertEqual(1, len(materials))
 
     def testAddValidMaterial(self):
-        self.db.addMaterial('air')
+        self.db.addMaterial('nitrogen')
         self.db.addMaterial('oxygen')
         self.db.addMaterial('aluminum')
         materials = self.db.getMaterials()
-        self.assertEqual(len(materials), 3)
-        self.assertIn(('air', None, 'gas'), materials)
+        self.assertEqual(4, len(materials))
+        self.assertIn(('nitrogen', 'N2', 'gas'), materials)
         self.assertIn(('oxygen', 'O2', 'gas'), materials)
         self.assertIn(('aluminum', 'Al', 'solid'), materials)
 
@@ -26,19 +27,26 @@ class TestMaterial(unittest.TestCase):
             self.db.addMaterial('airNone')
 
     def testAddDuplicateMaterial(self):
-        self.db.addMaterial('air')
+        self.db.addMaterial('nitrogen')
         with self.assertRaises(FileExistsError) as context:
-            self.db.addMaterial('air')
+            self.db.addMaterial('nitrogen')
 
     def testRemoveMaterial(self):
-        self.db.addMaterial('air')
+        self.db.addMaterial('nitrogen')
         self.db.addMaterial('oxygen')
-        self.db.removeMaterial('air')
+        self.db.removeMaterial('nitrogen')
         materials = self.db.getMaterials()
-        self.assertEqual(len(materials), 1)
+        self.assertEqual(2, len(materials))
         self.db.removeMaterial('oxygen')
         materials = self.db.getMaterials()
-        self.assertEqual(len(materials), 0)
+        self.assertEqual(1, len(materials))
+
+    def testMaterialDB(self):
+        materials = self.db.getMaterialsFromDB()
+        self.assertIn(('air', None, 'gas'), materials)
+        self.assertIn(('nitrogen', 'N2', 'gas'), materials)
+        self.assertIn(('oxygen', 'O2', 'gas'), materials)
+        self.assertIn(('aluminum', 'Al', 'solid'), materials)
 
 
 if __name__ == '__main__':

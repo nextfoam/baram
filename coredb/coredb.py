@@ -24,6 +24,8 @@ class CoreDB(object):
     XSD_PATH = 'baram.cfg.xsd'
     XML_PATH = 'baram.cfg.xml'
 
+    CELL_ZONE_PATH = 'cell_zone.xml'
+
     MATERIALS_PATH = 'materials.csv'
 
     _instance = None
@@ -47,6 +49,9 @@ class CoreDB(object):
 
         df = pd.read_csv(resource.file(self.MATERIALS_PATH), header=0, index_col=0).transpose()
         self._materialDB = df.where(pd.notnull(df), None).to_dict()
+
+        # Add 'air' as default material
+        self.addMaterial('air')
 
     def getValue(self, xpath: str) -> str:
         """Returns specified configuration value.
@@ -261,6 +266,28 @@ class CoreDB(object):
             raise LookupError
 
         parent.remove(material)
+
+    def addRegion(self, name: str):
+        region = self._xmlTree.find(f'.//cellZones/region[name="{name}"]', namespaces=nsmap)
+
+        if region is not None:
+            raise FileExistsError
+
+        cellZones = self._xmlTree.find('.//cellZones', namespaces=nsmap)
+
+        region = etree.SubElement(cellZones, f'{{{ns}}}region')
+
+        etree.SubElement(region, f'{{{ns}}}name').text = name
+        etree.SubElement(region, f'{{{ns}}}material').text = 'air'
+
+        czone = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
+        region.append(czone.getroot())
+
+        self._xmlSchema.assertValid(self._xmlTree)
+
+    def getRegions(self) -> list[str]:
+        regionNames = self._xmlTree.xpath(f'.//x:cellZones/x:region/x:name/text()', namespaces={'x': ns})
+        return [str(r) for r in regionNames]
 
     def saveAs(self, path: str):
         f = h5py.File(path, 'w')

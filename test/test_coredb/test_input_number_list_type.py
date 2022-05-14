@@ -6,7 +6,6 @@ from coredb import coredb
 class TestInputNumberListType(unittest.TestCase):
     def setUp(self):
         self.db = coredb.CoreDB()
-        self.db.addMaterial('air')
         self.path = './/material[name="air"]/specificHeat/polynomial'
 
     def testSingleDecimalNotation(self):
