@@ -3,7 +3,7 @@ import unittest
 from coredb import coredb
 
 
-class TestMaterial(unittest.TestCase):
+class TestCellZones(unittest.TestCase):
     def setUp(self):
         self.db = coredb.CoreDB()
 

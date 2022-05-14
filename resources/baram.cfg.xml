@@ -45,8 +45,7 @@
 
     <cellZones></cellZones>
 
-    <boundaryConditions>
-    </boundaryConditions>
+    <boundaryConditions></boundaryConditions>
 
     <numericalConditions>
         <pressureVelocityCouplingScheme>SIMPLE</pressureVelocityCouplingScheme>

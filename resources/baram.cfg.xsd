@@ -700,8 +700,6 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
-            <xs:element name="temperature" type="temperatureBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -723,16 +721,12 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
-            <xs:element name="temperature" type="temperatureBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="pressureInletType">
         <xs:sequence>
             <xs:element name="pressure" type="inputNumberType" default="0"/>
-            <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
-            <xs:element name="temperature" type="temperatureBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -740,8 +734,6 @@
         <xs:sequence>
             <xs:element name="totalPressure" type="inputNumberType" default="0"/>
             <xs:element name="calculatedBackflow" type="xs:boolean" default="false"/>
-            <xs:element name="backflowTurbulence" type="turbulenceBoundaryConditionType"/>
-            <xs:element name="backflowTotalTemperature" type="inputNumberType" default="288.15"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -758,14 +750,12 @@
     <xs:complexType name="openChannelInletType">
         <xs:sequence>
             <xs:element name="volumeFlowRate" type="inputNumberType" default="1"/>
-            <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="openChannelOutletType">
         <xs:sequence>
             <xs:element name="meanVelocity" type="inputNumberType" default="1"/>
-            <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -773,7 +763,6 @@
         <xs:sequence>
             <xs:element name="streamVelocity" type="vector"/>
             <xs:element name="pressure" type="inputNumberType" default="0"/>
-            <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -783,7 +772,6 @@
             <xs:element name="machNumber" type="inputNumberType" default="1"/>
             <xs:element name="staticPressure" type="inputNumberType" default="101325"/>
             <xs:element name="staticTemperature" type="inputNumberType" default="300"/>
-            <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -792,7 +780,6 @@
             <xs:element name="flowDirection" type="vector"/>
             <xs:element name="totalPressure" type="inputNumberType" default="101325"/>
             <xs:element name="totalTemperature" type="inputNumberType" default="300"/>
-            <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -807,7 +794,6 @@
             <xs:element name="velocity" type="vector"/>
             <xs:element name="staticPressure" type="inputNumberType" default="101325"/>
             <xs:element name="staticTemperature" type="inputNumberType" default="300"/>
-            <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -904,7 +890,11 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-            <xs:element name="coupledBoundary" type="xs:nonNegativeInteger"/>
+            <xs:element name="coupledBoundary">
+                <xs:simpleType>
+                    <xs:list itemType="xs:string"/>
+                </xs:simpleType>
+            </xs:element>
             <xs:element name="rotationAxisOrigin" type="vector"/>
             <xs:element name="rotationAxisDirection" type="vector"/>
             <xs:element name="translationVector" type="vector"/>
@@ -921,7 +911,11 @@
 
     <xs:complexType name="cyclicType">
         <xs:sequence>
-            <xs:element name="coupledBoundary" type="xs:nonNegativeInteger"/>
+            <xs:element name="coupledBoundary">
+                <xs:simpleType>
+                    <xs:list itemType="xs:string"/>
+                </xs:simpleType>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -1007,6 +1001,9 @@
                 <xs:element name="cyclic" type="cyclicType"/>
                 <!-- no setting for wedge -->
                 <!-- <xs:element name="wedge" type="wedgeType" /> -->
+
+                <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
+                <xs:element name="temperature" type="temperatureBoundaryConditionType"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

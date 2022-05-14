@@ -25,6 +25,7 @@ class CoreDB(object):
     XML_PATH = 'baram.cfg.xml'
 
     CELL_ZONE_PATH = 'cell_zone.xml'
+    BOUNDARY_CONDITION_PATH = 'boundary_condition.xml'
 
     MATERIALS_PATH = 'materials.csv'
 
@@ -267,8 +268,8 @@ class CoreDB(object):
 
         parent.remove(material)
 
-    def addRegion(self, name: str):
-        region = self._xmlTree.find(f'.//cellZones/region[name="{name}"]', namespaces=nsmap)
+    def addRegion(self, rname: str):
+        region = self._xmlTree.find(f'.//cellZones/region[name="{rname}"]', namespaces=nsmap)
 
         if region is not None:
             raise FileExistsError
@@ -277,7 +278,7 @@ class CoreDB(object):
 
         region = etree.SubElement(cellZones, f'{{{ns}}}region')
 
-        etree.SubElement(region, f'{{{ns}}}name').text = name
+        etree.SubElement(region, f'{{{ns}}}name').text = rname
         etree.SubElement(region, f'{{{ns}}}material').text = 'air'
 
         czone = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
@@ -306,6 +307,27 @@ class CoreDB(object):
 
     def getCellZones(self, rname: str) -> list[str]:
         names = self._xmlTree.xpath(f'.//x:cellZones/x:region[x:name="{rname}"]/x:cellZone/x:name/text()', namespaces={'x': ns})
+        return [str(r) for r in names]
+
+    def addBoundaryCondition(self, bname: str, geometricalType: str):
+        bc = self._xmlTree.find(f'.//boundaryConditions/boundaryCondition[name="{bname}"]', namespaces=nsmap)
+
+        if bc is not None:
+            raise FileExistsError
+
+        bcs = self._xmlTree.find(f'.//boundaryConditions', namespaces=nsmap)
+
+        bc = etree.parse(resource.file(self.BOUNDARY_CONDITION_PATH), self._xmlParser)
+        bc.find('name', namespaces=nsmap).text = bname
+
+        # ToDo: set default physicalType according to the geometricalType
+
+        bcs.append(bc.getroot())
+
+        self._xmlSchema.assertValid(self._xmlTree)
+
+    def getBoundaryConditions(self) -> list[str]:
+        names = self._xmlTree.xpath(f'.//x:boundaryConditions/x:boundaryCondition/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
     def saveAs(self, path: str):
