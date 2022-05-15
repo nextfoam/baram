@@ -892,7 +892,7 @@
             </xs:element>
             <xs:element name="coupledBoundary">
                 <xs:simpleType>
-                    <xs:list itemType="xs:string"/>
+                    <xs:list itemType="xs:positiveInteger"/>
                 </xs:simpleType>
             </xs:element>
             <xs:element name="rotationAxisOrigin" type="vector"/>
@@ -913,7 +913,7 @@
         <xs:sequence>
             <xs:element name="coupledBoundary">
                 <xs:simpleType>
-                    <xs:list itemType="xs:string"/>
+                    <xs:list itemType="xs:positiveInteger"/>
                 </xs:simpleType>
             </xs:element>
         </xs:sequence>
@@ -1005,6 +1005,7 @@
                 <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
                 <xs:element name="temperature" type="temperatureBoundaryConditionType"/>
             </xs:sequence>
+            <xs:attribute name="bcid" type="xs:positiveInteger" use="required"/>
         </xs:complexType>
     </xs:element>
 

@@ -41,6 +41,7 @@ class CoreDB(object):
     VOLUME_MONITOR_DEFAULT_NAME = 'volume-mon-'
 
     MONITOR_MAX_INDEX = 100
+    BOUNDARY_CONDITION_MAX_INDEX = 10000
 
     _instance = None
 
@@ -294,8 +295,8 @@ class CoreDB(object):
         etree.SubElement(region, f'{{{ns}}}name').text = rname
         etree.SubElement(region, f'{{{ns}}}material').text = 'air'
 
-        czone = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
-        region.append(czone.getroot())
+        czoneTree = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
+        region.append(czoneTree.getroot())
 
         self._xmlSchema.assertValid(self._xmlTree)
 
@@ -304,17 +305,17 @@ class CoreDB(object):
         return [str(r) for r in names]
 
     def addCellZone(self, rname: str, zname: str):
-        zone = self._xmlTree.find(f'.//cellZones/region[name="{rname}"]/cellZone[name="{zname}"]', namespaces=nsmap)
+        zoneTree = self._xmlTree.find(f'.//cellZones/region[name="{rname}"]/cellZone[name="{zname}"]', namespaces=nsmap)
 
-        if zone is not None:
+        if zoneTree is not None:
             raise FileExistsError
 
         region = self._xmlTree.find(f'.//cellZones/region[name="{rname}"]', namespaces=nsmap)
 
-        zone = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
-        zone.find('name', namespaces=nsmap).text = zname
+        zoneTree = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
+        zoneTree.find('name', namespaces=nsmap).text = zname
 
-        region.append(zone.getroot())
+        region.append(zoneTree.getroot())
 
         self._xmlSchema.assertValid(self._xmlTree)
 
@@ -322,26 +323,38 @@ class CoreDB(object):
         names = self._xmlTree.xpath(f'.//x:cellZones/x:region[x:name="{rname}"]/x:cellZone/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
-    def addBoundaryCondition(self, bname: str, geometricalType: str):
+    def addBoundaryCondition(self, bname: str, geometricalType: str) -> int:
         bc = self._xmlTree.find(f'.//boundaryConditions/boundaryCondition[name="{bname}"]', namespaces=nsmap)
 
         if bc is not None:
             raise FileExistsError
 
+        idList = self._xmlTree.xpath(f'string(.//x:boundaryConditions/x:boundaryCondition/@bcid)', namespaces={'x': ns})
+
+        for index in range(1, self.BOUNDARY_CONDITION_MAX_INDEX):
+            if str(index) not in idList:
+                break
+        else:
+            raise OverflowError
+
         parent = self._xmlTree.find(f'.//boundaryConditions', namespaces=nsmap)
 
-        bc = etree.parse(resource.file(self.BOUNDARY_CONDITION_PATH), self._xmlParser)
+        bcTree = etree.parse(resource.file(self.BOUNDARY_CONDITION_PATH), self._xmlParser)
+        bc = bcTree.getroot()
         bc.find('name', namespaces=nsmap).text = bname
+        bc.attrib['bcid'] = str(index)
 
         # ToDo: set default physicalType according to the geometricalType
 
-        parent.append(bc.getroot())
+        parent.append(bc)
 
         self._xmlSchema.assertValid(self._xmlTree)
 
-    def getBoundaryConditions(self) -> list[str]:
-        names = self._xmlTree.xpath(f'.//x:boundaryConditions/x:boundaryCondition/x:name/text()', namespaces={'x': ns})
-        return [str(r) for r in names]
+        return index
+
+    def getBoundaryConditions(self) -> list[(int, str)]:
+        elements = self._xmlTree.findall(f'.//boundaryConditions/boundaryCondition', namespaces=nsmap)
+        return [(int(e.attrib['bcid']), e.find('name', namespaces=nsmap).text) for e in elements]
 
     def addForceMonitor(self) -> str:
         names = self.getForceMonitors()
@@ -355,10 +368,10 @@ class CoreDB(object):
 
         parent = self._xmlTree.find(f'.//monitors/forces', namespaces=nsmap)
 
-        fm = etree.parse(resource.file(self.FORCE_MONITOR_PATH), self._xmlParser)
-        fm.find('name', namespaces=nsmap).text = monitorName
+        forceTree = etree.parse(resource.file(self.FORCE_MONITOR_PATH), self._xmlParser)
+        forceTree.find('name', namespaces=nsmap).text = monitorName
 
-        parent.append(fm.getroot())
+        parent.append(forceTree.getroot())
 
         self._xmlSchema.assertValid(self._xmlTree)
 
@@ -388,10 +401,10 @@ class CoreDB(object):
 
         parent = self._xmlTree.find(f'.//monitors/points', namespaces=nsmap)
 
-        monitor = etree.parse(resource.file(self.POINT_MONITOR_PATH), self._xmlParser)
-        monitor.find('name', namespaces=nsmap).text = monitorName
+        pointTree = etree.parse(resource.file(self.POINT_MONITOR_PATH), self._xmlParser)
+        pointTree.find('name', namespaces=nsmap).text = monitorName
 
-        parent.append(monitor.getroot())
+        parent.append(pointTree.getroot())
 
         self._xmlSchema.assertValid(self._xmlTree)
 
@@ -421,10 +434,10 @@ class CoreDB(object):
 
         parent = self._xmlTree.find(f'.//monitors/surfaces', namespaces=nsmap)
 
-        surface = etree.parse(resource.file(self.SURFACE_MONITOR_PATH), self._xmlParser)
-        surface.find('name', namespaces=nsmap).text = monitorName
+        surfaceTree = etree.parse(resource.file(self.SURFACE_MONITOR_PATH), self._xmlParser)
+        surfaceTree.find('name', namespaces=nsmap).text = monitorName
 
-        parent.append(surface.getroot())
+        parent.append(surfaceTree.getroot())
 
         self._xmlSchema.assertValid(self._xmlTree)
 
@@ -454,10 +467,10 @@ class CoreDB(object):
 
         parent = self._xmlTree.find(f'.//monitors/volumes', namespaces=nsmap)
 
-        volume = etree.parse(resource.file(self.VOLUME_MONITOR_PATH), self._xmlParser)
-        volume.find('name', namespaces=nsmap).text = monitorName
+        volumeTree = etree.parse(resource.file(self.VOLUME_MONITOR_PATH), self._xmlParser)
+        volumeTree.find('name', namespaces=nsmap).text = monitorName
 
-        parent.append(volume.getroot())
+        parent.append(volumeTree.getroot())
 
         self._xmlSchema.assertValid(self._xmlTree)
 
