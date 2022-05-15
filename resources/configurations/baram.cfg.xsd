@@ -1127,83 +1127,91 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="forceMonitorType">
-        <xs:sequence>
-            <xs:element name="name" type="xs:string"/>
-            <xs:element name="referenceArea" type="inputNumberType" default="1"/>
-            <xs:element name="referenceLength" type="inputNumberType" default="1"/>
-            <xs:element name="referenceVelocity" type="inputNumberType" default="1"/>
-            <xs:element name="referenceDensity" type="inputNumberType" default="1"/>
-            <xs:element name="dragDirection" type="vector"/>
-            <xs:element name="liftDirection" type="vector"/>
-            <xs:element name="pitchAxisDirection" type="vector"/>
-            <xs:element name="centerOfRotation" type="vector"/>
-            <xs:element name="boundaries">
-                <xs:simpleType>
-                    <xs:list itemType="xs:positiveInteger"/>
-                </xs:simpleType>
-            </xs:element>
-        </xs:sequence>
-    </xs:complexType>
+    <xs:element name="forceMonitor">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="name" type="xs:string"/>
+                <xs:element name="referenceArea" type="inputNumberType" default="1"/>
+                <xs:element name="referenceLength" type="inputNumberType" default="1"/>
+                <xs:element name="referenceVelocity" type="inputNumberType" default="1"/>
+                <xs:element name="referenceDensity" type="inputNumberType" default="1"/>
+                <xs:element name="dragDirection" type="vector"/>
+                <xs:element name="liftDirection" type="vector"/>
+                <xs:element name="pitchAxisDirection" type="vector"/>
+                <xs:element name="centerOfRotation" type="vector"/>
+                <xs:element name="boundaries">
+                    <xs:simpleType>
+                        <xs:list itemType="xs:positiveInteger"/>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 
-    <xs:complexType name="pointMonitorType">
-        <xs:sequence>
-            <xs:element name="name" type="xs:string"/>
-            <!-- ToDo: Field id? -->
-            <xs:element name="interval" type="xs:positiveInteger" default="1"/>
-            <xs:element name="coordinate" type="vector"/>
-            <xs:element name="snapOntoBoundary" type="xs:boolean" default="false"/>
-            <!-- Boundary ID if snapOntoBoundary is true -->
-            <xs:element name="boundary" type="xs:nonNegativeInteger" default="0"/>
-        </xs:sequence>
-    </xs:complexType>
+    <xs:element name="pointMonitor">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="name" type="xs:string"/>
+                <!-- ToDo: Field id? -->
+                <xs:element name="interval" type="xs:positiveInteger" default="1"/>
+                <xs:element name="coordinate" type="vector"/>
+                <xs:element name="snapOntoBoundary" type="xs:boolean" default="false"/>
+                <!-- Boundary ID if snapOntoBoundary is true -->
+                <xs:element name="boundary" type="xs:nonNegativeInteger" default="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 
-    <xs:complexType name="surfaceMonitorType">
-        <xs:sequence>
-            <xs:element name="name" type="xs:string"/>
-            <xs:element name="reportType" default="areaWeightedAverage">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:enumeration value="areaWeightedAverage"/>
-                        <xs:enumeration value="Integral"/>
-                        <xs:enumeration value="flowRate"/>
-                        <xs:enumeration value="minimum"/>
-                        <xs:enumeration value="maximum"/>
-                        <xs:enumeration value="cov"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:element>
-            <!-- ToDo: Field Variable element -->
-            <xs:element name="surfaces">
-                <xs:simpleType>
-                    <xs:list itemType="xs:positiveInteger"/>
-                </xs:simpleType>
-            </xs:element>
-        </xs:sequence>
-    </xs:complexType>
+    <xs:element name="surfaceMonitor">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="name" type="xs:string"/>
+                <xs:element name="reportType" default="areaWeightedAverage">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="areaWeightedAverage"/>
+                            <xs:enumeration value="Integral"/>
+                            <xs:enumeration value="flowRate"/>
+                            <xs:enumeration value="minimum"/>
+                            <xs:enumeration value="maximum"/>
+                            <xs:enumeration value="cov"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <!-- ToDo: Field Variable element -->
+                <xs:element name="surfaces">
+                    <xs:simpleType>
+                        <xs:list itemType="xs:positiveInteger"/>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 
-    <xs:complexType name="volumeMonitorType">
-        <xs:sequence>
-            <xs:element name="name" type="xs:string" default="volumeAverage"/>
-            <xs:element name="reportType">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:enumeration value="volumeAverage"/>
-                        <xs:enumeration value="volumeIntegral"/>
-                        <xs:enumeration value="minimum"/>
-                        <xs:enumeration value="maximum"/>
-                        <xs:enumeration value="cov"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:element>
-            <!-- ToDo: Field Variable element -->
-            <xs:element name="surfaces">
-                <xs:simpleType>
-                    <xs:list itemType="xs:positiveInteger"/>
-                </xs:simpleType>
-            </xs:element>
-        </xs:sequence>
-    </xs:complexType>
+    <xs:element name="volumeMonitor">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="name" type="xs:string" default="volumeAverage"/>
+                <xs:element name="reportType">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="volumeAverage"/>
+                            <xs:enumeration value="volumeIntegral"/>
+                            <xs:enumeration value="minimum"/>
+                            <xs:enumeration value="maximum"/>
+                            <xs:enumeration value="cov"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <!-- ToDo: Field Variable element -->
+                <xs:element name="surfaces">
+                    <xs:simpleType>
+                        <xs:list itemType="xs:positiveInteger"/>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 
     <!-- root element "configuration" -->
 
@@ -1278,7 +1286,7 @@
                             <xs:element name="forces">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="force" type="forceMonitorType" minOccurs="0"
+                                        <xs:element ref="forceMonitor" minOccurs="0"
                                                     maxOccurs="unbounded"/>
                                     </xs:sequence>
                                 </xs:complexType>
@@ -1286,7 +1294,7 @@
                             <xs:element name="points">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="point" type="pointMonitorType" minOccurs="0"
+                                        <xs:element ref="pointMonitor" minOccurs="0"
                                                     maxOccurs="unbounded"/>
                                     </xs:sequence>
                                 </xs:complexType>
@@ -1294,7 +1302,7 @@
                             <xs:element name="surfaces">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="surface" type="surfaceMonitorType" minOccurs="0"
+                                        <xs:element ref="surfaceMonitor" minOccurs="0"
                                                     maxOccurs="unbounded"/>
                                     </xs:sequence>
                                 </xs:complexType>
@@ -1302,7 +1310,7 @@
                             <xs:element name="volumes">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="volume" type="volumeMonitorType" minOccurs="0"
+                                        <xs:element ref="volumeMonitor" minOccurs="0"
                                                     maxOccurs="unbounded"/>
                                     </xs:sequence>
                                 </xs:complexType>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<volumeMonitor xmlns="http://www.example.org/baram">
+    <name>default</name>
+    <reportType>volumeAverage</reportType>
+    <surfaces></surfaces>
+</volumeMonitor>

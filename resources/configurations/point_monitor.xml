@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pointMonitor xmlns="http://www.example.org/baram">
+    <name>default</name>
+    <interval>1</interval>
+    <coordinate>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+    </coordinate>
+    <snapOntoBoundary>false</snapOntoBoundary>
+    <boundary></boundary>
+</pointMonitor>

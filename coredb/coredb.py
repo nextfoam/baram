@@ -21,13 +21,26 @@ _mutex = Lock()
 
 
 class CoreDB(object):
-    XSD_PATH = 'baram.cfg.xsd'
-    XML_PATH = 'baram.cfg.xml'
+    CONFIGURATION_ROOT = 'configurations'
+    XSD_PATH = f'{CONFIGURATION_ROOT}/baram.cfg.xsd'
+    XML_PATH = f'{CONFIGURATION_ROOT}/baram.cfg.xml'
 
-    CELL_ZONE_PATH = 'cell_zone.xml'
-    BOUNDARY_CONDITION_PATH = 'boundary_condition.xml'
+    CELL_ZONE_PATH = f'{CONFIGURATION_ROOT}/cell_zone.xml'
+    BOUNDARY_CONDITION_PATH = f'{CONFIGURATION_ROOT}/boundary_condition.xml'
+
+    FORCE_MONITOR_PATH   = f'{CONFIGURATION_ROOT}/force_monitor.xml'
+    POINT_MONITOR_PATH   = f'{CONFIGURATION_ROOT}/point_monitor.xml'
+    SURFACE_MONITOR_PATH = f'{CONFIGURATION_ROOT}/surface_monitor.xml'
+    VOLUME_MONITOR_PATH  = f'{CONFIGURATION_ROOT}/volume_monitor.xml'
 
     MATERIALS_PATH = 'materials.csv'
+
+    FORCE_MONITOR_DEFAULT_NAME = 'force-mon-'
+    POINT_MONITOR_DEFAULT_NAME = 'point-mon-'
+    SURFACE_MONITOR_DEFAULT_NAME = 'surface-mon-'
+    VOLUME_MONITOR_DEFAULT_NAME = 'volume-mon-'
+
+    MONITOR_MAX_INDEX = 100
 
     _instance = None
 
@@ -315,19 +328,151 @@ class CoreDB(object):
         if bc is not None:
             raise FileExistsError
 
-        bcs = self._xmlTree.find(f'.//boundaryConditions', namespaces=nsmap)
+        parent = self._xmlTree.find(f'.//boundaryConditions', namespaces=nsmap)
 
         bc = etree.parse(resource.file(self.BOUNDARY_CONDITION_PATH), self._xmlParser)
         bc.find('name', namespaces=nsmap).text = bname
 
         # ToDo: set default physicalType according to the geometricalType
 
-        bcs.append(bc.getroot())
+        parent.append(bc.getroot())
 
         self._xmlSchema.assertValid(self._xmlTree)
 
     def getBoundaryConditions(self) -> list[str]:
         names = self._xmlTree.xpath(f'.//x:boundaryConditions/x:boundaryCondition/x:name/text()', namespaces={'x': ns})
+        return [str(r) for r in names]
+
+    def addForceMonitor(self) -> str:
+        names = self.getForceMonitors()
+
+        for index in range(1, self.MONITOR_MAX_INDEX):
+            monitorName = self.FORCE_MONITOR_DEFAULT_NAME+str(index)
+            if monitorName not in names:
+                break
+        else:
+            raise OverflowError
+
+        parent = self._xmlTree.find(f'.//monitors/forces', namespaces=nsmap)
+
+        fm = etree.parse(resource.file(self.FORCE_MONITOR_PATH), self._xmlParser)
+        fm.find('name', namespaces=nsmap).text = monitorName
+
+        parent.append(fm.getroot())
+
+        self._xmlSchema.assertValid(self._xmlTree)
+
+        return monitorName
+
+    def removeForceMonitor(self, name: str):
+        monitor = self._xmlTree.find(f'.//monitors/forces/forceMonitor[name="{name}"]', namespaces=nsmap)
+        if monitor is None:
+            raise LookupError
+
+        parent = self._xmlTree.find(f'.//monitors/forces', namespaces=nsmap)
+        parent.remove(monitor)
+
+    def getForceMonitors(self) -> list[str]:
+        names = self._xmlTree.xpath(f'.//x:monitors/x:forces/x:forceMonitor/x:name/text()', namespaces={'x': ns})
+        return [str(r) for r in names]
+
+    def addPointMonitor(self) -> str:
+        names = self.getPointMonitors()
+
+        for index in range(1, self.MONITOR_MAX_INDEX):
+            monitorName = self.POINT_MONITOR_DEFAULT_NAME+str(index)
+            if monitorName not in names:
+                break
+        else:
+            raise OverflowError
+
+        parent = self._xmlTree.find(f'.//monitors/points', namespaces=nsmap)
+
+        monitor = etree.parse(resource.file(self.POINT_MONITOR_PATH), self._xmlParser)
+        monitor.find('name', namespaces=nsmap).text = monitorName
+
+        parent.append(monitor.getroot())
+
+        self._xmlSchema.assertValid(self._xmlTree)
+
+        return monitorName
+
+    def removePointMonitor(self, name: str):
+        monitor = self._xmlTree.find(f'.//monitors/points/pointMonitor[name="{name}"]', namespaces=nsmap)
+        if monitor is None:
+            raise LookupError
+
+        parent = self._xmlTree.find(f'.//monitors/points', namespaces=nsmap)
+        parent.remove(monitor)
+
+    def getPointMonitors(self) -> list[str]:
+        names = self._xmlTree.xpath(f'.//x:monitors/x:points/x:pointMonitor/x:name/text()', namespaces={'x': ns})
+        return [str(r) for r in names]
+
+    def addSurfaceMonitor(self) -> str:
+        names = self.getSurfaceMonitors()
+
+        for index in range(1, self.MONITOR_MAX_INDEX):
+            monitorName = self.SURFACE_MONITOR_DEFAULT_NAME+str(index)
+            if monitorName not in names:
+                break
+        else:
+            raise OverflowError
+
+        parent = self._xmlTree.find(f'.//monitors/surfaces', namespaces=nsmap)
+
+        surface = etree.parse(resource.file(self.SURFACE_MONITOR_PATH), self._xmlParser)
+        surface.find('name', namespaces=nsmap).text = monitorName
+
+        parent.append(surface.getroot())
+
+        self._xmlSchema.assertValid(self._xmlTree)
+
+        return monitorName
+
+    def removeSurfaceMonitor(self, name: str):
+        monitor = self._xmlTree.find(f'.//monitors/surfaces/surfaceMonitor[name="{name}"]', namespaces=nsmap)
+        if monitor is None:
+            raise LookupError
+
+        parent = self._xmlTree.find(f'.//monitors/surfaces', namespaces=nsmap)
+        parent.remove(monitor)
+
+    def getSurfaceMonitors(self) -> list[str]:
+        names = self._xmlTree.xpath(f'.//x:monitors/x:surfaces/x:surfaceMonitor/x:name/text()', namespaces={'x': ns})
+        return [str(r) for r in names]
+
+    def addVolumeMonitor(self) -> str:
+        names = self.getVolumeMonitors()
+
+        for index in range(1, self.MONITOR_MAX_INDEX):
+            monitorName = self.VOLUME_MONITOR_DEFAULT_NAME+str(index)
+            if monitorName not in names:
+                break
+        else:
+            raise OverflowError
+
+        parent = self._xmlTree.find(f'.//monitors/volumes', namespaces=nsmap)
+
+        volume = etree.parse(resource.file(self.VOLUME_MONITOR_PATH), self._xmlParser)
+        volume.find('name', namespaces=nsmap).text = monitorName
+
+        parent.append(volume.getroot())
+
+        self._xmlSchema.assertValid(self._xmlTree)
+
+        return monitorName
+
+    def removeVolumeMonitor(self, name: str):
+        monitor = self._xmlTree.find(f'.//monitors/volumes/volumeMonitor[name="{name}"]', namespaces=nsmap)
+        if monitor is None:
+            raise LookupError
+
+        parent = self._xmlTree.find(f'.//monitors/volumes', namespaces=nsmap)
+        parent.remove(monitor)
+
+    def getVolumeMonitors(self) -> list[str]:
+        names = self._xmlTree.xpath(f'.//x:monitors/x:volumes/x:volumeMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
     def saveAs(self, path: str):
@@ -374,4 +519,3 @@ class CoreDB(object):
         self._xmlTree = root
         self._filePath = path
         self._modified = False
-
