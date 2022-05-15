@@ -88,12 +88,12 @@ class CoreDB(object):
         element = elements[0]
 
         path = self._xmlTree.getelementpath(element)
-        match = self._schema.find(".//" + path, namespaces=nsmap)
+        schema = self._schema.find(".//" + path, namespaces=nsmap)
 
-        if match is None:
+        if schema is None:
             raise LookupError
 
-        if not match.type.has_simple_content():
+        if not schema.type.has_simple_content():
             raise LookupError
 
         return element.text
@@ -118,20 +118,20 @@ class CoreDB(object):
         element = elements[0]
 
         path = self._xmlTree.getelementpath(element)
-        match = self._schema.find(".//" + path, namespaces=nsmap)
+        schema = self._schema.find(".//" + path, namespaces=nsmap)
 
-        if match is None:
+        if schema is None:
             raise LookupError
 
-        if not match.type.has_simple_content():
+        if not schema.type.has_simple_content():
             raise LookupError
 
-        if match.type.local_name == 'inputNumberType'\
-                or match.type.base_type.local_name == 'inputNumberType':  # The case when the type has restrictions
+        if schema.type.local_name == 'inputNumberType'\
+                or schema.type.base_type.local_name == 'inputNumberType':  # The case when the type has restrictions
             decimal = float(value)
 
-            minValue = match.type.min_value
-            maxValue = match.type.max_value
+            minValue = schema.type.min_value
+            maxValue = schema.type.max_value
 
             if minValue is not None and decimal < minValue:
                 raise ValueError
@@ -143,7 +143,7 @@ class CoreDB(object):
 
             self._modified = True
 
-        elif match.type.local_name == 'inputNumberListType':
+        elif schema.type.local_name == 'inputNumberListType':
             numbers = value.split()
             # To check if the strings in value are valid numbers
             # 'ValueError" exception is raised if invalid number found
@@ -153,15 +153,15 @@ class CoreDB(object):
 
             self._modified = True
 
-        elif match.type.is_decimal():
-            if match.type.is_simple():
-                name = match.type.local_name.lower()
-                minValue = match.type.min_value
-                maxValue = match.type.max_value
+        elif schema.type.is_decimal():
+            if schema.type.is_simple():
+                name = schema.type.local_name.lower()
+                minValue = schema.type.min_value
+                maxValue = schema.type.max_value
             else:
-                name = match.type.content.primitive_type.local_name.lower()
-                minValue = match.type.content.min_value
-                maxValue = match.type.content.max_value
+                name = schema.type.content.primitive_type.local_name.lower()
+                minValue = schema.type.content.min_value
+                maxValue = schema.type.content.max_value
 
             if 'integer' in name:
                 decimal = int(value)
@@ -181,7 +181,7 @@ class CoreDB(object):
             self._modified = True
 
         else:  # String
-            if match.type.is_restriction() and value not in match.type.enumeration:
+            if schema.type.is_restriction() and value not in schema.type.enumeration:
                 raise ValueError
 
             element.text = value
