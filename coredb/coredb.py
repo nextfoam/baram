@@ -41,6 +41,8 @@ class CoreDB(object):
     VOLUME_MONITOR_DEFAULT_NAME = 'volume-mon-'
 
     MONITOR_MAX_INDEX = 100
+    MATERIAL_MAX_INDEX = 1000
+    CELL_ZONE_MAX_INDEX = 1000
     BOUNDARY_CONDITION_MAX_INDEX = 10000
 
     _instance = None
@@ -200,7 +202,7 @@ class CoreDB(object):
         """
         return [(k, v['chemicalFormula'], v['phase']) for k, v in self._materialDB.items()]
 
-    def getMaterials(self) -> list[(str, str, str)]:
+    def getMaterials(self) -> list[(int, str, str, str)]:
         """Returns configured materials
 
         Returns configured materials with name, chemicalFormula and phase from material database
@@ -210,9 +212,9 @@ class CoreDB(object):
         """
         elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
 
-        return [(e.findtext('name', namespaces=nsmap), e.findtext('chemicalFormula', namespaces=nsmap), e.findtext('phase', namespaces=nsmap)) for e in elements]
+        return [(int(e.attrib['mid']), e.findtext('name', namespaces=nsmap), e.findtext('chemicalFormula', namespaces=nsmap), e.findtext('phase', namespaces=nsmap)) for e in elements]
 
-    def addMaterial(self, name: str):
+    def addMaterial(self, name: str) -> int:
         """Add material to configuration from material database
 
         Add material to configuration from material database
@@ -230,6 +232,14 @@ class CoreDB(object):
         if material is not None:
             raise FileExistsError
 
+        idList = self._xmlTree.xpath(f'string(.//x:materials/x:material/@mid)', namespaces={'x': ns})
+
+        for index in range(1, self.MATERIAL_MAX_INDEX):
+            if str(index) not in idList:
+                break
+        else:
+            raise OverflowError
+
         materialsElement = self._xmlTree.find('.//materials', namespaces=nsmap)
 
         def _materialPropertySubElement(parent: etree.Element, tag: str, pname: str):
@@ -238,6 +248,7 @@ class CoreDB(object):
             etree.SubElement(parent, f'{{{ns}}}{tag}').text = str(mdb[pname])
 
         material = etree.SubElement(materialsElement, f'{{{ns}}}material')
+        material.attrib['mid'] = str(index)
 
         etree.SubElement(material, f'{{{ns}}}name').text = name
 
@@ -274,6 +285,8 @@ class CoreDB(object):
 
         self._xmlSchema.assertValid(self._xmlTree)
 
+        return index
+
     def removeMaterial(self, name: str):
         parent = self._xmlTree.find(f'.//materials', namespaces=nsmap)
         material = parent.find(f'material[name="{name}"]', namespaces=nsmap)
@@ -306,24 +319,37 @@ class CoreDB(object):
         names = self._xmlTree.xpath(f'.//x:cellZones/x:region/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
-    def addCellZone(self, rname: str, zname: str):
+    def addCellZone(self, rname: str, zname: str) -> int:
         zoneTree = self._xmlTree.find(f'.//cellZones/region[name="{rname}"]/cellZone[name="{zname}"]', namespaces=nsmap)
 
         if zoneTree is not None:
             raise FileExistsError
 
+        idList = self._xmlTree.xpath(f'string(.//x:cellZones/x:region[x:name="{rname}"]/x:cellZone/@czid)', namespaces={'x': ns})
+
+        for index in range(1, self.CELL_ZONE_MAX_INDEX):
+            if str(index) not in idList:
+                break
+        else:
+            raise OverflowError
+
+        # 'region' cannot be None because zoneTree lookup above succeeded
         region = self._xmlTree.find(f'.//cellZones/region[name="{rname}"]', namespaces=nsmap)
 
         zoneTree = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
-        zoneTree.find('name', namespaces=nsmap).text = zname
+        zone = zoneTree.getroot()
+        zone.find('name', namespaces=nsmap).text = zname
+        zone.attrib['czid'] = str(index)
 
-        region.append(zoneTree.getroot())
+        region.append(zone)
 
         self._xmlSchema.assertValid(self._xmlTree)
 
-    def getCellZones(self, rname: str) -> list[str]:
-        names = self._xmlTree.xpath(f'.//x:cellZones/x:region[x:name="{rname}"]/x:cellZone/x:name/text()', namespaces={'x': ns})
-        return [str(r) for r in names]
+        return index
+
+    def getCellZones(self, rname: str) -> list[(int, str)]:
+        elements = self._xmlTree.findall(f'.//cellZones/region[name="{rname}"]/cellZone', namespaces=nsmap)
+        return [(int(e.attrib['czid']), e.find('name', namespaces=nsmap).text) for e in elements]
 
     def addBoundaryCondition(self, bname: str, geometricalType: str) -> int:
         bc = self._xmlTree.find(f'.//boundaryConditions/boundaryCondition[name="{bname}"]', namespaces=nsmap)

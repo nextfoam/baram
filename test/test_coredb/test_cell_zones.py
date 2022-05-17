@@ -24,9 +24,16 @@ class TestCellZones(unittest.TestCase):
         rname = 'testRegion_1'
         zname = 'testZone_1'
         self.db.addRegion(rname)
-        self.db.addCellZone(rname, zname)
+        czid = self.db.addCellZone(rname, zname)
         zones = self.db.getCellZones(rname)
-        self.assertIn(zname, zones)
+        self.assertIn((czid, zname), zones)
+
+    def testAddCellZoneId(self):
+        rname = 'testRegion_1'
+        zname = 'testZone_1'
+        self.db.addRegion(rname)
+        czid = self.db.addCellZone(rname, zname)
+        self.assertEqual(2, czid)  # next to 'All' zone
 
     def testDefaultCellZoneType(self):
         rname = 'testRegion_1'

@@ -164,6 +164,7 @@
             <xs:element name="saturationPressure" type="inputNumberType" minOccurs="0"/>
             <xs:element name="emissivity" type="inputNumberType" minOccurs="0"/>
         </xs:all>
+        <xs:attribute name="mid" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="multiphaseModelsType">
@@ -530,6 +531,7 @@
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
+            <xs:attribute name="czid" type="xs:positiveInteger" use="required"/>
         </xs:complexType>
     </xs:element>
 
