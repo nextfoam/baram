@@ -292,9 +292,11 @@ class CoreDB(object):
 
         region = etree.SubElement(cellZones, f'{{{ns}}}region')
 
+        # set default material for the region
         etree.SubElement(region, f'{{{ns}}}name').text = rname
         etree.SubElement(region, f'{{{ns}}}material').text = 'air'
 
+        # add default cell zone named "All"
         czoneTree = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
         region.append(czoneTree.getroot())
 
