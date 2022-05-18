@@ -43,6 +43,9 @@ class TestCellZones(unittest.TestCase):
         path = f'.//cellZones/region[name="{rname}"]/cellZone[name="{zname}"]/zoneType'
         self.assertEqual('none', self.db.getValue(path))
 
+    def tearDown(self) -> None:
+        del coredb.CoreDB._instance
+
 
 if __name__ == '__main__':
     unittest.main()

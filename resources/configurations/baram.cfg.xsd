@@ -244,7 +244,7 @@
             <xs:element name="rotationAxisDirection" type="vector"/>
             <xs:element name="staticBoundaries">
                 <xs:simpleType>
-                    <xs:list itemType="xs:positiveInteger"/>
+                    <xs:list itemType="xs:positiveInteger"/>  <!-- boundary condition bcid -->
                 </xs:simpleType>
             </xs:element>
         </xs:sequence>
@@ -894,7 +894,7 @@
             </xs:element>
             <xs:element name="coupledBoundary">
                 <xs:simpleType>
-                    <xs:list itemType="xs:positiveInteger"/>
+                    <xs:list itemType="xs:positiveInteger"/>  <!-- boundary condition bcid -->
                 </xs:simpleType>
             </xs:element>
             <xs:element name="rotationAxisOrigin" type="vector"/>
@@ -915,7 +915,7 @@
         <xs:sequence>
             <xs:element name="coupledBoundary">
                 <xs:simpleType>
-                    <xs:list itemType="xs:positiveInteger"/>
+                    <xs:list itemType="xs:positiveInteger"/>  <!-- boundary condition bcid -->
                 </xs:simpleType>
             </xs:element>
         </xs:sequence>
@@ -1144,7 +1144,7 @@
                 <xs:element name="centerOfRotation" type="vector"/>
                 <xs:element name="boundaries">
                     <xs:simpleType>
-                        <xs:list itemType="xs:positiveInteger"/>
+                        <xs:list itemType="xs:positiveInteger"/> <!-- boundary condition bcid -->
                     </xs:simpleType>
                 </xs:element>
             </xs:sequence>
@@ -1160,7 +1160,7 @@
                 <xs:element name="coordinate" type="vector"/>
                 <xs:element name="snapOntoBoundary" type="xs:boolean" default="false"/>
                 <!-- Boundary ID if snapOntoBoundary is true -->
-                <xs:element name="boundary" type="xs:nonNegativeInteger" default="0"/>
+                <xs:element name="boundary" type="xs:nonNegativeInteger" default="0"/>  <!-- boundary condition bcid -->
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -1184,7 +1184,7 @@
                 <!-- ToDo: Field Variable element -->
                 <xs:element name="surfaces">
                     <xs:simpleType>
-                        <xs:list itemType="xs:positiveInteger"/>
+                        <xs:list itemType="xs:positiveInteger"/> <!-- boundary condition bcid -->
                     </xs:simpleType>
                 </xs:element>
             </xs:sequence>
@@ -1207,9 +1207,9 @@
                     </xs:simpleType>
                 </xs:element>
                 <!-- ToDo: Field Variable element -->
-                <xs:element name="surfaces">
+                <xs:element name="volumes">
                     <xs:simpleType>
-                        <xs:list itemType="xs:positiveInteger"/>
+                        <xs:list itemType="xs:positiveInteger"/> <!-- cellZone czid -->
                     </xs:simpleType>
                 </xs:element>
             </xs:sequence>
@@ -1264,7 +1264,7 @@
                                 <xs:complexType>
                                     <xs:sequence>
                                         <xs:element name="name" type="xs:string"/>
-                                        <xs:element name="material" type="xs:string"/> <!-- material name -->
+                                        <xs:element name="material" type="xs:positiveInteger"/> <!-- material mid -->
                                         <xs:element ref="cellZone" minOccurs="0" maxOccurs="unbounded"/>
                                     </xs:sequence>
                                 </xs:complexType>

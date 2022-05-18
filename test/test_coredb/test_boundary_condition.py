@@ -22,6 +22,9 @@ class TestBoundaryCondition(unittest.TestCase):
         index = self.db.addBoundaryCondition('second', physicalType)
         self.assertEqual(2, index)
 
+    def tearDown(self) -> None:
+        del coredb.CoreDB._instance
+
 
 if __name__ == '__main__':
     unittest.main()

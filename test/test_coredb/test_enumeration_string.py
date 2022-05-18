@@ -20,6 +20,9 @@ class TestEnumerationString(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.db.setValue(self.path, written)
 
+    def tearDown(self) -> None:
+        del coredb.CoreDB._instance
+
 
 if __name__ == '__main__':
     unittest.main()

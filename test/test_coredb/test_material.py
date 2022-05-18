@@ -48,6 +48,9 @@ class TestMaterial(unittest.TestCase):
         materials = self.db.getMaterials()
         self.assertEqual(1, len(materials))
 
+    def tearDown(self) -> None:
+        del coredb.CoreDB._instance
+
 
 if __name__ == '__main__':
     unittest.main()

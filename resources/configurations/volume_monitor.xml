@@ -2,5 +2,5 @@
 <volumeMonitor xmlns="http://www.example.org/baram">
     <name>default</name>
     <reportType>volumeAverage</reportType>
-    <surfaces></surfaces>
+    <volumes></volumes>
 </volumeMonitor>

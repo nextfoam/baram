@@ -22,22 +22,21 @@ class TestPositiveInteger(unittest.TestCase):
 
     def test_zero(self):
         written = '0'
-        with self.assertRaises(ValueError) as context:
-            self.db.setValue(self.path, written)
+        error = self.db.setValue(self.path, written)
+        self.assertEqual(coredb.Error.OUT_OF_RANGE, error)
 
     def test_negativeValue(self):
         written = '-1'
-        with self.assertRaises(ValueError) as context:
-            self.db.setValue(self.path, written)
+        error = self.db.setValue(self.path, written)
+        self.assertEqual(coredb.Error.OUT_OF_RANGE, error)
 
     def test_malformedString(self):
         written = '10E'
-        with self.assertRaises(ValueError) as context:
-            self.db.setValue(self.path, written)
+        error = self.db.setValue(self.path, written)
+        self.assertEqual(coredb.Error.INTEGER_ONLY, error)
 
-    #def test_turbulentIntensity(self):
-        #db.getValue('.//runConditions/timeSteppingMethod')
-        #db.getValue('.//runConditions/numberOfIterations') # non negative integer
+    def tearDown(self) -> None:
+        del coredb.CoreDB._instance
 
 
 if __name__ == '__main__':

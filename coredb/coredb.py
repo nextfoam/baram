@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from threading import Lock
+from enum import Enum, auto
+import copy
 
 from lxml import etree
 import xmlschema
@@ -18,6 +20,13 @@ ns = 'http://www.example.org/baram'
 nsmap = {'': ns}
 
 _mutex = Lock()
+
+
+class Error(Enum):
+    OUT_OF_RANGE = auto()
+    INTEGER_ONLY = auto()
+    FLOAT_ONLY   = auto()
+    REFERENCED   = auto()
 
 
 class CoreDB(object):
@@ -45,17 +54,22 @@ class CoreDB(object):
     CELL_ZONE_MAX_INDEX = 1000
     BOUNDARY_CONDITION_MAX_INDEX = 10000
 
-    _instance = None
-
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         with _mutex:
-            if cls._instance is None:
+            if not hasattr(cls, '_instance'):
                 cls._instance = super(CoreDB, cls).__new__(cls)
         return cls._instance
 
     def __init__(self):
+        if hasattr(self, '_initialized'):
+            return
+
+        self._initialized = True
+
         self._modified = False
         self._filePath = None
+        self._backupTree = None
+        self._lastError = None
 
         self._schema = xmlschema.XMLSchema(resource.file(self.XSD_PATH))
 
@@ -69,6 +83,18 @@ class CoreDB(object):
 
         # Add 'air' as default material
         self.addMaterial('air')
+
+    def __enter__(self):
+        self._backupTree = copy.deepcopy(self._xmlTree)
+        self._lastError = None
+        return self
+
+    def __exit__(self, eType, eValue, eTraceback):
+        if self._lastError is not None or eType is not None:
+            self._xmlTree = self._backupTree
+
+        self._lastError = None
+        self._backupTree = None
 
     def getValue(self, xpath: str) -> str:
         """Returns specified configuration value.
@@ -101,7 +127,7 @@ class CoreDB(object):
 
         return element.text
 
-    def setValue(self, xpath: str, value: str):
+    def setValue(self, xpath: str, value: str) -> Error:
         """Sets configuration value in specified path
 
         Sets configuration value in specified path
@@ -131,16 +157,23 @@ class CoreDB(object):
 
         if schema.type.local_name == 'inputNumberType'\
                 or schema.type.base_type.local_name == 'inputNumberType':  # The case when the type has restrictions
-            decimal = float(value)
+
+            try:
+                decimal = float(value)
+            except ValueError:
+                self._lastError = Error.FLOAT_ONLY
+                return Error.FLOAT_ONLY
 
             minValue = schema.type.min_value
             maxValue = schema.type.max_value
 
             if minValue is not None and decimal < minValue:
-                raise ValueError
+                self._lastError = Error.OUT_OF_RANGE
+                return Error.OUT_OF_RANGE
 
             if maxValue is not None and decimal > maxValue:
-                raise ValueError
+                self._lastError = Error.OUT_OF_RANGE
+                return Error.OUT_OF_RANGE
 
             element.text = value.lower()
 
@@ -150,7 +183,11 @@ class CoreDB(object):
             numbers = value.split()
             # To check if the strings in value are valid numbers
             # 'ValueError" exception is raised if invalid number found
-            [float(n) for n in numbers]
+            try:
+                [float(n) for n in numbers]
+            except ValueError:
+                self._lastError = Error.FLOAT_ONLY
+                return Error.FLOAT_ONLY
 
             element.text = value
 
@@ -167,23 +204,36 @@ class CoreDB(object):
                 maxValue = schema.type.content.max_value
 
             if 'integer' in name:
-                decimal = int(value)
+                try:
+                    decimal = int(value)
+                except ValueError:
+                    self._lastError = Error.INTEGER_ONLY
+                    return Error.INTEGER_ONLY
             else:
-                decimal = float(value)
+                try:
+                    decimal = float(value)
+                except ValueError:
+                    self._lastError = Error.FLOAT_ONLY
+                    return Error.FLOAT_ONLY
 
             if minValue is not None and decimal < minValue:
-                raise ValueError
+                self._lastError = Error.OUT_OF_RANGE
+                return Error.OUT_OF_RANGE
 
             if maxValue is not None and decimal > maxValue:
-                raise ValueError
+                self._lastError = Error.OUT_OF_RANGE
+                return Error.OUT_OF_RANGE
 
             if element.text == str(decimal):
-                return
+                return None
 
             element.text = str(decimal)
             self._modified = True
 
-        else:  # String
+        # String
+        # For now, string value is set only by VIEW code not by user.
+        # Therefore, raising exception(not returning value) is reasonable.
+        else:
             if schema.type.is_restriction() and value not in schema.type.enumeration:
                 raise ValueError
 
@@ -191,6 +241,7 @@ class CoreDB(object):
             self._modified = True
 
         self._xmlSchema.assertValid(self._xmlTree)
+        return None
 
     def getMaterialsFromDB(self) -> list[(str, str, str)]:
         """Returns available materials from material database
@@ -208,7 +259,7 @@ class CoreDB(object):
         Returns configured materials with name, chemicalFormula and phase from material database
 
         Returns:
-            List of materials in tuple, '(name, chemicalFormula, phase)'
+            List of materials in tuple, '(id, name, chemicalFormula, phase)'
         """
         elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
 
@@ -287,13 +338,21 @@ class CoreDB(object):
 
         return index
 
-    def removeMaterial(self, name: str):
+    def removeMaterial(self, name: str) -> Error:
         parent = self._xmlTree.find(f'.//materials', namespaces=nsmap)
         material = parent.find(f'material[name="{name}"]', namespaces=nsmap)
         if material is None:
             raise LookupError
 
+        # check if the material is referenced by other elements
+
+        mid = material.attrib['mid']
+        idList = self._xmlTree.xpath(f'.//x:cellZones/x:region/x:material/text()', namespaces={'x': ns})
+        if str(mid) in idList:
+            return Error.REFERENCED
+
         parent.remove(material)
+        return None
 
     def addRegion(self, rname: str):
         region = self._xmlTree.find(f'.//cellZones/region[name="{rname}"]', namespaces=nsmap)
@@ -305,9 +364,18 @@ class CoreDB(object):
 
         region = etree.SubElement(cellZones, f'{{{ns}}}region')
 
-        # set default material for the region
         etree.SubElement(region, f'{{{ns}}}name').text = rname
-        etree.SubElement(region, f'{{{ns}}}material').text = 'air'
+
+        # set default material for the region
+        materials = self.getMaterials()
+        for m in materials:
+            if m[1] == 'air':
+                airId = m[0]
+                break
+        else:
+            raise AssertionError  # 'air' should have been added in '__init__'
+
+        etree.SubElement(region, f'{{{ns}}}material').text = str(airId)
 
         # add default cell zone named "All"
         czoneTree = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
@@ -538,7 +606,7 @@ class CoreDB(object):
             if h5py.check_string_dtype(ds.dtype) is None:
                 raise ValueError
 
-            ds[0] = etree.tostring(self._xmlTree, xml_declaration=True, encoding='UTF-8')
+            ds[0] = etree.tostring(self._xmlTree.getroot(), xml_declaration=True, encoding='UTF-8')
 
             # ToDo: write the rest of data like uploaded polynomials
         finally:

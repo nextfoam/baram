@@ -28,8 +28,11 @@ class TestInputNumberListType(unittest.TestCase):
 
     def testInvalidNotation(self):
         written = '2.345 1.234e 4.567'
-        with self.assertRaises(ValueError) as context:
-            self.db.setValue(self.path, written)
+        error = self.db.setValue(self.path, written)
+        self.assertEqual(coredb.Error.FLOAT_ONLY, error)
+
+    def tearDown(self) -> None:
+        del coredb.CoreDB._instance
 
 
 if __name__ == '__main__':

@@ -28,13 +28,13 @@ class TestInputNumberTypeWithRestriction(unittest.TestCase):
 
     def testLessThanMinimumValue(self):
         written = '-1'
-        with self.assertRaises(ValueError) as context:
-            self.db.setValue(self.path, written)
+        error = self.db.setValue(self.path, written)
+        self.assertEqual(coredb.Error.OUT_OF_RANGE, error)
 
     def testBiggerThanMaximumValue(self):
         written = '101'
-        with self.assertRaises(ValueError) as context:
-            self.db.setValue(self.path, written)
+        error = self.db.setValue(self.path, written)
+        self.assertEqual(coredb.Error.OUT_OF_RANGE, error)
 
     def testBigEScientificNotation(self):
         written = '12.345E-6'
@@ -44,8 +44,8 @@ class TestInputNumberTypeWithRestriction(unittest.TestCase):
 
     def testMalformedString(self):
         written = '10E'
-        with self.assertRaises(ValueError) as context:
-            self.db.setValue(self.path, written)
+        error = self.db.setValue(self.path, written)
+        self.assertEqual(coredb.Error.FLOAT_ONLY, error)
 
     def testNotationChange(self):
         # 1. Write in Scientific Notation
@@ -65,6 +65,9 @@ class TestInputNumberTypeWithRestriction(unittest.TestCase):
         self.db.setValue(self.path, written)
         read = self.db.getValue(self.path)
         self.assertEqual(written, read)
+
+    def tearDown(self) -> None:
+        del coredb.CoreDB._instance
 
 
 if __name__ == '__main__':

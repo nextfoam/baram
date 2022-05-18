@@ -28,13 +28,16 @@ class TestNonNegativeInteger(unittest.TestCase):
 
     def testNegativeValue(self):
         written = '-1'
-        with self.assertRaises(ValueError) as context:
-            self.db.setValue(self.path, written)
+        error = self.db.setValue(self.path, written)
+        self.assertEqual(coredb.Error.OUT_OF_RANGE, error)
 
     def testMalformedString(self):
         written = '10E'
-        with self.assertRaises(ValueError) as context:
-            self.db.setValue(self.path, written)
+        error = self.db.setValue(self.path, written)
+        self.assertEqual(coredb.Error.INTEGER_ONLY, error)
+
+    def tearDown(self) -> None:
+        del coredb.CoreDB._instance
 
 
 if __name__ == '__main__':

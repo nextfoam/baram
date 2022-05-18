@@ -51,6 +51,9 @@ class TestMonitors(unittest.TestCase):
         monitors = self.db.getVolumeMonitors()
         self.assertNotIn(name, monitors)
 
+    def tearDown(self) -> None:
+        del coredb.CoreDB._instance
+
 
 if __name__ == '__main__':
     unittest.main()
