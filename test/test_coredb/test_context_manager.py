@@ -7,7 +7,7 @@ class TestContextManager(unittest.TestCase):
     def setUp(self):
         self.db = coredb.CoreDB()
         self.pathFirst = './/runConditions/numberOfIterations'
-        # turbulentIntensity sould be in 0~100
+        # turbulentIntensity should be in 0~100
         self.pathSecond = './/initialValues/turbulentIntensity'
 
     def testValidInteger(self):
