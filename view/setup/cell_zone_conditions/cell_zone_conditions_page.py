@@ -51,9 +51,13 @@ class CellZoneConditionsPage(QWidget):
         self._ui.operatingConditions.setEnabled(True)
         self._ui.edit.setEnabled(True)
 
+    def edit(self):
+        dialog = CellZoneConditionDialog()
+        dialog.exec()
+
     def _connectSignalsSlots(self):
         self._ui.operatingConditions.clicked.connect(self._operatingConditions)
-        self._ui.edit.clicked.connect(self._edit)
+        self._ui.edit.clicked.connect(self.edit)
 
     def _addRegion(self, region):
         id_ = region["id"]
@@ -62,8 +66,4 @@ class CellZoneConditionsPage(QWidget):
 
     def _operatingConditions(self):
         dialog = OperatingConditionsDialog()
-        dialog.exec()
-
-    def _edit(self):
-        dialog = CellZoneConditionDialog()
         dialog.exec()

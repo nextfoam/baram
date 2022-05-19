@@ -8,6 +8,7 @@ from view.setup.general.general_page import GeneralPage
 from view.setup.materials.material_page import MaterialPage
 from view.setup.models.models_page import ModelsPage
 from view.setup.cell_zone_conditions.cell_zone_conditions_page import CellZoneConditionsPage
+from view.setup.boundary_conditions.boundary_conditions_page import BoundaryConditionsPage
 
 
 class MenuView:
@@ -54,9 +55,9 @@ class MenuView:
                         "text": QCoreApplication.translate("MenuView", "Cell Zone Conditions"),
                         "page_class": CellZoneConditionsPage,
                     },
-                    "boundayConditions": {
+                    "boundaryConditions": {
                         "text": QCoreApplication.translate("MenuView", "Boundary Conditions"),
-                        #"page_class": EmptyPage,
+                        "page_class": BoundaryConditionsPage,
                     },
                     "dynamicMesh": {
                         "text": QCoreApplication.translate("MenuView", "Dynamic Mesh"),

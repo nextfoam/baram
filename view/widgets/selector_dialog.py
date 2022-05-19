@@ -8,11 +8,12 @@ from view.widgets.selector_dialog_ui import Ui_SelectorDialog
 
 
 class SelectorDialog(QDialog):
-    def __init__(self, label, items):
+    def __init__(self, title, label, items):
         super().__init__()
         self._ui = Ui_SelectorDialog()
         self._ui.setupUi(self)
 
+        self.setWindowTitle(title)
         self._setup(label, items)
         self._connectSignalsSlots()
 

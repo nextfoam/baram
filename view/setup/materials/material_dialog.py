@@ -4,10 +4,10 @@
 from enum import Enum, auto
 from PySide6.QtCore import Qt
 
-from view.widgets.resizable_dialog import ResizableDialog
+from view.widgets.resizable_dialog import ResizableDialog, ResizableForm
+from view.widgets.polynomial_dialog import PolynomialDialog
 from .material import Material
 from .material_dialog_ui import Ui_MaterialDialog
-from .polynomial_dialog import PolynomialDialog
 
 
 class MaterialDialog(ResizableDialog):
@@ -17,15 +17,18 @@ class MaterialDialog(ResizableDialog):
         SUTHERLAND = auto()
         POLYNOMIAL = auto()
 
+    class PROPERTY_FORM_ROW(Enum):
+        MOLECULAR_WEIGHT = 0
+        ABSORPTION_COEFFICIENT = auto()
+        SURFACE_TENSION = auto()
+        SATURATION_PRESSURE = auto()
+        EMISSIVITY = auto()
+
+
     def __init__(self, material):
         super().__init__()
         self._ui = Ui_MaterialDialog()
         self._ui.setupUi(self)
-
-        self._fluidGroup = None
-        self._gasGroup = None
-        self._liquidGroup = None
-        self._solidGroup = None
 
         self._setup(material)
         self._connectSignalsSlots()
@@ -37,33 +40,30 @@ class MaterialDialog(ResizableDialog):
         self._resizeDialog(self)
 
     def _setupPhase(self, phase):
+        self._propertyLayout = ResizableForm(self._ui.properties.layout())
+
         self._fluidGroup = [
-            self._ui.viscosityGroup,
-            self._ui.molecularWeightLabel,
-            self._ui.molecularWeight,
+            self.PROPERTY_FORM_ROW.MOLECULAR_WEIGHT.value,
         ]
 
         self._gasGroup = [
-            self._ui.absorptionCoefficientLabel,
-            self._ui.absorptionCoefficient,
+            self.PROPERTY_FORM_ROW.ABSORPTION_COEFFICIENT.value,
         ]
 
         self._liquidGroup = [
-            self._ui.surfaceTensionLabel,
-            self._ui.surfaceTension,
-            self._ui.saturationPressureLabel,
-            self._ui.saturationPressure,
+            self.PROPERTY_FORM_ROW.SURFACE_TENSION.value,
+            self.PROPERTY_FORM_ROW.SATURATION_PRESSURE.value,
         ]
 
         self._solidGroup = [
-            self._ui.emissivityLabel,
-            self._ui.emissivity,
+            self.PROPERTY_FORM_ROW.EMISSIVITY.value,
         ]
 
-        self._setGroupVisible(self._fluidGroup, phase != Material.PHASE.Solid)
-        self._setGroupVisible(self._gasGroup, phase == Material.PHASE.Gas)
-        self._setGroupVisible(self._liquidGroup, phase == Material.PHASE.Liquid)
-        self._setGroupVisible(self._solidGroup, phase == Material.PHASE.Solid)
+        self._ui.viscosityGroup.setVisible(phase != Material.PHASE.Solid)
+        self._propertyLayout.setRowsVisible(self._fluidGroup, phase != Material.PHASE.Solid)
+        self._propertyLayout.setRowsVisible(self._gasGroup, phase == Material.PHASE.Gas)
+        self._propertyLayout.setRowsVisible(self._liquidGroup, phase == Material.PHASE.Liquid)
+        self._propertyLayout.setRowsVisible(self._solidGroup, phase == Material.PHASE.Solid)
 
         self._ui.densityEdit.setEnabled(False)
         self._ui.specificHeatEdit.setEnabled(False)

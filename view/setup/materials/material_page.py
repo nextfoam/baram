@@ -19,7 +19,8 @@ class MaterialPage(QWidget):
         self._cardListLayout.setSpacing(0)
         self._cardListLayout.setContentsMargins(0, 0, 0, 0)
 
-        self._addDialog = SelectorDialog(self.tr("Select material to add"), MaterialDB.instance().materialList())
+        self._addDialog = SelectorDialog(self.tr("Material"), self.tr("Select material to add"),
+                                         MaterialDB.instance().materialList())
 
         self._connectSignalsSlots()
 
