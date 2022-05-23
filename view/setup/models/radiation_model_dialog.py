@@ -29,9 +29,9 @@ class RadiationModelDialog(ResizableDialog):
             self.PARAMETER_FORM_ROW.MAXIMUM_NUMBER_OF_RADIATION_ITERATIONS.value,
         ]
 
-        self.connectSignalsSlots()
+        self._connectSignalsSlots()
 
-    def connectSignalsSlots(self):
+    def _connectSignalsSlots(self):
         self._ui.off.toggled.connect(self._modelChanged)
         self._ui.p1.toggled.connect(self._modelChanged)
         self._ui.DO.toggled.connect(self._modelChanged)

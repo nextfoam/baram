@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>275</width>
+    <width>265</width>
     <height>472</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>265</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Turbulence Model</string>
@@ -18,7 +24,7 @@
     <widget class="QWidget" name="modelWidget" native="true">
      <property name="minimumSize">
       <size>
-       <width>257</width>
+       <width>0</width>
        <height>0</height>
       </size>
      </property>

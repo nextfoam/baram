@@ -26,6 +26,12 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
+   <property name="minimumSize">
+    <size>
+     <width>650</width>
+     <height>0</height>
+    </size>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
      <widget class="QSplitter" name="splitter">
@@ -47,7 +53,7 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>200</width>
+         <width>0</width>
          <height>0</height>
         </size>
        </property>
@@ -69,7 +75,7 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>240</width>
+         <width>450</width>
          <height>0</height>
         </size>
        </property>

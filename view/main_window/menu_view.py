@@ -9,7 +9,11 @@ from view.setup.materials.material_page import MaterialPage
 from view.setup.models.models_page import ModelsPage
 from view.setup.cell_zone_conditions.cell_zone_conditions_page import CellZoneConditionsPage
 from view.setup.boundary_conditions.boundary_conditions_page import BoundaryConditionsPage
-
+from view.setup.reference_values.reference_values_page import ReferenceValuesPage
+from view.solution.numerical_conditions.numerical_conditions_page import NumericalConditionsPage
+from view.solution.monitors.monitors_page import MonitorsPage
+from view.solution.initialization.initialization_page import InitializationPage
+from view.solution.run_calculation.run_calculation_page import RunCalculationPage
 
 class MenuView:
     class MenuItem:
@@ -59,16 +63,37 @@ class MenuView:
                         "text": QCoreApplication.translate("MenuView", "Boundary Conditions"),
                         "page_class": BoundaryConditionsPage,
                     },
-                    "dynamicMesh": {
-                        "text": QCoreApplication.translate("MenuView", "Dynamic Mesh"),
-                        #"page_class": EmptyPage,
-                    },
+                    # "dynamicMesh": {
+                    #     "text": QCoreApplication.translate("MenuView", "Dynamic Mesh"),
+                    #     "page_class": EmptyPage,
+                    # },
                     "referenceValues": {
                         "text": QCoreApplication.translate("MenuView", "Reference Values"),
-                        #"page_class": EmptyPage,
+                        "page_class": ReferenceValuesPage,
                     },
-                }
-            }
+                },
+            },
+            "solution": {
+                "text": QCoreApplication.translate("MenuView", "Solution"),
+                "sub_menu": {
+                    "numericalConditions": {
+                        "text": QCoreApplication.translate("MenuView", "Numerial Conditions"),
+                        "page_class": NumericalConditionsPage
+                    },
+                    "monitors": {
+                        "text": QCoreApplication.translate("MenuView", "Monitors"),
+                        "page_class": MonitorsPage
+                    },
+                    "initialization": {
+                        "text": QCoreApplication.translate("MenuView", "Initialization"),
+                        "page_class": InitializationPage
+                    },
+                    "runCalculation": {
+                        "text": QCoreApplication.translate("MenuView", "Run Calculation"),
+                        "page_class": RunCalculationPage
+                    },
+                },
+            },
         }
 
         self._view = tree

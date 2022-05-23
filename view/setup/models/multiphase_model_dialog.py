@@ -11,7 +11,7 @@ class MultiphaseModelDialog(ResizableDialog):
         self._ui = Ui_MultiphaseModelDialog()
         self._ui.setupUi(self)
 
-        self.connectSignalsSlots()
+        self._connectSignalsSlots()
 
-    def connectSignalsSlots(self):
+    def _connectSignalsSlots(self):
         pass
