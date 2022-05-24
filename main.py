@@ -3,6 +3,7 @@
 
 import sys
 import os
+import logging
 
 from PySide6.QtCore import QFile, QTextStream, QIODevice, QTranslator, QCoreApplication
 from PySide6.QtWidgets import QApplication
@@ -17,10 +18,18 @@ import resource_rc
 
 from view.main_window.main_window import MainWindow
 
+
 if __name__ == '__main__':
     # TODO: The scale value should be save in configuration and loaded/used in next launch
     # This environment variable should be set before QApplication is created
     os.environ["QT_SCALE_FACTOR"] = "1.1"
+
+    logger = logging.getLogger()
+    formatter = logging.Formatter("[%(name)s] %(message)s")
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
 
     app = QApplication(sys.argv)
 

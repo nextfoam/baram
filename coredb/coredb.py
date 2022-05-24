@@ -4,6 +4,7 @@
 from threading import Lock
 from enum import Enum, auto
 import copy
+import logging
 
 from lxml import etree
 import xmlschema
@@ -20,6 +21,8 @@ ns = 'http://www.example.org/baram'
 nsmap = {'': ns}
 
 _mutex = Lock()
+
+logger = logging.getLogger(__name__)
 
 
 class Cancel(Exception):
@@ -89,6 +92,7 @@ class CoreDB(object):
         self.addMaterial('air')
 
     def __enter__(self):
+        logger.debug('enter')
         self._backupTree = copy.deepcopy(self._xmlTree)
         self._lastError = None
         return self
@@ -101,8 +105,10 @@ class CoreDB(object):
         self._backupTree = None
 
         if eType == Cancel:
+            logger.debug('exit with Cancel')
             return True
         else: # To make it clear
+            logger.debug('exit without error')
             return None
 
     def getValue(self, xpath: str) -> str:
@@ -134,6 +140,8 @@ class CoreDB(object):
         if not schema.type.has_simple_content():
             raise LookupError
 
+        logger.debug(f'getValue( {xpath} -> {element.text} )')
+
         return element.text
 
     def setValue(self, xpath: str, value: str) -> Error:
@@ -164,9 +172,8 @@ class CoreDB(object):
         if not schema.type.has_simple_content():
             raise LookupError
 
-        if schema.type.local_name == 'inputNumberType'\
-                or schema.type.base_type.local_name == 'inputNumberType':  # The case when the type has restrictions
-
+        if schema.type.local_name == 'inputNumberType' or (
+                schema.type.base_type is not None and schema.type.base_type.local_name == 'inputNumberType'):  # The case when the type has restrictions
             try:
                 decimal = float(value)
             except ValueError:
@@ -186,6 +193,7 @@ class CoreDB(object):
 
             element.text = value.lower()
 
+            logger.debug(f'setValue( {xpath} -> {element.text} )')
             self._modified = True
 
         elif schema.type.local_name == 'inputNumberListType':
@@ -200,6 +208,7 @@ class CoreDB(object):
 
             element.text = value
 
+            logger.debug(f'setValue( {xpath} -> {element.text} )')
             self._modified = True
 
         elif schema.type.is_decimal():
@@ -237,6 +246,7 @@ class CoreDB(object):
                 return None
 
             element.text = str(decimal)
+            logger.debug(f'setValue( {xpath} -> {element.text} )')
             self._modified = True
 
         # String
@@ -247,6 +257,7 @@ class CoreDB(object):
                 raise ValueError
 
             element.text = value
+            logger.debug(f'setValue( {xpath} -> {element.text} )')
             self._modified = True
 
         self._xmlSchema.assertValid(self._xmlTree)
