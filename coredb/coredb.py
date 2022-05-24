@@ -22,6 +22,10 @@ nsmap = {'': ns}
 _mutex = Lock()
 
 
+class Cancel(Exception):
+    pass
+
+
 class Error(Enum):
     OUT_OF_RANGE = auto()
     INTEGER_ONLY = auto()
@@ -95,6 +99,11 @@ class CoreDB(object):
 
         self._lastError = None
         self._backupTree = None
+
+        if eType == Cancel:
+            return True
+        else: # To make it clear
+            return None
 
     def getValue(self, xpath: str) -> str:
         """Returns specified configuration value.

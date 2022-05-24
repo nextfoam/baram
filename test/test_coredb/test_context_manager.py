@@ -10,6 +10,9 @@ class TestContextManager(unittest.TestCase):
         # turbulentIntensity should be in 0~100
         self.pathSecond = './/initialValues/turbulentIntensity'
 
+    def tearDown(self) -> None:
+        del coredb.CoreDB._instance
+
     def testValidInteger(self):
         self.db.setValue(self.pathFirst, '10')
         with coredb.CoreDB() as db:
@@ -18,8 +21,22 @@ class TestContextManager(unittest.TestCase):
 
         self.assertEqual('10', self.db.getValue(self.pathFirst))
 
-    def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+    def testException(self):
+        self.db.setValue(self.pathFirst, '10')
+        with self.assertRaises(UserWarning):
+            with coredb.CoreDB() as db:
+                db.setValue(self.pathFirst, '20')
+                raise UserWarning
+
+        self.assertEqual('10', self.db.getValue(self.pathFirst))
+
+    def testCancel(self):
+        self.db.setValue(self.pathFirst, '10')
+        with coredb.CoreDB() as db:
+            db.setValue(self.pathFirst, '30')
+            raise coredb.Cancel
+
+        self.assertEqual('10', self.db.getValue(self.pathFirst))
 
 
 if __name__ == '__main__':
