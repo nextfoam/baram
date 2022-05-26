@@ -183,7 +183,7 @@
              <string>off</string>
             </property>
             <attribute name="buttonGroup">
-             <string notr="true">buttonGroup</string>
+             <string notr="true">optionRadioGroup</string>
             </attribute>
            </widget>
           </item>
@@ -193,7 +193,7 @@
              <string>Set Fields</string>
             </property>
             <attribute name="buttonGroup">
-             <string notr="true">buttonGroup</string>
+             <string notr="true">optionRadioGroup</string>
             </attribute>
            </widget>
           </item>
@@ -280,7 +280,7 @@
                 <string>Map Fields</string>
                </property>
                <attribute name="buttonGroup">
-                <string notr="true">buttonGroup</string>
+                <string notr="true">optionRadioGroup</string>
                </attribute>
               </widget>
              </item>
@@ -313,7 +313,7 @@
              <string>Potential Flow</string>
             </property>
             <attribute name="buttonGroup">
-             <string notr="true">buttonGroup</string>
+             <string notr="true">optionRadioGroup</string>
             </attribute>
            </widget>
           </item>
@@ -368,6 +368,6 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup"/>
+  <buttongroup name="optionRadioGroup"/>
  </buttongroups>
 </ui>

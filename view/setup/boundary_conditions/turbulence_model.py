@@ -8,19 +8,20 @@ from .turbulence_k_omega_widget import TurbulenceKOmegaWidget
 from .turbulence_spalart_allmaras_widget import TurbulenceSpalartAllmarasWidget
 
 
-class TurbulenceModel:
-    class MODEL(Enum):
-        K_EPSILON = auto()
-        K_OMEGA = auto()
-        SPALART_ALLMARAS = auto()
+class Model(Enum):
+    K_EPSILON = auto()
+    K_OMEGA = auto()
+    SPALART_ALLMARAS = auto()
 
-    def __init__(self, model=MODEL.SPALART_ALLMARAS):
+
+class TurbulenceModel:
+    def __init__(self, model=Model.K_OMEGA):
         self._model = model
 
     def boundaryConditionWidget(self, parent):
-        if self._model == self.MODEL.K_EPSILON:
+        if self._model == Model.K_EPSILON:
             return TurbulenceKEpsilonWidget(parent)
-        elif self._model == self.MODEL.K_OMEGA:
+        elif self._model == Model.K_OMEGA:
             return TurbulenceKOmegaWidget(parent)
-        elif self._model == self.MODEL.SPALART_ALLMARAS:
+        elif self._model == Model.SPALART_ALLMARAS:
             return TurbulenceSpalartAllmarasWidget(parent)

@@ -4,18 +4,20 @@
 from enum import Enum, auto
 from os import path
 
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QWidget, QFileDialog
 
-from view.widgets.polynomial_dialog import PiecewiseLinearDialog, PolynomialDialog
+from view.widgets.number_input_dialog import PiecewiseLinearDialog, PolynomialDialog
 from .temperature_widget_ui import Ui_temperatureWidget
 
 
-class TemperatureWidget(QWidget):
-    class PROFILE_TYPE(Enum):
-        CONSTANT = 0
-        SPATIAL_DISTRIBUTION = auto()
-        TEMPORAL_DISTRIBUTION = auto()
+class ProfileType(Enum):
+    CONSTANT = 0
+    SPATIAL_DISTRIBUTION = auto()
+    TEMPORAL_DISTRIBUTION = auto()
 
+
+class TemperatureWidget(QWidget):
     def __init__(self, parent):
         super().__init__()
         self._ui = Ui_temperatureWidget()
@@ -37,13 +39,13 @@ class TemperatureWidget(QWidget):
 
     def _profileTypeChanged(self, index):
         self._ui.constant.setVisible(
-            index == self.PROFILE_TYPE.CONSTANT.value)
+            index == ProfileType.CONSTANT.value)
         self._ui.spatialDistribution.setVisible(
-            index == self.PROFILE_TYPE.SPATIAL_DISTRIBUTION.value)
+            index == ProfileType.SPATIAL_DISTRIBUTION.value)
         self._ui.temporalDistribution.setVisible(
-            index == self.PROFILE_TYPE.TEMPORAL_DISTRIBUTION.value)
+            index == ProfileType.TEMPORAL_DISTRIBUTION.value)
 
-        self._parent._resizeDialog(self._ui.groupBox)
+        QTimer.singleShot(0, lambda: self._parent.adjustSize())
 
     def _selectSpatialDistributionFile(self):
         fileName = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), "", self.tr("CSV (*.csv)"))

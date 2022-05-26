@@ -1,10 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from enum import Enum, auto
+
 from PySide6.QtWidgets import QWidget, QFileDialog, QMessageBox
 
+from coredb import coredb
 from .initialization_page_ui import Ui_InitializationPage
 from .option_dialog import OptionDialog
+
+
+class OptionType(Enum):
+    OFF = auto()
+    SET_FIELDS = auto()
+    MAP_FIELDS = auto()
+    POTENTIAL_FLOW = auto()
 
 
 class InitializationPage(QWidget):
@@ -12,6 +22,13 @@ class InitializationPage(QWidget):
         super().__init__()
         self._ui = Ui_InitializationPage()
         self._ui.setupUi(self)
+
+        self._ui.optionRadioGroup.setId(self._ui.off, OptionType.OFF.value)
+        self._ui.optionRadioGroup.setId(self._ui.setFields, OptionType.SET_FIELDS.value)
+        self._ui.optionRadioGroup.setId(self._ui.mapFields, OptionType.MAP_FIELDS.value)
+        self._ui.optionRadioGroup.setId(self._ui.potentialFlow, OptionType.POTENTIAL_FLOW.value)
+
+        self._db = coredb.CoreDB()
 
         self._connectSignalsSlots()
 
@@ -23,10 +40,11 @@ class InitializationPage(QWidget):
         self._ui.selectSourceCase.clicked.connect(self._selectSourceCase)
         self._ui.initialize.clicked.connect(self._initialize)
 
-    def load(self):
-        pass
+    def hideEvent(self, ev):
+        if ev.spontaneous():
+            return
 
-    def save(self):
+    def _load(self):
         pass
 
     def _createOption(self):

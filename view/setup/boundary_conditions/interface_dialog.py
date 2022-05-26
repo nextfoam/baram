@@ -3,37 +3,38 @@
 
 from enum import Enum, auto
 
-from view.widgets.resizable_dialog import ResizableDialog
+from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QDialog
+
 from .interface_dialog_ui import Ui_InterfaceDialog
 from .boundary_radio_group import BoundaryRadioGroup
 
 
-class InterfaceDialog(ResizableDialog):
-    class MODE(Enum):
-        INTERNAL_INTERFACE = 0
-        ROTATIONAL_PERIDDIC = auto()
-        TRANSLATIONAL_PERIODIC = auto()
-        REGION_INTERFACE = auto()
+class Mode(Enum):
+    INTERNAL_INTERFACE = 0
+    ROTATIONAL_PERIODIC = auto()
+    TRANSLATIONAL_PERIODIC = auto()
+    REGION_INTERFACE = auto()
 
-    def __init__(self):
+
+class InterfaceDialog(QDialog):
+    def __init__(self, bcid):
         super().__init__()
         self._ui = Ui_InterfaceDialog()
         self._ui.setupUi(self)
 
         self._boundaryRadios = BoundaryRadioGroup()
+        self._boundaryRadios.setup(self._ui.boundaryList, "cyclicAMI")
 
-        self._setup()
         self._connectSignalsSlots()
 
         self._modeChanged(0)
-
-    def _setup(self):
-        self._boundaryRadios.setup(self._ui.boundaryList, "cyclicAMI")
 
     def _connectSignalsSlots(self):
         self._ui.mode.currentIndexChanged.connect(self._modeChanged)
 
     def _modeChanged(self, index):
-        self._ui.rotationalPeriodic.setVisible(index == self.MODE.ROTATIONAL_PERIDDIC.value)
-        self._ui.translationalPeriodic.setVisible(index == self.MODE.TRANSLATIONAL_PERIODIC.value)
-        self._resizeDialog(self._ui.dialogContents)
+        self._ui.rotationalPeriodic.setVisible(index == Mode.ROTATIONAL_PERIODIC.value)
+        self._ui.translationalPeriodic.setVisible(index == Mode.TRANSLATIONAL_PERIODIC.value)
+
+        QTimer.singleShot(0, lambda: self.adjustSize())

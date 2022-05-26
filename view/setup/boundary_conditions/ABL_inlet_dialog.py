@@ -7,7 +7,7 @@ from .ABL_inlet_dialog_ui import Ui_ABLInletDialog
 
 
 class ABLInletDialog(QDialog):
-    def __init__(self):
+    def __init__(self, bcid):
         super().__init__()
         self._ui = Ui_ABLInletDialog()
         self._ui.setupUi(self)

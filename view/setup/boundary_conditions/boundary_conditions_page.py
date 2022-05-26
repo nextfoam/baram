@@ -6,7 +6,8 @@ from enum import Enum, auto
 from PySide6.QtWidgets import QWidget, QTableWidgetItem, QHeaderView, QComboBox
 from PySide6.QtCore import Qt
 
-from view.setup.boundary_conditions.boundary_conditions_page_ui import Ui_BoundaryConditionsPage
+from coredb import coredb
+from .boundary_conditions_page_ui import Ui_BoundaryConditionsPage
 from .velocity_inlet_dialog import VelocityInletDialog
 from .flow_rate_inlet_dialog import FlowRateInletDialog
 from .pressure_inlet_dialog import PressureInletDialog
@@ -26,188 +27,153 @@ from .fan_dialog import FanDialog
 from .cyclic_dialog import CyclicDialog
 
 
-class BoundaryConditionsPage(QWidget):
-    class BOUNDARY_TYPE(Enum):
-        # Inlet
-        VELOCITY_INLET = auto()
-        FLOW_RATE_INLET = auto()
-        PRESSURE_INLET = auto()
-        ABL_INLET = auto()
-        OPEN_CHANNEL_INLET = auto()
-        FREE_STREAM = auto()
-        FAR_FIELD_RIEMANN = auto()
-        SUBSONIC_INFLOW = auto()
-        SUPERSONIC_INFLOW = auto()
-        # Outlet
-        PRESSURE_OUTLET = auto()
-        OPEN_CHANNEL_OUTLET = auto()
-        OUTFLOW = auto()
-        SUBSONIC_OUTFLOW = auto()
-        SUPERSONIC_OUTFLOW = auto()
-        # Wall
-        WALL = auto()
-        THERMO_COUPLED_WALL = auto()
-        POROUS_JUMP = auto()
-        FAN = auto()
-        # Internal
-        SYMMETRY = auto()
-        INTERFACE = auto()
-        EMPTY = auto()
-        CYCLIC = auto()
-        WEDGE = auto()
+class BoundaryType(Enum):
+    # Inlet
+    VELOCITY_INLET	    = "velocityInlet"
+    FLOW_RATE_INLET	    = "flowRateInlet"
+    PRESSURE_INLET	    = "pressureInlet"
+    ABL_INLET	        = "ablInlet"
+    OPEN_CHANNEL_INLET  = "openChannelInlet"
+    FREE_STREAM	        = "freeStream"
+    FAR_FIELD_RIEMANN	= "farFieldRiemann"
+    SUBSONIC_INFLOW	    = "subsonicInflow"
+    SUPERSONIC_INFLOW	= "supersonicInflow"
+    # Outlet
+    PRESSURE_OUTLET	    = "pressureOutlet"
+    OPEN_CHANNEL_OUTLET = "openChannelOutlet"
+    OUTFLOW	            = "outflow"
+    SUBSONIC_OUTFLOW	= "subsonicOutflow"
+    SUPERSONIC_OUTFLOW	= "supersonicOutflow"
+    # Wall
+    WALL	            = "wall"
+    THERMO_COUPLED_WALL	= "thermoCoupledWall"
+    POROUS_JUMP	        = "porousJump"
+    FAN	                = "fan"
+    # Internal
+    SYMMETRY	        = "symmetry"
+    INTERFACE	        = "interface"
+    EMPTY	            = "empty"
+    CYCLIC	            = "cyclic"
+    WEDGE	            = "wedge"
 
+
+DIALOGS = {
+    BoundaryType.VELOCITY_INLET: VelocityInletDialog,
+    BoundaryType.FLOW_RATE_INLET: FlowRateInletDialog,
+    BoundaryType.PRESSURE_INLET: PressureInletDialog,
+    BoundaryType.ABL_INLET: ABLInletDialog,
+    BoundaryType.OPEN_CHANNEL_INLET: OpenChannelInletDialog,
+    BoundaryType.FREE_STREAM: FreeStreamDialog,
+    BoundaryType.FAR_FIELD_RIEMANN: FarFieldRiemannDialog,
+    BoundaryType.SUBSONIC_INFLOW: SubsonicInflowDialog,
+    BoundaryType.SUPERSONIC_INFLOW: SupersonicInflowDialog,
+    BoundaryType.PRESSURE_OUTLET: PressureOutletDialog,
+    BoundaryType.OPEN_CHANNEL_OUTLET: OpenChannelOutletDialog,
+    BoundaryType.OUTFLOW: None,
+    BoundaryType.SUBSONIC_OUTFLOW: SubsonicOutflowDialog,
+    BoundaryType.SUPERSONIC_OUTFLOW: None,
+    BoundaryType.WALL: WallDialog,
+    BoundaryType.THERMO_COUPLED_WALL: None,
+    BoundaryType.POROUS_JUMP: PorousJumpDialog,
+    BoundaryType.FAN: FanDialog,
+    BoundaryType.SYMMETRY: None,
+    BoundaryType.INTERFACE: InterfaceDialog,
+    BoundaryType.EMPTY: None,
+    BoundaryType.CYCLIC: CyclicDialog,
+    BoundaryType.WEDGE: None,
+}
+
+
+class ListItemIndex(Enum):
+    ID = 0
+    NAME = auto()
+    TYPE = auto()
+
+
+class BoundaryConditionsPage(QWidget):
     def __init__(self):
         super().__init__()
         self._ui = Ui_BoundaryConditionsPage()
         self._ui.setupUi(self)
 
-        self._boundaryTypes = None
-        self._setup()
+        self._boundaries = None
+        self._db = coredb.CoreDB()
+
         self._connectSignalsSlots()
 
-    def load(self):
-        boundaries = [
-            {
-                "id": "b1",
-                "name": "boundary1",
-                "type": self.BOUNDARY_TYPE.FLOW_RATE_INLET,
-            },
-            {
-                "id": "b2",
-                "name": "boundary2",
-                "type": self.BOUNDARY_TYPE.OPEN_CHANNEL_OUTLET,
-            },
-        ]
-
-        self._ui.list.setRowCount(len(boundaries))
         header = self._ui.list.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
 
-        for i in range(len(boundaries)):
-            self._ui.list.setItem(i, 0, QTableWidgetItem(boundaries[i]["name"]))
-            self._ui.list.setCellWidget(i, 1, self._createComboBox(boundaries[i]["type"]))
+        self._load()
 
-    def save(self):
-        pass
+    def hideEvent(self, ev):
+        if ev.spontaneous():
+            return
 
-    def _setup(self):
-        self._boundaryTypes = {
-            self.BOUNDARY_TYPE.VELOCITY_INLET: {
-                "text": self.tr("Velocity Inlet"),
-                "dialog": VelocityInletDialog
-            },
-            self.BOUNDARY_TYPE.FLOW_RATE_INLET: {
-                "text": self.tr("Flow Rate Inlet"),
-                "dialog": FlowRateInletDialog
-            },
-            self.BOUNDARY_TYPE.PRESSURE_INLET: {
-                "text": self.tr("Pressure Inlet"),
-                "dialog": PressureInletDialog
-            },
-            self.BOUNDARY_TYPE.ABL_INLET: {
-                "text": self.tr("ABL Inlet"),
-                "dialog": ABLInletDialog
-            },
-            self.BOUNDARY_TYPE.OPEN_CHANNEL_INLET: {
-                "text": self.tr("Open Channel Inlet"),
-                "dialog": OpenChannelInletDialog
-            },
-            self.BOUNDARY_TYPE.FREE_STREAM: {
-                "text": self.tr("Free Stream"),
-                "dialog": FreeStreamDialog
-            },
-            self.BOUNDARY_TYPE.FAR_FIELD_RIEMANN: {
-                "text": self.tr("Far-Field Riemann"),
-                "dialog": FarFieldRiemannDialog
-            },
-            self.BOUNDARY_TYPE.SUBSONIC_INFLOW: {
-                "text": self.tr("Subsonic Inflow"),
-                "dialog": SubsonicInflowDialog
-            },
-            self.BOUNDARY_TYPE.SUPERSONIC_INFLOW: {
-                "text": self.tr("Supersonic Inflow"),
-                "dialog": SupersonicInflowDialog
-            },
-            self.BOUNDARY_TYPE.PRESSURE_OUTLET: {
-                "text": self.tr("Pressure Outlet"),
-                "dialog": PressureOutletDialog
-            },
-            self.BOUNDARY_TYPE.OPEN_CHANNEL_OUTLET: {
-                "text": self.tr("OpenChannel Outet"),
-                "dialog": OpenChannelOutletDialog
-            },
-            self.BOUNDARY_TYPE.OUTFLOW: {
-                "text": self.tr("Outflow"),
-                "dialog": None
-            },
-            self.BOUNDARY_TYPE.SUBSONIC_OUTFLOW: {
-                "text": self.tr("Subsonic Outflow"),
-                "dialog": SubsonicOutflowDialog
-            },
-            self.BOUNDARY_TYPE.SUPERSONIC_OUTFLOW: {
-                "text": self.tr("Supersonic Outflow"),
-                "dialog": None
-            },
-            self.BOUNDARY_TYPE.WALL: {
-                "text": self.tr("Wall"),
-                "dialog": WallDialog
-            },
-            self.BOUNDARY_TYPE.THERMO_COUPLED_WALL: {
-                "text": self.tr("Thermo-Coupled Wall"),
-                "dialog": None
-            },
-            self.BOUNDARY_TYPE.POROUS_JUMP: {
-                "text": self.tr("Porous Jump"),
-                "dialog": PorousJumpDialog
-            },
-            self.BOUNDARY_TYPE.FAN: {
-                "text": self.tr("FAN"),
-                "dialog": FanDialog
-            },
-            self.BOUNDARY_TYPE.SYMMETRY: {
-                "text": self.tr("Symmetry"),
-                "dialog": None
-            },
-            self.BOUNDARY_TYPE.INTERFACE: {
-                "text": self.tr("Interface"),
-                "dialog": InterfaceDialog
-            },
-            self.BOUNDARY_TYPE.EMPTY: {
-                "text": self.tr("Empty"),
-                "dialog": None
-            },
-            self.BOUNDARY_TYPE.CYCLIC: {
-                "text": self.tr("Cyclic"),
-                "dialog": CyclicDialog
-            },
-            self.BOUNDARY_TYPE.WEDGE: {
-                "text": self.tr("Wedge"),
-                "dialog": None
-            },
-        }
-
-    def _createComboBox(self, boundaryType):
+    def _createComboBox(self, currentType):
         combo = QComboBox()
-        for type_ in self._boundaryTypes:
-            combo.addItem(self._boundaryTypes[type_]["text"], type_)
-            if type_ == boundaryType:
-                combo.setCurrentText(self._boundaryTypes[type_]["text"])
+
+        # Inlet
+        self._addComboItem(combo, currentType, BoundaryType.VELOCITY_INLET, self.tr("Velocity Inlet"))
+        self._addComboItem(combo, currentType, BoundaryType.FLOW_RATE_INLET, self.tr("Flow Rate Inlet"))
+        self._addComboItem(combo, currentType, BoundaryType.PRESSURE_INLET, self.tr("Pressure Inlet"))
+        self._addComboItem(combo, currentType, BoundaryType.ABL_INLET, self.tr("ABL Inlet"))
+        self._addComboItem(combo, currentType, BoundaryType.OPEN_CHANNEL_INLET, self.tr("Open Channel Inlet"))
+        self._addComboItem(combo, currentType, BoundaryType.FREE_STREAM, self.tr("Free Stream"))
+        self._addComboItem(combo, currentType, BoundaryType.FAR_FIELD_RIEMANN, self.tr("Far-Field Riemann"))
+        self._addComboItem(combo, currentType, BoundaryType.SUBSONIC_INFLOW, self.tr("Subsonic Inflow"))
+        self._addComboItem(combo, currentType, BoundaryType.SUPERSONIC_INFLOW, self.tr("Supersonic Inflow"))
+        # Outlet, BoundaryType
+        self._addComboItem(combo, currentType, BoundaryType.PRESSURE_OUTLET, self.tr("Pressure Outlet"))
+        self._addComboItem(combo, currentType, BoundaryType.OPEN_CHANNEL_OUTLET, self.tr("OpenChannel Outlet"))
+        self._addComboItem(combo, currentType, BoundaryType.OUTFLOW, self.tr("Outflow"))
+        self._addComboItem(combo, currentType, BoundaryType.SUBSONIC_OUTFLOW, self.tr("Subsonic Outflow"))
+        self._addComboItem(combo, currentType, BoundaryType.SUPERSONIC_OUTFLOW, self.tr("Supersonic Outflow"))
+        # Wall, BoundaryType
+        self._addComboItem(combo, currentType, BoundaryType.WALL, self.tr("Wall"))
+        self._addComboItem(combo, currentType, BoundaryType.THERMO_COUPLED_WALL, self.tr("Thermo-Coupled Wall"))
+        self._addComboItem(combo, currentType, BoundaryType.POROUS_JUMP, self.tr("Porous Jump"))
+        self._addComboItem(combo, currentType, BoundaryType.FAN, self.tr("FAN"))
+        # Internal, BoundaryType
+        self._addComboItem(combo, currentType, BoundaryType.SYMMETRY, self.tr("Symmetry"))
+        self._addComboItem(combo, currentType, BoundaryType.INTERFACE, self.tr("Interface"))
+        self._addComboItem(combo, currentType, BoundaryType.EMPTY, self.tr("Empty"))
+        self._addComboItem(combo, currentType, BoundaryType.CYCLIC, self.tr("Cyclic"))
+        self._addComboItem(combo, currentType, BoundaryType.WEDGE, self.tr("Wedge"))
 
         return combo
+
+    def _addComboItem(self, combo, current, boundaryType, text):
+        combo.addItem(text, boundaryType)
+        if current == boundaryType.value:
+            combo.setCurrentIndex(combo.count() - 1)
 
     def _connectSignalsSlots(self):
         self._ui.list.currentCellChanged.connect(self._boundarySelected)
         self._ui.list.itemDoubleClicked.connect(self._edit)
         self._ui.edit.clicked.connect(self._edit)
 
+    def _load(self):
+        self._db.addBoundaryCondition("boundary1", "cyclic")
+        self._db.addBoundaryCondition("boundary2", "patch")
+
+        self._ui.list.clear()
+
+        self._boundaries = self._db.getBoundaryConditions()
+        self._ui.list.setRowCount(len(self._boundaries))
+
+        for i in range(len(self._boundaries)):
+            self._ui.list.setItem(i, 0, QTableWidgetItem(self._boundaries[i][ListItemIndex.NAME.value]))
+            self._ui.list.setCellWidget(i, 1, self._createComboBox(self._boundaries[i][ListItemIndex.TYPE.value]))
+
     def _boundarySelected(self, row, column):
-        boundaryType = self._ui.list.cellWidget(self._ui.list.currentRow(), 1).currentData(Qt.UserRole)
-        self._ui.edit.setEnabled(column == 0 and self._boundaryTypes[boundaryType]["dialog"] is not None)
+        dialogClass = DIALOGS[self._ui.list.cellWidget(row, 1).currentData(Qt.UserRole)]
+        self._ui.edit.setEnabled(column == 0 and dialogClass is not None)
 
     def _edit(self):
-        boundaryType = self._ui.list.cellWidget(self._ui.list.currentRow(), 1).currentData(Qt.UserRole)
-        dialogClass = self._boundaryTypes[boundaryType]["dialog"]
+        currentRow = self._ui.list.currentRow()
+        dialogClass = DIALOGS[self._ui.list.cellWidget(currentRow, 1).currentData(Qt.UserRole)]
         if dialogClass is not None:
-            dialog = self._boundaryTypes[boundaryType]["dialog"]()
-            dialog.exec()
+            self._dialog = dialogClass(self._boundaries[currentRow][ListItemIndex.ID.value])
+            self._dialog.open()

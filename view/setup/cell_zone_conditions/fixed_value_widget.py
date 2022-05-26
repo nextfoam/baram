@@ -17,8 +17,5 @@ class FixedValueWidget(QWidget):
         self._ui = Ui_FixedValueWidget()
         self._ui.setupUi(self)
 
-        self._setup(texts)
-
-    def _setup(self, texts):
         self._ui.groupBox.setTitle(texts["title"])
         self._ui.label.setText(texts["label"])

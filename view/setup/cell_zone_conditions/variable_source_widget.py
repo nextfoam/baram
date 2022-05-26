@@ -5,16 +5,17 @@ from enum import Enum, auto
 
 from PySide6.QtWidgets import QWidget
 
+from view.widgets.number_input_dialog import PiecewiseLinearDialog, PolynomialDialog
 from .variable_source_widget_ui import Ui_VariableSourceWidget
-from view.widgets.polynomial_dialog import PiecewiseLinearDialog, PolynomialDialog
+
+
+class TemporalProfileType(Enum):
+    CONSTANT = 0
+    PIECEWISE_LINEAR = auto()
+    POLYNOMIAL = auto()
 
 
 class VariableSourceWidget(QWidget):
-    class TEMPORAL_PROFILE_TYPE(Enum):
-        CONSTANT = 0
-        PIECEWISE_LINEAR = auto()
-        POLYNOMIAL = auto()
-
     def __init__(self, title):
         super().__init__()
         self._ui = Ui_VariableSourceWidget()
@@ -34,18 +35,18 @@ class VariableSourceWidget(QWidget):
             self._temporalProfileTypeChanged(self._ui.temporalProfileType.currentIndex())
 
     def _temporalProfileTypeChanged(self, index):
-        self._ui.edit.setEnabled(index != self.TEMPORAL_PROFILE_TYPE.CONSTANT.value)
-        self._ui.constantValue.setEnabled(index == self.TEMPORAL_PROFILE_TYPE.CONSTANT.value)
+        self._ui.edit.setEnabled(index != TemporalProfileType.CONSTANT.value)
+        self._ui.constantValue.setEnabled(index == TemporalProfileType.CONSTANT.value)
 
     def _edit(self):
         temporalProfileType = self._ui.temporalProfileType.currentIndex()
-        if temporalProfileType == self.TEMPORAL_PROFILE_TYPE.PIECEWISE_LINEAR.value:
+        if temporalProfileType == TemporalProfileType.PIECEWISE_LINEAR.value:
             if self._ui.groupBox.title() == "Energy":
                 dialog = PiecewiseLinearDialog(self.tr("Piecewise Linear"), [self.tr("t"), self.tr("Energy")])
                 dialog.exec()
             else:
                 dialog = PiecewiseLinearDialog(self.tr("Piecewise Linear"), [self.tr("t"), self.tr("Flow Rate")])
                 dialog.exec()
-        elif temporalProfileType == self.TEMPORAL_PROFILE_TYPE.POLYNOMIAL.value:
+        elif temporalProfileType == TemporalProfileType.POLYNOMIAL.value:
             dialog = PolynomialDialog(self.tr("Polynomial"))
             dialog.exec()

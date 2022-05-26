@@ -6,6 +6,7 @@ from enum import Enum
 from PySide6.QtWidgets import QWidget, QDialog, QMessageBox
 from PySide6.QtCore import Qt
 
+from coredb import coredb
 from .monitors_page_ui import Ui_MonitorsPage
 from .force_dialog import ForceDialog
 from .point_dialog import PointDialog
@@ -13,13 +14,14 @@ from .surface_dialog import SurfaceDialog
 from .volume_dialog import VolumeDialog
 
 
+class Button(Enum):
+    ADD = -2
+    EDIT = -3
+    DELETE = -4
+
+
 class MonitorsPage(QWidget):
     class MonitorTarget:
-        class BUTTON(Enum):
-            ADD = -2
-            EDIT = -3
-            DELETE = -4
-
         def __init__(self, parent, name, listView, buttonGroup, prefix, addSlot, editSlot, deleteSlot):
             self._parent = parent
             self._prefix = prefix
@@ -33,13 +35,13 @@ class MonitorsPage(QWidget):
 
         def _connectSignalsSlots(self):
             self._list.currentItemChanged.connect(self._itemSelected)
-            self._buttonGroup.button(self.BUTTON.ADD.value).clicked.connect(self._add)
-            self._buttonGroup.button(self.BUTTON.EDIT.value).clicked.connect(self._edit)
-            self._buttonGroup.button(self.BUTTON.DELETE.value).clicked.connect(self._delete)
+            self._buttonGroup.button(Button.ADD.value).clicked.connect(self._add)
+            self._buttonGroup.button(Button.EDIT.value).clicked.connect(self._edit)
+            self._buttonGroup.button(Button.DELETE.value).clicked.connect(self._delete)
 
         def _itemSelected(self, item):
-            self._buttonGroup.button(self.BUTTON.EDIT.value).setEnabled(True)
-            self._buttonGroup.button(self.BUTTON.DELETE.value).setEnabled(True)
+            self._buttonGroup.button(Button.EDIT.value).setEnabled(True)
+            self._buttonGroup.button(Button.DELETE.value).setEnabled(True)
 
         def _add(self):
             name = self._addSlot(self._newName())
@@ -71,6 +73,8 @@ class MonitorsPage(QWidget):
         self._ui = Ui_MonitorsPage()
         self._ui.setupUi(self)
 
+        self._db = coredb.CoreDB()
+
         self.forces = self.MonitorTarget(self, "force", self._ui.forces, self._ui.forceButtons, "Force",
                                            self._addForce, self._editForce, self._deleteForce)
         self.points = self.MonitorTarget(self, "point", self._ui.points, self._ui.pointButtons, "point-mon",
@@ -80,11 +84,12 @@ class MonitorsPage(QWidget):
         self.Volumes = self.MonitorTarget(self, "volume", self._ui.volumes, self._ui.volumeButtons, "volume-mon",
                                             self._addVolume, self._editVolume, self._deleteVolume)
 
-    def load(self):
-        pass
+    def hideEvent(self, ev):
+        if ev.spontaneous():
+            return
 
-    def save(self):
-        pass
+    def _load(self):
+        return
 
     def _addForce(self, name):
         dialog = ForceDialog(name)

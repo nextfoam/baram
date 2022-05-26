@@ -51,18 +51,11 @@ class MainWindow(QMainWindow):
         if fileName[0]:
             self._meshDock.showMesh(fileName[0])
 
-    def _changeForm(self, current, previous):
-        if previous is not None:
-            index = self._menuView.paneIndex(previous)
-            if index > 0:
-                previousPage = self._contentView.page(index)
-                previousPage.save()
-
+    def _changeForm(self, current):
         currentPane = self._menuView.currentPane()
         if currentPane.index < 0:
             newPage = currentPane.createPage()
             currentPane.index = self._contentView.addPage(newPage)
-            newPage.load()
 
         self._contentView.changePane(currentPane.index)
 

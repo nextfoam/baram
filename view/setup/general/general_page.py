@@ -5,9 +5,9 @@ import logging
 
 from PySide6.QtWidgets import QWidget
 
-from view.setup.general.general_page_ui import Ui_GeneralPage
-
 from coredb import coredb
+from .general_page_ui import Ui_GeneralPage
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,23 +21,21 @@ class GeneralPage(QWidget):
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
+        self._load()
 
     def hideEvent(self, ev):
         if ev.spontaneous():
             return
 
-        if self._ui.transient_2.isChecked():
+        if self._ui.transient_.isChecked():
             self._db.setValue(self.MODEL_XPATH, 'true')
         else:
             self._db.setValue(self.MODEL_XPATH, 'false')
 
-    def showEvent(self, ev):
-        if ev.spontaneous():
-            return
-
+    def _load(self):
         timeTransient = self._db.getValue(self.MODEL_XPATH)
         if timeTransient == 'true':
-            self._ui.transient_2.setChecked(True)
+            self._ui.transient_.setChecked(True)
         else:
             self._ui.steady.setChecked(True)
 

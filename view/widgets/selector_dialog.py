@@ -4,7 +4,7 @@
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QListWidgetItem
 from PySide6.QtCore import Qt
 
-from view.widgets.selector_dialog_ui import Ui_SelectorDialog
+from .selector_dialog_ui import Ui_SelectorDialog
 
 
 class SelectorDialog(QDialog):

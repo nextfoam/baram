@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, auto
+from enum import Flag, auto
+
+
+class Phase(Flag):
+    GAS = auto()
+    LIQUID = auto()
+    SOLID = auto()
+    FLUID = GAS | LIQUID
 
 
 class Material:
-    class PHASE(Enum):
-        Gas = auto()
-        Liquid = auto()
-        Solid = auto()
-
     def __init__(self):
         self._name = None
         self._phase = None

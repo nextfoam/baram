@@ -17,12 +17,5 @@ class ConstantSourceWidget(QWidget):
         self._ui = Ui_ConstantSourceWidget()
         self._ui.setupUi(self)
 
-        self._setup(texts)
-        self._connectSignalsSlots()
-
-    def _setup(self, texts):
         self._ui.groupBox.setTitle(texts["title"])
         self._ui.label.setText(texts["label"])
-
-    def _connectSignalsSlots(self):
-        pass

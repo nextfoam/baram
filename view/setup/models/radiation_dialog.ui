@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>RadiationModelDialog</class>
- <widget class="QDialog" name="RadiationModelDialog">
+ <class>RadiationDialog</class>
+ <widget class="QDialog" name="RadiationDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -61,6 +61,9 @@
               <property name="text">
                <string>Off</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">modelRadioGroup</string>
+              </attribute>
              </widget>
             </item>
             <item>
@@ -68,6 +71,9 @@
               <property name="text">
                <string>P1</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">modelRadioGroup</string>
+              </attribute>
              </widget>
             </item>
             <item>
@@ -75,6 +81,9 @@
               <property name="text">
                <string>Discrete Ordinates(DO)</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">modelRadioGroup</string>
+              </attribute>
              </widget>
             </item>
            </layout>
@@ -303,7 +312,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>RadiationModelDialog</receiver>
+   <receiver>RadiationDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -319,7 +328,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>RadiationModelDialog</receiver>
+   <receiver>RadiationDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -333,4 +342,7 @@
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="modelRadioGroup"/>
+ </buttongroups>
 </ui>

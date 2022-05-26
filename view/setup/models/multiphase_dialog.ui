@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MultiphaseModelDialog</class>
- <widget class="QDialog" name="MultiphaseModelDialog">
+ <class>MultiphaseDialog</class>
+ <widget class="QDialog" name="MultiphaseDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -25,13 +25,19 @@
         <property name="text">
          <string>Off</string>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">modelRadioGroup</string>
+        </attribute>
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="VOF">
+       <widget class="QRadioButton" name="volumeOfFluid">
         <property name="text">
          <string>Volume of Fluid</string>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">modelRadioGroup</string>
+        </attribute>
        </widget>
       </item>
       <item>
@@ -39,6 +45,9 @@
         <property name="text">
          <string>Mixture (cavitation)</string>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">modelRadioGroup</string>
+        </attribute>
        </widget>
       </item>
      </layout>
@@ -74,7 +83,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>MultiphaseModelDialog</receiver>
+   <receiver>MultiphaseDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -90,7 +99,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>MultiphaseModelDialog</receiver>
+   <receiver>MultiphaseDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -104,4 +113,7 @@
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="modelRadioGroup"/>
+ </buttongroups>
 </ui>

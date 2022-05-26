@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PolynomialDialog</class>
- <widget class="QDialog" name="PolynomialDialog">
+ <class>NumberInputDialog</class>
+ <widget class="QDialog" name="NumberInputDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>252</width>
+    <width>279</width>
     <height>300</height>
    </rect>
   </property>
@@ -45,7 +45,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>234</width>
+        <width>261</width>
         <height>186</height>
        </rect>
       </property>
@@ -159,7 +159,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>PolynomialDialog</receiver>
+   <receiver>NumberInputDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -175,7 +175,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>PolynomialDialog</receiver>
+   <receiver>NumberInputDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

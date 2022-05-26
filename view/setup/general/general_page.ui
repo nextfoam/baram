@@ -66,7 +66,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="transient_2">
+       <widget class="QRadioButton" name="transient_">
         <property name="text">
          <string>Transient</string>
         </property>

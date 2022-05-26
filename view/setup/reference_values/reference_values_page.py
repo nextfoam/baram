@@ -3,6 +3,7 @@
 
 from PySide6.QtWidgets import QWidget
 
+from coredb import coredb
 from .reference_values_page_ui import Ui_ReferenceValuesPage
 
 
@@ -12,8 +13,12 @@ class ReferenceValuesPage(QWidget):
         self._ui = Ui_ReferenceValuesPage()
         self._ui.setupUi(self)
 
-    def load(self):
-        pass
+        self._db = coredb.CoreDB()
+        self._load()
 
-    def save(self):
+    def hideEvent(self, ev):
+        if ev.spontaneous():
+            return
+
+    def _load(self):
         pass

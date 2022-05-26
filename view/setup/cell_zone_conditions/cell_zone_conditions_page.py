@@ -3,7 +3,8 @@
 
 from PySide6.QtWidgets import QWidget
 
-from view.setup.cell_zone_conditions.cell_zone_conditions_page_ui import Ui_CellZoneConditionsPage
+from coredb import coredb
+from .cell_zone_conditions_page_ui import Ui_CellZoneConditionsPage
 from .region_widget import RegionWidget
 from .operating_conditions_dialog import OperatingConditionsDialog
 from .cell_zone_condition_dialog import CellZoneConditionDialog
@@ -15,31 +16,18 @@ class CellZoneConditionsPage(QWidget):
         self._ui = Ui_CellZoneConditionsPage()
         self._ui.setupUi(self)
 
+        self._db = coredb.CoreDB()
+
         self._regions = {}
         self._currentRegion = None
         self._regionsLayout = self._ui.regions.layout()
 
         self._connectSignalsSlots()
+        self._load()
 
-    def load(self):
-        regions = [
-            {
-                "id": "r1",
-                "name": "region1",
-                "cellZones": {"zone1-1", "zone1-2"}
-            },
-            {
-                "id": "r2",
-                "name": "region2",
-                "cellZones": {"zone2-1", "zone2-2"}
-            },
-        ]
-
-        for region in regions:
-            self._addRegion(region)
-
-    def save(self):
-        pass
+    def hideEvent(self, ev):
+        if ev.spontaneous():
+            return
 
     def regionSelected(self, regionId):
         self._currentRegion = regionId
@@ -58,6 +46,23 @@ class CellZoneConditionsPage(QWidget):
     def _connectSignalsSlots(self):
         self._ui.operatingConditions.clicked.connect(self._operatingConditions)
         self._ui.edit.clicked.connect(self.edit)
+
+    def _load(self):
+        regions = [
+            {
+                "id": "r1",
+                "name": "region1",
+                "cellZones": {"zone1-1", "zone1-2"}
+            },
+            {
+                "id": "r2",
+                "name": "region2",
+                "cellZones": {"zone2-1", "zone2-2"}
+            },
+        ]
+
+        for region in regions:
+            self._addRegion(region)
 
     def _addRegion(self, region):
         id_ = region["id"]

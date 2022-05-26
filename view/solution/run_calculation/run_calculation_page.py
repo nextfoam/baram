@@ -3,6 +3,7 @@
 
 from PySide6.QtWidgets import QWidget
 
+from coredb import coredb
 from .run_calculation_page_ui import Ui_RunCalculationPage
 
 
@@ -12,13 +13,18 @@ class RunCalculationPage(QWidget):
         self._ui = Ui_RunCalculationPage()
         self._ui.setupUi(self)
 
+        self._db = coredb.CoreDB()
+
         self._connectSignalsSlots()
+
+        self._load()
+
+    def hideEvent(self, ev):
+        if ev.spontaneous():
+            return
 
     def _connectSignalsSlots(self):
         pass
 
-    def load(self):
-        pass
-
-    def save(self):
-        pass
+    def _load(self):
+        return

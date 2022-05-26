@@ -9,10 +9,11 @@ from .fan_dialog_ui import Ui_FanDialog
 
 
 class FanDialog(QDialog):
-    def __init__(self):
+    def __init__(self, bcid):
         super().__init__()
         self._ui = Ui_FanDialog()
         self._ui.setupUi(self)
+
         self._connectSignalsSlots()
 
     def _connectSignalsSlots(self):

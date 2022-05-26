@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TurbulenceModelDialog</class>
- <widget class="QDialog" name="TurbulenceModelDialog">
+ <class>TurbulenceDialog</class>
+ <widget class="QDialog" name="TurbulenceDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -52,6 +52,9 @@
            <property name="text">
             <string>Laminar</string>
            </property>
+           <attribute name="buttonGroup">
+            <string notr="true">modelRadioGroup</string>
+           </attribute>
           </widget>
          </item>
          <item>
@@ -59,6 +62,9 @@
            <property name="text">
             <string>Spalart-Allmaras</string>
            </property>
+           <attribute name="buttonGroup">
+            <string notr="true">modelRadioGroup</string>
+           </attribute>
           </widget>
          </item>
          <item>
@@ -66,6 +72,9 @@
            <property name="text">
             <string>k-epsilon</string>
            </property>
+           <attribute name="buttonGroup">
+            <string notr="true">modelRadioGroup</string>
+           </attribute>
           </widget>
          </item>
          <item>
@@ -73,6 +82,9 @@
            <property name="text">
             <string>k-omega</string>
            </property>
+           <attribute name="buttonGroup">
+            <string notr="true">modelRadioGroup</string>
+           </attribute>
           </widget>
          </item>
          <item>
@@ -80,6 +92,9 @@
            <property name="text">
             <string>LES</string>
            </property>
+           <attribute name="buttonGroup">
+            <string notr="true">modelRadioGroup</string>
+           </attribute>
           </widget>
          </item>
         </layout>
@@ -114,6 +129,9 @@
               <property name="text">
                <string>Standard</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">kEpsilonRadioGroup</string>
+              </attribute>
              </widget>
             </item>
             <item>
@@ -121,6 +139,9 @@
               <property name="text">
                <string>RNG</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">kEpsilonRadioGroup</string>
+              </attribute>
              </widget>
             </item>
             <item>
@@ -128,6 +149,9 @@
               <property name="text">
                <string>Realizable</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">kEpsilonRadioGroup</string>
+              </attribute>
              </widget>
             </item>
            </layout>
@@ -144,6 +168,9 @@
               <property name="text">
                <string>Standard Wall Functions</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">nearWallTreatmentRadioGroup</string>
+              </attribute>
              </widget>
             </item>
             <item>
@@ -151,6 +178,9 @@
               <property name="text">
                <string>Enhanced Wall Treatment (two layer)</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">nearWallTreatmentRadioGroup</string>
+              </attribute>
              </widget>
             </item>
            </layout>
@@ -214,7 +244,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>TurbulenceModelDialog</receiver>
+   <receiver>TurbulenceDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -230,7 +260,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>TurbulenceModelDialog</receiver>
+   <receiver>TurbulenceDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -244,4 +274,9 @@
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="modelRadioGroup"/>
+  <buttongroup name="kEpsilonRadioGroup"/>
+  <buttongroup name="nearWallTreatmentRadioGroup"/>
+ </buttongroups>
 </ui>

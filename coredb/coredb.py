@@ -470,7 +470,9 @@ class CoreDB(object):
 
     def getBoundaryConditions(self) -> list[(int, str)]:
         elements = self._xmlTree.findall(f'.//boundaryConditions/boundaryCondition', namespaces=nsmap)
-        return [(int(e.attrib['bcid']), e.find('name', namespaces=nsmap).text) for e in elements]
+        return [(int(e.attrib['bcid']),
+                 e.find('name', namespaces=nsmap).text,
+                 e.find('physicalType', namespaces=nsmap).text) for e in elements]
 
     def addForceMonitor(self) -> str:
         names = self.getForceMonitors()

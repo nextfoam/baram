@@ -3,16 +3,18 @@
 
 from enum import Enum, auto
 
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QWidget
 
 from .turbulence_spalart_allmaras_widget_ui import Ui_turbulenceSpalartAllmarasWidget
 
 
-class TurbulenceSpalartAllmarasWidget(QWidget):
-    class SPECIFICATION_METHOD(Enum):
-        MODIFIED_TURBULENT_VISCOSITY = 0
-        TURBULENT_VISCOSITY_RATIO = auto()
+class SpecificationMethod(Enum):
+    MODIFIED_TURBULENT_VISCOSITY = 0
+    TURBULENT_VISCOSITY_RATIO = auto()
 
+
+class TurbulenceSpalartAllmarasWidget(QWidget):
     def __init__(self, parent):
         super().__init__()
         self._ui = Ui_turbulenceSpalartAllmarasWidget()
@@ -29,7 +31,8 @@ class TurbulenceSpalartAllmarasWidget(QWidget):
 
     def _specificationMethodChanged(self, index):
         self._ui.modifiedTurbulentViscosity.setVisible(
-            index == self.SPECIFICATION_METHOD.MODIFIED_TURBULENT_VISCOSITY.value)
+            index == SpecificationMethod.MODIFIED_TURBULENT_VISCOSITY.value)
         self._ui.turbulentViscosityRatio.setVisible(
-            index == self.SPECIFICATION_METHOD.TURBULENT_VISCOSITY_RATIO.value)
-        self._parent._resizeDialog(self._ui.groupBox)
+            index == SpecificationMethod.TURBULENT_VISCOSITY_RATIO.value)
+
+        QTimer.singleShot(0, lambda: self._parent.adjustSize())

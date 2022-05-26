@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from view.widgets.resizable_dialog import ResizableDialog
+from PySide6.QtWidgets import QDialog
+
 from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
 from .mrf_widget import MRFWidget
 from .porous_zone_widget import PorousZoneWidget
@@ -12,7 +13,7 @@ from .constant_source_widget import ConstantSourceWidget
 from .fixed_value_widget import FixedValueWidget
 
 
-class CellZoneConditionDialog(ResizableDialog):
+class CellZoneConditionDialog(QDialog):
     def __init__(self):
         super().__init__()
         self._ui = Ui_CellZoneConditionDialog()

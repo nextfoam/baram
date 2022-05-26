@@ -6,9 +6,9 @@ import csv
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget, QLineEdit, QPushButton, QLabel, QDialogButtonBox
 from PySide6.QtWidgets import QHBoxLayout
 from PySide6.QtGui import QIcon
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 
-from .polynomial_dialog_ui import Ui_PolynomialDialog
+from .number_input_dialog_ui import Ui_NumberInputDialog
 
 
 class PiecewiseLinearDialog(QDialog):
@@ -37,10 +37,12 @@ class PiecewiseLinearDialog(QDialog):
             self._layout.addWidget(self._button)
 
     class EditFieldWidget(FieldWidget):
-        def __init__(self, parent, index, columnCount):
+        removeClicked = Signal(int)
+        changed = Signal(str)
+
+        def __init__(self, index, columnCount):
             super().__init__([QLineEdit() for _ in range(columnCount)], QPushButton())
 
-            self._parent = parent
             self._index = index
 
             self._setup()
@@ -57,23 +59,21 @@ class PiecewiseLinearDialog(QDialog):
 
         def _connectSignalsSlots(self):
             [field.textChanged.connect(self._valueChanged) for field in self._edits]
-            self._button.clicked.connect(self._parent.removeAt)
+            self._button.clicked.connect(self._remove)
 
         def _remove(self):
-            self._parent.removeAt(self._index)
+            self.removeClicked.emit(self._index)
 
         def _valueChanged(self, text):
-            if text == "":
+            if text.strip() == "":
                 self._filled = False
-                self._parent.setSubmitEnabled(False)
-                return
-
-            if not self._filled:
+            elif not self._filled:
                 for edit in self._edits:
                     if edit.text() == "":
                         return
                 self._filled = True
-                self._parent.updateSubmitEnabled()
+
+            self.changed.emit(text)
 
     def __init__(self, title, columns, prefix=""):
         """Constructs a dialog for piecewise linear values.
@@ -84,7 +84,7 @@ class PiecewiseLinearDialog(QDialog):
             prefix: The prefix of index
         """
         super().__init__()
-        self._ui = Ui_PolynomialDialog()
+        self._ui = Ui_NumberInputDialog()
         self._ui.setupUi(self)
         self.setWindowTitle(title)
 
@@ -93,27 +93,10 @@ class PiecewiseLinearDialog(QDialog):
         self._no = 0
         self._rowFields = []
 
+        self._scrollBar = self._ui.editArea.verticalScrollBar()
+        self._scrollBar.rangeChanged.connect(lambda: self._scrollBar.setValue(self._scrollBar.maximum()))
         self._setup(columns)
         self._connectSignalsSlots()
-
-    def removeAt(self, index):
-        count = len(self._rowFields)
-        for i in range(index, count - 1):
-            self._rowFields[i].setValues(self._rowFields[i + 1].values())
-
-        self._rowFields.pop()
-        self._layout.removeRow(count)
-        self._no = self._no - 1
-
-    def setSubmitEnabled(self, enabled):
-        self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(enabled)
-
-    def updateSubmitEnabled(self):
-        for field in self._rowFields:
-            if not field.isFilled():
-                self.setSubmitEnabled(False)
-                return
-        self.setSubmitEnabled(True)
 
     def clear(self):
         while self._layout.rowCount() > 1:
@@ -133,7 +116,7 @@ class PiecewiseLinearDialog(QDialog):
         self._layout = self._ui.polynomialWidget.layout()
         self._layout.addRow("", self.FieldWidget(headers, emptyButton))
         self._ui.editArea.setMinimumWidth(self._columnCount * 80 + 100)
-        self.setSubmitEnabled(False)
+        self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def _connectSignalsSlots(self):
         self._ui.add.clicked.connect(self._addFocusedRow)
@@ -141,19 +124,20 @@ class PiecewiseLinearDialog(QDialog):
 
     def _addRow(self):
         label = self._prefix + str(self._no)
-        row = self.EditFieldWidget(self, len(self._rowFields), self._columnCount)
+        row = self.EditFieldWidget(len(self._rowFields), self._columnCount)
         self._layout.addRow(label, row)
         self._rowFields.append(row)
         self._no = self._no + 1
+
+        row.removeClicked.connect(self._removeAt)
+        row.changed.connect(self._valueChanged)
 
         return row
 
     def _addFocusedRow(self):
         row = self._addRow()
         row.setFocus()
-        scrollBar = self._ui.editArea.verticalScrollBar()
-        scrollBar.setValue(scrollBar.maximum())
-        self.setSubmitEnabled(False)
+        self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def _loadFile(self):
         fileName = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), "", self.tr("CSV (*.csv)"))
@@ -167,6 +151,32 @@ class PiecewiseLinearDialog(QDialog):
                     row = self._addRow()
                     row.setValues(line)
 
+    def _removeAt(self, index):
+        count = len(self._rowFields)
+        for i in range(index, count - 1):
+            self._rowFields[i].setValues(self._rowFields[i + 1].values())
+
+        self._rowFields.pop()
+        self._layout.removeRow(count)
+        self._no = self._no - 1
+
+        if index == count - 1:
+            self._updateSubmitEnabled()
+
+    def _valueChanged(self, text):
+        if text.strip() == "":
+            self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        else:
+            self._updateSubmitEnabled()
+
+    def _updateSubmitEnabled(self):
+        for field in self._rowFields:
+            if not field.isFilled():
+                self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+                return
+        self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+
+
 class PolynomialDialog(PiecewiseLinearDialog):
     def __init__(self, title, prefix=""):
         """Constructs a dialog for polynomial coefficients.
@@ -176,4 +186,4 @@ class PolynomialDialog(PiecewiseLinearDialog):
             prefix: The prefix of index
         """
         super().__init__(title, [self.tr("Coefficient")], prefix)
-        self._ui.file.setVisible(False)
+        self._ui.file.hide()

@@ -16,9 +16,8 @@ class RegionWidget(QWidget):
         self._parent = parent
         self._regionId = region["id"]
 
-        self._setup(region)
-
         self._connectSignalsSlots()
+        self._setRegion(region)
 
     @property
     def regionId(self):
@@ -27,7 +26,7 @@ class RegionWidget(QWidget):
     def clearSelection(self):
         self._ui.list.clearSelection()
 
-    def _setup(self, region):
+    def _setRegion(self, region):
         self._ui.groupBox.setTitle(region["name"])
 
         for cellZone in region["cellZones"]:
