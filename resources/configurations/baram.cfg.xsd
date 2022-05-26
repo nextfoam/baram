@@ -35,6 +35,32 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="scalarFieldType">
+        <xs:sequence>
+            <xs:element name="field" default="pressure">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="pressure"/>
+                        <xs:enumeration value="speed"/>
+                        <xs:enumeration value="xVelocity"/>
+                        <xs:enumeration value="yVelocity"/>
+                        <xs:enumeration value="zVelocity"/>
+                        <xs:enumeration value="turbulentKineticEnergy"/>
+                        <xs:enumeration value="turbulentDissipationRate"/>
+                        <xs:enumeration value="specificDissipationRate"/>
+                        <xs:enumeration value="modifiedTurbulentViscosity"/>
+                        <xs:enumeration value="temperature"/>
+                        <xs:enumeration value="density"/>
+                        <xs:enumeration value="modifiedPressure"/>
+                        <xs:enumeration value="material"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="mid" type="xs:positiveInteger" default="1"/>  <!-- set if "field" is "material" -->
+        </xs:sequence>
+    </xs:complexType>
+
+
     <xs:complexType name="generalType">
         <xs:sequence>
             <xs:element name="flowType">
@@ -1155,7 +1181,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="name" type="xs:string"/>
-                <!-- ToDo: Field id? -->
+                <xs:element name="field" type="scalarFieldType"/>
                 <xs:element name="interval" type="xs:positiveInteger" default="1"/>
                 <xs:element name="coordinate" type="vector"/>
                 <xs:element name="snapOntoBoundary" type="xs:boolean" default="false"/>
@@ -1181,7 +1207,7 @@
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:element>
-                <!-- ToDo: Field Variable element -->
+                <xs:element name="field" type="scalarFieldType"/>
                 <xs:element name="surfaces">
                     <xs:simpleType>
                         <xs:list itemType="xs:positiveInteger"/> <!-- boundary condition bcid -->
@@ -1206,7 +1232,7 @@
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:element>
-                <!-- ToDo: Field Variable element -->
+                <xs:element name="field" type="scalarFieldType"/>
                 <xs:element name="volumes">
                     <xs:simpleType>
                         <xs:list itemType="xs:positiveInteger"/> <!-- cellZone czid -->

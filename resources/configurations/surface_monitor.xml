@@ -2,5 +2,9 @@
 <surfaceMonitor xmlns="http://www.example.org/baram">
     <name>default</name>
     <reportType>areaWeightedAverage</reportType>
+    <field>
+        <field>pressure</field>
+        <mid>1</mid>
+    </field>
     <surfaces></surfaces>
 </surfaceMonitor>

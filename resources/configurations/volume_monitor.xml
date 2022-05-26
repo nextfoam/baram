@@ -2,5 +2,9 @@
 <volumeMonitor xmlns="http://www.example.org/baram">
     <name>default</name>
     <reportType>volumeAverage</reportType>
+    <field>
+        <field>pressure</field>
+        <mid>1</mid>
+    </field>
     <volumes></volumes>
 </volumeMonitor>

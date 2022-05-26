@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pointMonitor xmlns="http://www.example.org/baram">
     <name>default</name>
+    <field>
+        <field>pressure</field>
+        <mid>1</mid>
+    </field>
     <interval>1</interval>
     <coordinate>
         <x>0</x>
