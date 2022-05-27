@@ -34,6 +34,7 @@ class Error(Enum):
     INTEGER_ONLY = auto()
     FLOAT_ONLY   = auto()
     REFERENCED   = auto()
+    EMPTY        = auto()
 
 
 class CoreDB(object):
@@ -191,7 +192,7 @@ class CoreDB(object):
                 self._lastError = Error.OUT_OF_RANGE
                 return Error.OUT_OF_RANGE
 
-            element.text = value.lower()
+            element.text = value.lower().strip()
 
             logger.debug(f'setValue( {xpath} -> {element.text} )')
             self._modified = True
@@ -206,7 +207,7 @@ class CoreDB(object):
                 self._lastError = Error.FLOAT_ONLY
                 return Error.FLOAT_ONLY
 
-            element.text = value
+            element.text = ' '.join(numbers)
 
             logger.debug(f'setValue( {xpath} -> {element.text} )')
             self._modified = True
@@ -242,10 +243,8 @@ class CoreDB(object):
                 self._lastError = Error.OUT_OF_RANGE
                 return Error.OUT_OF_RANGE
 
-            if element.text == str(decimal):
-                return None
+            element.text = value.lower().strip()
 
-            element.text = str(decimal)
             logger.debug(f'setValue( {xpath} -> {element.text} )')
             self._modified = True
 
@@ -256,7 +255,7 @@ class CoreDB(object):
             if schema.type.is_restriction() and value not in schema.type.enumeration:
                 raise ValueError
 
-            element.text = value
+            element.text = value.strip()
             logger.debug(f'setValue( {xpath} -> {element.text} )')
             self._modified = True
 
@@ -371,6 +370,10 @@ class CoreDB(object):
         if str(mid) in idList:
             return Error.REFERENCED
 
+        elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
+        if len(elements) == 1:  # this is the last material in the list
+            return Error.EMPTY
+
         parent.remove(material)
         return None
 
@@ -388,14 +391,11 @@ class CoreDB(object):
 
         # set default material for the region
         materials = self.getMaterials()
-        for m in materials:
-            if m[1] == 'air':
-                airId = m[0]
-                break
-        else:
-            raise AssertionError  # 'air' should have been added in '__init__'
+        if len(materials) == 0:
+            raise AssertionError  # One material should exist
 
-        etree.SubElement(region, f'{{{ns}}}material').text = str(airId)
+        # use the first material for default material for the region
+        etree.SubElement(region, f'{{{ns}}}material').text = str(materials[0][0])
 
         # add default cell zone named "All"
         czoneTree = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
@@ -460,7 +460,9 @@ class CoreDB(object):
         bc.find('name', namespaces=nsmap).text = bname
         bc.attrib['bcid'] = str(index)
 
-        # ToDo: set default physicalType according to the geometricalType
+        if geometricalType is not None:
+            bc.find('geometricalType', namespaces=nsmap).text = geometricalType
+            # ToDo: set default physicalType according to the geometricalType
 
         parent.append(bc)
 
@@ -468,7 +470,7 @@ class CoreDB(object):
 
         return index
 
-    def getBoundaryConditions(self) -> list[(int, str)]:
+    def getBoundaryConditions(self) -> list[(int, str, str)]:
         elements = self._xmlTree.findall(f'.//boundaryConditions/boundaryCondition', namespaces=nsmap)
         return [(int(e.attrib['bcid']),
                  e.find('name', namespaces=nsmap).text,
@@ -622,30 +624,21 @@ class CoreDB(object):
         self._modified = False
 
     def save(self):
-        f = h5py.File(self._filePath, 'r+')
-        try:
+        with h5py.File(self._filePath, 'r+') as f:
             ds = f['configuration']
             if h5py.check_string_dtype(ds.dtype) is None:
                 raise ValueError
-
             ds[0] = etree.tostring(self._xmlTree.getroot(), xml_declaration=True, encoding='UTF-8')
-
             # ToDo: write the rest of data like uploaded polynomials
-        finally:
-            f.close()
 
         self._modified = False
 
     def load(self, path: str):
-        f = h5py.File(path, 'r')
-        try:
+        with h5py.File(path, 'r') as f:
             ds = f['configuration']
             if h5py.check_string_dtype(ds.dtype) is None:
                 raise ValueError
-
             root = etree.fromstring(ds[0], self._xmlParser)
-        finally:
-            f.close()
 
         self._xmlTree = root
         self._filePath = path
