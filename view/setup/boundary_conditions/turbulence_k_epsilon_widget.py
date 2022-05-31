@@ -11,7 +11,7 @@ from .turbulence_k_epsilon_widget_ui import Ui_turbulenceKEpsilonWidget
 
 class SpecificationMethod(Enum):
     K_AND_EPSILON = 0
-    INTENSITY_AND_VISCOCITY_RATIO = auto()
+    INTENSITY_AND_VISCOSITY_RATIO = auto()
 
 
 class TurbulenceKEpsilonWidget(QWidget):
@@ -33,6 +33,6 @@ class TurbulenceKEpsilonWidget(QWidget):
         self._ui.kAndEpsilon.setVisible(
             index == SpecificationMethod.K_AND_EPSILON.value)
         self._ui.intensityAndViscocityRatio.setVisible(
-            index == SpecificationMethod.INTENSITY_AND_VISCOCITY_RATIO.value)
+            index == SpecificationMethod.INTENSITY_AND_VISCOSITY_RATIO.value)
 
         QTimer.singleShot(0, lambda: self._parent.adjustSize())

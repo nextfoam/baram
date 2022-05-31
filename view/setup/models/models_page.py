@@ -14,7 +14,7 @@ from .radiation_dialog import RadiationDialog
 
 class ListIndex(Enum):
     MULTIPHASE_MODEL = QListWidgetItem.ItemType.UserType
-    TURBULANCE = auto()
+    TURBULENCE = auto()
     RADIATION = auto()
     SPECIES = auto()
 
@@ -32,7 +32,7 @@ class ModelsPage(QWidget):
         self._connectSignalsSlots()
 
         self._addModel(self.tr("Multiphase"), "Off", ListIndex.MULTIPHASE_MODEL)
-        self._addModel(self.tr("Turbulence"), "Laminar", ListIndex.TURBULANCE)
+        self._addModel(self.tr("Turbulence"), "Laminar", ListIndex.TURBULENCE)
         self._addModel(self.tr("Radiation"), "Off", ListIndex.RADIATION)
         self._addModel(self.tr("Species"), "Off", ListIndex.SPECIES)
 
@@ -59,7 +59,7 @@ class ModelsPage(QWidget):
             self._dialog = MultiphaseModelDialog()
             self._dialog._ui.off.setChecked(True)
             self._dialog.open()
-        elif type_ == ListIndex.TURBULANCE.value:
+        elif type_ == ListIndex.TURBULENCE.value:
             self._dialog = TurbulenceModelDialog()
             self._dialog.open()
         elif type_ == ListIndex.RADIATION.value:

@@ -11,7 +11,7 @@ from .turbulence_k_omega_widget_ui import Ui_turbulenceKOmegaWidget
 
 class SpecificationMethod(Enum):
     K_AND_OMEGA                   = "kAndEpsilon"
-    INTENSITY_AND_VISCOCITY_RATIO = "intensityAndViscosityRatio"
+    INTENSITY_AND_VISCOSITY_RATIO = "intensityAndViscosityRatio"
 
 
 class TurbulenceKOmegaWidget(QWidget):
@@ -40,14 +40,13 @@ class TurbulenceKOmegaWidget(QWidget):
     def _setupSpecificationMethodCombo(self, specification):
         self._addSpecificationMethodComboItem(specification, SpecificationMethod.K_AND_OMEGA,
                                               self.tr("K and Omega"))
-        self._addSpecificationMethodComboItem(specification, SpecificationMethod.INTENSITY_AND_VISCOCITY_RATIO,
+        self._addSpecificationMethodComboItem(specification, SpecificationMethod.INTENSITY_AND_VISCOSITY_RATIO,
                                               self.tr("Intensity and Viscosity Ratio"))
-
 
     def _specificationMethodChanged(self):
         method = self._ui.specificationMethod.currentData(Qt.UserRole)
         self._ui.kAndOmega.setVisible(method == SpecificationMethod.K_AND_OMEGA)
-        self._ui.intensityAndViscocityRatio.setVisible(method == SpecificationMethod.INTENSITY_AND_VISCOCITY_RATIO)
+        self._ui.intensityAndViscocityRatio.setVisible(method == SpecificationMethod.INTENSITY_AND_VISCOSITY_RATIO)
 
         QTimer.singleShot(0, lambda: self._parent.adjustSize())
 

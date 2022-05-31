@@ -38,19 +38,19 @@ class VelocityInletDialog(QDialog):
 
         self._connectSignalsSlots()
 
-        self._profileTypeChagned()
+        self._profileTypeChanged()
 
     def _connectSignalsSlots(self):
         self._ui.velocitySpecificationMethod.currentIndexChanged.connect(self._velocitySpecificationMethodChanged)
-        self._ui.profileType.currentIndexChanged.connect(self._profileTypeChagned)
+        self._ui.profileType.currentIndexChanged.connect(self._profileTypeChanged)
         self._ui.spatialDistributionFileSelect.clicked.connect(self._selectSpatialDistributionFile)
         self._ui.temporalDistributionEdit.clicked.connect(self._editTemporalDistribution)
 
     def _velocitySpecificationMethodChanged(self):
         if self._ui.profileType.currentIndex() == ProfileType.CONSTANT.value:
-            self._profileTypeChagned()
+            self._profileTypeChanged()
 
-    def _profileTypeChagned(self):
+    def _profileTypeChanged(self):
         self._ui.componentConstant.setVisible(
             self._ui.velocitySpecificationMethod.currentIndex() == VelocitySpecificationMethod.COMPONENT.value
             and self._ui.profileType.currentIndex() == ProfileType.CONSTANT.value
