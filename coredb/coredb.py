@@ -608,6 +608,10 @@ class CoreDB(object):
         names = self._xmlTree.xpath(f'.//x:monitors/x:volumes/x:volumeMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
+    @property
+    def isModified(self) -> bool:
+        return self._modified
+
     def saveAs(self, path: str):
         f = h5py.File(path, 'w')
         try:
