@@ -3,8 +3,7 @@
 
 from enum import Enum, auto
 
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QDialog
+from view.widgets.resizable_dialog import ResizableDialog
 
 from .wall_dialog_ui import Ui_WallDialog
 
@@ -25,7 +24,7 @@ class Temperature(Enum):
     CONVECTION = auto()
 
 
-class WallDialog(QDialog):
+class WallDialog(ResizableDialog):
     def __init__(self, bcid):
         super().__init__()
         self._ui = Ui_WallDialog()
@@ -44,11 +43,7 @@ class WallDialog(QDialog):
         self._ui.translationalMovingWall.setVisible(index == VelocityCondition.TRANSLATIONAL_MOVING_WALL.value)
         self._ui.rotationalMovingWall.setVisible(index == VelocityCondition.ROTATIONAL_MOVING_WALL.value)
 
-        QTimer.singleShot(0, lambda: self.adjustSize())
-
     def _temperatureTypeChanged(self, index):
         self._ui.constantTemperature.setVisible(index == Temperature.CONSTANT_TEMPERATURE.value)
         self._ui.constantHeatFlux.setVisible(index == Temperature.CONSTANT_HEAT_FLUX.value)
         self._ui.convection.setVisible(index == Temperature.CONVECTION.value)
-
-        QTimer.singleShot(0, lambda: self.adjustSize())

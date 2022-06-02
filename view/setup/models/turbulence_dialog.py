@@ -3,9 +3,7 @@
 
 from enum import Enum, auto
 
-from PySide6.QtCore import QTimer, QEvent
-from PySide6.QtWidgets import QDialog
-
+from view.widgets.resizable_dialog import ResizableDialog
 from .turbulence_dialog_ui import Ui_TurbulenceDialog
 
 
@@ -32,14 +30,13 @@ class KOmegaModel(Enum):
     SST = auto()
 
 
-class TurbulenceModelDialog(QDialog):
+class TurbulenceModelDialog(ResizableDialog):
     def __init__(self):
         super().__init__()
         self._ui = Ui_TurbulenceDialog()
         self._ui.setupUi(self)
 
         self._connectSignalsSlots()
-        self._ui.kEpsilonModel.installEventFilter(self)
 
         self._ui.laminar.setChecked(True)
         self._ui.standard.setChecked(True)
@@ -53,16 +50,6 @@ class TurbulenceModelDialog(QDialog):
             self._ui.kEpsilonModel.setVisible(self._ui.kEpsilon.isChecked())
             self._ui.kOmegaModel.setVisible(self._ui.kOmega.isChecked())
 
-            QTimer.singleShot(0, lambda: self.adjustSize())
-
     def _kEpsilonModelChanged(self, id_, checked):
         if checked:
             self._ui.nearWallTreatment.setVisible(self._ui.realizable.isChecked())
-
-            # QTimer.singleShot(0, lambda: self.adjustSize())
-
-    def eventFilter(self, obj, event):
-        if event.type() == QEvent.Resize:
-            QTimer.singleShot(0, lambda: self.adjustSize())
-
-        return False

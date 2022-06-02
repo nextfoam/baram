@@ -19,10 +19,6 @@ class CellZoneConditionDialog(QDialog):
         self._ui = Ui_CellZoneConditionDialog()
         self._ui.setupUi(self)
 
-        self._zoneTypeLayout = self._ui.zoneType.layout()
-        self._sourceTermsLayout = self._ui.sourceTerms.layout()
-        self._fixedValuesLayout = self._ui.fixedValues.layout()
-
         # Zone Type Widgets
         self._MRFZone = MRFWidget()
         self._porousZone = PorousZoneWidget()
@@ -39,35 +35,37 @@ class CellZoneConditionDialog(QDialog):
         self._turbulenceFixedValues = {}
         self._temperatureFixedValue = FixedValueWidget({"title": self.tr("Temperature"), "label": self.tr("Value (K)")})
 
-        self._setup()
-        self._connectSignalsSlots()
+        layout = self._ui.zoneType.layout()
+        layout.insertWidget(1, self._MRFZone)
+        layout.insertWidget(2, self._porousZone)
+        layout.insertWidget(3, self._slidingMeshZone)
+        layout.insertWidget(4, self._actuatorDiskZone)
 
-    def _setup(self):
-        self._zoneTypeLayout.insertWidget(1, self._MRFZone)
-        self._zoneTypeLayout.insertWidget(2, self._porousZone)
-        self._zoneTypeLayout.insertWidget(3, self._slidingMeshZone)
-        self._zoneTypeLayout.insertWidget(4, self._actuatorDiskZone)
+        layout = self._ui.sourceTerms.layout()
+        layout.addWidget(self._massSourceTerm)
+        layout.addWidget(self._energySourceTerm)
 
-        self._sourceTermsLayout.addWidget(self._massSourceTerm)
-        self._sourceTermsLayout.addWidget(self._energySourceTerm)
+        layout = self._ui.fixedValues.layout()
+        layout.addWidget(self._temperatureFixedValue)
 
         self._setupTurbulenceWidgets(["k", "epsilon"])
         self._setupMaterialWidgets(["O2"])
 
-        self._fixedValuesLayout.addWidget(self._temperatureFixedValue)
+        self._ui.zoneType.layout().addStretch()
+        self._ui.sourceTerms.layout().addStretch()
+        self._ui.fixedValues.layout().addStretch()
 
-        self._sourceTermsLayout.addStretch()
-        self._fixedValuesLayout.addStretch()
+        self._connectSignalsSlots()
 
     def _setupTurbulenceWidgets(self, turbulences):
         self._turbulenceTexts = {
             "k": {
                 "title": self.tr("Turbulent Kinetic Energy, k"),
-                "label": "k (㎡/s<sup>2</sup>)"
+                "label": "k (m<sup>2</sup>/s<sup>2</sup>)"
             },
             "epsilon": {
                 "title": self.tr("Turbulent Dissipation Rate, ε)"),
-                "label": "ε (㎡/s<sup>3</sup>)"
+                "label": "ε (m<sup>2</sup>/s<sup>3</sup>)"
             },
             "omega": {
                 "title": self.tr("Specific Dissipation Rate, ω"),
@@ -75,20 +73,22 @@ class CellZoneConditionDialog(QDialog):
             },
             "nu": {
                 "title": self.tr("Modified Turbulent Viscosity, ν"),
-                "label": "ν (㎡/s)"
+                "label": "ν (m<sup>2</sup>/s)"
             },
         }
 
+        layout = self._ui.sourceTerms.layout()
         for turbulence in turbulences:
             self._turbulenceSourceTerms[turbulence] = ConstantSourceWidget(self._turbulenceTexts[turbulence])
-            self._sourceTermsLayout.addWidget(self._turbulenceSourceTerms[turbulence])
+            layout.addWidget(self._turbulenceSourceTerms[turbulence])
             self._turbulenceFixedValues[turbulence] = FixedValueWidget(self._turbulenceTexts[turbulence])
-            self._fixedValuesLayout.addWidget(self._turbulenceFixedValues[turbulence])
+            layout.addWidget(self._turbulenceFixedValues[turbulence])
 
     def _setupMaterialWidgets(self, materials):
+        layout = self._ui.sourceTerms.layout()
         for material in materials:
             self._materialSourceTerms[material] = VariableSourceWidget(material)
-            self._sourceTermsLayout.addWidget(self._materialSourceTerms[material])
+            layout.addWidget(self._materialSourceTerms[material])
 
     def _connectSignalsSlots(self):
         self._ui.none.toggled.connect(self._zoneTypeChanged)

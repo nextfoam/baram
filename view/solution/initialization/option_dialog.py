@@ -3,8 +3,7 @@
 
 from enum import Enum, auto
 
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QDialog
+from view.widgets.resizable_dialog import ResizableDialog
 
 from .option_dialog_ui import Ui_OptionDialog
 
@@ -15,7 +14,7 @@ class OptionType(Enum):
     CELL_ZONE = auto()
 
 
-class OptionDialog(QDialog):
+class OptionDialog(ResizableDialog):
     def __init__(self):
         super().__init__()
         self._ui = Ui_OptionDialog()
@@ -32,5 +31,3 @@ class OptionDialog(QDialog):
         self._ui.box.setVisible(self._ui.type.currentIndex() == OptionType.BOX.value)
         self._ui.cylinder.setVisible(self._ui.type.currentIndex() == OptionType.CYLINDER.value)
         self._ui.cellZone.setVisible(self._ui.type.currentIndex() == OptionType.CELL_ZONE.value)
-
-        QTimer.singleShot(0, lambda: self.adjustSize())

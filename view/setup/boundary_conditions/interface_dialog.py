@@ -3,9 +3,7 @@
 
 from enum import Enum, auto
 
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QDialog
-
+from view.widgets.resizable_dialog import ResizableDialog
 from .interface_dialog_ui import Ui_InterfaceDialog
 from .boundary_radio_group import BoundaryRadioGroup
 
@@ -17,7 +15,7 @@ class Mode(Enum):
     REGION_INTERFACE = auto()
 
 
-class InterfaceDialog(QDialog):
+class InterfaceDialog(ResizableDialog):
     def __init__(self, bcid):
         super().__init__()
         self._ui = Ui_InterfaceDialog()
@@ -36,5 +34,3 @@ class InterfaceDialog(QDialog):
     def _modeChanged(self, index):
         self._ui.rotationalPeriodic.setVisible(index == Mode.ROTATIONAL_PERIODIC.value)
         self._ui.translationalPeriodic.setVisible(index == Mode.TRANSLATIONAL_PERIODIC.value)
-
-        QTimer.singleShot(0, lambda: self.adjustSize())

@@ -302,10 +302,12 @@ class CoreDB(object):
         if material is not None:
             raise FileExistsError
 
-        idList = self._xmlTree.xpath(f'string(.//x:materials/x:material/@mid)', namespaces={'x': ns})
+        # idList = self._xmlTree.xpath(f'string(.//x:materials/x:material/@mid)', namespaces={'x': ns})
 
         for index in range(1, self.MATERIAL_MAX_INDEX):
-            if str(index) not in idList:
+            # if str(index) not in idList:
+            #     break
+            if self._xmlTree.find(f'.//materials/material[@mid="{index}"]', namespaces=nsmap) is None:
                 break
         else:
             raise OverflowError
@@ -344,9 +346,10 @@ class CoreDB(object):
             etree.SubElement(viscosity, f'{{{ns}}}specification').text = 'constant'
             _materialPropertySubElement(viscosity, 'constant', 'viscosity')
             etree.SubElement(viscosity, f'{{{ns}}}polynomial').text = ''
-            sutherland = etree.SubElement(viscosity, f'{{{ns}}}sutherland')
-            _materialPropertySubElement(sutherland, 'coefficient', 'sutherlandCoefficient')
-            _materialPropertySubElement(sutherland, 'temperature', 'sutherlandTemperature')
+            if mdb['phase'] == 'gas':
+                sutherland = etree.SubElement(viscosity, f'{{{ns}}}sutherland')
+                _materialPropertySubElement(sutherland, 'coefficient', 'sutherlandCoefficient')
+                _materialPropertySubElement(sutherland, 'temperature', 'sutherlandTemperature')
 
         thermalConductivity = etree.SubElement(material, f'{{{ns}}}thermalConductivity')
         etree.SubElement(thermalConductivity, f'{{{ns}}}specification').text = 'constant'

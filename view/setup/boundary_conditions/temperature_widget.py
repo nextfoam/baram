@@ -4,7 +4,6 @@
 from enum import Enum, auto
 from os import path
 
-from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QWidget, QFileDialog
 
 from view.widgets.number_input_dialog import PiecewiseLinearDialog, PolynomialDialog
@@ -45,8 +44,6 @@ class TemperatureWidget(QWidget):
         self._ui.temporalDistribution.setVisible(
             index == ProfileType.TEMPORAL_DISTRIBUTION.value)
 
-        QTimer.singleShot(0, lambda: self._parent.adjustSize())
-
     def _selectSpatialDistributionFile(self):
         fileName = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), "", self.tr("CSV (*.csv)"))
         if fileName[0]:
@@ -57,9 +54,9 @@ class TemperatureWidget(QWidget):
         self._ui.polynomialEdit.setEnabled(self._ui.polynomial.isChecked())
 
     def _editPeicewiseLinear(self):
-        dialog = PiecewiseLinearDialog(self.tr("Temporal Distribution"), [self.tr("t"), self.tr("T")])
+        dialog = PiecewiseLinearDialog(self.tr("Temporal Distribution"), [self.tr("t"), self.tr("T")], ["", ""])
         dialog.exec()
 
     def _editPolynomial(self):
-        dialog = PolynomialDialog(self.tr("Temporal Distribution"), "a")
+        dialog = PolynomialDialog(self.tr("Temporal Distribution"), "", "a")
         dialog.exec()

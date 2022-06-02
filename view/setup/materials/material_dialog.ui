@@ -83,7 +83,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Value (kg/㎥)</string>
+         <string>Value (kg/m&lt;sup&gt;3&lt;/sup&gt;)</string>
         </property>
        </widget>
       </item>

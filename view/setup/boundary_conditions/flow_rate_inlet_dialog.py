@@ -3,9 +3,7 @@
 
 from enum import Enum, auto
 
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QDialog
-
+from view.widgets.resizable_dialog import ResizableDialog
 from .flow_rate_inlet_dialog_ui import Ui_FlowRateInletDialog
 from .turbulence_model import TurbulenceModel
 from .temperature_widget import TemperatureWidget
@@ -16,7 +14,7 @@ class FlowRateSpecificationMethod(Enum):
     MASS_FLOW_RATE = auto()
 
 
-class FlowRateInletDialog(QDialog):
+class FlowRateInletDialog(ResizableDialog):
     def __init__(self, bcid):
         super().__init__()
         self._ui = Ui_FlowRateInletDialog()
@@ -42,5 +40,3 @@ class FlowRateInletDialog(QDialog):
         self._ui.massFlowRateWidget.setVisible(
             index == FlowRateSpecificationMethod.MASS_FLOW_RATE.value
         )
-
-        QTimer.singleShot(0, lambda: self.adjustSize())

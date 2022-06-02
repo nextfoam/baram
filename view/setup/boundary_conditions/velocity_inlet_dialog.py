@@ -4,9 +4,9 @@
 from enum import Enum, auto
 from os import path
 
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QFileDialog, QDialog
+from PySide6.QtWidgets import QFileDialog
 
+from view.widgets.resizable_dialog import ResizableDialog
 from view.widgets.number_input_dialog import PiecewiseLinearDialog
 from .velocity_inlet_dialog_ui import Ui_VelocityInletDialog
 from .turbulence_model import TurbulenceModel
@@ -24,7 +24,7 @@ class ProfileType(Enum):
     TEMPORAL_DISTRIBUTION = auto()
 
 
-class VelocityInletDialog(QDialog):
+class VelocityInletDialog(ResizableDialog):
     def __init__(self, bcid):
         super().__init__()
         self._ui = Ui_VelocityInletDialog()
@@ -66,8 +66,6 @@ class VelocityInletDialog(QDialog):
             self._ui.profileType.currentIndex() == ProfileType.TEMPORAL_DISTRIBUTION.value
         )
 
-        QTimer.singleShot(0, lambda: self.adjustSize())
-
     def _selectSpatialDistributionFile(self):
         fileName = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), "", self.tr("CSV (*.csv)"))
         if fileName[0]:
@@ -76,8 +74,9 @@ class VelocityInletDialog(QDialog):
     def _editTemporalDistribution(self):
         if self._ui.velocitySpecificationMethod.currentIndex() == VelocitySpecificationMethod.COMPONENT.value:
             dialog = PiecewiseLinearDialog(self.tr("Temporal Distribution"),
-                                           [self.tr("t"), self.tr("Ux"), self.tr("Uy"), self.tr("Uz")])
+                                           [self.tr("t"), self.tr("Ux"), self.tr("Uy"), self.tr("Uz")],
+                                           ["", "", "", ""])
             dialog.exec()
         elif self._ui.velocitySpecificationMethod.currentIndex() == VelocitySpecificationMethod.MAGNITUDE.value:
-            dialog = PiecewiseLinearDialog(self.tr("Temporal Distribution"), [self.tr("t"), self.tr("Umag")])
+            dialog = PiecewiseLinearDialog(self.tr("Temporal Distribution"), [self.tr("t"), self.tr("Umag")], ["", ""])
             dialog.exec()

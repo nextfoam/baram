@@ -42,11 +42,12 @@ class VariableSourceWidget(QWidget):
         temporalProfileType = self._ui.temporalProfileType.currentIndex()
         if temporalProfileType == TemporalProfileType.PIECEWISE_LINEAR.value:
             if self._ui.groupBox.title() == "Energy":
-                dialog = PiecewiseLinearDialog(self.tr("Piecewise Linear"), [self.tr("t"), self.tr("Energy")])
+                dialog = PiecewiseLinearDialog(self.tr("Piecewise Linear"), [self.tr("t"), self.tr("Energy")], ["", ""])
                 dialog.exec()
             else:
-                dialog = PiecewiseLinearDialog(self.tr("Piecewise Linear"), [self.tr("t"), self.tr("Flow Rate")])
+                dialog = PiecewiseLinearDialog(
+                    self.tr("Piecewise Linear"), [self.tr("t"), self.tr("Flow Rate")], ["", ""])
                 dialog.exec()
         elif temporalProfileType == TemporalProfileType.POLYNOMIAL.value:
-            dialog = PolynomialDialog(self.tr("Polynomial"))
+            dialog = PolynomialDialog(self.tr("Polynomial"), "")
             dialog.exec()

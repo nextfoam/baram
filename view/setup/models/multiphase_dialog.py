@@ -3,8 +3,7 @@
 
 from enum import Enum, auto
 
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QDialog
+from view.widgets.resizable_dialog import ResizableDialog
 
 from .multiphase_dialog_ui import Ui_MultiphaseDialog
 
@@ -15,7 +14,7 @@ class Model(Enum):
     MIXTURE = auto()
 
 
-class MultiphaseModelDialog(QDialog):
+class MultiphaseModelDialog(ResizableDialog):
     def __init__(self):
         super().__init__()
         self._ui = Ui_MultiphaseDialog()
@@ -23,8 +22,6 @@ class MultiphaseModelDialog(QDialog):
 
         self._ui.volumeOfFluid.hide()
         self._ui.mixture.hide()
-
-        QTimer.singleShot(0, lambda: self.adjustSize())
 
         self._connectSignalsSlots()
 

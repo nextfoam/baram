@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QDialog
-
+from view.widgets.resizable_dialog import ResizableDialog
 from .subsonic_inflow_dialog_ui import Ui_SubsonicInflowDialog
 from .turbulence_model import TurbulenceModel
 
 
-class SubsonicInflowDialog(QDialog):
+class SubsonicInflowDialog(ResizableDialog):
     def __init__(self, bcid):
         super().__init__()
         self._ui = Ui_SubsonicInflowDialog()

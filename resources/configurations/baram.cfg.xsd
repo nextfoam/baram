@@ -157,7 +157,7 @@
                         </xs:element>
                         <xs:element name="constant" type="inputNumberType"/>
                         <xs:element name="polynomial" type="inputNumberListType"/>
-                        <xs:element name="sutherland">
+                        <xs:element name="sutherland" minOccurs="0">
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="coefficient" type="inputNumberType"/>

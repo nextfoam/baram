@@ -3,7 +3,6 @@
 
 from enum import Enum, auto
 
-from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QWidget
 
 from .turbulence_k_epsilon_widget_ui import Ui_turbulenceKEpsilonWidget
@@ -34,5 +33,3 @@ class TurbulenceKEpsilonWidget(QWidget):
             index == SpecificationMethod.K_AND_EPSILON.value)
         self._ui.intensityAndViscocityRatio.setVisible(
             index == SpecificationMethod.INTENSITY_AND_VISCOSITY_RATIO.value)
-
-        QTimer.singleShot(0, lambda: self._parent.adjustSize())

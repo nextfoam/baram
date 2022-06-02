@@ -11,9 +11,7 @@ class ConsoleDock(TabifiedDock):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._textView = None
-        self._setup()
 
-    def _setup(self):
         self.setWindowTitle(self.tr("Console"))
         self.setAllowedAreas(Qt.RightDockWidgetArea)
         self._dockWidgetContents = QWidget()

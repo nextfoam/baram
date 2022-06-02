@@ -78,12 +78,12 @@
          <item row="0" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Turbulent Kinetic Energe, k (㎡/s&lt;sup&gt;2&lt;/sup&gt;)</string>
+            <string>Turbulent Kinetic Energy, k (m&lt;sup&gt;2&lt;/sup&gt;/s&lt;sup&gt;2&lt;/sup&gt;)</string>
            </property>
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="turbulentKineticEnerge"/>
+          <widget class="QLineEdit" name="turbulentKineticEnergy"/>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_3">

@@ -3,9 +3,9 @@
 
 from enum import Flag, Enum, auto
 
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QDialog, QFormLayout
+from PySide6.QtWidgets import QFormLayout
 
+from view.widgets.resizable_dialog import ResizableDialog
 from .radiation_dialog_ui import Ui_RadiationDialog
 
 
@@ -24,7 +24,7 @@ class Parameter(Enum):
     MAXIMUM_NUMBER_OF_ITERATIONS = auto()
 
 
-class RadiationDialog(QDialog):
+class RadiationDialog(ResizableDialog):
     def __init__(self):
         super().__init__()
         self._ui = Ui_RadiationDialog()
@@ -65,8 +65,6 @@ class RadiationDialog(QDialog):
             self._removeAll()
             self._showParams(Mode(mode))
             self._ui.parametersWidget.setVisible(mode != Mode.OFF.value)
-
-            QTimer.singleShot(0, lambda: self.adjustSize())
 
     def _showParams(self, flag):
         for p in self._parameters:
