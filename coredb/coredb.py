@@ -302,12 +302,10 @@ class CoreDB(object):
         if material is not None:
             raise FileExistsError
 
-        # idList = self._xmlTree.xpath(f'string(.//x:materials/x:material/@mid)', namespaces={'x': ns})
+        idList = self._xmlTree.xpath(f'.//x:materials/x:material/@mid', namespaces={'x': ns})
 
         for index in range(1, self.MATERIAL_MAX_INDEX):
-            # if str(index) not in idList:
-            #     break
-            if self._xmlTree.find(f'.//materials/material[@mid="{index}"]', namespaces=nsmap) is None:
+            if str(index) not in idList:
                 break
         else:
             raise OverflowError

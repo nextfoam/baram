@@ -7,6 +7,9 @@ class TestMaterial(unittest.TestCase):
     def setUp(self):
         self.db = coredb.CoreDB()
 
+    def tearDown(self) -> None:
+        del coredb.CoreDB._instance
+
     def testMaterialDB(self):
         materials = self.db.getMaterialsFromDB()
         self.assertIn(('air', None, 'gas'), materials)
@@ -48,8 +51,27 @@ class TestMaterial(unittest.TestCase):
         materials = self.db.getMaterials()
         self.assertEqual(1, len(materials))
 
-    def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+    def testMaterialIdReuse(self):
+        self.db.addMaterial('nitrogen')
+        self.db.addMaterial('oxygen')
+
+        materials = self.db.getMaterials()
+        mid = 0
+        for m in materials:
+            if m[1] == 'nitrogen':
+                mid = m[0]
+                break
+
+        self.db.removeMaterial('nitrogen')
+        self.db.addMaterial('hydrogen')
+
+        materials = self.db.getMaterials()
+        for m in materials:
+            if m[1] == 'hydrogen':
+                self.assertEqual(mid, m[0])
+                break
+        else:
+            self.assertTrue(False)
 
 
 if __name__ == '__main__':
