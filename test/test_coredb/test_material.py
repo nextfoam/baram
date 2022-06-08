@@ -1,4 +1,5 @@
 import unittest
+import pprint
 
 from coredb import coredb
 
@@ -6,6 +7,7 @@ from coredb import coredb
 class TestMaterial(unittest.TestCase):
     def setUp(self):
         self.db = coredb.CoreDB()
+        self.pp = pprint.PrettyPrinter(indent=4)
 
     def tearDown(self) -> None:
         del coredb.CoreDB._instance
@@ -72,6 +74,92 @@ class TestMaterial(unittest.TestCase):
                 break
         else:
             self.assertTrue(False)
+
+    def testMaterialGetBulk(self):
+        expected = {
+            'material': [
+                {
+                    '@mid': '1',
+                    'absorptionCoefficient': '0.0',
+                    'density': {
+                        'constant': '1.225',
+                        'specification': 'constant'
+                    },
+                    'molecularWeight': '28.966',
+                    'name': 'air',
+                    'phase': 'gas',
+                    'specificHeat': {
+                        'constant': '1006.0',
+                        'polynomial': '',
+                        'specification': 'constant'
+                    },
+                    'thermalConductivity': {
+                        'constant': '0.0245',
+                        'polynomial': '',
+                        'specification': 'constant'
+                    },
+                    'viscosity': {
+                        'constant': '1.79e-05',
+                        'polynomial': '',
+                        'specification': 'constant',
+                        'sutherland': {
+                            'coefficient': '1.46e-06',
+                            'temperature': '110.4'
+                        }
+                    }
+                },
+                {
+                    '@mid': '2',
+                    'absorptionCoefficient': '0.0',
+                    'chemicalFormula': 'H2',
+                    'density': {
+                        'constant': '0.085',
+                        'specification': 'constant'
+                    },
+                    'molecularWeight': '2.01588',
+                    'name': 'hydrogen',
+                    'phase': 'gas',
+                    'specificHeat': {
+                        'constant': '14268.0',
+                        'polynomial': '',
+                        'specification': 'constant'
+                    },
+                    'thermalConductivity': {
+                        'constant': '0.181',
+                        'polynomial': '',
+                        'specification': 'constant'
+                    },
+                    'viscosity': {
+                        'constant': '8.69e-06',
+                        'polynomial': '',
+                        'specification': 'constant',
+                        'sutherland': {
+                            'coefficient': '6.9e-06',
+                            'temperature': '97.0'
+                        }
+                    }
+                }
+            ]
+        }
+
+        self.db.addMaterial('hydrogen')
+        data = self.db.getBulk('.//materials')
+        # self.pp.pprint(data)
+        self.assertDictEqual(expected, data)
+
+    def testMaterialSetBulk(self):
+        testName = 'myair'
+        data = self.db.getBulk('.//materials/material[name="air"]')
+        mid = data['@mid']
+        data['name'] = testName
+        with self.db:
+            self.db.setBulk(f'.//materials/material[@mid="{mid}"]', data)
+        name = self.db.getValue(f'.//materials/material[@mid="{mid}"]/name')
+
+        # data = self.db.getBulk(f'.//materials/material[@mid="{mid}"]')
+        # self.pp.pprint(data)
+
+        self.assertEqual(testName, name)
 
 
 if __name__ == '__main__':

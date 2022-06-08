@@ -76,6 +76,7 @@ class CoreDB(object):
 
         self._modified = False
         self._filePath = None
+        self._inContext = False
         self._backupTree = None
         self._lastError = None
 
@@ -96,6 +97,7 @@ class CoreDB(object):
         logger.debug('enter')
         self._backupTree = copy.deepcopy(self._xmlTree)
         self._lastError = None
+        self._inContext = True
         return self
 
     def __exit__(self, eType, eValue, eTraceback):
@@ -104,6 +106,7 @@ class CoreDB(object):
 
         self._lastError = None
         self._backupTree = None
+        self._inContext = False
 
         if eType == Cancel:
             logger.debug('exit with Cancel')
@@ -261,6 +264,113 @@ class CoreDB(object):
 
         self._xmlSchema.assertValid(self._xmlTree)
         return None
+
+    def setBulk(self, xpath: str, value: dict):
+        """Set the value at the specified path
+
+        Current configuration under the xpath will be cleared.
+        Usually process is like following.
+            1. A value of type dictionary is read by getBulk()
+            2. Some values in the dictionary are modified
+            3. the dictionary value is written back by setBulk
+        It handles only dictionary, list and simple types
+
+        Args:
+            xpath: XML xpath for the configuration item
+            value: configuration value of dictionary type
+
+        Raises:
+            LookupError: Less or more than one item are matched
+            ValueError: Invalid configuration value
+            RuntimeError: Called not in "with" context
+        """
+        def _setBulkInternal(element: etree.Element, data: dict):
+            for k, v in data.items():
+                # process attributes
+                if k.startswith('@'):
+                    element.set(k[1:], v)
+                # process text
+                elif k.startswith('$'):
+                    element.text = str(v)
+                # process dictionary
+                elif isinstance(v, dict):
+                    _setBulkInternal(etree.SubElement(element, f'{{{ns}}}{k}'), v)
+                elif isinstance(v, list):
+                    # Only primitive types or dictionary can be a member of the value
+                    if len(v) == 0:
+                        etree.SubElement(element, f'{{{ns}}}{k}')
+                    elif isinstance(v[0], dict):
+                        for item in v:
+                            if not isinstance(item, dict):
+                                raise ValueError
+                            _setBulkInternal(etree.SubElement(element, f'{{{ns}}}{k}'), item)
+                    else:
+                        for item in v:
+                            etree.SubElement(element, f'{{{ns}}}{k}').text = str(item)
+                else:
+                    etree.SubElement(element, f'{{{ns}}}{k}').text = str(v)
+
+        if not self._inContext:
+            raise RuntimeError
+
+        if not isinstance(value, dict):
+            raise ValueError
+
+        elements = self._xmlTree.findall(xpath, namespaces=nsmap)
+        if len(elements) != 1:
+            raise LookupError
+
+        elements[0].clear()
+        _setBulkInternal(elements[0], value)
+
+    def getBulk(self, xpath: str) -> dict:
+        """Get the value at the specified path
+
+        Current configuration under the xpath will be returned in dictionary type
+
+        Args:
+            xpath: XML xpath for the configuration item
+
+        Raises:
+            LookupError: Less or more than one item are matched
+        """
+
+        def _getBulkInternal(element: etree.Element) -> dict:
+            data = {}
+
+            # process attributes
+            for k, v in element.items():
+                data['@' + k] = v
+
+            # process dictionary
+            for child in element:
+                tag = etree.QName(child.tag).localname
+                result = _getBulkInternal(child)
+                if tag in data:
+                    if isinstance(data[tag], list):
+                        data[tag].append(result)
+                    else:
+                        data[tag] = [
+                            data[tag],
+                            result
+                        ]
+                else:
+                    data[tag] = result
+
+            # process text
+            if element.text is not None:
+                if data:  # dictionary is not empty
+                    data['$'] = element.text
+                else:
+                    data = element.text
+
+            return data
+
+        elements = self._xmlTree.findall(xpath, namespaces=nsmap)
+        if len(elements) != 1:
+            raise LookupError
+
+        return _getBulkInternal(elements[0])
 
     def getMaterialsFromDB(self) -> list[(str, str, str)]:
         """Returns available materials from material database
