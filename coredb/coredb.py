@@ -323,6 +323,8 @@ class CoreDB(object):
         elements[0].clear()
         _setBulkInternal(elements[0], value)
 
+        self._xmlSchema.assertValid(self._xmlTree)
+
     def getBulk(self, xpath: str) -> dict:
         """Get the value at the specified path
 
@@ -334,7 +336,6 @@ class CoreDB(object):
         Raises:
             LookupError: Less or more than one item are matched
         """
-
         def _getBulkInternal(element: etree.Element) -> dict:
             data = {}
 
