@@ -1283,7 +1283,7 @@
                     </xs:complexType>
                 </xs:element>
 
-                <xs:element name="cellZones">
+                <xs:element name="regions">
                     <xs:complexType>
                         <xs:sequence>
                             <xs:element name="region" minOccurs="0" maxOccurs="unbounded">
@@ -1291,18 +1291,23 @@
                                     <xs:sequence>
                                         <xs:element name="name" type="xs:string"/>
                                         <xs:element name="material" type="xs:positiveInteger"/> <!-- material mid -->
-                                        <xs:element ref="cellZone" minOccurs="0" maxOccurs="unbounded"/>
+                                        <xs:element name="cellZones">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element ref="cellZone" minOccurs="0" maxOccurs="unbounded"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="boundaryConditions">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element ref="boundaryCondition" minOccurs="0" maxOccurs="unbounded"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
-                        </xs:sequence>
-                    </xs:complexType>
-                </xs:element>
-
-                <xs:element name="boundaryConditions">
-                    <xs:complexType>
-                        <xs:sequence>
-                            <xs:element ref="boundaryCondition" minOccurs="0" maxOccurs="unbounded"/>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>

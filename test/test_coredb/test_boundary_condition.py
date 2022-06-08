@@ -11,18 +11,22 @@ class TestBoundaryCondition(unittest.TestCase):
         del coredb.CoreDB._instance
 
     def testAddBoundaryCondition(self):
-        name = 'testBoundaryCondition_1'
+        rname = 'testRegion_1'
+        self.db.addRegion(rname)
+        bname = 'testBoundaryCondition_1'
         geometricalType = 'patch'
-        index = self.db.addBoundaryCondition(name, geometricalType)
-        bcs = self.db.getBoundaryConditions()
-        self.assertIn((index, name, 'wall'), bcs)
+        index = self.db.addBoundaryCondition(rname, bname, geometricalType)
+        bcs = self.db.getBoundaryConditions(rname)
+        self.assertIn((index, bname, 'wall'), bcs)
         self.assertEqual(1, len(bcs))
 
     def testAddBoundaryConditionIndex(self):
-        name = 'testBoundaryCondition_1'
+        rname = 'testRegion_1'
+        self.db.addRegion(rname)
+        bname = 'testBoundaryCondition_1'
         physicalType = 'patch'
-        self.db.addBoundaryCondition(name, physicalType)
-        index = self.db.addBoundaryCondition('second', physicalType)
+        self.db.addBoundaryCondition(rname, bname, physicalType)
+        index = self.db.addBoundaryCondition(rname, 'second', physicalType)
         self.assertEqual(2, index)
 
 

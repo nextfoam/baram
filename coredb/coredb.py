@@ -490,14 +490,14 @@ class CoreDB(object):
         return None
 
     def addRegion(self, rname: str):
-        region = self._xmlTree.find(f'.//cellZones/region[name="{rname}"]', namespaces=nsmap)
+        region = self._xmlTree.find(f'.//regions/region[name="{rname}"]', namespaces=nsmap)
 
         if region is not None:
             raise FileExistsError
 
-        cellZones = self._xmlTree.find('.//cellZones', namespaces=nsmap)
+        parent = self._xmlTree.find('.//regions', namespaces=nsmap)
 
-        region = etree.SubElement(cellZones, f'{{{ns}}}region')
+        region = etree.SubElement(parent, f'{{{ns}}}region')
 
         etree.SubElement(region, f'{{{ns}}}name').text = rname
 
@@ -509,23 +509,26 @@ class CoreDB(object):
         # use the first material for default material for the region
         etree.SubElement(region, f'{{{ns}}}material').text = str(materials[0][0])
 
+        cellZones = etree.SubElement(region, f'{{{ns}}}cellZones')
+        etree.SubElement(region, f'{{{ns}}}boundaryConditions')
+
         # add default cell zone named "All"
         czoneTree = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
-        region.append(czoneTree.getroot())
+        cellZones.append(czoneTree.getroot())
 
         self._xmlSchema.assertValid(self._xmlTree)
 
     def getRegions(self) -> list[str]:
-        names = self._xmlTree.xpath(f'.//x:cellZones/x:region/x:name/text()', namespaces={'x': ns})
+        names = self._xmlTree.xpath(f'.//x:region/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
     def addCellZone(self, rname: str, zname: str) -> int:
-        zoneTree = self._xmlTree.find(f'.//cellZones/region[name="{rname}"]/cellZone[name="{zname}"]', namespaces=nsmap)
+        zone = self._xmlTree.find(f'.//region[name="{rname}"]/cellZones/cellZone[name="{zname}"]', namespaces=nsmap)
 
-        if zoneTree is not None:
+        if zone is not None:
             raise FileExistsError
 
-        idList = self._xmlTree.xpath(f'string(.//x:cellZones/x:region[x:name="{rname}"]/x:cellZone/@czid)', namespaces={'x': ns})
+        idList = self._xmlTree.xpath(f'.//x:region[x:name="{rname}"]/x:cellZones/x:cellZone/@czid', namespaces={'x': ns})
 
         for index in range(1, self.CELL_ZONE_MAX_INDEX):
             if str(index) not in idList:
@@ -534,30 +537,30 @@ class CoreDB(object):
             raise OverflowError
 
         # 'region' cannot be None because zoneTree lookup above succeeded
-        region = self._xmlTree.find(f'.//cellZones/region[name="{rname}"]', namespaces=nsmap)
+        cellZones = self._xmlTree.find(f'.//region[name="{rname}"]/cellZones', namespaces=nsmap)
 
         zoneTree = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
         zone = zoneTree.getroot()
         zone.find('name', namespaces=nsmap).text = zname
         zone.attrib['czid'] = str(index)
 
-        region.append(zone)
+        cellZones.append(zone)
 
         self._xmlSchema.assertValid(self._xmlTree)
 
         return index
 
     def getCellZones(self, rname: str) -> list[(int, str)]:
-        elements = self._xmlTree.findall(f'.//cellZones/region[name="{rname}"]/cellZone', namespaces=nsmap)
+        elements = self._xmlTree.findall(f'.//region[name="{rname}"]/cellZones/cellZone', namespaces=nsmap)
         return [(int(e.attrib['czid']), e.find('name', namespaces=nsmap).text) for e in elements]
 
-    def addBoundaryCondition(self, bname: str, geometricalType: str) -> int:
-        bc = self._xmlTree.find(f'.//boundaryConditions/boundaryCondition[name="{bname}"]', namespaces=nsmap)
+    def addBoundaryCondition(self, rname: str, bname: str, geometricalType: str) -> int:
+        bc = self._xmlTree.find(f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bname}"]', namespaces=nsmap)
 
         if bc is not None:
             raise FileExistsError
 
-        idList = self._xmlTree.xpath(f'string(.//x:boundaryConditions/x:boundaryCondition/@bcid)', namespaces={'x': ns})
+        idList = self._xmlTree.xpath(f'.//x:region[x:name="{rname}"]/x:boundaryConditions/x:boundaryCondition/@bcid', namespaces={'x': ns})
 
         for index in range(1, self.BOUNDARY_CONDITION_MAX_INDEX):
             if str(index) not in idList:
@@ -565,7 +568,7 @@ class CoreDB(object):
         else:
             raise OverflowError
 
-        parent = self._xmlTree.find(f'.//boundaryConditions', namespaces=nsmap)
+        parent = self._xmlTree.find(f'.//region[name="{rname}"]/boundaryConditions', namespaces=nsmap)
 
         bcTree = etree.parse(resource.file(self.BOUNDARY_CONDITION_PATH), self._xmlParser)
         bc = bcTree.getroot()
@@ -582,8 +585,8 @@ class CoreDB(object):
 
         return index
 
-    def getBoundaryConditions(self) -> list[(int, str, str)]:
-        elements = self._xmlTree.findall(f'.//boundaryConditions/boundaryCondition', namespaces=nsmap)
+    def getBoundaryConditions(self, rname: str) -> list[(int, str, str)]:
+        elements = self._xmlTree.findall(f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition', namespaces=nsmap)
         return [(int(e.attrib['bcid']),
                  e.find('name', namespaces=nsmap).text,
                  e.find('physicalType', namespaces=nsmap).text) for e in elements]

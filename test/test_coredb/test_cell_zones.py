@@ -17,7 +17,7 @@ class TestCellZones(unittest.TestCase):
     def testDefaultCellZone(self):
         rname = 'testRegion_1'
         self.db.addRegion(rname)
-        path = f'.//cellZones/region[name="{rname}"]/cellZone[name="All"]/zoneType'
+        path = f'.//region[name="{rname}"]/cellZones/cellZone[name="All"]/zoneType'
         self.assertEqual('none', self.db.getValue(path))
 
     def testAddCellZone(self):
@@ -40,7 +40,7 @@ class TestCellZones(unittest.TestCase):
         zname = 'testZone_1'
         self.db.addRegion(rname)
         self.db.addCellZone(rname, zname)
-        path = f'.//cellZones/region[name="{rname}"]/cellZone[name="{zname}"]/zoneType'
+        path = f'.//region[name="{rname}"]/cellZones/cellZone[name="{zname}"]/zoneType'
         self.assertEqual('none', self.db.getValue(path))
 
     def tearDown(self) -> None:

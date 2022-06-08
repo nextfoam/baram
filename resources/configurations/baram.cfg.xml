@@ -43,9 +43,7 @@
         <speciesModels>off</speciesModels>
     </models>
 
-    <cellZones></cellZones>
-
-    <boundaryConditions></boundaryConditions>
+    <regions></regions>
 
     <numericalConditions>
         <pressureVelocityCouplingScheme>SIMPLE</pressureVelocityCouplingScheme>
