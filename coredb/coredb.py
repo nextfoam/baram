@@ -115,6 +115,59 @@ class CoreDB(object):
             logger.debug('exit without error')
             return None
 
+    def getAttribute(self, xpath: str, name: str) -> str:
+        """Returns attribute value on specified configuration path.
+
+        Returns attribute value specified by 'xpath', and 'name'
+
+        Args:
+            xpath: XML xpath for the configuration item
+            name: attribute name
+
+        Returns:
+            attribute value
+
+        Raises:
+            LookupError: Less or more than one item are matched, or attribute not found
+        """
+        elements = self._xmlTree.findall(xpath, namespaces=nsmap)
+        if len(elements) != 1:
+            raise LookupError
+
+        value = elements[0].get(name)
+        if value is None:
+            raise LookupError
+
+        logger.debug(f'getAttribute( {xpath}:{name} -> {value} )')
+
+        return value
+
+    def setAttribute(self, xpath: str, name: str, value: str):
+        """Returns attribute value on specified configuration path.
+
+        Returns attribute value specified by 'xpath', and 'name'
+
+        Args:
+            xpath: XML xpath for the configuration item
+            name: attribute name
+            value: attribute value
+
+        Returns:
+
+        Raises:
+            LookupError: Less or more than one item are matched, or attribute not found
+        """
+        elements = self._xmlTree.findall(xpath, namespaces=nsmap)
+        if len(elements) != 1:
+            raise LookupError
+
+        if name not in elements[0].keys():
+            raise LookupError
+
+        elements[0].set(name, value)
+
+        logger.debug(f'setAttribute( {xpath}:{name} -> {value} )')
+
     def getValue(self, xpath: str) -> str:
         """Returns specified configuration value.
 

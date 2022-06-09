@@ -88,7 +88,7 @@
                                 <xs:sequence>
                                     <xs:element name="direction" type="vector"/>
                                 </xs:sequence>
-                                <xs:attribute name="disabled" type="xs:boolean" default="true"/>
+                                <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                             </xs:complexType>
                         </xs:element>
                         <xs:element name="pressure" type="inputNumberType"/>
@@ -380,7 +380,7 @@
                                         <xs:element name="polynomial" type="inputNumberListType"/>
                                     </xs:sequence>
                                     <xs:attribute name="disabled" type="xs:boolean"
-                                                  default="true"/>
+                                                  use="required"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="energy">
@@ -416,7 +416,7 @@
                                         <xs:element name="polynomial" type="inputNumberListType"/>
                                     </xs:sequence>
                                     <xs:attribute name="disabled" type="xs:boolean"
-                                                  default="true"/>
+                                                  use="required"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="turbulentKineticEnergy">
@@ -437,7 +437,7 @@
                                                     type="inputNumberType" default="0"/>
                                     </xs:sequence>
                                     <xs:attribute name="disabled" type="xs:boolean"
-                                                  default="true"/>
+                                                  use="required"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="turbulentDissipationRate">
@@ -458,7 +458,7 @@
                                                     type="inputNumberType" default="0"/>
                                     </xs:sequence>
                                     <xs:attribute name="disabled" type="xs:boolean"
-                                                  default="true"/>
+                                                  use="required"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="specificDissipationRate">
@@ -479,7 +479,7 @@
                                                     type="inputNumberType" default="0"/>
                                     </xs:sequence>
                                     <xs:attribute name="disabled" type="xs:boolean"
-                                                  default="true"/>
+                                                  use="required"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="modifiedTurbulentViscosity">
@@ -500,7 +500,7 @@
                                                     type="inputNumberType" default="0"/>
                                     </xs:sequence>
                                     <xs:attribute name="disabled" type="xs:boolean"
-                                                  default="true"/>
+                                                  use="required"/>
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
@@ -515,7 +515,7 @@
                                         <xs:extension base="inputNumberType">
                                             <xs:attribute name="disabled"
                                                           type="xs:boolean"
-                                                          default="true"/>
+                                                          use="required"/>
                                         </xs:extension>
                                     </xs:simpleContent>
                                 </xs:complexType>
@@ -526,7 +526,7 @@
                                         <xs:extension base="inputNumberType">
                                             <xs:attribute name="disabled"
                                                           type="xs:boolean"
-                                                          default="true"/>
+                                                          use="required"/>
                                         </xs:extension>
                                     </xs:simpleContent>
                                 </xs:complexType>
@@ -537,7 +537,7 @@
                                         <xs:extension base="inputNumberType">
                                             <xs:attribute name="disabled"
                                                           type="xs:boolean"
-                                                          default="true"/>
+                                                          use="required"/>
                                         </xs:extension>
                                     </xs:simpleContent>
                                 </xs:complexType>
@@ -548,7 +548,7 @@
                                         <xs:extension base="inputNumberType">
                                             <xs:attribute name="disabled"
                                                           type="xs:boolean"
-                                                          default="true"/>
+                                                          use="required"/>
                                         </xs:extension>
                                     </xs:simpleContent>
                                 </xs:complexType>
