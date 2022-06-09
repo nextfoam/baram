@@ -21,7 +21,9 @@ class NumericalConditionsPage(QWidget):
 
     def hideEvent(self, ev):
         if ev.spontaneous():
-            return
+            return super().hideEvent(ev)
+
+        return super().hideEvent(ev)
 
     def _connectSignalsSlots(self):
         self._ui.advanced.clicked.connect(self._advancedSetup)

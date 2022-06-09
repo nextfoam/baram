@@ -142,7 +142,7 @@ class PiecewiseLinearDialog(QDialog):
         self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def _setData(self, data):
-        values = [d.split() for d in data]
+        values = [d.split() if d else [] for d in data]
 
         for i in range(len(values[0])):
             row = self._addRow()

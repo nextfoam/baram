@@ -25,12 +25,14 @@ class GeneralPage(QWidget):
 
     def hideEvent(self, ev):
         if ev.spontaneous():
-            return
+            return super().hideEvent(ev)
 
         if self._ui.transient_.isChecked():
             self._db.setValue(self.MODEL_XPATH, 'true')
         else:
             self._db.setValue(self.MODEL_XPATH, 'false')
+
+        return super().hideEvent(ev)
 
     def _load(self):
         timeTransient = self._db.getValue(self.MODEL_XPATH)

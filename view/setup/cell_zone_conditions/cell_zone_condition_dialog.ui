@@ -91,6 +91,9 @@
                <property name="text">
                 <string>None</string>
                </property>
+               <attribute name="buttonGroup">
+                <string notr="true">zoneTypeRadioGroup</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -104,6 +107,9 @@
                <property name="text">
                 <string>Multiple Refernce Frame, MRF</string>
                </property>
+               <attribute name="buttonGroup">
+                <string notr="true">zoneTypeRadioGroup</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -111,6 +117,9 @@
                <property name="text">
                 <string>Porous Zone</string>
                </property>
+               <attribute name="buttonGroup">
+                <string notr="true">zoneTypeRadioGroup</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -124,6 +133,9 @@
                <property name="text">
                 <string>Sliding Mesh</string>
                </property>
+               <attribute name="buttonGroup">
+                <string notr="true">zoneTypeRadioGroup</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -137,6 +149,9 @@
                <property name="text">
                 <string>actuator Disk</string>
                </property>
+               <attribute name="buttonGroup">
+                <string notr="true">zoneTypeRadioGroup</string>
+               </attribute>
               </widget>
              </item>
             </layout>
@@ -171,94 +186,28 @@
          <property name="title">
           <string>Fixed Values</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_7">
+         <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <widget class="QGroupBox" name="xVelocityGroup">
+           <widget class="QGroupBox" name="velocityGroup">
             <property name="title">
-             <string>X-Velocity</string>
+             <string>Velocity</string>
             </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-            <layout class="QFormLayout" name="formLayout_10">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_17">
-               <property name="text">
-                <string>U&lt;sub&gt;x&lt;/sub&gt; (m/s)</string>
-               </property>
+            <layout class="QVBoxLayout" name="verticalLayout_3">
+             <item>
+              <widget class="QWidget" name="widget_7" native="true">
+               <layout class="QFormLayout" name="formLayout_13">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_21">
+                  <property name="text">
+                   <string>Relaxation (0~1)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="relaxation"/>
+                </item>
+               </layout>
               </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="xVelocity"/>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QGroupBox" name="yVelocityGroup">
-            <property name="title">
-             <string>Y-Velocity</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-            <layout class="QFormLayout" name="formLayout_11">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_19">
-               <property name="text">
-                <string>U&lt;sub&gt;x&lt;/sub&gt; (m/s)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="yVelocity"/>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QGroupBox" name="zVelocityGroup">
-            <property name="title">
-             <string>Z-Velocity</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-            <layout class="QFormLayout" name="formLayout_12">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_20">
-               <property name="text">
-                <string>U&lt;sub&gt;z&lt;/sub&gt; (m/s)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="zVelocity"/>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QWidget" name="widget_7" native="true">
-            <layout class="QFormLayout" name="formLayout_13">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_21">
-               <property name="text">
-                <string>relaxation (0~1)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="relaxation"/>
              </item>
             </layout>
            </widget>
@@ -317,4 +266,7 @@
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="zoneTypeRadioGroup"/>
+ </buttongroups>
 </ui>

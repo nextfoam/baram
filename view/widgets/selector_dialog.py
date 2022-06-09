@@ -40,11 +40,15 @@ class SelectorDialog(QDialog):
     def selectedItem(self):
         return self._ui.list.currentItem().data(Qt.UserRole)[ItemDataIndex.ID_DATA.value]
 
-    def showEvent(self, event):
+    def showEvent(self, ev):
+        if ev.spontaneous():
+            return super().showEvent(ev)
+
         self._ui.filter.clear()
         self._ui.list.clearSelection()
         self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-        return super().showEvent(event)
+
+        return super().showEvent(ev)
 
     def _connectSignalsSlots(self):
         self._ui.filter.textChanged.connect(self._filterChanged)
@@ -55,7 +59,7 @@ class SelectorDialog(QDialog):
         self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
 
     def _filterChanged(self):
-        filter = self._ui.filter.text().lower()
+        filterText = self._ui.filter.text().lower()
         for i in range(self._ui.list.count()):
             item = self._ui.list.item(i)
-            item.setHidden(filter not in item.data(Qt.UserRole)[ItemDataIndex.FILTERING_TEXT.value])
+            item.setHidden(filterText not in item.data(Qt.UserRole)[ItemDataIndex.FILTERING_TEXT.value])

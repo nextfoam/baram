@@ -9,17 +9,16 @@ from PySide6.QtWidgets import QMessageBox
 from view.widgets.resizable_dialog import ResizableDialog
 from .supersonic_inflow_dialog_ui import Ui_SupersonicInflowDialog
 from .turbulence_model import TurbulenceModel
+from .boundary_db import BoundaryDB
 
 
 class SupersonicInflowDialog(ResizableDialog):
-    BOUNDARY_CONDITIONS_XPATH = './/boundaryConditions'
-
     def __init__(self, bcid):
         super().__init__()
         self._ui = Ui_SupersonicInflowDialog()
         self._ui.setupUi(self)
 
-        self._xpath = f'{self.BOUNDARY_CONDITIONS_XPATH}/boundaryCondition[@bcid="{bcid}"]'
+        self._xpath = f'{BoundaryDB.BOUNDARY_CONDITIONS_XPATH}/boundaryCondition[@bcid="{bcid}"]'
         self._boundaryCondition = None
 
         self._db = coredb.CoreDB()

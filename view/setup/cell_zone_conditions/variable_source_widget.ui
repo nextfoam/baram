@@ -53,16 +53,6 @@
           <height>0</height>
          </size>
         </property>
-        <item>
-         <property name="text">
-          <string>Value per Unit Volume</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Value for Entire Cell Zone</string>
-         </property>
-        </item>
        </widget>
       </item>
       <item row="1" column="0">
@@ -116,21 +106,6 @@
                 <height>0</height>
                </size>
               </property>
-              <item>
-               <property name="text">
-                <string>Constant</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Piecewise Linear</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Polynomial</string>
-               </property>
-              </item>
              </widget>
             </item>
             <item>

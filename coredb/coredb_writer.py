@@ -7,10 +7,11 @@ from coredb.coredb import CoreDB, Error
 
 
 class DBWriteItem:
-    def __init__(self, path, value, name):
+    def __init__(self, path, value, name, isAttribute=False):
         self._xpath = path
         self._value = value
         self._name = name
+        self._isAttribute = isAttribute
 
     @property
     def xpath(self):
@@ -23,6 +24,9 @@ class DBWriteItem:
     @property
     def name(self):
         return self._name
+
+    def isAttribute(self):
+        return self._isAttribute
 
 
 class DBWriterError:
@@ -48,14 +52,22 @@ class CoreDBWriter:
 
         self._db = CoreDB()
 
-    def append(self, xpath, value, name):
-        self._items.append(DBWriteItem(xpath, value, name))
+    def append(self, xpath, value, label):
+        self._items.append(DBWriteItem(xpath, value, label))
+
+    def setAttribute(self, xpath, name, value):
+        self._items.append(DBWriteItem(xpath, value, name, True))
 
     def write(self):
         self._errors = []
         with self._db:
             for i in self._items:
-                error = self._db.setValue(i.xpath, i.value)
+                error = None
+                if i.isAttribute():
+                    self._db.setAttribute(i.xpath, i.name, i.value)
+                else:
+                    error = self._db.setValue(i.xpath, i.value)
+
                 if error is not None:
                     self._errors.append(DBWriterError(i.name, error))
 

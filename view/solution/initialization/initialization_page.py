@@ -42,7 +42,9 @@ class InitializationPage(QWidget):
 
     def hideEvent(self, ev):
         if ev.spontaneous():
-            return
+            return super().hideEvent(ev)
+
+        return super().hideEvent(ev)
 
     def _load(self):
         pass

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, auto
-
 from PySide6.QtWidgets import QWidget, QTableWidgetItem, QHeaderView, QComboBox
 from PySide6.QtCore import Qt
 
@@ -25,37 +23,7 @@ from .interface_dialog import InterfaceDialog
 from .porous_jump_dialog import PorousJumpDialog
 from .fan_dialog import FanDialog
 from .cyclic_dialog import CyclicDialog
-
-
-class BoundaryType(Enum):
-    # Inlet
-    VELOCITY_INLET	    = "velocityInlet"
-    FLOW_RATE_INLET	    = "flowRateInlet"
-    PRESSURE_INLET	    = "pressureInlet"
-    ABL_INLET	        = "ablInlet"
-    OPEN_CHANNEL_INLET  = "openChannelInlet"
-    FREE_STREAM	        = "freeStream"
-    FAR_FIELD_RIEMANN	= "farFieldRiemann"
-    SUBSONIC_INFLOW	    = "subsonicInflow"
-    SUPERSONIC_INFLOW	= "supersonicInflow"
-    # Outlet
-    PRESSURE_OUTLET	    = "pressureOutlet"
-    OPEN_CHANNEL_OUTLET = "openChannelOutlet"
-    OUTFLOW	            = "outflow"
-    SUBSONIC_OUTFLOW	= "subsonicOutflow"
-    SUPERSONIC_OUTFLOW	= "supersonicOutflow"
-    # Wall
-    WALL	            = "wall"
-    THERMO_COUPLED_WALL	= "thermoCoupledWall"
-    POROUS_JUMP	        = "porousJump"
-    FAN	                = "fan"
-    # Internal
-    SYMMETRY	        = "symmetry"
-    INTERFACE	        = "interface"
-    EMPTY	            = "empty"
-    CYCLIC	            = "cyclic"
-    WEDGE	            = "wedge"
-
+from .boundary_db import BoundaryType, ListItemIndex
 
 DIALOGS = {
     BoundaryType.VELOCITY_INLET: VelocityInletDialog,
@@ -84,12 +52,6 @@ DIALOGS = {
 }
 
 
-class ListItemIndex(Enum):
-    ID = 0
-    NAME = auto()
-    TYPE = auto()
-
-
 class BoundaryConditionsPage(QWidget):
     def __init__(self):
         super().__init__()
@@ -109,7 +71,7 @@ class BoundaryConditionsPage(QWidget):
 
     def hideEvent(self, ev):
         if ev.spontaneous():
-            return
+            return super().hideEvent(ev)
 
     def _createComboBox(self, currentType):
         combo = QComboBox()
@@ -155,9 +117,6 @@ class BoundaryConditionsPage(QWidget):
         self._ui.edit.clicked.connect(self._edit)
 
     def _load(self):
-        self._db.addBoundaryCondition("boundary1", "cyclic")
-        self._db.addBoundaryCondition("boundary2", "patch")
-
         self._ui.list.clear()
 
         self._boundaries = self._db.getBoundaryConditions()

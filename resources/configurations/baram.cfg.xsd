@@ -335,8 +335,8 @@
                             <xs:enumeration value="none"/>
                             <xs:enumeration value="mrf"/>
                             <xs:enumeration value="porous"/>
-                            <xs:enumeration value="slidingMesh"/>
                             <xs:enumeration value="actuatorDisk"/>
+                            <xs:enumeration value="slidingMesh"/>
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:element>
@@ -542,6 +542,14 @@
                                     </xs:simpleContent>
                                 </xs:complexType>
                             </xs:element>
+                            <xs:element name="relaxation" default="1">
+                                <xs:simpleType>
+                                    <xs:restriction base="inputNumberType">
+                                        <xs:minInclusive value="0"/>
+                                        <xs:maxInclusive value="1"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
                             <xs:element name="temperature" default="300">
                                 <xs:complexType>
                                     <xs:simpleContent>
@@ -549,6 +557,50 @@
                                             <xs:attribute name="disabled"
                                                           type="xs:boolean"
                                                           use="required"/>
+                                        </xs:extension>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="turbulentKineticEnergy" default="0">
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="inputNumberType">
+                                            <xs:attribute name="disabled"
+                                                          type="xs:boolean"
+                                                          default="true"/>
+                                        </xs:extension>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="turbulentDissipationRate" default="0">
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="inputNumberType">
+                                            <xs:attribute name="disabled"
+                                                          type="xs:boolean"
+                                                          default="true"/>
+                                        </xs:extension>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="specificDissipationRate" default="0">
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="inputNumberType">
+                                            <xs:attribute name="disabled"
+                                                          type="xs:boolean"
+                                                          default="true"/>
+                                        </xs:extension>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="modifiedTurbulentViscosity" default="0">
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="inputNumberType">
+                                            <xs:attribute name="disabled"
+                                                          type="xs:boolean"
+                                                          default="true"/>
                                         </xs:extension>
                                     </xs:simpleContent>
                                 </xs:complexType>

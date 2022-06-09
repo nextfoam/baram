@@ -52,12 +52,20 @@ class MaterialDialog(ResizableDialog):
         self._polynomialDialog = None
 
         self._showPropertyRows()
+        if self._phase != Phase.GAS:
+            layout = self._ui.viscosityGroup.layout()
+            layout.removeRow(self._ui.sutherlandCoefficient)
+            layout.removeRow(self._ui.sutherlandTemperature)
+
         self._setupSpecifications()
         self._ui.viscosityGroup.setVisible(self._phase != Phase.SOLID)
 
         self._connectSignalsSlots()
 
-    def showEvent(self, event):
+    def showEvent(self, ev):
+        if ev.spontaneous():
+            return super().showEvent(ev)
+
         self._ui.material.setText(self._db.getValue(self._xpath + '/name'))
 
         specification = MaterialDB.getSpecification(self._db.getValue(self._xpath + '/density/specification'))
@@ -87,15 +95,17 @@ class MaterialDialog(ResizableDialog):
         self._ui.constantThermalConductivity.setText(self._db.getValue(self._xpath + '/thermalConductivity/constant'))
         self._thermalConductivityTypeChanged()
 
-        if self._phase != Phase.SOLID:
-            self._ui.molecularWeight.setText(self._db.getValue(self._xpath + '/molecularWeight'))
-        if self._phase == Phase.GAS:
-            self._ui.absorptionCoefficient.setText(self._db.getValue(self._xpath + '/absorptionCoefficient'))
-        if self._phase == Phase.LIQUID:
-            self._ui.surfaceTension.setText(self._db.getValue(self._xpath + '/surfaceTension'))
-            self._ui.saturationPressure.setText(self._db.getValue(self._xpath + '/saturationPressure'))
         if self._phase == Phase.SOLID:
             self._ui.emissivity.setText(self._db.getValue(self._xpath + '/emissivity'))
+        else:
+            self._ui.molecularWeight.setText(self._db.getValue(self._xpath + '/molecularWeight'))
+            if self._phase == Phase.GAS:
+                self._ui.absorptionCoefficient.setText(self._db.getValue(self._xpath + '/absorptionCoefficient'))
+            elif self._phase == Phase.LIQUID:
+                self._ui.surfaceTension.setText(self._db.getValue(self._xpath + '/surfaceTension'))
+                self._ui.saturationPressure.setText(self._db.getValue(self._xpath + '/saturationPressure'))
+
+        return super().showEvent(ev)
 
     def accept(self):
         writer = CoreDBWriter()
@@ -150,18 +160,19 @@ class MaterialDialog(ResizableDialog):
                 QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Thermal Conductivity Polynomial."))
                 return
 
-        if self._phase != Phase.SOLID:
-            writer.append(self._xpath + '/molecularWeight',
-                          self._ui.molecularWeight.text(), self.tr("Molecular Weight"))
-        if self._phase == Phase.GAS:
-            writer.append(self._xpath + '/absorptionCoefficient',
-                          self._ui.absorptionCoefficient.text(), self.tr("Absorption Coefficient"))
-        if self._phase == Phase.LIQUID:
-            writer.append(self._xpath + '/surfaceTension', self._ui.surfaceTension.text(), self.tr("Surface Tension"))
-            writer.append(self._xpath + '/saturationPressure',
-                          self._ui.saturationPressure.text(), self.tr("Surface Pressure"))
         if self._phase == Phase.SOLID:
             writer.append(self._xpath + '/emissivity', self._ui.emissivity.text(), self.tr("Emissivity"))
+        else:
+            writer.append(self._xpath + '/molecularWeight',
+                          self._ui.molecularWeight.text(), self.tr("Molecular Weight"))
+            if self._phase == Phase.GAS:
+                writer.append(self._xpath + '/absorptionCoefficient',
+                              self._ui.absorptionCoefficient.text(), self.tr("Absorption Coefficient"))
+            elif self._phase == Phase.LIQUID:
+                writer.append(self._xpath + '/surfaceTension',
+                              self._ui.surfaceTension.text(), self.tr("Surface Tension"))
+                writer.append(self._xpath + '/saturationPressure',
+                              self._ui.saturationPressure.text(), self.tr("Surface Pressure"))
 
         errorCount = writer.write()
         if errorCount > 0:
@@ -243,14 +254,12 @@ class MaterialDialog(ResizableDialog):
         self._ui.specificHeatType.currentTextChanged.connect(self._specificHeatTypeChanged)
         self._ui.viscosityType.currentTextChanged.connect(self._viscosityTypeChanged)
         self._ui.thermalConductivityType.currentTextChanged.connect(self._thermalConductivityTypeChanged)
-        self._ui.densityEdit.clicked.connect(self._editDensity)
         self._ui.specificHeatEdit.clicked.connect(self._editSpecificHeat)
         self._ui.viscosityEdit.clicked.connect(self._editViscosity)
         self._ui.thermalConductivityEdit.clicked.connect(self._editThermalConductivity)
 
     def _densityTypeChanged(self):
         specification = self._ui.densityType.currentData(Qt.UserRole)
-        self._ui.densityEdit.setEnabled(specification == Specification.PERFECT_GAS)
         self._ui.constantDensity.setEnabled(specification == Specification.CONSTANT)
 
     def _specificHeatTypeChanged(self):
@@ -269,9 +278,6 @@ class MaterialDialog(ResizableDialog):
         specification = self._ui.thermalConductivityType.currentData(Qt.UserRole)
         self._ui.thermalConductivityEdit.setEnabled(specification == Specification.POLYNOMIAL)
         self._ui.constantThermalConductivity.setEnabled(specification == Specification.CONSTANT)
-
-    def _editDensity(self):
-        pass
 
     def _editSpecificHeat(self):
         self._dialog = PolynomialDialog(self.tr("Polynomial Specific Heat"),

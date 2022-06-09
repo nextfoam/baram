@@ -18,9 +18,11 @@ class MaterialCard(QWidget):
         self._ui = Ui_MaterialCard()
         self._ui.setupUi(self)
 
+        self._mid = mid
+        self._dialog = None
+
         self._db = coredb.CoreDB()
         self._xpath = MaterialDB.getXPath(mid)
-        self._dialog = None
 
         self._connectSignalsSlots()
         self._load()

@@ -27,14 +27,17 @@ class MaterialPage(QWidget):
         self._connectSignalsSlots()
         self._load()
 
-    def hideEvent(self, ev):
-        if ev.spontaneous():
+    def _remove(self, card):
+        # The count of the layout returns one more than the number of cards, because of the stretch.
+        if self._cardListLayout.count() < 3:
+            QMessageBox.information(self, self.tr("Remove material"),
+                                    self.tr("At least one material is required and cannot be removed."))
             return
 
-    def _remove(self, card):
         confirm = QMessageBox.question(
-            self, self.tr("Remove material"), self.tr('Remove material "{material}"').format(material=card.name))
+            self, self.tr("Remove material"), self.tr(f'Remove material "{card.name}"'))
         if confirm == QMessageBox.Yes:
+            self._db.removeMaterial(card.name)
             self._cardListLayout.removeWidget(card)
             card.deleteLater()
 

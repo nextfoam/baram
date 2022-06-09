@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>217</width>
-    <height>638</height>
+    <height>666</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,7 +33,35 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QGroupBox" name="groupBox_2">
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QFormLayout" name="formLayout_6">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Model</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="model"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="darcyForchheimer">
         <property name="title">
          <string>Darcy-Forchheimer</string>
         </property>
@@ -158,13 +186,13 @@
          <item>
           <widget class="QGroupBox" name="groupBox_5">
            <property name="title">
-            <string>Viscous Resistance cefficient</string>
+            <string>Viscous Resistance Coefficient</string>
            </property>
            <layout class="QFormLayout" name="formLayout_4">
             <item row="0" column="0">
              <widget class="QLabel" name="label_8">
               <property name="text">
-               <string>X (1/㎡)</string>
+               <string>X (1/m&lt;sup&gt;2&lt;/sup&gt;)</string>
               </property>
              </widget>
             </item>
@@ -174,7 +202,7 @@
             <item row="1" column="0">
              <widget class="QLabel" name="label_9">
               <property name="text">
-               <string>Y (1/㎡)</string>
+               <string>Y (1/m&lt;sup&gt;2&lt;/sup&gt;)</string>
               </property>
              </widget>
             </item>
@@ -184,7 +212,7 @@
             <item row="2" column="0">
              <widget class="QLabel" name="label_10">
               <property name="text">
-               <string>Z (1/㎡)</string>
+               <string>Z (1/m&lt;sup&gt;2&lt;/sup&gt;)</string>
               </property>
              </widget>
             </item>
@@ -198,7 +226,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_7">
+       <widget class="QGroupBox" name="powerLaw">
         <property name="title">
          <string>Power Law</string>
         </property>

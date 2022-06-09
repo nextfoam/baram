@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from threading import Lock
 from enum import Enum, Flag, auto
 
-MATERIALS_XPATH = './/materials'
+from PySide6.QtCore import QCoreApplication
 
-_mutex = Lock()
+
+MATERIALS_XPATH = './/materials'
 
 
 class ListIndex(Enum):
@@ -37,14 +37,14 @@ class Specification(Flag):
 
 
 class MaterialDB(object):
-    specificationText = {
-        Specification.CONSTANT: "Constant",
-        Specification.PERFECT_GAS: "Perfect Gas",
-        Specification.SUTHERLAND: "Sutherland",
-        Specification.POLYNOMIAL: "Polynomial"
+    _specificationText = {
+        Specification.CONSTANT:    QCoreApplication.translate("MaterialDB", "Constant"),
+        Specification.PERFECT_GAS: QCoreApplication.translate("MaterialDB", "Perfect Gas"),
+        Specification.SUTHERLAND:  QCoreApplication.translate("MaterialDB", "Sutherland"),
+        Specification.POLYNOMIAL:  QCoreApplication.translate("MaterialDB", "Polynomial"),
     }
 
-    phaseText = {
+    _phaseText = {
         Phase.GAS: "Gas",
         Phase.LIQUID: "Liquid",
         Phase.SOLID: "Solid"
@@ -65,7 +65,7 @@ class MaterialDB(object):
         
     @classmethod
     def getPhaseText(cls, phase):
-        return cls.phaseText[phase]
+        return cls._phaseText[phase]
 
     @classmethod
     def getSpecification(cls, dbText):
@@ -73,4 +73,4 @@ class MaterialDB(object):
 
     @classmethod
     def getSpecificationText(cls, specifcation):
-        return cls.specificationText[specifcation]
+        return cls._specificationText[specifcation]
