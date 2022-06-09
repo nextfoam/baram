@@ -43,6 +43,18 @@ class TestCellZones(unittest.TestCase):
         path = f'.//region[name="{rname}"]/cellZones/cellZone[name="{zname}"]/zoneType'
         self.assertEqual('none', self.db.getValue(path))
 
+    def testFixedValue(self):
+        rname = 'testRegion_1'
+        zname = 'testZone_1'
+        self.db.addRegion(rname)
+        self.db.addCellZone(rname, zname)
+
+        path = f'.//region[name="{rname}"]/cellZones/cellZone[name="{zname}"]/fixedValues/xVelocity'
+        expected = '3'
+        self.db.setValue(path, expected)
+        value = self.db.getValue(path)
+        self.assertEqual(expected, value)
+
     def tearDown(self) -> None:
         del coredb.CoreDB._instance
 

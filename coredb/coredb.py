@@ -229,22 +229,24 @@ class CoreDB(object):
         if not schema.type.has_simple_content():
             raise LookupError
 
-        if schema.type.local_name == 'inputNumberType' or (
-                schema.type.base_type is not None and schema.type.base_type.local_name == 'inputNumberType'):  # The case when the type has restrictions
+        if schema.type.local_name == 'inputNumberType' \
+                or (schema.type.base_type is not None
+                    and schema.type.base_type.local_name == 'inputNumberType'):  # The case when the type has restrictions or attributes
             try:
                 decimal = float(value)
             except ValueError:
                 self._lastError = Error.FLOAT_ONLY
                 return Error.FLOAT_ONLY
 
-            minValue = schema.type.min_value
-            maxValue = schema.type.max_value
-
-            if minValue is not None and decimal < minValue:
+            if hasattr(schema.type, 'min_value') \
+                    and schema.type.min_value is not None \
+                    and decimal < schema.type.min_value:
                 self._lastError = Error.OUT_OF_RANGE
                 return Error.OUT_OF_RANGE
 
-            if maxValue is not None and decimal > maxValue:
+            if hasattr(schema.type, 'max_value') \
+                    and schema.type.max_value is not None \
+                    and decimal > schema.type.max_value:
                 self._lastError = Error.OUT_OF_RANGE
                 return Error.OUT_OF_RANGE
 
