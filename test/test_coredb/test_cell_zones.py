@@ -7,6 +7,9 @@ class TestCellZones(unittest.TestCase):
     def setUp(self):
         self.db = coredb.CoreDB()
 
+    def tearDown(self) -> None:
+        del coredb.CoreDB._instance
+
     def testAddRegion(self):
         rname = 'testRegion_1'
         self.db.addRegion(rname)
@@ -35,6 +38,19 @@ class TestCellZones(unittest.TestCase):
         czid = self.db.addCellZone(rname, zname)
         self.assertEqual(2, czid)  # next to 'All' zone
 
+    def testCellZoneIdUniqueness(self):
+        """Cell Zone index should be unique regardless of region
+        """
+        rname1 = 'testRegion_1'
+        rname2 = 'testRegion_2'
+        zname1 = 'testZone_1'
+        zname2 = 'testZone_2'
+        self.db.addRegion(rname1)
+        self.db.addRegion(rname2)
+        id1 = self.db.addCellZone(rname1, zname1)
+        id2 = self.db.addCellZone(rname2, zname2)
+        self.assertEqual(id1+1, id2)
+
     def testDefaultCellZoneType(self):
         rname = 'testRegion_1'
         zname = 'testZone_1'
@@ -54,9 +70,6 @@ class TestCellZones(unittest.TestCase):
         self.db.setValue(path, expected)
         value = self.db.getValue(path)
         self.assertEqual(expected, value)
-
-    def tearDown(self) -> None:
-        del coredb.CoreDB._instance
 
 
 if __name__ == '__main__':

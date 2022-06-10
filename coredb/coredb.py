@@ -583,7 +583,7 @@ class CoreDB(object):
         if zone is not None:
             raise FileExistsError
 
-        idList = self._xmlTree.xpath(f'.//x:region[x:name="{rname}"]/x:cellZones/x:cellZone/@czid', namespaces={'x': ns})
+        idList = self._xmlTree.xpath(f'.//x:cellZones/x:cellZone/@czid', namespaces={'x': ns})
 
         for index in range(1, self.CELL_ZONE_MAX_INDEX):
             if str(index) not in idList:
@@ -615,7 +615,7 @@ class CoreDB(object):
         if bc is not None:
             raise FileExistsError
 
-        idList = self._xmlTree.xpath(f'.//x:region[x:name="{rname}"]/x:boundaryConditions/x:boundaryCondition/@bcid', namespaces={'x': ns})
+        idList = self._xmlTree.xpath(f'.//x:boundaryConditions/x:boundaryCondition/@bcid', namespaces={'x': ns})
 
         for index in range(1, self.BOUNDARY_CONDITION_MAX_INDEX):
             if str(index) not in idList:
