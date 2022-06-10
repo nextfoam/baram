@@ -169,16 +169,29 @@ class ThermophysicalProperties(object):
 
     def __init__(self, rname: str):
         self._rname = rname
+        self._data = None
 
     def __str__(self):
+        return self.asstr()
+
+    def _build(self):
+        if self._data is not None:
+            return
+
         db = coredb.CoreDB()
 
         mid = db.getValue(f'.//region[name="{self._rname}"]/material')
         phase = db.getValue(f'.//materials/material[@mid="{mid}"]/phase')
 
         if phase == 'solid':
-            data = _constructSolid(self._rname)
+            self._data = _constructSolid(self._rname)
         else:
-            data = _constructFluid(self._rname)
+            self._data = _constructFluid(self._rname)
 
-        return str(FoamFileGenerator(data, header=self.HEADER))
+    def asdict(self):
+        self._build()
+        return self._data
+
+    def asstr(self):
+        self._build()
+        return str(FoamFileGenerator(self._data, header=self.HEADER))
