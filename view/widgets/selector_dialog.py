@@ -16,15 +16,16 @@ class ItemDataIndex(Enum):
 
 
 class SelectorDialog(QDialog):
-    def __init__(self, title, label, items):
+    def __init__(self, parent, title, label, items):
         """Constructs a new SelectorDialog
 
         Args:
+            parent: Parent widget of the dialog
             title: Window title of the dialog
             label: The label of the item (object name)
             items: List of item tuples - [(text to display, text for filtering, data to identify the item), ...]
         """
-        super().__init__()
+        super().__init__(parent)
         self._ui = Ui_SelectorDialog()
         self._ui.setupUi(self)
 

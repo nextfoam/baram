@@ -5,6 +5,8 @@ from enum import Enum, Flag, auto
 
 from PySide6.QtCore import QCoreApplication
 
+from coredb import coredb
+
 
 MATERIALS_XPATH = './/materials'
 
@@ -37,7 +39,7 @@ class Specification(Flag):
 
 
 class MaterialDB(object):
-    _specificationText = {
+    specificationText = {
         Specification.CONSTANT:    QCoreApplication.translate("MaterialDB", "Constant"),
         Specification.PERFECT_GAS: QCoreApplication.translate("MaterialDB", "Perfect Gas"),
         Specification.SUTHERLAND:  QCoreApplication.translate("MaterialDB", "Sutherland"),
@@ -49,6 +51,8 @@ class MaterialDB(object):
         Phase.LIQUID: "Liquid",
         Phase.SOLID: "Solid"
     }
+
+    _db = coredb.CoreDB()
 
     @classmethod
     def getXPath(cls, mid):
@@ -68,9 +72,9 @@ class MaterialDB(object):
         return cls._phaseText[phase]
 
     @classmethod
-    def getSpecification(cls, dbText):
-        return Specification(dbText)
+    def getSpecificationText(cls, dbText):
+        return cls.specificationText[Specification(dbText)]
 
     @classmethod
-    def getSpecificationText(cls, specifcation):
-        return cls._specificationText[specifcation]
+    def isMaterialExists(cls, name):
+        return cls._db.exists(f'{MATERIALS_XPATH}/material[name="{name}"]')

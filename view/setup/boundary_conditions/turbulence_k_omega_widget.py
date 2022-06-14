@@ -1,53 +1,54 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum
-
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
+from coredb import coredb
 from .turbulence_k_omega_widget_ui import Ui_turbulenceKOmegaWidget
-
-
-class SpecificationMethod(Enum):
-    K_AND_OMEGA                   = "kAndOmega"
-    INTENSITY_AND_VISCOSITY_RATIO = "intensityAndViscosityRatio"
+from .boundary_db import KOmegaSpecification
 
 
 class TurbulenceKOmegaWidget(QWidget):
     RELATIVE_PATH = '/turbulence/k-omega'
 
-    def __init__(self, parent):
+    def __init__(self, xpath):
         super().__init__()
         self._ui = Ui_turbulenceKOmegaWidget()
-
-        self._parent = parent
-
         self._ui.setupUi(self)
+
+        self._specificationMethods = {
+            KOmegaSpecification.K_AND_OMEGA.value: self.tr("K and Omega"),
+            KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value: self.tr("Intensity and Viscosity Ratio"),
+        }
+        self._setupSpecificationMethodCombo()
+
+        self._db = coredb.CoreDB()
+        self._xpath = xpath
 
         self._connectSignalsSlots()
 
-    def load(self, db, xpath):
-        path = xpath + self.RELATIVE_PATH
+    def load(self):
+        path = self._xpath + self.RELATIVE_PATH
 
-        self._setupSpecificationMethodCombo(db.getValue(path + '/specification'))
-        self._ui.turbulentKineticEnergy.setText(db.getValue(path + '/turbulentKineticEnergy'))
-        self._ui.specificDissipationRate.setText(db.getValue(path + '/specificDissipationRate'))
-        self._ui.turbulentIntensity.setText(db.getValue(path + '/turbulentIntensity'))
-        self._ui.turbulentViscosityRatio.setText(db.getValue(path + '/turbulentViscosityRatio'))
+        self._ui.specificationMethod.setCurrentText(
+            self._specificationMethods[self._db.getValue(path + '/specification')])
+        self._ui.turbulentKineticEnergy.setText(self._db.getValue(path + '/turbulentKineticEnergy'))
+        self._ui.specificDissipationRate.setText(self._db.getValue(path + '/specificDissipationRate'))
+        self._ui.turbulentIntensity.setText(self._db.getValue(path + '/turbulentIntensity'))
+        self._ui.turbulentViscosityRatio.setText(self._db.getValue(path + '/turbulentViscosityRatio'))
+        self._specificationMethodChanged()
 
-    def appendToWriter(self, writer, xpath):
-        path = xpath + self.RELATIVE_PATH
+    def appendToWriter(self, writer):
+        path = self._xpath + self.RELATIVE_PATH
 
         specification = self._ui.specificationMethod.currentData()
-        writer.append(path + '/specification', specification.value, None)
-
-        if specification == SpecificationMethod.K_AND_OMEGA:
+        writer.append(path + '/specification', specification, None)
+        if specification == KOmegaSpecification.K_AND_OMEGA.value:
             writer.append(path + '/turbulentKineticEnergy', self._ui.turbulentKineticEnergy.text(),
                           self.tr("Turbulent Kinetic Energy"))
             writer.append(path + '/specificDissipationRate', self._ui.specificDissipationRate.text(),
                           self.tr("Specific Dissipation Rate"))
-        elif specification == SpecificationMethod.INTENSITY_AND_VISCOSITY_RATIO:
+        elif specification == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
             writer.append(path + '/turbulentIntensity', self._ui.turbulentIntensity.text(),
                           self.tr("Turbulent Intensity"))
             writer.append(path + '/turbulentViscosityRatio', self._ui.turbulentViscosityRatio.text(),
@@ -56,19 +57,12 @@ class TurbulenceKOmegaWidget(QWidget):
     def _connectSignalsSlots(self):
         self._ui.specificationMethod.currentIndexChanged.connect(self._specificationMethodChanged)
 
-    def _setupSpecificationMethodCombo(self, specification):
-        self._addSpecificationMethodComboItem(specification, SpecificationMethod.K_AND_OMEGA,
-                                              self.tr("K and Omega"))
-        self._addSpecificationMethodComboItem(specification, SpecificationMethod.INTENSITY_AND_VISCOSITY_RATIO,
-                                              self.tr("Intensity and Viscosity Ratio"))
-
+    def _setupSpecificationMethodCombo(self):
+        for value, text in self._specificationMethods.items():
+            self._ui.specificationMethod.addItem(text, value)
 
     def _specificationMethodChanged(self):
-        method = self._ui.specificationMethod.currentData(Qt.UserRole)
-        self._ui.kAndOmega.setVisible(method == SpecificationMethod.K_AND_OMEGA)
-        self._ui.intensityAndViscocityRatio.setVisible(method == SpecificationMethod.INTENSITY_AND_VISCOSITY_RATIO)
-
-    def _addSpecificationMethodComboItem(self, current, method, text):
-        self._ui.specificationMethod.addItem(text, method)
-        if current == method.value:
-            self._ui.specificationMethod.setCurrentIndex(self._ui.specificationMethod.count() - 1)
+        specification = self._ui.specificationMethod.currentData()
+        self._ui.kAndOmega.setVisible(specification == KOmegaSpecification.K_AND_OMEGA.value)
+        self._ui.intensityAndViscocityRatio.setVisible(
+            specification == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value)

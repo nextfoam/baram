@@ -79,7 +79,7 @@ class PiecewiseLinearDialog(QDialog):
 
             self.changed.emit(text)
 
-    def __init__(self, title, columns, data, prefix=""):
+    def __init__(self, parent, title, columns, data, prefix=""):
         """Constructs a dialog for piecewise linear values.
 
         Args:
@@ -89,7 +89,7 @@ class PiecewiseLinearDialog(QDialog):
                 ["column1_value1 column1_value2, ...", "column2_value1 column2_value2, ...", ...]
             prefix: The prefix of index
         """
-        super().__init__()
+        super().__init__(parent)
         self._ui = Ui_NumberInputDialog()
         self._ui.setupUi(self)
         self.setWindowTitle(title)
@@ -208,7 +208,7 @@ class PiecewiseLinearDialog(QDialog):
 
 
 class PolynomialDialog(PiecewiseLinearDialog):
-    def __init__(self, title, data, prefix=""):
+    def __init__(self, parent, title, data, prefix=""):
         """Constructs a dialog for polynomial coefficients.
 
         Args:
@@ -216,5 +216,12 @@ class PolynomialDialog(PiecewiseLinearDialog):
             data: Space-separated column data. "value1 value2 ..."
             prefix: The prefix of index
         """
-        super().__init__(title, [self.tr("Coefficient")], [data], prefix)
+        super().__init__(parent, title, [self.tr("Coefficient")], [data], prefix)
         self._ui.file.hide()
+
+    def getValues(self):
+        values = ''
+        for field in self._rowFields:
+            values = values + field.value(0) + ' '
+
+        return values[:-1]

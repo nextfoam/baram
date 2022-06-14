@@ -79,18 +79,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QComboBox" name="specificationMethod">
-           <item>
-            <property name="text">
-             <string>K and Epsilon</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Intensity and Viscosity Ratio</string>
-            </property>
-           </item>
-          </widget>
+          <widget class="QComboBox" name="specificationMethod"/>
          </item>
         </layout>
        </widget>
@@ -101,12 +90,12 @@
          <item row="0" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Turbulent Kinetic Energe, k (㎡/s&lt;sup&gt;2&lt;/sup&gt;)</string>
+            <string>Turbulent Kinetic Energy, k (㎡/s&lt;sup&gt;2&lt;/sup&gt;)</string>
            </property>
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="kEpsilonK"/>
+          <widget class="QLineEdit" name="turbulentKineticEnergy"/>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_3">
@@ -132,7 +121,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="lineEdit"/>
+          <widget class="QLineEdit" name="turbulentIntensity"/>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_5">
@@ -142,7 +131,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="lineEdit_2"/>
+          <widget class="QLineEdit" name="turbulentViscosityRatio"/>
          </item>
         </layout>
        </widget>

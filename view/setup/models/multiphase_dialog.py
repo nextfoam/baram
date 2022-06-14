@@ -19,17 +19,18 @@ class ModelId(Enum):
 
 
 class MultiphaseModelDialog(ResizableDialog):
-    models = {
-        ModelId.OFF.value:             MultiphaseModel.OFF,
-        ModelId.VOLUME_OF_FLUID.value: MultiphaseModel.VOLUME_OF_FLUID,
-    }
-
     def __init__(self):
         super().__init__()
         self._ui = Ui_MultiphaseDialog()
         self._ui.setupUi(self)
 
+        self._modelRadios = {
+            self._ui.modelRadioGroup.id(self._ui.off): MultiphaseModel.OFF.value,
+            self._ui.modelRadioGroup.id(self._ui.volumeOfFluid): MultiphaseModel.VOLUME_OF_FLUID.value,
+        }
+
         self._db = coredb.CoreDB()
+        self._xpath = ModelsDB.MULTIPHASE_MODELS_PATH
 
         self._ui.volumeOfFluid.hide()
         self._ui.mixture.hide()
@@ -38,30 +39,24 @@ class MultiphaseModelDialog(ResizableDialog):
         if ev.spontaneous():
             return super().showEvent(ev)
 
-        xpath = ModelsDB.MULTIPHASE_MODELS_PATH
-        self._setModel(ModelsDB.getMultiphaseModel(self._db.getValue(xpath + '/model')))
+        self._getRadio(
+            self._ui.modelRadioGroup, self._modelRadios, self._db.getValue(self._xpath + '/model')
+        ).setChecked(True)
 
         return super().showEvent(ev)
 
     def accept(self):
-        xpath = ModelsDB.MULTIPHASE_MODELS_PATH
         writer = CoreDBWriter()
-        writer.append(xpath + '/model',
-                      self.models[self._ui.modelRadioGroup.id(self._ui.modelRadioGroup.checkedButton())].value,
-                      self.tr("Model"))
+        writer.append(self._xpath + '/model', self._getRadioValue(self._ui.modelRadioGroup, self._modelRadios), None)
 
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
-            self.close()
+            super().accept()
 
-    def _setModel(self, model):
-        self._setupRadioGroup(self._ui.off, ModelId.OFF.value, model)
-        self._setupRadioGroup(self._ui.volumeOfFluid, ModelId.VOLUME_OF_FLUID.value, model)
-        # self._setRadioId(self._ui.mixture, Model.MIXTURE.value, model)
+    def _getRadio(self, group, radios, value):
+        return group.button(list(radios.keys())[list(radios.values()).index(value)])
 
-    def _setupRadioGroup(self, button, id_, model):
-        self._ui.modelRadioGroup.setId(button, id_)
-        if self.models[id_] == model:
-            button.setChecked(True)
+    def _getRadioValue(self, group, radios):
+        return radios[group.id(group.checkedButton())]

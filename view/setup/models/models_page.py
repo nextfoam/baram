@@ -31,6 +31,9 @@ class ModelsPage(QWidget):
         self._turbulenceDialog = None
         # self._radiationDialog = None
 
+        self._multiphaseModelItem = QListWidgetItem(self._ui.list, Model.MULTIPHASE.value)
+        self._turbulenceModelItem = QListWidgetItem(self._ui.list, Model.TURBULENCE.value)
+
         self._connectSignalsSlots()
 
         self._load()
@@ -41,11 +44,14 @@ class ModelsPage(QWidget):
         self._ui.edit.clicked.connect(self._edit)
 
     def _load(self):
-        model = ModelsDB.getMultiphaseModel(self._db.getValue(ModelsDB.MULTIPHASE_MODELS_PATH + '/model'))
-        self._addModel(self.tr("Multiphase"), ModelsDB.getMuliphaseModelText(model), Model.MULTIPHASE)
+        self._loadMultiphaseModel()
+        self._loadTurbulenceModel()
 
-        model = ModelsDB.getTurbulenceModel(self._db.getValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model'))
-        self._addModel(self.tr("Turbulence"), ModelsDB.getTurbulenceModelText(model), Model.TURBULENCE)
+    def _loadMultiphaseModel(self):
+        self._multiphaseModelItem.setText(self.tr("Multiphase") + "/" + ModelsDB.getMultiphaseModelText())
+
+    def _loadTurbulenceModel(self):
+        self._turbulenceModelItem.setText(self.tr("Turbulence") + "/" + ModelsDB.getTurbulenceModelText())
 
     def _modelSelected(self):
         self._ui.edit.setEnabled(True)
@@ -56,10 +62,12 @@ class ModelsPage(QWidget):
         if model == Model.MULTIPHASE.value:
             if self._multiphaseDialog is None:
                 self._multiphaseDialog = MultiphaseModelDialog()
+                self._multiphaseDialog.accepted.connect(self._loadMultiphaseModel)
             self._multiphaseDialog.open()
         elif model == Model.TURBULENCE.value:
             if self._turbulenceDialog is None:
                 self._turbulenceDialog = TurbulenceModelDialog()
+                self._turbulenceDialog.accepted.connect(self._loadTurbulenceModel)
             self._turbulenceDialog.open()
         # elif model == Model.RADIATION.value:
         #     if self._radiationDialog is None:
@@ -67,6 +75,3 @@ class ModelsPage(QWidget):
         #     self._radiationDialog.open()
         elif model == Model.SPECIES.value:
             pass
-
-    def _addModel(self, name, value, type_):
-        QListWidgetItem(name + "/" + value, self._ui.list, type_.value)

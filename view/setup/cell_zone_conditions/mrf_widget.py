@@ -17,8 +17,8 @@ class MRFWidget(QWidget):
         self.setVisible(False)
 
         self._db = coredb.CoreDB()
+        self._staticBoundaries = None
         self._xpath = xpath + '/mrf'
-
         self._dialog = None
 
         self._connectSignalsSlots()
@@ -31,8 +31,8 @@ class MRFWidget(QWidget):
         self._ui.rotationAxisDirectionX.setText(self._db.getValue(self._xpath + '/rotationAxisDirection/x'))
         self._ui.rotationAxisDirectionY.setText(self._db.getValue(self._xpath + '/rotationAxisDirection/y'))
         self._ui.rotationAxisDirectionZ.setText(self._db.getValue(self._xpath + '/rotationAxisDirection/z'))
-        self._staticBoundaries = self._db.getValue(self._xpath + '/staticBoundaries')
-        self._setStaticBoundaryList(self._staticBoundaries.split() if self._staticBoundaries else [])
+        boundaries = self._db.getValue(self._xpath + '/staticBoundaries')
+        self._setStaticBoundaries(boundaries.split() if boundaries else [])
 
     def appendToWriter(self, writer):
         writer.append(self._xpath + '/rotatingSpeed',
@@ -49,25 +49,25 @@ class MRFWidget(QWidget):
                       self._ui.rotationAxisDirectionY.text(), self.tr("Rotating-Axis Direction Y"))
         writer.append(self._xpath + '/rotationAxisDirection/z',
                       self._ui.rotationAxisDirectionZ.text(), self.tr("Rotating-Axis Direction Z"))
+        writer.append(self._xpath + '/staticBoundaries',
+                      ' '.join(str(b) for b in self._staticBoundaries), self.tr("Static Boundary"))
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectStaticBoundaries)
 
-    def _setStaticBoundaryList(self, boundaries):
+    def _setStaticBoundaries(self, boundaries):
+        self._staticBoundaries = boundaries
+
         self._ui.staticBoundary.clear()
         for i in boundaries:
-            # name = self._db.getValue(BoundaryDB.getBoundaryXPath(i) + '/name')
-            # region = self._db.getValue(BoundaryDB.getBoundaryXPath(i) + '/../../name')
-            # self._ui.staticBoundary.addItem(f'{name} - {region}')
-            self._ui.staticBoundary.addItem(f'{i}')
+            self._ui.staticBoundary.addItem(f'{BoundaryDB.getBoundaryName(i)} / {BoundaryDB.getBoundaryRegion(i)}')
 
     def _selectStaticBoundaries(self):
-        self._dialog = MultiSelectorDialog(self,self.tr("Select Boundaries"),
-                                                   BoundaryDB.getBoundariesForSelector(), self._staticBoundaries)
+        self._dialog = MultiSelectorDialog(self, self.tr("Select Boundaries"),
+                                           BoundaryDB.getBoundariesForSelector(), self._staticBoundaries)
         self._dialog.open()
         self._dialog.accepted.connect(self._staticBoundariesChanged)
 
     def _staticBoundariesChanged(self):
         boundaries = self._dialog.selectedItems()
-        self._setStaticBoundaryList(boundaries)
-        self._staticBoundaries = ' '.join(boundaries)
+        self._setStaticBoundaries(boundaries)

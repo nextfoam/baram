@@ -51,6 +51,7 @@
     <pressureOutlet>
         <totalPressure>0</totalPressure>
         <calculatedBackflow>false</calculatedBackflow>
+        <backflowTotalTemperature>300</backflowTotalTemperature>
     </pressureOutlet>
     <ablInlet>
         <flowDirection>

@@ -57,7 +57,7 @@ class MaterialPage(QWidget):
                 m[DBListIndex.NAME.value],
                 m[DBListIndex.NAME.value])
                 for m in self._db.getMaterialsFromDB()]
-            self._addDialog = SelectorDialog(self.tr("Material"), self.tr("Select material to add"), materials)
+            self._addDialog = SelectorDialog(self, self.tr("Material"), self.tr("Select material to add"), materials)
             self._addDialog.accepted.connect(self._addDialogAccepted)
 
         self._addDialog.open()

@@ -37,38 +37,38 @@ class MaterialCard(QWidget):
         phase = MaterialDB.getPhase(self._db.getValue(self._xpath + '/phase'))
         self._ui.phase.setText("(" + MaterialDB.getPhaseText(phase) + ")")
 
-        specification = MaterialDB.getSpecification(self._db.getValue(self._xpath + '/density/specification'))
-        if specification == Specification.CONSTANT:
+        specification = self._db.getValue(self._xpath + '/density/specification')
+        if specification == Specification.CONSTANT.value:
             self._ui.density.setText(self._db.getValue(self._xpath + '/density/constant') + ' kg/m<sup>3</sup>')
         else:
-            self._ui.density.setText(MaterialDB.getSpeicificationText(specification))
+            self._ui.density.setText(MaterialDB.getSpecificationText(specification))
 
-        specification = MaterialDB.getSpecification(self._db.getValue(self._xpath + '/specificHeat/specification'))
-        if specification == Specification.CONSTANT:
+        specification = self._db.getValue(self._xpath + '/specificHeat/specification')
+        if specification == Specification.CONSTANT.value:
             self._ui.specificHeat.setText(self._db.getValue(self._xpath + '/specificHeat/constant') + ' J/kg·K')
         else:
-            self._ui.specificHeat.setText(MaterialDB.getSpeicificationText(specification))
+            self._ui.specificHeat.setText(MaterialDB.getSpecificationText(specification))
 
         if phase == Phase.SOLID:
             self._ui.viscosistyWidget.hide()
         else:
-            specification = MaterialDB.getSpecification(self._db.getValue(self._xpath + '/viscosity/specification'))
-            if specification == Specification.CONSTANT:
+            specification = self._db.getValue(self._xpath + '/viscosity/specification')
+            if specification == Specification.CONSTANT.value:
                 self._ui.viscosity.setText(self._db.getValue(self._xpath + '/viscosity/constant') + ' kg/m·s')
             else:
-                self._ui.viscosity.setText(MaterialDB.getSpeicificationText(specification))
+                self._ui.viscosity.setText(MaterialDB.getSpecificationText(specification))
 
-        specification = MaterialDB.getSpecification(
-            self._db.getValue(self._xpath + '/thermalConductivity/specification'))
-        if specification == Specification.CONSTANT:
+        specification = self._db.getValue(self._xpath + '/thermalConductivity/specification')
+        if specification == Specification.CONSTANT.value:
             self._ui.thermalConductivity.setText(
                 self._db.getValue(self._xpath + '/thermalConductivity/constant') + ' W/m·K')
         else:
-            self._ui.thermalConductivity.setText(MaterialDB.getSpeicificationText(specification))
+            self._ui.thermalConductivity.setText(MaterialDB.getSpecificationText(specification))
 
     def _edit(self):
         if self._dialog is None:
-            self._dialog = MaterialDialog(self._xpath)
+            self._dialog = MaterialDialog(self, self._xpath)
+            self._dialog.accepted.connect(self._load)
 
         self._dialog.open()
 

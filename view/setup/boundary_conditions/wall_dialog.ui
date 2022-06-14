@@ -64,38 +64,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QComboBox" name="velocityCondition">
-              <item>
-               <property name="text">
-                <string>No Slip</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Slip</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Moving Wall</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Atmoslational Wall</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Translational Moving Wall</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Rotational Moving Wall</string>
-               </property>
-              </item>
-             </widget>
+             <widget class="QComboBox" name="velocityCondition"/>
             </item>
            </layout>
           </widget>
@@ -353,28 +322,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QComboBox" name="temperatureType">
-              <item>
-               <property name="text">
-                <string>Adiabatic</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Constant Temperature</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Constant Heat Flux</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Convection</string>
-               </property>
-              </item>
-             </widget>
+             <widget class="QComboBox" name="temperatureType"/>
             </item>
            </layout>
           </widget>
@@ -469,7 +417,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_6">
+       <widget class="QGroupBox" name="radiation">
         <property name="title">
          <string>Radiation</string>
         </property>

@@ -778,6 +778,17 @@ class CoreDB(object):
         names = self._xmlTree.xpath(f'.//x:monitors/x:volumes/x:volumeMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
+    def exists(self, xpath: str):
+        """Returns if specified configuration path is exists.
+
+        Args:
+            xpath: XML xpath for the configuration item.
+
+        Returns:
+            True if xpath element exists, False otherwise.
+        """
+        return self._xmlTree.find(xpath, namespaces=nsmap) is not None
+
     @property
     def isModified(self) -> bool:
         return self._modified

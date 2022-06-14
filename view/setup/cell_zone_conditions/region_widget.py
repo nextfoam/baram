@@ -11,7 +11,7 @@ from .cell_zone_db import CellZoneListIndex, CellZoneDB
 
 
 class RegionWidget(QWidget):
-    cellZoneSelected = Signal(str)
+    regionSelected = Signal(str)
     cellZoneDoubleClicked = Signal()
 
     def __init__(self, name):
@@ -20,12 +20,10 @@ class RegionWidget(QWidget):
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
-
         self._name = name
         self._dialog = None
 
         self._connectSignalsSlots()
-
         self._load()
 
     @property
@@ -60,10 +58,10 @@ class RegionWidget(QWidget):
 
     def _connectSignalsSlots(self):
         self._ui.list.currentItemChanged.connect(self._cellZoneSelected)
-        self._ui.list.itemDoubleClicked.connect(self._edit)
+        self._ui.list.itemDoubleClicked.connect(self._cellZoneDoubleClicked)
 
     def _cellZoneSelected(self):
-        self.cellZoneSelected.emit(self._name)
+        self.regionSelected.emit(self._name)
 
-    def _edit(self):
+    def _cellZoneDoubleClicked(self):
         self.cellZoneDoubleClicked.emit()

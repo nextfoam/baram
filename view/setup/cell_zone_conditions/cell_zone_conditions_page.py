@@ -19,7 +19,6 @@ class CellZoneConditionsPage(QWidget):
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
-
         self._regions = {}
         self._currentRegion = None
 
@@ -48,7 +47,7 @@ class CellZoneConditionsPage(QWidget):
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
-            self.close()
+            super().hideEvent(ev)
 
         return super().hideEvent(ev)
 
@@ -62,22 +61,21 @@ class CellZoneConditionsPage(QWidget):
         for r in regions:
             self._regions[r] = RegionWidget(r)
             layout.addWidget(self._regions[r])
-            self._regions[r].cellZoneSelected.connect(self._regionSelected)
+            self._regions[r].regionSelected.connect(self._regionSelected)
             self._regions[r].cellZoneDoubleClicked.connect(self._edit)
 
-    def _regionSelected(self, name):
-        self._currentRegion = name
+    def _regionSelected(self, rname):
+        if rname == self._currentRegion:
+            return
 
-        for key, item in self._regions.items():
-            if key != name:
-                item.clearSelection()
+        if self._currentRegion is not None:
+            self._regions[self._currentRegion].clearSelection()
 
-        self._ui.operatingConditions.setEnabled(True)
+        self._currentRegion = rname
         self._ui.edit.setEnabled(True)
 
     def _operatingConditions(self):
-        self._dialog = OperatingConditionsDialog(self._currentRegion,
-                                                 self._regions[self._currentRegion].currentCellZone())
+        self._dialog = OperatingConditionsDialog(self)
         self._dialog.open()
 
     def _edit(self):

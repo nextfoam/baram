@@ -68,7 +68,7 @@ class VariableSourceWidget(QWidget):
             elif specification == TemporalProfileType.POLYNOMIAL.value:
                 if self._polynomial is not None:
                     writer.append(self._xpath + '/polynomial',
-                                  self._polynomial[0], self.tr(f'{self._title} Polynomial'))
+                                  self._polynomial, self.tr(f'{self._title} Polynomial'))
                 elif not self._db.getValue(self._xpath + '/polynomial'):
                     QMessageBox.critical(self, self.tr("Input Error"),
                                          self.tr(f'Edit {self._title} Polynomial Values.'))
@@ -100,29 +100,32 @@ class VariableSourceWidget(QWidget):
         temporalProfileType = self._ui.temporalProfileType.currentData()
         if temporalProfileType == TemporalProfileType.PIECEWISE_LINEAR.value:
             if self._ui.groupBox.title() == "Energy":
-                self._dialog = PiecewiseLinearDialog(
-                    self.tr("Piecewise Linear"),
-                    [self.tr("t"), self.tr("Energy")],
-                    [
+                if self._piecewiseLinear is None:
+                    self._piecewiseLinear = [
                         self._db.getValue(self._xpath + '/piecewiseLinear/t'),
                         self._db.getValue(self._xpath + '/piecewiseLinear/v')
                     ]
-                )
+
+                self._dialog = PiecewiseLinearDialog(self, self.tr("Piecewise Linear"),
+                                                     [self.tr("t"), self.tr("Energy")], self._piecewiseLinear)
                 self._dialog.accepted.connect(self._piecewiseLinearAccepted)
                 self._dialog.open()
             else:
-                self._dialog = PiecewiseLinearDialog(
-                    self.tr("Piecewise Linear"),
-                    [self.tr("t"), self.tr("Flow Rate")],
-                    [
+                if self._piecewiseLinear is None:
+                    self._piecewiseLinear = [
                         self._db.getValue(self._xpath + '/piecewiseLinear/t'),
                         self._db.getValue(self._xpath + '/piecewiseLinear/v')
                     ]
-                )
+
+                self._dialog = PiecewiseLinearDialog(self, self.tr("Piecewise Linear"),
+                                                     [self.tr("t"), self.tr("Flow Rate")], self._piecewiseLinear)
                 self._dialog.accepted.connect(self._piecewiseLinearAccepted)
                 self._dialog.open()
         elif temporalProfileType == TemporalProfileType.POLYNOMIAL.value:
-            self._dialog = PolynomialDialog(self.tr("Polynomial"), self._db.getValue(self._xpath + '/polynomial'))
+            if self._polynomial is None:
+                self._polynomial = self._db.getValue(self._xpath + '/polynomial')
+
+            self._dialog = PolynomialDialog(self, self.tr("Polynomial"), self._polynomial)
             self._dialog.accepted.connect(self._polynomialAccepted)
             self._dialog.open()
 

@@ -67,24 +67,13 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QComboBox" name="specificationMethod">
-           <item>
-            <property name="text">
-             <string>Modified Turbulent Viscosity</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Turbulent Viscosity Ratio</string>
-            </property>
-           </item>
-          </widget>
+          <widget class="QComboBox" name="specificationMethod"/>
          </item>
         </layout>
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="modifiedTurbulentViscosity" native="true">
+       <widget class="QWidget" name="modifiedTurbulentViscosityWidget" native="true">
         <layout class="QFormLayout" name="formLayout">
          <item row="0" column="0">
           <widget class="QLabel" name="label_2">
@@ -94,7 +83,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="modelTurbulentViscosity">
+          <widget class="QLineEdit" name="modifiedTurbulentViscosity">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -107,7 +96,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="turbulentViscosityRatio" native="true">
+       <widget class="QWidget" name="turbulentViscosityRatioWidget" native="true">
         <layout class="QFormLayout" name="formLayout_3">
          <item row="0" column="0">
           <widget class="QLabel" name="label_5">
@@ -117,7 +106,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="lineEdit_2">
+          <widget class="QLineEdit" name="turbulentViscosityRatio">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>

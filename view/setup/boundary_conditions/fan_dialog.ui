@@ -69,7 +69,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="checkBox">
+       <widget class="QCheckBox" name="reverseDirection">
         <property name="text">
          <string>reverse Direction</string>
         </property>

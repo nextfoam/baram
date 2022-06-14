@@ -76,18 +76,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QComboBox" name="velocitySpecificationMethod">
-              <item>
-               <property name="text">
-                <string>Component</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Magnitude, Normal to Boundary</string>
-               </property>
-              </item>
-             </widget>
+             <widget class="QComboBox" name="velocitySpecificationMethod"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_2">
@@ -97,23 +86,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QComboBox" name="profileType">
-              <item>
-               <property name="text">
-                <string>Constant</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Spatial Distribution</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Temporal Distribution</string>
-               </property>
-              </item>
-             </widget>
+             <widget class="QComboBox" name="profileType"/>
             </item>
            </layout>
           </widget>
@@ -230,7 +203,7 @@
                   </sizepolicy>
                  </property>
                  <property name="text">
-                  <string>Peicewise Linear</string>
+                  <string>Piecewise Linear</string>
                  </property>
                 </widget>
                </item>

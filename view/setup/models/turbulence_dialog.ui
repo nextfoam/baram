@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>265</width>
-    <height>472</height>
+    <height>498</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -47,6 +47,16 @@
          <string>Model</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QRadioButton" name="inviscid">
+           <property name="text">
+            <string>Inviscid</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">modelRadioGroup</string>
+           </attribute>
+          </widget>
+         </item>
          <item>
           <widget class="QRadioButton" name="laminar">
            <property name="text">
@@ -90,7 +100,7 @@
          <item>
           <widget class="QRadioButton" name="LES">
            <property name="text">
-            <string>LES</string>
+            <string>LES, Large Eddy Simulation</string>
            </property>
            <attribute name="buttonGroup">
             <string notr="true">modelRadioGroup</string>
@@ -275,8 +285,8 @@
   </connection>
  </connections>
  <buttongroups>
+  <buttongroup name="nearWallTreatmentRadioGroup"/>
   <buttongroup name="modelRadioGroup"/>
   <buttongroup name="kEpsilonRadioGroup"/>
-  <buttongroup name="nearWallTreatmentRadioGroup"/>
  </buttongroups>
 </ui>

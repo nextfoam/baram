@@ -14,6 +14,7 @@ class MultiphaseModel(Enum):
 
 
 class TurbulenceModel(Enum):
+    INVISCID = "inviscid"
     LAMINAR = "laminar"
     SPALART_ALLMARAS = "spalartAllmaras"
     K_EPSILON = "k-epsilon"
@@ -48,35 +49,39 @@ class ModelsDB:
     MULTIPHASE_MODELS_PATH = MODELS_XPATH + '/multiphaseModels'
     TURBULENCE_MODELS_PATH = MODELS_XPATH + '/turbulenceModels'
     SPECIES_MODELS_PATH = MODELS_XPATH + '/speciesModels'
+    ENERGY_MODELS_PATH = MODELS_XPATH + '/energyModels'
 
     _multiphaseModelText = {
-        MultiphaseModel.OFF: "Off",
-        MultiphaseModel.VOLUME_OF_FLUID: "Volume of Fluid",
+        MultiphaseModel.OFF: QCoreApplication.translate("ModelsDB", "Off"),
+        MultiphaseModel.VOLUME_OF_FLUID: QCoreApplication.translate("ModelsDB", "Volume of Fluid"),
     }
 
     _turbulenceModelText = {
-        TurbulenceModel.LAMINAR: "Laminar",
-        TurbulenceModel.SPALART_ALLMARAS: "Spalart-Allmaras",
-        TurbulenceModel.K_EPSILON: "k-epsilon",
-        TurbulenceModel.K_OMEGA: "k-omega",
-        TurbulenceModel.LES: "les",
+        TurbulenceModel.INVISCID: QCoreApplication.translate("ModelsDB", "Inviscid"),
+        TurbulenceModel.LAMINAR: QCoreApplication.translate("ModelsDB", "Laminar"),
+        TurbulenceModel.SPALART_ALLMARAS: QCoreApplication.translate("ModelsDB", "Spalart-Allmaras"),
+        TurbulenceModel.K_EPSILON: QCoreApplication.translate("ModelsDB", "k-epsilon"),
+        TurbulenceModel.K_OMEGA: QCoreApplication.translate("ModelsDB", "k-omega"),
+        TurbulenceModel.LES: QCoreApplication.translate("ModelsDB", "LES"),
     }
 
-    @classmethod
-    def getMultiphaseModel(cls, dbText):
-        return MultiphaseModel(dbText)
+    _db = coredb.CoreDB()
 
     @classmethod
-    def getMuliphaseModelText(cls, model):
-        return cls._multiphaseModelText[model]
+    def getMultiphaseModel(cls):
+        return MultiphaseModel(cls._db.getValue(ModelsDB.MULTIPHASE_MODELS_PATH + '/model'))
 
     @classmethod
-    def getTurbulenceModel(cls, dbText):
-        return TurbulenceModel(dbText)
+    def getMultiphaseModelText(cls):
+        return cls._multiphaseModelText[cls.getMultiphaseModel()]
 
     @classmethod
-    def getTurbulenceModelText(cls, model):
-        return cls._turbulenceModelText[model]
+    def getTurbulenceModel(cls):
+        return TurbulenceModel(cls._db.getValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model'))
+
+    @classmethod
+    def getTurbulenceModelText(cls):
+        return cls._turbulenceModelText[cls.getTurbulenceModel()]
 
     @classmethod
     def getKEpsilonModel(cls, dbText):
@@ -89,6 +94,14 @@ class ModelsDB:
     @classmethod
     def getKOmegaModel(cls, dbText):
         return KOmegaModel(dbText)
+
+    @classmethod
+    def isEnergyModelOn(cls):
+        return cls._db.getValue(ModelsDB.ENERGY_MODELS_PATH) == 'on'
+
+    @classmethod
+    def isRadiationModelOn(cls):
+        return True
 
 
 class TurbulenceField:
@@ -111,6 +124,7 @@ class TurbulenceField:
 
 class TurbulenceModelHelper:
     _modelFields = {
+        TurbulenceModel.INVISCID: [],
         TurbulenceModel.LAMINAR: [],
         TurbulenceModel.SPALART_ALLMARAS: [TurbulenceFields.NU_TILDA],
         TurbulenceModel.K_EPSILON: [TurbulenceFields.K, TurbulenceFields.EPSILON],
@@ -133,12 +147,6 @@ class TurbulenceModelHelper:
                             "ν", "m<sup>2</sup>/s", "modifiedTurbulentViscosity"),
     }
 
-    _db = coredb.CoreDB()
-
-    @classmethod
-    def getModel(cls):
-        return TurbulenceModel(cls._db.getValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model'))
-
     @classmethod
     def getFields(cls):
-        return [cls._fields[f] for f in cls._modelFields[cls.getModel()]]
+        return [cls._fields[f] for f in cls._modelFields[ModelsDB.getTurbulenceModel()]]

@@ -16,10 +16,8 @@ class TurbulenceModelDialog(ResizableDialog):
         self._ui = Ui_TurbulenceDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
-        self._xpath = ModelsDB.TURBULENCE_MODELS_PATH
-
         self._modelRadios = {
+            self._ui.modelRadioGroup.id(self._ui.inviscid): TurbulenceModel.INVISCID.value,
             self._ui.modelRadioGroup.id(self._ui.laminar): TurbulenceModel.LAMINAR.value,
             self._ui.modelRadioGroup.id(self._ui.spalartAllmaras): TurbulenceModel.SPALART_ALLMARAS.value,
             self._ui.modelRadioGroup.id(self._ui.kEpsilon): TurbulenceModel.K_EPSILON.value,
@@ -39,6 +37,9 @@ class TurbulenceModelDialog(ResizableDialog):
             self._ui.nearWallTreatmentRadioGroup.id(self._ui.enhancedWallTreatment):
                 NearWallTreatment.ENHANCED_WALL_TREATMENT.value,
         }
+
+        self._db = coredb.CoreDB()
+        self._xpath = ModelsDB.TURBULENCE_MODELS_PATH
 
         self._connectSignalsSlots()
 
@@ -84,7 +85,7 @@ class TurbulenceModelDialog(ResizableDialog):
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
-            self.close()
+            super().accept()
 
     def _connectSignalsSlots(self):
         self._ui.modelRadioGroup.idToggled.connect(self._modelChanged)

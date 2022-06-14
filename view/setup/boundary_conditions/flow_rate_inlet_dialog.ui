@@ -89,16 +89,6 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <item>
-               <property name="text">
-                <string>Volume Flow Rate</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Mass Flow Rate</string>
-               </property>
-              </item>
              </widget>
             </item>
            </layout>

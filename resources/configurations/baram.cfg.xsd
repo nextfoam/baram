@@ -210,6 +210,7 @@
             <xs:element name="model">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
+                        <xs:enumeration value="inviscid"/>
                         <xs:enumeration value="laminar"/>
                         <xs:enumeration value="spalartAllmaras"/>
                         <xs:enumeration value="k-epsilon"/>
@@ -814,6 +815,7 @@
         <xs:sequence>
             <xs:element name="totalPressure" type="inputNumberType" default="0"/>
             <xs:element name="calculatedBackflow" type="xs:boolean" default="false"/>
+            <xs:element name="backflowTotalTemperature" type="inputNumberType" default="300"/>
         </xs:sequence>
     </xs:complexType>
 

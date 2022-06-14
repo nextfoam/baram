@@ -23,9 +23,16 @@ class CellZoneConditionDialog(QDialog):
         self._ui = Ui_CellZoneConditionDialog()
         self._ui.setupUi(self)
 
+        self._zoneTypeRadios = {
+            self._ui.zoneTypeRadioGroup.id(self._ui.none): ZoneType.NONE.value,
+            self._ui.zoneTypeRadioGroup.id(self._ui.MRF): ZoneType.MRF.value,
+            self._ui.zoneTypeRadioGroup.id(self._ui.porousZone): ZoneType.POROUS.value,
+            self._ui.zoneTypeRadioGroup.id(self._ui.slidingMesh): ZoneType.SLIDING_MESH.value,
+            self._ui.zoneTypeRadioGroup.id(self._ui.actuatorDisk): ZoneType.ACTUATOR_DISK.value,
+        }
+
         self._rname = rname
         self._czid = czid
-
         self._db = coredb.CoreDB()
         self._xpath = CellZoneDB.getXPath(self._rname, self._czid)
 
@@ -46,14 +53,6 @@ class CellZoneConditionDialog(QDialog):
             layout.insertWidget(2, self._porousZone)
             layout.insertWidget(3, self._slidingMeshZone)
             layout.insertWidget(4, self._actuatorDiskZone)
-
-        self._zoneTypeRadios = {
-            self._ui.zoneTypeRadioGroup.id(self._ui.none): ZoneType.NONE.value,
-            self._ui.zoneTypeRadioGroup.id(self._ui.MRF): ZoneType.MRF.value,
-            self._ui.zoneTypeRadioGroup.id(self._ui.porousZone): ZoneType.POROUS.value,
-            self._ui.zoneTypeRadioGroup.id(self._ui.slidingMesh): ZoneType.SLIDING_MESH.value,
-            self._ui.zoneTypeRadioGroup.id(self._ui.actuatorDisk): ZoneType.ACTUATOR_DISK.value,
-        }
 
         # Source Terms Widgets
         self._massSourceTerm = VariableSourceWidget(self.tr("Mass"), self._xpath + '/sourceTerms/mass')
@@ -93,33 +92,7 @@ class CellZoneConditionDialog(QDialog):
         self._ui.fixedValues.layout().addStretch()
 
         self._connectSignalsSlots()
-
-    def showEvent(self, ev):
-        if ev.spontaneous():
-            return super().showEvent(ev)
-
-        self._ui.zoneName.setText(self._db.getValue(self._xpath + '/name'))
-        self._getZoneTypeRadio(self._db.getValue(self._xpath + '/zoneType')).setChecked(True)
-        if not self._isAll():
-            self._MRFZone.load()
-            self._porousZone.load()
-            self._slidingMeshZone.load()
-            self._actuatorDiskZone.load()
-
-        self._massSourceTerm.load()
-        self._energySourceTerm.load()
-        for field, widget in self._turbulenceSourceTerms.items():
-            widget.load()
-
-        self._xVelocity.load()
-        self._yVelocity.load()
-        self._zVelocity.load()
-        self._ui.relaxation.setText(self._db.getValue(self._xpath + '/fixedValues/relaxation'))
-        self._temperature.load()
-        for field, widget in self._turbulenceFixedValues.items():
-            widget.load()
-
-        return super().showEvent(ev)
+        self._load()
 
     def accept(self):
         writer = CoreDBWriter()
@@ -154,7 +127,29 @@ class CellZoneConditionDialog(QDialog):
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
-            self.close()
+            super().accept()
+
+    def _load(self):
+        self._ui.zoneName.setText(self._db.getValue(self._xpath + '/name'))
+        self._getZoneTypeRadio(self._db.getValue(self._xpath + '/zoneType')).setChecked(True)
+        if not self._isAll():
+            self._MRFZone.load()
+            self._porousZone.load()
+            self._slidingMeshZone.load()
+            self._actuatorDiskZone.load()
+
+        self._massSourceTerm.load()
+        self._energySourceTerm.load()
+        for field, widget in self._turbulenceSourceTerms.items():
+            widget.load()
+
+        self._xVelocity.load()
+        self._yVelocity.load()
+        self._zVelocity.load()
+        self._ui.relaxation.setText(self._db.getValue(self._xpath + '/fixedValues/relaxation'))
+        self._temperature.load()
+        for field, widget in self._turbulenceFixedValues.items():
+            widget.load()
 
     def _setupTurbulenceWidgets(self):
         sourceTermsLayout = self._ui.sourceTerms.layout()
