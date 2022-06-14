@@ -159,14 +159,6 @@ def _constructSolid(region: str):
 
 
 class ThermophysicalProperties(object):
-    HEADER = {
-        'version': '2.0',
-        'format': 'ascii',
-        'class': 'dictionary',
-        'location': 'constant',
-        'object': 'thermophysicalProperties'
-    }
-
     def __init__(self, rname: str):
         self._rname = rname
         self._data = None
@@ -193,5 +185,12 @@ class ThermophysicalProperties(object):
         return self._data
 
     def asstr(self):
+        HEADER = {
+            'version': '2.0',
+            'format': 'ascii',
+            'class': 'dictionary',
+            'location': f'constant/{self._rname}',
+            'object': 'thermophysicalProperties'
+        }
         self._build()
-        return str(FoamFileGenerator(self._data, header=self.HEADER))
+        return str(FoamFileGenerator(self._data, header=HEADER))
