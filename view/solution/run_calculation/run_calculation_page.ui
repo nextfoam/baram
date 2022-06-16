@@ -58,9 +58,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-215</y>
-        <width>385</width>
-        <height>782</height>
+        <y>0</y>
+        <width>391</width>
+        <height>812</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -109,18 +109,7 @@
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="QComboBox" name="timeSteppingMethod">
-               <item>
-                <property name="text">
-                 <string>Fixed</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Adaptive</string>
-                </property>
-               </item>
-              </widget>
+              <widget class="QComboBox" name="timeSteppingMethod"/>
              </item>
              <item row="2" column="0">
               <widget class="QLabel" name="label_3">
@@ -175,7 +164,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="groupBox_3">
+           <widget class="QGroupBox" name="retainOnlyTheMostRecentFiles">
             <property name="title">
              <string>Retain Only the Most Recent Files</string>
             </property>
@@ -207,18 +196,7 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QComboBox" name="timeSteppingMethod_2">
-               <item>
-                <property name="text">
-                 <string>Binary</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>ASCII</string>
-                </property>
-               </item>
-              </widget>
+              <widget class="QComboBox" name="dataWriteFormat"/>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_9">
@@ -251,7 +229,7 @@
          <property name="title">
           <string>Parallel</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_6">
+         <layout class="QFormLayout" name="formLayout_5">
           <item row="0" column="0">
            <widget class="QLabel" name="label_11">
             <property name="text">
@@ -260,7 +238,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="dataWritePrecision_2"/>
+           <widget class="QLineEdit" name="numberOfCores"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_15">
@@ -270,17 +248,45 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QComboBox" name="timeSteppingMethod_4">
-            <item>
-             <property name="text">
-              <string>Shared Memory on Local Machine, SMP</string>
+           <widget class="QComboBox" name="machineType"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Host File</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QWidget" name="widget_7" native="true">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="leftMargin">
+              <number>0</number>
              </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Distributed Memory on a Cluster</string>
+             <property name="topMargin">
+              <number>0</number>
              </property>
-            </item>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLineEdit" name="hostFile">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="select">
+               <property name="text">
+                <string>Select</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
          </layout>

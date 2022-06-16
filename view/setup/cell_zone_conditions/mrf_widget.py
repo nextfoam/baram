@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QMessageBox
 
 from coredb import coredb
 from view.setup.boundary_conditions.boundary_db import BoundaryDB
@@ -35,6 +35,10 @@ class MRFWidget(QWidget):
         self._setStaticBoundaries(boundaries.split() if boundaries else [])
 
     def appendToWriter(self, writer):
+        if not self._staticBoundaries:
+            QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Static Boundary."))
+            return False
+
         writer.append(self._xpath + '/rotatingSpeed',
                       self._ui.rotatingSpeed.text(), self.tr("Rotating Speed"))
         writer.append(self._xpath + '/rotationAxisOrigin/x',
@@ -50,7 +54,9 @@ class MRFWidget(QWidget):
         writer.append(self._xpath + '/rotationAxisDirection/z',
                       self._ui.rotationAxisDirectionZ.text(), self.tr("Rotating-Axis Direction Z"))
         writer.append(self._xpath + '/staticBoundaries',
-                      ' '.join(str(b) for b in self._staticBoundaries), self.tr("Static Boundary"))
+                      ' '.join(b for b in self._staticBoundaries), self.tr("Static Boundary"))
+
+        return True
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectStaticBoundaries)

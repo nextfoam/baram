@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, auto
-
 from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
@@ -10,12 +8,6 @@ from coredb.coredb_writer import CoreDBWriter
 from view.widgets.resizable_dialog import ResizableDialog
 from .multiphase_dialog_ui import Ui_MultiphaseDialog
 from .models_db import ModelsDB, MultiphaseModel
-
-
-class ModelId(Enum):
-    OFF = auto()
-    VOLUME_OF_FLUID = auto()
-    MIXTURE = auto()
 
 
 class MultiphaseModelDialog(ResizableDialog):

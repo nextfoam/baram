@@ -48,7 +48,7 @@ class WallDialog(ResizableDialog):
             self._ui.radiation.hide()
 
         self._db = coredb.CoreDB()
-        self._xpath = BoundaryDB.getBoundaryXPath(bcid)
+        self._xpath = BoundaryDB.getXPath(bcid)
 
         self._connectSignalsSlots()
         self._load()

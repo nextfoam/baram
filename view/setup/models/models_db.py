@@ -96,12 +96,20 @@ class ModelsDB:
         return KOmegaModel(dbText)
 
     @classmethod
-    def isEnergyModelOn(cls):
-        return cls._db.getValue(ModelsDB.ENERGY_MODELS_PATH) == 'on'
+    def isMultiphaseModelOn(cls):
+        return cls.getMultiphaseModel() != 'off'
 
     @classmethod
     def isRadiationModelOn(cls):
         return True
+
+    @classmethod
+    def isSpeciesModelOn(cls):
+        return cls._db.getValue(ModelsDB.SPECIES_MODELS_PATH) != 'off'
+
+    @classmethod
+    def isEnergyModelOn(cls):
+        return cls._db.getValue(ModelsDB.ENERGY_MODELS_PATH) == 'on'
 
 
 class TurbulenceField:

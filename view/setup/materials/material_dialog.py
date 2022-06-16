@@ -39,7 +39,7 @@ class MaterialDialog(ResizableDialog):
         self._xpath = xpath
         self._db = coredb.CoreDB()
         self._name = None
-        self._phase = MaterialDB.getPhase(self._db.getValue(self._xpath + '/phase'))
+        self._phase = MaterialDB.DBTextToPhase(self._db.getValue(self._xpath + '/phase'))
         self._polynomialSpecificHeat = None
         self._polynomialViscosity = None
         self._polynomialThermalConductivity = None
@@ -64,18 +64,18 @@ class MaterialDialog(ResizableDialog):
         self._ui.name.setText(self._name)
 
         specification = self._db.getValue(self._xpath + '/density/specification')
-        self._ui.densityType.setCurrentText(MaterialDB.getSpecificationText(specification))
+        self._ui.densityType.setCurrentText(MaterialDB.DBSpecificationToText(specification))
         self._ui.constantDensity.setText(self._db.getValue(self._xpath + '/density/constant'))
         self._densityTypeChanged()
 
         specification = self._db.getValue(self._xpath + '/specificHeat/specification')
-        self._ui.specificHeatType.setCurrentText(MaterialDB.getSpecificationText(specification))
+        self._ui.specificHeatType.setCurrentText(MaterialDB.DBSpecificationToText(specification))
         self._ui.constantSpecificHeat.setText(self._db.getValue(self._xpath + '/specificHeat/constant'))
         self._specificHeatTypeChanged()
 
         if self._phase != Phase.SOLID:
             specification = self._db.getValue(self._xpath + '/viscosity/specification')
-            self._ui.viscosityType.setCurrentText(MaterialDB.getSpecificationText(specification))
+            self._ui.viscosityType.setCurrentText(MaterialDB.DBSpecificationToText(specification))
             self._ui.constantViscosity.setText(self._db.getValue(self._xpath + '/viscosity/constant'))
             if self._phase == Phase.GAS:
                 self._ui.sutherlandCoefficient.setText(
@@ -85,7 +85,7 @@ class MaterialDialog(ResizableDialog):
             self._viscosityTypeChanged()
 
         specification = self._db.getValue(self._xpath + '/thermalConductivity/specification')
-        self._ui.thermalConductivityType.setCurrentText(MaterialDB.getSpecificationText(specification))
+        self._ui.thermalConductivityType.setCurrentText(MaterialDB.DBSpecificationToText(specification))
         self._ui.constantThermalConductivity.setText(self._db.getValue(self._xpath + '/thermalConductivity/constant'))
         self._thermalConductivityTypeChanged()
 

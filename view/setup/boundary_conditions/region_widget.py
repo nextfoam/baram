@@ -5,9 +5,8 @@ from PySide6.QtWidgets import QWidget, QHeaderView, QTableWidgetItem, QComboBox
 from PySide6.QtCore import Signal
 
 from coredb import coredb
-from coredb.coredb_writer import CoreDBWriter
 from .region_widget_ui import Ui_RegionWidget
-from .boundary_db import ListIndex, BoundaryType, BoundaryDB
+from .boundary_db import BoundaryListIndex, BoundaryType, BoundaryDB
 
 
 class RegionWidget(QWidget):
@@ -51,8 +50,8 @@ class RegionWidget(QWidget):
         self._ui.list.setRowCount(len(boundaries))
         for i in range(len(boundaries)):
             self._ui.list.setItem(
-                i, 0, QTableWidgetItem(boundaries[i][ListIndex.NAME.value], boundaries[i][ListIndex.ID.value]))
-            self._ui.list.setCellWidget(i, 1, self._createComboBox(boundaries[i][ListIndex.TYPE.value]))
+                i, 0, QTableWidgetItem(boundaries[i][BoundaryListIndex.NAME.value], boundaries[i][BoundaryListIndex.ID.value]))
+            self._ui.list.setCellWidget(i, 1, self._createComboBox(boundaries[i][BoundaryListIndex.TYPE.value]))
 
     def _connectSignalsSlots(self):
         self._ui.list.currentCellChanged.connect(self._boundarySelected)
@@ -106,9 +105,7 @@ class RegionWidget(QWidget):
         self.boundaryDoubleClicked.emit()
 
     def _boundaryTypeChanged(self):
-        writer = CoreDBWriter()
-        writer.append(BoundaryDB.getBoundaryXPath(self.currentBoundaryId()) + '/physicalType',
-                      self.currentBoundaryType().value, None)
-        writer.write()
+        self._db.setValue(BoundaryDB.getXPath(self.currentBoundaryId()) + '/physicalType',
+                          self.currentBoundaryType().value)
 
         self.boundaryTypeChanged.emit(self.currentBoundaryType())

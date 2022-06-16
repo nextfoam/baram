@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>298</width>
-    <height>362</height>
+    <height>360</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,9 +15,37 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
+    <widget class="QWidget" name="nameWidget" native="true">
+     <layout class="QFormLayout" name="formLayout_8">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_1">
+        <property name="text">
+         <string>Name</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="name"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>New Surface Monitor</string>
+      <string>Surface Monitor</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -43,38 +71,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QComboBox" name="reportType">
-           <item>
-            <property name="text">
-             <string>Area-Weighted Average</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Intergral</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Flow Rate</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Minimum</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Maximum</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Coefficient of Variation, CoV</string>
-            </property>
-           </item>
-          </widget>
+          <widget class="QComboBox" name="reportType"/>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_2">
@@ -90,10 +87,48 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_17">
-        <property name="text">
-         <string>Surfaces</string>
-        </property>
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Surfaces</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>123</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="select">
+           <property name="text">
+            <string>Select</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>

@@ -59,12 +59,12 @@ class MaterialDB(object):
         return f'{MATERIALS_XPATH}/material[@mid="{mid}"]'
 
     @classmethod
-    def getPhase(cls, dbText):
-        if dbText == "gas":
+    def DBTextToPhase(cls, DBText):
+        if DBText == "gas":
             return Phase.GAS
-        elif dbText == "liquid":
+        elif DBText == "liquid":
             return Phase.LIQUID
-        elif dbText == "solid":
+        elif DBText == "solid":
             return Phase.SOLID
         
     @classmethod
@@ -72,8 +72,8 @@ class MaterialDB(object):
         return cls._phaseText[phase]
 
     @classmethod
-    def getSpecificationText(cls, dbText):
-        return cls.specificationText[Specification(dbText)]
+    def DBSpecificationToText(cls, DBText):
+        return cls.specificationText[Specification(DBText)]
 
     @classmethod
     def isMaterialExists(cls, name):

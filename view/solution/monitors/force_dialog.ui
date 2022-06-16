@@ -15,9 +15,37 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
+    <widget class="QWidget" name="nameWidget" native="true">
+     <layout class="QFormLayout" name="formLayout_6">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_1">
+        <property name="text">
+         <string>Name</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="name"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>New Force Monitor</string>
+      <string>Force Monitor</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -174,7 +202,7 @@
          <item row="1" column="0">
           <widget class="QGroupBox" name="groupBox_4">
            <property name="title">
-            <string>Patch Axis Direction</string>
+            <string>Pitch Axis Direction</string>
            </property>
            <layout class="QFormLayout" name="formLayout_4">
             <item row="0" column="0">
@@ -185,7 +213,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="patchAxisDirectionX"/>
+             <widget class="QLineEdit" name="pitchAxisDirectionX"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_12">
@@ -195,7 +223,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="patchAxisDirectionY"/>
+             <widget class="QLineEdit" name="pitchAxisDirectionY"/>
             </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label_13">
@@ -205,7 +233,7 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QLineEdit" name="patchAxisDirectionZ"/>
+             <widget class="QLineEdit" name="pitchAxisDirectionZ"/>
             </item>
            </layout>
           </widget>
@@ -253,10 +281,48 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_17">
-        <property name="text">
-         <string>Boundaries</string>
-        </property>
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_17">
+           <property name="text">
+            <string>Boundaries</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>123</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="select">
+           <property name="text">
+            <string>Select</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>

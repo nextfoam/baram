@@ -81,18 +81,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="pressureVelocityCouplingScheme">
-            <item>
-             <property name="text">
-              <string>SIMPLE</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>SIMPLEC</string>
-             </property>
-            </item>
-           </widget>
+           <widget class="QComboBox" name="pressureVelocityCouplingScheme"/>
           </item>
          </layout>
         </widget>
@@ -111,18 +100,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="discretizationSchemeTime">
-            <item>
-             <property name="text">
-              <string>First Order Implicit</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Second Order Implicit</string>
-             </property>
-            </item>
-           </widget>
+           <widget class="QComboBox" name="discretizationSchemeTime"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_21">
@@ -132,18 +110,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QComboBox" name="discretizationSchemeMomentum">
-            <item>
-             <property name="text">
-              <string>First Order Upwind</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Second Order Upwind</string>
-             </property>
-            </item>
-           </widget>
+           <widget class="QComboBox" name="discretizationSchemeMomentum"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_19">
@@ -153,18 +120,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QComboBox" name="discretizationSchemeEnergy">
-            <item>
-             <property name="text">
-              <string>First Order Upwind</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Second Order Upwind</string>
-             </property>
-            </item>
-           </widget>
+           <widget class="QComboBox" name="discretizationSchemeEnergy"/>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_22">
@@ -174,18 +130,7 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QComboBox" name="discretizationSchemeTurbulentKineticEnergy">
-            <item>
-             <property name="text">
-              <string>First Order Upwind</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Second Order Upwind</string>
-             </property>
-            </item>
-           </widget>
+           <widget class="QComboBox" name="discretizationSchemeTurbulentKineticEnergy"/>
           </item>
          </layout>
         </widget>

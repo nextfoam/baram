@@ -12,7 +12,7 @@ from .cell_zone_db import CellZoneListIndex, CellZoneDB
 
 class RegionWidget(QWidget):
     regionSelected = Signal(str)
-    cellZoneDoubleClicked = Signal()
+    regionDoubleClicked = Signal(str)
 
     def __init__(self, name):
         super().__init__()
@@ -64,4 +64,4 @@ class RegionWidget(QWidget):
         self.regionSelected.emit(self._name)
 
     def _cellZoneDoubleClicked(self):
-        self.cellZoneDoubleClicked.emit()
+        self.regionDoubleClicked.emit(self._name)

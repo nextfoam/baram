@@ -7,14 +7,13 @@ from PySide6.QtWidgets import QWidget
 
 from coredb import coredb
 from .general_page_ui import Ui_GeneralPage
+from .general_db import GeneralDB
 
 
 logger = logging.getLogger(__name__)
 
 
 class GeneralPage(QWidget):
-    MODEL_XPATH = './/general/timeTransient'
-
     def __init__(self):
         super().__init__()
         self._ui = Ui_GeneralPage()
@@ -27,15 +26,19 @@ class GeneralPage(QWidget):
         if ev.spontaneous():
             return super().hideEvent(ev)
 
+        xpath = GeneralDB.MODEL_XPATH
+
         if self._ui.transient_.isChecked():
-            self._db.setValue(self.MODEL_XPATH, 'true')
+            self._db.setValue(xpath, 'true')
         else:
-            self._db.setValue(self.MODEL_XPATH, 'false')
+            self._db.setValue(xpath, 'false')
 
         return super().hideEvent(ev)
 
     def _load(self):
-        timeTransient = self._db.getValue(self.MODEL_XPATH)
+        xpath = GeneralDB.MODEL_XPATH
+
+        timeTransient = self._db.getValue(xpath)
         if timeTransient == 'true':
             self._ui.transient_.setChecked(True)
         else:

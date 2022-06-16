@@ -21,7 +21,7 @@ class SupersonicInflowDialog(ResizableDialog):
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
-        self._xpath = BoundaryDB.getBoundaryXPath(bcid)
+        self._xpath = BoundaryDB.getXPath(bcid)
         self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
 
         if self._turbulenceWidget is not None:
@@ -30,14 +30,14 @@ class SupersonicInflowDialog(ResizableDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        xpath = self._xpath + self.RELATIVE_PATH
 
         writer = CoreDBWriter()
-        writer.append(path + '/velocity/x', self._ui.xVelocity.text(), self.tr("X-Velocity"))
-        writer.append(path + '/velocity/y', self._ui.yVelocity.text(), self.tr("Y-Velocity"))
-        writer.append(path + '/velocity/z', self._ui.zVelocity.text(), self.tr("Z-Velocity"))
-        writer.append(path + '/staticPressure', self._ui.staticPressure.text(), self.tr("Static Pressure"))
-        writer.append(path + '/staticTemperature', self._ui.staticTemperature.text(), self.tr("Static Temperature"))
+        writer.append(xpath + '/velocity/x', self._ui.xVelocity.text(), self.tr("X-Velocity"))
+        writer.append(xpath + '/velocity/y', self._ui.yVelocity.text(), self.tr("Y-Velocity"))
+        writer.append(xpath + '/velocity/z', self._ui.zVelocity.text(), self.tr("Z-Velocity"))
+        writer.append(xpath + '/staticPressure', self._ui.staticPressure.text(), self.tr("Static Pressure"))
+        writer.append(xpath + '/staticTemperature', self._ui.staticTemperature.text(), self.tr("Static Temperature"))
 
         if self._turbulenceWidget is not None:
             self._turbulenceWidget.appendToWriter(writer)
@@ -49,13 +49,13 @@ class SupersonicInflowDialog(ResizableDialog):
             super().accept()
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        xpath = self._xpath + self.RELATIVE_PATH
 
-        self._ui.xVelocity.setText(self._db.getValue(path + '/velocity/x'))
-        self._ui.yVelocity.setText(self._db.getValue(path + '/velocity/y'))
-        self._ui.zVelocity.setText(self._db.getValue(path + '/velocity/z'))
-        self._ui.staticPressure.setText(self._db.getValue(path + '/staticPressure'))
-        self._ui.staticTemperature.setText(self._db.getValue(path + '/staticTemperature'))
+        self._ui.xVelocity.setText(self._db.getValue(xpath + '/velocity/x'))
+        self._ui.yVelocity.setText(self._db.getValue(xpath + '/velocity/y'))
+        self._ui.zVelocity.setText(self._db.getValue(xpath + '/velocity/z'))
+        self._ui.staticPressure.setText(self._db.getValue(xpath + '/staticPressure'))
+        self._ui.staticTemperature.setText(self._db.getValue(xpath + '/staticTemperature'))
 
         if self._turbulenceWidget is not None:
             self._turbulenceWidget.load()
