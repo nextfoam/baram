@@ -26,7 +26,7 @@ class FlowRateInletDialog(ResizableDialog):
         self._setupSpecificationMethodCombo()
 
         self._db = coredb.CoreDB()
-        self._xpath = BoundaryDB.getBoundaryXPath(bcid)
+        self._xpath = BoundaryDB.getXPath(bcid)
         self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
         self._temperatureWidget = None
 

@@ -34,7 +34,7 @@ class CellZoneConditionDialog(QDialog):
         self._rname = rname
         self._czid = czid
         self._db = coredb.CoreDB()
-        self._xpath = CellZoneDB.getXPath(self._rname, self._czid)
+        self._xpath = CellZoneDB.getXPathWithRegion(self._rname, self._czid)
 
         # Zone Type Widgets
         if self._isAll():
@@ -100,7 +100,8 @@ class CellZoneConditionDialog(QDialog):
         zoneType = self._getZoneTypeRadioValue()
         writer.append(self._xpath + '/zoneType', zoneType, None)
         if zoneType == ZoneType.MRF.value:
-            self._MRFZone.appendToWriter(writer)
+            if not self._MRFZone.appendToWriter(writer):
+                return
         elif zoneType == ZoneType.POROUS.value:
             self._porousZone.appendToWriter(writer)
         elif zoneType == ZoneType.SLIDING_MESH.value:

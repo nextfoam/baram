@@ -20,7 +20,7 @@ class FanDialog(QDialog):
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
-        self._xpath = BoundaryDB.getBoundaryXPath(bcid)
+        self._xpath = BoundaryDB.getXPath(bcid)
 
         self._connectSignalsSlots()
         self._load()

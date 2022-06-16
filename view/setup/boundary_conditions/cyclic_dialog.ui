@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>485</width>
+    <width>405</width>
     <height>90</height>
    </rect>
   </property>
@@ -31,7 +31,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="coupledBoundary"/>
+       <widget class="QLineEdit" name="coupledBoundary">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="select">

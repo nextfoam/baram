@@ -36,7 +36,7 @@ class BoundaryType(Enum):
     WEDGE	            = "wedge"
 
 
-class ListIndex(Enum):
+class BoundaryListIndex(Enum):
     ID = 0
     NAME = auto()
     TYPE = auto()
@@ -112,33 +112,33 @@ class BoundaryDB:
 
     _db = coredb.CoreDB()
     _boundariesForSelector = None
+    _boundariesForSelectorWithNone = None
 
     @classmethod
-    def getBoundaryXPath(cls, bcid):
+    def getXPath(cls, bcid):
         return f'{cls.BOUNDARY_CONDITIONS_XPATH}/boundaryCondition[@bcid="{bcid}"]'
 
     @classmethod
     def getBoundaryName(cls, bcid):
-        return cls._db.getValue(BoundaryDB.getBoundaryXPath(bcid) + '/name')
+        return cls._db.getValue(cls.getXPath(bcid) + '/name')
 
     @classmethod
     def getBoundaryRegion(cls, bcid):
-        return cls._db.getValue(BoundaryDB.getBoundaryXPath(bcid) + '/../../name')
+        return cls._db.getValue(cls.getXPath(bcid) + '/../../name')
 
     @classmethod
     def getBoundariesForSelector(cls):
         if cls._boundariesForSelector is None:
-            cls._boundariesForSelector = []
-
-            for region in cls._db.getRegions():
-                for boundary in cls._db.getBoundaryConditions(region):
-                    cls._boundariesForSelector.append((
-                        f'{boundary[ListIndex.NAME.value]} / {region}',
-                        boundary[ListIndex.NAME.value],
-                        boundary[ListIndex.ID.value]
-                    ))
+            cls._createBoundaryLists()
 
         return cls._boundariesForSelector
+
+    @classmethod
+    def getBoundariesForSelectorWithNone(cls):
+        if cls._boundariesForSelector is None:
+            cls._createBoundaryLists()
+
+        return cls._boundariesForSelectorWithNone
 
     @classmethod
     def getCyclicAMIBoundaries(cls, bcidToExcept):
@@ -146,13 +146,22 @@ class BoundaryDB:
 
         for region in cls._db.getRegions():
             for boundary in cls._db.getBoundaryConditions(region):
-                bcid = boundary[ListIndex.ID.value]
+                bcid = boundary[BoundaryListIndex.ID.value]
                 if bcid != bcidToExcept:
                         #and cls._db.getValue(cls.getBoundaryXPath(bcid) + '/geometricalType') == "cyclic":
-                    boundaries.append((
-                        f'{boundary[ListIndex.NAME.value]} / {region}',
-                        boundary[ListIndex.NAME.value],
-                        bcid
-                    ))
+                    name = boundary[BoundaryListIndex.NAME.value]
+                    boundaries.append((f'{name} / {region}', name, bcid))
 
         return boundaries
+
+    @classmethod
+    def _createBoundaryLists(cls):
+        cls._boundariesForSelector = []
+        cls._boundariesForSelectorWithNone = [('None', '', '0')]
+
+        for region in cls._db.getRegions():
+            for boundary in cls._db.getBoundaryConditions(region):
+                name = boundary[BoundaryListIndex.NAME.value]
+                item = (f'{name} / {region}', name, str(boundary[BoundaryListIndex.ID.value]))
+                cls._boundariesForSelector.append(item)
+                cls._boundariesForSelectorWithNone.append(item)

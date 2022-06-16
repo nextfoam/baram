@@ -19,7 +19,7 @@ class CyclicDialog(QDialog):
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
-        self._xpath = BoundaryDB.getBoundaryXPath(bcid)
+        self._xpath = BoundaryDB.getXPath(bcid)
         self._bcid = bcid
         self._coupledBoundary = None
         self._dialog = None

@@ -46,8 +46,6 @@ class CellZoneConditionsPage(QWidget):
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            super().hideEvent(ev)
 
         return super().hideEvent(ev)
 
@@ -62,7 +60,7 @@ class CellZoneConditionsPage(QWidget):
             self._regions[r] = RegionWidget(r)
             layout.addWidget(self._regions[r])
             self._regions[r].regionSelected.connect(self._regionSelected)
-            self._regions[r].cellZoneDoubleClicked.connect(self._edit)
+            self._regions[r].regionDoubleClicked.connect(self._regionDoubleClicked)
 
     def _regionSelected(self, rname):
         if rname == self._currentRegion:
@@ -73,6 +71,10 @@ class CellZoneConditionsPage(QWidget):
 
         self._currentRegion = rname
         self._ui.edit.setEnabled(True)
+
+    def _regionDoubleClicked(self, rname):
+        self._regionSelected(rname)
+        self._edit()
 
     def _operatingConditions(self):
         self._dialog = OperatingConditionsDialog(self)
