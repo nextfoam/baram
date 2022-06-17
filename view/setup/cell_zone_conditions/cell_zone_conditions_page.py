@@ -81,6 +81,5 @@ class CellZoneConditionsPage(QWidget):
         self._dialog.open()
 
     def _edit(self):
-        self._dialog = CellZoneConditionDialog(self, self._currentRegion,
-                                               self._regions[self._currentRegion].currentCellZone())
+        self._dialog = CellZoneConditionDialog(self, self._regions[self._currentRegion].currentCellZone())
         self._dialog.open()

@@ -150,7 +150,7 @@ class FieldHelper:
             _appendField(Field.DENSITY)
 
         # Fields depending on another models
-        if not GeneralDB.isCompressible() or (energyOn and ModelsDB.isMultiphaseModelOn()):
+        if (not GeneralDB.isCompressible() and energyOn) or ModelsDB.isMultiphaseModelOn():
             _appendField(Field.MODIFIED_PRESSURE)
 
         # Material fields when species model is on

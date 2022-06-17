@@ -18,7 +18,7 @@ from .cell_zone_db import CellZoneDB, ZoneType
 
 
 class CellZoneConditionDialog(QDialog):
-    def __init__(self, parent, rname, czid):
+    def __init__(self, parent, czid):
         super().__init__(parent)
         self._ui = Ui_CellZoneConditionDialog()
         self._ui.setupUi(self)
@@ -31,10 +31,10 @@ class CellZoneConditionDialog(QDialog):
             self._ui.zoneTypeRadioGroup.id(self._ui.actuatorDisk): ZoneType.ACTUATOR_DISK.value,
         }
 
-        self._rname = rname
         self._czid = czid
         self._db = coredb.CoreDB()
-        self._xpath = CellZoneDB.getXPathWithRegion(self._rname, self._czid)
+        self._xpath = CellZoneDB.getXPath(self._czid)
+        self._name = self._db.getValue(self._xpath + '/name')
 
         # Zone Type Widgets
         if self._isAll():
@@ -131,7 +131,7 @@ class CellZoneConditionDialog(QDialog):
             super().accept()
 
     def _load(self):
-        self._ui.zoneName.setText(self._db.getValue(self._xpath + '/name'))
+        self._ui.zoneName.setText(self._name)
         self._getZoneTypeRadio(self._db.getValue(self._xpath + '/zoneType')).setChecked(True)
         if not self._isAll():
             self._MRFZone.load()
@@ -188,4 +188,4 @@ class CellZoneConditionDialog(QDialog):
         return self._zoneTypeRadios[self._ui.zoneTypeRadioGroup.id(self._ui.zoneTypeRadioGroup.checkedButton())]
 
     def _isAll(self):
-        return self._czid == 1
+        return self._name == CellZoneDB.NAME_FOR_ALL
