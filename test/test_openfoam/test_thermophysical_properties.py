@@ -8,7 +8,7 @@ _DEF_CONTENT = """FoamFile
  version 2.0;
  format ascii;
  class dictionary;
- location constant;
+ location "constant/testRegion_1";
  object thermophysicalProperties;
 }
 

@@ -568,8 +568,7 @@ class CoreDB(object):
         etree.SubElement(region, f'{{{ns}}}boundaryConditions')
 
         # add default cell zone named "All"
-        czoneTree = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
-        cellZones.append(czoneTree.getroot())
+        self.addCellZone(rname, 'All')
 
         self._xmlSchema.assertValid(self._xmlTree)
 
