@@ -35,8 +35,38 @@ class TemporalProfileType(Enum):
     POLYNOMIAL = 'polynomial'
 
 
+class MeshObject:
+    def __init__(self, id_, name, rname):
+        """Constructs a mesh object (boundary or cell zone)
+
+        Args:
+            id_: object ID
+            name: object name
+            rname: name of the region containing the object
+        """
+        self._id = id_
+        self._name = name
+        self._rname = rname
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def rname(self):
+        return self._rname
+
+    def toText(self):
+        return f'{self._rname} / {self._name}'
+
+
 class CellZoneDB:
     CELL_ZONE_CONDITIONS_XPATH = './/cellZones'
+    OPERATING_CONDITIONS_XPATH = './/operatingConditions'
     NAME_FOR_ALL = 'All'
 
     _db = coredb.CoreDB()
@@ -67,7 +97,7 @@ class CellZoneDB:
                 for cellZone in cls._db.getCellZones(region):
                     name = cellZone[CellZoneListIndex.NAME.value]
                     if name != cls.NAME_FOR_ALL:
-                        cls._cellZonesForSelector.append((f'{name} / {region}', name,
-                                                          str(cellZone[CellZoneListIndex.ID.value])))
+                        cls._cellZonesForSelector.append(
+                            MeshObject(str(cellZone[CellZoneListIndex.ID.value]), name, region))
 
         return cls._cellZonesForSelector

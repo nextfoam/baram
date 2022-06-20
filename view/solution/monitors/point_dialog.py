@@ -7,11 +7,14 @@ from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from view.setup.boundary_conditions.boundary_db import BoundaryDB
 from view.widgets.selector_dialog import SelectorDialog
+from view.widgets.multi_selector_dialog import SelectorItem
 from .point_dialog_ui import Ui_PointDialog
 from .monitor_db import MonitorDB, FieldHelper
 
 
 class PointDialog(QDialog):
+    TEXT_FOR_NONE_BOUNDARY = 'None'
+
     def __init__(self, parent, name=None):
         """Constructs point monitor setup dialog.
 
@@ -62,9 +65,10 @@ class PointDialog(QDialog):
         writer.append(self._xpath + '/coordinate/z', self._ui.coordinateZ.text(), self.tr("Coordinate Z"))
         if self._snapOntoBoundary:
             writer.append(self._xpath + 'snapOntoBoundary', 'true', None)
+            writer.append(self._xpath + '/boundary', self._snapOntoBoundary, None)
         else:
             writer.append(self._xpath + 'snapOntoBoundary', 'false', None)
-        writer.append(self._xpath + '/boundary', self._snapOntoBoundary, None)
+            writer.append(self._xpath + '/boundary', '0', None)
 
         if self._isNew:
             writer.append(self._xpath + '/name', name, self.tr("Name"))
@@ -99,19 +103,21 @@ class PointDialog(QDialog):
         if snapOntoBoundary == 'true':
             self._setSnapOntoBoundary(self._db.getValue(self._xpath + '/boundary'))
         else:
-            self._setSnapOntoBoundary('0')
+            self._setSnapOntoBoundary(None)
 
     def _setSnapOntoBoundary(self, bcid):
         self._snapOntoBoundary = bcid
-        if bcid != '0':
+        if bcid is None:
+            self._ui.snapOntoBoundary.setText(self.TEXT_FOR_NONE_BOUNDARY)
+        else:
             self._ui.snapOntoBoundary.setText(
                 f'{BoundaryDB.getBoundaryName(bcid)} / {BoundaryDB.getBoundaryRegion(bcid)}')
-        else:
-            self._ui.snapOntoBoundary.setText('None')
 
     def _selectSnapOntoBoundary(self):
-        self._dialog = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"),
-                                      BoundaryDB.getBoundariesForSelectorWithNone())
+        self._dialog = SelectorDialog(
+            self, self.tr("Select Boundary"), self.tr("Select Boundary"),
+            [SelectorItem(b.toText(), b.name, b.id) for b in BoundaryDB.getBoundariesForSelector()],
+            self.TEXT_FOR_NONE_BOUNDARY)
         self._dialog.open()
         self._dialog.accepted.connect(self._snapOntoBoundaryChanged)
 

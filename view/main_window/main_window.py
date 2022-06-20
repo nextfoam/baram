@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog
 from PySide6.QtCore import Qt
 
 from view.case_wizard.case_wizard import CaseWizard
+from openfoam.case_generator import CaseGenerator
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu_view import MenuView
@@ -38,6 +39,7 @@ class MainWindow(QMainWindow):
     def _connectSignalsSlots(self):
         self._ui.actionExit.triggered.connect(self.close)
         self._ui.actionNew.triggered.connect(self._openWizard)
+        self._ui.actionSave.triggered.connect(self._save)
         self._ui.actionLoad_Mesh.triggered.connect(self._loadMesh)
         self._menuView.connectCurrentItemChanged(self._changeForm)
 
@@ -45,6 +47,11 @@ class MainWindow(QMainWindow):
         self._wizard = CaseWizard()
 
         self._wizard.exec()
+
+    def _save(self):
+        dirName = QFileDialog.getExistingDirectory(self)
+        if dirName:
+            CaseGenerator(dirName).generateFiles()
 
     def _loadMesh(self):
         fileName = QFileDialog.getOpenFileName(self, self.tr("Open Mesh"), "", self.tr("OpenFOAM Mesh (*.foam)"))

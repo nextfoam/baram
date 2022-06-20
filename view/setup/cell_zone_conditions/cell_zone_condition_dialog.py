@@ -7,7 +7,7 @@ from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from view.setup.models.models_db import TurbulenceModelHelper
 from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
-from .mrf_widget import MRFWidget
+from .MRF_widget import MRFWidget
 from .porous_zone_widget import PorousZoneWidget
 from .sliding_mesh_widget import SlidingMeshWidget
 from .actuator_disk_widget import ActuatorDiskWidget

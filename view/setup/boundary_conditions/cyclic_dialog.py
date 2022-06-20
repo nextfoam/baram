@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from view.widgets.selector_dialog import SelectorDialog
+from view.widgets.multi_selector_dialog import SelectorItem
 from .cyclic_dialog_ui import Ui_CyclicDialog
 from .boundary_db import BoundaryDB
 
@@ -55,8 +56,12 @@ class CyclicDialog(QDialog):
 
     def _selectCoupledBoundary(self):
         if self._dialog is None:
-            self._dialog = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"),
-                                          BoundaryDB.getCyclicAMIBoundaries(self._bcid))
+            self._dialog = SelectorDialog(
+                self, self.tr("Select Boundary"), self.tr("Select Boundary"),
+                [
+                    SelectorItem(f'{b.name} / {b.rname}', b.name, b.id)
+                    for b in BoundaryDB.getCyclicAMIBoundaries(self._bcid)
+                ])
             self._dialog.accepted.connect(self._coupledBoundaryAccepted)
 
         self._dialog.open()

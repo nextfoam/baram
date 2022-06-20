@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from view.setup.boundary_conditions.boundary_db import BoundaryDB
-from view.widgets.multi_selector_dialog import MultiSelectorDialog
+from view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 from .force_dialog_ui import Ui_ForceDialog
 from .monitor_db import MonitorDB
 
@@ -122,8 +122,9 @@ class ForceDialog(QDialog):
             self._ui.boundaries.addItem(f'{BoundaryDB.getBoundaryName(b)} / {BoundaryDB.getBoundaryRegion(b)}')
 
     def _selectBoundaries(self):
-        self._dialog = MultiSelectorDialog(self, self.tr("Select Boundaries"),
-                                           BoundaryDB.getBoundariesForSelector(), self._boundaries)
+        self._dialog = MultiSelectorDialog(
+            self, self.tr("Select Boundaries"),
+            [SelectorItem(b.toText(), b.name, b.id) for b in BoundaryDB.getBoundariesForSelector()], self._boundaries)
         self._dialog.open()
         self._dialog.accepted.connect(self._boundariesChanged)
 
