@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from view.setup.cell_zone_conditions.cell_zone_db import CellZoneDB
-from view.widgets.multi_selector_dialog import MultiSelectorDialog
+from view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 from .volume_dialog_ui import Ui_VolumeDialog
 from .monitor_db import MonitorDB, VolumeReportType, FieldHelper
 
@@ -109,8 +109,10 @@ class VolumeDialog(QDialog):
             self._ui.volumes.addItem(f'{CellZoneDB.getCellZoneName(v)} / {CellZoneDB.getCellZoneRegion(v)}')
 
     def _selectVolumes(self):
-        self._dialog = MultiSelectorDialog(self, self.tr("Select Boundaries"),
-                                           CellZoneDB.getCellZonesForSelector(), self._volumes)
+        self._dialog = MultiSelectorDialog(
+            self, self.tr("Select Boundaries"),
+            [SelectorItem(f'{c.name} / {c.rname}', c.name, c.id) for c in CellZoneDB.getCellZonesForSelector()],
+            self._volumes)
         self._dialog.open()
         self._dialog.accepted.connect(self._volumesChanged)
 

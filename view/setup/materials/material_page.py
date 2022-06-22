@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QMessageBox
 
 from coredb import coredb
 from view.widgets.selector_dialog import SelectorDialog
+from view.widgets.multi_selector_dialog import SelectorItem
 from .material_page_ui import Ui_MaterialPage
 from .material_card import MaterialCard
 from .material_db import MaterialDB, ListIndex, DBListIndex
@@ -52,7 +53,7 @@ class MaterialPage(QWidget):
 
     def _add(self):
         if self._addDialog is None:
-            materials = [(
+            materials = [SelectorItem(
                 f'{m[DBListIndex.NAME.value]} ({MaterialDB.getPhaseText(MaterialDB.DBTextToPhase(m[DBListIndex.PHASE.value]))})',
                 m[DBListIndex.NAME.value],
                 m[DBListIndex.NAME.value])

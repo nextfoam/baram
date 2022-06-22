@@ -9,16 +9,36 @@ from PySide6.QtCore import Qt
 from .multi_selector_dialog_ui import Ui_MultiSelectorDialog
 
 
-class ItemDataIndex(Enum):
-    DISPLAY_TEXT = 0
-    FILTERING_TEXT = auto()
-    ID_DATA = auto()
-
-
-class ListDataType(Enum):
+class ListDataRole(Enum):
     USER_DATA = Qt.UserRole
     FILTERING_TEXT = auto()
     SELECTION_FLAG = auto()
+
+
+class SelectorItem:
+    def __init__(self, label, text, data):
+        """Constructs an item to use for the selection list
+
+        Args:
+            label: The text to display in list
+            text: The text to filter items
+            data: The data to identify selected items
+        """
+        self._label = label
+        self._text = text
+        self._data = data
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def text(self):
+        return self._text
+
+    @property
+    def data(self):
+        return self._data
 
 
 class MultiSelectorDialog(QDialog):
@@ -27,7 +47,7 @@ class MultiSelectorDialog(QDialog):
 
         Args:
             title: Window title of the dialog
-            items: List of item tuples - [(text to display, text for filtering, id), ...]
+            items: List of items
             selectedItems: List of ids of selected items
         """
         super().__init__()
@@ -36,19 +56,19 @@ class MultiSelectorDialog(QDialog):
 
         self.setWindowTitle(title)
         for data in items:
-            item = QListWidgetItem(data[ItemDataIndex.DISPLAY_TEXT.value])
-            item.setData(ListDataType.USER_DATA.value, data[ItemDataIndex.ID_DATA.value])
-            item.setData(ListDataType.FILTERING_TEXT.value, data[ItemDataIndex.FILTERING_TEXT.value])
-            item.setData(ListDataType.SELECTION_FLAG.value, False)
+            item = QListWidgetItem(data.label)
+            item.setData(ListDataRole.USER_DATA.value, data.data)
+            item.setData(ListDataRole.FILTERING_TEXT.value, data.text.lower())
+            item.setData(ListDataRole.SELECTION_FLAG.value, False)
 
             self._ui.list.addItem(item)
-            if data[ItemDataIndex.ID_DATA.value] in selectedItems:
-                self._addItem(item)
+            if data.data in selectedItems:
+                self._addSelectedItem(item)
 
         self._connectSignalsSlots()
 
     def selectedItems(self):
-        return [self._ui.list.item(self._ui.selectedList.item(i).data(Qt.UserRole)).data(ListDataType.USER_DATA.value)
+        return [self._ui.list.item(self._ui.selectedList.item(i).data(Qt.UserRole)).data(ListDataRole.USER_DATA.value)
                 for i in range(self._ui.selectedList.count())]
 
     def _connectSignalsSlots(self):
@@ -62,22 +82,22 @@ class MultiSelectorDialog(QDialog):
         text = self._ui.filter.text().lower()
         for i in range(self._ui.list.count()):
             item = self._ui.list.item(i)
-            item.setHidden(text not in item.data(ListDataType.FILTERING_TEXT.value)
-                           or item.data(ListDataType.SELECTION_FLAG.value))
+            item.setHidden(text not in item.data(ListDataRole.FILTERING_TEXT.value)
+                           or item.data(ListDataRole.SELECTION_FLAG.value))
 
     def _addClicked(self):
         for item in self._ui.list.selectedItems():
-            self._addItem(item)
+            self._addSelectedItem(item)
 
     def _removeClicked(self):
         for item in self._ui.selectedList.selectedItems():
             i = self._ui.list.item(item.data(Qt.UserRole))
-            i.setData(ListDataType.SELECTION_FLAG.value, False)
+            i.setData(ListDataRole.SELECTION_FLAG.value, False)
             i.setHidden(False)
             self._ui.selectedList.takeItem(self._ui.selectedList.row(item))
 
-    def _addItem(self, item):
-        item.setData(ListDataType.SELECTION_FLAG.value, True)
+    def _addSelectedItem(self, item):
+        item.setData(ListDataRole.SELECTION_FLAG.value, True)
         item.setHidden(True)
         item.setSelected(False)
 

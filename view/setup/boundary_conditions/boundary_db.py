@@ -4,6 +4,7 @@
 from enum import Enum, auto
 
 from coredb import coredb
+from view.setup.cell_zone_conditions.cell_zone_db import MeshObject
 
 
 class BoundaryType(Enum):
@@ -129,16 +130,15 @@ class BoundaryDB:
     @classmethod
     def getBoundariesForSelector(cls):
         if cls._boundariesForSelector is None:
-            cls._createBoundaryLists()
+            cls._boundariesForSelector = []
+
+            for region in cls._db.getRegions():
+                for boundary in cls._db.getBoundaryConditions(region):
+                    cls._boundariesForSelector.append(
+                        MeshObject(
+                            str(boundary[BoundaryListIndex.ID.value]), boundary[BoundaryListIndex.NAME.value], region))
 
         return cls._boundariesForSelector
-
-    @classmethod
-    def getBoundariesForSelectorWithNone(cls):
-        if cls._boundariesForSelector is None:
-            cls._createBoundaryLists()
-
-        return cls._boundariesForSelectorWithNone
 
     @classmethod
     def getCyclicAMIBoundaries(cls, bcidToExcept):
@@ -149,19 +149,6 @@ class BoundaryDB:
                 bcid = boundary[BoundaryListIndex.ID.value]
                 if bcid != bcidToExcept:
                         #and cls._db.getValue(cls.getBoundaryXPath(bcid) + '/geometricalType') == "cyclic":
-                    name = boundary[BoundaryListIndex.NAME.value]
-                    boundaries.append((f'{name} / {region}', name, bcid))
+                    boundaries.append(MeshObject(str(bcid), boundary[BoundaryListIndex.NAME.value], region))
 
         return boundaries
-
-    @classmethod
-    def _createBoundaryLists(cls):
-        cls._boundariesForSelector = []
-        cls._boundariesForSelectorWithNone = [('None', '', '0')]
-
-        for region in cls._db.getRegions():
-            for boundary in cls._db.getBoundaryConditions(region):
-                name = boundary[BoundaryListIndex.NAME.value]
-                item = (f'{name} / {region}', name, str(boundary[BoundaryListIndex.ID.value]))
-                cls._boundariesForSelector.append(item)
-                cls._boundariesForSelectorWithNone.append(item)

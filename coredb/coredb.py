@@ -610,8 +610,14 @@ class CoreDB(object):
         elements = self._xmlTree.findall(f'.//region[name="{rname}"]/cellZones/cellZone', namespaces=nsmap)
         return [(int(e.attrib['czid']), e.find('name', namespaces=nsmap).text) for e in elements]
 
+    def getCellZonesByType(self, rname: str, zoneType: str) -> list[(int)]:
+        elements = self._xmlTree.findall(f'.//region[name="{rname}"]/cellZones/cellZone[zoneType="{zoneType}"]',
+                                         namespaces=nsmap)
+        return [e.attrib['czid'] for e in elements]
+
     def addBoundaryCondition(self, rname: str, bname: str, geometricalType: str) -> int:
-        bc = self._xmlTree.find(f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bname}"]', namespaces=nsmap)
+        bc = self._xmlTree.find(f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bname}"]',
+                                namespaces=nsmap)
 
         if bc is not None:
             raise FileExistsError
@@ -789,6 +795,11 @@ class CoreDB(object):
             True if xpath element exists, False otherwise.
         """
         return self._xmlTree.find(xpath, namespaces=nsmap) is not None
+
+    def getVector(self, xpath: str):
+        return [float(self.getValue(xpath + '/x')),
+                float(self.getValue(xpath + '/y')),
+                float(self.getValue(xpath + '/z'))]
 
     @property
     def isModified(self) -> bool:
