@@ -41,6 +41,8 @@ class TurbulenceModelDialog(ResizableDialog):
         self._db = coredb.CoreDB()
         self._xpath = ModelsDB.TURBULENCE_MODELS_PATH
 
+        self._ui.LES.setVisible(False)
+
         self._connectSignalsSlots()
 
     def showEvent(self, ev):

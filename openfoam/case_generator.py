@@ -5,8 +5,12 @@ import shutil
 import os
 
 from coredb import coredb
+from view.setup.cell_zone_conditions.cell_zone_db import RegionDB
+from view.setup.materials.material_db import Phase
 from .operating_conditions import OperatingConditions
 from .MRF_properties import MRFProperties
+from .turbulence_properties import TurbulenceProperties
+from .g import G
 
 
 class CaseGenerator:
@@ -33,4 +37,12 @@ class CaseGenerator:
             if properties:
                 with open(f'{rpath}/MRFProperties', "w") as f:
                     f.write(properties)
+
+            if RegionDB.getPhase(rname) != Phase.SOLID:
+                with open(f'{rpath}/turbulenceProperties', "w") as f:
+                    f.write(str(TurbulenceProperties(rname)))
+
+                with open(f'{rpath}/g', "w") as f:
+                    f.write(str(G(rname)))
+
 

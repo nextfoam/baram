@@ -100,8 +100,7 @@ class CellZoneConditionDialog(QDialog):
         zoneType = self._getZoneTypeRadioValue()
         writer.append(self._xpath + '/zoneType', zoneType, None)
         if zoneType == ZoneType.MRF.value:
-            if not self._MRFZone.appendToWriter(writer):
-                return
+            self._MRFZone.appendToWriter(writer)
         elif zoneType == ZoneType.POROUS.value:
             self._porousZone.appendToWriter(writer)
         elif zoneType == ZoneType.SLIDING_MESH.value:

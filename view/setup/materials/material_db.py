@@ -59,6 +59,10 @@ class MaterialDB(object):
         return f'{MATERIALS_XPATH}/material[@mid="{mid}"]'
 
     @classmethod
+    def getPhase(cls, mid):
+        return cls.DBTextToPhase(cls._db.getValue(cls.getXPath(mid) + '/phase'))
+
+    @classmethod
     def DBTextToPhase(cls, DBText):
         if DBText == "gas":
             return Phase.GAS

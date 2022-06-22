@@ -9,7 +9,7 @@ from .cell_zone_conditions_page_ui import Ui_CellZoneConditionsPage
 from .region_widget import RegionWidget
 from .operating_conditions_dialog import OperatingConditionsDialog
 from .cell_zone_condition_dialog import CellZoneConditionDialog
-from .cell_zone_db import CellZoneDB
+from .cell_zone_db import RegionDB
 
 
 class CellZoneConditionsPage(QWidget):
@@ -41,7 +41,7 @@ class CellZoneConditionsPage(QWidget):
 
         writer = CoreDBWriter()
         for name, region in self._regions.items():
-            writer.append(CellZoneDB.getRegionXPath(name) + '/material', str(region.material()), None)
+            writer.append(RegionDB.getXPath(name) + '/material', str(region.material()), None)
 
         errorCount = writer.write()
         if errorCount > 0:
