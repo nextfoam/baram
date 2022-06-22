@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QWidget, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from view.setup.general.general_db import GeneralDB
 from .run_calculation_page_ui import Ui_RunCalculationPage
 from .run_calculation_db import TimeSteppingMethod, DataWriteFormat, MachineType, RunCalculationDB
 
@@ -42,6 +43,12 @@ class RunCalculationPage(QWidget):
     def showEvent(self, ev):
         if ev.spontaneous():
             return super().showEvent(ev)
+
+        timeIsTransient = GeneralDB.isTimeTransient()
+        self._ui.steadyConditions.setVisible(not timeIsTransient)
+        self._ui.transientConditions.setVisible(timeIsTransient)
+        self._ui.steadyReportInterval.setVisible(not timeIsTransient)
+        self._ui.transientReportInterval.setVisible(timeIsTransient)
 
         self._ui.numberOfIterations.setText(self._db.getValue(self._xpath + '/runConditions/numberOfIterations'))
         self._ui.timeSteppingMethod.setCurrentText(

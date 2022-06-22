@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Signal
 from coredb import coredb
 from view.setup.materials.material_db import ListIndex
 from .region_widget_ui import Ui_RegionWidget
-from .cell_zone_db import CellZoneListIndex, CellZoneDB
+from .cell_zone_db import CellZoneListIndex, RegionDB
 
 
 class RegionWidget(QWidget):
@@ -37,7 +37,7 @@ class RegionWidget(QWidget):
         return self._ui.list.currentItem().data(Qt.UserRole)
 
     def setMaterials(self, materials):
-        material = self._db.getValue(CellZoneDB.getRegionXPath(self._name) + '/material')
+        material = self._db.getValue(RegionDB.getXPath(self._name) + '/material')
 
         self._ui.material.clear()
         for m in materials:

@@ -4,6 +4,7 @@
 from enum import Enum, auto
 
 from coredb import coredb
+from view.setup.materials.material_db import MaterialDB
 
 
 class CellZoneListIndex(Enum):
@@ -64,6 +65,18 @@ class MeshObject:
         return f'{self._rname} / {self._name}'
 
 
+class RegionDB:
+    _db = coredb.CoreDB()
+
+    @classmethod
+    def getXPath(cls, rname):
+        return f'.//region[name="{rname}"]'
+
+    @classmethod
+    def getPhase(cls, rname):
+        MaterialDB.getPhase(cls._db.getValue(cls.getXPath(rname) + '/material'))
+
+
 class CellZoneDB:
     CELL_ZONE_CONDITIONS_XPATH = './/cellZones'
     OPERATING_CONDITIONS_XPATH = './/operatingConditions'
@@ -75,10 +88,6 @@ class CellZoneDB:
     @classmethod
     def getXPath(cls, czid):
         return f'{cls.CELL_ZONE_CONDITIONS_XPATH}/cellZone[@czid="{czid}"]'
-
-    @classmethod
-    def getRegionXPath(cls, rname):
-        return f'.//region[name="{rname}"]'
 
     @classmethod
     def getCellZoneName(cls, czid):

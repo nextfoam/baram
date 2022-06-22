@@ -49,17 +49,18 @@ class NumericalConditionsPage(QWidget):
         if ev.spontaneous():
             return super().hideEvent(ev)
 
-        self._ui.discretizationSchemeTime.setEnabled(GeneralDB.isTimeTransient())
-        self._ui.underRelaxationFactorPressureFinal.setEnabled(GeneralDB.isTimeTransient())
-        self._ui.underRelaxationFactorMomentumFinal.setEnabled(GeneralDB.isTimeTransient())
-        self._ui.underRelaxationFactorEnergyFinal.setEnabled(GeneralDB.isTimeTransient())
-        self._ui.underRelaxationFactorTurbulenceFinal.setEnabled(GeneralDB.isTimeTransient())
-        self._ui.maxIterationsPerTimeStep.setEnabled(GeneralDB.isTimeTransient())
-        self._ui.numberOfCorrectors.setEnabled(GeneralDB.isTimeTransient())
-        self._ui.relativePressure.setEnabled(GeneralDB.isTimeTransient())
-        self._ui.relativeMomentum.setEnabled(GeneralDB.isTimeTransient())
-        self._ui.relativeEnergy.setEnabled(GeneralDB.isTimeTransient())
-        self._ui.relativeTurbulence.setEnabled(GeneralDB.isTimeTransient())
+        timeIsTransient = GeneralDB.isTimeTransient()
+        self._ui.discretizationSchemeTime.setEnabled(timeIsTransient)
+        self._ui.underRelaxationFactorPressureFinal.setEnabled(timeIsTransient)
+        self._ui.underRelaxationFactorMomentumFinal.setEnabled(timeIsTransient)
+        self._ui.underRelaxationFactorEnergyFinal.setEnabled(timeIsTransient)
+        self._ui.underRelaxationFactorTurbulenceFinal.setEnabled(timeIsTransient)
+        self._ui.maxIterationsPerTimeStep.setEnabled(timeIsTransient)
+        self._ui.numberOfCorrectors.setEnabled(timeIsTransient)
+        self._ui.relativePressure.setEnabled(timeIsTransient)
+        self._ui.relativeMomentum.setEnabled(timeIsTransient)
+        self._ui.relativeEnergy.setEnabled(timeIsTransient)
+        self._ui.relativeTurbulence.setEnabled(timeIsTransient)
 
         self._ui.pressureVelocityCouplingScheme.setCurrentText(
             self._pressureVelocityCouplingSchemes[self._db.getValue(self._xpath + '/pressureVelocityCouplingScheme')])
@@ -74,10 +75,12 @@ class NumericalConditionsPage(QWidget):
             self._upwindDiscretizationSchemes[
                 self._db.getValue(self._xpath + '/discretizationSchemes/turbulentKineticEnergy')])
 
-        self._ui.underRelaxationFactorPressure.setText(self._db.getValue(self._xpath + '/underRelaxationFactors/pressure'))
+        self._ui.underRelaxationFactorPressure.setText(
+            self._db.getValue(self._xpath + '/underRelaxationFactors/pressure'))
         self._ui.underRelaxationFactorPressureFinal.setText(
             self._db.getValue(self._xpath + '/underRelaxationFactors/pressureFinal'))
-        self._ui.underRelaxationFactorMomentum.setText(self._db.getValue(self._xpath + '/underRelaxationFactors/momentum'))
+        self._ui.underRelaxationFactorMomentum.setText(
+            self._db.getValue(self._xpath + '/underRelaxationFactors/momentum'))
         self._ui.underRelaxationFactorMomentumFinal.setText(
             self._db.getValue(self._xpath + '/underRelaxationFactors/momentumFinal'))
         self._ui.underRelaxationFactorEnergy.setText(self._db.getValue(self._xpath + '/underRelaxationFactors/energy'))
@@ -110,10 +113,12 @@ class NumericalConditionsPage(QWidget):
         writer.append(self._xpath + '/pressureVelocityCouplingScheme',
                       self._ui.pressureVelocityCouplingScheme.currentData(), None)
 
-        writer.append(self._xpath + '/discretizationSchemes/time', self._ui.discretizationSchemeTime.currentData(), None)
+        writer.append(self._xpath + '/discretizationSchemes/time',
+                      self._ui.discretizationSchemeTime.currentData(), None)
         writer.append(self._xpath + '/discretizationSchemes/momentum',
                       self._ui.discretizationSchemeMomentum.currentData(), None)
-        writer.append(self._xpath + '/discretizationSchemes/energy', self._ui.discretizationSchemeEnergy.currentData(), None)
+        writer.append(self._xpath + '/discretizationSchemes/energy',
+                      self._ui.discretizationSchemeEnergy.currentData(), None)
         writer.append(self._xpath + '/discretizationSchemes/turbulentKineticEnergy',
                       self._ui.discretizationSchemeTurbulentKineticEnergy.currentData(), None)
 

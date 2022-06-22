@@ -46,10 +46,10 @@ class TurbulenceFields(Enum):
 
 class ModelsDB:
     MODELS_XPATH = './/models'
-    MULTIPHASE_MODELS_PATH = MODELS_XPATH + '/multiphaseModels'
-    TURBULENCE_MODELS_PATH = MODELS_XPATH + '/turbulenceModels'
-    SPECIES_MODELS_PATH = MODELS_XPATH + '/speciesModels'
-    ENERGY_MODELS_PATH = MODELS_XPATH + '/energyModels'
+    MULTIPHASE_MODELS_PATH = './/multiphaseModels'
+    TURBULENCE_MODELS_PATH = './/turbulenceModels'
+    SPECIES_MODELS_PATH = './/speciesModels'
+    ENERGY_MODELS_PATH = './/energyModels'
 
     _multiphaseModelText = {
         MultiphaseModel.OFF: QCoreApplication.translate("ModelsDB", "Off"),
@@ -82,18 +82,6 @@ class ModelsDB:
     @classmethod
     def getTurbulenceModelText(cls):
         return cls._turbulenceModelText[cls.getTurbulenceModel()]
-
-    @classmethod
-    def getKEpsilonModel(cls, dbText):
-        return KEpsilonModel(dbText)
-
-    @classmethod
-    def getNearWallTreatment(cls, dbText):
-        return NearWallTreatment(dbText)
-
-    @classmethod
-    def getKOmegaModel(cls, dbText):
-        return KOmegaModel(dbText)
 
     @classmethod
     def isMultiphaseModelOn(cls):

@@ -35,10 +35,6 @@ class MRFWidget(QWidget):
         self._setStaticBoundaries(boundaries.split() if boundaries else [])
 
     def appendToWriter(self, writer):
-        if not self._staticBoundaries:
-            QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Static Boundary."))
-            return False
-
         writer.append(self._xpath + '/rotatingSpeed',
                       self._ui.rotatingSpeed.text(), self.tr("Rotating Speed"))
         writer.append(self._xpath + '/rotationAxisOrigin/x',
@@ -55,8 +51,6 @@ class MRFWidget(QWidget):
                       self._ui.rotationAxisDirectionZ.text(), self.tr("Rotating-Axis Direction Z"))
         writer.append(self._xpath + '/staticBoundaries',
                       ' '.join(b for b in self._staticBoundaries), self.tr("Static Boundary"))
-
-        return True
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectStaticBoundaries)
