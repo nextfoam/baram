@@ -1,0 +1,440 @@
+solver,simpleNFoam,pimpleNFoam,interNFoam,PCNFoam,buoyantSimpleNFoam,buoyantPimpleNFoam,interPhaseChangeNFoam,speciesSimpleNFoam,speciesPimpleNFoam,speciesPCNFoam,chtMultiRegionSimpleNFoam,chtMultiRegionPimpleNFoam,TSLAeroFoam
+ddtSteady,"{
+'default':'steadyState'
+}",,"{
+'default':'localEuler'
+}","{
+'default':'NEXT::localEuler'
+}","{
+'default':'steadyState'
+}",,"{
+'default':'localEuler'
+}","{
+'default':'steadyState'
+}",,"{
+'default':'NEXT::localEuler'
+}","{
+'default':'steadyState'
+}",,"{
+'default':'localEuler'
+}"
+ddtFirstOrder,,"{
+'default':'NEXT::Euler'
+}","{
+'default':'Euler'
+}","{
+'default':'Euler'
+}",,"{
+'default':'NEXT::Euler'
+}","{
+'default':'Euler'
+}",,"{
+'default':'NEXT::Euler'
+}","{
+'default':'Euler'
+}",,"{
+'default':'NEXT::Euler'
+}",
+ddtSecondOrder,,"{
+'default':'NEXT::backward'
+}","{
+'default':'backward'
+}","{
+'default':'backward'
+}",,"{
+'default':'NEXT::backward'
+}","{
+'default':'backward'
+}",,"{
+'default':'NEXT::backward'
+}","{
+'default':'backward'
+}",,"{
+'default':'NEXT::backward'
+}",
+grad,"{
+'default':'Gauss linear',
+'momentumReconGrad':'NEXT::VKLimited Gauss linear 1.0'
+}","{
+'default':'Gauss linear',
+'momentumReconGrad':'NEXT::VKLimited Gauss linear 1.0'
+}","{
+'default':'Gauss linear',
+'momentumReconGrad':'NEXT::VKLimited Gauss linear 1.0'
+}","{
+'default':'Gauss linear'
+}","{
+'default':'Gauss linear',
+'momentumReconGrad':'NEXT::VKLimited Gauss linear 1.0',
+'energyReconGrad':'NEXT::BJLimited Gauss linear 1.0'
+}","{
+'default':'Gauss linear',
+'momentumReconGrad':'NEXT::VKLimited Gauss linear 1.0',
+'energyReconGrad':'NEXT::BJLimited Gauss linear 1.0'
+}","{
+'default':'Gauss linear',
+'momentumReconGrad':'NEXT::VKLimited Gauss linear 1.0'
+}","{
+'default':'Gauss linear',
+'momentumReconGrad':'NEXT::VKLimited Gauss linear 1.0',
+'energyReconGrad':'NEXT::BJLimited Gauss linear 1.0'
+}","{
+'default':'Gauss linear',
+'momentumReconGrad':'NEXT::VKLimited Gauss linear 1.0',
+'energyReconGrad':'NEXT::BJLimited Gauss linear 1.0'
+}","{
+'default':'Gauss linear'
+}","{
+'default':'Gauss linear',
+'momentumReconGrad':'NEXT::VKLimited Gauss linear 1.0',
+'energyReconGrad':'NEXT::BJLimited Gauss linear 1.0'
+}","{
+'default':'Gauss linear',
+'momentumReconGrad':'NEXT::VKLimited Gauss linear 1.0',
+'energyReconGrad':'NEXT::BJLimited Gauss linear 1.0'
+}","{
+'default':'Gauss linear',
+'grad(k)':'VKMDLimited Gauss linear 0.5',
+'grad(epsilon)':'VKMDLimited Gauss linear 0.5',
+'grad(omega)':'VKMDLimited Gauss linear 0.5',
+'grad(nuTilda)':'VKMDLimited Gauss linear 0.5',
+'reconGrad':'VKMDLimited Gauss linear 0.5'
+}"
+divMomentumFirstOrder,"{
+'default':'Gauss linear',
+'div(phi,U)':'bounded Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,U)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(rhoPhi,U)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phiNeg,U)':'Gauss upwind',
+'div(phiPos,U)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,U)':'bounded Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,U)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(rhoPhi,U)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,U)':'bounded Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,U)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phiNeg,U)':'Gauss upwind',
+'div(phiPos,U)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,U)':'bounded Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,U)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,k)':'Gauss upwind',
+'div(phi,epsilon)':'Gauss upwind',
+'div(phi,omega)':'Gauss upwind',
+'div(phi,nuTilda)':'Gauss upwind'
+}"
+divMomentumSecondOrder,"{
+'default':'bounded Gauss linear',
+'div(phi,U)':'bounded Gauss linearUpwind momentumReconGrad'
+}","{
+'default':'Gauss linear',
+'div(phi,U)':'Gauss linearUpwind momentumReconGrad'
+}","{
+'default':'Gauss linear',
+'div(rhoPhi,U)':'Gauss linearUpwind momentumReconGrad'
+}","{
+'default':'Gauss linear',
+'div(phiNeg,U)':'Gauss MinmodV',
+'div(phiPos,U)':'Gauss MinmodV'
+}","{
+'default':'bounded Gauss linear',
+'div(phi,U)':'bounded Gauss linearUpwind momentumReconGrad'
+}","{
+'default':'Gauss linear',
+'div(phi,U)':'Gauss linearUpwind momentumReconGrad'
+}","{
+'default':'Gauss linear',
+'div(rhoPhi,U)':'Gauss linearUpwind momentumReconGrad'
+}","{
+'default':'bounded Gauss linear',
+'div(phi,U)':'bounded Gauss linearUpwind momentumReconGrad'
+}","{
+'default':'Gauss linear',
+'div(phi,U)':'Gauss linearUpwind momentumReconGrad'
+}","{
+'default':'Gauss linear',
+'div(phiNeg,U)':'Gauss MinmodV',
+'div(phiPos,U)':'Gauss MinmodV'
+}","{
+'default':'Gauss linear',
+'div(phi,U)':'bounded Gauss linearUpwind momentumReconGrad'
+}","{
+'default':'Gauss linear',
+'div(phi,U)':'Gauss linearUpwind momentumReconGrad'
+}","{
+'default':'Gauss linear',
+'div(phi,k)':'Gauss linearUpwind reconGrad',
+'div(phi,epsilon)':'Gauss linearUpwind reconGrad',
+'div(phi,omega)':'Gauss linearUpwind reconGrad',
+'div(phi,nuTilda)':'Gauss linearUpwind reconGrad'
+}"
+divEnergyFirstOrder,,,,"{
+'default':'Gauss linear',
+'div(phiNeg,h)':'Gauss upwind',
+'div(phiPos,h)':'Gauss upwind',
+'div(phiNeg,K)':'Gauss upwind',
+'div(phiPos,K)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,h)':'Gauss upwind',
+'div(phi,K)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,h)':'Gauss upwind',
+'div(phi,K)':'Gauss upwind'
+}",,"{
+'default':'Gauss linear',
+'div(phi,h)':'Gauss upwind',
+'div(phi,K)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,h)':'Gauss upwind',
+'div(phi,K)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phiNeg,h)':'Gauss upwind',
+'div(phiPos,h)':'Gauss upwind',
+'div(phiNeg,K)':'Gauss upwind',
+'div(phiPos,K)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,h)':'Gauss upwind',
+'div(phi,K)':'Gauss upwind'
+}","{
+'default':'Gauss linear',
+'div(phi,h)':'Gauss upwind',
+'div(phi,K)':'Gauss upwind'
+}",
+divEnergySecondOrder,,,,"{
+'default':'Gauss linear',
+'div(phiNeg,h)':'Gauss Minmod',
+'div(phiPos,h)':'Gauss Minmod',
+'div(phiNeg,K)':'Gauss Minmod',
+'div(phiPos,K)':'Gauss Minmod',
+'div(phid_neg,p)':'Gauss Minmod',
+'div(phid_pos,p)':'Gauss Minmod'
+}","{
+'default':'Gauss linear',
+'div(phi,h)':'Gauss linearUpwind energyReconGrad',
+'div(phi,K)':'Gauss linearUpwind energyReconGrad'
+}","{
+'default':'Gauss linear',
+'div(phi,h)':'Gauss linearUpwind energyReconGrad',
+'div(phi,K)':'Gauss linearUpwind energyReconGrad'
+}",,"{
+'default':'Gauss linear',
+'div(phi,h)':'Gauss linearUpwind energyReconGrad',
+'div(phi,K)':'Gauss linearUpwind energyReconGrad'
+}","{
+'default':'Gauss linear',
+'div(phi,h)':'Gauss linearUpwind energyReconGrad',
+'div(phi,K)':'Gauss linearUpwind energyReconGrad'
+}","{
+'default':'Gauss linear',
+'div(phiNeg,h)':'Gauss Minmod',
+'div(phiPos,h)':'Gauss Minmod',
+'div(phiNeg,K)':'Gauss Minmod',
+'div(phiPos,K)':'Gauss Minmod',
+'div(phid_neg,p)':'Gauss Minmod',
+'div(phid_pos,p)':'Gauss Minmod'
+}","{
+'default':'Gauss linear',
+'div(phi,h)':'Gauss linearUpwind energyReconGrad',
+'div(phi,K)':'Gauss linearUpwind energyReconGrad'
+}","{
+'default':'Gauss linear',
+'div(phi,h)':'Gauss linearUpwind energyReconGrad',
+'div(phi,K)':'Gauss linearUpwind energyReconGrad'
+}",
+divAlphaFirstOrder,,,"{
+'default':'Gauss linear',
+'div(phi,alpha)':'Gauss Upwind',
+'div(phirb,alpha)':'Gauss Upwind'
+}",,,,"{
+'default':'Gauss linear',
+'div(phi,alpha)':'Gauss Upwind',
+'div(phirb,alpha)':'Gauss Upwind'
+}",,,,,,
+divAlphaSecondOrder,,,"{
+'default':'Gauss linear',
+'div(phi,alpha)':'Gauss vanLeer',
+'div(phirb,alpha)':'Gauss linear'
+}",,,,"{
+'default':'Gauss linear',
+'div(phi,alpha)':'Gauss vanLeer',
+'div(phirb,alpha)':'Gauss linear'
+}",,,,,,
+laplacianNormal,"{
+'default':'Gauss linear NEXT::corrected'
+}","{
+'default':'Gauss linear NEXT::corrected'
+}","{
+'default':'Gauss linear corrected'
+}","{
+'default':'Gauss linear NEXT::corrected'
+}","{
+'default':'Gauss linear NEXT::corrected'
+}","{
+'default':'Gauss linear NEXT::corrected'
+}","{
+'default':'Gauss linear corrected'
+}","{
+'default':'Gauss linear NEXT::corrected'
+}","{
+'default':'Gauss linear NEXT::corrected'
+}","{
+'default':'Gauss linear NEXT::corrected'
+}","{
+'default':'Gauss linear corrected'
+}","{
+'default':'Gauss linear corrected'
+}","{
+'default':'Gauss linear NEXT::corrected'
+}"
+laplacianImproveStability,"{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}","{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}","{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}","{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}","{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}","{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}","{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}","{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}","{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}","{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}","{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}","{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}","{
+'default':'Gauss linear limited NEXT::corrected 0.5'
+}"
+interpolation,"{
+'default':'linear',
+'interpolate(p)':'NEXT::momentumWeightedReconstruct'
+}","{
+'default':'linear',
+'interpolate(p)':'NEXT::momentumWeightedReconstruct'
+}","{
+'default':'linear'
+}","{
+'default':'linear',
+'reconstruct(psi)':'Minmod',
+'reconstruct(p)':'Minmod',
+'reconstruct(U)':'MinmodV',
+'reconstruct(Dp)':'Minmod'
+}","{
+'default':'linear',
+'interpolate(p_rgh)':'NEXT::momentumWeightedReconstruct'
+}","{
+'default':'linear',
+'interpolate(p_rgh)':'NEXT::momentumWeightedReconstruct'
+}","{
+'default':'linear'
+}","{
+'default':'linear',
+'interpolate(p_rgh)':'NEXT::momentumWeightedReconstruct'
+}","{
+'default':'linear',
+'interpolate(p_rgh)':'NEXT::momentumWeightedReconstruct'
+}","{
+'default':'linear',
+'reconstruct(psi)':'Minmod',
+'reconstruct(p)':'Minmod',
+'reconstruct(U)':'MinmodV',
+'reconstruct(Dp)':'Minmod'
+}","{
+'default':'linear',
+'interpolate(p_rgh)':'NEXT::momentumWeightedReconstruct'
+}","{
+'default':'linear',
+'interpolate(p_rgh)':'NEXT::momentumWeightedReconstruct'
+}","{
+'default':'linear',
+'interpolate(rho)':'linearUpwind phi grad(rho)'
+}"
+snGrad,"{
+'default':'NEXT::corrected'
+}","{
+'default':'NEXT::corrected'
+}","{
+'default':'corrected'
+}","{
+'default':'NEXT::corrected'
+}","{
+'default':'NEXT::corrected'
+}","{
+'default':'NEXT::corrected'
+}","{
+'default':'corrected'
+}","{
+'default':'NEXT::corrected'
+}","{
+'default':'NEXT::corrected'
+}","{
+'default':'NEXT::corrected'
+}","{
+'default':'NEXT::corrected'
+}","{
+'default':'NEXT::corrected'
+}","{
+'default':'NEXT::corrected'
+}"
+wallDist,"{
+'method':'meshWave'
+}","{
+'method':'meshWave'
+}","{
+'method':'meshWave'
+}","{
+'method':'meshWave'
+}","{
+'method':'meshWave'
+}","{
+'method':'meshWave'
+}","{
+'method':'meshWave'
+}","{
+'method':'meshWave'
+}","{
+'method':'meshWave'
+}","{
+'method':'meshWave'
+}","{
+'method':'meshWave'
+}","{
+'method':'meshWave'
+}","{
+'method':'meshWave'
+}"
