@@ -7,159 +7,134 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>228</height>
+    <height>200</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>WizardPage</string>
   </property>
-  <widget class="QWidget" name="formWidget" native="true">
-   <property name="geometry">
-    <rect>
-     <x>40</x>
-     <y>140</y>
-     <width>180</width>
-     <height>80</height>
-    </rect>
-   </property>
-   <layout class="QFormLayout" name="formLayout">
-    <item row="0" column="0">
-     <widget class="QLabel" name="GX">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+  <property name="title">
+   <string>Gravity</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="leftMargin">
+       <number>15</number>
       </property>
-      <property name="text">
-       <string>X(m/s&lt;sup&gt;2&lt;/sup&gt;)</string>
+      <property name="rightMargin">
+       <number>15</number>
       </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="GXValue">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="GY">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Y(m/s&lt;sup&gt;2&lt;/sup&gt;)</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLineEdit" name="GYValue"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="GZ">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Z(m/s&lt;sup&gt;2&lt;/sup&gt;)</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLineEdit" name="GZValue"/>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="widget" native="true">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>90</y>
-     <width>111</width>
-     <height>50</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QRadioButton" name="Include">
-      <property name="text">
-       <string>Include</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QRadioButton" name="NotInclude">
-      <property name="text">
-       <string>Not Include</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="title" native="true">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>50</y>
-     <width>150</width>
-     <height>35</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QLabel" name="Label">
-      <property name="text">
-       <string>Gravity Model</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="HelpButton">
-      <property name="toolTip">
-       <string>When a fluid flow is compressible, the fluid density varies with its pressure. Compressible flows are usually high speed flows with Mach numbers greater than about 0.3. Examples include aerodynamic applications such as flow over a wing or aircraft nacelle as well as industrial applications such as flow through high-performance valves.
-
-Incompressible flows do not have such a variation of density. 
-The key differentiation between compressible and incompressible is the velocity of the flow. A fluid such as air that is moving slower than Mach 0.3 is considered incompressible, even though it is a gas. A gas that is run through a compressor is not truly considered compressible (in the thermodynamic sense) unless its velocity exceeds Mach 0.3.</string>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border-radius: 20px;border-style:none</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="icon">
-       <iconset resource="../../resource.qrc">
-        <normaloff>:/icons-white/help-circle-outline.svg</normaloff>:/icons-white/help-circle-outline.svg</iconset>
-      </property>
-      <property name="iconSize">
-       <size>
-        <width>25</width>
-        <height>25</height>
-       </size>
-      </property>
-      <property name="flat">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+      <item>
+       <widget class="QRadioButton" name="include">
+        <property name="text">
+         <string>Include</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="formWidget" native="true">
+        <layout class="QFormLayout" name="formLayout">
+         <property name="leftMargin">
+          <number>20</number>
+         </property>
+         <property name="rightMargin">
+          <number>30</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_x">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>X(m/s&lt;sup&gt;2&lt;/sup&gt;)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="x">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_y">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Y(m/s&lt;sup&gt;2&lt;/sup&gt;)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="y"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_z">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Z(m/s&lt;sup&gt;2&lt;/sup&gt;)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="z"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="notInclude">
+        <property name="text">
+         <string>Not Include</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
  </widget>
  <resources>
   <include location="../../resource.qrc"/>
  </resources>
  <connections>
   <connection>
-   <sender>Include</sender>
+   <sender>include</sender>
    <signal>toggled(bool)</signal>
-   <receiver>GXValue</receiver>
+   <receiver>x</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -173,9 +148,9 @@ The key differentiation between compressible and incompressible is the velocity 
    </hints>
   </connection>
   <connection>
-   <sender>Include</sender>
+   <sender>include</sender>
    <signal>toggled(bool)</signal>
-   <receiver>GZValue</receiver>
+   <receiver>z</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -189,9 +164,9 @@ The key differentiation between compressible and incompressible is the velocity 
    </hints>
   </connection>
   <connection>
-   <sender>Include</sender>
+   <sender>include</sender>
    <signal>toggled(bool)</signal>
-   <receiver>GYValue</receiver>
+   <receiver>y</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">

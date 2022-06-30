@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
+    <width>420</width>
     <height>300</height>
    </rect>
   </property>
@@ -16,14 +16,34 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>420</width>
+    <height>300</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>420</width>
+    <height>300</height>
+   </size>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>Wizard</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color:rgb(82, 82, 82);</string>
+   <string notr="true"/>
   </property>
   <property name="wizardStyle">
    <enum>QWizard::ModernStyle</enum>
+  </property>
+  <property name="options">
+   <set>QWizard::CancelButtonOnLeft|QWizard::HaveHelpButton|QWizard::NoBackButtonOnStartPage</set>
   </property>
  </widget>
  <resources/>
