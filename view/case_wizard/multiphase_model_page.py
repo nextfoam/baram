@@ -13,5 +13,6 @@ class MultiphaseModelPage(QWizardPage):
         self._ui = Ui_MultiphaseModelPage()
         self._ui.setupUi(self)
 
-        self._ui.NotInclude.setChecked(True)
+        self._ui.notInclude.setChecked(True)
+        self.registerField("multiphaseModel", self._ui.include)
 
