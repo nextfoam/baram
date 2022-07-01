@@ -13,6 +13,8 @@ class TestFvSchemes(unittest.TestCase):
         self.db.addRegion(self.region)
         self.db.addCellZone(self.region, zone)
 
+        self.db.setValue('.//general/solverType', 'pressureBased')
+
         self.db.setValue('.//models/energyModels', 'on')
         self.db.setValue('.//models/multiphaseModels/model', 'off')
         self.db.setValue('.//models/speciesModels', 'off')
@@ -23,46 +25,67 @@ class TestFvSchemes(unittest.TestCase):
     def tearDown(self) -> None:
         del coredb.CoreDB._instance
 
-    def testSecondOrderTransient(self):
-        solver = 'PCNFoam'
-
+    def testSecondOrderTransient(self):  # PCNFoam
         self.db.setValue('.//general/timeTransient', 'true')
+
+        self.db.setValue('.//general/flowType', 'compressible')
 
         self.db.setValue('.//discretizationSchemes/time', 'secondOrderImplicit')
         self.db.setValue('.//discretizationSchemes/momentum', 'secondOrderUpwind')
         self.db.setValue('.//discretizationSchemes/energy', 'secondOrderUpwind')
         self.db.setValue('.//discretizationSchemes/turbulentKineticEnergy', 'secondOrderUpwind')
 
-        content = FvSchemes(self.region, solver).asDict()
+        content = FvSchemes(self.region).asDict()
 
         self.assertEqual('backward', content['ddtSchemes']['default'])
 
         self.assertEqual('Gauss linear', content['gradSchemes']['default'])
-        self.assertEqual('cellLimited Gauss linear 1.0', content['gradSchemes']['turbulenceReconGrad'])
+        self.assertEqual('BJLimited Gauss linear 1.0', content['gradSchemes']['turbulenceReconGrad'])
 
         self.assertEqual('Gauss MinmodV', content['divSchemes']['div(phiNeg,U)'])
         self.assertEqual('Gauss Minmod', content['divSchemes']['div(phiNeg,h)'])
         self.assertEqual('Gauss linearUpwind turbulenceReconGrad', content['divSchemes']['div(phi,epsilon)'])
 
-    def testFirstOrderSteady(self):
-        solver = 'PCNFoam'
-
+    def testFirstOrderSteady(self):  # PCNFoam
         self.db.setValue('.//general/timeTransient', 'false')
+
+        self.db.setValue('.//general/flowType', 'compressible')
 
         self.db.setValue('.//discretizationSchemes/time', 'firstOrderImplicit')
         self.db.setValue('.//discretizationSchemes/momentum', 'firstOrderUpwind')
         self.db.setValue('.//discretizationSchemes/energy', 'firstOrderUpwind')
         self.db.setValue('.//discretizationSchemes/turbulentKineticEnergy', 'firstOrderUpwind')
 
-        content = FvSchemes(self.region, solver).asDict()
+        content = FvSchemes(self.region).asDict()
 
-        self.assertEqual('NEXT::localEuler', content['ddtSchemes']['default'])
+        self.assertEqual('localEuler', content['ddtSchemes']['default'])
 
         self.assertEqual('Gauss linear', content['gradSchemes']['default'])
-        self.assertEqual('cellLimited Gauss linear 1.0', content['gradSchemes']['turbulenceReconGrad'])
+        self.assertEqual('BJLimited Gauss linear 1.0', content['gradSchemes']['turbulenceReconGrad'])
 
         self.assertEqual('Gauss upwind', content['divSchemes']['div(phiNeg,U)'])
         self.assertEqual('Gauss upwind', content['divSchemes']['div(phiNeg,h)'])
+        self.assertEqual('Gauss upwind', content['divSchemes']['div(phi,epsilon)'])
+
+    def testSteadyOnlySolver(self):  # buoyantSimpleNFoam
+        self.db.setValue('.//general/timeTransient', 'false')
+
+        self.db.setValue('.//general/flowType', 'incompressible')
+
+        self.db.setValue('.//discretizationSchemes/time', 'firstOrderImplicit')
+        self.db.setValue('.//discretizationSchemes/momentum', 'firstOrderUpwind')
+        self.db.setValue('.//discretizationSchemes/energy', 'firstOrderUpwind')
+        self.db.setValue('.//discretizationSchemes/turbulentKineticEnergy', 'firstOrderUpwind')
+
+        content = FvSchemes(self.region).asDict()
+
+        self.assertEqual('steadyState', content['ddtSchemes']['default'])
+
+        self.assertEqual('Gauss linear', content['gradSchemes']['default'])
+        self.assertEqual('BJLimited Gauss linear 1.0', content['gradSchemes']['turbulenceReconGrad'])
+
+        self.assertEqual('bounded Gauss upwind', content['divSchemes']['div(phiNeg,U)'])
+        self.assertEqual('bounded Gauss upwind', content['divSchemes']['div(phiNeg,h)'])
         self.assertEqual('bounded Gauss upwind', content['divSchemes']['div(phi,epsilon)'])
 
 

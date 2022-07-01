@@ -75,3 +75,7 @@ def findSolvers() -> list[str]:
             break
 
     return solvers
+
+
+def getSolverCapability(name: str) -> dict:
+    return availableSolvers[name]

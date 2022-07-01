@@ -1,28 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import json
-
-import pandas as pd
 from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
 
 from coredb import coredb
-from resources import resource
+
+import openfoam.solver
 
 
 class FvSchemes(object):
-    def __init__(self, rname: str, solver: str):
+    def __init__(self, rname: str):
         self._rname = rname
-        self._solver = solver
         self._data = None
+        self._db = coredb.CoreDB()
+        solvers = openfoam.solver.findSolvers()
+        if len(solvers) != 1:  # configuration not enough yet
+            raise RuntimeError
 
-        df = pd.read_csv(resource.file('openfoam/fv_schemes.csv'), header=0, index_col=0)
-        df.where(pd.notnull(df), None, inplace=True)
-        self._schemes = df.applymap(lambda s: json.loads(s.replace("'", '"')), na_action='ignore').to_dict()
-
-        df = pd.read_csv(resource.file('openfoam/fv_schemes_turbulence.csv'), header=0, index_col=0)
-        df.where(pd.notnull(df), None, inplace=True)
-        self._schemesTurbulence = df.applymap(lambda s: json.loads(s.replace("'", '"')), na_action='ignore').to_dict()
+        print(solvers)
+        self._solver = solvers[0]
+        self._cap = openfoam.solver.getSolverCapability(self._solver)
 
     def __str__(self):
         return self.asStr()
@@ -31,17 +28,18 @@ class FvSchemes(object):
         if self._data is not None:
             return
 
-        db = coredb.CoreDB()
-
-        mid = db.getValue(f'.//region[name="{self._rname}"]/material')
-        phase = db.getValue(f'.//materials/material[@mid="{mid}"]/phase')
+        mid = self._db.getValue(f'.//region[name="{self._rname}"]/material')
+        phase = self._db.getValue(f'.//materials/material[@mid="{mid}"]/phase')
 
         if phase == 'solid':
-            self._buildSolid(db)
-        else:
-            self._buildFluid(db)
+            self._buildSolid()
+        else:  # fluid
+            if self._solver == 'TSLAeroFoam':
+                pass
+            else:
+                self._buildFluid()
 
-    def _buildSolid(self, db):
+    def _buildSolid(self):
         self._data = {
             'ddtSchemes': {
                 'default': 'steadyState'
@@ -63,110 +61,165 @@ class FvSchemes(object):
             }
         }
 
-    def _buildFluid(self, db):
-        try:
-            scheme = self._schemes[self._solver]
-        except KeyError:
-            raise NotImplementedError
-
-        schemeTurbulence = None
-        turbulenceModel = db.getValue('.//turbulenceModels/model')
-        if turbulenceModel == 'spalartAllmaras':
-            schemeTurbulence = self._schemesTurbulence['spalartAllmaras']
-        elif turbulenceModel == 'k-epsilon':
-            model = db.getValue('.//turbulenceModels/k-epsilon/model')
-            if model == 'standard':
-                schemeTurbulence = self._schemesTurbulence['kEpsilon']
-            elif model == 'rng':
-                schemeTurbulence = self._schemesTurbulence['kEpsilon']
-            elif model == 'realizable':
-                schemeTurbulence = self._schemesTurbulence['realizableKE']
-        elif turbulenceModel == 'k-omega':
-            model = db.getValue('.//turbulenceModels/k-omega/model')
-            if model == 'SST':
-                schemeTurbulence = self._schemesTurbulence['kOmegaSST']
-
+    def _buildFluid(self):
         self._data = {
-            'ddtSchemes': self._constructDdtSchemes(db, scheme, schemeTurbulence),
-            'gradSchemes': self._constructGradSchemes(db, scheme, schemeTurbulence),
-            'divSchemes': self._constructDivSchemes(db, scheme, schemeTurbulence),
-            'laplacianSchemes': scheme['laplacianNormal'],
-            'interpolationSchemes': scheme['interpolation'],
-            'snGradSchemes': scheme['snGrad'],
-            'wallDist': scheme['wallDist']
+            'ddtSchemes': self._constructDdtSchemes(),
+            'gradSchemes': self._constructGradSchemes(),
+            'divSchemes': self._constructDivSchemes(),
+            'laplacianSchemes': self._constructLaplacianSchemes(),
+            'interpolationSchemes': {
+                'default': 'linear',
+                'interpolate(p)':     'momentumWeightedReconstruct',
+                'interpolate(p_rgh)': 'momentumWeightedReconstruct',
+                'reconstruct(psi)': 'Minmod',
+                'reconstruct(p)':   'Minmod',
+                'reconstruct(U)':   'MinmodV',
+                'reconstruct(Dp)':  'Minmod'
+            },
+            'snGradSchemes': {
+                'default': 'corrected'
+            },
+            'wallDist': {
+                'method': 'meshWave'
+            }
         }
 
-    def _constructDdtSchemes(self, db, scheme, schemeTurbulence):
-        timeTransient = db.getValue('.//general/timeTransient')
-        time = db.getValue('.//discretizationSchemes/time')
+    def _constructDdtSchemes(self):
+        timeTransient = self._db.getValue('.//general/timeTransient')
+        time = self._db.getValue('.//discretizationSchemes/time')
 
         ddtSchemes = {}
-
         if timeTransient == 'true':
             if time == 'firstOrderImplicit':
-                ddtSchemes.update(scheme['ddtFirstOrder'])
+                ddtSchemes = {
+                    'default': 'Euler'
+                }
             elif time == 'secondOrderImplicit':
-                ddtSchemes.update(scheme['ddtSecondOrder'])
+                ddtSchemes = {
+                    'default': 'backward'
+                }
         else:
-            ddtSchemes.update(scheme['ddtSteady'])
+            if self._cap['timeTransient']:  # this solver is able to solve both steady and transient
+                ddtSchemes = {
+                    'default': 'localEuler'
+                }
+            else:
+                ddtSchemes = {
+                    'default': 'steadyState'
+                }
 
         return ddtSchemes
 
-    def _constructGradSchemes(self, db, scheme, schemeTurbulence):
-        gradSchemes = scheme['grad']
+    def _constructGradSchemes(self):
+        return {
+            'default': 'Gauss linear',
+            'momentumReconGrad':   'VKLimited Gauss linear 1.0',
+            'energyReconGrad':     'BJLimited Gauss linear 1.0',
+            'turbulenceReconGrad': 'BJLimited Gauss linear 1.0'
+        }
 
-        if schemeTurbulence is not None:
-            gradSchemes.update(schemeTurbulence['grad'])
+    def _constructDivSchemes(self):
+        energyModel = self._db.getValue('.//models/energyModels')
+        multiphaseModel = self._db.getValue('.//models/multiphaseModels/model')
+        speciesModel = self._db.getValue('.//models/speciesModels')
 
-        return gradSchemes
+        momentum = self._db.getValue('.//discretizationSchemes/momentum')
+        energy = self._db.getValue('.//discretizationSchemes/energy')
+        turbulentKineticEnergy = self._db.getValue('.//discretizationSchemes/turbulentKineticEnergy')
+        volumeFraction = self._db.getValue('.//discretizationSchemes/volumeFraction')
 
-    def _constructDivSchemes(self, db, scheme, schemeTurbulence):
-        timeTransient = db.getValue('.//general/timeTransient')
+        # prepend 'bounded' prefix for steady state solvers
+        if self._cap['timeSteady'] and not self._cap['timeTransient']:
+            bounded = 'bounded '
+        else:
+            bounded = ''
 
-        energyModel     = db.getValue('.//models/energyModels')
-        multiphaseModel = db.getValue('.//models/multiphaseModels/model')
-        speciesModel    = db.getValue('.//models/speciesModels')
-
-        momentum = db.getValue('.//discretizationSchemes/momentum')
-        energy   = db.getValue('.//discretizationSchemes/energy')
-        turbulentKineticEnergy = db.getValue('.//discretizationSchemes/turbulentKineticEnergy')
-
-        divSchemes = {}
+        divSchemes = {
+            'default': 'Gauss linear'
+        }
 
         if momentum == 'firstOrderUpwind':
-            divSchemes.update(scheme['divMomentumFirstOrder'])
+            divSchemes.update({
+                'div(phi,U)': f'{bounded}Gauss upwind',
+                'div(rhoPhi,U)': f'{bounded}Gauss upwind',
+                'div(phiNeg,U)': f'{bounded}Gauss upwind',
+                'div(phiPos,U)': f'{bounded}Gauss upwind'
+            })
         elif momentum == 'secondOrderUpwind':
-            divSchemes.update(scheme['divMomentumSecondOrder'])
+            divSchemes.update({
+                'div(phi,U)': f'{bounded}Gauss linearUpwind momentumReconGrad',
+                'div(rhoPhi,U)': f'{bounded}Gauss linearUpwind momentumReconGrad',
+                'div(phiNeg,U)': f'{bounded}Gauss MinmodV',
+                'div(phiPos,U)': f'{bounded}Gauss MinmodV'
+            })
 
-        if schemeTurbulence is not None:
-            if turbulentKineticEnergy == 'firstOrderUpwind':
-                if timeTransient == 'true':
-                    divSchemes.update(schemeTurbulence['divTurbulenceFirstOrderTransient'])
-                else:
-                    divSchemes.update(schemeTurbulence['divTurbulenceFirstOrderSteady'])
-            elif turbulentKineticEnergy == 'secondOrderUpwind':
-                if timeTransient == 'true':
-                    divSchemes.update(schemeTurbulence['divTurbulenceSecondOrderTransient'])
-                else:
-                    divSchemes.update(schemeTurbulence['divTurbulenceSecondOrderSteady'])
+        if turbulentKineticEnergy == 'firstOrderUpwind':
+            divSchemes.update({
+                'div(phi,k)': f'{bounded}Gauss upwind',
+                'div(phi,epsilon)': f'{bounded}Gauss upwind',
+                'div(phi,omega)': f'{bounded}Gauss upwind',
+                'div(phi,nuTilda)': f'{bounded}Gauss upwind'
+            })
+        elif turbulentKineticEnergy == 'secondOrderUpwind':
+            divSchemes.update({
+                'div(phi,k)': f'{bounded}Gauss linearUpwind turbulenceReconGrad',
+                'div(phi,epsilon)': f'{bounded}Gauss linearUpwind turbulenceReconGrad',
+                'div(phi,omega)': f'{bounded}Gauss linearUpwind turbulenceReconGrad',
+                'div(phi,nuTilda)': f'{bounded}Gauss linearUpwind turbulenceReconGrad'
+            })
 
         if energyModel != 'off':
             if energy == 'firstOrderUpwind':
-                divSchemes.update(scheme['divEnergyFirstOrder'])
+                divSchemes.update({
+                    'div(phi,h)': f'{bounded}Gauss upwind',
+                    'div(phiNeg,h)': f'{bounded}Gauss upwind',
+                    'div(phiPos,h)': f'{bounded}Gauss upwind',
+                    'div(phi,K)': f'{bounded}Gauss upwind',
+                    'div(phiNeg,K)': f'{bounded}Gauss upwind',
+                    'div(phiPos,K)': f'{bounded}Gauss upwind'
+                })
             elif energy == 'secondOrderUpwind':
-                divSchemes.update(scheme['divEnergySecondOrder'])
+                divSchemes.update({
+                    'div(phi,h)': f'{bounded}Gauss linearUpwind energyReconGrad',
+                    'div(phiNeg,h)': f'{bounded}Gauss Minmod',
+                    'div(phiPos,h)': f'{bounded}Gauss Minmod',
+                    'div(phi,K)': f'{bounded}Gauss linearUpwind energyReconGrad',
+                    'div(phiNeg,K)': f'{bounded}Gauss Minmod',
+                    'div(phiPos,K)': f'{bounded}Gauss Minmod',
+                    'div(phid_neg,p)': f'{bounded}Gauss Minmod',
+                    'div(phid_pos,p)': f'{bounded}Gauss Minmod'
+                })
 
-        # ToDo: species discretization method
+        # unlike other values, do not add 'bounded' for species schemes even for steady state solvers
         if speciesModel != 'off':
-            pass
+            pass  # Not implemented yet
 
         if multiphaseModel != 'off':
-            if energy == 'firstOrder':
-                divSchemes.update(scheme['divAlphaFirstOrder'])
-            elif energy == 'secondOrder':
-                divSchemes.update(scheme['divAlphaSecondOrder'])
+            if volumeFraction == 'firstOrder':
+                divSchemes.update({
+                    'div(phi,alpha)': f'{bounded}Gauss Upwind',
+                    'div(phirb,alpha)': f'{bounded}Gauss Upwind'
+                })
+            elif volumeFraction == 'secondOrder':
+                divSchemes.update({
+                    'div(phi,alpha)': f'{bounded}Gauss vanLeer',
+                    'div(phirb,alpha)': f'{bounded}Gauss linear'
+                })
 
         return divSchemes
+
+    def _constructLaplacianSchemes(self):
+        relaxationDisabled = self._db.getAttribute('.//numericalConditions/highOrderTermRelaxation', 'disabled')
+        relFactor = self._db.getValue('.//numericalConditions/highOrderTermRelaxation/relaxationFactor')
+
+        laplacianSchemes = {}
+
+        if relaxationDisabled == 'true':
+            laplacianSchemes['default'] = 'Gauss linear corrected'
+        else:
+            laplacianSchemes['default'] = f'Gauss linear limited corrected {relFactor}'
+
+        return laplacianSchemes
 
     def asDict(self):
         self._build()

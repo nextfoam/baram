@@ -19,7 +19,7 @@ class TestOperatingConditions(unittest.TestCase):
         self.db.addCellZone(region, zone)
         self.db.setValue('.//operatingConditions/pressure', pressure)
 
-        content = OperatingConditions(region).asdict()
+        content = OperatingConditions(region).asDict()
         self.assertEqual(('Op [1 -1 -2 0 0 0 0]', pressure), content['Op'])
 
 
