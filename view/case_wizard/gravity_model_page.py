@@ -27,9 +27,9 @@ class GravityModelPage(QWizardPage):
         self._ui.y.setValidator(QDoubleValidator(self.MIN_GRAVITY, self.MAX_GRAVITY, self.DECIMAL_PRECISION))
         self._ui.z.setValidator(QDoubleValidator(self.MIN_GRAVITY, self.MAX_GRAVITY, self.DECIMAL_PRECISION))
 
-        self.registerField("gravity", self._ui.include)
-        self.registerField("gravity_x", self._ui.x)
-        self.registerField("gravity_y", self._ui.y)
-        self.registerField("gravity_z", self._ui.z)
+        self.registerField('gravity', self._ui.include)
+        self.registerField('gravity_x', self._ui.x)
+        self.registerField('gravity_y', self._ui.y)
+        self.registerField('gravity_z', self._ui.z)
 
 

@@ -14,4 +14,4 @@ class SolverTypePage(QWizardPage):
         self._ui.setupUi(self)
 
         self._ui.pressureBased.setChecked(True)
-        self.registerField("solverType", self._ui.pressureBased)
+        self.registerField('solverType', self._ui.pressureBased)
