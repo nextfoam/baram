@@ -2,15 +2,17 @@
 """Formats the output on a terminal"""
 
 import os
+import platform
 
 from PyFoam.Infrastructure.Configuration import Configuration as config
 
 def getTerminalCode(code):
     result=""
-    try:
-        result=os.popen("tput "+code).read()
-    except:
-        pass
+    if platform.system() != 'Windows':
+        try:
+            result=os.popen("tput "+code).read()
+        except:
+            pass
     return result
 
 class TerminalFormatter(object):
