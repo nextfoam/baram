@@ -97,8 +97,6 @@ class FoamFileGenerator(object):
             order=dic._order
         else:
             order=list(dic.keys())
-            if not isinstance(dic,(OrderedDict,)):
-                order.sort()
 
         for k in order:
             if type(k)==DictRedirection:
