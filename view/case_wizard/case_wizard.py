@@ -73,41 +73,41 @@ class CaseWizard(QWizard):
 
 
     def accept(self):
-        general_path = ".//general"
-        models_path = ".//models"
+        general_path = './/general'
+        models_path = './/models'
 
-        if self.field("flowType") == "True":
-            self._db.setValue(f"{general_path}/flowType", "compressible")
+        if self.field('flowType') == 'True':
+            self._db.setValue(f'{general_path}/flowType', 'compressible')
         else:
-            self._db.setValue(f"{general_path}/flowType", "incompressible")
+            self._db.setValue(f'{general_path}/flowType', 'incompressible')
 
-        if self.field("solverType") == "True":
-            self._db.setValue(f"{general_path}/solverType", "pressureBased")
+        if self.field('solverType') == 'True':
+            self._db.setValue(f'{general_path}/solverType', 'pressureBased')
         else:
-            self._db.setValue(f"{general_path}/solverType", "densityBased")
+            self._db.setValue(f'{general_path}/solverType', 'densityBased')
 
-        if self.field("energyModels") == "True":
-            self._db.setValue(f"{models_path}/energyModels", "on")
+        if self.field('energyModels') == 'True':
+            self._db.setValue(f'{models_path}/energyModels', 'on')
         else:
-            self._db.setValue(f"{models_path}/energyModels", "off")
+            self._db.setValue(f'{models_path}/energyModels', 'off')
 
-        if self.field("multiphaseModel") == "True":
-            self._db.setValue(f"{models_path}/multiphaseModels/model", "on")
+        if self.field('multiphaseModel') == 'True':
+            self._db.setValue(f'{models_path}/multiphaseModels/model', 'on')
         else:
-            self._db.setValue(f"{models_path}/multiphaseModels/model", "off")
+            self._db.setValue(f'{models_path}/multiphaseModels/model', 'off')
 
-        if self.field("gravity") == "True":
-            self._db.setAttribute(f"{general_path}/operatingConditions/gravity", "disabled", "true")
-            self._db.setValue(f"{general_path}/operatingConditions/gravity/direction/x", self.field("gravity_x"))
-            self._db.setValue(f"{general_path}/operatingConditions/gravity/direction/y", self.field("gravity_y"))
-            self._db.setValue(f"{general_path}/operatingConditions/gravity/direction/z", self.field("gravity_z"))
+        if self.field('gravity') == 'True':
+            self._db.setAttribute(f'{general_path}/operatingConditions/gravity', 'disabled', 'true')
+            self._db.setValue(f'{general_path}/operatingConditions/gravity/direction/x', self.field('gravity_x'))
+            self._db.setValue(f'{general_path}/operatingConditions/gravity/direction/y', self.field('gravity_y'))
+            self._db.setValue(f'{general_path}/operatingConditions/gravity/direction/z', self.field('gravity_z'))
         else:
-            self._db.setAttribute(f"{general_path}/operatingConditions/gravity", "disabled", "false")
+            self._db.setAttribute(f'{general_path}/operatingConditions/gravity', 'disabled', 'false')
 
-        if self.field("speciesModel") == "True":
-            self._db.setValue(f"{models_path}/speciesModels", "on")
+        if self.field('speciesModel') == 'True':
+            self._db.setValue(f'{models_path}/speciesModels', 'on')
         else:
-            self._db.setValue(f"{models_path}/speciesModels", "off")
+            self._db.setValue(f'{models_path}/speciesModels', 'off')
 
         #
         self.close()
