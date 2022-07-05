@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration version="1" xmlns="http://www.example.org/baram">
     <general>
-        <flowType>compressible</flowType>
+        <flowType>incompressible</flowType>
         <timeTransient>false</timeTransient>
         <solverType>pressureBased</solverType>
         <operatingConditions>
@@ -52,6 +52,7 @@
             <momentum>secondOrderUpwind</momentum>
             <energy>secondOrderUpwind</energy>
             <turbulentKineticEnergy>firstOrderUpwind</turbulentKineticEnergy>
+            <volumeFraction>firstOrderUpwind</volumeFraction>
         </discretizationSchemes>
         <underRelaxationFactors>
             <pressure>0.3</pressure>
@@ -63,6 +64,9 @@
             <turbulence>0.7</turbulence>
             <turbulenceFinal>1</turbulenceFinal>
         </underRelaxationFactors>
+        <highOrderTermRelaxation disabled="true">
+            <relaxationFactor>0.5</relaxationFactor>
+        </highOrderTermRelaxation>
         <maxIterationsPerTimeStep>20</maxIterationsPerTimeStep>
         <numberOfCorrectors>4</numberOfCorrectors>
         <convergenceCriteria>

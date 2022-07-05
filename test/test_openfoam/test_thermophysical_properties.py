@@ -60,6 +60,7 @@ class TestThermophysicalProperties(unittest.TestCase):
         zone = 'testZone_1'
         self.db.addRegion(region)
         self.db.addCellZone(region, zone)
+        self.db.setValue('.//general/flowType', 'compressible')
         content = str(ThermophysicalProperties(region))
         self.assertEqual(_DEF_CONTENT, content)
 
@@ -70,13 +71,14 @@ class TestThermophysicalProperties(unittest.TestCase):
         conductivityCcoeffs = '6.6 7.7 8.8 9.9'
         self.db.addRegion(region)
         self.db.addCellZone(region, zone)
+        self.db.setValue('.//general/flowType', 'incompressible')
         self.db.setValue('.//material[name="air"]/thermalConductivity/specification', 'polynomial')
         self.db.setValue('.//material[name="air"]/thermalConductivity/polynomial', conductivityCcoeffs)
 
         self.db.setValue('.//material[name="air"]/viscosity/specification', 'polynomial')
         self.db.setValue('.//material[name="air"]/viscosity/polynomial', viscosityCoeffs)
 
-        content = ThermophysicalProperties(region).asdict()
+        content = ThermophysicalProperties(region).asDict()
         self.assertEqual('polynomial', content['thermoType']['transport'])
         self.assertEqual(viscosityCoeffs, content['mixture']['transport']['muCoeffs'])
         self.assertEqual(conductivityCcoeffs, content['mixture']['transport']['kappaCoeffs'])
@@ -89,11 +91,12 @@ class TestThermophysicalProperties(unittest.TestCase):
         self.db.addRegion(region)
         self.db.addCellZone(region, zone)
 
+        self.db.setValue('.//general/flowType', 'incompressible')
         self.db.setValue('.//material[name="air"]/viscosity/specification', 'sutherland')
         self.db.setValue('.//material[name="air"]/viscosity/sutherland/coefficient', As)
         self.db.setValue('.//material[name="air"]/viscosity/sutherland/temperature', Ts)
 
-        content = ThermophysicalProperties(region).asdict()
+        content = ThermophysicalProperties(region).asDict()
         self.assertEqual('sutherland', content['thermoType']['transport'])
         self.assertEqual(As, content['mixture']['transport']['As'])
         self.assertEqual(Ts, content['mixture']['transport']['Ts'])

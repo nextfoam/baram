@@ -1136,6 +1136,14 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
+                        <xs:element name="volumeFraction" default="firstOrderUpwind">
+                            <xs:simpleType>
+                                <xs:restriction base='xs:string'>
+                                    <xs:enumeration value='firstOrderUpwind'/>
+                                    <xs:enumeration value='secondOrder'/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1151,6 +1159,21 @@
                         <xs:element name="turbulence" type="inputNumberType" default="0.7"/>
                         <xs:element name="turbulenceFinal" type="inputNumberType" default="1"/>
                     </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="highOrderTermRelaxation">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="relaxationFactor" default="0.5">
+                            <xs:simpleType>
+                                <xs:restriction base="inputNumberType">
+                                    <xs:minInclusive value="0"/>
+                                    <xs:maxInclusive value="1"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                 </xs:complexType>
             </xs:element>
             <xs:element name="maxIterationsPerTimeStep" type="xs:positiveInteger" default="20"/>

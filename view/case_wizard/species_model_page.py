@@ -13,4 +13,5 @@ class SpeciesModelPage(QWizardPage):
         self._ui = Ui_SpeciesModelPage()
         self._ui.setupUi(self)
 
-        self._ui.NotInclude.setChecked(True)
+        self._ui.notInclude.setChecked(True)
+        self.registerField('speciesModel', self._ui.include)

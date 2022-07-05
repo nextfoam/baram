@@ -12,7 +12,7 @@ class G(object):
         self._data = None
 
     def __str__(self):
-        return self.asstr()
+        return self.asStr()
 
     def _build(self):
         if self._data is not None:
@@ -25,11 +25,11 @@ class G(object):
             'value': db.getVector('.//operatingConditions/gravity/direction')
         }
 
-    def asdict(self):
+    def asDict(self):
         self._build()
         return self._data
 
-    def asstr(self):
+    def asStr(self):
         HEADER = {
             'version': '2.0',
             'format': 'ascii',

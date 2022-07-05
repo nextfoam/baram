@@ -22,9 +22,10 @@ class TestMRFProperties(unittest.TestCase):
         xpath = f'.//cellZones/cellZone[@czid="{czid}"]'
         self.db.setValue(xpath + '/zoneType', 'mrf')
         self.db.setValue(xpath + '/mrf/staticBoundaries', ' '.join([str(b) for b in boundaries]))
+        self.db.setValue('.//general/flowType', 'compressible')
 
-        content = MRFProperties(region).asdict()
-        patches = [self.db.getValue(f'.//boundaryConditions/boundaryCondition[@bcid="{bcid}"]/name')
+        content = MRFProperties(region).asDict()
+        patches = [self.db.getValue(f'.//regions/region[name="{region}"]/boundaryConditions/boundaryCondition[@bcid="{bcid}"]/name')
                    for bcid in boundaries]
 
         self.assertEqual(patches, content['MRFCellZone_testZone_1']['nonRotatingPatches'])
