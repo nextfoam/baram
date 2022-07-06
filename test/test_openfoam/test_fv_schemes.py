@@ -88,6 +88,28 @@ class TestFvSchemes(unittest.TestCase):
         self.assertEqual('bounded Gauss upwind', content['divSchemes']['div(phiNeg,h)'])
         self.assertEqual('bounded Gauss upwind', content['divSchemes']['div(phi,epsilon)'])
 
+    def testTSLAero(self):  # TSLAeroFoam
+        self.db.setValue('.//general/solverType', 'densityBased')
+        self.db.setValue('.//general/timeTransient', 'false')
+        self.db.setValue('.//general/flowType', 'compressible')
+
+        self.db.setValue('.//discretizationSchemes/time', 'firstOrderImplicit')
+        self.db.setValue('.//discretizationSchemes/momentum', 'firstOrderUpwind')
+        self.db.setValue('.//discretizationSchemes/energy', 'firstOrderUpwind')
+        self.db.setValue('.//discretizationSchemes/turbulentKineticEnergy', 'secondOrderUpwind')
+
+        content = FvSchemes(self.region).asDict()
+
+        self.assertEqual('localEuler', content['ddtSchemes']['default'])
+
+        self.assertEqual('Gauss linear', content['gradSchemes']['default'])
+        self.assertEqual('VKMDLimited Gauss linear 0.5', content['gradSchemes']['reconGrad'])
+
+        self.assertEqual('Gauss linearUpwind reconGrad', content['divSchemes']['div(phi,k)'])
+        self.assertEqual('Gauss linearUpwind reconGrad', content['divSchemes']['div(phi,epsilon)'])
+        self.assertEqual('Gauss linearUpwind reconGrad', content['divSchemes']['div(phi,omega)'])
+        self.assertEqual('Gauss linearUpwind reconGrad', content['divSchemes']['div(phi,nuTilda)'])
+
 
 if __name__ == '__main__':
     unittest.main()

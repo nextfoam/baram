@@ -31,13 +31,57 @@ class FvSchemes(object):
         mid = self._db.getValue(f'.//region[name="{self._rname}"]/material')
         phase = self._db.getValue(f'.//materials/material[@mid="{mid}"]/phase')
 
-        if phase == 'solid':
-            self._buildSolid()
-        else:  # fluid
-            if self._solver == 'TSLAeroFoam':
-                pass
-            else:
+        if self._solver == 'TSLAeroFoam':
+            self._buildTSLAero()
+        else:
+            if phase == 'solid':
+                self._buildSolid()
+            else:  # fluid
                 self._buildFluid()
+
+    def _buildTSLAero(self):
+        self._data = {
+            'ddtSchemes': {
+                'default': 'localEuler'
+            },
+            'gradSchemes': {
+                'default': 'Gauss linear',
+                'grad(k)':       'VKMDLimited Gauss linear 0.5',
+                'grad(epsilon)': 'VKMDLimited Gauss linear 0.5',
+                'grad(omega)':   'VKMDLimited Gauss linear 0.5',
+                'grad(nuTilda)': 'VKMDLimited Gauss linear 0.5',
+                'reconGrad':     'VKMDLimited Gauss linear 0.5'
+            },
+            'laplacianSchemes': self._constructLaplacianSchemes(),
+            'interpolationSchemes': {
+                'default': 'linear',
+                'interpolate(rho)': 'linearUpwind phi grad(rho)'
+            },
+            'snGradSchemes': {
+                'default': 'corrected'
+            },
+            'wallDist': {
+                'method': 'meshWave'
+            }
+        }
+
+        turbulentKineticEnergy = self._db.getValue('.//discretizationSchemes/turbulentKineticEnergy')
+        if turbulentKineticEnergy == 'firstOrderUpwind':
+            self._data['divSchemes'] = {
+                'default': 'Gauss linear',
+                'div(phi,k)':       'Gauss upwind',
+                'div(phi,epsilon)': 'Gauss upwind',
+                'div(phi,omega)':   'Gauss upwind',
+                'div(phi,nuTilda)': 'Gauss upwind'
+            }
+        elif turbulentKineticEnergy == 'secondOrderUpwind':
+            self._data['divSchemes'] = {
+                'default': 'Gauss linear',
+                'div(phi,k)':       'Gauss linearUpwind reconGrad',
+                'div(phi,epsilon)': 'Gauss linearUpwind reconGrad',
+                'div(phi,omega)':   'Gauss linearUpwind reconGrad',
+                'div(phi,nuTilda)': 'Gauss linearUpwind reconGrad'
+            }
 
     def _buildSolid(self):
         self._data = {
