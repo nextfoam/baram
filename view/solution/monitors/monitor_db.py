@@ -84,8 +84,6 @@ class FieldHelper:
         Field.MATERIAL: QCoreApplication.translate("MonitorField", "material"),
     }
 
-    _db = coredb.CoreDB()
-
     class FieldItem:
         class DBFieldKey:
             def __init__(self, field, mid=1):
@@ -155,7 +153,7 @@ class FieldHelper:
 
         # Material fields when species model is on
         if not ModelsDB.isSpeciesModelOn():
-            for m in cls._db.getMaterials():
+            for m in coredb.CoreDB().getMaterials():
                 if MaterialDB.DBTextToPhase(m[ListIndex.PHASE.value]) != Phase.SOLID:
                     _appendMaterial(m)
 
@@ -164,6 +162,6 @@ class FieldHelper:
     @classmethod
     def DBFieldKeyToText(cls, field, mid):
         if field == Field.MATERIAL.value:
-            return cls._db.getValue(MaterialDB.getXPath(mid) + '/name')
+            return coredb.CoreDB().getValue(MaterialDB.getXPath(mid) + '/name')
         else:
             return cls.FIELD_TEXTS[Field(field)]

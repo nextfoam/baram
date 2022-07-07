@@ -1,30 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
-
-from coredb import coredb
 
 import openfoam.solver
+from coredb import coredb
+from openfoam.dictionary_file import DictionaryFile
 
 
-class FvSchemes(object):
+class FvSchemes(DictionaryFile):
     def __init__(self, rname: str):
+        super().__init__(self.systemLocation(rname), 'fvSchemes')
+
         self._rname = rname
-        self._data = None
         self._db = coredb.CoreDB()
         solvers = openfoam.solver.findSolvers()
+        print(solvers)
         if len(solvers) != 1:  # configuration not enough yet
             raise RuntimeError
 
-        print(solvers)
         self._solver = solvers[0]
         self._cap = openfoam.solver.getSolverCapability(self._solver)
 
-    def __str__(self):
-        return self.asStr()
-
-    def _build(self):
+    def build(self):
         if self._data is not None:
             return
 
@@ -38,6 +35,8 @@ class FvSchemes(object):
                 self._buildSolid()
             else:  # fluid
                 self._buildFluid()
+
+        return self
 
     def _buildTSLAero(self):
         self._data = {
@@ -82,6 +81,8 @@ class FvSchemes(object):
                 'div(phi,omega)':   'Gauss linearUpwind reconGrad',
                 'div(phi,nuTilda)': 'Gauss linearUpwind reconGrad'
             }
+
+        return self
 
     def _buildSolid(self):
         self._data = {
@@ -264,18 +265,3 @@ class FvSchemes(object):
             laplacianSchemes['default'] = f'Gauss linear limited corrected {relFactor}'
 
         return laplacianSchemes
-
-    def asDict(self):
-        self._build()
-        return self._data
-
-    def asStr(self):
-        HEADER = {
-            'version': '2.0',
-            'format': 'ascii',
-            'class': 'dictionary',
-            'location': f'system/{self._rname}',
-            'object': 'fvSchemes'
-        }
-        self._build()
-        return str(FoamFileGenerator(self._data, header=HEADER))

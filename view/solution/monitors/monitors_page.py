@@ -3,7 +3,6 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 
-from coredb import coredb
 from .monitors_page_ui import Ui_MonitorsPage
 from .forces_widget import ForcesWidget
 from .points_widget import PointsWidget
@@ -17,7 +16,6 @@ class MonitorsPage(QWidget):
         self._ui = Ui_MonitorsPage()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._forcesWidget = ForcesWidget()
         self._pointsWidget = PointsWidget()
         self._surfacesWidget = SurfacesWidget()

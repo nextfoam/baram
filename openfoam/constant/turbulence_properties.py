@@ -1,21 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
-
 from coredb import coredb
 from view.setup.models.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, KOmegaModel
+from openfoam.dictionary_file import DictionaryFile
 
 
-class TurbulenceProperties(object):
+class TurbulenceProperties(DictionaryFile):
     def __init__(self, rname: str):
+        super().__init__(self.constantLocation(rname), 'TurbulenceProperties')
+
         self._rname = rname
-        self._data = None
 
-    def __str__(self):
-        return self.asStr()
-
-    def _build(self):
+    def build(self):
         if self._data is not None:
             return
 
@@ -41,6 +38,8 @@ class TurbulenceProperties(object):
         elif model == TurbulenceModel.LES:
             self._constructLESProperties()
 
+        return self
+
     def _constructLaminarProperties(self):
         self._data = {
             'simulationType': 'laminar'
@@ -60,18 +59,3 @@ class TurbulenceProperties(object):
         self._data = {
             'simulationType': 'LES'
         }
-
-    def asDict(self):
-        self._build()
-        return self._data
-
-    def asStr(self):
-        HEADER = {
-            'version': '2.0',
-            'format': 'ascii',
-            'class': 'dictionary',
-            'location': f'constant/{self._rname}',
-            'object': 'turbulenceProperties'
-        }
-        self._build()
-        return str(FoamFileGenerator(self._data, header=HEADER))

@@ -65,11 +65,9 @@ class ModelsDB:
         TurbulenceModel.LES: QCoreApplication.translate("ModelsDB", "LES"),
     }
 
-    _db = coredb.CoreDB()
-
     @classmethod
     def getMultiphaseModel(cls):
-        return MultiphaseModel(cls._db.getValue(ModelsDB.MULTIPHASE_MODELS_PATH + '/model'))
+        return MultiphaseModel(coredb.CoreDB().getValue(ModelsDB.MULTIPHASE_MODELS_PATH + '/model'))
 
     @classmethod
     def getMultiphaseModelText(cls):
@@ -77,7 +75,7 @@ class ModelsDB:
 
     @classmethod
     def getTurbulenceModel(cls):
-        return TurbulenceModel(cls._db.getValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model'))
+        return TurbulenceModel(coredb.CoreDB().getValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model'))
 
     @classmethod
     def getTurbulenceModelText(cls):
@@ -93,11 +91,20 @@ class ModelsDB:
 
     @classmethod
     def isSpeciesModelOn(cls):
-        return cls._db.getValue(ModelsDB.SPECIES_MODELS_PATH) != 'off'
+        return coredb.CoreDB().getValue(ModelsDB.SPECIES_MODELS_PATH) != 'off'
 
     @classmethod
     def isEnergyModelOn(cls):
-        return cls._db.getValue(ModelsDB.ENERGY_MODELS_PATH) == 'on'
+        return False
+        #return coredb.CoreDB().getValue(ModelsDB.ENERGY_MODELS_PATH) == 'on'
+
+    @classmethod
+    def isVOFModelOn(cls):
+        return True
+
+    @classmethod
+    def isDensityBased(cls):
+        return True
 
 
 class TurbulenceField:

@@ -52,15 +52,13 @@ class MaterialDB(object):
         Phase.SOLID: "Solid"
     }
 
-    _db = coredb.CoreDB()
-
     @classmethod
     def getXPath(cls, mid):
         return f'{MATERIALS_XPATH}/material[@mid="{mid}"]'
 
     @classmethod
     def getPhase(cls, mid):
-        return cls.DBTextToPhase(cls._db.getValue(cls.getXPath(mid) + '/phase'))
+        return cls.DBTextToPhase(coredb.CoreDB().getValue(cls.getXPath(mid) + '/phase'))
 
     @classmethod
     def DBTextToPhase(cls, DBText):
@@ -81,4 +79,4 @@ class MaterialDB(object):
 
     @classmethod
     def isMaterialExists(cls, name):
-        return cls._db.exists(f'{MATERIALS_XPATH}/material[name="{name}"]')
+        return coredb.CoreDB().exists(f'{MATERIALS_XPATH}/material[name="{name}"]')

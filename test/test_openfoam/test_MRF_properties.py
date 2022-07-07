@@ -1,7 +1,7 @@
 import unittest
 
 from coredb import coredb
-from openfoam.MRF_properties import MRFProperties
+from openfoam.constant.MRF_properties import MRFProperties
 
 
 class TestMRFProperties(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestMRFProperties(unittest.TestCase):
         self.db.setValue(xpath + '/mrf/staticBoundaries', ' '.join([str(b) for b in boundaries]))
         self.db.setValue('.//general/flowType', 'compressible')
 
-        content = MRFProperties(region).asDict()
+        content = MRFProperties(region).build().asDict()
         patches = [self.db.getValue(f'.//regions/region[name="{region}"]/boundaryConditions/boundaryCondition[@bcid="{bcid}"]/name')
                    for bcid in boundaries]
 

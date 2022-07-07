@@ -53,21 +53,6 @@
         <calculatedBackflow>false</calculatedBackflow>
         <backflowTotalTemperature>300</backflowTotalTemperature>
     </pressureOutlet>
-    <ablInlet>
-        <flowDirection>
-            <x>1</x>
-            <y>0</y>
-            <z>0</z>
-        </flowDirection>
-        <groundNormalDirection>
-            <x>0</x>
-            <y>0</y>
-            <z>1</z>
-        </groundNormalDirection>
-        <referenceFlowSpeed>10</referenceFlowSpeed>
-        <referenceHeight>10</referenceHeight>
-        <surfaceRoughnessLength>0.01</surfaceRoughnessLength>
-    </ablInlet>
     <openChannelInlet>
         <volumeFlowRate>1</volumeFlowRate>
     </openChannelInlet>

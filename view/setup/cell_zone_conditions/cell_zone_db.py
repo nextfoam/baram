@@ -66,15 +66,13 @@ class MeshObject:
 
 
 class RegionDB:
-    _db = coredb.CoreDB()
-
     @classmethod
     def getXPath(cls, rname):
         return f'.//region[name="{rname}"]'
 
     @classmethod
     def getPhase(cls, rname):
-        MaterialDB.getPhase(cls._db.getValue(cls.getXPath(rname) + '/material'))
+        MaterialDB.getPhase(coredb.CoreDB().getValue(cls.getXPath(rname) + '/material'))
 
 
 class CellZoneDB:
@@ -82,8 +80,7 @@ class CellZoneDB:
     OPERATING_CONDITIONS_XPATH = './/operatingConditions'
     NAME_FOR_ALL = 'All'
 
-    _db = coredb.CoreDB()
-    _cellZonesForSelector = None
+    _cellzones = None
 
     @classmethod
     def getXPath(cls, czid):
@@ -91,22 +88,24 @@ class CellZoneDB:
 
     @classmethod
     def getCellZoneName(cls, czid):
-        return cls._db.getValue(cls.getXPath(czid) + '/name')
+        return coredb.CoreDB().getValue(cls.getXPath(czid) + '/name')
 
     @classmethod
     def getCellZoneRegion(cls, czid):
-        return cls._db.getValue(cls.getXPath(czid) + '/../../name')
+        return coredb.CoreDB().getValue(cls.getXPath(czid) + '/../../name')
 
     @classmethod
-    def getCellZonesForSelector(cls):
-        if cls._cellZonesForSelector is None:
-            cls._cellZonesForSelector = []
+    def getCellZones(cls):
+        db = coredb.CoreDB()
+        
+        if cls._cellzones is None:
+            cls._cellzones = []
 
-            for region in cls._db.getRegions():
-                for cellZone in cls._db.getCellZones(region):
+            for region in db.getRegions():
+                for cellZone in db.getCellZones(region):
                     name = cellZone[CellZoneListIndex.NAME.value]
                     if name != cls.NAME_FOR_ALL:
-                        cls._cellZonesForSelector.append(
+                        cls._cellzones.append(
                             MeshObject(str(cellZone[CellZoneListIndex.ID.value]), name, region))
 
-        return cls._cellZonesForSelector
+        return cls._cellzones

@@ -59,7 +59,6 @@ class BoundaryConditionsPage(QWidget):
         self._ui = Ui_BoundaryConditionsPage()
         self._ui.setupUi(self)
 
-        self._boundaries = None
         self._db = coredb.CoreDB()
         self._regions = {}
         self._currentRegion = None

@@ -65,7 +65,7 @@ class WallVelocityCondition(Enum):
     MOVING_WALL = "movingWall"
     ATMOSPHERIC_WALL = "atmosphericWall"
     TRANSLATIONAL_MOVING_WALL = "translationalMovingWall"
-    ROTATIONAL_MOVING_WALL = "RotationalMovingWall"
+    ROTATIONAL_MOVING_WALL = "rotationalMovingWall"
 
 
 class WallTemperature(Enum):
@@ -110,8 +110,8 @@ class TemperatureTemporalDistribution(Enum):
 
 class BoundaryDB:
     BOUNDARY_CONDITIONS_XPATH = './/boundaryConditions'
+    ABL_INLET_CONDITIONS_XPATH = './/atmosphericBoundaryLayer'
 
-    _db = coredb.CoreDB()
     _boundariesForSelector = None
     _boundariesForSelectorWithNone = None
 
@@ -121,19 +121,21 @@ class BoundaryDB:
 
     @classmethod
     def getBoundaryName(cls, bcid):
-        return cls._db.getValue(cls.getXPath(bcid) + '/name')
+        return coredb.CoreDB().getValue(cls.getXPath(bcid) + '/name')
 
     @classmethod
     def getBoundaryRegion(cls, bcid):
-        return cls._db.getValue(cls.getXPath(bcid) + '/../../name')
+        return coredb.CoreDB().getValue(cls.getXPath(bcid) + '/../../name')
 
     @classmethod
     def getBoundariesForSelector(cls):
+        db = coredb.CoreDB()
+
         if cls._boundariesForSelector is None:
             cls._boundariesForSelector = []
 
-            for region in cls._db.getRegions():
-                for boundary in cls._db.getBoundaryConditions(region):
+            for region in db.getRegions():
+                for boundary in db.getBoundaryConditions(region):
                     cls._boundariesForSelector.append(
                         MeshObject(
                             str(boundary[BoundaryListIndex.ID.value]), boundary[BoundaryListIndex.NAME.value], region))
@@ -142,13 +144,14 @@ class BoundaryDB:
 
     @classmethod
     def getCyclicAMIBoundaries(cls, bcidToExcept):
-        boundaries = []
+        db = coredb.CoreDB()
 
-        for region in cls._db.getRegions():
-            for boundary in cls._db.getBoundaryConditions(region):
+        boundaries = []
+        for region in db.getRegions():
+            for boundary in db.getBoundaryConditions(region):
                 bcid = boundary[BoundaryListIndex.ID.value]
                 if bcid != bcidToExcept:
-                        #and cls._db.getValue(cls.getBoundaryXPath(bcid) + '/geometricalType') == "cyclic":
+                        #and db.getValue(cls.getBoundaryXPath(bcid) + '/geometricalType') == "cyclic":
                     boundaries.append(MeshObject(str(bcid), boundary[BoundaryListIndex.NAME.value], region))
 
         return boundaries

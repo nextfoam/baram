@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
-
 from coredb import coredb
+from openfoam.dictionary_file import DictionaryFile
 
 
 def _constructFluid(region: str):
@@ -158,15 +157,13 @@ def _constructSolid(region: str):
     }
 
 
-class ThermophysicalProperties(object):
+class ThermophysicalProperties(DictionaryFile):
     def __init__(self, rname: str):
+        super().__init__(self.constantLocation(rname), 'thermophysicalProperties')
+
         self._rname = rname
-        self._data = None
 
-    def __str__(self):
-        return self.asStr()
-
-    def _build(self):
+    def build(self):
         if self._data is not None:
             return
 
@@ -180,17 +177,4 @@ class ThermophysicalProperties(object):
         else:
             self._data = _constructFluid(self._rname)
 
-    def asDict(self):
-        self._build()
-        return self._data
-
-    def asStr(self):
-        HEADER = {
-            'version': '2.0',
-            'format': 'ascii',
-            'class': 'dictionary',
-            'location': f'constant/{self._rname}',
-            'object': 'thermophysicalProperties'
-        }
-        self._build()
-        return str(FoamFileGenerator(self._data, header=HEADER))
+        return self

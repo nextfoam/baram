@@ -1,22 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
-
 from coredb import coredb
 from view.setup.cell_zone_conditions.cell_zone_db import ZoneType, CellZoneDB
 from view.setup.boundary_conditions.boundary_db import BoundaryDB
+from openfoam.dictionary_file import DictionaryFile
 
 
-class MRFProperties(object):
+class MRFProperties(DictionaryFile):
     def __init__(self, rname: str):
+        super().__init__(self.constantLocation(rname), 'MRFProperties')
+
         self._rname = rname
-        self._data = None
 
-    def __str__(self):
-        return self.asStr()
-
-    def _build(self):
+    def build(self):
         if self._data is not None:
             return
 
@@ -40,17 +37,4 @@ class MRFProperties(object):
                     'omega': float(db.getValue(xpath + '/mrf/rotatingSpeed')) * 2 * 3.141592 / 60
                 }
 
-    def asDict(self):
-        self._build()
-        return self._data
-
-    def asStr(self):
-        HEADER = {
-            'version': '2.0',
-            'format': 'ascii',
-            'class': 'dictionary',
-            'location': f'constant/{self._rname}',
-            'object': 'MRFProperties'
-        }
-        self._build()
-        return str(FoamFileGenerator(self._data, header=HEADER)) if self._data else ''
+        return self

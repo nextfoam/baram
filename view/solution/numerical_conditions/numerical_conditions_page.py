@@ -174,8 +174,8 @@ class NumericalConditionsPage(QWidget):
         self._ui.advanced.clicked.connect(self._advancedSetup)
 
     def _advancedSetup(self):
-        dialog = AdvancedDialog()
-        dialog.exec()
+        self._dialog = AdvancedDialog()
+        self._dialog.open()
 
     def _setupCombo(self, combo, items):
         for value, text in items.items():

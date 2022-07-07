@@ -5,7 +5,6 @@ from enum import Enum, auto
 
 from PySide6.QtWidgets import QWidget, QListWidgetItem
 
-from coredb import coredb
 from .models_page_ui import Ui_ModelsPage
 from .multiphase_dialog import MultiphaseModelDialog
 from .turbulence_dialog import TurbulenceModelDialog
@@ -26,7 +25,6 @@ class ModelsPage(QWidget):
         self._ui = Ui_ModelsPage()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._multiphaseDialog = None
         self._turbulenceDialog = None
         # self._radiationDialog = None

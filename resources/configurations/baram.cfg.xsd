@@ -96,6 +96,18 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="atmosphericBoundaryLayer">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="flowDirection" type="vector"/>
+                        <xs:element name="groundNormalDirection" type="vector"/>
+                        <xs:element name="referenceFlowSpeed" type="inputNumberType" default="10"/>
+                        <xs:element name="referenceHeight" type="inputNumberType" default="10"/>
+                        <xs:element name="surfaceRoughnessLength" type="inputNumberType" default="0.01"/>
+                        <xs:element name="minimumZCoordinate" type="inputNumberType" default="0.0"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -261,6 +273,8 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="energyPrandtlNumber" type="inputNumberType" default="0.85"/>
+            <xs:element name="wallPrandtlNumber" type="inputNumberType" default="0.85"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -819,16 +833,6 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="ablInletType">
-        <xs:sequence>
-            <xs:element name="flowDirection" type="vector"/>
-            <xs:element name="groundNormalDirection" type="vector"/>
-            <xs:element name="referenceFlowSpeed" type="inputNumberType" default="10"/>
-            <xs:element name="referenceHeight" type="inputNumberType" default="10"/>
-            <xs:element name="surfaceRoughnessLength" type="inputNumberType" default="0.01"/>
-        </xs:sequence>
-    </xs:complexType>
-
     <xs:complexType name="openChannelInletType">
         <xs:sequence>
             <xs:element name="volumeFlowRate" type="inputNumberType" default="1"/>
@@ -892,7 +896,7 @@
                                     <xs:enumeration value="movingWall"/>
                                     <xs:enumeration value="atmosphericWall"/>
                                     <xs:enumeration value="translationalMovingWall"/>
-                                    <xs:enumeration value="RotationalMovingWall"/>
+                                    <xs:enumeration value="rotationalMovingWall"/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
@@ -1058,7 +1062,6 @@
                 <xs:element name="flowRateInlet" type="flowRateInletType"/>
                 <xs:element name="pressureInlet" type="pressureInletType"/>
                 <xs:element name="pressureOutlet" type="pressureOutletType"/>
-                <xs:element name="ablInlet" type="ablInletType"/>
                 <xs:element name="openChannelInlet" type="openChannelInletType"/>
                 <xs:element name="openChannelOutlet" type="openChannelOutletType"/>
                 <!-- no setting for "outflow" -->
@@ -1152,6 +1155,9 @@
                     <xs:sequence>
                         <xs:element name="pressure" type="inputNumberType" default="0.3"/>
                         <xs:element name="pressureFinal" type="inputNumberType" default="1"/>
+                        <!-- ToDo: check default value of density, densityFinal -->
+                        <xs:element name="density" type="inputNumberType" default="0.7"/>
+                        <xs:element name="densityFinal" type="inputNumberType" default="1"/>
                         <xs:element name="momentum" type="inputNumberType" default="0.7"/>
                         <xs:element name="momentumFinal" type="inputNumberType" default="1"/>
                         <xs:element name="energy" type="inputNumberType" default="0.9"/>

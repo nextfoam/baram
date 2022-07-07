@@ -44,6 +44,8 @@ class ABLInletDialog(QDialog):
                       self._ui.referenceHeight.text(), self.tr("Reference Height"))
         writer.append(path + '/surfaceRoughnessLength',
                       self._ui.surfaceRoughnessLength.text(), self.tr("Surface Roughness Length"))
+        writer.append(path + '/minimumZCoordinate',
+                      self._ui.minimumZCoordinate.text(), self.tr("Minimum z-coordinate"))
 
         errorCount = writer.write()
         if errorCount > 0:
@@ -63,3 +65,4 @@ class ABLInletDialog(QDialog):
         self._ui.referenceFlowSpeed.setText(self._db.getValue(path + '/referenceFlowSpeed'))
         self._ui.referenceHeight.setText(self._db.getValue(path + '/referenceHeight'))
         self._ui.surfaceRoughnessLength.setText(self._db.getValue(path + '/surfaceRoughnessLength'))
+        self._ui.minimumZCoordinate.setText(self._db.getValue(path + '/minimumZCoordinate'))

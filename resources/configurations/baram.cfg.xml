@@ -19,6 +19,22 @@
                 <z>0</z>
             </referencePressureLocation>
         </operatingConditions>
+        <atmosphericBoundaryLayer>
+            <flowDirection>
+                <x>1</x>
+                <y>0</y>
+                <z>0</z>
+            </flowDirection>
+            <groundNormalDirection>
+                <x>0</x>
+                <y>0</y>
+                <z>1</z>
+            </groundNormalDirection>
+            <referenceFlowSpeed>10</referenceFlowSpeed>
+            <referenceHeight>10</referenceHeight>
+            <surfaceRoughnessLength>0.01</surfaceRoughnessLength>
+            <minimumZCoordinate>0.0</minimumZCoordinate>
+        </atmosphericBoundaryLayer>
     </general>
 
     <materials></materials>
@@ -39,6 +55,8 @@
             <k-omega>
                 <model>SST</model>
             </k-omega>
+            <energyPrandtlNumber>0.85</energyPrandtlNumber>
+            <wallPrandtlNumber>0.85</wallPrandtlNumber>
         </turbulenceModels>
         <speciesModels>off</speciesModels>
     </models>
@@ -57,6 +75,9 @@
         <underRelaxationFactors>
             <pressure>0.3</pressure>
             <pressureFinal>1</pressureFinal>
+            <!-- ToDo: check default value of density, densityFinal -->
+            <density>0.7</density>
+            <densityFinal>1</densityFinal>
             <momentum>0.7</momentum>
             <momentumFinal>1</momentumFinal>
             <energy>0.9</energy>

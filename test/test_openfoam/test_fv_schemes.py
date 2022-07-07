@@ -1,7 +1,7 @@
 import unittest
 
 from coredb import coredb
-from openfoam.fv_schemes import FvSchemes
+from openfoam.system.fv_schemes import FvSchemes
 
 
 class TestFvSchemes(unittest.TestCase):
@@ -35,7 +35,7 @@ class TestFvSchemes(unittest.TestCase):
         self.db.setValue('.//discretizationSchemes/energy', 'secondOrderUpwind')
         self.db.setValue('.//discretizationSchemes/turbulentKineticEnergy', 'secondOrderUpwind')
 
-        content = FvSchemes(self.region).asDict()
+        content = FvSchemes(self.region).build().asDict()
 
         self.assertEqual('backward', content['ddtSchemes']['default'])
 
@@ -56,7 +56,7 @@ class TestFvSchemes(unittest.TestCase):
         self.db.setValue('.//discretizationSchemes/energy', 'firstOrderUpwind')
         self.db.setValue('.//discretizationSchemes/turbulentKineticEnergy', 'firstOrderUpwind')
 
-        content = FvSchemes(self.region).asDict()
+        content = FvSchemes(self.region).build().asDict()
 
         self.assertEqual('localEuler', content['ddtSchemes']['default'])
 
@@ -77,7 +77,7 @@ class TestFvSchemes(unittest.TestCase):
         self.db.setValue('.//discretizationSchemes/energy', 'firstOrderUpwind')
         self.db.setValue('.//discretizationSchemes/turbulentKineticEnergy', 'firstOrderUpwind')
 
-        content = FvSchemes(self.region).asDict()
+        content = FvSchemes(self.region).build().asDict()
 
         self.assertEqual('steadyState', content['ddtSchemes']['default'])
 
@@ -98,7 +98,7 @@ class TestFvSchemes(unittest.TestCase):
         self.db.setValue('.//discretizationSchemes/energy', 'firstOrderUpwind')
         self.db.setValue('.//discretizationSchemes/turbulentKineticEnergy', 'secondOrderUpwind')
 
-        content = FvSchemes(self.region).asDict()
+        content = FvSchemes(self.region).build().asDict()
 
         self.assertEqual('localEuler', content['ddtSchemes']['default'])
 

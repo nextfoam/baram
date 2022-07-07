@@ -1,7 +1,7 @@
 import unittest
 
 from coredb import coredb
-from openfoam.operating_conditions import OperatingConditions
+from openfoam.constant.operating_conditions import OperatingConditions
 
 
 class TestOperatingConditions(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestOperatingConditions(unittest.TestCase):
         self.db.addCellZone(region, zone)
         self.db.setValue('.//operatingConditions/pressure', pressure)
 
-        content = OperatingConditions(region).asDict()
+        content = OperatingConditions(region).build().asDict()
         self.assertEqual(('Op [1 -1 -2 0 0 0 0]', pressure), content['Op'])
 
 

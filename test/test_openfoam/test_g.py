@@ -1,13 +1,14 @@
 import unittest
 
 from coredb import coredb
-from openfoam.g import G
+from view.setup.models.models_db import ModelsDB
+from openfoam.constant.g import G
 
 
 class TestG(unittest.TestCase):
     def setUp(self):
         self.db = coredb.CoreDB()
-        self.path = './/turbulenceModels'
+        self.path = ModelsDB.TURBULENCE_MODELS_PATH
 
         self.region = 'testRegion_1'
         zone = 'testZone_1'
@@ -19,7 +20,7 @@ class TestG(unittest.TestCase):
 
     def testG(self):
         self.db.setValue(self.path + '/model', 'inviscid')
-        content = G(self.region).asDict()
+        content = G(self.region).build().asDict()
         self.assertEqual('[0 1 -2 0 0 0 0]', content['dimensions'])
         self.assertEqual(self.db.getVector('.//operatingConditions/gravity/direction'), content['value'])
 
