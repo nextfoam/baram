@@ -17,4 +17,4 @@ class FlowTypePage(QWizardPage):
         # self.setSubTitle(self.tr("Select flow type"))
 
         self._ui.compressible.setChecked(True)
-        self.registerField('flowType', self._ui.compressible)
+        self.registerField('flowTypeCompressible', self._ui.compressible)

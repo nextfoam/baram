@@ -43,24 +43,24 @@ class CaseWizard(QWizard):
         self.setPage(self.Page.SPECIES_MODEL, SpeciesModelPage(self))
         self.setStartId(self.Page.FLOW_TYPE)
 
-        self.accepted.connect(self.Clicked_Btn_Finish)
+        self.accepted.connect(self.caseAccepted)
 
 
     def nextId(self):
         if self.currentId() == self.Page.FLOW_TYPE:
-            if self.field("flowType"):
+            if self.field('flowTypeCompressible'):
                 return self.Page.SOLVER_TYPE
             else:
                 return self.Page.ENERGY_MODEL
         elif self.currentId() == self.Page.SOLVER_TYPE:
             return self.Page.SPECIES_MODEL
         elif self.currentId() == self.Page.ENERGY_MODEL:
-            if self.field("energyModels"):
+            if self.field('energyModelsInclude'):
                 return self.Page.GRAVITY_MODEL
             else:
                 return self.Page.MULTIPHASE_MODEL
         elif self.currentId() == self.Page.MULTIPHASE_MODEL:
-            if self.field("multiphaseModels"):
+            if self.field('multiphaseModelsInclude'):
                 return self.Page.GRAVITY_MODEL
             else:
                 return self.Page.SPECIES_MODEL
@@ -70,43 +70,42 @@ class CaseWizard(QWizard):
         elif self.currentId() == self.Page.SPECIES_MODEL:
             return self.Page.LAST
         else:
-            raise NotImplementedError("Unknown Case Wizard Page")
+            raise NotImplementedError('Unknown Case Wizard Page')
 
-
-    def Clicked_Btn_Finish(self):
+    def caseAccepted(self):
         general_path = './/general'
         models_path = './/models'
 
-        if self.field('flowType'):
+        if self.field('flowTypeCompressible'):
             self._db.setValue(f'{general_path}/flowType', 'compressible')
         else:
             self._db.setValue(f'{general_path}/flowType', 'incompressible')
 
-        if self.field('solverType'):
+        if self.field('solverTypePressureBased'):
             self._db.setValue(f'{general_path}/solverType', 'pressureBased')
         else:
             self._db.setValue(f'{general_path}/solverType', 'densityBased')
 
-        if self.field('energyModels'):
+        if self.field('energyModelsInclude'):
             self._db.setValue(f'{models_path}/energyModels', 'on')
         else:
             self._db.setValue(f'{models_path}/energyModels', 'off')
 
-        if self.field('multiphaseModel'):
+        if self.field('multiphaseModelsInclude'):
             self._db.setValue(f'{models_path}/multiphaseModels/model', 'on')
         else:
             self._db.setValue(f'{models_path}/multiphaseModels/model', 'off')
 
         gravity_path = f'{general_path}/operatingConditions/gravity'
-        if self.field('gravity'):
-            self._db.setAttribute(f'{gravity_path}', 'disabled', 'true')
-            self._db.setValue(f'{gravity_path}/direction/x', self.field('gravity_x'))
-            self._db.setValue(f'{gravity_path}/direction/y', self.field('gravity_y'))
-            self._db.setValue(f'{gravity_path}/direction/z', self.field('gravity_z'))
-        else:
+        if self.field('gravityInclude'):
             self._db.setAttribute(f'{gravity_path}', 'disabled', 'false')
+            self._db.setValue(f'{gravity_path}/direction/x', self.field('gravityX'))
+            self._db.setValue(f'{gravity_path}/direction/y', self.field('gravityY'))
+            self._db.setValue(f'{gravity_path}/direction/z', self.field('gravityZ'))
+        else:
+            self._db.setAttribute(f'{gravity_path}', 'disabled', 'true')
 
-        if self.field('speciesModel'):
+        if self.field('speciesModelsInclude'):
             self._db.setValue(f'{models_path}/speciesModels', 'on')
         else:
             self._db.setValue(f'{models_path}/speciesModels', 'off')
