@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import shutil
-
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog
 from PySide6.QtCore import Qt
 
@@ -56,23 +54,9 @@ class MainWindow(QMainWindow):
             CaseGenerator(dirName).generateFiles()
 
     def _loadMesh(self):
-        selectedPath = QFileDialog.getExistingDirectory(self, self.tr("Select constant"))
-        if selectedPath:
-            print(selectedPath)
-
-            # Check path (polyMesh dir)
-
-
-            # Copy
-            # shutil.copy(selectPath, casePath)
-
-            # Show
-            self._meshDock.showMesh(selectedPath)
-
-        # fileName = QFileDialog.getOpenFileName(self, self.tr("Open Mesh"), "", self.tr("OpenFOAM Mesh (*.foam)"))
-        # if fileName[0]:
-        #     self._meshDock.showMesh(fileName[0])
-
+        fileName = QFileDialog.getOpenFileName(self, self.tr("Open Mesh"), "", self.tr("OpenFOAM Mesh (*.foam)"))
+        if fileName[0]:
+            self._meshDock.showMesh(fileName[0])
 
     def _changeForm(self, current):
         currentPane = self._menuView.currentPane()
