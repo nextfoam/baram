@@ -14,4 +14,4 @@ class EnergyModelPage(QWizardPage):
         self._ui.setupUi(self)
 
         self._ui.notInclude.setChecked(True)
-        self.registerField('energyModels', self._ui.include)
+        self.registerField('energyModelsInclude', self._ui.include)
