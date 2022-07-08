@@ -653,6 +653,10 @@ class FoamFileParser(PlyParser):
         r'[^\*]'
         pass
 
+    def t_listtype_throwaway(self,t):
+        r'List<[a-zA-Z]+>'
+        pass
+
     t_mlcomment_ignore = ''
 
     def t_mlcomment_error(self,t):
