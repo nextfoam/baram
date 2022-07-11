@@ -9,6 +9,7 @@ from view.setup.materials.material_db import Phase
 from openfoam.constant.operating_conditions import OperatingConditions
 from openfoam.constant.MRF_properties import MRFProperties
 from openfoam.constant.turbulence_properties import TurbulenceProperties
+from openfoam.constant.transport_properties import TransportProperties
 from openfoam.constant.g import G
 from openfoam.boundary_conditions.p import P
 from openfoam.boundary_conditions.u import U
@@ -87,6 +88,8 @@ class CaseGenerator:
             #         Omega(rname).build().write(self._caseRoot)
             # elif turbulenceModel == TurbulenceModel.SPALART_ALLMARAS:
             #     NuTilda(rname).build().write(self._caseRoot)
+
+            TransportProperties(rname).build().write(self._caseRoot)
 
             T(rname).build().write(self._caseRoot)
             Alphat(rname).build().write(self._caseRoot)

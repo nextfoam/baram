@@ -7,13 +7,13 @@ from PySide6.QtWidgets import QDockWidget
 class TabifiedDock(QDockWidget):
     def __init__(self, mainWindow):
         super().__init__()
-        self._mainWinow = mainWindow
+        self._mainWindow = mainWindow
 
         self._connectTabifySlots()
 
     def _dockTopLevelChanged(self, topLevel):
         if not topLevel:
-            self._mainWinow.tabifyDock(self)
+            self._mainWindow.tabifyDock(self)
 
     def _dockToggled(self, checked):
         if checked:

@@ -35,40 +35,40 @@ class CaseWizard(QWizard):
         self._ui = Ui_CaseWizard()
         self._ui.setupUi(self)
 
-        self.setPage(self.Page.FLOW_TYPE, FlowTypePage(self))
-        self.setPage(self.Page.SOLVER_TYPE, SolverTypePage(self))
-        self.setPage(self.Page.ENERGY_MODEL, EnergyModelPage(self))
-        self.setPage(self.Page.MULTIPHASE_MODEL, MultiphaseModelPage(self))
-        self.setPage(self.Page.GRAVITY_MODEL, GravityModelPage(self))
-        self.setPage(self.Page.SPECIES_MODEL, SpeciesModelPage(self))
-        self.setStartId(self.Page.FLOW_TYPE)
+        self.setPage(self.Page.FLOW_TYPE.value, FlowTypePage(self))
+        self.setPage(self.Page.SOLVER_TYPE.value, SolverTypePage(self))
+        self.setPage(self.Page.ENERGY_MODEL.value, EnergyModelPage(self))
+        self.setPage(self.Page.MULTIPHASE_MODEL.value, MultiphaseModelPage(self))
+        self.setPage(self.Page.GRAVITY_MODEL.value, GravityModelPage(self))
+        self.setPage(self.Page.SPECIES_MODEL.value, SpeciesModelPage(self))
+        self.setStartId(self.Page.FLOW_TYPE.value)
 
         self.accepted.connect(self.caseAccepted)
 
-
     def nextId(self):
-        if self.currentId() == self.Page.FLOW_TYPE:
+        curID = self.currentId()
+        if curID == self.Page.FLOW_TYPE.value:
             if self.field('flowTypeCompressible'):
-                return self.Page.SOLVER_TYPE
+                return self.Page.SOLVER_TYPE.value
             else:
-                return self.Page.ENERGY_MODEL
-        elif self.currentId() == self.Page.SOLVER_TYPE:
-            return self.Page.SPECIES_MODEL
-        elif self.currentId() == self.Page.ENERGY_MODEL:
+                return self.Page.ENERGY_MODEL.value
+        elif curID == self.Page.SOLVER_TYPE.value:
+            return self.Page.SPECIES_MODEL.value
+        elif curID == self.Page.ENERGY_MODEL.value:
             if self.field('energyModelsInclude'):
-                return self.Page.GRAVITY_MODEL
+                return self.Page.GRAVITY_MODEL.value
             else:
-                return self.Page.MULTIPHASE_MODEL
-        elif self.currentId() == self.Page.MULTIPHASE_MODEL:
+                return self.Page.MULTIPHASE_MODEL.value
+        elif curID == self.Page.MULTIPHASE_MODEL.value:
             if self.field('multiphaseModelsInclude'):
-                return self.Page.GRAVITY_MODEL
+                return self.Page.GRAVITY_MODEL.value
             else:
-                return self.Page.SPECIES_MODEL
-        elif self.currentId() == self.Page.GRAVITY_MODEL:
-            return self.Page.SPECIES_MODEL
+                return self.Page.SPECIES_MODEL.value
+        elif curID == self.Page.GRAVITY_MODEL.value:
+            return self.Page.SPECIES_MODEL.value
 
-        elif self.currentId() == self.Page.SPECIES_MODEL:
-            return self.Page.LAST
+        elif curID == self.Page.SPECIES_MODEL.value:
+            return self.Page.LAST.value
         else:
             raise NotImplementedError('Unknown Case Wizard Page')
 

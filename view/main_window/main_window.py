@@ -9,7 +9,7 @@ from openfoam.case_generator import CaseGenerator
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu_view import MenuView
-from .mesh_dock import MeshDock
+# from .mesh_dock import MeshDock
 from .console_dock import ConsoleDock
 
 
@@ -25,11 +25,11 @@ class MainWindow(QMainWindow):
 
         self._emptyDock = self._ui.emptyDock
         self._emptyDock.setTitleBarWidget(QWidget())
-        self._meshDock = MeshDock(self)
+        # self._meshDock = MeshDock(self)
         self._consoleDock = ConsoleDock(self)
 
         self._addDockTabified(self._consoleDock)
-        self._addDockTabified(self._meshDock)
+        # self._addDockTabified(self._meshDock)
 
         self._connectSignalsSlots()
 
