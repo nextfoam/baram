@@ -524,46 +524,23 @@
                 <xs:element name="fixedValues">
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="xVelocity" default="0">
+                            <xs:element name="velocity" default="0">
                                 <xs:complexType>
-                                    <xs:simpleContent>
-                                        <xs:extension base="inputNumberType">
-                                            <xs:attribute name="disabled"
-                                                          type="xs:boolean"
-                                                          use="required"/>
-                                        </xs:extension>
-                                    </xs:simpleContent>
+                                    <xs:sequence>
+                                        <xs:element name="velocity" type="vector"/>
+                                        <xs:element name="relaxation" default="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="inputNumberType">
+                                                    <xs:minInclusive value="0"/>
+                                                    <xs:maxInclusive value="1"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="disabled"
+                                                  type="xs:boolean"
+                                                  use="required"/>
                                 </xs:complexType>
-                            </xs:element>
-                            <xs:element name="yVelocity" default="0">
-                                <xs:complexType>
-                                    <xs:simpleContent>
-                                        <xs:extension base="inputNumberType">
-                                            <xs:attribute name="disabled"
-                                                          type="xs:boolean"
-                                                          use="required"/>
-                                        </xs:extension>
-                                    </xs:simpleContent>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="zVelocity" default="0">
-                                <xs:complexType>
-                                    <xs:simpleContent>
-                                        <xs:extension base="inputNumberType">
-                                            <xs:attribute name="disabled"
-                                                          type="xs:boolean"
-                                                          use="required"/>
-                                        </xs:extension>
-                                    </xs:simpleContent>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="relaxation" default="1">
-                                <xs:simpleType>
-                                    <xs:restriction base="inputNumberType">
-                                        <xs:minInclusive value="0"/>
-                                        <xs:maxInclusive value="1"/>
-                                    </xs:restriction>
-                                </xs:simpleType>
                             </xs:element>
                             <xs:element name="temperature" default="300">
                                 <xs:complexType>
