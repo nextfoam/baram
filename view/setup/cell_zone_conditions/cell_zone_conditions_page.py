@@ -5,11 +5,11 @@ from PySide6.QtWidgets import QWidget, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.cell_zone_db import RegionDB
 from .cell_zone_conditions_page_ui import Ui_CellZoneConditionsPage
 from .region_widget import RegionWidget
 from .operating_conditions_dialog import OperatingConditionsDialog
 from .cell_zone_condition_dialog import CellZoneConditionDialog
-from .cell_zone_db import RegionDB
 
 
 class CellZoneConditionsPage(QWidget):

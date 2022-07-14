@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from view.setup.boundary_conditions.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType
-from view.setup.boundary_conditions.boundary_db import WallVelocityCondition, InterfaceMode
-from view.setup.models.models_db import ModelsDB, TurbulenceModel
+from coredb.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType
+from coredb.boundary_db import WallVelocityCondition, InterfaceMode
+from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 

@@ -4,8 +4,8 @@
 from PySide6.QtWidgets import QWidget
 
 from coredb import coredb
+from coredb.boundary_db import SpalartAllmarasSpecification
 from .turbulence_spalart_allmaras_widget_ui import Ui_turbulenceSpalartAllmarasWidget
-from .boundary_db import SpalartAllmarasSpecification
 
 
 class TurbulenceSpalartAllmarasWidget(QWidget):

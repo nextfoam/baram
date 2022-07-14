@@ -4,8 +4,8 @@
 from PySide6.QtWidgets import QWidget
 
 from coredb import coredb
+from coredb.cell_zone_db import PorousZoneModel
 from .porous_zone_widget_ui import Ui_porousZoneWidget
-from .cell_zone_db import PorousZoneModel
 
 
 class PorousZoneWidget(QWidget):

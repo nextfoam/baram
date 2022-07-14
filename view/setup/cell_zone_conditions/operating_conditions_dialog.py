@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.cell_zone_db import CellZoneDB
 from .operating_conditions_dialog_ui import Ui_OperatingConditionsDialog
-from .cell_zone_db import CellZoneDB
 
 
 class OperatingConditionsDialog(QDialog):

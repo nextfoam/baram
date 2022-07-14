@@ -2,10 +2,10 @@ import unittest
 
 from coredb import coredb
 from openfoam.system.fv_solution import FvSolution
-from view.setup.general.general_db import GeneralDB
-from view.setup.cell_zone_conditions.cell_zone_db import RegionDB
-from view.setup.materials.material_db import MaterialDB
-from view.solution.numerical_conditions.numerical_db import NumericalDB
+from coredb.general_db import GeneralDB
+from coredb.cell_zone_db import RegionDB
+from coredb.material_db import MaterialDB
+from coredb.numerical_db import NumericalDB
 
 region = "testRegion_1"
 

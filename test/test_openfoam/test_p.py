@@ -1,9 +1,9 @@
 import unittest
 
 from coredb import coredb
+from coredb.boundary_db import BoundaryDB
+from coredb.cell_zone_db import CellZoneDB
 from openfoam.boundary_conditions.p import P
-from view.setup.boundary_conditions.boundary_db import BoundaryDB
-from view.setup.cell_zone_conditions.cell_zone_db import CellZoneDB
 
 dimensions = '[1 -1 -2 0 0 0 0]'
 region = "testRegion_1"

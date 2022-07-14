@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.boundary_db import BoundaryDB
 from .porous_jump_dialog_ui import Ui_PorousJumpDialog
-from .boundary_db import BoundaryDB
 
 
 class PorousJumpDialog(QDialog):

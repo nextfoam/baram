@@ -5,11 +5,11 @@ from enum import Enum, auto
 
 from PySide6.QtWidgets import QWidget, QListWidgetItem
 
+from coredb.models_db import ModelsDB
 from .models_page_ui import Ui_ModelsPage
 from .multiphase_dialog import MultiphaseModelDialog
 from .turbulence_dialog import TurbulenceModelDialog
 # from .radiation_dialog import RadiationDialog
-from .models_db import ModelsDB
 
 
 class Model(Enum):

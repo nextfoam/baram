@@ -4,9 +4,9 @@
 from PySide6.QtWidgets import QWidget, QMessageBox
 
 from coredb import coredb
+from coredb.cell_zone_db import SpecificationMethod, TemporalProfileType
 from view.widgets.number_input_dialog import PiecewiseLinearDialog, PolynomialDialog
 from .variable_source_widget_ui import Ui_VariableSourceWidget
-from .cell_zone_db import SpecificationMethod, TemporalProfileType
 
 
 class VariableSourceWidget(QWidget):

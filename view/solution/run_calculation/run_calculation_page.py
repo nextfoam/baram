@@ -7,9 +7,9 @@ from PySide6.QtWidgets import QWidget, QMessageBox, QFormLayout
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from view.setup.general.general_db import GeneralDB
+from coredb.general_db import GeneralDB
+from coredb.run_calculation_db import TimeSteppingMethod, DataWriteFormat, MachineType, RunCalculationDB
 from .run_calculation_page_ui import Ui_RunCalculationPage
-from .run_calculation_db import TimeSteppingMethod, DataWriteFormat, MachineType, RunCalculationDB
 
 
 class TimeCondition(Enum):

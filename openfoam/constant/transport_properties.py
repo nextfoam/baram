@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from view.setup.materials.material_db import MaterialDB
+from coredb.material_db import MaterialDB
 from openfoam.dictionary_file import DictionaryFile
 
 

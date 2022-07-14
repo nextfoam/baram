@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QWidget, QMessageBox
+from PySide6.QtWidgets import QWidget
 
 from coredb import coredb
-from view.setup.boundary_conditions.boundary_db import BoundaryDB
+from coredb.boundary_db import BoundaryDB
 from view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 from .MRF_widget_ui import Ui_MRFWidget
 

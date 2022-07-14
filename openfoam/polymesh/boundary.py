@@ -6,7 +6,7 @@ import shutil
 
 from coredb import coredb
 from openfoam.dictionary_file import DictionaryFile
-from view.setup.boundary_conditions.boundary_db import BoundaryType
+from coredb.boundary_db import BoundaryType
 from .polymesh_loader import PolyMeshLoader
 
 

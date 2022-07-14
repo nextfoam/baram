@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from view.setup.models.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, KOmegaModel
+from coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, KOmegaModel
 from openfoam.dictionary_file import DictionaryFile
 
 

@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from coredb import coredb
-from coredb.coredb_writer import CoreDBWriter
-
 from PySide6.QtWidgets import QMessageBox
 
+from coredb import coredb
+from coredb.coredb_writer import CoreDBWriter
+from coredb.boundary_db import BoundaryDB
 from view.widgets.resizable_dialog import ResizableDialog
 from .supersonic_inflow_dialog_ui import Ui_SupersonicInflowDialog
 from .turbulence_model_helper import TurbulenceModelHelper
-from .boundary_db import BoundaryDB
 
 
 class SupersonicInflowDialog(ResizableDialog):

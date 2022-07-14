@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from view.setup.models.models_db import TurbulenceModel, ModelsDB
+from coredb.models_db import TurbulenceModel, ModelsDB
 from .turbulence_k_epsilon_widget import TurbulenceKEpsilonWidget
 from .turbulence_k_omega_widget import TurbulenceKOmegaWidget
 from .turbulence_spalart_allmaras_widget import TurbulenceSpalartAllmarasWidget

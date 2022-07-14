@@ -6,8 +6,8 @@ import logging
 from PySide6.QtWidgets import QWidget
 
 from coredb import coredb
+from coredb.general_db import GeneralDB
 from .general_page_ui import Ui_GeneralPage
-from .general_db import GeneralDB
 
 
 logger = logging.getLogger(__name__)

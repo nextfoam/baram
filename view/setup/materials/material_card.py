@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 
 from coredb import coredb
-from .material_db import MaterialDB, Specification, Phase
+from coredb.material_db import MaterialDB, Specification, Phase
 from .material_card_ui import Ui_MaterialCard
 from .material_dialog import MaterialDialog
 

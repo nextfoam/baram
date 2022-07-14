@@ -5,10 +5,10 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.boundary_db import BoundaryDB
 from view.widgets.selector_dialog import SelectorDialog
 from view.widgets.multi_selector_dialog import SelectorItem
 from .cyclic_dialog_ui import Ui_CyclicDialog
-from .boundary_db import BoundaryDB
 
 
 class CyclicDialog(QDialog):

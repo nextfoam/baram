@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from view.setup.boundary_conditions.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType, InterfaceMode
-from view.setup.cell_zone_conditions.cell_zone_db import CellZoneDB
+from coredb.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType, InterfaceMode
+from coredb.cell_zone_db import CellZoneDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 

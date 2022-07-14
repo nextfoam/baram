@@ -7,8 +7,8 @@ from PySide6.QtWidgets import QDialog, QFileDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.boundary_db import BoundaryDB
 from .fan_dialog_ui import Ui_FanDialog
-from .boundary_db import BoundaryDB
 
 
 class FanDialog(QDialog):

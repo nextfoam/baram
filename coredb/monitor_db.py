@@ -6,9 +6,9 @@ from enum import Enum
 from PySide6.QtCore import QCoreApplication
 
 from coredb import coredb
-from view.setup.models.models_db import ModelsDB, TurbulenceModel
-from view.setup.general.general_db import GeneralDB
-from view.setup.materials.material_db import MaterialDB, ListIndex, Phase
+from coredb.models_db import ModelsDB, TurbulenceModel
+from coredb.general_db import GeneralDB
+from coredb.material_db import MaterialDB, ListIndex, Phase
 
 
 class Field(Enum):

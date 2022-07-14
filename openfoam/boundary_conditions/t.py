@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from view.setup.boundary_conditions.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType
-from view.setup.boundary_conditions.boundary_db import FlowRateInletSpecification
-from view.setup.boundary_conditions.boundary_db import TemperatureProfile, TemperatureTemporalDistribution
-from view.setup.boundary_conditions.boundary_db import InterfaceMode
-from view.setup.cell_zone_conditions.cell_zone_db import RegionDB
-from view.setup.materials.material_db import Phase
+from coredb.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType
+from coredb.boundary_db import FlowRateInletSpecification
+from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution
+from coredb.boundary_db import InterfaceMode
+from coredb.cell_zone_db import RegionDB
+from coredb.material_db import Phase
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 

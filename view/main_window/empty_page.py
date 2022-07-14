@@ -3,9 +3,6 @@
 
 from PySide6.QtWidgets import QWidget
 
-from coredb import coredb
-from view.setup.boundary_conditions.boundary_db import BoundaryDB
-
 
 class EmptyPage(QWidget):
     def __init__(self, ui):

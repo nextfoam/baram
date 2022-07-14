@@ -1,8 +1,8 @@
 import unittest
 
 from coredb import coredb
+from coredb.boundary_db import BoundaryDB
 from openfoam.boundary_conditions.u import U
-from view.setup.boundary_conditions.boundary_db import BoundaryDB
 
 dimensions = '[0 1 -1 0 0 0 0]'
 region = "testRegion_1"

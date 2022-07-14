@@ -5,10 +5,10 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from view.setup.boundary_conditions.boundary_db import BoundaryDB
+from coredb.boundary_db import BoundaryDB
+from coredb.monitor_db import MonitorDB
 from view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 from .force_dialog_ui import Ui_ForceDialog
-from .monitor_db import MonitorDB
 
 
 class ForceDialog(QDialog):

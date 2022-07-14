@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QWidget, QHeaderView, QTableWidgetItem, QComboBox
 from PySide6.QtCore import Signal
 
 from coredb import coredb
+from coredb.boundary_db import BoundaryListIndex, BoundaryType, BoundaryDB
 from .region_widget_ui import Ui_RegionWidget
-from .boundary_db import BoundaryListIndex, BoundaryType, BoundaryDB
 
 
 class RegionWidget(QWidget):

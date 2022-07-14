@@ -3,8 +3,8 @@
 
 import openfoam.solver
 from coredb import coredb
-from view.setup.general.general_db import GeneralDB
-from view.solution.run_calculation.run_calculation_db import RunCalculationDB, TimeSteppingMethod
+from coredb.general_db import GeneralDB
+from coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from openfoam.dictionary_file import DictionaryFile
 
 

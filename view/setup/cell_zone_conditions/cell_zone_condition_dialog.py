@@ -5,7 +5,8 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from view.setup.models.models_db import TurbulenceModelHelper
+from coredb.models_db import TurbulenceModelHelper
+from coredb.cell_zone_db import CellZoneDB, ZoneType
 from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
 from .MRF_widget import MRFWidget
 from .porous_zone_widget import PorousZoneWidget
@@ -14,7 +15,6 @@ from .actuator_disk_widget import ActuatorDiskWidget
 from .variable_source_widget import VariableSourceWidget
 from .constant_source_widget import ConstantSourceWidget
 from .fixed_value_widget import FixedValueWidget
-from .cell_zone_db import CellZoneDB, ZoneType
 
 
 class CellZoneConditionDialog(QDialog):

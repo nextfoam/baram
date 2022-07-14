@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.boundary_db import BoundaryDB
 from .subsonic_outflow_dialog_ui import Ui_SubsonicOutflowDialog
-from .boundary_db import BoundaryDB
 
 
 class SubsonicOutflowDialog(QDialog):

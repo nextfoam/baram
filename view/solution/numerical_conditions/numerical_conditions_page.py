@@ -5,11 +5,11 @@ from PySide6.QtWidgets import QWidget, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from view.setup.general.general_db import GeneralDB
+from coredb.general_db import GeneralDB
+from coredb.numerical_db import PressureVelocityCouplingScheme, ImplicitDiscretizationScheme, UpwindDiscretizationScheme
+from coredb.numerical_db import NumericalDB
 from .numerical_conditions_page_ui import Ui_NumericalConditionsPage
 from .advanced_dialog import AdvancedDialog
-from .numerical_db import PressureVelocityCouplingScheme, ImplicitDiscretizationScheme, UpwindDiscretizationScheme
-from .numerical_db import NumericalDB
 
 
 class NumericalConditionsPage(QWidget):

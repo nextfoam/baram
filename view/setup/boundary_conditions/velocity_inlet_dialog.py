@@ -7,13 +7,13 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.models_db import ModelsDB
+from coredb.boundary_db import BoundaryDB, VelocitySpecification, VelocityProfile
 from view.widgets.resizable_dialog import ResizableDialog
 from view.widgets.number_input_dialog import PiecewiseLinearDialog
-from view.setup.models.models_db import ModelsDB
 from .velocity_inlet_dialog_ui import Ui_VelocityInletDialog
 from .turbulence_model_helper import TurbulenceModelHelper
 from .temperature_widget import TemperatureWidget
-from .boundary_db import BoundaryDB, VelocitySpecification, VelocityProfile
 
 
 class VelocityInletDialog(ResizableDialog):

@@ -4,8 +4,8 @@
 from PySide6.QtWidgets import QWidget
 
 from coredb import coredb
+from coredb.cell_zone_db import SpecificationMethod
 from .constant_source_widget_ui import Ui_ConstantSourceWidget
-from .cell_zone_db import SpecificationMethod
 
 
 class ConstantSourceWidget(QWidget):

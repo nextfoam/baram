@@ -4,9 +4,9 @@
 from PySide6.QtWidgets import QWidget, QFileDialog, QMessageBox
 
 from coredb import coredb
+from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution
 from view.widgets.number_input_dialog import PiecewiseLinearDialog, PolynomialDialog
 from .temperature_widget_ui import Ui_temperatureWidget
-from .boundary_db import TemperatureProfile, TemperatureTemporalDistribution
 
 
 class TemperatureWidget(QWidget):

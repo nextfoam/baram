@@ -4,8 +4,8 @@
 from PySide6.QtWidgets import QWidget
 
 from coredb import coredb
+from coredb.boundary_db import KOmegaSpecification
 from .turbulence_k_omega_widget_ui import Ui_turbulenceKOmegaWidget
-from .boundary_db import KOmegaSpecification
 
 
 class TurbulenceKOmegaWidget(QWidget):

@@ -4,7 +4,7 @@
 from enum import Enum, auto
 
 from coredb import coredb
-from view.setup.materials.material_db import MaterialDB
+from coredb.material_db import MaterialDB
 
 
 class CellZoneListIndex(Enum):
@@ -98,7 +98,7 @@ class CellZoneDB:
     def getCellZones(cls):
         db = coredb.CoreDB()
         
-        if cls._cellzones is None:
+        if not cls._cellzones:
             cls._cellzones = []
 
             for region in db.getRegions():

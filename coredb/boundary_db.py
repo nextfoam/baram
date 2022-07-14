@@ -4,7 +4,7 @@
 from enum import Enum, auto
 
 from coredb import coredb
-from view.setup.cell_zone_conditions.cell_zone_db import MeshObject
+from coredb.cell_zone_db import MeshObject
 
 
 class BoundaryType(Enum):
@@ -131,7 +131,7 @@ class BoundaryDB:
     def getBoundariesForSelector(cls):
         db = coredb.CoreDB()
 
-        if cls._boundariesForSelector is None:
+        if not cls._boundariesForSelector:
             cls._boundariesForSelector = []
 
             for region in db.getRegions():

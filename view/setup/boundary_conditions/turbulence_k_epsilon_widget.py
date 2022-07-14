@@ -4,8 +4,8 @@
 from PySide6.QtWidgets import QWidget
 
 from coredb import coredb
+from coredb.boundary_db import KEpsilonSpecification
 from .turbulence_k_epsilon_widget_ui import Ui_turbulenceKEpsilonWidget
-from .boundary_db import KEpsilonSpecification
 
 
 class TurbulenceKEpsilonWidget(QWidget):

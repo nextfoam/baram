@@ -3,10 +3,10 @@
 from builtins import str
 
 from coredb import coredb
-from view.solution.numerical_conditions.numerical_db import NumericalDB, PressureVelocityCouplingScheme
-from view.setup.general.general_db import GeneralDB
-from view.setup.cell_zone_conditions.cell_zone_db import RegionDB
-from view.setup.materials.material_db import Phase
+from coredb.numerical_db import NumericalDB, PressureVelocityCouplingScheme
+from coredb.general_db import GeneralDB
+from coredb.cell_zone_db import RegionDB
+from coredb.material_db import Phase
 from openfoam.dictionary_file import DictionaryFile
 
 

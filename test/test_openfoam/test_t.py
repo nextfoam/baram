@@ -2,9 +2,9 @@ import unittest
 
 from coredb import coredb
 from openfoam.boundary_conditions.t import T
-from view.setup.boundary_conditions.boundary_db import BoundaryDB
-from view.setup.cell_zone_conditions.cell_zone_db import RegionDB
-from view.setup.materials.material_db import Phase
+from coredb.boundary_db import BoundaryDB
+from coredb.cell_zone_db import RegionDB
+from coredb.material_db import Phase
 
 dimensions = '[0 0 0 1 0 0 0]'
 region = "testRegion_1"

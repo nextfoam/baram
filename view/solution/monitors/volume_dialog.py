@@ -5,10 +5,10 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from view.setup.cell_zone_conditions.cell_zone_db import CellZoneDB
+from coredb.cell_zone_db import CellZoneDB
+from coredb.monitor_db import MonitorDB, VolumeReportType, FieldHelper
 from view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 from .volume_dialog_ui import Ui_VolumeDialog
-from .monitor_db import MonitorDB, VolumeReportType, FieldHelper
 
 
 class VolumeDialog(QDialog):

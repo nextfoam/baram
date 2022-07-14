@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.numerical_db import NumericalDB
 from .advanced_dialog_ui import Ui_AdvancedDialog
-from .numerical_db import NumericalDB
 
 
 class AdvancedDialog(QDialog):

@@ -5,11 +5,11 @@ from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.boundary_db import BoundaryDB, InterfaceMode
 from view.widgets.resizable_dialog import ResizableDialog
 from view.widgets.selector_dialog import SelectorDialog
 from view.widgets.multi_selector_dialog import SelectorItem
 from .interface_dialog_ui import Ui_InterfaceDialog
-from .boundary_db import BoundaryDB, InterfaceMode
 
 
 class InterfaceDialog(ResizableDialog):

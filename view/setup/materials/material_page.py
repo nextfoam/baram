@@ -4,11 +4,11 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QMessageBox
 
 from coredb import coredb
+from coredb.material_db import MaterialDB, ListIndex, DBListIndex
 from view.widgets.selector_dialog import SelectorDialog
 from view.widgets.multi_selector_dialog import SelectorItem
 from .material_page_ui import Ui_MaterialPage
 from .material_card import MaterialCard
-from .material_db import MaterialDB, ListIndex, DBListIndex
 
 
 class MaterialPage(QWidget):

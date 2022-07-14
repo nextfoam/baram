@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from view.setup.cell_zone_conditions.cell_zone_db import CellZoneDB, PorousZoneModel
+from coredb.cell_zone_db import CellZoneDB, PorousZoneModel
 
 
 class Porous:

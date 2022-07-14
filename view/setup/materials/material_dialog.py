@@ -9,8 +9,8 @@ from PySide6.QtWidgets import QFormLayout, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.material_db import MaterialDB, Specification, Phase
 from view.widgets.number_input_dialog import PolynomialDialog
-from .material_db import MaterialDB, Specification, Phase
 from .material_dialog_ui import Ui_MaterialDialog
 
 

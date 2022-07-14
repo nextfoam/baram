@@ -5,6 +5,7 @@
 from PySide6.QtWidgets import QWidget
 
 from coredb import coredb
+from coredb.boundary_db import BoundaryType
 from .boundary_conditions_page_ui import Ui_BoundaryConditionsPage
 from .velocity_inlet_dialog import VelocityInletDialog
 from .flow_rate_inlet_dialog import FlowRateInletDialog
@@ -23,7 +24,6 @@ from .interface_dialog import InterfaceDialog
 from .porous_jump_dialog import PorousJumpDialog
 from .fan_dialog import FanDialog
 from .cyclic_dialog import CyclicDialog
-from .boundary_db import BoundaryType
 from .region_widget import RegionWidget
 
 DIALOGS = {

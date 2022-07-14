@@ -5,10 +5,10 @@ from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.boundary_db import BoundaryDB
 from view.widgets.resizable_dialog import ResizableDialog
 from .subsonic_inflow_dialog_ui import Ui_SubsonicInflowDialog
 from .turbulence_model_helper import TurbulenceModelHelper
-from .boundary_db import BoundaryDB
 
 
 class SubsonicInflowDialog(ResizableDialog):

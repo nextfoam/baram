@@ -1,7 +1,7 @@
 import unittest
 
 from coredb import coredb
-from view.setup.models.models_db import ModelsDB
+from coredb.models_db import ModelsDB
 from openfoam.constant.g import G
 
 

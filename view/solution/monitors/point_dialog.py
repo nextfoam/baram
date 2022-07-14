@@ -5,11 +5,11 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from view.setup.boundary_conditions.boundary_db import BoundaryDB
+from coredb.boundary_db import BoundaryDB
+from coredb.monitor_db import MonitorDB, FieldHelper
 from view.widgets.selector_dialog import SelectorDialog
 from view.widgets.multi_selector_dialog import SelectorItem
 from .point_dialog_ui import Ui_PointDialog
-from .monitor_db import MonitorDB, FieldHelper
 
 
 class PointDialog(QDialog):

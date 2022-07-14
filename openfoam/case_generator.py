@@ -4,8 +4,8 @@
 import os
 
 from coredb import coredb
-from view.setup.cell_zone_conditions.cell_zone_db import RegionDB
-from view.setup.materials.material_db import Phase
+from coredb.cell_zone_db import RegionDB
+from coredb.material_db import Phase
 from openfoam.constant.thermophysical_properties import ThermophysicalProperties
 from openfoam.constant.operating_conditions import OperatingConditions
 from openfoam.constant.MRF_properties import MRFProperties

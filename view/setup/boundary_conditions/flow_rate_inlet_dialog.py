@@ -5,12 +5,12 @@ from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.models_db import ModelsDB
+from coredb.boundary_db import FlowRateInletSpecification, BoundaryDB
 from view.widgets.resizable_dialog import ResizableDialog
-from view.setup.models.models_db import ModelsDB
 from .flow_rate_inlet_dialog_ui import Ui_FlowRateInletDialog
 from .turbulence_model_helper import TurbulenceModelHelper
 from .temperature_widget import TemperatureWidget
-from .boundary_db import FlowRateInletSpecification, BoundaryDB
 
 
 class FlowRateInletDialog(ResizableDialog):

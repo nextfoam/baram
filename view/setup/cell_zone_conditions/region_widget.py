@@ -5,9 +5,9 @@ from PySide6.QtWidgets import QWidget, QListWidgetItem
 from PySide6.QtCore import Qt, Signal
 
 from coredb import coredb
-from view.setup.materials.material_db import ListIndex
+from coredb.material_db import ListIndex
+from coredb.cell_zone_db import CellZoneListIndex, RegionDB
 from .region_widget_ui import Ui_RegionWidget
-from .cell_zone_db import CellZoneListIndex, RegionDB
 
 
 class RegionWidget(QWidget):

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from view.setup.boundary_conditions.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType
-from view.setup.boundary_conditions.boundary_db import KOmegaSpecification, WallVelocityCondition, InterfaceMode
+from coredb.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType
+from coredb.boundary_db import KOmegaSpecification, WallVelocityCondition, InterfaceMode
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 

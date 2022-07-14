@@ -5,9 +5,9 @@ from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, NearWallTreatment, KOmegaModel
 from view.widgets.resizable_dialog import ResizableDialog
 from .turbulence_dialog_ui import Ui_TurbulenceDialog
-from .models_db import ModelsDB, TurbulenceModel, KEpsilonModel, NearWallTreatment, KOmegaModel
 
 
 class TurbulenceModelDialog(ResizableDialog):
