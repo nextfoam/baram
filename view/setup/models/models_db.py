@@ -95,16 +95,7 @@ class ModelsDB:
 
     @classmethod
     def isEnergyModelOn(cls):
-        return False
-        #return coredb.CoreDB().getValue(ModelsDB.ENERGY_MODELS_PATH) == 'on'
-
-    @classmethod
-    def isVOFModelOn(cls):
-        return True
-
-    @classmethod
-    def isDensityBased(cls):
-        return True
+        return coredb.CoreDB().getValue(ModelsDB.ENERGY_MODELS_PATH) == 'on'
 
 
 class TurbulenceField:

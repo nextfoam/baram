@@ -92,7 +92,7 @@
                 <t>0</t>
                 <v>0</v>
             </piecewiseLinear>
-            <polynomial>0</polynomial>
+            <polynomial>0 3  4</polynomial>
         </energy>
         <turbulentKineticEnergy disabled="true">
             <unit>valueForEntireCellZone</unit>
@@ -112,10 +112,14 @@
         </modifiedTurbulentViscosity>
     </sourceTerms>
     <fixedValues>
-        <xVelocity disabled="true">0</xVelocity>
-        <yVelocity disabled="true">0</yVelocity>
-        <zVelocity disabled="true">0</zVelocity>
-        <relaxation>0</relaxation>
+        <velocity disabled="true">
+            <velocity>
+                <x>0</x>
+                <y>0</y>
+                <z>0</z>
+            </velocity>
+            <relaxation>0</relaxation>
+        </velocity>
         <temperature disabled="true">300</temperature>
         <turbulentKineticEnergy disabled="true">0</turbulentKineticEnergy>
         <turbulentDissipationRate disabled="true">0</turbulentDissipationRate>

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
+from view.setup.materials.material_db import MaterialDB
 from openfoam.dictionary_file import DictionaryFile
 
 
@@ -23,9 +24,9 @@ class TransportProperties(DictionaryFile):
             self._data['transportModel'] = 'Newtonian'
 
             mid = db.getValue(f'.//region[name="{self._rname}"]/material')
-            density = db.getValue(f'.//materials/material[@mid="{mid}"]/density')
-            viscosity = db.getValue(f'.//materials/material[@mid="{mid}"]/viscosity')
-            nu = viscosity/density
+            density = db.getValue(f'{MaterialDB.getXPath(mid)}/density')
+            viscosity = db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity')
+            nu = viscosity / density
             self._data['nu'] = f'[ 0 2 -1 0 0 0 0 ] {nu}'
 
             # MultiPhase (not defined yet)

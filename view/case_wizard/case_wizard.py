@@ -46,28 +46,28 @@ class CaseWizard(QWizard):
         self.accepted.connect(self.caseAccepted)
 
     def nextId(self):
-        curID = self.currentId()
-        if curID == self.Page.FLOW_TYPE.value:
+        curId = self.currentId()
+        if curId == self.Page.FLOW_TYPE.value:
             if self.field('flowTypeCompressible'):
                 return self.Page.SOLVER_TYPE.value
             else:
                 return self.Page.ENERGY_MODEL.value
-        elif curID == self.Page.SOLVER_TYPE.value:
+        elif curId == self.Page.SOLVER_TYPE.value:
             return self.Page.SPECIES_MODEL.value
-        elif curID == self.Page.ENERGY_MODEL.value:
+        elif curId == self.Page.ENERGY_MODEL.value:
             if self.field('energyModelsInclude'):
                 return self.Page.GRAVITY_MODEL.value
             else:
                 return self.Page.MULTIPHASE_MODEL.value
-        elif curID == self.Page.MULTIPHASE_MODEL.value:
+        elif curId == self.Page.MULTIPHASE_MODEL.value:
             if self.field('multiphaseModelsInclude'):
                 return self.Page.GRAVITY_MODEL.value
             else:
                 return self.Page.SPECIES_MODEL.value
-        elif curID == self.Page.GRAVITY_MODEL.value:
+        elif curId == self.Page.GRAVITY_MODEL.value:
             return self.Page.SPECIES_MODEL.value
 
-        elif curID == self.Page.SPECIES_MODEL.value:
+        elif curId == self.Page.SPECIES_MODEL.value:
             return self.Page.LAST.value
         else:
             raise NotImplementedError('Unknown Case Wizard Page')

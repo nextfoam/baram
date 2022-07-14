@@ -15,5 +15,10 @@ class TestTransportProperties(unittest.TestCase):
     def tearDown(self) -> None:
         del coredb.CoreDB._instance
 
+    def testNu(self):
+        self.db.setValue(self.path + '/model', 'laminar')
+        content = TransportProperties(self.region).build().asDict()
+        # self.assertEqual('laminar', content['simulationType'])
+
 if __name__ == '__main__':
     unittest.main()
