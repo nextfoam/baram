@@ -65,16 +65,16 @@ class BoundaryConditionsPage(QWidget):
 
         self._connectSignalsSlots()
 
-        self._load()
-
-    def hideEvent(self, ev):
+    def showEvent(self, ev):
         if ev.spontaneous():
-            return super().hideEvent(ev)
+            return super().showEvent(ev)
 
-    def _connectSignalsSlots(self):
-        self._ui.edit.clicked.connect(self._edit)
+        if not self._regions:
+            self.load()
 
-    def _load(self):
+        return super().showEvent(ev)
+
+    def load(self):
         layout = self._ui.regions.layout()
         regions = self._db.getRegions()
         for r in regions:
@@ -83,6 +83,9 @@ class BoundaryConditionsPage(QWidget):
             self._regions[r].regionSelected.connect(self._regionSelected)
             self._regions[r].boundaryTypeChanged.connect(self._boundaryTypeChanged)
             self._regions[r].boundaryDoubleClicked.connect(self._edit)
+
+    def _connectSignalsSlots(self):
+        self._ui.edit.clicked.connect(self._edit)
 
     def _regionSelected(self, rname):
         if self._currentRegion is not None:

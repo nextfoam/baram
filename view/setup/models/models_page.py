@@ -59,12 +59,12 @@ class ModelsPage(QWidget):
 
         if model == Model.MULTIPHASE.value:
             if self._multiphaseDialog is None:
-                self._multiphaseDialog = MultiphaseModelDialog()
+                self._multiphaseDialog = MultiphaseModelDialog(self)
                 self._multiphaseDialog.accepted.connect(self._loadMultiphaseModel)
             self._multiphaseDialog.open()
         elif model == Model.TURBULENCE.value:
             if self._turbulenceDialog is None:
-                self._turbulenceDialog = TurbulenceModelDialog()
+                self._turbulenceDialog = TurbulenceModelDialog(self)
                 self._turbulenceDialog.accepted.connect(self._loadTurbulenceModel)
             self._turbulenceDialog.open()
         # elif model == Model.RADIATION.value:

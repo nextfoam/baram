@@ -23,7 +23,7 @@ class K(BoundaryCondition):
 
     def build(self):
         if self._data is not None:
-            return
+            return self
 
         self._data = {
             'dimensions': self.DIMENSIONS,

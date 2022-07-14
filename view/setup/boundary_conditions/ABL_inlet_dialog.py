@@ -10,7 +10,7 @@ from .boundary_db import BoundaryDB
 
 
 class ABLInletDialog(QDialog):
-    RELATIVE_PATH = '/ablInlet'
+    RELATIVE_XPATH = '/ablInlet'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -23,7 +23,7 @@ class ABLInletDialog(QDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         writer.append(path + '/flowDirection/x',
@@ -54,7 +54,7 @@ class ABLInletDialog(QDialog):
             super().accept()
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.flowDirectionXComponent.setText(self._db.getValue(path + '/flowDirection/x'))
         self._ui.flowDirectionYComponent.setText(self._db.getValue(path + '/flowDirection/y'))

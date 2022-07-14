@@ -12,7 +12,7 @@ from .boundary_db import BoundaryDB
 
 
 class FarfieldRiemannDialog(ResizableDialog):
-    RELATIVE_PATH = '/farFieldRiemann'
+    RELATIVE_XPATH = '/farFieldRiemann'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -29,7 +29,7 @@ class FarfieldRiemannDialog(ResizableDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         writer.append(path + '/flowDirection/x', self._ui.xComponent.text(), self.tr("X-Velocity"))
@@ -49,7 +49,7 @@ class FarfieldRiemannDialog(ResizableDialog):
             super().accept()
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.xComponent.setText(self._db.getValue(path + '/flowDirection/x'))
         self._ui.yComponent.setText(self._db.getValue(path + '/flowDirection/y'))

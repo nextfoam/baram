@@ -8,9 +8,6 @@ from PySide6.QtCore import QCoreApplication
 from coredb import coredb
 
 
-MATERIALS_XPATH = './/materials'
-
-
 class ListIndex(Enum):
     ID = 0
     NAME = auto()
@@ -39,6 +36,8 @@ class Specification(Flag):
 
 
 class MaterialDB(object):
+    MATERIALS_XPATH = './/materials'
+
     specificationText = {
         Specification.CONSTANT:    QCoreApplication.translate("MaterialDB", "Constant"),
         Specification.PERFECT_GAS: QCoreApplication.translate("MaterialDB", "Perfect Gas"),
@@ -54,7 +53,7 @@ class MaterialDB(object):
 
     @classmethod
     def getXPath(cls, mid):
-        return f'{MATERIALS_XPATH}/material[@mid="{mid}"]'
+        return f'{cls.MATERIALS_XPATH}/material[@mid="{mid}"]'
 
     @classmethod
     def getPhase(cls, mid):
@@ -79,4 +78,4 @@ class MaterialDB(object):
 
     @classmethod
     def isMaterialExists(cls, name):
-        return coredb.CoreDB().exists(f'{MATERIALS_XPATH}/material[name="{name}"]')
+        return coredb.CoreDB().exists(f'{cls.MATERIALS_XPATH}/material[name="{name}"]')

@@ -12,7 +12,7 @@ from .boundary_db import BoundaryDB
 
 
 class FanDialog(QDialog):
-    RELATIVE_PATH = '/fan'
+    RELATIVE_XPATH = '/fan'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -26,7 +26,7 @@ class FanDialog(QDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         writer.append(path + '/reverseDirection',
@@ -42,7 +42,7 @@ class FanDialog(QDialog):
         self._ui.fanPQCurveFileSelect.clicked.connect(self._selectFanPQCurveFile)
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.reverseDirection.setChecked(self._db.getValue(path + '/reverseDirection') == 'true')
 

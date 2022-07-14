@@ -75,8 +75,7 @@
         <underRelaxationFactors>
             <pressure>0.3</pressure>
             <pressureFinal>1</pressureFinal>
-            <!-- ToDo: check default value of density, densityFinal -->
-            <density>0.7</density>
+            <density>0.3</density>
             <densityFinal>1</densityFinal>
             <momentum>0.7</momentum>
             <momentumFinal>1</momentumFinal>
@@ -143,6 +142,8 @@
             <numberOfIterations>0</numberOfIterations>
             <timeSteppingMethod>fixed</timeSteppingMethod>
             <timeStepSize>0.01</timeStepSize>
+            <!-- ToDo: maxCo default -->
+            <maxCourantNumber>0.1</maxCourantNumber>
             <endTime>0</endTime>
             <reportIntervalSteps>1</reportIntervalSteps>
             <reportIntervalSeconds>0.01</reportIntervalSeconds>

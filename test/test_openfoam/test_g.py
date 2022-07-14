@@ -8,7 +8,7 @@ from openfoam.constant.g import G
 class TestG(unittest.TestCase):
     def setUp(self):
         self.db = coredb.CoreDB()
-        self.path = ModelsDB.TURBULENCE_MODELS_PATH
+        self.path = ModelsDB.TURBULENCE_MODELS_XPATH
 
         self.region = 'testRegion_1'
         zone = 'testZone_1'

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from builtins import str
 
 from coredb import coredb
 from view.solution.numerical_conditions.numerical_db import NumericalDB, PressureVelocityCouplingScheme
@@ -19,13 +19,13 @@ class FvSolution(DictionaryFile):
 
     def build(self):
         if self._data is not None:
-            return
+            return self
 
         if self._rname:
             scheme = self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/pressureVelocityCouplingScheme')
             phase = RegionDB.getPhase(self._rname)
             consistent = 'no'
-            if scheme == PressureVelocityCouplingScheme.SIMPLEC and phase != Phase.SOLID:
+            if scheme == PressureVelocityCouplingScheme.SIMPLEC.value and phase != Phase.SOLID:
                 consistent = 'yes'
 
             self._data = {
@@ -77,15 +77,16 @@ class FvSolution(DictionaryFile):
                 },
                 'PIMPLE': {
                     'consistent': consistent,
-                    # ToDo: set momentumPredictor value
-                    'momentumPredictor': '<momentumPredictor>',
+                    # ToDo: set momentumPredictor value. Transient일 때만, Pressure Velocity 콤보 밑에. on/off
+                    'momentumPredictor': '<momentumPredictor>', # Use... checkbox. default:on
                     'turbOnFinalIterOnly': 'false',  # only for fluid
                     'nNonOrthogonalCorrectors': '0',
                     # only for fluid
                     'nCorrectors': self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/numberOfCorrectors'),
-                    # ToDo: only in single region case?
+                    # ToDo: only in single region case? 하지만 쓰기
                     'nOuterCorrectors':
                         self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/maxIterationsPerTimeStep'),
+                    'maxCo': 0, #ToDo: controlDict와 동일하게 (무조건)
                     'nonOrthogonalityThreshold': '80',
                     'skewnessThreshold': '0.95',
                     'pRefCell': '0',        # only for fluid
@@ -121,8 +122,8 @@ class FvSolution(DictionaryFile):
                         'pFinal': self._db.getValue('.//underRelaxationFactors/pressureFinal'),
                         'p_rgh': self._db.getValue('.//underRelaxationFactors/pressure'),
                         'p_rghFinal': self._db.getValue('.//underRelaxationFactors/pressureFinal'),
-                        'rho': self._db.getValue('.//underRelaxationFactors/turbulence'),
-                        'rhoFinal': self._db.getValue('.//underRelaxationFactors/turbulenceFinal'),
+                        'rho': self._db.getValue('.//underRelaxationFactors/density'),
+                        'rhoFinal': self._db.getValue('.//underRelaxationFactors/densityFinal'),
                     },
                     'equations': {
                         'U': self._db.getValue('.//underRelaxationFactors/momentum'),

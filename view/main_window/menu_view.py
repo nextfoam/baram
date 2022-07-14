@@ -1,127 +1,77 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from enum import Enum, auto
+
 from PySide6.QtWidgets import QTreeWidgetItem
-from PySide6.QtCore import Qt, QCoreApplication
+from PySide6.QtCore import QObject, Signal
 
-from view.setup.general.general_page import GeneralPage
-from view.setup.materials.material_page import MaterialPage
-from view.setup.models.models_page import ModelsPage
-from view.setup.cell_zone_conditions.cell_zone_conditions_page import CellZoneConditionsPage
-from view.setup.boundary_conditions.boundary_conditions_page import BoundaryConditionsPage
-from view.setup.reference_values.reference_values_page import ReferenceValuesPage
-from view.solution.numerical_conditions.numerical_conditions_page import NumericalConditionsPage
-from view.solution.monitors.monitors_page import MonitorsPage
-from view.solution.initialization.initialization_page import InitializationPage
-from view.solution.run_calculation.run_calculation_page import RunCalculationPage
 
-class MenuView:
-    class MenuItem:
-        def __init__(self, setup):
-            self._text = setup["text"]
-            self._pageClass = None
-            self._index = -1
+class MenuItem(Enum):
+    MENU_TOP = QTreeWidgetItem.UserType
+    # Setup
+    MENU_SETUP_GENERAL = auto()
+    MENU_SETUP_MATERIALS = auto()
+    MENU_SETUP_MODELS = auto()
+    MENU_SETUP_CELL_ZONE_CONDITIONS = auto()
+    MENU_SETUP_BOUNDARY_CONDITIONS = auto()
+    MENU_SETUP_REFERENCE_VALUES = auto()
+    # Solution
+    MENU_SOLUTION_NUMERICAL_CONDITIONS = auto()
+    MENU_SOLUTION_MONITORS = auto()
+    MENU_SOLUTION_INITIALIZATION = auto()
+    MENU_SOLUTION_RUN_CALCULATION = auto()
 
-            if "page_class" in setup:
-                self._pageClass = setup["page_class"]
-            else:
-                self._index = 0
 
-        @property
-        def index(self):
-            return self._index
-
-        @index.setter
-        def index(self, index):
-            self._index = index
-
-        def createPage(self):
-            return self._pageClass()
+class MenuView(QObject):
+    currentMenuChanged = Signal(int)
 
     def __init__(self, tree):
-        self.MENU = {
-            "setup": {
-                "text": QCoreApplication.translate("MenuView", "Setup"),
-                "sub_menu": {
-                    "general": {
-                        "text": QCoreApplication.translate("MenuView", "General"),
-                        "page_class": GeneralPage,
-                    },
-                    "materials": {
-                        "text": QCoreApplication.translate("MenuView", "Materials"),
-                        "page_class": MaterialPage,
-                    },
-                    "models": {
-                        "text": QCoreApplication.translate("MenuView", "Models"),
-                        "page_class": ModelsPage,
-                    },
-                    "cellZoneConditions": {
-                        "text": QCoreApplication.translate("MenuView", "Cell Zone Conditions"),
-                        "page_class": CellZoneConditionsPage,
-                    },
-                    "boundaryConditions": {
-                        "text": QCoreApplication.translate("MenuView", "Boundary Conditions"),
-                        "page_class": BoundaryConditionsPage,
-                    },
-                    # "dynamicMesh": {
-                    #     "text": QCoreApplication.translate("MenuView", "Dynamic Mesh"),
-                    #     "page_class": EmptyPage,
-                    # },
-                    "referenceValues": {
-                        "text": QCoreApplication.translate("MenuView", "Reference Values"),
-                        "page_class": ReferenceValuesPage,
-                    },
-                },
-            },
-            "solution": {
-                "text": QCoreApplication.translate("MenuView", "Solution"),
-                "sub_menu": {
-                    "numericalConditions": {
-                        "text": QCoreApplication.translate("MenuView", "Numerial Conditions"),
-                        "page_class": NumericalConditionsPage
-                    },
-                    "monitors": {
-                        "text": QCoreApplication.translate("MenuView", "Monitors"),
-                        "page_class": MonitorsPage
-                    },
-                    "initialization": {
-                        "text": QCoreApplication.translate("MenuView", "Initialization"),
-                        "page_class": InitializationPage
-                    },
-                    "runCalculation": {
-                        "text": QCoreApplication.translate("MenuView", "Run Calculation"),
-                        "page_class": RunCalculationPage
-                    },
-                },
-            },
-        }
+        super().__init__()
 
         self._view = tree
-        self._loadMenu()
+        
+        self._setupMenu = self._addTopMenu(self.tr('Setup'))
+        self._solutionMenu = self._addTopMenu(self.tr('Solution'))
 
-    def connectCurrentItemChanged(self, slot):
-        self._view.currentItemChanged.connect(slot)
+        self._menu = {}
+        self._addMenu(MenuItem.MENU_SETUP_GENERAL, self._setupMenu,
+                      self.tr('General'))
+        self._addMenu(MenuItem.MENU_SETUP_MATERIALS, self._setupMenu,
+                      self.tr('Materials'))
+        self._addMenu(MenuItem.MENU_SETUP_MODELS, self._setupMenu,
+                      self.tr('Models'))
+        self._addMenu(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS, self._setupMenu,
+                      self.tr('Cell Zone Conditions'))
+        self._addMenu(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS, self._setupMenu,
+                      self.tr('Boundary Conditions'))
+        self._addMenu(MenuItem.MENU_SETUP_REFERENCE_VALUES, self._setupMenu,
+                      self.tr('Reference Values'))
+        self._addMenu(MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS, self._solutionMenu,
+                      self.tr('Numerial Conditions'))
+        self._addMenu(MenuItem.MENU_SOLUTION_MONITORS, self._solutionMenu,
+                      self.tr('Monitors'))
+        self._addMenu(MenuItem.MENU_SOLUTION_INITIALIZATION, self._solutionMenu,
+                      self.tr('Initialization'))
+        self._addMenu(MenuItem.MENU_SOLUTION_RUN_CALCULATION, self._solutionMenu,
+                      self.tr('Run Calculation'))
 
-    def paneOf(self, menuItem):
-        return menuItem.data(0, Qt.UserRole)
+        self._connectSignalsSlots()
 
-    def paneIndex(self, menuItem):
-        return self.paneOf(menuItem).index
+    def connectCurrentItemChanged(self, current):
+        self.currentMenuChanged.emit(current.type())
 
-    def currentPane(self):
-        return self.paneOf(self._view.currentItem())
+    def currentMenu(self):
+        return self._view.currentItem().type()
 
-    def _loadMenu(self):
-        for key, setup in self.MENU.items():
-            item = QTreeWidgetItem(self._view)
-            item.setText(0, setup["text"])
-            item.setData(0, Qt.UserRole, self.MenuItem(setup))
-            self._appendSubMenu(item, setup["sub_menu"])
-            item.setExpanded(True)
+    def _connectSignalsSlots(self):
+        self._view.currentItemChanged.connect(self.connectCurrentItemChanged)
 
-    def _appendSubMenu(self, parent, menu):
-        for key, setup in menu.items():
-            item = QTreeWidgetItem(parent)
-            item.setText(0, setup["text"])
-            item.setData(0, Qt.UserRole, self.MenuItem(setup))
+    def _addTopMenu(self, text):
+        item = QTreeWidgetItem(self._view, [text], MenuItem.MENU_TOP.value)
+        item.setExpanded(True)
+        return item
+
+    def _addMenu(self, key, parent, text):
+        self._menu[key.value] = QTreeWidgetItem(parent, [text], key.value)
 

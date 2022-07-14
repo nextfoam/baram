@@ -60,7 +60,7 @@
         <x>0</x>
         <y>0</y>
         <width>385</width>
-        <height>866</height>
+        <height>894</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -112,7 +112,7 @@
           </item>
           <item>
            <widget class="QWidget" name="transientConditions" native="true">
-            <layout class="QFormLayout" name="formLayout_6">
+            <layout class="QFormLayout" name="timeConditionLayout">
              <property name="leftMargin">
               <number>0</number>
              </property>
@@ -122,7 +122,7 @@
              <item row="0" column="0">
               <widget class="QLabel" name="label_2">
                <property name="text">
-                <string>Time Stepping Methos</string>
+                <string>Time Stepping Method</string>
                </property>
               </widget>
              </item>
@@ -140,14 +140,24 @@
               <widget class="QLineEdit" name="timeStepSize"/>
              </item>
              <item row="2" column="0">
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>Max Courant Number</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
               <widget class="QLabel" name="label_4">
                <property name="text">
                 <string>End Time</string>
                </property>
               </widget>
              </item>
-             <item row="2" column="1">
+             <item row="3" column="1">
               <widget class="QLineEdit" name="endTime"/>
+             </item>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="maxCourantNumber"/>
              </item>
             </layout>
            </widget>

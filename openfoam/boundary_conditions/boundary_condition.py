@@ -109,6 +109,7 @@ class BoundaryCondition(DictionaryFile):
             value = [[t[i], [x[i], y[i], z[i]]] for i in range(len(t))]
 
         return {
+            # ToDo: polynomial: polynomial, etc:table
             'type': 'uniformFixedValue',
             'uniformValue': ('table', value)
         }

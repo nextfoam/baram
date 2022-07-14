@@ -524,7 +524,7 @@
                 <xs:element name="fixedValues">
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="velocity" default="0">
+                            <xs:element name="velocity">
                                 <xs:complexType>
                                     <xs:sequence>
                                         <xs:element name="velocity" type="vector"/>
@@ -1003,6 +1003,7 @@
                             <xs:enumeration value="cyclic"/>
                             <xs:enumeration value="wall"/>
                             <xs:enumeration value="processor"/>
+                            <xs:enumeration value="mappedWall"/>
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:element>
@@ -1132,8 +1133,7 @@
                     <xs:sequence>
                         <xs:element name="pressure" type="inputNumberType" default="0.3"/>
                         <xs:element name="pressureFinal" type="inputNumberType" default="1"/>
-                        <!-- ToDo: check default value of density, densityFinal -->
-                        <xs:element name="density" type="inputNumberType" default="0.7"/>
+                        <xs:element name="density" type="inputNumberType" default="0.3"/>
                         <xs:element name="densityFinal" type="inputNumberType" default="1"/>
                         <xs:element name="momentum" type="inputNumberType" default="0.7"/>
                         <xs:element name="momentumFinal" type="inputNumberType" default="1"/>
@@ -1457,6 +1457,8 @@
                                             </xs:simpleType>
                                         </xs:element>
                                         <xs:element name="timeStepSize" type="inputNumberType" default="0.01"/>
+                                        <!-- ToDo: maxCo default -->
+                                        <xs:element name="maxCourantNumber" type="inputNumberType" default="0.01"/>
                                         <xs:element name="endTime" type="inputNumberType" default="0"/>
                                         <xs:element name="reportIntervalSteps" type="xs:positiveInteger" default="1"/>
                                         <xs:element name="reportIntervalSeconds" type="inputNumberType" default="0.01"/>

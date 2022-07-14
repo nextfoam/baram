@@ -11,8 +11,8 @@ from .models_db import ModelsDB, TurbulenceModel, KEpsilonModel, NearWallTreatme
 
 
 class TurbulenceModelDialog(ResizableDialog):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self._ui = Ui_TurbulenceDialog()
         self._ui.setupUi(self)
 
@@ -38,8 +38,14 @@ class TurbulenceModelDialog(ResizableDialog):
                 NearWallTreatment.ENHANCED_WALL_TREATMENT.value,
         }
 
+        self._rasModelRadios = [
+            self._ui.modelRadioGroup.id(self._ui.spalartAllmaras),
+            self._ui.modelRadioGroup.id(self._ui.kEpsilon),
+            self._ui.modelRadioGroup.id(self._ui.kOmega)
+        ]
+
         self._db = coredb.CoreDB()
-        self._xpath = ModelsDB.TURBULENCE_MODELS_PATH
+        self._xpath = ModelsDB.TURBULENCE_MODELS_XPATH
 
         self._ui.LES.setVisible(False)
 
@@ -62,7 +68,8 @@ class TurbulenceModelDialog(ResizableDialog):
             self._db.getValue(self._xpath + '/k-epsilon/realizable/nearWallTreatment')
         ).setChecked(True)
 
-        self._ui.SST.setChecked(True)
+        self._ui.energyPrandtlNumber.setText(self._db.getValue(self._xpath + '/energyPrandtlNumber'))
+        self._ui.wallPrandtlNumber.setText(self._db.getValue(self._xpath + '/wallPrandtlNumber'))
 
         return super().showEvent(ev)
 
@@ -72,16 +79,23 @@ class TurbulenceModelDialog(ResizableDialog):
         model = self._getRadioValue(self._ui.modelRadioGroup, self._modelRadios)
         writer.append(self._xpath + '/model', model, None)
 
-        if model == TurbulenceModel.K_EPSILON.value:
-            kEpsilonModel = self._getRadioValue(self._ui.kEpsilonRadioGroup, self._kEpsilonModelRadios)
-            writer.append(self._xpath + '/k-epsilon/model', kEpsilonModel, None)
+        if self._ui.modelRadioGroup.checkedId() in self._rasModelRadios:
+            if model == TurbulenceModel.K_EPSILON.value:
+                kEpsilonModel = self._getRadioValue(self._ui.kEpsilonRadioGroup, self._kEpsilonModelRadios)
+                writer.append(self._xpath + '/k-epsilon/model', kEpsilonModel, None)
 
-            if kEpsilonModel == KEpsilonModel.REALIZABLE.value:
-                writer.append(self._xpath + '/k-epsilon/realizable/nearWallTreatment',
-                              self._getRadioValue(self._ui.nearWallTreatmentRadioGroup, self._nearWallTreatmentRadios),
-                              None)
-        elif model == TurbulenceModel.K_OMEGA.value:
-            writer.append(self._xpath + '/k-omega/model', KOmegaModel.SST.value, None)
+                if kEpsilonModel == KEpsilonModel.REALIZABLE.value:
+                    writer.append(self._xpath + '/k-epsilon/realizable/nearWallTreatment',
+                                  self._getRadioValue(self._ui.nearWallTreatmentRadioGroup,
+                                                      self._nearWallTreatmentRadios),
+                                  None)
+            elif model == TurbulenceModel.K_OMEGA.value:
+                writer.append(self._xpath + '/k-omega/model', KOmegaModel.SST.value, None)
+
+            writer.append(self._xpath + '/energyPrandtlNumber',
+                          self._ui.energyPrandtlNumber.text(), self.tr('Energy PrandtlNumber'))
+            writer.append(self._xpath + '/wallPrandtlNumber',
+                          self._ui.wallPrandtlNumber.text(), self.tr('Wall PrandtlNumber'))
 
         errorCount = writer.write()
         if errorCount > 0:
@@ -97,6 +111,11 @@ class TurbulenceModelDialog(ResizableDialog):
         if checked:
             self._ui.kEpsilonModel.setVisible(self._ui.kEpsilon.isChecked())
             self._ui.kOmegaModel.setVisible(self._ui.kOmega.isChecked())
+
+            self._ui.constantsWidget.setVisible(
+                id_ in self._rasModelRadios
+#                self._ui.spalartAllmaras.isChecked() or self._ui.kEpsilon.isChecked() or self._ui.kOmega.isChecked()
+            )
 
     def _kEpsilonModelChanged(self, id_, checked):
         if checked:

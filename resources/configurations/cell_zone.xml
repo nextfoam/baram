@@ -92,7 +92,7 @@
                 <t>0</t>
                 <v>0</v>
             </piecewiseLinear>
-            <polynomial>0 3  4</polynomial>
+            <polynomial>0</polynomial>
         </energy>
         <turbulentKineticEnergy disabled="true">
             <unit>valueForEntireCellZone</unit>

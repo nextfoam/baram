@@ -118,7 +118,7 @@ class TestNut(unittest.TestCase):
 
     # Wall
     def testNoSlip(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-epsilon')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.setValue(self._xpath + '/physicalType', 'wall')
         self._db.setValue(self._xpath + '/wall/velocity/type', 'noSlip')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
@@ -128,7 +128,7 @@ class TestNut(unittest.TestCase):
 
     # Wall
     def testSlip(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/physicalType', 'wall')
         self._db.setValue(self._xpath + '/wall/velocity/type', 'slip')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
@@ -138,7 +138,7 @@ class TestNut(unittest.TestCase):
 
     # Wall
     def testMovingWall(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-epsilon')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.setValue(self._xpath + '/physicalType', 'wall')
         self._db.setValue(self._xpath + '/wall/velocity/type', 'movingWall')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
@@ -157,7 +157,7 @@ class TestNut(unittest.TestCase):
 
     # Wall
     def testTranslationalMovingWall(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/physicalType', 'wall')
         self._db.setValue(self._xpath + '/wall/velocity/type', 'translationalMovingWall')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
@@ -167,7 +167,7 @@ class TestNut(unittest.TestCase):
 
     # Wall
     def testWallRotationalMovingWall(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-epsilon')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.setValue(self._xpath + '/physicalType', 'wall')
         self._db.setValue(self._xpath + '/wall/velocity/type', 'rotationalMovingWall')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
@@ -176,7 +176,7 @@ class TestNut(unittest.TestCase):
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testThermoCoupledWall(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')
         content = Nut(region).build().asDict()
         self.assertEqual('NEXT::nutSpaldingWallFunction', content['boundaryField'][boundary]['type'])
@@ -210,7 +210,7 @@ class TestNut(unittest.TestCase):
 
     # Interface
     def testRegionInterface(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-epsilon')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'regionInterface')
         content = Nut(region).build().asDict()

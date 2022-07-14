@@ -6,6 +6,7 @@ import os
 from coredb import coredb
 from view.setup.cell_zone_conditions.cell_zone_db import RegionDB
 from view.setup.materials.material_db import Phase
+from openfoam.constant.thermophysical_properties import ThermophysicalProperties
 from openfoam.constant.operating_conditions import OperatingConditions
 from openfoam.constant.MRF_properties import MRFProperties
 from openfoam.constant.turbulence_properties import TurbulenceProperties
@@ -23,6 +24,7 @@ from openfoam.boundary_conditions.alphat import Alphat
 from openfoam.system.fv_solution import FvSolution
 from openfoam.system.control_dict import ControlDict
 from openfoam.system.fv_schemes import FvSchemes
+from openfoam.polymesh.boundary import Boundary
 from .dictionary_file import DictionaryFile
 
 
@@ -44,7 +46,7 @@ class CaseGenerator:
         if not os.path.exists(self._systemPath):
             os.mkdir(self._systemPath)
 
-    def generateFiles(self):
+    def generateFiles(self, constantLoadingDir):
         self._initCaseDir()
 
         regions = self._db.getRegions()
@@ -61,6 +63,11 @@ class CaseGenerator:
             if not os.path.exists(spath):
                 os.mkdir(spath)
 
+            ppath = os.path.join(cpath, DictionaryFile.POLYMESH_DIRECTORY_NAME)
+            if not os.path.exists(ppath):
+                os.mkdir(ppath)
+
+            ThermophysicalProperties(rname).build().write(self._caseRoot)
             OperatingConditions(rname).build().write(self._caseRoot)
             MRFProperties(rname).build().write(self._caseRoot)
 
@@ -102,6 +109,8 @@ class CaseGenerator:
 
             FvSchemes(rname).build().write(self._caseRoot)
             FvSolution(rname).build().write(self._caseRoot)
+
+            Boundary(rname).build(constantLoadingDir, self._caseRoot).write(self._caseRoot)
 
         FvSolution().build().write(self._caseRoot)
         ControlDict().build().write(self._caseRoot)

@@ -17,7 +17,7 @@ from .boundary_db import BoundaryDB, VelocitySpecification, VelocityProfile
 
 
 class VelocityInletDialog(ResizableDialog):
-    RELATIVE_PATH = '/velocityInlet'
+    RELATIVE_XPATH = '/velocityInlet'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -58,7 +58,7 @@ class VelocityInletDialog(ResizableDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         specification = self._ui.velocitySpecificationMethod.currentData()
@@ -127,7 +127,7 @@ class VelocityInletDialog(ResizableDialog):
         self._ui.temporalDistributionEdit.clicked.connect(self._editTemporalDistribution)
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         specification = self._db.getValue(path + '/velocity/specification')
         self._ui.velocitySpecificationMethod.setCurrentText(self._specifications[specification])

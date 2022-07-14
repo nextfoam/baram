@@ -12,7 +12,7 @@ from .boundary_db import BoundaryDB
 
 
 class FreeStreamDialog(ResizableDialog):
-    RELATIVE_PATH = '/freeStream'
+    RELATIVE_XPATH = '/freeStream'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -29,7 +29,7 @@ class FreeStreamDialog(ResizableDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         writer.append(path + '/streamVelocity/x', self._ui.xVelocity.text(), self.tr("X-Velocity"))
@@ -47,7 +47,7 @@ class FreeStreamDialog(ResizableDialog):
             super().accept()
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.xVelocity.setText(self._db.getValue(path + '/streamVelocity/x'))
         self._ui.yVelocity.setText(self._db.getValue(path + '/streamVelocity/y'))

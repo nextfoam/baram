@@ -13,7 +13,7 @@ from .boundary_db import BoundaryDB
 
 
 class PressureOutletDialog(ResizableDialog):
-    RELATIVE_PATH = '/pressureOutlet'
+    RELATIVE_XPATH = '/pressureOutlet'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -33,7 +33,7 @@ class PressureOutletDialog(ResizableDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         writer.append(path + '/totalPressure', self._ui.totalPressure.text(), self.tr("Total Pressure"))
@@ -55,7 +55,7 @@ class PressureOutletDialog(ResizableDialog):
             super().accept()
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.totalPressure.setText(self._db.getValue(path + '/totalPressure'))
         self._ui.calculateBackflow.setChecked(self._db.getValue(path + '/calculatedBackflow') == "true")

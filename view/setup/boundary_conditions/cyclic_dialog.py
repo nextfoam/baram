@@ -12,7 +12,7 @@ from .boundary_db import BoundaryDB
 
 
 class CyclicDialog(QDialog):
-    RELATIVE_PATH = '/cyclic'
+    RELATIVE_XPATH = '/cyclic'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -29,7 +29,7 @@ class CyclicDialog(QDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         if self._coupledBoundary is None:
@@ -48,7 +48,7 @@ class CyclicDialog(QDialog):
         self._ui.select.clicked.connect(self._selectCoupledBoundary)
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         bcid = self._db.getValue(path + '/coupledBoundary')
         if bcid:

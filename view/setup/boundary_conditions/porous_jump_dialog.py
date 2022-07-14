@@ -10,7 +10,7 @@ from .boundary_db import BoundaryDB
 
 
 class PorousJumpDialog(QDialog):
-    RELATIVE_PATH = '/porousJump'
+    RELATIVE_XPATH = '/porousJump'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -23,7 +23,7 @@ class PorousJumpDialog(QDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         writer.append(path + '/darcyCoefficient', self._ui.darcyCoefficient.text(), self.tr("Darcy Coefficient"))
@@ -39,7 +39,7 @@ class PorousJumpDialog(QDialog):
             super().accept()
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.darcyCoefficient.setText(self._db.getValue(path + '/darcyCoefficient'))
         self._ui.inertialCoefficient.setText(self._db.getValue(path + '/inertialCoefficient'))

@@ -14,7 +14,7 @@ class OperatingConditions(DictionaryFile):
 
     def build(self):
         if self._data is not None:
-            return
+            return self
 
         db = coredb.CoreDB()
 

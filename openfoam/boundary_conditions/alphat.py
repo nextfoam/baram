@@ -21,7 +21,7 @@ class Alphat(BoundaryCondition):
 
     def build(self):
         if self._data is not None:
-            return
+            return self
 
         self._data = {
             'dimensions': self.DIMENSIONS,
@@ -105,13 +105,13 @@ class Alphat(BoundaryCondition):
     def _constructCompressibleAlphatWallFunction(self):
         return {
             'type': 'alphatWallFunction',
-            'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_PATH + '/wallPrandtlNumber'),
+            'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
             'value': ('uniform', self._initialValue)
         }
 
     def _constructCompressibleAlphatJayatillekeWallFunction(self):
         return {
             'type': 'alphatJayatillekeWallFunction',
-            'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_PATH + '/wallPrandtlNumber'),
+            'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
             'value': ('uniform', self._initialValue)
         }

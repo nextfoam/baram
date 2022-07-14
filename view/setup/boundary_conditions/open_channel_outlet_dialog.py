@@ -12,7 +12,7 @@ from .boundary_db import BoundaryDB
 
 
 class OpenChannelOutletDialog(ResizableDialog):
-    RELATIVE_PATH = '/openChannelOutlet'
+    RELATIVE_XPATH = '/openChannelOutlet'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -29,7 +29,7 @@ class OpenChannelOutletDialog(ResizableDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         writer.append(path + '/meanVelocity', self._ui.meanVelocity.text(), self.tr("Mean Velocity"))
@@ -44,7 +44,7 @@ class OpenChannelOutletDialog(ResizableDialog):
             super().accept()
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.meanVelocity.setText(self._db.getValue(path + '/meanVelocity'))
 

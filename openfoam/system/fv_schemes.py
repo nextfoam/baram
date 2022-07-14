@@ -23,7 +23,7 @@ class FvSchemes(DictionaryFile):
 
     def build(self):
         if self._data is not None:
-            return
+            return self
 
         mid = self._db.getValue(f'.//region[name="{self._rname}"]/material')
         phase = self._db.getValue(f'.//materials/material[@mid="{mid}"]/phase')

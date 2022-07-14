@@ -24,7 +24,7 @@ class TestEpsilon(unittest.TestCase):
 
     # Velocity Inlet - kAndOmega
     def testVelocityInlet(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'kAndOmega')
         self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')
         content = Omega(region).build().asDict()
@@ -37,7 +37,7 @@ class TestEpsilon(unittest.TestCase):
 
     # Flow Rate - intensityAndViscosityRatio
     def testFlowRateInletVolume(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'flowRateInlet')
         content = Omega(region).build().asDict()
@@ -46,7 +46,7 @@ class TestEpsilon(unittest.TestCase):
                          content['boundaryField'][boundary]['viscosityRatio'])
 
     def testPressureInlet(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'kAndOmega')
         self._db.setValue(self._xpath + '/physicalType', 'pressureInlet')
         content = Omega(region).build().asDict()
@@ -57,7 +57,7 @@ class TestEpsilon(unittest.TestCase):
 
     # Pressure Outlet
     def testPressureOutletBackflow(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'pressureOutlet')
         self._db.setValue(self._xpath + '/pressureOutlet/calculatedBackflow', 'true')
@@ -74,7 +74,7 @@ class TestEpsilon(unittest.TestCase):
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
 
     def testAblInlet(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'kAndOmega')
         self._db.setValue(self._xpath + '/physicalType', 'ablInlet')
         content = Omega(region).build().asDict()
@@ -84,7 +84,7 @@ class TestEpsilon(unittest.TestCase):
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testOpenChannelInlet(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'openChannelInlet')
         content = Omega(region).build().asDict()
@@ -93,7 +93,7 @@ class TestEpsilon(unittest.TestCase):
                          content['boundaryField'][boundary]['viscosityRatio'])
 
     def testOpenChannelOutlet(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'kAndOmega')
         self._db.setValue(self._xpath + '/physicalType', 'openChannelOutlet')
         content = Omega(region).build().asDict()
@@ -109,7 +109,7 @@ class TestEpsilon(unittest.TestCase):
 
     # Free Stream
     def testFreeStreamKAndOmega(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'kAndOmega')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = Omega(region).build().asDict()
@@ -119,7 +119,7 @@ class TestEpsilon(unittest.TestCase):
 
     # Free Stream
     def testFreeStreamKEpsilonIntensityAndViscosityRatio(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = Omega(region).build().asDict()
@@ -128,7 +128,7 @@ class TestEpsilon(unittest.TestCase):
                          content['boundaryField'][boundary]['viscosityRatio'])
 
     def testFarFieldRiemann(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'kAndOmega')
         self._db.setValue(self._xpath + '/physicalType', 'farFieldRiemann')
         content = Omega(region).build().asDict()
@@ -138,7 +138,7 @@ class TestEpsilon(unittest.TestCase):
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testSubsonicInflow(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'subsonicInflow')
         content = Omega(region).build().asDict()
@@ -152,7 +152,7 @@ class TestEpsilon(unittest.TestCase):
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
 
     def testSupersonicInflow(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model', 'k-omega')
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'kAndOmega')
         self._db.setValue(self._xpath + '/physicalType', 'supersonicInflow')
         content = Omega(region).build().asDict()

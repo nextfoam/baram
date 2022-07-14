@@ -12,7 +12,7 @@ from .boundary_db import BoundaryDB
 
 
 class OpenChannelInletDialog(ResizableDialog):
-    RELATIVE_PATH = '/openChannelInlet'
+    RELATIVE_XPATH = '/openChannelInlet'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -29,7 +29,7 @@ class OpenChannelInletDialog(ResizableDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         writer.append(path + '/volumeFlowRate', self._ui.volumeFlowRate.text(), self.tr("Volume Flow Rate"))
@@ -44,7 +44,7 @@ class OpenChannelInletDialog(ResizableDialog):
             super().accept()
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.volumeFlowRate.setText(self._db.getValue(path + '/volumeFlowRate'))
 

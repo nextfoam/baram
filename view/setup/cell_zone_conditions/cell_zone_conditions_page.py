@@ -23,15 +23,15 @@ class CellZoneConditionsPage(QWidget):
         self._currentRegion = None
 
         self._connectSignalsSlots()
-        self._load()
 
     def showEvent(self, ev):
         if ev.spontaneous():
             return super().showEvent(ev)
 
-        materials = self._db.getMaterials()
-        for name, region in self._regions.items():
-            region.setMaterials(materials)
+        if not self._regions:
+            self.load()
+        else:
+            self._setupMaterials()
 
         return super().showEvent(ev)
 
@@ -49,11 +49,7 @@ class CellZoneConditionsPage(QWidget):
 
         return super().hideEvent(ev)
 
-    def _connectSignalsSlots(self):
-        self._ui.operatingConditions.clicked.connect(self._operatingConditions)
-        self._ui.edit.clicked.connect(self._edit)
-
-    def _load(self):
+    def load(self):
         layout = self._ui.regions.layout()
         regions = self._db.getRegions()
         for r in regions:
@@ -61,6 +57,17 @@ class CellZoneConditionsPage(QWidget):
             layout.addWidget(self._regions[r])
             self._regions[r].regionSelected.connect(self._regionSelected)
             self._regions[r].regionDoubleClicked.connect(self._regionDoubleClicked)
+
+        self._setupMaterials()
+
+    def _connectSignalsSlots(self):
+        self._ui.operatingConditions.clicked.connect(self._operatingConditions)
+        self._ui.edit.clicked.connect(self._edit)
+
+    def _setupMaterials(self):
+        materials = self._db.getMaterials()
+        for name, region in self._regions.items():
+            region.setMaterials(materials)
 
     def _regionSelected(self, rname):
         if rname == self._currentRegion:

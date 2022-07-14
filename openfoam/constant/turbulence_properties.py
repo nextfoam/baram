@@ -14,7 +14,7 @@ class TurbulenceProperties(DictionaryFile):
 
     def build(self):
         if self._data is not None:
-            return
+            return self
 
         db = coredb.CoreDB()
 
@@ -24,7 +24,7 @@ class TurbulenceProperties(DictionaryFile):
         elif model == TurbulenceModel.SPALART_ALLMARAS:
             self._constructRASproperties('SpalartAllmaras')
         elif model == TurbulenceModel.K_EPSILON:
-            subModel = db.getValue(ModelsDB.TURBULENCE_MODELS_PATH + '/k-epsilon/model')
+            subModel = db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
             if subModel == KEpsilonModel.STANDARD.value:
                 self._constructRASproperties('kEpsilon')
             elif subModel == KEpsilonModel.RNG.value:
@@ -32,7 +32,7 @@ class TurbulenceProperties(DictionaryFile):
             elif subModel == KEpsilonModel.REALIZABLE.value:
                 self._constructRASproperties('realizableKE')
         elif model == TurbulenceModel.K_OMEGA:
-            subModel = db.getValue(ModelsDB.TURBULENCE_MODELS_PATH + '/k-omega/model')
+            subModel = db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-omega/model')
             if subModel == KOmegaModel.SST.value:
                 self._constructRASproperties('kOmegaSST')
         elif model == TurbulenceModel.LES:

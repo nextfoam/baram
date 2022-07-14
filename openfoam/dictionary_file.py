@@ -25,6 +25,7 @@ class DictionaryFile:
     CONSTANT_DIRECTORY_NAME = 'constant'
     BOUNDARY_DIRECTORY_NAME = '0'
     SYSTEM_DIRECTORY_NAME = 'system'
+    POLYMESH_DIRECTORY_NAME = 'polymesh'
 
     def __init__(self, location, objectName, class_=DataClass.CLASS_DICTIONARY, format_=Format.FORMAT_ASCII):
         self._header = {
@@ -48,12 +49,20 @@ class DictionaryFile:
     def systemLocation(cls, subPath=None):
         return os.path.join(cls.SYSTEM_DIRECTORY_NAME, subPath) if subPath else cls.SYSTEM_DIRECTORY_NAME
 
+    @classmethod
+    def polyMeshLocation(cls, rname=None):
+        return os.path.join(cls.CONSTANT_DIRECTORY_NAME, rname, cls.POLYMESH_DIRECTORY_NAME) if rname else \
+            cls.constantLocation(cls.POLYMESH_DIRECTORY_NAME)
+
+    def fullPath(self, casePath):
+        return os.path.join(casePath, self._header["location"], self._header["object"])
+
     def asDict(self):
         return self._data
 
     def write(self, casePath):
         if self._data:
-            with open(os.path.join(casePath, self._header["location"], self._header["object"]), 'w') as f:
+            with open(self.fullPath(casePath), 'w') as f:
                 f.write(str(FoamFileGenerator(self._data, header=self._header)))
 
     def _setFormat(self, fileFormat: Format):

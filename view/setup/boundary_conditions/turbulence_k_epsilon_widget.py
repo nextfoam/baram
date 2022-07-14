@@ -9,7 +9,7 @@ from .boundary_db import KEpsilonSpecification
 
 
 class TurbulenceKEpsilonWidget(QWidget):
-    RELATIVE_PATH = '/turbulence/k-epsilon'
+    RELATIVE_XPATH = '/turbulence/k-epsilon'
 
     def __init__(self, xpath):
         super().__init__()
@@ -30,7 +30,7 @@ class TurbulenceKEpsilonWidget(QWidget):
         self._specificationMethodChanged()
 
     def load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.specificationMethod.setCurrentText(
             self._specificationMethods[self._db.getValue(path + '/specification')])
@@ -41,7 +41,7 @@ class TurbulenceKEpsilonWidget(QWidget):
         self._specificationMethodChanged()
 
     def appendToWriter(self, writer):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         specification = self._ui.specificationMethod.currentData()
         writer.append(path + '/specification', specification, None)

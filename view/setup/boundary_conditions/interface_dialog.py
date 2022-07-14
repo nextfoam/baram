@@ -13,7 +13,7 @@ from .boundary_db import BoundaryDB, InterfaceMode
 
 
 class InterfaceDialog(ResizableDialog):
-    RELATIVE_PATH = '/interface'
+    RELATIVE_XPATH = '/interface'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -47,7 +47,7 @@ class InterfaceDialog(ResizableDialog):
         self._ui.translationalPeriodic.setVisible(mode == InterfaceMode.TRANSLATIONAL_PERIODIC.value)
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         mode = self._ui.mode.currentData()
@@ -87,7 +87,7 @@ class InterfaceDialog(ResizableDialog):
             super().accept()
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.mode.setCurrentText(self._modes[self._db.getValue(path + '/mode')])
         bcid = self._db.getValue(path + '/coupledBoundary')

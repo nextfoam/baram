@@ -10,7 +10,7 @@ from .boundary_db import BoundaryDB
 
 
 class SubsonicOutflowDialog(QDialog):
-    RELATIVE_PATH = '/subsonicOutflow'
+    RELATIVE_XPATH = '/subsonicOutflow'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -23,7 +23,7 @@ class SubsonicOutflowDialog(QDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         writer.append(path + '/staticPressure', self._ui.pressure.text(), self.tr("Pressure"))
@@ -35,6 +35,6 @@ class SubsonicOutflowDialog(QDialog):
             super().accept()
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.pressure.setText(self._db.getValue(path + '/staticPressure'))

@@ -72,11 +72,6 @@ class CellZoneConditionDialog(QDialog):
         self._zVelocity = FixedValueWidget(
             self.tr("Z-Velocity"), self.tr("U<sub>z</sub> (m/s)"), self._xpath + '/fixedValues/zVelocity')
 
-        layout = self._ui.velocityGroup.layout()
-        layout.insertWidget(0, self._xVelocity)
-        layout.insertWidget(1, self._yVelocity)
-        layout.insertWidget(2, self._zVelocity)
-
         self._turbulenceFixedValues = {}
         self._temperature = FixedValueWidget(
             self.tr("Temperature"), self.tr("Value (K)"), self._xpath + '/fixedValues/temperature')
@@ -115,10 +110,19 @@ class CellZoneConditionDialog(QDialog):
         for field, widget in self._turbulenceSourceTerms.items():
             widget.appendToWriter(writer)
 
-        self._xVelocity.appendToWriter(writer)
-        self._yVelocity.appendToWriter(writer)
-        self._zVelocity.appendToWriter(writer)
-        writer.append(self._xpath + '/fixedValues/relaxation', self._ui.relaxation.text(), self.tr("relaxation"))
+        if self._ui.velocityGroup.isChecked():
+            writer.setAttribute(self._xpath + 'fixedValues/velocity', 'disabled', 'false')
+            writer.append(self._xpath + '/fixedValues/velocity/velocity/x',
+                          self._ui.xVelocity.text(), self.tr("X-Velocity"))
+            writer.append(self._xpath + '/fixedValues/velocity/velocity/y',
+                          self._ui.yVelocity.text(), self.tr("Y-Velocity"))
+            writer.append(self._xpath + '/fixedValues/velocity/velocity/z',
+                          self._ui.zVelocity.text(), self.tr("Z-Velocity"))
+            writer.append(self._xpath + '/fixedValues/velocity/relaxation',
+                          self._ui.relaxation.text(), self.tr("relaxation"))
+        else:
+            writer.setAttribute(self._xpath + 'fixedValues/velocity', 'disabled', 'true')
+
         self._temperature.appendToWriter(writer)
         for field, widget in self._turbulenceFixedValues.items():
             widget.appendToWriter(writer)
@@ -143,10 +147,13 @@ class CellZoneConditionDialog(QDialog):
         for field, widget in self._turbulenceSourceTerms.items():
             widget.load()
 
-        self._xVelocity.load()
-        self._yVelocity.load()
-        self._zVelocity.load()
-        self._ui.relaxation.setText(self._db.getValue(self._xpath + '/fixedValues/relaxation'))
+        self._ui.velocityGroup.setChecked(
+            self._db.getAttribute(self._xpath + '/fixedValues/velocity', 'disabled') == 'false')
+        self._ui.xVelocity.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/velocity/x'))
+        self._ui.yVelocity.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/velocity/y'))
+        self._ui.zVelocity.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/velocity/z'))
+        self._ui.relaxation.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/relaxation'))
+
         self._temperature.load()
         for field, widget in self._turbulenceFixedValues.items():
             widget.load()

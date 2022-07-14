@@ -11,8 +11,8 @@ from .models_db import ModelsDB, MultiphaseModel
 
 
 class MultiphaseModelDialog(ResizableDialog):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self._ui = Ui_MultiphaseDialog()
         self._ui.setupUi(self)
 
@@ -22,7 +22,7 @@ class MultiphaseModelDialog(ResizableDialog):
         }
 
         self._db = coredb.CoreDB()
-        self._xpath = ModelsDB.MULTIPHASE_MODELS_PATH
+        self._xpath = ModelsDB.MULTIPHASE_MODELS_XPATH
 
         self._ui.volumeOfFluid.hide()
         self._ui.mixture.hide()

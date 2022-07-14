@@ -15,37 +15,40 @@ class ControlDict(DictionaryFile):
 
     def build(self):
         if self._data is not None:
-            return
+            return self
 
         db = coredb.CoreDB()
         xpath = RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions'
 
-        # ToDo: raise error when no solver is found
         solvers = openfoam.solver.findSolvers()
         if len(solvers) != 1:  # configuration not enough yet
             solvers = ['solver']
             # raise RuntimeError
 
-        endTime = db.getValue(xpath + '/numberOfIterations')
+        endTime = None
+        deltaT = None
+        writeControl = 'runTime'
+        writeInterval = None
+        adjustTimeStep = 'no'
         if GeneralDB.isTimeTransient():
             endTime = db.getValue(xpath + '/endTime')
-        deltaT = None
-        writeControl = None
-        timeSteppingMethod = db.getValue(xpath + '/timeSteppingMethod')
-        if timeSteppingMethod == TimeSteppingMethod.FIXED.value:
-            deltaT = db.getValue(xpath + '/timeStepSize'),
-            writeControl = 'runTime'
-        elif timeSteppingMethod == TimeSteppingMethod.ADAPTIVE.value:
-            deltaT = 0.001
-            writeControl = 'adjustableRunTime'
-
-        writeInterval = db.getValue(xpath + '/reportIntervalSteps')
-        if GeneralDB.isTimeTransient():
+            timeSteppingMethod = db.getValue(xpath + '/timeSteppingMethod')
             writeInterval = db.getValue(xpath + '/reportIntervalSeconds')
+            if timeSteppingMethod == TimeSteppingMethod.FIXED.value:
+                deltaT = db.getValue(xpath + '/timeStepSize')
+            elif timeSteppingMethod == TimeSteppingMethod.ADAPTIVE.value:
+                deltaT = 0.001
+                writeControl = 'adjustableRunTime'
+                adjustTimeStep = 'yes'
+        else:
+            endTime = db.getValue(xpath + '/numberOfIterations')
+            # ToDo: steady timeStepSize?
+            deltaT = db.getValue(xpath + '/timeStepSize')
+            writeInterval = db.getValue(xpath + '/reportIntervalSteps')
 
         purgeWrite = 0
         if db.getValue(xpath + '/retainOnlyTheMostRecentFiles') == 'true':
-            purgeWrite = db.getValue(xpath + '/retainOnlyTheMostRecentFiles')
+            purgeWrite = db.getValue(xpath + '/maximumNumberOfDataFiles')
 
         self._data = {
             'application': solvers[0],
@@ -53,9 +56,8 @@ class ControlDict(DictionaryFile):
             'startTime': 0,
             'stopAt': 'endTime',
             'endTime': endTime,
-            # ToDo: adaptive일 때는 0.001
             'deltaT': deltaT,
-            'writeControl': timeSteppingMethod,
+            'writeControl': writeControl,
             'writeInterval': writeInterval,
             'purgeWrite': purgeWrite,
             'writeFormat': db.getValue(xpath + '/dataWriteFormat'),
@@ -64,8 +66,8 @@ class ControlDict(DictionaryFile):
             'timeFormat': 'general',
             'timePrecision': db.getValue(xpath + '/timePrecision'),
             'runTimeModifiable': 'yes',
-            'adjustTimeStep': 'no',
-            # 'maxCo': db.getValue(xpath + '/'),     # ToDo: maxCo
+            'adjustTimeStep': adjustTimeStep,
+            'maxCo': db.getValue(xpath + '/maxCourantNumber'),
         }
 
         return self

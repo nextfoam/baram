@@ -9,7 +9,7 @@ from .boundary_db import SpalartAllmarasSpecification
 
 
 class TurbulenceSpalartAllmarasWidget(QWidget):
-    RELATIVE_PATH = '/turbulence/spalartAllmaras'
+    RELATIVE_XPATH = '/turbulence/spalartAllmaras'
 
     def __init__(self, xpath):
         super().__init__()
@@ -28,7 +28,7 @@ class TurbulenceSpalartAllmarasWidget(QWidget):
         self._connectSignalsSlots()
 
     def load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.specificationMethod.setCurrentText(
             self._specificationMethods[self._db.getValue(path + '/specification')])
@@ -37,7 +37,7 @@ class TurbulenceSpalartAllmarasWidget(QWidget):
         self._specificationMethodChanged()
 
     def appendToWriter(self, writer):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         specification = self._ui.specificationMethod.currentData()
         writer.append(path + '/specification', specification, None)

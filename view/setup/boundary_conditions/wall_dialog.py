@@ -12,7 +12,7 @@ from .boundary_db import BoundaryDB, WallVelocityCondition, WallTemperature
 
 
 class WallDialog(ResizableDialog):
-    RELATIVE_PATH = '/wall'
+    RELATIVE_XPATH = '/wall'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -54,7 +54,7 @@ class WallDialog(ResizableDialog):
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         type_ = self._ui.velocityCondition.currentData()
@@ -97,7 +97,7 @@ class WallDialog(ResizableDialog):
         self._ui.temperatureType.currentIndexChanged.connect(self._temperatureTypeChanged)
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_PATH
+        path = self._xpath + self.RELATIVE_XPATH
 
         type_ = self._db.getValue(path + '/velocity/type')
         self._ui.velocityCondition.setCurrentText(self._velocityConditions[type_])

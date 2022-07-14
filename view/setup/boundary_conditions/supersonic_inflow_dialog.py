@@ -13,7 +13,7 @@ from .boundary_db import BoundaryDB
 
 
 class SupersonicInflowDialog(ResizableDialog):
-    RELATIVE_PATH = '/supersonicInflow'
+    RELATIVE_XPATH = '/supersonicInflow'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
@@ -30,7 +30,7 @@ class SupersonicInflowDialog(ResizableDialog):
         self._load()
 
     def accept(self):
-        xpath = self._xpath + self.RELATIVE_PATH
+        xpath = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
         writer.append(xpath + '/velocity/x', self._ui.xVelocity.text(), self.tr("X-Velocity"))
@@ -49,7 +49,7 @@ class SupersonicInflowDialog(ResizableDialog):
             super().accept()
 
     def _load(self):
-        xpath = self._xpath + self.RELATIVE_PATH
+        xpath = self._xpath + self.RELATIVE_XPATH
 
         self._ui.xVelocity.setText(self._db.getValue(xpath + '/velocity/x'))
         self._ui.yVelocity.setText(self._db.getValue(xpath + '/velocity/y'))

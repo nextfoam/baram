@@ -13,7 +13,7 @@ class Porous:
 
     def buildDict(self):
         if self._data is not None:
-            return
+            return self
 
         model = self._db.getValue(self._xpath + '/porous/model')
 

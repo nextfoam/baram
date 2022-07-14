@@ -10,7 +10,7 @@ from .boundary_db import TemperatureProfile, TemperatureTemporalDistribution
 
 
 class TemperatureWidget(QWidget):
-    RELATIVE_PATH = '/temperature'
+    RELATIVE_XPATH = '/temperature'
 
     def __init__(self, xpath):
         super().__init__()
@@ -33,7 +33,7 @@ class TemperatureWidget(QWidget):
         self._setupProfileTypeCombo()
 
         self._db = coredb.CoreDB()
-        self._xpath = xpath + self.RELATIVE_PATH
+        self._xpath = xpath + self.RELATIVE_XPATH
         self._piecewiseLinear = None
         self._polynomial = None
 

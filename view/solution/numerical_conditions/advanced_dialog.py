@@ -10,7 +10,7 @@ from .numerical_db import NumericalDB
 
 
 class AdvancedDialog(QDialog):
-    RELATIVE_PATH = '/advanced'
+    RELATIVE_XPATH = '/advanced'
 
     def __init__(self):
         super().__init__()
@@ -18,7 +18,7 @@ class AdvancedDialog(QDialog):
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
-        self._xpath = NumericalDB.NUMERICAL_CONDITIONS_XPATH + self.RELATIVE_PATH
+        self._xpath = NumericalDB.NUMERICAL_CONDITIONS_XPATH + self.RELATIVE_XPATH
 
         self._load()
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>265</width>
-    <height>498</height>
+    <width>547</width>
+    <height>512</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -21,14 +21,8 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_7">
    <item>
-    <widget class="QWidget" name="modelWidget" native="true">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_6">
+    <widget class="QWidget" name="widget_2" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -42,80 +36,14 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QGroupBox" name="groupBox">
-        <property name="title">
-         <string>Model</string>
+       <widget class="QWidget" name="widget" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>240</width>
+          <height>0</height>
+         </size>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QRadioButton" name="inviscid">
-           <property name="text">
-            <string>Inviscid</string>
-           </property>
-           <attribute name="buttonGroup">
-            <string notr="true">modelRadioGroup</string>
-           </attribute>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="laminar">
-           <property name="text">
-            <string>Laminar</string>
-           </property>
-           <attribute name="buttonGroup">
-            <string notr="true">modelRadioGroup</string>
-           </attribute>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="spalartAllmaras">
-           <property name="text">
-            <string>Spalart-Allmaras</string>
-           </property>
-           <attribute name="buttonGroup">
-            <string notr="true">modelRadioGroup</string>
-           </attribute>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="kEpsilon">
-           <property name="text">
-            <string>k-epsilon</string>
-           </property>
-           <attribute name="buttonGroup">
-            <string notr="true">modelRadioGroup</string>
-           </attribute>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="kOmega">
-           <property name="text">
-            <string>k-omega</string>
-           </property>
-           <attribute name="buttonGroup">
-            <string notr="true">modelRadioGroup</string>
-           </attribute>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="LES">
-           <property name="text">
-            <string>LES, Large Eddy Simulation</string>
-           </property>
-           <attribute name="buttonGroup">
-            <string notr="true">modelRadioGroup</string>
-           </attribute>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="kEpsilonModel" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_5">
-         <property name="spacing">
-          <number>0</number>
-         </property>
+        <layout class="QVBoxLayout" name="verticalLayout_8">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -128,6 +56,75 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
+         <item>
+          <widget class="QGroupBox" name="groupBox">
+           <property name="title">
+            <string>Model</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QRadioButton" name="inviscid">
+              <property name="text">
+               <string>Inviscid</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">modelRadioGroup</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="laminar">
+              <property name="text">
+               <string>Laminar</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">modelRadioGroup</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="spalartAllmaras">
+              <property name="text">
+               <string>Spalart-Allmaras</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">modelRadioGroup</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="kEpsilon">
+              <property name="text">
+               <string>k-epsilon</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">modelRadioGroup</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="kOmega">
+              <property name="text">
+               <string>k-omega</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">modelRadioGroup</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="LES">
+              <property name="text">
+               <string>LES, Large Eddy Simulation</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">modelRadioGroup</string>
+              </attribute>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
          <item>
           <widget class="QGroupBox" name="groupBox_2">
            <property name="title">
@@ -193,6 +190,70 @@
               </attribute>
              </widget>
             </item>
+            <item>
+             <widget class="QWidget" name="modelWidget" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_6">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QWidget" name="kEpsilonModel" native="true">
+                 <layout class="QVBoxLayout" name="verticalLayout_5">
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QGroupBox" name="kOmegaModel">
+                 <property name="title">
+                  <string>k-omega Model</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_4">
+                  <item>
+                   <widget class="QRadioButton" name="SST">
+                    <property name="text">
+                     <string>SST</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>
@@ -200,17 +261,61 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="kOmegaModel">
-        <property name="title">
-         <string>k-omega Model</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
+       <widget class="QWidget" name="constantsWidget" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_9">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item>
-          <widget class="QRadioButton" name="SST">
-           <property name="text">
-            <string>SST</string>
+          <widget class="QGroupBox" name="groupBox_3">
+           <property name="title">
+            <string>Model Constants</string>
            </property>
+           <layout class="QFormLayout" name="formLayout">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Energy Prandtl Number</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="energyPrandtlNumber"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Wall Prandtl Number</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="wallPrandtlNumber"/>
+            </item>
+           </layout>
           </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </widget>
@@ -286,7 +391,7 @@
  </connections>
  <buttongroups>
   <buttongroup name="nearWallTreatmentRadioGroup"/>
-  <buttongroup name="modelRadioGroup"/>
   <buttongroup name="kEpsilonRadioGroup"/>
+  <buttongroup name="modelRadioGroup"/>
  </buttongroups>
 </ui>

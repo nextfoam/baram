@@ -46,10 +46,10 @@ class TurbulenceFields(Enum):
 
 class ModelsDB:
     MODELS_XPATH = './/models'
-    MULTIPHASE_MODELS_PATH = './/multiphaseModels'
-    TURBULENCE_MODELS_PATH = './/turbulenceModels'
-    SPECIES_MODELS_PATH = './/speciesModels'
-    ENERGY_MODELS_PATH = './/energyModels'
+    MULTIPHASE_MODELS_XPATH = './/multiphaseModels'
+    TURBULENCE_MODELS_XPATH = './/turbulenceModels'
+    SPECIES_MODELS_XPATH = './/speciesModels'
+    ENERGY_MODELS_XPATH = './/energyModels'
 
     _multiphaseModelText = {
         MultiphaseModel.OFF: QCoreApplication.translate("ModelsDB", "Off"),
@@ -67,7 +67,7 @@ class ModelsDB:
 
     @classmethod
     def getMultiphaseModel(cls):
-        return MultiphaseModel(coredb.CoreDB().getValue(ModelsDB.MULTIPHASE_MODELS_PATH + '/model'))
+        return MultiphaseModel(coredb.CoreDB().getValue(ModelsDB.MULTIPHASE_MODELS_XPATH + '/model'))
 
     @classmethod
     def getMultiphaseModelText(cls):
@@ -75,7 +75,7 @@ class ModelsDB:
 
     @classmethod
     def getTurbulenceModel(cls):
-        return TurbulenceModel(coredb.CoreDB().getValue(ModelsDB.TURBULENCE_MODELS_PATH + '/model'))
+        return TurbulenceModel(coredb.CoreDB().getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model'))
 
     @classmethod
     def getTurbulenceModelText(cls):
@@ -91,11 +91,11 @@ class ModelsDB:
 
     @classmethod
     def isSpeciesModelOn(cls):
-        return coredb.CoreDB().getValue(ModelsDB.SPECIES_MODELS_PATH) != 'off'
+        return coredb.CoreDB().getValue(ModelsDB.SPECIES_MODELS_XPATH) != 'off'
 
     @classmethod
     def isEnergyModelOn(cls):
-        return coredb.CoreDB().getValue(ModelsDB.ENERGY_MODELS_PATH) == 'on'
+        return coredb.CoreDB().getValue(ModelsDB.ENERGY_MODELS_XPATH) == 'on'
 
 
 class TurbulenceField:
