@@ -664,6 +664,16 @@ class CoreDB(object):
         return index
 
     def getBoundaryConditions(self, rname: str) -> list[(int, str, str)]:
+        """Returns list of boundary conditions in the region
+
+        Returns list of boundary conditions in the region
+
+        Args:
+            rname: region name
+
+        Returns:
+            List of boundary conditions in tuple, '(bcid, name, physicalType)'
+        """
         elements = self._xmlTree.findall(f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition', namespaces=nsmap)
         return [(int(e.attrib['bcid']),
                  e.find('name', namespaces=nsmap).text,
