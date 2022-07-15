@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
+from coredb.filedb import FileDB, BcFileRole
 from coredb.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType
 from coredb.boundary_db import VelocitySpecification, VelocityProfile
 from coredb.boundary_db import FlowRateInletSpecification, WallVelocityCondition, InterfaceMode
@@ -50,7 +51,7 @@ class U(BoundaryCondition):
                             self._db.getVector(xpath + '/velocityInlet/velocity/component/constant'))
                     elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                         field[name] = self._constructTimeVaryingMappedFixedValue(
-                            self._rname, 'U', xpath + '/velocityInlet/velocity/component/spatialDistribution')
+                            self._rname, name, 'U', FileDB.getBcFile(bcid, BcFileRole.BC_VELOCITY_COMPONENT))
                     elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
                         field[name] = self._constructUniformFixedValue(
                             xpath + '/velocityInlet/velocity/component/temporalDistribution/piecewiseLinear',
@@ -62,7 +63,7 @@ class U(BoundaryCondition):
                             self._db.getValue(xpath + '/velocityInlet/velocity/magnitudeNormal/constant'))
                     elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                         field[name] = self._constructTimeVaryingMappedFixedValue(
-                            self._rname, 'U', xpath + '/velocityInlet/velocity/magnitudeNormal/spatialDistribution')
+                            self._rname, name, 'U', FileDB.getBcFile(bcid, BcFileRole.BC_VELOCITY_MAGNITUDE))
                     elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
                         field[name] = self._constructUniformNormalFixedValue(
                             xpath + '/velocityInlet/velocity/magnitudeNormal/temporalDistribution/piecewiseLinear',
@@ -185,7 +186,7 @@ class U(BoundaryCondition):
         }
 
     def _constructNoSlip(self):
-        # Can be set to 'slip' but for paraview set to 'fixedValue'
+        # Can set to 'slip' but set to 'fixedValue' for paraview
         return self._constructFixedValue('(0 0 0)')
 
     def _constructMovingWallVelocity(self):

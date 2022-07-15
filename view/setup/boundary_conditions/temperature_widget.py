@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from os import path
+
 from PySide6.QtWidgets import QWidget, QFileDialog, QMessageBox
 
 from coredb import coredb
+from coredb.filedb import FileDB, BcFileRole, FileFormatError
 from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution
 from view.widgets.number_input_dialog import PiecewiseLinearDialog, PolynomialDialog
 from .temperature_widget_ui import Ui_temperatureWidget
@@ -12,10 +15,12 @@ from .temperature_widget_ui import Ui_temperatureWidget
 class TemperatureWidget(QWidget):
     RELATIVE_XPATH = '/temperature'
 
-    def __init__(self, xpath):
+    def __init__(self, xpath, bcid):
         super().__init__()
         self._ui = Ui_temperatureWidget()
         self._ui.setupUi(self)
+
+        self._bcid = bcid
 
         self._profileTypes = {
             TemperatureProfile.CONSTANT.value: self.tr("Constant"),
@@ -36,6 +41,8 @@ class TemperatureWidget(QWidget):
         self._xpath = xpath + self.RELATIVE_XPATH
         self._piecewiseLinear = None
         self._polynomial = None
+        self._spatialDistributionFile = None
+        self._spatialDistributionFileName = None
 
         self._connectSignalsSlots()
 
@@ -46,6 +53,8 @@ class TemperatureWidget(QWidget):
             self._ui.temporalDistributionRadioGroup, self._temporalDistributionRadios,
             self._db.getValue(self._xpath + '/temporalDistribution/specification')
         ).setChecked(True)
+        self._spatialDistributionFileName = FileDB.getBcFileName(self._bcid, BcFileRole.BC_TEMPERATURE)
+        self._ui.spatialDistributionFileName.setText(self._spatialDistributionFileName)
         self._profileTypeChanged()
         self._temporalDistributionTypeChanged()
 
@@ -56,7 +65,15 @@ class TemperatureWidget(QWidget):
         if profile == TemperatureProfile.CONSTANT.value:
             writer.append(self._xpath + '/constant', self._ui.temperature.text(), self.tr("Temperature"))
         elif profile == TemperatureProfile.SPATIAL_DISTRIBUTION.value:
-            pass
+            if self._spatialDistributionFile:
+                try:
+                    FileDB.putBcFile(self._bcid, BcFileRole.BC_TEMPERATURE, self._spatialDistributionFile)
+                except FileFormatError:
+                    QMessageBox.critical(self, self.tr("Input Error"), self.tr("CSV File is wrong"))
+                    return False
+            elif not self._spatialDistributionFileName:
+                QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select CSV File."))
+                return False
         elif profile == TemperatureProfile.TEMPORAL_DISTRIBUTION.value:
             specification = self._getRadioValue(
                 self._ui.temporalDistributionRadioGroup, self._temporalDistributionRadios)
@@ -69,14 +86,16 @@ class TemperatureWidget(QWidget):
                                   self._piecewiseLinear[1], self.tr("Piecewise Linear."))
                 elif self._db.getValue(self._xpath + '/temporalDistribution/piecewiseLinear/t') == '':
                     QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Piecewise Linear."))
-                    return
+                    return False
             elif specification == TemperatureTemporalDistribution.POLYNOMIAL.value:
                 if self._polynomial is not None:
                     writer.append(self._xpath + '/temporalDistribution/polynomial',
                                   self._polynomial, self.tr("Polynomial Linear."))
                 elif self._db.getValue(self._xpath + '/temporalDistribution/polynomial') == '':
                     QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Polynomial Linear."))
-                    return
+                    return False
+
+        return True
 
     def _connectSignalsSlots(self):
         self._ui.profileType.currentIndexChanged.connect(self._profileTypeChanged)
@@ -98,7 +117,8 @@ class TemperatureWidget(QWidget):
     def _selectSpatialDistributionFile(self):
         fileName = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), "", self.tr("CSV (*.csv)"))
         if fileName[0]:
-            self._ui.spatialDistributionFileName.setText(self._xpath.basename(fileName[0]))
+            self._spatialDistributionFile = fileName[0]
+            self._ui.spatialDistributionFileName.setText(path.basename(fileName[0]))
 
     def _temporalDistributionTypeChanged(self):
         self._ui.piecewiseLinearEdit.setEnabled(self._ui.piecewiseLinear.isChecked())

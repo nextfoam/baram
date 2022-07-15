@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
+from coredb.filedb import FileDB, BcFileRole
 from coredb.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType
 from coredb.boundary_db import FlowRateInletSpecification
 from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution
@@ -106,7 +107,7 @@ class T(BoundaryCondition):
                     field[name] = self._constructWedge()
             elif profile == TemperatureProfile.SPATIAL_DISTRIBUTION.value:
                 field[name] = self._constructTimeVaryingMappedFixedValue(
-                    self._rname, 'T', self._db.getValue(xpath + '/temperature/spatialDistribution'))
+                    self._rname, name, 'T', FileDB.getBcFile(bcid, BcFileRole.BC_TEMPERATURE))
             elif profile == TemperatureProfile.TEMPORAL_DISTRIBUTION.value:
                 spec = self._db.getValue(xpath + '/temperature/temporalDistribution/specification')
                 if spec == TemperatureTemporalDistribution.PIECEWISE_LINEAR.value:
@@ -115,7 +116,7 @@ class T(BoundaryCondition):
                     )
                 elif spec == TemperatureTemporalDistribution.POLYNOMIAL.value:
                     field[name] = self._constructUniformFixedValue(
-                        xpath + '/temperature/temporalDistribution/polynomial', self.TableType.NUMBER_LIST, 'a')
+                        xpath + '/temperature/temporalDistribution/polynomial', self.TableType.POLYNOMIAL)
 
         return field
 

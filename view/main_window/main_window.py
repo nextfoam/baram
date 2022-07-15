@@ -22,6 +22,7 @@ from .main_window_ui import Ui_MainWindow
 from .menu_view import MenuView, MenuItem
 from .mesh_dock import MeshDock
 from .console_dock import ConsoleDock
+from .start_window import StartWindow, StartAction
 
 
 class MenuPage:
@@ -73,29 +74,43 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SOLUTION_RUN_CALCULATION.value: MenuPage(RunCalculationPage),
         }
 
-        self._constantLoadingDir = None
-
+        self._startWindow = StartWindow()
         self._connectSignalsSlots()
+
+        self._startWindow.open()
 
     def tabifyDock(self, dock):
         self.tabifyDockWidget(self._emptyDock, dock)
 
     def _connectSignalsSlots(self):
+        self._startWindow.accepted.connect(self._start)
         self._ui.actionExit.triggered.connect(self.close)
         self._ui.actionNew.triggered.connect(self._openWizard)
         self._ui.actionSave.triggered.connect(self._save)
         self._ui.actionLoad_Mesh.triggered.connect(self._loadMesh)
         self._menuView.currentMenuChanged.connect(self._changeForm)
 
-    def _openWizard(self, signal):
+    def _start(self):
+        action = self._startWindow.action()
+        if action == StartAction.ACTION_NEW:
+            self._openWizard()
+        elif action == StartAction.ACTION_OPEN:
+            self.show()
+
+    def _openWizard(self):
         self._wizard = CaseWizard()
 
-        self._wizard.exec()
+        self._wizard.finished.connect(self._createCase)
+        self._wizard.open()
+
+    def _createCase(self, result):
+        if result == CaseWizard.Accepted:
+            self.show()
+        else:
+            self._startWindow.open()
 
     def _save(self):
-        dirName = QFileDialog.getExistingDirectory(self)
-        if dirName:
-            CaseGenerator(dirName).generateFiles(self._constantLoadingDir)
+        CaseGenerator().generateFiles()
 
     def _loadMesh(self):
         # fileName = QFileDialog.getOpenFileName(self, self.tr("Open Mesh"), "", self.tr("OpenFOAM Mesh (*.foam)"))
@@ -104,7 +119,6 @@ class MainWindow(QMainWindow):
         dirName = QFileDialog.getExistingDirectory(self)
         if dirName:
             PolyMeshLoader().load(dirName)
-            self._constantLoadingDir = dirName
 
             currentMenu = self._menuView.currentMenu()
             if currentMenu == MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value\

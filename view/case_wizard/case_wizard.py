@@ -1,31 +1,34 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import IntEnum
+from enum import IntEnum, auto
 
 from PySide6.QtWidgets import QWizard
 
 from coredb import coredb
-
+from coredb.settings import Settings
+from openfoam.file_system import FileSystem
+from openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from .case_wizard_ui import Ui_CaseWizard
-
 from .flow_type_page import FlowTypePage
 from .solver_type_page import SolverTypePage
 from .energy_model_page import EnergyModelPage
 from .multiphase_model_page import MultiphaseModelPage
 from .gravity_model_page import GravityModelPage
 from .species_model_page import SpeciesModelPage
+from .workspace_page import WorkspacePage
 
 
 class CaseWizard(QWizard):
     class Page(IntEnum):
         LAST             = -1
-        FLOW_TYPE        = 0
-        SOLVER_TYPE      = 1
-        ENERGY_MODEL     = 2
-        MULTIPHASE_MODEL = 3
-        GRAVITY_MODEL    = 4
-        SPECIES_MODEL    = 5
+        FLOW_TYPE        = auto()
+        SOLVER_TYPE      = auto()
+        ENERGY_MODEL     = auto()
+        MULTIPHASE_MODEL = auto()
+        GRAVITY_MODEL    = auto()
+        SPECIES_MODEL    = auto()
+        WORKSPACE        = auto()
 
     def __init__(self, *args, **kwargs):
         super(CaseWizard, self).__init__(*args, **kwargs)
@@ -41,6 +44,7 @@ class CaseWizard(QWizard):
         self.setPage(self.Page.MULTIPHASE_MODEL.value, MultiphaseModelPage(self))
         self.setPage(self.Page.GRAVITY_MODEL.value, GravityModelPage(self))
         self.setPage(self.Page.SPECIES_MODEL.value, SpeciesModelPage(self))
+        self.setPage(self.Page.WORKSPACE.value, WorkspacePage(self))
         self.setStartId(self.Page.FLOW_TYPE.value)
 
         self.accepted.connect(self.caseAccepted)
@@ -66,8 +70,9 @@ class CaseWizard(QWizard):
                 return self.Page.SPECIES_MODEL.value
         elif curId == self.Page.GRAVITY_MODEL.value:
             return self.Page.SPECIES_MODEL.value
-
         elif curId == self.Page.SPECIES_MODEL.value:
+            return self.Page.WORKSPACE.value
+        elif curId == self.Page.WORKSPACE.value:
             return self.Page.LAST.value
         else:
             raise NotImplementedError('Unknown Case Wizard Page')
@@ -109,3 +114,7 @@ class CaseWizard(QWizard):
             self._db.setValue(f'{models_path}/speciesModels', 'on')
         else:
             self._db.setValue(f'{models_path}/speciesModels', 'off')
+
+        Settings.setWorkingDirectory(self.field('workingDirectory'))
+        FileSystem.setup()
+        PolyMeshLoader.load(self.field('meshDirectory'))

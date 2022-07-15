@@ -23,7 +23,7 @@ class SupersonicInflowDialog(ResizableDialog):
         self._xpath = BoundaryDB.getXPath(bcid)
         self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._ui.dialogContents.layout().addWidget(self._turbulenceWidget)
 
         self._load()
@@ -38,7 +38,7 @@ class SupersonicInflowDialog(ResizableDialog):
         writer.append(xpath + '/staticPressure', self._ui.staticPressure.text(), self.tr("Static Pressure"))
         writer.append(xpath + '/staticTemperature', self._ui.staticTemperature.text(), self.tr("Static Temperature"))
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._turbulenceWidget.appendToWriter(writer)
 
         errorCount = writer.write()
@@ -56,5 +56,5 @@ class SupersonicInflowDialog(ResizableDialog):
         self._ui.staticPressure.setText(self._db.getValue(xpath + '/staticPressure'))
         self._ui.staticTemperature.setText(self._db.getValue(xpath + '/staticTemperature'))
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._turbulenceWidget.load()

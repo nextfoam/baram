@@ -5,11 +5,12 @@ from enum import Enum, auto
 
 from coredb import coredb
 from openfoam.dictionary_file import DictionaryFile, DataClass
+from openfoam.constant.boundary_data import BoundaryData
 
 
 class BoundaryCondition(DictionaryFile):
     class TableType(Enum):
-        NUMBER_LIST = auto()
+        POLYNOMIAL = auto()
         TEMPORAL_SCALAR_LIST = auto()
         TEMPORAL_VECTOR_LIST = auto()
 
@@ -83,20 +84,26 @@ class BoundaryCondition(DictionaryFile):
             'type': 'wedge'
         }
 
-    def _constructTimeVaryingMappedFixedValue(self, region, field, dataset):
-        # ToDo: Create files from CSV file in dataset
+    def _constructTimeVaryingMappedFixedValue(self, rname, bname, field, data):
+        BoundaryData.write(rname, bname, field, data)
+
         return {
             'type': 'timeVaryingMappedFixedValue'
         }
 
-    def _constructUniformFixedValue(self, xpath, type_, prefix=''):
+    def _constructUniformFixedValue(self, xpath, type_):
         value = None
 
-        if type_ == self.TableType.NUMBER_LIST:
+        if type_ == self.TableType.POLYNOMIAL:
             value = []
             v = self._db.getValue(xpath).split()
             for i in range(len(v)):
-                value.append([f'{prefix}{i}', v[i]])
+                value.append([v[i], i])
+
+            return {
+                'type': 'uniformFixedValue',
+                'uniformValue': ('polynomial', value)
+            }
         elif type_ == self.TableType.TEMPORAL_SCALAR_LIST:
             t = self._db.getValue(xpath + '/t').split()
             v = self._db.getValue(xpath + '/v').split()
@@ -109,7 +116,6 @@ class BoundaryCondition(DictionaryFile):
             value = [[t[i], [x[i], y[i], z[i]]] for i in range(len(t))]
 
         return {
-            # ToDo: polynomial: polynomial, etc:table
             'type': 'uniformFixedValue',
             'uniformValue': ('table', value)
         }

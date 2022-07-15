@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import os
-
 from enum import Enum
 
 from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
+
+from .file_system import FileSystem
 
 
 VERSION = '2.0'
@@ -22,11 +23,6 @@ class DataClass(Enum):
 
 
 class DictionaryFile:
-    CONSTANT_DIRECTORY_NAME = 'constant'
-    BOUNDARY_DIRECTORY_NAME = '0'
-    SYSTEM_DIRECTORY_NAME = 'system'
-    POLYMESH_DIRECTORY_NAME = 'polymesh'
-
     def __init__(self, location, objectName, class_=DataClass.CLASS_DICTIONARY, format_=Format.FORMAT_ASCII):
         self._header = {
             'version': VERSION,
@@ -39,30 +35,33 @@ class DictionaryFile:
 
     @classmethod
     def constantLocation(cls, subPath=None):
-        return os.path.join(cls.CONSTANT_DIRECTORY_NAME, subPath) if subPath else cls.CONSTANT_DIRECTORY_NAME
+        return os.path.join(FileSystem.CONSTANT_DIRECTORY_NAME, subPath) if subPath else\
+            FileSystem.CONSTANT_DIRECTORY_NAME
 
     @classmethod
     def boundaryLocation(cls, subPath=None):
-        return os.path.join(cls.BOUNDARY_DIRECTORY_NAME, subPath) if subPath else cls.BOUNDARY_DIRECTORY_NAME
+        return os.path.join(FileSystem.BOUNDARY_CONDITIONS_DIRECTORY_NAME, subPath) if subPath else\
+            FileSystem.BOUNDARY_CONDITIONS_DIRECTORY_NAME
 
     @classmethod
     def systemLocation(cls, subPath=None):
-        return os.path.join(cls.SYSTEM_DIRECTORY_NAME, subPath) if subPath else cls.SYSTEM_DIRECTORY_NAME
+        return os.path.join(FileSystem.SYSTEM_DIRECTORY_NAME, subPath) if subPath else\
+            FileSystem.SYSTEM_DIRECTORY_NAME
 
     @classmethod
     def polyMeshLocation(cls, rname=None):
-        return os.path.join(cls.CONSTANT_DIRECTORY_NAME, rname, cls.POLYMESH_DIRECTORY_NAME) if rname else \
-            cls.constantLocation(cls.POLYMESH_DIRECTORY_NAME)
+        return os.path.join(FileSystem.CONSTANT_DIRECTORY_NAME, rname, FileSystem.POLYMESH_DIRECTORY_NAME)\
+            if rname else cls.constantLocation(FileSystem.POLYMESH_DIRECTORY_NAME)
 
-    def fullPath(self, casePath):
-        return os.path.join(casePath, self._header["location"], self._header["object"])
+    def fullPath(self):
+        return os.path.join(FileSystem.caseRoot(), self._header["location"], self._header["object"])
 
     def asDict(self):
         return self._data
 
-    def write(self, casePath):
+    def write(self):
         if self._data:
-            with open(self.fullPath(casePath), 'w') as f:
+            with open(self.fullPath(), 'w') as f:
                 f.write(str(FoamFileGenerator(self._data, header=self._header)))
 
     def _setFormat(self, fileFormat: Format):

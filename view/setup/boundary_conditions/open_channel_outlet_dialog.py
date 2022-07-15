@@ -23,7 +23,7 @@ class OpenChannelOutletDialog(ResizableDialog):
         self._xpath = BoundaryDB.getXPath(bcid)
         self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._ui.dialogContents.layout().addWidget(self._turbulenceWidget)
 
         self._load()
@@ -34,7 +34,7 @@ class OpenChannelOutletDialog(ResizableDialog):
         writer = CoreDBWriter()
         writer.append(path + '/meanVelocity', self._ui.meanVelocity.text(), self.tr("Mean Velocity"))
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._turbulenceWidget.appendToWriter(writer)
 
         errorCount = writer.write()
@@ -48,5 +48,5 @@ class OpenChannelOutletDialog(ResizableDialog):
 
         self._ui.meanVelocity.setText(self._db.getValue(path + '/meanVelocity'))
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._turbulenceWidget.load()

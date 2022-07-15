@@ -7,39 +7,37 @@ import logging
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
 
 from coredb import coredb
-from openfoam.dictionary_file import DictionaryFile
+from openfoam.file_system import FileSystem
 
 
 logger = logging.getLogger(__name__)
 
 
 class PolyMeshLoader:
-    def load(self, dir):
+    @classmethod
+    def load(cls, meshDir):
         db = coredb.CoreDB()
 
-        for entry in os.scandir(dir):
+        FileSystem.copyMeshFrom(meshDir)
+        for entry in os.scandir(FileSystem.constantPath()):
             if entry.is_dir():
                 rname = entry.name
-                polyMeshPath = os.path.join(entry.path, DictionaryFile.POLYMESH_DIRECTORY_NAME)
-                boundaryPath = os.path.join(polyMeshPath, 'boundary')
+                boundaryPath = FileSystem.boundaryFilePath(rname)
                 if os.path.isfile(boundaryPath):
-                    boundaryDict = self.loadBoundary(boundaryPath)
+                    boundaryDict = cls.loadBoundary(boundaryPath)
                     if boundaryDict:
-                        print(boundaryDict.content)
                         db.addRegion(rname)
                         for bname, boundary in boundaryDict.content.items():
                             db.addBoundaryCondition(rname, bname, boundary['type'])
 
-                        cellZonesPath = os.path.join(polyMeshPath, 'cellZones')
+                        cellZonesPath = FileSystem.cellZonesFilePath(rname)
                         if os.path.isfile(cellZonesPath):
-                            cellZonesDict = self.loadBoundary(cellZonesPath)
+                            cellZonesDict = cls.loadBoundary(cellZonesPath)
                             if cellZonesDict:
-                                print(cellZonesDict.content)
-
-                                for zname, cellZone in cellZonesDict.content.items():
+                                for czname, cellZone in cellZonesDict.content.items():
                                     cellLabels = cellZone['cellLabels']
                                     if cellLabels and cellLabels[len(cellLabels) - 1]:
-                                        db.addCellZone(rname, zname)
+                                        db.addCellZone(rname, czname)
                 else:
                     logger.info(f'{rname} has no polyMesh({boundaryPath}), and is not added to regions')
 

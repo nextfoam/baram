@@ -24,7 +24,7 @@ class PressureOutletDialog(ResizableDialog):
         self._xpath = BoundaryDB.getXPath(bcid)
         self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._ui.calculateBackflow.layout().insertWidget(0, self._turbulenceWidget)
 
         if not ModelsDB.isEnergyModelOn():
@@ -40,7 +40,7 @@ class PressureOutletDialog(ResizableDialog):
         if self._ui.calculateBackflow.isChecked():
             writer.append(path + '/calculatedBackflow', "true", None)
 
-            if self._turbulenceWidget is not None:
+            if self._turbulenceWidget:
                 self._turbulenceWidget.appendToWriter(writer)
 
             writer.append(path + '/backflowTotalTemperature',
@@ -59,7 +59,7 @@ class PressureOutletDialog(ResizableDialog):
 
         self._ui.totalPressure.setText(self._db.getValue(path + '/totalPressure'))
         self._ui.calculateBackflow.setChecked(self._db.getValue(path + '/calculatedBackflow') == "true")
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._turbulenceWidget.load()
         if ModelsDB.isEnergyModelOn():
             self._ui.backflowTotalTemperature.setText(self._db.getValue(path + '/backflowTotalTemperature'))

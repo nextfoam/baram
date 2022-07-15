@@ -31,10 +31,10 @@ class FlowRateInletDialog(ResizableDialog):
         self._temperatureWidget = None
 
         layout = self._ui.dialogContents.layout()
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             layout.addWidget(self._turbulenceWidget)
         if ModelsDB.isEnergyModelOn():
-            self._temperatureWidget = TemperatureWidget(self._xpath)
+            self._temperatureWidget = TemperatureWidget(self._xpath, bcid)
             layout.addWidget(self._temperatureWidget)
 
         self._connectSignalsSlots()
@@ -51,10 +51,11 @@ class FlowRateInletDialog(ResizableDialog):
         elif specification == FlowRateInletSpecification.MASS_FLOW_RATE.value:
             writer.append(path + '/flowRate/massFlowRate', self._ui.massFlowRate.text(), self.tr("Mass Flow Rate"))
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._turbulenceWidget.appendToWriter(writer)
-        if self._temperatureWidget is not None:
-            self._temperatureWidget.appendToWriter(writer)
+        if self._temperatureWidget:
+            if not self._temperatureWidget.appendToWriter(writer):
+                return
 
         errorCount = writer.write()
         if errorCount > 0:
@@ -74,9 +75,9 @@ class FlowRateInletDialog(ResizableDialog):
         self._ui.massFlowRate.setText(self._db.getValue(path + '/flowRate/massFlowRate'))
         self._flowRateSpecificationMethodChanged()
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._turbulenceWidget.load()
-        if self._temperatureWidget is not None:
+        if self._temperatureWidget:
             self._temperatureWidget.load()
 
     def _setupSpecificationMethodCombo(self):

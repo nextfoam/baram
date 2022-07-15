@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import shutil
 
 from coredb import coredb
 from openfoam.dictionary_file import DictionaryFile
@@ -36,6 +34,7 @@ TYPE_MAP = {
     BoundaryType.WEDGE.value: 'wedge',
 }
 
+
 class Boundary(DictionaryFile):
     def __init__(self, rname: str):
         super().__init__(self.polyMeshLocation(rname), 'boundary')
@@ -43,17 +42,12 @@ class Boundary(DictionaryFile):
         self._rname = rname
         self._boundaryDict = None
 
-    def build(self, constantLoadingDir, casePath):
+    def build(self):
         if self._boundaryDict is not None:
             return self
 
-        if not constantLoadingDir:
-            return self
-
         db = coredb.CoreDB()
-
-        fullPath = self.fullPath(casePath)
-        shutil.copyfile(os.path.join(constantLoadingDir, self._rname, 'polyMesh', 'boundary'), fullPath)
+        fullPath = self.fullPath()
 
         self._boundaryDict = PolyMeshLoader.loadBoundary(fullPath)
         boundaries = self._boundaryDict.content
@@ -66,6 +60,6 @@ class Boundary(DictionaryFile):
 
         return self
 
-    def write(self, caseRoot):
+    def write(self):
         self._boundaryDict.writeFile()
 

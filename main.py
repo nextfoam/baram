@@ -44,6 +44,6 @@ if __name__ == '__main__':
     QCoreApplication.installTranslator(translator)
 
     window = MainWindow()
-    window.show()
+    # window.show()
 
     app.exec()

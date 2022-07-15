@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-
 from coredb import coredb
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import Phase
@@ -25,92 +23,64 @@ from openfoam.system.fv_solution import FvSolution
 from openfoam.system.control_dict import ControlDict
 from openfoam.system.fv_schemes import FvSchemes
 from openfoam.polymesh.boundary import Boundary
-from .dictionary_file import DictionaryFile
+from openfoam.file_system import FileSystem
 
 
 class CaseGenerator:
-    def __init__(self, path):
-        self._caseRoot = path
+    def __init__(self):
         self._db = coredb.CoreDB()
 
-        self._constantPath = os.path.join(self._caseRoot, DictionaryFile.CONSTANT_DIRECTORY_NAME)
-        self._boundaryPath = os.path.join(self._caseRoot, DictionaryFile.BOUNDARY_DIRECTORY_NAME)
-        self._systemPath = os.path.join(self._caseRoot, DictionaryFile.SYSTEM_DIRECTORY_NAME)
-
-    def _initCaseDir(self):
-        # shutil.rmtree(self._caseRoot)
-        if not os.path.exists(self._constantPath):
-            os.mkdir(self._constantPath)
-        if not os.path.exists(self._boundaryPath):
-            os.mkdir(self._boundaryPath)
-        if not os.path.exists(self._systemPath):
-            os.mkdir(self._systemPath)
-
-    def generateFiles(self, constantLoadingDir):
-        self._initCaseDir()
+    def generateFiles(self):
+        FileSystem.initCaseDir()
 
         regions = self._db.getRegions()
         for rname in regions:
-            cpath = os.path.join(self._constantPath, rname)
-            if not os.path.exists(cpath):
-                os.mkdir(cpath)
+            FileSystem.initRegionDirs(rname)
 
-            bpath = os.path.join(self._boundaryPath, rname)
-            if not os.path.exists(bpath):
-                os.mkdir(bpath)
-
-            spath = os.path.join(self._systemPath, rname)
-            if not os.path.exists(spath):
-                os.mkdir(spath)
-
-            ppath = os.path.join(cpath, DictionaryFile.POLYMESH_DIRECTORY_NAME)
-            if not os.path.exists(ppath):
-                os.mkdir(ppath)
-
-            ThermophysicalProperties(rname).build().write(self._caseRoot)
-            OperatingConditions(rname).build().write(self._caseRoot)
-            MRFProperties(rname).build().write(self._caseRoot)
+            ThermophysicalProperties(rname).build().write()
+            OperatingConditions(rname).build().write()
+            MRFProperties(rname).build().write()
 
             if RegionDB.getPhase(rname) != Phase.SOLID:
-                TurbulenceProperties(rname).build().write(self._caseRoot)
+                TurbulenceProperties(rname).build().write()
 
-            G(rname).build().write(self._caseRoot)
+            G(rname).build().write()
             # ToDo: for gravity models, set the file name to "p_rgh", otherwise set it to "p".
-            P(rname, 'p_rgh').build().write(self._caseRoot)
+            P(rname, 'p_rgh').build().write()
             # Todo: create only if p_rgh is created
-            P(rname, 'p', True).build().write(self._caseRoot)
-            U(rname).build().write(self._caseRoot)
+            P(rname, 'p', True).build().write()
+            U(rname).build().write()
 
             # if ModelsDB.isEnergyModelOn():
-            #     T(rname).build().write(self._caseRoot)
-            #     Alphat(rname).build().write(self._caseRoot)
+            #     T(rname).build().write()
+            #     Alphat(rname).build().write()
             #
             # turbulenceModel = ModelsDB.getTurbulenceModel()
             # if turbulenceModel == TurbulenceModel.K_EPSILON or turbulenceModel == TurbulenceModel.K_OMEGA:
-            #     K(rname).build().write(self._caseRoot)
-            #     Nut(rname).build().write(self._caseRoot)
+            #     K(rname).build().write()
+            #     Nut(rname).build().write()
             #     if turbulenceModel == TurbulenceModel.K_EPSILON:
-            #         Epsilon(rname).build().write(self._caseRoot)
+            #         Epsilon(rname).build().write()
             #     elif turbulenceModel == TurbulenceModel.K_OMEGA:
-            #         Omega(rname).build().write(self._caseRoot)
+            #         Omega(rname).build().write()
             # elif turbulenceModel == TurbulenceModel.SPALART_ALLMARAS:
-            #     NuTilda(rname).build().write(self._caseRoot)
+            #     NuTilda(rname).build().write()
 
-            TransportProperties(rname).build().write(self._caseRoot)
+            TransportProperties(rname).build().write()
 
-            T(rname).build().write(self._caseRoot)
-            Alphat(rname).build().write(self._caseRoot)
+            T(rname).build().write()
+            Alphat(rname).build().write()
 
-            K(rname).build().write(self._caseRoot)
-            Nut(rname).build().write(self._caseRoot)
-            Epsilon(rname).build().write(self._caseRoot)
-            Omega(rname).build().write(self._caseRoot)
-            NuTilda(rname).build().write(self._caseRoot)
+            K(rname).build().write()
+            Nut(rname).build().write()
+            Epsilon(rname).build().write()
+            Omega(rname).build().write()
+            NuTilda(rname).build().write()
 
-            FvSchemes(rname).build().write(self._caseRoot)
-            FvSolution(rname).build().write(self._caseRoot)
+            FvSchemes(rname).build().write()
+            FvSolution(rname).build().write()
 
-            Boundary(rname).build(constantLoadingDir, self._caseRoot).write(self._caseRoot)
+            Boundary(rname).build().write()
 
-        FvSolution().build().write(self._caseRoot)
-        ControlDict().build().write(self._caseRoot)
+        FvSolution().build().write()
+        ControlDict().build().write()

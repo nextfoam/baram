@@ -23,7 +23,7 @@ class FreeStreamDialog(ResizableDialog):
         self._xpath = BoundaryDB.getXPath(bcid)
         self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._ui.dialogContents.layout().addWidget(self._turbulenceWidget)
 
         self._load()
@@ -37,7 +37,7 @@ class FreeStreamDialog(ResizableDialog):
         writer.append(path + '/streamVelocity/z', self._ui.zVelocity.text(), self.tr("Z-Velocity"))
         writer.append(path + '/pressure', self._ui.pressure.text(), self.tr("Pressure"))
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._turbulenceWidget.appendToWriter(writer)
 
         errorCount = writer.write()
@@ -54,5 +54,5 @@ class FreeStreamDialog(ResizableDialog):
         self._ui.zVelocity.setText(self._db.getValue(path + '/streamVelocity/z'))
         self._ui.pressure.setText(self._db.getValue(path + '/pressure'))
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._turbulenceWidget.load()

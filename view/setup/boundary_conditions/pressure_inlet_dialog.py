@@ -27,10 +27,10 @@ class PressureInletDialog(ResizableDialog):
         self._temperatureWidget = None
 
         layout = self._ui.dialogContents.layout()
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             layout.addWidget(self._turbulenceWidget)
         if ModelsDB.isEnergyModelOn():
-            self._temperatureWidget = TemperatureWidget(self._xpath)
+            self._temperatureWidget = TemperatureWidget(self._xpath, bcid)
             layout.addWidget(self._temperatureWidget)
 
         self._load()
@@ -41,10 +41,11 @@ class PressureInletDialog(ResizableDialog):
         writer = CoreDBWriter()
         writer.append(path + '/pressure', self._ui.totalPressure.text(), self.tr("Total Pressure"))
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._turbulenceWidget.appendToWriter(writer)
-        if self._temperatureWidget is not None:
-            self._temperatureWidget.appendToWriter(writer)
+        if self._temperatureWidget:
+            if not self._temperatureWidget.appendToWriter(writer):
+                return
 
         errorCount = writer.write()
         if errorCount > 0:
@@ -57,7 +58,7 @@ class PressureInletDialog(ResizableDialog):
 
         self._ui.totalPressure.setText(self._db.getValue(path + '/pressure'))
 
-        if self._turbulenceWidget is not None:
+        if self._turbulenceWidget:
             self._turbulenceWidget.load()
-        if self._temperatureWidget is not None:
+        if self._temperatureWidget:
             self._temperatureWidget.load()
