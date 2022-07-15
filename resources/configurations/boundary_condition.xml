@@ -3,6 +3,8 @@
     <name>default</name>
     <geometricalType>wall</geometricalType>
     <physicalType>wall</physicalType>
+    <group>0</group>
+    <members></members>
     <velocityInlet>
         <velocity>
             <specification>magnitudeNormal</specification>

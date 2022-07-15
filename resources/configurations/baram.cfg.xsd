@@ -996,6 +996,7 @@
                 <xs:element name="geometricalType" default="wall">
                     <xs:simpleType>
                         <xs:restriction base="xs:string">
+                            <xs:enumeration value="group"/>
                             <xs:enumeration value="patch"/>
                             <xs:enumeration value="symmetryPlane"/>
                             <xs:enumeration value="empty"/>
@@ -1036,6 +1037,13 @@
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:element>
+                <xs:element name="group" type="xs:nonNegativeInteger" default="0"/> <!-- bcid of boundary group -->
+                <xs:element name="members"> <!-- bcid of group members when geometricalType is "group" -->
+                    <xs:simpleType>
+                        <xs:list itemType="xs:positiveInteger"/>
+                    </xs:simpleType>
+                </xs:element>
+
                 <xs:element name="velocityInlet" type="velocityInletType"/>
                 <xs:element name="flowRateInlet" type="flowRateInletType"/>
                 <xs:element name="pressureInlet" type="pressureInletType"/>
