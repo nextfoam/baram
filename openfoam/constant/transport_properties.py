@@ -16,17 +16,23 @@ class TransportProperties(DictionaryFile):
         if self._data is not None:
             return self
 
-        db = coredb.CoreDB()
-        energyModels = db.getValue('.//models/energyModels')
-
         self._data = {}
-        if energyModels == "off":
+        db = coredb.CoreDB()
+
+        mid = db.getValue(f'.//regions/region[name="{self._rname}"]/material')
+        print(mid)
+
+        energyModels = db.getValue('.//models/energyModels')
+        dSpec = db.getValue(f'{MaterialDB.getXPath(mid)}/density/specification')
+        vSpec = db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity/specification')
+
+        if energyModels == "off" and dSpec == 'constant' and vSpec == 'constant':
             self._data['transportModel'] = 'Newtonian'
 
-            mid = db.getValue(f'.//region[name="{self._rname}"]/material')
-            density = db.getValue(f'{MaterialDB.getXPath(mid)}/density')
-            viscosity = db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity')
-            nu = viscosity / density
+            density = db.getValue(f'{MaterialDB.getXPath(mid)}/density/constant')
+            viscosity = db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity/constant')
+
+            nu = float(viscosity) / float(density)
             self._data['nu'] = f'[ 0 2 -1 0 0 0 0 ] {nu}'
 
             # MultiPhase (not defined yet)
