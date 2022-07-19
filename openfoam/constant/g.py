@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from coredb.cell_zone_db import CellZoneDB
+from coredb.general_db import GeneralDB
 from openfoam.dictionary_file import DictionaryFile
 
 
@@ -22,7 +22,7 @@ class G(DictionaryFile):
 
         self._data = {
             'dimensions': self.DIMENSIONS,
-            'value': db.getVector(CellZoneDB.OPERATING_CONDITIONS_XPATH + '/gravity/direction')
+            'value': db.getVector(GeneralDB.OPERATING_CONDITIONS_XPATH + '/gravity/direction')
         }
 
         return self

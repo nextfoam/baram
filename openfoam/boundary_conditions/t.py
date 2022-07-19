@@ -48,63 +48,31 @@ class T(BoundaryCondition):
                 type_ = b[BoundaryListIndex.TYPE.value]
                 constant = self._db.getValue(xpath + '/temperature/constant')
 
-                if type_ == BoundaryType.VELOCITY_INLET.value:
-                    field[name] = self._constructFixedValue(constant)
-                elif type_ == BoundaryType.FLOW_RATE_INLET.value:
-                    spec = self._db.getValue(xpath + '/flowRateInlet/flowRate/specification')
-                    if spec == FlowRateInletSpecification.VOLUME_FLOW_RATE.value:
-                        field[name] = self._constructFixedValue(constant)
-                    elif spec == FlowRateInletSpecification.MASS_FLOW_RATE.value:
-                        field[name] = self._constructInletOutletTemperature(constant)
-                elif type_ == BoundaryType.PRESSURE_INLET.value:
-                    field[name] = self._constructInletOutletTemperature(constant)
-                elif type_ == BoundaryType.PRESSURE_OUTLET.value:
-                    if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
-                        field[name] = self._constructInletOutletTemperature(constant)
-                    else:
-                        field[name] = self._constructZeroGradient()
-                elif type_ == BoundaryType.ABL_INLET.value:
-                    pass
-                elif type_ == BoundaryType.OPEN_CHANNEL_INLET.value:
-                    pass
-                elif type_ == BoundaryType.OPEN_CHANNEL_OUTLET.value:
-                    pass
-                elif type_ == BoundaryType.OUTFLOW.value:
-                    field[name] = self._constructZeroGradient()
-                elif type_ == BoundaryType.FREE_STREAM.value:
-                    field[name] = self._constructFreestream(xpath + '/freeStream')
-                elif type_ == BoundaryType.FAR_FIELD_RIEMANN.value:
-                    field[name] = self._constructFarfieldRiemann(xpath + '/farFieldRiemann')
-                elif type_ == BoundaryType.SUBSONIC_INFLOW.value:
-                    field[name] = self._constructSubsonicInflow(xpath + '/subsonicInflow')
-                elif type_ == BoundaryType.SUBSONIC_OUTFLOW.value:
-                    field[name] = self._constructSubsonicOutflow(xpath + '/subsonicOutflow')
-                elif type_ == BoundaryType.SUPERSONIC_INFLOW.value:
-                    field[name] = self._constructFixedValue(constant)
-                elif type_ == BoundaryType.SUPERSONIC_OUTFLOW.value:
-                    field[name] = self._constructZeroGradient()
-                elif type_ == BoundaryType.WALL.value:
-                    field[name] = self._constructZeroGradient()
-                elif type_ == BoundaryType.THERMO_COUPLED_WALL.value:
-                    field[name] = self._constructNEXTTurbulentTemperatureCoupledBaffleMixed()
-                elif type_ == BoundaryType.SYMMETRY.value:
-                    field[name] = self._constructSymmetry()
-                elif type_ == BoundaryType.INTERFACE.value:
-                    spec = self._db.getValue(xpath + '/interface/mode')
-                    if spec == InterfaceMode.REGION_INTERFACE.value:
-                        field[name] = self._constructNEXTTurbulentTemperatureCoupledBaffleMixed()
-                    else:
-                        field[name] = self._constructCyclicAMI()
-                elif type_ == BoundaryType.POROUS_JUMP.value:
-                    field[name] = self._constructPorousBafflePressure(xpath + '/porousJump')
-                elif type_ == BoundaryType.FAN.value:
-                    field[name] = self._constructCyclic()
-                elif type_ == BoundaryType.EMPTY.value:
-                    field[name] = self._constructEmpty()
-                elif type_ == BoundaryType.CYCLIC.value:
-                    field[name] = self._constructCyclic()
-                elif type_ == BoundaryType.WEDGE.value:
-                    field[name] = self._constructWedge()
+                field[name] = {
+                    BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(constant)),
+                    BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFlowRateInletT(xpath, constant)),
+                    BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletTemperature(constant)),
+                    BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletT(xpath, constant)),
+                    BoundaryType.ABL_INLET.value:           (lambda: None),
+                    BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: None),
+                    BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: None),
+                    BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
+                    BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestream(xpath + '/freeStream')),
+                    BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann')),
+                    BoundaryType.SUBSONIC_INFLOW.value:     (lambda: self._constructSubsonicInflow(xpath + '/subsonicInflow')),
+                    BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructSubsonicOutflow(xpath + '/subsonicOutflow')),
+                    BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(constant)),
+                    BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
+                    BoundaryType.WALL.value:                (lambda: self._constructZeroGradient()),
+                    BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructNEXTTurbulentTemperatureCoupledBaffleMixed()),
+                    BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
+                    BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceT(xpath)),
+                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump')),
+                    BoundaryType.FAN.value:                 (lambda: self._constructCyclic()),
+                    BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
+                    BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
+                    BoundaryType.WEDGE.value:               (lambda: self._constructWedge()),
+                }.get(type_)()
             elif profile == TemperatureProfile.SPATIAL_DISTRIBUTION.value:
                 field[name] = self._constructTimeVaryingMappedFixedValue(
                     self._rname, name, 'T', FileDB.getBcFile(bcid, BcFileRole.BC_TEMPERATURE))
@@ -134,3 +102,23 @@ class T(BoundaryCondition):
             'Tnbr': 'T',
             'kappaMethod': 'solidThermo' if RegionDB.getPhase(self._rname) == Phase.SOLID else 'fluidThermo'
         }
+
+    def _constructFlowRateInletT(self, xpath, constant):
+        spec = self._db.getValue(xpath + '/flowRateInlet/flowRate/specification')
+        if spec == FlowRateInletSpecification.VOLUME_FLOW_RATE.value:
+            return self._constructFixedValue(constant)
+        elif spec == FlowRateInletSpecification.MASS_FLOW_RATE.value:
+            return self._constructInletOutletTemperature(constant)
+
+    def _constructPressureOutletT(self, xpath, constant):
+        if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+            return self._constructInletOutletTemperature(constant)
+        else:
+            return self._constructZeroGradient()
+
+    def _constructInterfaceT(self, xpath):
+        spec = self._db.getValue(xpath + '/interface/mode')
+        if spec == InterfaceMode.REGION_INTERFACE.value:
+            return self._constructNEXTTurbulentTemperatureCoupledBaffleMixed()
+        else:
+            return self._constructCyclicAMI()

@@ -10,7 +10,7 @@ region = "testRegion_1"
 boundary = "testBoundary_1"
 
 
-class TestTilda(unittest.TestCase):
+class TestAlphat(unittest.TestCase):
     def setUp(self):
         self._db = coredb.CoreDB()
         self._db.addRegion(region)

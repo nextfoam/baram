@@ -42,63 +42,31 @@ class Nut(BoundaryCondition):
             type_ = b[BoundaryListIndex.TYPE.value]
             xpath = BoundaryDB.getXPath(bcid)
 
-            if type_ == BoundaryType.VELOCITY_INLET.value:
-                field[name] = self._constructCalculated(self._initialValue)
-            elif type_ == BoundaryType.FLOW_RATE_INLET.value:
-                field[name] = self._constructCalculated(self._initialValue)
-            elif type_ == BoundaryType.PRESSURE_INLET.value:
-                field[name] = self._constructCalculated(self._initialValue)
-            elif type_ == BoundaryType.PRESSURE_OUTLET.value:
-                if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
-                    field[name] = self._constructCalculated(self._initialValue)
-                else:
-                    field[name] = self._constructZeroGradient()
-            elif type_ == BoundaryType.ABL_INLET.value:
-                field[name] = self._constructCalculated(self._initialValue)
-            elif type_ == BoundaryType.OPEN_CHANNEL_INLET.value:
-                field[name] = self._constructCalculated(self._initialValue)
-            elif type_ == BoundaryType.OPEN_CHANNEL_OUTLET.value:
-                field[name] = self._constructCalculated(self._initialValue)
-            elif type_ == BoundaryType.OUTFLOW.value:
-                field[name] = self._constructZeroGradient()
-            elif type_ == BoundaryType.FREE_STREAM.value:
-                field[name] = self._constructCalculated(self._initialValue)
-            elif type_ == BoundaryType.FAR_FIELD_RIEMANN.value:
-                field[name] = self._constructCalculated(self._initialValue)
-            elif type_ == BoundaryType.SUBSONIC_INFLOW.value:
-                field[name] = self._constructCalculated(self._initialValue)
-            elif type_ == BoundaryType.SUBSONIC_OUTFLOW.value:
-                field[name] = self._constructCalculated(self._initialValue)
-            elif type_ == BoundaryType.SUPERSONIC_INFLOW.value:
-                field[name] = self._constructCalculated(self._initialValue)
-            elif type_ == BoundaryType.SUPERSONIC_OUTFLOW.value:
-                field[name] = self._constructCalculated(self._initialValue)
-            elif type_ == BoundaryType.WALL.value:
-                spec = self._db.getValue(xpath + '/wall/velocity/type')
-                if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
-                    field[name] = self._constructAtmNutkWallFunction(xpath + '/wall')
-                else:
-                    field[name] = self._constructWallFunctionByModel()
-            elif type_ == BoundaryType.THERMO_COUPLED_WALL.value:
-                field[name] = self._constructWallFunctionByModel()
-            elif type_ == BoundaryType.SYMMETRY.value:
-                field[name] = self._constructSymmetry()
-            elif type_ == BoundaryType.INTERFACE.value:
-                spec = self._db.getValue(xpath + '/interface/mode')
-                if spec == InterfaceMode.REGION_INTERFACE.value:
-                    field[name] = self._constructWallFunctionByModel()
-                else:
-                    field[name] = self._constructCyclicAMI()
-            elif type_ == BoundaryType.POROUS_JUMP.value:
-                field[name] = self._constructCyclic()
-            elif type_ == BoundaryType.FAN.value:
-                field[name] = self._constructCyclic()
-            elif type_ == BoundaryType.EMPTY.value:
-                field[name] = self._constructEmpty()
-            elif type_ == BoundaryType.CYCLIC.value:
-                field[name] = self._constructCyclic()
-            elif type_ == BoundaryType.WEDGE.value:
-                field[name] = self._constructWedge()
+            field[name] = {
+                BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructCalculated(self._initialValue)),
+                BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructCalculated(self._initialValue)),
+                BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructCalculated(self._initialValue)),
+                BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletNut(xpath)),
+                BoundaryType.ABL_INLET.value:           (lambda: self._constructCalculated(self._initialValue)),
+                BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructCalculated(self._initialValue)),
+                BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructCalculated(self._initialValue)),
+                BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
+                BoundaryType.FREE_STREAM.value:         (lambda: self._constructCalculated(self._initialValue)),
+                BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructCalculated(self._initialValue)),
+                BoundaryType.SUBSONIC_INFLOW.value:     (lambda: self._constructCalculated(self._initialValue)),
+                BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructCalculated(self._initialValue)),
+                BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructCalculated(self._initialValue)),
+                BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructCalculated(self._initialValue)),
+                BoundaryType.WALL.value:                (lambda: self._constructWallNut(xpath)),
+                BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructWallFunctionByModel()),
+                BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
+                BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceNut(xpath)),
+                BoundaryType.POROUS_JUMP.value:         (lambda: self._constructCyclic()),
+                BoundaryType.FAN.value:                 (lambda: self._constructCyclic()),
+                BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
+                BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
+                BoundaryType.WEDGE.value:               (lambda: self._constructWedge()),
+            }.get(type_)()
 
         return field
 
@@ -125,3 +93,23 @@ class Nut(BoundaryCondition):
             'type': 'atmNutkWallFunction',
             'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength')
         }
+
+    def _constructPressureOutletNut(self, xpath):
+        if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+            return self._constructCalculated(self._initialValue)
+        else:
+            return self._constructZeroGradient()
+
+    def _constructWallNut(self, xpath):
+        spec = self._db.getValue(xpath + '/wall/velocity/type')
+        if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
+            return self._constructAtmNutkWallFunction(xpath + '/wall')
+        else:
+            return self._constructWallFunctionByModel()
+
+    def _constructInterfaceNut(self, xpath):
+        spec = self._db.getValue(xpath + '/interface/mode')
+        if spec == InterfaceMode.REGION_INTERFACE.value:
+            return self._constructWallFunctionByModel()
+        else:
+            return self._constructCyclicAMI()

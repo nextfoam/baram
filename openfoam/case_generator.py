@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
+from coredb.general_db import GeneralDB
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import Phase
 from openfoam.constant.thermophysical_properties import ThermophysicalProperties
@@ -45,10 +46,12 @@ class CaseGenerator:
                 TurbulenceProperties(rname).build().write()
 
             G(rname).build().write()
-            # ToDo: for gravity models, set the file name to "p_rgh", otherwise set it to "p".
-            P(rname, 'p_rgh').build().write()
-            # Todo: create only if p_rgh is created
-            P(rname, 'p', True).build().write()
+            if GeneralDB.isGravityModelOn():
+                P(rname, 'p_rgh').build().write()
+                P(rname, 'p', True).build().write()
+            else:
+                P(rname, 'p').build().write()
+
             U(rname).build().write()
 
             # if ModelsDB.isEnergyModelOn():

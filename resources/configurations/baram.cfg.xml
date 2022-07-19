@@ -65,6 +65,7 @@
 
     <numericalConditions>
         <pressureVelocityCouplingScheme>SIMPLE</pressureVelocityCouplingScheme>
+        <useMomentumPredictor>true</useMomentumPredictor>
         <discretizationSchemes>
             <time>firstOrderImplicit</time>
             <momentum>secondOrderUpwind</momentum>
@@ -142,8 +143,7 @@
             <numberOfIterations>0</numberOfIterations>
             <timeSteppingMethod>fixed</timeSteppingMethod>
             <timeStepSize>0.01</timeStepSize>
-            <!-- ToDo: maxCo default -->
-            <maxCourantNumber>0.1</maxCourantNumber>
+            <maxCourantNumber>1</maxCourantNumber>
             <endTime>0</endTime>
             <reportIntervalSteps>1</reportIntervalSteps>
             <reportIntervalSeconds>0.01</reportIntervalSeconds>

@@ -42,95 +42,31 @@ class U(BoundaryCondition):
             type_ = b[BoundaryListIndex.TYPE.value]
             xpath = BoundaryDB.getXPath(bcid)
 
-            if type_ == BoundaryType.VELOCITY_INLET.value:
-                spec = self._db.getValue(xpath + '/velocityInlet/velocity/specification')
-                if spec == VelocitySpecification.COMPONENT.value:
-                    profile = self._db.getValue(xpath + '/velocityInlet/velocity/component/profile')
-                    if profile == VelocityProfile.CONSTANT.value:
-                        field[name] = self._constructFixedValue(
-                            self._db.getVector(xpath + '/velocityInlet/velocity/component/constant'))
-                    elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
-                        field[name] = self._constructTimeVaryingMappedFixedValue(
-                            self._rname, name, 'U', FileDB.getBcFile(bcid, BcFileRole.BC_VELOCITY_COMPONENT))
-                    elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
-                        field[name] = self._constructUniformFixedValue(
-                            xpath + '/velocityInlet/velocity/component/temporalDistribution/piecewiseLinear',
-                            self.TableType.TEMPORAL_VECTOR_LIST)
-                elif spec == VelocitySpecification.MAGNITUDE.value:
-                    profile = self._db.getValue(xpath + '/velocityInlet/velocity/magnitudeNormal/profile')
-                    if profile == VelocityProfile.CONSTANT.value:
-                        field[name] = self._constructSurfaceNormalFixedValue(
-                            self._db.getValue(xpath + '/velocityInlet/velocity/magnitudeNormal/constant'))
-                    elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
-                        field[name] = self._constructTimeVaryingMappedFixedValue(
-                            self._rname, name, 'U', FileDB.getBcFile(bcid, BcFileRole.BC_VELOCITY_MAGNITUDE))
-                    elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
-                        field[name] = self._constructUniformNormalFixedValue(
-                            xpath + '/velocityInlet/velocity/magnitudeNormal/temporalDistribution/piecewiseLinear',
-                            self.TableType.TEMPORAL_SCALAR_LIST)
-            elif type_ == BoundaryType.FLOW_RATE_INLET.value:
-                field[name] = self._constructFlowRateInletVelocity(xpath + '/flowRateInlet')
-            elif type_ == BoundaryType.PRESSURE_INLET.value:
-                field[name] = self._constructPressureInletOutletVelocity()
-            elif type_ == BoundaryType.PRESSURE_OUTLET.value:
-                field[name] = self._constructPressureInletOutletVelocity()
-            elif type_ == BoundaryType.ABL_INLET.value:
-                field[name] = self._constructAtmBoundaryLayerInletVelocity()
-            elif type_ == BoundaryType.OPEN_CHANNEL_INLET.value:
-                field[name] = self._constructVariableHeightFlowRateInletVelocity(
-                    self._db.getValue(xpath + '/openChannelInlet/volumeFlowRate'))
-            elif type_ == BoundaryType.OPEN_CHANNEL_OUTLET.value:
-                field[name] = self._constructOutletPhaseMeanVelocity(
-                    self._db.getValue(xpath + '/openChannelOutlet/meanVelocity'))
-            elif type_ == BoundaryType.OUTFLOW.value:
-                field[name] = self._constructZeroGradient()
-            elif type_ == BoundaryType.FREE_STREAM.value:
-                field[name] = self._constructFreestreamVelocity(xpath + '/freeStream')
-            elif type_ == BoundaryType.FAR_FIELD_RIEMANN.value:
-                field[name] = self._constructFarfieldRiemann(xpath + '/farFieldRiemann')
-            elif type_ == BoundaryType.SUBSONIC_INFLOW.value:
-                field[name] = self._constructSubsonicInflow(xpath + '/subsonicInflow')
-            elif type_ == BoundaryType.SUBSONIC_OUTFLOW.value:
-                field[name] = self._constructSubsonicOutflow(xpath + '/subsonicOutflow')
-            elif type_ == BoundaryType.SUPERSONIC_INFLOW.value:
-                field[name] = self._constructFixedValue(self._db.getVector(xpath + '/supersonicInflow/velocity'))
-            elif type_ == BoundaryType.SUPERSONIC_OUTFLOW.value:
-                field[name] = self._constructZeroGradient()
-            elif type_ == BoundaryType.WALL.value:
-                spec = self._db.getValue(xpath + '/wall/velocity/type')
-                if spec == WallVelocityCondition.NO_SLIP.value:
-                    field[name] = self._constructNoSlip()
-                elif spec == WallVelocityCondition.SLIP.value:
-                    field[name] = self._construcSlip()
-                elif spec == WallVelocityCondition.MOVING_WALL.value:
-                    field[name] = self._constructMovingWallVelocity()
-                elif spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
-                    field[name] = self._constructNoSlip()
-                elif spec == WallVelocityCondition.TRANSLATIONAL_MOVING_WALL.value:
-                    field[name] = self._constructFixedValue(
-                        self._db.getVector(xpath + '/wall/velocity/translationalMovingWall/velocity'))
-                elif spec == WallVelocityCondition.ROTATIONAL_MOVING_WALL.value:
-                    field[name] = self._constructRotatingWallVelocity(xpath + '/wall/velocity/rotationalMovingWall')
-            elif type_ == BoundaryType.THERMO_COUPLED_WALL.value:
-                field[name] = self._constructNoSlip()
-            elif type_ == BoundaryType.SYMMETRY.value:
-                field[name] = self._constructSymmetry()
-            elif type_ == BoundaryType.INTERFACE.value:
-                spec = self._db.getValue(xpath + '/interface/mode')
-                if spec == InterfaceMode.REGION_INTERFACE.value:
-                    field[name] = self._constructNoSlip()
-                else:
-                    field[name] = self._constructCyclicAMI()
-            elif type_ == BoundaryType.POROUS_JUMP.value:
-                field[name] = self._constructCyclic()
-            elif type_ == BoundaryType.FAN.value:
-                field[name] = self._constructCyclic()
-            elif type_ == BoundaryType.EMPTY.value:
-                field[name] = self._constructEmpty()
-            elif type_ == BoundaryType.CYCLIC.value:
-                field[name] = self._constructCyclic()
-            elif type_ == BoundaryType.WEDGE.value:
-                field[name] = self._constructWedge()
+            field[name] = {
+                BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructVelocityInletU(xpath, bcid, name)),
+                BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFlowRateInletVelocity(xpath + '/flowRateInlet')),
+                BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructPressureInletOutletVelocity()),
+                BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureInletOutletVelocity()),
+                BoundaryType.ABL_INLET.value:           (lambda: self._constructAtmBoundaryLayerInletVelocity()),
+                BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructVariableHeightFlowRateInletVelocity(self._db.getValue(xpath + '/openChannelInlet/volumeFlowRate'))),
+                BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructOutletPhaseMeanVelocity(self._db.getValue(xpath + '/openChannelOutlet/meanVelocity'))),
+                BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
+                BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestreamVelocity(xpath + '/freeStream')),
+                BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann')),
+                BoundaryType.SUBSONIC_INFLOW.value:     (lambda: self._constructSubsonicInflow(xpath + '/subsonicInflow')),
+                BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructSubsonicOutflow(xpath + '/subsonicOutflow')),
+                BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(self._db.getVector(xpath + '/supersonicInflow/velocity'))),
+                BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
+                BoundaryType.WALL.value:                (lambda: self._constructWallU(xpath)),
+                BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructNoSlip()),
+                BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
+                BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceU(xpath)),
+                BoundaryType.POROUS_JUMP.value:         (lambda: self._constructCyclic()),
+                BoundaryType.FAN.value:                 (lambda: self._constructCyclic()),
+                BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
+                BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
+                BoundaryType.WEDGE.value:               (lambda: self._constructWedge()),
+            }.get(type_)()
 
         return field
 
@@ -202,3 +138,53 @@ class U(BoundaryCondition):
             'axis': self._db.getVector(xpath + '/rotationAxisDirection'),
             'omega': self._db.getValue(xpath + '/speed'),
         }
+
+    def _constructVelocityInletU(self, xpath, bcid, name):
+        spec = self._db.getValue(xpath + '/velocityInlet/velocity/specification')
+        if spec == VelocitySpecification.COMPONENT.value:
+            profile = self._db.getValue(xpath + '/velocityInlet/velocity/component/profile')
+            if profile == VelocityProfile.CONSTANT.value:
+                return self._constructFixedValue(
+                    self._db.getVector(xpath + '/velocityInlet/velocity/component/constant'))
+            elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
+                return self._constructTimeVaryingMappedFixedValue(
+                    self._rname, name, 'U', FileDB.getBcFile(bcid, BcFileRole.BC_VELOCITY_COMPONENT))
+            elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
+                return self._constructUniformFixedValue(
+                    xpath + '/velocityInlet/velocity/component/temporalDistribution/piecewiseLinear',
+                    self.TableType.TEMPORAL_VECTOR_LIST)
+        elif spec == VelocitySpecification.MAGNITUDE.value:
+            profile = self._db.getValue(xpath + '/velocityInlet/velocity/magnitudeNormal/profile')
+            if profile == VelocityProfile.CONSTANT.value:
+                return self._constructSurfaceNormalFixedValue(
+                    self._db.getValue(xpath + '/velocityInlet/velocity/magnitudeNormal/constant'))
+            elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
+                return self._constructTimeVaryingMappedFixedValue(
+                    self._rname, name, 'U', FileDB.getBcFile(bcid, BcFileRole.BC_VELOCITY_MAGNITUDE))
+            elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
+                return self._constructUniformNormalFixedValue(
+                    xpath + '/velocityInlet/velocity/magnitudeNormal/temporalDistribution/piecewiseLinear',
+                    self.TableType.TEMPORAL_SCALAR_LIST)
+
+    def _constructWallU(self, xpath):
+        spec = self._db.getValue(xpath + '/wall/velocity/type')
+        if spec == WallVelocityCondition.NO_SLIP.value:
+            return self._constructNoSlip()
+        elif spec == WallVelocityCondition.SLIP.value:
+            return self._construcSlip()
+        elif spec == WallVelocityCondition.MOVING_WALL.value:
+            return self._constructMovingWallVelocity()
+        elif spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
+            return self._constructNoSlip()
+        elif spec == WallVelocityCondition.TRANSLATIONAL_MOVING_WALL.value:
+            return self._constructFixedValue(
+                self._db.getVector(xpath + '/wall/velocity/translationalMovingWall/velocity'))
+        elif spec == WallVelocityCondition.ROTATIONAL_MOVING_WALL.value:
+            return self._constructRotatingWallVelocity(xpath + '/wall/velocity/rotationalMovingWall')
+
+    def _constructInterfaceU(self, xpath):
+        spec = self._db.getValue(xpath + '/interface/mode')
+        if spec == InterfaceMode.REGION_INTERFACE.value:
+            return self._constructNoSlip()
+        else:
+            return self._constructCyclicAMI()

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from coredb.cell_zone_db import CellZoneDB
+from coredb.general_db import GeneralDB
 from openfoam.dictionary_file import DictionaryFile
 
 
@@ -18,7 +18,7 @@ class OperatingConditions(DictionaryFile):
 
         db = coredb.CoreDB()
 
-        pressure = db.getValue(CellZoneDB.OPERATING_CONDITIONS_XPATH + '/pressure')
+        pressure = db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure')
 
         self._data = {
             "Op": ('Op [1 -1 -2 0 0 0 0]', pressure)

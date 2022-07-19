@@ -5,13 +5,18 @@ from coredb import coredb
 
 
 class GeneralDB:
-    MODEL_XPATH = './/general/timeTransient'
-    FLOW_TYPE_XPATH = './/general/flowType'
+    GENERAL_XPATH = './/general'
+    OPERATING_CONDITIONS_XPATH = './/operatingConditions'
 
     @classmethod
     def isTimeTransient(cls):
-        return coredb.CoreDB().getValue(cls.MODEL_XPATH) == 'true'
+        return coredb.CoreDB().getValue(cls.GENERAL_XPATH + '/timeTransient') == 'true'
 
     @classmethod
     def isCompressible(cls):
-        return coredb.CoreDB().getValue(cls.FLOW_TYPE_XPATH) == 'compressible'
+        return coredb.CoreDB().getValue(cls.GENERAL_XPATH + '/flowType') == 'compressible'
+
+    @classmethod
+    def isGravityModelOn(cls):
+        return coredb.CoreDB().getAttribute(cls.OPERATING_CONDITIONS_XPATH + '/gravity', 'disabled') == 'false'
+

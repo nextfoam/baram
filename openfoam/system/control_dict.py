@@ -42,8 +42,7 @@ class ControlDict(DictionaryFile):
                 adjustTimeStep = 'yes'
         else:
             endTime = db.getValue(xpath + '/numberOfIterations')
-            # ToDo: steady timeStepSize?
-            deltaT = db.getValue(xpath + '/timeStepSize')
+            deltaT = 1
             writeInterval = db.getValue(xpath + '/reportIntervalSteps')
 
         purgeWrite = 0

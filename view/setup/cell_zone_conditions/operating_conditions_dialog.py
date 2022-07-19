@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from coredb.cell_zone_db import CellZoneDB
+from coredb.general_db import GeneralDB
 from .operating_conditions_dialog_ui import Ui_OperatingConditionsDialog
 
 
@@ -16,7 +16,7 @@ class OperatingConditionsDialog(QDialog):
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
-        self._xpath = CellZoneDB.OPERATING_CONDITIONS_XPATH
+        self._xpath = GeneralDB.OPERATING_CONDITIONS_XPATH
         self._load()
 
     def accept(self):

@@ -40,64 +40,31 @@ class Epsilon(BoundaryCondition):
             type_ = b[BoundaryListIndex.TYPE.value]
             xpath = BoundaryDB.getXPath(bcid)
 
-            if type_ == BoundaryType.VELOCITY_INLET.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.FLOW_RATE_INLET.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.PRESSURE_INLET.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.PRESSURE_OUTLET.value:
-                if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
-                    field[name] = self._constructInletOutletByModel(xpath)
-                else:
-                    field[name] = self._constructZeroGradient()
-            elif type_ == BoundaryType.ABL_INLET.value:
-                field[name] = self._constructAtmBoundaryLayerInletEpsilon()
-            elif type_ == BoundaryType.OPEN_CHANNEL_INLET.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.OPEN_CHANNEL_OUTLET.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.OUTFLOW.value:
-                field[name] = self._constructZeroGradient()
-            elif type_ == BoundaryType.FREE_STREAM.value:
-                spec = self._db.getValue(xpath + '/turbulence/k-epsilon/specification')
-                if spec == KEpsilonSpecification.K_AND_EPSILON.value:
-                    field[name] = self._constructFreestream(xpath + '/freeStream')
-                elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-                    field[name] = self._constructNEXTViscosityRatioInletOutletTDR(
-                        self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'))
-            elif type_ == BoundaryType.FAR_FIELD_RIEMANN.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.SUBSONIC_INFLOW.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.SUBSONIC_OUTFLOW.value:
-                field[name] = self._constructZeroGradient()
-            elif type_ == BoundaryType.SUPERSONIC_INFLOW.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.SUPERSONIC_OUTFLOW.value:
-                field[name] = self._constructZeroGradient()
-            elif type_ == BoundaryType.WALL.value:
-                field[name] = self._constructNEXTEpsilonWallFunction()
-            elif type_ == BoundaryType.THERMO_COUPLED_WALL.value:
-                field[name] = self._constructNEXTEpsilonWallFunction()
-            elif type_ == BoundaryType.SYMMETRY.value:
-                field[name] = self._constructSymmetry()
-            elif type_ == BoundaryType.INTERFACE.value:
-                spec = self._db.getValue(xpath + '/interface/mode')
-                if spec == InterfaceMode.REGION_INTERFACE.value:
-                    field[name] = self._constructNEXTEpsilonWallFunction()
-                else:
-                    field[name] = self._constructCyclicAMI()
-            elif type_ == BoundaryType.POROUS_JUMP.value:
-                field[name] = self._constructCyclic()
-            elif type_ == BoundaryType.FAN.value:
-                field[name] = self._constructCyclic()
-            elif type_ == BoundaryType.EMPTY.value:
-                field[name] = self._constructEmpty()
-            elif type_ == BoundaryType.CYCLIC.value:
-                field[name] = self._constructCyclic()
-            elif type_ == BoundaryType.WEDGE.value:
-                field[name] = self._constructWedge()
+            field[name] = {
+                BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletEpsilon(xpath)),
+                BoundaryType.ABL_INLET.value:           (lambda: self._constructAtmBoundaryLayerInletEpsilon()),
+                BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
+                BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreeStreamEpsilon(xpath)),
+                BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.SUBSONIC_INFLOW.value:     (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructZeroGradient()),
+                BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
+                BoundaryType.WALL.value:                (lambda: self._constructNEXTEpsilonWallFunction()),
+                BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructNEXTEpsilonWallFunction()),
+                BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
+                BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceEpsilon(xpath)),
+                BoundaryType.POROUS_JUMP.value:         (lambda: self._constructCyclic()),
+                BoundaryType.FAN.value:                 (lambda: self._constructCyclic()),
+                BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
+                BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
+                BoundaryType.WEDGE.value:               (lambda: self._constructWedge()),
+            }.get(type_)()
 
         return field
 
@@ -126,3 +93,24 @@ class Epsilon(BoundaryCondition):
             'type': 'NEXT::epsilonWallFunction',
             'value': ('uniform', self._initialValue)
         }
+
+    def _constructPressureOutletEpsilon(self, xpath):
+        if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+            return self._constructInletOutletByModel(xpath)
+        else:
+            return self._constructZeroGradient()
+
+    def _constructFreeStreamEpsilon(self, xpath):
+        spec = self._db.getValue(xpath + '/turbulence/k-epsilon/specification')
+        if spec == KEpsilonSpecification.K_AND_EPSILON.value:
+            return self._constructFreestream(xpath + '/freeStream')
+        elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
+            return self._constructNEXTViscosityRatioInletOutletTDR(
+                self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'))
+
+    def _constructInterfaceEpsilon(self, xpath):
+        spec = self._db.getValue(xpath + '/interface/mode')
+        if spec == InterfaceMode.REGION_INTERFACE.value:
+            return self._constructNEXTEpsilonWallFunction()
+        else:
+            return self._constructCyclicAMI()

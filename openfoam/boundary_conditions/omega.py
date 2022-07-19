@@ -40,70 +40,31 @@ class Omega(BoundaryCondition):
             type_ = b[BoundaryListIndex.TYPE.value]
             xpath = BoundaryDB.getXPath(bcid)
 
-            if type_ == BoundaryType.VELOCITY_INLET.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.FLOW_RATE_INLET.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.PRESSURE_INLET.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.PRESSURE_OUTLET.value:
-                spec = self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow')
-                if spec == 'true':
-                    field[name] = self._constructInletOutletByModel(xpath)
-                else:
-                    field[name] = self._constructZeroGradient()
-            elif type_ == BoundaryType.ABL_INLET.value:
-                field[name] = self._constructInletOutlet(
-                    self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'), self._initialValue)
-            elif type_ == BoundaryType.OPEN_CHANNEL_INLET.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.OPEN_CHANNEL_OUTLET.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.OUTFLOW.value:
-                field[name] = self._constructZeroGradient()
-            elif type_ == BoundaryType.FREE_STREAM.value:
-                spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
-                if spec == KOmegaSpecification.K_AND_OMEGA.value:
-                    field[name] = self._constructFreestream(xpath + '/freeStream')
-                elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-                    field[name] = self._constructNEXTViscosityRatioInletOutletTDR(
-                        self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'))
-            elif type_ == BoundaryType.FAR_FIELD_RIEMANN.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.SUBSONIC_INFLOW.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.SUBSONIC_OUTFLOW.value:
-                field[name] = self._constructZeroGradient()
-            elif type_ == BoundaryType.SUPERSONIC_INFLOW.value:
-                field[name] = self._constructInletOutletByModel(xpath)
-            elif type_ == BoundaryType.SUPERSONIC_OUTFLOW.value:
-                field[name] = self._constructZeroGradient()
-            elif type_ == BoundaryType.WALL.value:
-                spec = self._db.getValue(xpath + '/wall/velocity/type')
-                if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
-                    field[name] = self._constructAtmOmegaWallFunction()
-                else:
-                    field[name] = self._constructNEXTOmegaBlendedWallFunction()
-            elif type_ == BoundaryType.THERMO_COUPLED_WALL.value:
-                field[name] = self._constructNEXTOmegaBlendedWallFunction()
-            elif type_ == BoundaryType.SYMMETRY.value:
-                field[name] = self._constructSymmetry()
-            elif type_ == BoundaryType.INTERFACE.value:
-                spec = self._db.getValue(xpath + '/interface/mode')
-                if spec == InterfaceMode.REGION_INTERFACE.value:
-                    field[name] = self._constructNEXTOmegaBlendedWallFunction()
-                else:
-                    field[name] = self._constructCyclicAMI()
-            elif type_ == BoundaryType.POROUS_JUMP.value:
-                field[name] = self._constructCyclic()
-            elif type_ == BoundaryType.FAN.value:
-                field[name] = self._constructCyclic()
-            elif type_ == BoundaryType.EMPTY.value:
-                field[name] = self._constructEmpty()
-            elif type_ == BoundaryType.CYCLIC.value:
-                field[name] = self._constructCyclic()
-            elif type_ == BoundaryType.WEDGE.value:
-                field[name] = self._constructWedge()
+            field[name] = {
+                BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletOmega(xpath)),
+                BoundaryType.ABL_INLET.value:           (lambda: self._constructInletOutlet(self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'), self._initialValue)),
+                BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
+                BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreeStreamOmega(xpath)),
+                BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.SUBSONIC_INFLOW.value:     (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructZeroGradient()),
+                BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
+                BoundaryType.WALL.value:                (lambda: self._constructWallOmega(xpath)),
+                BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructNEXTOmegaBlendedWallFunction()),
+                BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
+                BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceOmega(xpath)),
+                BoundaryType.POROUS_JUMP.value:         (lambda: self._constructCyclic()),
+                BoundaryType.FAN.value:                 (lambda: self._constructCyclic()),
+                BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
+                BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
+                BoundaryType.WEDGE.value:               (lambda: self._constructWedge()),
+            }.get(type_)()
 
         return field
 
@@ -128,3 +89,31 @@ class Omega(BoundaryCondition):
             'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
             'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
         }
+
+    def _constructPressureOutletOmega(self, xpath):
+        if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+            return self._constructInletOutletByModel(xpath)
+        else:
+            return self._constructZeroGradient()
+
+    def _constructFreeStreamOmega(self, xpath):
+        spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
+        if spec == KOmegaSpecification.K_AND_OMEGA.value:
+            return self._constructFreestream(xpath + '/freeStream')
+        elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
+            return self._constructNEXTViscosityRatioInletOutletTDR(
+                self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'))
+
+    def _constructWallOmega(self, xpath):
+        spec = self._db.getValue(xpath + '/wall/velocity/type')
+        if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
+            return self._constructAtmOmegaWallFunction()
+        else:
+            return self._constructNEXTOmegaBlendedWallFunction()
+
+    def _constructInterfaceOmega(self, xpath):
+        spec = self._db.getValue(xpath + '/interface/mode')
+        if spec == InterfaceMode.REGION_INTERFACE.value:
+            return self._constructNEXTOmegaBlendedWallFunction()
+        else:
+            return self._constructCyclicAMI()

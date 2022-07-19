@@ -25,8 +25,11 @@ class FvSolution(DictionaryFile):
             scheme = self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/pressureVelocityCouplingScheme')
             phase = RegionDB.getPhase(self._rname)
             consistent = 'no'
+            momentumPredictor = 'on'
             if scheme == PressureVelocityCouplingScheme.SIMPLEC.value and phase != Phase.SOLID:
                 consistent = 'yes'
+            if self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/useMomentumPredictor') == 'false':
+                momentumPredictor = 'off'
 
             self._data = {
                 'solvers': {
@@ -77,16 +80,16 @@ class FvSolution(DictionaryFile):
                 },
                 'PIMPLE': {
                     'consistent': consistent,
-                    # ToDo: set momentumPredictor value. Transient일 때만, Pressure Velocity 콤보 밑에. on/off
-                    'momentumPredictor': '<momentumPredictor>', # Use... checkbox. default:on
-                    'turbOnFinalIterOnly': 'false',  # only for fluid
+                    'momentumPredictor': momentumPredictor,
+                    # only for fluid
+                    'turbOnFinalIterOnly': 'false',
                     'nNonOrthogonalCorrectors': '0',
                     # only for fluid
                     'nCorrectors': self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/numberOfCorrectors'),
-                    # ToDo: only in single region case? 하지만 쓰기
+                    # only in single region case
                     'nOuterCorrectors':
                         self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/maxIterationsPerTimeStep'),
-                    'maxCo': 0, #ToDo: controlDict와 동일하게 (무조건)
+                    'maxCo': self._db.getValue('.//runConditions/maxCourantNumber'),
                     'nonOrthogonalityThreshold': '80',
                     'skewnessThreshold': '0.95',
                     'pRefCell': '0',        # only for fluid

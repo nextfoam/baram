@@ -50,6 +50,7 @@ class NumericalConditionsPage(QWidget):
             return super().hideEvent(ev)
 
         timeIsTransient = GeneralDB.isTimeTransient()
+        self._ui.useMomentumPredictor.setVisible(timeIsTransient)
         self._ui.discretizationSchemeTime.setEnabled(timeIsTransient)
         self._ui.underRelaxationFactorPressureFinal.setEnabled(timeIsTransient)
         self._ui.underRelaxationFactorMomentumFinal.setEnabled(timeIsTransient)
@@ -64,7 +65,7 @@ class NumericalConditionsPage(QWidget):
 
         self._ui.pressureVelocityCouplingScheme.setCurrentText(
             self._pressureVelocityCouplingSchemes[self._db.getValue(self._xpath + '/pressureVelocityCouplingScheme')])
-
+        self._ui.useMomentumPredictor.setChecked(self._db.getValue(self._xpath + '/useMomentumPredictor') == 'true')
         self._ui.discretizationSchemeTime.setCurrentText(
             self._implicitDiscretizationSchemes[self._db.getValue(self._xpath + '/discretizationSchemes/time')])
         self._ui.discretizationSchemeMomentum.setCurrentText(
@@ -112,6 +113,8 @@ class NumericalConditionsPage(QWidget):
         writer = CoreDBWriter()
         writer.append(self._xpath + '/pressureVelocityCouplingScheme',
                       self._ui.pressureVelocityCouplingScheme.currentData(), None)
+        writer.append(self._xpath + '/useMomentumPredictor',
+                      'true' if self._ui.useMomentumPredictor.isChecked() else 'false', None)
 
         writer.append(self._xpath + '/discretizationSchemes/time',
                       self._ui.discretizationSchemeTime.currentData(), None)

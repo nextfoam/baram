@@ -77,7 +77,6 @@ class RegionDB:
 
 class CellZoneDB:
     CELL_ZONE_CONDITIONS_XPATH = './/cellZones'
-    OPERATING_CONDITIONS_XPATH = './/operatingConditions'
     NAME_FOR_ALL = 'All'
 
     _cellzones = None

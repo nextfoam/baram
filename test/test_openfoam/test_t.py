@@ -1,10 +1,15 @@
 import unittest
+import os
+import shutil
 
 from coredb import coredb
-from openfoam.boundary_conditions.t import T
+from coredb.filedb import FileDB, BcFileRole
 from coredb.boundary_db import BoundaryDB
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import Phase
+from coredb.settings import Settings
+from openfoam.boundary_conditions.t import T
+from openfoam.file_system import FileSystem
 
 dimensions = '[0 0 0 1 0 0 0]'
 region = "testRegion_1"
@@ -15,8 +20,8 @@ class TestT(unittest.TestCase):
     def setUp(self):
         self._db = coredb.CoreDB()
         self._db.addRegion(region)
-        bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
-        self._xpath = BoundaryDB.getXPath(bcid)
+        self._bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
+        self._xpath = BoundaryDB.getXPath(self._bcid)
         self._initialValue = self._db.getValue('.//initialization/initialValues/temperature')
 
     def tearDown(self) -> None:
@@ -239,10 +244,24 @@ class TestT(unittest.TestCase):
 
     # Temperature Profile is spatial distribution
     def testTemperatureSpatialDistribution(self):
+        testDir = 'testTSpatialDistribution'
+        csvFile = 'testTSpatialDistribution/testTSpatial.csv'
+        os.makedirs(testDir, exist_ok=True)             # 사용자가 Working Directory 선택할 때 이미 존재하는 디렉토리
+        Settings.setWorkingDirectory(testDir)           # Case wizard 끝날 때 호출
+        FileSystem.setup()                              # Case wizard 끝날 때 호출
+        FileSystem._constantPath = FileSystem.makeDir(FileSystem.caseRoot(), FileSystem.CONSTANT_DIRECTORY_NAME)
+                                                        # 사용자가 선택한 mesh directory 복사해 올 때 생성됨
+        FileSystem.initCaseDir()                        # CaseGenerator애서 호출
+        FileSystem.initRegionDirs(region)               # CaseGenerator에서 호출
+        with open(csvFile, 'w') as f:
+            f.write('0,0,0,1\n0,0,1,2\n')
+
         self._db.setValue(self._xpath + '/temperature/profile', 'spatialDistribution')
+        FileDB.putBcFile(self._bcid, BcFileRole.BC_TEMPERATURE, csvFile)
         content = T(region).build().asDict()
         self.assertEqual('timeVaryingMappedFixedValue', content['boundaryField'][boundary]['type'])
-        # ToDo: Test if the files were created
+
+        shutil.rmtree(testDir)                          # 테스트 디렉토리 삭제
 
     # Temperature Profile is temporalDistribution
     def testTemperaturePiecewiseLinear(self):
@@ -262,7 +281,7 @@ class TestT(unittest.TestCase):
         t = self._db.getValue(self._xpath + '/temperature/temporalDistribution/piecewiseLinear/t').split()
         v = self._db.getValue(self._xpath + '/temperature/temporalDistribution/piecewiseLinear/v').split()
         self.assertEqual('uniformFixedValue', content['boundaryField'][boundary]['type'])
-        self.assertEqual([[f'a{i}', v[i]] for i in range(len(v))],
+        self.assertEqual([[v[i], i] for i in range(len(v))],
                          content['boundaryField'][boundary]['uniformValue'][1])
 
 

@@ -2,7 +2,7 @@ import unittest
 
 from coredb import coredb
 from coredb.boundary_db import BoundaryDB
-from coredb.cell_zone_db import CellZoneDB
+from coredb.general_db import GeneralDB
 from openfoam.boundary_conditions.p import P
 
 dimensions = '[1 -1 -2 0 0 0 0]'
@@ -17,7 +17,7 @@ class TestP(unittest.TestCase):
         bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
         self.xpath = BoundaryDB.getXPath(bcid)
         self._initialValue = self._db.getValue('.//initialization/initialValues/pressure')
-        operatingValue = self._db.getValue(CellZoneDB.OPERATING_CONDITIONS_XPATH + '/pressure')
+        operatingValue = self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure')
         self._calculatedValue = float(self._initialValue) + float(operatingValue)
 
     def tearDown(self) -> None:

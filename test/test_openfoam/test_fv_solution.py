@@ -21,12 +21,12 @@ class TestFvSolution(unittest.TestCase):
         del coredb.CoreDB._instance
 
     def testCompressible(self):
-        self._db.setValue(GeneralDB.FLOW_TYPE_XPATH, "compressible")
+        self._db.setValue(GeneralDB.GENERAL_XPATH + '/flowType', "compressible")
         content = FvSolution(region).build().asDict()
         self.assertEqual('PBiCGStab', content['solvers']['p']['solver'])
 
     def testIncompressible(self):
-        self._db.setValue(GeneralDB.FLOW_TYPE_XPATH, "incompressible")
+        self._db.setValue(GeneralDB.GENERAL_XPATH + '/flowType', "incompressible")
         content = FvSolution(region).build().asDict()
         self.assertEqual('PCG', content['solvers']['p']['solver'])
 
@@ -111,6 +111,20 @@ class TestFvSolution(unittest.TestCase):
         self.assertEqual('yes', content['PIMPLE']['consistent'])
         self.assertEqual(self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/numberOfCorrectors'),
                          content['PIMPLE']['nCorrectors'])
+
+    def testUseMomentumPredictor(self):
+        self._db.setValue(GeneralDB.GENERAL_XPATH + '/timeTransient', 'true')
+        self._db.setValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/useMomentumPredictor', 'true')
+        content = FvSolution(region).build().asDict()
+        self.assertEqual('on', content['PIMPLE']['momentumPredictor'])
+        self.assertEqual(self._db.getValue('.//runConditions/maxCourantNumber'), content['PIMPLE']['maxCo'])
+
+    def testNotUseMomentumPredictor(self):
+        self._db.setValue(GeneralDB.GENERAL_XPATH + '/timeTransient', 'true')
+        self._db.setValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/useMomentumPredictor', 'false')
+        content = FvSolution(region).build().asDict()
+        self.assertEqual('off', content['PIMPLE']['momentumPredictor'])
+        self.assertEqual(self._db.getValue('.//runConditions/maxCourantNumber'), content['PIMPLE']['maxCo'])
 
     def testRegion(self):
         content = FvSolution(region).build().asDict()

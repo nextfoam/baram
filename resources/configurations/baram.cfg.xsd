@@ -1090,6 +1090,7 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
+            <xs:element name="useMomentumPredictor" type="xs:boolean" default="true"/>
             <xs:element name="discretizationSchemes">
                 <xs:complexType>
                     <xs:sequence>
@@ -1465,8 +1466,7 @@
                                             </xs:simpleType>
                                         </xs:element>
                                         <xs:element name="timeStepSize" type="inputNumberType" default="0.01"/>
-                                        <!-- ToDo: maxCo default -->
-                                        <xs:element name="maxCourantNumber" type="inputNumberType" default="0.01"/>
+                                        <xs:element name="maxCourantNumber" type="inputNumberType" default="1"/>
                                         <xs:element name="endTime" type="inputNumberType" default="0"/>
                                         <xs:element name="reportIntervalSteps" type="xs:positiveInteger" default="1"/>
                                         <xs:element name="reportIntervalSeconds" type="inputNumberType" default="0.01"/>

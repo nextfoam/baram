@@ -3,7 +3,7 @@
 
 from coredb import coredb
 from coredb.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType, InterfaceMode
-from coredb.cell_zone_db import CellZoneDB
+from coredb.general_db import GeneralDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -20,7 +20,7 @@ class P(BoundaryCondition):
         self._calculatedValue = 0
 
         if calculated:
-            operatingPressure = self._db.getValue(CellZoneDB.OPERATING_CONDITIONS_XPATH + '/pressure')
+            operatingPressure = self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure')
             self._calculatedValue = float(self._initialValue) + float(operatingPressure)
 
     def build(self):
