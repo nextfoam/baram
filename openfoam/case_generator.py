@@ -23,6 +23,8 @@ from openfoam.boundary_conditions.alphat import Alphat
 from openfoam.system.fv_solution import FvSolution
 from openfoam.system.control_dict import ControlDict
 from openfoam.system.fv_schemes import FvSchemes
+from openfoam.system.fv_options import FvOptions
+from openfoam.system.decomposePar_dict import DecomposeParDict
 from openfoam.polymesh.boundary import Boundary
 from openfoam.file_system import FileSystem
 
@@ -82,8 +84,10 @@ class CaseGenerator:
 
             FvSchemes(rname).build().write()
             FvSolution(rname).build().write()
+            FvOptions(rname).build().write()
 
             Boundary(rname).build().write()
 
         FvSolution().build().write()
         ControlDict().build().write()
+        DecomposeParDict().build().write()

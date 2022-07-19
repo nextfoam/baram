@@ -11,26 +11,30 @@ class TransportProperties(DictionaryFile):
         super().__init__(self.constantLocation(rname), 'transportProperties')
 
         self._rname = rname
+        self._db = coredb.CoreDB()
 
     def build(self):
         if self._data is not None:
             return self
-
-        db = coredb.CoreDB()
-        energyModels = db.getValue('.//models/energyModels')
-
         self._data = {}
-        if energyModels == "off":
+
+        mid = self._db.getValue(f'.//regions/region[name="{self._rname}"]/material')
+
+        energyModels = self._db.getValue('.//models/energyModels')
+        dSpec = self._db.getValue(f'{MaterialDB.getXPath(mid)}/density/specification')
+        vSpec = self._db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity/specification')
+
+        if energyModels == "off" and dSpec == 'constant' and vSpec == 'constant':
             self._data['transportModel'] = 'Newtonian'
 
-            mid = db.getValue(f'.//region[name="{self._rname}"]/material')
-            density = db.getValue(f'{MaterialDB.getXPath(mid)}/density')
-            viscosity = db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity')
-            nu = viscosity / density
+            density = self._db.getValue(f'{MaterialDB.getXPath(mid)}/density/constant')
+            viscosity = self._db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity/constant')
+
+            nu = float(viscosity) / float(density)
             self._data['nu'] = f'[ 0 2 -1 0 0 0 0 ] {nu}'
 
             # MultiPhase (not defined yet)
-            # multiphaseModels = db.getValue('.//models/multiphaseModels')
+            # multiphaseModels = self._db.getValue('.//models/multiphaseModels')
             # if multiphaseModels == "VOF":
             #     self._data['VOF'] = {
             #         'phases': '(liquid gas)',
