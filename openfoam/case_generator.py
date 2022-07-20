@@ -85,9 +85,10 @@ class CaseGenerator:
             FvSchemes(rname).build().write()
             FvSolution(rname).build().write()
             FvOptions(rname).build().write()
+            DecomposeParDict(rname).build().write()
 
             Boundary(rname).build().write()
 
         FvSolution().build().write()
         ControlDict().build().write()
-        DecomposeParDict().build().write()
+
