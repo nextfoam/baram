@@ -92,33 +92,31 @@ class BoundaryCondition(DictionaryFile):
         }
 
     def _constructUniformFixedValue(self, xpath, type_):
-        value = None
-
         if type_ == self.TableType.POLYNOMIAL:
-            value = []
             v = self._db.getValue(xpath).split()
-            for i in range(len(v)):
-                value.append([v[i], i])
 
             return {
                 'type': 'uniformFixedValue',
-                'uniformValue': ('polynomial', value)
+                'uniformValue': ('polynomial', [[v[i], i] for i in range(len(v))])
             }
         elif type_ == self.TableType.TEMPORAL_SCALAR_LIST:
             t = self._db.getValue(xpath + '/t').split()
             v = self._db.getValue(xpath + '/v').split()
-            value = [[t[i], v[i]] for i in range(len(t))]
+
+            return {
+                'type': 'uniformFixedValue',
+                'uniformValue': ('table', [[t[i], v[i]] for i in range(len(t))])
+            }
         elif type_ == self.TableType.TEMPORAL_VECTOR_LIST:
             t = self._db.getValue(xpath + '/t').split()
             x = self._db.getValue(xpath + '/x').split()
             y = self._db.getValue(xpath + '/y').split()
             z = self._db.getValue(xpath + '/z').split()
-            value = [[t[i], [x[i], y[i], z[i]]] for i in range(len(t))]
 
-        return {
-            'type': 'uniformFixedValue',
-            'uniformValue': ('table', value)
-        }
+            return {
+                'type': 'uniformFixedValue',
+                'uniformValue': ('table', [[t[i], [x[i], y[i], z[i]]] for i in range(len(t))])
+            }
 
     def _constructUniformNormalFixedValue(self, xpath, type_):
         value = None

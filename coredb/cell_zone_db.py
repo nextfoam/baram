@@ -1,15 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, auto
+from enum import Enum
 
 from coredb import coredb
 from coredb.material_db import MaterialDB
-
-
-class CellZoneListIndex(Enum):
-    ID = 0
-    NAME = auto()
 
 
 class ZoneType(Enum):
@@ -101,10 +96,8 @@ class CellZoneDB:
             cls._cellzones = []
 
             for region in db.getRegions():
-                for cellZone in db.getCellZones(region):
-                    name = cellZone[CellZoneListIndex.NAME.value]
-                    if name != cls.NAME_FOR_ALL:
-                        cls._cellzones.append(
-                            MeshObject(str(cellZone[CellZoneListIndex.ID.value]), name, region))
+                for czid, czname in db.getCellZones(region):
+                    if czname != cls.NAME_FOR_ALL:
+                        cls._cellzones.append(MeshObject(str(czid), czname, region))
 
         return cls._cellzones

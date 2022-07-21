@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, auto
+from enum import Enum
 
 from coredb import coredb
 from coredb.cell_zone_db import MeshObject
@@ -35,12 +35,6 @@ class BoundaryType(Enum):
     EMPTY	            = "empty"
     CYCLIC	            = "cyclic"
     WEDGE	            = "wedge"
-
-
-class BoundaryListIndex(Enum):
-    ID = 0
-    NAME = auto()
-    TYPE = auto()
 
 
 class VelocitySpecification(Enum):
@@ -135,10 +129,9 @@ class BoundaryDB:
             cls._boundariesForSelector = []
 
             for region in db.getRegions():
-                for boundary in db.getBoundaryConditions(region):
+                for bcid, bcname, ptype in db.getBoundaryConditions(region):
                     cls._boundariesForSelector.append(
-                        MeshObject(
-                            str(boundary[BoundaryListIndex.ID.value]), boundary[BoundaryListIndex.NAME.value], region))
+                        MeshObject(str(bcid), bcname, region))
 
         return cls._boundariesForSelector
 
@@ -148,10 +141,9 @@ class BoundaryDB:
 
         boundaries = []
         for region in db.getRegions():
-            for boundary in db.getBoundaryConditions(region):
-                bcid = boundary[BoundaryListIndex.ID.value]
+            for bcid, bcname, ptype in db.getBoundaryConditions(region):
                 if bcid != bcidToExcept:
                         #and db.getValue(cls.getBoundaryXPath(bcid) + '/geometricalType') == "cyclic":
-                    boundaries.append(MeshObject(str(bcid), boundary[BoundaryListIndex.NAME.value], region))
+                    boundaries.append(MeshObject(str(bcid), bcname, region))
 
         return boundaries

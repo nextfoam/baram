@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, Signal
 
 from coredb import coredb
 from coredb.material_db import ListIndex
-from coredb.cell_zone_db import CellZoneListIndex, RegionDB
+from coredb.cell_zone_db import RegionDB
 from .region_widget_ui import Ui_RegionWidget
 
 
@@ -52,9 +52,9 @@ class RegionWidget(QWidget):
         self._ui.groupBox.setTitle(self._name)
 
         cellZones = self._db.getCellZones(self._name)
-        for c in cellZones:
-            item = QListWidgetItem(c[CellZoneListIndex.NAME.value], self._ui.list)
-            item.setData(Qt.UserRole, c[CellZoneListIndex.ID.value])
+        for czid, czname in cellZones:
+            item = QListWidgetItem(czname, self._ui.list)
+            item.setData(Qt.UserRole, czid)
 
     def _connectSignalsSlots(self):
         self._ui.list.currentItemChanged.connect(self._cellZoneSelected)

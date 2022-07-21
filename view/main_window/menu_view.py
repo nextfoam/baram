@@ -3,6 +3,7 @@
 
 from enum import Enum, auto
 
+from coredb.settings import Settings
 from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import QObject, Signal
 
@@ -42,9 +43,9 @@ class MenuView(QObject):
         self._addMenu(MenuItem.MENU_SETUP_MODELS, self._setupMenu,
                       self.tr('Models'))
         self._addMenu(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS, self._setupMenu,
-                      self.tr('Cell Zone Conditions'))
+                      self.tr('Cell Zone Conditions'), True)
         self._addMenu(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS, self._setupMenu,
-                      self.tr('Boundary Conditions'))
+                      self.tr('Boundary Conditions'), True)
         self._addMenu(MenuItem.MENU_SETUP_REFERENCE_VALUES, self._setupMenu,
                       self.tr('Reference Values'))
         self._addMenu(MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS, self._solutionMenu,
@@ -64,6 +65,10 @@ class MenuView(QObject):
     def currentMenu(self):
         return self._view.currentItem().type()
 
+    def updateMenu(self):
+        self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(not Settings.isMeshLoaded())
+        self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(not Settings.isMeshLoaded())
+
     def _connectSignalsSlots(self):
         self._view.currentItemChanged.connect(self.connectCurrentItemChanged)
 
@@ -72,6 +77,7 @@ class MenuView(QObject):
         item.setExpanded(True)
         return item
 
-    def _addMenu(self, key, parent, text):
+    def _addMenu(self, key, parent, text, disabled=False):
         self._menu[key.value] = QTreeWidgetItem(parent, [text], key.value)
+        self._menu[key.value].setDisabled(disabled)
 

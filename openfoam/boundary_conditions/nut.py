@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from coredb.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType
-from coredb.boundary_db import WallVelocityCondition, InterfaceMode
+from coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, InterfaceMode
 from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -36,10 +35,7 @@ class Nut(BoundaryCondition):
         field = {}
 
         boundaries = self._db.getBoundaryConditions(self._rname)
-        for b in boundaries:
-            bcid = b[BoundaryListIndex.ID.value]
-            name = b[BoundaryListIndex.NAME.value]
-            type_ = b[BoundaryListIndex.TYPE.value]
+        for bcid, name, type_ in boundaries:
             xpath = BoundaryDB.getXPath(bcid)
 
             field[name] = {

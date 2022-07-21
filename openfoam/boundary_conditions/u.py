@@ -3,8 +3,7 @@
 
 from coredb import coredb
 from coredb.filedb import FileDB, BcFileRole
-from coredb.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType
-from coredb.boundary_db import VelocitySpecification, VelocityProfile
+from coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
 from coredb.boundary_db import FlowRateInletSpecification, WallVelocityCondition, InterfaceMode
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from openfoam.dictionary_file import DataClass
@@ -36,10 +35,7 @@ class U(BoundaryCondition):
         field = {}
 
         boundaries = self._db.getBoundaryConditions(self._rname)
-        for b in boundaries:
-            bcid = b[BoundaryListIndex.ID.value]
-            name = b[BoundaryListIndex.NAME.value]
-            type_ = b[BoundaryListIndex.TYPE.value]
+        for bcid, name, type_ in boundaries:
             xpath = BoundaryDB.getXPath(bcid)
 
             field[name] = {

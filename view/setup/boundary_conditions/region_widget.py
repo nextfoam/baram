@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QHeaderView, QTableWidgetItem, QComboBox
 from PySide6.QtCore import Signal
 
 from coredb import coredb
-from coredb.boundary_db import BoundaryListIndex, BoundaryType, BoundaryDB
+from coredb.boundary_db import BoundaryType, BoundaryDB
 from .region_widget_ui import Ui_RegionWidget
 
 
@@ -48,10 +48,11 @@ class RegionWidget(QWidget):
         boundaries = self._db.getBoundaryConditions(self._rname)
 
         self._ui.list.setRowCount(len(boundaries))
-        for i in range(len(boundaries)):
-            self._ui.list.setItem(
-                i, 0, QTableWidgetItem(boundaries[i][BoundaryListIndex.NAME.value], boundaries[i][BoundaryListIndex.ID.value]))
-            self._ui.list.setCellWidget(i, 1, self._createComboBox(boundaries[i][BoundaryListIndex.TYPE.value]))
+        i = 0
+        for bcid, name, type_ in self._db.getBoundaryConditions(self._rname):
+            self._ui.list.setItem(i, 0, QTableWidgetItem(name, bcid))
+            self._ui.list.setCellWidget(i, 1, self._createComboBox(type_))
+            i += 1
 
     def _connectSignalsSlots(self):
         self._ui.list.currentCellChanged.connect(self._boundarySelected)

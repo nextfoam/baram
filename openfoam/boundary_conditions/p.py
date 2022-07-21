@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from coredb.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType, InterfaceMode
+from coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from coredb.general_db import GeneralDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -39,14 +39,10 @@ class P(BoundaryCondition):
         field = {}
 
         boundaries = self._db.getBoundaryConditions(self._rname)
-        for b in boundaries:
-            name = b[BoundaryListIndex.NAME.value]
-
+        for bcid, name, type_ in boundaries:
             if self._calculated:
                 field[name] = self._constructCalculated(self._calculatedValue)
             else:
-                bcid = b[BoundaryListIndex.ID.value]
-                type_ = b[BoundaryListIndex.TYPE.value]
                 xpath = BoundaryDB.getXPath(bcid)
 
                 field[name] = {

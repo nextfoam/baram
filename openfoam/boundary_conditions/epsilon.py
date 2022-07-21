@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from coredb.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType
-from coredb.boundary_db import KEpsilonSpecification, InterfaceMode
+from coredb.boundary_db import BoundaryDB, BoundaryType, KEpsilonSpecification, InterfaceMode
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -34,10 +33,7 @@ class Epsilon(BoundaryCondition):
         field = {}
 
         boundaries = self._db.getBoundaryConditions(self._rname)
-        for b in boundaries:
-            bcid = b[BoundaryListIndex.ID.value]
-            name = b[BoundaryListIndex.NAME.value]
-            type_ = b[BoundaryListIndex.TYPE.value]
+        for bcid, name, type_ in boundaries:
             xpath = BoundaryDB.getXPath(bcid)
 
             field[name] = {

@@ -247,7 +247,7 @@ class TestT(unittest.TestCase):
         testDir = 'testTSpatialDistribution'
         csvFile = 'testTSpatialDistribution/testTSpatial.csv'
         os.makedirs(testDir, exist_ok=True)             # 사용자가 Working Directory 선택할 때 이미 존재하는 디렉토리
-        Settings.setWorkingDirectory(testDir)           # Case wizard 끝날 때 호출
+        Settings.createWorkspace(testDir)           # Case wizard 끝날 때 호출
         FileSystem.setup()                              # Case wizard 끝날 때 호출
         FileSystem._constantPath = FileSystem.makeDir(FileSystem.caseRoot(), FileSystem.CONSTANT_DIRECTORY_NAME)
                                                         # 사용자가 선택한 mesh directory 복사해 올 때 생성됨

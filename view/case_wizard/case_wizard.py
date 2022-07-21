@@ -8,7 +8,6 @@ from PySide6.QtWidgets import QWizard
 from coredb import coredb
 from coredb.settings import Settings
 from openfoam.file_system import FileSystem
-from openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from .case_wizard_ui import Ui_CaseWizard
 from .flow_type_page import FlowTypePage
 from .solver_type_page import SolverTypePage
@@ -115,6 +114,5 @@ class CaseWizard(QWizard):
         else:
             self._db.setValue(f'{modelsXPath}/speciesModels', 'off')
 
-        Settings.setWorkingDirectory(self.field('workingDirectory'))
+        Settings.createWorkspace(self.field('workingDirectory'))
         FileSystem.setup()
-        PolyMeshLoader.load(self.field('meshDirectory'))

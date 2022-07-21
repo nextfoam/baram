@@ -44,8 +44,7 @@ class TestSolver(unittest.TestCase):
         content = ControlDict().build().asDict()
 
         self.assertEqual(self._db.getValue('.//runConditions/numberOfIterations'), content['endTime'])
-        # ToDo: steady timeStepSize?
-        self.assertEqual(self._db.getValue('.//runConditions/timeStepSize'), content['deltaT'])
+        self.assertEqual(1, content['deltaT'])
         self.assertEqual('runTime', content['writeControl'])
         self.assertEqual(self._db.getValue('.//runConditions/reportIntervalSteps'), content['writeInterval'])
         self.assertEqual(0, content['purgeWrite'])

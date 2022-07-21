@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThreadPool
 
+from coredb.settings import Settings
 from view.case_wizard.case_wizard import CaseWizard
 from view.setup.general.general_page import GeneralPage
 from view.setup.materials.material_page import MaterialPage
@@ -17,6 +18,7 @@ from view.solution.initialization.initialization_page import InitializationPage
 from view.solution.run_calculation.run_calculation_page import RunCalculationPage
 from openfoam.case_generator import CaseGenerator
 from openfoam.polymesh.polymesh_loader import PolyMeshLoader
+from openfoam.file_system import FileSystem
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu_view import MenuView, MenuItem
@@ -74,7 +76,9 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SOLUTION_RUN_CALCULATION.value: MenuPage(RunCalculationPage),
         }
 
+        self._threadPool = QThreadPool()
         self._startWindow = StartWindow()
+
         self._connectSignalsSlots()
 
         self._startWindow.open()
@@ -89,6 +93,7 @@ class MainWindow(QMainWindow):
         self._ui.actionSave.triggered.connect(self._save)
         self._ui.actionLoad_Mesh.triggered.connect(self._loadMesh)
         self._menuView.currentMenuChanged.connect(self._changeForm)
+        Settings.signals.statusChanged.connect(self._caseStatusChanged)
 
     def _start(self):
         action = self._startWindow.action()
@@ -113,19 +118,9 @@ class MainWindow(QMainWindow):
         CaseGenerator().generateFiles()
 
     def _loadMesh(self):
-        # fileName = QFileDialog.getOpenFileName(self, self.tr("Open Mesh"), "", self.tr("OpenFOAM Mesh (*.foam)"))
-        # if fileName[0]:
-        #     self._meshDock.showMesh(fileName[0])
         dirName = QFileDialog.getExistingDirectory(self)
         if dirName:
-            PolyMeshLoader().load(dirName)
-
-            currentMenu = self._menuView.currentMenu()
-            if currentMenu == MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value\
-                    or currentMenu == MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value:
-                idx = self._menuPages[currentMenu].index
-                if idx > 0:
-                    self._contentView.page(idx).load()
+            self._threadPool.start(lambda: self._copyMesh(dirName))
 
     def _changeForm(self, currentMenu):
         page = self._menuPages[currentMenu]
@@ -135,7 +130,15 @@ class MainWindow(QMainWindow):
 
         self._contentView.changePane(page.index)
 
+    def _caseStatusChanged(self, status):
+        self._menuView.updateMenu()
+
     def _addDockTabified(self, dock):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
         self.tabifyDock(dock)
         self._ui.menuView_2.addAction(dock.toggleViewAction())
+
+    def _copyMesh(self, dirName):
+        FileSystem.copyOpenFoamMeshFrom(dirName)
+        self._threadPool.start(lambda: PolyMeshLoader().load())
+        self._threadPool.start(lambda: self._meshDock.showOpenFoamMesh())

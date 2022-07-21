@@ -64,7 +64,11 @@ class FileSystem:
         return os.path.join(cls.constantPath(rname), rname, cls.BOUNDARY_DATA_DIRECTORY_NAME)
 
     @classmethod
-    def copyMeshFrom(cls, directory):
+    def foamFilePath(cls):
+        return os.path.join(cls._casePath, os.path.basename(Settings.workingDirectory()) + '.foam')
+
+    @classmethod
+    def copyOpenFoamMeshFrom(cls, directory):
         if not cls._constantPath:
             cls._constantPath = os.path.join(cls._casePath, cls.CONSTANT_DIRECTORY_NAME)
 
@@ -72,6 +76,9 @@ class FileSystem:
             shutil.rmtree(cls._constantPath)
 
         shutil.copytree(directory, cls._constantPath)
+
+        with open(cls.foamFilePath(), 'a'):
+            pass
 
     @classmethod
     def makeDir(cls, parent, directory):

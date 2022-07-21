@@ -3,10 +3,8 @@
 
 from coredb import coredb
 from coredb.filedb import FileDB, BcFileRole
-from coredb.boundary_db import BoundaryListIndex, BoundaryDB, BoundaryType
-from coredb.boundary_db import FlowRateInletSpecification
-from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution
-from coredb.boundary_db import InterfaceMode
+from coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification
+from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution, InterfaceMode
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import Phase
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
@@ -38,14 +36,11 @@ class T(BoundaryCondition):
         field = {}
 
         boundaries = self._db.getBoundaryConditions(self._rname)
-        for b in boundaries:
-            bcid = b[BoundaryListIndex.ID.value]
-            name = b[BoundaryListIndex.NAME.value]
+        for bcid, name, type_ in boundaries:
             xpath = BoundaryDB.getXPath(bcid)
 
             profile = self._db.getValue(xpath + '/temperature/profile')
             if profile == TemperatureProfile.CONSTANT.value:
-                type_ = b[BoundaryListIndex.TYPE.value]
                 constant = self._db.getValue(xpath + '/temperature/constant')
 
                 field[name] = {

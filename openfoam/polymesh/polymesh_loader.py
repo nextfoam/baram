@@ -7,6 +7,7 @@ import logging
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
 
 from coredb import coredb
+from coredb.settings import Settings, CaseStatus
 from openfoam.file_system import FileSystem
 
 
@@ -15,10 +16,9 @@ logger = logging.getLogger(__name__)
 
 class PolyMeshLoader:
     @classmethod
-    def load(cls, meshDir):
+    def load(cls):
         db = coredb.CoreDB()
 
-        FileSystem.copyMeshFrom(meshDir)
         for entry in os.scandir(FileSystem.constantPath()):
             if entry.is_dir():
                 rname = entry.name
@@ -40,6 +40,8 @@ class PolyMeshLoader:
                                         db.addCellZone(rname, czname)
                 else:
                     logger.info(f'{rname} has no polyMesh({boundaryPath}), and is not added to regions')
+
+        Settings.setStatus(CaseStatus.MESH_LOADED)
 
     @classmethod
     def loadBoundary(cls, path):
