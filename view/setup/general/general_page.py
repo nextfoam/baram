@@ -26,7 +26,7 @@ class GeneralPage(QWidget):
         if ev.spontaneous():
             return super().hideEvent(ev)
 
-        xpath = GeneralDB.MODEL_XPATH
+        xpath = GeneralDB.GENERAL_XPATH + '/timeTransient'
 
         if self._ui.transient_.isChecked():
             self._db.setValue(xpath, 'true')
@@ -36,7 +36,7 @@ class GeneralPage(QWidget):
         return super().hideEvent(ev)
 
     def _load(self):
-        xpath = GeneralDB.MODEL_XPATH
+        xpath = GeneralDB.GENERAL_XPATH + '/timeTransient'
 
         timeTransient = self._db.getValue(xpath)
         if timeTransient == 'true':

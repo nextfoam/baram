@@ -189,8 +189,16 @@
      <string>View</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuSetting">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionScale"/>
+    <addaction name="actionLanguage"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView_2"/>
+   <addaction name="menuSetting"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="emptyDock">
@@ -264,6 +272,16 @@
   <action name="actionLoad_Mesh">
    <property name="text">
     <string>Load Mesh</string>
+   </property>
+  </action>
+  <action name="actionScale">
+   <property name="text">
+    <string>Scale</string>
+   </property>
+  </action>
+  <action name="actionLanguage">
+   <property name="text">
+    <string>Language</string>
    </property>
   </action>
  </widget>

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog
+from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QDialog
 from PySide6.QtCore import Qt, QThreadPool
 
 from coredb.settings import Settings
@@ -22,6 +22,8 @@ from openfoam.file_system import FileSystem
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu_view import MenuView, MenuItem
+from .menu.settings_language import SettingLanguageDialog
+from .menu.settings_scaling import SettingScalingDialog
 from .mesh_dock import MeshDock
 from .console_dock import ConsoleDock
 from .start_window import StartWindow, StartAction
@@ -92,6 +94,8 @@ class MainWindow(QMainWindow):
         self._ui.actionNew.triggered.connect(self._openWizard)
         self._ui.actionSave.triggered.connect(self._save)
         self._ui.actionLoad_Mesh.triggered.connect(self._loadMesh)
+        self._ui.actionLanguage.triggered.connect(self._changeLanguage)
+        self._ui.actionScale.triggered.connect(self._changeScale)
         self._menuView.currentMenuChanged.connect(self._changeForm)
         Settings.signals.statusChanged.connect(self._caseStatusChanged)
 
@@ -142,3 +146,11 @@ class MainWindow(QMainWindow):
         FileSystem.copyOpenFoamMeshFrom(dirName)
         self._threadPool.start(lambda: PolyMeshLoader().load())
         self._threadPool.start(lambda: self._meshDock.showOpenFoamMesh())
+
+    def _changeLanguage(self):
+        self._dialogSettingLanguage = SettingLanguageDialog(self)
+        self._dialogSettingLanguage.open()
+
+    def _changeScale(self):
+        self._dialogSettingScaling = SettingScalingDialog(self)
+        self._dialogSettingScaling.open()

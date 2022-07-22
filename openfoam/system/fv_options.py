@@ -22,17 +22,12 @@ class FvOptions(DictionaryFile):
         self._data = {}
 
         cellZones = self._db.getCellZones(self._rname)
-        for czid, cname in cellZones:
+        for czid, czname in cellZones:
             xpath = CellZoneDB.getXPath(czid)
 
-            # Zone Type
-            self._buildZoneType(cname, xpath)
-
-            # Source Terms
-            self._buildSourceTerms(cname, xpath + '/sourceTerms')
-
-            # Fixed
-            self._buildFixedValues(cname, xpath + '/fixedValues')
+            self._buildZoneType(czname, xpath)
+            self._buildSourceTerms(czname, xpath + '/sourceTerms')
+            self._buildFixedValues(czname, xpath + '/fixedValues')
 
         return self
 
@@ -48,7 +43,7 @@ class FvOptions(DictionaryFile):
         elif zoneType == 'actuatorDisk':
             self._buildActuatorDisk(cname, xpath + '/actuatorDisk')
 
-        else:   # zoneType == 'None':
+        else:   # 'none', 'mrf', 'slidingMesh'
             pass
 
     # --------------------------------------------------------------------------
@@ -170,23 +165,24 @@ class FvOptions(DictionaryFile):
                 self._data[dictName]['cellZone'] = 'porosity'
 
     def _buildVolumeMode(self, xpath):
-        data = ''
-        if self._db.getValue(xpath + '/unit') == 'valueForEntireCellZone':
+        unitValue = self._db.getValue(xpath + '/unit')
+
+        if unitValue == 'valueForEntireCellZone':
             data = 'absolute'
-        elif self._db.getValue(xpath + '/unit') == 'valuePerUnitVolume':
+        elif unitValue == 'valuePerUnitVolume':
             data = 'specific'
         else:
-            logger.debug('Error volumeMode')
+            data = 'none'
+            raise Exception(f'unitValue is {unitValue}')
 
         return data
 
     def _buildInjectionRateSuSp(self, xpath, fieldType) -> dict:
         data = {}
 
-        if fieldType == 'nuTilda' or fieldType == 'k' \
-                or fieldType == 'epsilon' or fieldType == 'omega':
+        if fieldType in ['nuTilda', 'k', 'epsilon', 'omega']:
             valueType = 'constant'
-        else:   # 'rho' , 'h'
+        else:   # 'rho', 'h'
             valueType = self._db.getValue(xpath + '/specification')
 
         if valueType == 'constant':
