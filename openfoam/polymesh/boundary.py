@@ -49,7 +49,7 @@ class Boundary(DictionaryFile):
         db = coredb.CoreDB()
         fullPath = self.fullPath()
 
-        self._boundaryDict = PolyMeshLoader.loadBoundary(fullPath)
+        self._boundaryDict = PolyMeshLoader.loadBoundaryDict(fullPath)
         boundaries = self._boundaryDict.content
         for bname in boundaries:
             boundaries[bname]['type'] = TYPE_MAP[

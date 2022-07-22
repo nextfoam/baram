@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from os import path
-
-from PySide6.QtWidgets import QVBoxLayout, QWidget
 from PySide6.QtCore import Qt
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer
@@ -24,13 +21,9 @@ class MeshDock(TabifiedDock):
         self.setWindowTitle(self.tr("Mesh"))
         self.setAllowedAreas(Qt.RightDockWidgetArea)
 
-        # self._dockWidgetContents = QWidget()
-        # self._layout = QVBoxLayout(self._dockWidgetContents)
-        # self._layout.setContentsMargins(0, 0, 0, 0)
         self._widget = QVTKRenderWindowInteractor(self)
         self._renderer = vtkRenderer()
         self._widget.GetRenderWindow().AddRenderer(self._renderer)
-        # self._layout.addWidget(self._widget)
         self.setWidget(self._widget)
 
         self._widget.Initialize()
