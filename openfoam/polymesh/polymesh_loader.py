@@ -28,7 +28,7 @@ class PolyMeshLoader:
             boundaries[rname] = [(bname, boundary['type']) for bname, boundary in boundaryDict.content.items()]
             cellZonesPath = FileSystem.cellZonesFilePath(rname)
             if os.path.isfile(cellZonesPath):
-                cellZonesDict = cls.loadBoundaryDict(cellZonesPath)
+                cellZonesDict = cls.loadBoundaryDict(cellZonesPath, 10)
                 if cellZonesDict:
                     for czname, cellZone in cellZonesDict.content.items():
                         cellLabels = cellZone['cellLabels']
@@ -63,5 +63,5 @@ class PolyMeshLoader:
         return ['']
 
     @classmethod
-    def loadBoundaryDict(cls, path):
-        return ParsedBoundaryDict(path, listLengthUnparsed=20)
+    def loadBoundaryDict(cls, path, listLengthUnparsed=None):
+        return ParsedBoundaryDict(path, listLengthUnparsed=listLengthUnparsed)
