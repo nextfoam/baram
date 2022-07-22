@@ -21,7 +21,18 @@ class FvSolution(DictionaryFile):
         if self._data is not None:
             return self
 
-        if self._rname:
+        if self._rname is None:
+            # Global fvSolution in multi region case
+            self._data = {
+                'PIMPLE': {
+                    'nOuterCorrectors':
+                        self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/maxIterationsPerTimeStep'),
+                }
+
+            }
+        else:
+            # If region name is empty string, the only fvSolution in single region case.
+            # Otherwise, fvSolution of specified region.
             scheme = self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/pressureVelocityCouplingScheme')
             phase = RegionDB.getPhase(self._rname)
             consistent = 'no'
@@ -137,14 +148,6 @@ class FvSolution(DictionaryFile):
                         '(k|epsilon|omega|nuTilda)Final': self._db.getValue('.//underRelaxationFactors/turbulenceFinal'),
                     }
                 }
-            }
-        else:
-            self._data = {
-                'PIMPLE': {
-                    'nOuterCorrectors':
-                        self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/maxIterationsPerTimeStep'),
-                }
-
             }
 
         return self

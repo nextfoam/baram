@@ -56,7 +56,6 @@ class PolyMeshLoader:
                     regions.append(region)
 
             if regions:
-                print(regions)
                 return regions
             else:
                 raise RuntimeError
@@ -65,8 +64,4 @@ class PolyMeshLoader:
 
     @classmethod
     def loadBoundaryDict(cls, path):
-        return ParsedBoundaryDict(path)
-
-
-# ParsedBoundaryDict('D:/Data/meshes for testing/OF_mesh_multiregion_divided_region/constant/plate/polyMesh/cellZones', debug=True)
-# ParsedBoundaryDict('D:/Data/meshes for testing/OF_mesh_multiregion_just_cellzone/constant/polyMesh/cellZones', debug=True)
+        return ParsedBoundaryDict(path, listLengthUnparsed=20)
