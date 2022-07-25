@@ -89,6 +89,8 @@ class CaseGenerator:
 
             Boundary(rname).build().write()
 
-        FvSolution().build().write()
+        if len(regions) > 1:
+            FvSolution().build().write()
+
         ControlDict().build().write()
 

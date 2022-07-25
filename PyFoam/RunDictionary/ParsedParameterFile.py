@@ -1319,7 +1319,8 @@ class ParsedBoundaryDict(ParsedParameterFile):
                  name,
                  treatBinaryAsASCII=False,
                  backup=False,
-                 debug=False):
+                 debug=False,
+                 listLengthUnparsed=None):
         """:param name: The name of the parameter file
         :param backup: create a backup-copy of the file"""
 
@@ -1328,7 +1329,8 @@ class ParsedBoundaryDict(ParsedParameterFile):
                                      backup=backup,
                                      treatBinaryAsASCII=treatBinaryAsASCII,
                                      debug=debug,
-                                     boundaryDict=True)
+                                     boundaryDict=True,
+                                     listLengthUnparsed=listLengthUnparsed)
 
     def parse(self,content):
         """Constructs a representation of the file"""
