@@ -46,8 +46,6 @@ class CaseWizard(QWizard):
         self.setPage(self.Page.WORKSPACE.value, WorkspacePage(self))
         self.setStartId(self.Page.FLOW_TYPE.value)
 
-        self.accepted.connect(self.caseAccepted)
-
     def nextId(self):
         curId = self.currentId()
         if curId == self.Page.FLOW_TYPE.value:
@@ -76,7 +74,7 @@ class CaseWizard(QWizard):
         else:
             raise NotImplementedError('Unknown Case Wizard Page')
 
-    def caseAccepted(self):
+    def accept(self):
         generalXPath = './/general'
         gravityXPath = './/general/operatingConditions/gravity'
         modelsXPath = './/models'
@@ -116,3 +114,5 @@ class CaseWizard(QWizard):
 
         Settings.createWorkspace(self.field('workingDirectory'))
         FileSystem.setup()
+
+        super().accept()

@@ -9,10 +9,10 @@ from openfoam.system.decomposePar_dict import DecomposeParDict
 
 class TestDecomposeParDict(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self._db = coredb.CoreDB()
 
         self.region1 = 'testRegion_1'
-        self.db.addRegion(self.region1)
+        self._db.addRegion(self.region1)
 
     def tearDown(self) -> None:
         del coredb.CoreDB._instance
@@ -22,7 +22,7 @@ class TestDecomposeParDict(unittest.TestCase):
         content = DecomposeParDict(self.region1).build().asDict()
         self.assertEqual('4', content['numberOfSubdomains'])
 
-    def testNumberOfSubdomains(self):
+    def testMethod(self):
         content = DecomposeParDict(self.region1).build().asDict()
         self.assertEqual('scotch', content['method'])
 

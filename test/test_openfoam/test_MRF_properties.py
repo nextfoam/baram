@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import unittest
 
 from coredb import coredb
@@ -29,6 +32,9 @@ class TestMRFProperties(unittest.TestCase):
 
         self.assertEqual(patches, content['MRFCellZone_testZone_1']['nonRotatingPatches'])
 
+        self.assertEqual([0.0, 0.0, 0.0], content[f'MRFCellZone_{zone}']['origin'])
+        self.assertEqual([1.0, 0.0, 0.0], content[f'MRFCellZone_{zone}']['axis'])
+        self.assertEqual(0.0, content[f'MRFCellZone_{zone}']['omega'])
 
 if __name__ == '__main__':
     unittest.main()
