@@ -145,3 +145,6 @@ dmypy.json
 
 # Language files
 resources/locale/*.ts
+
+# Solver
+openfoam/

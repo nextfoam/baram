@@ -3,7 +3,7 @@
 
 from enum import Enum, auto
 
-from PySide6.QtWidgets import QDialog
+from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import Qt
 
 from coredb import coredb
@@ -22,6 +22,9 @@ class SettingLanguageDialog(QDialog):
         self._ui.language.setCurrentText(language)
 
     def accept(self):
+        QMessageBox.information(self, self.tr("Change UI language"),
+                                self.tr('Requires UI restart'))
+
         language = self._ui.language.currentText()
 
         # TODO: save selected language at yaml config file

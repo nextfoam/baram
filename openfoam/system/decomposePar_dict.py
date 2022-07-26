@@ -27,10 +27,8 @@ class DecomposeParDict(DictionaryFile):
         if self._data is not None:
             return
 
-        # Get
         numCores = self._db.getValue('.//runCalculation/parallel/numberOfCores')
 
-        # Set
         self._data = {
             'numberOfSubdomains': numCores,
             'method': MethodType.SCOTCH.value

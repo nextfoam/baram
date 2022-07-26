@@ -47,7 +47,7 @@ class PolyMeshLoader:
 
     @classmethod
     def loadRegions(cls):
-        fileName = FileSystem.constantPath('RegionProperties')
+        fileName = FileSystem.constantPath('regionProperties')
         if os.path.isfile(fileName):
             regions = []
             regionsDict = ParsedParameterFile(fileName).content['regions']
