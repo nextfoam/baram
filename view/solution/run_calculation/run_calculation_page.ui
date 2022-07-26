@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>420</width>
-    <height>700</height>
+    <height>692</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,8 +59,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>385</width>
-        <height>894</height>
+        <width>473</width>
+        <height>853</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -158,47 +158,6 @@
              </item>
              <item row="2" column="1">
               <widget class="QLineEdit" name="maxCourantNumber"/>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QGroupBox" name="groupBox_2">
-            <property name="title">
-             <string>Report Interval</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_5">
-             <item>
-              <widget class="QWidget" name="steadyReportInterval" native="true">
-               <layout class="QFormLayout" name="formLayout">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_5">
-                  <property name="text">
-                   <string>Every (Iteration Steps)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QLineEdit" name="reportIntervalIterationSteps"/>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QWidget" name="transientReportInterval" native="true">
-               <layout class="QFormLayout" name="formLayout_9">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_6">
-                  <property name="text">
-                   <string>Every (Seconds)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QLineEdit" name="reportIntervalSeconds"/>
-                </item>
-               </layout>
-              </widget>
              </item>
             </layout>
            </widget>
@@ -503,13 +462,6 @@
          </size>
         </property>
        </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="startRun">
-        <property name="text">
-         <string>Start Run</string>
-        </property>
-       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="plotMonitor">

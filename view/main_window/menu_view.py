@@ -22,6 +22,7 @@ class MenuItem(Enum):
     MENU_SOLUTION_MONITORS = auto()
     MENU_SOLUTION_INITIALIZATION = auto()
     MENU_SOLUTION_RUN_CALCULATION = auto()
+    MENU_SOLUTION_PROCESS_INFORMATION = auto()
 
 
 class MenuView(QObject):
@@ -56,6 +57,8 @@ class MenuView(QObject):
                       self.tr('Initialization'))
         self._addMenu(MenuItem.MENU_SOLUTION_RUN_CALCULATION, self._solutionMenu,
                       self.tr('Run Calculation'))
+        self._addMenu(MenuItem.MENU_SOLUTION_PROCESS_INFORMATION, self._solutionMenu,
+                      self.tr('Process Information'))
 
         self._connectSignalsSlots()
 

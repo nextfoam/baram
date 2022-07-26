@@ -18,6 +18,7 @@ from view.solution.numerical_conditions.numerical_conditions_page import Numeric
 from view.solution.monitors.monitors_page import MonitorsPage
 from view.solution.initialization.initialization_page import InitializationPage
 from view.solution.run_calculation.run_calculation_page import RunCalculationPage
+from view.solution.process_information.process_information_page import ProcessInformationPage
 from openfoam.case_generator import CaseGenerator
 from openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from openfoam.file_system import FileSystem
@@ -81,6 +82,7 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SOLUTION_MONITORS.value: MenuPage(MonitorsPage),
             MenuItem.MENU_SOLUTION_INITIALIZATION.value: MenuPage(InitializationPage),
             MenuItem.MENU_SOLUTION_RUN_CALCULATION.value: MenuPage(RunCalculationPage),
+            MenuItem.MENU_SOLUTION_PROCESS_INFORMATION.value: MenuPage(ProcessInformationPage),
         }
 
         self._threadPool = QThreadPool()
