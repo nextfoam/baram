@@ -1,13 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-<<<<<<<<< Temporary merge branch 1
 import logging
 
-from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
-=========
-from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QDialog
->>>>>>>>> Temporary merge branch 2
+from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox, QDialog
 from PySide6.QtCore import Qt, QThreadPool
 
 from coredb.settings import Settings, CaseStatus
@@ -152,7 +148,6 @@ class MainWindow(QMainWindow):
         self.tabifyDock(dock)
         self._ui.menuView_2.addAction(dock.toggleViewAction())
 
-<<<<<<<<< Temporary merge branch 1
     def _loadOpenFoamMesh(self, dirName):
         try:
             FileSystem.copyOpenFoamMeshFrom(dirName)
@@ -161,7 +156,7 @@ class MainWindow(QMainWindow):
         except Exception as ex:
             logger.debug(ex, exc_info=True)
             QMessageBox.critical(self, self.tr('Mesh Loading Failed'), self.tr(f'Mesh Loading Failed : {ex}'))
-=========
+
     def _copyMesh(self, dirName):
         FileSystem.copyOpenFoamMeshFrom(dirName)
         self._threadPool.start(lambda: PolyMeshLoader().load())
@@ -174,4 +169,3 @@ class MainWindow(QMainWindow):
     def _changeScale(self):
         self._dialogSettingScaling = SettingScalingDialog(self)
         self._dialogSettingScaling.open()
->>>>>>>>> Temporary merge branch 2

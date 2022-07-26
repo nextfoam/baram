@@ -13,12 +13,12 @@ class TestFvOptions(unittest.TestCase):
 
         self.rname = 'testRegion'
         self.czname = 'testZone'
-        self.czname_all = 'All'
+        self.cznameAll = 'All'
         self._db.addRegion(self.rname)
         self._db.addCellZone(self.rname, self.czname)
 
         self.xpath = f'.//region[name="{self.rname}"]/cellZones/cellZone[name="{self.czname}"]'
-        self.xpath_all = f'.//region[name="{self.rname}"]/cellZones/cellZone[name="All"]'
+        self.xpathAll = f'.//region[name="{self.rname}"]/cellZones/cellZone[name="All"]'
 
     def tearDown(self) -> None:
         del coredb.CoreDB._instance
@@ -77,7 +77,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('porosity', content[f'actuationDiskSource_{self.czname}']['cellZone'])
 
     # --------------------------------------------------------------------------
-    def testSourceTermsMass_constant(self):
+    def testSourceTermsMassConstant(self):
         xpath = self.xpath + '/sourceTerms/mass'
         self._db.setAttribute(xpath, 'disabled', 'false')
         self._db.setValue(xpath + '/unit', 'valueForEntireCellZone')
@@ -89,7 +89,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('absolute', content[f'scalarSource_{self.czname}_rho']['volumeMode'])
         self.assertEqual('0', content[f'scalarSource_{self.czname}_rho']['injectionRateSuSp']['rho']['Su'])
 
-    def testSourceTermsMass_piecewiseLinear(self):
+    def testSourceTermsMassPiecewiseLinear(self):
         xpath = self.xpath + '/sourceTerms/mass'
         self._db.setAttribute(xpath, 'disabled', 'false')
         self._db.setValue(xpath + '/unit', 'valueForEntireCellZone')
@@ -103,7 +103,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('absolute', content[f'scalarSource_{self.czname}_rho']['volumeMode'])
         self.assertEqual([['0', '4'], ['1', '5'], ['2', '6'], ['3', '7']], content[f'scalarSource_{self.czname}_rho']['injectionRateSuSp']['rho']['Su'][1])
 
-    def testSourceTermsMass_polynomial(self):
+    def testSourceTermsMassPolynomial(self):
         xpath = self.xpath + '/sourceTerms/mass'
         self._db.setAttribute(xpath, 'disabled', 'false')
         self._db.setValue(xpath + '/unit', 'valueForEntireCellZone')
@@ -116,7 +116,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('absolute', content[f'scalarSource_{self.czname}_rho']['volumeMode'])
         self.assertEqual([['2', 0], ['3', 1], ['4', 2], ['5', 3]], content[f'scalarSource_{self.czname}_rho']['injectionRateSuSp']['rho']['Su'][1])
 
-    def testSourceTermsEnergy_constant(self):
+    def testSourceTermsEnergyConstant(self):
         xpath = self.xpath + '/sourceTerms/energy'
         self._db.setAttribute(xpath, 'disabled', 'false')
         self._db.setValue(xpath + '/unit', 'valueForEntireCellZone')
@@ -128,7 +128,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('absolute', content[f'scalarSource_{self.czname}_h']['volumeMode'])
         self.assertEqual('0', content[f'scalarSource_{self.czname}_h']['injectionRateSuSp']['h']['Su'])
 
-    def testSourceTermsEnergy_piecewiseLinear(self):
+    def testSourceTermsEnergyPiecewiseLinear(self):
         xpath = self.xpath + '/sourceTerms/energy'
         self._db.setAttribute(xpath, 'disabled', 'false')
         self._db.setValue(xpath + '/unit', 'valueForEntireCellZone')
@@ -142,7 +142,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('absolute', content[f'scalarSource_{self.czname}_h']['volumeMode'])
         self.assertEqual([['0', '4'], ['1', '5'], ['2', '6'], ['3', '7']], content[f'scalarSource_{self.czname}_h']['injectionRateSuSp']['h']['Su'][1])
 
-    def testSourceTermsEnergy_polynomial(self):
+    def testSourceTermsEnergyPolynomial(self):
         xpath = self.xpath + '/sourceTerms/energy'
         self._db.setAttribute(xpath, 'disabled', 'false')
         self._db.setValue(xpath + '/unit', 'valueForEntireCellZone')
@@ -274,134 +274,134 @@ class TestFvOptions(unittest.TestCase):
     # --------------------------------------------------------------------------
     # All Region
     # --------------------------------------------------------------------------
-    def testSourceTermsMass_constant_all(self):
-        xpath_all = self.xpath_all + '/sourceTerms/mass'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
-        self._db.setValue(xpath_all + '/unit', 'valueForEntireCellZone')
+    def testSourceTermsMassConstantAll(self):
+        xpathAll = self.xpathAll + '/sourceTerms/mass'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
+        self._db.setValue(xpathAll + '/unit', 'valueForEntireCellZone')
 
-        self._db.setValue(xpath_all + '/specification', 'constant')
-
-        content = FvOptions(self.rname).build().asDict()
-
-        self.assertEqual('absolute', content[f'scalarSource_{self.czname_all}_rho']['volumeMode'])
-        self.assertEqual('0', content[f'scalarSource_{self.czname_all}_rho']['injectionRateSuSp']['rho']['Su'])
-
-    def testSourceTermsMass_piecewiseLinear_all(self):
-        xpath_all = self.xpath_all + '/sourceTerms/mass'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
-        self._db.setValue(xpath_all + '/unit', 'valueForEntireCellZone')
-
-        self._db.setValue(xpath_all + '/specification', 'piecewiseLinear')
-        self._db.setValue(xpath_all + '/piecewiseLinear/t', '0 1 2 3')
-        self._db.setValue(xpath_all + '/piecewiseLinear/v', '4 5 6 7')
+        self._db.setValue(xpathAll + '/specification', 'constant')
 
         content = FvOptions(self.rname).build().asDict()
 
-        self.assertEqual('absolute', content[f'scalarSource_{self.czname_all}_rho']['volumeMode'])
-        self.assertEqual([['0', '4'], ['1', '5'], ['2', '6'], ['3', '7']], content[f'scalarSource_{self.czname_all}_rho']['injectionRateSuSp']['rho']['Su'][1])
+        self.assertEqual('absolute', content[f'scalarSource_{self.cznameAll}_rho']['volumeMode'])
+        self.assertEqual('0', content[f'scalarSource_{self.cznameAll}_rho']['injectionRateSuSp']['rho']['Su'])
 
-    def testSourceTermsMass_polynomial_all(self):
-        xpath_all = self.xpath_all + '/sourceTerms/mass'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
-        self._db.setValue(xpath_all + '/unit', 'valueForEntireCellZone')
+    def testSourceTermsMassPiecewiseLinearAll(self):
+        xpathAll = self.xpathAll + '/sourceTerms/mass'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
+        self._db.setValue(xpathAll + '/unit', 'valueForEntireCellZone')
 
-        self._db.setValue(xpath_all + '/specification', 'polynomial')
-        self._db.setValue(xpath_all + '/polynomial', '2 3 4 5')
-
-        content = FvOptions(self.rname).build().asDict()
-
-        self.assertEqual('absolute', content[f'scalarSource_{self.czname_all}_rho']['volumeMode'])
-        self.assertEqual([['2', 0], ['3', 1], ['4', 2], ['5', 3]], content[f'scalarSource_{self.czname_all}_rho']['injectionRateSuSp']['rho']['Su'][1])
-
-    def testSourceTermsEnergy_constant_all(self):
-        xpath_all = self.xpath_all + '/sourceTerms/energy'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
-        self._db.setValue(xpath_all + '/unit', 'valueForEntireCellZone')
-
-        self._db.setValue(xpath_all + '/specification', 'constant')
+        self._db.setValue(xpathAll + '/specification', 'piecewiseLinear')
+        self._db.setValue(xpathAll + '/piecewiseLinear/t', '0 1 2 3')
+        self._db.setValue(xpathAll + '/piecewiseLinear/v', '4 5 6 7')
 
         content = FvOptions(self.rname).build().asDict()
 
-        self.assertEqual('absolute', content[f'scalarSource_{self.czname_all}_h']['volumeMode'])
-        self.assertEqual('0', content[f'scalarSource_{self.czname_all}_h']['injectionRateSuSp']['h']['Su'])
+        self.assertEqual('absolute', content[f'scalarSource_{self.cznameAll}_rho']['volumeMode'])
+        self.assertEqual([['0', '4'], ['1', '5'], ['2', '6'], ['3', '7']], content[f'scalarSource_{self.cznameAll}_rho']['injectionRateSuSp']['rho']['Su'][1])
 
-    def testSourceTermsEnergy_piecewiseLinear_all(self):
-        xpath_all = self.xpath_all + '/sourceTerms/energy'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
-        self._db.setValue(xpath_all + '/unit', 'valueForEntireCellZone')
+    def testSourceTermsMassPolynomialAll(self):
+        xpathAll = self.xpathAll + '/sourceTerms/mass'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
+        self._db.setValue(xpathAll + '/unit', 'valueForEntireCellZone')
 
-        self._db.setValue(xpath_all + '/specification', 'piecewiseLinear')
-        self._db.setValue(xpath_all + '/piecewiseLinear/t', '0 1 2 3')
-        self._db.setValue(xpath_all + '/piecewiseLinear/v', '4 5 6 7')
-
-        content = FvOptions(self.rname).build().asDict()
-
-        self.assertEqual('absolute', content[f'scalarSource_{self.czname_all}_h']['volumeMode'])
-        self.assertEqual([['0', '4'], ['1', '5'], ['2', '6'], ['3', '7']], content[f'scalarSource_{self.czname_all}_h']['injectionRateSuSp']['h']['Su'][1])
-
-    def testSourceTermsEnergy_polynomial_all(self):
-        xpath_all = self.xpath_all + '/sourceTerms/energy'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
-        self._db.setValue(xpath_all + '/unit', 'valueForEntireCellZone')
-
-        self._db.setValue(xpath_all + '/specification', 'polynomial')
-        self._db.setValue(xpath_all + '/polynomial', '2 3 4 5')
+        self._db.setValue(xpathAll + '/specification', 'polynomial')
+        self._db.setValue(xpathAll + '/polynomial', '2 3 4 5')
 
         content = FvOptions(self.rname).build().asDict()
 
-        self.assertEqual('absolute', content[f'scalarSource_{self.czname_all}_h']['volumeMode'])
-        self.assertEqual([['2', 0], ['3', 1], ['4', 2], ['5', 3]], content[f'scalarSource_{self.czname_all}_h']['injectionRateSuSp']['h']['Su'][1])
+        self.assertEqual('absolute', content[f'scalarSource_{self.cznameAll}_rho']['volumeMode'])
+        self.assertEqual([['2', 0], ['3', 1], ['4', 2], ['5', 3]], content[f'scalarSource_{self.cznameAll}_rho']['injectionRateSuSp']['rho']['Su'][1])
 
-    def testSourceTermsNutilda_all(self):
+    def testSourceTermsEnergyConstantAll(self):
+        xpathAll = self.xpathAll + '/sourceTerms/energy'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
+        self._db.setValue(xpathAll + '/unit', 'valueForEntireCellZone')
+
+        self._db.setValue(xpathAll + '/specification', 'constant')
+
+        content = FvOptions(self.rname).build().asDict()
+
+        self.assertEqual('absolute', content[f'scalarSource_{self.cznameAll}_h']['volumeMode'])
+        self.assertEqual('0', content[f'scalarSource_{self.cznameAll}_h']['injectionRateSuSp']['h']['Su'])
+
+    def testSourceTermsEnergyPiecewiseLinearAll(self):
+        xpathAll = self.xpathAll + '/sourceTerms/energy'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
+        self._db.setValue(xpathAll + '/unit', 'valueForEntireCellZone')
+
+        self._db.setValue(xpathAll + '/specification', 'piecewiseLinear')
+        self._db.setValue(xpathAll + '/piecewiseLinear/t', '0 1 2 3')
+        self._db.setValue(xpathAll + '/piecewiseLinear/v', '4 5 6 7')
+
+        content = FvOptions(self.rname).build().asDict()
+
+        self.assertEqual('absolute', content[f'scalarSource_{self.cznameAll}_h']['volumeMode'])
+        self.assertEqual([['0', '4'], ['1', '5'], ['2', '6'], ['3', '7']], content[f'scalarSource_{self.cznameAll}_h']['injectionRateSuSp']['h']['Su'][1])
+
+    def testSourceTermsEnergyPolynomialAll(self):
+        xpathAll = self.xpathAll + '/sourceTerms/energy'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
+        self._db.setValue(xpathAll + '/unit', 'valueForEntireCellZone')
+
+        self._db.setValue(xpathAll + '/specification', 'polynomial')
+        self._db.setValue(xpathAll + '/polynomial', '2 3 4 5')
+
+        content = FvOptions(self.rname).build().asDict()
+
+        self.assertEqual('absolute', content[f'scalarSource_{self.cznameAll}_h']['volumeMode'])
+        self.assertEqual([['2', 0], ['3', 1], ['4', 2], ['5', 3]], content[f'scalarSource_{self.cznameAll}_h']['injectionRateSuSp']['h']['Su'][1])
+
+    def testSourceTermsNutildaAll(self):
         self._db.setValue('.//models/turbulenceModels/model', 'spalartAllmaras')
 
-        xpath_all = self.xpath_all + '/sourceTerms/modifiedTurbulentViscosity'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
+        xpathAll = self.xpathAll + '/sourceTerms/modifiedTurbulentViscosity'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
 
         content = FvOptions(self.rname).build().asDict()
 
-        self.assertEqual('absolute', content[f'scalarSource_{self.czname_all}_nuTilda']['volumeMode'])
-        self.assertEqual('0', content[f'scalarSource_{self.czname_all}_nuTilda']['injectionRateSuSp']['nuTilda']['Su'])
-        self.assertEqual('all', content[f'scalarSource_{self.czname_all}_nuTilda']['selectionMode'])
+        self.assertEqual('absolute', content[f'scalarSource_{self.cznameAll}_nuTilda']['volumeMode'])
+        self.assertEqual('0', content[f'scalarSource_{self.cznameAll}_nuTilda']['injectionRateSuSp']['nuTilda']['Su'])
+        self.assertEqual('all', content[f'scalarSource_{self.cznameAll}_nuTilda']['selectionMode'])
 
-    def testSourceTermsK_all(self):
+    def testSourceTermsKAll(self):
         self._db.setValue('.//models/turbulenceModels/model', 'k-epsilon')
 
-        xpath_all = self.xpath_all + '/sourceTerms/turbulentKineticEnergy'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
+        xpathAll = self.xpathAll + '/sourceTerms/turbulentKineticEnergy'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
 
         content = FvOptions(self.rname).build().asDict()
 
-        self.assertEqual('absolute', content[f'scalarSource_{self.czname_all}_k']['volumeMode'])
-        self.assertEqual('0', content[f'scalarSource_{self.czname_all}_k']['injectionRateSuSp']['k']['Su'])
-        self.assertEqual('all', content[f'scalarSource_{self.czname_all}_k']['selectionMode'])
+        self.assertEqual('absolute', content[f'scalarSource_{self.cznameAll}_k']['volumeMode'])
+        self.assertEqual('0', content[f'scalarSource_{self.cznameAll}_k']['injectionRateSuSp']['k']['Su'])
+        self.assertEqual('all', content[f'scalarSource_{self.cznameAll}_k']['selectionMode'])
 
-    def testSourceTermsEpsilon_all(self):
+    def testSourceTermsEpsilonAll(self):
         self._db.setValue('.//models/turbulenceModels/model', 'k-epsilon')
-        xpath_all = self.xpath_all + '/sourceTerms/turbulentDissipationRate'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
+        xpathAll = self.xpathAll + '/sourceTerms/turbulentDissipationRate'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
 
         content = FvOptions(self.rname).build().asDict()
 
-        self.assertEqual('absolute', content[f'scalarSource_{self.czname_all}_epsilon']['volumeMode'])
-        self.assertEqual('0', content[f'scalarSource_{self.czname_all}_epsilon']['injectionRateSuSp']['epsilon']['Su'])
-        self.assertEqual('all', content[f'scalarSource_{self.czname_all}_epsilon']['selectionMode'])
+        self.assertEqual('absolute', content[f'scalarSource_{self.cznameAll}_epsilon']['volumeMode'])
+        self.assertEqual('0', content[f'scalarSource_{self.cznameAll}_epsilon']['injectionRateSuSp']['epsilon']['Su'])
+        self.assertEqual('all', content[f'scalarSource_{self.cznameAll}_epsilon']['selectionMode'])
 
-    def testSourceTermsOmega_all(self):
+    def testSourceTermsOmegaAll(self):
         self._db.setValue('.//models/turbulenceModels/model', 'k-omega')
-        xpath_all = self.xpath_all + '/sourceTerms/specificDissipationRate'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
+        xpathAll = self.xpathAll + '/sourceTerms/specificDissipationRate'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
 
         content = FvOptions(self.rname).build().asDict()
 
-        self.assertEqual('absolute', content[f'scalarSource_{self.czname_all}_omega']['volumeMode'])
-        self.assertEqual('0', content[f'scalarSource_{self.czname_all}_omega']['injectionRateSuSp']['omega']['Su'])
-        self.assertEqual('all', content[f'scalarSource_{self.czname_all}_omega']['selectionMode'])
+        self.assertEqual('absolute', content[f'scalarSource_{self.cznameAll}_omega']['volumeMode'])
+        self.assertEqual('0', content[f'scalarSource_{self.cznameAll}_omega']['injectionRateSuSp']['omega']['Su'])
+        self.assertEqual('all', content[f'scalarSource_{self.cznameAll}_omega']['selectionMode'])
 
     # --------------------------------------------------------------------------
-    def testFixedValuesVelocity_all(self):
-        xpath_all = self.xpath_all + '/fixedValues/velocity'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
+    def testFixedValuesVelocityAll(self):
+        xpathAll = self.xpathAll + '/fixedValues/velocity'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
 
         content = FvOptions(self.rname).build().asDict()
 
@@ -409,54 +409,54 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('0', content[f'fixedVelocity_All']['relaxation'])
         self.assertEqual('all', content[f'fixedVelocity_All']['selectionMode'])
 
-    def testFixedValuesTemperature_all(self):
-        xpath_all = self.xpath_all + '/fixedValues/temperature'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
+    def testFixedValuesTemperatureAll(self):
+        xpathAll = self.xpathAll + '/fixedValues/temperature'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
 
         content = FvOptions(self.rname).build().asDict()
 
         self.assertEqual('300', content[f'fixedTemperature_All']['temperature'][1])
         self.assertEqual('all', content[f'fixedTemperature_All']['selectionMode'])
 
-    def testFixedValuesNutilda_all(self):
+    def testFixedValuesNutildaAll(self):
         self._db.setValue('.//models/turbulenceModels/model', 'spalartAllmaras')
-        xpath_all = self.xpath_all + '/fixedValues/modifiedTurbulentViscosity'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
+        xpathAll = self.xpathAll + '/fixedValues/modifiedTurbulentViscosity'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
 
         content = FvOptions(self.rname).build().asDict()
 
-        self.assertEqual('0', content[f'fixedValue_{self.czname_all}_nuTilda']['fieldValues']['nuTilda'])
-        self.assertEqual('all', content[f'fixedValue_{self.czname_all}_nuTilda']['selectionMode'])
+        self.assertEqual('0', content[f'fixedValue_{self.cznameAll}_nuTilda']['fieldValues']['nuTilda'])
+        self.assertEqual('all', content[f'fixedValue_{self.cznameAll}_nuTilda']['selectionMode'])
 
-    def testFixedValuesK_all(self):
+    def testFixedValuesKAll(self):
         self._db.setValue('.//models/turbulenceModels/model', 'k-epsilon')
-        xpath_all = self.xpath_all + '/fixedValues/turbulentKineticEnergy'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
+        xpathAll = self.xpathAll + '/fixedValues/turbulentKineticEnergy'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
 
         content = FvOptions(self.rname).build().asDict()
 
-        self.assertEqual('0', content[f'fixedValue_{self.czname_all}_k']['fieldValues']['k'])
-        self.assertEqual('all', content[f'fixedValue_{self.czname_all}_k']['selectionMode'])
+        self.assertEqual('0', content[f'fixedValue_{self.cznameAll}_k']['fieldValues']['k'])
+        self.assertEqual('all', content[f'fixedValue_{self.cznameAll}_k']['selectionMode'])
 
-    def testFixedValuesEpsilon_all(self):
+    def testFixedValuesEpsilonAll(self):
         self._db.setValue('.//models/turbulenceModels/model', 'k-epsilon')
-        xpath_all = self.xpath_all + '/fixedValues/turbulentDissipationRate'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
+        xpathAll = self.xpathAll + '/fixedValues/turbulentDissipationRate'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
 
         content = FvOptions(self.rname).build().asDict()
 
-        self.assertEqual('0', content[f'fixedValue_{self.czname_all}_epsilon']['fieldValues']['epsilon'])
-        self.assertEqual('all', content[f'fixedValue_{self.czname_all}_epsilon']['selectionMode'])
+        self.assertEqual('0', content[f'fixedValue_{self.cznameAll}_epsilon']['fieldValues']['epsilon'])
+        self.assertEqual('all', content[f'fixedValue_{self.cznameAll}_epsilon']['selectionMode'])
 
-    def testFixedValuesOmega_all(self):
+    def testFixedValuesOmegaAll(self):
         self._db.setValue('.//models/turbulenceModels/model', 'k-omega')
-        xpath_all = self.xpath_all + '/fixedValues/specificDissipationRate'
-        self._db.setAttribute(xpath_all, 'disabled', 'false')
+        xpathAll = self.xpathAll + '/fixedValues/specificDissipationRate'
+        self._db.setAttribute(xpathAll, 'disabled', 'false')
 
         content = FvOptions(self.rname).build().asDict()
 
-        self.assertEqual('0', content[f'fixedValue_{self.czname_all}_omega']['fieldValues']['omega'])
-        self.assertEqual('all', content[f'fixedValue_{self.czname_all}_omega']['selectionMode'])
+        self.assertEqual('0', content[f'fixedValue_{self.cznameAll}_omega']['fieldValues']['omega'])
+        self.assertEqual('all', content[f'fixedValue_{self.cznameAll}_omega']['selectionMode'])
 
 
 if __name__ == '__main__':

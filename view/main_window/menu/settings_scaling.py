@@ -17,14 +17,14 @@ class SettingScalingDialog(QDialog):
         self._ui = Ui_SettingScalingDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
+        # TODO: load current scaling from yaml config file
 
-        # self._db.getValue('.//settings/ui/scaling')
-        self._ui.scaling.setValue(float('1.1'))
+        scaling = '1.1'
+        self._ui.scaling.setValue(float(scaling))
 
     def accept(self):
         scaling = str(self._ui.scaling.value())
-        # self._db.setValue('.//settings/ui/scaling', scaling)
+
+        # TODO: save selected scaling at yaml config file
 
         super().accept()
-

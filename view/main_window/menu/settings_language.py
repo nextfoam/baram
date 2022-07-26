@@ -16,14 +16,14 @@ class SettingLanguageDialog(QDialog):
         self._ui = Ui_SettingLanguageDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
+        # TODO: load current language from yaml config file
+        language = self.tr("Korean")
 
-        # self._db.getValue('.//settings/ui/language')
-        self._ui.language.setCurrentText(self.tr("Korean"))
+        self._ui.language.setCurrentText(language)
 
     def accept(self):
         language = self._ui.language.currentText()
-        # self._db.setValue('.//settings/ui/language', language)
+
+        # TODO: save selected language at yaml config file
 
         super().accept()
-

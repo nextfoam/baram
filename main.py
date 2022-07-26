@@ -40,7 +40,7 @@ if __name__ == '__main__':
     #app.setStyleSheet(app.styleSheet() + '\n' + stream.readAll())
 
     translator = QTranslator()
-    translator.load("lang_ko.qm")
+    translator.load("./resources/locale/lang_en.qm")
     QCoreApplication.installTranslator(translator)
 
     window = MainWindow()
