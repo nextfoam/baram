@@ -81,8 +81,8 @@ def launchSolver(solver: str, casePath: Path, np: int = 1) -> (int, float):
     if not isinstance(casePath, Path) or not casePath.is_absolute():
         raise AssertionError
 
-    stdout = open(casePath/'stdout.log', 'w')
-    stderr = open(casePath/'stderr.log', 'w')
+    stdout = open(casePath/'stdout.log', 'a')
+    stderr = open(casePath/'stderr.log', 'a')
 
     p = subprocess.Popen([MPICMD, '-np', str(np), OPENFOAM/'bin'/solver],
                          env=ENV, cwd=casePath,
