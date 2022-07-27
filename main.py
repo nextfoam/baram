@@ -16,7 +16,7 @@ import PySide6.QtSvg
 # noinspection PyUnresolvedReferences
 import resource_rc
 
-from view.main_window.main_window import MainWindow
+from view.main_window.start_window import Baram
 
 
 if __name__ == '__main__':
@@ -43,7 +43,6 @@ if __name__ == '__main__':
     translator.load("./resources/locale/lang_en.qm")
     QCoreApplication.installTranslator(translator)
 
-    window = MainWindow()
-    # window.show()
-
-    app.exec()
+    baram = Baram()
+    while not baram.toQuit() and baram.start():
+        app.exec()

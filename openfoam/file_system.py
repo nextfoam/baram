@@ -4,15 +4,13 @@
 import os
 import shutil
 
-from coredb.settings import Settings
-
 
 class FileSystem:
     CASE_DIRECTORY_NAME = 'case'
     CONSTANT_DIRECTORY_NAME = 'constant'
     BOUNDARY_CONDITIONS_DIRECTORY_NAME = '0'
     SYSTEM_DIRECTORY_NAME = 'system'
-    POLYMESH_DIRECTORY_NAME = 'polyMesh'
+    POLY_MESH_DIRECTORY_NAME = 'polyMesh'
     BOUNDARY_DATA_DIRECTORY_NAME = 'boundaryData'
 
     _casePath = None
@@ -21,8 +19,8 @@ class FileSystem:
     _systemPath = None
 
     @classmethod
-    def setup(cls):
-        cls._casePath = cls.makeDir(Settings.workingDirectory(), cls.CASE_DIRECTORY_NAME)
+    def setup(cls, projectDirectory):
+        cls._casePath = cls.makeDir(projectDirectory, cls.CASE_DIRECTORY_NAME)
 
     @classmethod
     def initCaseDir(cls):
@@ -53,11 +51,11 @@ class FileSystem:
 
     @classmethod
     def boundaryFilePath(cls, rname):
-        return os.path.join(cls.constantPath(rname), cls.POLYMESH_DIRECTORY_NAME, 'boundary')
+        return os.path.join(cls.constantPath(rname), cls.POLY_MESH_DIRECTORY_NAME, 'boundary')
 
     @classmethod
     def cellZonesFilePath(cls, rname):
-        return os.path.join(cls.constantPath(rname), cls.POLYMESH_DIRECTORY_NAME, 'cellZones')
+        return os.path.join(cls.constantPath(rname), cls.POLY_MESH_DIRECTORY_NAME, 'cellZones')
 
     @classmethod
     def boundaryDataPath(cls, rname):
@@ -65,7 +63,7 @@ class FileSystem:
 
     @classmethod
     def foamFilePath(cls):
-        return os.path.join(cls._casePath, os.path.basename(Settings.workingDirectory()) + '.foam')
+        return os.path.join(cls._casePath, 'baram.foam')
 
     @classmethod
     def copyOpenFoamMeshFrom(cls, directory):

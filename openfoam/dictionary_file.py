@@ -50,8 +50,8 @@ class DictionaryFile:
 
     @classmethod
     def polyMeshLocation(cls, rname=None):
-        return os.path.join(FileSystem.CONSTANT_DIRECTORY_NAME, rname, FileSystem.POLYMESH_DIRECTORY_NAME)\
-            if rname else cls.constantLocation(FileSystem.POLYMESH_DIRECTORY_NAME)
+        return os.path.join(FileSystem.CONSTANT_DIRECTORY_NAME, rname, FileSystem.POLY_MESH_DIRECTORY_NAME)\
+            if rname else cls.constantLocation(FileSystem.POLY_MESH_DIRECTORY_NAME)
 
     def fullPath(self):
         return os.path.join(FileSystem.caseRoot(), self._header["location"], self._header["object"])

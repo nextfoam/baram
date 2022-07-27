@@ -3,11 +3,11 @@
 
 import logging
 
-from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox, QDialog
-from PySide6.QtCore import Qt, QThreadPool
+from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
+from PySide6.QtCore import Qt, QThreadPool, Signal
 
-from coredb.settings import Settings, CaseStatus
-from view.case_wizard.case_wizard import CaseWizard
+from coredb.filedb import FileDB
+from coredb.project import CaseStatus
 from view.setup.general.general_page import GeneralPage
 from view.setup.materials.material_page import MaterialPage
 from view.setup.models.models_page import ModelsPage
@@ -19,17 +19,15 @@ from view.solution.monitors.monitors_page import MonitorsPage
 from view.solution.initialization.initialization_page import InitializationPage
 from view.solution.run_calculation.run_calculation_page import RunCalculationPage
 from view.solution.process_information.process_information_page import ProcessInformationPage
-from openfoam.case_generator import CaseGenerator
 from openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from openfoam.file_system import FileSystem
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
-from .menu_view import MenuView, MenuItem
 from .menu.settings_language import SettingLanguageDialog
 from .menu.settings_scaling import SettingScalingDialog
+from .navigator_view import NavigatorView, MenuItem
 from .mesh_dock import MeshDock
 from .console_dock import ConsoleDock
-from .start_window import StartWindow, StartAction
 
 
 logger = logging.getLogger(__name__)
@@ -53,13 +51,16 @@ class MenuPage:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    windowClosed = Signal()
+
+    def __init__(self, project):
+        super().__init__()
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
-        self._wizard = None
+        self.setWindowTitle(self.tr('Baram') + ' - ' + project.directory)
+        # self._wizard = None
 
-        self._menuView = MenuView(self._ui.menuView)
+        self._navigatorView = NavigatorView(self._ui.navigatorView)
         self._contentView = ContentView(self._ui.formView, self._ui)
 
         self._emptyDock = self._ui.emptyDock
@@ -85,48 +86,42 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SOLUTION_PROCESS_INFORMATION.value: MenuPage(ProcessInformationPage),
         }
 
+        self._project = project
+        FileSystem.setup(project.directory)
+
         self._threadPool = QThreadPool()
-        self._startWindow = StartWindow()
+        self._quit = True
 
         self._connectSignalsSlots()
 
-        self._startWindow.open()
+        self.show()
+
+    def toQuit(self):
+        return self._quit
 
     def tabifyDock(self, dock):
         self.tabifyDockWidget(self._emptyDock, dock)
 
+    def closeEvent(self, event):
+        self.windowClosed.emit()
+
     def _connectSignalsSlots(self):
-        self._startWindow.accepted.connect(self._start)
         self._ui.actionExit.triggered.connect(self.close)
-        self._ui.actionNew.triggered.connect(self._openWizard)
         self._ui.actionSave.triggered.connect(self._save)
-        self._ui.actionLoad_Mesh.triggered.connect(self._loadMesh)
+        self._ui.actionLoadMesh.triggered.connect(self._loadMesh)
+        self._ui.actionCloseCase.triggered.connect(self._closeProject)
+        self._navigatorView.currentMenuChanged.connect(self._changeForm)
         self._ui.actionLanguage.triggered.connect(self._changeLanguage)
         self._ui.actionScale.triggered.connect(self._changeScale)
-        self._menuView.currentMenuChanged.connect(self._changeForm)
-        Settings.signals.statusChanged.connect(self._caseStatusChanged)
+        self._navigatorView.currentMenuChanged.connect(self._changeForm)
+        self._project.statusChanged.connect(self._caseStatusChanged)
 
-    def _start(self):
-        action = self._startWindow.action()
-        if action == StartAction.ACTION_NEW:
-            self._openWizard()
-        elif action == StartAction.ACTION_OPEN:
-            self.show()
-
-    def _openWizard(self):
-        self._wizard = CaseWizard()
-
-        self._wizard.finished.connect(self._createCase)
-        self._wizard.open()
-
-    def _createCase(self, result):
-        if result == CaseWizard.Accepted:
-            self.show()
-        else:
-            self._startWindow.open()
+    def _closeProject(self):
+        self._quit = False
+        self.close()
 
     def _save(self):
-        CaseGenerator().generateFiles()
+        FileDB.save()
 
     def _loadMesh(self):
         dirName = QFileDialog.getExistingDirectory(self)
@@ -142,22 +137,24 @@ class MainWindow(QMainWindow):
         self._contentView.changePane(page.index)
 
     def _caseStatusChanged(self, status):
-        self._menuView.updateMenu()
-        self._ui.actionLoad_Mesh.setEnabled(status < CaseStatus.MESH_LOADED)
+        self._navigatorView.updateMenu(status)
+        self._ui.actionLoadMesh.setEnabled(status < CaseStatus.MESH_LOADED)
 
     def _addDockTabified(self, dock):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
         self.tabifyDock(dock)
-        self._ui.menuView_2.addAction(dock.toggleViewAction())
+        self._ui.menuView.addAction(dock.toggleViewAction())
 
     def _loadOpenFoamMesh(self, dirName):
         try:
             FileSystem.copyOpenFoamMeshFrom(dirName)
             PolyMeshLoader.load()
-            self._meshDock.showOpenFoamMesh()
+            self._project.setStatus(CaseStatus.MESH_LOADED)
         except Exception as ex:
             logger.debug(ex, exc_info=True)
             QMessageBox.critical(self, self.tr('Mesh Loading Failed'), self.tr(f'Mesh Loading Failed : {ex}'))
+
+        self._meshDock.showOpenFoamMesh()
 
     def _copyMesh(self, dirName):
         FileSystem.copyOpenFoamMeshFrom(dirName)

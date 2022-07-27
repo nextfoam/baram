@@ -80,7 +80,7 @@ class CoreDB(object):
         self._initialized = True
 
         self._configCountAtSave = CoreDB._configCount
-        self._filePath = None
+        # self._filePath = None
         self._inContext = False
         self._backupTree = None
         self._lastError = None
@@ -855,15 +855,18 @@ class CoreDB(object):
         finally:
             f.close()
 
-        self._filePath = path
+        # self._filePath = path
         self._configCountAtSave = CoreDB._configCount
 
-    def save(self):
-        with h5py.File(self._filePath, 'r+') as f:
-            ds = f['configuration']
-            if h5py.check_string_dtype(ds.dtype) is None:
-                raise ValueError
-            ds[0] = etree.tostring(self._xmlTree.getroot(), xml_declaration=True, encoding='UTF-8')
+    def save(self, path: str):
+        with h5py.File(path, 'a') as f:
+            if 'configuration' in f.keys():
+                ds = f['configuration']
+                if h5py.check_string_dtype(ds.dtype) is None:
+                    raise ValueError
+                ds.data = etree.tostring(self._xmlTree.getroot(), xml_declaration=True, encoding='UTF-8')
+            else:
+                f['configuration'] = etree.tostring(self._xmlTree.getroot(), xml_declaration=True, encoding='UTF-8')
             # ToDo: write the rest of data like uploaded polynomials
         self._configCountAtSave = CoreDB._configCount
 
@@ -872,8 +875,8 @@ class CoreDB(object):
             ds = f['configuration']
             if h5py.check_string_dtype(ds.dtype) is None:
                 raise ValueError
-            root = etree.fromstring(ds[0], self._xmlParser)
+            root = etree.fromstring(ds[()], self._xmlParser)
 
         self._xmlTree = root
-        self._filePath = path
+        # self._filePath = path
         self._configCountAtSave = CoreDB._configCount

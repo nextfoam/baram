@@ -7,7 +7,6 @@ import logging
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict, ParsedParameterFile
 
 from coredb import coredb
-from coredb.settings import Settings, CaseStatus
 from openfoam.file_system import FileSystem
 
 
@@ -42,8 +41,6 @@ class PolyMeshLoader:
 
         for rname, czname in cellZones:
             db.addCellZone(rname, czname)
-
-        Settings.setStatus(CaseStatus.MESH_LOADED)
 
     @classmethod
     def loadRegions(cls):

@@ -3,7 +3,7 @@
 
 from enum import Enum, auto
 
-from coredb.settings import Settings
+from coredb.project import CaseStatus
 from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import QObject, Signal
 
@@ -25,7 +25,7 @@ class MenuItem(Enum):
     MENU_SOLUTION_PROCESS_INFORMATION = auto()
 
 
-class MenuView(QObject):
+class NavigatorView(QObject):
     currentMenuChanged = Signal(int)
 
     def __init__(self, tree):
@@ -68,9 +68,9 @@ class MenuView(QObject):
     def currentMenu(self):
         return self._view.currentItem().type()
 
-    def updateMenu(self):
-        self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(not Settings.isMeshLoaded())
-        self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(not Settings.isMeshLoaded())
+    def updateMenu(self, caseStatus):
+        self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(caseStatus < CaseStatus.MESH_LOADED)
+        self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(caseStatus < CaseStatus.MESH_LOADED)
 
     def _connectSignalsSlots(self):
         self._view.currentItemChanged.connect(self.connectCurrentItemChanged)
