@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<surfaceMonitor xmlns="http://www.example.org/baram">
+<surfaceMonitor xmlns="http://www.baramcfd.org/baram">
     <name>default</name>
     <reportType>areaWeightedAverage</reportType>
     <field>
