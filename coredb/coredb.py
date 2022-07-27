@@ -20,7 +20,7 @@ import resource_rc
 
 from resources import resource
 
-ns = 'http://www.example.org/baram'
+ns = 'http://www.baramcfd.org/baram'
 nsmap = {'': ns}
 
 _mutex = Lock()
