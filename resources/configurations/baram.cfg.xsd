@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/baram"
-           xmlns="http://www.example.org/baram" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified">
 
     <!-- type definitions -->
     <xs:simpleType name="inputNumberType">
