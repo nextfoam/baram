@@ -48,7 +48,7 @@ else:
     library = str(OPENFOAM/'lib') + os.pathsep \
               + str(OPENFOAM/'lib'/'sys-openmpi/')
 
-    if not 'LD_LIBRARY_PATH' in os.environ:
+    if 'LD_LIBRARY_PATH' not in os.environ:
         os.environ['LD_LIBRARY_PATH'] = ''
 
     ENV = {

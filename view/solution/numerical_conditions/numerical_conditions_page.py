@@ -47,7 +47,7 @@ class NumericalConditionsPage(QWidget):
 
     def showEvent(self, ev):
         if ev.spontaneous():
-            return super().hideEvent(ev)
+            return super().showEvent(ev)
 
         timeIsTransient = GeneralDB.isTimeTransient()
         self._ui.useMomentumPredictor.setVisible(timeIsTransient)

@@ -3,6 +3,7 @@
 
 from enum import Enum, auto
 
+from coredb.project import SolverStatus
 from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import QObject, Signal
 
@@ -67,12 +68,10 @@ class NavigatorView(QObject):
     def currentMenu(self):
         return self._view.currentItem().type()
 
-    def enableMeshMenus(self):
-        self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(False)
-        self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(False)
-
-    def updateMenu(self, status):
-        pass
+    def updateMenu(self, caseStatus):
+        #self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(caseStatus < CaseStatus.MESH_LOADED)
+        #self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(caseStatus < CaseStatus.MESH_LOADED)
+        ...
 
     def _connectSignalsSlots(self):
         self._view.currentItemChanged.connect(self.connectCurrentItemChanged)

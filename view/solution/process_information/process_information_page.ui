@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>390</width>
-    <height>390</height>
+    <height>456</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -128,6 +128,20 @@
         </property>
         <property name="text">
          <string>Start Calculation</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cancelCalculation">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>60</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Cancel Calculation
+Calculation stops as soon as possible</string>
         </property>
        </widget>
       </item>

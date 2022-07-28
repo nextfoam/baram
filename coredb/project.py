@@ -105,6 +105,10 @@ class _Project(QObject):
         return self._settings.get(ProjectSettingKey.PROCESS_ID)
 
     @property
+    def startTime(self):
+        return self._settings.get(ProjectSettingKey.PROCESS_START_TIME)
+
+    @property
     def jobid(self):
         return self._settings.get(ProjectSettingKey.JOB_ID)
 
