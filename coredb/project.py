@@ -119,7 +119,6 @@ class _Project(QObject):
         self._settings.set(ProjectSettingKey.CASE_UUID, str(uuid.uuid4()))
 
     def setSolverJob(self, jobid, startTime):
-        print(jobid, startTime)
         self._startTime = startTime
         self._runType = self.RunType.JOB
         self._settings.setJob(jobid, startTime)
@@ -140,7 +139,6 @@ class _Project(QObject):
         self._timer.start()
 
     def _setStatus(self, status):
-        print(status)
         if self._status != status:
             self._status = status
             self.statusChanged.emit(status)

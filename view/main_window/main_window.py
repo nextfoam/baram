@@ -155,7 +155,8 @@ class MainWindow(QMainWindow):
             self._project.setStatus(CaseStatus.MESH_LOADED)
         except Exception as ex:
             logger.debug(ex, exc_info=True)
-            QMessageBox.critical(self, self.tr('Mesh Loading Failed'), self.tr(f'Mesh Loading Failed : {ex}'))
+            QMessageBox.critical(self, self.tr('Mesh Loading Failed'), self.tr(f'Mesh Loading Failed.'))
+            return
 
         self._meshDock.showOpenFoamMesh()
 
