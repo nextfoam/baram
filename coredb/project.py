@@ -100,6 +100,14 @@ class _Project(QObject):
     def name(self):
         return os.path.basename(self._directory)
 
+    @property
+    def pid(self):
+        return self._settings.get(ProjectSettingKey.PROCESS_ID)
+
+    @property
+    def jobid(self):
+        return self._settings.get(ProjectSettingKey.JOB_ID)
+
     def solverStatus(self):
         return self._status
 
