@@ -7,7 +7,6 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QThreadPool, Signal
 
 from coredb.filedb import FileDB
-from coredb.project import CaseStatus
 from view.setup.general.general_page import GeneralPage
 from view.setup.materials.material_page import MaterialPage
 from view.setup.models.models_page import ModelsPage
@@ -138,7 +137,6 @@ class MainWindow(QMainWindow):
 
     def _caseStatusChanged(self, status):
         self._navigatorView.updateMenu(status)
-        self._ui.actionLoadMesh.setEnabled(status < CaseStatus.MESH_LOADED)
 
     def _addDockTabified(self, dock):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
@@ -149,17 +147,13 @@ class MainWindow(QMainWindow):
         try:
             FileSystem.copyOpenFoamMeshFrom(dirName)
             PolyMeshLoader.load()
-            self._project.setStatus(CaseStatus.MESH_LOADED)
+            self._ui.actionLoadMesh.setEnabled(False)
+            self._navigatorView.enableMeshMenus()
         except Exception as ex:
             logger.debug(ex, exc_info=True)
             QMessageBox.critical(self, self.tr('Mesh Loading Failed'), self.tr(f'Mesh Loading Failed : {ex}'))
 
         self._meshDock.showOpenFoamMesh()
-
-    def _copyMesh(self, dirName):
-        FileSystem.copyOpenFoamMeshFrom(dirName)
-        self._threadPool.start(lambda: PolyMeshLoader().load())
-        self._threadPool.start(lambda: self._meshDock.showOpenFoamMesh())
 
     def _changeLanguage(self):
         self._dialogSettingLanguage = SettingLanguageDialog(self)

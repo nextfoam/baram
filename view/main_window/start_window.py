@@ -44,9 +44,6 @@ class StartWindow(QDialog):
 
         self._connectSignalsSlots()
 
-    def action(self):
-        return self._action
-
     def getProjectDirectory(self):
         return self._projectDirectory
 
@@ -116,7 +113,7 @@ class Baram:
         self._toQuit = result == QDialog.Rejected
 
     def _startMainWindow(self, action, directory):
-        project = Project(directory)
+        project = Project.open(directory)
         if action == StartAction.ACTION_OPEN and project.uuid is None:
             QMessageBox.critical(self._dialog, self._dialog.tr('Case Open Error'),
                                  self._dialog.tr(f'{os.path.basename(directory)} is not a baram case.'))

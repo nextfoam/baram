@@ -4,75 +4,93 @@
 
 import os
 import uuid
-from enum import IntEnum, auto, Enum
+from enum import auto, Enum
 
 import yaml
-from PySide6.QtCore import QObject, Signal
+import psutil
+from PySide6.QtCore import QObject, Signal, QTimer
 from pathlib import Path
 
 
 FORMAT_VERSION = 1
+SOLVER_CHECK_INTERVAL = 5000
 
 
-class CaseStatus(IntEnum):
-    CREATED = 0
-    MESH_LOADED = auto()
+class SolverStatus(Enum):
+    NONE = 0
+    WAITING = auto()
+    RUNNING = auto()
 
 
 class ProjectSettingKey(Enum):
     FORMAT_VERSION = 'format_version'
     CASE_UUID = 'case_uuid'
     CASE_FULL_PATH = 'case_full_path'
+    JOB_ID = 'job_id'
+    JOB_START_TIME = 'job_start_time'
+    PROCESS_ID = 'process_id'
+    PROCESS_START_TIME = 'process_start_time'
 
 
-class LocalSettings:
-    def __init__(self, projectDirectory):
-        self._settingsFile = os.path.join(projectDirectory, 'baram.cfg')
-        self._settings = None
+class _Project(QObject):
+    statusChanged = Signal(SolverStatus)
 
-        self._load()
+    class RunType:
+        PROCESS = 0
+        JOB = 1
 
-    def getId(self):
-        return self._get(ProjectSettingKey.CASE_UUID)
+    class LocalSettings:
+        def __init__(self, directory):
+            self._directory = directory
+            self._settingsFile = os.path.join(directory, 'baram.cfg')
 
-    def save(self, project):
-        settings = {
-            ProjectSettingKey.FORMAT_VERSION.value: FORMAT_VERSION,
-            ProjectSettingKey.CASE_UUID.value: project.uuid,
-            ProjectSettingKey.CASE_FULL_PATH.value: project.directory
-        }
+            self._settings = {}
+            self._load()
 
-        with open(self._settingsFile, 'w') as file:
-            yaml.dump(settings, file)
+        def get(self, key):
+            if self._settings and key.value in self._settings:
+                return self._settings[key.value]
 
-    def _load(self):
-        if os.path.isfile(self._settingsFile):
-            with open(self._settingsFile) as file:
-                self._settings = yaml.load(file, Loader=yaml.FullLoader)
+            return None
 
-    def _get(self, key):
-        if self._settings:
-            return self._settings[key.value]
+        def set(self, key, value):
+            self._settings[key.value] = value
+            self._save()
 
-        return None
+        def setJob(self, jobid, startTime):
+            self._settings[ProjectSettingKey.JOB_ID.value] = jobid
+            self._settings[ProjectSettingKey.JOB_START_TIME.value] = str(startTime)
+            self._save()
 
+        def setProcess(self, pid, startTime):
+            self._settings[ProjectSettingKey.PROCESS_ID.value] = pid
+            self._settings[ProjectSettingKey.PROCESS_START_TIME.value] = str(startTime)
+            self._save()
 
-class Project(QObject):
-    statusChanged = Signal(CaseStatus)
+        def _load(self):
+            if os.path.isfile(self._settingsFile):
+                with open(self._settingsFile) as file:
+                    self._settings = yaml.load(file, Loader=yaml.FullLoader)
 
-    _directory = None
-    _uuid = None
-    _status = CaseStatus.CREATED
+            self._settings[ProjectSettingKey.FORMAT_VERSION.value] = FORMAT_VERSION
+            self._settings[ProjectSettingKey.CASE_FULL_PATH.value] = self._directory
+
+        def _save(self):
+            with open(self._settingsFile, 'w') as file:
+                yaml.dump(self._settings, file)
 
     def __init__(self, directory):
         super().__init__()
         self._directory = str(Path(directory).resolve())
-        self._localSettings = LocalSettings(self._directory)
-        self._uuid = self._localSettings.getId()
+        self._settings = self.LocalSettings(directory)
+        self._startTime = None
+        self._runType = None
+        self._status = SolverStatus.NONE
+        self._timer = None
 
     @property
     def uuid(self):
-        return self._uuid
+        return self._settings.get(ProjectSettingKey.CASE_UUID)
 
     @property
     def directory(self):
@@ -82,15 +100,66 @@ class Project(QObject):
     def name(self):
         return os.path.basename(self._directory)
 
-    def renewId(self):
-        self._uuid = str(uuid.uuid4())
-
-    def status(self):
+    def solverStatus(self):
         return self._status
 
-    def setStatus(self, status):
-        self._status = status
-        self.statusChanged.emit(status)
+    def renewId(self):
+        self._settings.set(ProjectSettingKey.CASE_UUID, str(uuid.uuid4()))
 
-    def saveSettings(self):
-        self._localSettings.save(self)
+    def setSolverJob(self, jobid, startTime):
+        print(jobid, startTime)
+        self._startTime = startTime
+        self._runType = self.RunType.JOB
+        self._settings.setJob(jobid, startTime)
+        self._updateJobStatus()
+        self._timer = QTimer()
+        self._timer.setInterval(SOLVER_CHECK_INTERVAL)
+        self._timer.timeout.connect(self._updateJobStatus)
+        self._timer.start()
+
+    def setSolverProcess(self, pid, startTime):
+        self._startTime = startTime
+        self._runType = self.RunType.PROCESS
+        self._settings.setProcess(pid, startTime)
+        self._updateProcessStatus()
+        self._timer = QTimer()
+        self._timer.setInterval(SOLVER_CHECK_INTERVAL)
+        self._timer.timeout.connect(self._updateProcessStatus)
+        self._timer.start()
+
+    def _setStatus(self, status):
+        print(status)
+        if self._status != status:
+            self._status = status
+            self.statusChanged.emit(status)
+
+    def _updateProcessStatus(self):
+        try:
+            ps = psutil.Process(pid=self._settings.get(ProjectSettingKey.PROCESS_ID))
+            if ps.create_time() == self._startTime:
+                self._setStatus(SolverStatus.RUNNING)
+        except psutil.NoSuchProcess:
+            self._setStatus(SolverStatus.NONE)
+            self._timer.stop()
+
+    def _updateJobStatus(self):
+        pass
+
+
+class Project:
+    _currentProject = None
+
+    @classmethod
+    def open(cls, directory):
+        assert(cls._currentProject is None)
+        cls._currentProject = _Project(directory)
+        return cls._currentProject
+
+    @classmethod
+    def close(cls):
+        cls._currentProject = None
+
+    @classmethod
+    def instance(cls):
+        assert(cls._currentProject is not None)
+        return cls._currentProject

@@ -74,7 +74,6 @@ class ProjectSettings:
         self._setupSettingPaths(project)
         os.mkdir(self._settingsDirectory)
 
-        project.saveSettings()
         self._save(project)
 
     def _load(self):
