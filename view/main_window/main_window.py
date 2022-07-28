@@ -27,6 +27,7 @@ from .menu.settings_scaling import SettingScalingDialog
 from .navigator_view import NavigatorView, MenuItem
 from .mesh_dock import MeshDock
 from .console_dock import ConsoleDock
+from .chart_dock import ChartDock
 
 
 logger = logging.getLogger(__name__)
@@ -66,9 +67,11 @@ class MainWindow(QMainWindow):
         self._emptyDock.setTitleBarWidget(QWidget())
         self._meshDock = MeshDock(self)
         self._consoleDock = ConsoleDock(self)
+        self._chartDock = ChartDock(self)
 
         self._addDockTabified(self._consoleDock)
         self._addDockTabified(self._meshDock)
+        self._addDockTabified(self._chartDock)
 
         self._menuPages = {
             MenuItem.MENU_TOP.value: MenuPage(),
