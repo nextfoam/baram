@@ -151,7 +151,8 @@ class MainWindow(QMainWindow):
             self._navigatorView.enableMeshMenus()
         except Exception as ex:
             logger.debug(ex, exc_info=True)
-            QMessageBox.critical(self, self.tr('Mesh Loading Failed'), self.tr(f'Mesh Loading Failed : {ex}'))
+            QMessageBox.critical(self, self.tr('Mesh Loading Failed'), self.tr(f'Mesh Loading Failed.'))
+            return
 
         self._meshDock.showOpenFoamMesh()
 

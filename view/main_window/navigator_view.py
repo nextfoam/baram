@@ -6,6 +6,8 @@ from enum import Enum, auto
 from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import QObject, Signal
 
+from coredb.project import SolverStatus
+
 
 class MenuItem(Enum):
     MENU_TOP = QTreeWidgetItem.UserType
@@ -72,7 +74,19 @@ class NavigatorView(QObject):
         self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(False)
 
     def updateMenu(self, status):
-        pass
+        self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(status != SolverStatus.NONE)
+        self._menu[MenuItem.MENU_SETUP_MATERIALS.value].setDisabled(status != SolverStatus.NONE)
+        self._menu[MenuItem.MENU_SETUP_MODELS.value].setDisabled(status != SolverStatus.NONE)
+        self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(status != SolverStatus.NONE)
+        self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(status != SolverStatus.NONE)
+        self._menu[MenuItem.MENU_SETUP_REFERENCE_VALUES.value].setDisabled(status != SolverStatus.NONE)
+
+        # "Numerical Conditions" and "Monitors" are always enabled.
+        # self._menu[MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value].setDisabled(status != SolverStatus.NONE)
+        # self._menu[MenuItem.MENU_SOLUTION_MONITORS.value].setDisabled(status != SolverStatus.NONE)
+        self._menu[MenuItem.MENU_SOLUTION_INITIALIZATION.value].setDisabled(status != SolverStatus.NONE)
+        self._menu[MenuItem.MENU_SOLUTION_RUN_CALCULATION.value].setDisabled(status != SolverStatus.NONE)
+        self._menu[MenuItem.MENU_SOLUTION_PROCESS_INFORMATION.value].setDisabled(status != SolverStatus.NONE)
 
     def _connectSignalsSlots(self):
         self._view.currentItemChanged.connect(self.connectCurrentItemChanged)
