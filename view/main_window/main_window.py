@@ -21,6 +21,7 @@ from view.solution.run_calculation.run_calculation_page import RunCalculationPag
 from view.solution.process_information.process_information_page import ProcessInformationPage
 from openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from openfoam.file_system import FileSystem
+from openfoam.case_generator import CaseGenerator
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu.settings_language import SettingLanguageDialog
@@ -125,6 +126,7 @@ class MainWindow(QMainWindow):
 
     def _save(self):
         FileDB.save()
+        CaseGenerator().generateFiles()
 
     def _loadMesh(self):
         dirName = QFileDialog.getExistingDirectory(self)
@@ -152,7 +154,7 @@ class MainWindow(QMainWindow):
         try:
             FileSystem.copyOpenFoamMeshFrom(dirName)
             PolyMeshLoader.load()
-            self._project.setStatus(CaseStatus.MESH_LOADED)
+            # self._project.setStatus(CaseStatus.MESH_LOADED)
         except Exception as ex:
             logger.debug(ex, exc_info=True)
             QMessageBox.critical(self, self.tr('Mesh Loading Failed'), self.tr(f'Mesh Loading Failed.'))
