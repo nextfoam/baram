@@ -13,7 +13,6 @@ import logging
 import numpy as np
 import pandas as pd
 from PySide6.QtCore import QTimer, QObject, QThread, Signal
-from PySide6.QtWidgets import QApplication
 
 
 # "solverInfo.dat" sample
@@ -28,8 +27,8 @@ from PySide6.QtWidgets import QApplication
 """
 _mutex = Lock()
 
-mPattern = r'(?P<region>[^/\\]+)[/\\]solverInfo_\d+[/\\](?P<time>[0-9]+(?:\.[0-9]+)?)[/\\]solverInfo(?:_(?P<dup>[0-9]+(?:\.[0-9]+)?))?\.dat'
-sPattern = r'[/\\]solverInfo_\d+[/\\](?P<time>[0-9]+(?:\.[0-9]+)?)[/\\]solverInfo(?:_(?P<dup>[0-9]+(?:\.[0-9]+)?))?\.dat'
+mrRegexPattern = r'(?P<region>[^/\\]+)[/\\]solverInfo_\d+[/\\](?P<time>[0-9]+(?:\.[0-9]+)?)[/\\]solverInfo(?:_(?P<dup>[0-9]+(?:\.[0-9]+)?))?\.dat'
+srRegexPattern = r'[/\\]solverInfo_\d+[/\\](?P<time>[0-9]+(?:\.[0-9]+)?)[/\\]solverInfo(?:_(?P<dup>[0-9]+(?:\.[0-9]+)?))?\.dat'
 
 
 logger = logging.getLogger(__name__)
@@ -117,13 +116,10 @@ class Worker(QObject):
 
         self.data = {}
 
-        self.mgPattern = None
-        self.sgPattern = None
+        self.mrGlobPattern = None
+        self.srGlobPattern = None
 
         self.infoFiles = None
-
-        self.mPaths = None
-        self.sPaths = None
 
         self.timerVar = None
         self.running = False
@@ -138,11 +134,8 @@ class Worker(QObject):
         print('startRun'+str(path))
         self.running = True
 
-        self.mgPattern = path/'postProcessing'/'*'/'solverInfo_*'/'*'/'solverInfo*.dat'
-        self.sgPattern = path/'postProcessing'/'solverInfo_*'/'*'/'solverInfo*.dat'
-
-        self.mPaths = {}
-        self.sPaths = {}
+        self.mrGlobPattern = path / 'postProcessing' / '*' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
+        self.srGlobPattern = path / 'postProcessing' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
 
         infoFiles = self.getInfoFiles()
         for p, s in infoFiles.items():
@@ -151,7 +144,9 @@ class Worker(QObject):
             if not lines:
                 continue
 
-            names = [k if k == 'Time' else s.region + ':' + k for k in names]
+            if s.region != '':
+                names = [k if k == 'Time' else s.region + ':' + k for k in names]
+
             if s.region in self.data:
                 self.data[s.region] = updateData(self.data[s.region], lines, names)
             else:
@@ -191,7 +186,9 @@ class Worker(QObject):
             if not lines:
                 continue
 
-            names = [k if k == 'Time' else s.region + ':' + k for k in names]
+            if s.region != '':
+                names = [k if k == 'Time' else s.region + ':' + k for k in names]
+
             if s.region in self.data:
                 self.data[s.region] = updateData(self.data[s.region], lines, names)
             else:
@@ -211,12 +208,18 @@ class Worker(QObject):
         return updatedFiles
 
     def getInfoFiles(self) -> {Path: _SolverInfo}:
-        files = [((p := Path(pstr)), p.stat().st_size) for pstr in glob.glob(str(self.mgPattern))]
+        mrFiles = [((p := Path(pstr)), p.stat().st_size) for pstr in glob.glob(str(self.mrGlobPattern))]
+        srFiles = [((p := Path(pstr)), p.stat().st_size) for pstr in glob.glob(str(self.srGlobPattern))]
 
         infoFiles = {}
-        for path, size in files:
-            m = re.search(mPattern, str(path))
+
+        for path, size in mrFiles:
+            m = re.search(mrRegexPattern, str(path))
             infoFiles[path] = _SolverInfo(m.group('region'), float(m.group('time')), m.group('dup'), size, path, None)
+
+        for path, size in srFiles:
+            m = re.search(srRegexPattern, str(path))
+            infoFiles[path] = _SolverInfo('', float(m.group('time')), m.group('dup'), size, path, None)
 
         # Drop obsoleted info file, which has newer info file in the same directory
         newerFiles = [p for p, s in infoFiles.items() if s.dup is not None]
@@ -225,6 +228,9 @@ class Worker(QObject):
         infoFiles = dict(sorted(infoFiles.items(), key=lambda x: (x[1].region, x[1].time)))
 
         return infoFiles
+
+    def update(self):
+        self.updated.emit(list(self.data.values()))
 
 
 class SolverInfoManager(QObject):
@@ -237,10 +243,15 @@ class SolverInfoManager(QObject):
         return cls._instance
 
     def __init__(self, path: Path):
-        super().__init__()
+        if hasattr(self, '_initialized'):
+            return
+
+        self._initialized = True
 
         if not path.is_absolute():
             raise AssertionError
+
+        super().__init__()
 
         self.path = path
 
