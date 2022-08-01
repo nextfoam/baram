@@ -9,7 +9,7 @@ from filelock import FileLock
 
 import yaml
 
-from coredb.app_settings import AppSettings
+from coredb.settings import AppSettings
 
 
 SETTINGS_FILE_NAME = 'case.cfg.yaml'

@@ -14,7 +14,6 @@ class FvSchemes(DictionaryFile):
         self._rname = rname
         self._db = coredb.CoreDB()
         solvers = openfoam.solver.findSolvers()
-        print(solvers)
         if len(solvers) != 1:  # configuration not enough yet
             raise RuntimeError
 

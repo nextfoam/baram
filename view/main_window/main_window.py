@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QThreadPool, Signal
 
 from coredb.project import Project
-from coredb.app_settings import AppSettings
+from coredb.settings import AppSettings
 from view.setup.general.general_page import GeneralPage
 from view.setup.materials.material_page import MaterialPage
 from view.setup.models.models_page import ModelsPage

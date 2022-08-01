@@ -7,7 +7,7 @@ from enum import Enum, auto
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QFileDialog, QMessageBox
 from filelock import Timeout
 
-from coredb.app_settings import AppSettings
+from coredb.settings import AppSettings
 from coredb.project_settings import ProjectSettings
 from coredb.project import Project
 from view.case_wizard.case_wizard import CaseWizard

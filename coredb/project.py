@@ -13,7 +13,7 @@ from PySide6.QtCore import QObject, Signal, QTimer
 from pathlib import Path
 
 from .project_settings import ProjectSettings, ProjectSettingKey
-from .app_settings import AppSettings
+from .settings import AppSettings
 from .filedb import FileDB
 
 
@@ -94,6 +94,14 @@ class _Project(QObject):
     @property
     def name(self):
         return os.path.basename(self.directory)
+
+    @property
+    def pid(self):
+        return self._pid
+
+    @property
+    def startTime(self):
+        return self._pStartTime
 
     @property
     def runType(self):
