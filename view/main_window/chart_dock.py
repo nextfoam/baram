@@ -1,25 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
+
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QTextBrowser
 from PySide6.QtCore import Qt
-
-import numpy as np
 
 from matplotlib.backends.qt_compat import QtWidgets
 from matplotlib.backends.backend_qtagg import (
     FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 
+from openfoam.solver_info_manager import getSolverInfoManager
 from .tabified_dock import TabifiedDock
-
-import time
 
 
 class ChartDock(TabifiedDock):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._textView = None
+
+        self._lines = {}
 
         self.setWindowTitle(self.tr("Chart"))
         self.setAllowedAreas(Qt.RightDockWidgetArea)
@@ -29,31 +30,50 @@ class ChartDock(TabifiedDock):
 
         layout = QtWidgets.QVBoxLayout(self._widget)
 
-        static_canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        self.static_canvas = FigureCanvas(Figure(figsize=(5, 3)))
         # Ideally one would use self.addToolBar here, but it is slightly
         # incompatible between PyQt6 and other bindings, so we just add the
         # toolbar as a plain widget instead.
-        layout.addWidget(NavigationToolbar(static_canvas, self))
-        layout.addWidget(static_canvas)
+        layout.addWidget(NavigationToolbar(self.static_canvas, self))
+        layout.addWidget(self.static_canvas)
 
-        dynamic_canvas = FigureCanvas(Figure(figsize=(5, 3)))
-        layout.addWidget(dynamic_canvas)
-        layout.addWidget(NavigationToolbar(dynamic_canvas, self))
+        self._static_ax = self.static_canvas.figure.subplots()
+        self._static_ax.set_yscale('log')
 
-        self._static_ax = static_canvas.figure.subplots()
-        t = np.linspace(0, 10, 501)
-        self._static_ax.plot(t, np.tan(t), ".")
+        self.lines1 = None
 
-        self._dynamic_ax = dynamic_canvas.figure.subplots()
-        t = np.linspace(0, 10, 101)
-        # Set up a Line2D.
-        self._line, = self._dynamic_ax.plot(t, np.sin(t + time.time()))
-        self._timer = dynamic_canvas.new_timer(50)
-        self._timer.add_callback(self._update_canvas)
-        self._timer.start()
+        self.solverInfoManager = getSolverInfoManager(Path('./multiRegionHeater').resolve())
 
-    def _update_canvas(self):
-        t = np.linspace(0, 10, 101)
-        # Shift the sinusoid as a function of time.
-        self._line.set_data(t, np.sin(t + time.time()))
-        self._line.figure.canvas.draw()
+        self.solverInfoManager.updated.connect(self.updated)
+
+        self.startDrawing()
+
+    def startDrawing(self):
+        self.solverInfoManager.startCollecting()
+
+    def updated(self, data):
+        for df in data:
+            print('output ')
+            columns = list(filter(lambda x: x.endswith('_initial'),
+                             df.columns.values.tolist()))
+            print('output ')
+            timeMin = df.first_valid_index()
+            timeMax = df.last_valid_index()
+            print(f'time range ({timeMin}, {timeMax})')
+
+            d = df.reset_index()  # "Time" is back to a column to serve as X value
+
+            for c in columns:
+                if c not in self._lines:
+                    print('newLine '+c)
+                    self._lines[c], = self._static_ax.plot('Time', c, '', label=c, data=d)
+                else:
+                    print('updateLine ' + c)
+                    self._lines[c].set_data(d[['Time', c]].to_numpy().transpose())
+
+        self._static_ax.set_xlim(None, timeMax+1)
+        self._static_ax.legend()
+        self.static_canvas.draw()
+
+
+
