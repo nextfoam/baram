@@ -33,7 +33,7 @@ class RunType(Enum):
 
 
 class _Project(QObject):
-    statusChanged = Signal(SolverStatus)
+    statusChanged = Signal()
     projectChanged = Signal()
 
     class LocalSettings:
@@ -200,7 +200,7 @@ class _Project(QObject):
     def _setStatus(self, status):
         if self._status != status:
             self._status = status
-            self.statusChanged.emit(status)
+            self.statusChanged.emit()
 
     def _startProcessMonitor(self, process):
         self._runType = RunType.PROCESS
@@ -227,25 +227,25 @@ class _Project(QObject):
 
 
 class Project:
-    _currentProject = None
+    _instance = None
 
     @classmethod
-    def open(cls, directory, create):
-        assert(cls._currentProject is None)
-        cls._currentProject = _Project()
-        cls._currentProject.open(directory, create)
-        return cls._currentProject
+    def open(cls, directory, create=False):
+        assert(cls._instance is None)
+        cls._instance = _Project()
+        cls._instance.open(directory, create)
+        return cls._instance
 
     @classmethod
     def close(cls):
-        if cls._currentProject:
-            cls._currentProject.close()
-        cls._currentProject = None
+        if cls._instance:
+            cls._instance.close()
+        cls._instance = None
 
     @classmethod
     def instance(cls):
-        assert(cls._currentProject is not None)
-        return cls._currentProject
+        assert(cls._instance is not None)
+        return cls._instance
 
     @classmethod
     def fileDB(cls):

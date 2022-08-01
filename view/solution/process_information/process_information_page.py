@@ -31,6 +31,9 @@ class ProcessInformationPage(QWidget):
 
         return super().showEvent(ev)
 
+    def save(self):
+        pass
+
     def _connectSignalsSlots(self):
         self._ui.startCalculation.clicked.connect(self._startCalculationClicked)
         self._ui.cancelCalculation.clicked.connect(self._cancelCalculationClicked)
@@ -65,8 +68,8 @@ class ProcessInformationPage(QWidget):
     def _updateConfigurationClicked(self):
         ...
 
-    def _update(self, status):
-        self._showStatus(status)
+    def _update(self):
+        self._showStatus(Project.instance().solverStatus())
 
     def _showStatus(self, status):
         if status == SolverStatus.NONE:

@@ -23,17 +23,18 @@ class GeneralPage(QWidget):
         self._load()
 
     def hideEvent(self, ev):
-        if ev.spontaneous():
-            return super().hideEvent(ev)
+        if not ev.spontaneous():
+            self.save()
 
+        return super().hideEvent(ev)
+
+    def save(self):
         xpath = GeneralDB.GENERAL_XPATH + '/timeTransient'
 
         if self._ui.transient_.isChecked():
             self._db.setValue(xpath, 'true')
         else:
             self._db.setValue(xpath, 'false')
-
-        return super().hideEvent(ev)
 
     def _load(self):
         xpath = GeneralDB.GENERAL_XPATH + '/timeTransient'

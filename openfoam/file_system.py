@@ -4,6 +4,8 @@
 import os
 import shutil
 
+from coredb.project import Project
+
 
 class FileSystem:
     CASE_DIRECTORY_NAME = 'case'
@@ -19,8 +21,9 @@ class FileSystem:
     _systemPath = None
 
     @classmethod
-    def setupCase(cls, projectDirectory):
-        cls._casePath = cls.makeDir(projectDirectory, cls.CASE_DIRECTORY_NAME)
+    def setup(cls):
+        cls._casePath = cls.makeDir(Project.instance().directory, cls.CASE_DIRECTORY_NAME)
+        cls._constantPath = os.path.join(cls._casePath, cls.CONSTANT_DIRECTORY_NAME)
 
     @classmethod
     def initCaseDir(cls):
@@ -67,9 +70,6 @@ class FileSystem:
 
     @classmethod
     def copyMeshFrom(cls, directory):
-        if not cls._constantPath:
-            cls._constantPath = os.path.join(cls._casePath, cls.CONSTANT_DIRECTORY_NAME)
-
         if os.path.exists(cls._constantPath):
             shutil.rmtree(cls._constantPath)
 

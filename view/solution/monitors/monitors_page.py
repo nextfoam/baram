@@ -27,3 +27,6 @@ class MonitorsPage(QWidget):
         layout.addWidget(self._surfacesWidget)
         layout.addWidget(self._volumesWidget)
         layout.addStretch()
+
+    def save(self):
+        pass

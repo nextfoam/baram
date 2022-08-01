@@ -107,9 +107,12 @@ class NumericalConditionsPage(QWidget):
         return super().showEvent(ev)
 
     def hideEvent(self, ev):
-        if ev.spontaneous():
-            return super().hideEvent(ev)
+        if not ev.spontaneous():
+            self.save()
 
+        return super().hideEvent(ev)
+
+    def save(self):
         writer = CoreDBWriter()
         writer.append(self._xpath + '/pressureVelocityCouplingScheme',
                       self._ui.pressureVelocityCouplingScheme.currentData(), None)
@@ -170,8 +173,6 @@ class NumericalConditionsPage(QWidget):
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
-
-        return super().hideEvent(ev)
 
     def _connectSignalsSlots(self):
         self._ui.advanced.clicked.connect(self._advancedSetup)

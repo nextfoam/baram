@@ -17,10 +17,13 @@ class ReferenceValuesPage(QWidget):
         self._load()
 
     def hideEvent(self, ev):
-        if ev.spontaneous():
-            return super().hideEvent(ev)
+        if not ev.spontaneous():
+            self.save()
 
         return super().hideEvent(ev)
+
+    def save(self):
+        pass
 
     def _load(self):
         pass

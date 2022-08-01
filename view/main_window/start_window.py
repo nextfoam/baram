@@ -80,7 +80,7 @@ class StartWindow(QDialog):
 
     def _openProject(self, directory, create=False):
         try:
-            project = Project.open(directory, create)
+            Project.open(directory, create)
             self.done(QDialog.Accepted)
         except FileNotFoundError:
             QMessageBox.critical(self._dialog, self._dialog.tr('Case Open Error'),

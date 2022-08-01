@@ -28,6 +28,9 @@ class MaterialPage(QWidget):
         self._connectSignalsSlots()
         self._load()
 
+    def save(self):
+        pass
+
     def _remove(self, card):
         # The count of the layout returns one more than the number of cards, because of the stretch.
         if self._cardListLayout.count() < 3:

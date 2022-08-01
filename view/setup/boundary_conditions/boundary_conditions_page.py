@@ -70,11 +70,11 @@ class BoundaryConditionsPage(QWidget):
             return super().showEvent(ev)
 
         if not self._regions:
-            self.load()
+            self._load()
 
         return super().showEvent(ev)
 
-    def load(self):
+    def _load(self):
         layout = self._ui.regions.layout()
         regions = self._db.getRegions()
         for r in regions:

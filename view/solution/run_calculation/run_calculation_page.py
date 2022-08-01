@@ -106,9 +106,12 @@ class RunCalculationPage(QWidget):
         return super().showEvent(ev)
 
     def hideEvent(self, ev):
-        if ev.spontaneous():
-            return super().hideEvent(ev)
+        if not ev.spontaneous():
+            self.save()
 
+        return super().hideEvent(ev)
+
+    def save(self):
         writer = CoreDBWriter()
         writer.append(self._xpath + '/runConditions/numberOfIterations', self._ui.numberOfIterations.text(),
                       self.tr('Number of Iteration'))
@@ -146,8 +149,6 @@ class RunCalculationPage(QWidget):
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
-
-        return super().hideEvent(ev)
 
     def _connectSignalsSlots(self):
         self._ui.timeSteppingMethod.currentIndexChanged.connect(self._timeSteppingMethodChanged)

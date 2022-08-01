@@ -137,7 +137,6 @@ class U(BoundaryCondition):
         }
 
     def _constructVelocityInletU(self, xpath, bcid, name):
-        fileDB = Project.instance().fileDB()
         spec = self._db.getValue(xpath + '/velocityInlet/velocity/specification')
         if spec == VelocitySpecification.COMPONENT.value:
             profile = self._db.getValue(xpath + '/velocityInlet/velocity/component/profile')
@@ -146,7 +145,8 @@ class U(BoundaryCondition):
                     self._db.getVector(xpath + '/velocityInlet/velocity/component/constant'))
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 return self._constructTimeVaryingMappedFixedValue(
-                    self._rname, name, 'U', fileDB.getBcFile(bcid, BcFileRole.BC_VELOCITY_COMPONENT))
+                    self._rname, name, 'U',
+                    Project.instance().fileDB().getBcFile(bcid, BcFileRole.BC_VELOCITY_COMPONENT))
             elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
                 return self._constructUniformFixedValue(
                     xpath + '/velocityInlet/velocity/component/temporalDistribution/piecewiseLinear',
@@ -158,7 +158,8 @@ class U(BoundaryCondition):
                     self._db.getValue(xpath + '/velocityInlet/velocity/magnitudeNormal/constant'))
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 return self._constructTimeVaryingMappedFixedValue(
-                    self._rname, name, 'U', fileDB.getBcFile(bcid, BcFileRole.BC_VELOCITY_MAGNITUDE))
+                    self._rname, name, 'U',
+                    Project.instance().fileDB().getBcFile(bcid, BcFileRole.BC_VELOCITY_MAGNITUDE))
             elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
                 return self._constructUniformNormalFixedValue(
                     xpath + '/velocityInlet/velocity/magnitudeNormal/temporalDistribution/piecewiseLinear',

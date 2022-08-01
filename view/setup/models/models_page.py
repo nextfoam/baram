@@ -36,6 +36,9 @@ class ModelsPage(QWidget):
 
         self._load()
 
+    def save(self):
+        pass
+
     def _connectSignalsSlots(self):
         self._ui.list.currentItemChanged.connect(self._modelSelected)
         self._ui.list.itemDoubleClicked.connect(self._edit)

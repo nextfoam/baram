@@ -61,9 +61,12 @@ class InitializationPage(QWidget):
         return super().showEvent(ev)
 
     def hideEvent(self, ev):
-        if ev.spontaneous():
-            return super().hideEvent(ev)
+        if not ev.spontaneous():
+            self.save()
 
+        return super().hideEvent(ev)
+
+    def save(self):
         writer = CoreDBWriter()
         writer.append(self._xpath + '/initialValues/velocity/x', self._ui.xVelocity.text(), self.tr("X-Velocity"))
         writer.append(self._xpath + '/initialValues/velocity/y', self._ui.yVelocity.text(), self.tr("Y-Velocity"))
@@ -80,8 +83,6 @@ class InitializationPage(QWidget):
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
-
-        return super().hideEvent(ev)
 
     def _createOption(self):
         self._dialog = OptionDialog()

@@ -29,16 +29,19 @@ class CellZoneConditionsPage(QWidget):
             return super().showEvent(ev)
 
         if not self._regions:
-            self.load()
+            self._load()
         else:
             self._setupMaterials()
 
         return super().showEvent(ev)
 
     def hideEvent(self, ev):
-        if ev.spontaneous():
-            return super().hideEvent(ev)
+        if not ev.spontaneous():
+            self.save()
 
+        return super().hideEvent(ev)
+
+    def save(self):
         writer = CoreDBWriter()
         for name, region in self._regions.items():
             writer.append(RegionDB.getXPath(name) + '/material', str(region.material()), None)
@@ -47,9 +50,7 @@ class CellZoneConditionsPage(QWidget):
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
 
-        return super().hideEvent(ev)
-
-    def load(self):
+    def _load(self):
         layout = self._ui.regions.layout()
         regions = self._db.getRegions()
         for r in regions:

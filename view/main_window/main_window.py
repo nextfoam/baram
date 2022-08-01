@@ -104,7 +104,6 @@ class MainWindow(QMainWindow):
         self._closeType = CloseType.EXIT_APP
 
         if self._project.meshLoaded:
-            FileSystem.setupCase(self._project.directory)
             self._threadPool.start(self._meshDock.showOpenFoamMesh)
 
         self.show()
@@ -113,19 +112,19 @@ class MainWindow(QMainWindow):
         self.tabifyDockWidget(self._emptyDock, dock)
 
     def closeEvent(self, event):
-        if self._project.isModified:
-            msgBox = QMessageBox()
-            msgBox.setWindowTitle(self.tr("Save Changed"))
-            msgBox.setText(self.tr("Do you want save your changes?"))
-            msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Discard | QMessageBox.Cancel)
-            msgBox.setDefaultButton(QMessageBox.Ok)
+        # if self._project.isModified:
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle(self.tr("Save Changed"))
+        msgBox.setText(self.tr("Do you want save your changes?"))
+        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Discard | QMessageBox.Cancel)
+        msgBox.setDefaultButton(QMessageBox.Ok)
 
-            result = msgBox.exec()
-            if result == QMessageBox.Ok:
-                self._project.save()
-            elif result == QMessageBox.Cancel:
-                event.ignore()
-                return
+        result = msgBox.exec()
+        if result == QMessageBox.Ok:
+            self._save()
+        elif result == QMessageBox.Cancel:
+            event.ignore()
+            return
 
         Project.close()
         self.windowClosed.emit(self._closeType)
@@ -149,9 +148,11 @@ class MainWindow(QMainWindow):
         self.close()
 
     def _save(self):
+        self._saveCurrentPage()
         self._project.save()
 
     def _saveAs(self):
+        self._saveCurrentPage()
         # dirName = QFileDialog.getExistingDirectory(self, self.tr('Case Directory'), AppSettings.getRecentDirectory())
         # if dirName:
         dirName = QFileDialog.getSaveFileName(self, self.tr('Case Directory'), AppSettings.getRecentDirectory())[0]
@@ -165,6 +166,11 @@ class MainWindow(QMainWindow):
                     return
 
             self._project.saveAs(dirName)
+
+    def _saveCurrentPage(self):
+        currentPage = self._contentView.currentPage()
+        if currentPage:
+            currentPage.save()
 
     def _loadMesh(self):
         dirName = QFileDialog.getExistingDirectory(self)
@@ -184,6 +190,7 @@ class MainWindow(QMainWindow):
 
     def _projectChanged(self):
         self.setWindowTitle(self.tr('Baram') + ' - ' + self._project.directory)
+        FileSystem.setup()
 
     def _addDockTabified(self, dock):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
@@ -192,7 +199,6 @@ class MainWindow(QMainWindow):
 
     def _loadOpenFoamMesh(self, dirName):
         try:
-            FileSystem.setupCase(self._project.directory)
             FileSystem.copyMeshFrom(dirName)
             PolyMeshLoader.load()
             self._project.setMeshLoaded()
