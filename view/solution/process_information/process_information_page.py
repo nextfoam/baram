@@ -115,7 +115,8 @@ class ProcessInformationPage(QWidget):
             FvSolution(rname).build().write()
         ControlDict().build().write()
 
-    def _updatedStatus(self, status):
+    def _updatedStatus(self):
+        status = self._project.solverStatus()
         self._showStatus(status)
 
     def _showStatus(self, status):
