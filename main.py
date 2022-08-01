@@ -44,5 +44,5 @@ if __name__ == '__main__':
     QCoreApplication.installTranslator(translator)
 
     baram = Baram()
-    while not baram.toQuit() and baram.start():
-        app.exec()
+    baram.start()
+    app.exec()

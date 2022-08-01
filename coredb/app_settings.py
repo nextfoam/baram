@@ -6,11 +6,22 @@ import os
 from enum import Enum
 
 import yaml
-from filelock import FileLock, Timeout
+from filelock import FileLock
 
 
 FORMAT_VERSION = 1
 RECENT_CASES_NUMBER = 5
+
+userDirectory = os.path.join(os.path.expanduser('~'), 'baram')
+settingsDirectory = os.path.join(os.path.expanduser('~'), '.baram')
+casesDirectory = os.path.join(settingsDirectory, 'cases')
+settingsFile = os.path.join(settingsDirectory, 'baram.cfg.yaml')
+
+if not os.path.isdir(settingsDirectory):
+    os.mkdir(settingsDirectory)
+
+if not os.path.isdir(casesDirectory):
+    os.mkdir(casesDirectory)
 
 
 class SettingKey(Enum):
@@ -20,37 +31,22 @@ class SettingKey(Enum):
     RECENT_CASES = 'recent_cases'
 
 
-class Settings:
-    _userDirectory = os.path.expanduser('~')
-    _settingsDirectory = os.path.join(_userDirectory, '.baram')
-    _casesDirectory = os.path.join(_settingsDirectory, 'cases')
-    _settingsFile = os.path.join(_settingsDirectory, 'baram.cfg.yaml')
-    _applicationLockFile = os.path.join(_settingsDirectory, 'baram.lock')
-
-    @classmethod
-    def init(cls):
-        if not os.path.isdir(cls._settingsDirectory):
-            os.mkdir(cls._settingsDirectory)
-
-        if not os.path.isdir(cls._casesDirectory):
-            os.mkdir(cls._casesDirectory)
+class AppSettings:
+    _applicationLockFile = os.path.join(settingsDirectory, 'baram.lock')
 
     @classmethod
     def casesDirectory(cls):
-        return cls._casesDirectory
+        return casesDirectory
 
     @classmethod
     def acquireLock(cls, timeout):
-        try:
-            lock = FileLock(cls._applicationLockFile)
-            lock.acquire(timeout=timeout)
-            return lock
-        except Timeout:
-            return None
+        lock = FileLock(cls._applicationLockFile)
+        lock.acquire(timeout=timeout)
+        return lock
 
     @classmethod
     def getRecentDirectory(cls):
-        return cls._get(SettingKey.RECENT_DIRECTORY, cls._userDirectory)
+        return cls._get(SettingKey.RECENT_DIRECTORY, userDirectory)
 
     @classmethod
     def getRecentCases(cls):
@@ -72,18 +68,18 @@ class Settings:
 
     @classmethod
     def _load(cls):
-        if os.path.isfile(cls._settingsFile):
-            with open(cls._settingsFile) as file:
+        if os.path.isfile(settingsFile):
+            with open(settingsFile) as file:
                 return yaml.load(file, Loader=yaml.FullLoader)
         else:
             return {SettingKey.FORMAT_VERSION.value: FORMAT_VERSION}
 
     @classmethod
     def _save(cls, settings):
-        with open(cls._settingsFile, 'w') as file:
+        with open(settingsFile, 'w') as file:
             yaml.dump(settings, file)
 
     @classmethod
-    def _get(cls, key, defauilt=None):
+    def _get(cls, key, default=None):
         settings = cls._load()
-        return settings[key.value] if key.value in settings else defauilt
+        return settings[key.value] if key.value in settings else default

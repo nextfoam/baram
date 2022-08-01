@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from coredb.filedb import FileDB, BcFileRole
+from coredb.filedb import BcFileRole
 from coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
 from coredb.boundary_db import FlowRateInletSpecification, WallVelocityCondition, InterfaceMode
+from coredb.project import Project
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from openfoam.dictionary_file import DataClass
 
@@ -136,6 +137,7 @@ class U(BoundaryCondition):
         }
 
     def _constructVelocityInletU(self, xpath, bcid, name):
+        fileDB = Project.instance().fileDB()
         spec = self._db.getValue(xpath + '/velocityInlet/velocity/specification')
         if spec == VelocitySpecification.COMPONENT.value:
             profile = self._db.getValue(xpath + '/velocityInlet/velocity/component/profile')
@@ -144,7 +146,7 @@ class U(BoundaryCondition):
                     self._db.getVector(xpath + '/velocityInlet/velocity/component/constant'))
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 return self._constructTimeVaryingMappedFixedValue(
-                    self._rname, name, 'U', FileDB.getBcFile(bcid, BcFileRole.BC_VELOCITY_COMPONENT))
+                    self._rname, name, 'U', fileDB.getBcFile(bcid, BcFileRole.BC_VELOCITY_COMPONENT))
             elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
                 return self._constructUniformFixedValue(
                     xpath + '/velocityInlet/velocity/component/temporalDistribution/piecewiseLinear',
@@ -156,7 +158,7 @@ class U(BoundaryCondition):
                     self._db.getValue(xpath + '/velocityInlet/velocity/magnitudeNormal/constant'))
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 return self._constructTimeVaryingMappedFixedValue(
-                    self._rname, name, 'U', FileDB.getBcFile(bcid, BcFileRole.BC_VELOCITY_MAGNITUDE))
+                    self._rname, name, 'U', fileDB.getBcFile(bcid, BcFileRole.BC_VELOCITY_MAGNITUDE))
             elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
                 return self._constructUniformNormalFixedValue(
                     xpath + '/velocityInlet/velocity/magnitudeNormal/temporalDistribution/piecewiseLinear',

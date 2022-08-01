@@ -43,11 +43,10 @@ class ProcessInformationPage(QWidget):
         caseRoot = FileSystem.caseRoot()
         numCores = self._db.getValue('.//runCalculation/parallel/numberOfCores')
 
-        # solvers = ['chtMultiRegionFoam']
-        # caseRoot = '/home/test/Desktop/TestBARAM/multiRegionHeater/'
+        solvers = ['chtMultiRegionFoam']
+        caseRoot = 'D:/Data/baram/multiRegionHeater'
 
-        pid, createdTime = launchSolver(solvers[0], Path(caseRoot), int(numCores))
-        Project.instance().setSolverProcess(pid, createdTime)
+        Project.instance().setSolverProcess(launchSolver(solvers[0], Path(caseRoot), int(numCores)))
 
         self._showSolverStatusRunning()
 
@@ -94,8 +93,7 @@ class ProcessInformationPage(QWidget):
     def _showSolverStatusRunning(self):
         project = Project.instance()
 
-        pid = project.pid
-        startTime = project.startTime
+        pid, startTime = project.solverProcess()
 
         self._ui.id.setText(self.tr(f'{pid}'))
         self._ui.created.setText(self.tr(f'{startTime}'))

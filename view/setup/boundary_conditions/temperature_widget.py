@@ -6,8 +6,9 @@ from os import path
 from PySide6.QtWidgets import QWidget, QFileDialog, QMessageBox
 
 from coredb import coredb
-from coredb.filedb import FileDB, BcFileRole, FileFormatError
+from coredb.filedb import BcFileRole, FileFormatError
 from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution
+from coredb.project import Project
 from view.widgets.number_input_dialog import PiecewiseLinearDialog, PolynomialDialog
 from .temperature_widget_ui import Ui_temperatureWidget
 
@@ -53,7 +54,8 @@ class TemperatureWidget(QWidget):
             self._ui.temporalDistributionRadioGroup, self._temporalDistributionRadios,
             self._db.getValue(self._xpath + '/temporalDistribution/specification')
         ).setChecked(True)
-        self._spatialDistributionFileName = FileDB.getBcFileName(self._bcid, BcFileRole.BC_TEMPERATURE)
+        self._spatialDistributionFileName = Project.instance().fileDB().getBcFileName(
+            self._bcid, BcFileRole.BC_TEMPERATURE)
         self._ui.spatialDistributionFileName.setText(self._spatialDistributionFileName)
         self._profileTypeChanged()
         self._temporalDistributionTypeChanged()
@@ -67,7 +69,8 @@ class TemperatureWidget(QWidget):
         elif profile == TemperatureProfile.SPATIAL_DISTRIBUTION.value:
             if self._spatialDistributionFile:
                 try:
-                    FileDB.putBcFile(self._bcid, BcFileRole.BC_TEMPERATURE, self._spatialDistributionFile)
+                    Project.instance().fileDB().putBcFile(
+                        self._bcid, BcFileRole.BC_TEMPERATURE, self._spatialDistributionFile)
                 except FileFormatError:
                     QMessageBox.critical(self, self.tr("Input Error"), self.tr("CSV File is wrong"))
                     return False

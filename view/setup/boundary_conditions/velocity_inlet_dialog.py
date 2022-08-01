@@ -6,10 +6,11 @@ from os import path
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 
 from coredb import coredb
-from coredb.filedb import FileDB, BcFileRole, FileFormatError
+from coredb.filedb import BcFileRole, FileFormatError
 from coredb.coredb_writer import CoreDBWriter
 from coredb.models_db import ModelsDB
 from coredb.boundary_db import BoundaryDB, VelocitySpecification, VelocityProfile
+from coredb.project import Project
 from view.widgets.resizable_dialog import ResizableDialog
 from view.widgets.number_input_dialog import PiecewiseLinearDialog
 from .velocity_inlet_dialog_ui import Ui_VelocityInletDialog
@@ -81,7 +82,7 @@ class VelocityInletDialog(ResizableDialog):
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 if self._componentSpatialDistributionFile:
                     try:
-                        FileDB.putBcFile(self._bcid, BcFileRole.BC_VELOCITY_COMPONENT,
+                        Project.instance().fileDB().putBcFile(self._bcid, BcFileRole.BC_VELOCITY_COMPONENT,
                                          self._componentSpatialDistributionFile)
                     except FileFormatError:
                         QMessageBox.critical(self, self.tr("Input Error"), self.tr("Velocity CSV File is wrong"))
@@ -114,8 +115,8 @@ class VelocityInletDialog(ResizableDialog):
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 if self._magnitudeSpatialDistributionFile:
                     try:
-                        FileDB.putBcFile(self._bcid, BcFileRole.BC_VELOCITY_MAGNITUDE,
-                                         self._magnitudeSpatialDistributionFile)
+                        Project.instance().fileDB().putBcFile(self._bcid, BcFileRole.BC_VELOCITY_MAGNITUDE,
+                                                              self._magnitudeSpatialDistributionFile)
                     except FileFormatError:
                         QMessageBox.critical(self, self.tr("Input Error"), self.tr("Velocity CSV File is wrong"))
                         return
@@ -155,6 +156,8 @@ class VelocityInletDialog(ResizableDialog):
     def _load(self):
         xpath = self._xpath + self.RELATIVE_XPATH
 
+        filedb = Project.instance().fileDB()
+
         specification = self._db.getValue(xpath + '/velocity/specification')
         self._ui.velocitySpecificationMethod.setCurrentText(self._specifications[specification])
         profile = None
@@ -162,8 +165,8 @@ class VelocityInletDialog(ResizableDialog):
             profile = self._db.getValue(xpath + '/velocity/component/profile')
         elif specification == VelocitySpecification.MAGNITUDE.value:
             profile = self._db.getValue(xpath + '/velocity/magnitudeNormal/profile')
-        self._componentSpatialDistributionFileName = FileDB.getBcFileName(self._bcid, BcFileRole.BC_VELOCITY_COMPONENT)
-        self._magnitudeSpatialDistributionFileName = FileDB.getBcFileName(self._bcid, BcFileRole.BC_VELOCITY_MAGNITUDE)
+        self._componentSpatialDistributionFileName = filedb.getBcFileName(self._bcid, BcFileRole.BC_VELOCITY_COMPONENT)
+        self._magnitudeSpatialDistributionFileName = filedb.getBcFileName(self._bcid, BcFileRole.BC_VELOCITY_MAGNITUDE)
         self._ui.profileType.setCurrentText(self._profileTypes[profile])
         self._ui.xVelocity.setText(self._db.getValue(xpath + '/velocity/component/constant/x'))
         self._ui.yVelocity.setText(self._db.getValue(xpath + '/velocity/component/constant/y'))

@@ -6,7 +6,7 @@ from enum import Enum, auto
 from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import QObject, Signal
 
-from coredb.project import SolverStatus
+from coredb.project import Project, SolverStatus
 
 
 class MenuItem(Enum):
@@ -45,9 +45,9 @@ class NavigatorView(QObject):
         self._addMenu(MenuItem.MENU_SETUP_MODELS, self._setupMenu,
                       self.tr('Models'))
         self._addMenu(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS, self._setupMenu,
-                      self.tr('Cell Zone Conditions'), True)
+                      self.tr('Cell Zone Conditions'))
         self._addMenu(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS, self._setupMenu,
-                      self.tr('Boundary Conditions'), True)
+                      self.tr('Boundary Conditions'))
         self._addMenu(MenuItem.MENU_SETUP_REFERENCE_VALUES, self._setupMenu,
                       self.tr('Reference Values'))
         self._addMenu(MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS, self._solutionMenu,
@@ -62,6 +62,7 @@ class NavigatorView(QObject):
                       self.tr('Process Information'))
 
         self._connectSignalsSlots()
+        self.updateMenu()
 
     def connectCurrentItemChanged(self, current):
         self.currentMenuChanged.emit(current.type())
@@ -69,24 +70,20 @@ class NavigatorView(QObject):
     def currentMenu(self):
         return self._view.currentItem().type()
 
-    def enableMeshMenus(self):
-        self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(False)
-        self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(False)
+    def updateMenu(self):
+        project = Project.instance()
+        noMesh = not project.meshLoaded
+        solverSubmitted = project.solverStatus() != SolverStatus.NONE
 
-    def updateMenu(self, status):
-        self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(status != SolverStatus.NONE)
-        self._menu[MenuItem.MENU_SETUP_MATERIALS.value].setDisabled(status != SolverStatus.NONE)
-        self._menu[MenuItem.MENU_SETUP_MODELS.value].setDisabled(status != SolverStatus.NONE)
-        self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(status != SolverStatus.NONE)
-        self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(status != SolverStatus.NONE)
-        self._menu[MenuItem.MENU_SETUP_REFERENCE_VALUES.value].setDisabled(status != SolverStatus.NONE)
+        self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(solverSubmitted)
+        self._menu[MenuItem.MENU_SETUP_MATERIALS.value].setDisabled(solverSubmitted)
+        self._menu[MenuItem.MENU_SETUP_MODELS.value].setDisabled(solverSubmitted)
+        self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(noMesh or solverSubmitted)
+        self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(noMesh or solverSubmitted)
+        self._menu[MenuItem.MENU_SETUP_REFERENCE_VALUES.value].setDisabled(solverSubmitted)
 
-        # "Numerical Conditions" and "Monitors" are always enabled.
-        # self._menu[MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value].setDisabled(status != SolverStatus.NONE)
-        # self._menu[MenuItem.MENU_SOLUTION_MONITORS.value].setDisabled(status != SolverStatus.NONE)
-        self._menu[MenuItem.MENU_SOLUTION_INITIALIZATION.value].setDisabled(status != SolverStatus.NONE)
-        self._menu[MenuItem.MENU_SOLUTION_RUN_CALCULATION.value].setDisabled(status != SolverStatus.NONE)
-        self._menu[MenuItem.MENU_SOLUTION_PROCESS_INFORMATION.value].setDisabled(status != SolverStatus.NONE)
+        self._menu[MenuItem.MENU_SOLUTION_INITIALIZATION.value].setDisabled(solverSubmitted)
+        self._menu[MenuItem.MENU_SOLUTION_PROCESS_INFORMATION.value].setDisabled(noMesh)
 
     def _connectSignalsSlots(self):
         self._view.currentItemChanged.connect(self.connectCurrentItemChanged)
@@ -96,7 +93,6 @@ class NavigatorView(QObject):
         item.setExpanded(True)
         return item
 
-    def _addMenu(self, key, parent, text, disabled=False):
+    def _addMenu(self, key, parent, text):
         self._menu[key.value] = QTreeWidgetItem(parent, [text], key.value)
-        self._menu[key.value].setDisabled(disabled)
 

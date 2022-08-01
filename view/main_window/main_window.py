@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import os
+from enum import Enum, auto
 
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QThreadPool, Signal
 
-from coredb.filedb import FileDB
-from coredb.project import SolverStatus
+from coredb.project import Project
+from coredb.app_settings import AppSettings
 from view.setup.general.general_page import GeneralPage
 from view.setup.materials.material_page import MaterialPage
 from view.setup.models.models_page import ModelsPage
@@ -34,6 +36,11 @@ from .chart_dock import ChartDock
 logger = logging.getLogger(__name__)
 
 
+class CloseType(Enum):
+    EXIT_APP = 0
+    CLOSE_PROJECT = auto()
+
+
 class MenuPage:
     def __init__(self, pageClass=None):
         self._pageClass = pageClass
@@ -52,14 +59,15 @@ class MenuPage:
 
 
 class MainWindow(QMainWindow):
-    windowClosed = Signal()
+    windowClosed = Signal(CloseType)
 
-    def __init__(self, project):
+    def __init__(self):
         super().__init__()
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
-        self.setWindowTitle(self.tr('Baram') + ' - ' + project.directory)
-        # self._wizard = None
+
+        self._project = Project.instance()
+        self._projectChanged()
 
         self._navigatorView = NavigatorView(self._ui.navigatorView)
         self._contentView = ContentView(self._ui.formView, self._ui)
@@ -89,42 +97,74 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SOLUTION_PROCESS_INFORMATION.value: MenuPage(ProcessInformationPage),
         }
 
-        self._project = project
-        FileSystem.setup(project.directory)
-
         self._threadPool = QThreadPool()
         self._quit = True
 
         self._connectSignalsSlots()
+        self._closeType = CloseType.EXIT_APP
+
+        if self._project.meshLoaded:
+            FileSystem.setupCase(self._project.directory)
+            self._threadPool.start(self._meshDock.showOpenFoamMesh)
 
         self.show()
-
-    def toQuit(self):
-        return self._quit
 
     def tabifyDock(self, dock):
         self.tabifyDockWidget(self._emptyDock, dock)
 
     def closeEvent(self, event):
-        self.windowClosed.emit()
+        if self._project.isModified:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle(self.tr("Save Changed"))
+            msgBox.setText(self.tr("Do you want save your changes?"))
+            msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Discard | QMessageBox.Cancel)
+            msgBox.setDefaultButton(QMessageBox.Ok)
+
+            result = msgBox.exec()
+            if result == QMessageBox.Ok:
+                self._project.save()
+            elif result == QMessageBox.Cancel:
+                event.ignore()
+                return
+
+        Project.close()
+        self.windowClosed.emit(self._closeType)
+        super().closeEvent(event)
 
     def _connectSignalsSlots(self):
         self._ui.actionExit.triggered.connect(self.close)
         self._ui.actionSave.triggered.connect(self._save)
+        self._ui.actionSaveAs.triggered.connect(self._saveAs)
         self._ui.actionLoadMesh.triggered.connect(self._loadMesh)
         self._ui.actionCloseCase.triggered.connect(self._closeProject)
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
         self._ui.actionLanguage.triggered.connect(self._changeLanguage)
         self._ui.actionScale.triggered.connect(self._changeScale)
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
-        self._project.statusChanged.connect(self._caseStatusChanged)
+        self._project.statusChanged.connect(self._projectStatusChanged)
+        self._project.projectChanged.connect(self._projectChanged)
 
     def _closeProject(self):
-        self._quit = False
+        self._closeType = CloseType.CLOSE_PROJECT
         self.close()
 
     def _save(self):
-        FileDB.save()
+        self._project.save()
+
+    def _saveAs(self):
+        # dirName = QFileDialog.getExistingDirectory(self, self.tr('Case Directory'), AppSettings.getRecentDirectory())
+        # if dirName:
+        dirName = QFileDialog.getSaveFileName(self, self.tr('Case Directory'), AppSettings.getRecentDirectory())[0]
+        if dirName:
+            if os.path.exists(dirName):
+                if not os.path.isdir(dirName):
+                    QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirName} is not a directory.'))
+                    return
+                elif os.listdir(dirName):
+                    QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirName} is not empty.'))
+                    return
+
+            self._project.saveAs(dirName)
 
     def _loadMesh(self):
         dirName = QFileDialog.getExistingDirectory(self)
@@ -139,9 +179,11 @@ class MainWindow(QMainWindow):
 
         self._contentView.changePane(page.index)
 
-    def _caseStatusChanged(self, status):
-        self._navigatorView.updateMenu(status)
-        # self._ui.actionLoadMesh.setEnabled(status < CaseStatus.MESH_LOADED)
+    def _projectStatusChanged(self):
+        self._navigatorView.updateMenu()
+
+    def _projectChanged(self):
+        self.setWindowTitle(self.tr('Baram') + ' - ' + self._project.directory)
 
     def _addDockTabified(self, dock):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
@@ -150,20 +192,16 @@ class MainWindow(QMainWindow):
 
     def _loadOpenFoamMesh(self, dirName):
         try:
-            FileSystem.copyOpenFoamMeshFrom(dirName)
+            FileSystem.setupCase(self._project.directory)
+            FileSystem.copyMeshFrom(dirName)
             PolyMeshLoader.load()
-            self._project.setStatus(CaseStatus.MESH_LOADED)
+            self._project.setMeshLoaded()
         except Exception as ex:
             logger.debug(ex, exc_info=True)
             QMessageBox.critical(self, self.tr('Mesh Loading Failed'), self.tr(f'Mesh Loading Failed.'))
             return
 
         self._meshDock.showOpenFoamMesh()
-
-    def _copyMesh(self, dirName):
-        FileSystem.copyOpenFoamMeshFrom(dirName)
-        self._threadPool.start(lambda: PolyMeshLoader().load())
-        self._threadPool.start(lambda: self._meshDock.showOpenFoamMesh())
 
     def _changeLanguage(self):
         self._dialogSettingLanguage = SettingLanguageDialog(self)

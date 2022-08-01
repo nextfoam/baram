@@ -19,7 +19,7 @@ class FileSystem:
     _systemPath = None
 
     @classmethod
-    def setup(cls, projectDirectory):
+    def setupCase(cls, projectDirectory):
         cls._casePath = cls.makeDir(projectDirectory, cls.CASE_DIRECTORY_NAME)
 
     @classmethod
@@ -66,7 +66,7 @@ class FileSystem:
         return os.path.join(cls._casePath, 'baram.foam')
 
     @classmethod
-    def copyOpenFoamMeshFrom(cls, directory):
+    def copyMeshFrom(cls, directory):
         if not cls._constantPath:
             cls._constantPath = os.path.join(cls._casePath, cls.CONSTANT_DIRECTORY_NAME)
 

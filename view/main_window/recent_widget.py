@@ -5,7 +5,6 @@ import os
 
 from PySide6.QtWidgets import QWidget
 
-from coredb.project_settings import ProjectSettingKey
 from .recent_widget_ui import Ui_RecentWidget
 
 
@@ -15,9 +14,10 @@ class RecentWidget(QWidget):
         self._ui = Ui_RecentWidget()
         self._ui.setupUi(self)
 
-        fullPath = settings[ProjectSettingKey.CASE_FULL_PATH.value]
+        fullPath = settings.projectPath
         self._ui.name.setText(os.path.basename(fullPath))
-        self._ui.status.setText('configuring')
+        if settings.getProcess():
+            self._ui.status.setText('Running')
         self._ui.path.setText(fullPath)
 
     def getProjectPath(self):

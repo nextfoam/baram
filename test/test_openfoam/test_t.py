@@ -3,11 +3,12 @@ import os
 import shutil
 
 from coredb import coredb
-from coredb.filedb import FileDB, BcFileRole
+from coredb.filedb import BcFileRole
 from coredb.boundary_db import BoundaryDB
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import Phase
-from coredb.settings import Settings
+from coredb.app_settings import AppSettings
+from coredb.project import Project
 from openfoam.boundary_conditions.t import T
 from openfoam.file_system import FileSystem
 
@@ -248,7 +249,7 @@ class TestT(unittest.TestCase):
         csvFile = 'testTSpatialDistribution/testTSpatial.csv'
         # ToDo: Settings 처리 정리 후 재작성
         os.makedirs(testDir, exist_ok=True)             # 사용자가 Working Directory 선택할 때 이미 존재하는 디렉토리
-        Settings.createProject(testDir)                 # Case wizard 끝날 때 호출
+        AppSettings.createProject(testDir)                 # Case wizard 끝날 때 호출
         FileSystem.setup()                              # Case wizard 끝날 때 호출
         FileSystem._constantPath = FileSystem.makeDir(FileSystem.caseRoot(), FileSystem.CONSTANT_DIRECTORY_NAME)
                                                         # 사용자가 선택한 mesh directory 복사해 올 때 생성됨
@@ -258,7 +259,7 @@ class TestT(unittest.TestCase):
             f.write('0,0,0,1\n0,0,1,2\n')
 
         self._db.setValue(self._xpath + '/temperature/profile', 'spatialDistribution')
-        FileDB.putBcFile(self._bcid, BcFileRole.BC_TEMPERATURE, csvFile)
+        Project.instance().fileDB().putBcFile(self._bcid, BcFileRole.BC_TEMPERATURE, csvFile)
         content = T(region).build().asDict()
         self.assertEqual('timeVaryingMappedFixedValue', content['boundaryField'][boundary]['type'])
 

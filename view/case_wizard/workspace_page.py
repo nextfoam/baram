@@ -5,7 +5,7 @@ from os import path
 
 from PySide6.QtWidgets import QWizardPage, QFileDialog
 
-from coredb.settings import Settings
+from coredb.app_settings import AppSettings
 from .workspace_page_ui import Ui_WorkspacePage
 
 
@@ -17,7 +17,7 @@ class WorkspacePage(QWizardPage):
         self._ui.setupUi(self)
 
         self._complete = False
-        self._locationParent = Settings.getRecentDirectory()
+        self._locationParent = AppSettings.getRecentDirectory()
         self._updateProjectLocation()
 
         self.registerField('projectName*', self._ui.projectName)
@@ -53,7 +53,7 @@ class WorkspacePage(QWizardPage):
         self._ui.select.clicked.connect(self._selectLocation)
 
     def _selectLocation(self):
-        dirName = QFileDialog.getExistingDirectory(self, self.tr('Project Directory'), self._locationParent)
+        dirName = QFileDialog.getExistingDirectory(self, self.tr('Case Directory'), self._locationParent)
         if dirName:
             self._locationParent = dirName
             self._updateProjectLocation()
