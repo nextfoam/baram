@@ -53,6 +53,7 @@ class ProcessInformationPage(QWidget):
 
     def _startCalculationClicked(self):
         self._ui.status.setText(self.tr('Waiting...'))
+        self._ui.startCalculation.setDisabled(True)
 
         CaseGenerator().generateFiles()
 
@@ -65,8 +66,6 @@ class ProcessInformationPage(QWidget):
 
         process = launchSolver(self._solvers[0], Path(self._caseRoot), int(numCores))
         self._project.setSolverProcess(process)
-
-        self._showStatusRunning()
 
     def _cancelCalculationClicked(self):
         self._ui.status.setText(self.tr('Stopping...'))
