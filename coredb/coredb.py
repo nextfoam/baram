@@ -90,13 +90,13 @@ class CoreDB(object):
         xsdTree = etree.parse(resource.file(self.XSD_PATH))
         self._xmlSchema = etree.XMLSchema(etree=xsdTree)
         self._xmlParser = etree.XMLParser(schema=self._xmlSchema)
-        self._xmlTree = etree.parse(resource.file(self.XML_PATH), self._xmlParser)
+
+        self._xmlTree = None
 
         df = pd.read_csv(resource.file(self.MATERIALS_PATH), header=0, index_col=0).transpose()
         self._materialDB = df.where(pd.notnull(df), None).to_dict()
 
-        # Add 'air' as default material
-        self.addMaterial('air')
+        self.loadDefault()
 
     def __enter__(self):
         logger.debug('enter')
@@ -873,7 +873,13 @@ class CoreDB(object):
             if h5py.check_string_dtype(ds.dtype) is None:
                 raise ValueError
             root = etree.fromstring(ds[()], self._xmlParser)
+            self._xmlTree = etree.ElementTree(root)
 
-        self._xmlTree = etree.ElementTree(root)
-        # self._filePath = path
+        self._configCountAtSave = CoreDB._configCount
+
+    def loadDefault(self):
+        self._xmlTree = etree.parse(resource.file(self.XML_PATH), self._xmlParser)
+        # Add 'air' as default material
+        self.addMaterial('air')
+
         self._configCountAtSave = CoreDB._configCount
