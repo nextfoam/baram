@@ -14,7 +14,6 @@ from matplotlib.backends.backend_qtagg import (
     FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 
-from openfoam.file_system import FileSystem
 from openfoam.solver_info_manager import getSolverInfoManager
 from openfoam.file_system import FileSystem
 from .tabified_dock import TabifiedDock
