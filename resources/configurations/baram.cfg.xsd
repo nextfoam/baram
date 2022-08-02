@@ -998,6 +998,7 @@
                         <xs:restriction base="xs:string">
                             <xs:enumeration value="group"/>
                             <xs:enumeration value="patch"/>
+                            <xs:enumeration value="symmetry"/>
                             <xs:enumeration value="symmetryPlane"/>
                             <xs:enumeration value="empty"/>
                             <xs:enumeration value="wedge"/>
