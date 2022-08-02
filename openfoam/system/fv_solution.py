@@ -144,8 +144,8 @@ class FvSolution(DictionaryFile):
                         'UFinal': self._db.getValue('.//underRelaxationFactors/momentumFinal'),
                         'h': self._db.getValue('.//underRelaxationFactors/energy'),
                         'hFinal': self._db.getValue('.//underRelaxationFactors/energyFinal'),
-                        '(k|epsilon|omega|nuTilda)': self._db.getValue('.//underRelaxationFactors/turbulence'),
-                        '(k|epsilon|omega|nuTilda)Final': self._db.getValue('.//underRelaxationFactors/turbulenceFinal'),
+                        '"(k|epsilon|omega|nuTilda)"': self._db.getValue('.//underRelaxationFactors/turbulence'),
+                        '"(k|epsilon|omega|nuTilda)Final"': self._db.getValue('.//underRelaxationFactors/turbulenceFinal'),
                     }
                 }
             }
