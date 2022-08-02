@@ -589,8 +589,13 @@ class CoreDB(object):
         self._xmlSchema.assertValid(self._xmlTree)
 
     def getRegions(self) -> list[str]:
-        names = self._xmlTree.xpath(f'.//x:region/x:name/text()', namespaces={'x': ns})
-        return [str(r) for r in names]
+        elements = self._xmlTree.findall(f'.//regions/region', namespaces=nsmap)
+        regions = [e.find('name', namespaces=nsmap).text for e in elements]
+        if len(regions) == 1 and regions[0] is None:
+            self.setValue('.//regions/region/name', '')
+            return ['']
+
+        return regions
 
     @config_change
     def addCellZone(self, rname: str, zname: str) -> int:
