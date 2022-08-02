@@ -159,7 +159,8 @@ class Worker(QObject):
         self.timerVar.timeout.connect(self.process)
         self.timerVar.start()
 
-        self.updated.emit(list(self.data.values()))
+        # copy dataframe to send it to another thread
+        self.updated.emit([df.copy() for df in self.data.values()])
 
     def stopRun(self):
         self.timerVar.stop()
@@ -194,7 +195,8 @@ class Worker(QObject):
             else:
                 self.data[s.region] = updateData(None, lines, names)
 
-        self.updated.emit(list(self.data.values()))
+        # copy dataframe to send it to another thread
+        self.updated.emit([df.copy() for df in self.data.values()])
 
     def getUpdatedFiles(self, current: {Path: _SolverInfo}) -> {Path: _SolverInfo}:
         infoFiles = self.getInfoFiles()

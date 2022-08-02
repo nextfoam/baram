@@ -3,6 +3,7 @@
 
 from pathlib import Path
 
+import pandas as pd
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QTextBrowser
 from PySide6.QtCore import Qt
 
@@ -31,6 +32,7 @@ class ChartDock(TabifiedDock):
         self.setWidget(self._widget)
 
         layout = QtWidgets.QVBoxLayout(self._widget)
+        self._data = None
 
         self._canvas = FigureCanvas(Figure(figsize=(5, 3)))
         self._canvas.mpl_connect('scroll_event', self.onScroll)
@@ -53,14 +55,15 @@ class ChartDock(TabifiedDock):
         self.solverInfoManager.startCollecting()
 
     def updated(self, data):
+        timeMax = None
         for df in data:
             columns = list(filter(lambda x: x.endswith('_initial'),
                                   df.columns.values.tolist()))
 
-            timeMin = df.first_valid_index()
-            timeMax = df.last_valid_index()
+            if timeMax is None or timeMax < df.last_valid_index():
+                timeMax = df.last_valid_index()
 
-            d = df.reset_index()  # "Time" is back to a column to serve as X value
+            d = df.reset_index()  # "Time" is back to a column to serve as X value in numpy transpose below
 
             for c in columns:
                 if c not in self._lines:
@@ -68,9 +71,19 @@ class ChartDock(TabifiedDock):
                 else:
                     self._lines[c].set_data(d[['Time', c]].to_numpy().transpose())
 
-        self._ax.set_xlim(None, timeMax)
+        minX, maxX = self._ax.get_xlim()
+
+        minX += timeMax - maxX
+        maxX = timeMax
+
+        self._ax.set_xlim([minX, maxX])
+        minY, maxY = self._getValueRange(data, minX, maxX)
+        self._ax.set_ylim([minY, maxY])
+
         self._ax.legend()
         self._canvas.draw()
+
+        self._data = data
 
     def onScroll(self, event):
         print(f'mouse event {event.step}')
@@ -79,11 +92,26 @@ class ChartDock(TabifiedDock):
         print(f'scale {scale}')
         left = maxX - (maxX-minX) * scale
         self._ax.set_xlim([left, maxX])
-        self._ax.relim(visible_only=True)
-        self._ax.set_autoscaley_on(True)
-        self._ax.autoscale_view(scalex=False, scaley=True)
+        minY, maxY = self._getValueRange(self._data, left, maxX)
+        self._ax.set_ylim([minY, maxY])
 
         self._canvas.draw()  # force re-draw the next time the GUI refreshes
 
+    def _getValueRange(self, data: [pd.DataFrame], timeMin: float, timeMax: float):
+        minY = None
+        maxY = None
+        for df in data:
+            columns = list(filter(lambda x: x.endswith('_initial'),
+                                  df.columns.values.tolist()))
+            d = df[(df.index >= timeMin) & (df.index <= timeMax)][columns]
+            valueMin = d.min().min()
+            valueMax = d.max().max()
+
+            if minY is None or minY > valueMin:
+                minY = valueMin
+            if maxY is None or maxY < valueMax:
+                maxY = valueMax
+
+        return minY, maxY
 
 
