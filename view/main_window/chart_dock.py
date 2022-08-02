@@ -15,6 +15,7 @@ from matplotlib.backends.backend_qtagg import (
 from matplotlib.figure import Figure
 
 from openfoam.solver_info_manager import getSolverInfoManager
+from openfoam.file_system import FileSystem
 from .tabified_dock import TabifiedDock
 
 
@@ -45,7 +46,7 @@ class ChartDock(TabifiedDock):
         self._ax = self._canvas.figure.subplots()
         self._ax.set_yscale('log')
 
-        self.solverInfoManager = getSolverInfoManager(Path('./multiRegionHeater').resolve())
+        self.solverInfoManager = getSolverInfoManager(Path(FileSystem.caseRoot()).resolve())
 
         self.solverInfoManager.updated.connect(self.updated)
 
