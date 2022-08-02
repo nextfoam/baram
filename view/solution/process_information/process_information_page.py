@@ -3,7 +3,8 @@
 
 from pathlib import Path
 import psutil, signal
-import time, datetime
+import time
+import platform
 
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QWidget
@@ -11,10 +12,10 @@ from PySide6.QtWidgets import QWidget
 from coredb import coredb
 from coredb.project import Project, SolverStatus
 from openfoam.run import launchSolver
+from openfoam.case_generator import CaseGenerator
 from openfoam.system.fv_solution import FvSolution
 from openfoam.system.control_dict import ControlDict
 from openfoam.system.fv_schemes import FvSchemes
-from openfoam.system.fv_options import FvOptions
 import openfoam.solver
 from openfoam.file_system import FileSystem
 from .process_information_page_ui import Ui_ProcessInformationPage
@@ -48,118 +49,109 @@ class ProcessInformationPage(QWidget):
         self._ui.cancelCalculation.clicked.connect(self._cancelCalculationClicked)
         self._ui.saveAndStopCalculation.clicked.connect(self._saveAndStopCalculationClicked)
         self._ui.updateConfiguration.clicked.connect(self._updateConfigurationClicked)
-        self._project.statusChanged.connect(self._update)
+        self._project.statusChanged.connect(self._updatedStatus)
 
     def _startCalculationClicked(self):
-        # CaseGenerator().generateFiles()
+        self._ui.status.setText(self.tr('Waiting...'))
+        self._ui.startCalculation.setDisabled(True)
+
+        CaseGenerator().generateFiles()
+
+        controlDict = ControlDict().build()
+        controlDict.asDict()['startFrom'] = 'latestTime'
+        controlDict.asDict()['stopAt'] = 'endTime'
+        controlDict.write()
 
         numCores = self._db.getValue('.//runCalculation/parallel/numberOfCores')
 
-        pid, createdTime = launchSolver(self._solvers[0], Path(self._caseRoot), int(numCores))
-
-        self._project.setSolverProcess(pid, createdTime)
-
-        self._showStatusRunning()
+        process = launchSolver(self._solvers[0], Path(self._caseRoot), int(numCores))
+        self._project.setSolverProcess(process)
 
     def _cancelCalculationClicked(self):
-        # controlDict = ControlDict().build()
-        # controlDict.asDict()['stopAt'] = 'noWriteNow'
-        # controlDict.write()
+        self._ui.status.setText(self.tr('Stopping...'))
 
-        from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
-        conDict = ParsedParameterFile(f'{self._caseRoot}/system/controlDict')
-        conDict['stopAt'] = 'noWriteNow'
-        conDict.writeFile()
+        self._ui.cancelCalculation.setDisabled(True)
+        self._ui.saveAndStopCalculation.setDisabled(True)
+        self._ui.updateConfiguration.setDisabled(True)
 
-        self._showStatusNone()
-        self._ui.status.setText(self.tr('Canceled'))
-
-    def _saveAndStopCalculationClicked(self):
-        # controlDict = ControlDict().build()
-        # controlDict.asDict()['stopAt'] = 'writeNow'
-        # controlDict.write()
-
-        # from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
-        # conDict = ParsedParameterFile(f'{self._caseRoot}/system/controlDict')
-        # conDict['stopAt'] = 'writeNow'
-        # conDict.writeFile()
+        controlDict = ControlDict().build()
+        controlDict.asDict()['stopAt'] = 'noWriteNow'
+        controlDict.write()
 
         self._timer = QTimer()
         self._timer.setInterval(SOLVER_CHECK_INTERVAL)
+        self._timer.setSingleShot(True)
         self._timer.timeout.connect(self._waitingStop)
         self._timer.start()
 
     def _waitingStop(self):
-        try:
-            print(self._project.pid)
-
+        if self._project.solverStatus() == SolverStatus.RUNNING:
             ps = psutil.Process(pid=self._project.pid)
-            print(self._project.startTime, ps.create_time())
-
             if ps.create_time() == self._project.startTime:
-                psutil.Popen.send_signal(signal.SIGTERM)
-                # self._project.setStatus(SolverStatus.RUNNING)
+                if platform.system() == "Windows":
+                    ps.send_signal(signal.CTRL_C_EVENT)
+                elif platform.system() == "Linux":
+                    ps.send_signal(signal.SIGTERM)
+                    ps.wait()   # Temporary code
+                else:
+                    raise Exception(self.tr('Unsupported OS'))
 
-        except psutil.NoSuchProcess:
-            self._project.setStatus(SolverStatus.NONE)
-            self._timer.stop()
+    def _saveAndStopCalculationClicked(self):
+        self._ui.status.setText(self.tr('Stopping after saving...'))
+
+        self._ui.cancelCalculation.setDisabled(True)
+        self._ui.saveAndStopCalculation.setDisabled(True)
+        self._ui.updateConfiguration.setDisabled(True)
+
+        controlDict = ControlDict().build()
+        controlDict.asDict()['stopAt'] = 'writeNow'
+        controlDict.write()
 
     def _updateConfigurationClicked(self):
         regions = self._db.getRegions()
         for rname in regions:
             FvSchemes(rname).build().write()
             FvSolution(rname).build().write()
-            FvOptions(rname).build().write()
         ControlDict().build().write()
 
-    def _update(self, status):
+    def _updatedStatus(self):
+        status = self._project.solverStatus()
         self._showStatus(status)
 
     def _showStatus(self, status):
         if status == SolverStatus.NONE:
             self._showStatusNone()
-
-        elif status == SolverStatus.RUNNING:
-            self._showStatusRunning()
-
         elif status == SolverStatus.WAITING:
             self._showStatusWaiting()
+        elif status == SolverStatus.RUNNING:
+            self._showStatusRunning()
         else:
             pass
 
     def _showStatusNone(self):
         self._ui.id.setText(self.tr('-'))
-        self._ui.created.setText(self.tr('-'))
+        self._ui.createTime.setText(self.tr('-'))
         self._ui.status.setText(self.tr('Not Running'))
 
         self._ui.startCalculation.show()
         self._ui.startCalculation.setEnabled(True)
         self._ui.cancelCalculation.hide()
         self._ui.saveAndStopCalculation.setDisabled(True)
-        self._ui.updateConfiguration.setEnabled(True)
+        self._ui.updateConfiguration.setDisabled(True)
 
-        # controlDict = ControlDict().build()
-        # controlDict.asDict()['startFrom'] = 'latestTime'
-        # controlDict.asDict()['stopAt'] = 'endTime'
-        # controlDict.write()
+    def _showStatusWaiting(self):
+        self._ui.status.setText(self.tr('Job submitted'))
 
-        from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
-        conDict = ParsedParameterFile(f'{self._caseRoot}/system/controlDict')
-        conDict['startFrom'] = 'firstTime'  ### should be deleted
-        conDict['stopAt'] = 'endTime'
-        conDict.writeFile()
+        self._ui.startCalculation.setDisabled(True)
+        self._ui.saveAndStopCalculation.setDisabled(True)
+        self._ui.updateConfiguration.setDisabled(True)
 
     def _showStatusRunning(self):
+        pid, startTime = self._project.solverProcess()
+        createTime = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime(startTime))
 
-        startTime = self._project.startTime
-
-        print(startTime)
-        # print(time.localtime(startTime))
-        # print(datetime.datetime.fromtimestamp(startTime))
-        # print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(startTime)))
-
-        self._ui.id.setText(self.tr(f'{self._project.pid}'))
-        self._ui.created.setText(self.tr(f'{startTime}'))
+        self._ui.id.setText(self.tr(f'{pid}'))
+        self._ui.createTime.setText(self.tr(f'{createTime}'))
         self._ui.status.setText(self.tr('Running'))
 
         self._ui.startCalculation.hide()
@@ -167,10 +159,4 @@ class ProcessInformationPage(QWidget):
         self._ui.cancelCalculation.setEnabled(True)
         self._ui.saveAndStopCalculation.setEnabled(True)
         self._ui.updateConfiguration.setEnabled(True)
-
-    def _showStatusWaiting(self):
-        self._ui.startCalculation.setDisabled(True)
-        self._ui.cancelCalculation.setDisabled(True)
-        self._ui.saveAndStopCalculation.setDisabled(True)
-        self._ui.updateConfiguration.setDisabled(True)
 
