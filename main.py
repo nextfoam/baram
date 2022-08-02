@@ -29,7 +29,7 @@ if __name__ == '__main__':
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     app = QApplication(sys.argv)
 

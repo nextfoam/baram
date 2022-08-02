@@ -137,6 +137,7 @@ class Worker(QObject):
         self.mrGlobPattern = path / 'postProcessing' / '*' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
         self.srGlobPattern = path / 'postProcessing' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
 
+        hasUpdate = False
         infoFiles = self.getInfoFiles()
         for p, s in infoFiles.items():
             s.f = open(s.path, 'r')
@@ -144,6 +145,7 @@ class Worker(QObject):
             if not lines:
                 continue
 
+            hasUpdate = True
             if s.region != '':
                 names = [k if k == 'Time' else s.region + ':' + k for k in names]
 
@@ -152,6 +154,10 @@ class Worker(QObject):
             else:
                 self.data[s.region] = updateData(None, lines, names)
 
+        if hasUpdate:
+            # dataframe is copied because it is sent to another thread
+            self.updated.emit([df.copy() for df in self.data.values()])
+
         self.infoFiles = infoFiles
 
         self.timerVar = QTimer()
@@ -159,23 +165,19 @@ class Worker(QObject):
         self.timerVar.timeout.connect(self.process)
         self.timerVar.start()
 
-        # copy dataframe to send it to another thread
-        self.updated.emit([df.copy() for df in self.data.values()])
 
     def stopRun(self):
         self.timerVar.stop()
         self.running = False
 
     def process(self):
-        print('Timeout')
+        hasUpdate = False
         infoFiles = self.getUpdatedFiles(self.infoFiles)
         for p, s in infoFiles.items():
             # close all the other files in the same region
             for p1, s1 in self.infoFiles.items():
                 if p1 != p and s1.region == s.region and s1.f is not None:
                     s1.f.close()
-
-            print('updated SolverInfo: '+str(p))
 
             if p in self.infoFiles:
                 self.infoFiles[p].size = s.size
@@ -187,6 +189,8 @@ class Worker(QObject):
             if not lines:
                 continue
 
+            hasUpdate = True
+
             if s.region != '':
                 names = [k if k == 'Time' else s.region + ':' + k for k in names]
 
@@ -195,8 +199,9 @@ class Worker(QObject):
             else:
                 self.data[s.region] = updateData(None, lines, names)
 
-        # copy dataframe to send it to another thread
-        self.updated.emit([df.copy() for df in self.data.values()])
+        if hasUpdate:
+            # dataframe is copied because it is sent to another thread
+            self.updated.emit([df.copy() for df in self.data.values()])
 
     def getUpdatedFiles(self, current: {Path: _SolverInfo}) -> {Path: _SolverInfo}:
         infoFiles = self.getInfoFiles()

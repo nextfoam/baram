@@ -14,15 +14,18 @@ from matplotlib.backends.backend_qtagg import (
     FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 
+from openfoam.file_system import FileSystem
 from openfoam.solver_info_manager import getSolverInfoManager
 from .tabified_dock import TabifiedDock
 
+END_MARGIN = 0.05  # 5% margin between line end and right axis
 
 class ChartDock(TabifiedDock):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._textView = None
 
+        self._data = None
+        self._timeMax = None
         self._lines = {}
 
         self.setWindowTitle(self.tr("Chart"))
@@ -32,86 +35,106 @@ class ChartDock(TabifiedDock):
         self.setWidget(self._widget)
 
         layout = QtWidgets.QVBoxLayout(self._widget)
-        self._data = None
 
         self._canvas = FigureCanvas(Figure(figsize=(5, 3)))
         self._canvas.mpl_connect('scroll_event', self.onScroll)
-        # Ideally one would use self.addToolBar here, but it is slightly
-        # incompatible between PyQt6 and other bindings, so we just add the
-        # toolbar as a plain widget instead.
-        #layout.addWidget(NavigationToolbar(self.canvas, self))
+
         layout.addWidget(self._canvas)
 
-        self._ax = self._canvas.figure.subplots()
-        self._ax.set_yscale('log')
+        self._axes = self._canvas.figure.subplots()
+        self._axes.set_yscale('log')
 
-        self.solverInfoManager = getSolverInfoManager(Path('./multiRegionHeater').resolve())
+        self.solverInfoManager = getSolverInfoManager(Path(FileSystem.caseRoot()).resolve())
 
         self.solverInfoManager.updated.connect(self.updated)
-
-        self.startDrawing()
 
     def startDrawing(self):
         self.solverInfoManager.startCollecting()
 
+    def stopDrawing(self):
+        self.solverInfoManager.stopCollecting()
+
     def updated(self, data):
+        self._data = data
+
         timeMax = None
         for df in data:
             columns = list(filter(lambda x: x.endswith('_initial'),
                                   df.columns.values.tolist()))
 
-            if timeMax is None or timeMax < df.last_valid_index():
-                timeMax = df.last_valid_index()
+            timeMax = df.last_valid_index()
 
             d = df.reset_index()  # "Time" is back to a column to serve as X value in numpy transpose below
 
             for c in columns:
                 if c not in self._lines:
-                    self._lines[c], = self._ax.plot('Time', c, '', label=c[:-8], data=d)
+                    self._lines[c], = self._axes.plot('Time', c, '', label=c[:-8], data=d)
                 else:
                     self._lines[c].set_data(d[['Time', c]].to_numpy().transpose())
 
-        minX, maxX = self._ax.get_xlim()
+        if self._timeMax is not None and timeMax > self._timeMax:
+            delta = timeMax - self._timeMax
+        else:
+            delta = 0
 
-        minX += timeMax - maxX
-        maxX = timeMax
+        self._timeMax = timeMax
 
-        self._ax.set_xlim([minX, maxX])
-        minY, maxY = self._getValueRange(data, minX, maxX)
-        self._ax.set_ylim([minY, maxY])
+        minX, maxX = self._axes.get_xlim()
 
-        self._ax.legend()
+        minX += delta
+
+        # If maxX is too far from current time max, adjust maxX to guarantee the margin
+        if (maxX - self._timeMax) / (maxX - minX) > END_MARGIN:
+            maxX = (self._timeMax - minX*END_MARGIN) / (1 - END_MARGIN)
+        else:
+            maxX += delta
+
+        self._axes.set_xlim([minX, maxX])
+
+        self._adjustYRange(data, minX, maxX)
+
+        self._axes.legend()
+
         self._canvas.draw()
 
-        self._data = data
-
     def onScroll(self, event):
-        print(f'mouse event {event.step}')
-        minX, maxX = self._ax.get_xlim()
+        if self._timeMax is None:
+            return
+
+        minX, maxX = self._axes.get_xlim()
         scale = np.power(1.05, -event.step)
-        print(f'scale {scale}')
-        left = maxX - (maxX-minX) * scale
-        self._ax.set_xlim([left, maxX])
-        minY, maxY = self._getValueRange(self._data, left, maxX)
-        self._ax.set_ylim([minY, maxY])
+
+        width = (maxX - minX) * scale
+        maxX = self._timeMax + width * END_MARGIN
+        minX = self._timeMax - width * (1 - END_MARGIN)
+
+        self._axes.set_xlim([minX, maxX])
+
+        self._adjustYRange(self._data, minX, maxX)
 
         self._canvas.draw()  # force re-draw the next time the GUI refreshes
 
-    def _getValueRange(self, data: [pd.DataFrame], timeMin: float, timeMax: float):
+    def _adjustYRange(self, data: [pd.DataFrame], minX: float, maxX: float):
         minY = None
         maxY = None
         for df in data:
             columns = list(filter(lambda x: x.endswith('_initial'),
                                   df.columns.values.tolist()))
-            d = df[(df.index >= timeMin) & (df.index <= timeMax)][columns]
-            valueMin = d.min().min()
-            valueMax = d.max().max()
+            d = df[(df.index >= minX) & (df.index <= maxX)][columns]
+            localMin = d.min().min()
+            localMax = d.max().max()
 
-            if minY is None or minY > valueMin:
-                minY = valueMin
-            if maxY is None or maxY < valueMax:
-                maxY = valueMax
+            if minY is None or minY > localMin:
+                minY = localMin
+            if maxY is None or maxY < localMax:
+                maxY = localMax
 
-        return minY, maxY
+        minY = minY / 10  # margin in log scale
+        if maxY < 0.1:
+            maxY = maxY * 10  # margin in log scale
+        else:
+            maxY = 1
+
+        self._axes.set_ylim([minY, maxY])
 
 
