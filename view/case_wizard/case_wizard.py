@@ -30,8 +30,6 @@ class CaseWizard(QWizard):
     def __init__(self, *args, **kwargs):
         super(CaseWizard, self).__init__(*args, **kwargs)
 
-        self._db = coredb.CoreDB()
-
         self._ui = Ui_CaseWizard()
         self._ui.setupUi(self)
 
@@ -73,41 +71,43 @@ class CaseWizard(QWizard):
             raise NotImplementedError('Unknown Case Wizard Page')
 
     def accept(self):
+        db = coredb.CoreDB()
+
         generalXPath = './/general'
         gravityXPath = './/general/operatingConditions/gravity'
         modelsXPath = './/models'
 
         if self.field('flowTypeCompressible'):
-            self._db.setValue(f'{generalXPath}/flowType', 'compressible')
+            db.setValue(f'{generalXPath}/flowType', 'compressible')
         else:
-            self._db.setValue(f'{generalXPath}/flowType', 'incompressible')
+            db.setValue(f'{generalXPath}/flowType', 'incompressible')
 
         if self.field('solverTypePressureBased'):
-            self._db.setValue(f'{generalXPath}/solverType', 'pressureBased')
+            db.setValue(f'{generalXPath}/solverType', 'pressureBased')
         else:
-            self._db.setValue(f'{generalXPath}/solverType', 'densityBased')
+            db.setValue(f'{generalXPath}/solverType', 'densityBased')
 
         if self.field('energyModelsInclude'):
-            self._db.setValue(f'{modelsXPath}/energyModels', 'on')
+            db.setValue(f'{modelsXPath}/energyModels', 'on')
         else:
-            self._db.setValue(f'{modelsXPath}/energyModels', 'off')
+            db.setValue(f'{modelsXPath}/energyModels', 'off')
 
         if self.field('multiphaseModelsInclude'):
-            self._db.setValue(f'{modelsXPath}/multiphaseModels/model', 'on')
+            db.setValue(f'{modelsXPath}/multiphaseModels/model', 'on')
         else:
-            self._db.setValue(f'{modelsXPath}/multiphaseModels/model', 'off')
+            db.setValue(f'{modelsXPath}/multiphaseModels/model', 'off')
 
         if self.field('gravityInclude'):
-            self._db.setAttribute(f'{gravityXPath}', 'disabled', 'false')
-            self._db.setValue(f'{gravityXPath}/direction/x', self.field('gravityX'))
-            self._db.setValue(f'{gravityXPath}/direction/y', self.field('gravityY'))
-            self._db.setValue(f'{gravityXPath}/direction/z', self.field('gravityZ'))
+            db.setAttribute(f'{gravityXPath}', 'disabled', 'false')
+            db.setValue(f'{gravityXPath}/direction/x', self.field('gravityX'))
+            db.setValue(f'{gravityXPath}/direction/y', self.field('gravityY'))
+            db.setValue(f'{gravityXPath}/direction/z', self.field('gravityZ'))
         else:
-            self._db.setAttribute(f'{gravityXPath}', 'disabled', 'true')
+            db.setAttribute(f'{gravityXPath}', 'disabled', 'true')
 
         if self.field('speciesModelsInclude'):
-            self._db.setValue(f'{modelsXPath}/speciesModels', 'on')
+            db.setValue(f'{modelsXPath}/speciesModels', 'on')
         else:
-            self._db.setValue(f'{modelsXPath}/speciesModels', 'off')
+            db.setValue(f'{modelsXPath}/speciesModels', 'off')
 
         super().accept()

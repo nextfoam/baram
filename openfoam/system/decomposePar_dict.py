@@ -21,13 +21,14 @@ class DecomposeParDict(DictionaryFile):
         super().__init__(self.systemLocation(rname), 'decomposeParDict')
 
         self._rname = rname
-        self._db = coredb.CoreDB()
 
     def build(self):
         if self._data is not None:
             return
 
-        numCores = self._db.getValue('.//runCalculation/parallel/numberOfCores')
+        db = coredb.CoreDB()
+
+        numCores = db.getValue('.//runCalculation/parallel/numberOfCores')
 
         self._data = {
             'numberOfSubdomains': numCores,

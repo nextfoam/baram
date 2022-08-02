@@ -67,6 +67,92 @@ class ControlDict(DictionaryFile):
             'runTimeModifiable': 'yes',
             'adjustTimeStep': adjustTimeStep,
             'maxCo': db.getValue(xpath + '/maxCourantNumber'),
+            'functions': self._buildFunctionObjects()
         }
 
         return self
+
+    def _buildFunctionObjects(self):
+        db = coredb.CoreDB()
+        data = self._buildResiduals()
+
+        forces = db.getForceMonitors()
+        if len(forces) > 0:
+            data.update(self._buildForces(forces))
+
+        points = db.getPointMonitors()
+        if len(points) > 0:
+            data.update(self._buildPoints(points))
+
+        surfaces = db.getSurfaceMonitors()
+        if len(surfaces) > 0:
+            data.update(self._buildSurfaces(surfaces))
+
+        volumes = db.getVolumeMonitors()
+        if len(volumes) > 0:
+            data.update(self._buildVolumes(volumes))
+
+        return data
+
+    def _buildResiduals(self):
+        db = coredb.CoreDB()
+
+        fields = '(U p)'
+
+        data = {
+            'solverInfo': {
+                'type': 'solverInfo',
+                'libs': '("libutilityFunctionObjects.so")',
+                'fields': fields,
+                'writeResidualFields': 'yes'
+            }
+        }
+        return data
+
+    def _buildForces(self, data):
+        data = {}
+        for i in data:
+            dataName = f'forces{i}'
+            patches = '()'
+            data[dataName] = {
+                'type': 'forces',
+                'libs': '("libforces.so")',
+                'patches': patches
+            }
+        return data
+    def _buildPoints(self, data):
+        data = {}
+        for i in data:
+            dataName = f'points{i}'
+            patches = '()'
+            data[dataName] = {
+                'type': 'points',
+                'libs': '("libpoints.so")',
+                'patches': patches
+            }
+        return data
+
+    def _buildSurfaces(self, data):
+        data = {}
+        for i in data:
+            dataName = f'surfaces{i}'
+            patches = '()'
+            data[dataName] = {
+                'type': 'surfaces',
+                'libs': '("libsurfaces.so")',
+                'patches': patches
+            }
+        return data
+
+    def _buildVolumes(self, data):
+        data = {}
+        for i in data:
+            dataName = f'volumes{i}'
+            patches = '()'
+            data[dataName] = {
+                'type': 'volumes',
+                'libs': '("libvolumes.so")',
+                'patches': patches
+            }
+        return data
+
