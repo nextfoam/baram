@@ -46,7 +46,7 @@ class ChartDock(TabifiedDock):
 
         self.solverInfoManager = getSolverInfoManager(Path(FileSystem.caseRoot()).resolve())
 
-        self.solverInfoManager.updated.connect(self.updated)
+        self.solverInfoManager.residualsUpdated.connect(self.updated)
 
     def startDrawing(self):
         self.solverInfoManager.startCollecting()
@@ -57,20 +57,18 @@ class ChartDock(TabifiedDock):
     def updated(self, data):
         self._data = data
 
-        timeMax = None
-        for df in data:
-            columns = list(filter(lambda x: x.endswith('_initial'),
-                                  df.columns.values.tolist()))
+        d = data.reset_index()  # "Time" is back to a column to serve as X value in numpy transpose below
 
-            timeMax = df.last_valid_index()
+        columns = list(filter(lambda x: x.endswith('_initial'),
+                              data.columns.values.tolist()))
 
-            d = df.reset_index()  # "Time" is back to a column to serve as X value in numpy transpose below
+        for c in columns:
+            if c not in self._lines:
+                self._lines[c], = self._axes.plot('Time', c, '', label=c[:-8], data=d)
+            else:
+                self._lines[c].set_data(d[['Time', c]].to_numpy().transpose())
 
-            for c in columns:
-                if c not in self._lines:
-                    self._lines[c], = self._axes.plot('Time', c, '', label=c[:-8], data=d)
-                else:
-                    self._lines[c].set_data(d[['Time', c]].to_numpy().transpose())
+        timeMax = data.last_valid_index()
 
         if self._timeMax is not None and timeMax > self._timeMax:
             delta = timeMax - self._timeMax
@@ -117,17 +115,15 @@ class ChartDock(TabifiedDock):
     def _adjustYRange(self, data: [pd.DataFrame], minX: float, maxX: float):
         minY = None
         maxY = None
-        for df in data:
-            columns = list(filter(lambda x: x.endswith('_initial'),
-                                  df.columns.values.tolist()))
-            d = df[(df.index >= minX) & (df.index <= maxX)][columns]
-            localMin = d.min().min()
-            localMax = d.max().max()
 
-            if minY is None or minY > localMin:
-                minY = localMin
-            if maxY is None or maxY < localMax:
-                maxY = localMax
+        columns = list(filter(lambda x: x.endswith('_initial'),
+                              data.columns.values.tolist()))
+        d = data[(data.index >= minX) & (data.index <= maxX)][columns]
+
+        if minY is None or minY > d.min().min():
+            minY = d.min().min()
+        if maxY is None or maxY < d.max().max():
+            maxY = d.max().max()
 
         minY = minY / 10  # margin in log scale
         if maxY < 0.1:
