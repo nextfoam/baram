@@ -25,43 +25,39 @@ class FvOptions(DictionaryFile):
         for czid, czname in cellZones:
             xpath = CellZoneDB.getXPath(czid)
 
-            self._buildZoneType(czname, xpath)
-            self._buildSourceTerms(czname, xpath + '/sourceTerms')
-            self._buildFixedValues(czname, xpath + '/fixedValues')
+            self._generateZoneType(czname, xpath)
+            self._generateSourceTerms(czname, xpath + '/sourceTerms')
+            self._generateFixedValues(czname, xpath + '/fixedValues')
 
         return self
 
-    # --------------------------------------------------------------------------
-    # Zone Type
-    # --------------------------------------------------------------------------
-    def _buildZoneType(self, cname, xpath):
+    def _generateZoneType(self, czname, xpath):
         zoneType = self._db.getValue(xpath + '/zoneType')
 
         if zoneType == 'porous':
-            self._buildPorous(cname, xpath + '/porous')
+            self._generatePorous(czname, xpath + '/porous')
 
         elif zoneType == 'actuatorDisk':
-            self._buildActuatorDisk(cname, xpath + '/actuatorDisk')
+            self._generateActuatorDisk(czname, xpath + '/actuatorDisk')
 
         else:   # 'none', 'mrf', 'slidingMesh'
             pass
 
-    # --------------------------------------------------------------------------
-    def _buildPorous(self, cname, xpath):
-        dictName = f'porosity_{cname}'
-        explicitData = self._buildExplicit(xpath)
+    def _generatePorous(self, czname, xpath):
+        dictName = f'porosity_{czname}'
+        explicitData = self._generateExplicit(xpath)
 
         self._data[dictName] = {
             'type': 'explicitPorositySource',
             'explicitPorositySourceCoeffs': explicitData
         }
-        if cname == 'All':
+        if czname == 'All':
             self._data[dictName]['explicitPorositySourceCoeffs']['selectionMode'] = 'all'
         else:
             self._data[dictName]['explicitPorositySourceCoeffs']['selectionMode'] = 'cellZone'
             self._data[dictName]['explicitPorositySourceCoeffs']['cellZone'] = 'porosity'
 
-    def _buildExplicit(self, xpath):
+    def _generateExplicit(self, xpath):
         data = {}
         porosityModel = self._db.getValue(xpath + '/model')
 
@@ -100,9 +96,8 @@ class FvOptions(DictionaryFile):
             }
         return data
 
-    # --------------------------------------------------------------------------
-    def _buildActuatorDisk(self, cname, xpath):
-        dictName = f'actuationDiskSource_{cname}'
+    def _generateActuatorDisk(self, czname, xpath):
+        dictName = f'actuationDiskSource_{czname}'
         diskDirection = self._db.getVector(xpath + '/diskDirection')
         powerCoefficient = self._db.getValue(xpath + '/powerCoefficient')
         thrustCoefficient = self._db.getValue(xpath + '/thrustCoefficient')
@@ -118,39 +113,35 @@ class FvOptions(DictionaryFile):
             'diskArea': diskArea,
             'upstreamPoint': upstreamPoint
         }
-        if cname == 'All':
+        if czname == 'All':
             self._data[dictName]['selectionMode'] = 'all'
         else:
             self._data[dictName]['selectionMode'] = 'cellZone'
             self._data[dictName]['cellZone'] = 'porosity'
 
-    # --------------------------------------------------------------------------
-    # Source Terms
-    # --------------------------------------------------------------------------
-    def _buildSourceTerms(self, cname, xpath):
-        self._buildSourceFields(cname, xpath + '/mass', 'rho')
-        self._buildSourceFields(cname, xpath + '/energy', 'h')
+    def _generateSourceTerms(self, czname, xpath):
+        self._generateSourceFields(czname, xpath + '/mass', 'rho')
+        self._generateSourceFields(czname, xpath + '/energy', 'h')
 
         modelsType = self._db.getValue('.//models/turbulenceModels/model')
         if modelsType == 'spalartAllmaras':
-            self._buildSourceFields(cname, xpath + '/modifiedTurbulentViscosity', 'nuTilda')
+            self._generateSourceFields(czname, xpath + '/modifiedTurbulentViscosity', 'nuTilda')
 
         elif modelsType == 'k-epsilon':
-            self._buildSourceFields(cname, xpath + '/turbulentKineticEnergy', 'k')
-            self._buildSourceFields(cname, xpath + '/turbulentDissipationRate', 'epsilon')
+            self._generateSourceFields(czname, xpath + '/turbulentKineticEnergy', 'k')
+            self._generateSourceFields(czname, xpath + '/turbulentDissipationRate', 'epsilon')
 
         elif modelsType == 'k-omega':
-            self._buildSourceFields(cname, xpath + '/turbulentKineticEnergy', 'k')
-            self._buildSourceFields(cname, xpath + '/specificDissipationRate', 'omega')
+            self._generateSourceFields(czname, xpath + '/turbulentKineticEnergy', 'k')
+            self._generateSourceFields(czname, xpath + '/specificDissipationRate', 'omega')
         else:
             logger.debug('Error Model Type')
 
-    # --------------------------------------------------------------------------
-    def _buildSourceFields(self, cname, xpath, fieldType):
+    def _generateSourceFields(self, czname, xpath, fieldType):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
-            dictName = f'scalarSource_{cname}_{fieldType}'
-            volumeMode = self._buildVolumeMode(xpath)
-            injectionRateSuSp = self._buildInjectionRateSuSp(xpath, fieldType)
+            dictName = f'scalarSource_{czname}_{fieldType}'
+            volumeMode = self._generateVolumeMode(xpath)
+            injectionRateSuSp = self._generateInjectionRateSuSp(xpath, fieldType)
 
             self._data[dictName] = {
                 'type': 'scalarSemiImplicitSource',
@@ -158,13 +149,13 @@ class FvOptions(DictionaryFile):
                 'volumeMode': volumeMode,
                 'injectionRateSuSp': injectionRateSuSp
             }
-            if cname == 'All':
+            if czname == 'All':
                 self._data[dictName]['selectionMode'] = 'all'
             else:
                 self._data[dictName]['selectionMode'] = 'cellZone'
                 self._data[dictName]['cellZone'] = 'porosity'
 
-    def _buildVolumeMode(self, xpath):
+    def _generateVolumeMode(self, xpath):
         unitValue = self._db.getValue(xpath + '/unit')
 
         if unitValue == 'valueForEntireCellZone':
@@ -177,7 +168,7 @@ class FvOptions(DictionaryFile):
 
         return data
 
-    def _buildInjectionRateSuSp(self, xpath, fieldType) -> dict:
+    def _generateInjectionRateSuSp(self, xpath, fieldType) -> dict:
         data = {}
 
         if fieldType in ['nuTilda', 'k', 'epsilon', 'omega']:
@@ -216,32 +207,28 @@ class FvOptions(DictionaryFile):
             }
         return data
 
-    # --------------------------------------------------------------------------
-    # Fixed Value
-    # --------------------------------------------------------------------------
-    def _buildFixedValues(self, cname, xpath):
-        self._buildFixedVelocity(cname, xpath + '/velocity')
-        self._buildFixedTemperature(cname, xpath + '/temperature')
+    def _generateFixedValues(self, czname, xpath):
+        self._generateFixedVelocity(czname, xpath + '/velocity')
+        self._generateFixedTemperature(czname, xpath + '/temperature')
 
         modelsType = self._db.getValue('.//models/turbulenceModels/model')
         if modelsType == 'spalartAllmaras':
-            self._buildFixedFields(cname, xpath + '/modifiedTurbulentViscosity', 'nuTilda')
+            self._generateFixedFields(czname, xpath + '/modifiedTurbulentViscosity', 'nuTilda')
 
         elif modelsType == 'k-epsilon':
-            self._buildFixedFields(cname, xpath + '/turbulentKineticEnergy', 'k')
-            self._buildFixedFields(cname, xpath + '/turbulentDissipationRate', 'epsilon')
+            self._generateFixedFields(czname, xpath + '/turbulentKineticEnergy', 'k')
+            self._generateFixedFields(czname, xpath + '/turbulentDissipationRate', 'epsilon')
 
         elif modelsType == 'k-omega':
-            self._buildFixedFields(cname, xpath + '/turbulentKineticEnergy', 'k')
-            self._buildFixedFields(cname, xpath + '/specificDissipationRate', 'omega')
+            self._generateFixedFields(czname, xpath + '/turbulentKineticEnergy', 'k')
+            self._generateFixedFields(czname, xpath + '/specificDissipationRate', 'omega')
 
         else:
             logger.debug('Error Model Type')
 
-    # --------------------------------------------------------------------------
-    def _buildFixedVelocity(self, cname, xpath):
+    def _generateFixedVelocity(self, czname, xpath):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
-            dictName = f'fixedVelocity_{cname}'
+            dictName = f'fixedVelocity_{czname}'
             uBar = self._db.getVector(xpath + '/velocity')
             relaxation = self._db.getValue(xpath + '/relaxation')
 
@@ -252,15 +239,15 @@ class FvOptions(DictionaryFile):
                 'Ubar': uBar,
                 'relaxation': relaxation
             }
-            if cname == 'All':
+            if czname == 'All':
                 self._data[dictName]['selectionMode'] = 'all'
             else:
                 self._data[dictName]['selectionMode'] = 'cellZone'
                 self._data[dictName]['cellZone'] = 'porosity'
 
-    def _buildFixedTemperature(self, cname, xpath):
+    def _generateFixedTemperature(self, czname, xpath):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
-            dictName = f'fixedTemperature_{cname}'
+            dictName = f'fixedTemperature_{czname}'
             temperature = self._db.getValue(xpath)
 
             self._data[dictName] = {
@@ -269,15 +256,15 @@ class FvOptions(DictionaryFile):
                 'mode': 'uniform',
                 'temperature': ('constant', temperature)
             }
-            if cname == 'All':
+            if czname == 'All':
                 self._data[dictName]['selectionMode'] = 'all'
             else:
                 self._data[dictName]['selectionMode'] = 'cellZone'
                 self._data[dictName]['cellZone'] = 'porosity'
 
-    def _buildFixedFields(self, cname, xpath, fieldType):
+    def _generateFixedFields(self, czname, xpath, fieldType):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
-            dictName = f'fixedValue_{cname}_{fieldType}'
+            dictName = f'fixedValue_{czname}_{fieldType}'
             fieldValues = self._db.getValue(xpath)
 
             self._data[dictName] = {
@@ -287,7 +274,7 @@ class FvOptions(DictionaryFile):
                     fieldType: fieldValues
                 }
             }
-            if cname == 'All':
+            if czname == 'All':
                 self._data[dictName]['selectionMode'] = 'all'
             else:
                 self._data[dictName]['selectionMode'] = 'cellZone'

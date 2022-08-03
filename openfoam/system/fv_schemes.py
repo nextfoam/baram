@@ -28,16 +28,16 @@ class FvSchemes(DictionaryFile):
         phase = self._db.getValue(f'.//materials/material[@mid="{mid}"]/phase')
 
         if self._solver == 'TSLAeroFoam':
-            self._buildTSLAero()
+            self._generateTSLAero()
         else:
             if phase == 'solid':
-                self._buildSolid()
+                self._generateSolid()
             else:  # fluid
-                self._buildFluid()
+                self._generateFluid()
 
         return self
 
-    def _buildTSLAero(self):
+    def _generateTSLAero(self):
         self._data = {
             'ddtSchemes': {
                 'default': 'localEuler'
@@ -83,7 +83,7 @@ class FvSchemes(DictionaryFile):
 
         return self
 
-    def _buildSolid(self):
+    def _generateSolid(self):
         self._data = {
             'ddtSchemes': {
                 'default': 'steadyState'
@@ -105,7 +105,7 @@ class FvSchemes(DictionaryFile):
             }
         }
 
-    def _buildFluid(self):
+    def _generateFluid(self):
         self._data = {
             'ddtSchemes': self._constructDdtSchemes(),
             'gradSchemes': self._constructGradSchemes(),

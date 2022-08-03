@@ -67,34 +67,30 @@ class ControlDict(DictionaryFile):
             'runTimeModifiable': 'yes',
             'adjustTimeStep': adjustTimeStep,
             'maxCo': db.getValue(xpath + '/maxCourantNumber'),
-            'functions': self._buildFunctionObjects()
+            'functions': self._generateFunctionObjects()
         }
 
         return self
 
-    def _buildFunctionObjects(self):
+    def _generateFunctionObjects(self):
         db = coredb.CoreDB()
-        data = self._buildResiduals()
+        data = self._generateResiduals()
 
         forces = db.getForceMonitors()
-        if len(forces) > 0:
-            data.update(self._buildForces(forces))
+        data.update(self._generateForces(forces))
 
         points = db.getPointMonitors()
-        if len(points) > 0:
-            data.update(self._buildPoints(points))
+        data.update(self._generatePoints(points))
 
         surfaces = db.getSurfaceMonitors()
-        if len(surfaces) > 0:
-            data.update(self._buildSurfaces(surfaces))
+        data.update(self._generateSurfaces(surfaces))
 
         volumes = db.getVolumeMonitors()
-        if len(volumes) > 0:
-            data.update(self._buildVolumes(volumes))
+        data.update(self._generateVolumes(volumes))
 
         return data
 
-    def _buildResiduals(self):
+    def _generateResiduals(self):
         db = coredb.CoreDB()
 
         fields = '(U p)'
@@ -102,56 +98,58 @@ class ControlDict(DictionaryFile):
         data = {
             'solverInfo': {
                 'type': 'solverInfo',
-                'libs': '("libutilityFunctionObjects.so")',
+                # 'region': '',
+                'libs': ['"libutilityFunctionObjects.so"'],
                 'fields': fields,
                 'writeResidualFields': 'yes'
             }
         }
         return data
 
-    def _buildForces(self, data):
+    def _generateForces(self, forces):
         data = {}
-        for i in data:
-            dataName = f'forces{i}'
-            patches = '()'
+        for d in forces:
+            dataName = f'forces_{d}'
+            patches = []
             data[dataName] = {
                 'type': 'forces',
-                'libs': '("libforces.so")',
+                'libs': ['"libforces.so"'],
                 'patches': patches
             }
         return data
-    def _buildPoints(self, data):
+
+    def _generatePoints(self, points):
         data = {}
-        for i in data:
-            dataName = f'points{i}'
-            patches = '()'
+        for d in points:
+            dataName = f'points_{d}'
+            patches = []
             data[dataName] = {
                 'type': 'points',
-                'libs': '("libpoints.so")',
+                'libs': ['"libpoints.so"'],
                 'patches': patches
             }
         return data
 
-    def _buildSurfaces(self, data):
+    def _generateSurfaces(self, surfaces):
         data = {}
-        for i in data:
-            dataName = f'surfaces{i}'
-            patches = '()'
+        for d in surfaces:
+            dataName = f'surfaces_{d}'
+            patches = []
             data[dataName] = {
                 'type': 'surfaces',
-                'libs': '("libsurfaces.so")',
+                'libs': ['"libsurfaces.so"'],
                 'patches': patches
             }
         return data
 
-    def _buildVolumes(self, data):
+    def _generateVolumes(self, volumes):
         data = {}
-        for i in data:
-            dataName = f'volumes{i}'
-            patches = '()'
+        for d in volumes:
+            dataName = f'volumes_{d}'
+            patches = []
             data[dataName] = {
                 'type': 'volumes',
-                'libs': '("libvolumes.so")',
+                'libs': ['"libvolumes.so"'],
                 'patches': patches
             }
         return data
