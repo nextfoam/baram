@@ -87,6 +87,21 @@ def readOutFile(f: typing.TextIO):
         return lines, None
 
 
+def mergeDataFrames(data: [pd.DataFrame]):
+    merged = None
+    for df in data:
+        if merged is None:
+            merged = df
+        else:
+            left_on = {'Time', *(merged.columns.values.tolist())}
+            right_on = {'Time', *(df.columns.values.tolist())}
+            on = list(left_on.intersection(right_on))
+            merged = pd.merge(merged, df, how='outer', on=on)
+
+    return merged
+
+
+
 def updateData(target, source: str, names: [str]):
     stream = StringIO(source)
     df = pd.read_csv(stream, sep=r'\s+', names=names, dtype={'Time': np.float64})
@@ -95,12 +110,13 @@ def updateData(target, source: str, names: [str]):
     df.set_index('Time', inplace=True)
 
     if target is not None:
-        left_on = {'Time', *(target.columns.values.tolist())}
-        right_on = {'Time', *(df.columns.values.tolist())}
-        on = list(left_on.intersection(right_on))
+        # Drop obsoleted rows.
+        # Dataframes should be kept PER REGION because of this dropping.
+        # If dataframes of regions are merged, updated data in other regions can be lost.
         time = df.first_valid_index()
-        filtered = target[target.index < time]  # Drop obsoleted rows
-        return pd.merge(filtered, df, how='outer', on=on)
+        filtered = target[target.index < time]
+
+        return mergeDataFrames([filtered, df])
     else:
         return df
 
@@ -108,8 +124,8 @@ def updateData(target, source: str, names: [str]):
 class Worker(QObject):
     start = Signal(Path)
     stop = Signal()
-    update = Signal()
-    updated = Signal(pd.DataFrame)
+    updateResiduals = Signal()
+    residualsUpdated = Signal(pd.DataFrame)
 
     def __init__(self):
         super().__init__()
@@ -155,8 +171,7 @@ class Worker(QObject):
                 self.data[s.region] = updateData(None, lines, names)
 
         if hasUpdate:
-            # dataframe is copied because it is sent to another thread
-            self.updated.emit([df.copy() for df in self.data.values()])
+            self.residualsUpdated.emit(mergeDataFrames(self.data.values()))
 
         self.infoFiles = infoFiles
 
@@ -200,8 +215,7 @@ class Worker(QObject):
                 self.data[s.region] = updateData(None, lines, names)
 
         if hasUpdate:
-            # dataframe is copied because it is sent to another thread
-            self.updated.emit([df.copy() for df in self.data.values()])
+            self.residualsUpdated.emit(mergeDataFrames(self.data.values()))
 
     def getUpdatedFiles(self, current: {Path: _SolverInfo}) -> {Path: _SolverInfo}:
         infoFiles = self.getInfoFiles()
@@ -237,11 +251,11 @@ class Worker(QObject):
         return infoFiles
 
     def update(self):
-        self.updated.emit(list(self.data.values()))
+        self.residualsUpdated.emit(mergeDataFrames(self.data.values()))
 
 
 class SolverInfoManager(QObject):
-    updated = Signal(pd.DataFrame)
+    residualsUpdated = Signal(pd.DataFrame)
 
     def __new__(cls, *args, **kwargs):
         with _mutex:
@@ -266,7 +280,7 @@ class SolverInfoManager(QObject):
         self.worker = Worker()
         self.worker.moveToThread(self.thread)
 
-        self.worker.updated.connect(self.updated)
+        self.worker.residualsUpdated.connect(self.residualsUpdated)
 
         self.thread.start()
 
@@ -276,8 +290,8 @@ class SolverInfoManager(QObject):
     def stopCollecting(self):
         self.worker.stop.emit()
 
-    def update(self):
-        self.worker.update.emit()
+    def updateResiduals(self):
+        self.worker.updateResiduals.emit()
 
 
 def getSolverInfoManager(path: Path):
