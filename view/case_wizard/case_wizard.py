@@ -15,58 +15,56 @@ from .gravity_model_page import GravityModelPage
 from .species_model_page import SpeciesModelPage
 from .workspace_page import WorkspacePage
 
+LAST = -1
+WORKSPACE = 0
+FLOW_TYPE = 1
+SOLVER_TYPE = 2
+ENERGY_MODEL = 3
+MULTIPHASE_MODEL = 4
+GRAVITY_MODEL = 5
+SPECIES_MODEL = 6
 
 class CaseWizard(QWizard):
-    class Page(IntEnum):
-        LAST             = -1
-        WORKSPACE        = auto()
-        FLOW_TYPE        = auto()
-        SOLVER_TYPE      = auto()
-        ENERGY_MODEL     = auto()
-        MULTIPHASE_MODEL = auto()
-        GRAVITY_MODEL    = auto()
-        SPECIES_MODEL    = auto()
-
     def __init__(self, *args, **kwargs):
         super(CaseWizard, self).__init__(*args, **kwargs)
 
         self._ui = Ui_CaseWizard()
         self._ui.setupUi(self)
 
-        self.setPage(self.Page.WORKSPACE.value, WorkspacePage(self))
-        self.setPage(self.Page.FLOW_TYPE.value, FlowTypePage(self))
-        self.setPage(self.Page.SOLVER_TYPE.value, SolverTypePage(self))
-        self.setPage(self.Page.ENERGY_MODEL.value, EnergyModelPage(self))
-        self.setPage(self.Page.MULTIPHASE_MODEL.value, MultiphaseModelPage(self))
-        self.setPage(self.Page.GRAVITY_MODEL.value, GravityModelPage(self))
-        self.setPage(self.Page.SPECIES_MODEL.value, SpeciesModelPage(self))
-        self.setStartId(self.Page.WORKSPACE.value)
+        self.setPage(WORKSPACE, WorkspacePage(self))
+        self.setPage(FLOW_TYPE, FlowTypePage(self))
+        self.setPage(SOLVER_TYPE, SolverTypePage(self))
+        self.setPage(ENERGY_MODEL, EnergyModelPage(self))
+        self.setPage(MULTIPHASE_MODEL, MultiphaseModelPage(self))
+        self.setPage(GRAVITY_MODEL, GravityModelPage(self))
+        self.setPage(SPECIES_MODEL, SpeciesModelPage(self))
+        self.setStartId(WORKSPACE)
 
     def nextId(self):
         curId = self.currentId()
-        if curId == self.Page.WORKSPACE.value:
-            return self.Page.FLOW_TYPE.value
-        elif curId == self.Page.FLOW_TYPE.value:
+        if curId == WORKSPACE:
+            return FLOW_TYPE
+        elif curId == FLOW_TYPE:
             if self.field('flowTypeCompressible'):
-                return self.Page.SOLVER_TYPE.value
+                return SOLVER_TYPE
             else:
-                return self.Page.ENERGY_MODEL.value
-        elif curId == self.Page.SOLVER_TYPE.value:
-            return self.Page.SPECIES_MODEL.value
-        elif curId == self.Page.ENERGY_MODEL.value:
+                return ENERGY_MODEL
+        elif curId == SOLVER_TYPE:
+            return SPECIES_MODEL
+        elif curId == ENERGY_MODEL:
             if self.field('energyModelsInclude'):
-                return self.Page.GRAVITY_MODEL.value
+                return GRAVITY_MODEL
             else:
-                return self.Page.MULTIPHASE_MODEL.value
-        elif curId == self.Page.MULTIPHASE_MODEL.value:
+                return MULTIPHASE_MODEL
+        elif curId == MULTIPHASE_MODEL:
             if self.field('multiphaseModelsInclude'):
-                return self.Page.GRAVITY_MODEL.value
+                return GRAVITY_MODEL
             else:
-                return self.Page.SPECIES_MODEL.value
-        elif curId == self.Page.GRAVITY_MODEL.value:
-            return self.Page.SPECIES_MODEL.value
-        elif curId == self.Page.SPECIES_MODEL.value:
-            return self.Page.LAST.value
+                return SPECIES_MODEL
+        elif curId == GRAVITY_MODEL:
+            return SPECIES_MODEL
+        elif curId == SPECIES_MODEL:
+            return LAST
         else:
             raise NotImplementedError('Unknown Case Wizard Page')
 

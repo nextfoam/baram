@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from pathlib import Path
-import psutil, signal
+import psutil
+import signal
 import time
 import platform
 
@@ -40,7 +41,7 @@ class ProcessInformationPage(QWidget):
         if ev.spontaneous():
             return super().showEvent(ev)
 
-        self._showStatus(self._project.solverStatus())
+        self._updateStatus()
 
         return super().showEvent(ev)
 
@@ -49,18 +50,15 @@ class ProcessInformationPage(QWidget):
         self._ui.cancelCalculation.clicked.connect(self._cancelCalculationClicked)
         self._ui.saveAndStopCalculation.clicked.connect(self._saveAndStopCalculationClicked)
         self._ui.updateConfiguration.clicked.connect(self._updateConfigurationClicked)
-        self._project.statusChanged.connect(self._updatedStatus)
+        self._project.statusChanged.connect(self._updateStatus)
 
     def _startCalculationClicked(self):
-        self._ui.status.setText(self.tr('Waiting...'))
-        self._ui.startCalculation.setDisabled(True)
+        # CaseGenerator().generateFiles()
 
-        CaseGenerator().generateFiles()
-
-        controlDict = ControlDict().build()
-        controlDict.asDict()['startFrom'] = 'latestTime'
-        controlDict.asDict()['stopAt'] = 'endTime'
-        controlDict.write()
+        # controlDict = ControlDict().build()
+        # controlDict.asDict()['startFrom'] = 'latestTime'
+        # controlDict.asDict()['stopAt'] = 'endTime'
+        # controlDict.write()
 
         numCores = self._db.getValue('.//runCalculation/parallel/numberOfCores')
 
@@ -68,12 +66,6 @@ class ProcessInformationPage(QWidget):
         self._project.setSolverProcess(process)
 
     def _cancelCalculationClicked(self):
-        self._ui.status.setText(self.tr('Stopping...'))
-
-        self._ui.cancelCalculation.setDisabled(True)
-        self._ui.saveAndStopCalculation.setDisabled(True)
-        self._ui.updateConfiguration.setDisabled(True)
-
         controlDict = ControlDict().build()
         controlDict.asDict()['stopAt'] = 'noWriteNow'
         controlDict.write()
@@ -97,12 +89,6 @@ class ProcessInformationPage(QWidget):
                     raise Exception(self.tr('Unsupported OS'))
 
     def _saveAndStopCalculationClicked(self):
-        self._ui.status.setText(self.tr('Stopping after saving...'))
-
-        self._ui.cancelCalculation.setDisabled(True)
-        self._ui.saveAndStopCalculation.setDisabled(True)
-        self._ui.updateConfiguration.setDisabled(True)
-
         controlDict = ControlDict().build()
         controlDict.asDict()['stopAt'] = 'writeNow'
         controlDict.write()
@@ -114,49 +100,31 @@ class ProcessInformationPage(QWidget):
             FvSolution(rname).build().write()
         ControlDict().build().write()
 
-    def _updatedStatus(self):
+    def _updateStatus(self):
         status = self._project.solverStatus()
-        self._showStatus(status)
 
-    def _showStatus(self, status):
         if status == SolverStatus.NONE:
-            self._showStatusNone()
+            text = self.tr('Not Running')
         elif status == SolverStatus.WAITING:
-            self._showStatusWaiting()
+            text = self.tr('Waiting')
         elif status == SolverStatus.RUNNING:
-            self._showStatusRunning()
+            text = self.tr('Running')
         else:
-            pass
+            text = '-'
 
-    def _showStatusNone(self):
-        self._ui.id.setText(self.tr('-'))
-        self._ui.createTime.setText(self.tr('-'))
-        self._ui.status.setText(self.tr('Not Running'))
-
-        self._ui.startCalculation.show()
-        self._ui.startCalculation.setEnabled(True)
-        self._ui.cancelCalculation.hide()
-        self._ui.saveAndStopCalculation.setDisabled(True)
-        self._ui.updateConfiguration.setDisabled(True)
-
-    def _showStatusWaiting(self):
-        self._ui.status.setText(self.tr('Job submitted'))
-
-        self._ui.startCalculation.setDisabled(True)
-        self._ui.saveAndStopCalculation.setDisabled(True)
-        self._ui.updateConfiguration.setDisabled(True)
-
-    def _showStatusRunning(self):
         pid, startTime = self._project.solverProcess()
-        createTime = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime(startTime))
+        if startTime:
+            createTime = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime(startTime))
+        else:
+            createTime = '-'
 
-        self._ui.id.setText(self.tr(f'{pid}'))
-        self._ui.createTime.setText(self.tr(f'{createTime}'))
-        self._ui.status.setText(self.tr('Running'))
+        self._ui.id.setText(str(pid) if pid else '-')
+        self._ui.createTime.setText(createTime)
+        self._ui.status.setText(text)
 
-        self._ui.startCalculation.hide()
-        self._ui.cancelCalculation.show()
-        self._ui.cancelCalculation.setEnabled(True)
-        self._ui.saveAndStopCalculation.setEnabled(True)
-        self._ui.updateConfiguration.setEnabled(True)
+        self._ui.startCalculation.setVisible(status == SolverStatus.NONE)
+        self._ui.cancelCalculation.setVisible(status != SolverStatus.NONE)
+        self._ui.saveAndStopCalculation.setEnabled(status != SolverStatus.NONE)
+        self._ui.updateConfiguration.setEnabled(status != SolverStatus.NONE)
+
 
