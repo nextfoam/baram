@@ -27,9 +27,9 @@ class FileDB:
         BcFileRole.BC_TEMPERATURE: 4,
     }
 
-    def __init__(self, projectDirectory):
-        self._filePath = os.path.join(projectDirectory, 'configuration.h5')
-        self._tmpPath = os.path.join(projectDirectory, 'configuration')
+    def __init__(self, projectPath):
+        self._filePath = projectPath / 'configuration.h5'
+        self._tmpPath = projectPath / 'configuration'
         self._modificationCount = 0
         self._modificationCountAtSave = 0
 

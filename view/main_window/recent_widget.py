@@ -14,11 +14,11 @@ class RecentWidget(QWidget):
         self._ui = Ui_RecentWidget()
         self._ui.setupUi(self)
 
-        fullPath = settings.projectPath
-        self._ui.name.setText(os.path.basename(fullPath))
+        path = settings.path
+        self._ui.name.setText(os.path.basename(path))
         if settings.getProcess():
             self._ui.status.setText('Running')
-        self._ui.path.setText(fullPath)
+        self._ui.path.setText(path)
 
     def getProjectPath(self):
         return self._ui.path.text()

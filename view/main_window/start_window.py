@@ -7,13 +7,16 @@ from enum import Enum, auto
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QFileDialog, QMessageBox
 from filelock import Timeout
 
-from coredb.settings import AppSettings
+from coredb.app_settings import AppSettings
 from coredb.project_settings import ProjectSettings
 from coredb.project import Project
 from view.case_wizard.case_wizard import CaseWizard
 from view.main_window.main_window import MainWindow, CloseType
 from .start_window_ui import Ui_StartWindow
 from .recent_widget import RecentWidget
+
+
+RECENT_PROJECTS_NUMBER = 5
 
 
 class GlobalSettingKey(Enum):
@@ -50,7 +53,7 @@ class StartWindow(QDialog):
         self._ui.recentCases.itemClicked.connect(self._openRecentCase)
 
     def _setupRecentCases(self):
-        recentCases = AppSettings.getRecentCases()
+        recentCases = AppSettings.getRecentProjects(RECENT_PROJECTS_NUMBER)
         for uuid_ in recentCases:
             settings = ProjectSettings()
             if settings.load(uuid_):
@@ -66,7 +69,7 @@ class StartWindow(QDialog):
         self._dialog.open()
 
     def _open(self):
-        dirName = QFileDialog.getExistingDirectory(self, self.tr('Project Directory'), AppSettings.getRecentDirectory())
+        dirName = QFileDialog.getExistingDirectory(self, self.tr('Project Directory'), AppSettings.getRecentLocation())
         if dirName:
             self._openProject(dirName)
 

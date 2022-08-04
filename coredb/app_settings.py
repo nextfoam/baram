@@ -2,26 +2,22 @@
 # -*- coding: utf-8 -*-
 
 
-import os
 from enum import Enum
+from pathlib import Path
 
 import yaml
 from filelock import FileLock
 
 
 FORMAT_VERSION = 1
-RECENT_CASES_NUMBER = 5
+RECENT_PROJECTS_NUMBER = 10
 
-userDirectory = os.path.join(os.path.expanduser('~'), 'baram')
-settingsDirectory = os.path.join(os.path.expanduser('~'), '.baram')
-casesDirectory = os.path.join(settingsDirectory, 'cases')
-settingsFile = os.path.join(settingsDirectory, 'baram.cfg.yaml')
+settingsPath = Path.home() / '.baram'
+casesPath = settingsPath / 'cases'
+settingsFile = settingsPath / 'baram.cfg.yaml'
 
-if not os.path.isdir(settingsDirectory):
-    os.mkdir(settingsDirectory)
-
-if not os.path.isdir(casesDirectory):
-    os.mkdir(casesDirectory)
+settingsPath.mkdir(exist_ok=True)
+casesPath.mkdir(exist_ok=True)
 
 
 class SettingKey(Enum):
@@ -32,11 +28,11 @@ class SettingKey(Enum):
 
 
 class AppSettings:
-    _applicationLockFile = os.path.join(settingsDirectory, 'baram.lock')
+    _applicationLockFile = settingsPath / 'baram.lock'
 
     @classmethod
-    def casesDirectory(cls):
-        return casesDirectory
+    def casesPath(cls):
+        return casesPath
 
     @classmethod
     def acquireLock(cls, timeout):
@@ -45,37 +41,40 @@ class AppSettings:
         return lock
 
     @classmethod
-    def getRecentDirectory(cls):
-        return cls._get(SettingKey.RECENT_DIRECTORY, userDirectory)
+    def getRecentLocation(cls):
+        return cls._get(SettingKey.RECENT_DIRECTORY, str(Path.home()))
 
     @classmethod
-    def getRecentCases(cls):
-        return cls._get(SettingKey.RECENT_CASES, [])
+    def getRecentProjects(cls, count):
+        projects = cls._get(SettingKey.RECENT_CASES, [])
+        return projects[:count]
 
     @classmethod
     def updateRecents(cls, project, new):
         settings = cls._load()
         if new:
-            settings[SettingKey.RECENT_DIRECTORY.value] = os.path.dirname(project.directory)
+            settings[SettingKey.RECENT_DIRECTORY.value] = str(project.path.parent)
 
         recentCases\
             = settings[SettingKey.RECENT_CASES.value] if SettingKey.RECENT_CASES.value in settings else []
         if project.uuid in recentCases:
             recentCases.remove(project.uuid)
         recentCases.insert(0, project.uuid)
-        settings[SettingKey.RECENT_CASES.value] = recentCases[:RECENT_CASES_NUMBER]
+        settings[SettingKey.RECENT_CASES.value] = recentCases[:RECENT_PROJECTS_NUMBER]
         cls._save(settings)
 
     @classmethod
     def _load(cls):
-        if os.path.isfile(settingsFile):
+        if settingsFile.is_file():
             with open(settingsFile) as file:
                 return yaml.load(file, Loader=yaml.FullLoader)
         else:
-            return {SettingKey.FORMAT_VERSION.value: FORMAT_VERSION}
+            return {}
 
     @classmethod
     def _save(cls, settings):
+        settings[SettingKey.FORMAT_VERSION.value] = FORMAT_VERSION
+
         with open(settingsFile, 'w') as file:
             yaml.dump(settings, file)
 

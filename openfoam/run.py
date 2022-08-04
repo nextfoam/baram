@@ -96,3 +96,14 @@ def launchSolver(solver: str, casePath: Path, np: int = 1) -> (int, float):
     ps = psutil.Process(pid=p.pid)
     return ps.pid, ps.create_time()
 
+
+def isProcessRunning(pid, startTime):
+    if pid and startTime:
+        try:
+            ps = psutil.Process(pid)
+            if ps.create_time() == startTime:
+                return True
+        except psutil.NoSuchProcess:
+            return False
+
+    return False

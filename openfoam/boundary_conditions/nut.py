@@ -23,11 +23,12 @@ class Nut(BoundaryCondition):
         if self._data is not None:
             return self
 
-        self._data = {
-            'dimensions': self.DIMENSIONS,
-            'internalField': ('uniform', self._initialValue),
-            'boundaryField': self._constructBoundaryField()
-        }
+        if self._model == TurbulenceModel.K_EPSILON or self._model == TurbulenceModel.K_OMEGA:
+            self._data = {
+                'dimensions': self.DIMENSIONS,
+                'internalField': ('uniform', self._initialValue),
+                'boundaryField': self._constructBoundaryField()
+            }
 
         return self
 

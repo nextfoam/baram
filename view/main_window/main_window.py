@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QThreadPool, Signal
 
 from coredb.project import Project
-from coredb.settings import AppSettings
+from coredb.app_settings import AppSettings
 from view.setup.general.general_page import GeneralPage
 from view.setup.materials.material_page import MaterialPage
 from view.setup.models.models_page import ModelsPage
@@ -23,7 +23,6 @@ from view.solution.run_calculation.run_calculation_page import RunCalculationPag
 from view.solution.process_information.process_information_page import ProcessInformationPage
 from openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from openfoam.file_system import FileSystem
-from openfoam.case_generator import CaseGenerator
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu.settings_language import SettingLanguageDialog
@@ -156,7 +155,7 @@ class MainWindow(QMainWindow):
         self._saveCurrentPage()
         # dirName = QFileDialog.getExistingDirectory(self, self.tr('Case Directory'), AppSettings.getRecentDirectory())
         # if dirName:
-        dirName = QFileDialog.getSaveFileName(self, self.tr('Case Directory'), AppSettings.getRecentDirectory())[0]
+        dirName = QFileDialog.getSaveFileName(self, self.tr('Case Directory'), AppSettings.getRecentLocation())[0]
         if dirName:
             if os.path.exists(dirName):
                 if not os.path.isdir(dirName):
@@ -188,9 +187,10 @@ class MainWindow(QMainWindow):
 
     def _projectStatusChanged(self):
         self._navigatorView.updateMenu()
+        self._ui.actionLoadMesh.setEnabled(not self._project.meshLoaded)
 
     def _projectChanged(self):
-        self.setWindowTitle(self.tr('Baram') + ' - ' + self._project.directory)
+        self.setWindowTitle(f'{self.tr("Baram")} - {self._project.path}')
         FileSystem.setup()
 
     def _addDockTabified(self, dock):

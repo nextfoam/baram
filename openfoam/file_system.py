@@ -22,7 +22,7 @@ class FileSystem:
 
     @classmethod
     def setup(cls):
-        cls._casePath = cls.makeDir(Project.instance().directory, cls.CASE_DIRECTORY_NAME)
+        cls._casePath = cls.makeDir(Project.instance().path, cls.CASE_DIRECTORY_NAME)
         cls._constantPath = os.path.join(cls._casePath, cls.CONSTANT_DIRECTORY_NAME)
 
     @classmethod
