@@ -53,12 +53,12 @@ class ProcessInformationPage(QWidget):
         self._project.statusChanged.connect(self._updateStatus)
 
     def _startCalculationClicked(self):
-        # CaseGenerator().generateFiles()
+        CaseGenerator().generateFiles()
 
-        # controlDict = ControlDict().build()
-        # controlDict.asDict()['startFrom'] = 'latestTime'
-        # controlDict.asDict()['stopAt'] = 'endTime'
-        # controlDict.write()
+        controlDict = ControlDict().build()
+        controlDict.asDict()['startFrom'] = 'latestTime'
+        controlDict.asDict()['stopAt'] = 'endTime'
+        controlDict.write()
 
         numCores = self._db.getValue('.//runCalculation/parallel/numberOfCores')
 

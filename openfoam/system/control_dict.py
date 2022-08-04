@@ -4,6 +4,7 @@
 import openfoam.solver
 from coredb import coredb
 from coredb.general_db import GeneralDB
+from coredb.monitor_db import MonitorDB
 from coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from openfoam.dictionary_file import DictionaryFile
 
@@ -90,15 +91,16 @@ class ControlDict(DictionaryFile):
 
         return data
 
-    def _generateResiduals(self):
+    def _generateResiduals(self) -> dict:
         db = coredb.CoreDB()
 
-        fields = '(U p)'
+        fields = ['U', 'p']
+        region = ''     # Get current region
 
         data = {
             'solverInfo': {
                 'type': 'solverInfo',
-                # 'region': '',
+                'region': region,
                 'libs': ['"libutilityFunctionObjects.so"'],
                 'fields': fields,
                 'writeResidualFields': 'yes'
@@ -107,50 +109,97 @@ class ControlDict(DictionaryFile):
         return data
 
     def _generateForces(self, forces):
+        db = coredb.CoreDB()
         data = {}
+
         for d in forces:
-            dataName = f'forces_{d}'
-            patches = []
-            data[dataName] = {
+            xpath = MonitorDB.getForceMonitorXPath(d)
+
+            name = db.getValue(xpath + '/name')  # same with b
+            referenceArea = db.getValue(xpath + '/referenceArea')
+            referenceLength = db.getValue(xpath + '/referenceLength')
+            referenceVelocity = db.getValue(xpath + '/referenceVelocity')
+            referenceDensity = db.getValue(xpath + '/referenceDensity')
+            dragDirection = db.getVector(xpath + '/dragDirection')
+            liftDirection = db.getVector(xpath + '/liftDirection')
+            pitchAxisDirection = db.getVector(xpath + '/pitchAxisDirection')
+            centerOfRotation = db.getVector(xpath + '/centerOfRotation')
+            boundaries = db.getValue(xpath + '/boundaries')
+
+            data[f'forces_{name}'] = {
                 'type': 'forces',
                 'libs': ['"libforces.so"'],
-                'patches': patches
+
+                'rhoInf': referenceDensity,
+                'CofR': centerOfRotation,
+                'liftDir': liftDirection,
+                'dragDir': dragDirection,
+                'pitchAxis': pitchAxisDirection,
+                'magUInf': referenceVelocity,
+                'lRef': referenceLength,
+                'Aref': referenceArea,
+                'patches': [boundaries]
             }
         return data
 
-    def _generatePoints(self, points):
+    def _generatePoints(self, points) -> dict:
+        db = coredb.CoreDB()
         data = {}
+
         for d in points:
-            dataName = f'points_{d}'
+            xpath = MonitorDB.getPointMonitorXPath(d)
+
+            name = db.getValue(xpath + '/name')
+            field = db.getValue(xpath + '/field/field')
+            mid = db.getValue(xpath + '/field/mid')
+            interval = db.getValue(xpath + '/interval')
+            coordinate = db.getVector(xpath + '/coordinate')
+            snapOntoBoundary = db.getVector(xpath + '/snapOntoBoundary')
+
             patches = []
-            data[dataName] = {
-                'type': 'points',
-                'libs': ['"libpoints.so"'],
-                'patches': patches
+            data[f'probes_{name}'] = {
+                'type': 'probes',
+                'libs': ['"libprobes.so"'],
             }
         return data
 
-    def _generateSurfaces(self, surfaces):
+    def _generateSurfaces(self, surfaces) -> dict:
+        db = coredb.CoreDB()
         data = {}
+
         for d in surfaces:
-            dataName = f'surfaces_{d}'
-            patches = []
-            data[dataName] = {
+            xpath = MonitorDB.getSurfaceMonitorXPath(d)
+
+            name = db.getValue(xpath + '/name')
+            reportType = db.getValue(xpath + '/reportType')
+            field = db.getValue(xpath + '/field/field')
+            mid = db.getValue(xpath + '/field/mid')
+            surfaces = db.getValue(xpath + '/surfaces')
+
+            data[f'surfaces_{name}'] = {
                 'type': 'surfaces',
                 'libs': ['"libsurfaces.so"'],
-                'patches': patches
+
             }
         return data
 
-    def _generateVolumes(self, volumes):
+    def _generateVolumes(self, volumes) -> dict:
+        db = coredb.CoreDB()
         data = {}
+
         for d in volumes:
-            dataName = f'volumes_{d}'
-            patches = []
-            data[dataName] = {
+            xpath = MonitorDB.getVolumeMonitorXPath(d)
+
+            name = db.getValue(xpath + '/name')
+            reportType = db.getValue(xpath + '/reportType')
+            field = db.getValue(xpath + '/field/field')
+            mid = db.getValue(xpath + '/field/mid')
+            volumes = db.getValue(xpath + '/volumes')
+
+            data[f'volumes_{name}'] = {
                 'type': 'volumes',
                 'libs': ['"libvolumes.so"'],
-                'patches': patches
+                'fields': [field],
+
             }
         return data
-
