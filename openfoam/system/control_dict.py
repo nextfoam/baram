@@ -129,7 +129,6 @@ class ControlDict(DictionaryFile):
             data[f'forces_{name}'] = {
                 'type': 'forces',
                 'libs': ['"libforces.so"'],
-
                 'rhoInf': referenceDensity,
                 'CofR': centerOfRotation,
                 'liftDir': liftDirection,
