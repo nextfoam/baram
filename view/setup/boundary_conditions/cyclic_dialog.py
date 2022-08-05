@@ -71,4 +71,4 @@ class CyclicDialog(QDialog):
 
     def _setCoupledBoundary(self, bcid):
         self._coupledBoundary = bcid
-        self._ui.coupledBoundary.setText(f'{BoundaryDB.getBoundaryName(bcid)} / {BoundaryDB.getBoundaryRegion(bcid)}')
+        self._ui.coupledBoundary.setText(f'{BoundaryDB.getBoundaryRegion(bcid)} / {BoundaryDB.getBoundaryName(bcid)}')

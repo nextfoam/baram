@@ -82,8 +82,9 @@ class ProcessInformationPage(QWidget):
 
     def _waitingStop(self):
         if self._project.solverStatus() == SolverStatus.RUNNING:
-            ps = psutil.Process(pid=self._project.pid)
-            if ps.create_time() == self._project.startTime:
+            pid, startTime = self._project.solverProcess()
+            ps = psutil.Process(pid)
+            if ps.create_time() == startTime:
                 if platform.system() == "Windows":
                     ps.send_signal(signal.CTRL_C_EVENT)
                 elif platform.system() == "Linux":

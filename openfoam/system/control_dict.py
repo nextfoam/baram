@@ -4,6 +4,7 @@
 import openfoam.solver
 from coredb import coredb
 from coredb.general_db import GeneralDB
+from coredb.boundary_db import BoundaryDB
 from coredb.monitor_db import MonitorDB
 from coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from openfoam.dictionary_file import DictionaryFile
@@ -75,7 +76,9 @@ class ControlDict(DictionaryFile):
 
     def _generateFunctionObjects(self):
         db = coredb.CoreDB()
-        data = self._generateResiduals()
+        data = {}
+
+        data.update(self._generateResiduals())
 
         forces = db.getForceMonitors()
         data.update(self._generateForces(forces))
@@ -93,53 +96,73 @@ class ControlDict(DictionaryFile):
 
     def _generateResiduals(self) -> dict:
         db = coredb.CoreDB()
-
+        regions = db.getRegions()
         fields = ['U', 'p']
-        region = ''     # Get current region
+        # 'laminar': ['U', 'p_rgh', 'h']
+        # 'kOmegaSST': ['U', 'p_rgh', 'h', 'k', 'omega']
+        # else: ['U', 'p_rgh', 'h', 'k', 'epsilon']
 
-        data = {
-            'solverInfo': {
+        data = {}
+        for rname in regions:   # [''] is single region.
+            residualsName = 'solverInfo' if rname == '' else f'solverInfo_{rname}'
+            data[residualsName] = {
                 'type': 'solverInfo',
-                'region': region,
                 'libs': ['"libutilityFunctionObjects.so"'],
-                'fields': fields,
-                'writeResidualFields': 'yes'
+                'writeControl': 'timeStep',
+                'writeInterval': '1',
+                'writeResidualFields': 'yes',
+                'log': 'true',
+
+                'fields': fields
             }
-        }
+            if rname != '':
+                data[residualsName].update({'region': rname})
         return data
 
-    def _generateForces(self, forces):
+    def _generateForces(self, forces) -> dict:
         db = coredb.CoreDB()
         data = {}
 
         for d in forces:
             xpath = MonitorDB.getForceMonitorXPath(d)
+            name = db.getValue(xpath + '/name')
+            boundaryIDs = db.getValue(xpath + '/boundaries')
+            for bid in boundaryIDs.split() if boundaryIDs else []:
+                rname = BoundaryDB.getBoundaryRegion(bid)
+                patch = BoundaryDB.getBoundaryName(bid)
 
-            name = db.getValue(xpath + '/name')  # same with b
-            referenceArea = db.getValue(xpath + '/referenceArea')
-            referenceLength = db.getValue(xpath + '/referenceLength')
-            referenceVelocity = db.getValue(xpath + '/referenceVelocity')
-            referenceDensity = db.getValue(xpath + '/referenceDensity')
-            dragDirection = db.getVector(xpath + '/dragDirection')
-            liftDirection = db.getVector(xpath + '/liftDirection')
-            pitchAxisDirection = db.getVector(xpath + '/pitchAxisDirection')
-            centerOfRotation = db.getVector(xpath + '/centerOfRotation')
-            boundaries = db.getValue(xpath + '/boundaries')
+                forcesName = f'forces_{name}' if rname == '' else f'forces_{name}_{rname}'
+                if forcesName not in data:
+                    referenceArea = db.getValue(xpath + '/referenceArea')
+                    referenceLength = db.getValue(xpath + '/referenceLength')
+                    referenceVelocity = db.getValue(xpath + '/referenceVelocity')
+                    referenceDensity = db.getValue(xpath + '/referenceDensity')
+                    dragDirection = db.getVector(xpath + '/dragDirection')
+                    liftDirection = db.getVector(xpath + '/liftDirection')
+                    pitchAxisDirection = db.getVector(xpath + '/pitchAxisDirection')
+                    centerOfRotation = db.getVector(xpath + '/centerOfRotation')
 
-            data[f'forces_{name}'] = {
-                'type': 'forces',
-                'libs': ['"libforces.so"'],
+                    data[forcesName] = {
+                        'type': 'forces',
+                        'libs': ['"libforces.so"'],
+                        'writeControl': 'timeStep',
+                        'writeInterval': '1',
+                        'writeFields': 'yes',
+                        'log': 'true',
 
-                'rhoInf': referenceDensity,
-                'CofR': centerOfRotation,
-                'liftDir': liftDirection,
-                'dragDir': dragDirection,
-                'pitchAxis': pitchAxisDirection,
-                'magUInf': referenceVelocity,
-                'lRef': referenceLength,
-                'Aref': referenceArea,
-                'patches': [boundaries]
-            }
+                        'region': rname,
+                        'patches': [],
+                        'Aref': referenceArea,
+                        'lRef': referenceLength,
+                        'magUInf': referenceVelocity,
+                        'rhoInf': referenceDensity,
+                        'dragDir': dragDirection,
+                        'liftDir': liftDirection,
+                        'pitchAxis': pitchAxisDirection,
+                        'CofR': centerOfRotation,
+                    }
+                data[forcesName]['patches'].append(patch)
+
         return data
 
     def _generatePoints(self, points) -> dict:
@@ -148,19 +171,33 @@ class ControlDict(DictionaryFile):
 
         for d in points:
             xpath = MonitorDB.getPointMonitorXPath(d)
-
             name = db.getValue(xpath + '/name')
-            field = db.getValue(xpath + '/field/field')
+            fields = db.getValue(xpath + '/field/field')
             mid = db.getValue(xpath + '/field/mid')
             interval = db.getValue(xpath + '/interval')
             coordinate = db.getVector(xpath + '/coordinate')
-            snapOntoBoundary = db.getVector(xpath + '/snapOntoBoundary')
+            snapOntoBoundary = db.getValue(xpath + '/snapOntoBoundary')
+            if snapOntoBoundary == 'true':
+                pass
+            bid = db.getValue(xpath + '/boundary')
+            rname = BoundaryDB.getBoundaryRegion(bid)
+            patch = BoundaryDB.getBoundaryName(bid)
 
-            patches = []
-            data[f'probes_{name}'] = {
+            pointsName = f'points_{name}' if rname == '' else f'points_{name}_{rname}'
+            data[pointsName] = {
                 'type': 'probes',
-                'libs': ['"libprobes.so"'],
+                'libs': ['"libsampling.so"'],
+                'writeControl': 'timeStep',
+                'writeInterval': interval,
+                'writeFields': 'yes',
+                'log': 'true',
+
+                'fields': fields,
+                'probeLocations': [coordinate],
+                'patchName': patch
             }
+            if rname != '':
+                data[pointsName].update({'region': rname})
         return data
 
     def _generateSurfaces(self, surfaces) -> dict:
@@ -169,18 +206,31 @@ class ControlDict(DictionaryFile):
 
         for d in surfaces:
             xpath = MonitorDB.getSurfaceMonitorXPath(d)
-
             name = db.getValue(xpath + '/name')
-            reportType = db.getValue(xpath + '/reportType')
-            field = db.getValue(xpath + '/field/field')
-            mid = db.getValue(xpath + '/field/mid')
-            surfaces = db.getValue(xpath + '/surfaces')
+            boundaryIDs = db.getValue(xpath + '/surfaces')
+            for bid in boundaryIDs.split() if boundaryIDs else []:
+                rname = BoundaryDB.getBoundaryRegion(bid)
+                patch = BoundaryDB.getBoundaryName(bid)
 
-            data[f'surfaces_{name}'] = {
-                'type': 'surfaces',
-                'libs': ['"libsurfaces.so"'],
+                surfacesName = f'surfaces_{name}' if rname == '' else f'surfaces_{name}_{rname}'
+                if surfacesName not in data:
+                    reportType = db.getValue(xpath + '/reportType')
+                    fields = db.getValue(xpath + '/field/field')
+                    mid = db.getValue(xpath + '/field/mid')
 
-            }
+                    data[surfacesName] = {
+                        'type': 'surfaces',
+                        'libs': ['"libsurfaces.so"'],
+
+                        'writeControl': 'timeStep',
+                        'writeInterval': '1',
+                        # 'writeFields': 'yes',
+                        'log': 'true',
+
+                        'region': rname,
+                        'fields': [],
+                    }
+                data[surfacesName]['patches'].append(patch)
         return data
 
     def _generateVolumes(self, volumes) -> dict:
@@ -189,18 +239,30 @@ class ControlDict(DictionaryFile):
 
         for d in volumes:
             xpath = MonitorDB.getVolumeMonitorXPath(d)
-
             name = db.getValue(xpath + '/name')
-            reportType = db.getValue(xpath + '/reportType')
-            field = db.getValue(xpath + '/field/field')
-            mid = db.getValue(xpath + '/field/mid')
-            volumes = db.getValue(xpath + '/volumes')
+            boundaryIDs = db.getValue(xpath + '/volumes')
+            for bid in boundaryIDs.split() if boundaryIDs else []:
+                rname = BoundaryDB.getBoundaryRegion(bid)
+                patch = BoundaryDB.getBoundaryName(bid)
 
-            data[f'volumes_{name}'] = {
-                'type': 'volumes',
-                'libs': ['"libvolumes.so"'],
-                'fields': [field],
+                volumesName = f'volumes_{name}' if rname == '' else f'volumes_{name}_{rname}'
+                if volumesName not in data:
+                    reportType = db.getValue(xpath + '/reportType')
+                    fields = db.getValue(xpath + '/field/field')
+                    mid = db.getValue(xpath + '/field/mid')
 
-            }
+                    data[volumesName] = {
+                        'type': 'volFieldValue',
+                        'libs': ['"libfieldFunctionObjects.so"'],
+
+                        'writeControl': 'timeStep',
+                        'writeInterval': '1',
+                        # 'writeFields': 'yes',
+                        'log': 'true',
+
+                        'region': rname,
+                        'fields': [],
+                    }
+                data[volumesName]['patches'].append(patch)
         return data
 

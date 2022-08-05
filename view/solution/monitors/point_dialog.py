@@ -111,7 +111,7 @@ class PointDialog(QDialog):
             self._ui.snapOntoBoundary.setText(self.TEXT_FOR_NONE_BOUNDARY)
         else:
             self._ui.snapOntoBoundary.setText(
-                f'{BoundaryDB.getBoundaryName(bcid)} / {BoundaryDB.getBoundaryRegion(bcid)}')
+                f'{BoundaryDB.getBoundaryRegion(bcid)} / {BoundaryDB.getBoundaryName(bcid)}')
 
     def _selectSnapOntoBoundary(self):
         self._dialog = SelectorDialog(
