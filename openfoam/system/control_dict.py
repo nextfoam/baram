@@ -4,6 +4,7 @@
 import openfoam.solver
 from coredb import coredb
 from coredb.general_db import GeneralDB
+from coredb.monitor_db import MonitorDB
 from coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from openfoam.dictionary_file import DictionaryFile
 
@@ -67,92 +68,139 @@ class ControlDict(DictionaryFile):
             'runTimeModifiable': 'yes',
             'adjustTimeStep': adjustTimeStep,
             'maxCo': db.getValue(xpath + '/maxCourantNumber'),
-            'functions': self._buildFunctionObjects()
+            'functions': self._generateFunctionObjects()
         }
 
         return self
 
-    def _buildFunctionObjects(self):
+    def _generateFunctionObjects(self):
         db = coredb.CoreDB()
-        data = self._buildResiduals()
+        data = self._generateResiduals()
 
         forces = db.getForceMonitors()
-        if len(forces) > 0:
-            data.update(self._buildForces(forces))
+        data.update(self._generateForces(forces))
 
         points = db.getPointMonitors()
-        if len(points) > 0:
-            data.update(self._buildPoints(points))
+        data.update(self._generatePoints(points))
 
         surfaces = db.getSurfaceMonitors()
-        if len(surfaces) > 0:
-            data.update(self._buildSurfaces(surfaces))
+        data.update(self._generateSurfaces(surfaces))
 
         volumes = db.getVolumeMonitors()
-        if len(volumes) > 0:
-            data.update(self._buildVolumes(volumes))
+        data.update(self._generateVolumes(volumes))
 
         return data
 
-    def _buildResiduals(self):
+    def _generateResiduals(self) -> dict:
         db = coredb.CoreDB()
 
-        fields = '(U p)'
+        fields = ['U', 'p']
+        region = ''     # Get current region
 
         data = {
             'solverInfo': {
                 'type': 'solverInfo',
-                'libs': '("libutilityFunctionObjects.so")',
+                'region': region,
+                'libs': ['"libutilityFunctionObjects.so"'],
                 'fields': fields,
                 'writeResidualFields': 'yes'
             }
         }
         return data
 
-    def _buildForces(self, data):
+    def _generateForces(self, forces):
+        db = coredb.CoreDB()
         data = {}
-        for i in data:
-            dataName = f'forces{i}'
-            patches = '()'
-            data[dataName] = {
+
+        for d in forces:
+            xpath = MonitorDB.getForceMonitorXPath(d)
+
+            name = db.getValue(xpath + '/name')  # same with b
+            referenceArea = db.getValue(xpath + '/referenceArea')
+            referenceLength = db.getValue(xpath + '/referenceLength')
+            referenceVelocity = db.getValue(xpath + '/referenceVelocity')
+            referenceDensity = db.getValue(xpath + '/referenceDensity')
+            dragDirection = db.getVector(xpath + '/dragDirection')
+            liftDirection = db.getVector(xpath + '/liftDirection')
+            pitchAxisDirection = db.getVector(xpath + '/pitchAxisDirection')
+            centerOfRotation = db.getVector(xpath + '/centerOfRotation')
+            boundaries = db.getValue(xpath + '/boundaries')
+
+            data[f'forces_{name}'] = {
                 'type': 'forces',
-                'libs': '("libforces.so")',
-                'patches': patches
-            }
-        return data
-    def _buildPoints(self, data):
-        data = {}
-        for i in data:
-            dataName = f'points{i}'
-            patches = '()'
-            data[dataName] = {
-                'type': 'points',
-                'libs': '("libpoints.so")',
-                'patches': patches
+                'libs': ['"libforces.so"'],
+
+                'rhoInf': referenceDensity,
+                'CofR': centerOfRotation,
+                'liftDir': liftDirection,
+                'dragDir': dragDirection,
+                'pitchAxis': pitchAxisDirection,
+                'magUInf': referenceVelocity,
+                'lRef': referenceLength,
+                'Aref': referenceArea,
+                'patches': [boundaries]
             }
         return data
 
-    def _buildSurfaces(self, data):
+    def _generatePoints(self, points) -> dict:
+        db = coredb.CoreDB()
         data = {}
-        for i in data:
-            dataName = f'surfaces{i}'
-            patches = '()'
-            data[dataName] = {
+
+        for d in points:
+            xpath = MonitorDB.getPointMonitorXPath(d)
+
+            name = db.getValue(xpath + '/name')
+            field = db.getValue(xpath + '/field/field')
+            mid = db.getValue(xpath + '/field/mid')
+            interval = db.getValue(xpath + '/interval')
+            coordinate = db.getVector(xpath + '/coordinate')
+            snapOntoBoundary = db.getVector(xpath + '/snapOntoBoundary')
+
+            patches = []
+            data[f'probes_{name}'] = {
+                'type': 'probes',
+                'libs': ['"libprobes.so"'],
+            }
+        return data
+
+    def _generateSurfaces(self, surfaces) -> dict:
+        db = coredb.CoreDB()
+        data = {}
+
+        for d in surfaces:
+            xpath = MonitorDB.getSurfaceMonitorXPath(d)
+
+            name = db.getValue(xpath + '/name')
+            reportType = db.getValue(xpath + '/reportType')
+            field = db.getValue(xpath + '/field/field')
+            mid = db.getValue(xpath + '/field/mid')
+            surfaces = db.getValue(xpath + '/surfaces')
+
+            data[f'surfaces_{name}'] = {
                 'type': 'surfaces',
-                'libs': '("libsurfaces.so")',
-                'patches': patches
+                'libs': ['"libsurfaces.so"'],
+
             }
         return data
 
-    def _buildVolumes(self, data):
+    def _generateVolumes(self, volumes) -> dict:
+        db = coredb.CoreDB()
         data = {}
-        for i in data:
-            dataName = f'volumes{i}'
-            patches = '()'
-            data[dataName] = {
+
+        for d in volumes:
+            xpath = MonitorDB.getVolumeMonitorXPath(d)
+
+            name = db.getValue(xpath + '/name')
+            reportType = db.getValue(xpath + '/reportType')
+            field = db.getValue(xpath + '/field/field')
+            mid = db.getValue(xpath + '/field/mid')
+            volumes = db.getValue(xpath + '/volumes')
+
+            data[f'volumes_{name}'] = {
                 'type': 'volumes',
-                'libs': '("libvolumes.so")',
-                'patches': patches
+                'libs': ['"libvolumes.so"'],
+                'fields': [field],
+
             }
         return data
 

@@ -46,6 +46,9 @@ class ProcessInformationPage(QWidget):
 
         return super().showEvent(ev)
 
+    def save(self):
+        pass
+
     def _connectSignalsSlots(self):
         self._ui.startCalculation.clicked.connect(self._startCalculationClicked)
         self._ui.cancelCalculation.clicked.connect(self._cancelCalculationClicked)
@@ -54,12 +57,12 @@ class ProcessInformationPage(QWidget):
         self._project.statusChanged.connect(self._updateStatus)
 
     def _startCalculationClicked(self):
-        # CaseGenerator().generateFiles()
+        CaseGenerator().generateFiles()
 
-        # controlDict = ControlDict().build()
-        # controlDict.asDict()['startFrom'] = 'latestTime'
-        # controlDict.asDict()['stopAt'] = 'endTime'
-        # controlDict.write()
+        controlDict = ControlDict().build()
+        controlDict.asDict()['startFrom'] = 'latestTime'
+        controlDict.asDict()['stopAt'] = 'endTime'
+        controlDict.write()
 
         numCores = self._db.getValue('.//runCalculation/parallel/numberOfCores')
 
