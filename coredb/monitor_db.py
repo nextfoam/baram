@@ -128,7 +128,6 @@ class FieldHelper:
         _appendField(Field.X_VELOCITY)
         _appendField(Field.Y_VELOCITY)
         _appendField(Field.Z_VELOCITY)
-        _appendField(Field.MODIFIED_PRESSURE)
 
         # Fields depending on the turbulence model
         turbulenceModel = ModelsDB.getTurbulenceModel()
@@ -152,7 +151,7 @@ class FieldHelper:
             _appendField(Field.MODIFIED_PRESSURE)
 
         # Material fields when species model is on
-        if not ModelsDB.isSpeciesModelOn():
+        if ModelsDB.isSpeciesModelOn():
             for m in coredb.CoreDB().getMaterials():
                 if MaterialDB.DBTextToPhase(m[ListIndex.PHASE.value]) != Phase.SOLID:
                     _appendMaterial(m)
