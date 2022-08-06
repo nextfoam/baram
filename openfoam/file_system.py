@@ -3,6 +3,7 @@
 
 import os
 import shutil
+import asyncio
 
 from coredb.project import Project
 
@@ -69,7 +70,7 @@ class FileSystem:
         return os.path.join(cls._casePath, 'baram.foam')
 
     @classmethod
-    def copyMeshFrom(cls, directory):
+    def _copyMeshFromInternal(cls, directory):
         if os.path.exists(cls._constantPath):
             shutil.rmtree(cls._constantPath)
 
@@ -77,6 +78,10 @@ class FileSystem:
 
         with open(cls.foamFilePath(), 'a'):
             pass
+
+    @classmethod
+    async def copyMeshFrom(cls, directory):
+        await asyncio.to_thread(cls._copyMeshFromInternal, directory)
 
     @classmethod
     def makeDir(cls, parent, directory):

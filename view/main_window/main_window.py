@@ -5,6 +5,8 @@ import logging
 import os
 from enum import Enum, auto
 
+import qasync
+
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QThreadPool, Signal
 
@@ -172,10 +174,11 @@ class MainWindow(QMainWindow):
         if currentPage:
             currentPage.save()
 
-    def _loadMesh(self):
+    @qasync.asyncSlot()
+    async def _loadMesh(self):
         dirName = QFileDialog.getExistingDirectory(self)
         if dirName:
-            self._threadPool.start(lambda: self._loadOpenFoamMesh(dirName))
+            await self._loadOpenFoamMesh(dirName)
 
     def _changeForm(self, currentMenu):
         page = self._menuPages[currentMenu]
@@ -198,9 +201,9 @@ class MainWindow(QMainWindow):
         self.tabifyDock(dock)
         self._ui.menuView.addAction(dock.toggleViewAction())
 
-    def _loadOpenFoamMesh(self, dirName):
+    async def _loadOpenFoamMesh(self, dirName):
         try:
-            FileSystem.copyMeshFrom(dirName)
+            await FileSystem.copyMeshFrom(dirName)
             PolyMeshLoader.load()
             self._project.setMeshLoaded()
         except Exception as ex:
