@@ -10,6 +10,42 @@ from coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from openfoam.dictionary_file import DictionaryFile
 
 
+def getFieldValue(field):
+    value = {
+        'pressure': 'p',
+        'speed': 'Umag',
+        'xVelocity': 'Ux',
+        'yVelocity': 'Uy',
+        'zVelocity': 'Uz',
+        'turbulentKineticEnergy': 'k',
+        'turbulentDissipationRate': 'Epsilon',
+        'specificDissipationRate': 'omega',
+        'modifiedTurbulentViscosity': 'nuTilda',
+        'temperature': 'T',
+        'density': 'rho',
+        'modifiedPressure': 'p_rho',
+        'material': '',
+    }
+    if field not in value:
+        raise ValueError
+    return [value[field]]
+
+def getOperationValue(option):
+    value = {
+        'areaWeightedAverage': 'weightedAverage',
+        'Integral': 'volIntegrate',
+        'flowRate': '',
+        'minimum': 'min',
+        'maximum': 'max',
+        'cov': 'CoV',
+
+        'volumeAverage': 'volAverage',
+        'volumeIntegral': 'volIntegrate',
+    }
+    if option not in value:
+        raise ValueError
+    return value[option]
+
 class ControlDict(DictionaryFile):
     def __init__(self):
         super().__init__(self.systemLocation(), 'controlDict')
@@ -172,18 +208,19 @@ class ControlDict(DictionaryFile):
         for d in points:
             xpath = MonitorDB.getPointMonitorXPath(d)
             name = db.getValue(xpath + '/name')
-            fields = db.getValue(xpath + '/field/field')
+            fields = getFieldValue(db.getValue(xpath + '/field/field'))
             mid = db.getValue(xpath + '/field/mid')
             interval = db.getValue(xpath + '/interval')
             coordinate = db.getVector(xpath + '/coordinate')
             snapOntoBoundary = db.getValue(xpath + '/snapOntoBoundary')
             if snapOntoBoundary == 'true':
                 pass
+
             bid = db.getValue(xpath + '/boundary')
             rname = BoundaryDB.getBoundaryRegion(bid)
             patch = BoundaryDB.getBoundaryName(bid)
-
             pointsName = f'points_{name}' if rname == '' else f'points_{name}_{rname}'
+
             data[pointsName] = {
                 'type': 'probes',
                 'libs': ['"libsampling.so"'],
@@ -193,9 +230,10 @@ class ControlDict(DictionaryFile):
                 'log': 'true',
 
                 'fields': fields,
-                'probeLocations': [coordinate],
-                'patchName': patch
+                'probeLocations': coordinate,
             }
+            if patch:
+                data[pointsName].update({'patchName': patch})
             if rname != '':
                 data[pointsName].update({'region': rname})
         return data
@@ -214,8 +252,8 @@ class ControlDict(DictionaryFile):
 
                 surfacesName = f'surfaces_{name}' if rname == '' else f'surfaces_{name}_{rname}'
                 if surfacesName not in data:
-                    reportType = db.getValue(xpath + '/reportType')
-                    fields = db.getValue(xpath + '/field/field')
+                    reportType = getOperationValue(db.getValue(xpath + '/reportType'))
+                    fields = getFieldValue(db.getValue(xpath + '/field/field'))
                     mid = db.getValue(xpath + '/field/mid')
 
                     data[surfacesName] = {
@@ -228,7 +266,9 @@ class ControlDict(DictionaryFile):
                         'log': 'true',
 
                         'region': rname,
-                        'fields': [],
+                        'patches': [],
+                        'fields': fields,
+                        'operation': reportType
                     }
                 data[surfacesName]['patches'].append(patch)
         return data
@@ -247,8 +287,8 @@ class ControlDict(DictionaryFile):
 
                 volumesName = f'volumes_{name}' if rname == '' else f'volumes_{name}_{rname}'
                 if volumesName not in data:
-                    reportType = db.getValue(xpath + '/reportType')
-                    fields = db.getValue(xpath + '/field/field')
+                    reportType = getOperationValue(db.getValue(xpath + '/reportType'))
+                    fields = getFieldValue(db.getValue(xpath + '/field/field'))
                     mid = db.getValue(xpath + '/field/mid')
 
                     data[volumesName] = {
@@ -261,7 +301,10 @@ class ControlDict(DictionaryFile):
                         'log': 'true',
 
                         'region': rname,
-                        'fields': [],
+                        'patches': [],
+                        'fields': fields,
+
+                        'operation': reportType
                     }
                 data[volumesName]['patches'].append(patch)
         return data
