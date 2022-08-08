@@ -7,6 +7,8 @@ import signal
 import time
 import platform
 
+import qasync
+
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QWidget
 
@@ -56,8 +58,9 @@ class ProcessInformationPage(QWidget):
         self._ui.updateConfiguration.clicked.connect(self._updateConfigurationClicked)
         self._project.statusChanged.connect(self._updateStatus)
 
-    def _startCalculationClicked(self):
-        CaseGenerator().generateFiles()
+    @qasync.asyncSlot()
+    async def _startCalculationClicked(self):
+        await CaseGenerator().generateFiles()
 
         controlDict = ControlDict().build()
         controlDict.asDict()['startFrom'] = 'latestTime'

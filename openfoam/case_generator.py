@@ -27,13 +27,14 @@ from openfoam.system.fv_options import FvOptions
 from openfoam.system.decomposePar_dict import DecomposeParDict
 from openfoam.polymesh.boundary import Boundary
 from openfoam.file_system import FileSystem
+from openfoam.run import runUtility
 
 
 class CaseGenerator:
     def __init__(self):
         self._db = coredb.CoreDB()
 
-    def generateFiles(self):
+    async def generateFiles(self):
         FileSystem.initCaseDir()
 
         regions = self._db.getRegions()
@@ -94,3 +95,6 @@ class CaseGenerator:
 
         ControlDict().build().write()
 
+        cwd = FileSystem.caseRoot()
+        #await runUtility('decomposePar', '-fields', '-case', cwd, cwd=cwd)
+        await runUtility('decomposePar', '-case', cwd, cwd=cwd)

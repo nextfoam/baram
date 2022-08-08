@@ -5,6 +5,7 @@ import platform
 import subprocess
 import psutil
 from pathlib import Path
+import asyncio
 
 # Solver Directory Structure
 #
@@ -95,6 +96,24 @@ def launchSolver(solver: str, casePath: Path, np: int = 1) -> (int, float):
 
     ps = psutil.Process(pid=p.pid)
     return ps.pid, ps.create_time()
+
+
+async def runUtility(program: str, *args, cwd=None):
+    global creationflags
+    global startupinfo
+
+    if platform.system() == 'Windows':
+        creationflags = subprocess.CREATE_NO_WINDOW
+        startupinfo = subprocess.STARTUPINFO(
+            dwFlags=subprocess.STARTF_USESHOWWINDOW,
+            wShowWindow=subprocess.SW_HIDE
+        )
+
+    proc = await asyncio.create_subprocess_exec(OPENFOAM/'bin'/program, *args,
+                                                env=ENV, cwd=cwd,
+                                                creationflags=creationflags,
+                                                startupinfo=startupinfo)
+    await proc.wait()
 
 
 def isProcessRunning(pid, startTime):
