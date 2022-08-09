@@ -65,8 +65,6 @@ class CoreDB(object):
     CELL_ZONE_MAX_INDEX = 1000
     BOUNDARY_CONDITION_MAX_INDEX = 10000
 
-    _configCount = 0
-
     def __new__(cls, *args, **kwargs):
         with _mutex:
             if not hasattr(cls, '_instance'):
@@ -79,7 +77,8 @@ class CoreDB(object):
 
         self._initialized = True
 
-        self._configCountAtSave = CoreDB._configCount
+        self._configCount = 0
+        self._configCountAtSave = self._configCount
         # self._filePath = None
         self._inContext = False
         self._backupTree = None
@@ -120,15 +119,6 @@ class CoreDB(object):
             logger.debug('exit without error')
             return None
 
-    # Decorator does not use camelCasing convention
-    def config_change(func):
-        @functools.wraps(func)
-        def _wrapper(self, *args, **kwargs):
-            rv = func(self, *args, **kwargs)
-            CoreDB._configCount += 1  # increase count if the func ran without exception
-            return rv
-        return _wrapper
-
     def getAttribute(self, xpath: str, name: str) -> str:
         """Returns attribute value on specified configuration path.
 
@@ -156,7 +146,6 @@ class CoreDB(object):
 
         return value
 
-    @config_change
     def setAttribute(self, xpath: str, name: str, value: str):
         """Returns attribute value on specified configuration path.
 
@@ -179,7 +168,10 @@ class CoreDB(object):
         if name not in elements[0].keys():
             raise LookupError
 
+        oldValue = elements[0].get(name)
         elements[0].set(name, value)
+        if value != oldValue:
+            self._configCount += 1
 
         logger.debug(f'setAttribute( {xpath}:{name} -> {value} )')
 
@@ -216,7 +208,6 @@ class CoreDB(object):
 
         return element.text
 
-    @config_change
     def setValue(self, xpath: str, value: str) -> Error:
         """Sets configuration value in specified path
 
@@ -266,7 +257,10 @@ class CoreDB(object):
                 self._lastError = Error.OUT_OF_RANGE
                 return Error.OUT_OF_RANGE
 
+            oldValue = element.text
             element.text = value.lower().strip()
+            if element.text != oldValue:
+                self._configCount += 1
 
             logger.debug(f'setValue( {xpath} -> {element.text} )')
 
@@ -280,7 +274,10 @@ class CoreDB(object):
                 self._lastError = Error.FLOAT_ONLY
                 return Error.FLOAT_ONLY
 
+            oldValue = element.text
             element.text = ' '.join(numbers)
+            if element.text != oldValue:
+                self._configCount += 1
 
             logger.debug(f'setValue( {xpath} -> {element.text} )')
 
@@ -315,7 +312,10 @@ class CoreDB(object):
                 self._lastError = Error.OUT_OF_RANGE
                 return Error.OUT_OF_RANGE
 
+            oldValue = element.text
             element.text = value.lower().strip()
+            if element.text != oldValue:
+                self._configCount += 1
 
             logger.debug(f'setValue( {xpath} -> {element.text} )')
 
@@ -326,13 +326,16 @@ class CoreDB(object):
             if schema.type.is_restriction() and value not in schema.type.enumeration:
                 raise ValueError
 
+            oldValue = element.text
             element.text = value.strip()
+            if element.text != oldValue:
+                self._configCount += 1
+
             logger.debug(f'setValue( {xpath} -> {element.text} )')
 
         self._xmlSchema.assertValid(self._xmlTree)
         return None
 
-    @config_change
     def setBulk(self, xpath: str, value: dict):
         """Set the value at the specified path
 
@@ -390,6 +393,7 @@ class CoreDB(object):
 
         elements[0].clear()
         _setBulkInternal(elements[0], value)
+        self._configCount += 1
 
         self._xmlSchema.assertValid(self._xmlTree)
 
@@ -463,7 +467,6 @@ class CoreDB(object):
 
         return [(int(e.attrib['mid']), e.findtext('name', namespaces=nsmap), e.findtext('chemicalFormula', namespaces=nsmap), e.findtext('phase', namespaces=nsmap)) for e in elements]
 
-    @config_change
     def addMaterial(self, name: str) -> int:
         """Add material to configuration from material database
 
@@ -534,11 +537,12 @@ class CoreDB(object):
         _materialPropertySubElement(thermalConductivity, 'constant', 'thermalConductivity')
         etree.SubElement(thermalConductivity, f'{{{ns}}}polynomial').text = ''
 
+        self._configCount += 1
+
         self._xmlSchema.assertValid(self._xmlTree)
 
         return index
 
-    @config_change
     def removeMaterial(self, name: str) -> Error:
         parent = self._xmlTree.find(f'.//materials', namespaces=nsmap)
         material = parent.find(f'material[name="{name}"]', namespaces=nsmap)
@@ -557,9 +561,11 @@ class CoreDB(object):
             return Error.EMPTY
 
         parent.remove(material)
+
+        self._configCount += 1
+
         return None
 
-    @config_change
     def addRegion(self, rname: str):
         region = self._xmlTree.find(f'.//regions/region[name="{rname}"]', namespaces=nsmap)
 
@@ -586,6 +592,8 @@ class CoreDB(object):
         # add default cell zone named "All"
         self.addCellZone(rname, 'All')
 
+        self._configCount += 1
+
         self._xmlSchema.assertValid(self._xmlTree)
 
     def getRegions(self) -> list[str]:
@@ -597,7 +605,6 @@ class CoreDB(object):
 
         return regions
 
-    @config_change
     def addCellZone(self, rname: str, zname: str) -> int:
         zone = self._xmlTree.find(f'.//region[name="{rname}"]/cellZones/cellZone[name="{zname}"]', namespaces=nsmap)
 
@@ -622,6 +629,8 @@ class CoreDB(object):
 
         cellZones.append(zone)
 
+        self._configCount += 1
+
         self._xmlSchema.assertValid(self._xmlTree)
 
         return index
@@ -635,7 +644,6 @@ class CoreDB(object):
                                          namespaces=nsmap)
         return [e.attrib['czid'] for e in elements]
 
-    @config_change
     def addBoundaryCondition(self, rname: str, bname: str, geometricalType: str) -> int:
         bc = self._xmlTree.find(f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bname}"]',
                                 namespaces=nsmap)
@@ -664,6 +672,8 @@ class CoreDB(object):
 
         parent.append(bc)
 
+        self._configCount += 1
+
         self._xmlSchema.assertValid(self._xmlTree)
 
         return index
@@ -684,7 +694,6 @@ class CoreDB(object):
                  e.find('name', namespaces=nsmap).text,
                  e.find('physicalType', namespaces=nsmap).text) for e in elements]
 
-    @config_change
     def addForceMonitor(self) -> str:
         names = self.getForceMonitors()
 
@@ -702,11 +711,12 @@ class CoreDB(object):
 
         parent.append(forceTree.getroot())
 
+        self._configCount += 1
+
         self._xmlSchema.assertValid(self._xmlTree)
 
         return monitorName
 
-    @config_change
     def removeForceMonitor(self, name: str):
         monitor = self._xmlTree.find(f'.//monitors/forces/forceMonitor[name="{name}"]', namespaces=nsmap)
         if monitor is None:
@@ -715,11 +725,12 @@ class CoreDB(object):
         parent = self._xmlTree.find(f'.//monitors/forces', namespaces=nsmap)
         parent.remove(monitor)
 
+        self._configCount += 1
+
     def getForceMonitors(self) -> list[str]:
         names = self._xmlTree.xpath(f'.//x:monitors/x:forces/x:forceMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
-    @config_change
     def addPointMonitor(self) -> str:
         names = self.getPointMonitors()
 
@@ -737,11 +748,12 @@ class CoreDB(object):
 
         parent.append(pointTree.getroot())
 
+        self._configCount += 1
+
         self._xmlSchema.assertValid(self._xmlTree)
 
         return monitorName
 
-    @config_change
     def removePointMonitor(self, name: str):
         monitor = self._xmlTree.find(f'.//monitors/points/pointMonitor[name="{name}"]', namespaces=nsmap)
         if monitor is None:
@@ -750,11 +762,12 @@ class CoreDB(object):
         parent = self._xmlTree.find(f'.//monitors/points', namespaces=nsmap)
         parent.remove(monitor)
 
+        self._configCount += 1
+
     def getPointMonitors(self) -> list[str]:
         names = self._xmlTree.xpath(f'.//x:monitors/x:points/x:pointMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
-    @config_change
     def addSurfaceMonitor(self) -> str:
         names = self.getSurfaceMonitors()
 
@@ -772,11 +785,12 @@ class CoreDB(object):
 
         parent.append(surfaceTree.getroot())
 
+        self._configCount += 1
+
         self._xmlSchema.assertValid(self._xmlTree)
 
         return monitorName
 
-    @config_change
     def removeSurfaceMonitor(self, name: str):
         monitor = self._xmlTree.find(f'.//monitors/surfaces/surfaceMonitor[name="{name}"]', namespaces=nsmap)
         if monitor is None:
@@ -785,11 +799,12 @@ class CoreDB(object):
         parent = self._xmlTree.find(f'.//monitors/surfaces', namespaces=nsmap)
         parent.remove(monitor)
 
+        self._configCount += 1
+
     def getSurfaceMonitors(self) -> list[str]:
         names = self._xmlTree.xpath(f'.//x:monitors/x:surfaces/x:surfaceMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
-    @config_change
     def addVolumeMonitor(self) -> str:
         names = self.getVolumeMonitors()
 
@@ -807,11 +822,12 @@ class CoreDB(object):
 
         parent.append(volumeTree.getroot())
 
+        self._configCount += 1
+
         self._xmlSchema.assertValid(self._xmlTree)
 
         return monitorName
 
-    @config_change
     def removeVolumeMonitor(self, name: str):
         monitor = self._xmlTree.find(f'.//monitors/volumes/volumeMonitor[name="{name}"]', namespaces=nsmap)
         if monitor is None:
@@ -819,6 +835,8 @@ class CoreDB(object):
 
         parent = self._xmlTree.find(f'.//monitors/volumes', namespaces=nsmap)
         parent.remove(monitor)
+
+        self._configCount += 1
 
     def getVolumeMonitors(self) -> list[str]:
         names = self._xmlTree.xpath(f'.//x:monitors/x:volumes/x:volumeMonitor/x:name/text()', namespaces={'x': ns})
@@ -842,11 +860,11 @@ class CoreDB(object):
 
     @property
     def isModified(self) -> bool:
-        return self._configCountAtSave != CoreDB._configCount
+        return self._configCountAtSave != self._configCount
 
     @property
     def configCount(self) -> int:
-        return CoreDB._configCount
+        return self._configCount
 
     def saveAs(self, path: str):
         f = h5py.File(path, 'w')
@@ -861,7 +879,7 @@ class CoreDB(object):
             f.close()
 
         # self._filePath = path
-        self._configCountAtSave = CoreDB._configCount
+        self._configCountAtSave = self._configCount
 
     def save(self, path: str):
         with h5py.File(path, 'a') as f:
@@ -870,7 +888,7 @@ class CoreDB(object):
 
             f['configuration'] = etree.tostring(self._xmlTree.getroot(), xml_declaration=True, encoding='UTF-8')
 
-        self._configCountAtSave = CoreDB._configCount
+        self._configCountAtSave = self._configCount
 
     def load(self, path: str):
         with h5py.File(path, 'r') as f:
@@ -880,11 +898,11 @@ class CoreDB(object):
             root = etree.fromstring(ds[()], self._xmlParser)
             self._xmlTree = etree.ElementTree(root)
 
-        self._configCountAtSave = CoreDB._configCount
+        self._configCountAtSave = self._configCount
 
     def loadDefault(self):
         self._xmlTree = etree.parse(resource.file(self.XML_PATH), self._xmlParser)
         # Add 'air' as default material
         self.addMaterial('air')
 
-        self._configCountAtSave = CoreDB._configCount
+        self._configCountAtSave = self._configCount
