@@ -13,6 +13,7 @@ boundary = "testBoundary_1"
 class TestNut(unittest.TestCase):
     def setUp(self):
         self._db = coredb.CoreDB()
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.addRegion(region)
         bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
         self._xpath = BoundaryDB.getXPath(bcid)

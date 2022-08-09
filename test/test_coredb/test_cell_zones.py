@@ -65,7 +65,7 @@ class TestCellZones(unittest.TestCase):
         self.db.addRegion(rname)
         self.db.addCellZone(rname, zname)
 
-        path = f'.//region[name="{rname}"]/cellZones/cellZone[name="{zname}"]/fixedValues/xVelocity'
+        path = f'.//region[name="{rname}"]/cellZones/cellZone[name="{zname}"]/fixedValues/velocity/velocity/x'
         expected = '3'
         self.db.setValue(path, expected)
         value = self.db.getValue(path)
