@@ -35,9 +35,6 @@ class ProcessInformationPage(QWidget):
         self._db = coredb.CoreDB()
         self._project = Project.instance()
 
-        self._solvers = openfoam.solver.findSolvers()
-        self._caseRoot = FileSystem.caseRoot()
-
         self._connectSignalsSlots()
 
     def showEvent(self, ev):
@@ -69,6 +66,10 @@ class ProcessInformationPage(QWidget):
 
         numCores = self._db.getValue('.//runCalculation/parallel/numberOfCores')
 
+        self._solvers = openfoam.solver.findSolvers()
+        self._caseRoot = FileSystem.caseRoot()
+
+        print(self._solvers)
         process = launchSolver(self._solvers[0], Path(self._caseRoot), int(numCores))
         self._project.setSolverProcess(process)
 

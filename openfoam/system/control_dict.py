@@ -12,18 +12,18 @@ from openfoam.dictionary_file import DictionaryFile
 
 def getFieldValue(field):
     value = {
-        'pressure': 'p',
-        'speed': 'Umag',
-        'xVelocity': 'Ux',
-        'yVelocity': 'Uy',
-        'zVelocity': 'Uz',
+        'pressure': 'p',    # 'modifiedPressure': 'p_rgh',
+        'speed': 'mag(U)',
+        'xVelocity': 'Ux',  # Ux
+        'yVelocity': 'Uy',  # Uy
+        'zVelocity': 'Uz',  # Uz
         'turbulentKineticEnergy': 'k',
-        'turbulentDissipationRate': 'Epsilon',
+        'turbulentDissipationRate': 'epsilon',
         'specificDissipationRate': 'omega',
         'modifiedTurbulentViscosity': 'nuTilda',
         'temperature': 'T',
         'density': 'rho',
-        'modifiedPressure': 'p_rho',
+        'phi': 'phi',
         'material': '',
     }
     if field not in value:
@@ -32,13 +32,14 @@ def getFieldValue(field):
 
 def getOperationValue(option):
     value = {
-        'areaWeightedAverage': 'weightedAverage',
-        'Integral': 'volIntegrate',
-        'flowRate': '',
+        # Surface
+        'areaWeightedAverage': 'weightedAreaAverage',
+        'Integral': 'areaIntegrate',
+        'flowRate': 'sum',  # fields : phi
         'minimum': 'min',
         'maximum': 'max',
         'cov': 'CoV',
-
+        # Volume
         'volumeAverage': 'volAverage',
         'volumeIntegral': 'volIntegrate',
     }
@@ -159,15 +160,22 @@ class ControlDict(DictionaryFile):
         db = coredb.CoreDB()
         data = {}
 
+        regionNum = {}
+        regions = db.getRegions()
+        for ii, dd in enumerate(regions):
+            regionNum[dd] = ii
+
         for d in forces:
             xpath = MonitorDB.getForceMonitorXPath(d)
             name = db.getValue(xpath + '/name')
             boundaryIDs = db.getValue(xpath + '/boundaries')
+
             for bid in boundaryIDs.split() if boundaryIDs else []:
                 rname = BoundaryDB.getBoundaryRegion(bid)
                 patch = BoundaryDB.getBoundaryName(bid)
 
-                forcesName = f'forces_{name}' if rname == '' else f'forces_{name}_{rname}'
+                regionID = regionNum[rname]
+                forcesName = f'forces_{regionID}'  # f'forces_{regionNum[rname]}' : f-string: unmatched '['
                 if forcesName not in data:
                     referenceArea = db.getValue(xpath + '/referenceArea')
                     referenceLength = db.getValue(xpath + '/referenceLength')
@@ -181,12 +189,7 @@ class ControlDict(DictionaryFile):
                     data[forcesName] = {
                         'type': 'forces',
                         'libs': ['"libforces.so"'],
-                        'writeControl': 'timeStep',
-                        'writeInterval': '1',
-                        'writeFields': 'yes',
-                        'log': 'true',
 
-                        'region': rname,
                         'patches': [],
                         'Aref': referenceArea,
                         'lRef': referenceLength,
@@ -196,14 +199,25 @@ class ControlDict(DictionaryFile):
                         'liftDir': liftDirection,
                         'pitchAxis': pitchAxisDirection,
                         'CofR': centerOfRotation,
+
+                        # 'writeFields': 'yes',
+                        'writeControl': 'timeStep',
+                        'writeInterval': '1',
+                        'log': 'true',
                     }
                 data[forcesName]['patches'].append(patch)
-
+                if rname != '':
+                    data[forcesName].update({'region': rname})
         return data
 
     def _generatePoints(self, points) -> dict:
         db = coredb.CoreDB()
         data = {}
+
+        regionNum = {}
+        regions = db.getRegions()
+        for ii, dd in enumerate(regions):
+            regionNum[dd] = ii
 
         for d in points:
             xpath = MonitorDB.getPointMonitorXPath(d)
@@ -219,21 +233,23 @@ class ControlDict(DictionaryFile):
             bid = db.getValue(xpath + '/boundary')
             rname = BoundaryDB.getBoundaryRegion(bid)
             patch = BoundaryDB.getBoundaryName(bid)
-            pointsName = f'points_{name}' if rname == '' else f'points_{name}_{rname}'
 
+            regionID = regionNum[rname]
+            pointsName = f'points_{regionID}'
             data[pointsName] = {
-                'type': 'probes',
-                'libs': ['"libsampling.so"'],
+                'type': 'patchProbes',
+                'libs': ['"libfieldFunctionObjects.so"'],
+
+                'patches': [],
+                'writeFields': 'yes',
+                'fields': fields,
+                'probeLocations': [coordinate],
+
                 'writeControl': 'timeStep',
                 'writeInterval': interval,
-                'writeFields': 'yes',
                 'log': 'true',
-
-                'fields': fields,
-                'probeLocations': coordinate,
             }
-            if patch:
-                data[pointsName].update({'patchName': patch})
+            data[pointsName].update({'patches': patch})
             if rname != '':
                 data[pointsName].update({'region': rname})
         return data
@@ -241,6 +257,11 @@ class ControlDict(DictionaryFile):
     def _generateSurfaces(self, surfaces) -> dict:
         db = coredb.CoreDB()
         data = {}
+
+        regionNum = {}
+        regions = db.getRegions()
+        for ii, dd in enumerate(regions):
+            regionNum[dd] = ii
 
         for d in surfaces:
             xpath = MonitorDB.getSurfaceMonitorXPath(d)
@@ -250,32 +271,42 @@ class ControlDict(DictionaryFile):
                 rname = BoundaryDB.getBoundaryRegion(bid)
                 patch = BoundaryDB.getBoundaryName(bid)
 
-                surfacesName = f'surfaces_{name}' if rname == '' else f'surfaces_{name}_{rname}'
+                regionID = regionNum[rname]
+                surfacesName = f'surfaces_{regionID}'
                 if surfacesName not in data:
                     reportType = getOperationValue(db.getValue(xpath + '/reportType'))
                     fields = getFieldValue(db.getValue(xpath + '/field/field'))
                     mid = db.getValue(xpath + '/field/mid')
 
                     data[surfacesName] = {
-                        'type': 'surfaces',
-                        'libs': ['"libsurfaces.so"'],
+                        'type': 'surfaceFieldValue',
+                        'libs': ['"libfieldFunctionObjects.so"'],
+
+                        'regionType': 'patch',
+                        'name': [],     # 개별로 생성할 것
+                        'surfaceFormat': 'none',    # Need to add
+
+                        'writeFields': 'yes',
+                        'fields': fields,
+                        'operation': reportType,
 
                         'writeControl': 'timeStep',
                         'writeInterval': '1',
-                        # 'writeFields': 'yes',
                         'log': 'true',
-
-                        'region': rname,
-                        'patches': [],
-                        'fields': fields,
-                        'operation': reportType
                     }
-                data[surfacesName]['patches'].append(patch)
+                data[surfacesName]['name'].append(patch)  # 개별로 생성해야 함
+                if rname != '':
+                    data[surfacesName].update({'region': rname})
         return data
 
     def _generateVolumes(self, volumes) -> dict:
         db = coredb.CoreDB()
         data = {}
+
+        regionNum = {}
+        regions = db.getRegions()
+        for ii, dd in enumerate(regions):
+            regionNum[dd] = ii
 
         for d in volumes:
             xpath = MonitorDB.getVolumeMonitorXPath(d)
@@ -285,7 +316,8 @@ class ControlDict(DictionaryFile):
                 rname = BoundaryDB.getBoundaryRegion(bid)
                 patch = BoundaryDB.getBoundaryName(bid)
 
-                volumesName = f'volumes_{name}' if rname == '' else f'volumes_{name}_{rname}'
+                regionID = regionNum[rname]
+                volumesName = f'volumes_{regionID}'
                 if volumesName not in data:
                     reportType = getOperationValue(db.getValue(xpath + '/reportType'))
                     fields = getFieldValue(db.getValue(xpath + '/field/field'))
@@ -295,17 +327,17 @@ class ControlDict(DictionaryFile):
                         'type': 'volFieldValue',
                         'libs': ['"libfieldFunctionObjects.so"'],
 
+                        'patches': [],
+                        'writeFields': 'yes',
+                        'fields': fields,
+                        'operation': reportType,
+
                         'writeControl': 'timeStep',
                         'writeInterval': '1',
-                        # 'writeFields': 'yes',
                         'log': 'true',
-
-                        'region': rname,
-                        'patches': [],
-                        'fields': fields,
-
-                        'operation': reportType
                     }
                 data[volumesName]['patches'].append(patch)
+                if rname != '':
+                    data[volumesName].update({'region': rname})
         return data
 
