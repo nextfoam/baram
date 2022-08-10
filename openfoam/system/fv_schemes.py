@@ -95,13 +95,13 @@ class FvSchemes(DictionaryFile):
                 'default': 'Gauss linear'
             },
             'laplacianSchemes': {
-                'default': 'Gauss linear NEXT::corrected'
+                'default': 'Gauss linear corrected'
             },
             'interpolationSchemes': {
                 'default': 'linear'
             },
             'snGradSchemes': {
-                'default': 'NEXT::corrected'
+                'default': 'corrected'
             }
         }
 

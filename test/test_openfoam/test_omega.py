@@ -41,7 +41,7 @@ class TestEpsilon(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'flowRateInlet')
         content = Omega(region).build().asDict()
-        self.assertEqual('NEXT::viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
+        self.assertEqual('viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentViscosityRatio'),
                          content['boundaryField'][boundary]['viscosityRatio'])
 
@@ -62,7 +62,7 @@ class TestEpsilon(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'pressureOutlet')
         self._db.setValue(self._xpath + '/pressureOutlet/calculatedBackflow', 'true')
         content = Omega(region).build().asDict()
-        self.assertEqual('NEXT::viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
+        self.assertEqual('viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentViscosityRatio'),
                          content['boundaryField'][boundary]['viscosityRatio'])
 
@@ -88,7 +88,7 @@ class TestEpsilon(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'openChannelInlet')
         content = Omega(region).build().asDict()
-        self.assertEqual('NEXT::viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
+        self.assertEqual('viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentViscosityRatio'),
                          content['boundaryField'][boundary]['viscosityRatio'])
 
@@ -123,7 +123,7 @@ class TestEpsilon(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = Omega(region).build().asDict()
-        self.assertEqual('NEXT::viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
+        self.assertEqual('viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentViscosityRatio'),
                          content['boundaryField'][boundary]['viscosityRatio'])
 
@@ -142,7 +142,7 @@ class TestEpsilon(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'subsonicInflow')
         content = Omega(region).build().asDict()
-        self.assertEqual('NEXT::viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
+        self.assertEqual('viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentViscosityRatio'),
                          content['boundaryField'][boundary]['viscosityRatio'])
 
@@ -170,7 +170,7 @@ class TestEpsilon(unittest.TestCase):
     def testWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'wall')
         content = Omega(region).build().asDict()
-        self.assertEqual('NEXT::omegaBlendedWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('omegaBlendedWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     # Wall
@@ -187,7 +187,7 @@ class TestEpsilon(unittest.TestCase):
     def testThermoCoupledWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')
         content = Omega(region).build().asDict()
-        self.assertEqual('NEXT::omegaBlendedWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('omegaBlendedWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testSymmetry(self):
@@ -221,7 +221,7 @@ class TestEpsilon(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'regionInterface')
         content = Omega(region).build().asDict()
-        self.assertEqual('NEXT::omegaBlendedWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('omegaBlendedWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testPorousJump(self):

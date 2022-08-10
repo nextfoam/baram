@@ -124,7 +124,7 @@ class TestNut(unittest.TestCase):
         self._db.setValue(self._xpath + '/wall/velocity/type', 'noSlip')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = Nut(region).build().asDict()
-        self.assertEqual('NEXT::nutkWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('nutkWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     # Wall
@@ -134,7 +134,7 @@ class TestNut(unittest.TestCase):
         self._db.setValue(self._xpath + '/wall/velocity/type', 'slip')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = Nut(region).build().asDict()
-        self.assertEqual('NEXT::nutSpaldingWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('nutSpaldingWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     # Wall
@@ -144,7 +144,7 @@ class TestNut(unittest.TestCase):
         self._db.setValue(self._xpath + '/wall/velocity/type', 'movingWall')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = Nut(region).build().asDict()
-        self.assertEqual('NEXT::nutkWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('nutkWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     # Wall
@@ -163,7 +163,7 @@ class TestNut(unittest.TestCase):
         self._db.setValue(self._xpath + '/wall/velocity/type', 'translationalMovingWall')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = Nut(region).build().asDict()
-        self.assertEqual('NEXT::nutSpaldingWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('nutSpaldingWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     # Wall
@@ -173,14 +173,14 @@ class TestNut(unittest.TestCase):
         self._db.setValue(self._xpath + '/wall/velocity/type', 'rotationalMovingWall')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = Nut(region).build().asDict()
-        self.assertEqual('NEXT::nutkWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('nutkWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testThermoCoupledWall(self):
         self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')
         content = Nut(region).build().asDict()
-        self.assertEqual('NEXT::nutSpaldingWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('nutSpaldingWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testSymmetry(self):
@@ -215,7 +215,7 @@ class TestNut(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'regionInterface')
         content = Nut(region).build().asDict()
-        self.assertEqual('NEXT::nutkWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('nutkWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testPorousJump(self):
