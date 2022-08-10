@@ -86,7 +86,7 @@ class K(BoundaryCondition):
 
     def _constructNEXTTurbulentIntensityInletOutletTKE(self, turbulentIntensity):
         return {
-            'type': 'NEXT::turbulentIntensityInletOutletTKE',
+            'type': 'turbulentIntensityInletOutletTKE',
             'turbIntensity': turbulentIntensity
         }
 

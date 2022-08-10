@@ -1,6 +1,7 @@
 import unittest
 import os
 import shutil
+from pathlib import Path
 
 from coredb import coredb
 from coredb.filedb import FileDB, BcFileRole
@@ -162,7 +163,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = T(region).build().asDict()
-        self.assertEqual('NEXT::turbulentTemperatureCoupledBaffleMixed', content['boundaryField'][boundary]['type'])
+        self.assertEqual('turbulentTemperatureCoupledBaffleMixed', content['boundaryField'][boundary]['type'])
         self.assertEqual('solidThermo' if RegionDB.getPhase(region) == Phase.SOLID else 'fluidThermo',
                          content['boundaryField'][boundary]['kappaMethod'])
 
@@ -202,7 +203,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/interface/mode', 'regionInterface')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = T(region).build().asDict()
-        self.assertEqual('NEXT::turbulentTemperatureCoupledBaffleMixed', content['boundaryField'][boundary]['type'])
+        self.assertEqual('turbulentTemperatureCoupledBaffleMixed', content['boundaryField'][boundary]['type'])
         self.assertEqual('solidThermo' if RegionDB.getPhase(region) == Phase.SOLID else 'fluidThermo',
                          content['boundaryField'][boundary]['kappaMethod'])
 
@@ -244,8 +245,8 @@ class TestT(unittest.TestCase):
 
     # Temperature Profile is spatial distribution
     def testTemperatureSpatialDistribution(self):
-        testDir = 'testTSpatialDistribution'
-        csvFile = 'testTSpatialDistribution/testTSpatial.csv'
+        testDir = Path('testTSpatialDistribution')
+        csvFile = Path('testTSpatialDistribution/testTSpatial.csv')
         # ToDo: Settings 처리 정리 후 재작성
         os.makedirs(testDir, exist_ok=True)             # 사용자가 Working Directory 선택할 때 이미 존재하는 디렉토리
         project = _Project()

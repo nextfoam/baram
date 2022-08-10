@@ -4,6 +4,8 @@
 import os
 from enum import Enum, auto
 
+import qasync
+
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QFileDialog, QMessageBox
 from filelock import Timeout
 
@@ -86,12 +88,11 @@ class StartWindow(QDialog):
             Project.open(directory, create)
             self.done(QDialog.Accepted)
         except FileNotFoundError:
-            QMessageBox.critical(self._dialog, self._dialog.tr('Case Open Error'),
-                                 self._dialog.tr(f'{os.path.basename(directory)} is not a baram case.'))
+            QMessageBox.critical(self._dialog, self.tr('Case Open Error'),
+                                 self.tr(f'{os.path.basename(directory)} is not a baram case.'))
         except Timeout:
-            QMessageBox.critical(self._dialog, self._dialog.tr('Case Open Error'),
-                                 self._dialog.tr(f'{os.path.basename(directory)} is open in another program.'))
-
+            QMessageBox.critical(self._dialog, self.tr('Case Open Error'),
+                                 self.tr(f'{os.path.basename(directory)} is open in another program.'))
 
 class Baram:
     def __init__(self):
@@ -103,7 +104,7 @@ class Baram:
     def toQuit(self):
         return self._toQuit
 
-    def start(self):
+    async def start(self):
         try:
             self._applicationLock = AppSettings.acquireLock(5)
         except Timeout:
@@ -119,6 +120,7 @@ class Baram:
             self._window = MainWindow()
             self._window.windowClosed.connect(self._windowClosed)
 
-    def _windowClosed(self, result):
+    @qasync.asyncSlot()
+    async def _windowClosed(self, result):
         if result == CloseType.CLOSE_PROJECT:
-            self.start()
+            await self.start()

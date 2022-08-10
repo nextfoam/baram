@@ -119,7 +119,7 @@ class ForceDialog(QDialog):
 
         self._ui.boundaries.clear()
         for b in boundaries:
-            self._ui.boundaries.addItem(f'{BoundaryDB.getBoundaryName(b)} / {BoundaryDB.getBoundaryRegion(b)}')
+            self._ui.boundaries.addItem(f'{BoundaryDB.getBoundaryRegion(b)} / {BoundaryDB.getBoundaryName(b)}')
 
     def _selectBoundaries(self):
         self._dialog = MultiSelectorDialog(

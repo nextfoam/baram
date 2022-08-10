@@ -75,13 +75,13 @@ class Nut(BoundaryCondition):
 
     def _constructNEXTNutkWallFunction(self):
         return {
-            'type': 'NEXT::nutkWallFunction',
+            'type': 'nutkWallFunction',
             'value': ('uniform', self._initialValue)
         }
 
     def _constructNEXTNutSpaldingWallFunction(self):
         return {
-            'type': 'NEXT::nutSpaldingWallFunction',
+            'type': 'nutSpaldingWallFunction',
             'value': ('uniform', self._initialValue)
         }
 

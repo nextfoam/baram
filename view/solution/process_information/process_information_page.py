@@ -7,6 +7,8 @@ import signal
 import time
 import platform
 
+import qasync
+
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QWidget
 
@@ -33,9 +35,6 @@ class ProcessInformationPage(QWidget):
         self._db = coredb.CoreDB()
         self._project = Project.instance()
 
-        self._solvers = openfoam.solver.findSolvers()
-        self._caseRoot = FileSystem.caseRoot()
-
         self._connectSignalsSlots()
 
     def showEvent(self, ev):
@@ -56,8 +55,9 @@ class ProcessInformationPage(QWidget):
         self._ui.updateConfiguration.clicked.connect(self._updateConfigurationClicked)
         self._project.statusChanged.connect(self._updateStatus)
 
-    def _startCalculationClicked(self):
-        CaseGenerator().generateFiles()
+    @qasync.asyncSlot()
+    async def _startCalculationClicked(self):
+        await CaseGenerator().generateFiles()
 
         controlDict = ControlDict().build()
         controlDict.asDict()['startFrom'] = 'latestTime'
@@ -66,6 +66,10 @@ class ProcessInformationPage(QWidget):
 
         numCores = self._db.getValue('.//runCalculation/parallel/numberOfCores')
 
+        self._solvers = openfoam.solver.findSolvers()
+        self._caseRoot = FileSystem.caseRoot()
+
+        print(self._solvers)
         process = launchSolver(self._solvers[0], Path(self._caseRoot), int(numCores))
         self._project.setSolverProcess(process)
 
@@ -82,8 +86,9 @@ class ProcessInformationPage(QWidget):
 
     def _waitingStop(self):
         if self._project.solverStatus() == SolverStatus.RUNNING:
-            ps = psutil.Process(pid=self._project.pid)
-            if ps.create_time() == self._project.startTime:
+            pid, startTime = self._project.solverProcess()
+            ps = psutil.Process(pid)
+            if ps.create_time() == startTime:
                 if platform.system() == "Windows":
                     ps.send_signal(signal.CTRL_C_EVENT)
                 elif platform.system() == "Linux":

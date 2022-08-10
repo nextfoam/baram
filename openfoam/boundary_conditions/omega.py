@@ -76,7 +76,7 @@ class Omega(BoundaryCondition):
 
     def _constructNEXTOmegaBlendedWallFunction(self):
         return {
-            'type': 'NEXT::omegaBlendedWallFunction',
+            'type': 'omegaBlendedWallFunction',
             'value': ('uniform', self._initialValue)
         }
 

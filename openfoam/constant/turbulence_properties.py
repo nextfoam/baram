@@ -8,7 +8,7 @@ from openfoam.dictionary_file import DictionaryFile
 
 class TurbulenceProperties(DictionaryFile):
     def __init__(self, rname: str):
-        super().__init__(self.constantLocation(rname), 'TurbulenceProperties')
+        super().__init__(self.constantLocation(rname), 'turbulenceProperties')
 
         self._rname = rname
 

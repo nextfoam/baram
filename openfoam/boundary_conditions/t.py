@@ -94,7 +94,7 @@ class T(BoundaryCondition):
 
     def _constructNEXTTurbulentTemperatureCoupledBaffleMixed(self):
         return {
-            'type': 'NEXT::turbulentTemperatureCoupledBaffleMixed',
+            'type': 'turbulentTemperatureCoupledBaffleMixed',
             'Tnbr': 'T',
             'kappaMethod': 'solidThermo' if RegionDB.getPhase(self._rname) == Phase.SOLID else 'fluidThermo'
         }

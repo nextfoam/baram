@@ -41,7 +41,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'flowRateInlet')
         content = K(region).build().asDict()
-        self.assertEqual('NEXT::turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
+        self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentIntensity'),
                          content['boundaryField'][boundary]['turbIntensity'])
 
@@ -63,7 +63,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'pressureOutlet')
         self._db.setValue(self._xpath + '/pressureOutlet/calculatedBackflow', 'true')
         content = K(region).build().asDict()
-        self.assertEqual('NEXT::turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
+        self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentIntensity'),
                          content['boundaryField'][boundary]['turbIntensity'])
 
@@ -106,7 +106,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'openChannelOutlet')
         content = K(region).build().asDict()
-        self.assertEqual('NEXT::turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
+        self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentIntensity'),
                          content['boundaryField'][boundary]['turbIntensity'])
 
@@ -131,7 +131,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = K(region).build().asDict()
-        self.assertEqual('NEXT::turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
+        self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentIntensity'),
                          content['boundaryField'][boundary]['turbIntensity'])
 
@@ -151,7 +151,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = K(region).build().asDict()
-        self.assertEqual('NEXT::turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
+        self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentIntensity'),
                          content['boundaryField'][boundary]['turbIntensity'])
 
@@ -170,7 +170,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'subsonicInflow')
         content = K(region).build().asDict()
-        self.assertEqual('NEXT::turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
+        self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentIntensity'),
                          content['boundaryField'][boundary]['turbIntensity'])
 

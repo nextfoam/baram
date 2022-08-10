@@ -8,11 +8,13 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget, QTextBrowser
 from PySide6.QtCore import Qt
 
 import numpy as np
+import random
 
 from matplotlib.backends.qt_compat import QtWidgets
 from matplotlib.backends.backend_qtagg import (
     FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
+import matplotlib.ticker as ticker
 
 from openfoam.solver_info_manager import getSolverInfoManager
 from openfoam.file_system import FileSystem
@@ -42,6 +44,9 @@ class ChartDock(TabifiedDock):
         layout.addWidget(self._canvas)
 
         self._axes = self._canvas.figure.subplots()
+        self._axes.grid(alpha=0.6, linestyle='--')
+        self._axes.xaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
+        self._axes.yaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
         self._axes.set_yscale('log')
 
         self.solverInfoManager = getSolverInfoManager(Path(FileSystem.caseRoot()).resolve())
@@ -65,6 +70,9 @@ class ChartDock(TabifiedDock):
         for c in columns:
             if c not in self._lines:
                 self._lines[c], = self._axes.plot('Time', c, '', label=c[:-8], data=d)
+                arrStyleLine = ["-", "--", "-.", ":"]
+                self._lines[c].set_linestyle(arrStyleLine[random.randrange(3)])
+                self._lines[c].set_linewidth(0.8)
             else:
                 self._lines[c].set_data(d[['Time', c]].to_numpy().transpose())
 

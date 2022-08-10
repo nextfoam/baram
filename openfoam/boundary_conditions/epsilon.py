@@ -86,7 +86,7 @@ class Epsilon(BoundaryCondition):
 
     def _constructNEXTEpsilonWallFunction(self):
         return {
-            'type': 'NEXT::epsilonWallFunction',
+            'type': 'epsilonWallFunction',
             'value': ('uniform', self._initialValue)
         }
 

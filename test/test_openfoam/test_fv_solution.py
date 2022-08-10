@@ -169,9 +169,9 @@ class TestFvSolution(unittest.TestCase):
         self.assertEqual(self._db.getValue('.//underRelaxationFactors/energyFinal'),
                          content['relaxationFactors']['equations']['hFinal'])
         self.assertEqual(self._db.getValue('.//underRelaxationFactors/turbulence'),
-                         content['relaxationFactors']['equations']['(k|epsilon|omega|nuTilda)'])
+                         content['relaxationFactors']['equations']['"(k|epsilon|omega|nuTilda)"'])
         self.assertEqual(self._db.getValue('.//underRelaxationFactors/turbulenceFinal'),
-                         content['relaxationFactors']['equations']['(k|epsilon|omega|nuTilda)Final'])
+                         content['relaxationFactors']['equations']['"(k|epsilon|omega|nuTilda)Final"'])
 
     def testNoRegion(self):
         content = FvSolution().build().asDict()
