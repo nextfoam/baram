@@ -249,7 +249,7 @@ class ControlDict(DictionaryFile):
                 'writeInterval': interval,
                 'log': 'true',
             }
-            data[pointsName].update({'patches': patch})
+            data[pointsName]['patches'].append(patch)
             if rname != '':
                 data[pointsName].update({'region': rname})
         return data
@@ -283,7 +283,7 @@ class ControlDict(DictionaryFile):
                         'libs': ['"libfieldFunctionObjects.so"'],
 
                         'regionType': 'patch',
-                        'name': [],     # 개별로 생성할 것
+                        'name': patch,     # 한개씩만 생성할 것
                         'surfaceFormat': 'none',    # Need to add
 
                         'writeFields': 'yes',
@@ -294,7 +294,6 @@ class ControlDict(DictionaryFile):
                         'writeInterval': '1',
                         'log': 'true',
                     }
-                data[surfacesName]['name'].append(patch)  # 개별로 생성해야 함
                 if rname != '':
                     data[surfacesName].update({'region': rname})
         return data
