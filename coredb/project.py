@@ -130,7 +130,7 @@ class _Project(QObject):
         if self._updateProcessStatus() != SolverStatus.NONE:
             self._startProcessMonitor(process)
 
-    def open(self, directory, create=False):
+    def _open(self, directory, create=False):
         path = Path(directory).resolve()
 
         self._settings = self.LocalSettings(path)
@@ -176,11 +176,10 @@ class _Project(QObject):
         else:
             self._status = SolverStatus.NONE
 
-    def close(self):
+    def _close(self):
         self._settings = None
         if self._projectLock:
             self._projectLock.release()
-        Project._instance = None
 
     def save(self):
         self._fileDB.save(self._coreDB)
@@ -188,8 +187,8 @@ class _Project(QObject):
     def saveAs(self, directory):
         shutil.copytree(self.path, directory, dirs_exist_ok=True)
         self._fileDB.saveAs(self._coreDB, directory)
-        self.close()
-        self.open(directory, True)
+        self._close()
+        self._open(directory, True)
         self.projectChanged.emit()
 
     def _setStatus(self, status):
@@ -222,6 +221,7 @@ class _Project(QObject):
             self._timer.stop()
             self._timer = None
 
+
 class Project:
     _instance = None
 
@@ -229,13 +229,14 @@ class Project:
     def open(cls, directory, create=False):
         assert(cls._instance is None)
         cls._instance = _Project()
-        cls._instance.open(directory, create)
+        cls._instance._open(directory, create)
         return cls._instance
 
     @classmethod
     def close(cls):
         if cls._instance:
-            cls._instance.close()
+            cls._instance._close()
+        cls._instance = None
 
     @classmethod
     def instance(cls):

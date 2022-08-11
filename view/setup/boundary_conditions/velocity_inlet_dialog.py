@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from os import path
+from pathlib import Path
 
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 
@@ -208,17 +208,10 @@ class VelocityInletDialog(ResizableDialog):
         self._ui.temporalDistribution.setVisible(profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value)
 
     def _selectSpatialDistributionFile(self):
-        file = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), "", self.tr("CSV (*.csv)"))
-        if file[0]:
-            fileName = path.basename(file[0])
-            self._ui.spatialDistributionFileName.setText(fileName)
-            specification = self._ui.velocitySpecificationMethod.currentData()
-            if specification == VelocitySpecification.COMPONENT.value:
-                self._componentSpatialDistributionFile = file[0]
-                self._componentSpatialDistributionFileName = fileName
-            elif specification == VelocitySpecification.MAGNITUDE.value:
-                self._magnitudeSpatialDistributionFile = file[0]
-                self._magnitudeSpatialDistributionFileName = fileName
+        self._dialog = QFileDialog(self, self.tr('Select CSV File'), '', self.tr('CSV (*.csv)'))
+        self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        self._dialog.accepted.connect(self._spatialDistributionFileSelected)
+        self._dialog.open()
 
     def _editTemporalDistribution(self):
         if self._ui.velocitySpecificationMethod.currentData() == VelocitySpecification.COMPONENT.value:
@@ -257,3 +250,15 @@ class VelocityInletDialog(ResizableDialog):
 
     def _magnitudeTemporalDistributionAccepted(self):
         self._magnitudeTemporalDistribution = self._dialog.getValues()
+
+    def _spatialDistributionFileSelected(self):
+        if files := self._dialog.selectedFiles():
+            fileName = Path(files[0]).name
+            self._ui.spatialDistributionFileName.setText(fileName)
+            specification = self._ui.velocitySpecificationMethod.currentData()
+            if specification == VelocitySpecification.COMPONENT.value:
+                self._componentSpatialDistributionFile = files[0]
+                self._componentSpatialDistributionFileName = fileName
+            elif specification == VelocitySpecification.MAGNITUDE.value:
+                self._magnitudeSpatialDistributionFile = files[0]
+                self._magnitudeSpatialDistributionFileName = fileName

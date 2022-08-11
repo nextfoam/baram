@@ -99,6 +99,8 @@ class PiecewiseLinearDialog(QDialog):
         self._no = 0
         self._rowFields = []
 
+        self._dialog = None
+
         self._scrollBar = self._ui.editArea.verticalScrollBar()
         self._scrollBar.rangeChanged.connect(lambda: self._scrollBar.setValue(self._scrollBar.maximum()))
 
@@ -166,16 +168,10 @@ class PiecewiseLinearDialog(QDialog):
         self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def _loadFile(self):
-        fileName = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), "", self.tr("CSV (*.csv)"))
-        if fileName[0]:
-            with open(fileName[0]) as file:
-                self.clear()
-                reader = csv.reader(file)
-                for line in reader:
-                    for i in range(len(line), self._columnCount):
-                        line.append('')
-                    row = self._addRow()
-                    row.setValues(line)
+        self._dialog = QFileDialog(self, self.tr('Select CSV File'), '', self.tr('CSV (*.csv)'))
+        self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        self._dialog.accepted.connect(self._fileSelected)
+        self._dialog.open()
 
     def _removeAt(self, index):
         count = len(self._rowFields)
@@ -205,6 +201,18 @@ class PiecewiseLinearDialog(QDialog):
                 return
 
         self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+
+    def _fileSelected(self):
+        if files := self._dialog.selectedFiles():
+            with open(files[0]) as file:
+                self.clear()
+                reader = csv.reader(file)
+                for line in reader:
+                    for i in range(len(line), self._columnCount):
+                        line.append('')
+                    row = self._addRow()
+                    row.setValues(line)
+
 
 
 class PolynomialDialog(PiecewiseLinearDialog):

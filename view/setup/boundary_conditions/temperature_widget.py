@@ -45,6 +45,8 @@ class TemperatureWidget(QWidget):
         self._spatialDistributionFile = None
         self._spatialDistributionFileName = None
 
+        self._dialog = None
+
         self._connectSignalsSlots()
 
     def load(self):
@@ -118,10 +120,10 @@ class TemperatureWidget(QWidget):
         self._ui.temporalDistribution.setVisible(profile == TemperatureProfile.TEMPORAL_DISTRIBUTION.value)
 
     def _selectSpatialDistributionFile(self):
-        fileName = QFileDialog.getOpenFileName(self, self.tr("Open CSV File"), "", self.tr("CSV (*.csv)"))
-        if fileName[0]:
-            self._spatialDistributionFile = fileName[0]
-            self._ui.spatialDistributionFileName.setText(path.basename(fileName[0]))
+        self._dialog = QFileDialog(self, self.tr('Select CSV File'), '', self.tr('CSV (*.csv)'))
+        self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        self._dialog.accepted.connect(self._spatialDistributionFileSelected)
+        self._dialog.open()
 
     def _temporalDistributionTypeChanged(self):
         self._ui.piecewiseLinearEdit.setEnabled(self._ui.piecewiseLinear.isChecked())
@@ -154,6 +156,11 @@ class TemperatureWidget(QWidget):
 
     def _getRadio(self, group, radios, value):
         return group.button(list(radios.keys())[list(radios.values()).index(value)])
+
+    def _spatialDistributionFileSelected(self):
+        if files := self._dialog.selectedFiles():
+            self._spatialDistributionFile = files[0]
+            self._ui.spatialDistributionFileName.setText(path.basename(files[0]))
 
     def _getRadioValue(self, group, radios):
         return radios[group.id(group.checkedButton())]
