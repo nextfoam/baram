@@ -496,13 +496,13 @@ class FoamFileParser(PlyParser):
 #        print size,ord(t.lexer.lexdata[t.lexer.lexpos-1]),ord(t.lexer.lexdata[t.lexer.lexpos]),ord(t.lexer.lexdata[t.lexer.lexpos+1])
 #        print size,ord(t.lexer.lexdata[t.lexer.binary_start-1]),ord(t.lexer.lexdata[t.lexer.binary_start])
 #        print size % (t.lexer.binary_listlen), len(t.lexer.lexdata)
-        if (size % t.lexer.binary_listlen)==0:
+        if t.lexer.binary_listlen == 0 or (size % t.lexer.binary_listlen)==0:
             # length of blob is multiple of the listlength
             nextChar=t.lexer.lexdata[t.lexer.lexpos]
             nextNextChar=t.lexer.lexdata[t.lexer.lexpos+1]
             if (nextChar in [';','\n'] and nextNextChar=='\n'):
                 t.value = t.lexer.lexdata[t.lexer.binary_start:t.lexer.lexpos-1]
-                assert(len(t.value)%t.lexer.binary_listlen == 0)
+                assert(t.lexer.binary_listlen == 0 or len(t.value)%t.lexer.binary_listlen == 0)
                 t.lexer.lexpos-=1
                 t.type = "BINARYBLOB"
                 t.lexer.lineno += t.value.count('\n')
