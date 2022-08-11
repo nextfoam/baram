@@ -102,6 +102,7 @@ class ChartDock(TabifiedDock):
         self._axes.legend()
 
         self._canvas.draw()
+        # self._canvas.draw_idle()
 
     def onScroll(self, event):
         if self._timeMax is None:
@@ -119,6 +120,7 @@ class ChartDock(TabifiedDock):
         self._adjustYRange(self._data, minX, maxX)
 
         self._canvas.draw()  # force re-draw the next time the GUI refreshes
+        # self._canvas.draw_idle()
 
     def _adjustYRange(self, data: [pd.DataFrame], minX: float, maxX: float):
         minY = None

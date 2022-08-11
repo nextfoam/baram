@@ -41,6 +41,7 @@ class StartWindow(QDialog):
 
         self._dialog = None
         self._projectDirectory = None
+        self.pathItem = []
 
         self._setupRecentCases()
 
@@ -56,14 +57,40 @@ class StartWindow(QDialog):
 
     def _setupRecentCases(self):
         recentCases = AppSettings.getRecentProjects(RECENT_PROJECTS_NUMBER)
+        self.pathItem = []
+
         for uuid_ in recentCases:
             settings = ProjectSettings()
             if settings.load(uuid_):
-                item = QListWidgetItem()
+                self.pathItem.append(QListWidgetItem())
                 widget = RecentWidget(settings)
-                item.setSizeHint(widget.sizeHint())
-                self._ui.recentCases.addItem(item)
-                self._ui.recentCases.setItemWidget(item, widget)
+                self.pathItem[-1].setSizeHint(widget.sizeHint())
+                self._ui.recentCases.addItem(self.pathItem[-1])
+                self._ui.recentCases.setItemWidget(self.pathItem[-1], widget)
+                widget.removeClicked.connect(self._remove)
+
+    def _remove(self, widget):
+        path = widget.getProjectPath()
+        total = self._ui.recentCases.count()
+        selectedPos = -1
+
+        for i in range(total):
+            item = self._ui.recentCases.item(i)
+            if widget == self._ui.recentCases.itemWidget(item):
+                selectedPos = i
+
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle(self.tr("Remove from list"))
+        msgBox.setText(self.tr(f"Do you want to remove selected path from list?\n{path}"))
+        msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+        msgBox.setDefaultButton(QMessageBox.Yes)
+
+        result = msgBox.exec()
+        if result == QMessageBox.Yes:
+            self._ui.recentCases.takeItem(selectedPos)
+            del self.pathItem[selectedPos]
+            AppSettings.removeProject(selectedPos)
+            # widget.deleteLater()
 
     def _new(self):
         self._dialog = CaseWizard(self)

@@ -5,12 +5,13 @@ import openfoam.solver
 from coredb import coredb
 from coredb.general_db import GeneralDB
 from coredb.boundary_db import BoundaryDB
+from coredb.cell_zone_db import CellZoneDB
 from coredb.monitor_db import MonitorDB
 from coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from openfoam.dictionary_file import DictionaryFile
 
 
-def getFieldValue(field):
+def getFieldValue(field) -> list:
     value = {
         'pressure': 'p',    # 'modifiedPressure': 'p_rgh',
         'speed': 'mag(U)',
@@ -30,7 +31,7 @@ def getFieldValue(field):
         raise ValueError
     return [value[field]]
 
-def getOperationValue(option):
+def getOperationValue(option) -> str:
     value = {
         # Surface
         'areaWeightedAverage': 'weightedAreaAverage',
@@ -46,6 +47,15 @@ def getOperationValue(option):
     if option not in value:
         raise ValueError
     return value[option]
+
+def getRegionNumbers() -> dict:
+    db = coredb.CoreDB()
+
+    regionNum = {}
+    regions = db.getRegions()
+    for ii, dd in enumerate(regions):
+        regionNum[dd] = ii
+    return regionNum
 
 class ControlDict(DictionaryFile):
     def __init__(self):
@@ -140,8 +150,12 @@ class ControlDict(DictionaryFile):
         # else: ['U', 'p_rgh', 'h', 'k', 'epsilon']
 
         data = {}
+        regionNum = getRegionNumbers()
+
         for rname in regions:   # [''] is single region.
-            residualsName = 'solverInfo' if rname == '' else f'solverInfo_{rname}'
+            rgid = regionNum[rname]
+
+            residualsName = f'solverInfo_{rgid}'
             data[residualsName] = {
                 'type': 'solverInfo',
                 'libs': ['"libutilityFunctionObjects.so"'],
@@ -160,22 +174,19 @@ class ControlDict(DictionaryFile):
         db = coredb.CoreDB()
         data = {}
 
-        regionNum = {}
-        regions = db.getRegions()
-        for ii, dd in enumerate(regions):
-            regionNum[dd] = ii
+        regionNum = getRegionNumbers()
 
         for d in forces:
             xpath = MonitorDB.getForceMonitorXPath(d)
             name = db.getValue(xpath + '/name')
-            boundaryIDs = db.getValue(xpath + '/boundaries')
+            bcid = db.getValue(xpath + '/boundaries')
 
-            for bid in boundaryIDs.split() if boundaryIDs else []:
-                rname = BoundaryDB.getBoundaryRegion(bid)
-                patch = BoundaryDB.getBoundaryName(bid)
+            for b in bcid.split() if bcid else []:
+                rname = BoundaryDB.getBoundaryRegion(b)
+                patch = BoundaryDB.getBoundaryName(b)
 
-                regionID = regionNum[rname]
-                forcesName = f'forces_{regionID}'  # f'forces_{regionNum[rname]}' : f-string: unmatched '['
+                rgid = regionNum[rname]
+                forcesName = f'forces_{name}_{rgid}'  # f'forces_{regionNum[rname]}' : f-string: unmatched '['
                 if forcesName not in data:
                     referenceArea = db.getValue(xpath + '/referenceArea')
                     referenceLength = db.getValue(xpath + '/referenceLength')
@@ -214,10 +225,7 @@ class ControlDict(DictionaryFile):
         db = coredb.CoreDB()
         data = {}
 
-        regionNum = {}
-        regions = db.getRegions()
-        for ii, dd in enumerate(regions):
-            regionNum[dd] = ii
+        regionNum = getRegionNumbers()
 
         for d in points:
             xpath = MonitorDB.getPointMonitorXPath(d)
@@ -230,12 +238,12 @@ class ControlDict(DictionaryFile):
             if snapOntoBoundary == 'true':
                 pass
 
-            bid = db.getValue(xpath + '/boundary')
-            rname = BoundaryDB.getBoundaryRegion(bid)
-            patch = BoundaryDB.getBoundaryName(bid)
+            bcid = db.getValue(xpath + '/boundary')
+            rname = BoundaryDB.getBoundaryRegion(bcid)
+            patch = BoundaryDB.getBoundaryName(bcid)
 
-            regionID = regionNum[rname]
-            pointsName = f'points_{regionID}'
+            rgid = regionNum[rname]
+            pointsName = f'points_{name}_{rgid}'
             data[pointsName] = {
                 'type': 'patchProbes',
                 'libs': ['"libfieldFunctionObjects.so"'],
@@ -258,21 +266,18 @@ class ControlDict(DictionaryFile):
         db = coredb.CoreDB()
         data = {}
 
-        regionNum = {}
-        regions = db.getRegions()
-        for ii, dd in enumerate(regions):
-            regionNum[dd] = ii
+        regionNum = getRegionNumbers()
 
         for d in surfaces:
             xpath = MonitorDB.getSurfaceMonitorXPath(d)
             name = db.getValue(xpath + '/name')
-            boundaryIDs = db.getValue(xpath + '/surfaces')
-            for bid in boundaryIDs.split() if boundaryIDs else []:
-                rname = BoundaryDB.getBoundaryRegion(bid)
-                patch = BoundaryDB.getBoundaryName(bid)
+            bcids = db.getValue(xpath + '/surfaces')
+            for b in bcids.split() if bcids else []:
+                rname = BoundaryDB.getBoundaryRegion(b)
+                patch = BoundaryDB.getBoundaryName(b)
 
-                regionID = regionNum[rname]
-                surfacesName = f'surfaces_{regionID}'
+                rgid = regionNum[rname]
+                surfacesName = f'surfaces_{name}_{rgid}'
                 if surfacesName not in data:
                     reportType = getOperationValue(db.getValue(xpath + '/reportType'))
                     fields = getFieldValue(db.getValue(xpath + '/field/field'))
@@ -302,21 +307,18 @@ class ControlDict(DictionaryFile):
         db = coredb.CoreDB()
         data = {}
 
-        regionNum = {}
-        regions = db.getRegions()
-        for ii, dd in enumerate(regions):
-            regionNum[dd] = ii
+        regionNum = getRegionNumbers()
 
         for d in volumes:
             xpath = MonitorDB.getVolumeMonitorXPath(d)
             name = db.getValue(xpath + '/name')
-            boundaryIDs = db.getValue(xpath + '/volumes')
-            for bid in boundaryIDs.split() if boundaryIDs else []:
-                rname = BoundaryDB.getBoundaryRegion(bid)
-                patch = BoundaryDB.getBoundaryName(bid)
+            czid = db.getValue(xpath + '/volumes')
+            for c in czid.split() if czid else []:
+                rname = CellZoneDB.getCellZoneRegion(c)
+                patch = CellZoneDB.getCellZoneName(c)
 
-                regionID = regionNum[rname]
-                volumesName = f'volumes_{regionID}'
+                rgid = regionNum[rname]
+                volumesName = f'volumes_{name}_{rgid}'
                 if volumesName not in data:
                     reportType = getOperationValue(db.getValue(xpath + '/reportType'))
                     fields = getFieldValue(db.getValue(xpath + '/field/field'))

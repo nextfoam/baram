@@ -82,3 +82,14 @@ class AppSettings:
     def _get(cls, key, default=None):
         settings = cls._load()
         return settings[key.value] if key.value in settings else default
+
+    @classmethod
+    def removeProject(cls, num):
+        project = AppSettings.getRecentProjects(RECENT_PROJECTS_NUMBER)
+
+        settings = cls._load()
+        recentCases \
+            = settings[SettingKey.RECENT_CASES.value] if SettingKey.RECENT_CASES.value in settings else []
+        if project[num] in recentCases:
+            recentCases.remove(project[num])
+        cls._save(settings)

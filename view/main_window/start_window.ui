@@ -58,6 +58,9 @@
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>
+     <property name="itemAlignment">
+      <set>Qt::AlignTop</set>
+     </property>
     </widget>
    </item>
   </layout>
