@@ -108,6 +108,7 @@ class MainWindow(QMainWindow):
         if self._project.meshLoaded:
             self._threadPool.start(self._meshDock.showOpenFoamMesh)
 
+        self._updateMenuEnables()
         self.show()
 
     def tabifyDock(self, dock):
@@ -142,7 +143,7 @@ class MainWindow(QMainWindow):
         self._ui.actionLanguage.triggered.connect(self._changeLanguage)
         self._ui.actionScale.triggered.connect(self._changeScale)
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
-        self._project.statusChanged.connect(self._projectStatusChanged)
+        self._project.statusChanged.connect(self._updateMenuEnables)
         self._project.projectChanged.connect(self._projectChanged)
 
     def _closeProject(self):
@@ -188,7 +189,7 @@ class MainWindow(QMainWindow):
 
         self._contentView.changePane(page.index)
 
-    def _projectStatusChanged(self):
+    def _updateMenuEnables(self):
         self._navigatorView.updateMenu()
         self._ui.actionLoadMesh.setEnabled(not self._project.meshLoaded)
 
@@ -203,12 +204,14 @@ class MainWindow(QMainWindow):
 
     async def _loadOpenFoamMesh(self, dirName):
         try:
+            self._ui.actionLoadMesh.setEnabled(False)
             await FileSystem.copyMeshFrom(dirName)
             PolyMeshLoader.load()
             self._project.setMeshLoaded()
         except Exception as ex:
             logger.debug(ex, exc_info=True)
             QMessageBox.critical(self, self.tr('Mesh Loading Failed'), self.tr(f'Mesh Loading Failed.'))
+            self._ui.actionLoadMesh.setEnabled(True)
             return
 
         self._meshDock.showOpenFoamMesh()
