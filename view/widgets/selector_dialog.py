@@ -32,7 +32,7 @@ class SelectorDialog(QDialog):
         self.setWindowTitle(title)
         self._ui.label.setText(label)
 
-        if labelForNone is not None:
+        if labelForNone:
             item = QListWidgetItem(labelForNone)
             item.setData(ListDataRole.USER_DATA.value, None)
             item.setData(ListDataRole.FILTERING_TEXT.value, '')
@@ -61,7 +61,7 @@ class SelectorDialog(QDialog):
 
     def _connectSignalsSlots(self):
         self._ui.filter.textChanged.connect(self._filterChanged)
-        self._ui.list.currentItemChanged.connect(self._itemSelected)
+        self._ui.list.itemClicked.connect(self._itemSelected)
         self._ui.list.itemDoubleClicked.connect(self.accept)
 
     def _itemSelected(self):

@@ -1,32 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from dataclasses import dataclass
+
 from PySide6.QtCore import QCoreApplication
 
 from coredb.coredb import CoreDB, Error
 
 
+@dataclass
 class DBWriteItem:
-    def __init__(self, path, value, name, isAttribute=False):
-        self._xpath = path
-        self._value = value
-        self._name = name
-        self._isAttribute = isAttribute
-
-    @property
-    def xpath(self):
-        return self._xpath
-
-    @property
-    def value(self):
-        return self._value
-
-    @property
-    def name(self):
-        return self._name
-
-    def isAttribute(self):
-        return self._isAttribute
+    xpath: str
+    value: str
+    name: str
+    isAttribute: bool = False
 
 
 class DBWriterError:
@@ -36,13 +23,13 @@ class DBWriterError:
 
     def toMessage(self):
         if self._error == Error.OUT_OF_RANGE:
-            return QCoreApplication.translate("CoreDBWriter", f"{self._name} is out of range.")
+            return QCoreApplication.translate('CoreDBWriter', f'{self._name} is out of range.')
         elif self._error == Error.INTEGER_ONLY:
-            return QCoreApplication.translate("CoreDBWriter", f"{self._name} must be a integer.")
+            return QCoreApplication.translate('CoreDBWriter', f'{self._name} must be a integer.')
         elif self._error == Error.FLOAT_ONLY:
-            return QCoreApplication.translate("CoreDBWriter", f"{self._name} must be a float.")
+            return QCoreApplication.translate('CoreDBWriter', f'{self._name} must be a float.')
         elif self._error == Error.REFERENCED:
-            return QCoreApplication.translate("CoreDBWriter", f"{self._name} is referenced by another.")
+            return QCoreApplication.translate('CoreDBWriter', f'{self._name} is referenced by another.')
 
 
 class CoreDBWriter:
@@ -63,7 +50,7 @@ class CoreDBWriter:
         with self._db:
             for i in self._items:
                 error = None
-                if i.isAttribute():
+                if i.isAttribute:
                     self._db.setAttribute(i.xpath, i.name, i.value)
                 else:
                     error = self._db.setValue(i.xpath, i.value)

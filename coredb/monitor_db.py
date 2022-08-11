@@ -86,7 +86,7 @@ class FieldHelper:
 
     class FieldItem:
         class DBFieldKey:
-            def __init__(self, field, mid=1):
+            def __init__(self, field, mid='1'):
                 # Values for coreDB's field element
                 self._field = field.value
                 self._mid = mid
@@ -153,7 +153,7 @@ class FieldHelper:
         # Material fields when species model is on
         if ModelsDB.isSpeciesModelOn():
             for m in coredb.CoreDB().getMaterials():
-                if MaterialDB.DBTextToPhase(m[ListIndex.PHASE.value]) != Phase.SOLID:
+                if MaterialDB.dbTextToPhase(m[ListIndex.PHASE.value]) != Phase.SOLID:
                     _appendMaterial(m)
 
         return fields

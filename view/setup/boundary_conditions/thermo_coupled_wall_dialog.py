@@ -7,17 +7,17 @@ from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.boundary_db import BoundaryDB, BoundaryType
 from view.widgets.selector_dialog import SelectorDialog
-from .porous_jump_dialog_ui import Ui_PorousJumpDialog
+from .thermo_coupled_wall_dialog_ui import Ui_ThermoCoupledWallDailog
 from .coupled_boundary_condition_dialog import CoupledBoundaryConditionDialog
 
 
-class PorousJumpDialog(CoupledBoundaryConditionDialog):
-    BOUNDARY_TYPE = BoundaryType.POROUS_JUMP
-    RELATIVE_XPATH = '/porousJump'
+class ThermoCoupledWallDialog(CoupledBoundaryConditionDialog):
+    BOUNDARY_TYPE = BoundaryType.THERMO_COUPLED_WALL
+    RELATIVE_XPATH = '/thermoCoupledWall'
 
     def __init__(self, parent, bcid):
         super().__init__(parent, bcid)
-        self._ui = Ui_PorousJumpDialog()
+        self._ui = Ui_ThermoCoupledWallDailog()
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
@@ -35,8 +35,6 @@ class PorousJumpDialog(CoupledBoundaryConditionDialog):
 
         writer = CoreDBWriter()
         coupleTypeChanged = self._changeCoupledBoundary(writer, self._coupledBoundary, self.BOUNDARY_TYPE)
-        self._writeConditions(writer, self._xpath + self.RELATIVE_XPATH)
-        self._writeConditions(writer, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH)
 
         errorCount = writer.write()
         if errorCount == 0:
@@ -51,11 +49,6 @@ class PorousJumpDialog(CoupledBoundaryConditionDialog):
         self._ui.select.clicked.connect(self._selectCoupledBoundary)
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_XPATH
-
-        self._ui.darcyCoefficient.setText(self._db.getValue(path + '/darcyCoefficient'))
-        self._ui.inertialCoefficient.setText(self._db.getValue(path + '/inertialCoefficient'))
-        self._ui.porousMedieThickness.setText(self._db.getValue(path + '/porousMediaThickness'))
         self._setCoupledBoundary(self._db.getValue(self._xpath + '/coupledBoundary'))
 
     def _selectCoupledBoundary(self):
@@ -76,10 +69,3 @@ class PorousJumpDialog(CoupledBoundaryConditionDialog):
         else:
             self._coupledBoundary = 0
             self._ui.coupledBoundary.setText('')
-
-    def _writeConditions(self, writer, xpath):
-        writer.append(xpath + '/darcyCoefficient', self._ui.darcyCoefficient.text(), self.tr('Darcy Coefficient'))
-        writer.append(xpath + '/inertialCoefficient',
-                      self._ui.inertialCoefficient.text(), self.tr('Inertial Coefficient'))
-        writer.append(xpath + '/porousMediaThickness',
-                      self._ui.porousMedieThickness.text(), self.tr('Porous Media Thickness'))

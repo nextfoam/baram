@@ -53,8 +53,6 @@ class FileDB:
         coreDB = coredb.CoreDB()
         if os.path.isfile(self._filePath):
             coreDB.load(self._filePath)
-        else:
-            coreDB.loadDefault()
 
         self._modificationCountAtSave = self._modificationCount
 

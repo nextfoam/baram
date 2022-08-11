@@ -953,11 +953,6 @@
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-            <xs:element name="coupledBoundary">
-                <xs:simpleType>
-                    <xs:list itemType="xs:positiveInteger"/>  <!-- boundary condition bcid -->
-                </xs:simpleType>
-            </xs:element>
             <xs:element name="rotationAxisOrigin" type="vector"/>
             <xs:element name="rotationAxisDirection" type="vector"/>
             <xs:element name="translationVector" type="vector"/>
@@ -969,16 +964,6 @@
             <xs:element name="darcyCoefficient" type="inputNumberType" default="100"/>
             <xs:element name="inertialCoefficient" type="inputNumberType" default="5"/>
             <xs:element name="porousMediaThickness" type="inputNumberType" default="0.05"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="cyclicType">
-        <xs:sequence>
-            <xs:element name="coupledBoundary">
-                <xs:simpleType>
-                    <xs:list itemType="xs:positiveInteger"/>  <!-- boundary condition bcid -->
-                </xs:simpleType>
-            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -1070,12 +1055,13 @@
                 <xs:element name="fan" type="fanType"/>
                 <!-- no setting for empty -->
                 <!-- <xs:element name="empty" type="emptyType" /> -->
-                <xs:element name="cyclic" type="cyclicType"/>
+                <!-- xs:element name="cyclic" type="cyclicType"/> -->
                 <!-- no setting for wedge -->
                 <!-- <xs:element name="wedge" type="wedgeType" /> -->
 
                 <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
                 <xs:element name="temperature" type="temperatureBoundaryConditionType"/>
+                <xs:element name="coupledBoundary" type="xs:nonNegativeInteger" default="0"/>
             </xs:sequence>
             <xs:attribute name="bcid" type="xs:positiveInteger" use="required"/>
         </xs:complexType>

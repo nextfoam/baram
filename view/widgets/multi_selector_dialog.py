@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from dataclasses import dataclass
 from enum import Enum, auto
 
 from PySide6.QtWidgets import QDialog, QListWidgetItem
@@ -15,30 +16,11 @@ class ListDataRole(Enum):
     SELECTION_FLAG = auto()
 
 
+@dataclass
 class SelectorItem:
-    def __init__(self, label, text, data):
-        """Constructs an item to use for the selection list
-
-        Args:
-            label: The text to display in list
-            text: The text to filter items
-            data: The data to identify selected items
-        """
-        self._label = label
-        self._text = text
-        self._data = data
-
-    @property
-    def label(self):
-        return self._label
-
-    @property
-    def text(self):
-        return self._text
-
-    @property
-    def data(self):
-        return self._data
+    label: str
+    text: str
+    data: str
 
 
 class MultiSelectorDialog(QDialog):
@@ -50,7 +32,7 @@ class MultiSelectorDialog(QDialog):
             items: List of items
             selectedItems: List of ids of selected items
         """
-        super().__init__()
+        super().__init__(parent)
         self._ui = Ui_MultiSelectorDialog()
         self._ui.setupUi(self)
 

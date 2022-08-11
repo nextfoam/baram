@@ -57,7 +57,7 @@ class MaterialPage(QWidget):
     def _add(self):
         if self._addDialog is None:
             materials = [SelectorItem(
-                f'{m[DBListIndex.NAME.value]} ({MaterialDB.getPhaseText(MaterialDB.DBTextToPhase(m[DBListIndex.PHASE.value]))})',
+                f'{m[DBListIndex.NAME.value]} ({MaterialDB.getPhaseText(MaterialDB.dbTextToPhase(m[DBListIndex.PHASE.value]))})',
                 m[DBListIndex.NAME.value],
                 m[DBListIndex.NAME.value])
                 for m in self._db.getMaterialsFromDB()]

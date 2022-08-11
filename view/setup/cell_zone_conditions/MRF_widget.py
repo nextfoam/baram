@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget
 
 from coredb import coredb
 from coredb.boundary_db import BoundaryDB
-from view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
+from view.widgets.multi_selector_dialog import MultiSelectorDialog
 from .MRF_widget_ui import Ui_MRFWidget
 
 
@@ -59,16 +59,14 @@ class MRFWidget(QWidget):
         self._staticBoundaries = boundaries
 
         self._ui.staticBoundary.clear()
-        for i in boundaries:
-            self._ui.staticBoundary.addItem(f'{BoundaryDB.getBoundaryName(i)} / {BoundaryDB.getBoundaryRegion(i)}')
+        for b in boundaries:
+            self._ui.staticBoundary.addItem(BoundaryDB.getBoundaryText(b))
 
     def _selectStaticBoundaries(self):
-        self._dialog = MultiSelectorDialog(
-            self, self.tr("Select Boundaries"),
-            [SelectorItem(b.toText(), b.name, b.id) for b in BoundaryDB.getBoundariesForSelector()],
-            self._staticBoundaries)
-        self._dialog.open()
+        self._dialog = MultiSelectorDialog(self, self.tr("Select Boundaries"), BoundaryDB.getBoundarySelectorItems(),
+                                           self._staticBoundaries)
         self._dialog.accepted.connect(self._staticBoundariesChanged)
+        self._dialog.open()
 
     def _staticBoundariesChanged(self):
         boundaries = self._dialog.selectedItems()

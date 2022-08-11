@@ -138,7 +138,6 @@
     </wall>
     <interface>
         <mode>internalInterface</mode>
-        <coupledBoundary></coupledBoundary>
         <rotationAxisOrigin>
             <x>0</x>
             <y>0</y>
@@ -164,9 +163,6 @@
         <fanCurveFile></fanCurveFile>
         <reverseDirection>false</reverseDirection>
     </fan>
-    <cyclic>
-        <coupledBoundary></coupledBoundary>
-    </cyclic>
     <turbulence>
         <k-epsilon>
             <specification>intensityAndViscosityRatio</specification>
@@ -201,4 +197,5 @@
             <polynomial>0</polynomial>
         </temporalDistribution>
     </temperature>
+    <coupledBoundary>0</coupledBoundary>
 </boundaryCondition>

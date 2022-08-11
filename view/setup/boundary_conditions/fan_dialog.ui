@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>329</width>
-    <height>98</height>
+    <width>400</width>
+    <height>128</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>400</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Fan Boundary Condition</string>
@@ -30,8 +36,8 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QWidget" name="spatialDistribution" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout">
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QGridLayout" name="gridLayout">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -44,22 +50,43 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item>
-          <widget class="QLabel" name="label_7">
+         <item row="3" column="0">
+          <widget class="QLabel" name="label">
            <property name="text">
             <string>Fan P-Q Curve File</string>
            </property>
           </widget>
          </item>
-         <item>
+         <item row="3" column="2">
+          <widget class="QPushButton" name="fanPQCurveFileSelect">
+           <property name="text">
+            <string>Select</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
           <widget class="QLineEdit" name="fanPQCurveFileName">
            <property name="enabled">
             <bool>false</bool>
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QPushButton" name="fanPQCurveFileSelect">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Coupled Boundary</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="coupledBoundary">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QPushButton" name="coupledBoundarySelect">
            <property name="text">
             <string>Select</string>
            </property>

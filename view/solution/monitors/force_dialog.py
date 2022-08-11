@@ -7,7 +7,7 @@ from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.boundary_db import BoundaryDB
 from coredb.monitor_db import MonitorDB
-from view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
+from view.widgets.multi_selector_dialog import MultiSelectorDialog
 from .force_dialog_ui import Ui_ForceDialog
 
 
@@ -119,14 +119,13 @@ class ForceDialog(QDialog):
 
         self._ui.boundaries.clear()
         for b in boundaries:
-            self._ui.boundaries.addItem(f'{BoundaryDB.getBoundaryRegion(b)} / {BoundaryDB.getBoundaryName(b)}')
+            self._ui.boundaries.addItem(BoundaryDB.getBoundaryText(b))
 
     def _selectBoundaries(self):
-        self._dialog = MultiSelectorDialog(
-            self, self.tr("Select Boundaries"),
-            [SelectorItem(b.toText(), b.name, b.id) for b in BoundaryDB.getBoundariesForSelector()], self._boundaries)
-        self._dialog.open()
+        self._dialog = MultiSelectorDialog(self, self.tr("Select Boundaries"), BoundaryDB.getBoundarySelectorItems(),
+                                           self._boundaries)
         self._dialog.accepted.connect(self._boundariesChanged)
+        self._dialog.open()
 
     def _boundariesChanged(self):
         self._setBoundaries(self._dialog.selectedItems())

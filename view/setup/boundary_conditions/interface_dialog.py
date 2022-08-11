@@ -5,37 +5,55 @@ from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from coredb.boundary_db import BoundaryDB, InterfaceMode
-from view.widgets.resizable_dialog import ResizableDialog
+from coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from view.widgets.selector_dialog import SelectorDialog
-from view.widgets.multi_selector_dialog import SelectorItem
 from .interface_dialog_ui import Ui_InterfaceDialog
+from .coupled_boundary_condition_dialog import CoupledBoundaryConditionDialog
 
 
-class InterfaceDialog(ResizableDialog):
+class InterfaceDialog(CoupledBoundaryConditionDialog):
+    BOUNDARY_TYPE = BoundaryType.INTERFACE
     RELATIVE_XPATH = '/interface'
 
     def __init__(self, parent, bcid):
-        super().__init__(parent)
+        super().__init__(parent, bcid)
         self._ui = Ui_InterfaceDialog()
         self._ui.setupUi(self)
 
         self._modes = {
-            InterfaceMode.INTERNAL_INTERFACE.value: self.tr("Internal Interface"),
-            InterfaceMode.ROTATIONAL_PERIODIC.value: self.tr("Rotational Periodic"),
-            InterfaceMode.TRANSLATIONAL_PERIODIC.value: self.tr("Translational Periodic"),
-            InterfaceMode.REGION_INTERFACE.value: self.tr("Region Interface"),
+            InterfaceMode.INTERNAL_INTERFACE.value: self.tr('Internal Interface'),
+            InterfaceMode.ROTATIONAL_PERIODIC.value: self.tr('Rotational Periodic'),
+            InterfaceMode.TRANSLATIONAL_PERIODIC.value: self.tr('Translational Periodic'),
+            InterfaceMode.REGION_INTERFACE.value: self.tr('Region Interface'),
         }
         self._setupModeCombo()
 
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
-        self._bcid = bcid
         self._coupledBoundary = None
         self._dialog = None
 
         self._connectSignalsSlots()
         self._load()
+
+    def accept(self):
+        if not self._coupledBoundary:
+            QMessageBox.critical(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
+            return
+
+        writer = CoreDBWriter()
+        coupleTypeChanged = self._changeCoupledBoundary(writer, self._coupledBoundary, self.BOUNDARY_TYPE)
+        self._writeConditions(writer, self._xpath + self.RELATIVE_XPATH)
+        self._writeConditions(writer, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH, True)
+
+        errorCount = writer.write()
+        if errorCount == 0:
+            if coupleTypeChanged:
+                self.boundaryTypeChanged.emit(int(self._coupledBoundary))
+
+            super().accept()
+        else:
+            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
 
     def _connectSignalsSlots(self):
         self._ui.mode.currentIndexChanged.connect(self._modeChanged)
@@ -46,53 +64,11 @@ class InterfaceDialog(ResizableDialog):
         self._ui.rotationalPeriodic.setVisible(mode == InterfaceMode.ROTATIONAL_PERIODIC.value)
         self._ui.translationalPeriodic.setVisible(mode == InterfaceMode.TRANSLATIONAL_PERIODIC.value)
 
-    def accept(self):
-        path = self._xpath + self.RELATIVE_XPATH
-
-        writer = CoreDBWriter()
-        mode = self._ui.mode.currentData()
-        writer.append(path + '/mode', mode, None)
-
-        if self._coupledBoundary is None:
-            QMessageBox.critical(self, self.tr("Input Error"), "Select Coupled Boundary")
-            return
-        else:
-            writer.append(path + '/coupledBoundary', self._coupledBoundary, self.tr("Coupled Boundary"))
-
-        if mode == InterfaceMode.ROTATIONAL_PERIODIC.value:
-            writer.append(path + '/rotationAxisOrigin/x',
-                          self._ui.rotationAxisX.text(), self.tr("Rotation Axis Origin X"))
-            writer.append(path + '/rotationAxisOrigin/y',
-                          self._ui.rotationAxisY.text(), self.tr("Rotation Axis Origin Y"))
-            writer.append(path + '/rotationAxisOrigin/z',
-                          self._ui.rotationAxisZ.text(), self.tr("Rotation Axis Origin Z"))
-            writer.append(path + '/rotationAxisDirection/x',
-                          self._ui.rotationDirectionX.text(), self.tr("Rotation Axis Direction X"))
-            writer.append(path + '/rotationAxisDirection/y',
-                          self._ui.rotationDirectionY.text(), self.tr("Rotation Axis Direction Y"))
-            writer.append(path + '/rotationAxisDirection/z',
-                          self._ui.rotationDirectionZ.text(), self.tr("Rotation Axis Direction Z"))
-        elif mode == InterfaceMode.TRANSLATIONAL_PERIODIC.value:
-            writer.append(path + '/translationVector/x',
-                          self._ui.translationVectorX.text(), self.tr("Translation Vector X"))
-            writer.append(path + '/translationVector/y',
-                          self._ui.translationVectorY.text(), self.tr("Translation Vector Y"))
-            writer.append(path + '/translationVector/z',
-                          self._ui.translationVectorZ.text(), self.tr("Translation Vector Z"))
-
-        errorCount = writer.write()
-        if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            super().accept()
-
     def _load(self):
         path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.mode.setCurrentText(self._modes[self._db.getValue(path + '/mode')])
-        bcid = self._db.getValue(path + '/coupledBoundary')
-        if bcid:
-            self._setCoupledBoundary(bcid)
+        self._setCoupledBoundary(self._db.getValue(self._xpath + '/coupledBoundary'))
         self._ui.rotationAxisX.setText(self._db.getValue(path + '/rotationAxisOrigin/x'))
         self._ui.rotationAxisY.setText(self._db.getValue(path + '/rotationAxisOrigin/y'))
         self._ui.rotationAxisZ.setText(self._db.getValue(path + '/rotationAxisOrigin/z'))
@@ -109,13 +85,9 @@ class InterfaceDialog(ResizableDialog):
             self._ui.mode.addItem(text, value)
 
     def _selectCoupledBoundary(self):
-        if self._dialog is None:
-            self._dialog = SelectorDialog(
-                self, self.tr("Select Boundary"), self.tr("Select Boundary"),
-                [
-                    SelectorItem(f'{b.name} / {b.rname}', b.name, b.id)
-                    for b in BoundaryDB.getCyclicAMIBoundaries(self._bcid)
-                ])
+        if not self._dialog:
+            self._dialog = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"),
+                                          BoundaryDB.getCyclicAMIBoundarySelectorItems(self, self._bcid))
             self._dialog.accepted.connect(self._coupledBoundaryAccepted)
 
         self._dialog.open()
@@ -124,5 +96,39 @@ class InterfaceDialog(ResizableDialog):
         self._setCoupledBoundary(str(self._dialog.selectedItem()))
 
     def _setCoupledBoundary(self, bcid):
-        self._coupledBoundary = bcid
-        self._ui.coupledBoundary.setText(f'{BoundaryDB.getBoundaryRegion(bcid)} / {BoundaryDB.getBoundaryName(bcid)}')
+        if bcid != '0':
+            self._coupledBoundary = str(bcid)
+            self._ui.coupledBoundary.setText(BoundaryDB.getBoundaryText(bcid))
+        else:
+            self._coupledBoundary = 0
+            self._ui.coupledBoundary.setText('')
+
+    def _writeConditions(self, writer, xpath, couple=False):
+        mode = self._ui.mode.currentData()
+        writer.append(xpath + '/mode', mode, None)
+
+        if mode == InterfaceMode.ROTATIONAL_PERIODIC.value:
+            writer.append(xpath + '/rotationAxisOrigin/x',
+                          self._ui.rotationAxisX.text(), self.tr('Rotation Axis Origin X'))
+            writer.append(xpath + '/rotationAxisOrigin/y',
+                          self._ui.rotationAxisY.text(), self.tr('Rotation Axis Origin Y'))
+            writer.append(xpath + '/rotationAxisOrigin/z',
+                          self._ui.rotationAxisZ.text(), self.tr('Rotation Axis Origin Z'))
+            writer.append(xpath + '/rotationAxisDirection/x',
+                          self._ui.rotationDirectionX.text(), self.tr('Rotation Axis Direction X'))
+            writer.append(xpath + '/rotationAxisDirection/y',
+                          self._ui.rotationDirectionY.text(), self.tr('Rotation Axis Direction Y'))
+            writer.append(xpath + '/rotationAxisDirection/z',
+                          self._ui.rotationDirectionZ.text(), self.tr('Rotation Axis Direction Z'))
+        elif mode == InterfaceMode.TRANSLATIONAL_PERIODIC.value:
+            if couple:
+                writer.append(xpath + '/translationVector/x', str(-int(self._ui.translationVectorX.text())), None)
+                writer.append(xpath + '/translationVector/y', str(-int(self._ui.translationVectorY.text())), None)
+                writer.append(xpath + '/translationVector/z', str(-int(self._ui.translationVectorZ.text())), None)
+            else:
+                writer.append(xpath + '/translationVector/x',
+                              self._ui.translationVectorX.text(), self.tr('Translation Vector X'))
+                writer.append(xpath + '/translationVector/y',
+                              self._ui.translationVectorY.text(), self.tr('Translation Vector Y'))
+                writer.append(xpath + '/translationVector/z',
+                              self._ui.translationVectorZ.text(), self.tr('Translation Vector Z'))

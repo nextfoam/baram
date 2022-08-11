@@ -3,115 +3,156 @@
 
 from enum import Enum
 
+from PySide6.QtCore import QCoreApplication
+
 from coredb import coredb
-from coredb.cell_zone_db import MeshObject
+from view.widgets.multi_selector_dialog import SelectorItem
 
 
 class BoundaryType(Enum):
     # Inlet
-    VELOCITY_INLET	    = "velocityInlet"
-    FLOW_RATE_INLET	    = "flowRateInlet"
-    PRESSURE_INLET	    = "pressureInlet"
-    ABL_INLET	        = "ablInlet"
-    OPEN_CHANNEL_INLET  = "openChannelInlet"
-    FREE_STREAM	        = "freeStream"
-    FAR_FIELD_RIEMANN	= "farFieldRiemann"
-    SUBSONIC_INFLOW	    = "subsonicInflow"
-    SUPERSONIC_INFLOW	= "supersonicInflow"
+    VELOCITY_INLET	    = 'velocityInlet'
+    FLOW_RATE_INLET	    = 'flowRateInlet'
+    PRESSURE_INLET	    = 'pressureInlet'
+    ABL_INLET	        = 'ablInlet'
+    OPEN_CHANNEL_INLET  = 'openChannelInlet'
+    FREE_STREAM	        = 'freeStream'
+    FAR_FIELD_RIEMANN	= 'farFieldRiemann'
+    SUBSONIC_INFLOW	    = 'subsonicInflow'
+    SUPERSONIC_INFLOW	= 'supersonicInflow'
     # Outlet
-    PRESSURE_OUTLET	    = "pressureOutlet"
-    OPEN_CHANNEL_OUTLET = "openChannelOutlet"
-    OUTFLOW	            = "outflow"
-    SUBSONIC_OUTFLOW	= "subsonicOutflow"
-    SUPERSONIC_OUTFLOW	= "supersonicOutflow"
+    PRESSURE_OUTLET	    = 'pressureOutlet'
+    OPEN_CHANNEL_OUTLET = 'openChannelOutlet'
+    OUTFLOW	            = 'outflow'
+    SUBSONIC_OUTFLOW	= 'subsonicOutflow'
+    SUPERSONIC_OUTFLOW	= 'supersonicOutflow'
     # Wall
-    WALL	            = "wall"
-    THERMO_COUPLED_WALL	= "thermoCoupledWall"
-    POROUS_JUMP	        = "porousJump"
-    FAN	                = "fan"
+    WALL	            = 'wall'
+    THERMO_COUPLED_WALL	= 'thermoCoupledWall'
+    POROUS_JUMP	        = 'porousJump'
+    FAN	                = 'fan'
     # Internal
-    SYMMETRY	        = "symmetry"
-    INTERFACE	        = "interface"
-    EMPTY	            = "empty"
-    CYCLIC	            = "cyclic"
-    WEDGE	            = "wedge"
+    SYMMETRY	        = 'symmetry'
+    INTERFACE	        = 'interface'
+    EMPTY	            = 'empty'
+    CYCLIC	            = 'cyclic'
+    WEDGE	            = 'wedge'
 
 
 class VelocitySpecification(Enum):
-    COMPONENT = "component"
-    MAGNITUDE = "magnitudeNormal"
+    COMPONENT = 'component'
+    MAGNITUDE = 'magnitudeNormal'
 
 
 class VelocityProfile(Enum):
-    CONSTANT = "constant"
-    SPATIAL_DISTRIBUTION = "spatialDistribution"
-    TEMPORAL_DISTRIBUTION = "temporalDistribution"
+    CONSTANT = 'constant'
+    SPATIAL_DISTRIBUTION = 'spatialDistribution'
+    TEMPORAL_DISTRIBUTION = 'temporalDistribution'
 
 
 class FlowRateInletSpecification(Enum):
-    VOLUME_FLOW_RATE = "volumeFlowRate"
-    MASS_FLOW_RATE = "massFlowRate"
+    VOLUME_FLOW_RATE = 'volumeFlowRate'
+    MASS_FLOW_RATE = 'massFlowRate'
 
 
 class WallVelocityCondition(Enum):
-    NO_SLIP = "noSlip"
-    SLIP = "slip"
-    MOVING_WALL = "movingWall"
-    ATMOSPHERIC_WALL = "atmosphericWall"
-    TRANSLATIONAL_MOVING_WALL = "translationalMovingWall"
-    ROTATIONAL_MOVING_WALL = "rotationalMovingWall"
+    NO_SLIP = 'noSlip'
+    SLIP = 'slip'
+    MOVING_WALL = 'movingWall'
+    ATMOSPHERIC_WALL = 'atmosphericWall'
+    TRANSLATIONAL_MOVING_WALL = 'translationalMovingWall'
+    ROTATIONAL_MOVING_WALL = 'rotationalMovingWall'
 
 
 class WallTemperature(Enum):
-    ADIABATIC = "adiabatic"
-    CONSTANT_TEMPERATURE = "constantTemperature"
-    CONSTANT_HEAT_FLUX = "constantHeatFlux"
-    CONVECTION = "convection"
+    ADIABATIC = 'adiabatic'
+    CONSTANT_TEMPERATURE = 'constantTemperature'
+    CONSTANT_HEAT_FLUX = 'constantHeatFlux'
+    CONVECTION = 'convection'
 
 
 class InterfaceMode(Enum):
-    INTERNAL_INTERFACE = "internalInterface"
-    ROTATIONAL_PERIODIC = "rotationalPeriodic"
-    TRANSLATIONAL_PERIODIC = "translationalPeriodic"
-    REGION_INTERFACE = "regionInterface"
+    INTERNAL_INTERFACE = 'internalInterface'
+    ROTATIONAL_PERIODIC = 'rotationalPeriodic'
+    TRANSLATIONAL_PERIODIC = 'translationalPeriodic'
+    REGION_INTERFACE = 'regionInterface'
 
 
 class SpalartAllmarasSpecification(Enum):
-    MODIFIED_TURBULENT_VISCOSITY = "modifiedTurbulentViscosity"
-    TURBULENT_VISCOSITY_RATIO = "turbulentViscosityRatio"
+    MODIFIED_TURBULENT_VISCOSITY = 'modifiedTurbulentViscosity'
+    TURBULENT_VISCOSITY_RATIO = 'turbulentViscosityRatio'
 
 
 class KEpsilonSpecification(Enum):
-    K_AND_EPSILON = "kAndEpsilon"
-    INTENSITY_AND_VISCOSITY_RATIO = "intensityAndViscosityRatio"
+    K_AND_EPSILON = 'kAndEpsilon'
+    INTENSITY_AND_VISCOSITY_RATIO = 'intensityAndViscosityRatio'
 
 
 class KOmegaSpecification(Enum):
-    K_AND_OMEGA = "kAndOmega"
-    INTENSITY_AND_VISCOSITY_RATIO = "intensityAndViscosityRatio"
+    K_AND_OMEGA = 'kAndOmega'
+    INTENSITY_AND_VISCOSITY_RATIO = 'intensityAndViscosityRatio'
 
 
 class TemperatureProfile(Enum):
-    CONSTANT = "constant"
-    SPATIAL_DISTRIBUTION = "spatialDistribution"
-    TEMPORAL_DISTRIBUTION = "temporalDistribution"
+    CONSTANT = 'constant'
+    SPATIAL_DISTRIBUTION = 'spatialDistribution'
+    TEMPORAL_DISTRIBUTION = 'temporalDistribution'
 
 
 class TemperatureTemporalDistribution(Enum):
-    PIECEWISE_LINEAR = "piecewiseLinear"
-    POLYNOMIAL = "polynomial"
+    PIECEWISE_LINEAR = 'piecewiseLinear'
+    POLYNOMIAL = 'polynomial'
 
 
 class BoundaryDB:
     BOUNDARY_CONDITIONS_XPATH = './/boundaryConditions'
     ABL_INLET_CONDITIONS_XPATH = './/atmosphericBoundaryLayer'
 
-    _boundariesForSelector = None
-    _boundariesForSelectorWithNone = None
+    _boundaryTypeTexts = {
+        # Inlet
+        BoundaryType.VELOCITY_INLET.value: QCoreApplication.translate('BoundaryConditions', 'Velocity Inlet'),
+        BoundaryType.FLOW_RATE_INLET.value: QCoreApplication.translate('BoundaryConditions', 'Flow Rate Inlet'),
+        BoundaryType.PRESSURE_INLET.value: QCoreApplication.translate('BoundaryConditions', 'Pressure Inlet'),
+        BoundaryType.ABL_INLET.value: QCoreApplication.translate('BoundaryConditions', 'ABL Inlet'),
+        BoundaryType.OPEN_CHANNEL_INLET.value: QCoreApplication.translate('BoundaryConditions', 'Open Channel Inlet'),
+        BoundaryType.FREE_STREAM.value: QCoreApplication.translate('BoundaryConditions', 'Free Stream'),
+        BoundaryType.FAR_FIELD_RIEMANN.value: QCoreApplication.translate('BoundaryConditions', 'Far-Field Riemann'),
+        BoundaryType.SUBSONIC_INFLOW.value: QCoreApplication.translate('BoundaryConditions', 'Subsonic Inflow'),
+        BoundaryType.SUPERSONIC_INFLOW.value: QCoreApplication.translate('BoundaryConditions', 'Supersonic Inflow'),
+        # Outlet
+        BoundaryType.PRESSURE_OUTLET.value: QCoreApplication.translate('BoundaryConditions', 'Pressure Outlet'),
+        BoundaryType.OPEN_CHANNEL_OUTLET.value: QCoreApplication.translate('BoundaryConditions', 'Open Channel Outlet'),
+        BoundaryType.OUTFLOW.value: QCoreApplication.translate('BoundaryConditions', 'Outflow'),
+        BoundaryType.SUBSONIC_OUTFLOW.value: QCoreApplication.translate('BoundaryConditions', 'Subsonic Outflow'),
+        BoundaryType.SUPERSONIC_OUTFLOW.value: QCoreApplication.translate('BoundaryConditions', 'Supersonic Outflow'),
+        # Wall
+        BoundaryType.WALL.value: QCoreApplication.translate('BoundaryConditions', 'Wall'),
+        BoundaryType.THERMO_COUPLED_WALL.value: QCoreApplication.translate('BoundaryConditions', 'Thermo-Coupled Wall'),
+        BoundaryType.POROUS_JUMP.value: QCoreApplication.translate('BoundaryConditions', 'Porous Jump'),
+        BoundaryType.FAN.value: QCoreApplication.translate('BoundaryConditions', 'FAN'),
+        # Internal
+        BoundaryType.SYMMETRY.value: QCoreApplication.translate('BoundaryConditions', 'Symmetry'),
+        BoundaryType.INTERFACE.value: QCoreApplication.translate('BoundaryConditions', 'Interface'),
+        BoundaryType.EMPTY.value: QCoreApplication.translate('BoundaryConditions', 'Empty'),
+        BoundaryType.CYCLIC.value: QCoreApplication.translate('BoundaryConditions', 'Cyclic'),
+        BoundaryType.WEDGE.value: QCoreApplication.translate('BoundaryConditions', 'Wedge'),
+    }
+
+    _coupledBoundaryType = {
+        BoundaryType.THERMO_COUPLED_WALL.value,
+        BoundaryType.POROUS_JUMP.value,
+        BoundaryType.FAN.value,
+        BoundaryType.INTERFACE.value,
+        BoundaryType.CYCLIC.value,
+    }
 
     @classmethod
     def getXPath(cls, bcid):
         return f'{cls.BOUNDARY_CONDITIONS_XPATH}/boundaryCondition[@bcid="{bcid}"]'
+
+    @classmethod
+    def getXPathByName(cls, rname, bcname):
+        return f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bcname}"]'
 
     @classmethod
     def getBoundaryName(cls, bcid):
@@ -122,28 +163,47 @@ class BoundaryDB:
         return coredb.CoreDB().getValue(cls.getXPath(bcid) + '/../../name')
 
     @classmethod
-    def getBoundariesForSelector(cls):
-        db = coredb.CoreDB()
-
-        if not cls._boundariesForSelector:
-            cls._boundariesForSelector = []
-
-            for region in db.getRegions():
-                for bcid, bcname, ptype in db.getBoundaryConditions(region):
-                    cls._boundariesForSelector.append(
-                        MeshObject(str(bcid), bcname, region))
-
-        return cls._boundariesForSelector
+    def getBoundaryText(cls, bcid):
+        return f'{cls.getBoundaryRegion(bcid)}:{cls.getBoundaryName(bcid)}' if bcid else ''
 
     @classmethod
-    def getCyclicAMIBoundaries(cls, bcidToExcept):
+    def getBoundaryType(cls, bcid):
+        return coredb.CoreDB().getValue(cls.getXPath(bcid) + '/physicalType')
+
+    @classmethod
+    def getBoundaryTypeByName(cls, rname, bcname):
+        return coredb.CoreDB().getValue(
+            f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bcname}"]/physicalType')
+
+    @classmethod
+    def needsCoupledBoundary(cls, bctype):
+        return bctype in cls._coupledBoundaryType
+
+    @classmethod
+    def dbBoundaryTypeToText(cls, dbText):
+        return cls._boundaryTypeTexts[dbText]
+
+    @classmethod
+    def getBoundarySelectorItems(cls):
         db = coredb.CoreDB()
 
-        boundaries = []
+        items = []
         for region in db.getRegions():
             for bcid, bcname, ptype in db.getBoundaryConditions(region):
-                if bcid != bcidToExcept:
-                        #and db.getValue(cls.getBoundaryXPath(bcid) + '/geometricalType') == "cyclic":
-                    boundaries.append(MeshObject(str(bcid), bcname, region))
+                items.append(SelectorItem(f'{region}:{bcname}', bcname, str(bcid)))
 
-        return boundaries
+        return items
+
+    @classmethod
+    def getCyclicAMIBoundarySelectorItems(cls, parent, bcidToExcept):
+        db = coredb.CoreDB()
+
+        items = []
+        for region in db.getRegions():
+            for id_, bcname, ptype in db.getBoundaryConditions(region):
+                bcid = str(id_)
+                if bcid != bcidToExcept:
+                        #and db.getValue(cls.getBoundaryXPath(bcid) + '/geometricalType') == 'cyclic':
+                        items.append(SelectorItem(f'{region}:{bcname}', bcname, bcid))
+
+        return items

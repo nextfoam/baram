@@ -8,7 +8,6 @@ from coredb.coredb_writer import CoreDBWriter
 from coredb.boundary_db import BoundaryDB
 from coredb.monitor_db import MonitorDB, FieldHelper
 from view.widgets.selector_dialog import SelectorDialog
-from view.widgets.multi_selector_dialog import SelectorItem
 from .point_dialog_ui import Ui_PointDialog
 
 
@@ -110,16 +109,13 @@ class PointDialog(QDialog):
         if bcid is None:
             self._ui.snapOntoBoundary.setText(self.TEXT_FOR_NONE_BOUNDARY)
         else:
-            self._ui.snapOntoBoundary.setText(
-                f'{BoundaryDB.getBoundaryRegion(bcid)} / {BoundaryDB.getBoundaryName(bcid)}')
+            self._ui.snapOntoBoundary.setText(BoundaryDB.getBoundaryText(bcid))
 
     def _selectSnapOntoBoundary(self):
-        self._dialog = SelectorDialog(
-            self, self.tr("Select Boundary"), self.tr("Select Boundary"),
-            [SelectorItem(b.toText(), b.name, b.id) for b in BoundaryDB.getBoundariesForSelector()],
-            self.TEXT_FOR_NONE_BOUNDARY)
-        self._dialog.open()
+        self._dialog = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"),
+                                      BoundaryDB.getBoundarySelectorItems(), self.TEXT_FOR_NONE_BOUNDARY)
         self._dialog.accepted.connect(self._snapOntoBoundaryChanged)
+        self._dialog.open()
 
     def _snapOntoBoundaryChanged(self):
         self._setSnapOntoBoundary(self._dialog.selectedItem())

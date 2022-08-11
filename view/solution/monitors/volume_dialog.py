@@ -7,7 +7,7 @@ from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.cell_zone_db import CellZoneDB
 from coredb.monitor_db import MonitorDB, VolumeReportType, FieldHelper
-from view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
+from view.widgets.multi_selector_dialog import MultiSelectorDialog
 from .volume_dialog_ui import Ui_VolumeDialog
 
 
@@ -106,13 +106,11 @@ class VolumeDialog(QDialog):
 
         self._ui.volumes.clear()
         for v in volumes:
-            self._ui.volumes.addItem(f'{CellZoneDB.getCellZoneName(v)} / {CellZoneDB.getCellZoneRegion(v)}')
+            self._ui.volumes.addItem(CellZoneDB.getCellZoneText(v))
 
     def _selectVolumes(self):
-        self._dialog = MultiSelectorDialog(
-            self, self.tr("Select Boundaries"),
-            [SelectorItem(f'{c.name} / {c.rname}', c.name, c.id) for c in CellZoneDB.getCellZones()],
-            self._volumes)
+        self._dialog = MultiSelectorDialog(self, self.tr("Select Boundaries"), CellZoneDB.getCellZoneSelectorItems(),
+                                           self._volumes)
         self._dialog.open()
         self._dialog.accepted.connect(self._volumesChanged)
 

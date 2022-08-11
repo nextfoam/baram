@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from PySide6.QtCore import QCoreApplication
+
 from coredb import coredb
 from coredb.general_db import GeneralDB
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import Phase
+from coredb.boundary_db import BoundaryDB
 from openfoam.constant.thermophysical_properties import ThermophysicalProperties
 from openfoam.constant.operating_conditions import OperatingConditions
 from openfoam.constant.MRF_properties import MRFProperties
@@ -33,8 +36,15 @@ from openfoam.run import runUtility
 class CaseGenerator:
     def __init__(self):
         self._db = coredb.CoreDB()
+        self._errors = None
+
+    def getErrors(self):
+        return self._errors
 
     async def generateFiles(self):
+        if self._validate():
+            return False
+
         FileSystem.initCaseDir()
 
         regions = self._db.getRegions()
@@ -98,3 +108,19 @@ class CaseGenerator:
         cwd = FileSystem.caseRoot()
         #await runUtility('decomposePar', '-fields', '-case', cwd, cwd=cwd)
         await runUtility('decomposePar', '-case', cwd, cwd=cwd)
+        return True
+
+    def _validate(self):
+        self._errors = ''
+
+        regions = self._db.getRegions()
+        for rname in regions:
+            boundaries = self._db.getBoundaryConditions(rname)
+            for bcid, bcname, bctype in boundaries:
+                xpath = BoundaryDB.getXPath(bcid)
+                if BoundaryDB.needsCoupledBoundary(bctype) and self._db.getValue(xpath + '/coupledBoundary') == '0':
+                    self._errors += QCoreApplication.translate(
+                        'CaseGenerator',
+                        f'{BoundaryDB.dbBoundaryTypeToText(bctype)} boundary "{bcname}" needs a coupled boundary.\n')
+
+        return self._errors

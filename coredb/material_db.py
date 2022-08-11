@@ -57,10 +57,10 @@ class MaterialDB(object):
 
     @classmethod
     def getPhase(cls, mid):
-        return cls.DBTextToPhase(coredb.CoreDB().getValue(cls.getXPath(mid) + '/phase'))
+        return cls.dbTextToPhase(coredb.CoreDB().getValue(cls.getXPath(mid) + '/phase'))
 
     @classmethod
-    def DBTextToPhase(cls, DBText):
+    def dbTextToPhase(cls, DBText):
         if DBText == "gas":
             return Phase.GAS
         elif DBText == "liquid":
@@ -73,7 +73,7 @@ class MaterialDB(object):
         return cls._phaseText[phase]
 
     @classmethod
-    def DBSpecificationToText(cls, DBText):
+    def dbSpecificationToText(cls, DBText):
         return cls.specificationText[Specification(DBText)]
 
     @classmethod

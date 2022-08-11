@@ -5,6 +5,7 @@ from enum import Enum
 
 from coredb import coredb
 from coredb.material_db import MaterialDB
+from view.widgets.multi_selector_dialog import SelectorItem
 
 
 class ZoneType(Enum):
@@ -29,35 +30,6 @@ class TemporalProfileType(Enum):
     CONSTANT = 'constant'
     PIECEWISE_LINEAR = 'piecewiseLinear'
     POLYNOMIAL = 'polynomial'
-
-
-class MeshObject:
-    def __init__(self, id_, name, rname):
-        """Constructs a mesh object (boundary or cell zone)
-
-        Args:
-            id_: object ID
-            name: object name
-            rname: name of the region containing the object
-        """
-        self._id = id_
-        self._name = name
-        self._rname = rname
-
-    @property
-    def id(self):
-        return self._id
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def rname(self):
-        return self._rname
-
-    def toText(self):
-        return f'{self._rname} / {self._name}'
 
 
 class RegionDB:
@@ -89,15 +61,19 @@ class CellZoneDB:
         return coredb.CoreDB().getValue(cls.getXPath(czid) + '/../../name')
 
     @classmethod
-    def getCellZones(cls):
+    def getCellZoneText(cls, czid):
+        return f'{cls.getCellZoneRegion(czid)}:{cls.getCellZoneName(czid)}' if czid else ''
+
+    @classmethod
+    def getCellZoneSelectorItems(cls):
         db = coredb.CoreDB()
-        
+
         if not cls._cellzones:
             cls._cellzones = []
 
             for region in db.getRegions():
                 for czid, czname in db.getCellZones(region):
                     if czname != cls.NAME_FOR_ALL:
-                        cls._cellzones.append(MeshObject(str(czid), czname, region))
+                        cls._cellzones.append(SelectorItem(f'{region}:{czname}', czname, str(czid)))
 
         return cls._cellzones

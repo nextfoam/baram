@@ -10,7 +10,7 @@ import platform
 import qasync
 
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QMessageBox
 
 from coredb import coredb
 from coredb.project import Project, SolverStatus
@@ -57,7 +57,11 @@ class ProcessInformationPage(QWidget):
 
     @qasync.asyncSlot()
     async def _startCalculationClicked(self):
-        await CaseGenerator().generateFiles()
+        caseGenerator = CaseGenerator()
+        result = await caseGenerator.generateFiles()
+        if not result:
+            QMessageBox.critical(self, self.tr('Case Configuration Error'), caseGenerator.getErrors())
+            return
 
         controlDict = ControlDict().build()
         controlDict.asDict()['startFrom'] = 'latestTime'

@@ -7,7 +7,7 @@ from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.boundary_db import BoundaryDB
 from coredb.monitor_db import MonitorDB, SurfaceReportType, FieldHelper
-from view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
+from view.widgets.multi_selector_dialog import MultiSelectorDialog
 from .surface_dialog_ui import Ui_SurfaceDialog
 
 
@@ -107,14 +107,13 @@ class SurfaceDialog(QDialog):
 
         self._ui.surfaces.clear()
         for s in surfaces:
-            self._ui.surfaces.addItem(f'{BoundaryDB.getBoundaryName(s)} / {BoundaryDB.getBoundaryRegion(s)}')
+            self._ui.surfaces.addItem(BoundaryDB.getBoundaryText(s))
 
     def _selectSurfaces(self):
-        self._dialog = MultiSelectorDialog(
-            self, self.tr("Select Boundaries"),
-            [SelectorItem(b.toText(), b.name, b.id) for b in BoundaryDB.getBoundariesForSelector()], self._surfaces)
-        self._dialog.open()
+        self._dialog = MultiSelectorDialog(self, self.tr("Select Boundaries"), BoundaryDB.getBoundarySelectorItems(),
+                                           self._surfaces)
         self._dialog.accepted.connect(self._surfacesChanged)
+        self._dialog.open()
 
     def _surfacesChanged(self):
         self._setSurfaces(self._dialog.selectedItems())
