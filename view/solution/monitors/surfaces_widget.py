@@ -15,7 +15,7 @@ class SurfacesWidget(MonitorsWidget):
         self._db = coredb.CoreDB()
         self._dialog = None
 
-        self._setListItems(self._db.getForceMonitors())
+        self._setListItems(self._db.getSurfaceMonitors())
 
     def _addClicked(self):
         self._dialog = SurfaceDialog(self)
