@@ -99,6 +99,8 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SOLUTION_PROCESS_INFORMATION.value: MenuPage(ProcessInformationPage),
         }
 
+        self._dialog = None
+
         self._threadPool = QThreadPool()
         self._quit = True
 

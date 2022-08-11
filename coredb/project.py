@@ -178,7 +178,9 @@ class _Project(QObject):
 
     def close(self):
         self._settings = None
-        self._projectLock.release()
+        if self._projectLock:
+            self._projectLock.release()
+        Project._instance = None
 
     def save(self):
         self._fileDB.save(self._coreDB)
@@ -234,7 +236,6 @@ class Project:
     def close(cls):
         if cls._instance:
             cls._instance.close()
-        cls._instance = None
 
     @classmethod
     def instance(cls):

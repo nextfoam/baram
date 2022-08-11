@@ -87,12 +87,16 @@ class StartWindow(QDialog):
         try:
             Project.open(directory, create)
             self.done(QDialog.Accepted)
+
+            return
         except FileNotFoundError:
             QMessageBox.critical(self._dialog, self.tr('Case Open Error'),
                                  self.tr(f'{os.path.basename(directory)} is not a baram case.'))
         except Timeout:
             QMessageBox.critical(self._dialog, self.tr('Case Open Error'),
                                  self.tr(f'{os.path.basename(directory)} is open in another program.'))
+
+        Project.close()
 
 class Baram:
     def __init__(self):
