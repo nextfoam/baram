@@ -175,11 +175,17 @@ class MainWindow(QMainWindow):
         if currentPage:
             currentPage.save()
 
+    def _loadMesh(self):
+        # dirName = QFileDialog.getExistingDirectory(self)
+        self._dialog = QFileDialog(self)
+        self._dialog.setFileMode(QFileDialog.FileMode.Directory)
+        self._dialog.accepted.connect(self._meshFilesSelected)
+        self._dialog.open()
+
     @qasync.asyncSlot()
-    async def _loadMesh(self):
-        dirName = QFileDialog.getExistingDirectory(self)
-        if dirName:
-            await self._loadOpenFoamMesh(dirName)
+    async def _meshFilesSelected(self):
+        if dirs := self._dialog.selectedFiles():
+            await self._loadOpenFoamMesh(dirs[0])
 
     def _changeForm(self, currentMenu):
         page = self._menuPages[currentMenu]
