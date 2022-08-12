@@ -4,7 +4,6 @@
 from PySide6.QtCore import QCoreApplication
 
 from coredb import coredb
-from coredb.general_db import GeneralDB
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import Phase
 from coredb.boundary_db import BoundaryDB
@@ -59,12 +58,8 @@ class CaseGenerator:
                 TurbulenceProperties(rname).build().write()
 
             G(rname).build().write()
-            if GeneralDB.isGravityModelOn():
-                P(rname, 'p_rgh').build().write()
-                P(rname, 'p', True).build().write()
-            else:
-                P(rname, 'p').build().write()
-
+            P(rname, 'p_rgh').build().write()
+            P(rname).build().write()
             U(rname).build().write()
 
             # if ModelsDB.isEnergyModelOn():

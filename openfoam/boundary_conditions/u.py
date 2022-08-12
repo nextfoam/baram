@@ -20,9 +20,10 @@ class U(BoundaryCondition):
         self._db = coredb.CoreDB()
         self._initialValue = self._db.getVector('.//initialization/initialValues/velocity')
 
+        self._data = None
+
     def build(self):
-        if self._data is not None:
-            return self
+        self._data = None
 
         self._data = {
             'dimensions': self.DIMENSIONS,

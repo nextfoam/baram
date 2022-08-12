@@ -19,6 +19,8 @@ class TestAlphat(unittest.TestCase):
         # ToDo: set initial value
         self._initialValue = 0
 
+        self._db.setValue(ModelsDB.ENERGY_MODELS_XPATH, 'on')
+
     def tearDown(self) -> None:
         del coredb.CoreDB._instance
 

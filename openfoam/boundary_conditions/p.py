@@ -10,37 +10,43 @@ from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 class P(BoundaryCondition):
     DIMENSIONS = '[1 -1 -2 0 0 0 0]'
 
-    def __init__(self, rname: str, field='p', calculated=False):
+    def __init__(self, rname: str, field='p'):
         super().__init__(self.boundaryLocation(rname), field)
 
         self._rname = rname
-        self._calculated = calculated
         self._db = coredb.CoreDB()
         self._initialValue = self._db.getValue('.//initialization/initialValues/pressure')
         self._calculatedValue = 0
 
-        if calculated:
-            operatingPressure = self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure')
-            self._calculatedValue = float(self._initialValue) + float(operatingPressure)
+        self._field = field
+        self._data = None
 
     def build(self):
-        if self._data is not None:
-            return self
+        self._data = None
+
+        calculated = False
+        if GeneralDB.isGravityModelOn():
+            if self._field == 'p':
+                operatingPressure = self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure')
+                self._calculatedValue = float(self._initialValue) + float(operatingPressure)
+                calculated = True
+        elif self._field == 'p_rgh':
+            return
 
         self._data = {
             'dimensions': self.DIMENSIONS,
             'internalField': ('uniform', self._initialValue),
-            'boundaryField': self._constructBoundaryField()
+            'boundaryField': self._constructBoundaryField(calculated)
         }
 
         return self
 
-    def _constructBoundaryField(self):
+    def _constructBoundaryField(self, calculated):
         field = {}
 
         boundaries = self._db.getBoundaryConditions(self._rname)
         for bcid, name, type_ in boundaries:
-            if self._calculated:
+            if calculated:
                 field[name] = self._constructCalculated(self._calculatedValue)
             else:
                 xpath = BoundaryDB.getXPath(bcid)

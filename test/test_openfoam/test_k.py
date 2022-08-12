@@ -19,12 +19,13 @@ class TestK(unittest.TestCase):
         # ToDo: set initial value
         self._initialValue = 0
 
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
+
     def tearDown(self) -> None:
         del coredb.CoreDB._instance
 
     # Velocity Inlet - kAndEpsilon
     def testVelocityInlet(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'kAndEpsilon')
         self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')
         content = K(region).build().asDict()
@@ -37,7 +38,6 @@ class TestK(unittest.TestCase):
 
     # Flow Rate - intensityAndViscosityRatio (kEpsilon)
     def testFlowRateInletVolume(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'flowRateInlet')
         content = K(region).build().asDict()
@@ -92,7 +92,6 @@ class TestK(unittest.TestCase):
                          content['boundaryField'][boundary]['d'])
 
     def testOpenChannelInlet(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'kAndEpsilon')
         self._db.setValue(self._xpath + '/physicalType', 'openChannelInlet')
         content = K(region).build().asDict()
@@ -102,7 +101,6 @@ class TestK(unittest.TestCase):
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testOpenChannelOutlet(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'openChannelOutlet')
         content = K(region).build().asDict()
@@ -117,7 +115,6 @@ class TestK(unittest.TestCase):
 
     # Free Stream
     def testFreeStreamKAndEpsilon(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'kAndEpsilon')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = K(region).build().asDict()
@@ -127,7 +124,6 @@ class TestK(unittest.TestCase):
 
     # Free Stream
     def testFreeStreamKEpsilonIntensityAndViscosityRatio(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = K(region).build().asDict()
@@ -180,7 +176,6 @@ class TestK(unittest.TestCase):
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
 
     def testSupersonicInflow(self):
-        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'kAndEpsilon')
         self._db.setValue(self._xpath + '/physicalType', 'supersonicInflow')
         content = K(region).build().asDict()

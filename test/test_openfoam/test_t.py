@@ -9,6 +9,7 @@ from coredb.boundary_db import BoundaryDB
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import Phase
 from coredb.project import Project, _Project
+from coredb.models_db import ModelsDB
 from openfoam.boundary_conditions.t import T
 from openfoam.file_system import FileSystem
 
@@ -24,6 +25,8 @@ class TestT(unittest.TestCase):
         self._bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
         self._xpath = BoundaryDB.getXPath(self._bcid)
         self._initialValue = self._db.getValue('.//initialization/initialValues/temperature')
+
+        self._db.setValue(ModelsDB.ENERGY_MODELS_XPATH, 'on')
 
     def tearDown(self) -> None:
         del coredb.CoreDB._instance

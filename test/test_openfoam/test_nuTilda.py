@@ -3,13 +3,14 @@ import unittest
 from coredb import coredb
 from openfoam.boundary_conditions.nuTilda import NuTilda
 from coredb.boundary_db import BoundaryDB
+from coredb.models_db import ModelsDB
 
 dimensions = '[0 2 -1 0 0 0 0]'
 region = "testRegion_1"
 boundary = "testBoundary_1"
 
 
-class TestTilda(unittest.TestCase):
+class TestNuTilda(unittest.TestCase):
     def setUp(self):
         self._db = coredb.CoreDB()
         self._db.addRegion(region)
@@ -18,12 +19,13 @@ class TestTilda(unittest.TestCase):
         # ToDo: set initial value
         self._initialValue = 0
 
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'spalartAllmaras')
+
     def tearDown(self) -> None:
         del coredb.CoreDB._instance
 
     # Velocity Inlet - modifiedTurbulentViscosity
     def testVelocityInlet(self):
-        self._db.setValue(self._xpath + '/turbulence/spalartAllmaras/specification', 'modifiedTurbulentViscosity')
         self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')
         content = NuTilda(region).build().asDict()
         self.assertEqual(dimensions, content['dimensions'])
