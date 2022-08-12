@@ -66,7 +66,7 @@ class BoundaryConditionsPage(QWidget):
         self._currentRegion = None
 
         self._dialog = None
-        self._typePicker = BoundaryTypePicker()
+        self._typePicker = None
 
         self._connectSignalsSlots()
         self._load()
@@ -89,7 +89,6 @@ class BoundaryConditionsPage(QWidget):
         self._ui.boundaries.currentItemChanged.connect(self._updateEditEnabled)
         self._ui.boundaries.doubleClicked.connect(self._edit)
         self._ui.edit.clicked.connect(self._edit)
-        self._typePicker.picked.connect(self._changeBoundaryType)
 
     def _addBoundaryItems(self, parent, boundaries):
         for bcid, bcname, bctype in boundaries:
@@ -126,7 +125,8 @@ class BoundaryConditionsPage(QWidget):
                 QMessageBox.information(
                     self, self.tr('Need to edit boundary condition'),
                     self.tr(f'The {BoundaryDB.dbBoundaryTypeToText(bctype)} boundary needs a coupled boundary.'))
-                self._edit()
+
+            self._edit()
 
     def _boundaryTypeChanged(self, bcid):
         self._boundaries[bcid].reloadType()
@@ -143,11 +143,8 @@ class BoundaryConditionsPage(QWidget):
                 self._dialog.open()
 
     def _showTypePicker(self, bcid, point):
-        screenHeight = self.window().windowHandle().screen().availableSize().height()
-        pickerHeight = self._typePicker.heightWithMargin()
-        point.setY(min(screenHeight - pickerHeight, point.y()))
-
-        self._typePicker.bcid = bcid
-        self._typePicker.move(point)
+        self._typePicker = BoundaryTypePicker(bcid, point,
+                                              self.window().windowHandle().screen().availableSize().height())
+        self._typePicker.picked.connect(self._changeBoundaryType)
         self._typePicker.show()
 
