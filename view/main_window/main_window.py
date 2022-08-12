@@ -161,7 +161,7 @@ class MainWindow(QMainWindow):
         self._saveCurrentPage()
         self._dialog = QFileDialog(self, self.tr('Select Project Directory'), AppSettings.getRecentLocation())
         self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        self._dialog.accepted.connect(self._projectDirectorySelected)
+        self._dialog.finished.connect(self._projectDirectorySelected)
         self._dialog.open()
 
     def _saveCurrentPage(self):
@@ -172,11 +172,14 @@ class MainWindow(QMainWindow):
     def _loadMesh(self):
         self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'))
         self._dialog.setFileMode(QFileDialog.FileMode.Directory)
-        self._dialog.accepted.connect(self._meshDirectorySelected)
+        self._dialog.finished.connect(lambda: self._meshDirectorySelected())
         self._dialog.open()
 
     @qasync.asyncSlot()
     async def _meshDirectorySelected(self):
+        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
+        self._ui.menubar.repaint()
+
         if dirs := self._dialog.selectedFiles():
             await self._loadOpenFoamMesh(dirs[0])
 
@@ -224,12 +227,16 @@ class MainWindow(QMainWindow):
         self._dialogSettingScaling.open()
 
     def _projectDirectorySelected(self):
+        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
+        self._ui.menubar.repaint()
+
         if dirs := self._dialog.selectedFiles():
             path = Path(dirs[0]).resolve()
 
             if path.exists():
                 if not path.is_dir():
-                    QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirs[0]} is not a directory.'))
+                    QMessageBox.critical(self, self.tr('Case Directory Error'),
+                                         self.tr(f'{dirs[0]} is not a directory.'))
                     return
                 elif os.listdir(path):
                     QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirs[0]} is not empty.'))
