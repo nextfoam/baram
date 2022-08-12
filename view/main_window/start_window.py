@@ -53,7 +53,7 @@ class StartWindow(QDialog):
     def _connectSignalsSlots(self):
         self._ui.newCase.clicked.connect(self._new)
         self._ui.open.clicked.connect(self._open)
-        self._ui.recentCases.itemClicked.connect(self._openRecentCase)
+        self._ui.recentCases.itemClicked.connect(self._openRecentProject)
 
     def _setupRecentCases(self):
         recentCases = AppSettings.getRecentProjects(RECENT_PROJECTS_NUMBER)
@@ -98,17 +98,22 @@ class StartWindow(QDialog):
         self._dialog.open()
 
     def _open(self):
-        dirName = QFileDialog.getExistingDirectory(self, self.tr('Project Directory'), AppSettings.getRecentLocation())
-        if dirName:
-            self._openProject(dirName)
+        self._dialog = QFileDialog(self, self.tr('Select Project Directory'), AppSettings.getRecentLocation())
+        self._dialog.setFileMode(QFileDialog.FileMode.Directory)
+        self._dialog.accepted.connect(self._openExistingProject)
+        self._dialog.open()
 
-    def _openRecentCase(self, item):
+    def _openRecentProject(self, item):
         self._openProject(self._ui.recentCases.itemWidget(item).getProjectPath())
 
     def _createProject(self):
         directory = self._dialog.field('projectLocation')
         os.mkdir(directory)
         self._openProject(directory, True)
+
+    def _openExistingProject(self):
+        if dirs := self._dialog.selectedFiles():
+            self._openProject(dirs[0])
 
     def _openProject(self, directory, create=False):
         try:

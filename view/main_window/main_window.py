@@ -4,6 +4,7 @@
 import logging
 import os
 from enum import Enum, auto
+from pathlib import Path
 
 import qasync
 
@@ -158,19 +159,10 @@ class MainWindow(QMainWindow):
 
     def _saveAs(self):
         self._saveCurrentPage()
-        # dirName = QFileDialog.getExistingDirectory(self, self.tr('Case Directory'), AppSettings.getRecentDirectory())
-        # if dirName:
-        dirName = QFileDialog.getSaveFileName(self, self.tr('Case Directory'), AppSettings.getRecentLocation())[0]
-        if dirName:
-            if os.path.exists(dirName):
-                if not os.path.isdir(dirName):
-                    QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirName} is not a directory.'))
-                    return
-                elif os.listdir(dirName):
-                    QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirName} is not empty.'))
-                    return
-
-            self._project.saveAs(dirName)
+        self._dialog = QFileDialog(self, self.tr('Select Project Directory'), AppSettings.getRecentLocation())
+        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        self._dialog.accepted.connect(self._projectDirectorySelected)
+        self._dialog.open()
 
     def _saveCurrentPage(self):
         currentPage = self._contentView.currentPage()
@@ -178,14 +170,13 @@ class MainWindow(QMainWindow):
             currentPage.save()
 
     def _loadMesh(self):
-        # dirName = QFileDialog.getExistingDirectory(self)
-        self._dialog = QFileDialog(self)
+        self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'))
         self._dialog.setFileMode(QFileDialog.FileMode.Directory)
-        self._dialog.accepted.connect(self._meshFilesSelected)
+        self._dialog.accepted.connect(self._meshDirectorySelected)
         self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _meshFilesSelected(self):
+    async def _meshDirectorySelected(self):
         if dirs := self._dialog.selectedFiles():
             await self._loadOpenFoamMesh(dirs[0])
 
@@ -231,3 +222,17 @@ class MainWindow(QMainWindow):
     def _changeScale(self):
         self._dialogSettingScaling = SettingScalingDialog(self)
         self._dialogSettingScaling.open()
+
+    def _projectDirectorySelected(self):
+        if dirs := self._dialog.selectedFiles():
+            path = Path(dirs[0]).resolve()
+
+            if path.exists():
+                if not path.is_dir():
+                    QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirs[0]} is not a directory.'))
+                    return
+                elif os.listdir(path):
+                    QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirs[0]} is not empty.'))
+                    return
+
+            self._project.saveAs(path)

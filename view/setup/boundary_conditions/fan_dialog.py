@@ -25,6 +25,7 @@ class FanDialog(CoupledBoundaryConditionDialog):
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
         self._coupledBoundary = None
+        self._boundarySelector = None
         self._dialog = None
 
         self._connectSignalsSlots()
@@ -60,20 +61,25 @@ class FanDialog(CoupledBoundaryConditionDialog):
         self._setCoupledBoundary(self._db.getValue(self._xpath + '/coupledBoundary'))
 
     def _selectFanPQCurveFile(self):
-        fileName = QFileDialog.getOpenFileName(self, self.tr('Open CSV File'), '', self.tr('CSV (*.csv)'))
-        if fileName[0]:
-            self._ui.fanPQCurveFileName.setText(path.basename(fileName[0]))
-
-    def _selectCoupledBoundary(self):
-        if not self._dialog:
-            self._dialog = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"),
-                                          BoundaryDB.getCyclicAMIBoundarySelectorItems(self, self._bcid))
-            self._dialog.accepted.connect(self._coupledBoundaryAccepted)
-
+        self._dialog = QFileDialog(self, self.tr('Select CSV File'), '', self.tr('CSV (*.csv)'))
+        self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        self._dialog.accepted.connect(self._fanPQCurveFileSelected)
         self._dialog.open()
 
+    def _selectCoupledBoundary(self):
+        if not self._boundarySelector:
+            self._boundarySelector = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"),
+                                                    BoundaryDB.getCyclicAMIBoundarySelectorItems(self, self._bcid))
+            self._boundarySelector.accepted.connect(self._coupledBoundaryAccepted)
+
+        self._boundarySelector.open()
+
     def _coupledBoundaryAccepted(self):
-        self._setCoupledBoundary(str(self._dialog.selectedItem()))
+        self._setCoupledBoundary(str(self._boundarySelector.selectedItem()))
+
+    def _fanPQCurveFileSelected(self):
+        if files := self._dialog.selectedFiles():
+            self._ui.fanPQCurveFileName.setText(path.basename(files[0]))
 
     def _setCoupledBoundary(self, bcid):
         if bcid != '0':

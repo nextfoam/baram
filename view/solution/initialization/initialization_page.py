@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QWidget, QFileDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
+from coredb.app_settings import AppSettings
 from .initialization_page_ui import Ui_InitializationPage
 from .option_dialog import OptionDialog
 
@@ -99,9 +100,16 @@ class InitializationPage(QWidget):
         self._dialog.open()
 
     def _selectSourceCase(self):
-        directoryName = QFileDialog.getExistingDirectory(self, self.tr("Folder Selection"))
+        self._dialog = QFileDialog(self, self.tr('Select Source Case'), AppSettings.getRecentLocation())
+        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        self._dialog.accepted.connect(self._sourceCaseSelected)
+        self._dialog.open()
 
     def _initialize(self):
         confirm = QMessageBox.question(self, self.tr("Initialize"), self.tr("All saved data will be deleted. OK?"))
         if confirm == QMessageBox.Yes:
+            pass
+
+    def _sourceCaseSelected(self):
+        if dirs := self._dialog.selectedFiles():
             pass
