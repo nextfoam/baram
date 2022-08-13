@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from coredb.boundary_db import BoundaryDB, BoundaryType
-from coredb.boundary_db import KOmegaSpecification, WallVelocityCondition, InterfaceMode
+from coredb.boundary_db import BoundaryDB, BoundaryType, KOmegaSpecification, WallVelocityCondition, InterfaceMode
+from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -18,15 +18,17 @@ class Omega(BoundaryCondition):
         # ToDo: Set initialValue
         self._initialValue = 0
 
-    def build(self):
-        if self._data is not None:
-            return self
+        self._data = None
 
-        self._data = {
-            'dimensions': self.DIMENSIONS,
-            'internalField': ('uniform', self._initialValue),
-            'boundaryField': self._constructBoundaryField()
-        }
+    def build(self):
+        self._data = None
+
+        if ModelsDB.getTurbulenceModel() == TurbulenceModel.K_OMEGA:
+            self._data = {
+                'dimensions': self.DIMENSIONS,
+                'internalField': ('uniform', self._initialValue),
+                'boundaryField': self._constructBoundaryField()
+            }
 
         return self
 

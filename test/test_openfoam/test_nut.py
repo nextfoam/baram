@@ -20,6 +20,8 @@ class TestNut(unittest.TestCase):
         # ToDo: Set initial value
         self._initialValue = 0
 
+        self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
+
     def tearDown(self) -> None:
         del coredb.CoreDB._instance
 

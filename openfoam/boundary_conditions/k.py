@@ -20,15 +20,17 @@ class K(BoundaryCondition):
         self._specification = None
         self._model = ModelsDB.getTurbulenceModel()
 
-    def build(self):
-        if self._data is not None:
-            return self
+        self._data = None
 
-        self._data = {
-            'dimensions': self.DIMENSIONS,
-            'internalField': ('uniform', self._initialValue),
-            'boundaryField': self._constructBoundaryField()
-        }
+    def build(self):
+        self._data = None
+
+        if self._model == TurbulenceModel.K_EPSILON or self._model == TurbulenceModel.K_OMEGA:
+            self._data = {
+                'dimensions': self.DIMENSIONS,
+                'internalField': ('uniform', self._initialValue),
+                'boundaryField': self._constructBoundaryField()
+            }
 
         return self
 

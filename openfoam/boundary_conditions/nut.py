@@ -19,9 +19,10 @@ class Nut(BoundaryCondition):
         self._initialValue = 0
         self._model = ModelsDB.getTurbulenceModel()
 
+        self._data = None
+
     def build(self):
-        if self._data is not None:
-            return self
+        self._data = None
 
         if self._model == TurbulenceModel.K_EPSILON or self._model == TurbulenceModel.K_OMEGA:
             self._data = {

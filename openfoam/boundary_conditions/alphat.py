@@ -18,15 +18,17 @@ class Alphat(BoundaryCondition):
         # ToDo: Set initialValue
         self._initialValue = 0
 
-    def build(self):
-        if self._data is not None:
-            return self
+        self._data = None
 
-        self._data = {
-            'dimensions': self.DIMENSIONS,
-            'internalField': ('uniform', self._initialValue),
-            'boundaryField': self._constructBoundaryField()
-        }
+    def build(self):
+        self._data = None
+
+        if ModelsDB.isEnergyModelOn():
+            self._data = {
+                'dimensions': self.DIMENSIONS,
+                'internalField': ('uniform', self._initialValue),
+                'boundaryField': self._constructBoundaryField()
+            }
 
         return self
 
