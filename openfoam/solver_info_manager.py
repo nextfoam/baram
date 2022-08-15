@@ -241,21 +241,29 @@ class Worker(QObject):
 
         return updatedFiles
 
-    def getInfoFiles(self) -> {Path: _SolverInfo}:
+    def _getInfoFilesMultiRegion(self) -> {Path: _SolverInfo}:
         mrFiles = [((p := Path(pstr)), p.stat().st_size) for pstr in glob.glob(str(self.mrGlobPattern))]
-        srFiles = [((p := Path(pstr)), p.stat().st_size) for pstr in glob.glob(str(self.srGlobPattern))]
-
         infoFiles = {}
-
         for path, size in mrFiles:
             m = re.search(mrRegexPattern, str(path))
             if m.group('region') not in self.data:
                 continue
             infoFiles[path] = _SolverInfo(m.group('region'), float(m.group('time')), m.group('dup'), size, path, None)
+        return infoFiles
 
+    def _getInfoFilesSingleRegion(self) -> {Path: _SolverInfo}:
+        srFiles = [((p := Path(pstr)), p.stat().st_size) for pstr in glob.glob(str(self.srGlobPattern))]
+        infoFiles = {}
         for path, size in srFiles:
             m = re.search(srRegexPattern, str(path))
             infoFiles[path] = _SolverInfo('', float(m.group('time')), m.group('dup'), size, path, None)
+        return infoFiles
+
+    def getInfoFiles(self) -> {Path: _SolverInfo}:
+        if len(self.regions) > 1:
+            infoFiles = self._getInfoFilesMultiRegion()
+        else:
+            infoFiles = self._getInfoFilesSingleRegion()
 
         # Drop obsoleted info file, which has newer info file in the same directory
         newerFiles = [p for p, s in infoFiles.items() if s.dup is not None]
