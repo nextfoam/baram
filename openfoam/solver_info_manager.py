@@ -280,7 +280,7 @@ class SolverInfoManager(QObject):
 
     def startCollecting(self, casePath: Path, regions: [str]):
         if self.thread is not None:
-            raise FileExistsError
+            return
 
         if not casePath.is_absolute():
             raise AssertionError
@@ -298,7 +298,7 @@ class SolverInfoManager(QObject):
 
     def stopCollecting(self):
         if self.thread is None:
-            raise FileNotFoundError
+            return
 
         self.worker.stop.emit()
         self.thread.quit()
