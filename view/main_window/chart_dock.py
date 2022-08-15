@@ -20,6 +20,7 @@ from openfoam.solver_info_manager import SolverInfoManager
 from openfoam.file_system import FileSystem
 from .tabified_dock import TabifiedDock
 from coredb import coredb
+from coredb.project import Project, SolverStatus
 
 END_MARGIN = 0.05  # 5% margin between line end and right axis
 
@@ -55,6 +56,10 @@ class ChartDock(TabifiedDock):
 
         self.solverInfoManager.residualsUpdated.connect(self.updated)
 
+        self._project = Project.instance()
+
+        self._project.statusChanged.connect(self.solverStatusChanged)
+
     def startDrawing(self):
         self.solverInfoManager.startCollecting(
             Path(FileSystem.caseRoot()).resolve(),
@@ -62,6 +67,14 @@ class ChartDock(TabifiedDock):
 
     def stopDrawing(self):
         self.solverInfoManager.stopCollecting()
+
+    def solverStatusChanged(self ):
+        status = self._project.solverStatus()
+
+        if status == SolverStatus.NONE:
+            self.stopDrawing()
+        elif status == SolverStatus.RUNNING:
+            self.startDrawing()
 
     def updated(self, data):
         self._data = data
