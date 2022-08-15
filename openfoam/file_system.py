@@ -4,6 +4,7 @@
 import os
 import shutil
 import asyncio
+from pathlib import Path
 
 from coredb.project import Project
 
@@ -67,7 +68,7 @@ class FileSystem:
 
     @classmethod
     def foamFilePath(cls):
-        return os.path.join(cls._casePath, 'baram.foam')
+        return Path(os.path.join(cls._casePath, 'baram.foam'))
 
     @classmethod
     def _copyMeshFromInternal(cls, directory):
