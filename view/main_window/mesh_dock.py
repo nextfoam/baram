@@ -1,11 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtCore import Qt
+from dataclasses import dataclass
+import asyncio
+from pathlib import Path
+
+import qasync
+
+from PySide6.QtCore import Qt, Signal
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer
 from vtkmodules.vtkIOGeometry import vtkOpenFOAMReader
-from vtkmodules.vtkFiltersGeometry import vtkCompositeDataGeometryFilter
+from vtkmodules.vtkFiltersGeometry import  vtkGeometryFilter
+from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
 # load implementations for rendering and interaction factory classes
 import vtkmodules.vtkRenderingOpenGL2
 import vtkmodules.vtkInteractionStyle
@@ -13,8 +20,109 @@ import vtkmodules.vtkInteractionStyle
 from openfoam.file_system import FileSystem
 from .tabified_dock import TabifiedDock
 
+import vtk
+
+
+@dataclass
+class ActorInfo:
+    # It is not clear if the references of these two values should be kept
+    #    dataset: vtk.vtkDataObject
+    #    gFilter: vtk.vtkGeometryFilter
+    mapper: vtkPolyDataMapper
+    actor: vtkActor
+
+
+def getActorInfo(dataset) -> ActorInfo:
+    gFilter = vtkGeometryFilter()
+    gFilter.SetInputData(dataset)
+    gFilter.Update()
+
+    mapper = vtkPolyDataMapper()
+    mapper.SetInputData(gFilter.GetOutput())
+
+    actor = vtkActor()
+    actor.SetMapper(mapper)
+    actor.GetProperty().SetColor(255, 255, 255)
+
+    # return ActorInfo(dataset, gFilter, mapper, actor)
+    return ActorInfo(mapper, actor)
+
+
+def build(mBlock):
+    vtkMesh = {}
+    n = mBlock.GetNumberOfBlocks()
+    for i in range(0, n):
+        if mBlock.HasMetaData(i):
+            name = mBlock.GetMetaData(i).Get(vtkCompositeDataSet.NAME())
+        else:
+            name = ''
+        ds = mBlock.GetBlock(i)
+        dsType = ds.GetDataObjectType()
+        if dsType == vtk.VTK_MULTIBLOCK_DATA_SET:
+            vtkMesh[name] = build(ds)
+        elif dsType == vtk.VTK_UNSTRUCTURED_GRID:
+            vtkMesh[name] = getActorInfo(ds)
+        elif dsType == vtk.VTK_POLY_DATA:
+            vtkMesh[name] = getActorInfo(ds)
+        else:
+            vtkMesh[name] = f'Type {dsType}'  # ds
+
+    return vtkMesh
+
+
+"""
+VtkMesh dict
+{
+    <region> : {
+        "boundary" : {
+            <boundary> : <ActorInfo>
+            ...
+        },
+        "internalMesh" : <ActorInfo>,
+        "zones" : {
+            "cellZones" : {
+                <cellZone> : <ActorInfo>,
+                ...
+            }
+        }
+    },
+    ...
+}
+"""
+def getVtkMesh(foamFilePath: Path):
+    r = vtkOpenFOAMReader()
+    r.SetFileName(str(foamFilePath))
+    r.DecomposePolyhedraOn()
+    r.EnableAllCellArrays()
+    r.EnableAllPointArrays()
+    r.EnableAllPatchArrays()
+    r.EnableAllLagrangianArrays()
+    r.CreateCellToPointOn()
+    r.CacheMeshOn()
+    r.ReadZonesOn()
+    r.Update()
+
+    numberOfPatchArrays = r.GetNumberOfPatchArrays()
+    for i in range(0, numberOfPatchArrays):
+        name = r.GetPatchArrayName(i)
+        if name.endswith('internalMesh'):
+            r.SetPatchArrayStatus(name, 0)
+        else:
+            r.SetPatchArrayStatus(name, 1)
+
+    r.Update()
+
+    vtkMesh = build(r.GetOutput())
+
+    if 'boundary' in vtkMesh:  # single region mesh
+        vtkMesh = {'': vtkMesh}
+
+    return vtkMesh
+
 
 class MeshDock(TabifiedDock):
+    reloadMesh = Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -29,24 +137,15 @@ class MeshDock(TabifiedDock):
         self._widget.Initialize()
         self._widget.Start()
 
-    def showOpenFoamMesh(self):
-        reader = vtkOpenFOAMReader()
-        reader.SetFileName(FileSystem.foamFilePath())
-        # reader.CreateCellToPointOn()
-        # reader.DisableAllPointArrays()
-        # reader.DecomposePolyhedraOn()
-        reader.EnableAllPatchArrays()
-        reader.Update()
+        self.reloadMesh.connect(self.showOpenFoamMesh)
 
-        compositeFilter = vtkCompositeDataGeometryFilter()
-        compositeFilter.SetInputConnection(reader.GetOutputPort())
-        compositeFilter.Update()
+    @qasync.asyncSlot()
+    async def showOpenFoamMesh(self):
+        vtkMesh = await asyncio.to_thread(getVtkMesh, FileSystem.foamFilePath())
 
-        mapper = vtkPolyDataMapper()
-        mapper.SetInputConnection(compositeFilter.GetOutputPort())
+        for region in vtkMesh:
+            for boundary in vtkMesh[region]['boundary']:
+                actorInfo = vtkMesh[region]['boundary'][boundary]
+                self._renderer.AddActor(actorInfo.actor)
 
-        actor = vtkActor()
-        actor.SetMapper(mapper)
-
-        self._renderer.AddActor(actor)
         self._widget.Render()

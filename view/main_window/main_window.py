@@ -109,7 +109,7 @@ class MainWindow(QMainWindow):
         self._closeType = CloseType.EXIT_APP
 
         if self._project.meshLoaded:
-            self._threadPool.start(self._meshDock.showOpenFoamMesh)
+            self._meshDock.reloadMesh.emit()
 
         self._updateMenuEnables()
         self.show()
@@ -216,7 +216,7 @@ class MainWindow(QMainWindow):
             self._ui.actionLoadMesh.setEnabled(True)
             return
 
-        self._meshDock.showOpenFoamMesh()
+        self._meshDock.reloadMesh.emit()
 
     def _changeLanguage(self):
         self._dialogSettingLanguage = SettingLanguageDialog(self)
