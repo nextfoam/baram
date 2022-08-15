@@ -7,7 +7,6 @@ import typing
 from io import StringIO
 from pathlib import Path
 from dataclasses import dataclass
-from threading import Lock
 import logging
 
 import numpy as np
@@ -25,7 +24,6 @@ from PySide6.QtCore import QTimer, QObject, QThread, Signal
 0.0439595       	DILUPBiCGStab	2.31957720e-02	2.67950170e-08	1	5.38653860e-01	3.35496420e-13	1	3.79282860e-02	5.53125350e-08	1	false
 ...
 """
-_mutex = Lock()
 
 mrRegexPattern = r'(?P<region>[^/\\]+)[/\\]solverInfo_\d+[/\\](?P<time>[0-9]+(?:\.[0-9]+)?)[/\\]solverInfo(?:_(?P<dup>[0-9]+(?:\.[0-9]+)?))?\.dat'
 srRegexPattern = r'[/\\]solverInfo_\d+[/\\](?P<time>[0-9]+(?:\.[0-9]+)?)[/\\]solverInfo(?:_(?P<dup>[0-9]+(?:\.[0-9]+)?))?\.dat'
@@ -101,118 +99,133 @@ def mergeDataFrames(data: [pd.DataFrame]):
     return merged
 
 
+def updateData(target, source):
+    if target is None:
+        return source
+    else:
+        # Drop obsoleted rows.
+        # Dataframes should be kept PER REGION because of this dropping.
+        # If dataframes of regions are merged, updated data in other regions can be lost.
+        time = source.first_valid_index()
+        filtered = target[target.index < time]
+        return mergeDataFrames([filtered, source])
 
-def updateData(target, source: str, names: [str]):
-    stream = StringIO(source)
+
+def updateDataFromFile(target: pd.DataFrame, region: str, f: typing.TextIO) -> (bool, pd.DataFrame):
+    lines, names = readOutFile(f)
+    if not lines:
+        return False, target
+
+    if region != '':
+        names = [k if k == 'Time' else region + ':' + k for k in names]
+
+    stream = StringIO(lines)
     df = pd.read_csv(stream, sep=r'\s+', names=names, dtype={'Time': np.float64})
     stream.close()
 
     df.set_index('Time', inplace=True)
 
-    if target is not None:
-        # Drop obsoleted rows.
-        # Dataframes should be kept PER REGION because of this dropping.
-        # If dataframes of regions are merged, updated data in other regions can be lost.
-        time = df.first_valid_index()
-        filtered = target[target.index < time]
+    return True, updateData(target, df)
 
-        return mergeDataFrames([filtered, df])
-    else:
+
+def getDataFrame(region, path) -> pd.DataFrame:
+    with path.open(mode='r') as f:
+        f.readline()  # skip '# Solver information' comment
+        names = f.readline().split()  # read header
+        names.pop(0)  # remove '#' from the list
+        if names[0] != 'Time':
+            raise RuntimeError
+        names = [k if k == 'Time' else region + ':' + k for k in names]
+        df = pd.read_csv(f, sep=r'\s+', names=names, skiprows=0)
+        df.set_index('Time', inplace=True)
         return df
 
 
 class Worker(QObject):
-    start = Signal(Path)
+    start = Signal()
     stop = Signal()
     updateResiduals = Signal()
     residualsUpdated = Signal(pd.DataFrame)
 
-    def __init__(self):
+    def __init__(self, casePath: Path, regions: [str]):
         super().__init__()
 
-        self.data = {}
+        self.mrGlobPattern = casePath / 'postProcessing' / '*' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
+        self.srGlobPattern = casePath / 'postProcessing' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
 
-        self.mrGlobPattern = None
-        self.srGlobPattern = None
+        self.regions = regions
+        self.changingFiles = {r: None for r in regions}
+
+        self.data = {r: None for r in regions}
+
+        self.collectionReady = False
 
         self.infoFiles = None
 
-        self.timerVar = None
+        self.timer = None
         self.running = False
 
         self.start.connect(self.startRun)
         self.stop.connect(self.stopRun)
 
-    def startRun(self, path: Path):
+    def startRun(self):
         if self.running:
             return
 
-        print('startRun'+str(path))
         self.running = True
 
-        self.mrGlobPattern = path / 'postProcessing' / '*' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
-        self.srGlobPattern = path / 'postProcessing' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
+        # Get current snapshot of info files
+        self.infoFiles = self.getInfoFiles()
 
-        hasUpdate = False
-        infoFiles = self.getInfoFiles()
-        for p, s in infoFiles.items():
-            s.f = open(s.path, 'r')
-            lines, names = readOutFile(s.f)
-            if not lines:
-                continue
-
-            hasUpdate = True
-            if s.region != '':
-                names = [k if k == 'Time' else s.region + ':' + k for k in names]
-
-            if s.region in self.data:
-                self.data[s.region] = updateData(self.data[s.region], lines, names)
-            else:
-                self.data[s.region] = updateData(None, lines, names)
-
-        if hasUpdate:
-            self.residualsUpdated.emit(mergeDataFrames(self.data.values()))
-
-        self.infoFiles = infoFiles
-
-        self.timerVar = QTimer()
-        self.timerVar.setInterval(500)
-        self.timerVar.timeout.connect(self.process)
-        self.timerVar.start()
-
+        self.timer = QTimer()
+        self.timer.setInterval(500)
+        self.timer.timeout.connect(self.process)
+        self.timer.start()
 
     def stopRun(self):
-        self.timerVar.stop()
+        self.timer.stop()
+        for s in self.changingFiles.values():
+            s.f.close()
         self.running = False
 
     def process(self):
-        hasUpdate = False
-        infoFiles = self.getUpdatedFiles(self.infoFiles)
-        for p, s in infoFiles.items():
-            # close all the other files in the same region
-            for p1, s1 in self.infoFiles.items():
-                if p1 != p and s1.region == s.region and s1.f is not None:
-                    s1.f.close()
-
+        updatedFiles = self.getUpdatedFiles(self.infoFiles)
+        for p, s in updatedFiles.items():
             if p in self.infoFiles:
                 self.infoFiles[p].size = s.size
             else:
                 self.infoFiles[p] = s
-                s.f = open(s.path, 'r')
 
-            lines, names = readOutFile(self.infoFiles[p].f)
-            if not lines:
-                continue
+            if self.changingFiles[s.region] is None:
+                self.changingFiles[s.region] = self.infoFiles[p]
 
-            hasUpdate = True
+        if not self.collectionReady:
+            collectionReady = all(self.changingFiles.values())
+            if not collectionReady:
+                return
+            else:  # Now, Ready to collect
+                self.collectionReady = True
+                for s in self.infoFiles.values():
+                    if s not in self.changingFiles.values():  # not-changing files
+                        df = getDataFrame(s.region, s.path)
+                        self.data[s.region] = updateData(self.data[s.region], df)
 
-            if s.region != '':
-                names = [k if k == 'Time' else s.region + ':' + k for k in names]
+                for s in self.changingFiles.values():
+                    s.f = open(s.path, 'r')
+                    updated, df = updateDataFromFile(self.data[s.region], s.region, s.f)
+                    if updated:
+                        self.data[s.region] = updateData(self.data[s.region], df)
+                self.residualsUpdated.emit(mergeDataFrames(self.data.values()))
 
-            if s.region in self.data:
-                self.data[s.region] = updateData(self.data[s.region], lines, names)
-            else:
-                self.data[s.region] = updateData(None, lines, names)
+                return
+
+        # regular update routine
+        hasUpdate = False
+        for s in updatedFiles.values():
+            updated, df = updateDataFromFile(self.data[s.region], s.region, self.infoFiles[s.path].f)
+            if updated:
+                self.data[s.region] = df
+                hasUpdate = True
 
         if hasUpdate:
             self.residualsUpdated.emit(mergeDataFrames(self.data.values()))
@@ -236,6 +249,8 @@ class Worker(QObject):
 
         for path, size in mrFiles:
             m = re.search(mrRegexPattern, str(path))
+            if m.group('region') not in self.data:
+                continue
             infoFiles[path] = _SolverInfo(m.group('region'), float(m.group('time')), m.group('dup'), size, path, None)
 
         for path, size in srFiles:
@@ -257,42 +272,42 @@ class Worker(QObject):
 class SolverInfoManager(QObject):
     residualsUpdated = Signal(pd.DataFrame)
 
-    def __new__(cls, *args, **kwargs):
-        with _mutex:
-            if not hasattr(cls, '_instance'):
-                cls._instance = super(SolverInfoManager, cls).__new__(cls)
-        return cls._instance
-
-    def __init__(self, path: Path):
-        if hasattr(self, '_initialized'):
-            return
-
-        self._initialized = True
-
-        if not path.is_absolute():
-            raise AssertionError
-
+    def __init__(self):
         super().__init__()
 
-        self.path = path
+        self.worker = None
+        self.thread = None
+
+    def startCollecting(self, casePath: Path, regions: [str]):
+        if self.thread is not None:
+            raise FileExistsError
+
+        if not casePath.is_absolute():
+            raise AssertionError
 
         self.thread = QThread()
-        self.worker = Worker()
+        self.worker = Worker(casePath, regions)
+
         self.worker.moveToThread(self.thread)
 
         self.worker.residualsUpdated.connect(self.residualsUpdated)
 
         self.thread.start()
 
-    def startCollecting(self):
-        self.worker.start.emit(self.path)
+        self.worker.start.emit()
 
     def stopCollecting(self):
+        if self.thread is None:
+            raise FileNotFoundError
+
         self.worker.stop.emit()
+        self.thread.quit()
+
+        self.worker = None
+        self.thread = None
 
     def updateResiduals(self):
+        if self.thread is None:
+            raise FileNotFoundError
+
         self.worker.updateResiduals.emit()
-
-
-def getSolverInfoManager(path: Path):
-    return SolverInfoManager(path)

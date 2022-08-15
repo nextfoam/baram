@@ -16,11 +16,13 @@ from matplotlib.backends.backend_qtagg import (
 from matplotlib.figure import Figure
 import matplotlib.ticker as ticker
 
-from openfoam.solver_info_manager import getSolverInfoManager
+from openfoam.solver_info_manager import SolverInfoManager
 from openfoam.file_system import FileSystem
 from .tabified_dock import TabifiedDock
+from coredb import coredb
 
 END_MARGIN = 0.05  # 5% margin between line end and right axis
+
 
 class ChartDock(TabifiedDock):
     def __init__(self, parent=None):
@@ -30,7 +32,7 @@ class ChartDock(TabifiedDock):
         self._timeMax = None
         self._lines = {}
 
-        self.setWindowTitle(self.tr("Chart"))
+        self.setWindowTitle(self.tr("Residuals"))
         self.setAllowedAreas(Qt.RightDockWidgetArea)
 
         self._widget = QWidget()
@@ -49,12 +51,14 @@ class ChartDock(TabifiedDock):
         self._axes.yaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
         self._axes.set_yscale('log')
 
-        self.solverInfoManager = getSolverInfoManager(Path(FileSystem.caseRoot()).resolve())
+        self.solverInfoManager = SolverInfoManager()
 
         self.solverInfoManager.residualsUpdated.connect(self.updated)
 
     def startDrawing(self):
-        self.solverInfoManager.startCollecting()
+        self.solverInfoManager.startCollecting(
+            Path(FileSystem.caseRoot()).resolve(),
+            coredb.CoreDB().getRegions())
 
     def stopDrawing(self):
         self.solverInfoManager.stopCollecting()
