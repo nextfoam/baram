@@ -5,6 +5,7 @@ import logging
 import os
 from enum import Enum, auto
 from pathlib import Path
+import glob
 
 import qasync
 
@@ -175,7 +176,7 @@ class MainWindow(QMainWindow):
             confirm = QMessageBox.question(
                     self, self.tr('Load Mesh'),
                     self.tr('Current mesh and monitor configurations will be cleared.\n'
-                            'Woulud you like to load another mesh?'))
+                            'Would you like to load another mesh?'))
 
             if confirm != QMessageBox.Yes:
                 return
@@ -191,7 +192,41 @@ class MainWindow(QMainWindow):
         self._ui.menubar.repaint()
 
         if result == QFileDialog.Accepted:
-            await self._loadOpenFoamMesh(self._dialog.selectedFiles()[0])
+            polyMeshPath, multiRegionState = self._checkPolyMesh(self._dialog.selectedFiles()[0])
+            if polyMeshPath:
+                await self._loadOpenFoamMesh(polyMeshPath, multiRegionState)
+            else:
+                QMessageBox.critical(self, self.tr('Open polyMesh'), self.tr('Cannot find polyMesh folder'))
+
+    def _checkPolyMesh(self, path):
+        path = Path(path)
+        multiRegionState = False
+
+        foundFiles = glob.glob(str(path / '**' / 'regionProperties'), recursive=True)
+        if len(foundFiles) == 0:
+            foundFiles = glob.glob(str(path / '**' / 'boundary'), recursive=True)
+            if len(foundFiles) == 1:
+                path = Path(foundFiles[0]).parent
+            else:
+                return False, False
+        elif len(foundFiles) == 1:
+            path = Path(foundFiles[0]).parent
+            multiRegionState = True
+        else:
+            return False, False
+
+        checkFiles = ['boundary', 'cellZones', 'faces', 'neighbour', 'owner', 'points']
+        if multiRegionState:
+            foundFiles = glob.glob(str(path / '**' / 'polyMesh'), recursive=True)
+            for f in foundFiles:
+                for g in checkFiles:
+                    if not os.path.isfile(f'{f}/{g}'):
+                        return False, False
+        if not multiRegionState:
+            for f in checkFiles:
+                if not os.path.isfile(f'{path}/{f}'):
+                    return False, False
+        return path, multiRegionState
 
     def _changeForm(self, currentMenu):
         page = self._menuPages[currentMenu]
@@ -213,12 +248,12 @@ class MainWindow(QMainWindow):
         self.tabifyDock(dock)
         self._ui.menuView.addAction(dock.toggleViewAction())
 
-    async def _loadOpenFoamMesh(self, dirName):
+    async def _loadOpenFoamMesh(self, dirName, multiRegionState):
         self._clearMesh()
 
         try:
             self._ui.actionLoadMesh.setEnabled(False)
-            await FileSystem.copyMeshFrom(dirName)
+            await FileSystem.copyMeshFrom(dirName, multiRegionState)
             self._meshDock.reloadMesh.emit()
             # PolyMeshLoader.load()
             # self._project.setMeshLoaded(True)

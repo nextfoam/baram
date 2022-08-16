@@ -71,23 +71,28 @@ class FileSystem:
         return Path(os.path.join(cls._casePath, 'baram.foam'))
 
     @classmethod
-    def _copyMeshFromInternal(cls, directory):
+    def _copyMeshFromInternal(cls, directory, multiRegionState):
         if os.path.exists(cls._constantPath):
             shutil.rmtree(cls._constantPath)
 
-        shutil.copytree(directory, cls._constantPath)
+        os.mkdir(cls._constantPath)
+        objPath = cls._constantPath
+        if not multiRegionState:
+            objPath = f'{cls._constantPath}/polyMesh'
+            Path(objPath).mkdir(parents=True)
+
+        shutil.copytree(directory, objPath, dirs_exist_ok=True)
 
         with open(cls.foamFilePath(), 'a'):
             pass
 
     @classmethod
-    async def copyMeshFrom(cls, directory):
-        await asyncio.to_thread(cls._copyMeshFromInternal, directory)
+    async def copyMeshFrom(cls, directory, multiRegionState):
+        await asyncio.to_thread(cls._copyMeshFromInternal, directory, multiRegionState)
 
     @classmethod
     def makeDir(cls, parent, directory):
         path = os.path.join(parent, directory)
         if not os.path.exists(path):
             os.mkdir(path)
-
         return path
