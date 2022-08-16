@@ -4,7 +4,7 @@
 from pathlib import Path
 
 import pandas as pd
-from PySide6.QtWidgets import QVBoxLayout, QWidget, QTextBrowser
+from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt
 
 import numpy as np
@@ -58,7 +58,7 @@ class ChartDock(TabifiedDock):
 
         self._project = Project.instance()
 
-        self._project.statusChanged.connect(self.solverStatusChanged)
+        self._project.solverStatusChanged.connect(self.solverStatusChanged)
 
     def startDrawing(self):
         self.solverInfoManager.startCollecting(
@@ -68,9 +68,7 @@ class ChartDock(TabifiedDock):
     def stopDrawing(self):
         self.solverInfoManager.stopCollecting()
 
-    def solverStatusChanged(self ):
-        status = self._project.solverStatus()
-
+    def solverStatusChanged(self, status):
         if status == SolverStatus.NONE:
             self.stopDrawing()
         elif status == SolverStatus.RUNNING:

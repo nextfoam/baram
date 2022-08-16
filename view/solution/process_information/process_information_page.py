@@ -53,7 +53,7 @@ class ProcessInformationPage(QWidget):
         self._ui.cancelCalculation.clicked.connect(self._cancelCalculationClicked)
         self._ui.saveAndStopCalculation.clicked.connect(self._saveAndStopCalculationClicked)
         self._ui.updateConfiguration.clicked.connect(self._updateConfigurationClicked)
-        self._project.statusChanged.connect(self._updateStatus)
+        self._project.solverStatusChanged.connect(self._updateStatus)
 
     @qasync.asyncSlot()
     async def _startCalculationClicked(self):

@@ -30,3 +30,12 @@ class MonitorsPage(QWidget):
 
     def save(self):
         pass
+
+    def load(self):
+        pass
+
+    def clear(self):
+        self._forcesWidget.clear()
+        self._pointsWidget.clear()
+        self._surfacesWidget.clear()
+        self._volumesWidget.clear()

@@ -39,7 +39,8 @@ class ProjectOpenType(Enum):
 
 
 class _Project(QObject):
-    statusChanged = Signal()
+    meshStatusChanged = Signal(bool)
+    solverStatusChanged = Signal(SolverStatus)
     projectChanged = Signal()
 
     class LocalSettings:
@@ -124,9 +125,9 @@ class _Project(QObject):
     def solverStatus(self):
         return self._status
 
-    def setMeshLoaded(self):
-        self._meshLoaded = True
-        self.statusChanged.emit()
+    def setMeshLoaded(self, loaded):
+        self._meshLoaded = loaded
+        self.meshStatusChanged.emit(loaded)
 
     def setSolverProcess(self, process):
         self._runType = RunType.PROCESS
@@ -206,7 +207,7 @@ class _Project(QObject):
     def _setStatus(self, status):
         if self._status != status:
             self._status = status
-            self.statusChanged.emit()
+            self.solverStatusChanged.emit(status)
 
     def _startProcessMonitor(self, process):
         self._timer = QTimer()

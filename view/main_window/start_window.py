@@ -163,5 +163,7 @@ class Baram:
 
     @qasync.asyncSlot()
     async def _windowClosed(self, result):
+        Project.close()
+
         if result == CloseType.CLOSE_PROJECT:
             await self.start()

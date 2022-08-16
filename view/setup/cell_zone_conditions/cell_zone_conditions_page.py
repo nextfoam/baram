@@ -29,7 +29,7 @@ class CellZoneConditionsPage(QWidget):
             return super().showEvent(ev)
 
         if not self._regions:
-            self._load()
+            self.load()
         else:
             self._setupMaterials()
 
@@ -50,7 +50,7 @@ class CellZoneConditionsPage(QWidget):
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
 
-    def _load(self):
+    def load(self):
         layout = self._ui.regions.layout()
         regions = self._db.getRegions()
         for r in regions:
@@ -60,6 +60,15 @@ class CellZoneConditionsPage(QWidget):
             self._regions[r].regionDoubleClicked.connect(self._regionDoubleClicked)
 
         self._setupMaterials()
+
+    def clear(self):
+        layout = self._ui.regions.layout()
+        while layout.count():
+            item = layout.takeAt(0)
+            item.widget().parent = None
+            item.widget().deleteLater()
+        self._regions = {}
+        self._currentRegion = None
 
     def _connectSignalsSlots(self):
         self._ui.operatingConditions.clicked.connect(self._operatingConditions)

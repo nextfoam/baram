@@ -626,6 +626,10 @@ class _CoreDB(object):
 
         return regions
 
+    def clearRegions(self):
+        parent = self._xmlTree.find('.//regions', namespaces=nsmap)
+        parent.clear()
+
     def addCellZone(self, rname: str, zname: str) -> int:
         zone = self._xmlTree.find(f'.//region[name="{rname}"]/cellZones/cellZone[name="{zname}"]', namespaces=nsmap)
 
@@ -752,6 +756,10 @@ class _CoreDB(object):
         names = self._xmlTree.xpath(f'.//x:monitors/x:forces/x:forceMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
+    def clearForceMonitors(self):
+        parent = self._xmlTree.find('.//monitors/forces', namespaces=nsmap)
+        parent.clear()
+
     def addPointMonitor(self) -> str:
         names = self.getPointMonitors()
 
@@ -788,6 +796,10 @@ class _CoreDB(object):
     def getPointMonitors(self) -> list[str]:
         names = self._xmlTree.xpath(f'.//x:monitors/x:points/x:pointMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
+
+    def clearPointMonitors(self):
+        parent = self._xmlTree.find('.//monitors/points', namespaces=nsmap)
+        parent.clear()
 
     def addSurfaceMonitor(self) -> str:
         names = self.getSurfaceMonitors()
@@ -826,6 +838,10 @@ class _CoreDB(object):
         names = self._xmlTree.xpath(f'.//x:monitors/x:surfaces/x:surfaceMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
+    def clearSurfacesMonitors(self):
+        parent = self._xmlTree.find('.//monitors/surfaces', namespaces=nsmap)
+        parent.clear()
+
     def addVolumeMonitor(self) -> str:
         names = self.getVolumeMonitors()
 
@@ -862,6 +878,16 @@ class _CoreDB(object):
     def getVolumeMonitors(self) -> list[str]:
         names = self._xmlTree.xpath(f'.//x:monitors/x:volumes/x:volumeMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
+
+    def clearVolumeMonitors(self):
+        parent = self._xmlTree.find('.//monitors/volumes', namespaces=nsmap)
+        parent.clear()
+
+    def clearMonitors(self):
+        self.clearForceMonitors()
+        self.clearPointMonitors()
+        self.clearSurfacesMonitors()
+        self.clearVolumeMonitors()
 
     def exists(self, xpath: str):
         """Returns if specified configuration path is exists.

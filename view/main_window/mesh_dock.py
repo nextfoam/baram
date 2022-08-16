@@ -122,6 +122,7 @@ def getVtkMesh(foamFilePath: Path):
 
 class MeshDock(TabifiedDock):
     reloadMesh = Signal()
+    meshLoaded = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -137,15 +138,22 @@ class MeshDock(TabifiedDock):
         self._widget.Initialize()
         self._widget.Start()
 
+        self._vtkMesh = None
+
         self.reloadMesh.connect(self.showOpenFoamMesh)
+
+    def vtkMesh(self):
+        return self._vtkMesh
 
     @qasync.asyncSlot()
     async def showOpenFoamMesh(self):
-        vtkMesh = await asyncio.to_thread(getVtkMesh, FileSystem.foamFilePath())
+        self._vtkMesh = await asyncio.to_thread(getVtkMesh, FileSystem.foamFilePath())
 
-        for region in vtkMesh:
-            for boundary in vtkMesh[region]['boundary']:
-                actorInfo = vtkMesh[region]['boundary'][boundary]
+        for region in self._vtkMesh:
+            for boundary in self._vtkMesh[region]['boundary']:
+                actorInfo = self._vtkMesh[region]['boundary'][boundary]
                 self._renderer.AddActor(actorInfo.actor)
 
         self._widget.Render()
+
+        self.meshLoaded.emit()

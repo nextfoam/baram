@@ -15,6 +15,9 @@ class ForcesWidget(MonitorsWidget):
         self._db = coredb.CoreDB()
         self._dialog = None
 
+        self.load()
+
+    def load(self):
         self._setListItems(self._db.getForceMonitors())
 
     def _addClicked(self):

@@ -15,6 +15,9 @@ class PointsWidget(MonitorsWidget):
         self._db = coredb.CoreDB()
         self._dialog = None
 
+        self.load()
+
+    def load(self):
         self._setListItems(self._db.getPointMonitors())
 
     def _addClicked(self):

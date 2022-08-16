@@ -69,12 +69,12 @@ class BoundaryConditionsPage(QWidget):
         self._typePicker = None
 
         self._connectSignalsSlots()
-        self._load()
+        self.load()
 
     def save(self):
         pass
 
-    def _load(self):
+    def load(self):
         regions = self._db.getRegions()
         if len(regions) == 1 and not regions[0]:
             self._addBoundaryItems(self._ui.boundaries, self._db.getBoundaryConditions(regions[0]))
@@ -84,6 +84,11 @@ class BoundaryConditionsPage(QWidget):
                 self._addBoundaryItems(item, self._db.getBoundaryConditions(rname))
 
         self._ui.boundaries.expandAll()
+
+    def clear(self):
+        self._ui.boundaries.clear()
+        self._boundaries = {}
+        self._currentRegion = None
 
     def _connectSignalsSlots(self):
         self._ui.boundaries.currentItemChanged.connect(self._updateEditEnabled)

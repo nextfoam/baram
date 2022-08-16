@@ -16,6 +16,9 @@ class MonitorsWidget(QWidget):
 
         self._connectSignalsSlots()
 
+    def clear(self):
+        self._ui.list.clear()
+
     def _setListItems(self, items):
         for i in items:
             self._ui.list.addItem(i)
