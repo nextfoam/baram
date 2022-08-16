@@ -31,7 +31,7 @@ class P(BoundaryCondition):
                 self._calculatedValue = float(self._initialValue) + float(operatingPressure)
                 calculated = True
         elif self._field == 'p_rgh':
-            return
+            return self
 
         self._data = {
             'dimensions': self.DIMENSIONS,
