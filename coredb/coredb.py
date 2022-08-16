@@ -3,11 +3,9 @@
 
 from __future__ import annotations
 
-from threading import Lock
 from enum import Enum, auto
 import copy
 import logging
-import functools
 
 from lxml import etree
 import xmlschema
@@ -23,7 +21,7 @@ from resources import resource
 ns = 'http://www.baramcfd.org/baram'
 nsmap = {'': ns}
 
-_mutex = Lock()
+__instance = None
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +38,40 @@ class Error(Enum):
     EMPTY        = auto()
 
 
-class CoreDB(object):
+def CoreDB():
+    global __instance
+    assert(__instance is not None)
+
+    return __instance
+
+def createDB():
+    global __instance
+    assert(__instance is None)
+
+    __instance = _CoreDB()
+    __instance.loadDefault()
+
+    return __instance
+
+def loadDB(file):
+    global __instance
+    assert(__instance is None)
+
+    __instance = _CoreDB()
+    __instance.load(file)
+
+    return __instance
+
+def loaded():
+    global __instance
+    return __instance is not None
+
+def destroy():
+    global __instance
+    __instance = None
+
+
+class _CoreDB(object):
     CONFIGURATION_ROOT = 'configurations'
     XSD_PATH = f'{CONFIGURATION_ROOT}/baram.cfg.xsd'
     XML_PATH = f'{CONFIGURATION_ROOT}/baram.cfg.xml'
@@ -65,21 +96,11 @@ class CoreDB(object):
     CELL_ZONE_MAX_INDEX = 1000
     BOUNDARY_CONDITION_MAX_INDEX = 10000
 
-    def __new__(cls, *args, **kwargs):
-        with _mutex:
-            if not hasattr(cls, '_instance'):
-                cls._instance = super(CoreDB, cls).__new__(cls)
-        return cls._instance
-
     def __init__(self):
-        if hasattr(self, '_initialized'):
-            return
-
         self._initialized = True
 
         self._configCount = 0
         self._configCountAtSave = self._configCount
-        # self._filePath = None
         self._inContext = False
         self._backupTree = None
         self._lastError = None

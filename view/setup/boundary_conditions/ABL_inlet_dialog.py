@@ -10,41 +10,37 @@ from .ABL_inlet_dialog_ui import Ui_ABLInletDialog
 
 
 class ABLInletDialog(QDialog):
-    RELATIVE_XPATH = '/ablInlet'
-
     def __init__(self, parent, bcid):
         super().__init__(parent)
         self._ui = Ui_ABLInletDialog()
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
-        self._xpath = BoundaryDB.getXPath(bcid)
+        self._xpath = BoundaryDB.ABL_INLET_CONDITIONS_XPATH
 
         self._load()
 
     def accept(self):
-        path = self._xpath + self.RELATIVE_XPATH
-
         writer = CoreDBWriter()
-        writer.append(path + '/flowDirection/x',
+        writer.append(self._xpath + '/flowDirection/x',
                       self._ui.flowDirectionXComponent.text(), self.tr("Flow Direction X-Component"))
-        writer.append(path + '/flowDirection/y',
+        writer.append(self._xpath + '/flowDirection/y',
                       self._ui.flowDirectionYComponent.text(), self.tr("Flow Direction Y-Component"))
-        writer.append(path + '/flowDirection/z',
+        writer.append(self._xpath + '/flowDirection/z',
                       self._ui.flowDirectionZComponent.text(), self.tr("Flow Direction Z-Component"))
-        writer.append(path + '/groundNormalDirection/x',
+        writer.append(self._xpath + '/groundNormalDirection/x',
                       self._ui.groundNormalDirectionXComponent.text(), self.tr("Ground-Normal Direction X-Component"))
-        writer.append(path + '/groundNormalDirection/y',
+        writer.append(self._xpath + '/groundNormalDirection/y',
                       self._ui.groundNormalDirectionYComponent.text(), self.tr("Ground-Normal Direction Y-Component"))
-        writer.append(path + '/groundNormalDirection/z',
+        writer.append(self._xpath + '/groundNormalDirection/z',
                       self._ui.groundNormalDirectionZComponent.text(), self.tr("Ground-Normal Direction Z-Component"))
-        writer.append(path + '/referenceFlowSpeed',
+        writer.append(self._xpath + '/referenceFlowSpeed',
                       self._ui.referenceFlowSpeed.text(), self.tr("Reference Flow Speed"))
-        writer.append(path + '/referenceHeight',
+        writer.append(self._xpath + '/referenceHeight',
                       self._ui.referenceHeight.text(), self.tr("Reference Height"))
-        writer.append(path + '/surfaceRoughnessLength',
+        writer.append(self._xpath + '/surfaceRoughnessLength',
                       self._ui.surfaceRoughnessLength.text(), self.tr("Surface Roughness Length"))
-        writer.append(path + '/minimumZCoordinate',
+        writer.append(self._xpath + '/minimumZCoordinate',
                       self._ui.minimumZCoordinate.text(), self.tr("Minimum z-coordinate"))
 
         errorCount = writer.write()
@@ -54,15 +50,13 @@ class ABLInletDialog(QDialog):
             super().accept()
 
     def _load(self):
-        path = self._xpath + self.RELATIVE_XPATH
-
-        self._ui.flowDirectionXComponent.setText(self._db.getValue(path + '/flowDirection/x'))
-        self._ui.flowDirectionYComponent.setText(self._db.getValue(path + '/flowDirection/y'))
-        self._ui.flowDirectionZComponent.setText(self._db.getValue(path + '/flowDirection/z'))
-        self._ui.groundNormalDirectionXComponent.setText(self._db.getValue(path + '/groundNormalDirection/x'))
-        self._ui.groundNormalDirectionYComponent.setText(self._db.getValue(path + '/groundNormalDirection/y'))
-        self._ui.groundNormalDirectionZComponent.setText(self._db.getValue(path + '/groundNormalDirection/z'))
-        self._ui.referenceFlowSpeed.setText(self._db.getValue(path + '/referenceFlowSpeed'))
-        self._ui.referenceHeight.setText(self._db.getValue(path + '/referenceHeight'))
-        self._ui.surfaceRoughnessLength.setText(self._db.getValue(path + '/surfaceRoughnessLength'))
-        self._ui.minimumZCoordinate.setText(self._db.getValue(path + '/minimumZCoordinate'))
+        self._ui.flowDirectionXComponent.setText(self._db.getValue(self._xpath + '/flowDirection/x'))
+        self._ui.flowDirectionYComponent.setText(self._db.getValue(self._xpath + '/flowDirection/y'))
+        self._ui.flowDirectionZComponent.setText(self._db.getValue(self._xpath + '/flowDirection/z'))
+        self._ui.groundNormalDirectionXComponent.setText(self._db.getValue(self._xpath + '/groundNormalDirection/x'))
+        self._ui.groundNormalDirectionYComponent.setText(self._db.getValue(self._xpath + '/groundNormalDirection/y'))
+        self._ui.groundNormalDirectionZComponent.setText(self._db.getValue(self._xpath + '/groundNormalDirection/z'))
+        self._ui.referenceFlowSpeed.setText(self._db.getValue(self._xpath + '/referenceFlowSpeed'))
+        self._ui.referenceHeight.setText(self._db.getValue(self._xpath + '/referenceHeight'))
+        self._ui.surfaceRoughnessLength.setText(self._db.getValue(self._xpath + '/surfaceRoughnessLength'))
+        self._ui.minimumZCoordinate.setText(self._db.getValue(self._xpath + '/minimumZCoordinate'))

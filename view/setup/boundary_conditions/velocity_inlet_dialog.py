@@ -253,12 +253,12 @@ class VelocityInletDialog(ResizableDialog):
 
     def _spatialDistributionFileSelected(self):
         if files := self._dialog.selectedFiles():
-            fileName = Path(files[0]).name
-            self._ui.spatialDistributionFileName.setText(fileName)
+            file = Path(files[0])
+            self._ui.spatialDistributionFileName.setText(file.name)
             specification = self._ui.velocitySpecificationMethod.currentData()
             if specification == VelocitySpecification.COMPONENT.value:
-                self._componentSpatialDistributionFile = files[0]
-                self._componentSpatialDistributionFileName = fileName
+                self._componentSpatialDistributionFile = file
+                self._componentSpatialDistributionFileName = file.name
             elif specification == VelocitySpecification.MAGNITUDE.value:
-                self._magnitudeSpatialDistributionFile = files[0]
-                self._magnitudeSpatialDistributionFileName = fileName
+                self._magnitudeSpatialDistributionFile = file
+                self._magnitudeSpatialDistributionFileName = file.name

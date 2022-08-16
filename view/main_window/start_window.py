@@ -11,7 +11,8 @@ from filelock import Timeout
 
 from coredb.app_settings import AppSettings
 from coredb.project_settings import ProjectSettings
-from coredb.project import Project
+from coredb.project import Project, ProjectOpenType
+from coredb import coredb
 from view.case_wizard.case_wizard import CaseWizard
 from view.main_window.main_window import MainWindow, CloseType
 from .start_window_ui import Ui_StartWindow
@@ -93,8 +94,9 @@ class StartWindow(QDialog):
             # widget.deleteLater()
 
     def _new(self):
+        coredb.createDB()
         self._dialog = CaseWizard(self)
-        self._dialog.accepted.connect(self._createProject)
+        self._dialog.finished.connect(self._createProject)
         self._dialog.open()
 
     def _open(self):
@@ -106,18 +108,21 @@ class StartWindow(QDialog):
     def _openRecentProject(self, item):
         self._openProject(self._ui.recentCases.itemWidget(item).getProjectPath())
 
-    def _createProject(self):
-        directory = self._dialog.field('projectLocation')
-        os.mkdir(directory)
-        self._openProject(directory, True)
+    def _createProject(self, result):
+        if result == QDialog.Accepted:
+            directory = self._dialog.field('projectLocation')
+            os.mkdir(directory)
+            self._openProject(directory, ProjectOpenType.WIZARD)
+        else:
+            coredb.destroy()
 
     def _openExistingProject(self):
         if dirs := self._dialog.selectedFiles():
             self._openProject(dirs[0])
 
-    def _openProject(self, directory, create=False):
+    def _openProject(self, directory, openType=ProjectOpenType.EXISTING):
         try:
-            Project.open(directory, create)
+            Project.open(directory, openType)
             self.done(QDialog.Accepted)
 
             return

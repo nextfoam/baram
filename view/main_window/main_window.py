@@ -118,19 +118,22 @@ class MainWindow(QMainWindow):
         self.tabifyDockWidget(self._emptyDock, dock)
 
     def closeEvent(self, event):
-        # if self._project.isModified:
-        msgBox = QMessageBox()
-        msgBox.setWindowTitle(self.tr("Save Changed"))
-        msgBox.setText(self.tr("Do you want save your changes?"))
-        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Discard | QMessageBox.Cancel)
-        msgBox.setDefaultButton(QMessageBox.Ok)
+        self._saveCurrentPage()
 
-        result = msgBox.exec()
-        if result == QMessageBox.Ok:
-            self._save()
-        elif result == QMessageBox.Cancel:
-            event.ignore()
-            return
+        if self._project.isModified:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle(self.tr("Save Changed"))
+            msgBox.setText(self.tr("Do you want save your changes?"))
+            msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Discard | QMessageBox.Cancel)
+            msgBox.setDefaultButton(QMessageBox.Ok)
+
+            result = msgBox.exec()
+            if result == QMessageBox.Ok:
+                print('save')
+                self._save()
+            elif result == QMessageBox.Cancel:
+                event.ignore()
+                return
 
         Project.close()
         self.windowClosed.emit(self._closeType)
@@ -154,7 +157,6 @@ class MainWindow(QMainWindow):
         self.close()
 
     def _save(self):
-        self._saveCurrentPage()
         self._project.save()
 
     def _saveAs(self):
