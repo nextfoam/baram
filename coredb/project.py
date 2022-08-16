@@ -11,6 +11,7 @@ from PySide6.QtCore import QObject, Signal, QTimer
 from pathlib import Path
 
 from openfoam.run import isProcessRunning
+from coredb import coredb
 from .project_settings import ProjectSettings, ProjectSettingKey
 from .app_settings import AppSettings
 from .filedb import FileDB
@@ -29,6 +30,12 @@ class SolverStatus(Enum):
 class RunType(Enum):
     PROCESS = auto()
     JOB = auto()
+
+
+class ProjectOpenType(Enum):
+    WIZARD = auto()
+    SAVE_AS = auto()
+    EXISTING = auto()
 
 
 class _Project(QObject):
@@ -110,9 +117,6 @@ class _Project(QObject):
     def fileDB(self):
         return self._fileDB
 
-    def coreDB(self):
-        return self._coreDB
-
     def solverProcess(self):
         return self._projectSettings.get(ProjectSettingKey.PROCESS_ID),\
                self._projectSettings.get(ProjectSettingKey.PROCESS_START_TIME)
@@ -130,7 +134,7 @@ class _Project(QObject):
         if self._updateProcessStatus() != SolverStatus.NONE:
             self._startProcessMonitor(process)
 
-    def _open(self, directory, create=False):
+    def _open(self, directory, route=ProjectOpenType.EXISTING):
         path = Path(directory).resolve()
 
         self._settings = self.LocalSettings(path)
@@ -138,7 +142,7 @@ class _Project(QObject):
 
         self._settings.set(ProjectSettingKey.PATH, path)
 
-        if create or self.uuid:
+        if route != ProjectOpenType.EXISTING or self.uuid:
             projectPath = None
             if self.uuid:
                 self._projectSettings.load(self.uuid)
@@ -162,10 +166,17 @@ class _Project(QObject):
             raise FileNotFoundError
 
         self._projectLock = self._projectSettings.acquireLock(5)
-        AppSettings.updateRecents(self, create)
+        AppSettings.updateRecents(self, route != ProjectOpenType.EXISTING)
 
         self._fileDB = FileDB(self.path)
-        self._coreDB = self._fileDB.load()
+        self._coreDB = None
+        if route == ProjectOpenType.WIZARD:
+            # Coredb should have been created by the wizard,
+            # Ssve that configurations as new project.
+            self._fileDB.saveCoreDB()
+            self._coreDB = coredb.CoreDB()
+        else:
+            self._coreDB = self._fileDB.loadCoreDB()
 
         self._meshLoaded = True if self._coreDB.getRegions() else False
 
@@ -178,17 +189,18 @@ class _Project(QObject):
 
     def _close(self):
         self._settings = None
+        coredb.destroy()
         if self._projectLock:
             self._projectLock.release()
 
     def save(self):
-        self._fileDB.save(self._coreDB)
+        self._fileDB.save()
 
     def saveAs(self, directory):
         shutil.copytree(self.path, directory, dirs_exist_ok=True)
-        self._fileDB.saveAs(self._coreDB, directory)
+        self._fileDB.saveAs(directory)
         self._close()
-        self._open(directory, True)
+        self._open(directory, ProjectOpenType.SAVE_AS)
         self.projectChanged.emit()
 
     def _setStatus(self, status):
@@ -226,16 +238,17 @@ class Project:
     _instance = None
 
     @classmethod
-    def open(cls, directory, create=False):
+    def open(cls, directory, openType):
         assert(cls._instance is None)
         cls._instance = _Project()
-        cls._instance._open(directory, create)
+        cls._instance._open(directory, openType)
         return cls._instance
 
     @classmethod
     def close(cls):
         if cls._instance:
             cls._instance._close()
+
         cls._instance = None
 
     @classmethod
@@ -246,7 +259,3 @@ class Project:
     @classmethod
     def fileDB(cls):
         return cls.instance().fileDB()
-
-    @classmethod
-    def coreDB(cls):
-        return cls.instance().coreDB()

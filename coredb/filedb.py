@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import shutil
 from enum import Enum
+from pathlib import Path
 
 import pandas as pd
 
@@ -30,18 +30,17 @@ class FileDB:
     def __init__(self, projectPath):
         self._filePath = projectPath / 'configuration.h5'
         self._tmpPath = projectPath / 'configuration'
-        self._modificationCount = 0
-        self._modificationCountAtSave = 0
+        self._modifiedAfterSaved = False
 
-        if os.path.isfile(self._filePath):
+        if self._filePath.is_file():
             shutil.copy(self._filePath, self._tmpPath)
 
     @property
     def isModified(self):
-        return self._modificationCountAtSave != self._modificationCount
+        return self._modifiedAfterSaved
 
     def putBcFile(self, bcid, role, filePath):
-        self._saveFile(self._bcKey(bcid, role), filePath, self._columnCounts[role])
+        self._saveFile(self._bcKey(bcid, role), Path(filePath), self._columnCounts[role])
 
     def getBcFile(self, bcid, role):
         return self._loadFile(self._bcKey(bcid, role))
@@ -49,32 +48,26 @@ class FileDB:
     def getBcFileName(self, bcid, role):
         return self._getFileName(self._bcKey(bcid, role))
 
-    def load(self):
-        coreDB = coredb.CoreDB()
-        if os.path.isfile(self._filePath):
-            coreDB.load(self._filePath)
+    def loadCoreDB(self):
+        if coredb.loaded():
+            raise AssertionError('Coredb has not been freed for a fresh load.')
 
-        self._modificationCountAtSave = self._modificationCount
+        if self._filePath.is_file():
+            return coredb.loadDB(self._filePath)
 
-        return coreDB
+        raise AssertionError('Project configuration file was not found.')
 
-    def save(self, coreDB):
-        if os.path.isfile(self._tmpPath):
-            shutil.copy(self._tmpPath, self._filePath)
+    def saveCoreDB(self):
+        if coredb.loaded():
+            coredb.CoreDB().save(self._filePath)
+        else:
+            raise AssertionError('CoreDB has not been created')
 
-        coreDB.save(self._filePath)
+    def save(self):
+        self._save(self._filePath)
 
-        self._modificationCountAtSave = self._modificationCount
-
-    def saveAs(self, coreDB, directory):
-        filePath = os.path.join(directory, 'configuration.h5')
-
-        if os.path.isfile(self._tmpPath):
-            shutil.copy(self._tmpPath, filePath)
-
-        coreDB.save(filePath)
-
-        self._modificationCountAtSave = self._modificationCount
+    def saveAs(self, directory):
+        self._save(directory / 'configuration.h5')
 
     def _bcKey(self, bcid, role):
         return f'bc{bcid}{role.value}'
@@ -86,9 +79,9 @@ class FileDB:
 
         with pd.HDFStore(self._tmpPath) as store:
             store.put(key, df)
-            store.get_storer(key).attrs.fileName = os.path.basename(filePath)
+            store.get_storer(key).attrs.fileName = filePath.name
 
-        self._modificationCount += 1
+        self._modifiedAfterSaved = True
 
     def _loadFile(self, key):
         with pd.HDFStore(self._tmpPath) as store:
@@ -103,3 +96,10 @@ class FileDB:
                 return store.get_storer(key).attrs.fileName
             else:
                 return None
+
+    def _save(self, filePath):
+        if self._tmpPath.is_file():
+            shutil.copy(self._tmpPath, filePath)
+
+        coredb.CoreDB().save(filePath)
+        self._modifiedAfterSaved = False

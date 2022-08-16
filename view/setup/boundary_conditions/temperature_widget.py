@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from os import path
+from pathlib import Path
 
 from PySide6.QtWidgets import QWidget, QFileDialog, QMessageBox
 
@@ -159,8 +159,8 @@ class TemperatureWidget(QWidget):
 
     def _spatialDistributionFileSelected(self):
         if files := self._dialog.selectedFiles():
-            self._spatialDistributionFile = files[0]
-            self._ui.spatialDistributionFileName.setText(path.basename(files[0]))
+            self._spatialDistributionFile = Path(files[0])
+            self._ui.spatialDistributionFileName.setText(self._spatialDistributionFile.name)
 
     def _getRadioValue(self, group, radios):
         return radios[group.id(group.checkedButton())]
