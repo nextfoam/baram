@@ -43,6 +43,8 @@ class _Project(QObject):
     solverStatusChanged = Signal(SolverStatus)
     projectChanged = Signal()
 
+    materialChanged = Signal()
+
     class LocalSettings:
         def __init__(self, path):
             self._settingsFile = path / 'baram.cfg'

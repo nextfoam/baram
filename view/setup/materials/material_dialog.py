@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QFormLayout, QMessageBox
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.material_db import MaterialDB, Specification, Phase
+from coredb.project import Project
 from view.widgets.number_input_dialog import PolynomialDialog
 from .material_dialog_ui import Ui_MaterialDialog
 
@@ -183,6 +184,8 @@ class MaterialDialog(ResizableDialog):
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
+            if name != self._name:
+                Project.instance().materialChanged.emit()
             super().accept()
 
     def _showPropertyRows(self):

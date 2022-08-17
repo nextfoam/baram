@@ -1,24 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, Flag, auto
+from enum import Flag, auto
 
 from PySide6.QtCore import QCoreApplication
 
 from coredb import coredb
-
-
-class ListIndex(Enum):
-    ID = 0
-    NAME = auto()
-    CHEMICAL_FORMULAR = auto()
-    PHASE = auto()
-
-
-class DBListIndex(Enum):
-    NAME = 0
-    CHEMICAL_FORMULAR = auto()
-    PHASE = auto()
 
 
 class Phase(Flag):

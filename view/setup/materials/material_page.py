@@ -4,7 +4,8 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QMessageBox
 
 from coredb import coredb
-from coredb.material_db import MaterialDB, ListIndex, DBListIndex
+from coredb.material_db import MaterialDB
+from coredb.project import Project
 from view.widgets.selector_dialog import SelectorDialog
 from view.widgets.multi_selector_dialog import SelectorItem
 from .material_page_ui import Ui_MaterialPage
@@ -24,6 +25,8 @@ class MaterialPage(QWidget):
 
         self._db = coredb.CoreDB()
         self._addDialog = None
+
+        self._materialChanged = Project.instance().materialChanged
 
         self._connectSignalsSlots()
         self._load()
@@ -45,22 +48,22 @@ class MaterialPage(QWidget):
             self._cardListLayout.removeWidget(card)
             card.deleteLater()
 
+        self._materialChanged.emit()
+
     def _connectSignalsSlots(self):
         self._ui.add.clicked.connect(self._add)
 
     def _load(self):
         materials = self._db.getMaterials()
 
-        for m in materials:
-            self._addCard(m[ListIndex.ID.value])
+        for mid, name, formula, phase in materials:
+            self._addCard(mid)
 
     def _add(self):
         if self._addDialog is None:
-            materials = [SelectorItem(
-                f'{m[DBListIndex.NAME.value]} ({MaterialDB.getPhaseText(MaterialDB.dbTextToPhase(m[DBListIndex.PHASE.value]))})',
-                m[DBListIndex.NAME.value],
-                m[DBListIndex.NAME.value])
-                for m in self._db.getMaterialsFromDB()]
+            materials = [
+                SelectorItem(f'{name} ({MaterialDB.getPhaseText(MaterialDB.dbTextToPhase(phase))})', name, name)
+                for name, formula, phase in self._db.getMaterialsFromDB()]
             self._addDialog = SelectorDialog(self, self.tr("Material"), self.tr("Select material to add"), materials)
             self._addDialog.accepted.connect(self._addDialogAccepted)
 
@@ -73,4 +76,5 @@ class MaterialPage(QWidget):
 
     def _addDialogAccepted(self):
         self._addCard(self._db.addMaterial(self._addDialog.selectedItem()))
+        self._materialChanged.emit()
 

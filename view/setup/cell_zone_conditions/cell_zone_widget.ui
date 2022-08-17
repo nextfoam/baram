@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>BoundaryWidget</class>
- <widget class="QWidget" name="BoundaryWidget">
+ <class>CellZoneWidget</class>
+ <widget class="QWidget" name="CellZoneWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
