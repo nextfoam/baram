@@ -574,8 +574,8 @@ class _CoreDB(object):
         # check if the material is referenced by other elements
 
         mid = material.attrib['mid']
-        idList = self._xmlTree.xpath(f'.//x:cellZones/x:region/x:material/text()', namespaces={'x': ns})
-        if str(mid) in idList:
+        idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:material/text()', namespaces={'x': ns})
+        if mid in idList:
             return Error.REFERENCED
 
         elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
