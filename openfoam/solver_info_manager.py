@@ -205,17 +205,23 @@ class Worker(QObject):
                 return
             else:  # Now, Ready to collect
                 self.collectionReady = True
+                hasUpdate = False
                 for s in self.infoFiles.values():
                     if s not in self.changingFiles.values():  # not-changing files
                         df = getDataFrame(s.region, s.path)
-                        self.data[s.region] = updateData(self.data[s.region], df)
+                        if df is not None:
+                            self.data[s.region] = updateData(self.data[s.region], df)
+                            hasUpdate = True
 
                 for s in self.changingFiles.values():
                     s.f = open(s.path, 'r')
                     updated, df = updateDataFromFile(self.data[s.region], s.region, s.f)
                     if updated:
                         self.data[s.region] = updateData(self.data[s.region], df)
-                self.residualsUpdated.emit(mergeDataFrames(self.data.values()))
+                        hasUpdate = True
+
+                if hasUpdate:
+                    self.residualsUpdated.emit(mergeDataFrames(self.data.values()))
 
                 return
 

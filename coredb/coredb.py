@@ -6,6 +6,7 @@ from __future__ import annotations
 from enum import Enum, auto
 import copy
 import logging
+from typing import Optional
 
 from lxml import etree
 import xmlschema
@@ -21,7 +22,7 @@ from resources import resource
 ns = 'http://www.baramcfd.org/baram'
 nsmap = {'': ns}
 
-__instance = None
+__instance: Optional[_CoreDB] = None
 
 logger = logging.getLogger(__name__)
 

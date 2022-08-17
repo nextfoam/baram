@@ -148,7 +148,10 @@
                </sizepolicy>
               </property>
               <property name="styleSheet">
-               <string notr="true">color:grey</string>
+               <string notr="true">QLabel::enabled
+{
+    color:	grey;
+}</string>
               </property>
               <property name="text">
                <string/>
@@ -176,7 +179,11 @@
             </font>
            </property>
            <property name="styleSheet">
-            <string notr="true">color:boldgrey</string>
+            <string notr="true">QLabel::enabled
+{
+    color:	boldgrey;
+}
+</string>
            </property>
            <property name="text">
             <string>TextLabel</string>

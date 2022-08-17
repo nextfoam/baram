@@ -159,10 +159,9 @@ class ControlDict(DictionaryFile):
             data[residualsName] = {
                 'type': 'solverInfo',
                 'libs': ['"libutilityFunctionObjects.so"'],
-                'writeControl': 'timeStep',
-                'writeInterval': '1',
-                'writeResidualFields': 'yes',
-                'log': 'true',
+                'executeControl': 'timeStep',
+                'executeInterval': '1',
+                'writeResidualFields': 'no',
 
                 'fields': fields
             }
