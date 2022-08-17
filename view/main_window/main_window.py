@@ -300,6 +300,9 @@ class MainWindow(QMainWindow):
         self._project.setMeshLoaded(False)
 
     def _updateMesh(self):
+        if self._project.meshLoaded:
+            return
+
         db = coredb.CoreDB()
         mesh = self._meshDock.vtkMesh()
 
