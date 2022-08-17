@@ -222,7 +222,7 @@ class MainWindow(QMainWindow):
                 for g in checkFiles:
                     if not os.path.isfile(f'{f}/{g}'):
                         return False, False
-        if not multiRegionState:
+        else:   # if not multiRegionState:
             for f in checkFiles:
                 if not os.path.isfile(f'{path}/{f}'):
                     return False, False
