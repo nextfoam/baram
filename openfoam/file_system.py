@@ -8,6 +8,8 @@ from pathlib import Path
 
 from coredb.project import Project
 
+from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
+
 
 class FileSystem:
     CASE_DIRECTORY_NAME = 'case'
@@ -75,13 +77,30 @@ class FileSystem:
         if os.path.exists(cls._constantPath):
             shutil.rmtree(cls._constantPath)
 
-        os.mkdir(cls._constantPath)
-        objPath = cls._constantPath
-        if not multiRegionState:
-            objPath = f'{cls._constantPath}/polyMesh'
-            Path(objPath).mkdir(parents=True)
+        constantPath = cls._constantPath
+        Path(constantPath).mkdir(parents=True)
+        if multiRegionState:
+            srcFile = f'{directory}/regionProperties'
+            objFile = f'{constantPath}/regionProperties'
+            shutil.copyfile(srcFile, objFile)
 
-        shutil.copytree(directory, objPath, dirs_exist_ok=True)
+            regions = []
+            regionsDict = ParsedParameterFile(f'{directory}/regionProperties').content['regions']
+            for i in range(1, len(regionsDict), 2):
+                for region in regionsDict[i]:
+                    regions.append(region)
+
+            for d in regions:
+                srcPath = f'{directory}/{d}'
+                objPath = f'{constantPath}/{d}'
+                shutil.copytree(srcPath, objPath, dirs_exist_ok=True)
+
+        elif not multiRegionState:
+            polyMeshPath = f'{cls._constantPath}/polyMesh'
+            Path(polyMeshPath).mkdir(parents=True)
+
+
+            shutil.copytree(directory, polyMeshPath, dirs_exist_ok=True)
 
         with open(cls.foamFilePath(), 'a'):
             pass
