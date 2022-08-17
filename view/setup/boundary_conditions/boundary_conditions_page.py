@@ -28,6 +28,9 @@ from .cyclic_dialog import CyclicDialog
 from .boundary_widget import BoundaryWidget
 from .boundary_type_picker import BoundaryTypePicker
 
+
+DEFAULT_REGION_NAME = 'region0'
+
 DIALOGS = {
     BoundaryType.VELOCITY_INLET.value: VelocityInletDialog,
     BoundaryType.FLOW_RATE_INLET.value: FlowRateInletDialog,
@@ -63,7 +66,6 @@ class BoundaryConditionsPage(QWidget):
 
         self._db = coredb.CoreDB()
         self._boundaries = {}
-        self._currentRegion = None
 
         self._dialog = None
         self._typePicker = None
@@ -77,25 +79,26 @@ class BoundaryConditionsPage(QWidget):
     def load(self):
         regions = self._db.getRegions()
         if len(regions) == 1 and not regions[0]:
-            self._addBoundaryItems(self._ui.boundaries, self._db.getBoundaryConditions(regions[0]))
+            item = QTreeWidgetItem(self._ui.boundaries, [DEFAULT_REGION_NAME], 0)
+            self._addBoundaryItems(item, '')
         else:
             for rname in regions:
                 item = QTreeWidgetItem(self._ui.boundaries, [rname], 0)
-                self._addBoundaryItems(item, self._db.getBoundaryConditions(rname))
+                self._addBoundaryItems(item, rname)
 
         self._ui.boundaries.expandAll()
 
     def clear(self):
         self._ui.boundaries.clear()
         self._boundaries = {}
-        self._currentRegion = None
 
     def _connectSignalsSlots(self):
         self._ui.boundaries.currentItemChanged.connect(self._updateEditEnabled)
         self._ui.boundaries.doubleClicked.connect(self._edit)
         self._ui.edit.clicked.connect(self._edit)
 
-    def _addBoundaryItems(self, parent, boundaries):
+    def _addBoundaryItems(self, parent, rname):
+        boundaries = self._db.getBoundaryConditions(rname)
         for bcid, bcname, bctype in boundaries:
             item = QTreeWidgetItem(parent, bcid)
             boundaryWidget = BoundaryWidget(bcid, bcname, bctype)

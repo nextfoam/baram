@@ -57,18 +57,18 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>36</width>
-          <height>36</height>
+          <width>32</width>
+          <height>32</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>36</width>
-          <height>36</height>
+          <width>32</width>
+          <height>32</height>
          </size>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color:skyblue; border-radius:17px</string>
+         <string notr="true">background-color:skyblue; border-radius:15px</string>
         </property>
         <property name="text">
          <string/>

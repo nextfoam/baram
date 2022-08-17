@@ -8,7 +8,7 @@ from PySide6.QtCore import QCoreApplication
 from coredb import coredb
 from coredb.models_db import ModelsDB, TurbulenceModel
 from coredb.general_db import GeneralDB
-from coredb.material_db import MaterialDB, ListIndex, Phase
+from coredb.material_db import MaterialDB, Phase
 
 
 class Field(Enum):
@@ -118,9 +118,8 @@ class FieldHelper:
         def _appendField(field):
             fields.append(cls.FieldItem(cls.FIELD_TEXTS[field], field))
 
-        def _appendMaterial(material):
-            fields.append(
-                cls.FieldItem(material[ListIndex.NAME.value], Field.MATERIAL, str(material[ListIndex.ID.value])))
+        def _appendMaterial(mid, name):
+            fields.append(cls.FieldItem(name, Field.MATERIAL, str(mid)))
 
         # Always available fields
         _appendField(Field.PRESSURE)
@@ -152,9 +151,9 @@ class FieldHelper:
 
         # Material fields when species model is on
         if ModelsDB.isSpeciesModelOn():
-            for m in coredb.CoreDB().getMaterials():
-                if MaterialDB.dbTextToPhase(m[ListIndex.PHASE.value]) != Phase.SOLID:
-                    _appendMaterial(m)
+            for mid, name, formula, phase in coredb.CoreDB().getMaterials():
+                if MaterialDB.dbTextToPhase(phase) != Phase.SOLID:
+                    _appendMaterial(mid, name)
 
         return fields
 

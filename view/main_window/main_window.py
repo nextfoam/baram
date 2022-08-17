@@ -262,6 +262,7 @@ class MainWindow(QMainWindow):
         self._clearPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
         self._clearPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
         self._clearPage(MenuItem.MENU_SOLUTION_MONITORS)
+        self._project.setMeshLoaded(False)
 
     def _updateMesh(self):
         db = coredb.CoreDB()
