@@ -91,14 +91,15 @@ class FileSystem:
                     regions.append(region)
 
             for d in regions:
-                srcPath = f'{directory}/{d}'
-                objPath = f'{constantPath}/{d}'
+                srcPath = f'{directory}/{d}/polyMesh'
+                objPath = f'{constantPath}/{d}/polyMesh'
+                Path(objPath).mkdir(parents=True)
+
                 shutil.copytree(srcPath, objPath, dirs_exist_ok=True)
 
         elif not multiRegionState:
             polyMeshPath = f'{cls._constantPath}/polyMesh'
             Path(polyMeshPath).mkdir(parents=True)
-
 
             shutil.copytree(directory, polyMeshPath, dirs_exist_ok=True)
 
