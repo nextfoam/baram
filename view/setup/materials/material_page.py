@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QMessageBox
 from coredb import coredb
 from coredb.material_db import MaterialDB
 from coredb.project import Project
+from coredb.coredb import Error
 from view.widgets.selector_dialog import SelectorDialog
 from view.widgets.multi_selector_dialog import SelectorItem
 from .material_page_ui import Ui_MaterialPage
@@ -44,9 +45,14 @@ class MaterialPage(QWidget):
         confirm = QMessageBox.question(
             self, self.tr("Remove material"), self.tr(f'Remove material "{card.name}"'))
         if confirm == QMessageBox.Yes:
-            self._db.removeMaterial(card.name)
-            self._cardListLayout.removeWidget(card)
-            card.deleteLater()
+            error = self._db.removeMaterial(card.name)
+            if not error:
+                self._cardListLayout.removeWidget(card)
+                card.deleteLater()
+            elif error == Error.REFERENCED:
+                QMessageBox.critical(
+                    self, self.tr('Remove Meterial Failed'),
+                    self.tr(f'"{card.name}" is referenced by other configurations. It cannot be removed.'))
 
         self._materialChanged.emit()
 
