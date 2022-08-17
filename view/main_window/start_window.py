@@ -19,7 +19,7 @@ from .start_window_ui import Ui_StartWindow
 from .recent_widget import RecentWidget
 
 
-RECENT_PROJECTS_NUMBER = 5
+RECENT_PROJECTS_NUMBER = 100
 
 
 class GlobalSettingKey(Enum):
