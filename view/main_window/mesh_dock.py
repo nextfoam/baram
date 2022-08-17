@@ -61,7 +61,8 @@ def build(mBlock):
         if dsType == vtk.VTK_MULTIBLOCK_DATA_SET:
             vtkMesh[name] = build(ds)
         elif dsType == vtk.VTK_UNSTRUCTURED_GRID:
-            vtkMesh[name] = getActorInfo(ds)
+            if ds.GetNumberOfCells() > 0:
+                vtkMesh[name] = getActorInfo(ds)
         elif dsType == vtk.VTK_POLY_DATA:
             vtkMesh[name] = getActorInfo(ds)
         else:
