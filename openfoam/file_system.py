@@ -87,10 +87,10 @@ class FileSystem:
             for rname in regions:
                 srcPath = directory / rname / cls.POLY_MESH_DIRECTORY_NAME
                 objPath = cls.constantPath(rname) / cls.POLY_MESH_DIRECTORY_NAME
-                shutil.copytree(srcPath, objPath)
+                shutil.copytree(srcPath, objPath, copy_function=shutil.copyfile)
         else:
             polyMeshPath = cls.constantPath(cls.POLY_MESH_DIRECTORY_NAME)
-            shutil.copytree(directory / FileSystem.POLY_MESH_DIRECTORY_NAME, polyMeshPath)
+            shutil.copytree(directory / FileSystem.POLY_MESH_DIRECTORY_NAME, polyMeshPath, copy_function=shutil.copyfile)
 
         with open(cls.foamFilePath(), 'a'):
             pass
