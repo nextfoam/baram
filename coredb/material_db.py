@@ -39,15 +39,20 @@ class MaterialDB(object):
     }
 
     @classmethod
-    def getXPath(cls, mid):
+    def getXPath(cls, mid) -> str:
         return f'{cls.MATERIALS_XPATH}/material[@mid="{mid}"]'
 
     @classmethod
-    def getPhase(cls, mid):
+    def getPhase(cls, mid) -> Phase:
         return cls.dbTextToPhase(coredb.CoreDB().getValue(cls.getXPath(mid) + '/phase'))
 
     @classmethod
-    def dbTextToPhase(cls, DBText):
+    def getCoolPropName(cls, mid) -> str:
+        name = coredb.CoreDB().getValue(f'{MaterialDB.getXPath(mid)}/name')
+        return coredb.CoreDB().materialDB[name]['CoolPropName']
+
+    @classmethod
+    def dbTextToPhase(cls, DBText) -> Phase:
         if DBText == "gas":
             return Phase.GAS
         elif DBText == "liquid":
@@ -56,13 +61,13 @@ class MaterialDB(object):
             return Phase.SOLID
         
     @classmethod
-    def getPhaseText(cls, phase):
+    def getPhaseText(cls, phase) -> str:
         return cls._phaseText[phase]
 
     @classmethod
-    def dbSpecificationToText(cls, DBText):
+    def dbSpecificationToText(cls, DBText) -> str:
         return cls.specificationText[Specification(DBText)]
 
     @classmethod
-    def isMaterialExists(cls, name):
+    def isMaterialExists(cls, name) -> bool:
         return coredb.CoreDB().exists(f'{cls.MATERIALS_XPATH}/material[name="{name}"]')

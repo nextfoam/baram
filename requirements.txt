@@ -3,6 +3,7 @@ aiosignal==1.2.0
 async-timeout==4.0.2
 attrs==21.4.0
 charset-normalizer==2.1.0
+CoolProp==6.4.1
 cycler==0.11.0
 elementpath==2.5.1
 filelock==3.7.1
@@ -13,9 +14,10 @@ idna==3.3
 kiwisolver==1.4.4
 lxml==4.8.0
 matplotlib==3.5.2
+msvc-runtime==14.29.30133
 multidict==6.0.2
 numexpr==2.8.3
-numpy==1.22.3
+numpy==1.19.5
 packaging==21.3
 pandas==1.4.2
 Pillow==9.2.0

@@ -115,7 +115,7 @@ class _CoreDB(object):
         self._xmlTree = None
 
         df = pd.read_csv(resource.file(self.MATERIALS_PATH), header=0, index_col=0).transpose()
-        self._materialDB = df.where(pd.notnull(df), None).to_dict()
+        self.materialDB = df.where(pd.notnull(df), None).to_dict()
 
         self.loadDefault()
 
@@ -475,7 +475,7 @@ class _CoreDB(object):
         Returns:
             List of materials in tuple, '(name, chemicalFormula, phase)'
         """
-        return [(k, v['chemicalFormula'], v['phase']) for k, v in self._materialDB.items()]
+        return [(k, v['chemicalFormula'], v['phase']) for k, v in self.materialDB.items()]
 
     def getMaterials(self) -> list[(int, str, str, str)]:
         """Returns configured materials
@@ -499,7 +499,7 @@ class _CoreDB(object):
             LookupError: material not found in material database
         """
         try:
-            mdb = self._materialDB[name]
+            mdb = self.materialDB[name]
         except KeyError:
             raise LookupError
 

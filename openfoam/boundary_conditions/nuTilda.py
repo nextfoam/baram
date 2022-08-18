@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from CoolProp.CoolProp import PropsSI
+
 from coredb import coredb
+from coredb.cell_zone_db import RegionDB
+from coredb.material_db import MaterialDB, Phase
 from coredb.boundary_db import BoundaryDB, BoundaryType, SpalartAllmarasSpecification, InterfaceMode
 from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
@@ -15,8 +19,23 @@ class NuTilda(BoundaryCondition):
 
         self._rname = rname
         self._db = coredb.CoreDB()
-        # ToDo: Set initialValue
-        self._initialValue = 0
+
+        p = float(self._db.getValue('.//initialization/initialValues/pressure'))\
+            + float(self._db.getValue('.//operatingConditions/pressure'))  # Pressure
+        t = float(self._db.getValue('.//initialization/initialValues/temperature'))  # Temperature
+        b = float(self._db.getValue('.//initialization/initialValues/turbulentViscosity'))  # Turbulent Viscosity
+
+        mid = RegionDB.getMaterial(rname)
+        assert MaterialDB.getPhase(mid) in [Phase.LIQUID, Phase.GAS]
+        cpName = MaterialDB.getCoolPropName(mid)
+
+        rho = PropsSI('D', 'T', float(t), 'P', float(p), cpName)  # Density
+        mu  = PropsSI('V', 'T', float(t), 'P', float(p), cpName)  # Viscosity
+
+        nu = mu / rho  # Kinetic Viscosity
+        nut = b * nu
+
+        self._initialValue = nut  # nut can be used for the INITIAL value of nuTilda
 
         self._data = None
 
