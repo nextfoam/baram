@@ -17,6 +17,7 @@ from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
 import vtkmodules.vtkRenderingOpenGL2
 import vtkmodules.vtkInteractionStyle
 
+from coredb import coredb
 from openfoam.file_system import FileSystem
 from .tabified_dock import TabifiedDock
 
@@ -90,7 +91,7 @@ VtkMesh dict
     ...
 }
 """
-def getVtkMesh(foamFilePath: Path):
+def getVtkMesh(foamFilePath: Path, statusConfig: dict):
     r = vtkOpenFOAMReader()
     r.SetFileName(str(foamFilePath))
     r.DecomposePolyhedraOn()
@@ -101,15 +102,9 @@ def getVtkMesh(foamFilePath: Path):
     r.CreateCellToPointOn()
     r.CacheMeshOn()
     r.ReadZonesOn()
-    r.Update()
 
-    numberOfPatchArrays = r.GetNumberOfPatchArrays()
-    for i in range(0, numberOfPatchArrays):
-        name = r.GetPatchArrayName(i)
-        if name.endswith('internalMesh'):
-            r.SetPatchArrayStatus(name, 0)
-        else:
-            r.SetPatchArrayStatus(name, 1)
+    for patchName, status in statusConfig.items():
+        r.SetPatchArrayStatus(patchName, status)
 
     r.Update()
 
@@ -152,9 +147,14 @@ class MeshDock(TabifiedDock):
 
     @qasync.asyncSlot()
     async def showOpenFoamMesh(self):
-        self._vtkMesh = await asyncio.to_thread(getVtkMesh, FileSystem.foamFilePath())
+        statusConfig = self.buildPatchArrayStatus()
+
+        self._vtkMesh = await asyncio.to_thread(getVtkMesh, FileSystem.foamFilePath(), statusConfig)
 
         for region in self._vtkMesh:
+            if 'boundary' not in self._vtkMesh[region]:  # polyMesh folder in multi-region constant folder
+                continue
+
             for boundary in self._vtkMesh[region]['boundary']:
                 actorInfo = self._vtkMesh[region]['boundary'][boundary]
                 self._renderer.AddActor(actorInfo.actor)
@@ -162,3 +162,23 @@ class MeshDock(TabifiedDock):
         self._widget.Render()
 
         self.meshLoaded.emit()
+
+    def buildPatchArrayStatus(self):
+        statusConfig = {'internalMesh': 0}
+
+        db = coredb.CoreDB()
+        regions = db.getRegions()
+
+        if len(regions) == 1:  # single region
+            for _, b, _ in db.getBoundaryConditions(regions[0]):
+                statusConfig[f'patch/{b}'] = 1
+
+            return statusConfig
+
+        else:  # multi-region
+            for r in regions:
+                statusConfig[f'/{r}/internalMesh'] = 0
+                for _, b, _ in db.getBoundaryConditions(r):
+                    statusConfig[f'/{r}/patch/{b}'] = 1
+
+            return statusConfig
