@@ -27,6 +27,7 @@ from view.solution.initialization.initialization_page import InitializationPage
 from view.solution.run_calculation.run_calculation_page import RunCalculationPage
 from view.solution.process_information.process_information_page import ProcessInformationPage
 from openfoam.file_system import FileSystem
+from openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu.settings_language import SettingLanguageDialog
@@ -206,7 +207,7 @@ class MainWindow(QMainWindow):
         if len(foundFiles) == 0:
             foundFiles = glob.glob(str(path / '**' / 'boundary'), recursive=True)
             if len(foundFiles) == 1:
-                path = Path(foundFiles[0]).parent
+                path = Path(foundFiles[0]).parent.parent
             else:
                 return False, False
         elif len(foundFiles) == 1:
@@ -216,16 +217,12 @@ class MainWindow(QMainWindow):
             return False, False
 
         checkFiles = ['boundary', 'cellZones', 'faces', 'neighbour', 'owner', 'points']
-        if multiRegionState:
-            foundFiles = glob.glob(str(path / '**' / 'polyMesh'), recursive=True)
-            for f in foundFiles:
-                for g in checkFiles:
-                    if not os.path.isfile(f'{f}/{g}'):
-                        return False, False
-        else:   # if not multiRegionState:
-            for f in checkFiles:
-                if not os.path.isfile(f'{path}/{f}'):
+        foundFiles = glob.glob(str(path / '**' / 'polyMesh'), recursive=True)
+        for f in foundFiles:
+            for g in checkFiles:
+                if not os.path.isfile(f'{f}/{g}'):
                     return False, False
+
         return path, multiRegionState
 
     def _changeForm(self, currentMenu):
@@ -248,18 +245,19 @@ class MainWindow(QMainWindow):
         self.tabifyDock(dock)
         self._ui.menuView.addAction(dock.toggleViewAction())
 
-    async def _loadOpenFoamMesh(self, dirName, multiRegionState):
+    async def _loadOpenFoamMesh(self, srcPath, multiRegionState):
         self._clearMesh()
 
         try:
             self._ui.actionLoadMesh.setEnabled(False)
-            await FileSystem.copyMeshFrom(dirName, multiRegionState)
+            await PolyMeshLoader.loadBoundaries(srcPath)
+            await FileSystem.copyMeshFrom(srcPath, coredb.CoreDB().getRegions())
             self._meshDock.reloadMesh.emit()
             # PolyMeshLoader.load()
             # self._project.setMeshLoaded(True)
         except Exception as ex:
-            logger.debug(ex, exc_info=True)
-            QMessageBox.critical(self, self.tr('Mesh Loading Failed'), self.tr(f'Mesh Loading Failed.'))
+            logger.info(ex, exc_info=True)
+            QMessageBox.critical(self, self.tr('Mesh Loading Failed'), str(ex))
             self._ui.actionLoadMesh.setEnabled(True)
 
     def _changeLanguage(self):
@@ -292,11 +290,11 @@ class MainWindow(QMainWindow):
         db = coredb.CoreDB()
         db.clearRegions()
         db.clearMonitors()
-        self._project.setMeshLoaded(False)
 
         self._clearPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
         self._clearPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
         self._clearPage(MenuItem.MENU_SOLUTION_MONITORS)
+        self._meshDock.clear()
         self._project.setMeshLoaded(False)
 
     def _updateMesh(self):
@@ -307,9 +305,6 @@ class MainWindow(QMainWindow):
         mesh = self._meshDock.vtkMesh()
 
         for region in mesh:
-            db.addRegion(region)
-            for boundary in mesh[region]['boundary']:
-                db.addBoundaryCondition(region, boundary, 'wall')
             if 'zones' in mesh[region] and 'cellZones' in mesh[region]['zones']:
                 for cellZone in mesh[region]['zones']['cellZones']:
                     db.addCellZone(region, cellZone)

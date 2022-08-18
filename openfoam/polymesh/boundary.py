@@ -50,7 +50,7 @@ class Boundary(DictionaryFile):
 
         fullPath = self.fullPath()
 
-        self._boundaryDict = PolyMeshLoader.loadBoundaryDict(fullPath, treatBinaryAsASCII=True)
+        self._boundaryDict = PolyMeshLoader.loadBoundaryDict(fullPath)
         for bcname in self._boundaryDict.content:
             xpath = BoundaryDB.getXPathByName(self._rname, bcname)
             bctype = self._db.getValue(xpath + '/physicalType')

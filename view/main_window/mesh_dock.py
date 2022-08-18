@@ -146,10 +146,12 @@ class MeshDock(TabifiedDock):
     def vtkMesh(self):
         return self._vtkMesh
 
+    def clear(self):
+        self._renderer.RemoveAllViewProps()
+        self._widget.Render()
+
     @qasync.asyncSlot()
     async def showOpenFoamMesh(self):
-        self._renderer.RemoveAllViewProps()
-
         self._vtkMesh = await asyncio.to_thread(getVtkMesh, FileSystem.foamFilePath())
 
         for region in self._vtkMesh:

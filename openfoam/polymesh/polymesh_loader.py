@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import logging
 
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict, ParsedParameterFile
 
 from coredb import coredb
-from openfoam.file_system import FileSystem
+from openfoam.file_system import FileSystem, FileLoadingError
 
 
 logger = logging.getLogger(__name__)
@@ -15,37 +14,26 @@ logger = logging.getLogger(__name__)
 
 class PolyMeshLoader:
     @classmethod
-    def load(cls):
+    async def loadBoundaries(cls, srcPath):
         db = coredb.CoreDB()
 
-        regions = cls.loadRegions()
+        regions = cls.loadRegions(srcPath)
         boundaries = {}
-        cellZones = []
 
         for rname in regions:
-            boundaryDict = cls.loadBoundaryDict(FileSystem.boundaryFilePath(rname), treatBinaryAsASCII=True)
+            boundaryPath = (srcPath / rname if rname else srcPath) / FileSystem.POLY_MESH_DIRECTORY_NAME / 'boundary'
+            boundaryDict = cls.loadBoundaryDict(boundaryPath)
             boundaries[rname] = [(bname, boundary['type']) for bname, boundary in boundaryDict.content.items()]
-            cellZonesPath = FileSystem.cellZonesFilePath(rname)
-            if os.path.isfile(cellZonesPath):
-                cellZonesDict = cls.loadBoundaryDict(cellZonesPath, listLengthUnparsed=10)
-                if cellZonesDict:
-                    for czname, cellZone in cellZonesDict.content.items():
-                        cellLabels = cellZone['cellLabels']
-                        if cellLabels and cellLabels[len(cellLabels) - 1]:
-                            cellZones.append((rname, czname))
 
         for rname in regions:
             db.addRegion(rname)
             for bname, btype in boundaries[rname]:
                 db.addBoundaryCondition(rname, bname, btype)
 
-        for rname, czname in cellZones:
-            db.addCellZone(rname, czname)
-
     @classmethod
-    def loadRegions(cls):
-        fileName = FileSystem.constantPath('regionProperties')
-        if os.path.isfile(fileName):
+    def loadRegions(cls, srcPath):
+        fileName = srcPath / FileSystem.REGION_PROPERTIES_FILE_NAME
+        if fileName.is_file():
             regions = []
             regionsDict = ParsedParameterFile(fileName).content['regions']
             for i in range(1, len(regionsDict), 2):
@@ -55,10 +43,10 @@ class PolyMeshLoader:
             if regions:
                 return regions
             else:
-                raise RuntimeError
+                raise FileLoadingError('Failed to load regionProperties file.')
 
         return ['']
 
     @classmethod
-    def loadBoundaryDict(cls, path, listLengthUnparsed=None, treatBinaryAsASCII=False):
-        return ParsedBoundaryDict(path, listLengthUnparsed=listLengthUnparsed, treatBinaryAsASCII=treatBinaryAsASCII)
+    def loadBoundaryDict(cls, path, listLengthUnparsed=None):
+        return ParsedBoundaryDict(path, listLengthUnparsed=listLengthUnparsed, treatBinaryAsASCII=True)

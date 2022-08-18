@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import shutil
 import asyncio
-from pathlib import Path
 
 from coredb.project import Project
 
-from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
+
+class FileLoadingError(Exception):
+    pass
 
 
 class FileSystem:
@@ -18,6 +18,7 @@ class FileSystem:
     SYSTEM_DIRECTORY_NAME = 'system'
     POLY_MESH_DIRECTORY_NAME = 'polyMesh'
     BOUNDARY_DATA_DIRECTORY_NAME = 'boundaryData'
+    REGION_PROPERTIES_FILE_NAME = 'regionProperties'
 
     _casePath = None
     _constantPath = None
@@ -27,7 +28,7 @@ class FileSystem:
     @classmethod
     def setup(cls):
         cls._casePath = cls.makeDir(Project.instance().path, cls.CASE_DIRECTORY_NAME)
-        cls._constantPath = os.path.join(cls._casePath, cls.CONSTANT_DIRECTORY_NAME)
+        cls._constantPath = cls._casePath / cls.CONSTANT_DIRECTORY_NAME
 
     @classmethod
     def initCaseDir(cls):
@@ -46,73 +47,60 @@ class FileSystem:
 
     @classmethod
     def constantPath(cls, rname=None):
-        return os.path.join(cls._constantPath, rname) if rname else cls._constantPath
+        return cls._constantPath / rname if rname else cls._constantPath
 
     @classmethod
     def boundaryConditionsPath(cls, rname=None):
-        return os.path.join(cls._boundaryConditionsPath, rname) if rname else cls._boundaryConditionsPath
+        return cls._boundaryConditionsPath / rname if rname else cls._boundaryConditionsPath
 
     @classmethod
     def systemPath(cls, rname=None):
-        return os.path.join(cls._systemPath, rname) if rname else cls._systemPath
+        return cls._systemPath / rname if rname else cls._systemPath
 
     @classmethod
     def boundaryFilePath(cls, rname):
-        return os.path.join(cls.constantPath(rname), cls.POLY_MESH_DIRECTORY_NAME, 'boundary')
+        return cls.constantPath(rname) / cls.POLY_MESH_DIRECTORY_NAME / 'boundary'
 
     @classmethod
     def cellZonesFilePath(cls, rname):
-        return os.path.join(cls.constantPath(rname), cls.POLY_MESH_DIRECTORY_NAME, 'cellZones')
+        return cls.constantPath(rname) / cls.POLY_MESH_DIRECTORY_NAME / 'cellZones'
 
     @classmethod
     def boundaryDataPath(cls, rname):
-        return os.path.join(cls.constantPath(rname), rname, cls.BOUNDARY_DATA_DIRECTORY_NAME)
+        return cls.constantPath(rname) / rname / cls.BOUNDARY_DATA_DIRECTORY_NAME
 
     @classmethod
     def foamFilePath(cls):
-        return Path(os.path.join(cls._casePath, 'baram.foam'))
+        return cls._casePath / 'baram.foam'
 
     @classmethod
-    def _copyMeshFromInternal(cls, directory, multiRegionState):
-        if os.path.exists(cls._constantPath):
+    def _copyMeshFromInternal(cls, directory, regions):
+        if cls._constantPath.exists():
             shutil.rmtree(cls._constantPath)
+        cls._constantPath.mkdir(exist_ok=True)
 
-        constantPath = cls._constantPath
-        Path(constantPath).mkdir(parents=True)
-        if multiRegionState:
-            srcFile = f'{directory}/regionProperties'
-            objFile = f'{constantPath}/regionProperties'
+        srcFile = directory / cls.REGION_PROPERTIES_FILE_NAME
+        if srcFile.is_file():
+            objFile = cls.constantPath(cls.REGION_PROPERTIES_FILE_NAME)
             shutil.copyfile(srcFile, objFile)
 
-            regions = []
-            regionsDict = ParsedParameterFile(f'{directory}/regionProperties').content['regions']
-            for i in range(1, len(regionsDict), 2):
-                for region in regionsDict[i]:
-                    regions.append(region)
-
-            for d in regions:
-                srcPath = f'{directory}/{d}/polyMesh'
-                objPath = f'{constantPath}/{d}/polyMesh'
-                Path(objPath).mkdir(parents=True)
-
-                shutil.copytree(srcPath, objPath, dirs_exist_ok=True)
-
-        elif not multiRegionState:
-            polyMeshPath = f'{cls._constantPath}/polyMesh'
-            Path(polyMeshPath).mkdir(parents=True)
-
-            shutil.copytree(directory, polyMeshPath, dirs_exist_ok=True)
+            for rname in regions:
+                srcPath = directory / rname / cls.POLY_MESH_DIRECTORY_NAME
+                objPath = cls.constantPath(rname) / cls.POLY_MESH_DIRECTORY_NAME
+                shutil.copytree(srcPath, objPath)
+        else:
+            polyMeshPath = cls.constantPath(cls.POLY_MESH_DIRECTORY_NAME)
+            shutil.copytree(directory / FileSystem.POLY_MESH_DIRECTORY_NAME, polyMeshPath)
 
         with open(cls.foamFilePath(), 'a'):
             pass
 
     @classmethod
-    async def copyMeshFrom(cls, directory, multiRegionState):
-        await asyncio.to_thread(cls._copyMeshFromInternal, directory, multiRegionState)
+    async def copyMeshFrom(cls, directory, regions):
+        await asyncio.to_thread(cls._copyMeshFromInternal, directory, regions)
 
     @classmethod
     def makeDir(cls, parent, directory):
-        path = os.path.join(parent, directory)
-        if not os.path.exists(path):
-            os.mkdir(path)
+        path = parent / directory
+        path.mkdir(exist_ok=True)
         return path
