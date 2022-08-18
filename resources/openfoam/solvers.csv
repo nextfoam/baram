@@ -1,10 +1,8 @@
 Solver,solverTypePressure,solverTypeDensity,timeSteady,timeTransient,flowTypeCompressible,flowTypeIncompressible,energyOn,energyOff,gravityOn,gravityOff,phaseSingle,phaseVOF,phaseCavitation,speciesSingle,speciesMultiple,regionSingle,regionMultiple
-simpleFoam,True,False,True,False,False,True,False,True,False,True,True,False,False,True,False,True,False
-pimpleFoam,True,False,False,True,False,True,False,True,False,True,True,False,False,True,False,True,False
 interFoam,True,False,True,True,False,True,False,True,True,False,False,True,False,True,False,True,False
 PCNFoam,True,False,True,True,True,False,True,False,False,True,True,False,False,True,False,True,False
-buoyantSimpleFoam,True,False,True,False,False,True,True,False,True,True,True,False,False,True,False,True,False
-buoyantPimpleFoam,True,False,False,True,False,True,True,False,True,True,True,False,False,True,False,True,False
+buoyantSimpleFoam,True,False,True,False,False,True,True,True,True,True,True,False,False,True,False,True,False
+buoyantPimpleFoam,True,False,False,True,False,True,True,True,True,True,True,False,False,True,False,True,False
 interPhaseChangeFoam,True,False,True,True,False,True,False,True,True,False,False,False,True,True,False,True,False
 speciesSimpleNFoam,True,False,True,False,False,True,True,False,True,True,True,False,False,False,True,True,False
 speciesPimpleNFoam,True,False,False,True,False,True,True,False,True,True,True,False,False,False,True,True,False
