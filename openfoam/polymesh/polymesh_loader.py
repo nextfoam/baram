@@ -15,20 +15,46 @@ logger = logging.getLogger(__name__)
 class PolyMeshLoader:
     @classmethod
     async def loadBoundaries(cls, srcPath):
+        """
+        Load regions and boundaries from srcPath, and return directory's path to copy.
+
+        Args:
+            srcPath: Full path of the directory selected by the user.
+
+        Returns:
+            For multi-region meshes, full path to copy to 'constant'.
+            For single-region meshes, full path to copy to 'constant/polyMesh'.
+
+        """
         db = coredb.CoreDB()
 
-        regions = cls.loadRegions(srcPath)
         boundaries = {}
+        path = srcPath
 
-        for rname in regions:
-            boundaryPath = (srcPath / rname if rname else srcPath) / FileSystem.POLY_MESH_DIRECTORY_NAME / 'boundary'
-            boundaryDict = cls.loadBoundaryDict(boundaryPath)
-            boundaries[rname] = [(bname, boundary['type']) for bname, boundary in boundaryDict.content.items()]
+        regions = cls.loadRegions(srcPath)
+        if regions is None:
+            # single region
+            regions = ['']
+
+            if not FileSystem.isPolyMesh(path):
+                path = srcPath / 'polyMesh'
+                if not FileSystem.isPolyMesh(path):
+                    raise FileLoadingError('Mesh directory not found.')
+
+                boundaryDict = cls.loadBoundaryDict(path / 'boundary')
+                boundaries[''] = [(bname, boundary['type']) for bname, boundary in boundaryDict.content.items()]
+        else:
+            # multi region
+            for rname in regions:
+                boundaryDict = cls.loadBoundaryDict(path / rname / FileSystem.POLY_MESH_DIRECTORY_NAME / 'boundary')
+                boundaries[rname] = [(bname, boundary['type']) for bname, boundary in boundaryDict.content.items()]
 
         for rname in regions:
             db.addRegion(rname)
-            for bname, btype in boundaries[rname]:
-                db.addBoundaryCondition(rname, bname, btype)
+            for bcname, bctype in boundaries[rname]:
+                db.addBoundaryCondition(rname, bcname, bctype)
+
+        return path
 
     @classmethod
     def loadRegions(cls, srcPath):
@@ -45,7 +71,7 @@ class PolyMeshLoader:
             else:
                 raise FileLoadingError('Failed to load regionProperties file.')
 
-        return ['']
+        return None
 
     @classmethod
     def loadBoundaryDict(cls, path, listLengthUnparsed=None):

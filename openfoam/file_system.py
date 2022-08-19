@@ -71,6 +71,16 @@ class FileSystem:
         return cls._casePath / 'baram.foam'
 
     @classmethod
+    def makeDir(cls, parent, directory):
+        path = parent / directory
+        path.mkdir(exist_ok=True)
+        return path
+
+    @classmethod
+    def isPolyMesh(cls, path):
+        return all([path.joinpath(f).is_file() for f in ['boundary', 'faces', 'neighbour', 'owner', 'points']])
+
+    @classmethod
     def _copyMeshFromInternal(cls, directory, regions):
         if cls._constantPath.exists():
             shutil.rmtree(cls._constantPath)
@@ -87,7 +97,7 @@ class FileSystem:
                 shutil.copytree(srcPath, objPath, copy_function=shutil.copyfile)
         else:
             polyMeshPath = cls.constantPath(cls.POLY_MESH_DIRECTORY_NAME)
-            shutil.copytree(directory / FileSystem.POLY_MESH_DIRECTORY_NAME, polyMeshPath, copy_function=shutil.copyfile)
+            shutil.copytree(directory, polyMeshPath, copy_function=shutil.copyfile)
 
         with open(cls.foamFilePath(), 'a'):
             pass
@@ -95,9 +105,3 @@ class FileSystem:
     @classmethod
     async def copyMeshFrom(cls, directory, regions):
         await asyncio.to_thread(cls._copyMeshFromInternal, directory, regions)
-
-    @classmethod
-    def makeDir(cls, parent, directory):
-        path = parent / directory
-        path.mkdir(exist_ok=True)
-        return path

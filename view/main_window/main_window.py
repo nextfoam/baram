@@ -276,8 +276,8 @@ class MainWindow(QMainWindow):
 
         try:
             self._ui.actionLoadMesh.setEnabled(False)
-            await PolyMeshLoader.loadBoundaries(srcPath)
-            await FileSystem.copyMeshFrom(srcPath, coredb.CoreDB().getRegions())
+            path = await PolyMeshLoader.loadBoundaries(srcPath)
+            await FileSystem.copyMeshFrom(path, coredb.CoreDB().getRegions())
             self._meshDock.reloadMesh.emit()
         except Exception as ex:
             logger.info(ex, exc_info=True)
