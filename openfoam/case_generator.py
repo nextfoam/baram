@@ -44,8 +44,6 @@ class CaseGenerator:
         if self._validate():
             return False
 
-        FileSystem.initCaseDir()
-
         regions = self._db.getRegions()
         for rname in regions:
             FileSystem.initRegionDirs(rname)
@@ -104,6 +102,11 @@ class CaseGenerator:
         #await runUtility('decomposePar', '-fields', '-case', cwd, cwd=cwd)
         await runUtility('decomposePar', '-case', cwd, cwd=cwd)
         return True
+
+    @classmethod
+    def createCase(cls):
+        FileSystem.setup()
+        ControlDict().build().write()
 
     def _validate(self):
         self._errors = ''

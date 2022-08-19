@@ -196,7 +196,16 @@
     <addaction name="actionScale"/>
     <addaction name="actionLanguage"/>
    </widget>
+   <widget class="QMenu" name="menuMesh">
+    <property name="title">
+     <string>Mesh</string>
+    </property>
+    <addaction name="actionMeshScale"/>
+    <addaction name="actionMeshTranslate"/>
+    <addaction name="actionMeshRotate"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuMesh"/>
    <addaction name="menuView"/>
    <addaction name="menuSetting"/>
   </widget>
@@ -282,6 +291,21 @@
   <action name="actionLanguage">
    <property name="text">
     <string>Language</string>
+   </property>
+  </action>
+  <action name="actionMeshScale">
+   <property name="text">
+    <string>Scale</string>
+   </property>
+  </action>
+  <action name="actionMeshTranslate">
+   <property name="text">
+    <string>Translate</string>
+   </property>
+  </action>
+  <action name="actionMeshRotate">
+   <property name="text">
+    <string>Rotate</string>
    </property>
   </action>
  </widget>

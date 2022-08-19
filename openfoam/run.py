@@ -115,6 +115,8 @@ async def runUtility(program: str, *args, cwd=None):
                                                 startupinfo=startupinfo)
     await proc.wait()
 
+    return proc.returncode
+
 
 def isProcessRunning(pid, startTime):
     if pid and startTime:

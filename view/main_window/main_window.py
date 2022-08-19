@@ -28,6 +28,7 @@ from view.solution.run_calculation.run_calculation_page import RunCalculationPag
 from view.solution.process_information.process_information_page import ProcessInformationPage
 from openfoam.file_system import FileSystem
 from openfoam.polymesh.polymesh_loader import PolyMeshLoader
+from openfoam.case_generator import CaseGenerator
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu.settings_language import SettingLanguageDialog
@@ -36,6 +37,9 @@ from .navigator_view import NavigatorView, MenuItem
 from .mesh_dock import MeshDock
 from .console_dock import ConsoleDock
 from .chart_dock import ChartDock
+from .mesh_scale_dialog import MeshScaleDialog
+from .mesh_translate_dialog import MeshTranslateDialog
+from .mesh_rotate_dialog import MeshRotateDialog
 
 
 logger = logging.getLogger(__name__)
@@ -145,6 +149,9 @@ class MainWindow(QMainWindow):
         self._ui.actionSaveAs.triggered.connect(self._saveAs)
         self._ui.actionLoadMesh.triggered.connect(self._loadMesh)
         self._ui.actionCloseCase.triggered.connect(self._closeProject)
+        self._ui.actionMeshTranslate.triggered.connect(self._translateMesh)
+        self._ui.actionMeshScale.triggered.connect(self._scaleMesh)
+        self._ui.actionMeshRotate.triggered.connect(self._rotateMesh)
         self._ui.actionLanguage.triggered.connect(self._changeLanguage)
         self._ui.actionScale.triggered.connect(self._changeScale)
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
@@ -152,10 +159,6 @@ class MainWindow(QMainWindow):
         self._project.solverStatusChanged.connect(self._updateMenuEnables)
         self._project.projectChanged.connect(self._projectChanged)
         self._meshDock.meshLoaded.connect(self._updateMesh)
-
-    def _closeProject(self):
-        self._closeType = CloseType.CLOSE_PROJECT
-        self.close()
 
     def _save(self):
         self._project.save()
@@ -186,6 +189,28 @@ class MainWindow(QMainWindow):
         self._dialog.setFileMode(QFileDialog.FileMode.Directory)
         self._dialog.finished.connect(self._meshDirectorySelected)
         self._dialog.open()
+
+    def _closeProject(self):
+        self._closeType = CloseType.CLOSE_PROJECT
+        self.close()
+
+    def _scaleMesh(self):
+        self._dialog = MeshScaleDialog(self)
+        self._dialog.accepted.connect(self._meshTransformed)
+        self._dialog.open()
+
+    def _translateMesh(self):
+        self._dialog = MeshTranslateDialog(self)
+        self._dialog.accepted.connect(self._meshTransformed)
+        self._dialog.open()
+
+    def _rotateMesh(self):
+        self._dialog = MeshRotateDialog(self)
+        self._dialog.accepted.connect(self._meshTransformed)
+        self._dialog.open()
+
+    def _meshTransformed(self):
+        self._meshDock.reloadMesh.emit()
 
     @qasync.asyncSlot()
     async def _meshDirectorySelected(self, result):
@@ -234,11 +259,12 @@ class MainWindow(QMainWindow):
         self._contentView.changePane(page.index)
 
     def _updateMenuEnables(self):
+        self._ui.menuMesh.setEnabled(self._project.meshLoaded)
         self._navigatorView.updateMenu()
 
     def _projectChanged(self):
         self.setWindowTitle(f'{self.tr("Baram")} - {self._project.path}')
-        FileSystem.setup()
+        CaseGenerator.createCase()
 
     def _addDockTabified(self, dock):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
@@ -253,8 +279,6 @@ class MainWindow(QMainWindow):
             await PolyMeshLoader.loadBoundaries(srcPath)
             await FileSystem.copyMeshFrom(srcPath, coredb.CoreDB().getRegions())
             self._meshDock.reloadMesh.emit()
-            # PolyMeshLoader.load()
-            # self._project.setMeshLoaded(True)
         except Exception as ex:
             logger.info(ex, exc_info=True)
             QMessageBox.critical(self, self.tr('Mesh Loading Failed'), str(ex))
