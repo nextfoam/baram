@@ -216,6 +216,8 @@ class MainWindow(QMainWindow):
         else:
             if os.path.exists(f'{path}/boundary'):
                 path = Path(path).parent
+            elif os.path.exists(f'{path}/polyMesh/boundary'):
+                path = Path(path)
             else:
                 return False
 
