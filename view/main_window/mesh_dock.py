@@ -42,6 +42,7 @@ def getActorInfo(dataset) -> ActorInfo:
     mapper.SetInputData(gFilter.GetOutput())
 
     actor = vtkActor()
+
     actor.SetMapper(mapper)
     actor.GetProperty().SetColor(255, 255, 255)
 
@@ -127,6 +128,7 @@ class MeshDock(TabifiedDock):
         self.setAllowedAreas(Qt.RightDockWidgetArea)
 
         self._widget = QVTKRenderWindowInteractor(self)
+        self._widget.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
         self._renderer = vtkRenderer()
         self._widget.GetRenderWindow().AddRenderer(self._renderer)
         self.setWidget(self._widget)
@@ -137,6 +139,9 @@ class MeshDock(TabifiedDock):
         self._vtkMesh = None
 
         self.reloadMesh.connect(self.showOpenFoamMesh)
+
+        self._setBackGroundColor()
+        self._addAxes()
 
     def vtkMesh(self):
         return self._vtkMesh
@@ -159,6 +164,13 @@ class MeshDock(TabifiedDock):
                 actorInfo = self._vtkMesh[region]['boundary'][boundary]
                 self._renderer.AddActor(actorInfo.actor)
 
+                actorInfo.actor.GetProperty().SetColor((0.8, 0.8, 0.8))
+                actorInfo.actor.GetProperty().SetOpacity(0.9)
+                actorInfo.actor.GetProperty().EdgeVisibilityOn()
+                actorInfo.actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
+                actorInfo.actor.GetProperty().SetLineWidth(1.0)
+
+        self._renderer.ResetCamera()
         self._widget.Render()
 
         self.meshLoaded.emit()
@@ -182,3 +194,57 @@ class MeshDock(TabifiedDock):
                     statusConfig[f'/{r}/patch/{b}'] = 1
 
             return statusConfig
+
+    def _setBackGroundColor(self):
+        self._renderer.GradientBackgroundOn()
+        self._renderer.SetBackground2(0.32, 0.34, 0.43)
+        self._renderer.SetBackground(0.90, 0.91, 0.91)
+
+    def _addAxes(self):
+        self.actAxes = vtk.vtkAxesActor()
+
+        self.actAxes.SetShaftTypeToCylinder()
+        self.actAxes.SetCylinderResolution(4)
+        self.actAxes.SetNormalizedShaftLength(0.9, 0.9, 0.9)
+        self.actAxes.SetConeResolution(4)
+        self.actAxes.SetNormalizedTipLength(0.3, 0.3, 0.3)
+
+        actorAxesX = self.actAxes.GetXAxisCaptionActor2D()
+        actorAxesY = self.actAxes.GetYAxisCaptionActor2D()
+        actorAxesZ = self.actAxes.GetZAxisCaptionActor2D()
+
+        actorTextAxesX = actorAxesX.GetTextActor()
+        actorTextAxesY = actorAxesY.GetTextActor()
+        actorTextAxesZ = actorAxesZ.GetTextActor()
+
+        propAxesX = actorAxesX.GetCaptionTextProperty()
+        propAxesY = actorAxesY.GetCaptionTextProperty()
+        propAxesZ = actorAxesZ.GetCaptionTextProperty()
+
+        actorTextAxesX.SetTextScaleModeToNone()
+        actorTextAxesY.SetTextScaleModeToNone()
+        actorTextAxesZ.SetTextScaleModeToNone()
+
+        self.actAxes.SetXAxisLabelText('X')
+        self.actAxes.SetYAxisLabelText('Y')
+        self.actAxes.SetZAxisLabelText('Z')
+
+        self.actAxes.SetNormalizedLabelPosition(1.2, 1.2, 1.2)
+
+        propAxesX.SetFontSize(24)
+        propAxesY.SetFontSize(24)
+        propAxesZ.SetFontSize(24)
+
+        propAxesX.SetColor(0.1, 0.1, 0.1)
+        propAxesY.SetColor(0.1, 0.1, 0.1)
+        propAxesZ.SetColor(0.1, 0.1, 0.1)
+
+        self.axes = vtk.vtkOrientationMarkerWidget()
+        self.axes.SetViewport(0.0, 0.0, 0.2, 0.2)
+        self.axes.SetOrientationMarker(self.actAxes)
+        self.axes.SetInteractor(self._widget)
+
+        self.axes.EnabledOn()
+        self.axes.InteractiveOn()
+
+        self.actAxes.SetVisibility(True)
