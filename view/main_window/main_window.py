@@ -12,6 +12,8 @@ import qasync
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QThreadPool, Signal
 
+from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
+
 from coredb.project import Project
 from coredb.app_settings import AppSettings
 from coredb import coredb
@@ -218,37 +220,42 @@ class MainWindow(QMainWindow):
         self._ui.menubar.repaint()
 
         if result == QFileDialog.Accepted:
-            polyMeshPath, multiRegionState = self._checkPolyMesh(self._dialog.selectedFiles()[0])
+            polyMeshPath = self._checkPolyMesh(self._dialog.selectedFiles()[0])
             if polyMeshPath:
-                await self._loadOpenFoamMesh(polyMeshPath, multiRegionState)
+                await self._loadOpenFoamMesh(polyMeshPath)
             else:
                 QMessageBox.critical(self, self.tr('Open polyMesh'), self.tr('Cannot find polyMesh folder'))
 
     def _checkPolyMesh(self, path):
-        path = Path(path)
-        multiRegionState = False
+        regions = []
+        regionPropFile = f'{path}/regionProperties'
 
-        foundFiles = glob.glob(str(path / '**' / 'regionProperties'), recursive=True)
-        if len(foundFiles) == 0:
-            foundFiles = glob.glob(str(path / '**' / 'boundary'), recursive=True)
-            if len(foundFiles) == 1:
-                path = Path(foundFiles[0]).parent.parent
-            else:
-                return False, False
-        elif len(foundFiles) == 1:
-            path = Path(foundFiles[0]).parent
-            multiRegionState = True
+        if os.path.exists(regionPropFile):
+            regionsDict = ParsedParameterFile(regionPropFile).content['regions']
+            for i in range(1, len(regionsDict), 2):
+                for region in regionsDict[i]:
+                    if not os.path.exists(f'{path}/{region}'):
+                        return False
+                    regions.append(region)
+            path = Path(path)
         else:
-            return False, False
+            if os.path.exists(f'{path}/boundary'):
+                path = Path(path).parent
+            elif os.path.exists(f'{path}/polyMesh/boundary'):
+                path = Path(path)
+            else:
+                return False
 
-        checkFiles = ['boundary', 'cellZones', 'faces', 'neighbour', 'owner', 'points']
-        foundFiles = glob.glob(str(path / '**' / 'polyMesh'), recursive=True)
-        for f in foundFiles:
-            for g in checkFiles:
-                if not os.path.isfile(f'{f}/{g}'):
-                    return False, False
-
-        return path, multiRegionState
+        checkFiles = ['boundary', 'faces', 'neighbour', 'owner', 'points']
+        for f in checkFiles:
+            if regions:
+                for g in regions:
+                    if not os.path.exists(f'{path}/{g}/polyMesh/{f}'):
+                        return False
+            else:
+                if not os.path.exists(f'{path}/polyMesh/{f}'):
+                    return False
+        return path
 
     def _changeForm(self, currentMenu):
         page = self._menuPages[currentMenu]
@@ -271,7 +278,7 @@ class MainWindow(QMainWindow):
         self.tabifyDock(dock)
         self._ui.menuView.addAction(dock.toggleViewAction())
 
-    async def _loadOpenFoamMesh(self, srcPath, multiRegionState):
+    async def _loadOpenFoamMesh(self, srcPath):
         self._clearMesh()
 
         try:
