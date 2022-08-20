@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from typing import TYPE_CHECKING
+
 from dataclasses import dataclass
 import asyncio
 from pathlib import Path
+from typing import Optional
 
 import qasync
 
@@ -20,6 +23,8 @@ import vtkmodules.vtkInteractionStyle
 from coredb import coredb
 from openfoam.file_system import FileSystem
 from .tabified_dock import TabifiedDock
+if TYPE_CHECKING:
+    from .main_window import MainWindow
 
 import vtk
 
@@ -120,8 +125,10 @@ class MeshDock(TabifiedDock):
     reloadMesh = Signal()
     meshLoaded = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional['MainWindow'] = None):
         super().__init__(parent)
+
+        self._main_window = parent
 
         self.setWindowTitle(self.tr("Mesh"))
         self.setAllowedAreas(Qt.RightDockWidgetArea)
@@ -138,12 +145,20 @@ class MeshDock(TabifiedDock):
 
         self.reloadMesh.connect(self.showOpenFoamMesh)
 
+        self._main_window.windowClosed.connect(self._windowClosed)
+
     def vtkMesh(self):
         return self._vtkMesh
 
     def clear(self):
         self._renderer.RemoveAllViewProps()
         self._widget.Render()
+
+    def closeEvent(self, event):
+        self._widget.close()
+
+    def _windowClosed(self, result):
+        self.close()
 
     @qasync.asyncSlot()
     async def showOpenFoamMesh(self):
