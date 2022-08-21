@@ -445,7 +445,7 @@ class MeshDock(TabifiedDock):
         self.axes.EnabledOn()
 
     def _showAxesOff(self):
-        self._showAxes = True
+        self._showAxes = False
         self._actionAxesOnOff.setIcon(self.iconAxesOff)
         self.axes.EnabledOff()
 
