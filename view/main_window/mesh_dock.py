@@ -133,33 +133,26 @@ class MeshDock(TabifiedDock):
         self.setWindowTitle(self.tr("Mesh"))
         self.setAllowedAreas(Qt.RightDockWidgetArea)
 
-        self._widget = QVTKRenderWindowInteractor(self)
-        self._widget.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
-        self._renderer = vtkRenderer()
-        self._widget.GetRenderWindow().AddRenderer(self._renderer)
-        self.setWidget(self._widget)
-
-        self._widget.Initialize()
-        self._widget.Start()
-
+        self._widget = None
+        self._renderer = None
         self._vtkMesh = None
 
         self.reloadMesh.connect(self.showOpenFoamMesh)
 
         self._main_window.windowClosed.connect(self._windowClosed)
 
-        self._setBackGroundColor()
-        self._addAxes()
-
     def vtkMesh(self):
         return self._vtkMesh
 
     def clear(self):
-        self._renderer.RemoveAllViewProps()
-        self._widget.Render()
+        if self._widget is not None:
+            self._renderer.RemoveAllViewProps()
+            self._widget.Render()
 
     def closeEvent(self, event):
-        self._widget.close()
+        if self._widget is not None:
+            self._widget.close()
+            self._widget = None
 
     def _windowClosed(self, result):
         self.close()
@@ -167,6 +160,18 @@ class MeshDock(TabifiedDock):
     @qasync.asyncSlot()
     async def showOpenFoamMesh(self):
         self.clear()
+
+        if self._widget is None:
+            self._widget = QVTKRenderWindowInteractor(self)
+            self._renderer = vtkRenderer()
+            self._widget.GetRenderWindow().AddRenderer(self._renderer)
+            self.setWidget(self._widget)
+
+            self._widget.Initialize()
+            self._widget.Start()
+
+            self._setBackGroundColor()
+            self._addAxes()
 
         statusConfig = self.buildPatchArrayStatus()
 
