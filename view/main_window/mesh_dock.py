@@ -163,6 +163,7 @@ class MeshDock(TabifiedDock):
 
         if self._widget is None:
             self._widget = QVTKRenderWindowInteractor(self)
+            self._widget.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
             self._renderer = vtkRenderer()
             self._widget.GetRenderWindow().AddRenderer(self._renderer)
             self.setWidget(self._widget)
