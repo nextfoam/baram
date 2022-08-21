@@ -350,7 +350,7 @@ class MeshDock(TabifiedDock):
         self._toolBar.addAction(self._actionShowMode)
         self._toolBar.addSeparator()
 
-        self._actionCulling = QAction(self._iconCulling, 'Surface Culling', self._main_window)
+        self._actionCulling = QAction(self._iconCullingOff, 'Surface Culling', self._main_window)
         self._actionCulling.setCheckable(True)
         self._toolBar.addAction(self._actionCulling)
         self._toolBar.addSeparator()
@@ -367,7 +367,8 @@ class MeshDock(TabifiedDock):
         self._iconPlusY = self._newIcon(str(path / 'plusY.png'))
         self._iconPlusZ = self._newIcon(str(path / 'plusZ.png'))
 
-        self._iconCulling = self._newIcon(str(path / 'culling.png'))
+        self._iconCullingOn = self._newIcon(str(path / 'cullingOn.png'))
+        self._iconCullingOff = self._newIcon(str(path / 'cullingOff.png'))
 
     def _newIcon(self, path):
         wgIcon = QIcon()
@@ -450,6 +451,8 @@ class MeshDock(TabifiedDock):
 
     def _showCullingOn(self):
         self._showCulling = True
+        self._actionCulling.setIcon(self._iconCullingOn)
+
         actors = []
         for region in self._vtkMesh:
             for boundary in self._vtkMesh[region]['boundary']:
@@ -461,6 +464,8 @@ class MeshDock(TabifiedDock):
 
     def _showCullingOff(self):
         self._showCulling = False
+        self._actionCulling.setIcon(self._iconCullingOff)
+
         actors = []
         for region in self._vtkMesh:
             for boundary in self._vtkMesh[region]['boundary']:
