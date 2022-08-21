@@ -85,7 +85,11 @@ def launchSolver(solver: str, casePath: Path, np: int = 1) -> (int, float):
     stdout = open(casePath/'stdout.log', 'a')
     stderr = open(casePath/'stderr.log', 'a')
 
-    p = subprocess.Popen([MPICMD, '-np', str(np), OPENFOAM/'bin'/solver],
+    args = [MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
+    if np > 1:
+        args.append('-parallel')
+
+    p = subprocess.Popen(args,
                          env=ENV, cwd=casePath,
                          stdout=stdout, stderr=stderr,
                          creationflags=creationflags,
