@@ -11,6 +11,9 @@ from typing import Optional
 import qasync
 
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import QComboBox, QFrame, QToolBar, QVBoxLayout, QWidgetAction
+from PySide6.QtGui import QAction, QIcon, QPixmap
+
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer
 from vtkmodules.vtkIOGeometry import vtkOpenFOAMReader
@@ -21,6 +24,7 @@ import vtkmodules.vtkRenderingOpenGL2
 import vtkmodules.vtkInteractionStyle
 
 from coredb import coredb
+from resources import resource
 from openfoam.file_system import FileSystem
 from .tabified_dock import TabifiedDock
 if TYPE_CHECKING:
@@ -28,6 +32,12 @@ if TYPE_CHECKING:
 
 import vtk
 
+
+DISPLAY_MODE_POINTS         = 0
+DISPLAY_MODE_WIREFRAME      = 1
+DISPLAY_MODE_SURFACE        = 2
+DISPLAY_MODE_SURFACE_EDGE   = 3
+# DISPLAY_MODE_FEATURE        = 4
 
 @dataclass
 class ActorInfo:
@@ -37,6 +47,17 @@ class ActorInfo:
     mapper: vtkPolyDataMapper
     actor: vtkActor
 
+    selected: bool
+
+    show: bool
+    viewMode: int
+    outLine: bool
+
+    position: list
+    rotation: list
+    color: list
+
+    opacity: float
 
 def getActorInfo(dataset) -> ActorInfo:
     gFilter = vtkGeometryFilter()
@@ -50,8 +71,20 @@ def getActorInfo(dataset) -> ActorInfo:
     actor.SetMapper(mapper)
     actor.GetProperty().SetColor(255, 255, 255)
 
+    selected = True
+
+    show = True
+    displayMode = DISPLAY_MODE_SURFACE_EDGE
+    outLine = False
+
+    position = [0.0, 0.0, 0.0]
+    rotation = [0.0, 0.0, 0.0]
+    color = [0.8, 0.8, 0.8]
+    opacity = 1.0
+
     # return ActorInfo(dataset, gFilter, mapper, actor)
-    return ActorInfo(mapper, actor)
+    actorInfo = ActorInfo(mapper, actor, selected, show, displayMode, outLine, position, rotation, color, opacity)
+    return actorInfo
 
 
 def build(mBlock):
@@ -137,6 +170,10 @@ class MeshDock(TabifiedDock):
         self._renderer = None
         self._vtkMesh = None
 
+        self._showAxes = True
+        self._displayMode = DISPLAY_MODE_SURFACE_EDGE
+        self._showCulling = False
+
         self.reloadMesh.connect(self.showOpenFoamMesh)
 
         self._main_window.windowClosed.connect(self._windowClosed)
@@ -166,13 +203,22 @@ class MeshDock(TabifiedDock):
             self._widget.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
             self._renderer = vtkRenderer()
             self._widget.GetRenderWindow().AddRenderer(self._renderer)
-            self.setWidget(self._widget)
 
             self._widget.Initialize()
             self._widget.Start()
 
-            self._setBackGroundColor()
             self._addAxes()
+            self._setBackGroundColor()
+
+            self._graphicsPage = QVBoxLayout()
+            self._graphicsPage.setSpacing(0)
+            self._graphicsPage.setContentsMargins(9, 0, 9, 9)
+
+            self._addToolBar()
+            self._graphicsPage.addWidget(self._widget)
+            frame = QFrame()
+            frame.setLayout(self._graphicsPage)
+            self.setWidget(frame)
 
         statusConfig = self.buildPatchArrayStatus()
 
@@ -186,9 +232,9 @@ class MeshDock(TabifiedDock):
                 actorInfo = self._vtkMesh[region]['boundary'][boundary]
                 self._renderer.AddActor(actorInfo.actor)
 
-                actorInfo.actor.GetProperty().SetColor((0.8, 0.8, 0.8))
-                actorInfo.actor.GetProperty().SetOpacity(0.9)
-                actorInfo.actor.GetProperty().EdgeVisibilityOn()
+                actorInfo.actor.GetProperty().SetColor(actorInfo.color)
+                actorInfo.actor.GetProperty().SetOpacity(actorInfo.opacity)
+                actorInfo.actor.GetProperty().SetEdgeVisibility(True)
                 actorInfo.actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
                 actorInfo.actor.GetProperty().SetLineWidth(1.0)
 
@@ -216,11 +262,6 @@ class MeshDock(TabifiedDock):
                     statusConfig[f'/{r}/patch/{b}'] = 1
 
             return statusConfig
-
-    def _setBackGroundColor(self):
-        self._renderer.GradientBackgroundOn()
-        self._renderer.SetBackground2(0.32, 0.34, 0.43)
-        self._renderer.SetBackground(0.90, 0.91, 0.91)
 
     def _addAxes(self):
         self.actAxes = vtk.vtkAxesActor()
@@ -270,3 +311,161 @@ class MeshDock(TabifiedDock):
         self.axes.InteractiveOn()
 
         self.actAxes.SetVisibility(True)
+
+    def _setBackGroundColor(self):
+        self._renderer.GradientBackgroundOn()
+        self._renderer.SetBackground2(0.32, 0.34, 0.43)
+        self._renderer.SetBackground(0.90, 0.91, 0.91)
+
+    def _addToolBar(self):
+        self._toolBar = QToolBar()
+        self._graphicsPage.addWidget(self._toolBar)
+
+        self._addIcons(resource.file('graphicsIcons'))
+
+        self._actionAxesOnOff = QAction(self.iconAxesOn, 'Axes On/Off', self._main_window)
+        self._actionAxesOnOff.setCheckable(True)
+        self._actionAxesOnOff.setChecked(self._showAxes)
+        self._toolBar.addAction(self._actionAxesOnOff)
+        self._toolBar.addSeparator()
+
+        self._actionFit = QAction(self._iconFit, 'Fit', self._main_window)
+        self._toolBar.addAction(self._actionFit)
+        self._toolBar.addSeparator()
+
+        self._actionPlusX = QAction(self._iconPlusX, '+X', self._main_window)
+        self._toolBar.addAction(self._actionPlusX)
+        self._actionPlusY = QAction(self._iconPlusY, '+Y', self._main_window)
+        self._toolBar.addAction(self._actionPlusY)
+        self._actionPlusZ = QAction(self._iconPlusZ, '+Z', self._main_window)
+        self._toolBar.addAction(self._actionPlusZ)
+        self._toolBar.addSeparator()
+
+        self._displayModeCombo = QComboBox()
+        self._displayModeCombo.addItems(['Points', 'Wireframe', 'Surface', 'SurfaceEdge'])  # 'Feature'
+        self._displayModeCombo.setCurrentIndex(DISPLAY_MODE_SURFACE_EDGE)
+        self._displayModeCombo.currentIndexChanged.connect(self._clickedVDisplayModeCombo)
+        self._actionShowMode = QWidgetAction(self._main_window)
+        self._actionShowMode.setDefaultWidget(self._displayModeCombo)
+        self._toolBar.addAction(self._actionShowMode)
+        self._toolBar.addSeparator()
+
+        self._actionCulling = QAction(self._iconCulling, 'Surface Culling', self._main_window)
+        self._actionCulling.setCheckable(True)
+        self._toolBar.addAction(self._actionCulling)
+        self._toolBar.addSeparator()
+
+        self._toolBar.actionTriggered[QAction].connect(self.clickedToolBar)
+
+    def _addIcons(self, path):
+        self.iconAxesOff = self._newIcon(str(path / 'axesOff.png'))
+        self.iconAxesOn = self._newIcon(str(path / 'axesOn.png'))
+
+        self._iconFit = self._newIcon(str(path / 'fit.png'))
+
+        self._iconPlusX = self._newIcon(str(path / 'plusX.png'))
+        self._iconPlusY = self._newIcon(str(path / 'plusY.png'))
+        self._iconPlusZ = self._newIcon(str(path / 'plusZ.png'))
+
+        self._iconCulling = self._newIcon(str(path / 'culling.png'))
+
+    def _newIcon(self, path):
+        wgIcon = QIcon()
+        wgIcon.addPixmap(QPixmap(path))
+        return wgIcon
+
+    def _clickedVDisplayModeCombo(self, widget):
+        actors = []
+        for region in self._vtkMesh:
+            for boundary in self._vtkMesh[region]['boundary']:
+                actorInfo = self._vtkMesh[region]['boundary'][boundary]
+                actors.append(actorInfo.actor)
+
+        curIndex = self._displayModeCombo.currentIndex()
+        if curIndex == DISPLAY_MODE_POINTS:
+            for a in actors:
+                a.GetProperty().SetPointSize(3)
+                a.GetProperty().SetColor(0.1, 0.0, 0.3)
+                a.GetProperty().SetRepresentationToPoints()
+
+        elif curIndex == DISPLAY_MODE_WIREFRAME:
+            for a in actors:
+                a.GetProperty().SetColor(0.1, 0.0, 0.3)
+                a.GetProperty().SetLineWidth(0.5)
+                a.GetProperty().SetRepresentationToWireframe()
+
+        elif curIndex == DISPLAY_MODE_SURFACE:
+            for a in actors:
+                a.GetProperty().SetColor(0.8, 0.8, 0.8)
+                a.GetProperty().SetRepresentationToSurface()
+                a.GetProperty().EdgeVisibilityOff()
+
+        elif curIndex == DISPLAY_MODE_SURFACE_EDGE:
+            for a in actors:
+                a.GetProperty().SetColor(0.8, 0.8, 0.8)
+                a.GetProperty().SetRepresentationToSurface()
+                a.GetProperty().EdgeVisibilityOn()
+                a.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
+                a.GetProperty().SetLineWidth(1.0)
+
+        # elif curIndex == DISPLAY_MODE_FEATURE:
+        #     for a in actors:
+
+        self._widget.Render()
+
+    def clickedToolBar(self, action):
+        if action == self._actionAxesOnOff:
+            if self._showAxes:
+                self._showAxesOff()
+            else:
+                self._showAxesOn()
+
+        elif action == self._actionFit:
+            self._renderer.ResetCamera()
+
+        elif action == self._actionPlusX:
+            ...
+        elif action == self._actionPlusY:
+            ...
+        elif action == self._actionPlusZ:
+            ...
+
+        elif action == self._actionCulling:
+            if self._showCulling:
+                self._showCullingOff()
+            else:
+                self._showCullingOn()
+
+        self._widget.Render()
+
+    def _showAxesOn(self):
+        self._showAxes = True
+        self._actionAxesOnOff.setIcon(self.iconAxesOn)
+        self.axes.EnabledOn()
+
+    def _showAxesOff(self):
+        self._showAxes = True
+        self._actionAxesOnOff.setIcon(self.iconAxesOff)
+        self.axes.EnabledOff()
+
+    def _showCullingOn(self):
+        self._showCulling = True
+        actors = []
+        for region in self._vtkMesh:
+            for boundary in self._vtkMesh[region]['boundary']:
+                actorInfo = self._vtkMesh[region]['boundary'][boundary]
+                actors.append(actorInfo.actor)
+
+        for a in actors:
+            a.GetProperty().FrontfaceCullingOn()
+
+    def _showCullingOff(self):
+        self._showCulling = False
+        actors = []
+        for region in self._vtkMesh:
+            for boundary in self._vtkMesh[region]['boundary']:
+                actorInfo = self._vtkMesh[region]['boundary'][boundary]
+                actors.append(actorInfo.actor)
+
+        for a in actors:
+            a.GetProperty().FrontfaceCullingOff()
