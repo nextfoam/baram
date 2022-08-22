@@ -15,9 +15,10 @@ from PySide6.QtWidgets import QComboBox, QFrame, QToolBar, QVBoxLayout, QWidgetA
 from PySide6.QtGui import QAction, QIcon, QPixmap
 
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer
+from vtkmodules.vtkFiltersSources import vtkLineSource
+from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer, vtkCamera
 from vtkmodules.vtkIOGeometry import vtkOpenFOAMReader
-from vtkmodules.vtkFiltersGeometry import  vtkGeometryFilter
+from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
 from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
 # load implementations for rendering and interaction factory classes
 import vtkmodules.vtkRenderingOpenGL2
@@ -38,6 +39,13 @@ DISPLAY_MODE_WIREFRAME      = 1
 DISPLAY_MODE_SURFACE        = 2
 DISPLAY_MODE_SURFACE_EDGE   = 3
 # DISPLAY_MODE_FEATURE        = 4
+
+CAMERA_VIEW_PLUS_X  = 0
+CAMERA_VIEW_MINUS_X = 1
+CAMERA_VIEW_PLUS_Y  = 2
+CAMERA_VIEW_MINUS_Y = 3
+CAMERA_VIEW_PLUS_Z  = 4
+CAMERA_VIEW_MINUS_Z = 5
 
 @dataclass
 class ActorInfo:
@@ -170,12 +178,14 @@ class MeshDock(TabifiedDock):
         self._renderer = None
         self._vtkMesh = None
 
-        self._showAxes = True
+        self._axesOn = True
+        self._originAxesOn = True
+
+        self._orthogonalOn = True
         self._displayMode = DISPLAY_MODE_SURFACE_EDGE
-        self._showCulling = False
+        self._cullingOn = False
 
         self.reloadMesh.connect(self.showOpenFoamMesh)
-
         self._main_window.windowClosed.connect(self._windowClosed)
 
     def vtkMesh(self):
@@ -207,18 +217,24 @@ class MeshDock(TabifiedDock):
             self._widget.Initialize()
             self._widget.Start()
 
-            self._addAxes()
-            self._setBackGroundColor()
-
             self._graphicsPage = QVBoxLayout()
             self._graphicsPage.setSpacing(0)
-            self._graphicsPage.setContentsMargins(9, 0, 9, 9)
+            self._graphicsPage.setContentsMargins(6, 0, 6, 6)
 
             self._addToolBar()
+            self._graphicsPage.addWidget(self._toolBar)
             self._graphicsPage.addWidget(self._widget)
             frame = QFrame()
             frame.setLayout(self._graphicsPage)
             self.setWidget(frame)
+
+            self._addAxes()
+            self._addOriginAxes()
+            self._addScaleAxes()
+            self._setBackGroundColor()
+
+            self._addCamera()
+            self._orthogonalMode()
 
         statusConfig = self.buildPatchArrayStatus()
 
@@ -238,7 +254,7 @@ class MeshDock(TabifiedDock):
                 actorInfo.actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
                 actorInfo.actor.GetProperty().SetLineWidth(1.0)
 
-        self._renderer.ResetCamera()
+        self._fitCamera()
         self._widget.Render()
 
         self.meshLoaded.emit()
@@ -264,17 +280,18 @@ class MeshDock(TabifiedDock):
             return statusConfig
 
     def _addAxes(self):
-        self.actAxes = vtk.vtkAxesActor()
+        self._actAxes = vtk.vtkAxesActor()
+        self._actAxes.SetVisibility(True)
 
-        self.actAxes.SetShaftTypeToCylinder()
-        self.actAxes.SetCylinderResolution(4)
-        self.actAxes.SetNormalizedShaftLength(0.9, 0.9, 0.9)
-        self.actAxes.SetConeResolution(4)
-        self.actAxes.SetNormalizedTipLength(0.3, 0.3, 0.3)
+        self._actAxes.SetShaftTypeToCylinder()
+        self._actAxes.SetCylinderResolution(8)
+        self._actAxes.SetNormalizedShaftLength(0.8, 0.8, 0.8)
+        self._actAxes.SetConeResolution(8)
+        self._actAxes.SetNormalizedTipLength(0.3, 0.3, 0.3)
 
-        actorAxesX = self.actAxes.GetXAxisCaptionActor2D()
-        actorAxesY = self.actAxes.GetYAxisCaptionActor2D()
-        actorAxesZ = self.actAxes.GetZAxisCaptionActor2D()
+        actorAxesX = self._actAxes.GetXAxisCaptionActor2D()
+        actorAxesY = self._actAxes.GetYAxisCaptionActor2D()
+        actorAxesZ = self._actAxes.GetZAxisCaptionActor2D()
 
         actorTextAxesX = actorAxesX.GetTextActor()
         actorTextAxesY = actorAxesY.GetTextActor()
@@ -288,45 +305,91 @@ class MeshDock(TabifiedDock):
         actorTextAxesY.SetTextScaleModeToNone()
         actorTextAxesZ.SetTextScaleModeToNone()
 
-        self.actAxes.SetXAxisLabelText('X')
-        self.actAxes.SetYAxisLabelText('Y')
-        self.actAxes.SetZAxisLabelText('Z')
+        self._actAxes.SetXAxisLabelText('X')
+        self._actAxes.SetYAxisLabelText('Y')
+        self._actAxes.SetZAxisLabelText('Z')
 
-        self.actAxes.SetNormalizedLabelPosition(1.2, 1.2, 1.2)
+        self._actAxes.SetNormalizedLabelPosition(1.2, 1.2, 1.2)
 
-        propAxesX.SetFontSize(24)
-        propAxesY.SetFontSize(24)
-        propAxesZ.SetFontSize(24)
+        propAxesX.SetFontSize(20)
+        propAxesY.SetFontSize(20)
+        propAxesZ.SetFontSize(20)
 
-        propAxesX.SetColor(0.1, 0.1, 0.1)
-        propAxesY.SetColor(0.1, 0.1, 0.1)
-        propAxesZ.SetColor(0.1, 0.1, 0.1)
+        propAxesX.SetColor(0.9, 0.9, 0.9)
+        propAxesY.SetColor(0.9, 0.9, 0.9)
+        propAxesZ.SetColor(0.9, 0.9, 0.9)
 
-        self.axes = vtk.vtkOrientationMarkerWidget()
-        self.axes.SetViewport(0.0, 0.0, 0.2, 0.2)
-        self.axes.SetOrientationMarker(self.actAxes)
-        self.axes.SetInteractor(self._widget)
+        self._axes = vtk.vtkOrientationMarkerWidget()
+        self._axes.SetViewport(0.0, 0.0, 0.2, 0.2)
+        self._axes.SetOrientationMarker(self._actAxes)
+        # self._axes.SetOutlineColor(1.0, 1.0, 1.0)
+        self._axes.SetInteractor(self._widget)
 
-        self.axes.EnabledOn()
-        self.axes.InteractiveOn()
+        self._axes.EnabledOn()
+        self._axes.InteractiveOn()
 
-        self.actAxes.SetVisibility(True)
+    def _addOriginAxes(self):
+        self._originActorX = self._drawLine([[-10.0, 0.0, 0.0], [10.0, 0.0, 0.0]])
+        self._originActorY = self._drawLine([[0.0, -10.0, 0.0], [0.0, 10.0, 0.0]])
+        self._originActorZ = self._drawLine([[0.0, 0.0, -10.0], [0.0, 0.0, 10.0]])
+
+        self._renderer.AddActor(self._originActorX)
+        self._renderer.AddActor(self._originActorY)
+        self._renderer.AddActor(self._originActorZ)
+
+    def _addScaleAxes(self):
+        self._scaleActor = self._drawLine([[-10.0, 0.0, 0.0], [10.0, 0.0, 0.0]])
+        self._scaleActor.GetProperty().SetColor(0.0, 0.0, 0.0)
+        self._scaleActor.SetVisibility(True)
+
+        self._scaleAxes = vtk.vtkOrientationMarkerWidget()
+        self._scaleAxes.SetViewport(0.8, 0.0, 1.0, 0.2)
+        self._scaleAxes.SetOrientationMarker(self._scaleActor)
+        self._scaleAxes.SetInteractor(self._widget)
+
+        self._scaleAxes.EnabledOn()
+        self._scaleAxes.InteractiveOn()
+
+    def _drawLine(self, points=[]):
+        if len(points) < 2:
+            points.append([-1.0, 0.0, 0.0])
+            points.append([1.0, 0.0, 0.0])
+
+        lineSource = vtkLineSource()
+        lineSource.SetPoint1(points[0])
+        lineSource.SetPoint2(points[1])
+
+        mapper = vtkPolyDataMapper()
+        mapper.SetInputConnection(lineSource.GetOutputPort())
+        actor = vtkActor()
+        actor.SetMapper(mapper)
+        actor.GetProperty().SetLineWidth(2)
+        actor.GetProperty().SetColor(0.8, 0.8, 0.8)
+        return actor
 
     def _setBackGroundColor(self):
         self._renderer.GradientBackgroundOn()
+        self._renderer.SetBackground(0.84, 0.85, 0.851)
         self._renderer.SetBackground2(0.32, 0.34, 0.43)
-        self._renderer.SetBackground(0.90, 0.91, 0.91)
 
     def _addToolBar(self):
         self._toolBar = QToolBar()
-        self._graphicsPage.addWidget(self._toolBar)
-
         self._addIcons(resource.file('graphicsIcons'))
 
-        self._actionAxesOnOff = QAction(self.iconAxesOn, 'Axes On/Off', self._main_window)
+        self._actionAxesOnOff = QAction(self._iconAxesOn, 'Axes On/Off', self._main_window)
         self._actionAxesOnOff.setCheckable(True)
-        self._actionAxesOnOff.setChecked(self._showAxes)
+        self._actionAxesOnOff.setChecked(self._axesOn)
         self._toolBar.addAction(self._actionAxesOnOff)
+
+        self._actionOriginAxesOnOff = QAction(self._iconOriginAxesOn, 'Origin Axes On/Off', self._main_window)
+        self._actionOriginAxesOnOff.setCheckable(True)
+        self._actionOriginAxesOnOff.setChecked(self._originAxesOn)
+        self._toolBar.addAction(self._actionOriginAxesOnOff)
+
+        self._actionOrthogonalOnOff = QAction(self._iconOrthogonalOn, 'Orthogonal/Perspective View', self._main_window)
+        self._actionOrthogonalOnOff.setCheckable(True)
+        self._actionOrthogonalOnOff.setChecked(self._orthogonalOn)
+        self._toolBar.addAction(self._actionOrthogonalOnOff)
         self._toolBar.addSeparator()
 
         self._actionFit = QAction(self._iconFit, 'Fit', self._main_window)
@@ -335,11 +398,18 @@ class MeshDock(TabifiedDock):
 
         self._actionPlusX = QAction(self._iconPlusX, '+X', self._main_window)
         self._toolBar.addAction(self._actionPlusX)
+        self._actionMinusX = QAction(self._iconMinusX, '-X', self._main_window)
+        self._toolBar.addAction(self._actionMinusX)
+
         self._actionPlusY = QAction(self._iconPlusY, '+Y', self._main_window)
         self._toolBar.addAction(self._actionPlusY)
+        self._actionMinusY = QAction(self._iconMinusY, '-Y', self._main_window)
+        self._toolBar.addAction(self._actionMinusY)
+
         self._actionPlusZ = QAction(self._iconPlusZ, '+Z', self._main_window)
         self._toolBar.addAction(self._actionPlusZ)
-        self._toolBar.addSeparator()
+        self._actionMinusZ = QAction(self._iconMinusZ, '-Z', self._main_window)
+        self._toolBar.addAction(self._actionMinusZ)
 
         self._displayModeCombo = QComboBox()
         self._displayModeCombo.addItems(['Points', 'Wireframe', 'Surface', 'SurfaceEdge'])  # 'Feature'
@@ -358,14 +428,23 @@ class MeshDock(TabifiedDock):
         self._toolBar.actionTriggered[QAction].connect(self.clickedToolBar)
 
     def _addIcons(self, path):
-        self.iconAxesOff = self._newIcon(str(path / 'axesOff.png'))
-        self.iconAxesOn = self._newIcon(str(path / 'axesOn.png'))
+        self._iconAxesOn = self._newIcon(str(path / 'axesOn.png'))
+        self._iconAxesOff = self._newIcon(str(path / 'axesOff.png'))
+
+        self._iconOriginAxesOn = self._newIcon(str(path / 'originAxesOn.png'))
+        self._iconOriginAxesOff = self._newIcon(str(path / 'originAxesOff.png'))
+
+        self._iconOrthogonalOn = self._newIcon(str(path / 'orthogonalOn.png'))
+        self._iconOrthogonalOff = self._newIcon(str(path / 'orthogonalOff.png'))
 
         self._iconFit = self._newIcon(str(path / 'fit.png'))
 
         self._iconPlusX = self._newIcon(str(path / 'plusX.png'))
+        self._iconMinusX = self._newIcon(str(path / 'minusX.png'))
         self._iconPlusY = self._newIcon(str(path / 'plusY.png'))
+        self._iconMinusY = self._newIcon(str(path / 'minusY.png'))
         self._iconPlusZ = self._newIcon(str(path / 'plusZ.png'))
+        self._iconMinusZ = self._newIcon(str(path / 'minusZ.png'))
 
         self._iconCullingOn = self._newIcon(str(path / 'cullingOn.png'))
         self._iconCullingOff = self._newIcon(str(path / 'cullingOff.png'))
@@ -416,41 +495,92 @@ class MeshDock(TabifiedDock):
 
     def clickedToolBar(self, action):
         if action == self._actionAxesOnOff:
-            if self._showAxes:
-                self._showAxesOff()
+            if self._axesOn:
+                self._hideAxes()
             else:
-                self._showAxesOn()
+                self._showAxes()
+
+        elif action == self._actionOriginAxesOnOff:
+            if self._originAxesOn:
+                self._hideOriginAxes()
+            else:
+                self._showOriginAxes()
+
+        elif action == self._actionOrthogonalOnOff:
+            if self._orthogonalOn:
+                self._perspectiveMode()
+            else:
+                self._orthogonalMode()
 
         elif action == self._actionFit:
-            self._renderer.ResetCamera()
-
+            self._fitCamera()
         elif action == self._actionPlusX:
-            ...
+            self._setCameraViewPlusX()
+        elif action == self._actionMinusX:
+            self._setCameraViewMinusX()
         elif action == self._actionPlusY:
-            ...
+            self._setCameraViewPlusY()
+        elif action == self._actionMinusY:
+            self._setCameraViewMinusY()
         elif action == self._actionPlusZ:
-            ...
+            self._setCameraViewPlusZ()
+        elif action == self._actionMinusZ:
+            self._setCameraViewMinusZ()
 
         elif action == self._actionCulling:
-            if self._showCulling:
-                self._showCullingOff()
+            if self._cullingOn:
+                self._hideCulling()
             else:
-                self._showCullingOn()
+                self._showCulling()
 
         self._widget.Render()
 
-    def _showAxesOn(self):
-        self._showAxes = True
-        self._actionAxesOnOff.setIcon(self.iconAxesOn)
-        self.axes.EnabledOn()
+    def _showAxes(self):
+        self._axesOn = True
+        self._actionAxesOnOff.setIcon(self._iconAxesOn)
+        self._actAxes.SetVisibility(True)
+        self._axes.EnabledOn()
 
-    def _showAxesOff(self):
-        self._showAxes = False
-        self._actionAxesOnOff.setIcon(self.iconAxesOff)
-        self.axes.EnabledOff()
+    def _hideAxes(self):
+        self._axesOn = False
+        self._actionAxesOnOff.setIcon(self._iconAxesOff)
+        self._actAxes.SetVisibility(False)
+        self._axes.EnabledOff()
 
-    def _showCullingOn(self):
-        self._showCulling = True
+    def _showOriginAxes(self):
+        self._originAxesOn = True
+        self._actionOriginAxesOnOff.setIcon(self._iconOriginAxesOn)
+        self._renderer.AddActor(self._originActorX)
+        self._renderer.AddActor(self._originActorY)
+        self._renderer.AddActor(self._originActorZ)
+
+    def _hideOriginAxes(self):
+        self._originAxesOn = False
+        self._actionOriginAxesOnOff.setIcon(self._iconOriginAxesOff)
+        self._renderer.RemoveActor(self._originActorX)
+        self._renderer.RemoveActor(self._originActorY)
+        self._renderer.RemoveActor(self._originActorZ)
+
+    def _orthogonalMode(self):
+        self._orthogonalOn = True
+        self._actionOrthogonalOnOff.setIcon(self._iconOrthogonalOn)
+        self._renderer.GetActiveCamera().ParallelProjectionOn()
+
+    def _perspectiveMode(self):
+        self._orthogonalOn = False
+        self._actionOrthogonalOnOff.setIcon(self._iconOrthogonalOff)
+        self._renderer.GetActiveCamera().ParallelProjectionOff()
+
+    def _fitCamera(self):
+        if self._originAxesOn:
+            self._hideOriginAxes()
+            self._renderer.ResetCamera()
+            self._showOriginAxes()
+        else:
+            self._renderer.ResetCamera()
+
+    def _showCulling(self):
+        self._cullingOn = True
         self._actionCulling.setIcon(self._iconCullingOn)
 
         actors = []
@@ -462,8 +592,8 @@ class MeshDock(TabifiedDock):
         for a in actors:
             a.GetProperty().FrontfaceCullingOn()
 
-    def _showCullingOff(self):
-        self._showCulling = False
+    def _hideCulling(self):
+        self._cullingOn = False
         self._actionCulling.setIcon(self._iconCullingOff)
 
         actors = []
@@ -474,3 +604,48 @@ class MeshDock(TabifiedDock):
 
         for a in actors:
             a.GetProperty().FrontfaceCullingOff()
+
+    def _addCamera(self):
+        self.camera = vtkCamera()
+        self._renderer.SetActiveCamera(self.camera)
+
+    def _setCameraPosition(self, pos=(0.0, 0.0, 1.0), focal=(0.0, 0.0, 0.0), up=(0.0, 1.0, 0.0)):
+        self.camera.SetPosition(pos)
+        self.camera.SetFocalPoint(focal)
+        self.camera.SetViewUp(up)
+
+        # if self.bAlwaysFit:
+        #     self.renderer.ResetCamera()
+        return
+
+    def _setCameraViewPlusX(self):
+        self._setCameraPosition((0, 0, 1), (0, 0, 0), (0, 1, 0))
+
+    def _setCameraViewPlusY(self):
+        self._setCameraPosition((0, 0, -1), (0, 0, 0), (0, 1, 0))
+
+    def _setCameraViewPlusZ(self):
+        self._setCameraPosition((0, 1, 0), (0, 0, 0), (0, 0, -1))
+
+    def _setCameraViewMinusX(self):
+        self._setCameraPosition((1, 0, 0), (0, 0, 0), (0, 1, 0))
+
+    def _setCameraViewMinusY(self):
+        self._setCameraPosition((-1, 0, 0), (0, 0, 0), (0, 1, 0))
+
+    def _setCameraViewMinusZ(self):
+        self._setCameraPosition((0, -1, 0), (0, 0, 0), (0, 0, 1))
+
+    def _setCameraView(self, cameraView):
+        if cameraView == CAMERA_VIEW_PLUS_X:
+            self._setCameraViewPlusX()
+        elif cameraView == CAMERA_VIEW_MINUS_X:
+            self._setCameraViewMinusX()
+        elif cameraView == CAMERA_VIEW_PLUS_Y:
+            self._setCameraViewPlusY()
+        elif cameraView == CAMERA_VIEW_MINUS_Y:
+            self._setCameraViewMinusY()
+        elif cameraView == CAMERA_VIEW_PLUS_Z:
+            self._setCameraViewPlusZ()
+        elif cameraView == CAMERA_VIEW_MINUS_Z:
+            self._setCameraViewMinusZ()
