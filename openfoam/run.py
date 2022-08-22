@@ -58,8 +58,45 @@ else:
         'LD_LIBRARY_PATH': library + os.pathsep + os.environ['LD_LIBRARY_PATH']
     }
 
+def openSolverProcess(cmd, casePath, inParallel):
+    stdout = open(casePath/'stdout.log', 'a')
+    stderr = open(casePath/'stderr.log', 'a')
 
-def launchSolver(solver: str, casePath: Path, np: int = 1) -> (int, float):
+    if inParallel:
+        cmd.append('-parallel')
+
+    p = subprocess.Popen(cmd,
+                         env=ENV, cwd=casePath,
+                         stdout=stdout, stderr=stderr,
+                         creationflags=creationflags,
+                         startupinfo=startupinfo)
+
+    stdout.close()
+    stderr.close()
+
+    return p
+
+def launchSolverOnWindow(solver: str, casePath: Path, np: int = 1) -> (int, float):
+    args = [MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
+
+    process = openSolverProcess(args, casePath, np > 1)
+
+    ps = psutil.Process(pid=process.pid)
+    return ps.pid, ps.create_time()
+
+def launchSolverOnLinux(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float):
+    args = [OPENFOAM/'bin'/'baramd', '-project', uuid, '-cmdline', MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
+
+    openSolverProcess(args, casePath, np > 1)
+
+    processes = [p for p in psutil.process_iter(['pid', 'cmdline', 'create_time']) if uuid in p.info['cmdline']]
+    if processes:
+        ps = max(processes, key=lambda p: p.create_time())
+        return ps.pid, ps.create_time()
+
+    return None
+
+def launchSolver(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float):
     """Launch solver
 
     Launch solver in case folder
@@ -82,25 +119,10 @@ def launchSolver(solver: str, casePath: Path, np: int = 1) -> (int, float):
     if not isinstance(casePath, Path) or not casePath.is_absolute():
         raise AssertionError
 
-    stdout = open(casePath/'stdout.log', 'a')
-    stderr = open(casePath/'stderr.log', 'a')
-
-    args = [MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
-    if np > 1:
-        args.append('-parallel')
-
-    p = subprocess.Popen(args,
-                         env=ENV, cwd=casePath,
-                         stdout=stdout, stderr=stderr,
-                         creationflags=creationflags,
-                         startupinfo=startupinfo)
-
-    stdout.close()
-    stderr.close()
-
-    ps = psutil.Process(pid=p.pid)
-    return ps.pid, ps.create_time()
-
+    if platform.system() == 'Windows':
+        return launchSolverOnWindow(solver, casePath, np)
+    else:
+        return launchSolverOnLinux(solver, casePath, uuid, np)
 
 async def runUtility(program: str, *args, cwd=None):
     global creationflags

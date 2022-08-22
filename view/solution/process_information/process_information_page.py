@@ -74,8 +74,12 @@ class ProcessInformationPage(QWidget):
         self._caseRoot = FileSystem.caseRoot()
 
         print(self._solvers)
-        process = launchSolver(self._solvers[0], Path(self._caseRoot), int(numCores))
-        self._project.setSolverProcess(process)
+        process = launchSolver(self._solvers[0], Path(self._caseRoot), self._project.uuid, int(numCores))
+        if process:
+            self._project.setSolverProcess(process)
+        else:
+            QMessageBox.critical(self, self.tr('Calculation Execution Failed'),
+                                 self.tr('Solver execution failed or terminated.'))
 
     def _cancelCalculationClicked(self):
         controlDict = ControlDict().build()

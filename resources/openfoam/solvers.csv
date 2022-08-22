@@ -7,8 +7,6 @@ interPhaseChangeFoam,True,False,True,True,False,True,False,True,True,False,False
 speciesSimpleNFoam,True,False,True,False,False,True,True,False,True,True,True,False,False,False,True,True,False
 speciesPimpleNFoam,True,False,False,True,False,True,True,False,True,True,True,False,False,False,True,True,False
 speciesPCNFoam,True,False,True,True,True,False,True,False,False,True,True,False,False,False,True,True,False
-"chtMultiRegionSimple
-Foam",True,False,True,False,False,True,True,False,True,True,True,False,False,True,False,False,True
-"chtMultiRegion
-Foam",True,False,False,True,False,True,True,False,True,True,True,False,False,True,False,False,True
+chtMultiRegionSimpleFoam,True,False,True,False,False,True,True,False,True,True,True,False,False,True,False,False,True
+chtMultiRegionFoam,True,False,False,True,False,True,True,False,True,True,True,False,False,True,False,False,True
 TSLAeroFoam,False,True,True,False,True,False,True,False,False,True,True,False,False,True,False,True,False
