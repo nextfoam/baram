@@ -3,8 +3,6 @@
 
 import math
 
-from CoolProp.CoolProp import PropsSI
-
 from coredb import coredb
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import MaterialDB, Phase
@@ -22,28 +20,13 @@ class K(BoundaryCondition):
 
         self._db = coredb.CoreDB()
 
-        p = float(self._db.getValue('.//initialization/initialValues/pressure'))\
-            + float(self._db.getValue('.//operatingConditions/pressure'))  # Pressure
-        t = float(self._db.getValue('.//initialization/initialValues/temperature'))  # Temperature
         v = float(self._db.getValue('.//initialization/initialValues/scaleOfVelocity'))  # Scale of Velocity
         i = float(self._db.getValue('.//initialization/initialValues/turbulentIntensity'))  # Turbulent Intensity
-        b = float(self._db.getValue('.//initialization/initialValues/turbulentViscosity'))  # Turbulent Viscosity
 
         mid = RegionDB.getMaterial(rname)
         assert MaterialDB.getPhase(mid) in [Phase.LIQUID, Phase.GAS]
-        cpName = MaterialDB.getCoolPropName(mid)
-
-        rho = PropsSI('D', 'T', float(t), 'P', float(p), cpName)  # Density
-        mu  = PropsSI('V', 'T', float(t), 'P', float(p), cpName)  # Viscosity
-
-        nu = mu / rho  # Kinetic Viscosity
-        pr = 0.85  # Prandtl Number
-        nut = b * nu
 
         k = 1.5 * math.sqrt(v*i)
-        e = 0.09 * math.sqrt(k) / nut
-        w = k / nut
-        alphat = rho * nut / pr
 
         self._initialValue = k
         self._specification = None

@@ -101,7 +101,7 @@ class CaseGenerator:
         cwd = FileSystem.caseRoot()
         #await runUtility('decomposePar', '-fields', '-case', cwd, cwd=cwd)
         if int(self._db.getValue('.//runCalculation/parallel/numberOfCores')) > 1:
-            await runUtility('decomposePar', '-case', cwd, cwd=cwd)
+            await runUtility('decomposePar', '-force', '-case', cwd, cwd=cwd)
         return True
 
     @classmethod

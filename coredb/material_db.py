@@ -52,6 +52,53 @@ class MaterialDB(object):
         return coredb.CoreDB().materialDB[name]['CoolPropName']
 
     @classmethod
+    def getDensity(cls, mid, t: float, p: float) -> float:
+        spec = coredb.CoreDB().getValue(cls.getXPath(mid) + '/density/specification')
+        if spec == 'constant':
+            return float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/density/constant'))
+        elif spec == 'perfectGas':
+            mw = float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/molecularWeight'))
+            return p * mw / (8.31446261815324 * t)
+        else:
+            raise KeyError
+
+    @classmethod
+    def getSpecificHeat(cls, mid: int, t: float) -> float:
+        spec = coredb.CoreDB().getValue(cls.getXPath(mid) + '/specificHeat/specification')
+        if spec == 'constant':
+            return float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/specificHeat/constant'))
+        elif spec == 'polynomial':
+            coeffs = list(map(float, coredb.CoreDB().getValue(cls.getXPath(mid) + '/specificHeat/polynomial').split()))
+            cp = 0.0
+            exp = 0
+            for c in coeffs:
+                cp += c * t ** exp
+                exp += 1
+            return cp
+        else:
+            raise KeyError
+
+    @classmethod
+    def getViscosity(cls, mid: int, t: float) -> float:
+        spec = coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/specification')
+        if spec == 'constant':
+            return float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/constant'))
+        elif spec == 'polynomial':
+            coeffs = list(map(float, coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/polynomial').split()))
+            cp = 0.0
+            exp = 0
+            for c in coeffs:
+                cp += c * t ** exp
+                exp += 1
+            return cp
+        elif spec == 'sutherland':
+            c1 = float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/sutherland/coefficient'))
+            s = float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/sutherland/temperature'))
+            return c1 * t ** 1.5 / (t+s)
+        else:
+            raise KeyError
+
+    @classmethod
     def dbTextToPhase(cls, DBText) -> Phase:
         if DBText == "gas":
             return Phase.GAS
