@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from CoolProp.CoolProp import PropsSI
-
 from coredb import coredb
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import MaterialDB, Phase
@@ -27,10 +25,9 @@ class NuTilda(BoundaryCondition):
 
         mid = RegionDB.getMaterial(rname)
         assert MaterialDB.getPhase(mid) in [Phase.LIQUID, Phase.GAS]
-        cpName = MaterialDB.getCoolPropName(mid)
 
-        rho = PropsSI('D', 'T', float(t), 'P', float(p), cpName)  # Density
-        mu  = PropsSI('V', 'T', float(t), 'P', float(p), cpName)  # Viscosity
+        rho = MaterialDB.getDensity(mid, t, p)  # Density
+        mu = MaterialDB.getViscosity(mid, t)  # Viscosity
 
         nu = mu / rho  # Kinetic Viscosity
         nut = b * nu
