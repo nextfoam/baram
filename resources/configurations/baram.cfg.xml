@@ -132,7 +132,7 @@
             </velocity>
             <pressure>0</pressure>
             <temperature>300</temperature>
-            <scaleOfVelocity>0</scaleOfVelocity>
+            <scaleOfVelocity>1</scaleOfVelocity>
             <turbulentIntensity>10</turbulentIntensity>
             <turbulentViscosity>10</turbulentViscosity>
         </initialValues>
