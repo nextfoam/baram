@@ -10,7 +10,7 @@ from filelock import FileLock
 
 
 FORMAT_VERSION = 1
-RECENT_PROJECTS_NUMBER = 10
+RECENT_PROJECTS_NUMBER = 100
 
 settingsPath = Path.home() / '.baram'
 casesPath = settingsPath / 'cases'
@@ -25,6 +25,7 @@ class SettingKey(Enum):
     DISPLAY_SCALE = 'display_scale'
     RECENT_DIRECTORY = 'recent_directory'
     RECENT_CASES = 'recent_cases'
+    LAST_WINDOW_POSITION = 'last_window_position'
 
 
 class AppSettings:
@@ -61,6 +62,16 @@ class AppSettings:
             recentCases.remove(project.uuid)
         recentCases.insert(0, project.uuid)
         settings[SettingKey.RECENT_CASES.value] = recentCases[:RECENT_PROJECTS_NUMBER]
+        cls._save(settings)
+
+    @classmethod
+    def getLastWindowPosition(cls):
+        return cls._get(SettingKey.LAST_WINDOW_POSITION, [200, 200, 1280, 770])
+
+    @classmethod
+    def updateLastWindowPosition(cls, rect):
+        settings = cls._load()
+        settings[SettingKey.LAST_WINDOW_POSITION.value] = [rect[0], rect[1], rect[2], rect[3]]
         cls._save(settings)
 
     @classmethod

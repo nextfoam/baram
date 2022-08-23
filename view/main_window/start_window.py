@@ -6,6 +6,7 @@ from enum import Enum, auto
 
 import qasync
 
+from PySide6.QtCore import QRect
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QFileDialog, QMessageBox
 from filelock import Timeout
 
@@ -20,13 +21,6 @@ from .recent_widget import RecentWidget
 
 
 RECENT_PROJECTS_NUMBER = 100
-
-
-class GlobalSettingKey(Enum):
-    FORMAT_VERSION = 'format_version'
-    DISPLAY_SCALE = 'display_scale'
-    RECENT_DIRECTORY = 'recent_directory'
-    RECENT_CASES = 'recent_cases'
 
 
 class StartAction(Enum):
@@ -161,8 +155,14 @@ class Baram:
             self._window = MainWindow()
             self._window.windowClosed.connect(self._windowClosed)
 
+            rect = AppSettings.getLastWindowPosition()
+            self._window.setGeometry(QRect(rect[0], rect[1], rect[2], rect[3]))
+
     @qasync.asyncSlot()
     async def _windowClosed(self, result):
+        rect = self._window.geometry()
+        getRect = [rect.x(), rect.y(), rect.width(), rect.height()]
+        AppSettings.updateLastWindowPosition(getRect)
         Project.close()
 
         if result == CloseType.CLOSE_PROJECT:

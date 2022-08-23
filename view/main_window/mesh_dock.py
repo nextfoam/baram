@@ -61,10 +61,7 @@ class ActorInfo:
     viewMode: int
     outLine: bool
 
-    position: list
-    rotation: list
-    color: list
-
+    color: (int, int, int)
     opacity: float
 
 def getActorInfo(dataset) -> ActorInfo:
@@ -85,13 +82,11 @@ def getActorInfo(dataset) -> ActorInfo:
     displayMode = DISPLAY_MODE_SURFACE_EDGE
     outLine = False
 
-    position = [0.0, 0.0, 0.0]
-    rotation = [0.0, 0.0, 0.0]
     color = [0.8, 0.8, 0.8]
     opacity = 1.0
 
     # return ActorInfo(dataset, gFilter, mapper, actor)
-    actorInfo = ActorInfo(mapper, actor, selected, show, displayMode, outLine, position, rotation, color, opacity)
+    actorInfo = ActorInfo(mapper, actor, selected, show, displayMode, outLine, color, opacity)
     return actorInfo
 
 
@@ -230,7 +225,6 @@ class MeshDock(TabifiedDock):
 
             self._addAxes()
             self._addOriginAxes()
-            self._addScaleAxes()
             self._setBackGroundColor()
 
             self._addCamera()
@@ -337,19 +331,6 @@ class MeshDock(TabifiedDock):
         self._renderer.AddActor(self._originActorY)
         self._renderer.AddActor(self._originActorZ)
 
-    def _addScaleAxes(self):
-        self._scaleActor = self._drawLine([[-10.0, 0.0, 0.0], [10.0, 0.0, 0.0]])
-        self._scaleActor.GetProperty().SetColor(0.0, 0.0, 0.0)
-        self._scaleActor.SetVisibility(True)
-
-        self._scaleAxes = vtk.vtkOrientationMarkerWidget()
-        self._scaleAxes.SetViewport(0.8, 0.0, 1.0, 0.2)
-        self._scaleAxes.SetOrientationMarker(self._scaleActor)
-        self._scaleAxes.SetInteractor(self._widget)
-
-        self._scaleAxes.EnabledOn()
-        self._scaleAxes.InteractiveOn()
-
     def _drawLine(self, points=[]):
         if len(points) < 2:
             points.append([-1.0, 0.0, 0.0])
@@ -363,7 +344,7 @@ class MeshDock(TabifiedDock):
         mapper.SetInputConnection(lineSource.GetOutputPort())
         actor = vtkActor()
         actor.SetMapper(mapper)
-        actor.GetProperty().SetLineWidth(2)
+        actor.GetProperty().SetLineWidth(1.0)
         actor.GetProperty().SetColor(0.8, 0.8, 0.8)
         return actor
 
@@ -390,10 +371,12 @@ class MeshDock(TabifiedDock):
         self._actionOrthogonalOnOff.setCheckable(True)
         self._actionOrthogonalOnOff.setChecked(self._orthogonalOn)
         self._toolBar.addAction(self._actionOrthogonalOnOff)
+
         self._toolBar.addSeparator()
 
         self._actionFit = QAction(self._iconFit, 'Fit', self._main_window)
         self._toolBar.addAction(self._actionFit)
+
         self._toolBar.addSeparator()
 
         self._actionPlusX = QAction(self._iconPlusX, '+X', self._main_window)
@@ -411,6 +394,8 @@ class MeshDock(TabifiedDock):
         self._actionMinusZ = QAction(self._iconMinusZ, '-Z', self._main_window)
         self._toolBar.addAction(self._actionMinusZ)
 
+        self._toolBar.addSeparator()
+
         self._displayModeCombo = QComboBox()
         self._displayModeCombo.addItems(['Points', 'Wireframe', 'Surface', 'SurfaceEdge'])  # 'Feature'
         self._displayModeCombo.setCurrentIndex(DISPLAY_MODE_SURFACE_EDGE)
@@ -418,6 +403,7 @@ class MeshDock(TabifiedDock):
         self._actionShowMode = QWidgetAction(self._main_window)
         self._actionShowMode.setDefaultWidget(self._displayModeCombo)
         self._toolBar.addAction(self._actionShowMode)
+
         self._toolBar.addSeparator()
 
         self._actionCulling = QAction(self._iconCullingOff, 'Surface Culling', self._main_window)
@@ -471,7 +457,7 @@ class MeshDock(TabifiedDock):
         elif curIndex == DISPLAY_MODE_WIREFRAME:
             for a in actors:
                 a.GetProperty().SetColor(0.1, 0.0, 0.3)
-                a.GetProperty().SetLineWidth(0.5)
+                a.GetProperty().SetLineWidth(1.0)
                 a.GetProperty().SetRepresentationToWireframe()
 
         elif curIndex == DISPLAY_MODE_SURFACE:
@@ -621,20 +607,20 @@ class MeshDock(TabifiedDock):
     def _setCameraViewPlusX(self):
         self._setCameraPosition((0, 0, 1), (0, 0, 0), (0, 1, 0))
 
-    def _setCameraViewPlusY(self):
+    def _setCameraViewMinusX(self):
         self._setCameraPosition((0, 0, -1), (0, 0, 0), (0, 1, 0))
 
-    def _setCameraViewPlusZ(self):
-        self._setCameraPosition((0, 1, 0), (0, 0, 0), (0, 0, -1))
-
-    def _setCameraViewMinusX(self):
-        self._setCameraPosition((1, 0, 0), (0, 0, 0), (0, 1, 0))
+    def _setCameraViewPlusY(self):
+        self._setCameraPosition((0, 0, -1), (0, 0, 0), (1, 0, 0))
 
     def _setCameraViewMinusY(self):
-        self._setCameraPosition((-1, 0, 0), (0, 0, 0), (0, 1, 0))
+        self._setCameraPosition((0, 0, 1), (0, 0, 0), (1, 0, 0))
+
+    def _setCameraViewPlusZ(self):
+        self._setCameraPosition((0, 1, 0), (0, 0, 0), (1, 0, 0))
 
     def _setCameraViewMinusZ(self):
-        self._setCameraPosition((0, -1, 0), (0, 0, 0), (0, 0, 1))
+        self._setCameraPosition((0, -1, 0), (0, 0, 0), (1, 0, 0))
 
     def _setCameraView(self, cameraView):
         if cameraView == CAMERA_VIEW_PLUS_X:
