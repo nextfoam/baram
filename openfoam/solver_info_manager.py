@@ -135,7 +135,8 @@ def getDataFrame(region, path) -> pd.DataFrame:
         names.pop(0)  # remove '#' from the list
         if names[0] != 'Time':
             raise RuntimeError
-        names = [k if k == 'Time' else region + ':' + k for k in names]
+        if region != '':
+            names = [k if k == 'Time' else region + ':' + k for k in names]
         df = pd.read_csv(f, sep=r'\s+', names=names, skiprows=0)
         df.set_index('Time', inplace=True)
         return df
