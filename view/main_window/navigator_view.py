@@ -57,9 +57,9 @@ class NavigatorView(QObject):
         self._addMenu(MenuItem.MENU_SOLUTION_INITIALIZATION, self._solutionMenu,
                       self.tr('Initialization'))
         self._addMenu(MenuItem.MENU_SOLUTION_RUN_CALCULATION, self._solutionMenu,
-                      self.tr('Run Calculation'))
+                      self.tr('Calculate Conditions'))
         self._addMenu(MenuItem.MENU_SOLUTION_PROCESS_INFORMATION, self._solutionMenu,
-                      self.tr('Process Information'))
+                      self.tr('Run Calculation'))
 
         self._connectSignalsSlots()
         self.updateMenu()
