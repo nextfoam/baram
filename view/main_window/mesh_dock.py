@@ -185,7 +185,6 @@ class MeshDock(TabifiedDock):
 
         self._cubeAxesOn = False
         self._cubeAxesActor = None
-        self._totalBounds = [0, 0, 0, 0, 0, 0]
 
         self._orthogonalViewOn = True
         self._displayMode = DISPLAY_MODE_SURFACE_EDGE
@@ -244,7 +243,6 @@ class MeshDock(TabifiedDock):
 
         self._vtkMesh = await asyncio.to_thread(getVtkMesh, FileSystem.foamFilePath(), statusConfig)
 
-        self._totalBounds = [0, 0, 0, 0, 0, 0]
         for region in self._vtkMesh:
             if 'boundary' not in self._vtkMesh[region]:  # polyMesh folder in multi-region constant folder
                 continue
@@ -259,11 +257,14 @@ class MeshDock(TabifiedDock):
                 actorInfo.actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
                 actorInfo.actor.GetProperty().SetLineWidth(1.0)
 
-                getBounds = actorInfo.actor.GetBounds()
-                for i, d in enumerate(getBounds):
-                    self._totalBounds[i] += d
+        if self._cubeAxesOn:
+            self._showCubeAxes()
+
+        if self._originAxesOn:
+            self._showOriginAxes()
 
         self._fitCamera()
+        # self._fitCameraIncludeOriginAxes()
         self._widget.Render()
 
         self.meshLoaded.emit()
@@ -364,7 +365,7 @@ class MeshDock(TabifiedDock):
         self._cubeAxesActor = vtkCubeAxesActor()
         self._cubeAxesActor.SetUseTextActor3D(1)
         self._cubeAxesActor.SetBounds(bounds)
-        self._cubeAxesActor.SetCamera(self._renderer.GetActiveCamera())
+        self._cubeAxesActor.SetCamera(self._renderer.GetActiveCamera())     # 현재 카메라 정보를 통해 글자 크기가 결정됨
 
         self._cubeAxesActor.GetTitleTextProperty(0).SetColor(axisXColor)
         self._cubeAxesActor.GetTitleTextProperty(0).SetFontSize(48)
@@ -378,21 +379,53 @@ class MeshDock(TabifiedDock):
         self._cubeAxesActor.GetTitleTextProperty(2).SetFontSize(48)
         self._cubeAxesActor.GetLabelTextProperty(2).SetColor(axisZColor)
 
-        # self._cubeAxesActor.DrawXGridlinesOn()
-        # self._cubeAxesActor.DrawYGridlinesOn()
-        # self._cubeAxesActor.DrawZGridlinesOn()
+        # self._cubeAxesActor.DrawXGridpolysOn()  # Default is Off
+        # self._cubeAxesActor.DrawYGridpolysOn()
+        # self._cubeAxesActor.DrawZGridpolysOn()
+
+        # self._cubeAxesActor.DrawXInnerGridlinesOn()  # Default is Off
+        # self._cubeAxesActor.DrawYInnerGridlinesOn()
+        # self._cubeAxesActor.DrawZInnerGridlinesOn()
+
+        self._cubeAxesActor.DrawXGridlinesOn()    # Default is Off
+        self._cubeAxesActor.DrawYGridlinesOn()
+        self._cubeAxesActor.DrawZGridlinesOn()
         self._cubeAxesActor.SetGridLineLocation(self._cubeAxesActor.VTK_GRID_LINES_FURTHEST)
+
+        # self._cubeAxesActor.UpdateGridLineVisibility(self._cubeAxesActor.VTK_GRID_LINES_FURTHEST)
+
+        # self._cubeAxesActor.XAxisTickVisibilityOn()   # Default is On
+        # self._cubeAxesActor.YAxisTickVisibilityOn()
+        # self._cubeAxesActor.ZAxisTickVisibilityOn()
 
         self._cubeAxesActor.XAxisMinorTickVisibilityOff()
         self._cubeAxesActor.YAxisMinorTickVisibilityOff()
         self._cubeAxesActor.ZAxisMinorTickVisibilityOff()
 
-        # self._cubeAxesActor.SetFlyModeToOuterEdges()        # mode 0: depend on viewport
-        # self._cubeAxesActor.SetFlyModeToClosestTriad()    # mode 1: only front 앞쪽 모서리(숫자가 잘 안보임)
-        # self._cubeAxesActor.SetFlyModeToFurthestTriad()   # mode 2: only backward 뒤쪽 모서리
+        self._cubeAxesActor.SetTickLocationToInside()     # Default
+        # self._cubeAxesActor.SetTickLocationToOutside()
+        # self._cubeAxesActor.SetTickLocationToBoth()
+
+        # self._cubeAxesActor.SetLabelOffset(20.0)  # Default
+        # self._cubeAxesActor.SetLabelScaling(False, 0, 0, 0)   # not exactly
+
+        # self._cubeAxesActor.SetFlyModeToOuterEdges()      # mode 0: depend on viewport
+        # self._cubeAxesActor.SetFlyModeToClosestTriad()    # mode 1: only front 앞쪽 모서리(숫자가 격자와 겹쳐져서 잘 안보임)  # Default
+        # self._cubeAxesActor.SetFlyModeToFurthestTriad()   # mode 2: only backward 뒤쪽 모서리(숫자가 격자에 가려져서 안보임)
         # self._cubeAxesActor.SetFlyModeToStaticTriad()     # mode 3: # X,Y,Z fixed
         self._cubeAxesActor.SetFlyModeToStaticEdges()     # mode 4: Display all
         # self._cubeAxesActor.SetFlyMode(mode)
+
+        # self._cubeAxesActor.SetXLabelFormat('%-#6.3g')    # Default
+        # self._cubeAxesActor.SetYLabelFormat('%-#6.3g')
+        # self._cubeAxesActor.SetZLabelFormat('%-#6.3g')
+
+        # self._cubeAxesActor.SetAxisOrigin(10.0, 0.0, 0.0)  # 설정한 위치의 좌표를 기준으로 출력
+        # self._cubeAxesActor.SetUseAxisOrigin(True)
+
+        # self._cubeAxesActor.SetAxisBaseForX(0.0, 0.0, 0.0)
+        # self._cubeAxesActor.SetAxisBaseForY(0.0, 0.0, 0.0)
+        # self._cubeAxesActor.SetAxisBaseForX(0.0, 0.0, 0.0)
 
     def _drawLine(self, startPoint=(-1.0, 0.0, 0.0), endPoint=(1.0, 0.0, 0.0), color=(0.8, 0.8, 0.8)):
         lineSource = vtkLineSource()
@@ -427,8 +460,8 @@ class MeshDock(TabifiedDock):
         self._actionOriginAxesOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionOriginAxesOnOff)
 
-        self._actionCubeAxesOnOff = QAction(self._iconCubeAxesOn, 'Cube Axes On/Off', self._main_window)
-        self._actionCubeAxesOnOff.setCheckable(True)
+        self._actionCubeAxesOnOff = QAction(self._iconCubeAxesOff, 'Cube Axes On/Off', self._main_window)
+        # self._actionCubeAxesOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionCubeAxesOnOff)
 
         self._actionOrthogonalViewOnOff = QAction(self._iconOrthogonalViewOn, 'Orthogonal/Perspective View', self._main_window)
@@ -571,6 +604,7 @@ class MeshDock(TabifiedDock):
 
         elif action == self._actionFit:
             self._fitCamera()
+            # self._fitCameraIncludeOriginAxes()
 
         elif action == self._actionPlusX:
             self._setCameraViewPlusX()
@@ -609,8 +643,18 @@ class MeshDock(TabifiedDock):
             self._axes.EnabledOff()
 
     def _showOriginAxes(self):
-        if self._originActorX is None:
-            self._addOriginAxes(10.0)
+        if self._originActorX is not None:
+            self._renderer.RemoveActor(self._originActorX)
+            self._renderer.RemoveActor(self._originActorY)
+            self._renderer.RemoveActor(self._originActorZ)
+
+        bounds = self.getTotalBounds()
+        xSize = abs(bounds[1]-bounds[0]) * 2.0
+        ySize = abs(bounds[3]-bounds[2]) * 2.0
+        zSize = abs(bounds[5]-bounds[4]) * 2.0
+        maxSize = max(xSize, ySize, zSize)
+        self._addOriginAxes(maxSize)
+
         self._originAxesOn = True
         self._actionOriginAxesOnOff.setIcon(self._iconOriginAxesOn)
         self._renderer.AddActor(self._originActorX)
@@ -640,8 +684,30 @@ class MeshDock(TabifiedDock):
             self._renderer.RemoveActor(self._cubeAxesActor)
         self._cubeAxesOn = True
         self._actionCubeAxesOnOff.setIcon(self._iconCubeAxesOn)
-        self._addCubeAxes(self._totalBounds)
+        self._addCubeAxes(self.getTotalBounds())
         self._renderer.AddActor(self._cubeAxesActor)
+
+    def getTotalBounds(self):
+        checkFirst = [True, True, True, True, True, True]
+        bounds = [0, 0, 0, 0, 0, 0]
+        for region in self._vtkMesh:
+            for boundary in self._vtkMesh[region]['boundary']:
+                actorInfo = self._vtkMesh[region]['boundary'][boundary]
+                getBounds = actorInfo.actor.GetBounds()
+                for i, d in enumerate(getBounds):
+                    if i % 2 == 0:
+                        if checkFirst[i]:
+                            bounds[i] = d
+                            checkFirst[i] = False
+                        else:
+                            bounds[i] = min(bounds[i], d)
+                    else:
+                        if checkFirst[i]:
+                            bounds[i] = d
+                            checkFirst[i] = False
+                        else:
+                            bounds[i] = max(bounds[i], d)
+        return bounds
 
     def _hideCubeAxes(self):
         if self._cubeAxesActor is not None:
@@ -656,6 +722,12 @@ class MeshDock(TabifiedDock):
             self._showOriginAxes()
         else:
             self._renderer.ResetCamera()
+
+        if self._cubeAxesOn:
+            self._showCubeAxes()
+
+    def _fitCameraIncludeOriginAxes(self):
+        self._renderer.ResetCamera()
 
     def _showCulling(self):
         self._cullingOn = True
