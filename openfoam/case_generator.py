@@ -106,7 +106,7 @@ class CaseGenerator:
 
     @classmethod
     def createCase(cls):
-        FileSystem.setup()
+        FileSystem.setupNewCase()
         ControlDict().build().write()
 
     def _validate(self):

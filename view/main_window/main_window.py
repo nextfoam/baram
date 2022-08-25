@@ -5,7 +5,6 @@ import logging
 import os
 from enum import Enum, auto
 from pathlib import Path
-import glob
 
 import qasync
 
@@ -31,6 +30,7 @@ from view.solution.process_information.process_information_page import ProcessIn
 from openfoam.file_system import FileSystem
 from openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from openfoam.case_generator import CaseGenerator
+from openfoam.run import runUtility
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu.settings_language import SettingLanguageDialog
@@ -50,6 +50,27 @@ logger = logging.getLogger(__name__)
 class CloseType(Enum):
     EXIT_APP = 0
     CLOSE_PROJECT = auto()
+
+
+class MeshType(Enum):
+    POLY_MESH = auto()
+    FLUENT_2D = auto()
+    FLUENT_3D = auto()
+    STAR_CCM = auto()
+    GMSH = auto()
+    IDEAS = auto()
+    NAMS_PLOT3D = auto()
+
+
+OPENFOAM_MESH_CONVERTERS = {
+    MeshType.POLY_MESH: None,
+    MeshType.FLUENT_2D: 'fluentMeshToFoam',
+    MeshType.FLUENT_3D: 'fluent3DMeshToFoam',
+    MeshType.STAR_CCM: 'ccmToFoam',
+    MeshType.GMSH: 'gmshToFoam',
+    MeshType.IDEAS: 'ideasUnvToFoam',
+    MeshType.NAMS_PLOT3D: 'plot3dToFoam',
+}
 
 
 class MenuPage:
@@ -118,6 +139,7 @@ class MainWindow(QMainWindow):
 
         if self._project.meshLoaded:
             self._meshDock.reloadMesh.emit()
+        FileSystem.setupForProject()
 
         self._updateMenuEnables()
         self.show()
@@ -149,7 +171,13 @@ class MainWindow(QMainWindow):
         self._ui.actionExit.triggered.connect(self.close)
         self._ui.actionSave.triggered.connect(self._save)
         self._ui.actionSaveAs.triggered.connect(self._saveAs)
-        self._ui.actionLoadMesh.triggered.connect(self._loadMesh)
+        self._ui.actionOpenFoam.triggered.connect(self._loadMesh)
+        self._ui.actionFluent2D.triggered.connect(self._importFluent2D)
+        self._ui.actionFluent3D.triggered.connect(self._importFluent3D)
+        self._ui.actionStarCCM.triggered.connect(self._importStarCcmPlus)
+        self._ui.actionGmsh.triggered.connect(self._importGmsh)
+        self._ui.actionIdeas.triggered.connect(self._importIdeas)
+        self._ui.actionNasaPlot3d.triggered.connect(self._importNasaPlot3D)
         self._ui.actionCloseCase.triggered.connect(self._closeProject)
         self._ui.actionMeshTranslate.triggered.connect(self._translateMesh)
         self._ui.actionMeshScale.triggered.connect(self._scaleMesh)
@@ -163,10 +191,11 @@ class MainWindow(QMainWindow):
         self._meshDock.meshLoaded.connect(self._updateMesh)
 
     def _save(self):
+        self._saveCurrentPage()
+        FileSystem.saveCase()
         self._project.save()
 
     def _saveAs(self):
-        self._saveCurrentPage()
         self._dialog = QFileDialog(self, self.tr('Select Project Directory'), AppSettings.getRecentLocation())
         self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         self._dialog.finished.connect(self._projectDirectorySelected)
@@ -178,31 +207,37 @@ class MainWindow(QMainWindow):
             currentPage.save()
 
     def _loadMesh(self):
-        if coredb.CoreDB().getRegions():
-            confirm = QMessageBox.question(
-                    self, self.tr('Load Mesh'),
-                    self.tr('Current mesh and monitor configurations will be cleared.\n'
-                            'Would you like to load another mesh?'))
+        self._importMesh(MeshType.POLY_MESH)
 
-            if confirm != QMessageBox.Yes:
-                return
+    def _importFluent2D(self):
+        self._importMesh(MeshType.FLUENT_2D, self.tr('Fluent2D (*.msh)'))
 
-        self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'))
-        self._dialog.setFileMode(QFileDialog.FileMode.Directory)
-        self._dialog.finished.connect(self._meshDirectorySelected)
-        self._dialog.open()
+    def _importFluent3D(self):
+        self._importMesh(MeshType.FLUENT_3D, self.tr('Fluent3D (*.msh)'))
+
+    def _importStarCcmPlus(self):
+        self._importMesh(MeshType.STAR_CCM, self.tr('StarCCM+ (*.ccm)'))
+
+    def _importGmsh(self):
+        self._importMesh(MeshType.GMSH, self.tr('Gmsh (*.msh)'))
+
+    def _importIdeas(self):
+        self._importMesh(MeshType.IDEAS, self.tr('Ideas (*.unv)'))
+
+    def _importNasaPlot3D(self):
+        self._importMesh(MeshType.NAMS_PLOT3D, self.tr('NASA plot3d (*.unv)'))
 
     def _closeProject(self):
         self._closeType = CloseType.CLOSE_PROJECT
         self.close()
 
-    def _scaleMesh(self):
-        self._dialog = MeshScaleDialog(self)
+    def _translateMesh(self):
+        self._dialog = MeshTranslateDialog(self)
         self._dialog.accepted.connect(self._meshTransformed)
         self._dialog.open()
 
-    def _translateMesh(self):
-        self._dialog = MeshTranslateDialog(self)
+    def _scaleMesh(self):
+        self._dialog = MeshScaleDialog(self)
         self._dialog.accepted.connect(self._meshTransformed)
         self._dialog.open()
 
@@ -213,18 +248,6 @@ class MainWindow(QMainWindow):
 
     def _meshTransformed(self):
         self._meshDock.reloadMesh.emit()
-
-    @qasync.asyncSlot()
-    async def _meshDirectorySelected(self, result):
-        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
-        self._ui.menubar.repaint()
-
-        if result == QFileDialog.Accepted:
-            polyMeshPath = self._checkPolyMesh(self._dialog.selectedFiles()[0])
-            if polyMeshPath:
-                await self._loadOpenFoamMesh(polyMeshPath)
-            else:
-                QMessageBox.critical(self, self.tr('Open polyMesh'), self.tr('Cannot find polyMesh folder'))
 
     def _checkPolyMesh(self, path):
         regions = []
@@ -271,25 +294,11 @@ class MainWindow(QMainWindow):
 
     def _projectChanged(self):
         self.setWindowTitle(f'{self.tr("Baram")} - {self._project.path}')
-        CaseGenerator.createCase()
 
     def _addDockTabified(self, dock):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
         self.tabifyDock(dock)
         self._ui.menuView.addAction(dock.toggleViewAction())
-
-    async def _loadOpenFoamMesh(self, srcPath):
-        self._clearMesh()
-
-        try:
-            self._ui.actionLoadMesh.setEnabled(False)
-            path = await PolyMeshLoader.loadBoundaries(srcPath)
-            await FileSystem.copyMeshFrom(path, coredb.CoreDB().getRegions())
-            self._meshDock.reloadMesh.emit()
-        except Exception as ex:
-            logger.info(ex, exc_info=True)
-            QMessageBox.critical(self, self.tr('Mesh Loading Failed'), str(ex))
-            self._ui.actionLoadMesh.setEnabled(True)
 
     def _changeLanguage(self):
         self._dialogSettingLanguage = SettingLanguageDialog(self)
@@ -315,6 +324,8 @@ class MainWindow(QMainWindow):
                     QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirs[0]} is not empty.'))
                     return
 
+            self._saveCurrentPage()
+            FileSystem.saveCase(path)
             self._project.saveAs(path)
 
     def _clearMesh(self):
@@ -344,7 +355,7 @@ class MainWindow(QMainWindow):
         self._loadPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
         self._loadPage(MenuItem.MENU_SOLUTION_MONITORS)
         self._project.setMeshLoaded(True)
-        self._ui.actionLoadMesh.setEnabled(True)
+        self._ui.menuLoadMesh.setEnabled(True)
 
     def _clearPage(self, menu):
         page = self._menuPages[menu.value]
@@ -355,3 +366,61 @@ class MainWindow(QMainWindow):
         page = self._menuPages[menu.value]
         if page.index > 0:
             self._contentView.page(page.index).load()
+
+    def _importMesh(self, meshType, fileFilter=None):
+        if coredb.CoreDB().getRegions():
+            confirm = QMessageBox.question(
+                self, self.tr('Load Mesh'),
+                self.tr('Current mesh and monitor configurations will be cleared.\n'
+                        'Would you like to load another mesh?'))
+
+            if confirm != QMessageBox.Yes:
+                return
+
+        self._clearMesh()
+        if fileFilter is None:
+            # Select OpenFOAM mesh directory.
+            self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'))
+            self._dialog.setFileMode(QFileDialog.FileMode.Directory)
+        else:
+            # Select a mesh file to convert.
+            self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'), '', fileFilter)
+
+        self._dialog.finished.connect(lambda result: self._meshFileSelected(result, meshType))
+        self._dialog.open()
+
+    @qasync.asyncSlot()
+    async def _meshFileSelected(self, result, meshType):
+        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
+        self._ui.menubar.repaint()
+
+        if result == QFileDialog.Accepted:
+            self._ui.menuLoadMesh.setEnabled(False)
+            CaseGenerator.createCase()
+
+            file = Path(self._dialog.selectedFiles()[0])
+            if meshType == MeshType.POLY_MESH:
+                if polyMeshPath := self._checkPolyMesh(file):
+                    await self._loadOpenFoamMesh(polyMeshPath)
+                else:
+                    QMessageBox.critical(self, self.tr('Open polyMesh'), self.tr('Cannot find polyMesh folder'))
+            else:
+                await FileSystem.copyFileToCase(file)
+                if await runUtility(OPENFOAM_MESH_CONVERTERS[meshType], file.name, cwd=FileSystem.caseRoot()):
+                    QMessageBox.critical(self, self.tr('Load Mesh'), self.tr('File conversion failed.'))
+                else:
+                    await self._loadOpenFoamMesh()
+                await FileSystem.removeFile(file.name)
+
+            self._ui.menuLoadMesh.setEnabled(True)
+
+    async def _loadOpenFoamMesh(self, srcPath=None):
+        try:
+            path = await PolyMeshLoader.loadBoundaries(srcPath)
+            if srcPath:
+                await FileSystem.copyMeshFrom(path, coredb.CoreDB().getRegions())
+            self._meshDock.reloadMesh.emit()
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            QMessageBox.critical(self, self.tr('Mesh Loading Failed'), str(ex))
+            self._ui.menuLoadMesh.setEnabled(True)

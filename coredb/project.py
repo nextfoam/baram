@@ -200,7 +200,6 @@ class _Project(QObject):
         self._fileDB.save()
 
     def saveAs(self, directory):
-        shutil.copytree(self.path, directory, dirs_exist_ok=True)
         self._fileDB.saveAs(directory)
         self._close()
         self._open(directory, ProjectOpenType.SAVE_AS)

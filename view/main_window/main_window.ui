@@ -177,9 +177,21 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuLoadMesh">
+     <property name="title">
+      <string>Load Mesh</string>
+     </property>
+     <addaction name="actionOpenFoam"/>
+     <addaction name="actionFluent2D"/>
+     <addaction name="actionFluent3D"/>
+     <addaction name="actionStarCCM"/>
+     <addaction name="actionGmsh"/>
+     <addaction name="actionIdeas"/>
+     <addaction name="actionNasaPlot3d"/>
+    </widget>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
-    <addaction name="actionLoadMesh"/>
+    <addaction name="menuLoadMesh"/>
     <addaction name="actionCloseCase"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -278,11 +290,6 @@
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionLoadMesh">
-   <property name="text">
-    <string>Load Mesh</string>
-   </property>
-  </action>
   <action name="actionScale">
    <property name="text">
     <string>Scale</string>
@@ -306,6 +313,47 @@
   <action name="actionMeshRotate">
    <property name="text">
     <string>Rotate</string>
+   </property>
+  </action>
+  <action name="actionOpenFoam">
+   <property name="text">
+    <string>OpenFoam</string>
+   </property>
+  </action>
+  <action name="actionFluent2D">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Fluent2D</string>
+   </property>
+  </action>
+  <action name="actionFluent3D">
+   <property name="text">
+    <string>Fluent3D</string>
+   </property>
+  </action>
+  <action name="actionStarCCM">
+   <property name="text">
+    <string>StarCCM+</string>
+   </property>
+  </action>
+  <action name="actionGmsh">
+   <property name="text">
+    <string>Gmsh</string>
+   </property>
+  </action>
+  <action name="actionIdeas">
+   <property name="text">
+    <string>Ideas</string>
+   </property>
+  </action>
+  <action name="actionNasaPlot3d">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>NASA plot3d</string>
    </property>
   </action>
  </widget>

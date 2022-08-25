@@ -68,6 +68,7 @@ class FileDB:
 
     def saveAs(self, directory):
         self._save(directory / 'configuration.h5')
+        self._modifiedAfterSaved = False
 
     def _bcKey(self, bcid, role):
         return f'bc{bcid}{role.value}'

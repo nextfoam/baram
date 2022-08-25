@@ -47,7 +47,7 @@ if platform.system() == 'Windows':
     }
 else:
     library = str(OPENFOAM/'lib') + os.pathsep \
-              + str(OPENFOAM/'lib'/'sys-openmpi/')
+              + str(OPENFOAM/'lib'/'openmpi-4.0.7/')
 
     if 'LD_LIBRARY_PATH' not in os.environ:
         os.environ['LD_LIBRARY_PATH'] = ''

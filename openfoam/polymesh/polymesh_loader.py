@@ -29,6 +29,8 @@ class PolyMeshLoader:
         db = coredb.CoreDB()
 
         boundaries = {}
+        if not srcPath:
+            srcPath = FileSystem.constantPath(FileSystem.POLY_MESH_DIRECTORY_NAME)
         path = srcPath
 
         regions = cls.loadRegions(srcPath)
@@ -41,8 +43,8 @@ class PolyMeshLoader:
                 if not FileSystem.isPolyMesh(path):
                     raise FileLoadingError('Mesh directory not found.')
 
-                boundaryDict = cls.loadBoundaryDict(path / 'boundary')
-                boundaries[''] = [(bname, boundary['type']) for bname, boundary in boundaryDict.content.items()]
+            boundaryDict = cls.loadBoundaryDict(path / 'boundary')
+            boundaries[''] = [(bname, boundary['type']) for bname, boundary in boundaryDict.content.items()]
         else:
             # multi region
             for rname in regions:

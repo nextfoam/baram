@@ -12,6 +12,7 @@ class FileLoadingError(Exception):
 
 
 class FileSystem:
+    TEMP_DIRECTORY_NAME = 'temp'
     CASE_DIRECTORY_NAME = 'case'
     CONSTANT_DIRECTORY_NAME = 'constant'
     BOUNDARY_CONDITIONS_DIRECTORY_NAME = '0'
@@ -26,11 +27,19 @@ class FileSystem:
     _systemPath = None
 
     @classmethod
-    def setup(cls):
-        cls._casePath = cls.makeDir(Project.instance().path, cls.CASE_DIRECTORY_NAME)
+    def setupNewCase(cls):
+        cls._casePath = Project.instance().path / cls.TEMP_DIRECTORY_NAME
+        if cls._casePath.exists():
+            shutil.rmtree(cls._casePath)
+        cls._casePath.mkdir(exist_ok=True)
+
         cls._constantPath = cls._casePath / cls.CONSTANT_DIRECTORY_NAME
         cls._boundaryConditionsPath = cls.makeDir(cls._casePath, cls.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
         cls._systemPath = cls.makeDir(cls._casePath, cls.SYSTEM_DIRECTORY_NAME)
+
+    @classmethod
+    def setupForProject(cls):
+        cls._casePath = Project.instance().path / cls.CASE_DIRECTORY_NAME
 
     @classmethod
     def initRegionDirs(cls, rname):
@@ -105,3 +114,27 @@ class FileSystem:
     @classmethod
     async def copyMeshFrom(cls, directory, regions):
         await asyncio.to_thread(cls._copyMeshFromInternal, directory, regions)
+
+    @classmethod
+    async def copyFileToCase(cls, file):
+        await asyncio.to_thread(shutil.copyfile, file, cls._casePath / file.name)
+
+    @classmethod
+    async def removeFile(cls, file):
+        path = cls._casePath / file
+        path.unlink()
+
+    @classmethod
+    def saveCase(cls, projectPath=None):
+        if projectPath:
+            projectPath.mkdir(exist_ok=True)
+        else:
+            projectPath = Project.instance().path
+
+        targetPath = projectPath / cls.CASE_DIRECTORY_NAME
+        if targetPath.exists():
+            shutil.rmtree(targetPath)
+
+        if cls._casePath != targetPath:
+            cls._casePath.rename(targetPath)
+            cls._casePath = targetPath
