@@ -320,41 +320,10 @@ class MeshDock(TabifiedDock):
         self._axesActor.SetShaftTypeToLine()
         self._axesActor.SetTotalLength(10.0, 10.0, 10.0)
 
-        # self._axesActor.SetXAxisLabelText('X') # 기본으로 X, Y, Z가 출력됨
-        # self._axesActor.SetYAxisLabelText('Y')
-        # self._axesActor.SetZAxisLabelText('Z')
-
-        # actorAxesX = self._axesActor.GetXAxisCaptionActor2D()
-        # actorAxesY = self._axesActor.GetYAxisCaptionActor2D()
-        # actorAxesZ = self._axesActor.GetZAxisCaptionActor2D()
-
-        # actorTextAxesX = actorAxesX.GetTextActor()
-        # actorTextAxesY = actorAxesY.GetTextActor()
-        # actorTextAxesZ = actorAxesZ.GetTextActor()
-
-        # actorTextAxesX.SetTextScaleModeToNone()   # Default
-        # actorTextAxesY.SetTextScaleModeToNone()
-        # actorTextAxesZ.SetTextScaleModeToNone()
-        # actorTextAxesX.SetTextScaleModeToViewport()   # Problem: 축표시 글자가 깜박임
-        # actorTextAxesY.SetTextScaleModeToViewport()
-        # actorTextAxesZ.SetTextScaleModeToViewport()
-
-        # propAxesX = actorAxesX.GetCaptionTextProperty()
-        # propAxesY = actorAxesY.GetCaptionTextProperty()
-        # propAxesZ = actorAxesZ.GetCaptionTextProperty()
-
-        # propAxesX.SetFontSize(20)
-        # propAxesY.SetFontSize(20)
-        # propAxesZ.SetFontSize(20)
-
-        # propAxesX.SetColor(0.9, 0.9, 0.9) # 기본값 1.0
-        # propAxesY.SetColor(0.9, 0.9, 0.9)
-        # propAxesZ.SetColor(0.9, 0.9, 0.9)
-
-        self._axesActor.SetNormalizedLabelPosition(1.0, 1.0, 1.0)   # 기본값은 간격이 좁음
+        self._axesActor.SetNormalizedLabelPosition(1.0, 1.0, 1.0)
 
         self._axes = vtk.vtkOrientationMarkerWidget()
-        self._axes.SetViewport(0.0, 0.0, 0.2, 0.2)  # 왼쪽 아래가 원점, (x, y, width, height)
+        self._axes.SetViewport(0.0, 0.0, 0.2, 0.2)  # (x, y, width, height)
         self._axes.SetOrientationMarker(self._axesActor)
         self._axes.SetInteractor(self._widget)
 
@@ -384,7 +353,7 @@ class MeshDock(TabifiedDock):
         self._cubeAxesActor = vtkCubeAxesActor()
         self._cubeAxesActor.SetUseTextActor3D(1)
         self._cubeAxesActor.SetBounds(bounds)
-        self._cubeAxesActor.SetCamera(self._renderer.GetActiveCamera())     # 현재 카메라 정보를 통해 글자 크기가 결정됨
+        self._cubeAxesActor.SetCamera(self._renderer.GetActiveCamera())
 
         self._cubeAxesActor.GetTitleTextProperty(0).SetColor(axisXColor)
         self._cubeAxesActor.GetTitleTextProperty(0).SetFontSize(48)
@@ -398,53 +367,16 @@ class MeshDock(TabifiedDock):
         self._cubeAxesActor.GetTitleTextProperty(2).SetFontSize(48)
         self._cubeAxesActor.GetLabelTextProperty(2).SetColor(axisZColor)
 
-        # self._cubeAxesActor.DrawXGridpolysOn()  # Default is Off
-        # self._cubeAxesActor.DrawYGridpolysOn()
-        # self._cubeAxesActor.DrawZGridpolysOn()
-
-        # self._cubeAxesActor.DrawXInnerGridlinesOn()  # Default is Off
-        # self._cubeAxesActor.DrawYInnerGridlinesOn()
-        # self._cubeAxesActor.DrawZInnerGridlinesOn()
-
-        self._cubeAxesActor.DrawXGridlinesOn()    # Default is Off
+        self._cubeAxesActor.DrawXGridlinesOn()
         self._cubeAxesActor.DrawYGridlinesOn()
         self._cubeAxesActor.DrawZGridlinesOn()
         self._cubeAxesActor.SetGridLineLocation(self._cubeAxesActor.VTK_GRID_LINES_FURTHEST)
-
-        # self._cubeAxesActor.UpdateGridLineVisibility(self._cubeAxesActor.VTK_GRID_LINES_FURTHEST)
-
-        # self._cubeAxesActor.XAxisTickVisibilityOn()   # Default is On
-        # self._cubeAxesActor.YAxisTickVisibilityOn()
-        # self._cubeAxesActor.ZAxisTickVisibilityOn()
 
         self._cubeAxesActor.XAxisMinorTickVisibilityOff()
         self._cubeAxesActor.YAxisMinorTickVisibilityOff()
         self._cubeAxesActor.ZAxisMinorTickVisibilityOff()
 
-        self._cubeAxesActor.SetTickLocationToInside()     # Default
-        # self._cubeAxesActor.SetTickLocationToOutside()
-        # self._cubeAxesActor.SetTickLocationToBoth()
-
-        # self._cubeAxesActor.SetLabelOffset(20.0)  # Default
-        # self._cubeAxesActor.SetLabelScaling(False, 0, 0, 0)   # not exactly
-
-        # self._cubeAxesActor.SetFlyModeToOuterEdges()      # mode 0: depend on viewport
-        # self._cubeAxesActor.SetFlyModeToClosestTriad()    # mode 1: only front 앞쪽 모서리(숫자가 격자와 겹쳐져서 잘 안보임)  # Default
-        # self._cubeAxesActor.SetFlyModeToFurthestTriad()   # mode 2: only backward 뒤쪽 모서리(숫자가 격자에 가려져서 안보임)
-        # self._cubeAxesActor.SetFlyModeToStaticTriad()     # mode 3: # X,Y,Z fixed
-        self._cubeAxesActor.SetFlyModeToStaticEdges()     # mode 4: Display all
-        # self._cubeAxesActor.SetFlyMode(mode)
-
-        # self._cubeAxesActor.SetXLabelFormat('%-#6.3g')    # Default
-        # self._cubeAxesActor.SetYLabelFormat('%-#6.3g')
-        # self._cubeAxesActor.SetZLabelFormat('%-#6.3g')
-
-        # self._cubeAxesActor.SetAxisOrigin(10.0, 0.0, 0.0)  # 설정한 위치의 좌표를 기준으로 출력
-        # self._cubeAxesActor.SetUseAxisOrigin(True)
-
-        # self._cubeAxesActor.SetAxisBaseForX(0.0, 0.0, 0.0)
-        # self._cubeAxesActor.SetAxisBaseForY(0.0, 0.0, 0.0)
-        # self._cubeAxesActor.SetAxisBaseForX(0.0, 0.0, 0.0)
+        self._cubeAxesActor.SetFlyModeToStaticEdges()
 
     def _drawLine(self, startPoint=(-1.0, 0.0, 0.0), endPoint=(1.0, 0.0, 0.0), color=(0.8, 0.8, 0.8)):
         lineSource = vtkLineSource()
@@ -809,18 +741,18 @@ class MeshDock(TabifiedDock):
         cameraPosition = [0.0, 0.0, 0.0]
         centers = self.getMeshCenterPoint()
         cameraPosition[0:3] = centers[0:3]
-        cameraPosition[1] = centers[1] + 2.0
+        cameraPosition[0] = centers[0] - 2.0
 
-        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (1, 0, 0))
+        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (0, 1, 0))
         self._fitCamera()
 
     def _setCameraViewMinusZ(self):
         cameraPosition = [0.0, 0.0, 0.0]
         centers = self.getMeshCenterPoint()
         cameraPosition[0:3] = centers[0:3]
-        cameraPosition[1] = centers[1] - 2.0
+        cameraPosition[0] = centers[0] + 2.0
 
-        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (1, 0, 0))
+        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (0, 1, 0))
         self._fitCamera()
 
     def _setCameraView(self, cameraView):
