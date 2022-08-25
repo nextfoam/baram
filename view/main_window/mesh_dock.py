@@ -179,9 +179,7 @@ class MeshDock(TabifiedDock):
         self._axesActor = None
 
         self._originAxesOn = False
-        self._originActorX = None
-        self._originActorY = None
-        self._originActorZ = None
+        self._originActor = None
 
         self._cubeAxesOn = False
         self._cubeAxesActor = None
@@ -264,7 +262,6 @@ class MeshDock(TabifiedDock):
             self._showOriginAxes()
 
         self._fitCamera()
-        # self._fitCameraIncludeOriginAxes()
         self._widget.Render()
 
         self.meshLoaded.emit()
@@ -292,13 +289,23 @@ class MeshDock(TabifiedDock):
     def _setDefaults(self):
         self._actionAxesOnOff.setChecked(self._axesOn)
         self._actionOriginAxesOnOff.setChecked(self._originAxesOn)
+        self._actionCubeAxesOnOff.setChecked(self._cubeAxesOn)
+        self._actionOrthogonalViewOnOff.setChecked(self._orthogonalViewOn)
 
         self._showAxes()
 
-        # self._setBackGroundColorGradient()
-        self._setBackGroundColorSolid()
+        self._setBackGroundColorGradient()
+        # self._setBackGroundColorSolid()
 
         self._orthogonalView()
+
+    def _getAllActor(self):
+        actors = []
+        for region in self._vtkMesh:
+            for boundary in self._vtkMesh[region]['boundary']:
+                actorInfo = self._vtkMesh[region]['boundary'][boundary]
+                actors.append(actorInfo.actor)
+        return actors
 
     def _addAxes(self):
         self._axesActor = vtk.vtkAxesActor()
@@ -308,40 +315,46 @@ class MeshDock(TabifiedDock):
         self._axesActor.SetCylinderResolution(8)
         self._axesActor.SetNormalizedShaftLength(0.8, 0.8, 0.8)
         self._axesActor.SetConeResolution(8)
-        self._axesActor.SetNormalizedTipLength(0.3, 0.3, 0.3)
 
-        actorAxesX = self._axesActor.GetXAxisCaptionActor2D()
-        actorAxesY = self._axesActor.GetYAxisCaptionActor2D()
-        actorAxesZ = self._axesActor.GetZAxisCaptionActor2D()
+        self._axesActor.SetConeRadius(0.3)
+        self._axesActor.SetShaftTypeToLine()
+        self._axesActor.SetTotalLength(10.0, 10.0, 10.0)
 
-        actorTextAxesX = actorAxesX.GetTextActor()
-        actorTextAxesY = actorAxesY.GetTextActor()
-        actorTextAxesZ = actorAxesZ.GetTextActor()
+        # self._axesActor.SetXAxisLabelText('X') # 기본으로 X, Y, Z가 출력됨
+        # self._axesActor.SetYAxisLabelText('Y')
+        # self._axesActor.SetZAxisLabelText('Z')
 
-        propAxesX = actorAxesX.GetCaptionTextProperty()
-        propAxesY = actorAxesY.GetCaptionTextProperty()
-        propAxesZ = actorAxesZ.GetCaptionTextProperty()
+        # actorAxesX = self._axesActor.GetXAxisCaptionActor2D()
+        # actorAxesY = self._axesActor.GetYAxisCaptionActor2D()
+        # actorAxesZ = self._axesActor.GetZAxisCaptionActor2D()
 
-        actorTextAxesX.SetTextScaleModeToViewport()
-        actorTextAxesY.SetTextScaleModeToViewport()
-        actorTextAxesZ.SetTextScaleModeToViewport()
+        # actorTextAxesX = actorAxesX.GetTextActor()
+        # actorTextAxesY = actorAxesY.GetTextActor()
+        # actorTextAxesZ = actorAxesZ.GetTextActor()
 
-        self._axesActor.SetXAxisLabelText('X')
-        self._axesActor.SetYAxisLabelText('Y')
-        self._axesActor.SetZAxisLabelText('Z')
+        # actorTextAxesX.SetTextScaleModeToNone()   # Default
+        # actorTextAxesY.SetTextScaleModeToNone()
+        # actorTextAxesZ.SetTextScaleModeToNone()
+        # actorTextAxesX.SetTextScaleModeToViewport()   # Problem: 축표시 글자가 깜박임
+        # actorTextAxesY.SetTextScaleModeToViewport()
+        # actorTextAxesZ.SetTextScaleModeToViewport()
 
-        self._axesActor.SetNormalizedLabelPosition(1.0, 1.0, 1.0)
+        # propAxesX = actorAxesX.GetCaptionTextProperty()
+        # propAxesY = actorAxesY.GetCaptionTextProperty()
+        # propAxesZ = actorAxesZ.GetCaptionTextProperty()
 
-        propAxesX.SetFontSize(20)
-        propAxesY.SetFontSize(20)
-        propAxesZ.SetFontSize(20)
+        # propAxesX.SetFontSize(20)
+        # propAxesY.SetFontSize(20)
+        # propAxesZ.SetFontSize(20)
 
-        propAxesX.SetColor(0.9, 0.9, 0.9)
-        propAxesY.SetColor(0.9, 0.9, 0.9)
-        propAxesZ.SetColor(0.9, 0.9, 0.9)
+        # propAxesX.SetColor(0.9, 0.9, 0.9) # 기본값 1.0
+        # propAxesY.SetColor(0.9, 0.9, 0.9)
+        # propAxesZ.SetColor(0.9, 0.9, 0.9)
+
+        self._axesActor.SetNormalizedLabelPosition(1.0, 1.0, 1.0)   # 기본값은 간격이 좁음
 
         self._axes = vtk.vtkOrientationMarkerWidget()
-        self._axes.SetViewport(0.0, 0.0, 0.2, 0.2)
+        self._axes.SetViewport(0.0, 0.0, 0.2, 0.2)  # 왼쪽 아래가 원점, (x, y, width, height)
         self._axes.SetOrientationMarker(self._axesActor)
         self._axes.SetInteractor(self._widget)
 
@@ -349,13 +362,19 @@ class MeshDock(TabifiedDock):
         self._axes.InteractiveOn()
 
     def _addOriginAxes(self, size=10.0):
-        self._originActorX = self._drawLine((-size, 0.0, 0.0), (size, 0.0, 0.0), (1.0, 0.0, 0.0))
-        self._originActorY = self._drawLine((0.0, -size, 0.0), (0.0, size, 0.0), (0.0, 1.0, 0.0))
-        self._originActorZ = self._drawLine((0.0, 0.0, -size), (0.0, 0.0, size), (0.0, 0.0, 1.0))
+        self._originActor = vtk.vtkAxesActor()
+        self._originActor.SetVisibility(True)
 
-        self._renderer.AddActor(self._originActorX)
-        self._renderer.AddActor(self._originActorY)
-        self._renderer.AddActor(self._originActorZ)
+        self._originActor.SetConeRadius(0.2)
+        self._originActor.SetShaftTypeToLine()
+        self._originActor.SetTotalLength(size, size, size)
+
+        self._originActor.SetNormalizedLabelPosition(1.0, 1.0, 1.0)
+
+        self._originAxes = vtk.vtkOrientationMarkerWidget()
+        self._originAxes.SetViewport(0.0, 0.0, 0.2, 0.2)
+        self._originAxes.SetOrientationMarker(self._originActor)
+        self._originAxes.SetInteractor(self._widget)
 
     def _addCubeAxes(self, bounds):
         axisXColor = self._namedColors.GetColor3d("Salmon")
@@ -456,15 +475,16 @@ class MeshDock(TabifiedDock):
         self._actionAxesOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionAxesOnOff)
 
-        self._actionOriginAxesOnOff = QAction(self._iconOriginAxesOn, 'Origin Axes On/Off', self._main_window)
+        self._actionOriginAxesOnOff = QAction(self._iconOriginAxesOff, 'Origin Axes On/Off', self._main_window)
         self._actionOriginAxesOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionOriginAxesOnOff)
 
         self._actionCubeAxesOnOff = QAction(self._iconCubeAxesOff, 'Cube Axes On/Off', self._main_window)
-        # self._actionCubeAxesOnOff.setCheckable(True)
+        self._actionCubeAxesOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionCubeAxesOnOff)
 
         self._actionOrthogonalViewOnOff = QAction(self._iconOrthogonalViewOn, 'Orthogonal/Perspective View', self._main_window)
+        self._actionOrthogonalViewOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionOrthogonalViewOnOff)
 
         self._toolBar.addSeparator()
@@ -539,13 +559,9 @@ class MeshDock(TabifiedDock):
         return wgIcon
 
     def _clickedVDisplayModeCombo(self, widget):
-        actors = []
-        for region in self._vtkMesh:
-            for boundary in self._vtkMesh[region]['boundary']:
-                actorInfo = self._vtkMesh[region]['boundary'][boundary]
-                actors.append(actorInfo.actor)
-
+        actors = self._getAllActor()
         curIndex = self._displayModeCombo.currentIndex()
+
         if curIndex == DISPLAY_MODE_POINTS:
             for a in actors:
                 a.GetProperty().SetPointSize(3)
@@ -604,7 +620,6 @@ class MeshDock(TabifiedDock):
 
         elif action == self._actionFit:
             self._fitCamera()
-            # self._fitCameraIncludeOriginAxes()
 
         elif action == self._actionPlusX:
             self._setCameraViewPlusX()
@@ -643,31 +658,25 @@ class MeshDock(TabifiedDock):
             self._axes.EnabledOff()
 
     def _showOriginAxes(self):
-        if self._originActorX is not None:
-            self._renderer.RemoveActor(self._originActorX)
-            self._renderer.RemoveActor(self._originActorY)
-            self._renderer.RemoveActor(self._originActorZ)
+        if self._originActor is not None:
+            self._renderer.RemoveActor(self._originActor)
 
-        bounds = self.getTotalBounds()
+        bounds = self.getMeshTotalBounds()
         xSize = abs(bounds[1]-bounds[0]) * 2.0
         ySize = abs(bounds[3]-bounds[2]) * 2.0
         zSize = abs(bounds[5]-bounds[4]) * 2.0
         maxSize = max(xSize, ySize, zSize)
-        self._addOriginAxes(maxSize)
 
+        self._addOriginAxes(maxSize)
         self._originAxesOn = True
         self._actionOriginAxesOnOff.setIcon(self._iconOriginAxesOn)
-        self._renderer.AddActor(self._originActorX)
-        self._renderer.AddActor(self._originActorY)
-        self._renderer.AddActor(self._originActorZ)
+        self._renderer.AddActor(self._originActor)
 
     def _hideOriginAxes(self):
-        if self._originActorX is not None:
+        if self._originActor is not None:
             self._originAxesOn = False
             self._actionOriginAxesOnOff.setIcon(self._iconOriginAxesOff)
-            self._renderer.RemoveActor(self._originActorX)
-            self._renderer.RemoveActor(self._originActorY)
-            self._renderer.RemoveActor(self._originActorZ)
+            self._renderer.RemoveActor(self._originActor)
 
     def _orthogonalView(self):
         self._orthogonalViewOn = True
@@ -684,30 +693,35 @@ class MeshDock(TabifiedDock):
             self._renderer.RemoveActor(self._cubeAxesActor)
         self._cubeAxesOn = True
         self._actionCubeAxesOnOff.setIcon(self._iconCubeAxesOn)
-        self._addCubeAxes(self.getTotalBounds())
+        self._addCubeAxes(self.getMeshTotalBounds())
         self._renderer.AddActor(self._cubeAxesActor)
 
-    def getTotalBounds(self):
-        checkFirst = [True, True, True, True, True, True]
+    def getMeshTotalBounds(self) -> list:
+        checkFirst = True
         bounds = [0, 0, 0, 0, 0, 0]
         for region in self._vtkMesh:
             for boundary in self._vtkMesh[region]['boundary']:
                 actorInfo = self._vtkMesh[region]['boundary'][boundary]
                 getBounds = actorInfo.actor.GetBounds()
-                for i, d in enumerate(getBounds):
-                    if i % 2 == 0:
-                        if checkFirst[i]:
-                            bounds[i] = d
-                            checkFirst[i] = False
-                        else:
-                            bounds[i] = min(bounds[i], d)
-                    else:
-                        if checkFirst[i]:
-                            bounds[i] = d
-                            checkFirst[i] = False
-                        else:
-                            bounds[i] = max(bounds[i], d)
+                if checkFirst:
+                    bounds = list(getBounds)
+                    checkFirst = False
+                else:
+                    bounds[0] = min(bounds[0], getBounds[0])
+                    bounds[1] = max(bounds[1], getBounds[1])
+                    bounds[2] = min(bounds[2], getBounds[2])
+                    bounds[3] = max(bounds[3], getBounds[3])
+                    bounds[4] = min(bounds[4], getBounds[4])
+                    bounds[5] = max(bounds[5], getBounds[5])
         return bounds
+
+    def getMeshCenterPoint(self) -> list:
+        center = []
+        bounds = self.getMeshTotalBounds()
+        center.append((bounds[0] + bounds[1]) * 0.5)
+        center.append((bounds[2] + bounds[3]) * 0.5)
+        center.append((bounds[4] + bounds[5]) * 0.5)
+        return center
 
     def _hideCubeAxes(self):
         if self._cubeAxesActor is not None:
@@ -726,19 +740,11 @@ class MeshDock(TabifiedDock):
         if self._cubeAxesOn:
             self._showCubeAxes()
 
-    def _fitCameraIncludeOriginAxes(self):
-        self._renderer.ResetCamera()
-
     def _showCulling(self):
         self._cullingOn = True
         self._actionCulling.setIcon(self._iconCullingOn)
 
-        actors = []
-        for region in self._vtkMesh:
-            for boundary in self._vtkMesh[region]['boundary']:
-                actorInfo = self._vtkMesh[region]['boundary'][boundary]
-                actors.append(actorInfo.actor)
-
+        actors = self._getAllActor()
         for a in actors:
             a.GetProperty().FrontfaceCullingOn()
 
@@ -746,12 +752,7 @@ class MeshDock(TabifiedDock):
         self._cullingOn = False
         self._actionCulling.setIcon(self._iconCullingOff)
 
-        actors = []
-        for region in self._vtkMesh:
-            for boundary in self._vtkMesh[region]['boundary']:
-                actorInfo = self._vtkMesh[region]['boundary'][boundary]
-                actors.append(actorInfo.actor)
-
+        actors = self._getAllActor()
         for a in actors:
             a.GetProperty().FrontfaceCullingOff()
 
@@ -769,22 +770,58 @@ class MeshDock(TabifiedDock):
         return
 
     def _setCameraViewPlusX(self):
-        self._setCameraPosition((0, 0, 1), (0, 0, 0), (0, 1, 0))
+        cameraPosition = [0.0, 0.0, 0.0]
+        centers = self.getMeshCenterPoint()
+        cameraPosition[0:3] = centers[0:3]
+        cameraPosition[2] = centers[2] + 2.0
+
+        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (0, 1, 0))
+        self._fitCamera()
 
     def _setCameraViewMinusX(self):
-        self._setCameraPosition((0, 0, -1), (0, 0, 0), (0, 1, 0))
+        cameraPosition = [0.0, 0.0, 0.0]
+        centers = self.getMeshCenterPoint()
+        cameraPosition[0:3] = centers[0:3]
+        cameraPosition[2] = centers[2] - 2.0
+
+        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (0, 1, 0))
+        self._fitCamera()
 
     def _setCameraViewPlusY(self):
-        self._setCameraPosition((0, 0, -1), (0, 0, 0), (1, 0, 0))
+        cameraPosition = [0.0, 0.0, 0.0]
+        centers = self.getMeshCenterPoint()
+        cameraPosition[0:3] = centers[0:3]
+        cameraPosition[2] = centers[2] - 2.0
+
+        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (1, 0, 0))
+        self._fitCamera()
 
     def _setCameraViewMinusY(self):
-        self._setCameraPosition((0, 0, 1), (0, 0, 0), (1, 0, 0))
+        cameraPosition = [0.0, 0.0, 0.0]
+        centers = self.getMeshCenterPoint()
+        cameraPosition[0:3] = centers[0:3]
+        cameraPosition[2] = centers[2] + 2.0
+
+        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (1, 0, 0))
+        self._fitCamera()
 
     def _setCameraViewPlusZ(self):
-        self._setCameraPosition((0, 1, 0), (0, 0, 0), (1, 0, 0))
+        cameraPosition = [0.0, 0.0, 0.0]
+        centers = self.getMeshCenterPoint()
+        cameraPosition[0:3] = centers[0:3]
+        cameraPosition[1] = centers[1] + 2.0
+
+        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (1, 0, 0))
+        self._fitCamera()
 
     def _setCameraViewMinusZ(self):
-        self._setCameraPosition((0, -1, 0), (0, 0, 0), (1, 0, 0))
+        cameraPosition = [0.0, 0.0, 0.0]
+        centers = self.getMeshCenterPoint()
+        cameraPosition[0:3] = centers[0:3]
+        cameraPosition[1] = centers[1] - 2.0
+
+        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (1, 0, 0))
+        self._fitCamera()
 
     def _setCameraView(self, cameraView):
         if cameraView == CAMERA_VIEW_PLUS_X:
