@@ -315,10 +315,7 @@ class MeshDock(TabifiedDock):
         self._axesActor.SetCylinderResolution(8)
         self._axesActor.SetNormalizedShaftLength(0.8, 0.8, 0.8)
         self._axesActor.SetConeResolution(8)
-
-        self._axesActor.SetConeRadius(0.3)
-        self._axesActor.SetShaftTypeToLine()
-        self._axesActor.SetTotalLength(10.0, 10.0, 10.0)
+        self._axesActor.SetNormalizedTipLength(0.3, 0.3, 0.3)
 
         self._axesActor.SetNormalizedLabelPosition(1.0, 1.0, 1.0)
 
