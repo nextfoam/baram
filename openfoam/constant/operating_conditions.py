@@ -8,7 +8,7 @@ from openfoam.dictionary_file import DictionaryFile
 
 class OperatingConditions(DictionaryFile):
     def __init__(self, rname: str):
-        super().__init__(self.constantLocation(rname), 'OperatingConditions')
+        super().__init__(self.constantLocation(rname), 'operatingConditions')
 
         self._rname = rname
 
