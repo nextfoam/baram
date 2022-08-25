@@ -78,7 +78,8 @@ class U(BoundaryCondition):
         elif spec == FlowRateInletSpecification.MASS_FLOW_RATE.value:
             return {
                 'type': 'flowRateInletVelocity',
-                'massFlowRate': self._db.getValue(xpath + '/flowRate/massFlowRate')
+                'massFlowRate': self._db.getValue(xpath + '/flowRate/massFlowRate'),
+                'rho': 'rho'
             }
 
     def _constructPressureInletOutletVelocity(self):
