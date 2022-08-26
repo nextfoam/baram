@@ -57,6 +57,9 @@ class MaterialDB(object):
         if spec == 'constant':
             return float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/density/constant'))
         elif spec == 'perfectGas':
+            r'''
+            .. math:: \rho = \frac{MW \times P}{R \times T}
+            '''
             mw = float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/molecularWeight'))
             return p * mw / (8.31446261815324 * t)
         else:
@@ -85,13 +88,16 @@ class MaterialDB(object):
             return float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/constant'))
         elif spec == 'polynomial':
             coeffs = list(map(float, coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/polynomial').split()))
-            cp = 0.0
+            mu = 0.0
             exp = 0
             for c in coeffs:
-                cp += c * t ** exp
+                mu += c * t ** exp
                 exp += 1
-            return cp
+            return mu
         elif spec == 'sutherland':
+            r'''
+            .. math:: \mu = \frac{C_1 T^{3/2}}{T+S}
+            '''
             c1 = float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/sutherland/coefficient'))
             s = float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/sutherland/temperature'))
             return c1 * t ** 1.5 / (t+s)
