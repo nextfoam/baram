@@ -273,8 +273,8 @@ class Worker(QObject):
             infoFiles = self._getInfoFilesSingleRegion()
 
         # Drop obsoleted info file, which has newer info file in the same directory
-        newerFiles = [p for p, s in infoFiles.items() if s.dup is not None]
-        infoFiles = {p: s for p, s in infoFiles.items() if s.dup is not None or s.path not in newerFiles}
+        newerFiles = [p.parent for p, s in infoFiles.items() if s.dup is not None]
+        infoFiles = {p: s for p, s in infoFiles.items() if s.dup is not None or s.path.parent not in newerFiles}
 
         infoFiles = dict(sorted(infoFiles.items(), key=lambda x: (x[1].region, x[1].time)))
 
