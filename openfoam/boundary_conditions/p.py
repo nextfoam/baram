@@ -5,6 +5,7 @@ from coredb import coredb
 from coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from coredb.general_db import GeneralDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
+import openfoam.solver
 
 
 class P(BoundaryCondition):
@@ -15,56 +16,64 @@ class P(BoundaryCondition):
 
         self._rname = rname
         self._db = coredb.CoreDB()
-        self._initialValue = self._db.getValue('.//initialization/initialValues/pressure')
-        self._calculatedValue = 0
+        self.initialPressure = float(self._db.getValue('.//initialization/initialValues/pressure'))
+        self.operatingPressure = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
 
         self._field = field
         self._data = None
 
+        if field == 'p_rgh':
+            solvers = openfoam.solver.findSolvers()
+            if len(solvers) == 0:  # configuration not enough yet
+                raise RuntimeError
+
+            cap = openfoam.solver.getSolverCapability(solvers[0])
+            if cap['nextfoamCustom']:  # Gauge Pressure is used for p_rgh
+                self.operatingPressure = 0  # This makes Gauge Pressure value unchanged
+
     def build(self):
         self._data = None
 
-        calculated = False
-        if GeneralDB.isGravityModelOn():
-            if self._field == 'p':
-                operatingPressure = self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure')
-                self._calculatedValue = float(self._initialValue) + float(operatingPressure)
-                calculated = True
-        elif self._field == 'p_rgh':
-            return self
+        forceCalculatedType = False
+
+        if self._field == 'p_rgh' and not GeneralDB.isGravityModelOn():
+            return self  # no "p_rgh" file
+
+        if self._field == 'p' and GeneralDB.isGravityModelOn():  # "p" field is calculated internally by the solver
+            forceCalculatedType = True
 
         self._data = {
             'dimensions': self.DIMENSIONS,
-            'internalField': ('uniform', self._initialValue),
-            'boundaryField': self._constructBoundaryField(calculated)
+            'internalField': ('uniform', self.initialPressure + self.operatingPressure),
+            'boundaryField': self._constructBoundaryField(forceCalculatedType)
         }
 
         return self
 
-    def _constructBoundaryField(self, calculated):
+    def _constructBoundaryField(self, forceCalculatedType):
         field = {}
 
         boundaries = self._db.getBoundaryConditions(self._rname)
         for bcid, name, type_ in boundaries:
-            if calculated:
-                field[name] = self._constructCalculated(self._calculatedValue)
+            if forceCalculatedType:
+                field[name] = self._constructCalculated(self.initialPressure + self.operatingPressure)
             else:
                 xpath = BoundaryDB.getXPath(bcid)
 
                 field[name] = {
                     BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructZeroGradient()),
                     BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructZeroGradient()),
-                    BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructTotalPressure(self._db.getValue(xpath + '/pressureInlet/pressure'))),
-                    BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructTotalPressure(self._db.getValue(xpath + '/pressureOutlet/totalPressure'))),
+                    BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructTotalPressure(self.operatingPressure + float(self._db.getValue(xpath + '/pressureInlet/pressure')))),
+                    BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructTotalPressure(self.operatingPressure + float(self._db.getValue(xpath + '/pressureOutlet/totalPressure')))),
                     BoundaryType.ABL_INLET.value:           (lambda: self._constructZeroGradient()),
                     BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructZeroGradient()),
                     BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
-                    BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestreamPressure(xpath + '/freeStream')),
+                    BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestreamPressure(self.operatingPressure + float(self._db.getValue(xpath + '/freeStream/pressure')))),
                     BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann')),
                     BoundaryType.SUBSONIC_INFLOW.value:     (lambda: self._constructSubsonicInflow(xpath + '/subsonicInflow')),
                     BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructSubsonicOutflow(xpath + '/subsonicOutflow')),
-                    BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue( self._db.getValue(xpath + '/supersonicInflow/staticPressure'))),
+                    BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(self.operatingPressure + float(self._db.getValue(xpath + '/supersonicInflow/staticPressure')))),
                     BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.WALL.value:                (lambda: self._constructFluxPressure()),
                     BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructFluxPressure()),
@@ -85,10 +94,10 @@ class P(BoundaryCondition):
             'p0': ('uniform', pressure)
         }
 
-    def _constructFreestreamPressure(self, xpath):
+    def _constructFreestreamPressure(self, pressure):
         return {
             'type': 'freestreamPressure',
-            'freestreamValue': self._db.getValue(xpath + '/pressure')
+            'freestreamValue': pressure
         }
 
     def _constructFluxPressure(self):
