@@ -38,13 +38,14 @@ if platform.system() == 'Windows':
             | subprocess.CREATE_NEW_PROCESS_GROUP
     )
     startupinfo = subprocess.STARTUPINFO(
-        dwFlags = subprocess.STARTF_USESHOWWINDOW,
-        wShowWindow = subprocess.SW_HIDE
+        dwFlags=subprocess.STARTF_USESHOWWINDOW,
+        wShowWindow=subprocess.SW_HIDE
     )
-    ENV = {
+    ENV = os.environ.copy()
+    ENV.update({
         'WM_PROJECT_DIR': str(OPENFOAM),
         'PATH': library + os.pathsep + os.environ['PATH']
-    }
+    })
 else:
     library = str(OPENFOAM/'lib') + os.pathsep \
               + str(OPENFOAM/'lib'/'openmpi-4.0.7/')
@@ -52,11 +53,12 @@ else:
     if 'LD_LIBRARY_PATH' not in os.environ:
         os.environ['LD_LIBRARY_PATH'] = ''
 
-    ENV = {
+    ENV = os.environ.copy()
+    ENV.update({
         'WM_PROJECT_DIR': str(OPENFOAM),
-        'PATH': os.environ['PATH'],
         'LD_LIBRARY_PATH': library + os.pathsep + os.environ['LD_LIBRARY_PATH']
-    }
+    })
+
 
 def openSolverProcess(cmd, casePath, inParallel):
     stdout = open(casePath/'stdout.log', 'a')
@@ -76,6 +78,7 @@ def openSolverProcess(cmd, casePath, inParallel):
 
     return p
 
+
 def launchSolverOnWindow(solver: str, casePath: Path, np: int = 1) -> (int, float):
     args = [MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
 
@@ -83,6 +86,7 @@ def launchSolverOnWindow(solver: str, casePath: Path, np: int = 1) -> (int, floa
 
     ps = psutil.Process(pid=process.pid)
     return ps.pid, ps.create_time()
+
 
 def launchSolverOnLinux(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float):
     args = [OPENFOAM/'bin'/'baramd', '-project', uuid, '-cmdline', MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
@@ -95,6 +99,7 @@ def launchSolverOnLinux(solver: str, casePath: Path, uuid, np: int = 1) -> (int,
         return ps.pid, ps.create_time()
 
     return None
+
 
 def launchSolver(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float):
     """Launch solver
@@ -123,6 +128,7 @@ def launchSolver(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float)
         return launchSolverOnWindow(solver, casePath, np)
     else:
         return launchSolverOnLinux(solver, casePath, uuid, np)
+
 
 async def runUtility(program: str, *args, cwd=None):
     global creationflags
