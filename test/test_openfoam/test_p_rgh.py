@@ -12,7 +12,7 @@ boundary = "testBoundary_1"
 
 class TestP(unittest.TestCase):
     def setUp(self):
-        self._db = coredb.CoreDB()
+        self._db = coredb.createDB()
         self._db.addRegion(region)
         bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
         self._xpath = BoundaryDB.getXPath(bcid)
@@ -21,7 +21,7 @@ class TestP(unittest.TestCase):
         self._db.setAttribute(GeneralDB.OPERATING_CONDITIONS_XPATH + '/gravity', 'disabled', 'false')
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testVelocityInlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')

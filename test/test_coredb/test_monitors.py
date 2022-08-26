@@ -5,7 +5,7 @@ from coredb import coredb
 
 class TestMonitors(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
 
     def testAddForceMonitor(self):
         name = self.db.addForceMonitor()
@@ -52,7 +52,7 @@ class TestMonitors(unittest.TestCase):
         self.assertNotIn(name, monitors)
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
 
 if __name__ == '__main__':

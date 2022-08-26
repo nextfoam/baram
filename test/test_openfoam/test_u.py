@@ -11,14 +11,14 @@ boundary = "testBoundary_1"
 
 class TestU(unittest.TestCase):
     def setUp(self):
-        self._db = coredb.CoreDB()
+        self._db = coredb.createDB()
         self._db.addRegion(region)
         bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
         self._xpath = BoundaryDB.getXPath(bcid)
         self._initialValue = self._db.getVector('.//initialization/initialValues/velocity')
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     # Velocity Inlet
     def testVelocityInletComponentConstant(self):

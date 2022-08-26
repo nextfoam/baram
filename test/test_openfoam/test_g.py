@@ -7,7 +7,7 @@ from openfoam.constant.g import G
 
 class TestG(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
         self.path = ModelsDB.TURBULENCE_MODELS_XPATH
 
         self.region = 'testRegion_1'
@@ -16,7 +16,7 @@ class TestG(unittest.TestCase):
         self.db.addCellZone(self.region, zone)
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testG(self):
         self.db.setValue(self.path + '/model', 'inviscid')

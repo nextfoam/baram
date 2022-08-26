@@ -5,11 +5,11 @@ from coredb import coredb
 
 class TestConfigCount(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
         self.gravityPath = './/operatingConditions/gravity'
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testSetAttributeChange(self):
         attr = 'disabled'

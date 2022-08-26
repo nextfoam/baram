@@ -5,7 +5,7 @@ from coredb import coredb
 
 class TestNonNegativeInteger(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
         self.path = './/runConditions/numberOfIterations'
 
     def testValidInteger(self):
@@ -37,7 +37,7 @@ class TestNonNegativeInteger(unittest.TestCase):
         self.assertEqual(coredb.Error.INTEGER_ONLY, error)
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
 
 if __name__ == '__main__':

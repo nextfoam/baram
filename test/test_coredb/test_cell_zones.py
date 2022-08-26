@@ -5,10 +5,10 @@ from coredb import coredb
 
 class TestCellZones(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testAddRegion(self):
         rname = 'testRegion_1'

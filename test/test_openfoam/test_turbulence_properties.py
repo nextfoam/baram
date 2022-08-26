@@ -6,7 +6,7 @@ from openfoam.constant.turbulence_properties import TurbulenceProperties
 
 class TestTurbulenceProperties(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
         self.path = './/turbulenceModels'
 
         self.region = 'testRegion_1'
@@ -16,7 +16,7 @@ class TestTurbulenceProperties(unittest.TestCase):
         self.db.setValue('.//general/flowType', 'compressible')
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testInviscid(self):
         self.db.setValue(self.path + '/model', 'inviscid')

@@ -5,7 +5,7 @@ from coredb import coredb
 
 class TestInputNumberTypeWithRestriction(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
         self.path = './/initialValues/turbulentIntensity'
 
     def testValidDecimalNotation(self):
@@ -67,7 +67,7 @@ class TestInputNumberTypeWithRestriction(unittest.TestCase):
         self.assertEqual(written, read)
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
 
 if __name__ == '__main__':

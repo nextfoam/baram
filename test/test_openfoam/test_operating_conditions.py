@@ -6,10 +6,10 @@ from openfoam.constant.operating_conditions import OperatingConditions
 
 class TestOperatingConditions(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testBuild(self):
         region = 'testRegion_1'

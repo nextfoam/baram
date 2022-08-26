@@ -4,6 +4,8 @@ from coredb import coredb
 from openfoam.boundary_conditions.nuTilda import NuTilda
 from coredb.boundary_db import BoundaryDB
 from coredb.models_db import ModelsDB
+from coredb.cell_zone_db import RegionDB
+from coredb.material_db import MaterialDB
 
 dimensions = '[0 2 -1 0 0 0 0]'
 region = "testRegion_1"
@@ -12,17 +14,30 @@ boundary = "testBoundary_1"
 
 class TestNuTilda(unittest.TestCase):
     def setUp(self):
-        self._db = coredb.CoreDB()
+        self._db = coredb.createDB()
         self._db.addRegion(region)
         bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
         self._xpath = BoundaryDB.getXPath(bcid)
-        # ToDo: set initial value
-        self._initialValue = 0
+
+        p = float(self._db.getValue('.//initialization/initialValues/pressure')) \
+            + float(self._db.getValue('.//operatingConditions/pressure'))  # Pressure
+        t = float(self._db.getValue('.//initialization/initialValues/temperature'))  # Temperature
+        b = float(self._db.getValue('.//initialization/initialValues/turbulentViscosity'))  # Turbulent Viscosity
+
+        mid = RegionDB.getMaterial(region)
+
+        rho = MaterialDB.getDensity(mid, t, p)  # Density
+        mu = MaterialDB.getViscosity(mid, t)  # Viscosity
+
+        nu = mu / rho  # Kinetic Viscosity
+        nut = b * nu
+
+        self._initialValue = nut  # nut can be used for the INITIAL value of nuTilda
 
         self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'spalartAllmaras')
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     # Velocity Inlet - modifiedTurbulentViscosity
     def testVelocityInlet(self):

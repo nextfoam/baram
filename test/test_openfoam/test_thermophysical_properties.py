@@ -49,11 +49,11 @@ mixture
 
 class TestThermophysicalProperties(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
         self.path = './/operatingConditions/gravity'
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testBasicGeneration(self):
         region = 'testRegion_1'

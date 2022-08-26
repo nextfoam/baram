@@ -9,10 +9,10 @@ from openfoam.constant.MRF_properties import MRFProperties
 
 class TestMRFProperties(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testBuild(self):
         region = 'testRegion_1'

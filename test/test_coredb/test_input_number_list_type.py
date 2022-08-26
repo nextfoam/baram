@@ -5,7 +5,7 @@ from coredb import coredb
 
 class TestInputNumberListType(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
         self.path = './/material[name="air"]/specificHeat/polynomial'
 
     def testSingleDecimalNotation(self):
@@ -32,7 +32,7 @@ class TestInputNumberListType(unittest.TestCase):
         self.assertEqual(coredb.Error.FLOAT_ONLY, error)
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
 
 if __name__ == '__main__':

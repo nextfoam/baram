@@ -9,7 +9,7 @@ from openfoam.system.fv_options import FvOptions
 
 class TestFvOptions(unittest.TestCase):
     def setUp(self):
-        self._db = coredb.CoreDB()
+        self._db = coredb.createDB()
 
         self.rname = 'testRegion'
         self.czname = 'testZone'
@@ -21,7 +21,7 @@ class TestFvOptions(unittest.TestCase):
         self.xpathAll = f'.//region[name="{self.rname}"]/cellZones/cellZone[name="All"]'
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     # --------------------------------------------------------------------------
     def testZoneTypePorousDarcyForchheimer(self):

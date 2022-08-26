@@ -10,13 +10,13 @@ from openfoam.constant.transport_properties import TransportProperties
 
 class TestTransportProperties(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
 
         self.region1 = 'testRegion_1'
         self.db.addRegion(self.region1)
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testTransportModel(self):
         content = TransportProperties(self.region1).build().asDict()

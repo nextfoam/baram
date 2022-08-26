@@ -1,8 +1,10 @@
 import unittest
+import math
 
 from coredb import coredb
 from coredb.boundary_db import BoundaryDB
 from coredb.models_db import ModelsDB
+from coredb.cell_zone_db import RegionDB
 from openfoam.boundary_conditions.k import K
 
 dimensions = '[0 2 -2 0 0 0 0]'
@@ -12,17 +14,24 @@ boundary = "testBoundary_1"
 
 class TestK(unittest.TestCase):
     def setUp(self):
-        self._db = coredb.CoreDB()
+        self._db = coredb.createDB()
         self._db.addRegion(region)
         bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
         self._xpath = BoundaryDB.getXPath(bcid)
-        # ToDo: set initial value
-        self._initialValue = 0
+
+        v = float(self._db.getValue('.//initialization/initialValues/scaleOfVelocity'))  # Scale of Velocity
+        i = float(self._db.getValue('.//initialization/initialValues/turbulentIntensity'))  # Turbulent Intensity
+
+        mid = RegionDB.getMaterial(region)
+
+        k = 1.5 * math.sqrt(v*i)
+
+        self._initialValue = k
 
         self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     # Velocity Inlet - kAndEpsilon
     def testVelocityInlet(self):

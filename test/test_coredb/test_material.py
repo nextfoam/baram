@@ -6,11 +6,11 @@ from coredb import coredb
 
 class TestMaterial(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
         self.pp = pprint.PrettyPrinter(indent=4)
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testMaterialDB(self):
         materials = self.db.getMaterialsFromDB()

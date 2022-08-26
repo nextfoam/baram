@@ -7,10 +7,10 @@ from openfoam.system.control_dict import ControlDict
 
 class TestSolver(unittest.TestCase):
     def setUp(self):
-        self._db = coredb.CoreDB()
+        self._db = coredb.createDB()
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testTransientFixedTimeStep(self):
         self._db.setValue('.//general/timeTransient', 'true')

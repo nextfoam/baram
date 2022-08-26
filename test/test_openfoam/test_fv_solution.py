@@ -12,13 +12,13 @@ region = "testRegion_1"
 
 class TestFvSolution(unittest.TestCase):
     def setUp(self):
-        self._db = coredb.CoreDB()
+        self._db = coredb.createDB()
         self._db.addRegion(region)
         self._air = self._db.getAttribute(f'{MaterialDB.MATERIALS_XPATH}/material[name="air"]', 'mid')
         self._steel = str(self._db.addMaterial('steel'))
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testCompressible(self):
         self._db.setValue(GeneralDB.GENERAL_XPATH + '/flowType', "compressible")

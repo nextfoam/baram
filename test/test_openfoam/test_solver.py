@@ -6,7 +6,7 @@ import openfoam.solver
 
 class TestSolver(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
 
         self.region = 'testRegion_1'
         zone = 'testZone_1'
@@ -14,7 +14,7 @@ class TestSolver(unittest.TestCase):
         self.db.addCellZone(self.region, zone)
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testFindingPCNFoamForTransient(self):
         self.db.setValue('.//general/timeTransient', 'true')

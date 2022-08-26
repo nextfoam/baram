@@ -1,8 +1,11 @@
 import unittest
+import math
 
 from coredb import coredb
 from coredb.boundary_db import BoundaryDB
 from coredb.models_db import ModelsDB
+from coredb.cell_zone_db import RegionDB
+from coredb.material_db import MaterialDB
 from openfoam.boundary_conditions.omega import Omega
 
 dimensions = '[0 0 -1 0 0 0 0]'
@@ -12,17 +15,35 @@ boundary = "testBoundary_1"
 
 class TestEpsilon(unittest.TestCase):
     def setUp(self):
-        self._db = coredb.CoreDB()
+        self._db = coredb.createDB()
         self._db.addRegion(region)
         bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
         self._xpath = BoundaryDB.getXPath(bcid)
-        # ToDo: Set initial value
-        self._initialValue = 0
+
+        p = float(self._db.getValue('.//initialization/initialValues/pressure')) \
+            + float(self._db.getValue('.//operatingConditions/pressure'))  # Pressure
+        t = float(self._db.getValue('.//initialization/initialValues/temperature'))  # Temperature
+        v = float(self._db.getValue('.//initialization/initialValues/scaleOfVelocity'))  # Scale of Velocity
+        i = float(self._db.getValue('.//initialization/initialValues/turbulentIntensity'))  # Turbulent Intensity
+        b = float(self._db.getValue('.//initialization/initialValues/turbulentViscosity'))  # Turbulent Viscosity
+
+        mid = RegionDB.getMaterial(region)
+
+        rho = MaterialDB.getDensity(mid, t, p)  # Density
+        mu = MaterialDB.getViscosity(mid, t)  # Viscosity
+
+        nu = mu / rho  # Kinetic Viscosity
+        nut = b * nu
+
+        k = 1.5 * math.sqrt(v*i)
+        w = k / nut
+
+        self._initialValue = w
 
         self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     # Velocity Inlet - kAndOmega
     def testVelocityInlet(self):

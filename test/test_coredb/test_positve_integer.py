@@ -5,7 +5,7 @@ from coredb import coredb
 
 class TestPositiveInteger(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
         self.path = './/runConditions/reportIntervalSteps'
 
     def test_validInteger(self):
@@ -36,7 +36,7 @@ class TestPositiveInteger(unittest.TestCase):
         self.assertEqual(coredb.Error.INTEGER_ONLY, error)
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
 
 if __name__ == '__main__':

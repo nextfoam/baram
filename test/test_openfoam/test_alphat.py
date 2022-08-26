@@ -12,7 +12,7 @@ boundary = "testBoundary_1"
 
 class TestAlphat(unittest.TestCase):
     def setUp(self):
-        self._db = coredb.CoreDB()
+        self._db = coredb.createDB()
         self._db.addRegion(region)
         bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
         self._xpath = BoundaryDB.getXPath(bcid)
@@ -22,7 +22,7 @@ class TestAlphat(unittest.TestCase):
         self._db.setValue(ModelsDB.ENERGY_MODELS_XPATH, 'on')
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testVelocityInlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')
@@ -110,12 +110,21 @@ class TestAlphat(unittest.TestCase):
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
+    # Wall
     def testWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'wall')
         content = Alphat(region).build().asDict()
-        self.assertEqual('alphatWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('compressible::alphatWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
                          content['boundaryField'][boundary]['Prt'])
+        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
+
+    # Wall
+    def testAtmosphericWall(self):
+        self._db.setValue(self._xpath + '/physicalType', 'wall')
+        self._db.setValue(self._xpath + '/wall/velocity/type', 'atmosphericWall')
+        content = Alphat(region).build().asDict()
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testThermoCoupledWall(self):

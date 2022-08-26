@@ -4,6 +4,8 @@ from coredb import coredb
 from openfoam.boundary_conditions.nut import Nut
 from coredb.boundary_db import BoundaryDB
 from coredb.models_db import ModelsDB
+from coredb.cell_zone_db import RegionDB
+from coredb.material_db import MaterialDB
 
 dimensions = '[0 2 -1 0 0 0 0]'
 region = "testRegion_1"
@@ -12,18 +14,31 @@ boundary = "testBoundary_1"
 
 class TestNut(unittest.TestCase):
     def setUp(self):
-        self._db = coredb.CoreDB()
+        self._db = coredb.createDB()
         self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
         self._db.addRegion(region)
         bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
         self._xpath = BoundaryDB.getXPath(bcid)
-        # ToDo: Set initial value
-        self._initialValue = 0
+
+        p = float(self._db.getValue('.//initialization/initialValues/pressure')) \
+            + float(self._db.getValue('.//operatingConditions/pressure'))  # Pressure
+        t = float(self._db.getValue('.//initialization/initialValues/temperature'))  # Temperature
+        b = float(self._db.getValue('.//initialization/initialValues/turbulentViscosity'))  # Turbulent Viscosity
+
+        mid = RegionDB.getMaterial(region)
+
+        rho = MaterialDB.getDensity(mid, t, p)  # Density
+        mu = MaterialDB.getViscosity(mid, t)  # Viscosity
+
+        nu = mu / rho  # Kinetic Viscosity
+        nut = b * nu
+
+        self._initialValue = nut
 
         self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-epsilon')
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testVelocityInlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')

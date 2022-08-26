@@ -9,13 +9,13 @@ from openfoam.system.decomposePar_dict import DecomposeParDict
 
 class TestDecomposeParDict(unittest.TestCase):
     def setUp(self):
-        self._db = coredb.CoreDB()
+        self._db = coredb.createDB()
 
         self.region1 = 'testRegion_1'
         self._db.addRegion(self.region1)
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testNumberOfSubdomains(self):
         self._db.setValue('.//runCalculation/parallel/numberOfCores', '4')

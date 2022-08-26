@@ -6,7 +6,7 @@ from openfoam.system.fv_schemes import FvSchemes
 
 class TestFvSchemes(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
 
         self.region = 'testRegion_1'
         zone = 'testZone_1'
@@ -23,7 +23,7 @@ class TestFvSchemes(unittest.TestCase):
         self.db.setValue('.//turbulenceModels/k-epsilon/model', 'realizable')
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testSecondOrderTransient(self):  # PCNFoam
         self.db.setValue('.//general/timeTransient', 'true')

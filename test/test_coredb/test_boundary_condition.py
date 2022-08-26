@@ -5,10 +5,10 @@ from coredb import coredb
 
 class TestBoundaryCondition(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testAddBoundaryCondition(self):
         rname = 'testRegion_1'

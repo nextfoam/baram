@@ -5,7 +5,7 @@ from coredb import coredb
 
 class TestEnumerationString(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
         self.path = './/runConditions/timeSteppingMethod'
 
     def testValidItems(self):
@@ -21,7 +21,7 @@ class TestEnumerationString(unittest.TestCase):
             self.db.setValue(self.path, written)
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
 
 if __name__ == '__main__':

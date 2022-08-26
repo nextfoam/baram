@@ -5,11 +5,11 @@ from coredb import coredb
 
 class TestAttribute(unittest.TestCase):
     def setUp(self):
-        self.db = coredb.CoreDB()
+        self.db = coredb.createDB()
         self.path = './/operatingConditions/gravity'
 
     def tearDown(self) -> None:
-        del coredb.CoreDB._instance
+        coredb.destroy()
 
     def testGetAttribute(self):
         attr = 'disabled'
