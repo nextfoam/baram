@@ -124,18 +124,18 @@ class FileSystem:
         path.unlink()
 
     @classmethod
-    def saveCase(cls, projectPath=None):
-        if projectPath:
-            projectPath.mkdir(exist_ok=True)
-        else:
-            projectPath = Project.instance().path
-
-        targetPath = projectPath / cls.CASE_DIRECTORY_NAME
+    def save(cls):
+        targetPath = Project.instance().path / cls.CASE_DIRECTORY_NAME
         if cls._casePath != targetPath:
             if targetPath.exists():
                 shutil.rmtree(targetPath)
             cls._casePath.rename(targetPath)
             cls._setCaseRoot(targetPath)
+
+    @classmethod
+    def saveAs(cls, projectPath):
+        targetPath = projectPath / cls.CASE_DIRECTORY_NAME
+        shutil.copytree(cls._casePath, targetPath, dirs_exist_ok=True)
 
     @classmethod
     def _setCaseRoot(cls, path):
