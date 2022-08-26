@@ -16,9 +16,9 @@ class TestP(unittest.TestCase):
         self._db.addRegion(region)
         bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
         self._xpath = BoundaryDB.getXPath(bcid)
-        self._initialValue = self._db.getValue('.//initialization/initialValues/pressure')
-        operatingValue = self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure')
-        self._calculatedValue = float(self._initialValue) + float(operatingValue)
+        self._initialValue = float(self._db.getValue('.//initialization/initialValues/pressure'))
+        self._operatingValue = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
+        self._calculatedValue = self._initialValue + self._operatingValue
 
         self._db.setAttribute(GeneralDB.OPERATING_CONDITIONS_XPATH + '/gravity', 'disabled', 'true')
 
@@ -30,7 +30,7 @@ class TestP(unittest.TestCase):
 
         content = P(region, 'p').build().asDict()
         self.assertEqual(dimensions, content['dimensions'])
-        self.assertEqual(self._initialValue, content['internalField'][1])
+        self.assertEqual(self._calculatedValue, content['internalField'][1])
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
@@ -48,14 +48,14 @@ class TestP(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'pressureInlet')
         content = P(region).build().asDict()
         self.assertEqual('totalPressure', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/pressureInlet/pressure'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/pressureInlet/pressure'))+self._operatingValue,
                          content['boundaryField'][boundary]['p0'][1])
 
     def testPressureOutlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'pressureOutlet')
         content = P(region).build().asDict()
         self.assertEqual('totalPressure', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/pressureOutlet/totalPressure'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/pressureOutlet/totalPressure'))+self._operatingValue,
                          content['boundaryField'][boundary]['p0'][1])
 
     def testAblInlet(self):
@@ -82,7 +82,7 @@ class TestP(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = P(region).build().asDict()
         self.assertEqual('freestreamPressure', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/freeStream/pressure'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/freeStream/pressure'))+self._operatingValue,
                          content['boundaryField'][boundary]['freestreamValue'])
 
     def testFarFieldRiemann(self):
@@ -120,7 +120,7 @@ class TestP(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'supersonicInflow')
         content = P(region).build().asDict()
         self.assertEqual('fixedValue', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/supersonicInflow/staticPressure'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/supersonicInflow/staticPressure'))+self._operatingValue,
                          content['boundaryField'][boundary]['value'][1])
 
     def testSupersonicOutflow(self):
