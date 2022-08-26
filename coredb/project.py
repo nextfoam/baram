@@ -3,7 +3,6 @@
 
 
 import uuid
-import shutil
 from enum import auto, Enum
 
 import yaml
@@ -147,8 +146,7 @@ class _Project(QObject):
 
         if route != ProjectOpenType.EXISTING or self.uuid:
             projectPath = None
-            if self.uuid:
-                self._projectSettings.load(self.uuid)
+            if self.uuid and self._projectSettings.load(self.uuid):
                 projectPath = Path(self._projectSettings.path)
 
             if not projectPath or (projectPath != self.path and projectPath.is_dir()):
