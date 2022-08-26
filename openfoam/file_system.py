@@ -28,18 +28,17 @@ class FileSystem:
 
     @classmethod
     def setupNewCase(cls):
-        cls._casePath = Project.instance().path / cls.TEMP_DIRECTORY_NAME
+        cls._setCaseRoot(Project.instance().path / cls.TEMP_DIRECTORY_NAME)
         if cls._casePath.exists():
             shutil.rmtree(cls._casePath)
         cls._casePath.mkdir(exist_ok=True)
 
-        cls._constantPath = cls._casePath / cls.CONSTANT_DIRECTORY_NAME
         cls._boundaryConditionsPath = cls.makeDir(cls._casePath, cls.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
         cls._systemPath = cls.makeDir(cls._casePath, cls.SYSTEM_DIRECTORY_NAME)
 
     @classmethod
     def setupForProject(cls):
-        cls._casePath = Project.instance().path / cls.CASE_DIRECTORY_NAME
+        cls._setCaseRoot(Project.instance().path / cls.CASE_DIRECTORY_NAME)
 
     @classmethod
     def initRegionDirs(cls, rname):
@@ -132,9 +131,15 @@ class FileSystem:
             projectPath = Project.instance().path
 
         targetPath = projectPath / cls.CASE_DIRECTORY_NAME
-        if targetPath.exists():
-            shutil.rmtree(targetPath)
-
         if cls._casePath != targetPath:
+            if targetPath.exists():
+                shutil.rmtree(targetPath)
             cls._casePath.rename(targetPath)
-            cls._casePath = targetPath
+            cls._setCaseRoot(targetPath)
+
+    @classmethod
+    def _setCaseRoot(cls, path):
+        cls._casePath = path
+        cls._constantPath = cls._casePath / cls.CONSTANT_DIRECTORY_NAME
+        cls._boundaryConditionsPath = cls._casePath / cls.BOUNDARY_CONDITIONS_DIRECTORY_NAME
+        cls._systemPath = cls._casePath / cls.SYSTEM_DIRECTORY_NAME
