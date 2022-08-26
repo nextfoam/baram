@@ -44,8 +44,9 @@ class FvSolution(DictionaryFile):
 
             self._data = {
                 'solvers': {
-                    'p': self._constructSolversP(),
-                    'p_rgh': {
+                    'p': (p := self._constructSolversP()),
+                    'pFinal': p,
+                    'p_rgh': (p_rgh := {
                         'solver': 'PCG',
                         'preconditioner': {
                             'preconditioner': 'GAMG',
@@ -57,24 +58,28 @@ class FvSolution(DictionaryFile):
                         'relTol': '0.1',
                         'minIter': '1',
                         'maxIter': '5',
-                    },
-                    'h': self._constructSolversH(phase),
-                    'rho': {
+                    }),
+                    'p_rghFinal': p_rgh,
+                    'h': (h := self._constructSolversH(phase)),
+                    'hFinal': h,
+                    'rho': (rho := {
                         'solver': 'PCG',
                         'preconditioner': 'DIC',
                         'tolerance': '1e-16',
                         'relTol': '0.1',
                         'minIter': '1',
                         'maxIter': '5',
-                    },
-                    '"(U|k|epsilon|omega|nuTilda)"': {
+                    }),
+                    'rhoFinal': rho,
+                    '"(U|k|epsilon|omega|nuTilda)"': (others := {
                         'solver': 'PBiCGStab',
                         'preconditioner': 'DILU',
                         'tolerance': '1e-16',
                         'relTol': '0.1',
                         'minIter': '1',
                         'maxIter': '5',
-                    },
+                    }),
+                    '"(U|k|epsilon|omega|nuTilda)Final"': others
                 },
                 'SIMPLE': {
                     'consistent': consistent,
