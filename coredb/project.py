@@ -136,6 +136,15 @@ class _Project(QObject):
         if self._updateProcessStatus() != SolverStatus.NONE:
             self._startProcessMonitor(process)
 
+    def save(self):
+        self._fileDB.save()
+
+    def saveAs(self, directory):
+        self._fileDB.saveAs(directory)
+        self._close()
+        self._open(directory, ProjectOpenType.SAVE_AS)
+        self.projectChanged.emit()
+
     def _open(self, directory, route=ProjectOpenType.EXISTING):
         path = Path(directory).resolve()
 
@@ -170,10 +179,9 @@ class _Project(QObject):
         AppSettings.updateRecents(self, route != ProjectOpenType.EXISTING)
 
         self._fileDB = FileDB(self.path)
-        self._coreDB = None
         if route == ProjectOpenType.WIZARD:
-            # Coredb should have been created by the wizard,
-            # Ssve that configurations as new project.
+            # CoreDB should have been created by the wizard,
+            # Save that configurations as new project.
             self._fileDB.saveCoreDB()
             self._coreDB = coredb.CoreDB()
         else:
@@ -193,15 +201,6 @@ class _Project(QObject):
         coredb.destroy()
         if self._projectLock:
             self._projectLock.release()
-
-    def save(self):
-        self._fileDB.save()
-
-    def saveAs(self, directory):
-        self._fileDB.saveAs(directory)
-        self._close()
-        self._open(directory, ProjectOpenType.SAVE_AS)
-        self.projectChanged.emit()
 
     def _setStatus(self, status):
         if self._status != status:

@@ -192,7 +192,7 @@ class MainWindow(QMainWindow):
 
     def _save(self):
         self._saveCurrentPage()
-        FileSystem.saveCase()
+        FileSystem.save()
         self._project.save()
 
     def _saveAs(self):
@@ -323,9 +323,10 @@ class MainWindow(QMainWindow):
                 elif os.listdir(path):
                     QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirs[0]} is not empty.'))
                     return
+            path.mkdir(exist_ok=True)
 
             self._saveCurrentPage()
-            FileSystem.saveCase(path)
+            FileSystem.saveAs(path)
             self._project.saveAs(path)
 
     def _clearMesh(self):
