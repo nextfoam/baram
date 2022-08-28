@@ -8,8 +8,7 @@ import asyncio
 
 import qasync
 
-from PySide6.QtCore import Qt, QFile, QTextStream, QIODevice, QTranslator, QCoreApplication
-from PySide6.QtGui import QCursor
+from PySide6.QtCore import QFile, QTextStream, QIODevice, QTranslator, QCoreApplication
 from PySide6.QtWidgets import QApplication
 
 # To render SVG files.
@@ -36,7 +35,6 @@ if __name__ == '__main__':
     logger.setLevel(logging.INFO)
 
     app = QApplication(sys.argv)
-    app.setOverrideCursor(QCursor(Qt.CursorShape.ArrowCursor))
 
     loop = qasync.QEventLoop(app)
     asyncio.set_event_loop(loop)
