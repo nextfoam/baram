@@ -188,7 +188,7 @@ class MeshDock(TabifiedDock):
         self._displayMode = DISPLAY_MODE_SURFACE_EDGE
         self._cullingOn = False
 
-        self.reloadMesh.connect(self.showOpenFoamMesh)
+        self.reloadMesh.connect(self.showOpenFoamMesh, Qt.ConnectionType.QueuedConnection)
         self._main_window.windowClosed.connect(self._windowClosed)
 
     def vtkMesh(self):
