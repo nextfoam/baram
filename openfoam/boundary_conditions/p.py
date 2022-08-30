@@ -28,7 +28,7 @@ class P(BoundaryCondition):
                 raise RuntimeError
 
             cap = openfoam.solver.getSolverCapability(solvers[0])
-            if cap['nextfoamCustom']:  # Gauge Pressure is used for p_rgh
+            if cap['useGaugePressureInPrgh']:
                 self.operatingPressure = 0  # This makes Gauge Pressure value unchanged
 
     def build(self):
