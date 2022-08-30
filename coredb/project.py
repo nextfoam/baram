@@ -175,7 +175,7 @@ class _Project(QObject):
         else:
             raise FileNotFoundError
 
-        self._projectLock = self._projectSettings.acquireLock(5)
+        self._projectLock = self._projectSettings.acquireLock(0.01)
         AppSettings.updateRecents(self, route != ProjectOpenType.EXISTING)
 
         self._fileDB = FileDB(self.path)

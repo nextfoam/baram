@@ -9,7 +9,7 @@ from .settings_scaling_ui import Ui_SettingScalingDialog
 
 class SettingScalingDialog(QDialog):
     def __init__(self, parent):
-        super().__init__()
+        super().__init__(parent)
         self._ui = Ui_SettingScalingDialog()
         self._ui.setupUi(self)
 

@@ -20,7 +20,7 @@ languages = [
 
 class SettingLanguageDialog(QDialog):
     def __init__(self, parent):
-        super().__init__()
+        super().__init__(parent)
         self._ui = Ui_SettingLanguageDialog()
         self._ui.setupUi(self)
 
