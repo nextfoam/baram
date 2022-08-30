@@ -189,53 +189,47 @@ class MeshDock(TabifiedDock):
         self._cullingOn = False
 
         self.reloadMesh.connect(self.showOpenFoamMesh, Qt.ConnectionType.QueuedConnection)
-        self._main_window.windowClosed.connect(self._windowClosed)
+        self._main_window.windowClosed.connect(self._mainWindowClosed)
+
+        frame = QFrame()
+
+        self._widget = QVTKRenderWindowInteractor(frame)
+        self._widget.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+        self._renderer = vtkRenderer()
+        self._widget.GetRenderWindow().AddRenderer(self._renderer)
+
+        self._widget.Initialize()
+        self._widget.Start()
+
+        self._addCamera()
+
+        self._namedColors = vtkNamedColors()
+
+        self._graphicsPage = QVBoxLayout()
+        self._graphicsPage.setSpacing(0)
+        self._graphicsPage.setContentsMargins(6, 0, 6, 6)
+
+        self._addToolBar()
+        self._graphicsPage.addWidget(self._toolBar)
+        self._graphicsPage.addWidget(self._widget)
+        frame.setLayout(self._graphicsPage)
+        self.setWidget(frame)
+
+        self._setDefaults()
 
     def vtkMesh(self):
         return self._vtkMesh
 
     def clear(self):
-        if self._widget is not None:
-            self._renderer.RemoveAllViewProps()
-            self._widget.Render()
+        self._renderer.RemoveAllViewProps()
+        self._widget.Render()
 
-    def closeEvent(self, event):
-        if self._widget is not None:
-            self._widget.close()
-            self._widget = None
-
-    def _windowClosed(self, result):
-        self.close()
+    def _mainWindowClosed(self, result):
+        self._widget.close()
 
     @qasync.asyncSlot()
     async def showOpenFoamMesh(self):
         self.clear()
-
-        if self._widget is None:
-            self._widget = QVTKRenderWindowInteractor(self)
-            self._widget.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
-            self._renderer = vtkRenderer()
-            self._widget.GetRenderWindow().AddRenderer(self._renderer)
-
-            self._widget.Initialize()
-            self._widget.Start()
-
-            self._addCamera()
-
-            self._namedColors = vtkNamedColors()
-
-            self._graphicsPage = QVBoxLayout()
-            self._graphicsPage.setSpacing(0)
-            self._graphicsPage.setContentsMargins(6, 0, 6, 6)
-
-            self._addToolBar()
-            self._graphicsPage.addWidget(self._toolBar)
-            self._graphicsPage.addWidget(self._widget)
-            frame = QFrame()
-            frame.setLayout(self._graphicsPage)
-            self.setWidget(frame)
-
-            self._setDefaults()
 
         statusConfig = self.buildPatchArrayStatus()
 
