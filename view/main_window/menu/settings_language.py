@@ -1,32 +1,39 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, auto
-
 from PySide6.QtWidgets import QDialog, QMessageBox
-from PySide6.QtCore import Qt
 
-from coredb import coredb
+from coredb.app_settings import AppSettings
 from .settings_language_ui import Ui_SettingLanguageDialog
 
 
+languages = [
+    ['lang_de', 'lang_en', 'lang_es', 'lang_fr', 'lang_it',
+     'lang_ja', 'lang_ko', 'lang_nl', 'lang_pl', 'lang_pt',
+     'lang_ru', 'lang_sv', 'lang_tr', 'lang_zh'
+     ],
+    ['Deutsch', 'English', 'Español', 'Français', 'Italiano',
+     '日本語', '한국어', 'Nederlands', 'Polski', 'Português',
+     'русском', 'Svenska', 'Türkçe', '简体中文'
+     ]
+]
+
 class SettingLanguageDialog(QDialog):
     def __init__(self, parent):
-        super().__init__()
+        super().__init__(parent)
         self._ui = Ui_SettingLanguageDialog()
         self._ui.setupUi(self)
 
-        # TODO: load current language from yaml config file
-        language = self.tr("Korean")
-
-        self._ui.language.setCurrentText(language)
+        self._ui.language.addItems(languages[1])
+        index = languages[0].index(AppSettings.getDefaultLanguage())
+        self._ui.language.setCurrentIndex(index)
 
     def accept(self):
-        QMessageBox.information(self, self.tr("Change UI language"),
-                                self.tr('Requires UI restart'))
+        index = self._ui.language.currentIndex()
 
-        language = self._ui.language.currentText()
-
-        # TODO: save selected language at yaml config file
+        preIndex = languages[0].index(AppSettings.getDefaultLanguage())
+        if preIndex != index:
+            QMessageBox.information(self, self.tr("Change UI language"), self.tr('Requires UI restart'))
+            AppSettings.updateDefaultLanguage(languages[0][index])
 
         super().accept()
