@@ -6,7 +6,7 @@ from enum import Enum, auto
 
 import qasync
 
-from PySide6.QtCore import QRect
+from PySide6.QtCore import Qt, QRect
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QFileDialog, QMessageBox
 from filelock import Timeout
 
@@ -146,14 +146,14 @@ class Baram:
             return
 
         self._dialog = StartWindow()
-        self._dialog.finished.connect(self._starterClosed)
+        self._dialog.finished.connect(self._starterClosed, type=Qt.ConnectionType.QueuedConnection)
         self._dialog.open()
 
     def _starterClosed(self, result):
         self._applicationLock.release()
         if result == QDialog.Accepted:
             self._window = MainWindow()
-            self._window.windowClosed.connect(self._windowClosed)
+            self._window.windowClosed.connect(self._windowClosed, type=Qt.ConnectionType.QueuedConnection)
 
             rect = AppSettings.getLastWindowPosition()
             self._window.setGeometry(QRect(rect[0], rect[1], rect[2], rect[3]))
