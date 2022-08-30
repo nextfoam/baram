@@ -7,7 +7,7 @@ from enum import Enum, auto
 import qasync
 
 from PySide6.QtCore import Qt, QRect
-from PySide6.QtWidgets import QDialog, QListWidgetItem, QFileDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem, QFileDialog, QMessageBox
 from filelock import Timeout
 
 from coredb.app_settings import AppSettings
@@ -157,6 +157,8 @@ class Baram:
 
             rect = AppSettings.getLastWindowPosition()
             self._window.setGeometry(QRect(rect[0], rect[1], rect[2], rect[3]))
+        else:
+            QApplication.quit()
 
     @qasync.asyncSlot()
     async def _windowClosed(self, result):
@@ -167,3 +169,5 @@ class Baram:
 
         if result == CloseType.CLOSE_PROJECT:
             await self.start()
+        else:
+            QApplication.quit()

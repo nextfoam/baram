@@ -34,6 +34,7 @@ if __name__ == '__main__':
     logger.setLevel(logging.INFO)
 
     app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
 
     loop = qasync.QEventLoop(app)
     asyncio.set_event_loop(loop)
