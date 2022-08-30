@@ -22,7 +22,8 @@ casesPath.mkdir(exist_ok=True)
 
 class SettingKey(Enum):
     FORMAT_VERSION = 'format_version'
-    DISPLAY_SCALE = 'display_scale'
+    UI_SCALING = 'ui_scaling'
+    DEFAULT_LANGUAGE = 'default_language'
     RECENT_DIRECTORY = 'recent_directory'
     RECENT_CASES = 'recent_cases'
     LAST_WINDOW_POSITION = 'last_window_position'
@@ -72,6 +73,26 @@ class AppSettings:
     def updateLastWindowPosition(cls, rect):
         settings = cls._load()
         settings[SettingKey.LAST_WINDOW_POSITION.value] = [rect[0], rect[1], rect[2], rect[3]]
+        cls._save(settings)
+
+    @classmethod
+    def getUiScaling(cls):
+        return cls._get(SettingKey.UI_SCALING, '1.1')
+
+    @classmethod
+    def updateUiScaling(cls, scaling):
+        settings = cls._load()
+        settings[SettingKey.UI_SCALING.value] = scaling
+        cls._save(settings)
+
+    @classmethod
+    def getDefaultLanguage(cls):
+        return cls._get(SettingKey.DEFAULT_LANGUAGE, 'lang_en')
+
+    @classmethod
+    def updateDefaultLanguage(cls, lang):
+        settings = cls._load()
+        settings[SettingKey.DEFAULT_LANGUAGE.value] = lang
         cls._save(settings)
 
     @classmethod

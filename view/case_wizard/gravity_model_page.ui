@@ -65,6 +65,9 @@
            <property name="enabled">
             <bool>true</bool>
            </property>
+           <property name="text">
+            <string/>
+           </property>
           </widget>
          </item>
          <item row="1" column="0">
@@ -81,7 +84,11 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="y"/>
+          <widget class="QLineEdit" name="y">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="label_z">
@@ -97,7 +104,11 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QLineEdit" name="z"/>
+          <widget class="QLineEdit" name="z">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>

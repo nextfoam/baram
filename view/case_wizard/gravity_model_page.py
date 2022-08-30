@@ -19,6 +19,11 @@ class GravityModelPage(QWizardPage):
         self._ui.setupUi(self)
 
         self._ui.notInclude.setChecked(True)
+
+        self._ui.x.setText('0.0')
+        self._ui.y.setText('-9.81')
+        self._ui.z.setText('0.0')
+
         self._ui.x.setEnabled(False)
         self._ui.y.setEnabled(False)
         self._ui.z.setEnabled(False)

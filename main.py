@@ -20,12 +20,11 @@ import PySide6.QtSvg
 import resource_rc
 
 from view.main_window.start_window import Baram
+from coredb.app_settings import AppSettings
 
 
 if __name__ == '__main__':
-    # TODO: The scale value should be save in configuration and loaded/used in next launch
-    # This environment variable should be set before QApplication is created
-    os.environ["QT_SCALE_FACTOR"] = "1.1"
+    os.environ["QT_SCALE_FACTOR"] = AppSettings.getUiScaling()
 
     logger = logging.getLogger()
     formatter = logging.Formatter("[%(name)s] %(message)s")
@@ -46,7 +45,8 @@ if __name__ == '__main__':
     #app.setStyleSheet(app.styleSheet() + '\n' + stream.readAll())
 
     translator = QTranslator()
-    translator.load("./resources/locale/lang_en.qm")
+    lang = AppSettings.getDefaultLanguage()
+    translator.load(f'./resources/locale/{lang}.qm')
     QCoreApplication.installTranslator(translator)
 
     background_tasks = set()

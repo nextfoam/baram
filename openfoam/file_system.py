@@ -31,7 +31,10 @@ class FileSystem:
         cls._setCaseRoot(Project.instance().path / cls.TEMP_DIRECTORY_NAME)
         if cls._casePath.exists():
             shutil.rmtree(cls._casePath)
+
         cls._casePath.mkdir(exist_ok=True)
+        with open(cls.foamFilePath(), 'a'):
+            pass
 
         cls._boundaryConditionsPath = cls.makeDir(cls._casePath, cls.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
         cls._systemPath = cls.makeDir(cls._casePath, cls.SYSTEM_DIRECTORY_NAME)
@@ -106,9 +109,6 @@ class FileSystem:
         else:
             polyMeshPath = cls.constantPath(cls.POLY_MESH_DIRECTORY_NAME)
             shutil.copytree(directory, polyMeshPath, copy_function=shutil.copyfile)
-
-        with open(cls.foamFilePath(), 'a'):
-            pass
 
     @classmethod
     async def copyMeshFrom(cls, directory, regions):
