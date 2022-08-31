@@ -140,13 +140,13 @@
 
     <runCalculation>
         <runConditions>
-            <numberOfIterations>0</numberOfIterations>
+            <numberOfIterations>1000</numberOfIterations>
             <timeSteppingMethod>fixed</timeSteppingMethod>
             <timeStepSize>0.01</timeStepSize>
             <maxCourantNumber>1</maxCourantNumber>
-            <endTime>0</endTime>
-            <reportIntervalSteps>1</reportIntervalSteps>
-            <reportIntervalSeconds>0.01</reportIntervalSeconds>
+            <endTime>10</endTime>
+            <reportIntervalSteps>100</reportIntervalSteps>
+            <reportIntervalSeconds>0.1</reportIntervalSeconds>
             <retainOnlyTheMostRecentFiles>false</retainOnlyTheMostRecentFiles>
             <maximumNumberOfDataFiles>1</maximumNumberOfDataFiles>
             <dataWriteFormat>binary</dataWriteFormat>
