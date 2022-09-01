@@ -19,7 +19,7 @@
    <string>WizardPage</string>
   </property>
   <property name="title">
-   <string>FlowType</string>
+   <string>Flow Type</string>
   </property>
   <property name="subTitle">
    <string/>
