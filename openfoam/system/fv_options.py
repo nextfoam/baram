@@ -55,7 +55,7 @@ class FvOptions(DictionaryFile):
             self._data[dictName]['explicitPorositySourceCoeffs']['selectionMode'] = 'all'
         else:
             self._data[dictName]['explicitPorositySourceCoeffs']['selectionMode'] = 'cellZone'
-            self._data[dictName]['explicitPorositySourceCoeffs']['cellZone'] = 'porosity'
+            self._data[dictName]['explicitPorositySourceCoeffs']['cellZone'] = czname
 
     def _generateExplicit(self, xpath):
         data = {}
@@ -117,7 +117,7 @@ class FvOptions(DictionaryFile):
             self._data[dictName]['selectionMode'] = 'all'
         else:
             self._data[dictName]['selectionMode'] = 'cellZone'
-            self._data[dictName]['cellZone'] = 'porosity'
+            self._data[dictName]['cellZone'] = czname
 
     def _generateSourceTerms(self, czname, xpath):
         self._generateSourceFields(czname, xpath + '/mass', 'rho')
@@ -153,7 +153,7 @@ class FvOptions(DictionaryFile):
                 self._data[dictName]['selectionMode'] = 'all'
             else:
                 self._data[dictName]['selectionMode'] = 'cellZone'
-                self._data[dictName]['cellZone'] = 'porosity'
+                self._data[dictName]['cellZone'] = czname
 
     def _generateVolumeMode(self, xpath):
         unitValue = self._db.getValue(xpath + '/unit')
@@ -243,7 +243,7 @@ class FvOptions(DictionaryFile):
                 self._data[dictName]['selectionMode'] = 'all'
             else:
                 self._data[dictName]['selectionMode'] = 'cellZone'
-                self._data[dictName]['cellZone'] = 'porosity'
+                self._data[dictName]['cellZone'] = czname
 
     def _generateFixedTemperature(self, czname, xpath):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
@@ -260,7 +260,7 @@ class FvOptions(DictionaryFile):
                 self._data[dictName]['selectionMode'] = 'all'
             else:
                 self._data[dictName]['selectionMode'] = 'cellZone'
-                self._data[dictName]['cellZone'] = 'porosity'
+                self._data[dictName]['cellZone'] = czname
 
     def _generateFixedFields(self, czname, xpath, fieldType):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
@@ -278,4 +278,4 @@ class FvOptions(DictionaryFile):
                 self._data[dictName]['selectionMode'] = 'all'
             else:
                 self._data[dictName]['selectionMode'] = 'cellZone'
-                self._data[dictName]['cellZone'] = 'porosity'
+                self._data[dictName]['cellZone'] = czname
