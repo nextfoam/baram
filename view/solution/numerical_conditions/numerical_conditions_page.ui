@@ -144,7 +144,7 @@
           <item row="3" column="0">
            <widget class="QLabel" name="label_22">
             <property name="text">
-             <string>Turbulent Kinetic Energy</string>
+             <string>Turbulence Kinetic Energy</string>
             </property>
            </widget>
           </item>
