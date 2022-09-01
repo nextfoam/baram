@@ -101,7 +101,6 @@ class ProcessInformationPage(QWidget):
                     ps.send_signal(signal.CTRL_C_EVENT)
                 elif platform.system() == "Linux":
                     ps.send_signal(signal.SIGTERM)
-                    ps.wait()   # Temporary code
                 else:
                     raise Exception(self.tr('Unsupported OS'))
 
