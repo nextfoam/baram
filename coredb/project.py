@@ -4,6 +4,7 @@
 
 import uuid
 from enum import auto, Enum
+from typing import Optional
 
 import yaml
 from PySide6.QtCore import QObject, Signal, QTimer
@@ -80,7 +81,7 @@ class _Project(QObject):
         self._runType = None
 
         self._settings = None
-        self._projectSettings = None
+        self._projectSettings: Optional[ProjectSettings] = None
         self._projectLock = None
 
         self._fileDB = None
