@@ -98,7 +98,7 @@ class AppSettings:
             maxX = max(maxX, d.x + d.width)
             maxY = max(maxY, d.y + d.height)
 
-        if minX <= x <= maxX and minY <= y <= maxY:
+        if minX <= x <= (maxX-width) and minY <= y <= (maxY-height):
             return [x, y, width, height]
         return cls.getWindowCenterPosition(width, height)
 
