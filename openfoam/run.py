@@ -91,7 +91,8 @@ def launchSolverOnWindow(solver: str, casePath: Path, np: int = 1) -> (int, floa
 def launchSolverOnLinux(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float):
     args = [OPENFOAM/'bin'/'baramd', '-project', uuid, '-cmdline', MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
 
-    openSolverProcess(args, casePath, np > 1)
+    process = openSolverProcess(args, casePath, np > 1)
+    process.wait()
 
     processes = [p for p in psutil.process_iter(['pid', 'cmdline', 'create_time']) if uuid in p.info['cmdline']]
     if processes:
