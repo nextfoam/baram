@@ -61,7 +61,7 @@ class MaterialDB(object):
             .. math:: \rho = \frac{MW \times P}{R \times T}
             '''
             mw = float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/molecularWeight'))
-            return p * mw / (8.31446261815324 * t)
+            return p * mw / (8314.46261815324 * t)
         else:
             raise KeyError
 
