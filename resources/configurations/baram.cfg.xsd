@@ -988,6 +988,7 @@
                             <xs:enumeration value="empty"/>
                             <xs:enumeration value="wedge"/>
                             <xs:enumeration value="cyclic"/>
+                            <xs:enumeration value="cyclicAMI"/>
                             <xs:enumeration value="wall"/>
                             <xs:enumeration value="processor"/>
                             <xs:enumeration value="mappedWall"/>
