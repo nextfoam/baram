@@ -18,7 +18,7 @@ from .filedb import FileDB
 
 
 FORMAT_VERSION = 1
-SOLVER_CHECK_INTERVAL = 5000
+SOLVER_CHECK_INTERVAL = 500
 
 
 class SolverStatus(Enum):

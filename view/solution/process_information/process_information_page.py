@@ -95,14 +95,18 @@ class ProcessInformationPage(QWidget):
     def _waitingStop(self):
         if self._project.solverStatus() == SolverStatus.RUNNING:
             pid, startTime = self._project.solverProcess()
-            ps = psutil.Process(pid)
-            if ps.create_time() == startTime:
-                if platform.system() == "Windows":
-                    ps.send_signal(signal.CTRL_C_EVENT)
-                elif platform.system() == "Linux":
-                    ps.send_signal(signal.SIGTERM)
-                else:
-                    raise Exception(self.tr('Unsupported OS'))
+            try:
+                ps = psutil.Process(pid)
+                with ps.oneshot():
+                    if ps.is_running() and ps.create_time() == startTime:
+                        if platform.system() == "Windows":
+                            ps.send_signal(signal.CTRL_C_EVENT)
+                        elif platform.system() == "Linux":
+                            ps.send_signal(signal.SIGTERM)
+                        else:
+                            raise Exception(self.tr('Unsupported OS'))
+            except psutil.NoSuchProcess:
+                pass
 
     def _saveAndStopCalculationClicked(self):
         controlDict = ControlDict().build()
