@@ -145,7 +145,6 @@ class FvOptions(DictionaryFile):
 
             self._data[dictName] = {
                 'type': 'scalarSemiImplicitSource',
-                'duration': '1000.0',
                 'volumeMode': volumeMode,
                 'injectionRateSuSp': injectionRateSuSp
             }
