@@ -147,15 +147,22 @@ class Baram:
 
         self._dialog = StartWindow()
         self._dialog.finished.connect(self._starterClosed, type=Qt.ConnectionType.QueuedConnection)
+        rect = AppSettings.getLastStartWindowPosition()
+        self._dialog.setGeometry(QRect(rect[0], rect[1], rect[2], rect[3]))
         self._dialog.open()
 
     def _starterClosed(self, result):
         self._applicationLock.release()
+
+        rect = self._dialog.geometry()
+        getRect = [rect.x(), rect.y(), rect.width(), rect.height()]
+        AppSettings.updateLastStartWindowPosition(getRect)
+
         if result == QDialog.Accepted:
             self._window = MainWindow()
             self._window.windowClosed.connect(self._windowClosed, type=Qt.ConnectionType.QueuedConnection)
 
-            rect = AppSettings.getLastWindowPosition()
+            rect = AppSettings.getLastMainWindowPosition()
             self._window.setGeometry(QRect(rect[0], rect[1], rect[2], rect[3]))
         else:
             QApplication.quit()
@@ -164,7 +171,7 @@ class Baram:
     async def _windowClosed(self, result):
         rect = self._window.geometry()
         getRect = [rect.x(), rect.y(), rect.width(), rect.height()]
-        AppSettings.updateLastWindowPosition(getRect)
+        AppSettings.updateLastMainWindowPosition(getRect)
         Project.close()
 
         if result == CloseType.CLOSE_PROJECT:

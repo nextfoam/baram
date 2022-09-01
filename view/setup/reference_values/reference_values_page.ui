@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
+    <width>240</width>
     <height>500</height>
    </rect>
   </property>
@@ -76,10 +76,13 @@
    <item>
     <widget class="QWidget" name="widget" native="true">
      <layout class="QFormLayout" name="formLayout_2">
+      <property name="rowWrapPolicy">
+       <enum>QFormLayout::WrapLongRows</enum>
+      </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>Angle Of Attack, AOA (Degrees, °)</string>
+         <string>Angle Of Attack, AOA (deg, °)</string>
         </property>
        </widget>
       </item>
@@ -89,7 +92,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Angle Of Sideslip, AOS (Degrees, °)</string>
+         <string>Angle Of Sideslip, AOS (deg, °)</string>
         </property>
        </widget>
       </item>

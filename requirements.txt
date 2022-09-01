@@ -33,3 +33,4 @@ vtk==9.1.0
 wslink==1.6.6
 xmlschema==1.10.0
 yarl==1.7.2
+screeninfo==0.8

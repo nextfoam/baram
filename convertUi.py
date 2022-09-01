@@ -7,8 +7,8 @@ import platform
 import sys
 import fnmatch
 
-# findFiles (v1.2)
-def findFiles(startPath='.', option='*', bPath=True, bView=False, bSort=True, pathExcepts=[]):
+# findFiles (v1.32)
+def findFiles(startPath='.', option='*', bPath=True, bView=False, bSort=True, pathExcepts=[], fileExcepts=[]):
     arrFoundFiles = []
     startPath = startPath.replace('"', '')
     for fullPath, subPath, fileNames in os.walk(startPath):
@@ -16,27 +16,43 @@ def findFiles(startPath='.', option='*', bPath=True, bView=False, bSort=True, pa
             if bPath:
                 f = os.path.join(fullPath, f)
 
-            # Excepts
             if len(pathExcepts) > 0:
-                bCheckExcepts = False
-                for e in pathExcepts:
-                    if f.find(f'{e}') == 0:
-                        bCheckExcepts = True
-                if not bCheckExcepts:
-                    arrFoundFiles.append(f)
-                    # View
-                    if bView: print(f)
+                bExceptsPath = False
+                for g in pathExcepts:
+                    if f.find(f'{g}') == 0:
+                        bExceptsPath = True
+                if not bExceptsPath:
+                    if len(fileExcepts) > 0:
+                        bExceptsFile = False
+                        for h in fileExcepts:
+                            if f.find(f'{h}') != -1:
+                                bExceptsFile = True
+                        if not bExceptsFile:
+                            arrFoundFiles.append(f)
+                            if bView:
+                                print(f)
+                    else:
+                        arrFoundFiles.append(f)
+                        if bView:
+                            print(f)
             else:
-                arrFoundFiles.append(f)
-                # View
-                if bView:
-                    print(f)
-    # Sort
+                if len(fileExcepts) > 0:
+                    bExceptsFile = False
+                    for h in fileExcepts:
+                        if f.find(f'{h}') != -1:
+                            bExceptsFile = True
+                    if not bExceptsFile:
+                        arrFoundFiles.append(f)
+                        if bView:
+                            print(f)
+                else:
+                    arrFoundFiles.append(f)
+                    if bView:
+                        print(f)
     if bSort:
         arrFoundFiles.sort()
     return arrFoundFiles
 
-#
 def getFileNameExt(path):  # Path/Name.ext    >> Name.ext
     if len(path) >= 2 and path[0] == '"' and path[-1] == '"':
         path = path[1:-1]
@@ -61,7 +77,6 @@ if len(sys.argv) > 1:
 
 # Run 1
 print('>> Convert qrc files')
-
 arrFound = findFiles(filePath, 'resource.qrc', pathExcepts=['./venv'])
 for d in arrFound:
     print(f'  Converting... resource.qrc -> {d[2:-4]}_rc.py')

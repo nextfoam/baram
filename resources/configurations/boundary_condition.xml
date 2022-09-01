@@ -11,7 +11,7 @@
             <component>
                 <profile>constant</profile>
                 <constant>
-                    <x>0</x>
+                    <x>1</x>
                     <y>0</y>
                     <z>0</z>
                 </constant>
@@ -28,7 +28,7 @@
             </component>
             <magnitudeNormal>
                 <profile>constant</profile>
-                <constant>0</constant>
+                <constant>1</constant>
                 <spatialDistribution></spatialDistribution>
                 <temporalDistribution>
                     <specification>piecewiseLinear</specification>
@@ -93,7 +93,7 @@
     </subsonicOutflow>
     <supersonicInflow>
         <velocity>
-            <x>0</x>
+            <x>1</x>
             <y>0</y>
             <z>0</z>
         </velocity>

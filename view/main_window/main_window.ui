@@ -216,9 +216,16 @@
     <addaction name="actionMeshTranslate"/>
     <addaction name="actionMeshRotate"/>
    </widget>
+   <widget class="QMenu" name="menuPost">
+    <property name="title">
+     <string>Post</string>
+    </property>
+    <addaction name="actionParaview"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMesh"/>
    <addaction name="menuView"/>
+   <addaction name="menuPost"/>
    <addaction name="menuSetting"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -354,6 +361,11 @@
    </property>
    <property name="text">
     <string>NASA plot3d</string>
+   </property>
+  </action>
+  <action name="actionParaview">
+   <property name="text">
+    <string>Paraview</string>
    </property>
   </action>
  </widget>

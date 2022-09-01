@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
+import screeninfo
 from enum import Enum
 from pathlib import Path
 
@@ -26,7 +26,8 @@ class SettingKey(Enum):
     DEFAULT_LANGUAGE = 'default_language'
     RECENT_DIRECTORY = 'recent_directory'
     RECENT_CASES = 'recent_cases'
-    LAST_WINDOW_POSITION = 'last_window_position'
+    LAST_START_WINDOW_POSITION = 'last_start_window_position'
+    LAST_MAIN_WINDOW_POSITION = 'last_main_window_position'
 
 
 class AppSettings:
@@ -66,18 +67,73 @@ class AppSettings:
         cls._save(settings)
 
     @classmethod
-    def getLastWindowPosition(cls):
-        return cls._get(SettingKey.LAST_WINDOW_POSITION, [200, 200, 1280, 770])
+    def getPrimaryMonitor(cls):
+        monitorsInfo = screeninfo.get_monitors()
+        for i, d in enumerate(monitorsInfo):
+            if d.is_primary:
+                return i
+        return 0
 
     @classmethod
-    def updateLastWindowPosition(cls, rect):
+    def getMonitorSize(cls, monitorNum=-1):
+        monitorsInfo = screeninfo.get_monitors()
+        if monitorNum < 0 or monitorNum >= len(monitorsInfo):
+            monitorNum = cls.getPrimaryMonitor()
+
+        x = monitorsInfo[monitorNum].x
+        y = monitorsInfo[monitorNum].y
+        width = monitorsInfo[monitorNum].width
+        height = monitorsInfo[monitorNum].height
+        return [x, y, width, height]
+
+    @classmethod
+    def getWindowProperPosition(cls, position):
+        x, y, width, height = position[0], position[1], position[2], position[3]
+        minX, minY, maxX, maxY = 0, 0, 0, 0
+
+        monitorsInfo = screeninfo.get_monitors()
+        for d in monitorsInfo:
+            minX = min(minX, d.x)
+            minY = min(minY, d.y)
+            maxX = max(maxX, d.x + d.width)
+            maxY = max(maxY, d.y + d.height)
+
+        if minX <= x <= maxX and minY <= y <= maxY:
+            return [x, y, width, height]
+        return cls.getWindowCenterPosition(width, height)
+
+    @classmethod
+    def getWindowCenterPosition(cls, width=400, height=300):
+        monitorSize = cls.getMonitorSize()
+        x = (monitorSize[2] / 2) - (width / 2) + monitorSize[0]
+        y = (monitorSize[3] / 2) - (height / 2)
+        return [x, y, width, height]
+
+    @classmethod
+    def getLastStartWindowPosition(cls):
+        position = cls._get(SettingKey.LAST_START_WINDOW_POSITION, cls.getWindowCenterPosition(400, 300))
+        return cls.getWindowProperPosition(position)
+
+    @classmethod
+    def updateLastStartWindowPosition(cls, rect):
         settings = cls._load()
-        settings[SettingKey.LAST_WINDOW_POSITION.value] = [rect[0], rect[1], rect[2], rect[3]]
+        settings[SettingKey.LAST_START_WINDOW_POSITION.value] = [rect[0], rect[1], rect[2], rect[3]]
+        cls._save(settings)
+
+    @classmethod
+    def getLastMainWindowPosition(cls):
+        position = cls._get(SettingKey.LAST_MAIN_WINDOW_POSITION, cls.getWindowCenterPosition(1280, 770))
+        return cls.getWindowProperPosition(position)
+
+    @classmethod
+    def updateLastMainWindowPosition(cls, rect):
+        settings = cls._load()
+        settings[SettingKey.LAST_MAIN_WINDOW_POSITION.value] = [rect[0], rect[1], rect[2], rect[3]]
         cls._save(settings)
 
     @classmethod
     def getUiScaling(cls):
-        return cls._get(SettingKey.UI_SCALING, '1.1')
+        return cls._get(SettingKey.UI_SCALING, '1.0')
 
     @classmethod
     def updateUiScaling(cls, scaling):

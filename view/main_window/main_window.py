@@ -3,6 +3,7 @@
 
 import logging
 import os
+import platform
 from enum import Enum, auto
 from pathlib import Path
 
@@ -46,7 +47,6 @@ from .mesh_rotate_dialog import MeshRotateDialog
 
 logger = logging.getLogger(__name__)
 
-
 class CloseType(Enum):
     EXIT_APP = 0
     CLOSE_PROJECT = auto()
@@ -71,7 +71,6 @@ OPENFOAM_MESH_CONVERTERS = {
     MeshType.IDEAS: 'ideasUnvToFoam',
     MeshType.NAMS_PLOT3D: 'plot3dToFoam',
 }
-
 
 class MenuPage:
     def __init__(self, pageClass=None):
@@ -168,7 +167,6 @@ class MainWindow(QMainWindow):
         self.windowClosed.emit(self._closeType)
 
     def _connectSignalsSlots(self):
-        self._ui.actionExit.triggered.connect(self.close)
         self._ui.actionSave.triggered.connect(self._save)
         self._ui.actionSaveAs.triggered.connect(self._saveAs)
         self._ui.actionOpenFoam.triggered.connect(self._loadMesh)
@@ -179,16 +177,24 @@ class MainWindow(QMainWindow):
         self._ui.actionIdeas.triggered.connect(self._importIdeas)
         self._ui.actionNasaPlot3d.triggered.connect(self._importNasaPlot3D)
         self._ui.actionCloseCase.triggered.connect(self._closeProject)
-        self._ui.actionMeshTranslate.triggered.connect(self._translateMesh)
+        self._ui.actionExit.triggered.connect(self.close)
+
         self._ui.actionMeshScale.triggered.connect(self._scaleMesh)
+        self._ui.actionMeshTranslate.triggered.connect(self._translateMesh)
         self._ui.actionMeshRotate.triggered.connect(self._rotateMesh)
-        self._ui.actionLanguage.triggered.connect(self._changeLanguage)
+
+        self._ui.actionParaview.triggered.connect(self._runParaview)
+
         self._ui.actionScale.triggered.connect(self._changeScale)
+        self._ui.actionLanguage.triggered.connect(self._changeLanguage)
+
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
+
+        self._meshDock.meshLoaded.connect(self._updateMesh)
+
         self._project.meshStatusChanged.connect(self._updateMenuEnables)
         self._project.solverStatusChanged.connect(self._updateMenuEnables)
         self._project.projectChanged.connect(self._projectChanged)
-        self._meshDock.meshLoaded.connect(self._updateMesh)
 
     def _save(self):
         self._saveCurrentPage()
@@ -231,13 +237,13 @@ class MainWindow(QMainWindow):
         self._closeType = CloseType.CLOSE_PROJECT
         self.close()
 
-    def _translateMesh(self):
-        self._dialog = MeshTranslateDialog(self)
+    def _scaleMesh(self):
+        self._dialog = MeshScaleDialog(self)
         self._dialog.accepted.connect(self._meshTransformed)
         self._dialog.open()
 
-    def _scaleMesh(self):
-        self._dialog = MeshScaleDialog(self)
+    def _translateMesh(self):
+        self._dialog = MeshTranslateDialog(self)
         self._dialog.accepted.connect(self._meshTransformed)
         self._dialog.open()
 
@@ -300,13 +306,23 @@ class MainWindow(QMainWindow):
         self.tabifyDock(dock)
         self._ui.menuView.addAction(dock.toggleViewAction())
 
-    def _changeLanguage(self):
-        self._dialogSettingLanguage = SettingLanguageDialog(self)
-        self._dialogSettingLanguage.open()
+    def _runParaview(self):
+        casePath = ''
+        if self._project.meshLoaded:
+            casePath = FileSystem.foamFilePath()
+
+        if platform.system() == 'Windows':
+            os.system(f'paraview {casePath}')
+        else:
+            os.system(f'paraview {casePath} &')
 
     def _changeScale(self):
         self._dialogSettingScaling = SettingScalingDialog(self)
         self._dialogSettingScaling.open()
+
+    def _changeLanguage(self):
+        self._dialogSettingLanguage = SettingLanguageDialog(self)
+        self._dialogSettingLanguage.open()
 
     def _projectDirectorySelected(self):
         # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
