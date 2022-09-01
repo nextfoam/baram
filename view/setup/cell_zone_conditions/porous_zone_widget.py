@@ -75,7 +75,7 @@ class PorousZoneWidget(QWidget):
                           self._ui.inertialResistanceCoefficientY.text(), self.tr("Viscous Resistance Coefficient Y"))
             writer.append(self._xpath + '/darcyForchheimer/inertialResistanceCoefficient/z',
                           self._ui.inertialResistanceCoefficientZ.text(), self.tr("Viscous Resistance Coefficient Z"))
-        elif model == PorousZoneModel.POWER_LAW:
+        elif model == PorousZoneModel.POWER_LAW.value:
             writer.append(self._xpath + '/powerLaw/c0', self._ui.c0.text(), self.tr("C0"))
             writer.append(self._xpath + '/powerLaw/c1', self._ui.c1.text(), self.tr("C1"))
 
