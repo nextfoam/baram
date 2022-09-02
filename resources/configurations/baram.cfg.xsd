@@ -1479,15 +1479,8 @@
                                 <xs:complexType>
                                     <xs:sequence>
                                         <xs:element name="numberOfCores" type="xs:positiveInteger"/>
-                                        <xs:element name="machineType">
-                                            <xs:simpleType>
-                                                <xs:restriction base="xs:string">
-                                                    <xs:enumeration value="smp"/>
-                                                    <xs:enumeration value="cluster"/>
-                                                </xs:restriction>
-                                            </xs:simpleType>
-                                        </xs:element>
-                                        <!-- ToDo: hosts file handling -->
+                                        <xs:element name="localhost" type="xs:boolean"/>
+                                        <xs:element name="hostfile" type="xs:string"/> <!-- HDF5 Dataset -->
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
