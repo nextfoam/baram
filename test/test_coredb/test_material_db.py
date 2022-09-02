@@ -31,7 +31,7 @@ class TestMaterialDB(unittest.TestCase):
         .. math:: \rho = \frac{MW \times P}{R \times T}
         '''
         mw = float(coredb.CoreDB().getValue(self.xpath + '/molecularWeight'))
-        density = p * mw / (8.31446261815324 * t)
+        density = p * mw / (8314.46261815324 * t)
         self.assertEqual(density, MaterialDB.getDensity(self.mid, t, p))
 
     def testGetSpecificHeatConstant(self):

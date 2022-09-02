@@ -37,7 +37,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual([1.0, 0.0, 0.0], content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['DarcyForchheimerCoeffs']['coordinateSystem']['coordinateRotation']['e1'])
         self.assertEqual([0.0, 0.0, 1.0], content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['DarcyForchheimerCoeffs']['coordinateSystem']['coordinateRotation']['e2'])
         self.assertEqual('cellZone', content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['selectionMode'])
-        self.assertEqual('porosity', content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['cellZone'])
+        self.assertEqual(self.czname, content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['cellZone'])
 
     def testZoneTypePorousPowerLaw(self):
         self._db.setValue(self.xpath + '/zoneType', 'porous')
@@ -50,7 +50,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('0', content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['powerLawCoeffs']['C0'])
         self.assertEqual('0', content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['powerLawCoeffs']['C1'])
         self.assertEqual('cellZone', content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['selectionMode'])
-        self.assertEqual('porosity', content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['cellZone'])
+        self.assertEqual(self.czname, content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['cellZone'])
 
     # def testZoneTypeSlidingMesh(self):    # Not defined
     #     self._db.setValue(self.xpath + '/zoneType', 'slidingMesh')
@@ -74,7 +74,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('0', content[f'actuationDiskSource_{self.czname}']['diskArea'])
         self.assertEqual([0.0, 0.0, 0.0], content[f'actuationDiskSource_{self.czname}']['upstreamPoint'])
         self.assertEqual('cellZone', content[f'actuationDiskSource_{self.czname}']['selectionMode'])
-        self.assertEqual('porosity', content[f'actuationDiskSource_{self.czname}']['cellZone'])
+        self.assertEqual(self.czname, content[f'actuationDiskSource_{self.czname}']['cellZone'])
 
     # --------------------------------------------------------------------------
     def testSourceTermsMassConstant(self):
@@ -166,7 +166,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('absolute', content[f'scalarSource_{self.czname}_nuTilda']['volumeMode'])
         self.assertEqual('0', content[f'scalarSource_{self.czname}_nuTilda']['injectionRateSuSp']['nuTilda']['Su'])
         self.assertEqual('cellZone', content[f'scalarSource_{self.czname}_nuTilda']['selectionMode'])
-        self.assertEqual('porosity', content[f'scalarSource_{self.czname}_nuTilda']['cellZone'])
+        self.assertEqual(self.czname, content[f'scalarSource_{self.czname}_nuTilda']['cellZone'])
 
     def testSourceTermsK(self):
         self._db.setValue('.//models/turbulenceModels/model', 'k-epsilon')
@@ -179,7 +179,7 @@ class TestFvOptions(unittest.TestCase):
 
         self.assertEqual('0', content[f'scalarSource_{self.czname}_k']['injectionRateSuSp']['k']['Su'])
         self.assertEqual('cellZone', content[f'scalarSource_{self.czname}_k']['selectionMode'])
-        self.assertEqual('porosity', content[f'scalarSource_{self.czname}_k']['cellZone'])
+        self.assertEqual(self.czname, content[f'scalarSource_{self.czname}_k']['cellZone'])
 
     def testSourceTermsEpsilon(self):
         self._db.setValue('.//models/turbulenceModels/model', 'k-epsilon')
@@ -191,7 +191,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('absolute', content[f'scalarSource_{self.czname}_epsilon']['volumeMode'])
         self.assertEqual('0', content[f'scalarSource_{self.czname}_epsilon']['injectionRateSuSp']['epsilon']['Su'])
         self.assertEqual('cellZone', content[f'scalarSource_{self.czname}_epsilon']['selectionMode'])
-        self.assertEqual('porosity', content[f'scalarSource_{self.czname}_epsilon']['cellZone'])
+        self.assertEqual(self.czname, content[f'scalarSource_{self.czname}_epsilon']['cellZone'])
 
     def testSourceTermsOmega(self):
         self._db.setValue('.//models/turbulenceModels/model', 'k-omega')
@@ -203,7 +203,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('absolute', content[f'scalarSource_{self.czname}_omega']['volumeMode'])
         self.assertEqual('0', content[f'scalarSource_{self.czname}_omega']['injectionRateSuSp']['omega']['Su'])
         self.assertEqual('cellZone', content[f'scalarSource_{self.czname}_omega']['selectionMode'])
-        self.assertEqual('porosity', content[f'scalarSource_{self.czname}_omega']['cellZone'])
+        self.assertEqual(self.czname, content[f'scalarSource_{self.czname}_omega']['cellZone'])
 
     # --------------------------------------------------------------------------
     def testFixedValuesVelocity(self):
@@ -215,7 +215,7 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual([0, 0, 0], content[f'fixedVelocity_{self.czname}']['Ubar'])
         self.assertEqual('0', content[f'fixedVelocity_{self.czname}']['relaxation'])
         self.assertEqual('cellZone', content[f'fixedVelocity_{self.czname}']['selectionMode'])
-        self.assertEqual('porosity', content[f'fixedVelocity_{self.czname}']['cellZone'])
+        self.assertEqual(self.czname, content[f'fixedVelocity_{self.czname}']['cellZone'])
 
     def testFixedValuesTemperature(self):
         xpath = self.xpath + '/fixedValues/temperature'
@@ -225,7 +225,7 @@ class TestFvOptions(unittest.TestCase):
 
         self.assertEqual('300', content[f'fixedTemperature_{self.czname}']['temperature'][1])
         self.assertEqual('cellZone', content[f'fixedTemperature_{self.czname}']['selectionMode'])
-        self.assertEqual('porosity', content[f'fixedTemperature_{self.czname}']['cellZone'])
+        self.assertEqual(self.czname, content[f'fixedTemperature_{self.czname}']['cellZone'])
 
     def testFixedValuesNutilda(self):
         self._db.setValue('.//models/turbulenceModels/model', 'spalartAllmaras')
@@ -236,7 +236,7 @@ class TestFvOptions(unittest.TestCase):
 
         self.assertEqual('0', content[f'fixedValue_{self.czname}_nuTilda']['fieldValues']['nuTilda'])
         self.assertEqual('cellZone', content[f'fixedValue_{self.czname}_nuTilda']['selectionMode'])
-        self.assertEqual('porosity', content[f'fixedValue_{self.czname}_nuTilda']['cellZone'])
+        self.assertEqual(self.czname, content[f'fixedValue_{self.czname}_nuTilda']['cellZone'])
 
     def testFixedValuesK(self):
         self._db.setValue('.//models/turbulenceModels/model', 'k-epsilon')
@@ -247,7 +247,7 @@ class TestFvOptions(unittest.TestCase):
 
         self.assertEqual('0', content[f'fixedValue_{self.czname}_k']['fieldValues']['k'])
         self.assertEqual('cellZone', content[f'fixedValue_{self.czname}_k']['selectionMode'])
-        self.assertEqual('porosity', content[f'fixedValue_{self.czname}_k']['cellZone'])
+        self.assertEqual(self.czname, content[f'fixedValue_{self.czname}_k']['cellZone'])
 
     def testFixedValuesEpsilon(self):
         self._db.setValue('.//models/turbulenceModels/model', 'k-epsilon')
@@ -258,7 +258,7 @@ class TestFvOptions(unittest.TestCase):
 
         self.assertEqual('0', content[f'fixedValue_{self.czname}_epsilon']['fieldValues']['epsilon'])
         self.assertEqual('cellZone', content[f'fixedValue_{self.czname}_epsilon']['selectionMode'])
-        self.assertEqual('porosity', content[f'fixedValue_{self.czname}_epsilon']['cellZone'])
+        self.assertEqual(self.czname, content[f'fixedValue_{self.czname}_epsilon']['cellZone'])
 
     def testFixedValuesOmega(self):
         self._db.setValue('.//models/turbulenceModels/model', 'k-omega')
@@ -269,7 +269,7 @@ class TestFvOptions(unittest.TestCase):
 
         self.assertEqual('0', content[f'fixedValue_{self.czname}_omega']['fieldValues']['omega'])
         self.assertEqual('cellZone', content[f'fixedValue_{self.czname}_omega']['selectionMode'])
-        self.assertEqual('porosity', content[f'fixedValue_{self.czname}_omega']['cellZone'])
+        self.assertEqual(self.czname, content[f'fixedValue_{self.czname}_omega']['cellZone'])
 
     # --------------------------------------------------------------------------
     # All Region
