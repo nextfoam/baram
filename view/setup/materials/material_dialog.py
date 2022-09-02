@@ -279,8 +279,9 @@ class MaterialDialog(ResizableDialog):
         specification = self._ui.viscosityType.currentData(Qt.UserRole)
         self._ui.viscosityEdit.setEnabled(specification == Specification.POLYNOMIAL)
         self._ui.constantViscosity.setEnabled(specification == Specification.CONSTANT)
-        self._ui.sutherlandCoefficient.setEnabled(specification == Specification.SUTHERLAND)
-        self._ui.sutherlandTemperature.setEnabled(specification == Specification.SUTHERLAND)
+        if self._phase == Phase.GAS:
+            self._ui.sutherlandCoefficient.setEnabled(specification == Specification.SUTHERLAND)
+            self._ui.sutherlandTemperature.setEnabled(specification == Specification.SUTHERLAND)
 
     def _thermalConductivityTypeChanged(self):
         specification = self._ui.thermalConductivityType.currentData(Qt.UserRole)
