@@ -15,8 +15,8 @@ class DataWriteFormat(Enum):
 
 
 class MachineType(Enum):
-    SHARED_MEMORY_ON_LOCAL_MACHINE = "smp"
-    DISTRIBUTED_MEMORY_ON_A_CLUSTER = "cluster"
+    SHARED_MEMORY_ON_LOCAL_MACHINE = "true"
+    DISTRIBUTED_MEMORY_ON_A_CLUSTER = "false"
 
 
 class RunCalculationDB:

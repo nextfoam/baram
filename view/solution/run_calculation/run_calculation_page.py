@@ -101,7 +101,7 @@ class RunCalculationPage(QWidget):
 
         self._ui.numberOfCores.setText(self._db.getValue(self._xpath + '/parallel/numberOfCores'))
         self._ui.machineType.setCurrentText(
-            self._machineTypes[self._db.getValue(self._xpath + '/parallel/machineType')])
+            self._machineTypes[self._db.getValue(self._xpath + '/parallel/localhost')])
 
         return super().showEvent(ev)
 
@@ -144,7 +144,7 @@ class RunCalculationPage(QWidget):
 
         writer.append(self._xpath + '/parallel/numberOfCores', self._ui.numberOfCores.text(),
                       self.tr('Number of Cores'))
-        writer.append(self._xpath + '/parallel/machineType', self._ui.machineType.currentData(), None)
+        writer.append(self._xpath + '/parallel/localhost', self._ui.machineType.currentData(), None)
 
         errorCount = writer.write()
         if errorCount > 0:
