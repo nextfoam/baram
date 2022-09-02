@@ -324,7 +324,7 @@
 
     <xs:complexType name="slidingMeshZoneType">
         <xs:sequence>
-            <xs:element name="rotatingSpeed" type="inputNumberType" default="0"/>
+            <xs:element name="rotatingSpeed" type="inputNumberType" default="1000"/>
             <xs:element name="rotationAxisOrigin" type="vector"/>
             <xs:element name="rotationAxisDirection" type="vector"/>
         </xs:sequence>

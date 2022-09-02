@@ -46,7 +46,7 @@
         </powerLaw>
     </porous>
     <slidingMesh>
-        <rotatingSpeed>0</rotatingSpeed>
+        <rotatingSpeed>1000</rotatingSpeed>
         <rotationAxisOrigin>
             <x>0</x>
             <y>0</y>
