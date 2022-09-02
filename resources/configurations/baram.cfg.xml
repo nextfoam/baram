@@ -155,7 +155,8 @@
         </runConditions>
         <parallel>
             <numberOfCores>1</numberOfCores>
-            <machineType>smp</machineType>
+            <localhost>true</localhost>
+            <hostfile></hostfile>
         </parallel>
     </runCalculation>
 </configuration>
