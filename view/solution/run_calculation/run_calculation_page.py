@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from os import path
 from enum import Enum, Flag, auto
+from pathlib import Path
 
-from PySide6.QtWidgets import QWidget, QMessageBox, QFormLayout
+from PySide6.QtWidgets import QWidget, QMessageBox, QFormLayout, QFileDialog
 
 from coredb import coredb
+from coredb.app_settings import AppSettings
 from coredb.coredb_writer import CoreDBWriter
 from coredb.general_db import GeneralDB
-from coredb.run_calculation_db import TimeSteppingMethod, DataWriteFormat, MachineType, RunCalculationDB
+from coredb.run_calculation_db import TimeSteppingMethod, DataWriteFormat, RunCalculationDB
 from .run_calculation_page_ui import Ui_RunCalculationPage
 
 
@@ -47,14 +50,8 @@ class RunCalculationPage(QWidget):
             DataWriteFormat.ASCII.value: self.tr('ASCII'),
         }
 
-        self._machineTypes = {
-            MachineType.SHARED_MEMORY_ON_LOCAL_MACHINE.value: self.tr('Shared Memory on Local Machine, SMP'),
-            MachineType.DISTRIBUTED_MEMORY_ON_A_CLUSTER.value: self.tr('Distributed Memory on a Cluster'),
-        }
-
         self._setupCombo(self._ui.timeSteppingMethod, self._timeSteppingMethods)
         self._setupCombo(self._ui.dataWriteFormat, self._dataWriteFormats)
-        self._setupCombo(self._ui.machineType, self._machineTypes)
 
         self._timeConditions = [
             self._getRowWidgets(TimeCondition.TIME_STEP_SIZE.value,
@@ -100,8 +97,9 @@ class RunCalculationPage(QWidget):
         self._ui.timePrecision.setText(self._db.getValue(self._xpath + '/runConditions/timePrecision'))
 
         self._ui.numberOfCores.setText(self._db.getValue(self._xpath + '/parallel/numberOfCores'))
-        self._ui.machineType.setCurrentText(
-            self._machineTypes[self._db.getValue(self._xpath + '/parallel/localhost')])
+        self._ui.cluster.setChecked(
+            self._db.getValue(self._xpath + '/parallel/localhost') == 'true')
+        self._ui.hostFile.setText(self._db.getValue(self._xpath + '/parallel/hostfile'))
 
         return super().showEvent(ev)
 
@@ -132,7 +130,7 @@ class RunCalculationPage(QWidget):
                       self.tr('Report Interval Seconds'))
         writer.append(self._xpath + '/runConditions/retainOnlyTheMostRecentFiles',
                       'true' if self._ui.retainOnlyTheMostRecentFiles.isChecked() else 'false',
-                      self.tr('Report Interval Seconds'))
+                      self.tr('Retain Only the Most Recent Files'))
         writer.append(self._xpath + '/runConditions/maximumNumberOfDataFiles', self._ui.maximumNumberODataFiles.text(),
                       self.tr('Maximum Number of Data Files'))
         writer.append(self._xpath + '/runConditions/dataWriteFormat', self._ui.dataWriteFormat.currentData(),
@@ -144,7 +142,10 @@ class RunCalculationPage(QWidget):
 
         writer.append(self._xpath + '/parallel/numberOfCores', self._ui.numberOfCores.text(),
                       self.tr('Number of Cores'))
-        writer.append(self._xpath + '/parallel/localhost', self._ui.machineType.currentData(), None)
+        writer.append(self._xpath + '/parallel/localhost',
+                      'true' if self._ui.cluster.isChecked() else 'false',
+                      self.tr('Cluster'))
+        writer.append(self._xpath + '/parallel/hostfile', self._ui.hostFile.text(), None)
 
         errorCount = writer.write()
         if errorCount > 0:
@@ -152,6 +153,7 @@ class RunCalculationPage(QWidget):
 
     def _connectSignalsSlots(self):
         self._ui.timeSteppingMethod.currentIndexChanged.connect(self._timeSteppingMethodChanged)
+        self._ui.selectHostFile.clicked.connect(self._selectHostFileClicked)
 
     def _setupCombo(self, combo, items):
         for value, text in items.items():
@@ -180,3 +182,18 @@ class RunCalculationPage(QWidget):
         for c in self._timeConditions:
             if c[0] & flag:
                 self._timeConditionForm.addRow(c[1], c[2])
+
+    def _selectHostFileClicked(self, widget):
+        _locationParent = Path(AppSettings.getRecentLocation()).resolve()
+
+        self._dialogHostFile = QFileDialog(self, self.tr('Select host file'), str(_locationParent), self.tr('All Files (*.*)'))
+        self._dialogHostFile.setFileMode(QFileDialog.FileMode.ExistingFile)
+        self._dialogHostFile.accepted.connect(self._acceptedHostFile)
+        self._dialogHostFile.open()
+
+    def _acceptedHostFile(self):
+        if files := self._dialogHostFile.selectedFiles():
+            self._ui.hostFile.setText(path.basename(files[0]))
+
+        # Project.instance().fileDB().putHostFile()
+

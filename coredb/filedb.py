@@ -48,6 +48,12 @@ class FileDB:
     def getBcFileName(self, bcid, role):
         return self._getFileName(self._bcKey(bcid, role))
 
+    def putHostFile(self, filePath):
+        self._saveFile(Path(filePath))
+
+    def getHostFile(self, filePath):
+        return self._loadFile(Path(filePath))
+
     def loadCoreDB(self):
         if coredb.loaded():
             raise AssertionError('Coredb has not been freed for a fresh load.')

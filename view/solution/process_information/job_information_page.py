@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QWidget, QMessageBox, QFormLayout
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.general_db import GeneralDB
-from coredb.run_calculation_db import TimeSteppingMethod, DataWriteFormat, MachineType, RunCalculationDB
+from coredb.run_calculation_db import TimeSteppingMethod, DataWriteFormat, RunCalculationDB
 from .job_information_page_ui import Ui_JobInformationPage
 
 class JobInformationPage(QWidget):

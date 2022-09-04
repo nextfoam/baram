@@ -14,10 +14,5 @@ class DataWriteFormat(Enum):
     ASCII = "ascii"
 
 
-class MachineType(Enum):
-    SHARED_MEMORY_ON_LOCAL_MACHINE = "true"
-    DISTRIBUTED_MEMORY_ON_A_CLUSTER = "false"
-
-
 class RunCalculationDB:
     RUN_CALCULATION_XPATH = './/runCalculation'
