@@ -3,7 +3,6 @@
 
 import logging
 import os
-import platform
 from enum import Enum, auto
 from pathlib import Path
 
@@ -183,8 +182,6 @@ class MainWindow(QMainWindow):
         self._ui.actionMeshTranslate.triggered.connect(self._translateMesh)
         self._ui.actionMeshRotate.triggered.connect(self._rotateMesh)
 
-        self._ui.actionParaview.triggered.connect(self._runParaview)
-
         self._ui.actionScale.triggered.connect(self._changeScale)
         self._ui.actionLanguage.triggered.connect(self._changeLanguage)
 
@@ -305,16 +302,6 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
         self.tabifyDock(dock)
         self._ui.menuView.addAction(dock.toggleViewAction())
-
-    def _runParaview(self):
-        casePath = ''
-        if self._project.meshLoaded:
-            casePath = FileSystem.foamFilePath()
-
-        if platform.system() == 'Windows':
-            os.system(f'paraview {casePath}')
-        else:
-            os.system(f'paraview {casePath} &')
 
     def _changeScale(self):
         self._dialogSettingScaling = SettingScalingDialog(self)

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+import platform
 from typing import TYPE_CHECKING
 
 from dataclasses import dataclass
@@ -27,6 +29,7 @@ import vtkmodules.vtkRenderingOpenGL2
 import vtkmodules.vtkInteractionStyle
 
 from coredb import coredb
+from coredb.project import Project
 from resources import resource
 from openfoam.file_system import FileSystem
 from .tabified_dock import TabifiedDock
@@ -394,6 +397,11 @@ class MeshDock(TabifiedDock):
         self._toolBar = QToolBar()
         self._addIcons(resource.file('graphicsIcons'))
 
+        self._actionRunParaview = QAction(self._iconRunParaview, 'Run ParaView', self._main_window)
+        self._toolBar.addAction(self._actionRunParaview)
+
+        self._toolBar.addSeparator()
+
         self._actionAxesOnOff = QAction(self._iconAxesOn, 'Axes On/Off', self._main_window)
         self._actionAxesOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionAxesOnOff)
@@ -452,6 +460,8 @@ class MeshDock(TabifiedDock):
         self._toolBar.actionTriggered[QAction].connect(self.clickedToolBar)
 
     def _addIcons(self, path):
+        self._iconRunParaview = self._newIcon(str(path / 'ParaView.png'))
+
         self._iconAxesOn = self._newIcon(str(path / 'axesOn.png'))
         self._iconAxesOff = self._newIcon(str(path / 'axesOff.png'))
 
@@ -517,7 +527,10 @@ class MeshDock(TabifiedDock):
         self._widget.Render()
 
     def clickedToolBar(self, action):
-        if action == self._actionAxesOnOff:
+        if action == self._actionRunParaview:
+            self._runParaview()
+
+        elif action == self._actionAxesOnOff:
             if self._axesOn:
                 self._hideAxes()
             else:
@@ -564,6 +577,17 @@ class MeshDock(TabifiedDock):
                 self._showCulling()
 
         self._widget.Render()
+
+    def _runParaview(self):
+        casePath = ''
+        _project = Project.instance()
+        if _project.meshLoaded:
+            casePath = FileSystem.foamFilePath()
+
+        if platform.system() == 'Windows':
+            os.system(f'paraview {casePath}')
+        else:
+            os.system(f'paraview {casePath} &')
 
     def _showAxes(self):
         if self._axesActor is None:

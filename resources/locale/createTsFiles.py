@@ -6,60 +6,44 @@ import os
 import platform
 import sys
 import fnmatch
+from pathlib import Path
 
+# findFiles (v2.02)
+def findFiles(startFindPath='.', filters=['*'], recursive=True, excludeDirs=[], excludeFiles=[], includeFullPath=True, sortFiles=True):
+    foundFiles = []
+    startFindPath = Path(startFindPath)
+    for fullPath, subPath, fileNames in os.walk(startFindPath):
+        checkExcludeDirs = False
+        for exDir in excludeDirs:
+            if exDir:   # and exDir != './':
+                exDir = Path(startFindPath / exDir)
+                if fnmatch.fnmatch(fullPath, str(exDir)):
+                    checkExcludeDirs = True
+                elif fullPath.find(str(exDir)) == 0:
+                    checkExcludeDirs = True
 
-# findFiles (v1.32)
-def findFiles(startPath='.', option='*', bPath=True, bView=False, bSort=True, pathExcepts=[], fileExcepts=[]):
-    arrFoundFiles = []
-    startPath = startPath.replace('"', '')
-    for fullPath, subPath, fileNames in os.walk(startPath):
-        for f in fnmatch.filter(fileNames, option):
-            if bPath:
-                f = os.path.join(fullPath, f)
+        if not checkExcludeDirs:
+            for f in filters:
+                for fName in fnmatch.filter(fileNames, f):
+                    checkExcludeFiles = False
+                    for exFile in excludeFiles:
+                        if exFile:
+                            exFile = Path(exFile)
+                            if fnmatch.fnmatch(fName, str(exFile)):
+                                checkExcludeFiles = True
 
-            if len(pathExcepts) > 0:
-                bExceptsPath = False
-                for g in pathExcepts:
-                    if f.find(f'{g}') == 0:
-                        bExceptsPath = True
-                if not bExceptsPath:
-                    if len(fileExcepts) > 0:
-                        bExceptsFile = False
-                        for h in fileExcepts:
-                            if f.find(f'{h}') != -1:
-                                bExceptsFile = True
-                        if not bExceptsFile:
-                            arrFoundFiles.append(f)
-                            if bView:
-                                print(f)
-                    else:
-                        arrFoundFiles.append(f)
-                        if bView:
-                            print(f)
-            else:
-                if len(fileExcepts) > 0:
-                    bExceptsFile = False
-                    for h in fileExcepts:
-                        if f.find(f'{h}') != -1:
-                            bExceptsFile = True
-                    if not bExceptsFile:
-                        arrFoundFiles.append(f)
-                        if bView:
-                            print(f)
-                else:
-                    arrFoundFiles.append(f)
-                    if bView:
-                        print(f)
-    if bSort:
-        arrFoundFiles.sort()
-    return arrFoundFiles
+                    if not checkExcludeFiles:
+                        if includeFullPath:
+                            foundFiles.append(os.path.join(fullPath, fName))
+                        else:
+                            foundFiles.append(fName)
 
-def getFileNameExt(path):  # Path/Name.ext    >> Name.ext
-    if len(path) >= 2 and path[0] == '"' and path[-1] == '"':
-        path = path[1:-1]
+        if not recursive:
+            return foundFiles
 
-    splitData = os.path.split(str(path))
-    return splitData[1]
+    if sortFiles:
+        foundFiles.sort()
+    return foundFiles
 
 
 languages = [
@@ -75,7 +59,7 @@ if platform.system() == 'Windows':
 elif platform.system() == 'Linux':
     typeEXT = ''
 
-filePath = '../../view'
+startPath = '../../view'
 tsFileName = './fileList.txt'
 
 # Check
@@ -85,9 +69,7 @@ if len(sys.argv) > 1:
 
 # Run
 print('>> Extracting linguist data...')
-langFiles = []
-langFiles += findFiles(filePath, '*.py', fileExcepts=['__init__.py', '_ui.py'])
-langFiles += findFiles(filePath, '*.ui')
+langFiles = findFiles(startPath, ['*.py', '*.ui'], excludeFiles=['__init__.py', '*_ui.py'])
 
 with open(f'{tsFileName}', 'w') as file:
     for d in langFiles:

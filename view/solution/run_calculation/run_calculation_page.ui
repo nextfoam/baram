@@ -58,9 +58,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-456</y>
+        <y>-308</y>
         <width>397</width>
-        <height>1052</height>
+        <height>1071</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -301,26 +301,52 @@
           <item row="0" column="1">
            <widget class="QLineEdit" name="numberOfCores"/>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_15">
-            <property name="text">
-             <string>Machine Type</string>
-            </property>
+          <item row="1" column="1">
+           <widget class="QWidget" name="widget_7" native="true">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+            </layout>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="machineType"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_12">
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="cluster">
+         <property name="title">
+          <string>Cluster</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <layout class="QFormLayout" name="formLayout_6">
+          <property name="rowWrapPolicy">
+           <enum>QFormLayout::WrapLongRows</enum>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_24">
             <property name="text">
              <string>Host File</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QWidget" name="widget_7" native="true">
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item row="0" column="1">
+           <widget class="QWidget" name="widget_8" native="true">
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
              <property name="leftMargin">
               <number>0</number>
              </property>
@@ -341,7 +367,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="select">
+              <widget class="QPushButton" name="selectHostFile">
                <property name="text">
                 <string>Select</string>
                </property>
