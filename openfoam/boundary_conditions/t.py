@@ -8,7 +8,6 @@ from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistributi
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import Phase
 from coredb.project import Project
-from coredb.models_db import ModelsDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -25,14 +24,11 @@ class T(BoundaryCondition):
         self._data = None
 
     def build(self):
-        self._data = None
-
-        if ModelsDB.isEnergyModelOn():
-            self._data = {
-                'dimensions': self.DIMENSIONS,
-                'internalField': ('uniform', self._initialValue),
-                'boundaryField': self._constructBoundaryField()
-            }
+        self._data = {
+            'dimensions': self.DIMENSIONS,
+            'internalField': ('uniform', self._initialValue),
+            'boundaryField': self._constructBoundaryField()
+        }
 
         return self
 
