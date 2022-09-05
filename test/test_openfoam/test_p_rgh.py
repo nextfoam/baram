@@ -11,7 +11,7 @@ region = "testRegion_1"
 boundary = "testBoundary_1"
 
 
-class TestP(unittest.TestCase):
+class TestPRgh(unittest.TestCase):
     def setUp(self):
         self._db = coredb.createDB()
         self._db.addRegion(region)

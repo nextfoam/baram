@@ -3,7 +3,6 @@ import unittest
 from coredb import coredb
 from coredb.boundary_db import BoundaryDB
 from coredb.general_db import GeneralDB
-from coredb.models_db import ModelsDB
 from openfoam.boundary_conditions.p import P
 
 dimensions = '[1 -1 -2 0 0 0 0]'
@@ -11,7 +10,7 @@ region = "testRegion_1"
 boundary = "testBoundary_1"
 
 
-class TestP(unittest.TestCase):
+class TestPCalculated(unittest.TestCase):
     def setUp(self):
         self._db = coredb.createDB()
         self._db.addRegion(region)
@@ -22,8 +21,6 @@ class TestP(unittest.TestCase):
         self._calculatedValue = self._initialValue + self._operatingValue
 
         self._db.setAttribute(GeneralDB.OPERATING_CONDITIONS_XPATH + '/gravity', 'disabled', 'true')
-        self._db.setValue(ModelsDB.ENERGY_MODELS_XPATH, 'on')
-        self._db.setValue(ModelsDB.SPECIES_MODELS_XPATH, 'on')
 
     def tearDown(self) -> None:
         coredb.destroy()
@@ -33,106 +30,98 @@ class TestP(unittest.TestCase):
         content = P(region).build().asDict()
         self.assertEqual(dimensions, content['dimensions'])
         self.assertEqual(self._calculatedValue, content['internalField'][1])
-        self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testFlowRateInlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'flowRateInlet')
         content = P(region).build().asDict()
-        self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testPressureInlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'pressureInlet')
         content = P(region).build().asDict()
-        self.assertEqual('totalPressure', content['boundaryField'][boundary]['type'])
-        self.assertEqual(float(self._db.getValue(self._xpath + '/pressureInlet/pressure'))+self._operatingValue,
-                         content['boundaryField'][boundary]['p0'][1])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testPressureOutlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'pressureOutlet')
         content = P(region).build().asDict()
-        self.assertEqual('totalPressure', content['boundaryField'][boundary]['type'])
-        self.assertEqual(float(self._db.getValue(self._xpath + '/pressureOutlet/totalPressure'))+self._operatingValue,
-                         content['boundaryField'][boundary]['p0'][1])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testAblInlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'ablInlet')
         content = P(region).build().asDict()
-        self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testOpenChannelInlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'openChannelInlet')
         content = P(region).build().asDict()
-        self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testOpenChannelOutlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'openChannelOutlet')
         content = P(region).build().asDict()
-        self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testOutflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'outflow')
         content = P(region).build().asDict()
-        self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testFreeStream(self):
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = P(region).build().asDict()
-        self.assertEqual('freestreamPressure', content['boundaryField'][boundary]['type'])
-        self.assertEqual(float(self._db.getValue(self._xpath + '/freeStream/pressure'))+self._operatingValue,
-                         content['boundaryField'][boundary]['freestreamValue'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testFarFieldRiemann(self):
         self._db.setValue(self._xpath + '/physicalType', 'farFieldRiemann')
         content = P(region).build().asDict()
-        self.assertEqual('farfieldRiemann', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getVector(self._xpath + '/farFieldRiemann/flowDirection'),
-                         content['boundaryField'][boundary]['flowDir'])
-        self.assertEqual(self._db.getValue(self._xpath + '/farFieldRiemann/machNumber'),
-                         content['boundaryField'][boundary]['MInf'])
-        self.assertEqual(self._db.getValue(self._xpath + '/farFieldRiemann/staticPressure'),
-                         content['boundaryField'][boundary]['pInf'])
-        self.assertEqual(self._db.getValue(self._xpath + '/farFieldRiemann/staticTemperature'),
-                         content['boundaryField'][boundary]['TInf'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testSubsonicInflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'subsonicInflow')
         content = P(region).build().asDict()
-        self.assertEqual('subsonicInflow', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getVector(self._xpath + '/subsonicInflow/flowDirection'),
-                         content['boundaryField'][boundary]['flowDir'])
-        self.assertEqual(self._db.getValue(self._xpath + '/subsonicInflow/totalPressure'),
-                         content['boundaryField'][boundary]['p0'])
-        self.assertEqual(self._db.getValue(self._xpath + '/subsonicInflow/totalTemperature'),
-                         content['boundaryField'][boundary]['T0'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testSubsonicOutflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'subsonicOutflow')
         content = P(region).build().asDict()
-        self.assertEqual('subsonicOutflow', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/subsonicOutflow/staticPressure'),
-                         content['boundaryField'][boundary]['pExit'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testSupersonicInflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'supersonicInflow')
         content = P(region).build().asDict()
-        self.assertEqual('fixedValue', content['boundaryField'][boundary]['type'])
-        self.assertEqual(float(self._db.getValue(self._xpath + '/supersonicInflow/staticPressure'))+self._operatingValue,
-                         content['boundaryField'][boundary]['value'][1])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testSupersonicOutflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'supersonicOutflow')
         content = P(region).build().asDict()
-        self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'wall')
         content = P(region).build().asDict()
-        self.assertEqual('fixedFluxPressure', content['boundaryField'][boundary]['type'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testThermoCoupledWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')
         content = P(region).build().asDict()
-        self.assertEqual('fixedFluxPressure', content['boundaryField'][boundary]['type'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testSymmetry(self):
         self._db.setValue(self._xpath + '/physicalType', 'symmetry')
@@ -165,26 +154,18 @@ class TestP(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'regionInterface')
         content = P(region).build().asDict()
-        self.assertEqual('fixedFluxPressure', content['boundaryField'][boundary]['type'])
+        self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
+        self.assertEqual(self._calculatedValue, content['boundaryField'][boundary]['value'][1])
 
     def testPorousJump(self):
         self._db.setValue(self._xpath + '/physicalType', 'porousJump')
         content = P(region).build().asDict()
-        self.assertEqual('porousBafflePressure', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/porousJump/darcyCoefficient'),
-                         content['boundaryField'][boundary]['D'])
-        self.assertEqual(self._db.getValue(self._xpath + '/porousJump/inertialCoefficient'),
-                         content['boundaryField'][boundary]['I'])
-        self.assertEqual(self._db.getValue(self._xpath + '/porousJump/porousMediaThickness'),
-                         content['boundaryField'][boundary]['length'])
+        self.assertEqual('cyclic', content['boundaryField'][boundary]['type'])
 
     def testFan(self):
         self._db.setValue(self._xpath + '/physicalType', 'fan')
         content = P(region).build().asDict()
-        self.assertEqual('fanPressureJump', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/fan/fanCurveFile'), content['boundaryField'][boundary]['file'])
-        self.assertEqual(self._db.getValue(self._xpath + '/fan/reverseDirection'),
-                         content['boundaryField'][boundary]['reverse'])
+        self.assertEqual('cyclic', content['boundaryField'][boundary]['type'])
 
     def testEmpty(self):
         self._db.setValue(self._xpath + '/physicalType', 'empty')
