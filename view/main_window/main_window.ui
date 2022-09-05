@@ -216,16 +216,9 @@
     <addaction name="actionMeshTranslate"/>
     <addaction name="actionMeshRotate"/>
    </widget>
-   <widget class="QMenu" name="menuPost">
-    <property name="title">
-     <string>Post</string>
-    </property>
-    <addaction name="actionParaview"/>
-   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMesh"/>
    <addaction name="menuView"/>
-   <addaction name="menuPost"/>
    <addaction name="menuSetting"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
