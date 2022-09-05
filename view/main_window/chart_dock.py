@@ -20,6 +20,8 @@ from openfoam.solver_info_manager import SolverInfoManager
 from openfoam.file_system import FileSystem
 from .tabified_dock import TabifiedDock
 from coredb import coredb
+from coredb.general_db import GeneralDB
+from coredb.run_calculation_db import RunCalculationDB
 from coredb.project import Project, SolverStatus
 
 END_MARGIN = 0.05  # 5% margin between line end and right axis
@@ -29,8 +31,11 @@ class ChartDock(TabifiedDock):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self._main_window = parent
+
         self._data = None
         self._timeMax = None
+        self._timeMin = None
         self._lines = {}
 
         self.setWindowTitle(self.tr("Residuals"))
@@ -52,15 +57,32 @@ class ChartDock(TabifiedDock):
         self._axes.yaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
         self._axes.set_yscale('log')
 
-        self.solverInfoManager = SolverInfoManager()
+        if GeneralDB.isTimeTransient():
+            # 10% of total case time
+            endTime = float(coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/endTime'))
+            maxX = endTime / 10
+        else:
+            # 10% of total iteration count or iteration count if it is less than MIN_COUNT
+            MIN_COUNT = 100
+            count = int(coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/numberOfIterations'))
+            if count < MIN_COUNT:
+                maxX = count
+            else:
+                maxX = MIN_COUNT + count / 10
 
+        self._axes.set_xlim([-(maxX * END_MARGIN), maxX])
+
+        self.solverInfoManager = SolverInfoManager()
         self.solverInfoManager.residualsUpdated.connect(self.updated)
 
         self._project = Project.instance()
-
         self._project.solverStatusChanged.connect(self.solverStatusChanged)
 
+        self._main_window.windowClosed.connect(self._mainWindowClosed)
+
     def startDrawing(self):
+        self._timeMax = None
+        self._timeMin = None
         self.solverInfoManager.startCollecting(
             Path(FileSystem.caseRoot()).resolve(),
             coredb.CoreDB().getRegions())
@@ -74,7 +96,10 @@ class ChartDock(TabifiedDock):
         elif status == SolverStatus.RUNNING:
             self.startDrawing()
 
-    def updated(self, data):
+    def _mainWindowClosed(self, result):
+        self.stopDrawing()
+
+    def updated(self, data: pd.DataFrame):
         self._data = data
 
         d = data.reset_index()  # "Time" is back to a column to serve as X value in numpy transpose below
@@ -91,24 +116,29 @@ class ChartDock(TabifiedDock):
             else:
                 self._lines[c].set_data(d[['Time', c]].to_numpy().transpose())
 
-        timeMax = data.last_valid_index()
-
-        if self._timeMax is not None and timeMax > self._timeMax:
-            delta = timeMax - self._timeMax
-        else:
-            delta = 0
-
-        self._timeMax = timeMax
+        timeMax = float(data.last_valid_index())
+        timeMin = float(data.first_valid_index())
 
         minX, maxX = self._axes.get_xlim()
+        chartWidth = (maxX - minX)
 
-        minX += delta
-
-        # If maxX is too far from current time max, adjust maxX to guarantee the margin
-        if (maxX - self._timeMax) / (maxX - minX) > END_MARGIN:
-            maxX = (self._timeMax - minX*END_MARGIN) / (1 - END_MARGIN)
+        if self._timeMax is None:  # new drawing
+            dataWidth = chartWidth * (1 - 2 * END_MARGIN)
+            if (timeMax - timeMin) > dataWidth:
+                maxX = timeMax + chartWidth * END_MARGIN
+                minX = maxX - chartWidth
+            else:
+                minX = timeMin - END_MARGIN
+                maxX = minX + chartWidth
         else:
-            maxX += delta
+            if timeMax + chartWidth * END_MARGIN < maxX:
+                pass  # keep the range as is
+            else:
+                maxX = timeMax + chartWidth * END_MARGIN
+                minX = maxX - chartWidth
+
+        self._timeMax = timeMax
+        self._timeMin = timeMin
 
         self._axes.set_xlim([minX, maxX])
 
@@ -124,11 +154,28 @@ class ChartDock(TabifiedDock):
             return
 
         minX, maxX = self._axes.get_xlim()
+        width = maxX - minX
+
+        # this margin will be kept without change
+        margin = (maxX - self._timeMax) / width
+
         scale = np.power(1.05, -event.step)
 
-        width = (maxX - minX) * scale
-        maxX = self._timeMax + width * END_MARGIN
-        minX = self._timeMax - width * (1 - END_MARGIN)
+        newWidth = width * scale
+
+        if scale < 1:  # Zoom in
+            # if self._timeMax + width * END_MARGIN >= maxX:
+            if minX > self._timeMin or maxX <= self._timeMax + width * END_MARGIN:
+                maxX = self._timeMax + newWidth * margin
+                minX = self._timeMax - newWidth * (1 - margin)
+            else:
+                maxX = minX + newWidth
+        else:  # Zoom out
+            if minX >= self._timeMin:
+                maxX = self._timeMax + newWidth * margin
+                minX = self._timeMax - newWidth * (1 - margin)
+            else:
+                maxX = minX + newWidth
 
         self._axes.set_xlim([minX, maxX])
 

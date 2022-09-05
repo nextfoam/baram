@@ -3,7 +3,7 @@
 
 import glob
 import re
-import typing
+from typing import TextIO, Optional
 from io import StringIO
 from pathlib import Path
 from dataclasses import dataclass
@@ -11,7 +11,7 @@ import logging
 
 import numpy as np
 import pandas as pd
-from PySide6.QtCore import QTimer, QObject, QThread, Signal
+from PySide6.QtCore import Qt, QTimer, QObject, QThread, Signal
 
 
 # "solverInfo.dat" sample
@@ -44,7 +44,7 @@ class _SolverInfo:
     dup: str
     size: int
     path: Path
-    f: typing.TextIO
+    f: Optional[TextIO]
 
 
 def readCompleteLineOnly(f):
@@ -62,7 +62,7 @@ def readCompleteLineOnly(f):
         return ''
 
 
-def readOutFile(f: typing.TextIO):
+def readOutFile(f: TextIO):
     lines = ''
 
     while line := readCompleteLineOnly(f):
@@ -111,7 +111,7 @@ def updateData(target, source):
         return mergeDataFrames([filtered, source])
 
 
-def updateDataFromFile(target: pd.DataFrame, region: str, f: typing.TextIO) -> (bool, pd.DataFrame):
+def updateDataFromFile(target: pd.DataFrame, region: str, f: TextIO) -> (bool, pd.DataFrame):
     lines, names = readOutFile(f)
     if not lines:
         return False, target
@@ -155,9 +155,9 @@ class Worker(QObject):
         self.srGlobPattern = casePath / 'postProcessing' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
 
         self.regions = regions
-        self.changingFiles = {r: None for r in regions}
 
-        self.data = {r: None for r in regions}
+        self.changingFiles = None
+        self.data = None
 
         self.collectionReady = False
 
@@ -166,14 +166,19 @@ class Worker(QObject):
         self.timer = None
         self.running = False
 
-        self.start.connect(self.startRun)
-        self.stop.connect(self.stopRun)
+        self.start.connect(self.startRun, type=Qt.ConnectionType.QueuedConnection)
+        self.stop.connect(self.stopRun, type=Qt.ConnectionType.QueuedConnection)
 
     def startRun(self):
         if self.running:
             return
 
         self.running = True
+
+        self.collectionReady = False
+
+        self.changingFiles = {r: None for r in self.regions}
+        self.data = {r: None for r in self.regions}
 
         # Get current snapshot of info files
         self.infoFiles = self.getInfoFiles()
@@ -187,6 +192,7 @@ class Worker(QObject):
         self.timer.stop()
         for s in self.changingFiles.values():
             s.f.close()
+        QThread.currentThread().quit()
         self.running = False
 
     def process(self):
@@ -212,7 +218,6 @@ class Worker(QObject):
                         df = getDataFrame(s.region, s.path)
                         if df is not None:
                             self.data[s.region] = updateData(self.data[s.region], df)
-                            hasUpdate = True
 
                 for s in self.changingFiles.values():
                     s.f = open(s.path, 'r')
@@ -305,7 +310,7 @@ class SolverInfoManager(QObject):
 
         self.worker.moveToThread(self.thread)
 
-        self.worker.residualsUpdated.connect(self.residualsUpdated)
+        self.worker.residualsUpdated.connect(self.residualsUpdated, type=Qt.ConnectionType.QueuedConnection)
 
         self.thread.start()
 
@@ -316,7 +321,7 @@ class SolverInfoManager(QObject):
             return
 
         self.worker.stop.emit()
-        self.thread.quit()
+        self.thread.wait(1000)  # usually 1ms is sufficient, yet delay over 500ms was seen once
 
         self.worker = None
         self.thread = None
