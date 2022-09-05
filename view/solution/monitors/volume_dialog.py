@@ -109,7 +109,7 @@ class VolumeDialog(QDialog):
             self._ui.volumes.addItem(CellZoneDB.getCellZoneText(v))
 
     def _selectVolumes(self):
-        self._dialog = MultiSelectorDialog(self, self.tr("Select Boundaries"), CellZoneDB.getCellZoneSelectorItems(),
+        self._dialog = MultiSelectorDialog(self, self.tr("Select Cell Zones"), CellZoneDB.getCellZoneSelectorItems(),
                                            self._volumes)
         self._dialog.open()
         self._dialog.accepted.connect(self._volumesChanged)

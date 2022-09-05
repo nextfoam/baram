@@ -164,7 +164,9 @@ class BoundaryDB:
 
     @classmethod
     def getBoundaryText(cls, bcid):
-        return f'{cls.getBoundaryRegion(bcid)}:{cls.getBoundaryName(bcid)}' if bcid else ''
+        rname = cls.getBoundaryRegion(bcid)
+        r = '' if rname == '' else rname + ':'
+        return f'{r}{cls.getBoundaryName(bcid)}' if bcid else ''
 
     @classmethod
     def getBoundaryType(cls, bcid):
@@ -188,9 +190,10 @@ class BoundaryDB:
         db = coredb.CoreDB()
 
         items = []
-        for region in db.getRegions():
-            for bcid, bcname, ptype in db.getBoundaryConditions(region):
-                items.append(SelectorItem(f'{region}:{bcname}', bcname, str(bcid)))
+        for rname in db.getRegions():
+            r = '' if rname == '' else rname + ':'
+            for bcid, bcname, ptype in db.getBoundaryConditions(rname):
+                items.append(SelectorItem(f'{r}{bcname}', bcname, str(bcid)))
 
         return items
 
@@ -199,11 +202,12 @@ class BoundaryDB:
         db = coredb.CoreDB()
 
         items = []
-        for region in db.getRegions():
-            for id_, bcname, ptype in db.getBoundaryConditions(region):
+        for rname in db.getRegions():
+            r = '' if rname == '' else rname + ':'
+            for id_, bcname, ptype in db.getBoundaryConditions(rname):
                 bcid = str(id_)
                 if bcid != bcidToExcept:
                         #and db.getValue(cls.getBoundaryXPath(bcid) + '/geometricalType') == 'cyclic':
-                        items.append(SelectorItem(f'{region}:{bcname}', bcname, bcid))
+                        items.append(SelectorItem(f'{r}{bcname}', bcname, bcid))
 
         return items

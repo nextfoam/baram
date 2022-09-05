@@ -66,7 +66,9 @@ class CellZoneDB:
 
     @classmethod
     def getCellZoneText(cls, czid):
-        return f'{cls.getCellZoneRegion(czid)}:{cls.getCellZoneName(czid)}' if czid else ''
+        rname = cls.getCellZoneRegion(czid)
+        r = '' if rname == '' else rname + ':'
+        return f'{r}{cls.getCellZoneName(czid)}' if czid else ''
 
     @classmethod
     def getCellZoneSelectorItems(cls):
@@ -75,9 +77,10 @@ class CellZoneDB:
         if not cls._cellzones:
             cls._cellzones = []
 
-            for region in db.getRegions():
-                for czid, czname in db.getCellZones(region):
+            for rname in db.getRegions():
+                r = '' if rname == '' else rname + ':'
+                for czid, czname in db.getCellZones(rname):
                     if czname != cls.NAME_FOR_ALL:
-                        cls._cellzones.append(SelectorItem(f'{region}:{czname}', czname, str(czid)))
+                        cls._cellzones.append(SelectorItem(f'{r}{czname}', czname, str(czid)))
 
         return cls._cellzones
