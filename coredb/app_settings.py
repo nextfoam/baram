@@ -90,23 +90,24 @@ class AppSettings:
     def getWindowProperPosition(cls, position):
         x, y, width, height = position[0], position[1], position[2], position[3]
         minX, minY, maxX, maxY = 0, 0, 0, 0
+        scaling = float(AppSettings.getUiScaling())
 
         monitorsInfo = screeninfo.get_monitors()
         for d in monitorsInfo:
-            minX = min(minX, d.x)
-            minY = min(minY, d.y)
-            maxX = max(maxX, d.x + d.width)
-            maxY = max(maxY, d.y + d.height)
+            minX = (min(minX, d.x) / scaling)
+            minY = (min(minY, d.y) / scaling)
+            maxX = (max(maxX, d.x + d.width) / scaling)
+            maxY = (max(maxY, d.y + d.height) / scaling)
 
-        if minX <= x <= (maxX-width) and minY <= y <= (maxY-height):
+        if minX <= x <= (maxX - (width / scaling)) and minY <= y <= (maxY - (height / scaling)):
             return [x, y, width, height]
-        return cls.getWindowCenterPosition(width, height)
+        return cls.getWindowCenterPosition(width, height, scaling)
 
     @classmethod
-    def getWindowCenterPosition(cls, width=400, height=300):
+    def getWindowCenterPosition(cls, width=400, height=300, scaling=1.0):
         monitorSize = cls.getMonitorSize()
-        x = (monitorSize[2] / 2) - (width / 2) + monitorSize[0]
-        y = (monitorSize[3] / 2) - (height / 2)
+        x = ((monitorSize[2] / 2) - (width / 2) + monitorSize[0]) / scaling
+        y = ((monitorSize[3] / 2) - (height / 2)) / scaling
         return [x, y, width, height]
 
     @classmethod
