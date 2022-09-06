@@ -39,7 +39,7 @@ class PolyMeshLoader:
             regions = ['']
 
             if not FileSystem.isPolyMesh(path):
-                path = srcPath / 'polyMesh'
+                path = srcPath / FileSystem.POLY_MESH_DIRECTORY_NAME
                 if not FileSystem.isPolyMesh(path):
                     raise FileLoadingError('Mesh directory not found.')
 

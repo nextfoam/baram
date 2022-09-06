@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QWidget, QFileDialog, QMessageBox
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.app_settings import AppSettings
+from openfoam.file_system import FileSystem
 from .initialization_page_ui import Ui_InitializationPage
 from .option_dialog import OptionDialog
 
@@ -108,7 +109,8 @@ class InitializationPage(QWidget):
     def _initialize(self):
         confirm = QMessageBox.question(self, self.tr("Initialize"), self.tr("All saved data will be deleted. OK?"))
         if confirm == QMessageBox.Yes:
-            pass
+            regions = self._db.getRegions()
+            FileSystem.initialize(regions)
 
     def _sourceCaseSelected(self):
         if dirs := self._dialog.selectedFiles():
