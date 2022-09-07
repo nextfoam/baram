@@ -7,6 +7,32 @@ from coredb.general_db import GeneralDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 import openfoam.solver
 
+TYPE_MAP = {
+    BoundaryType.VELOCITY_INLET.value: 'calculated',
+    BoundaryType.FLOW_RATE_INLET.value: 'calculated',
+    BoundaryType.PRESSURE_INLET.value: 'calculated',
+    BoundaryType.ABL_INLET.value: 'calculated',
+    BoundaryType.OPEN_CHANNEL_INLET.value: 'calculated',
+    BoundaryType.FREE_STREAM.value: 'calculated',
+    BoundaryType.FAR_FIELD_RIEMANN.value: 'calculated',
+    BoundaryType.SUBSONIC_INFLOW.value: 'calculated',
+    BoundaryType.SUPERSONIC_INFLOW.value: 'calculated',
+    BoundaryType.PRESSURE_OUTLET.value: 'calculated',
+    BoundaryType.OPEN_CHANNEL_OUTLET.value: 'calculated',
+    BoundaryType.OUTFLOW.value: 'calculated',
+    BoundaryType.SUBSONIC_OUTFLOW.value: 'calculated',
+    BoundaryType.SUPERSONIC_OUTFLOW.value: 'calculated',
+    BoundaryType.WALL.value: 'calculated',
+    BoundaryType.THERMO_COUPLED_WALL.value: 'calculated',
+    BoundaryType.POROUS_JUMP.value: 'cyclic',
+    BoundaryType.FAN.value: 'cyclic',
+    BoundaryType.SYMMETRY.value: 'symmetry',
+    BoundaryType.INTERFACE.value: 'cyclicAMI',
+    BoundaryType.EMPTY.value: 'empty',
+    BoundaryType.CYCLIC.value: 'cyclic',
+    BoundaryType.WEDGE.value: 'wedge',
+}
+
 
 class P(BoundaryCondition):
     DIMENSIONS = '[1 -1 -2 0 0 0 0]'
@@ -21,25 +47,27 @@ class P(BoundaryCondition):
 
         self._field = field
         self._data = None
+        self._usePrgh = False
 
-        if field == 'p_rgh':
-            solvers = openfoam.solver.findSolvers()
-            if len(solvers) == 0:  # configuration not enough yet
-                raise RuntimeError
+        solvers = openfoam.solver.findSolvers()
+        if len(solvers) == 0:  # configuration not enough yet
+            raise RuntimeError
 
-            cap = openfoam.solver.getSolverCapability(solvers[0])
-            if cap['useGaugePressureInPrgh']:
-                self.operatingPressure = 0  # This makes Gauge Pressure value unchanged
+        cap = openfoam.solver.getSolverCapability(solvers[0])
+        self._usePrgh = cap['usePrgh']
+
+        if field == 'p_rgh' and cap['useGaugePressureInPrgh']:
+            self.operatingPressure = 0  # This makes Gauge Pressure value unchanged
 
     def build(self):
         self._data = None
 
         forceCalculatedType = False
 
-        if self._field == 'p_rgh' and not GeneralDB.isGravityModelOn():
+        if self._field == 'p_rgh' and not self._usePrgh:
             return self  # no "p_rgh" file
 
-        if self._field == 'p' and GeneralDB.isGravityModelOn():  # "p" field is calculated internally by the solver
+        if self._field == 'p' and self._usePrgh:  # "p" field is calculated internally by the solver
             forceCalculatedType = True
 
         self._data = {
@@ -55,8 +83,21 @@ class P(BoundaryCondition):
 
         boundaries = self._db.getBoundaryConditions(self._rname)
         for bcid, name, type_ in boundaries:
+            t = TYPE_MAP[type_]
+            if type_ == BoundaryType.INTERFACE.value:
+                spec = self._db.getValue(BoundaryDB.getXPath(bcid) + '/interface/mode')
+                if spec == InterfaceMode.REGION_INTERFACE.value:
+                    t = 'calculated'
+
             if forceCalculatedType:
-                field[name] = self._constructCalculated(self.initialPressure + self.operatingPressure)
+                field[name] = {
+                    'calculated': (lambda: self._constructCalculated(self.initialPressure + self.operatingPressure)),
+                    'cyclic':     (lambda: self._constructCyclic()),
+                    'symmetry':   (lambda: self._constructSymmetry()),
+                    'cyclicAMI':  (lambda: self._constructCyclicAMI()),
+                    'empty':      (lambda: self._constructEmpty()),
+                    'wedge':      (lambda: self._constructWedge())
+                }.get(t)()
             else:
                 xpath = BoundaryDB.getXPath(bcid)
 

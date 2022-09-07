@@ -111,11 +111,7 @@ class TurbulenceModelDialog(ResizableDialog):
         if checked:
             self._ui.kEpsilonModel.setVisible(self._ui.kEpsilon.isChecked())
             self._ui.kOmegaModel.setVisible(self._ui.kOmega.isChecked())
-
-            self._ui.constantsWidget.setVisible(
-                id_ in self._rasModelRadios
-#                self._ui.spalartAllmaras.isChecked() or self._ui.kEpsilon.isChecked() or self._ui.kOmega.isChecked()
-            )
+            self._ui.constantsWidget.setVisible(id_ in self._rasModelRadios)
 
     def _kEpsilonModelChanged(self, id_, checked):
         if checked:

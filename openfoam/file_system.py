@@ -20,6 +20,7 @@ class FileSystem:
     POLY_MESH_DIRECTORY_NAME = 'polyMesh'
     BOUNDARY_DATA_DIRECTORY_NAME = 'boundaryData'
     REGION_PROPERTIES_FILE_NAME = 'regionProperties'
+    FOAM_FILE_NAME = 'baram.foam'
 
     _casePath = None
     _constantPath = None
@@ -79,7 +80,7 @@ class FileSystem:
 
     @classmethod
     def foamFilePath(cls):
-        return cls._casePath / 'baram.foam'
+        return cls._casePath / cls.FOAM_FILE_NAME
 
     @classmethod
     def makeDir(cls, parent, directory):
@@ -138,8 +139,47 @@ class FileSystem:
         shutil.copytree(cls._casePath, targetPath, dirs_exist_ok=True)
 
     @classmethod
+    def initialize(cls, regions):
+        latestTimeDir = cls._casePath / '-1'
+        keepFiles = [cls.CONSTANT_DIRECTORY_NAME, cls.SYSTEM_DIRECTORY_NAME, cls.FOAM_FILE_NAME]
+        for file in cls._casePath.glob('*'):
+            if file.is_dir and file.name.isnumeric():
+                if float(file.name) > float(latestTimeDir.name):
+                    shutil.rmtree(latestTimeDir, ignore_errors=True)
+                    latestTimeDir = file
+                else:
+                    shutil.rmtree(file)
+            elif file.name not in keepFiles:
+                cls._remove(file)
+        latestTimeDir.rename(cls._boundaryConditionsPath)
+
+        if len(regions) == 1 and not regions[0]:
+            cls._clearDirectory(cls._constantPath, [cls.POLY_MESH_DIRECTORY_NAME])
+        else:
+            for file in cls._constantPath.glob('*'):
+                if file.name in regions:
+                    cls._clearDirectory(file, [cls.POLY_MESH_DIRECTORY_NAME])
+                elif file.name != cls.REGION_PROPERTIES_FILE_NAME:
+                    cls._remove(file)
+
+        cls._clearDirectory(cls._systemPath, ['controlDict'])
+
+    @classmethod
     def _setCaseRoot(cls, path):
         cls._casePath = path
         cls._constantPath = cls._casePath / cls.CONSTANT_DIRECTORY_NAME
         cls._boundaryConditionsPath = cls._casePath / cls.BOUNDARY_CONDITIONS_DIRECTORY_NAME
         cls._systemPath = cls._casePath / cls.SYSTEM_DIRECTORY_NAME
+
+    @classmethod
+    def _clearDirectory(cls, directory, filesToKeep):
+        for file in directory.glob('*'):
+            if file.name not in filesToKeep:
+                cls._remove(file)
+
+    @classmethod
+    def _remove(cls, file):
+        if file.is_dir():
+            shutil.rmtree(file)
+        else:
+            file.unlink()
