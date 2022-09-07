@@ -101,7 +101,7 @@ class Epsilon(BoundaryCondition):
 
     def _constructAtmBoundaryLayerInletEpsilon(self):
         return {
-            'type': 'atmBoundaryLayerInletVelocity',
+            'type': 'atmBoundaryLayerInletEpsilon',
             'flowDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection'),
             'zDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/groundNormalDirection'),
             'Uref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
