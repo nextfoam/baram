@@ -95,7 +95,7 @@ class TestEpsilon(unittest.TestCase):
     def testAblInlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'ablInlet')
         content = Epsilon(region).build().asDict()
-        self.assertEqual('atmBoundaryLayerInletVelocity', content['boundaryField'][boundary]['type'])
+        self.assertEqual('atmBoundaryLayerInletEpsilon', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection'),
                          content['boundaryField'][boundary]['flowDir'])
         self.assertEqual(self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/groundNormalDirection'),
