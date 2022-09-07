@@ -258,7 +258,7 @@ class Worker(QObject):
         infoFiles = {}
         for path, size in mrFiles:
             m = re.search(mrRegexPattern, str(path))
-            if m.group('region') not in self.data:
+            if m.group('region') not in self.regions:
                 continue
             infoFiles[path] = _SolverInfo(m.group('region'), float(m.group('time')), m.group('dup'), size, path, None)
         return infoFiles
