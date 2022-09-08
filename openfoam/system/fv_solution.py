@@ -7,6 +7,7 @@ from coredb.numerical_db import NumericalDB, PressureVelocityCouplingScheme
 from coredb.general_db import GeneralDB
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import Phase
+from coredb.models_db import ModelsDB
 from openfoam.dictionary_file import DictionaryFile
 
 
@@ -37,6 +38,8 @@ class FvSolution(DictionaryFile):
             phase = RegionDB.getPhase(self._rname)
             consistent = 'no'
             momentumPredictor = 'on'
+            energyOn = ModelsDB.isEnergyModelOn()
+
             if scheme == PressureVelocityCouplingScheme.SIMPLEC.value and phase != Phase.SOLID:
                 consistent = 'yes'
             if self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/useMomentumPredictor') == 'false':
@@ -86,6 +89,7 @@ class FvSolution(DictionaryFile):
                     'nNonOrthogonalCorrectors': '0',
                     'pRefCell': '0',        # only for fluid
                     'pRefValue': '0.0',     # only for fluid
+                    'solveEnergy': 'yes' if energyOn else 'no',  # NEXTfoam custom option
                     'residualControl': {
                         'p': self._db.getValue('.//convergenceCriteria/pressure/absolute'),
                         'p_rgh': self._db.getValue('//convergenceCriteria/pressure/absolute'),
@@ -112,6 +116,7 @@ class FvSolution(DictionaryFile):
                     'pRefValue': '0.0',     # only for fluid
                     'rDeltaTSmoothingCoeff': '0.05',
                     'rDeltaTDampingCoeff': '0.5',
+                    'solveEnergy': 'yes' if energyOn else 'no',  # NEXTfoam custom option
                     'residualControl': {
                         'p': {
                             'tolerance': self._db.getValue('.//convergenceCriteria/pressure/absolute'),
