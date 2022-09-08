@@ -178,7 +178,7 @@ class MaterialDialog(ResizableDialog):
                 writer.append(self._xpath + '/surfaceTension',
                               self._ui.surfaceTension.text(), self.tr("Surface Tension"))
                 writer.append(self._xpath + '/saturationPressure',
-                              self._ui.saturationPressure.text(), self.tr("Surface Pressure"))
+                              self._ui.saturationPressure.text(), self.tr("Saturation Pressure"))
 
         errorCount = writer.write()
         if errorCount > 0:
