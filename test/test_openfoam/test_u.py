@@ -163,8 +163,8 @@ class TestU(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = U(region).build().asDict()
         self.assertEqual('freestreamVelocity', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getVector(self._xpath + '/freeStream/streamVelocity'),
-                         content['boundaryField'][boundary]['U'])
+        self.assertEqual(('uniform', self._db.getVector(self._xpath + '/freeStream/streamVelocity')),
+                         content['boundaryField'][boundary]['freestreamValue'])
 
     def testFarFieldRiemann(self):
         self._db.setValue(self._xpath + '/physicalType', 'farFieldRiemann')
