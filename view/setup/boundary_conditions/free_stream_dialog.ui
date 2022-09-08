@@ -38,7 +38,7 @@
       <item>
        <widget class="QGroupBox" name="groupBox">
         <property name="title">
-         <string>Stream Velocity</string>
+         <string>Free Stream Velocity</string>
         </property>
         <layout class="QFormLayout" name="formLayout">
          <item row="0" column="0">

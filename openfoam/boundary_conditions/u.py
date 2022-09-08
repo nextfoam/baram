@@ -117,7 +117,7 @@ class U(BoundaryCondition):
     def _constructFreestreamVelocity(self, xpath):
         return {
             'type': 'freestreamVelocity',
-            'U': self._db.getVector(xpath + '/streamVelocity')
+            'freestreamValue': ('uniform', self._db.getVector(xpath + '/streamVelocity'))
         }
 
     def _constructNoSlip(self):
