@@ -77,6 +77,11 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>factorX</tabstop>
+  <tabstop>factorY</tabstop>
+  <tabstop>factorZ</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

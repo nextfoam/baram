@@ -6,21 +6,21 @@ import psutil
 import signal
 import time
 import platform
-
 import qasync
+import asyncio
 
-from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QWidget, QMessageBox
 
 from coredb import coredb
 from coredb.project import Project, SolverStatus
-from openfoam.run import launchSolver
+from openfoam.run import launchSolver, runUtility
 from openfoam.case_generator import CaseGenerator
 from openfoam.system.fv_solution import FvSolution
 from openfoam.system.control_dict import ControlDict
 from openfoam.system.fv_schemes import FvSchemes
 import openfoam.solver
 from openfoam.file_system import FileSystem
+from view.widgets.progress_dialog import ProgressDialog
 from .process_information_page_ui import Ui_ProcessInformationPage
 
 SOLVER_CHECK_INTERVAL = 3000
@@ -34,6 +34,8 @@ class ProcessInformationPage(QWidget):
 
         self._db = coredb.CoreDB()
         self._project = Project.instance()
+
+        self._stopDialog = None
 
         self._connectSignalsSlots()
 
@@ -57,10 +59,12 @@ class ProcessInformationPage(QWidget):
 
     @qasync.asyncSlot()
     async def _startCalculationClicked(self):
+        progress = ProgressDialog(self, self.tr('Calculation Run.'), self.tr('Generating case'))
+
         caseGenerator = CaseGenerator()
-        result = await caseGenerator.generateFiles()
+        result = await asyncio.to_thread(caseGenerator.generateFiles)
         if not result:
-            QMessageBox.critical(self, self.tr('Case Configuration Error'), caseGenerator.getErrors())
+            progress.error(self.tr('Case generating fail. - ' + caseGenerator.getErrors()))
             return
 
         controlDict = ControlDict().build()
@@ -72,6 +76,16 @@ class ProcessInformationPage(QWidget):
 
         self._solvers = openfoam.solver.findSolvers()
         self._caseRoot = FileSystem.caseRoot()
+
+        if int(self._db.getValue('.//runCalculation/parallel/numberOfCores')) > 1:
+            cwd = FileSystem.caseRoot()
+            proc = await runUtility('decomposePar', '-force', '-case', cwd, cwd=cwd)
+            progress.setProcess(proc, self.tr('Decomposing the case.'))
+            await proc.wait()
+            if progress.canceled():
+                return
+
+        progress.close()
 
         print(self._solvers)
         process = launchSolver(self._solvers[0], Path(self._caseRoot), self._project.uuid, int(numCores))
@@ -86,11 +100,10 @@ class ProcessInformationPage(QWidget):
         controlDict.asDict()['stopAt'] = 'noWriteNow'
         controlDict.write()
 
-        self._timer = QTimer()
-        self._timer.setInterval(SOLVER_CHECK_INTERVAL)
-        self._timer.setSingleShot(True)
-        self._timer.timeout.connect(self._waitingStop)
-        self._timer.start()
+        message = self.tr('Waiting for the solver to stop after final calculation. You can "Force Stop",\n'
+                          'yet it could corrupt the final iteration result.')
+        self._stopDialog = ProgressDialog(self, self.tr('Calculation Canceling'), message)
+        self._stopDialog.setButtonToCancel(self._waitingStop, self.tr('Force Stop'))
 
     def _waitingStop(self):
         if self._project.solverStatus() == SolverStatus.RUNNING:
@@ -125,6 +138,9 @@ class ProcessInformationPage(QWidget):
 
         if status == SolverStatus.NONE:
             text = self.tr('Not Running')
+            if self._stopDialog is not None:
+                self._stopDialog.close()
+                self._stopDialog = None
         elif status == SolverStatus.WAITING:
             text = self.tr('Waiting')
         elif status == SolverStatus.RUNNING:

@@ -29,7 +29,6 @@ from openfoam.system.fv_options import FvOptions
 from openfoam.system.decomposePar_dict import DecomposeParDict
 from openfoam.polymesh.boundary import Boundary
 from openfoam.file_system import FileSystem
-from openfoam.run import runUtility
 
 
 class CaseGenerator:
@@ -40,7 +39,7 @@ class CaseGenerator:
     def getErrors(self):
         return self._errors
 
-    async def generateFiles(self):
+    def generateFiles(self):
         if self._validate():
             return False
 
@@ -59,21 +58,6 @@ class CaseGenerator:
             P(rname, 'p_rgh').build().write()
             P(rname).build().write()
             U(rname).build().write()
-
-            # if ModelsDB.isEnergyModelOn():
-            #     T(rname).build().write()
-            #     Alphat(rname).build().write()
-            #
-            # turbulenceModel = ModelsDB.getTurbulenceModel()
-            # if turbulenceModel == TurbulenceModel.K_EPSILON or turbulenceModel == TurbulenceModel.K_OMEGA:
-            #     K(rname).build().write()
-            #     Nut(rname).build().write()
-            #     if turbulenceModel == TurbulenceModel.K_EPSILON:
-            #         Epsilon(rname).build().write()
-            #     elif turbulenceModel == TurbulenceModel.K_OMEGA:
-            #         Omega(rname).build().write()
-            # elif turbulenceModel == TurbulenceModel.SPALART_ALLMARAS:
-            #     NuTilda(rname).build().write()
 
             TransportProperties(rname).build().write()
 
@@ -98,10 +82,6 @@ class CaseGenerator:
 
         ControlDict().build().write()
 
-        cwd = FileSystem.caseRoot()
-        #await runUtility('decomposePar', '-fields', '-case', cwd, cwd=cwd)
-        if int(self._db.getValue('.//runCalculation/parallel/numberOfCores')) > 1:
-            await runUtility('decomposePar', '-force', '-case', cwd, cwd=cwd)
         return True
 
     @classmethod

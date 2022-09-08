@@ -11,8 +11,6 @@ import qasync
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QThreadPool, Signal
 
-from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
-
 from coredb.project import Project
 from coredb.app_settings import AppSettings
 from coredb import coredb
@@ -27,49 +25,29 @@ from view.solution.monitors.monitors_page import MonitorsPage
 from view.solution.initialization.initialization_page import InitializationPage
 from view.solution.run_calculation.run_calculation_page import RunCalculationPage
 from view.solution.process_information.process_information_page import ProcessInformationPage
+from view.main_window.menu.mesh.mesh_scale_dialog import MeshScaleDialog
+from view.main_window.menu.mesh.mesh_translate_dialog import MeshTranslateDialog
+from view.main_window.menu.mesh.mesh_rotate_dialog import MeshRotateDialog
+from view.main_window.menu.settings_language import SettingLanguageDialog
+from view.main_window.mesh_manager import MeshManager, MeshType
 from openfoam.file_system import FileSystem
-from openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from openfoam.case_generator import CaseGenerator
-from openfoam.run import runUtility
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
-from .menu.settings_language import SettingLanguageDialog
 from .menu.settings_scaling import SettingScalingDialog
 from .navigator_view import NavigatorView, MenuItem
 from .mesh_dock import MeshDock
 from .console_dock import ConsoleDock
 from .chart_dock import ChartDock
-from .mesh_scale_dialog import MeshScaleDialog
-from .mesh_translate_dialog import MeshTranslateDialog
-from .mesh_rotate_dialog import MeshRotateDialog
 
 
 logger = logging.getLogger(__name__)
+
 
 class CloseType(Enum):
     EXIT_APP = 0
     CLOSE_PROJECT = auto()
 
-
-class MeshType(Enum):
-    POLY_MESH = auto()
-    FLUENT_2D = auto()
-    FLUENT_3D = auto()
-    STAR_CCM = auto()
-    GMSH = auto()
-    IDEAS = auto()
-    NAMS_PLOT3D = auto()
-
-
-OPENFOAM_MESH_CONVERTERS = {
-    MeshType.POLY_MESH: None,
-    MeshType.FLUENT_2D: 'fluentMeshToFoam',
-    MeshType.FLUENT_3D: 'fluent3DMeshToFoam',
-    MeshType.STAR_CCM: 'ccmToFoam',
-    MeshType.GMSH: 'gmshToFoam',
-    MeshType.IDEAS: 'ideasUnvToFoam',
-    MeshType.NAMS_PLOT3D: 'plot3dToFoam',
-}
 
 class MenuPage:
     def __init__(self, pageClass=None):
@@ -132,12 +110,14 @@ class MainWindow(QMainWindow):
         self._threadPool = QThreadPool()
         self._quit = True
 
-        self._connectSignalsSlots()
         self._closeType = CloseType.EXIT_APP
 
+        self._meshManager = MeshManager(self)
         if self._project.meshLoaded:
             self._meshDock.reloadMesh.emit()
         FileSystem.setupForProject()
+
+        self._connectSignalsSlots()
 
         self._updateMenuEnables()
         self.show()
@@ -192,6 +172,7 @@ class MainWindow(QMainWindow):
         self._project.meshStatusChanged.connect(self._updateMenuEnables)
         self._project.solverStatusChanged.connect(self._updateMenuEnables)
         self._project.projectChanged.connect(self._projectChanged)
+        self._meshManager.meshChanged.connect(self._meshChanged)
 
     def _save(self):
         self._saveCurrentPage()
@@ -235,53 +216,19 @@ class MainWindow(QMainWindow):
         self.close()
 
     def _scaleMesh(self):
-        self._dialog = MeshScaleDialog(self)
-        self._dialog.accepted.connect(self._meshTransformed)
+        self._dialog = MeshScaleDialog(self, self._meshManager)
         self._dialog.open()
 
     def _translateMesh(self):
-        self._dialog = MeshTranslateDialog(self)
-        self._dialog.accepted.connect(self._meshTransformed)
+        self._dialog = MeshTranslateDialog(self, self._meshManager)
         self._dialog.open()
 
     def _rotateMesh(self):
-        self._dialog = MeshRotateDialog(self)
-        self._dialog.accepted.connect(self._meshTransformed)
+        self._dialog = MeshRotateDialog(self, self._meshManager)
         self._dialog.open()
 
-    def _meshTransformed(self):
+    def _meshChanged(self):
         self._meshDock.reloadMesh.emit()
-
-    def _checkPolyMesh(self, path):
-        regions = []
-        regionPropFile = f'{path}/regionProperties'
-
-        if os.path.exists(regionPropFile):
-            regionsDict = ParsedParameterFile(regionPropFile).content['regions']
-            for i in range(1, len(regionsDict), 2):
-                for region in regionsDict[i]:
-                    if not os.path.exists(f'{path}/{region}'):
-                        return False
-                    regions.append(region)
-            path = Path(path)
-        else:
-            if os.path.exists(f'{path}/boundary'):
-                path = Path(path).parent
-            elif os.path.exists(f'{path}/polyMesh/boundary'):
-                path = Path(path)
-            else:
-                return False
-
-        checkFiles = ['boundary', 'faces', 'neighbour', 'owner', 'points']
-        for f in checkFiles:
-            if regions:
-                for g in regions:
-                    if not os.path.exists(f'{path}/{g}/polyMesh/{f}'):
-                        return False
-            else:
-                if not os.path.exists(f'{path}/polyMesh/{f}'):
-                    return False
-        return path
 
     def _changeForm(self, currentMenu):
         page = self._menuPages[currentMenu]
@@ -404,27 +351,8 @@ class MainWindow(QMainWindow):
 
             file = Path(self._dialog.selectedFiles()[0])
             if meshType == MeshType.POLY_MESH:
-                if polyMeshPath := self._checkPolyMesh(file):
-                    await self._loadOpenFoamMesh(polyMeshPath)
-                else:
-                    QMessageBox.critical(self, self.tr('Open polyMesh'), self.tr('Cannot find polyMesh folder'))
+                await self._meshManager.importOpenFoamMesh(file)
             else:
-                await FileSystem.copyFileToCase(file)
-                if await runUtility(OPENFOAM_MESH_CONVERTERS[meshType], file.name, cwd=FileSystem.caseRoot()):
-                    QMessageBox.critical(self, self.tr('Load Mesh'), self.tr('File conversion failed.'))
-                else:
-                    await self._loadOpenFoamMesh()
-                await FileSystem.removeFile(file.name)
+                await self._meshManager.importMesh(file, meshType)
 
-            self._ui.menuLoadMesh.setEnabled(True)
-
-    async def _loadOpenFoamMesh(self, srcPath=None):
-        try:
-            path = await PolyMeshLoader.loadBoundaries(srcPath)
-            if srcPath:
-                await FileSystem.copyMeshFrom(path, coredb.CoreDB().getRegions())
-            self._meshDock.reloadMesh.emit()
-        except Exception as ex:
-            logger.info(ex, exc_info=True)
-            QMessageBox.critical(self, self.tr('Mesh Loading Failed'), str(ex))
             self._ui.menuLoadMesh.setEnabled(True)
