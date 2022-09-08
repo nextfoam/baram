@@ -353,7 +353,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>NASA plot3d</string>
+    <string>PLOT3D</string>
    </property>
   </action>
   <action name="actionParaview">
