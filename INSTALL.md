@@ -15,7 +15,7 @@
 
 ### Clone the source code
 ```commandline
-git clone http://210.16.192.68/nextfoam/baram.git
+git clone https://github.com/nextfoam/baram.git
 ```
 
 ### Setup Python virtual environment
