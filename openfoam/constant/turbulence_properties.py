@@ -11,6 +11,8 @@ class TurbulenceProperties(DictionaryFile):
         super().__init__(self.constantLocation(rname), 'turbulenceProperties')
 
         self._rname = rname
+        self._db = coredb.CoreDB()
+        self._model = ModelsDB.getTurbulenceModel()
 
     def build(self):
         if self._data is not None:
@@ -18,12 +20,11 @@ class TurbulenceProperties(DictionaryFile):
 
         db = coredb.CoreDB()
 
-        model = ModelsDB.getTurbulenceModel()
-        if model == TurbulenceModel.INVISCID or model == TurbulenceModel.LAMINAR:
+        if self._model == TurbulenceModel.INVISCID or self._model == TurbulenceModel.LAMINAR:
             self._constructLaminarProperties()
-        elif model == TurbulenceModel.SPALART_ALLMARAS:
+        elif self._model == TurbulenceModel.SPALART_ALLMARAS:
             self._constructRASproperties('SpalartAllmaras')
-        elif model == TurbulenceModel.K_EPSILON:
+        elif self._model == TurbulenceModel.K_EPSILON:
             subModel = db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
             if subModel == KEpsilonModel.STANDARD.value:
                 self._constructRASproperties('kEpsilon')
@@ -31,11 +32,11 @@ class TurbulenceProperties(DictionaryFile):
                 self._constructRASproperties('RNGkEpsilon')
             elif subModel == KEpsilonModel.REALIZABLE.value:
                 self._constructRASproperties('realizableKE')
-        elif model == TurbulenceModel.K_OMEGA:
+        elif self._model == TurbulenceModel.K_OMEGA:
             subModel = db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-omega/model')
             if subModel == KOmegaModel.SST.value:
                 self._constructRASproperties('kOmegaSST')
-        elif model == TurbulenceModel.LES:
+        elif self._model == TurbulenceModel.LES:
             self._constructLESProperties()
 
         return self
@@ -45,15 +46,30 @@ class TurbulenceProperties(DictionaryFile):
             'simulationType': 'laminar'
         }
 
-    def _constructRASproperties(self, model):
+    def _constructRASproperties(self, subModel):
         self._data = {
             'simulationType': 'RAS',
             'RAS': {
-                'RASModel': model,
+                'RASModel': subModel,
                 'turbulence': 'on',
-                'printCoeffs': 'on',
+                'printCoeffs': 'on'
             }
         }
+
+        hasABLInlet = False
+        boundaries = self._db.getBoundaryConditions(self._rname)
+        for _, _, type_ in boundaries:
+            if type_ == 'ablInlet':
+                hasABLInlet = True
+                break
+
+        if hasABLInlet and self._model == TurbulenceModel.K_EPSILON:
+            self._data['RAS']['kEpsilonCoeffs'] = {
+                'Cmu': 0.09,
+                'C1': 1.44,
+                'C2': 1.92,
+                'sigmaEps': 1.11
+            }
 
     def _constructLESProperties(self):
         self._data = {
