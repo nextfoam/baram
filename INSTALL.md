@@ -11,6 +11,7 @@
 - Python 3.9.x or newer
 - [MS-MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi) 10.0 or newer ( Windows Only )
 - OpenMPI 4.0 or newer ( Linux, macOS )
+- GNU C Compiler or any other C Compiler ( Linux, macOS )
 
 ### Clone the source code
 ```commandline
@@ -45,12 +46,22 @@ pip install -r requirements.txt
 ```
 
 ### Copy Solver Executables
-Download and extract solver executables into the top directory of downloaded source code
+Download and uncompress solver executables into the top directory of downloaded source code
 #### Windows
+Will be available soon
 
 #### Linux
+[solvers_linux_20220908.tar.xz](http://d3c6e16xufx1gb.cloudfront.net/solvers_linux_20220908.tar.xz)
 
 #### macOS
+[solvers_mac_20220908.tar.gz](http://d3c6e16xufx1gb.cloudfront.net/solvers_mac_20220908.tar.gz)
+
+
+### Compile Daemonizer ( only for Windows and macOS )
+"solvers" directory was created when the compressed file was uncompressed.
+```commandline
+gcc -o solvers/openfoam/bin/baramd misc/baramd.c
+```
 
 ### Compile Resource Files
 ```commandline
