@@ -208,7 +208,7 @@ class VelocityInletDialog(ResizableDialog):
         self._ui.temporalDistribution.setVisible(profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value)
 
     def _selectSpatialDistributionFile(self):
-        self._dialog = QFileDialog(self, self.tr('Select CSV File'), '', self.tr('CSV (*.csv)'))
+        self._dialog = QFileDialog(self, self.tr('Select CSV File'), '', 'CSV (*.csv)')
         self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         self._dialog.accepted.connect(self._spatialDistributionFileSelected)
         self._dialog.open()

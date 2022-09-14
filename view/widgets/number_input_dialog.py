@@ -168,7 +168,7 @@ class PiecewiseLinearDialog(QDialog):
         self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def _loadFile(self):
-        self._dialog = QFileDialog(self, self.tr('Select CSV File'), '', self.tr('CSV (*.csv)'))
+        self._dialog = QFileDialog(self, self.tr('Select CSV File'), '', 'CSV (*.csv)')
         self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         self._dialog.accepted.connect(self._fileSelected)
         self._dialog.open()

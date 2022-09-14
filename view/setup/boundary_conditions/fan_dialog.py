@@ -61,7 +61,7 @@ class FanDialog(CoupledBoundaryConditionDialog):
         self._setCoupledBoundary(self._db.getValue(self._xpath + '/coupledBoundary'))
 
     def _selectFanPQCurveFile(self):
-        self._dialog = QFileDialog(self, self.tr('Select CSV File'), '', self.tr('CSV (*.csv)'))
+        self._dialog = QFileDialog(self, self.tr('Select CSV File'), '', 'CSV (*.csv)')
         self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         self._dialog.accepted.connect(self._fanPQCurveFileSelected)
         self._dialog.open()

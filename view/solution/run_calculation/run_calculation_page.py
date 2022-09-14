@@ -186,7 +186,7 @@ class RunCalculationPage(QWidget):
     def _selectHostFileClicked(self, widget):
         _locationParent = Path(AppSettings.getRecentLocation()).resolve()
 
-        self._dialogHostFile = QFileDialog(self, self.tr('Select host file'), str(_locationParent), self.tr('All Files (*.*)'))
+        self._dialogHostFile = QFileDialog(self, self.tr('Select host file'), str(_locationParent), 'All Files (*.*)')
         self._dialogHostFile.setFileMode(QFileDialog.FileMode.ExistingFile)
         self._dialogHostFile.accepted.connect(self._acceptedHostFile)
         self._dialogHostFile.open()

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import glob
 import platform
 from typing import TYPE_CHECKING
 
@@ -13,7 +14,7 @@ from typing import Optional
 import qasync
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QComboBox, QFrame, QToolBar, QVBoxLayout, QWidgetAction
+from PySide6.QtWidgets import QComboBox, QFrame, QToolBar, QVBoxLayout, QWidgetAction, QFileDialog
 from PySide6.QtGui import QAction, QIcon, QPixmap
 
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -29,6 +30,7 @@ import vtkmodules.vtkRenderingOpenGL2
 import vtkmodules.vtkInteractionStyle
 
 from coredb import coredb
+from coredb.app_settings import AppSettings
 from coredb.project import Project
 from resources import resource
 from openfoam.file_system import FileSystem
@@ -585,9 +587,34 @@ class MeshDock(TabifiedDock):
             casePath = FileSystem.foamFilePath()
 
         if platform.system() == 'Windows':
-            os.system(f'paraview {casePath}')
+            path = AppSettings.getParaviewInstalledPath()
+            if path:
+                os.system(f'{path} {casePath}')
+            else:
+                findParaview = glob.glob('C:\\Program Files\\paraview*')
+                if len(findParaview) == 1:
+                    executeFile = f'{findParaview[0]}\\bin\\paraview.exe'
+                    if os.path.exists(executeFile):
+                        path = executeFile
+                        AppSettings.updateParaviewInstalledPath(path)
+
+                if not path:
+                    self._dialog = QFileDialog(self, self.tr('Select Paraview Program'), '', 'exe (*.exe)')
+                    self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+                    self._dialog.accepted.connect(self._selectedExeFile)
+                    self._dialog.open()
         else:
             os.system(f'paraview {casePath} &')
+
+    def _selectedExeFile(self):
+        casePath = ''
+        _project = Project.instance()
+        if _project.meshLoaded:
+            casePath = FileSystem.foamFilePath()
+
+        selectedFile = self._dialog.selectedFiles()[0]
+        AppSettings.updateParaviewInstalledPath(selectedFile)
+        os.system(f'{selectedFile} {casePath}')
 
     def _showAxes(self):
         if self._axesActor is None:

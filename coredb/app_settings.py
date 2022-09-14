@@ -28,6 +28,7 @@ class SettingKey(Enum):
     RECENT_CASES = 'recent_cases'
     LAST_START_WINDOW_POSITION = 'last_start_window_position'
     LAST_MAIN_WINDOW_POSITION = 'last_main_window_position'
+    PARAVIEW_INSTALLED_PATH = 'paraview_installed_path'
 
 
 class AppSettings:
@@ -150,6 +151,16 @@ class AppSettings:
     def updateDefaultLanguage(cls, lang):
         settings = cls._load()
         settings[SettingKey.DEFAULT_LANGUAGE.value] = lang
+        cls._save(settings)
+
+    @classmethod
+    def getParaviewInstalledPath(cls):
+        return cls._get(SettingKey.PARAVIEW_INSTALLED_PATH, '')
+
+    @classmethod
+    def updateParaviewInstalledPath(cls, path):
+        settings = cls._load()
+        settings[SettingKey.PARAVIEW_INSTALLED_PATH.value] = path
         cls._save(settings)
 
     @classmethod
