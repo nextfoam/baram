@@ -26,7 +26,7 @@ class ProgressDialog(QDialog):
 
         self._connectSignalsSlots()
 
-        self.show()
+        self.open()
 
     def setProcess(self, proc, text=None, buttontext=None):
         if text:
