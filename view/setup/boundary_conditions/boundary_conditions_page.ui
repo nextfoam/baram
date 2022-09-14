@@ -44,7 +44,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="filterString">
+       <widget class="QLineEdit" name="filter">
         <property name="placeholderText">
          <string>filter string is here</string>
         </property>

@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from enum import Enum, auto
 
 from PySide6.QtWidgets import QWidget, QTreeWidgetItem, QMessageBox
+from PySide6.QtCore import Qt
 
 from coredb import coredb
 from coredb.boundary_db import BoundaryType, BoundaryDB
@@ -93,9 +95,23 @@ class BoundaryConditionsPage(QWidget):
         self._boundaries = {}
 
     def _connectSignalsSlots(self):
+        self._ui.filter.textChanged.connect(self._filterChanged)
         self._ui.boundaries.currentItemChanged.connect(self._updateEditEnabled)
         self._ui.boundaries.doubleClicked.connect(self._edit)
         self._ui.edit.clicked.connect(self._edit)
+
+    def _filterChanged(self):
+        filterText = self._ui.filter.text().lower()
+
+        rnum = self._ui.boundaries.topLevelItemCount()
+        for i in range(0, rnum):
+            item = self._ui.boundaries.topLevelItem(i)
+            bnum = item.childCount()
+            self._ui.boundaries.invisibleRootItem()
+            for j in range(0, bnum):
+                childItem = item.child(j)
+                boundaryWidget = self._ui.boundaries.itemWidget(childItem, 0)
+                boundaryWidget.setHidden(filterText not in boundaryWidget.bcname)
 
     def _addBoundaryItems(self, parent, rname):
         boundaries = self._db.getBoundaryConditions(rname)

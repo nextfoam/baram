@@ -22,6 +22,7 @@ class BoundaryWidget(QWidget):
 
         self._bcid = bcid
         self.bctype = bctype
+        self._bcname = bcname
 
         self._ui.name.setText(bcname)
 
@@ -32,6 +33,10 @@ class BoundaryWidget(QWidget):
     @property
     def bctype(self):
         return self._bctype
+
+    @property
+    def bcname(self):
+        return self._bcname
 
     @bctype.setter
     def bctype(self, bctype):
