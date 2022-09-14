@@ -8,7 +8,7 @@
 
 ### BARAM requires following installed software:
 
-- Python 3.9.x or newer
+- Python **3.9.x** or newer
 - [MS-MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi) 10.0 or newer ( Windows Only )
 - OpenMPI 4.0 or newer ( Linux, macOS )
 - GNU C Compiler or any other C Compiler ( Linux, macOS )
@@ -20,7 +20,9 @@ git clone https://github.com/nextfoam/baram.git
 
 ### Setup Python virtual environment
 
-Run following command in the top directory of downloaded source code
+Run following command in the top directory of downloaded source code.
+Please don't forget that Python **3.9.x** or newer is required.
+You can check it with the command of `python3 -V`.
 
 ```commandline
 python3 -m venv venv
@@ -57,7 +59,7 @@ Will be available soon
 [solvers_mac_20220908.tar.gz](http://d3c6e16xufx1gb.cloudfront.net/solvers_mac_20220908.tar.gz)
 
 
-### Compile Daemonizer ( only for Windows and macOS )
+### Compile Daemonizer ( only for Linux and macOS )
 "solvers" directory was created when the compressed file was uncompressed.
 ```commandline
 gcc -o solvers/openfoam/bin/baramd misc/baramd.c
