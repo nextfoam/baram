@@ -100,12 +100,22 @@ class ProcessInformationPage(QWidget):
         controlDict.asDict()['stopAt'] = 'noWriteNow'
         controlDict.write()
 
+        self._waitingStop()
+
+    def _saveAndStopCalculationClicked(self):
+        controlDict = ControlDict().build()
+        controlDict.asDict()['stopAt'] = 'writeNow'
+        controlDict.write()
+
+        self._waitingStop()
+
+    def _waitingStop(self):
         message = self.tr('Waiting for the solver to stop after final calculation. You can "Force Stop",\n'
                           'yet it could corrupt the final iteration result.')
         self._stopDialog = ProgressDialog(self, self.tr('Calculation Canceling'), message)
-        self._stopDialog.setButtonToCancel(self._waitingStop, self.tr('Force Stop'))
+        self._stopDialog.setButtonToCancel(self._forceStop, self.tr('Force Stop'))
 
-    def _waitingStop(self):
+    def _forceStop(self):
         if self._project.solverStatus() == SolverStatus.RUNNING:
             pid, startTime = self._project.solverProcess()
             try:
@@ -120,11 +130,6 @@ class ProcessInformationPage(QWidget):
                             raise Exception(self.tr('Unsupported OS'))
             except psutil.NoSuchProcess:
                 pass
-
-    def _saveAndStopCalculationClicked(self):
-        controlDict = ControlDict().build()
-        controlDict.asDict()['stopAt'] = 'writeNow'
-        controlDict.write()
 
     def _updateConfigurationClicked(self):
         regions = self._db.getRegions()
