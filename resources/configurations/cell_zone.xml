@@ -118,7 +118,7 @@
                 <y>0</y>
                 <z>0</z>
             </velocity>
-            <relaxation>0</relaxation>
+            <relaxation>1</relaxation>
         </velocity>
         <temperature disabled="true">300</temperature>
         <turbulentKineticEnergy disabled="true">0</turbulentKineticEnergy>
