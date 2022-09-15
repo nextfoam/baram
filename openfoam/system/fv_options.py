@@ -68,8 +68,8 @@ class FvOptions(DictionaryFile):
             d2 = self._db.getVector(xpath + '/darcyForchheimer/direction2Vector')
 
             data = {
-                'type': 'darcyForchheimer',
-                'DarcyForchheimerCoeffs':{
+                'type': 'DarcyForchheimer',
+                'DarcyForchheimerCoeffs': {
                     'd': ('d', '[ 0 -2 0 0 0 0 0 ]', d),
                     'f': ('f', '[ 0 -1 0 0 0 0 0 ]', f),
                     'coordinateSystem': {
