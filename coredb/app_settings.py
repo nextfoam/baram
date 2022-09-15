@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import screeninfo
 from enum import Enum
 from pathlib import Path
@@ -26,6 +27,7 @@ class SettingKey(Enum):
     DEFAULT_LANGUAGE = 'default_language'
     RECENT_DIRECTORY = 'recent_directory'
     RECENT_CASES = 'recent_cases'
+    RECENT_MESH_DIRECTORY = 'recent_mesh_directory'
     LAST_START_WINDOW_POSITION = 'last_start_window_position'
     LAST_MAIN_WINDOW_POSITION = 'last_main_window_position'
     PARAVIEW_INSTALLED_PATH = 'paraview_installed_path'
@@ -65,6 +67,16 @@ class AppSettings:
             recentCases.remove(project.uuid)
         recentCases.insert(0, project.uuid)
         settings[SettingKey.RECENT_CASES.value] = recentCases[:RECENT_PROJECTS_NUMBER]
+        cls._save(settings)
+
+    @classmethod
+    def getRecentMeshDirectory(cls):
+        return cls._get(SettingKey.RECENT_MESH_DIRECTORY, os.path.expanduser('~'))
+
+    @classmethod
+    def updateRecentMeshDirectory(cls, path):
+        settings = cls._load()
+        settings[SettingKey.RECENT_MESH_DIRECTORY.value] = path
         cls._save(settings)
 
     @classmethod

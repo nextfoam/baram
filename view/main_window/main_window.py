@@ -331,11 +331,13 @@ class MainWindow(QMainWindow):
         self._clearMesh()
         if fileFilter is None:
             # Select OpenFOAM mesh directory.
-            self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'))
+            self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'),
+                                       AppSettings.getRecentMeshDirectory())
             self._dialog.setFileMode(QFileDialog.FileMode.Directory)
         else:
             # Select a mesh file to convert.
-            self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'), '', fileFilter)
+            self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'),
+                                       AppSettings.getRecentMeshDirectory(), fileFilter)
 
         self._dialog.finished.connect(lambda result: self._meshFileSelected(result, meshType))
         self._dialog.open()
@@ -350,6 +352,7 @@ class MainWindow(QMainWindow):
             CaseGenerator.createCase()
 
             file = Path(self._dialog.selectedFiles()[0])
+            AppSettings.updateRecentMeshDirectory(str(file))
             if meshType == MeshType.POLY_MESH:
                 await self._meshManager.importOpenFoamMesh(file)
             else:
