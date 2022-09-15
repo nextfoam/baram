@@ -191,7 +191,8 @@ class Worker(QObject):
     def stopRun(self):
         self.timer.stop()
         for s in self.changingFiles.values():
-            s.f.close()
+            if s is not None:  # "s" could remain "None" if the solver stops by error as soon as it starts
+                s.f.close()
         QThread.currentThread().quit()
         self.running = False
 
