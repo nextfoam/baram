@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import glob
+import os
 import platform
+import subprocess
 from typing import TYPE_CHECKING
 
 from dataclasses import dataclass
@@ -494,6 +495,9 @@ class MeshDock(TabifiedDock):
         return wgIcon
 
     def _clickedVDisplayModeCombo(self, widget):
+        if self._vtkMesh is None:
+            return
+
         actors = self._getAllActor()
         curIndex = self._displayModeCombo.currentIndex()
 
@@ -588,23 +592,25 @@ class MeshDock(TabifiedDock):
 
         if platform.system() == 'Windows':
             path = AppSettings.getParaviewInstalledPath()
-            if path:
-                os.system(f'{path} {casePath}')
+            if os.path.exists(path):
+                subprocess.Popen([f'{path}', f'{casePath}'])
             else:
-                findParaview = glob.glob('C:\\Program Files\\paraview*')
+                path = ''
+                findParaview = glob.glob('C:/Program Files/paraview*')
                 if len(findParaview) == 1:
-                    executeFile = f'{findParaview[0]}\\bin\\paraview.exe'
+                    executeFile = f'{findParaview[0]}/bin/paraview.exe'
                     if os.path.exists(executeFile):
                         path = executeFile
                         AppSettings.updateParaviewInstalledPath(path)
+                        subprocess.Popen([f'{path}', f'{casePath}'])
 
                 if not path:
-                    self._dialog = QFileDialog(self, self.tr('Select Paraview Program'), '', 'exe (*.exe)')
+                    self._dialog = QFileDialog(self, self.tr('Select Paraview Program'), 'C:/Program Files', 'exe (*.exe)')
                     self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
                     self._dialog.accepted.connect(self._selectedExeFile)
                     self._dialog.open()
         else:
-            os.system(f'paraview {casePath} &')
+            subprocess.Popen([f'paraview', f'{casePath}'])
 
     def _selectedExeFile(self):
         casePath = ''
@@ -614,7 +620,7 @@ class MeshDock(TabifiedDock):
 
         selectedFile = self._dialog.selectedFiles()[0]
         AppSettings.updateParaviewInstalledPath(selectedFile)
-        os.system(f'{selectedFile} {casePath}')
+        subprocess.Popen([f'{selectedFile}', f'{casePath}'])
 
     def _showAxes(self):
         if self._axesActor is None:
@@ -673,6 +679,10 @@ class MeshDock(TabifiedDock):
     def getMeshTotalBounds(self) -> list:
         checkFirst = True
         bounds = [0, 0, 0, 0, 0, 0]
+
+        if self._vtkMesh is None:
+            return bounds
+
         for region in self._vtkMesh:
             for boundary in self._vtkMesh[region]['boundary']:
                 actorInfo = self._vtkMesh[region]['boundary'][boundary]
@@ -718,17 +728,19 @@ class MeshDock(TabifiedDock):
         self._cullingOn = True
         self._actionCulling.setIcon(self._iconCullingOn)
 
-        actors = self._getAllActor()
-        for a in actors:
-            a.GetProperty().FrontfaceCullingOn()
+        if self._vtkMesh is not None:
+            actors = self._getAllActor()
+            for a in actors:
+                a.GetProperty().FrontfaceCullingOn()
 
     def _hideCulling(self):
         self._cullingOn = False
         self._actionCulling.setIcon(self._iconCullingOff)
 
-        actors = self._getAllActor()
-        for a in actors:
-            a.GetProperty().FrontfaceCullingOff()
+        if self._vtkMesh is not None:
+            actors = self._getAllActor()
+            for a in actors:
+                a.GetProperty().FrontfaceCullingOff()
 
     def _addCamera(self):
         self.camera = vtkCamera()
