@@ -31,7 +31,7 @@ class TestFvOptions(unittest.TestCase):
 
         content = FvOptions(self.rname).build().asDict()
 
-        self.assertEqual('darcyForchheimer', content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['type'])
+        self.assertEqual('DarcyForchheimer', content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['type'])
         self.assertEqual([0.0, 0.0, 0.0], content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['DarcyForchheimerCoeffs']['d'][2])
         self.assertEqual([0.0, 0.0, 0.0], content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['DarcyForchheimerCoeffs']['f'][2])
         self.assertEqual([1.0, 0.0, 0.0], content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['DarcyForchheimerCoeffs']['coordinateSystem']['coordinateRotation']['e1'])
@@ -213,7 +213,7 @@ class TestFvOptions(unittest.TestCase):
         content = FvOptions(self.rname).build().asDict()
 
         self.assertEqual([0, 0, 0], content[f'fixedVelocity_{self.czname}']['Ubar'])
-        self.assertEqual('0', content[f'fixedVelocity_{self.czname}']['relaxation'])
+        self.assertEqual('1', content[f'fixedVelocity_{self.czname}']['relaxation'])
         self.assertEqual('cellZone', content[f'fixedVelocity_{self.czname}']['selectionMode'])
         self.assertEqual(self.czname, content[f'fixedVelocity_{self.czname}']['cellZone'])
 
@@ -406,7 +406,7 @@ class TestFvOptions(unittest.TestCase):
         content = FvOptions(self.rname).build().asDict()
 
         self.assertEqual([0, 0, 0], content[f'fixedVelocity_All']['Ubar'])
-        self.assertEqual('0', content[f'fixedVelocity_All']['relaxation'])
+        self.assertEqual('1', content[f'fixedVelocity_All']['relaxation'])
         self.assertEqual('all', content[f'fixedVelocity_All']['selectionMode'])
 
     def testFixedValuesTemperatureAll(self):
