@@ -1130,7 +1130,7 @@
                     <xs:sequence>
                         <xs:element name="pressure" type="inputNumberType" default="0.3"/>
                         <xs:element name="pressureFinal" type="inputNumberType" default="1"/>
-                        <xs:element name="density" type="inputNumberType" default="0.3"/>
+                        <xs:element name="density" type="inputNumberType" default="0.9"/>
                         <xs:element name="densityFinal" type="inputNumberType" default="1"/>
                         <xs:element name="momentum" type="inputNumberType" default="0.7"/>
                         <xs:element name="momentumFinal" type="inputNumberType" default="1"/>
