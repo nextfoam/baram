@@ -19,7 +19,15 @@ class FvOptions(DictionaryFile):
     def build(self):
         if self._data is not None:
             return
-        self._data = {}
+        self._data = {
+            'limitT': {
+                'type': 'limitTemperature',
+                'active': 'yes',
+                'selectionMode': 'all',
+                'min': self._db.getValue('.//numericalConditions/advanced/limits/minimumStaticTemperature'),
+                'max': self._db.getValue('.//numericalConditions/advanced/limits/maximumStaticTemperature')
+            }
+        }
 
         cellZones = self._db.getCellZones(self._rname)
         for czid, czname in cellZones:
