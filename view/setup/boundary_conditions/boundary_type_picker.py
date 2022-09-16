@@ -52,8 +52,6 @@ class BoundaryTypePicker(QWidget):
         self._wallTypes =  [
             BoundaryType.WALL.value,
             BoundaryType.THERMO_COUPLED_WALL.value,
-            BoundaryType.POROUS_JUMP.value,
-            BoundaryType.FAN.value,
         ]
 
         self._miscTypes = [
@@ -62,6 +60,8 @@ class BoundaryTypePicker(QWidget):
             BoundaryType.EMPTY.value,
             BoundaryType.CYCLIC.value,
             BoundaryType.WEDGE.value,
+            BoundaryType.POROUS_JUMP.value,
+            BoundaryType.FAN.value,
         ]
 
         self._connectSignalsSlots()

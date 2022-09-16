@@ -296,16 +296,6 @@ px}</string>
              <string>Thermo-Coupled Wall</string>
             </property>
            </item>
-           <item>
-            <property name="text">
-             <string>Porous Jump</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>FAN</string>
-            </property>
-           </item>
           </widget>
          </item>
         </layout>
@@ -374,6 +364,16 @@ px}</string>
            <item>
             <property name="text">
              <string>Wedge</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Porous Jump</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>FAN</string>
             </property>
            </item>
           </widget>
