@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
+from coredb.cell_zone_db import RegionDB
+from coredb.material_db import MaterialDB, Phase
 from coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, InterfaceMode
 from coredb.models_db import ModelsDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
@@ -15,20 +17,34 @@ class Alphat(BoundaryCondition):
 
         self._rname = rname
         self._db = coredb.CoreDB()
-        # ToDo: Set initialValue
-        self._initialValue = 0
+
+        p = float(self._db.getValue('.//initialization/initialValues/pressure')) \
+            + float(self._db.getValue('.//operatingConditions/pressure'))  # Pressure
+        t = float(self._db.getValue('.//initialization/initialValues/temperature'))  # Temperature
+        b = float(self._db.getValue('.//initialization/initialValues/turbulentViscosity'))  # Turbulent Viscosity
+
+        mid = RegionDB.getMaterial(rname)
+        assert MaterialDB.getPhase(mid) in [Phase.LIQUID, Phase.GAS]
+
+        rho = MaterialDB.getDensity(mid, t, p)  # Density
+        mu = MaterialDB.getViscosity(mid, t)  # Viscosity
+
+        nu = mu / rho  # Kinetic Viscosity
+        pr = 0.85  # Prandtl Number
+        nut = b * nu
+
+        alphat = rho * nut / pr
+
+        self._initialValue = alphat
 
         self._data = None
 
     def build(self):
-        self._data = None
-
-        if ModelsDB.isEnergyModelOn():
-            self._data = {
-                'dimensions': self.DIMENSIONS,
-                'internalField': ('uniform', self._initialValue),
-                'boundaryField': self._constructBoundaryField()
-            }
+        self._data = {
+            'dimensions': self.DIMENSIONS,
+            'internalField': ('uniform', self._initialValue),
+            'boundaryField': self._constructBoundaryField()
+        }
 
         return self
 

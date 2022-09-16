@@ -62,13 +62,14 @@ class CaseGenerator:
             TransportProperties(rname).build().write()
 
             T(rname).build().write()
-            Alphat(rname).build().write()
+            if RegionDB.getPhase(rname) != Phase.SOLID:
+                Alphat(rname).build().write()
 
-            K(rname).build().write()
-            Nut(rname).build().write()
-            Epsilon(rname).build().write()
-            Omega(rname).build().write()
-            NuTilda(rname).build().write()
+                K(rname).build().write()
+                Nut(rname).build().write()
+                Epsilon(rname).build().write()
+                Omega(rname).build().write()
+                NuTilda(rname).build().write()
 
             FvSchemes(rname).build().write()
             FvSolution(rname).build().write()
