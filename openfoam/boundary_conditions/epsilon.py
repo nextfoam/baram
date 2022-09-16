@@ -6,7 +6,7 @@ import math
 from coredb import coredb
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import MaterialDB, Phase
-from coredb.boundary_db import BoundaryDB, BoundaryType, KEpsilonSpecification, InterfaceMode
+from coredb.boundary_db import BoundaryDB, BoundaryType, KEpsilonSpecification, WallVelocityCondition, WallVelocityCondition, InterfaceMode
 from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -77,7 +77,7 @@ class Epsilon(BoundaryCondition):
                 BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructZeroGradient()),
                 BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
-                BoundaryType.WALL.value:                (lambda: self._constructNEXTEpsilonWallFunction()),
+                BoundaryType.WALL.value:                (lambda: self._constructWallEpsilon()),
                 BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructNEXTEpsilonWallFunction()),
                 BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                 BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceEpsilon(xpath)),
@@ -115,6 +115,20 @@ class Epsilon(BoundaryCondition):
             'type': 'epsilonWallFunction',
             'value': ('uniform', self._initialValue)
         }
+
+    def _constructAtmEpsilonWallFunction(self):
+        return {
+            'type': 'atmEpsilonWallFunction',
+            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
+            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
+        }
+
+    def _constructWallEpsilon(self, xpath):
+        spec = self._db.getValue(xpath + '/wall/velocity/type')
+        if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
+            return self._constructAtmEpsilonWallFunction()
+        else:
+            return self._constructNEXTEpsilonWallFunction()
 
     def _constructPressureOutletEpsilon(self, xpath):
         if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
