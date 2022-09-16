@@ -91,7 +91,16 @@ class FvOptions(DictionaryFile):
                 'type': 'powerLaw',
                 'powerLawCoeffs': {
                     'C0': c0,
-                    'C1': c1
+                    'C1': c1,
+                    'coordinateSystem': {
+                        'type': 'cartesian',
+                        'origin': '(0 0 0)',
+                        'coordinateRotation': {
+                            'type': 'axesRotation',
+                            'e1': (1, 0, 0),
+                            'e2': (0, 1, 0)
+                        }
+                    }
                 }
             }
         return data
