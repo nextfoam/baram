@@ -76,7 +76,7 @@
         <underRelaxationFactors>
             <pressure>0.3</pressure>
             <pressureFinal>1</pressureFinal>
-            <density>0.3</density>
+            <density>0.9</density>
             <densityFinal>1</densityFinal>
             <momentum>0.7</momentum>
             <momentumFinal>1</momentumFinal>
