@@ -28,28 +28,23 @@ class TestAlphat(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')
         content = Alphat(region).build().asDict()
         self.assertEqual(dimensions, content['dimensions'])
-        self.assertEqual(self._initialValue, content['internalField'][1])
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testFlowRateInletVolume(self):
         self._db.setValue(self._xpath + '/physicalType', 'flowRateInlet')
         content = Alphat(region).build().asDict()
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testPressureInlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'pressureInlet')
         content = Alphat(region).build().asDict()
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testPressureOutletBackflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'pressureOutlet')
         self._db.setValue(self._xpath + '/pressureOutlet/calculatedBackflow', 'true')
         content = Alphat(region).build().asDict()
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testPressureOutlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'pressureOutlet')
@@ -61,13 +56,11 @@ class TestAlphat(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'openChannelInlet')
         content = Alphat(region).build().asDict()
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testOpenChannelOutlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'openChannelOutlet')
         content = Alphat(region).build().asDict()
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testOutflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'outflow')
@@ -78,37 +71,31 @@ class TestAlphat(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = Alphat(region).build().asDict()
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testFarFieldRiemann(self):
         self._db.setValue(self._xpath + '/physicalType', 'farFieldRiemann')
         content = Alphat(region).build().asDict()
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testSubsonicInflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'subsonicInflow')
         content = Alphat(region).build().asDict()
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testSubsonicOutflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'subsonicOutflow')
         content = Alphat(region).build().asDict()
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testSupersonicInflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'supersonicInflow')
         content = Alphat(region).build().asDict()
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testSupersonicOutflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'supersonicOutflow')
         content = Alphat(region).build().asDict()
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     # Wall
     def testWall(self):
@@ -117,7 +104,6 @@ class TestAlphat(unittest.TestCase):
         self.assertEqual('compressible::alphatWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
                          content['boundaryField'][boundary]['Prt'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     # Wall
     def testAtmosphericWall(self):
@@ -125,7 +111,6 @@ class TestAlphat(unittest.TestCase):
         self._db.setValue(self._xpath + '/wall/velocity/type', 'atmosphericWall')
         content = Alphat(region).build().asDict()
         self.assertEqual('calculated', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testThermoCoupledWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')
@@ -133,7 +118,6 @@ class TestAlphat(unittest.TestCase):
         self.assertEqual('alphatJayatillekeWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
                          content['boundaryField'][boundary]['Prt'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testSymmetry(self):
         self._db.setValue(self._xpath + '/physicalType', 'symmetry')
@@ -169,7 +153,6 @@ class TestAlphat(unittest.TestCase):
         self.assertEqual('alphatJayatillekeWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
                          content['boundaryField'][boundary]['Prt'])
-        self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testPorousJump(self):
         self._db.setValue(self._xpath + '/physicalType', 'porousJump')
