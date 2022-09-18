@@ -5,10 +5,42 @@ import openfoam.solver
 from coredb import coredb
 from coredb.general_db import GeneralDB
 from coredb.boundary_db import BoundaryDB
-from coredb.cell_zone_db import CellZoneDB
+from coredb.cell_zone_db import CellZoneDB, RegionDB
+from coredb.material_db import MaterialDB, Phase
 from coredb.monitor_db import MonitorDB
+from coredb.models_db import ModelsDB, TurbulenceModel
 from coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from openfoam.dictionary_file import DictionaryFile
+
+
+def _getAvailableFields():
+    fields = ['U']
+
+    solvers = openfoam.solver.findSolvers()
+    if len(solvers) == 0:  # configuration not enough yet
+        raise RuntimeError
+
+    cap = openfoam.solver.getSolverCapability(solvers[0])
+    if cap['usePrgh']:
+        fields.append('p_rgh')
+    else:
+        fields.append('p')
+
+    # Fields depending on the turbulence model
+    turbulenceModel = ModelsDB.getTurbulenceModel()
+    if turbulenceModel == TurbulenceModel.K_EPSILON:
+        fields.append('k')
+        fields.append('epsilon')
+    elif turbulenceModel == TurbulenceModel.K_OMEGA:
+        fields.append('k')
+        fields.append('omega')
+    elif turbulenceModel == TurbulenceModel.SPALART_ALLMARAS:
+        fields.append('nuTilda')
+
+    if ModelsDB.isEnergyModelOn():
+        fields.append('h')
+
+    return fields
 
 
 def getFieldValue(field) -> list:
@@ -144,11 +176,6 @@ class ControlDict(DictionaryFile):
     def _generateResiduals(self) -> dict:
         db = coredb.CoreDB()
         regions = db.getRegions()
-        fields = ['U', 'p']
-        # 'laminar': ['U', 'p_rgh', 'h']
-        # 'kOmegaSST': ['U', 'p_rgh', 'h', 'k', 'omega']
-        # else: ['U', 'p_rgh', 'h', 'k', 'epsilon']
-
         data = {}
         regionNum = getRegionNumbers()
 
@@ -156,6 +183,16 @@ class ControlDict(DictionaryFile):
             rgid = regionNum[rname]
 
             residualsName = f'solverInfo_{rgid}'
+
+            mid = RegionDB.getMaterial(rname)
+            if MaterialDB.getPhase(mid) == Phase.SOLID:
+                if ModelsDB.isEnergyModelOn():
+                    fields = ['h']
+                else:
+                    continue  # 'h' is the only property solid has
+            else:
+                fields = _getAvailableFields()
+
             data[residualsName] = {
                 'type': 'solverInfo',
                 'libs': ['"libutilityFunctionObjects.so"'],
