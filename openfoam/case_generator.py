@@ -54,7 +54,6 @@ class CaseGenerator:
             if RegionDB.getPhase(rname) != Phase.SOLID:
                 TurbulenceProperties(rname).build().write()
 
-            G(rname).build().write()
             P(rname, 'p_rgh').build().write()
             P(rname).build().write()
             U(rname).build().write()
@@ -80,6 +79,8 @@ class CaseGenerator:
 
         if len(regions) > 1:
             FvSolution().build().write()
+
+        G().build().write()
 
         ControlDict().build().write()
 
