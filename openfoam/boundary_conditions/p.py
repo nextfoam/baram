@@ -120,7 +120,7 @@ class P(BoundaryCondition):
                     BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructFluxPressure()),
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfacePressure(self._db.getValue(xpath + '/interface/mode'))),
-                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump')),
+                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump'), 0),
                     BoundaryType.FAN.value:                 (lambda: self._constructFanPressure(xpath + '/fan')),
                     BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                     BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
@@ -151,15 +151,6 @@ class P(BoundaryCondition):
             return self._constructFluxPressure()
         else:
             return self._constructCyclicAMI()
-
-    def _constructPorousBafflePressure(self, xpath):
-        return {
-            'type': 'porousBafflePressure',
-            'patchType': 'cyclic',
-            'D': self._db.getValue(xpath + '/darcyCoefficient'),
-            'I': self._db.getValue(xpath + '/inertialCoefficient'),
-            'length': self._db.getValue(xpath + '/porousMediaThickness'),
-        }
 
     def _constructFanPressure(self, xpath):
         return {
