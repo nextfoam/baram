@@ -145,13 +145,14 @@ class BoundaryCondition(DictionaryFile):
             'type': 'slip'
         }
 
-    def _constructPorousBafflePressure(self, xpath):
+    def _constructPorousBafflePressure(self, xpath, value):
         return {
             'type': 'porousBafflePressure',
             'patchType': 'cyclic',
             'D': self._db.getValue(xpath + '/darcyCoefficient'),
             'I': self._db.getValue(xpath + '/inertialCoefficient'),
             'length': self._db.getValue(xpath + '/porousMediaThickness'),
+            'value': ('uniform', value)
         }
 
     def _constructFreestream(self, xpath):
