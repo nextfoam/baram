@@ -62,7 +62,7 @@ class T(BoundaryCondition):
                     BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructNEXTTurbulentTemperatureCoupledBaffleMixed()),
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceT(xpath)),
-                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump', 300)),
+                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructCyclic()),
                     BoundaryType.FAN.value:                 (lambda: self._constructCyclic()),
                     BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                     BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
