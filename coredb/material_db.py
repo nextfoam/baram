@@ -7,6 +7,8 @@ from PySide6.QtCore import QCoreApplication
 
 from coredb import coredb
 
+UNIVERSAL_GAL_CONSTANT = 8314.46261815324
+
 
 class Phase(Flag):
     GAS = auto()
@@ -61,7 +63,7 @@ class MaterialDB(object):
             .. math:: \rho = \frac{MW \times P}{R \times T}
             '''
             mw = float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/molecularWeight'))
-            return p * mw / (8314.46261815324 * t)
+            return p * mw / (UNIVERSAL_GAL_CONSTANT * t)
         else:
             raise KeyError
 
@@ -103,6 +105,10 @@ class MaterialDB(object):
             return c1 * t ** 1.5 / (t+s)
         else:
             raise KeyError
+
+    @classmethod
+    def getMolecularWeight(cls, mid) -> float:
+        return float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/molecularWeight'))
 
     @classmethod
     def dbTextToPhase(cls, DBText) -> Phase:
