@@ -115,7 +115,7 @@ class TestAlphat(unittest.TestCase):
     def testThermoCoupledWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')
         content = Alphat(region).build().asDict()
-        self.assertEqual('alphatJayatillekeWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('compressible::alphatJayatillekeWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
                          content['boundaryField'][boundary]['Prt'])
 
@@ -150,7 +150,7 @@ class TestAlphat(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'regionInterface')
         content = Alphat(region).build().asDict()
-        self.assertEqual('alphatJayatillekeWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('compressible::alphatJayatillekeWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
                          content['boundaryField'][boundary]['Prt'])
 

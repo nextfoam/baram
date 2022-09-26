@@ -120,7 +120,7 @@ class P(BoundaryCondition):
                     BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructFluxPressure()),
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfacePressure(self._db.getValue(xpath + '/interface/mode'))),
-                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump'), self.initialPressure + self.operatingPressure),
+                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump', self.initialPressure + self.operatingPressure)),
                     BoundaryType.FAN.value:                 (lambda: self._constructFan(xpath + '/fan', self.initialPressure + self.operatingPressure)),
                     BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                     BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),

@@ -166,7 +166,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = T(region).build().asDict()
-        self.assertEqual('turbulentTemperatureCoupledBaffleMixed', content['boundaryField'][boundary]['type'])
+        self.assertEqual('compressible::turbulentTemperatureCoupledBaffleMixed', content['boundaryField'][boundary]['type'])
         self.assertEqual('solidThermo' if RegionDB.getPhase(region) == Phase.SOLID else 'fluidThermo',
                          content['boundaryField'][boundary]['kappaMethod'])
 
@@ -206,7 +206,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/interface/mode', 'regionInterface')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = T(region).build().asDict()
-        self.assertEqual('turbulentTemperatureCoupledBaffleMixed', content['boundaryField'][boundary]['type'])
+        self.assertEqual('compressible::turbulentTemperatureCoupledBaffleMixed', content['boundaryField'][boundary]['type'])
         self.assertEqual('solidThermo' if RegionDB.getPhase(region) == Phase.SOLID else 'fluidThermo',
                          content['boundaryField'][boundary]['kappaMethod'])
 
@@ -214,13 +214,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'porousJump')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = T(region).build().asDict()
-        self.assertEqual('porousBafflePressure', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/porousJump/darcyCoefficient'),
-                         content['boundaryField'][boundary]['D'])
-        self.assertEqual(self._db.getValue(self._xpath + '/porousJump/inertialCoefficient'),
-                         content['boundaryField'][boundary]['I'])
-        self.assertEqual(self._db.getValue(self._xpath + '/porousJump/porousMediaThickness'),
-                         content['boundaryField'][boundary]['length'])
+        self.assertEqual('cyclic', content['boundaryField'][boundary]['type'])
 
     def testFan(self):
         self._db.setValue(self._xpath + '/physicalType', 'fan')

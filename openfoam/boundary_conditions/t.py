@@ -59,7 +59,7 @@ class T(BoundaryCondition):
                     BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(constant)),
                     BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.WALL.value:                (lambda: self._constructZeroGradient()),
-                    BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructNEXTTurbulentTemperatureCoupledBaffleMixed()),
+                    BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructCompressibleTurbulentTemperatureCoupledBaffleMixed()),
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceT(xpath)),
                     BoundaryType.POROUS_JUMP.value:         (lambda: self._constructCyclic()),
@@ -91,11 +91,12 @@ class T(BoundaryCondition):
             'T0': ('uniform', constant)
         }
 
-    def _constructNEXTTurbulentTemperatureCoupledBaffleMixed(self):
+    def _constructCompressibleTurbulentTemperatureCoupledBaffleMixed(self):
         return {
-            'type': 'turbulentTemperatureCoupledBaffleMixed',
+            'type': 'compressible::turbulentTemperatureCoupledBaffleMixed',
             'Tnbr': 'T',
-            'kappaMethod': 'solidThermo' if RegionDB.getPhase(self._rname) == Phase.SOLID else 'fluidThermo'
+            'kappaMethod': 'solidThermo' if RegionDB.getPhase(self._rname) == Phase.SOLID else 'fluidThermo',
+            'value': ('uniform', self._initialValue)
         }
 
     def _constructFlowRateInletT(self, xpath, constant):
@@ -114,6 +115,6 @@ class T(BoundaryCondition):
     def _constructInterfaceT(self, xpath):
         spec = self._db.getValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
-            return self._constructNEXTTurbulentTemperatureCoupledBaffleMixed()
+            return self._constructCompressibleTurbulentTemperatureCoupledBaffleMixed()
         else:
             return self._constructCyclicAMI()
