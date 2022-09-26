@@ -32,17 +32,33 @@
        <number>15</number>
       </property>
       <item>
-       <widget class="QRadioButton" name="include">
+       <widget class="QRadioButton" name="off">
         <property name="text">
-         <string>Include</string>
+         <string>Off</string>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">modelRadioGroup</string>
+        </attribute>
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="notInclude">
+       <widget class="QRadioButton" name="volumeOfFluid">
         <property name="text">
-         <string>Not Include</string>
+         <string>Volume of Fluid</string>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">modelRadioGroup</string>
+        </attribute>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="mixture">
+        <property name="text">
+         <string>Mixture (cavitation)</string>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">modelRadioGroup</string>
+        </attribute>
        </widget>
       </item>
      </layout>
@@ -67,4 +83,7 @@
   <include location="../../resource.qrc"/>
  </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="modelRadioGroup"/>
+ </buttongroups>
 </ui>

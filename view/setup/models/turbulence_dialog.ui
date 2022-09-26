@@ -351,6 +351,22 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>inviscid</tabstop>
+  <tabstop>laminar</tabstop>
+  <tabstop>spalartAllmaras</tabstop>
+  <tabstop>kEpsilon</tabstop>
+  <tabstop>kOmega</tabstop>
+  <tabstop>LES</tabstop>
+  <tabstop>standard</tabstop>
+  <tabstop>RNG</tabstop>
+  <tabstop>realizable</tabstop>
+  <tabstop>standardWallFunction</tabstop>
+  <tabstop>enhancedWallTreatment</tabstop>
+  <tabstop>SST</tabstop>
+  <tabstop>energyPrandtlNumber</tabstop>
+  <tabstop>wallPrandtlNumber</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

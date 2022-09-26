@@ -83,7 +83,7 @@ class ModelsDB:
 
     @classmethod
     def isMultiphaseModelOn(cls):
-        return cls.getMultiphaseModel() != 'off'
+        return cls.getMultiphaseModel() != MultiphaseModel.OFF
 
     @classmethod
     def isRadiationModelOn(cls):
@@ -96,6 +96,10 @@ class ModelsDB:
     @classmethod
     def isEnergyModelOn(cls):
         return coredb.CoreDB().getValue(ModelsDB.ENERGY_MODELS_XPATH) == 'on'
+
+    @classmethod
+    def getEnergyModelText(cls):
+        return 'Include' if cls.isEnergyModelOn() else 'Not Include'
 
 
 class TurbulenceField:

@@ -50,28 +50,7 @@ class TurbulenceModelDialog(ResizableDialog):
         self._ui.LES.setVisible(False)
 
         self._connectSignalsSlots()
-
-    def showEvent(self, ev):
-        if ev.spontaneous():
-            return super().showEvent(ev)
-
-        self._getRadio(
-            self._ui.modelRadioGroup, self._modelRadios, self._db.getValue(self._xpath + '/model')
-        ).setChecked(True)
-
-        self._getRadio(
-            self._ui.kEpsilonRadioGroup, self._kEpsilonModelRadios, self._db.getValue(self._xpath + '/k-epsilon/model')
-        ).setChecked(True)
-
-        self._getRadio(
-            self._ui.nearWallTreatmentRadioGroup, self._nearWallTreatmentRadios,
-            self._db.getValue(self._xpath + '/k-epsilon/realizable/nearWallTreatment')
-        ).setChecked(True)
-
-        self._ui.energyPrandtlNumber.setText(self._db.getValue(self._xpath + '/energyPrandtlNumber'))
-        self._ui.wallPrandtlNumber.setText(self._db.getValue(self._xpath + '/wallPrandtlNumber'))
-
-        return super().showEvent(ev)
+        self._load()
 
     def accept(self):
         writer = CoreDBWriter()
@@ -106,6 +85,23 @@ class TurbulenceModelDialog(ResizableDialog):
     def _connectSignalsSlots(self):
         self._ui.modelRadioGroup.idToggled.connect(self._modelChanged)
         self._ui.kEpsilonRadioGroup.idToggled.connect(self._kEpsilonModelChanged)
+
+    def _load(self):
+        self._getRadio(
+            self._ui.modelRadioGroup, self._modelRadios, self._db.getValue(self._xpath + '/model')
+        ).setChecked(True)
+
+        self._getRadio(
+            self._ui.kEpsilonRadioGroup, self._kEpsilonModelRadios, self._db.getValue(self._xpath + '/k-epsilon/model')
+        ).setChecked(True)
+
+        self._getRadio(
+            self._ui.nearWallTreatmentRadioGroup, self._nearWallTreatmentRadios,
+            self._db.getValue(self._xpath + '/k-epsilon/realizable/nearWallTreatment')
+        ).setChecked(True)
+
+        self._ui.energyPrandtlNumber.setText(self._db.getValue(self._xpath + '/energyPrandtlNumber'))
+        self._ui.wallPrandtlNumber.setText(self._db.getValue(self._xpath + '/wallPrandtlNumber'))
 
     def _modelChanged(self, id_, checked):
         if checked:

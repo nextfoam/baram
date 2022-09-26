@@ -8,7 +8,7 @@
             <gravity disabled="true">
                 <direction>
                     <x>0</x>
-                    <y>0</y>
+                    <y>-9.81</y>
                     <z>0</z>
                 </direction>
             </gravity>
