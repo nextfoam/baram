@@ -7,6 +7,7 @@ from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.models_db import TurbulenceModelHelper
 from coredb.cell_zone_db import CellZoneDB, ZoneType
+from coredb.general_db import GeneralDB
 from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
 from .MRF_widget import MRFWidget
 from .porous_zone_widget import PorousZoneWidget
@@ -37,22 +38,33 @@ class CellZoneConditionDialog(QDialog):
         self._name = self._db.getValue(self._xpath + '/name')
 
         # Zone Type Widgets
+        self._MRFZone = None
+        self._porousZone = None
+        self._slidingMeshZone = None
+        self._actuatorDiskZone = None
+
         if self._isAll():
             self._ui.MRF.setEnabled(False)
             self._ui.porousZone.setEnabled(False)
             self._ui.slidingMesh.setEnabled(False)
             self._ui.actuatorDisk.setEnabled(False)
         else:
-            self._MRFZone = MRFWidget(self._xpath)
-            self._porousZone = PorousZoneWidget(self._xpath)
-            self._slidingMeshZone = SlidingMeshWidget(self._xpath)
-            self._actuatorDiskZone = ActuatorDiskWidget(self._xpath)
-
             layout = self._ui.zoneType.layout()
-            layout.insertWidget(1, self._MRFZone)
-            layout.insertWidget(2, self._porousZone)
-            layout.insertWidget(3, self._slidingMeshZone)
-            layout.insertWidget(4, self._actuatorDiskZone)
+
+            self._MRFZone = MRFWidget(self._xpath)
+            layout.addWidget(self._MRFZone)
+
+            self._porousZone = PorousZoneWidget(self._xpath)
+            layout.addWidget(self._porousZone)
+
+            if GeneralDB.isTimeTransient():
+                self._slidingMeshZone = SlidingMeshWidget(self._xpath)
+                layout.addWidget(self._slidingMeshZone)
+            else:
+                self._ui.slidingMesh.setEnabled(False)
+
+            self._actuatorDiskZone = ActuatorDiskWidget(self._xpath)
+            layout.addWidget(self._actuatorDiskZone)
 
         # Source Terms Widgets
         self._massSourceTerm = VariableSourceWidget(self.tr("Mass"), self._xpath + '/sourceTerms/mass')
@@ -136,10 +148,12 @@ class CellZoneConditionDialog(QDialog):
     def _load(self):
         self._ui.zoneName.setText(self._name)
         self._getZoneTypeRadio(self._db.getValue(self._xpath + '/zoneType')).setChecked(True)
+
         if not self._isAll():
             self._MRFZone.load()
             self._porousZone.load()
-            self._slidingMeshZone.load()
+            if self._slidingMeshZone:
+                self._slidingMeshZone.load()
             self._actuatorDiskZone.load()
 
         self._massSourceTerm.load()
@@ -183,7 +197,8 @@ class CellZoneConditionDialog(QDialog):
         if checked:
             self._MRFZone.setVisible(self._ui.MRF.isChecked())
             self._porousZone.setVisible(self._ui.porousZone.isChecked())
-            self._slidingMeshZone.setVisible(self._ui.slidingMesh.isChecked())
+            if self._slidingMeshZone:
+                self._slidingMeshZone.setVisible(self._ui.slidingMesh.isChecked())
             self._actuatorDiskZone.setVisible(self._ui.actuatorDisk.isChecked())
 
     def _getZoneTypeRadio(self, value):
