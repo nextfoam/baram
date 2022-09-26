@@ -24,7 +24,7 @@ class Omega(BoundaryCondition):
             + float(self._db.getValue('.//operatingConditions/pressure'))  # Pressure
         t = float(self._db.getValue('.//initialization/initialValues/temperature'))  # Temperature
         v = float(self._db.getValue('.//initialization/initialValues/scaleOfVelocity'))  # Scale of Velocity
-        i = float(self._db.getValue('.//initialization/initialValues/turbulentIntensity'))  # Turbulent Intensity
+        i = float(self._db.getValue('.//initialization/initialValues/turbulentIntensity')) / 100.0  # Turbulent Intensity
         b = float(self._db.getValue('.//initialization/initialValues/turbulentViscosity'))  # Turbulent Viscosity
 
         mid = RegionDB.getMaterial(rname)

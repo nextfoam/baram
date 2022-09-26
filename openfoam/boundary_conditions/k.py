@@ -21,7 +21,7 @@ class K(BoundaryCondition):
         self._db = coredb.CoreDB()
 
         v = float(self._db.getValue('.//initialization/initialValues/scaleOfVelocity'))  # Scale of Velocity
-        i = float(self._db.getValue('.//initialization/initialValues/turbulentIntensity'))  # Turbulent Intensity
+        i = float(self._db.getValue('.//initialization/initialValues/turbulentIntensity')) / 100.0  # Turbulent Intensity
 
         mid = RegionDB.getMaterial(rname)
         assert MaterialDB.getPhase(mid) in [Phase.LIQUID, Phase.GAS]
