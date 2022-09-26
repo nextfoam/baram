@@ -3,6 +3,8 @@
 
 import os
 from enum import Enum
+import tempfile
+from pathlib import Path
 
 from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
 
@@ -54,7 +56,7 @@ class DictionaryFile:
             if rname else cls.constantLocation(FileSystem.POLY_MESH_DIRECTORY_NAME)
 
     def fullPath(self):
-        return os.path.join(FileSystem.caseRoot(), self._header["location"], self._header["object"])
+        return FileSystem.caseRoot() / self._header["location"] / self._header["object"]
 
     def asDict(self):
         return self._data
@@ -63,6 +65,13 @@ class DictionaryFile:
         if self._data:
             with open(self.fullPath(), 'w') as f:
                 f.write(str(FoamFileGenerator(self._data, header=self._header)))
+
+    def writeAtomic(self):
+        if self._data:
+            with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+                f.write(str(FoamFileGenerator(self._data, header=self._header)))
+                p = Path(f.name)
+            p.replace(self.fullPath())
 
     def _setFormat(self, fileFormat: Format):
         self._header['format'] = fileFormat.value

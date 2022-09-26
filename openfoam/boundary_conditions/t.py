@@ -6,7 +6,7 @@ from coredb.filedb import BcFileRole
 from coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification
 from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution, InterfaceMode
 from coredb.cell_zone_db import RegionDB
-from coredb.material_db import Phase
+from coredb.material_db import MaterialDB, Phase, UNIVERSAL_GAL_CONSTANT
 from coredb.project import Project
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -46,7 +46,7 @@ class T(BoundaryCondition):
                 field[name] = {
                     BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(constant)),
                     BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFlowRateInletT(xpath, constant)),
-                    BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletTemperature(constant)),
+                    BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletTotalTemperature(constant)),
                     BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletT(xpath, constant)),
                     BoundaryType.ABL_INLET.value:           (lambda: None),
                     BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: None),
@@ -59,10 +59,10 @@ class T(BoundaryCondition):
                     BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(constant)),
                     BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.WALL.value:                (lambda: self._constructZeroGradient()),
-                    BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructNEXTTurbulentTemperatureCoupledBaffleMixed()),
+                    BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructCompressibleTurbulentTemperatureCoupledBaffleMixed()),
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceT(xpath)),
-                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump')),
+                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructCyclic()),
                     BoundaryType.FAN.value:                 (lambda: self._constructCyclic()),
                     BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                     BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
@@ -83,19 +83,24 @@ class T(BoundaryCondition):
 
         return field
 
-    def _constructInletOutletTemperature(self, constant):
+    def _constructInletOutletTotalTemperature(self, constant):
+        mid = RegionDB.getMaterial(self._rname)
+        cp = MaterialDB.getSpecificHeat(mid, constant)
+        mw = MaterialDB.getMolecularWeight(mid)
+        gamma = cp / (cp - UNIVERSAL_GAL_CONSTANT/mw)
         return {
             'type': 'inletOutletTotalTemperature',
-            'gamma': 'gamma',
+            'gamma': gamma,
             'inletValue': ('uniform', constant),
             'T0': ('uniform', constant)
         }
 
-    def _constructNEXTTurbulentTemperatureCoupledBaffleMixed(self):
+    def _constructCompressibleTurbulentTemperatureCoupledBaffleMixed(self):
         return {
-            'type': 'turbulentTemperatureCoupledBaffleMixed',
+            'type': 'compressible::turbulentTemperatureCoupledBaffleMixed',
             'Tnbr': 'T',
-            'kappaMethod': 'solidThermo' if RegionDB.getPhase(self._rname) == Phase.SOLID else 'fluidThermo'
+            'kappaMethod': 'solidThermo' if RegionDB.getPhase(self._rname) == Phase.SOLID else 'fluidThermo',
+            'value': ('uniform', self._initialValue)
         }
 
     def _constructFlowRateInletT(self, xpath, constant):
@@ -103,17 +108,17 @@ class T(BoundaryCondition):
         if spec == FlowRateInletSpecification.VOLUME_FLOW_RATE.value:
             return self._constructFixedValue(constant)
         elif spec == FlowRateInletSpecification.MASS_FLOW_RATE.value:
-            return self._constructInletOutletTemperature(constant)
+            return self._constructInletOutletTotalTemperature(constant)
 
     def _constructPressureOutletT(self, xpath, constant):
         if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
-            return self._constructInletOutletTemperature(constant)
+            return self._constructInletOutletTotalTemperature(constant)
         else:
             return self._constructZeroGradient()
 
     def _constructInterfaceT(self, xpath):
         spec = self._db.getValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
-            return self._constructNEXTTurbulentTemperatureCoupledBaffleMixed()
+            return self._constructCompressibleTurbulentTemperatureCoupledBaffleMixed()
         else:
             return self._constructCyclicAMI()

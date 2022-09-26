@@ -92,7 +92,7 @@ class Alphat(BoundaryCondition):
 
     def _constructCompressibleAlphatJayatillekeWallFunction(self):
         return {
-            'type': 'alphatJayatillekeWallFunction',
+            'type': 'compressible::alphatJayatillekeWallFunction',
             'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
             'value': ('uniform', self._initialValue)
         }

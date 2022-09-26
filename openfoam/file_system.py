@@ -3,6 +3,8 @@
 
 import shutil
 import asyncio
+from typing import Optional
+from pathlib import Path
 
 from coredb.project import Project
 
@@ -22,7 +24,7 @@ class FileSystem:
     REGION_PROPERTIES_FILE_NAME = 'regionProperties'
     FOAM_FILE_NAME = 'baram.foam'
 
-    _casePath = None
+    _casePath: Optional[Path] = None
     _constantPath = None
     _boundaryConditionsPath = None
     _systemPath = None

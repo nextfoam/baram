@@ -20,7 +20,7 @@ class TestK(unittest.TestCase):
         self._xpath = BoundaryDB.getXPath(bcid)
 
         v = float(self._db.getValue('.//initialization/initialValues/scaleOfVelocity'))  # Scale of Velocity
-        i = float(self._db.getValue('.//initialization/initialValues/turbulentIntensity'))  # Turbulent Intensity
+        i = float(self._db.getValue('.//initialization/initialValues/turbulentIntensity')) / 100.0  # Turbulent Intensity
 
         mid = RegionDB.getMaterial(region)
 

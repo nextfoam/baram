@@ -120,8 +120,8 @@ class P(BoundaryCondition):
                     BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructFluxPressure()),
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfacePressure(self._db.getValue(xpath + '/interface/mode'))),
-                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump')),
-                    BoundaryType.FAN.value:                 (lambda: self._constructFanPressure(xpath + '/fan')),
+                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump', self.initialPressure + self.operatingPressure)),
+                    BoundaryType.FAN.value:                 (lambda: self._constructFan(xpath + '/fan', self.initialPressure + self.operatingPressure)),
                     BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                     BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
                     BoundaryType.WEDGE.value:               (lambda: self._constructWedge())
@@ -152,18 +152,9 @@ class P(BoundaryCondition):
         else:
             return self._constructCyclicAMI()
 
-    def _constructPorousBafflePressure(self, xpath):
+    def _constructFan(self, xpath, value):
         return {
-            'type': 'porousBafflePressure',
-            'patchType': 'cyclic',
-            'D': self._db.getValue(xpath + '/darcyCoefficient'),
-            'I': self._db.getValue(xpath + '/inertialCoefficient'),
-            'length': self._db.getValue(xpath + '/porousMediaThickness'),
-        }
-
-    def _constructFanPressure(self, xpath):
-        return {
-            'type': 'fanPressureJump',
+            'type': 'fan',
             'patchType': 'cyclic',
             'fanCurve': 'csvFile',
             'nHeaderLine': 0,
@@ -176,4 +167,5 @@ class P(BoundaryCondition):
             # ToDo: set fanCurveFile according to the coredb's file handling structure
             'file': self._db.getValue(xpath + '/fanCurveFile'),
             'reverse': self._db.getValue(xpath + '/reverseDirection'),
+            'value': ('uniform', value)
         }

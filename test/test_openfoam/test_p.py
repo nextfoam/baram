@@ -181,7 +181,7 @@ class TestP(unittest.TestCase):
     def testFan(self):
         self._db.setValue(self._xpath + '/physicalType', 'fan')
         content = P(region).build().asDict()
-        self.assertEqual('fanPressureJump', content['boundaryField'][boundary]['type'])
+        self.assertEqual('fan', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/fan/fanCurveFile'), content['boundaryField'][boundary]['file'])
         self.assertEqual(self._db.getValue(self._xpath + '/fan/reverseDirection'),
                          content['boundaryField'][boundary]['reverse'])
