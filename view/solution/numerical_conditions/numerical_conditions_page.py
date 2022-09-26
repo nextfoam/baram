@@ -91,6 +91,10 @@ class NumericalConditionsPage(QWidget):
             self._db.getValue(self._xpath + '/underRelaxationFactors/turbulence'))
         self._ui.underRelaxationFactorTurbulenceFinal.setText(
             self._db.getValue(self._xpath + '/underRelaxationFactors/turbulenceFinal'))
+        self._ui.underRelaxationFactorDensity.setText(
+            self._db.getValue(self._xpath + '/underRelaxationFactors/density'))
+        self._ui.underRelaxationFactorDensityFinal.setText(
+            self._db.getValue(self._xpath + '/underRelaxationFactors/densityFinal'))
 
         self._ui.maxIterationsPerTimeStep.setText(self._db.getValue(self._xpath + '/maxIterationsPerTimeStep'))
         self._ui.numberOfCorrectors.setText(self._db.getValue(self._xpath + '/numberOfCorrectors'))
@@ -147,6 +151,11 @@ class NumericalConditionsPage(QWidget):
         writer.append(self._xpath + '/underRelaxationFactors/turbulenceFinal',
                       self._ui.underRelaxationFactorTurbulenceFinal.text(),
                       self.tr("Under-Relaxation Factor Turbulence Final"))
+        writer.append(self._xpath + '/underRelaxationFactors/density',
+                      self._ui.underRelaxationFactorDensity.text(), self.tr("Under-Relaxation Factor Density"))
+        writer.append(self._xpath + '/underRelaxationFactors/densityFinal',
+                      self._ui.underRelaxationFactorDensityFinal.text(),
+                      self.tr("Under-Relaxation Factor Density Final"))
 
         writer.append(self._xpath + '/maxIterationsPerTimeStep',
                       self._ui.maxIterationsPerTimeStep.text(), self.tr("Max Iterations per Time Step"))
