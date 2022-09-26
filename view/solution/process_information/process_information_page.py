@@ -70,7 +70,7 @@ class ProcessInformationPage(QWidget):
         controlDict = ControlDict().build()
         controlDict.asDict()['startFrom'] = 'latestTime'
         controlDict.asDict()['stopAt'] = 'endTime'
-        controlDict.write()
+        controlDict.writeAtomic()
 
         numCores = self._db.getValue('.//runCalculation/parallel/numberOfCores')
 
@@ -98,14 +98,14 @@ class ProcessInformationPage(QWidget):
     def _cancelCalculationClicked(self):
         controlDict = ControlDict().build()
         controlDict.asDict()['stopAt'] = 'noWriteNow'
-        controlDict.write()
+        controlDict.writeAtomic()
 
         self._waitingStop()
 
     def _saveAndStopCalculationClicked(self):
         controlDict = ControlDict().build()
         controlDict.asDict()['stopAt'] = 'writeNow'
-        controlDict.write()
+        controlDict.writeAtomic()
 
         self._waitingStop()
 
@@ -136,7 +136,7 @@ class ProcessInformationPage(QWidget):
         for rname in regions:
             FvSchemes(rname).build().write()
             FvSolution(rname).build().write()
-        ControlDict().build().write()
+        ControlDict().build().writeAtomic()
 
     def _updateStatus(self):
         status = self._project.solverStatus()
