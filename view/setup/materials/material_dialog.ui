@@ -227,7 +227,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_4">
+    <widget class="QGroupBox" name="thermalConductivity">
      <property name="title">
       <string>Thermal Conductivity</string>
      </property>
