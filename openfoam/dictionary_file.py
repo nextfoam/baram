@@ -68,7 +68,7 @@ class DictionaryFile:
 
     def writeAtomic(self):
         if self._data:
-            with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+            with tempfile.NamedTemporaryFile(mode='w', delete=False, dir=self.fullPath().parent) as f:
                 f.write(str(FoamFileGenerator(self._data, header=self._header)))
                 p = Path(f.name)
             p.replace(self.fullPath())
