@@ -3,7 +3,7 @@
 
 from coredb import coredb
 from coredb.filedb import BcFileRole
-from coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification
+from coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallVelocityCondition
 from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution, InterfaceMode
 from coredb.cell_zone_db import RegionDB
 from coredb.material_db import MaterialDB, Phase, UNIVERSAL_GAL_CONSTANT
@@ -48,9 +48,9 @@ class T(BoundaryCondition):
                     BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFlowRateInletT(xpath, constant)),
                     BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletTotalTemperature(constant)),
                     BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletT(xpath, constant)),
-                    BoundaryType.ABL_INLET.value:           (lambda: None),
-                    BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: None),
-                    BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: None),
+                    BoundaryType.ABL_INLET.value:           (lambda: self._constructFixedValue(constant)),
+                    BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructFixedValue(constant)),
+                    BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructFixedValue(constant)),
                     BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
                     BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestream(xpath + '/freeStream')),
                     BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann')),
@@ -58,7 +58,7 @@ class T(BoundaryCondition):
                     BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructSubsonicOutflow(xpath + '/subsonicOutflow')),
                     BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(constant)),
                     BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
-                    BoundaryType.WALL.value:                (lambda: self._constructZeroGradient()),
+                    BoundaryType.WALL.value:                (lambda: self._constructWallT(xpath, constant)),
                     BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructCompressibleTurbulentTemperatureCoupledBaffleMixed()),
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceT(xpath)),
@@ -122,3 +122,11 @@ class T(BoundaryCondition):
             return self._constructCompressibleTurbulentTemperatureCoupledBaffleMixed()
         else:
             return self._constructCyclicAMI()
+
+    def _constructWallT(self, xpath, constant):
+        spec = self._db.getValue(xpath + '/wall/velocity/type')
+        if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
+            return self._constructFixedValue(constant)
+        else:
+            return self._constructZeroGradient()
+
