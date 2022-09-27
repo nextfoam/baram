@@ -4,7 +4,6 @@
 from enum import Enum
 
 from coredb import coredb
-from coredb.material_db import MaterialDB
 from view.widgets.multi_selector_dialog import SelectorItem
 
 
@@ -30,20 +29,6 @@ class TemporalProfileType(Enum):
     CONSTANT = 'constant'
     PIECEWISE_LINEAR = 'piecewiseLinear'
     POLYNOMIAL = 'polynomial'
-
-
-class RegionDB:
-    @classmethod
-    def getXPath(cls, rname):
-        return f'.//region[name="{rname}"]'
-
-    @classmethod
-    def getPhase(cls, rname):
-        return MaterialDB.getPhase(coredb.CoreDB().getValue(cls.getXPath(rname) + '/material'))
-
-    @classmethod
-    def getMaterial(cls, rname):
-        return coredb.CoreDB().getValue(cls.getXPath(rname) + '/material')
 
 
 class CellZoneDB:

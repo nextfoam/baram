@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QMessageBox, QTreeWidgetItem, QComboBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from coredb.cell_zone_db import RegionDB
+from coredb.region_db import RegionDB
 from coredb.project import Project
 from .cell_zone_conditions_page_ui import Ui_CellZoneConditionsPage
 from .operating_conditions_dialog import OperatingConditionsDialog

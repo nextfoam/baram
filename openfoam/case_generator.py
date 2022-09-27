@@ -4,8 +4,7 @@
 from PySide6.QtCore import QCoreApplication
 
 from coredb import coredb
-from coredb.cell_zone_db import RegionDB
-from coredb.material_db import Phase
+from coredb.region_db import RegionDB
 from coredb.boundary_db import BoundaryDB
 from openfoam.constant.thermophysical_properties import ThermophysicalProperties
 from openfoam.constant.operating_conditions import OperatingConditions
@@ -45,30 +44,31 @@ class CaseGenerator:
 
         regions = self._db.getRegions()
         for rname in regions:
+            region = RegionDB.getRegionProperties(rname)
+
             FileSystem.initRegionDirs(rname)
 
             ThermophysicalProperties(rname).build().write()
             OperatingConditions(rname).build().write()
             MRFProperties(rname).build().write()
 
-            if RegionDB.getPhase(rname) != Phase.SOLID:
+            if region.isFluid():
                 TurbulenceProperties(rname).build().write()
 
-            P(rname, 'p_rgh').build().write()
-            P(rname).build().write()
-            U(rname).build().write()
+                Alphat(region).build().write()
+
+                K(region).build().write()
+                Nut(region).build().write()
+                Epsilon(region).build().write()
+                Omega(region).build().write()
+                NuTilda(region).build().write()
+
+            P(region, 'p_rgh').build().write()
+            P(region).build().write()
+            U(region).build().write()
+            T(region).build().write()
 
             TransportProperties(rname).build().write()
-
-            T(rname).build().write()
-            if RegionDB.getPhase(rname) != Phase.SOLID:
-                Alphat(rname).build().write()
-
-                K(rname).build().write()
-                Nut(rname).build().write()
-                Epsilon(rname).build().write()
-                Omega(rname).build().write()
-                NuTilda(rname).build().write()
 
             FvSchemes(rname).build().write()
             FvSolution(rname).build().write()

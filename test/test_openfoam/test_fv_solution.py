@@ -3,7 +3,7 @@ import unittest
 from coredb import coredb
 from openfoam.system.fv_solution import FvSolution
 from coredb.general_db import GeneralDB
-from coredb.cell_zone_db import RegionDB
+from coredb.region_db import RegionDB
 from coredb.material_db import MaterialDB
 from coredb.numerical_db import NumericalDB
 

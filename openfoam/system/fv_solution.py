@@ -5,7 +5,7 @@ from builtins import str
 from coredb import coredb
 from coredb.numerical_db import NumericalDB, PressureVelocityCouplingScheme
 from coredb.general_db import GeneralDB
-from coredb.cell_zone_db import RegionDB
+from coredb.region_db import RegionDB
 from coredb.material_db import Phase
 from coredb.models_db import ModelsDB
 from openfoam.dictionary_file import DictionaryFile

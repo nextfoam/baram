@@ -52,7 +52,8 @@ class TurbulenceProperties(DictionaryFile):
             'RAS': {
                 'RASModel': subModel,
                 'turbulence': 'on',
-                'printCoeffs': 'on'
+                'printCoeffs': 'on',
+                'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/energyPrandtlNumber')
             }
         }
 

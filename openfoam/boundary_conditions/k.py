@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import math
-
 from coredb import coredb
-from coredb.cell_zone_db import RegionDB
-from coredb.material_db import MaterialDB, Phase
 from coredb.boundary_db import BoundaryDB, BoundaryType, KEpsilonSpecification, KOmegaSpecification, InterfaceMode
 from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
@@ -14,21 +10,13 @@ from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 class K(BoundaryCondition):
     DIMENSIONS = '[0 2 -2 0 0 0 0]'
 
-    def __init__(self, rname: str):
-        self._rname = rname
-        super().__init__(self.boundaryLocation(rname), 'k')
+    def __init__(self, region):
+        super().__init__(self.boundaryLocation(region.rname), 'k')
 
+        self._region = region
         self._db = coredb.CoreDB()
 
-        v = float(self._db.getValue('.//initialization/initialValues/scaleOfVelocity'))  # Scale of Velocity
-        i = float(self._db.getValue('.//initialization/initialValues/turbulentIntensity')) / 100.0  # Turbulent Intensity
-
-        mid = RegionDB.getMaterial(rname)
-        assert MaterialDB.getPhase(mid) in [Phase.LIQUID, Phase.GAS]
-
-        k = 1.5 * math.sqrt(v*i)
-
-        self._initialValue = k
+        self._initialValue = region.initialK
         self._specification = None
         self._model = ModelsDB.getTurbulenceModel()
 
@@ -49,8 +37,7 @@ class K(BoundaryCondition):
     def _constructBoundaryField(self):
         field = {}
 
-        boundaries = self._db.getBoundaryConditions(self._rname)
-        for bcid, name, type_ in boundaries:
+        for bcid, name, type_ in self._region.boundaries:
             xpath = BoundaryDB.getXPath(bcid)
             field[name] = {
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructInletOutletByModel(xpath)),

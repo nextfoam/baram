@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from coredb.cell_zone_db import RegionDB
-from coredb.material_db import MaterialDB, Phase
 from coredb.boundary_db import BoundaryDB, BoundaryType, SpalartAllmarasSpecification, InterfaceMode
 from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
@@ -12,27 +10,13 @@ from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 class NuTilda(BoundaryCondition):
     DIMENSIONS = '[0 2 -1 0 0 0 0]'
 
-    def __init__(self, rname: str):
-        super().__init__(self.boundaryLocation(rname), 'nuTilda')
+    def __init__(self, region):
+        super().__init__(self.boundaryLocation(region.rname), 'nuTilda')
 
-        self._rname = rname
+        self._region = region
         self._db = coredb.CoreDB()
 
-        p = float(self._db.getValue('.//initialization/initialValues/pressure'))\
-            + float(self._db.getValue('.//operatingConditions/pressure'))  # Pressure
-        t = float(self._db.getValue('.//initialization/initialValues/temperature'))  # Temperature
-        b = float(self._db.getValue('.//initialization/initialValues/turbulentViscosity'))  # Turbulent Viscosity
-
-        mid = RegionDB.getMaterial(rname)
-        assert MaterialDB.getPhase(mid) in [Phase.LIQUID, Phase.GAS]
-
-        rho = MaterialDB.getDensity(mid, t, p)  # Density
-        mu = MaterialDB.getViscosity(mid, t)  # Viscosity
-
-        nu = mu / rho  # Kinetic Viscosity
-        nut = b * nu
-
-        self._initialValue = nut  # nut can be used for the INITIAL value of nuTilda
+        self._initialValue = region.initialNut  # nut can be used for the INITIAL value of nuTilda
 
         self._data = None
 
@@ -51,8 +35,7 @@ class NuTilda(BoundaryCondition):
     def _constructBoundaryField(self):
         field = {}
 
-        boundaries = self._db.getBoundaryConditions(self._rname)
-        for bcid, name, type_ in boundaries:
+        for bcid, name, type_ in self._region.boundaries:
             xpath = BoundaryDB.getXPath(bcid)
 
             field[name] = {

@@ -5,7 +5,8 @@ import openfoam.solver
 from coredb import coredb
 from coredb.general_db import GeneralDB
 from coredb.boundary_db import BoundaryDB
-from coredb.cell_zone_db import CellZoneDB, RegionDB
+from coredb.cell_zone_db import CellZoneDB
+from coredb.region_db import RegionDB
 from coredb.material_db import MaterialDB, Phase
 from coredb.monitor_db import MonitorDB
 from coredb.models_db import ModelsDB, TurbulenceModel

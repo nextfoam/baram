@@ -13,10 +13,10 @@ from openfoam.dictionary_file import DataClass
 class U(BoundaryCondition):
     DIMENSIONS = '[0 1 -1 0 0 0 0]'
 
-    def __init__(self, rname: str):
-        super().__init__(self.boundaryLocation(rname), 'U', DataClass.CLASS_VOL_VECTOR_FIELD)
+    def __init__(self, region):
+        super().__init__(self.boundaryLocation(region.rname), 'U', DataClass.CLASS_VOL_VECTOR_FIELD)
 
-        self._rname = rname
+        self._region = region
         self._db = coredb.CoreDB()
         self._initialValue = self._db.getVector('.//initialization/initialValues/velocity')
 
@@ -36,8 +36,7 @@ class U(BoundaryCondition):
     def _constructBoundaryField(self):
         field = {}
 
-        boundaries = self._db.getBoundaryConditions(self._rname)
-        for bcid, name, type_ in boundaries:
+        for bcid, name, type_ in self._region.boundaries:
             xpath = BoundaryDB.getXPath(bcid)
 
             field[name] = {
@@ -79,7 +78,7 @@ class U(BoundaryCondition):
             return {
                 'type': 'flowRateInletVelocity',
                 'massFlowRate': self._db.getValue(xpath + '/flowRate/massFlowRate'),
-                'rho': 'rho'
+                'rhoInlet': self._region.density
             }
 
     def _constructPressureInletOutletVelocity(self):
@@ -147,7 +146,7 @@ class U(BoundaryCondition):
                     self._db.getVector(xpath + '/velocityInlet/velocity/component/constant'))
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 return self._constructTimeVaryingMappedFixedValue(
-                    self._rname, name, 'U',
+                    self._region.rname, name, 'U',
                     Project.instance().fileDB().getBcFile(bcid, BcFileRole.BC_VELOCITY_COMPONENT))
             elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
                 return self._constructUniformFixedValue(
@@ -160,7 +159,7 @@ class U(BoundaryCondition):
                     self._db.getValue(xpath + '/velocityInlet/velocity/magnitudeNormal/constant'))
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 return self._constructTimeVaryingMappedFixedValue(
-                    self._rname, name, 'U',
+                    self._region.rname, name, 'U',
                     Project.instance().fileDB().getBcFile(bcid, BcFileRole.BC_VELOCITY_MAGNITUDE))
             elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
                 return self._constructUniformNormalFixedValue(

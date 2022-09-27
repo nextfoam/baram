@@ -37,10 +37,10 @@ TYPE_MAP = {
 class P(BoundaryCondition):
     DIMENSIONS = '[1 -1 -2 0 0 0 0]'
 
-    def __init__(self, rname: str, field='p'):
-        super().__init__(self.boundaryLocation(rname), field)
+    def __init__(self, region, field='p'):
+        super().__init__(self.boundaryLocation(region.rname), field)
 
-        self._rname = rname
+        self._region = region
         self._db = coredb.CoreDB()
         self.initialPressure = float(self._db.getValue('.//initialization/initialValues/pressure'))
         self.operatingPressure = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
@@ -81,8 +81,7 @@ class P(BoundaryCondition):
     def _constructBoundaryField(self, forceCalculatedType):
         field = {}
 
-        boundaries = self._db.getBoundaryConditions(self._rname)
-        for bcid, name, type_ in boundaries:
+        for bcid, name, type_ in self._region.boundaries:
             t = TYPE_MAP[type_]
             if type_ == BoundaryType.INTERFACE.value:
                 spec = self._db.getValue(BoundaryDB.getXPath(bcid) + '/interface/mode')

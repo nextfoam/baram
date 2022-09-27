@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import math
-
 from coredb import coredb
-from coredb.cell_zone_db import RegionDB
-from coredb.material_db import MaterialDB, Phase
-from coredb.boundary_db import BoundaryDB, BoundaryType, KEpsilonSpecification, WallVelocityCondition, WallVelocityCondition, InterfaceMode
+from coredb.boundary_db import BoundaryDB, BoundaryType, KEpsilonSpecification, WallVelocityCondition, InterfaceMode
 from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -14,32 +10,13 @@ from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 class Epsilon(BoundaryCondition):
     DIMENSIONS = '[0 2 -3 0 0 0 0]'
 
-    def __init__(self, rname: str):
-        super().__init__(self.boundaryLocation(rname), 'epsilon')
+    def __init__(self, region):
+        super().__init__(self.boundaryLocation(region.rname), 'epsilon')
 
-        self._rname = rname
+        self._region = region
         self._db = coredb.CoreDB()
 
-        p = float(self._db.getValue('.//initialization/initialValues/pressure'))\
-            + float(self._db.getValue('.//operatingConditions/pressure'))  # Pressure
-        t = float(self._db.getValue('.//initialization/initialValues/temperature'))  # Temperature
-        v = float(self._db.getValue('.//initialization/initialValues/scaleOfVelocity'))  # Scale of Velocity
-        i = float(self._db.getValue('.//initialization/initialValues/turbulentIntensity')) / 100.0  # Turbulent Intensity
-        b = float(self._db.getValue('.//initialization/initialValues/turbulentViscosity'))  # Turbulent Viscosity
-
-        mid = RegionDB.getMaterial(rname)
-        assert MaterialDB.getPhase(mid) in [Phase.LIQUID, Phase.GAS]
-
-        rho = MaterialDB.getDensity(mid, t, p)  # Density
-        mu = MaterialDB.getViscosity(mid, t)  # Viscosity
-
-        nu = mu / rho  # Kinetic Viscosity
-        nut = b * nu
-
-        k = 1.5 * math.sqrt(v*i)
-        e = 0.09 * math.sqrt(k) / nut
-
-        self._initialValue = e
+        self._initialValue = region.initialEpsilon
 
         self._data = None
 
@@ -58,8 +35,7 @@ class Epsilon(BoundaryCondition):
     def _constructBoundaryField(self):
         field = {}
 
-        boundaries = self._db.getBoundaryConditions(self._rname)
-        for bcid, name, type_ in boundaries:
+        for bcid, name, type_ in self._region.boundaries:
             xpath = BoundaryDB.getXPath(bcid)
 
             field[name] = {

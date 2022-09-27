@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from coredb.cell_zone_db import RegionDB
-from coredb.material_db import MaterialDB, Phase
 from coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, InterfaceMode
 from coredb.models_db import ModelsDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
@@ -12,30 +10,13 @@ from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 class Alphat(BoundaryCondition):
     DIMENSIONS = '[1 -1 -1  0 0 0 0]'
 
-    def __init__(self, rname: str):
-        super().__init__(self.boundaryLocation(rname), 'alphat')
+    def __init__(self, region):
+        super().__init__(self.boundaryLocation(region.rname), 'alphat')
 
-        self._rname = rname
+        self._region = region
         self._db = coredb.CoreDB()
 
-        p = float(self._db.getValue('.//initialization/initialValues/pressure')) \
-            + float(self._db.getValue('.//operatingConditions/pressure'))  # Pressure
-        t = float(self._db.getValue('.//initialization/initialValues/temperature'))  # Temperature
-        b = float(self._db.getValue('.//initialization/initialValues/turbulentViscosity'))  # Turbulent Viscosity
-
-        mid = RegionDB.getMaterial(rname)
-        assert MaterialDB.getPhase(mid) in [Phase.LIQUID, Phase.GAS]
-
-        rho = MaterialDB.getDensity(mid, t, p)  # Density
-        mu = MaterialDB.getViscosity(mid, t)  # Viscosity
-
-        nu = mu / rho  # Kinetic Viscosity
-        pr = 0.85  # Prandtl Number
-        nut = b * nu
-
-        alphat = rho * nut / pr
-
-        self._initialValue = alphat
+        self._initialValue = region.initialAlphat
 
         self._data = None
 
@@ -51,8 +32,7 @@ class Alphat(BoundaryCondition):
     def _constructBoundaryField(self):
         field = {}
 
-        boundaries = self._db.getBoundaryConditions(self._rname)
-        for bcid, name, type_ in boundaries:
+        for bcid, name, type_ in self._region.boundaries:
             xpath = BoundaryDB.getXPath(bcid)
 
             field[name] = {

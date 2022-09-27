@@ -5,8 +5,7 @@ from coredb import coredb
 from coredb.filedb import BcFileRole
 from coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallVelocityCondition
 from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution, InterfaceMode
-from coredb.cell_zone_db import RegionDB
-from coredb.material_db import MaterialDB, Phase, UNIVERSAL_GAL_CONSTANT
+from coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT
 from coredb.project import Project
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -14,10 +13,10 @@ from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 class T(BoundaryCondition):
     DIMENSIONS = '[0 0 0 1 0 0 0]'
 
-    def __init__(self, rname: str):
-        super().__init__(self.boundaryLocation(rname), 'T')
+    def __init__(self, region):
+        super().__init__(self.boundaryLocation(region.rname), 'T')
 
-        self._rname = rname
+        self._region = region
         self._db = coredb.CoreDB()
         self._initialValue = self._db.getValue('.//initialization/initialValues/temperature')
 
@@ -35,8 +34,7 @@ class T(BoundaryCondition):
     def _constructBoundaryField(self):
         field = {}
 
-        boundaries = self._db.getBoundaryConditions(self._rname)
-        for bcid, name, type_ in boundaries:
+        for bcid, name, type_ in self._region.boundaries:
             xpath = BoundaryDB.getXPath(bcid)
 
             profile = self._db.getValue(xpath + '/temperature/profile')
@@ -70,7 +68,8 @@ class T(BoundaryCondition):
                 }.get(type_)()
             elif profile == TemperatureProfile.SPATIAL_DISTRIBUTION.value:
                 field[name] = self._constructTimeVaryingMappedFixedValue(
-                    self._rname, name, 'T', Project.instance().fileDB().getBcFile(bcid, BcFileRole.BC_TEMPERATURE))
+                    self._region.rname, name, 'T',
+                    Project.instance().fileDB().getBcFile(bcid, BcFileRole.BC_TEMPERATURE))
             elif profile == TemperatureProfile.TEMPORAL_DISTRIBUTION.value:
                 spec = self._db.getValue(xpath + '/temperature/temporalDistribution/specification')
                 if spec == TemperatureTemporalDistribution.PIECEWISE_LINEAR.value:
@@ -84,9 +83,8 @@ class T(BoundaryCondition):
         return field
 
     def _constructInletOutletTotalTemperature(self, constant):
-        mid = RegionDB.getMaterial(self._rname)
-        cp = MaterialDB.getSpecificHeat(mid, constant)
-        mw = MaterialDB.getMolecularWeight(mid)
+        cp = MaterialDB.getSpecificHeat(self._region.mid, constant)
+        mw = MaterialDB.getMolecularWeight(self._region.mid)
         gamma = cp / (cp - UNIVERSAL_GAL_CONSTANT/mw)
         return {
             'type': 'inletOutletTotalTemperature',
@@ -99,7 +97,7 @@ class T(BoundaryCondition):
         return {
             'type': 'compressible::turbulentTemperatureCoupledBaffleMixed',
             'Tnbr': 'T',
-            'kappaMethod': 'solidThermo' if RegionDB.getPhase(self._rname) == Phase.SOLID else 'fluidThermo',
+            'kappaMethod': 'fluidThermo' if self._region.isFluid() else 'solidThermo',
             'value': ('uniform', self._initialValue)
         }
 
