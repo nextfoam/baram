@@ -163,7 +163,7 @@ class NumericalConditionsPage(QWidget):
                       self._ui.numberOfCorrectors.text(), self.tr("Number of Correctors"))
 
         writer.append(self._xpath + '/convergenceCriteria/pressure/absolute',
-                      self._ui.absolutePressure.text(), self.tr("Convergence Criteria Absulute Pressure"))
+                      self._ui.absolutePressure.text(), self.tr("Convergence Criteria Absolute Pressure"))
         writer.append(self._xpath + '/convergenceCriteria/pressure/relative',
                       self._ui.relativePressure.text(), self.tr("Convergence Criteria Relative Pressure"))
         writer.append(self._xpath + '/convergenceCriteria/momentum/absolute',

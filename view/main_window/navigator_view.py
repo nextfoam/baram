@@ -51,7 +51,7 @@ class NavigatorView(QObject):
         self._addMenu(MenuItem.MENU_SETUP_REFERENCE_VALUES, self._setupMenu,
                       self.tr('Reference Values'))
         self._addMenu(MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS, self._solutionMenu,
-                      self.tr('Numerial Conditions'))
+                      self.tr('Numerical Conditions'))
         self._addMenu(MenuItem.MENU_SOLUTION_MONITORS, self._solutionMenu,
                       self.tr('Monitors'))
         self._addMenu(MenuItem.MENU_SOLUTION_INITIALIZATION, self._solutionMenu,
