@@ -107,22 +107,24 @@ class MeshManager(QObject):
 
     async def importOpenFoamMesh(self, path):
         progress = ProgressDialog(self._window, self.tr('Mesh Loading'), self.tr('Checking the mesh.'))
-        if polyMeshPath := self._checkPolyMesh(path):
-            progress.setText(self.tr('Loading the boundaries.'))
-            try:
+
+        try:
+            if polyMeshPath := self._checkPolyMesh(path):
+                progress.setText(self.tr('Loading the boundaries.'))
                 await self._loadOpenFoamMesh(polyMeshPath)
                 progress.close()
-            except Exception as ex:
-                logger.info(ex, exc_info=True)
-                progress.error(str(ex))
-        else:
-            progress.error(self.tr('Cannot find polyMesh folder'))
+            else:
+                progress.error(self.tr('Cannot find polyMesh folder'))
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            progress.error(self.tr('Error occurred:\n' + str(ex)))
 
     async def importMesh(self, path, meshType):
         progress = ProgressDialog(self._window, self.tr('Mesh Loading'), self.tr('Converting the mesh.'))
-        await FileSystem.copyFileToCase(path)
 
         try:
+            await FileSystem.copyFileToCase(path)
+
             proc = await runUtility(OPENFOAM_MESH_CONVERTERS[meshType], path.name, cwd=FileSystem.caseRoot())
             progress.setProcess(proc)
             if await proc.wait():
