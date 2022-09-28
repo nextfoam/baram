@@ -119,6 +119,12 @@ class MainWindow(QMainWindow):
 
         self._connectSignalsSlots()
 
+        if self._project.isSolverRunning():
+            self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_PROCESS_INFORMATION)
+            self._chartDock.raise_()
+        else:
+            self._meshDock.raise_()
+
         self._updateMenuEnables()
         self.show()
 

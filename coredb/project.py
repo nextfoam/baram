@@ -127,6 +127,9 @@ class _Project(QObject):
     def solverStatus(self):
         return self._status
 
+    def isSolverRunning(self):
+        return self._status == SolverStatus.RUNNING
+
     def setMeshLoaded(self, loaded):
         self._meshLoaded = loaded
         self.meshStatusChanged.emit(loaded)
@@ -193,7 +196,7 @@ class _Project(QObject):
         process = self._projectSettings.getProcess()
         if process:
             self._runType = RunType.PROCESS
-            self._startProcessMonitor(self._projectSettings.getProcess())
+            self.setSolverProcess(self._projectSettings.getProcess())
         else:
             self._status = SolverStatus.NONE
 
