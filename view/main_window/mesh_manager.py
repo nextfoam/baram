@@ -54,75 +54,89 @@ class MeshManager(QObject):
     async def scale(self, x, y, z):
         progress = ProgressDialog(self._window, self.tr('Mesh Scaling'), self.tr('Scaling the mesh.'))
 
-        proc = await runUtility('transformPoints', '-allRegions',  '-scale', f'({x} {y} {z})', cwd=FileSystem.caseRoot())
-        result = await proc.wait()
+        try:
+            proc = await runUtility('transformPoints', '-allRegions',  '-scale', f'({x} {y} {z})', cwd=FileSystem.caseRoot())
+            result = await proc.wait()
 
-        if result:
-            progress.error(self.tr('Mesh scaling failed.'))
-        else:
-            progress.finish(self.tr('Mesh scaling is complete'))
-            self.meshChanged.emit()
+            if result:
+                progress.error(self.tr('Mesh scaling failed.'))
+            else:
+                progress.finish(self.tr('Mesh scaling is complete'))
+                self.meshChanged.emit()
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            progress.error(self.tr('Error occurred:\n' + str(ex)))
 
     @qasync.asyncSlot()
     async def translate(self, x, y, z):
         progress = ProgressDialog(self._window, self.tr('Mesh Translation'), self.tr('Translating the mesh.'))
 
-        proc = await runUtility(
-            'transformPoints', '-allRegions', '-translate', f'({x} {y} {z})', cwd=FileSystem.caseRoot())
-        result = await proc.wait()
+        try:
+            proc = await runUtility(
+                'transformPoints', '-allRegions', '-translate', f'({x} {y} {z})', cwd=FileSystem.caseRoot())
+            result = await proc.wait()
 
-        if result:
-            progress.error(self.tr('Mesh translation failed.'))
-        else:
-            progress.finish(self.tr('Mesh translation is complete'))
-            self.meshChanged.emit()
+            if result:
+                progress.error(self.tr('Mesh translation failed.'))
+            else:
+                progress.finish(self.tr('Mesh translation is complete'))
+                self.meshChanged.emit()
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            progress.error(self.tr('Error occurred:\n' + str(ex)))
 
     @qasync.asyncSlot()
     async def rotate(self, origin, axis, angle):
         progress = ProgressDialog(self._window, self.tr('Mesh Rotation'), self.tr('Rotating the mesh.'))
 
-        proc = await runUtility('transformPoints', '-allRegions',
-                                '-origin', f'({" ".join(origin)})',
-                                '-rotate-angle', f'(({" ".join(axis)}) {angle})',
-                                cwd=FileSystem.caseRoot())
-        result = await proc.wait()
+        try:
+            proc = await runUtility('transformPoints', '-allRegions',
+                                    '-origin', f'({" ".join(origin)})',
+                                    '-rotate-angle', f'(({" ".join(axis)}) {angle})',
+                                    cwd=FileSystem.caseRoot())
+            result = await proc.wait()
 
-        if result:
-            progress.error(self.tr('Mesh rotation failed.'))
-        else:
-            progress.finish(self.tr('Mesh rotation is complete'))
-            self.meshChanged.emit()
+            if result:
+                progress.error(self.tr('Mesh rotation failed.'))
+            else:
+                progress.finish(self.tr('Mesh rotation is complete'))
+                self.meshChanged.emit()
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            progress.error(self.tr('Error occurred:\n' + str(ex)))
 
     async def importOpenFoamMesh(self, path):
         progress = ProgressDialog(self._window, self.tr('Mesh Loading'), self.tr('Checking the mesh.'))
-        if polyMeshPath := self._checkPolyMesh(path):
-            progress.setText(self.tr('Loading the boundaries.'))
-            try:
+
+        try:
+            if polyMeshPath := self._checkPolyMesh(path):
+                progress.setText(self.tr('Loading the boundaries.'))
                 await self._loadOpenFoamMesh(polyMeshPath)
                 progress.close()
-            except Exception as ex:
-                logger.info(ex, exc_info=True)
-                progress.error(str(ex))
-        else:
-            progress.error(self.tr('Cannot find polyMesh folder'))
+            else:
+                progress.error(self.tr('Cannot find polyMesh folder'))
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            progress.error(self.tr('Error occurred:\n' + str(ex)))
 
     async def importMesh(self, path, meshType):
         progress = ProgressDialog(self._window, self.tr('Mesh Loading'), self.tr('Converting the mesh.'))
-        await FileSystem.copyFileToCase(path)
 
-        proc = await runUtility(OPENFOAM_MESH_CONVERTERS[meshType], path.name, cwd=FileSystem.caseRoot())
-        progress.setProcess(proc)
-        if await proc.wait():
-            progress.error(self.tr('File conversion failed.'))
-        elif not progress.canceled():
-            progress.setText(self.tr('Loading the boundaries.'))
-            try:
+        try:
+            await FileSystem.copyFileToCase(path)
+
+            proc = await runUtility(OPENFOAM_MESH_CONVERTERS[meshType], path.name, cwd=FileSystem.caseRoot())
+            progress.setProcess(proc)
+            if await proc.wait():
+                progress.error(self.tr('File conversion failed.'))
+            elif not progress.canceled():
+                progress.setText(self.tr('Loading the boundaries.'))
                 await self._loadOpenFoamMesh()
                 await FileSystem.removeFile(path.name)
                 progress.close()
-            except Exception as ex:
-                logger.info(ex, exc_info=True)
-                progress.error(str(ex))
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            progress.error(self.tr('Error occurred:\n' + str(ex)))
 
     def _checkPolyMesh(self, path):
         regions = []
