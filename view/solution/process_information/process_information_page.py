@@ -8,6 +8,7 @@ import time
 import platform
 import qasync
 import asyncio
+import logging
 
 from PySide6.QtWidgets import QWidget, QMessageBox
 
@@ -22,6 +23,9 @@ import openfoam.solver
 from openfoam.file_system import FileSystem
 from view.widgets.progress_dialog import ProgressDialog
 from .process_information_page_ui import Ui_ProcessInformationPage
+
+
+logger = logging.getLogger(__name__)
 
 SOLVER_CHECK_INTERVAL = 3000
 
@@ -59,33 +63,37 @@ class ProcessInformationPage(QWidget):
 
     @qasync.asyncSlot()
     async def _startCalculationClicked(self):
-        progress = ProgressDialog(self, self.tr('Calculation Run.'), self.tr('Generating case'))
-
-        caseGenerator = CaseGenerator()
-        result = await asyncio.to_thread(caseGenerator.generateFiles)
-        if not result:
-            progress.error(self.tr('Case generating fail. - ' + caseGenerator.getErrors()))
-            return
-
-        controlDict = ControlDict().build()
-        controlDict.asDict()['startFrom'] = 'latestTime'
-        controlDict.asDict()['stopAt'] = 'endTime'
-        controlDict.writeAtomic()
-
         numCores = self._db.getValue('.//runCalculation/parallel/numberOfCores')
 
-        self._solvers = openfoam.solver.findSolvers()
-        self._caseRoot = FileSystem.caseRoot()
+        progress = ProgressDialog(self, self.tr('Calculation Run.'), self.tr('Generating case'))
 
-        if int(self._db.getValue('.//runCalculation/parallel/numberOfCores')) > 1:
-            cwd = FileSystem.caseRoot()
-            proc = await runUtility('decomposePar', '-force', '-case', cwd, cwd=cwd)
-            progress.setProcess(proc, self.tr('Decomposing the case.'))
-            await proc.wait()
-            if progress.canceled():
+        try:
+            self._solvers = openfoam.solver.findSolvers()
+            self._caseRoot = FileSystem.caseRoot()
+
+            caseGenerator = CaseGenerator()
+            result = await asyncio.to_thread(caseGenerator.generateFiles)
+            if not result:
+                progress.error(self.tr('Case generating fail. - ' + caseGenerator.getErrors()))
                 return
 
-        progress.close()
+            controlDict = ControlDict().build()
+            controlDict.asDict()['startFrom'] = 'latestTime'
+            controlDict.asDict()['stopAt'] = 'endTime'
+            controlDict.writeAtomic()
+
+            if int(numCores) > 1:
+                cwd = FileSystem.caseRoot()
+                proc = await runUtility('decomposePar', '-force', '-case', cwd, cwd=cwd)
+                progress.setProcess(proc, self.tr('Decomposing the case.'))
+                await proc.wait()
+                if progress.canceled():
+                    return
+
+            progress.close()
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            progress.error(self.tr('Error occurred:\n' + str(ex)))
 
         print(self._solvers)
         process = launchSolver(self._solvers[0], Path(self._caseRoot), self._project.uuid, int(numCores))

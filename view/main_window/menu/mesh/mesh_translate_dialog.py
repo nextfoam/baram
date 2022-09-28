@@ -19,5 +19,5 @@ class MeshTranslateDialog(QDialog):
     @qasync.asyncSlot()
     async def accept(self):
         self.close()
-        self._manager.translate(self._ui.offsetX.text, self._ui.offsetY.text(), self._ui.offsetZ.text())
+        self._manager.translate(self._ui.offsetX.text(), self._ui.offsetY.text(), self._ui.offsetZ.text())
         super().accept()
