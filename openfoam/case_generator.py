@@ -54,6 +54,7 @@ class CaseGenerator:
 
             if region.isFluid():
                 TurbulenceProperties(rname).build().write()
+                TransportProperties(rname).build().write()
 
                 Alphat(region).build().write()
 
@@ -67,8 +68,6 @@ class CaseGenerator:
             P(region).build().write()
             U(region).build().write()
             T(region).build().write()
-
-            TransportProperties(rname).build().write()
 
             FvSchemes(rname).build().write()
             FvSolution(rname).build().write()

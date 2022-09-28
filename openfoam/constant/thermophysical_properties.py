@@ -113,7 +113,7 @@ def _constructSolid(region: str):
         'mixture': 'pureMixture',
         'transport': 'constIso',
         'thermo': 'hConst',
-        'equationsOfState': 'rhoConst',
+        'equationOfState': 'rhoConst',
         'specie': 'specie',
         'energy': 'sensibleEnthalpy'
     }
@@ -124,9 +124,9 @@ def _constructSolid(region: str):
     mid = db.getValue(f'.//region[name="{region}"]/material')
     path = f'.//materials/material[@mid="{mid}"]'
 
-    mw = db.getValue(path + '/molecularWeight')
-    mix['specie'] = {
-        'molWeight': mw
+    mix['specie'] = {  # This value is not used for solid. The values are fake.
+        'nMoles': 1,
+        'molWeight': 100
     }
 
     spec = db.getValue(path + '/specificHeat/specification')
