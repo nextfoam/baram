@@ -336,7 +336,14 @@
             <xs:element name="powerCoefficient" type="inputNumberType" default="0"/>
             <xs:element name="thrustCoefficient" type="inputNumberType" default="0"/>
             <xs:element name="diskArea" type="inputNumberType" default="0"/>
-            <xs:element name="upstreamPoint" type="vector"/>
+            <xs:element name="forceComputation" default="Froude">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="Froude"/>
+                        <xs:enumeration value="variableScaling"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 

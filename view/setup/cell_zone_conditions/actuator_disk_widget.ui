@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>216</width>
-    <height>372</height>
+    <height>340</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -110,38 +110,28 @@
       <item>
        <widget class="QGroupBox" name="groupBox_4">
         <property name="title">
-         <string>Upstream Point</string>
+         <string>Force Computation</string>
         </property>
-        <layout class="QFormLayout" name="formLayout_3">
-         <item row="0" column="0">
-          <widget class="QLabel" name="diskDirectionX_2">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QRadioButton" name="froude">
            <property name="text">
-            <string>X (m)</string>
+            <string>Froude</string>
            </property>
+           <attribute name="buttonGroup">
+            <string notr="true">forceComputationRadioGroup</string>
+           </attribute>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="upstraemPointX"/>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_6">
+         <item>
+          <widget class="QRadioButton" name="variableScaling">
            <property name="text">
-            <string>Y (m)</string>
+            <string>Variable Scaling</string>
            </property>
+           <attribute name="buttonGroup">
+            <string notr="true">forceComputationRadioGroup</string>
+           </attribute>
           </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="upstraemPointY"/>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_7">
-           <property name="text">
-            <string>Z (m)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLineEdit" name="upstraemPointZ"/>
          </item>
         </layout>
        </widget>
@@ -153,4 +143,7 @@
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="forceComputationRadioGroup"/>
+ </buttongroups>
 </ui>

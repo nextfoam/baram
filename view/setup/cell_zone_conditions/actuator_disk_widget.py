@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from enum import Enum
+
 from PySide6.QtWidgets import QWidget
 
 from coredb import coredb
 from .actuator_disk_widget_ui import Ui_ActuatorDiskWidget
 
+
+class ForceComputation(Enum):
+    FROUDE = 'Froude'
+    VARIABLE_SCALING = 'variableScaling'
 
 class ActuatorDiskWidget(QWidget):
     def __init__(self, xpath):
@@ -13,6 +19,11 @@ class ActuatorDiskWidget(QWidget):
         self._ui = Ui_ActuatorDiskWidget()
         self._ui.setupUi(self)
         self.setVisible(False)
+
+        self._forceComputations = {
+            self._ui.forceComputationRadioGroup.id(self._ui.froude): ForceComputation.FROUDE.value,
+            self._ui.forceComputationRadioGroup.id(self._ui.variableScaling): ForceComputation.VARIABLE_SCALING.value,
+        }
 
         self._db = coredb.CoreDB()
         self._xpath = xpath + '/actuatorDisk'
@@ -24,9 +35,7 @@ class ActuatorDiskWidget(QWidget):
         self._ui.powerCoefficient.setText(self._db.getValue(self._xpath + '/powerCoefficient'))
         self._ui.thrustCoefficient.setText(self._db.getValue(self._xpath + '/thrustCoefficient'))
         self._ui.diskArea.setText(self._db.getValue(self._xpath + '/diskArea'))
-        self._ui.upstraemPointX.setText(self._db.getValue(self._xpath + '/upstreamPoint/x'))
-        self._ui.upstraemPointY.setText(self._db.getValue(self._xpath + '/upstreamPoint/y'))
-        self._ui.upstraemPointZ.setText(self._db.getValue(self._xpath + '/upstreamPoint/z'))
+        self._getForceComputationRadio(self._db.getValue(self._xpath + '/forceComputation')).setChecked(True)
 
     def appendToWriter(self, writer):
         writer.append(self._xpath + '/diskDirection/x', self._ui.diskDirectionX.text(), self.tr("Disk Direction X"))
@@ -37,6 +46,12 @@ class ActuatorDiskWidget(QWidget):
         writer.append(self._xpath + '/thrustCoefficient',
                       self._ui.thrustCoefficient.text(), self.tr("Thrust Coefficient"))
         writer.append(self._xpath + '/diskArea', self._ui.diskArea.text(), self.tr("Disk Area"))
-        writer.append(self._xpath + '/upstreamPoint/x', self._ui.upstraemPointX.text(), self.tr("Upstream Point X"))
-        writer.append(self._xpath + '/upstreamPoint/y', self._ui.upstraemPointY.text(), self.tr("Upstream Point Y"))
-        writer.append(self._xpath + '/upstreamPoint/z', self._ui.upstraemPointZ.text(), self.tr("Upstream Point Z"))
+        writer.append(self._xpath + '/forceComputation', self._getForceComputationRadioValue(), None)
+
+    def _getForceComputationRadio(self, value):
+        return self._ui.forceComputationRadioGroup.button(
+            list(self._forceComputations.keys())[list(self._forceComputations.values()).index(value)])
+
+    def _getForceComputationRadioValue(self):
+        return self._forceComputations[
+            self._ui.forceComputationRadioGroup.id(self._ui.forceComputationRadioGroup.checkedButton())]
