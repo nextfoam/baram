@@ -64,11 +64,11 @@ class NavigatorView(QObject):
         self._connectSignalsSlots()
         self.updateMenu()
 
-    def connectCurrentItemChanged(self, current):
-        self.currentMenuChanged.emit(current.type())
-
     def currentMenu(self):
         return self._view.currentItem().type()
+
+    def setCurrentMenu(self, menuItem):
+        self._view.setCurrentItem(self._menu[menuItem.value])
 
     def updateMenu(self):
         project = Project.instance()
@@ -86,7 +86,7 @@ class NavigatorView(QObject):
         self._menu[MenuItem.MENU_SOLUTION_PROCESS_INFORMATION.value].setDisabled(noMesh)
 
     def _connectSignalsSlots(self):
-        self._view.currentItemChanged.connect(self.connectCurrentItemChanged)
+        self._view.currentItemChanged.connect(self._currentMenuChanged)
 
     def _addTopMenu(self, text):
         item = QTreeWidgetItem(self._view, [text], MenuItem.MENU_TOP.value)
@@ -96,3 +96,5 @@ class NavigatorView(QObject):
     def _addMenu(self, key, parent, text):
         self._menu[key.value] = QTreeWidgetItem(parent, [text], key.value)
 
+    def _currentMenuChanged(self, current):
+        self.currentMenuChanged.emit(current.type())
