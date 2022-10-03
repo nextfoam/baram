@@ -56,6 +56,9 @@ class ConsoleDock(TabifiedDock):
 
         self._main_window.windowClosed.connect(self._mainWindowClosed)
 
+        if self._project.isSolverRunning():
+            self.startCollecting()
+
     def startCollecting(self):
         if self.readTask is None:
             self.stopReading = False
