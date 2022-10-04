@@ -56,6 +56,7 @@ class NumericalConditionsPage(QWidget):
         self._ui.underRelaxationFactorMomentumFinal.setEnabled(timeIsTransient)
         self._ui.underRelaxationFactorEnergyFinal.setEnabled(timeIsTransient)
         self._ui.underRelaxationFactorTurbulenceFinal.setEnabled(timeIsTransient)
+        self._ui.underRelaxationFactorDensityFinal.setEnabled(timeIsTransient)
         self._ui.maxIterationsPerTimeStep.setEnabled(timeIsTransient)
         self._ui.numberOfCorrectors.setEnabled(timeIsTransient)
         self._ui.relativePressure.setEnabled(timeIsTransient)
