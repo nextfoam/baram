@@ -62,8 +62,8 @@ else:
 
 
 def openSolverProcess(cmd, casePath, inParallel):
-    stdout = open(casePath/'stdout.log', 'a')
-    stderr = open(casePath/'stderr.log', 'a')
+    stdout = open(casePath/'stdout.log', 'w')
+    stderr = open(casePath/'stderr.log', 'w')
 
     if inParallel:
         cmd.append('-parallel')
