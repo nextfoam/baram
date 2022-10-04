@@ -39,7 +39,7 @@ class T(BoundaryCondition):
 
             profile = self._db.getValue(xpath + '/temperature/profile')
             if profile == TemperatureProfile.CONSTANT.value:
-                constant = self._db.getValue(xpath + '/temperature/constant')
+                constant = float(self._db.getValue(xpath + '/temperature/constant'))
 
                 field[name] = {
                     BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(constant)),
