@@ -48,7 +48,7 @@ def _constructFluid(region: str):
         }
     elif spec == 'polynomial':
         cpCoeffs = db.getValue(path + '/specificHeat/polynomial')
-        thermo['thermo'] = 'polynomial'
+        thermo['thermo'] = 'hPolynomial'
         mix['thermodynamics'] = {
             'Hf': 0,
             'Sf': 0,
