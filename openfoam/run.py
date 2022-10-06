@@ -151,6 +151,25 @@ async def runUtility(program: str, *args, cwd=None):
     return proc
 
 
+async def runParallelUtility(program: str, *args, np: int = 1, cwd=None):
+    global creationflags
+    global startupinfo
+
+    if platform.system() == 'Windows':
+        creationflags = subprocess.CREATE_NO_WINDOW
+        startupinfo = subprocess.STARTUPINFO(
+            dwFlags=subprocess.STARTF_USESHOWWINDOW,
+            wShowWindow=subprocess.SW_HIDE
+        )
+
+    proc = await asyncio.create_subprocess_exec(MPICMD, '-np', str(np), OPENFOAM/'bin'/program, *args,
+                                                env=ENV, cwd=cwd,
+                                                creationflags=creationflags,
+                                                startupinfo=startupinfo)
+
+    return proc
+
+
 def isProcessRunning(pid, startTime):
     if pid and startTime:
         try:
