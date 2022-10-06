@@ -13,11 +13,6 @@
                 </direction>
             </gravity>
             <pressure>101325</pressure>
-            <referencePressureLocation>
-                <x>0</x>
-                <y>0</y>
-                <z>0</z>
-            </referencePressureLocation>
         </operatingConditions>
         <atmosphericBoundaryLayer>
             <flowDirection>
@@ -38,12 +33,16 @@
     </general>
 
     <referenceValues>
-        <forces>
-            <area>1</area>
-            <density>1</density>
-            <length>1</length>
-            <velocity>1</velocity>
-        </forces>
+        <area>1</area>
+        <density>1</density>
+        <length>1</length>
+        <velocity>1</velocity>
+        <pressure>0</pressure>
+        <referencePressureLocation>
+            <x>0</x>
+            <y>0</y>
+            <z>0</z>
+        </referencePressureLocation>
     </referenceValues>
 
     <materials></materials>
