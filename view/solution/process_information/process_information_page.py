@@ -84,7 +84,7 @@ class ProcessInformationPage(QWidget):
 
             if int(numCores) > 1:
                 cwd = FileSystem.caseRoot()
-                proc = await runUtility('decomposePar', '-force', '-case', cwd, cwd=cwd)
+                proc = await runUtility('decomposePar', '-force', '-allRegions', '-case', cwd, cwd=cwd)
                 progress.setProcess(proc, self.tr('Decomposing the case.'))
                 await proc.wait()
                 if progress.canceled():
