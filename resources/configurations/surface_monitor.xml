@@ -6,5 +6,5 @@
         <field>pressure</field>
         <mid>1</mid>
     </field>
-    <surfaces></surfaces>
+    <surface>1</surface>
 </surfaceMonitor>

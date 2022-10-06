@@ -12,5 +12,5 @@
         <z>0</z>
     </coordinate>
     <snapOntoBoundary>false</snapOntoBoundary>
-    <boundary></boundary>
+    <boundary>0</boundary>
 </pointMonitor>

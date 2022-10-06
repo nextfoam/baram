@@ -111,6 +111,22 @@
         </xs:sequence>
     </xs:complexType>
 
+
+    <xs:complexType name="referenceValuesType">
+        <xs:sequence>
+            <xs:element name="forces">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="area" type="inputNumberType" default="1"/>
+                        <xs:element name="density" type="inputNumberType" default="1"/>
+                        <xs:element name="length" type="inputNumberType" default="1"/>
+                        <xs:element name="velocity" type="inputNumberType" default="1"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="materialType">
         <xs:all>
             <xs:element name="name" type="xs:string"/>
@@ -1224,14 +1240,11 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="name" type="xs:string"/>
-                <xs:element name="referenceArea" type="inputNumberType" default="1"/>
-                <xs:element name="referenceLength" type="inputNumberType" default="1"/>
-                <xs:element name="referenceVelocity" type="inputNumberType" default="1"/>
-                <xs:element name="referenceDensity" type="inputNumberType" default="1"/>
                 <xs:element name="dragDirection" type="vector"/>
                 <xs:element name="liftDirection" type="vector"/>
                 <xs:element name="pitchAxisDirection" type="vector"/>
                 <xs:element name="centerOfRotation" type="vector"/>
+                <xs:element name="region" type="xs:string"/>
                 <xs:element name="boundaries">
                     <xs:simpleType>
                         <xs:list itemType="xs:positiveInteger"/> <!-- boundary condition bcid -->
@@ -1272,11 +1285,7 @@
                     </xs:simpleType>
                 </xs:element>
                 <xs:element name="field" type="scalarFieldType"/>
-                <xs:element name="surfaces">
-                    <xs:simpleType>
-                        <xs:list itemType="xs:positiveInteger"/> <!-- boundary condition bcid -->
-                    </xs:simpleType>
-                </xs:element>
+                <xs:element name="surface" type="xs:positiveInteger"/>  <!-- boundary condition bcid -->
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -1297,11 +1306,7 @@
                     </xs:simpleType>
                 </xs:element>
                 <xs:element name="field" type="scalarFieldType"/>
-                <xs:element name="volumes">
-                    <xs:simpleType>
-                        <xs:list itemType="xs:positiveInteger"/> <!-- cellZone czid -->
-                    </xs:simpleType>
-                </xs:element>
+                <xs:element name="volume" type="xs:positiveInteger"/>   <!-- cellZone czid -->
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -1313,6 +1318,8 @@
             <xs:sequence>
 
                 <xs:element name="general" type="generalType"/>
+
+                <xs:element name="referenceValues" type="referenceValuesType"/>
 
                 <xs:element name="materials">
                     <xs:complexType>

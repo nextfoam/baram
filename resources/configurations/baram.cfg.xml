@@ -37,6 +37,15 @@
         </atmosphericBoundaryLayer>
     </general>
 
+    <referenceValues>
+        <forces>
+            <area>1</area>
+            <density>1</density>
+            <length>1</length>
+            <velocity>1</velocity>
+        </forces>
+    </referenceValues>
+
     <materials></materials>
 
     <models>

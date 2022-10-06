@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <forceMonitor xmlns="http://www.baramcfd.org/baram">
     <name>default</name>
-    <referenceArea>1</referenceArea>
-    <referenceLength>1</referenceLength>
-    <referenceVelocity>1</referenceVelocity>
-    <referenceDensity>1</referenceDensity>
     <dragDirection>
         <x>1</x>
         <y>0</y>
@@ -25,5 +21,6 @@
         <y>0</y>
         <z>0</z>
     </centerOfRotation>
+    <region></region>
     <boundaries></boundaries>
 </forceMonitor>

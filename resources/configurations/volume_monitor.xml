@@ -6,5 +6,5 @@
         <field>pressure</field>
         <mid>1</mid>
     </field>
-    <volumes></volumes>
+    <volume>1</volume>
 </volumeMonitor>
