@@ -119,7 +119,7 @@ class FvOptions(DictionaryFile):
         powerCoefficient = self._db.getValue(xpath + '/powerCoefficient')
         thrustCoefficient = self._db.getValue(xpath + '/thrustCoefficient')
         diskArea = self._db.getValue(xpath + '/diskArea')
-        upstreamPoint = self._db.getVector(xpath + '/upstreamPoint')
+        forceComputation = self._db.getValue(xpath + '/forceComputation')
 
         self._data[dictName] = {
             'type': 'actuationDiskSource',
@@ -128,7 +128,7 @@ class FvOptions(DictionaryFile):
             'Cp': powerCoefficient,
             'Ct': thrustCoefficient,
             'diskArea': diskArea,
-            'upstreamPoint': upstreamPoint
+            'variant': forceComputation
         }
         if czname == 'All':
             self._data[dictName]['selectionMode'] = 'all'

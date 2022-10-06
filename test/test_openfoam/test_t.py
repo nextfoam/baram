@@ -39,7 +39,7 @@ class TestT(unittest.TestCase):
         self.assertEqual(dimensions, content['dimensions'])
         self.assertEqual(self._initialValue, content['internalField'][1])
         self.assertEqual('fixedValue', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/temperature/constant'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['value'][1])
 
     # Flow Rate Inlet
@@ -49,7 +49,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/flowRateInlet/flowRate/specification', 'volumeFlowRate')
         content = T(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('fixedValue', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/temperature/constant'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['value'][1])
 
     # Flow Rate Inlet
@@ -59,9 +59,9 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/flowRateInlet/flowRate/specification', 'massFlowRate')
         content = T(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('inletOutletTotalTemperature', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/temperature/constant'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['T0'][1])
-        self.assertEqual(self._db.getValue(self._xpath + '/temperature/constant'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['T0'][1])
 
     def testPressureInlet(self):
@@ -69,9 +69,9 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = T(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('inletOutletTotalTemperature', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/temperature/constant'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['T0'][1])
-        self.assertEqual(self._db.getValue(self._xpath + '/temperature/constant'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['T0'][1])
 
     # Pressure Outlet
@@ -81,9 +81,9 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = T(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('inletOutletTotalTemperature', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/temperature/constant'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['inletValue'][1])
-        self.assertEqual(self._db.getValue(self._xpath + '/temperature/constant'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['T0'][1])
 
     # Pressure Outlet
@@ -146,7 +146,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = T(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('fixedValue', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/temperature/constant'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['value'][1])
 
     def testSupersonicOutflow(self):
