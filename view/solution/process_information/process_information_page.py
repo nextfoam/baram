@@ -14,7 +14,7 @@ from PySide6.QtWidgets import QWidget, QMessageBox
 
 from coredb import coredb
 from coredb.project import Project, SolverStatus
-from openfoam.run import launchSolver, runUtility
+from openfoam.run import launchSolver, runParallelUtility
 from openfoam.case_generator import CaseGenerator
 from openfoam.system.fv_solution import FvSolution
 from openfoam.system.control_dict import ControlDict
@@ -84,7 +84,10 @@ class ProcessInformationPage(QWidget):
 
             if int(numCores) > 1:
                 cwd = FileSystem.caseRoot()
-                proc = await runUtility('decomposePar', '-force', '-case', cwd, cwd=cwd)
+                proc = await runParallelUtility('redistributePar',
+                                                '-decompose', '-parallel', '-overwrite', '-allRegions',
+                                                '-case', cwd,
+                                                np=int(numCores), cwd=cwd)
                 progress.setProcess(proc, self.tr('Decomposing the case.'))
                 await proc.wait()
                 if progress.canceled():

@@ -153,7 +153,8 @@ class FileSystem:
                     shutil.rmtree(file)
             elif file.name not in keepFiles:
                 cls._remove(file)
-        latestTimeDir.rename(cls._boundaryConditionsPath)
+        if latestTimeDir != cls._boundaryConditionsPath:
+            latestTimeDir.replace(cls._boundaryConditionsPath)
 
         if len(regions) == 1 and not regions[0]:
             cls._clearDirectory(cls._constantPath, [cls.POLY_MESH_DIRECTORY_NAME])
