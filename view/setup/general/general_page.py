@@ -3,9 +3,10 @@
 
 import logging
 
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QMessageBox
 
 from coredb import coredb
+from coredb.coredb_writer import CoreDBWriter
 from coredb.general_db import GeneralDB
 from .general_page_ui import Ui_GeneralPage
 
@@ -31,15 +32,19 @@ class GeneralPage(QWidget):
         return super().hideEvent(ev)
 
     def save(self):
-        xpath = GeneralDB.GENERAL_XPATH + '/timeTransient'
-        if self._ui.transient_.isChecked():
-            self._db.setValue(xpath, 'true')
-        else:
-            self._db.setValue(xpath, 'false')
+        writer = CoreDBWriter()
 
-        self._db.setValue(GRAVITY_XPATH + '/x', self._ui.gravityX.text())
-        self._db.setValue(GRAVITY_XPATH + '/y', self._ui.gravityY.text())
-        self._db.setValue(GRAVITY_XPATH + '/z', self._ui.gravityZ.text())
+        writer.append(GeneralDB.GENERAL_XPATH + '/timeTransient',
+                      'true' if self._ui.transient_.isChecked() else 'false', None)
+        writer.append(GRAVITY_XPATH + '/x', self._ui.gravityX.text(), self.tr('Gravity X'))
+        writer.append(GRAVITY_XPATH + '/y', self._ui.gravityY.text(), self.tr('Gravity Y'))
+        writer.append(GRAVITY_XPATH + '/z', self._ui.gravityZ.text(), self.tr('Gravity Z'))
+        writer.append(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure',
+                      self._ui.operatingPressure.text(), self.tr("Operating Pressure"))
+
+        errorCount = writer.write()
+        if errorCount > 0:
+            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
 
     def _load(self):
         xpath = GeneralDB.GENERAL_XPATH + '/timeTransient'
@@ -52,4 +57,5 @@ class GeneralPage(QWidget):
         self._ui.gravityX.setText(self._db.getValue(GRAVITY_XPATH + '/x'))
         self._ui.gravityY.setText(self._db.getValue(GRAVITY_XPATH + '/y'))
         self._ui.gravityZ.setText(self._db.getValue(GRAVITY_XPATH + '/z'))
+        self._ui.operatingPressure.setText(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
 

@@ -8,7 +8,6 @@ from coredb.coredb_writer import CoreDBWriter
 from coredb.region_db import RegionDB
 from coredb.project import Project
 from .cell_zone_conditions_page_ui import Ui_CellZoneConditionsPage
-from .operating_conditions_dialog import OperatingConditionsDialog
 from .cell_zone_condition_dialog import CellZoneConditionDialog
 from .cell_zone_widget import CellZoneWidget
 
@@ -66,7 +65,6 @@ class CellZoneConditionsPage(QWidget):
         self._ui.cellZones.clear()
 
     def _connectSignalsSlots(self):
-        self._ui.operatingConditions.clicked.connect(self._operatingConditions)
         self._ui.cellZones.doubleClicked.connect(self._edit)
         self._ui.edit.clicked.connect(self._edit)
         Project.instance().materialChanged.connect(self._setupMaterials)
@@ -82,10 +80,6 @@ class CellZoneConditionsPage(QWidget):
                 combo.addItem(name, mid)
                 if mid == int(material):
                     combo.setCurrentText(name)
-
-    def _operatingConditions(self):
-        self._dialog = OperatingConditionsDialog(self)
-        self._dialog.open()
 
     def _edit(self):
         czid = self._ui.cellZones.currentItem().type()
