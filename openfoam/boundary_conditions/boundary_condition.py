@@ -168,8 +168,9 @@ class BoundaryCondition(DictionaryFile):
             'value': ('uniform', value)
         }
 
-    def _constructNEXTViscosityRatioInletOutletTDR(self, viscosityRatio):
+    def _constructNEXTViscosityRatioInletOutletTDR(self, viscosityRatio, initialValue):
         return {
             'type': 'viscosityRatioInletOutletTDR',
-            'viscosityRatio': viscosityRatio
+            'viscosityRatio': ('uniform', viscosityRatio),
+            'value': ('uniform', initialValue)
         }

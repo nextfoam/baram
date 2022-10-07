@@ -73,7 +73,7 @@ class Omega(BoundaryCondition):
                 self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'), self._initialValue)
         elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
             return self._constructNEXTViscosityRatioInletOutletTDR(
-                self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'))
+                self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'), self._initialValue)
 
     def _constructNEXTOmegaBlendedWallFunction(self):
         return {
@@ -100,7 +100,7 @@ class Omega(BoundaryCondition):
             return self._constructFreestream(xpath + '/freeStream')
         elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
             return self._constructNEXTViscosityRatioInletOutletTDR(
-                self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'))
+                self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'), self._initialValue)
 
     def _constructWallOmega(self, xpath):
         spec = self._db.getValue(xpath + '/wall/velocity/type')
