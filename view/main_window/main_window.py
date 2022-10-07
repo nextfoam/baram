@@ -310,7 +310,6 @@ class MainWindow(QMainWindow):
 
         self._loadPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
         self._loadPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
-        self._loadPage(MenuItem.MENU_SOLUTION_MONITORS)
         self._project.setMeshLoaded(True)
         self._ui.menuLoadMesh.setEnabled(True)
 

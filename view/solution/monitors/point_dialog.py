@@ -63,10 +63,10 @@ class PointDialog(QDialog):
         writer.append(self._xpath + '/coordinate/y', self._ui.coordinateY.text(), self.tr("Coordinate Y"))
         writer.append(self._xpath + '/coordinate/z', self._ui.coordinateZ.text(), self.tr("Coordinate Z"))
         if self._snapOntoBoundary:
-            writer.append(self._xpath + 'snapOntoBoundary', 'true', None)
+            writer.append(self._xpath + '/snapOntoBoundary', 'true', None)
             writer.append(self._xpath + '/boundary', self._snapOntoBoundary, None)
         else:
-            writer.append(self._xpath + 'snapOntoBoundary', 'false', None)
+            writer.append(self._xpath + '/snapOntoBoundary', 'false', None)
             writer.append(self._xpath + '/boundary', '0', None)
 
         if self._isNew:

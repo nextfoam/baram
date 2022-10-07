@@ -7,7 +7,7 @@ from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.boundary_db import BoundaryDB
 from coredb.monitor_db import MonitorDB, SurfaceReportType, FieldHelper
-from view.widgets.multi_selector_dialog import MultiSelectorDialog
+from view.widgets.selector_dialog import SelectorDialog
 from .surface_dialog_ui import Ui_SurfaceDialog
 
 
@@ -21,15 +21,6 @@ class SurfaceDialog(QDialog):
         super().__init__(parent)
         self._ui = Ui_SurfaceDialog()
         self._ui.setupUi(self)
-
-        self._reportTypes = {
-            SurfaceReportType.AREA_WEIGHTED_AVERAGE.value: self.tr("Area-Weighted Average"),
-            SurfaceReportType.INTEGRAL.value: self.tr("Integral"),
-            SurfaceReportType.FLOW_RATE.value: self.tr("Flow Rate"),
-            SurfaceReportType.MINIMUM.value: self.tr("Minimum"),
-            SurfaceReportType.MAXIMUM.value: self.tr("Maximum"),
-            SurfaceReportType.COEFFICIENT_OF_VARIATION.value: self.tr("Coefficient of Variation, CoV"),
-        }
 
         self._setupReportTypeCombo()
         self._setupFieldVariableCombo(FieldHelper.getAvailableFields())
@@ -46,7 +37,7 @@ class SurfaceDialog(QDialog):
             self._ui.groupBox.setTitle(name)
 
         self._xpath = MonitorDB.getSurfaceMonitorXPath(self._name)
-        self._surfaces = None
+        self._surface = None
 
         self._connectSignalsSlots()
         self._load()
@@ -62,8 +53,8 @@ class SurfaceDialog(QDialog):
                 QMessageBox.critical(self, self.tr("Input Error"), self.tr("Enter Monitor Name."))
                 return
 
-        if not self._surfaces:
-            QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Surfaces."))
+        if not self._surface:
+            QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Surface."))
             return
 
         writer = CoreDBWriter()
@@ -71,7 +62,7 @@ class SurfaceDialog(QDialog):
         field = self._ui.fieldVariable.currentData()
         writer.append(self._xpath + '/field/field', field.field, None)
         writer.append(self._xpath + '/field/mid', field.mid, None)
-        writer.append(self._xpath + '/surfaces', ' '.join(s for s in self._surfaces), self.tr("Surfaces"))
+        writer.append(self._xpath + '/surface', self._surface, self.tr("Surface"))
 
         if self._isNew:
             writer.append(self._xpath + '/name', name, self.tr("Name"))
@@ -91,36 +82,34 @@ class SurfaceDialog(QDialog):
             self._db.removeSurfaceMonitor(self._name)
 
     def _connectSignalsSlots(self):
-        self._ui.select.clicked.connect(self._selectSurfaces)
+        self._ui.select.clicked.connect(self._selectSurface)
 
     def _load(self):
         self._ui.name.setText(self._name)
-        self._ui.reportType.setCurrentText(self._reportTypes[self._db.getValue(self._xpath + '/reportType')])
+        self._ui.reportType.setCurrentText(MonitorDB.dbSurfaceReportTypeToText(self._db.getValue(self._xpath + '/reportType')))
         self._ui.fieldVariable.setCurrentText(
             FieldHelper.DBFieldKeyToText(self._db.getValue(self._xpath + '/field/field'),
                                          self._db.getValue(self._xpath + '/field/mid')))
-        surfaces = self._db.getValue(self._xpath + '/surfaces')
-        self._setSurfaces(surfaces.split() if surfaces else [])
+        surface = self._db.getValue(self._xpath + '/surface')
+        if surface != '0':
+            self._setSurface(surface)
 
-    def _setSurfaces(self, surfaces):
-        self._surfaces = surfaces
+    def _setSurface(self, surface):
+        self._surface = surface
+        self._ui.surface.setText(BoundaryDB.getBoundaryText(surface))
 
-        self._ui.surfaces.clear()
-        for s in surfaces:
-            self._ui.surfaces.addItem(BoundaryDB.getBoundaryText(s))
-
-    def _selectSurfaces(self):
-        self._dialog = MultiSelectorDialog(self, self.tr("Select Boundaries"), BoundaryDB.getBoundarySelectorItems(),
-                                           self._surfaces)
-        self._dialog.accepted.connect(self._surfacesChanged)
+    def _selectSurface(self):
+        self._dialog = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"),
+                                      BoundaryDB.getBoundarySelectorItems())
+        self._dialog.accepted.connect(self._surfaceChanged)
         self._dialog.open()
 
-    def _surfacesChanged(self):
-        self._setSurfaces(self._dialog.selectedItems())
+    def _surfaceChanged(self):
+        self._setSurface(self._dialog.selectedItem())
 
     def _setupReportTypeCombo(self):
-        for value, text in self._reportTypes.items():
-            self._ui.reportType.addItem(text, value)
+        for type_ in SurfaceReportType:
+            self._ui.reportType.addItem(MonitorDB.dbSurfaceReportTypeToText(type_.value), type_.value)
 
     def _setupFieldVariableCombo(self, fields):
         for f in fields:

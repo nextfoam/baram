@@ -1280,7 +1280,7 @@
                     </xs:simpleType>
                 </xs:element>
                 <xs:element name="field" type="scalarFieldType"/>
-                <xs:element name="surface" type="xs:positiveInteger"/>  <!-- boundary condition bcid -->
+                <xs:element name="surface" type="xs:nonNegativeInteger"/>  <!-- boundary condition bcid -->
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -1301,7 +1301,7 @@
                     </xs:simpleType>
                 </xs:element>
                 <xs:element name="field" type="scalarFieldType"/>
-                <xs:element name="volume" type="xs:positiveInteger"/>   <!-- cellZone czid -->
+                <xs:element name="volume" type="xs:nonNegativeInteger"/>   <!-- cellZone czid -->
             </xs:sequence>
         </xs:complexType>
     </xs:element>

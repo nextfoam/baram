@@ -7,7 +7,7 @@ from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.cell_zone_db import CellZoneDB
 from coredb.monitor_db import MonitorDB, VolumeReportType, FieldHelper
-from view.widgets.multi_selector_dialog import MultiSelectorDialog
+from view.widgets.selector_dialog import SelectorDialog
 from .volume_dialog_ui import Ui_VolumeDialog
 
 
@@ -21,14 +21,6 @@ class VolumeDialog(QDialog):
         super().__init__(parent)
         self._ui = Ui_VolumeDialog()
         self._ui.setupUi(self)
-
-        self._reportTypes = {
-            VolumeReportType.VOLUME_AVERAGE.value: self.tr("Volume Average"),
-            VolumeReportType.VOLUME_INTEGRAL.value: self.tr("Volume Integral"),
-            VolumeReportType.MINIMUM.value: self.tr("Minimum"),
-            VolumeReportType.MAXIMUM.value: self.tr("Maximum"),
-            VolumeReportType.COEFFICIENT_OF_VARIATION.value: self.tr("Coefficient of Variation, CoV"),
-        }
 
         self._setupReportTypeCombo()
         self._setupFieldVariableCombo(FieldHelper.getAvailableFields())
@@ -45,7 +37,7 @@ class VolumeDialog(QDialog):
             self._ui.groupBox.setTitle(name)
 
         self._xpath = MonitorDB.getVolumeMonitorXPath(self._name)
-        self._volumes = None
+        self._volume = None
 
         self._connectSignalsSlots()
         self._load()
@@ -58,11 +50,11 @@ class VolumeDialog(QDialog):
         if self._isNew:
             name = self._ui.name.text().strip()
             if not name:
-                QMessageBox.critical(self, self.tr("Input Error"), self.tr("Enter Monitor Name."))
+                QMessageBox.critical(self, self.tr('Input Error'), self.tr('Enter Monitor Name.'))
                 return
 
-        if not self._volumes:
-            QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Volumes."))
+        if not self._volume:
+            QMessageBox.critical(self, self.tr('Input Error'), self.tr('Select Volume.'))
             return
 
         writer = CoreDBWriter()
@@ -70,14 +62,14 @@ class VolumeDialog(QDialog):
         field = self._ui.fieldVariable.currentData()
         writer.append(self._xpath + '/field/field', field.field, None)
         writer.append(self._xpath + '/field/mid', field.mid, None)
-        writer.append(self._xpath + '/volumes', ' '.join(v for v in self._volumes), self.tr("Volumes"))
+        writer.append(self._xpath + '/volume', self._volume, self.tr('Volumes'))
 
         if self._isNew:
-            writer.append(self._xpath + '/name', name, self.tr("Name"))
+            writer.append(self._xpath + '/name', name, self.tr('Name'))
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
         else:
             if self._isNew:
                 self._name = name
@@ -94,32 +86,31 @@ class VolumeDialog(QDialog):
 
     def _load(self):
         self._ui.name.setText(self._name)
-        self._ui.reportType.setCurrentText(self._reportTypes[self._db.getValue(self._xpath + '/reportType')])
+        self._ui.reportType.setCurrentText(
+            MonitorDB.dbVolumeReportTypeToText(self._db.getValue(self._xpath + '/reportType')))
         self._ui.fieldVariable.setCurrentText(
             FieldHelper.DBFieldKeyToText(self._db.getValue(self._xpath + '/field/field'),
                                          self._db.getValue(self._xpath + '/field/mid')))
-        volumes = self._db.getValue(self._xpath + '/volumes')
-        self._setVolumes(volumes.split() if volumes else [])
+        volume = self._db.getValue(self._xpath + '/volume')
+        if volume != '0':
+            self._setVolume(volume)
 
-    def _setVolumes(self, volumes):
-        self._volumes = volumes
-
-        self._ui.volumes.clear()
-        for v in volumes:
-            self._ui.volumes.addItem(CellZoneDB.getCellZoneText(v))
+    def _setVolume(self, volume):
+        self._volume = volume
+        self._ui.volume.setText(CellZoneDB.getCellZoneText(volume))
 
     def _selectVolumes(self):
-        self._dialog = MultiSelectorDialog(self, self.tr("Select Cell Zones"), CellZoneDB.getCellZoneSelectorItems(),
-                                           self._volumes)
+        self._dialog = SelectorDialog(self, self.tr("Select Cell Zone"), self.tr("Select Cell Zone"),
+                                      CellZoneDB.getCellZoneSelectorItems())
         self._dialog.open()
-        self._dialog.accepted.connect(self._volumesChanged)
+        self._dialog.accepted.connect(self._volumeChanged)
 
-    def _volumesChanged(self):
-        self._setVolumes(self._dialog.selectedItems())
+    def _volumeChanged(self):
+        self._setVolume(self._dialog.selectedItem())
 
     def _setupReportTypeCombo(self):
-        for value, text in self._reportTypes.items():
-            self._ui.reportType.addItem(text, value)
+        for type_ in VolumeReportType:
+            self._ui.reportType.addItem(MonitorDB.dbVolumeReportTypeToText(type_.value), type_.value)
 
     def _setupFieldVariableCombo(self, fields):
         for f in fields:
