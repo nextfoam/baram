@@ -8,12 +8,15 @@ import qasync
 
 from PySide6.QtCore import Qt, QRect
 from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem, QFileDialog, QMessageBox
+from PySide6.QtGui import QIcon
+
 from filelock import Timeout
 
 from coredb.app_settings import AppSettings
 from coredb.project_settings import ProjectSettings
 from coredb.project import Project, ProjectOpenType
 from coredb import coredb
+from resources import resource
 from view.case_wizard.case_wizard import CaseWizard
 from view.main_window.main_window import MainWindow, CloseType
 from .start_window_ui import Ui_StartWindow
@@ -33,6 +36,8 @@ class StartWindow(QDialog):
         super().__init__()
         self._ui = Ui_StartWindow()
         self._ui.setupUi(self)
+
+        self.setWindowIcon(QIcon(str(resource.file('baram.ico'))))
 
         self._dialog = None
         self._projectDirectory = None
