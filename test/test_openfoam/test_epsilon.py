@@ -35,8 +35,8 @@ class TestEpsilon(unittest.TestCase):
         nu = mu / rho  # Kinetic Viscosity
         nut = b * nu
 
-        k = 1.5 * math.sqrt(v*i)
-        e = 0.09 * math.sqrt(k) / nut
+        k = 1.5 * (v*i) ** 2
+        e = 0.09 * k ** 2 / nut
 
         self._initialValue = e
 

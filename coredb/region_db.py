@@ -43,8 +43,8 @@ class RegionDB:
 
                 self._alphat = self._rho * self._nut / pr
 
-                self._k = 1.5 * math.sqrt(v*i)
-                self._e = 0.09 * math.sqrt(self._k) / self._nut
+                self._k = 1.5 * (v*i) ** 2
+                self._e = 0.09 * self._k ** 2 / self._nut
                 self._w = self._k / self._nut
 
         @property

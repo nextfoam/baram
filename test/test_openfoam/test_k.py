@@ -24,7 +24,7 @@ class TestK(unittest.TestCase):
 
         mid = RegionDB.getMaterial(region)
 
-        k = 1.5 * math.sqrt(v*i)
+        k = 1.5 * (v*i) ** 2
 
         self._initialValue = k
 
