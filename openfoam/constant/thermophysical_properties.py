@@ -47,19 +47,23 @@ def _constructFluid(region: str):
             'Hf': 0
         }
     elif spec == 'polynomial':
-        cpCoeffs = db.getValue(path + '/specificHeat/polynomial')
+        cpCoeffs: list[float] = [0] * 8  # To make sure that cpCoeffs has length of 8
+        for i, n in enumerate(db.getValue(path + '/specificHeat/polynomial').split()):
+            cpCoeffs[i] = float(n)
         thermo['thermo'] = 'hPolynomial'
         mix['thermodynamics'] = {
             'Hf': 0,
             'Sf': 0,
-            'CpCoeffs': cpCoeffs
+            'CpCoeffs<8>': cpCoeffs
         }
 
     spec = db.getValue(path + '/thermalConductivity/specification')
     if spec == 'constant':
         kk = db.getValue(path + '/thermalConductivity/constant')
     elif spec == 'polynomial':
-        kkCoeffs = db.getValue(path + '/thermalConductivity/polynomial')
+        kkCoeffs: list[float] = [0] * 8  # To make sure that kkCoeffs has length of 8
+        for i, n in enumerate(db.getValue(path + '/thermalConductivity/polynomial').split()):
+            kkCoeffs[i] = float(n)
 
     tModel = db.getValue('.//turbulenceModels/model')
     spec = db.getValue(path + '/viscosity/specification')
@@ -80,11 +84,13 @@ def _constructFluid(region: str):
             'Pr': str(pr)
         }
     elif spec == 'polynomial':
-        muCoeffs = db.getValue(path + '/viscosity/polynomial')
+        muCoeffs: list[float] = [0] * 8  # To make sure that muCoeffs has length of 8
+        for i, n in enumerate(db.getValue(path + '/viscosity/polynomial').split()):
+            muCoeffs[i] = float(n)
         thermo['transport'] = 'polynomial'
         mix['transport'] = {
-            'muCoeffs': muCoeffs,
-            'kappaCoeffs': kkCoeffs  # If viscosity spec is polynomial, thermalConductivity spec should be polynomial too
+            'muCoeffs<8>': muCoeffs,
+            'kappaCoeffs<8>': kkCoeffs  # If viscosity spec is polynomial, thermalConductivity spec should be polynomial too
         }
     elif spec == 'sutherland':
         as_ = db.getValue(path + '/viscosity/sutherland/coefficient')
@@ -134,7 +140,8 @@ def _constructSolid(region: str):
         cp = db.getValue(path + '/specificHeat/constant')
         mix['thermodynamics'] = {
             'Cp': cp,
-            'Hf': 0
+            'Hf': 0,
+            'Sf': 0
         }
 
     spec = db.getValue(path + '/thermalConductivity/specification')
