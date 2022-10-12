@@ -41,6 +41,7 @@ class MaterialDialog(ResizableDialog):
         self._db = coredb.CoreDB()
         self._name = None
         self._phase = MaterialDB.dbTextToPhase(self._db.getValue(self._xpath + '/phase'))
+        self._polynomialDensity = None
         self._polynomialSpecificHeat = None
         self._polynomialViscosity = None
         self._polynomialThermalConductivity = None
@@ -100,6 +101,7 @@ class MaterialDialog(ResizableDialog):
                 self._ui.surfaceTension.setText(self._db.getValue(self._xpath + '/surfaceTension'))
                 self._ui.saturationPressure.setText(self._db.getValue(self._xpath + '/saturationPressure'))
 
+        self._polynomialDensity = None
         self._polynomialSpecificHeat = None
         self._polynomialViscosity = None
         self._polynomialThermalConductivity = None
@@ -120,6 +122,13 @@ class MaterialDialog(ResizableDialog):
         writer.append(self._xpath + '/density/specification', specification.value, None)
         if specification == Specification.CONSTANT:
             writer.append(self._xpath + '/density/constant', self._ui.constantDensity.text(), self.tr("Density Value"))
+        elif specification == Specification.POLYNOMIAL:
+            if self._polynomialDensity is not None:
+                writer.append(self._xpath + '/density/polynomial',
+                              self._polynomialDensity, self.tr("Density Polynomial"))
+            elif self._db.getValue(self._xpath + '/density/polynomial') == '':
+                QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Density Polynomial."))
+                return
 
         specification = self._ui.specificHeatType.currentData()
         writer.append(self._xpath + '/specificHeat/specification', specification.value, None)
@@ -212,7 +221,8 @@ class MaterialDialog(ResizableDialog):
             self._setupSpecificationCombo(
                 self._ui.densityType, [
                     Specification.CONSTANT,
-                    Specification.PERFECT_GAS
+                    Specification.PERFECT_GAS,
+                    Specification.POLYNOMIAL
                 ]
             )
         else:
@@ -262,12 +272,14 @@ class MaterialDialog(ResizableDialog):
         self._ui.specificHeatType.currentTextChanged.connect(self._specificHeatTypeChanged)
         self._ui.viscosityType.currentTextChanged.connect(self._viscosityTypeChanged)
         self._ui.thermalConductivityType.currentTextChanged.connect(self._thermalConductivityTypeChanged)
+        self._ui.densityEdit.clicked.connect(self._editDensity)
         self._ui.specificHeatEdit.clicked.connect(self._editSpecificHeat)
         self._ui.viscosityEdit.clicked.connect(self._editViscosity)
         self._ui.thermalConductivityEdit.clicked.connect(self._editThermalConductivity)
 
     def _densityTypeChanged(self):
         specification = self._ui.densityType.currentData(Qt.UserRole)
+        self._ui.densityEdit.setEnabled(specification == Specification.POLYNOMIAL)
         self._ui.constantDensity.setEnabled(specification == Specification.CONSTANT)
 
     def _specificHeatTypeChanged(self):
@@ -289,6 +301,14 @@ class MaterialDialog(ResizableDialog):
         specification = self._ui.thermalConductivityType.currentData(Qt.UserRole)
         self._ui.thermalConductivityEdit.setEnabled(specification == Specification.POLYNOMIAL)
         self._ui.constantThermalConductivity.setEnabled(specification == Specification.CONSTANT)
+
+    def _editDensity(self):
+        if self._polynomialDensity is None:
+            self._polynomialDensity = self._db.getValue(self._xpath + '/density/polynomial')
+
+        self._dialog = PolynomialDialog(self, self.tr("Polynomial Density"), self._polynomialDensity)
+        self._dialog.accepted.connect(self._polynomialDensityAccepted)
+        self._dialog.open()
 
     def _editSpecificHeat(self):
         if self._polynomialSpecificHeat is None:
@@ -314,6 +334,9 @@ class MaterialDialog(ResizableDialog):
                                         self._polynomialThermalConductivity)
         self._dialog.accepted.connect(self._polynomialThermalConductivityAccepted)
         self._dialog.open()
+
+    def _polynomialDensityAccepted(self):
+        self._polynomialDensity = self._dialog.getValues()
 
     def _polynomialSpeicificHeatAccepted(self):
         self._polynomialSpecificHeat = self._dialog.getValues()

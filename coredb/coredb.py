@@ -538,6 +538,7 @@ class _CoreDB(object):
         density = etree.SubElement(material, f'{{{ns}}}density')
         etree.SubElement(density, f'{{{ns}}}specification').text = 'constant'
         _materialPropertySubElement(density, 'constant', 'density')
+        etree.SubElement(density, f'{{{ns}}}polynomial').text = ''
 
         specificHeat = etree.SubElement(material, f'{{{ns}}}specificHeat')
         etree.SubElement(specificHeat, f'{{{ns}}}specification').text = 'constant'

@@ -83,6 +83,7 @@ class TestMaterial(unittest.TestCase):
                     'absorptionCoefficient': '0.0',
                     'density': {
                         'constant': '1.225',
+                        'polynomial': '',
                         'specification': 'constant'
                     },
                     'molecularWeight': '28.966',
@@ -114,6 +115,7 @@ class TestMaterial(unittest.TestCase):
                     'chemicalFormula': 'H2',
                     'density': {
                         'constant': '0.085',
+                        'polynomial': '',
                         'specification': 'constant'
                     },
                     'molecularWeight': '2.01588',

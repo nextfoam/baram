@@ -64,6 +64,12 @@ class MaterialDB(object):
             '''
             mw = float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/molecularWeight'))
             return p * mw / (UNIVERSAL_GAL_CONSTANT * t)
+        elif spec == 'polynomial':
+            coeffs = list(map(float, coredb.CoreDB().getValue(cls.getXPath(mid) + '/density/polynomial').split()))
+            rho = 0.0
+            for exp, c in enumerate(coeffs):
+                rho += c * t ** exp
+            return rho
         else:
             raise KeyError
 
@@ -75,10 +81,8 @@ class MaterialDB(object):
         elif spec == 'polynomial':
             coeffs = list(map(float, coredb.CoreDB().getValue(cls.getXPath(mid) + '/specificHeat/polynomial').split()))
             cp = 0.0
-            exp = 0
-            for c in coeffs:
+            for exp, c in enumerate(coeffs):
                 cp += c * t ** exp
-                exp += 1
             return cp
         else:
             raise KeyError
@@ -91,10 +95,8 @@ class MaterialDB(object):
         elif spec == 'polynomial':
             coeffs = list(map(float, coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/polynomial').split()))
             mu = 0.0
-            exp = 0
-            for c in coeffs:
+            for exp, c in enumerate(coeffs):
                 mu += c * t ** exp
-                exp += 1
             return mu
         elif spec == 'sutherland':
             r'''

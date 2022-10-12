@@ -37,6 +37,14 @@ def _constructFluid(region: str):
         mix['equationOfState'] = {
             'rho': rho
         }
+    elif spec == 'polynomial':
+        rhoCoeffs: list[float] = [0] * 8  # To make sure that rhoCoeffs has length of 8
+        for i, n in enumerate(db.getValue(path + '/density/polynomial').split()):
+            rhoCoeffs[i] = float(n)
+        thermo['equationOfState'] = 'icoPolynomial'
+        mix['equationOfState'] = {
+            'rhoCoeffs<8>': rhoCoeffs
+        }
 
     spec = db.getValue(path + '/specificHeat/specification')
     if spec == 'constant':

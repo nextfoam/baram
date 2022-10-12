@@ -80,8 +80,14 @@ class TestThermophysicalProperties(unittest.TestCase):
 
         content = ThermophysicalProperties(region).build().asDict()
         self.assertEqual('polynomial', content['thermoType']['transport'])
-        self.assertEqual(viscosityCoeffs, content['mixture']['transport']['muCoeffs'])
-        self.assertEqual(conductivityCcoeffs, content['mixture']['transport']['kappaCoeffs'])
+        coeffs: list[float] = [0] * 8
+        for i, n in enumerate(map(float, viscosityCoeffs.split())):
+            coeffs[i] = float(n)
+        self.assertEqual(coeffs, content['mixture']['transport']['muCoeffs<8>'])
+        coeffs: list[float] = [0] * 8
+        for i, n in enumerate(map(float, conductivityCcoeffs.split())):
+            coeffs[i] = float(n)
+        self.assertEqual(coeffs, content['mixture']['transport']['kappaCoeffs<8>'])
 
     def testSutherlandViscosity(self):
         region = 'testRegion_1'
