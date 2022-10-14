@@ -88,18 +88,14 @@ class FvSchemes(DictionaryFile):
 
     def _generateSolid(self):
         self._data = {
-            'ddtSchemes': {
-                'default': 'steadyState'
-            },
+            'ddtSchemes': self._constructDdtSchemes(),
             'gradSchemes': {
                 'default': 'Gauss linear'
             },
             'divSchemes': {
                 'default': 'Gauss linear'
             },
-            'laplacianSchemes': {
-                'default': 'Gauss linear corrected'
-            },
+            'laplacianSchemes': self._constructLaplacianSchemes(),
             'interpolationSchemes': {
                 'default': 'linear'
             },
