@@ -20,6 +20,9 @@ class FvSchemes(DictionaryFile):
         self._solver = solvers[0]
         self._cap = openfoam.solver.getSolverCapability(self._solver)
 
+        self.relaxationDisabled = self._db.getAttribute('.//numericalConditions/highOrderTermRelaxation', 'disabled')
+        self.relFactor = self._db.getValue('.//numericalConditions/highOrderTermRelaxation/relaxationFactor')
+
     def build(self):
         if self._data is not None:
             return self
@@ -253,14 +256,11 @@ class FvSchemes(DictionaryFile):
         return divSchemes
 
     def _constructLaplacianSchemes(self):
-        relaxationDisabled = self._db.getAttribute('.//numericalConditions/highOrderTermRelaxation', 'disabled')
-        relFactor = self._db.getValue('.//numericalConditions/highOrderTermRelaxation/relaxationFactor')
-
         laplacianSchemes = {}
 
-        if relaxationDisabled == 'true':
+        if self.relaxationDisabled == 'true':
             laplacianSchemes['default'] = 'Gauss linear corrected'
         else:
-            laplacianSchemes['default'] = f'Gauss linear limited corrected {relFactor}'
+            laplacianSchemes['default'] = f'Gauss linear limited corrected {self.relFactor}'
 
         return laplacianSchemes
