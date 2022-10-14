@@ -103,10 +103,10 @@ class FvOptions(DictionaryFile):
                     'coordinateSystem': {
                         'type': 'cartesian',
                         'origin': '(0 0 0)',
-                        'coordinateRotation': {
+                        'rotation': {
                             'type': 'axesRotation',
-                            'e1': (1, 0, 0),
-                            'e2': (0, 1, 0)
+                            'e1': [1, 0, 0],
+                            'e2': [0, 1, 0]
                         }
                     }
                 }
