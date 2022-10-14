@@ -77,7 +77,8 @@ class Omega(BoundaryCondition):
 
     def _constructNEXTOmegaBlendedWallFunction(self):
         return {
-            'type': 'omegaBlendedWallFunction',
+            # 'type': 'omegaBlendedWallFunction',  # This type has not ported to OpenFOAM N yet
+            'type': 'omegaWallFunction',
             'value': ('uniform', self._initialValue)
         }
 

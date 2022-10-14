@@ -81,7 +81,8 @@ class Nut(BoundaryCondition):
 
     def _constructNEXTNutSpaldingWallFunction(self):
         return {
-            'type': 'nutSpaldingWallFunction',
+            # 'type': 'nutSpaldingWallFunction',  # This type has not ported to OpenFOAM N yet
+            'type': 'nutUSpaldingWallFunction',
             'value': ('uniform', self._initialValue)
         }
 
