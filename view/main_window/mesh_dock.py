@@ -62,8 +62,8 @@ class ActorInfo:
     #    gFilter: vtk.vtkGeometryFilter
 
     def __init__(self, inputData):
-        self._visibility = True
-        self._selected = True
+        self._visibility = False
+        self._selected = False
 
         self._mapper = vtkPolyDataMapper()
         self._actor = vtk.vtkQuadricLODActor()    # vtkActor()
@@ -280,8 +280,9 @@ class MeshDock(TabifiedDock):
         return actorInfo
 
     def showActor(self, actorInfo):
-        self._renderer.AddActor(actorInfo.actor)
-        actorInfo.visibility = True
+        if not actorInfo.visibility:
+            self._renderer.AddActor(actorInfo.actor)
+            actorInfo.visibility = True
 
     def hideActor(self, actorInfo):
         if actorInfo.visibility:
@@ -330,13 +331,6 @@ class MeshDock(TabifiedDock):
             for boundary in self._vtkMesh[region]['boundary']:
                 actorInfo = self._vtkMesh[region]['boundary'][boundary]
                 self.showActor(actorInfo)
-                # self._renderer.AddActor(actorInfo.actor)
-                #
-                # actorInfo.actor.GetProperty().SetColor(actorInfo.color)
-                # actorInfo.actor.GetProperty().SetOpacity(actorInfo.opacity)
-                # actorInfo.actor.GetProperty().SetEdgeVisibility(True)
-                # actorInfo.actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
-                # actorInfo.actor.GetProperty().SetLineWidth(1.0)
 
         if self._cubeAxesOn:
             self._showCubeAxes()
