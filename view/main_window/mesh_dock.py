@@ -7,7 +7,6 @@ import platform
 import subprocess
 from typing import TYPE_CHECKING
 
-from dataclasses import dataclass
 import asyncio
 from pathlib import Path
 from typing import Optional
@@ -29,6 +28,7 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 # load implementations for rendering and interaction factory classes
 import vtkmodules.vtkRenderingOpenGL2
 import vtkmodules.vtkInteractionStyle
+from vtkmodules.vtkIOLegacy import vtkPolyDataReader
 
 from coredb import coredb
 from coredb.app_settings import AppSettings
@@ -55,47 +55,46 @@ CAMERA_VIEW_MINUS_Y = 3
 CAMERA_VIEW_PLUS_Z  = 4
 CAMERA_VIEW_MINUS_Z = 5
 
-@dataclass
+
 class ActorInfo:
     # It is not clear if the references of these two values should be kept
     #    dataset: vtk.vtkDataObject
     #    gFilter: vtk.vtkGeometryFilter
-    mapper: vtkPolyDataMapper
-    actor: vtkActor
 
-    selected: bool
+    def __init__(self, inputData):
+        self._visibility = True
+        self._selected = True
 
-    show: bool
-    viewMode: int
-    outLine: bool
+        self._mapper = vtkPolyDataMapper()
+        self._actor = vtk.vtkQuadricLODActor()    # vtkActor()
 
-    color: (int, int, int)
-    opacity: float
+        self._mapper.SetInputData(inputData)
+        self._actor.SetMapper(self._mapper)
+        self._actor.GetProperty().SetColor(0.8, 0.8, 0.8)
+        self._actor.GetProperty().SetOpacity(1.0)
+        self._actor.GetProperty().SetEdgeVisibility(True)
+        self._actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
+        self._actor.GetProperty().SetLineWidth(1.0)
+
+    @property
+    def actor(self):
+        return self._actor
+
+    @property
+    def visibility(self):
+        return  self._visibility
+
+    @visibility.setter
+    def visibility(self, visibility):
+        self._visibility = visibility
+
 
 def getActorInfo(dataset) -> ActorInfo:
     gFilter = vtkGeometryFilter()
     gFilter.SetInputData(dataset)
     gFilter.Update()
 
-    mapper = vtkPolyDataMapper()
-    mapper.SetInputData(gFilter.GetOutput())
-
-    actor = vtk.vtkQuadricLODActor()    # vtkActor()
-    actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(255, 255, 255)
-
-    selected = True
-
-    show = True
-    displayMode = DISPLAY_MODE_SURFACE_EDGE
-    outLine = False
-
-    color = [0.8, 0.8, 0.8]
-    opacity = 1.0
-
-    # return ActorInfo(dataset, gFilter, mapper, actor)
-    actorInfo = ActorInfo(mapper, actor, selected, show, displayMode, outLine, color, opacity)
-    return actorInfo
+    return ActorInfo(gFilter.GetOutput())
 
 
 def build(mBlock):
@@ -194,7 +193,10 @@ class MeshDock(TabifiedDock):
         self._displayMode = DISPLAY_MODE_SURFACE_EDGE
         self._cullingOn = False
 
-        self.reloadMesh.connect(self.showOpenFoamMesh, Qt.ConnectionType.QueuedConnection)
+        self._meshOn = False
+        self._actors = []
+
+        self.reloadMesh.connect(self.loadOpenFoamMesh, Qt.ConnectionType.QueuedConnection)
         self._main_window.windowClosed.connect(self._mainWindowClosed)
 
         frame = QFrame()
@@ -234,35 +236,13 @@ class MeshDock(TabifiedDock):
         self._widget.close()
 
     @qasync.asyncSlot()
-    async def showOpenFoamMesh(self):
+    async def loadOpenFoamMesh(self):
         self.clear()
 
         statusConfig = self.buildPatchArrayStatus()
 
         self._vtkMesh = await asyncio.to_thread(getVtkMesh, FileSystem.foamFilePath(), statusConfig)
-
-        for region in self._vtkMesh:
-            if 'boundary' not in self._vtkMesh[region]:  # polyMesh folder in multi-region constant folder
-                continue
-
-            for boundary in self._vtkMesh[region]['boundary']:
-                actorInfo = self._vtkMesh[region]['boundary'][boundary]
-                self._renderer.AddActor(actorInfo.actor)
-
-                actorInfo.actor.GetProperty().SetColor(actorInfo.color)
-                actorInfo.actor.GetProperty().SetOpacity(actorInfo.opacity)
-                actorInfo.actor.GetProperty().SetEdgeVisibility(True)
-                actorInfo.actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
-                actorInfo.actor.GetProperty().SetLineWidth(1.0)
-
-        if self._cubeAxesOn:
-            self._showCubeAxes()
-
-        if self._originAxesOn:
-            self._showOriginAxes()
-
-        self._fitCamera()
-        self._widget.Render()
+        self._showBoundaries()
 
         self.meshLoaded.emit()
 
@@ -286,6 +266,39 @@ class MeshDock(TabifiedDock):
 
             return statusConfig
 
+    def loadVtkFile(self, file):
+        if not file.exists():
+            return None
+
+        r = vtkPolyDataReader()
+        r.SetFileName(file)
+        r.Update()
+
+        actorInfo = ActorInfo(r.GetOutput())
+        self._actors.append(actorInfo)
+
+        return actorInfo
+
+    def showActor(self, actorInfo):
+        self._renderer.AddActor(actorInfo.actor)
+        actorInfo.visibility = True
+
+    def hideActor(self, actorInfo):
+        if actorInfo.visibility:
+            self._renderer.RemoveActor(actorInfo.actor)
+            actorInfo.visibility = False
+
+    def hideAllActors(self):
+        if self._meshOn:
+            self._hideBoundaries()
+
+        for actorInfo in self._actors:
+            self.hideActor(actorInfo)
+
+    def render(self):
+        self._fitCamera()
+        self._widget.Render()
+
     def _setDefaults(self):
         self._actionAxesOnOff.setChecked(self._axesOn)
         self._actionOriginAxesOnOff.setChecked(self._originAxesOn)
@@ -306,6 +319,42 @@ class MeshDock(TabifiedDock):
                 actorInfo = self._vtkMesh[region]['boundary'][boundary]
                 actors.append(actorInfo.actor)
         return actors
+
+    def _showBoundaries(self):
+        self._meshOn = True
+
+        for region in self._vtkMesh:
+            if 'boundary' not in self._vtkMesh[region]:  # polyMesh folder in multi-region constant folder
+                continue
+
+            for boundary in self._vtkMesh[region]['boundary']:
+                actorInfo = self._vtkMesh[region]['boundary'][boundary]
+                self.showActor(actorInfo)
+                # self._renderer.AddActor(actorInfo.actor)
+                #
+                # actorInfo.actor.GetProperty().SetColor(actorInfo.color)
+                # actorInfo.actor.GetProperty().SetOpacity(actorInfo.opacity)
+                # actorInfo.actor.GetProperty().SetEdgeVisibility(True)
+                # actorInfo.actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
+                # actorInfo.actor.GetProperty().SetLineWidth(1.0)
+
+        if self._cubeAxesOn:
+            self._showCubeAxes()
+
+        if self._originAxesOn:
+            self._showOriginAxes()
+
+        self._fitCamera()
+        self._widget.Render()
+
+    def _hideBoundaries(self):
+        if self._meshOn:
+            for region in self._vtkMesh:
+                for boundary in self._vtkMesh[region]['boundary']:
+                    actorInfo = self._vtkMesh[region]['boundary'][boundary]
+                    self.hideActor(actorInfo)
+
+        self._meshOn = False
 
     def _addAxes(self):
         self._axesActor = vtk.vtkAxesActor()
