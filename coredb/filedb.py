@@ -6,6 +6,7 @@ from enum import Enum
 from pathlib import Path
 
 import pandas as pd
+import h5py
 
 from coredb import coredb
 
@@ -48,11 +49,21 @@ class FileDB:
     def getBcFileName(self, bcid, role):
         return self._getFileName(self._bcKey(bcid, role))
 
-    def putHostFile(self, filePath):
-        self._saveFile(Path(filePath))
+    def putText(self, key, data):
+        with h5py.File(self._tmpPath, 'a') as f:
+            if key in f.keys():
+                del f[key]
+            f[key] = data
 
-    def getHostFile(self, filePath):
-        return self._loadFile(Path(filePath))
+        self._modifiedAfterSaved = True
+
+    def getText(self, key):
+        try:
+            with h5py.File(self._tmpPath, 'r') as f:
+                ds = f[key]
+                return ds[()]
+        except KeyError:
+            return None
 
     def loadCoreDB(self):
         if coredb.loaded():
