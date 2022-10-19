@@ -30,10 +30,6 @@ srRegexPattern = r'[/\\]solverInfo_\d+[/\\](?P<time>[0-9]+(?:\.[0-9]+)?)[/\\]sol
 
 
 logger = logging.getLogger(__name__)
-formatter = logging.Formatter("[%(name)s] %(message)s")
-handler = logging.StreamHandler()
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 
