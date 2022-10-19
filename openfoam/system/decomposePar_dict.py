@@ -17,7 +17,7 @@ class MethodType(Enum):
     MULTILEVEL   = 'multiLevel'
 
 class DecomposeParDict(DictionaryFile):
-    def __init__(self, rname: str):
+    def __init__(self, rname: str = None):
         super().__init__(self.systemLocation(rname), 'decomposeParDict')
 
         self._rname = rname
