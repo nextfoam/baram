@@ -289,6 +289,9 @@ class MeshDock(TabifiedDock):
             self._renderer.RemoveActor(actorInfo.actor)
             actorInfo.visibility = False
 
+    def removeActor(self, actorInfo):
+        self._actors.remove(actorInfo)
+
     def hideAllActors(self):
         if self._meshOn:
             self._hideBoundaries()
