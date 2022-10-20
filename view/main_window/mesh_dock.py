@@ -290,6 +290,7 @@ class MeshDock(TabifiedDock):
             actorInfo.visibility = False
 
     def removeActor(self, actorInfo):
+        self.hideActor(actorInfo)
         self._actors.remove(actorInfo)
 
     def hideAllActors(self):
