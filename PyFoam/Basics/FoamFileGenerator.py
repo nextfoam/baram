@@ -194,7 +194,7 @@ class FoamFileGenerator(object):
                     isFixedType=False
 
         if isFixedType:
-            s+="("+" ".join(["%g"%v for v in lst])+")"
+            s+="("+" ".join(["%g"%float(v) for v in lst])+")"
         else:
             if self.longListThreshold:
                 if theLen>self.longListThreshold:
