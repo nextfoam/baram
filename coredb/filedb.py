@@ -72,7 +72,7 @@ class FileDB:
         if self._filePath.is_file():
             return coredb.loadDB(self._filePath)
 
-        raise AssertionError('Project configuration file was not found.')
+        raise FileNotFoundError
 
     def saveCoreDB(self):
         if coredb.loaded():

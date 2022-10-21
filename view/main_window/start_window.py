@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import logging
 from enum import Enum, auto
 
 import qasync
@@ -22,6 +23,8 @@ from view.main_window.main_window import MainWindow, CloseType
 from .start_window_ui import Ui_StartWindow
 from .recent_widget import RecentWidget
 
+
+logger = logging.getLogger(__name__)
 
 RECENT_PROJECTS_NUMBER = 100
 
@@ -131,6 +134,10 @@ class StartWindow(QDialog):
         except Timeout:
             QMessageBox.critical(self._dialog, self.tr('Case Open Error'),
                                  self.tr(f'{os.path.basename(directory)} is open in another program.'))
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            QMessageBox.critical(self._dialog, self.tr('Case Open Error'),
+                                 self.tr('Fail to open case\n' + str(ex)))
 
         Project.close()
 
