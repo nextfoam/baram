@@ -77,6 +77,7 @@ class FileDB:
     def saveCoreDB(self):
         if coredb.loaded():
             coredb.CoreDB().save(self._filePath)
+            shutil.copy(self._filePath, self._tmpPath)
         else:
             raise AssertionError('CoreDB has not been created')
 
