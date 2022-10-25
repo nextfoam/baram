@@ -50,10 +50,10 @@ pip install -r requirements.txt
 ### Copy Solver Executables
 Download and uncompress solver executables into the top directory of downloaded source code
 #### Windows
-Will be available soon
+[solvers_windows_20221006.7z](http://d3c6e16xufx1gb.cloudfront.net/solvers_windows_20221006.7z)
 
 #### Linux
-[solvers_linux_20220908.tar.xz](http://d3c6e16xufx1gb.cloudfront.net/solvers_linux_20220908.tar.xz)
+[solvers_linux_20221025-1.tar.xz](http://d3c6e16xufx1gb.cloudfront.net/solvers_linux_20221025-1.tar.xz)
 
 #### macOS
 [solvers_mac_20220908.tar.gz](http://d3c6e16xufx1gb.cloudfront.net/solvers_mac_20220908.tar.gz)
@@ -67,7 +67,7 @@ gcc -o solvers/openfoam/bin/baramd misc/baramd.c
 
 ### Compile Resource Files
 ```commandline
-python convertUI.py
+python convertUi.py
 ```
 
 ### Run BARAM
