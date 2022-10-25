@@ -229,6 +229,9 @@ class MeshDock(TabifiedDock):
         return self._vtkMesh
 
     def clear(self):
+        for actorInfo in self._actors:
+            actorInfo.visibility = False
+
         self._renderer.RemoveAllViewProps()
         self._widget.Render()
 
@@ -288,6 +291,10 @@ class MeshDock(TabifiedDock):
         if actorInfo.visibility:
             self._renderer.RemoveActor(actorInfo.actor)
             actorInfo.visibility = False
+
+    def removeActor(self, actorInfo):
+        self.hideActor(actorInfo)
+        self._actors.remove(actorInfo)
 
     def removeActor(self, actorInfo):
         self.hideActor(actorInfo)
