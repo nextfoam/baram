@@ -181,7 +181,7 @@ class TestEpsilon(unittest.TestCase):
     def testWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'wall')
         content = Omega(RegionDB.getRegionProperties(region)).build().asDict()
-        self.assertEqual('omegaBlendedWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('omegaWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     # Wall
@@ -198,7 +198,7 @@ class TestEpsilon(unittest.TestCase):
     def testThermoCoupledWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')
         content = Omega(RegionDB.getRegionProperties(region)).build().asDict()
-        self.assertEqual('omegaBlendedWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('omegaWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testSymmetry(self):
@@ -232,7 +232,7 @@ class TestEpsilon(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'regionInterface')
         content = Omega(RegionDB.getRegionProperties(region)).build().asDict()
-        self.assertEqual('omegaBlendedWallFunction', content['boundaryField'][boundary]['type'])
+        self.assertEqual('omegaWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testPorousJump(self):
