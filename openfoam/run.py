@@ -6,6 +6,7 @@ import subprocess
 import psutil
 from pathlib import Path
 import asyncio
+import glob
 
 # Solver Directory Structure
 #
@@ -47,9 +48,11 @@ if platform.system() == 'Windows':
         'PATH': library + os.pathsep + os.environ['PATH']
     })
 else:
-    library = str(OPENFOAM/'lib') + os.pathsep \
-              + str(OPENFOAM/'lib'/'openmpi-4.0.7/') + os.pathsep \
-              + str(OPENFOAM/'lib'/'dummy')
+    mpiPath = glob.glob(str(OPENFOAM / 'lib' / 'openmpi*'))[0]  # No Validity Check. It should exist.
+    library = str(OPENFOAM / 'lib') + os.pathsep \
+              + mpiPath + os.pathsep \
+              + str(OPENFOAM / 'lib' / 'dummy') + os.pathsep \
+              + str(OPENFOAM / 'tlib')
 
     if 'LD_LIBRARY_PATH' not in os.environ:
         os.environ['LD_LIBRARY_PATH'] = ''
