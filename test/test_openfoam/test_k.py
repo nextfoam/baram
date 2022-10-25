@@ -51,7 +51,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'flowRateInlet')
         content = K(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentIntensity'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentIntensity'))/100.0,
                          content['boundaryField'][boundary]['turbIntensity'][1])
 
     # Pressure Inlet - kAndOmega
@@ -73,7 +73,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/pressureOutlet/calculatedBackflow', 'true')
         content = K(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentIntensity'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentIntensity'))/100.0,
                          content['boundaryField'][boundary]['turbIntensity'][1])
 
     # Pressure Outlet
@@ -114,7 +114,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'openChannelOutlet')
         content = K(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentIntensity'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentIntensity'))/100.0,
                          content['boundaryField'][boundary]['turbIntensity'][1])
 
     def testOutflow(self):
@@ -137,7 +137,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = K(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentIntensity'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentIntensity'))/100.0,
                          content['boundaryField'][boundary]['turbIntensity'][1])
 
     # Free Stream
@@ -157,7 +157,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = K(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentIntensity'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentIntensity'))/100.0,
                          content['boundaryField'][boundary]['turbIntensity'][1])
 
     def testFarFieldRiemann(self):
@@ -176,7 +176,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'subsonicInflow')
         content = K(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentIntensity'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentIntensity'))/100.0,
                          content['boundaryField'][boundary]['turbIntensity'][1])
 
     def testSubsonicOutflow(self):
