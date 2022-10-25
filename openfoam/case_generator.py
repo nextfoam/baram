@@ -83,6 +83,8 @@ class CaseGenerator:
 
         ControlDict().build().write()
 
+        DecomposeParDict().build().write()
+
         return True
 
     @classmethod
