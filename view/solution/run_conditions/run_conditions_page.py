@@ -12,7 +12,7 @@ from coredb.app_settings import AppSettings
 from coredb.coredb_writer import CoreDBWriter
 from coredb.general_db import GeneralDB
 from coredb.run_calculation_db import TimeSteppingMethod, DataWriteFormat, RunCalculationDB
-from .run_calculation_page_ui import Ui_RunCalculationPage
+from .run_conditions_page_ui import Ui_RunConditionsPage
 
 
 class TimeCondition(Enum):
@@ -27,10 +27,10 @@ class TimeSteppingMethodFlag(Flag):
     ADAPTIVE = auto()
 
 
-class RunCalculationPage(QWidget):
+class RunConditionsPage(QWidget):
     def __init__(self):
         super().__init__()
-        self._ui = Ui_RunCalculationPage()
+        self._ui = Ui_RunConditionsPage()
         self._ui.setupUi(self)
 
         self._timeConditionForm = self._ui.timeConditionLayout

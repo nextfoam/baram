@@ -22,8 +22,8 @@ class MenuItem(Enum):
     MENU_SOLUTION_NUMERICAL_CONDITIONS = auto()
     MENU_SOLUTION_MONITORS = auto()
     MENU_SOLUTION_INITIALIZATION = auto()
-    MENU_SOLUTION_RUN_CALCULATION = auto()
-    MENU_SOLUTION_PROCESS_INFORMATION = auto()
+    MENU_SOLUTION_RUN_CONDITIONS = auto()
+    MENU_SOLUTION_RUN = auto()
 
 
 class NavigatorView(QObject):
@@ -56,10 +56,10 @@ class NavigatorView(QObject):
                       self.tr('Monitors'))
         self._addMenu(MenuItem.MENU_SOLUTION_INITIALIZATION, self._solutionMenu,
                       self.tr('Initialization'))
-        self._addMenu(MenuItem.MENU_SOLUTION_RUN_CALCULATION, self._solutionMenu,
-                      self.tr('Calculate Conditions'))
-        self._addMenu(MenuItem.MENU_SOLUTION_PROCESS_INFORMATION, self._solutionMenu,
-                      self.tr('Run Calculation'))
+        self._addMenu(MenuItem.MENU_SOLUTION_RUN_CONDITIONS, self._solutionMenu,
+                      self.tr('Run Conditions'))
+        self._addMenu(MenuItem.MENU_SOLUTION_RUN, self._solutionMenu,
+                      self.tr('Run'))
 
         self._connectSignalsSlots()
         self.updateMenu()
@@ -83,7 +83,7 @@ class NavigatorView(QObject):
         self._menu[MenuItem.MENU_SETUP_REFERENCE_VALUES.value].setDisabled(solverSubmitted)
 
         self._menu[MenuItem.MENU_SOLUTION_INITIALIZATION.value].setDisabled(solverSubmitted)
-        self._menu[MenuItem.MENU_SOLUTION_PROCESS_INFORMATION.value].setDisabled(noMesh)
+        self._menu[MenuItem.MENU_SOLUTION_RUN.value].setDisabled(noMesh)
 
     def _connectSignalsSlots(self):
         self._view.currentItemChanged.connect(self._currentMenuChanged)

@@ -25,8 +25,8 @@ from view.setup.reference_values.reference_values_page import ReferenceValuesPag
 from view.solution.numerical_conditions.numerical_conditions_page import NumericalConditionsPage
 from view.solution.monitors.monitors_page import MonitorsPage
 from view.solution.initialization.initialization_page import InitializationPage
-from view.solution.run_calculation.run_calculation_page import RunCalculationPage
-from view.solution.process_information.process_information_page import ProcessInformationPage
+from view.solution.run_conditions.run_conditions_page import RunConditionsPage
+from view.solution.run.process_information_page import ProcessInformationPage
 from view.main_window.menu.mesh.mesh_scale_dialog import MeshScaleDialog
 from view.main_window.menu.mesh.mesh_translate_dialog import MeshTranslateDialog
 from view.main_window.menu.mesh.mesh_rotate_dialog import MeshRotateDialog
@@ -105,8 +105,8 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value: MenuPage(NumericalConditionsPage),
             MenuItem.MENU_SOLUTION_MONITORS.value: MenuPage(MonitorsPage),
             MenuItem.MENU_SOLUTION_INITIALIZATION.value: MenuPage(InitializationPage),
-            MenuItem.MENU_SOLUTION_RUN_CALCULATION.value: MenuPage(RunCalculationPage),
-            MenuItem.MENU_SOLUTION_PROCESS_INFORMATION.value: MenuPage(ProcessInformationPage),
+            MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value: MenuPage(RunConditionsPage),
+            MenuItem.MENU_SOLUTION_RUN.value: MenuPage(ProcessInformationPage),
         }
 
         self._dialog = None
@@ -124,7 +124,7 @@ class MainWindow(QMainWindow):
         self._connectSignalsSlots()
 
         if self._project.isSolverRunning():
-            self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_PROCESS_INFORMATION)
+            self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN)
             self._chartDock.raise_()
         else:
             self._meshDock.raise_()
