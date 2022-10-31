@@ -45,6 +45,9 @@ class GeneralPage(QWidget):
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            return False
+
+        return True
 
     def _load(self):
         xpath = GeneralDB.GENERAL_XPATH + '/timeTransient'

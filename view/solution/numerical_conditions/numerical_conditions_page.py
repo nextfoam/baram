@@ -183,6 +183,9 @@ class NumericalConditionsPage(QWidget):
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            return False
+
+        return True
 
     def _connectSignalsSlots(self):
         self._ui.advanced.clicked.connect(self._advancedSetup)

@@ -43,6 +43,9 @@ class CellZoneConditionsPage(QWidget):
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            return False
+
+        return True
 
     def load(self):
         regions = self._db.getRegions()

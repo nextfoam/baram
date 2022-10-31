@@ -33,7 +33,7 @@ class MaterialPage(QWidget):
         self._load()
 
     def save(self):
-        pass
+        return True
 
     def _remove(self, card):
         # The count of the layout returns one more than the number of cards, because of the stretch.

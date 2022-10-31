@@ -31,7 +31,7 @@ class MonitorsPage(QWidget):
         self._load()
 
     def save(self):
-        pass
+        return True
 
     def _load(self):
         self.clear()

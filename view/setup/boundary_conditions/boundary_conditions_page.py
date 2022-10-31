@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, auto
-
 from PySide6.QtWidgets import QWidget, QTreeWidgetItem, QMessageBox
-from PySide6.QtCore import Qt
 
 from coredb import coredb
 from coredb.boundary_db import BoundaryType, BoundaryDB
@@ -76,7 +73,7 @@ class BoundaryConditionsPage(QWidget):
         self.load()
 
     def save(self):
-        pass
+        return True
 
     def load(self):
         regions = self._db.getRegions()

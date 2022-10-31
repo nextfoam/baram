@@ -35,7 +35,7 @@ class ModelsPage(QWidget):
         self._load()
 
     def save(self):
-        pass
+        return True
 
     def _connectSignalsSlots(self):
         self._ui.list.currentItemChanged.connect(self._modelSelected)

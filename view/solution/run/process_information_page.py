@@ -52,7 +52,7 @@ class ProcessInformationPage(QWidget):
         return super().showEvent(ev)
 
     def save(self):
-        pass
+        return True
 
     def _connectSignalsSlots(self):
         self._ui.startCalculation.clicked.connect(self._startCalculationClicked)

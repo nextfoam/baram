@@ -150,6 +150,9 @@ class RunConditionsPage(QWidget):
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
+            return False
+
+        return True
 
     def _connectSignalsSlots(self):
         self._ui.timeSteppingMethod.currentIndexChanged.connect(self._timeSteppingMethodChanged)
