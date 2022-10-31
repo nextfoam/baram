@@ -3,7 +3,7 @@
     <name>All</name>
     <zoneType>none</zoneType>
     <mrf>
-        <rotatingSpeed>0</rotatingSpeed>
+        <rotatingSpeed>1000</rotatingSpeed>
         <rotationAxisOrigin>
             <x>0</x>
             <y>0</y>
@@ -64,9 +64,9 @@
             <y>0</y>
             <z>0</z>
         </diskDirection>
-        <powerCoefficient>0</powerCoefficient>
-        <thrustCoefficient>0</thrustCoefficient>
-        <diskArea>0</diskArea>
+        <powerCoefficient>0.1</powerCoefficient>
+        <thrustCoefficient>0.1</thrustCoefficient>
+        <diskArea>1</diskArea>
         <forceComputation>Froude</forceComputation>
     </actuatorDisk>
     <sourceTerms>
