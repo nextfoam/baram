@@ -96,7 +96,8 @@ class Epsilon(BoundaryCondition):
         return {
             'type': 'atmEpsilonWallFunction',
             'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
-            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
+            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate'),
+            'value': ('uniform', self._initialValue)
         }
 
     def _constructWallEpsilon(self, xpath):

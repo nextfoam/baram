@@ -89,7 +89,8 @@ class Nut(BoundaryCondition):
     def _constructAtmNutkWallFunction(self, xpath):
         return {
             'type': 'atmNutkWallFunction',
-            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength')
+            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
+            'value': ('uniform', self._initialValue)
         }
 
     def _constructPressureOutletNut(self, xpath):
