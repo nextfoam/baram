@@ -66,14 +66,14 @@ class Alphat(BoundaryCondition):
     def _constructCompressibleAlphatWallFunction(self):
         return {
             'type': 'compressible::alphatWallFunction',
-            'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
+            'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/energyPrandtlNumber'),
             'value': ('uniform', self._initialValue)
         }
 
     def _constructCompressibleAlphatJayatillekeWallFunction(self):
         return {
             'type': 'compressible::alphatJayatillekeWallFunction',
-            'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
+            'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/energyPrandtlNumber'),
             'value': ('uniform', self._initialValue)
         }
 
