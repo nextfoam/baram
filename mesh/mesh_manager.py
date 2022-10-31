@@ -11,7 +11,6 @@ from PySide6.QtCore import QObject
 from PySide6.QtCore import Signal
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
-from coredb import coredb
 from openfoam.run import runUtility
 from openfoam.file_system import FileSystem
 from openfoam.polymesh.polymesh_loader import PolyMeshLoader
@@ -41,6 +40,7 @@ OPENFOAM_MESH_CONVERTERS = {
     MeshType.NAMS_PLOT3D: 'plot3dToFoam',
 }
 
+
 class MeshManager(QObject):
     meshChanged = Signal()
 
@@ -49,13 +49,13 @@ class MeshManager(QObject):
 
         self._window = window
 
-
     @qasync.asyncSlot()
     async def scale(self, x, y, z):
         progress = ProgressDialog(self._window, self.tr('Mesh Scaling'), self.tr('Scaling the mesh.'))
 
         try:
-            proc = await runUtility('transformPoints', '-allRegions',  '-scale', f'({x} {y} {z})', cwd=FileSystem.caseRoot())
+            proc = await runUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
+                                    cwd=FileSystem.caseRoot())
             result = await proc.wait()
 
             if result:
@@ -111,7 +111,7 @@ class MeshManager(QObject):
         try:
             if polyMeshPath := self._checkPolyMesh(path):
                 progress.setText(self.tr('Loading the boundaries.'))
-                await self._loadOpenFoamMesh(polyMeshPath)
+                await PolyMeshLoader().loadMesh(polyMeshPath)
                 progress.close()
             else:
                 progress.error(self.tr('Cannot find polyMesh folder'))
@@ -131,7 +131,7 @@ class MeshManager(QObject):
                 progress.error(self.tr('File conversion failed.'))
             elif not progress.canceled():
                 progress.setText(self.tr('Loading the boundaries.'))
-                await self._loadOpenFoamMesh()
+                await PolyMeshLoader().loadMesh()
                 await FileSystem.removeFile(path.name)
                 progress.close()
         except Exception as ex:
@@ -168,9 +168,3 @@ class MeshManager(QObject):
                 if not os.path.exists(f'{path}/polyMesh/{f}'):
                     return False
         return path
-
-    async def _loadOpenFoamMesh(self, srcPath=None):
-        path = await PolyMeshLoader.loadBoundaries(srcPath)
-        if srcPath:
-            await FileSystem.copyMeshFrom(path, coredb.CoreDB().getRegions())
-        self.meshChanged.emit()

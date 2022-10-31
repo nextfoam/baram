@@ -7,11 +7,7 @@ import platform
 import subprocess
 from typing import TYPE_CHECKING
 
-import asyncio
-from pathlib import Path
 from typing import Optional
-
-import qasync
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QComboBox, QFrame, QToolBar, QVBoxLayout, QWidgetAction, QFileDialog
@@ -21,16 +17,11 @@ from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkFiltersSources import vtkLineSource
 from vtkmodules.vtkRenderingAnnotation import vtkCubeAxesActor
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer, vtkCamera
-from vtkmodules.vtkIOGeometry import vtkOpenFOAMReader
-from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
-from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
 from vtkmodules.vtkCommonColor import vtkNamedColors
 # load implementations for rendering and interaction factory classes
 import vtkmodules.vtkRenderingOpenGL2
 import vtkmodules.vtkInteractionStyle
-from vtkmodules.vtkIOLegacy import vtkPolyDataReader
 
-from coredb import coredb
 from coredb.app_settings import AppSettings
 from coredb.project import Project
 from resources import resource
@@ -56,114 +47,6 @@ CAMERA_VIEW_PLUS_Z  = 4
 CAMERA_VIEW_MINUS_Z = 5
 
 
-class ActorInfo:
-    # It is not clear if the references of these two values should be kept
-    #    dataset: vtk.vtkDataObject
-    #    gFilter: vtk.vtkGeometryFilter
-
-    def __init__(self, inputData):
-        self._visibility = False
-        self._selected = False
-
-        self._mapper = vtkPolyDataMapper()
-        self._actor = vtk.vtkQuadricLODActor()    # vtkActor()
-
-        self._mapper.SetInputData(inputData)
-        self._actor.SetMapper(self._mapper)
-        self._actor.GetProperty().SetColor(0.8, 0.8, 0.8)
-        self._actor.GetProperty().SetOpacity(1.0)
-        self._actor.GetProperty().SetEdgeVisibility(True)
-        self._actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
-        self._actor.GetProperty().SetLineWidth(1.0)
-
-    @property
-    def actor(self):
-        return self._actor
-
-    @property
-    def visibility(self):
-        return  self._visibility
-
-    @visibility.setter
-    def visibility(self, visibility):
-        self._visibility = visibility
-
-
-def getActorInfo(dataset) -> ActorInfo:
-    gFilter = vtkGeometryFilter()
-    gFilter.SetInputData(dataset)
-    gFilter.Update()
-
-    return ActorInfo(gFilter.GetOutput())
-
-
-def build(mBlock):
-    vtkMesh = {}
-    n = mBlock.GetNumberOfBlocks()
-    for i in range(0, n):
-        if mBlock.HasMetaData(i):
-            name = mBlock.GetMetaData(i).Get(vtkCompositeDataSet.NAME())
-        else:
-            name = ''
-        ds = mBlock.GetBlock(i)
-        dsType = ds.GetDataObjectType()
-        if dsType == vtk.VTK_MULTIBLOCK_DATA_SET:
-            vtkMesh[name] = build(ds)
-        elif dsType == vtk.VTK_UNSTRUCTURED_GRID:
-            if ds.GetNumberOfCells() > 0:
-                vtkMesh[name] = getActorInfo(ds)
-        elif dsType == vtk.VTK_POLY_DATA:
-            vtkMesh[name] = getActorInfo(ds)
-        else:
-            vtkMesh[name] = f'Type {dsType}'  # ds
-
-    return vtkMesh
-
-
-"""
-VtkMesh dict
-{
-    <region> : {
-        "boundary" : {
-            <boundary> : <ActorInfo>
-            ...
-        },
-        "internalMesh" : <ActorInfo>,
-        "zones" : {
-            "cellZones" : {
-                <cellZone> : <ActorInfo>,
-                ...
-            }
-        }
-    },
-    ...
-}
-"""
-def getVtkMesh(foamFilePath: Path, statusConfig: dict):
-    r = vtkOpenFOAMReader()
-    r.SetFileName(str(foamFilePath))
-    r.DecomposePolyhedraOn()
-    r.EnableAllCellArrays()
-    r.EnableAllPointArrays()
-    r.EnableAllPatchArrays()
-    r.EnableAllLagrangianArrays()
-    r.CreateCellToPointOn()
-    r.CacheMeshOn()
-    r.ReadZonesOn()
-
-    for patchName, status in statusConfig.items():
-        r.SetPatchArrayStatus(patchName, status)
-
-    r.Update()
-
-    vtkMesh = build(r.GetOutput())
-
-    if 'boundary' in vtkMesh:  # single region mesh
-        vtkMesh = {'': vtkMesh}
-
-    return vtkMesh
-
-
 class MeshDock(TabifiedDock):
     reloadMesh = Signal()
     meshLoaded = Signal()
@@ -178,7 +61,6 @@ class MeshDock(TabifiedDock):
 
         self._widget = None
         self._renderer = None
-        self._vtkMesh = None
 
         self._axesOn = True
         self._axesActor = None
@@ -194,9 +76,8 @@ class MeshDock(TabifiedDock):
         self._cullingOn = False
 
         self._meshOn = False
-        self._actors = []
+        self._model = None
 
-        self.reloadMesh.connect(self.loadOpenFoamMesh, Qt.ConnectionType.QueuedConnection)
         self._main_window.windowClosed.connect(self._mainWindowClosed)
 
         frame = QFrame()
@@ -225,12 +106,22 @@ class MeshDock(TabifiedDock):
 
         self._setDefaults()
 
-    def vtkMesh(self):
-        return self._vtkMesh
+    def setModel(self, model):
+        if self._model:
+            self.clear()
+            self._model.deactivate()
+
+        self._model = model
+
+        for actorInfo in self._model.actorInfos():
+            if actorInfo.visibility:
+                self._renderer.AddActor(actorInfo.actor)
+        self.render()
 
     def clear(self):
-        for actorInfo in self._actors:
-            actorInfo.visibility = False
+        for actorInfo in self._model.actorInfos():
+            if actorInfo.visibility:
+                self._renderer.RemoveActor(actorInfo.actor)
 
         self._renderer.RemoveAllViewProps()
         self._widget.Render()
@@ -238,76 +129,23 @@ class MeshDock(TabifiedDock):
     def _mainWindowClosed(self, result):
         self._widget.close()
 
-    @qasync.asyncSlot()
-    async def loadOpenFoamMesh(self):
-        self.clear()
-
-        statusConfig = self.buildPatchArrayStatus()
-
-        self._vtkMesh = await asyncio.to_thread(getVtkMesh, FileSystem.foamFilePath(), statusConfig)
-        self._showBoundaries()
-
-        self.meshLoaded.emit()
-
-    def buildPatchArrayStatus(self):
-        statusConfig = {'internalMesh': 0}
-
-        db = coredb.CoreDB()
-        regions = db.getRegions()
-
-        if len(regions) == 1:  # single region
-            for _, b, _ in db.getBoundaryConditions(regions[0]):
-                statusConfig[f'patch/{b}'] = 1
-
-            return statusConfig
-
-        else:  # multi-region
-            for r in regions:
-                statusConfig[f'/{r}/internalMesh'] = 0
-                for _, b, _ in db.getBoundaryConditions(r):
-                    statusConfig[f'/{r}/patch/{b}'] = 1
-
-            return statusConfig
-
-    def loadVtkFile(self, file):
-        if not file.exists():
-            return None
-
-        r = vtkPolyDataReader()
-        r.SetFileName(file)
-        r.Update()
-
-        actorInfo = ActorInfo(r.GetOutput())
-        self._actors.append(actorInfo)
-
-        return actorInfo
-
-    def showActor(self, actorInfo):
+    def addActor(self, actorInfo):
         if not actorInfo.visibility:
             self._renderer.AddActor(actorInfo.actor)
             actorInfo.visibility = True
 
-    def hideActor(self, actorInfo):
+    def removeActor(self, actorInfo):
         if actorInfo.visibility:
             self._renderer.RemoveActor(actorInfo.actor)
             actorInfo.visibility = False
 
-    def removeActor(self, actorInfo):
-        self.hideActor(actorInfo)
-        self._actors.remove(actorInfo)
-
-    def removeActor(self, actorInfo):
-        self.hideActor(actorInfo)
-        self._actors.remove(actorInfo)
-
-    def hideAllActors(self):
-        if self._meshOn:
-            self._hideBoundaries()
-
-        for actorInfo in self._actors:
-            self.hideActor(actorInfo)
-
     def render(self):
+        if self._cubeAxesOn:
+            self._showCubeAxes()
+
+        if self._originAxesOn:
+            self._showOriginAxes()
+
         self._fitCamera()
         self._widget.Render()
 
@@ -323,43 +161,6 @@ class MeshDock(TabifiedDock):
         # self._setBackGroundColorSolid()
 
         self._orthogonalView()
-
-    def _getAllActor(self):
-        actors = []
-        for region in self._vtkMesh:
-            for boundary in self._vtkMesh[region]['boundary']:
-                actorInfo = self._vtkMesh[region]['boundary'][boundary]
-                actors.append(actorInfo.actor)
-        return actors
-
-    def _showBoundaries(self):
-        self._meshOn = True
-
-        for region in self._vtkMesh:
-            if 'boundary' not in self._vtkMesh[region]:  # polyMesh folder in multi-region constant folder
-                continue
-
-            for boundary in self._vtkMesh[region]['boundary']:
-                actorInfo = self._vtkMesh[region]['boundary'][boundary]
-                self.showActor(actorInfo)
-
-        if self._cubeAxesOn:
-            self._showCubeAxes()
-
-        if self._originAxesOn:
-            self._showOriginAxes()
-
-        self._fitCamera()
-        self._widget.Render()
-
-    def _hideBoundaries(self):
-        if self._meshOn:
-            for region in self._vtkMesh:
-                for boundary in self._vtkMesh[region]['boundary']:
-                    actorInfo = self._vtkMesh[region]['boundary'][boundary]
-                    self.hideActor(actorInfo)
-
-        self._meshOn = False
 
     def _addAxes(self):
         self._axesActor = vtk.vtkAxesActor()
@@ -549,37 +350,37 @@ class MeshDock(TabifiedDock):
         return wgIcon
 
     def _clickedVDisplayModeCombo(self, widget):
-        if self._vtkMesh is None:
+        if not self._model.isMesh():
             return
 
-        actors = self._getAllActor()
+        actorInfos = self._model.actorInfos()
         curIndex = self._displayModeCombo.currentIndex()
 
         if curIndex == DISPLAY_MODE_POINTS:
-            for a in actors:
-                a.GetProperty().SetPointSize(3)
-                a.GetProperty().SetColor(0.1, 0.0, 0.3)
-                a.GetProperty().SetRepresentationToPoints()
+            for a in actorInfos:
+                a.actor.GetProperty().SetPointSize(3)
+                a.actor.GetProperty().SetColor(0.1, 0.0, 0.3)
+                a.actor.GetProperty().SetRepresentationToPoints()
 
         elif curIndex == DISPLAY_MODE_WIREFRAME:
-            for a in actors:
-                a.GetProperty().SetColor(0.1, 0.0, 0.3)
-                a.GetProperty().SetLineWidth(1.0)
-                a.GetProperty().SetRepresentationToWireframe()
+            for a in actorInfos:
+                a.actor.GetProperty().SetColor(0.1, 0.0, 0.3)
+                a.actor.GetProperty().SetLineWidth(1.0)
+                a.actor.GetProperty().SetRepresentationToWireframe()
 
         elif curIndex == DISPLAY_MODE_SURFACE:
-            for a in actors:
-                a.GetProperty().SetColor(0.8, 0.8, 0.8)
-                a.GetProperty().SetRepresentationToSurface()
-                a.GetProperty().EdgeVisibilityOff()
+            for a in actorInfos:
+                a.actor.GetProperty().SetColor(0.8, 0.8, 0.8)
+                a.actor.GetProperty().SetRepresentationToSurface()
+                a.actor.GetProperty().EdgeVisibilityOff()
 
         elif curIndex == DISPLAY_MODE_SURFACE_EDGE:
-            for a in actors:
-                a.GetProperty().SetColor(0.8, 0.8, 0.8)
-                a.GetProperty().SetRepresentationToSurface()
-                a.GetProperty().EdgeVisibilityOn()
-                a.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
-                a.GetProperty().SetLineWidth(1.0)
+            for a in actorInfos:
+                a.actor.GetProperty().SetColor(0.8, 0.8, 0.8)
+                a.actor.GetProperty().SetRepresentationToSurface()
+                a.actor.GetProperty().EdgeVisibilityOn()
+                a.actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
+                a.actor.GetProperty().SetLineWidth(1.0)
 
         # elif curIndex == DISPLAY_MODE_FEATURE:
         #     for a in actors:
@@ -734,12 +535,8 @@ class MeshDock(TabifiedDock):
         checkFirst = True
         bounds = [0, 0, 0, 0, 0, 0]
 
-        if self._vtkMesh is None:
-            return bounds
-
-        for region in self._vtkMesh:
-            for boundary in self._vtkMesh[region]['boundary']:
-                actorInfo = self._vtkMesh[region]['boundary'][boundary]
+        if self._model:
+            for actorInfo in self._model.actorInfos():
                 getBounds = actorInfo.actor.GetBounds()
                 if checkFirst:
                     bounds = list(getBounds)
@@ -751,6 +548,7 @@ class MeshDock(TabifiedDock):
                     bounds[3] = max(bounds[3], getBounds[3])
                     bounds[4] = min(bounds[4], getBounds[4])
                     bounds[5] = max(bounds[5], getBounds[5])
+
         return bounds
 
     def getMeshCenterPoint(self) -> list:
@@ -782,19 +580,17 @@ class MeshDock(TabifiedDock):
         self._cullingOn = True
         self._actionCulling.setIcon(self._iconCullingOn)
 
-        if self._vtkMesh is not None:
-            actors = self._getAllActor()
-            for a in actors:
-                a.GetProperty().FrontfaceCullingOn()
+        if self._model:
+            for a in self._model.actorInfos():
+                a.actor.GetProperty().FrontfaceCullingOn()
 
     def _hideCulling(self):
         self._cullingOn = False
         self._actionCulling.setIcon(self._iconCullingOff)
 
-        if self._vtkMesh is not None:
-            actors = self._getAllActor()
-            for a in actors:
-                a.GetProperty().FrontfaceCullingOff()
+        if self._model:
+            for a in self._model.actorInfos():
+                a.actor.GetProperty().FrontfaceCullingOff()
 
     def _addCamera(self):
         self.camera = vtkCamera()

@@ -13,6 +13,7 @@ from PySide6.QtGui import QIcon
 
 from filelock import Timeout
 
+from app import app
 from coredb.app_settings import AppSettings
 from coredb.project_settings import ProjectSettings
 from coredb.project import Project, ProjectOpenType
@@ -141,11 +142,11 @@ class StartWindow(QDialog):
 
         Project.close()
 
+
 class Baram:
     def __init__(self):
         self._toQuit = False
         self._dialog = None
-        self._window = None
         self._applicationLock = None
 
     def toQuit(self):
@@ -171,17 +172,17 @@ class Baram:
         AppSettings.updateLastStartWindowPosition(getRect)
 
         if result == QDialog.Accepted:
-            self._window = MainWindow()
-            self._window.windowClosed.connect(self._windowClosed, type=Qt.ConnectionType.QueuedConnection)
+            app.setMainWindow(MainWindow())
+            app.window.windowClosed.connect(self._windowClosed, type=Qt.ConnectionType.QueuedConnection)
 
             rect = AppSettings.getLastMainWindowPosition()
-            self._window.setGeometry(QRect(rect[0], rect[1], rect[2], rect[3]))
+            app.window.setGeometry(QRect(rect[0], rect[1], rect[2], rect[3]))
         else:
             QApplication.quit()
 
     @qasync.asyncSlot()
     async def _windowClosed(self, result):
-        rect = self._window.geometry()
+        rect = app.window.geometry()
         getRect = [rect.x(), rect.y(), rect.width(), rect.height()]
         AppSettings.updateLastMainWindowPosition(getRect)
         Project.close()

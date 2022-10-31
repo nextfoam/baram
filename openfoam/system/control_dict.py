@@ -90,6 +90,7 @@ def getRegionNumbers() -> dict:
         regionNum[dd] = ii
     return regionNum
 
+
 class ControlDict(DictionaryFile):
     def __init__(self):
         super().__init__(self.systemLocation(), 'controlDict')
@@ -149,7 +150,7 @@ class ControlDict(DictionaryFile):
             'runTimeModifiable': 'yes',
             'adjustTimeStep': adjustTimeStep,
             'maxCo': db.getValue(xpath + '/maxCourantNumber'),
-            'functions': self._generateFunctionObjects()
+            # 'functions': self._generateFunctionObjects()
         }
 
         return self
@@ -216,11 +217,11 @@ class ControlDict(DictionaryFile):
         for d in forces:
             xpath = MonitorDB.getForceMonitorXPath(d)
             name = db.getValue(xpath + '/name')
-            bcid = db.getValue(xpath + '/boundaries')
+            boundaries = db.getValue(xpath + '/boundaries')
 
-            for b in bcid.split() if bcid else []:
-                rname = BoundaryDB.getBoundaryRegion(b)
-                patch = BoundaryDB.getBoundaryName(b)
+            for bcid in boundaries.split() if boundaries else []:
+                rname = BoundaryDB.getBoundaryRegion(bcid)
+                patch = BoundaryDB.getBoundaryName(bcid)
 
                 rgid = regionNum[rname]
                 forcesName = f'forces_{name}_{rgid}'  # f'forces_{regionNum[rname]}' : f-string: unmatched '['

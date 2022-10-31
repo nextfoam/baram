@@ -31,9 +31,10 @@ from view.main_window.menu.mesh.mesh_scale_dialog import MeshScaleDialog
 from view.main_window.menu.mesh.mesh_translate_dialog import MeshTranslateDialog
 from view.main_window.menu.mesh.mesh_rotate_dialog import MeshRotateDialog
 from view.main_window.menu.settings_language import SettingLanguageDialog
-from view.main_window.mesh_manager import MeshManager, MeshType
+from mesh.mesh_manager import MeshManager, MeshType
 from openfoam.file_system import FileSystem
 from openfoam.case_generator import CaseGenerator
+from openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu.settings_scaling import SettingScalingDialog
@@ -117,11 +118,11 @@ class MainWindow(QMainWindow):
         self._closeType = CloseType.EXIT_APP
 
         self._meshManager = MeshManager(self)
-        if self._project.meshLoaded:
-            self._meshDock.reloadMesh.emit()
-        FileSystem.setupForProject()
-
         self._connectSignalsSlots()
+
+        if self._project.meshLoaded:
+            self._meshManager.meshChanged.emit()
+        FileSystem.setupForProject()
 
         if self._project.isSolverRunning():
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN)
@@ -136,24 +137,29 @@ class MainWindow(QMainWindow):
         self.tabifyDockWidget(self._emptyDock, dock)
 
     def closeEvent(self, event):
-        self._saveCurrentPage()
+        if self._saveCurrentPage():
+            if self._project.isModified:
+                msgBox = QMessageBox()
+                msgBox.setWindowTitle(self.tr("Save Changed"))
+                msgBox.setText(self.tr("Do you want save your changes?"))
+                msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Discard | QMessageBox.Cancel)
+                msgBox.setDefaultButton(QMessageBox.Ok)
 
-        if self._project.isModified:
-            msgBox = QMessageBox()
-            msgBox.setWindowTitle(self.tr("Save Changed"))
-            msgBox.setText(self.tr("Do you want save your changes?"))
-            msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Discard | QMessageBox.Cancel)
-            msgBox.setDefaultButton(QMessageBox.Ok)
-
-            result = msgBox.exec()
-            if result == QMessageBox.Ok:
-                self._save()
-            elif result == QMessageBox.Cancel:
-                event.ignore()
-                return
+                result = msgBox.exec()
+                if result == QMessageBox.Ok:
+                    self._save()
+                elif result == QMessageBox.Cancel:
+                    event.ignore()
+                    return
+        else:
+            event.ignore()
+            return
 
         super().closeEvent(event)
         self.windowClosed.emit(self._closeType)
+
+    def meshDock(self):
+        return self._meshDock
 
     def _connectSignalsSlots(self):
         self._ui.actionSave.triggered.connect(self._save)
@@ -174,20 +180,17 @@ class MainWindow(QMainWindow):
 
         self._ui.actionScale.triggered.connect(self._changeScale)
         self._ui.actionLanguage.triggered.connect(self._changeLanguage)
-
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
-
-        self._meshDock.meshLoaded.connect(self._updateMesh)
 
         self._project.meshStatusChanged.connect(self._updateMenuEnables)
         self._project.solverStatusChanged.connect(self._updateMenuEnables)
         self._project.projectChanged.connect(self._projectChanged)
-        self._meshManager.meshChanged.connect(self._meshChanged)
+        self._meshManager.meshChanged.connect(self._meshChanged, Qt.ConnectionType.QueuedConnection)
 
     def _save(self):
-        self._saveCurrentPage()
-        FileSystem.save()
-        self._project.save()
+        if self._saveCurrentPage():
+            FileSystem.save()
+            self._project.save()
 
     def _saveAs(self):
         self._dialog = QFileDialog(self, self.tr('Select Project Directory'), AppSettings.getRecentLocation())
@@ -198,7 +201,9 @@ class MainWindow(QMainWindow):
     def _saveCurrentPage(self):
         currentPage = self._contentView.currentPage()
         if currentPage:
-            currentPage.save()
+            return currentPage.save()
+
+        return True
 
     def _loadMesh(self):
         self._importMesh(MeshType.POLY_MESH)
@@ -237,8 +242,9 @@ class MainWindow(QMainWindow):
         self._dialog = MeshRotateDialog(self, self._meshManager)
         self._dialog.open()
 
-    def _meshChanged(self):
-        self._meshDock.reloadMesh.emit()
+    @qasync.asyncSlot()
+    async def _meshChanged(self):
+        await PolyMeshLoader().loadVtk()
 
     def _changeForm(self, currentMenu):
         page = self._menuPages[currentMenu]
@@ -251,6 +257,13 @@ class MainWindow(QMainWindow):
     def _updateMenuEnables(self):
         self._ui.menuMesh.setEnabled(self._project.meshLoaded)
         self._navigatorView.updateMenu()
+
+        if self._project.meshLoaded:
+            self._clearPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
+            self._clearPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
+            self._clearPage(MenuItem.MENU_SOLUTION_MONITORS)
+            self._loadPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
+            self._loadPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
 
     def _projectChanged(self):
         self.setWindowTitle(f'{self.tr("Baram")} - {self._project.path}')
@@ -285,37 +298,9 @@ class MainWindow(QMainWindow):
                     return
             path.mkdir(exist_ok=True)
 
-            self._saveCurrentPage()
-            FileSystem.saveAs(path)
-            self._project.saveAs(path)
-
-    def _clearMesh(self):
-        db = coredb.CoreDB()
-        db.clearRegions()
-        db.clearMonitors()
-
-        self._clearPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
-        self._clearPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
-        self._clearPage(MenuItem.MENU_SOLUTION_MONITORS)
-        self._meshDock.clear()
-        self._project.setMeshLoaded(False)
-
-    def _updateMesh(self):
-        if self._project.meshLoaded:
-            return
-
-        db = coredb.CoreDB()
-        mesh = self._meshDock.vtkMesh()
-
-        for region in mesh:
-            if 'zones' in mesh[region] and 'cellZones' in mesh[region]['zones']:
-                for cellZone in mesh[region]['zones']['cellZones']:
-                    db.addCellZone(region, cellZone)
-
-        self._loadPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
-        self._loadPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
-        self._project.setMeshLoaded(True)
-        self._ui.menuLoadMesh.setEnabled(True)
+            if self._saveCurrentPage():
+                FileSystem.saveAs(path)
+                self._project.saveAs(path)
 
     def _clearPage(self, menu):
         page = self._menuPages[menu.value]
@@ -337,7 +322,7 @@ class MainWindow(QMainWindow):
             if confirm != QMessageBox.Yes:
                 return
 
-        self._clearMesh()
+        self._project.setMeshLoaded(False)
         if fileFilter is None:
             # Select OpenFOAM mesh directory.
             self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'),
@@ -357,7 +342,6 @@ class MainWindow(QMainWindow):
         self._ui.menubar.repaint()
 
         if result == QFileDialog.Accepted:
-            self._ui.menuLoadMesh.setEnabled(False)
             CaseGenerator.createCase()
 
             file = Path(self._dialog.selectedFiles()[0])
@@ -366,5 +350,3 @@ class MainWindow(QMainWindow):
                 await self._meshManager.importOpenFoamMesh(file)
             else:
                 await self._meshManager.importMesh(file, meshType)
-
-            self._ui.menuLoadMesh.setEnabled(True)

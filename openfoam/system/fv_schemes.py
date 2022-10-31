@@ -8,17 +8,12 @@ from openfoam.dictionary_file import DictionaryFile
 
 
 class FvSchemes(DictionaryFile):
-    def __init__(self, rname: str):
+    def __init__(self, rname: str = None):
         super().__init__(self.systemLocation(rname), 'fvSchemes')
 
         self._rname = rname
         self._db = coredb.CoreDB()
-        solvers = openfoam.solver.findSolvers()
-        if len(solvers) != 1:  # configuration not enough yet
-            raise RuntimeError
-
-        self._solver = solvers[0]
-        self._cap = openfoam.solver.getSolverCapability(self._solver)
+        self._cap = None
 
         self.relaxationDisabled = self._db.getAttribute('.//numericalConditions/highOrderTermRelaxation', 'disabled')
         self.relFactor = self._db.getValue('.//numericalConditions/highOrderTermRelaxation/relaxationFactor')
@@ -27,10 +22,17 @@ class FvSchemes(DictionaryFile):
         if self._data is not None:
             return self
 
+        solvers = openfoam.solver.findSolvers()
+        if len(solvers) != 1:  # configuration not enough yet
+            raise RuntimeError
+
+        solver = solvers[0]
+        self._cap = openfoam.solver.getSolverCapability(solver)
+
         mid = self._db.getValue(f'.//region[name="{self._rname}"]/material')
         phase = self._db.getValue(f'.//materials/material[@mid="{mid}"]/phase')
 
-        if self._solver == 'TSLAeroFoam':
+        if solver == 'TSLAeroFoam':
             self._generateTSLAero()
         else:
             if phase == 'solid':
