@@ -8,7 +8,7 @@
 
 ### BARAM requires following installed software:
 
-- Python **3.9.x** or newer
+- Python **3.9.x**
 - [MS-MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi) 10.0 or newer ( Windows Only )
 - OpenMPI 4.0 or newer ( Linux, macOS )
 - GNU C Compiler or any other C Compiler ( Linux, macOS )
@@ -21,7 +21,7 @@ git clone https://github.com/nextfoam/baram.git
 ### Setup Python virtual environment
 
 Run following command in the top directory of downloaded source code.
-Please don't forget that Python **3.9.x** or newer is required.
+Please don't forget that Python **3.9.x** is required.
 You can check it with the command of `python3 -V`.
 
 ```commandline
