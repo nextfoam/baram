@@ -8,6 +8,8 @@ from pathlib import Path
 import asyncio
 import glob
 
+import app
+
 # Solver Directory Structure
 #
 # solvers/
@@ -21,14 +23,14 @@ import glob
 
 MPICMD = 'mpirun'
 
-OPENFOAM = Path('solvers/openfoam').resolve()
+OPENFOAM = app.APP_PATH/'solvers'/'openfoam'
 
 creationflags = 0
 startupinfo = None
 
 if platform.system() == 'Windows':
     MPICMD = 'mpiexec'
-    MINGW = Path('solvers/mingw64').resolve()
+    MINGW = app.APP_PATH/'solvers'/'mingw64'
     library = str(OPENFOAM/'lib') + os.pathsep \
               + str(OPENFOAM/'lib'/'msmpi') + os.pathsep \
               + str(MINGW/'bin') + os.pathsep \
