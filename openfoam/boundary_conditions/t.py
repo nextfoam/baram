@@ -6,6 +6,7 @@ from coredb.filedb import BcFileRole
 from coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallVelocityCondition
 from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution, InterfaceMode
 from coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT
+from coredb.models_db import ModelsDB
 from coredb.project import Project
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -83,9 +84,13 @@ class T(BoundaryCondition):
         return field
 
     def _constructInletOutletTotalTemperature(self, constant):
-        cp = MaterialDB.getSpecificHeat(self._region.mid, constant)
-        mw = MaterialDB.getMolecularWeight(self._region.mid)
-        gamma = cp / (cp - UNIVERSAL_GAL_CONSTANT/mw)
+        if ModelsDB.isEnergyModelOn():
+            cp = MaterialDB.getSpecificHeat(self._region.mid, constant)
+            mw = MaterialDB.getMolecularWeight(self._region.mid)
+            gamma = cp / (cp - UNIVERSAL_GAL_CONSTANT/mw)
+        else:
+            gamma = 1.0
+
         return {
             'type': 'inletOutletTotalTemperature',
             'gamma': gamma,
