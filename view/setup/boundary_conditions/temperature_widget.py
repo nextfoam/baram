@@ -164,3 +164,7 @@ class TemperatureWidget(QWidget):
 
     def _getRadioValue(self, group, radios):
         return radios[group.id(group.checkedButton())]
+
+    def freezeProfileToConstant(self):
+        self._ui.profileType.setCurrentIndex(0)
+        self._ui.profileType.setEnabled(False)

@@ -47,7 +47,7 @@ class NuTilda(BoundaryCondition):
                 BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
-                BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestream(xpath + '/freeStream')),
+                BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestreamNuTilda(xpath)),
                 BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.SUBSONIC_INFLOW.value:     (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructZeroGradient()),
@@ -100,3 +100,15 @@ class NuTilda(BoundaryCondition):
             return self._constructZeroGradient()
         else:
             return self._constructCyclicAMI()
+
+    def _constructFreestreamNuTilda(self, xpath):
+        spec = self._db.getValue(xpath + '/turbulence/spalartAllmaras/specification')
+        if spec == SpalartAllmarasSpecification.MODIFIED_TURBULENT_VISCOSITY.value:
+            return self._constructFreestream(
+                float(self._db.getValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity')))
+        elif spec == SpalartAllmarasSpecification.TURBULENT_VISCOSITY_RATIO.value:
+            # ToDo: Setting according to boundary field spec
+            return {
+                'type': ''
+            }
+

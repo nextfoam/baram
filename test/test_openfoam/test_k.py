@@ -128,7 +128,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = K(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('freestream', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getVector(self._xpath + '/freeStream/streamVelocity'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentKineticEnergy')),
                          content['boundaryField'][boundary]['freestreamValue'][1])
 
     # Free Stream
@@ -147,7 +147,7 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = K(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('freestream', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getVector(self._xpath + '/freeStream/streamVelocity'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentKineticEnergy')),
                          content['boundaryField'][boundary]['freestreamValue'][1])
 
     # Free Stream

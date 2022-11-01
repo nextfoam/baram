@@ -155,10 +155,10 @@ class BoundaryCondition(DictionaryFile):
             'value': ('uniform', value)
         }
 
-    def _constructFreestream(self, xpath):
+    def _constructFreestream(self, value):
         return {
             'type': 'freestream',
-            'freestreamValue': ('uniform', self._db.getVector(xpath + '/streamVelocity'))
+            'freestreamValue': ('uniform', value)
         }
 
     def _constructInletOutlet(self, inletValue, value):

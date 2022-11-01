@@ -13,7 +13,7 @@ region = "testRegion_1"
 boundary = "testBoundary_1"
 
 
-class TestEpsilon(unittest.TestCase):
+class TestOmega(unittest.TestCase):
     def setUp(self):
         self._db = coredb.createDB()
         self._db.addRegion(region)
@@ -129,7 +129,7 @@ class TestEpsilon(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = Omega(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('freestream', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getVector(self._xpath + '/freeStream/streamVelocity'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/k-omega/specificDissipationRate')),
                          content['boundaryField'][boundary]['freestreamValue'][1])
 
     # Free Stream

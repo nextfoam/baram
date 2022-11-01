@@ -116,7 +116,8 @@ class Epsilon(BoundaryCondition):
     def _constructFreeStreamEpsilon(self, xpath):
         spec = self._db.getValue(xpath + '/turbulence/k-epsilon/specification')
         if spec == KEpsilonSpecification.K_AND_EPSILON.value:
-            return self._constructFreestream(xpath + '/freeStream')
+            epsilon = float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
+            return self._constructFreestream(epsilon)
         elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
             return self._constructNEXTViscosityRatioInletOutletTDR(
                 self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'), self._initialValue)

@@ -69,9 +69,9 @@ class TestFvOptions(unittest.TestCase):
         content = FvOptions(self.rname).build().asDict()
 
         self.assertEqual([1.0, 0.0, 0.0], content[f'actuationDiskSource_{self.czname}']['diskDir'])
-        self.assertEqual('0', content[f'actuationDiskSource_{self.czname}']['Cp'])
-        self.assertEqual('0', content[f'actuationDiskSource_{self.czname}']['Ct'])
-        self.assertEqual('0', content[f'actuationDiskSource_{self.czname}']['diskArea'])
+        self.assertEqual(self._db.getValue(xpath + '/powerCoefficient'), content[f'actuationDiskSource_{self.czname}']['Cp'])
+        self.assertEqual(self._db.getValue(xpath + '/thrustCoefficient'), content[f'actuationDiskSource_{self.czname}']['Ct'])
+        self.assertEqual(self._db.getValue(xpath + '/diskArea'), content[f'actuationDiskSource_{self.czname}']['diskArea'])
         self.assertEqual('Froude', content[f'actuationDiskSource_{self.czname}']['variant'])
         self.assertEqual('cellZone', content[f'actuationDiskSource_{self.czname}']['selectionMode'])
         self.assertEqual(self.czname, content[f'actuationDiskSource_{self.czname}']['cellZone'])

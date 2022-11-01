@@ -99,7 +99,8 @@ class Omega(BoundaryCondition):
     def _constructFreeStreamOmega(self, xpath):
         spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
         if spec == KOmegaSpecification.K_AND_OMEGA.value:
-            return self._constructFreestream(xpath + '/freeStream')
+            omega = float(self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))
+            return self._constructFreestream(omega)
         elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
             return self._constructNEXTViscosityRatioInletOutletTDR(
                 self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'), self._initialValue)

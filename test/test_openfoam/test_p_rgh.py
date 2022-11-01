@@ -86,7 +86,7 @@ class TestPRgh(unittest.TestCase):
         content = P(RegionDB.getRegionProperties(region), 'p_rgh').build().asDict()
         self.assertEqual('freestreamPressure', content['boundaryField'][boundary]['type'])
         self.assertEqual(float(self._db.getValue(self._xpath + '/freeStream/pressure')),
-                         content['boundaryField'][boundary]['freestreamValue'])
+                         content['boundaryField'][boundary]['freestreamValue'][1])
 
     def testFarFieldRiemann(self):
         self._db.setValue(self._xpath + '/physicalType', 'farFieldRiemann')

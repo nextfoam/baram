@@ -137,7 +137,7 @@ class P(BoundaryCondition):
     def _constructFreestreamPressure(self, pressure):
         return {
             'type': 'freestreamPressure',
-            'freestreamValue': pressure
+            'freestreamValue': ('uniform', pressure)
         }
 
     def _constructFluxPressure(self):

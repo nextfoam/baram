@@ -119,14 +119,16 @@ class K(BoundaryCondition):
         if self._model == TurbulenceModel.K_EPSILON:
             spec = self._db.getValue(xpath + '/turbulence/k-epsilon/specification')
             if spec == KEpsilonSpecification.K_AND_EPSILON.value:
-                return self._constructFreestream(xpath + '/freeStream')
+                k = float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentKineticEnergy'))
+                return self._constructFreestream(k)
             elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
                 return self._constructNEXTTurbulentIntensityInletOutletTKE(
                     float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentIntensity'))/100.0, self._initialValue)
         elif self._model == TurbulenceModel.K_OMEGA:
             spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
             if spec == KOmegaSpecification.K_AND_OMEGA.value:
-                return self._constructFreestream(xpath + '/freeStream')
+                k = float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentKineticEnergy'))
+                return self._constructFreestream(k)
             elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
                 return self._constructNEXTTurbulentIntensityInletOutletTKE(
                     float(self._db.getValue(xpath + '/turbulence/k-omega/turbulentIntensity'))/100.0, self._initialValue)

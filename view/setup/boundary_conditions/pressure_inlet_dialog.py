@@ -31,6 +31,7 @@ class PressureInletDialog(ResizableDialog):
             layout.addWidget(self._turbulenceWidget)
         if ModelsDB.isEnergyModelOn():
             self._temperatureWidget = TemperatureWidget(self._xpath, bcid)
+            self._temperatureWidget.freezeProfileToConstant()
             layout.addWidget(self._temperatureWidget)
 
         self._load()

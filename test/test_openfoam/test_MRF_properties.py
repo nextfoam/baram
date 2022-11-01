@@ -34,7 +34,7 @@ class TestMRFProperties(unittest.TestCase):
 
         self.assertEqual([0.0, 0.0, 0.0], content[f'MRFCellZone_{zone}']['origin'])
         self.assertEqual([1.0, 0.0, 0.0], content[f'MRFCellZone_{zone}']['axis'])
-        self.assertEqual(0.0, content[f'MRFCellZone_{zone}']['omega'])
+        self.assertEqual(float(self.db.getValue(xpath + '/mrf/rotatingSpeed')) * 2 * 3.141592 / 60, content[f'MRFCellZone_{zone}']['omega'])
 
 if __name__ == '__main__':
     unittest.main()

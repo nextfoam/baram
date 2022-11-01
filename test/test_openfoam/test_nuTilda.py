@@ -107,7 +107,7 @@ class TestNuTilda(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = NuTilda(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('freestream', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getVector(self._xpath + '/freeStream/streamVelocity'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity')),
                          content['boundaryField'][boundary]['freestreamValue'][1])
 
     def testFarFieldRiemann(self):
