@@ -24,12 +24,11 @@ class Nut(BoundaryCondition):
     def build(self):
         self._data = None
 
-        if self._model == TurbulenceModel.K_EPSILON or self._model == TurbulenceModel.K_OMEGA:
-            self._data = {
-                'dimensions': self.DIMENSIONS,
-                'internalField': ('uniform', self._initialValue),
-                'boundaryField': self._constructBoundaryField()
-            }
+        self._data = {
+            'dimensions': self.DIMENSIONS,
+            'internalField': ('uniform', self._initialValue),
+            'boundaryField': self._constructBoundaryField()
+        }
 
         return self
 
@@ -70,7 +69,7 @@ class Nut(BoundaryCondition):
     def _constructWallFunctionByModel(self):
         if self._model == TurbulenceModel.K_EPSILON:
             return self._constructNEXTNutkWallFunction()
-        elif self._model == TurbulenceModel.K_OMEGA:
+        else:
             return self._constructNEXTNutSpaldingWallFunction()
 
     def _constructNEXTNutkWallFunction(self):
