@@ -144,12 +144,12 @@
           <item row="3" column="0">
            <widget class="QLabel" name="label_22">
             <property name="text">
-             <string>Turbulence Kinetic Energy</string>
+             <string>Turbulence</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QComboBox" name="discretizationSchemeTurbulentKineticEnergy"/>
+           <widget class="QComboBox" name="discretizationSchemeTurbulence"/>
           </item>
          </layout>
         </widget>

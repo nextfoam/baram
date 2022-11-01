@@ -37,7 +37,7 @@ class NumericalConditionsPage(QWidget):
         self._setupCombo(self._ui.discretizationSchemeTime, self._implicitDiscretizationSchemes)
         self._setupCombo(self._ui.discretizationSchemeMomentum, self._upwindDiscretizationSchemes)
         self._setupCombo(self._ui.discretizationSchemeEnergy, self._upwindDiscretizationSchemes)
-        self._setupCombo(self._ui.discretizationSchemeTurbulentKineticEnergy, self._upwindDiscretizationSchemes)
+        self._setupCombo(self._ui.discretizationSchemeTurbulence, self._upwindDiscretizationSchemes)
 
         self._db = coredb.CoreDB()
         self._xpath = NumericalDB.NUMERICAL_CONDITIONS_XPATH
@@ -73,7 +73,7 @@ class NumericalConditionsPage(QWidget):
             self._upwindDiscretizationSchemes[self._db.getValue(self._xpath + '/discretizationSchemes/momentum')])
         self._ui.discretizationSchemeEnergy.setCurrentText(
             self._upwindDiscretizationSchemes[self._db.getValue(self._xpath + '/discretizationSchemes/energy')])
-        self._ui.discretizationSchemeTurbulentKineticEnergy.setCurrentText(
+        self._ui.discretizationSchemeTurbulence.setCurrentText(
             self._upwindDiscretizationSchemes[
                 self._db.getValue(self._xpath + '/discretizationSchemes/turbulentKineticEnergy')])
 
@@ -131,7 +131,7 @@ class NumericalConditionsPage(QWidget):
         writer.append(self._xpath + '/discretizationSchemes/energy',
                       self._ui.discretizationSchemeEnergy.currentData(), None)
         writer.append(self._xpath + '/discretizationSchemes/turbulentKineticEnergy',
-                      self._ui.discretizationSchemeTurbulentKineticEnergy.currentData(), None)
+                      self._ui.discretizationSchemeTurbulence.currentData(), None)
 
         writer.append(self._xpath + '/underRelaxationFactors/pressure',
                       self._ui.underRelaxationFactorPressure.text(), self.tr("Under-Relaxation Factor Pressure"))
