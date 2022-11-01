@@ -71,7 +71,7 @@ class MeshDock(TabifiedDock):
         self._cubeAxesOn = False
         self._cubeAxesActor = None
 
-        self._orthogonalViewOn = True
+        self._orthogonalViewOn = False
         self._displayMode = DISPLAY_MODE_SURFACE_EDGE
         self._cullingOn = False
 
@@ -160,7 +160,7 @@ class MeshDock(TabifiedDock):
         self._setBackGroundColorGradient()
         # self._setBackGroundColorSolid()
 
-        self._orthogonalView()
+        self._perspectiveView()
 
     def _addAxes(self):
         self._axesActor = vtk.vtkAxesActor()
