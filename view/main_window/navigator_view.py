@@ -13,8 +13,8 @@ class MenuItem(Enum):
     MENU_TOP = QTreeWidgetItem.UserType
     # Setup
     MENU_SETUP_GENERAL = auto()
-    MENU_SETUP_MATERIALS = auto()
     MENU_SETUP_MODELS = auto()
+    MENU_SETUP_MATERIALS = auto()
     MENU_SETUP_CELL_ZONE_CONDITIONS = auto()
     MENU_SETUP_BOUNDARY_CONDITIONS = auto()
     MENU_SETUP_REFERENCE_VALUES = auto()
@@ -40,10 +40,10 @@ class NavigatorView(QObject):
         self._menu = {}
         self._addMenu(MenuItem.MENU_SETUP_GENERAL, self._setupMenu,
                       self.tr('General'))
-        self._addMenu(MenuItem.MENU_SETUP_MATERIALS, self._setupMenu,
-                      self.tr('Materials'))
         self._addMenu(MenuItem.MENU_SETUP_MODELS, self._setupMenu,
                       self.tr('Models'))
+        self._addMenu(MenuItem.MENU_SETUP_MATERIALS, self._setupMenu,
+                      self.tr('Materials'))
         self._addMenu(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS, self._setupMenu,
                       self.tr('Cell Zone Conditions'))
         self._addMenu(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS, self._setupMenu,
@@ -76,8 +76,8 @@ class NavigatorView(QObject):
         solverSubmitted = project.solverStatus() != SolverStatus.NONE
 
         self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(solverSubmitted)
-        self._menu[MenuItem.MENU_SETUP_MATERIALS.value].setDisabled(solverSubmitted)
         self._menu[MenuItem.MENU_SETUP_MODELS.value].setDisabled(solverSubmitted)
+        self._menu[MenuItem.MENU_SETUP_MATERIALS.value].setDisabled(solverSubmitted)
         self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(noMesh or solverSubmitted)
         self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(noMesh or solverSubmitted)
         self._menu[MenuItem.MENU_SETUP_REFERENCE_VALUES.value].setDisabled(solverSubmitted)
