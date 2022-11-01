@@ -87,7 +87,7 @@ class ModelsDB:
 
     @classmethod
     def isRadiationModelOn(cls):
-        return True
+        return False
 
     @classmethod
     def isSpeciesModelOn(cls):
