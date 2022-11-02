@@ -292,6 +292,9 @@ class MeshDock(TabifiedDock):
         self._actionMinusZ = QAction(self._iconMinusZ, '-Z', self._main_window)
         self._toolBar.addAction(self._actionMinusZ)
 
+        self._actionRotate = QAction(self._iconRotate, 'Rotate', self._main_window)
+        self._toolBar.addAction(self._actionRotate)
+
         self._toolBar.addSeparator()
 
         self._displayModeCombo = QComboBox()
@@ -312,36 +315,33 @@ class MeshDock(TabifiedDock):
         self._toolBar.actionTriggered[QAction].connect(self.clickedToolBar)
 
     def _addIcons(self, path):
-        self._iconRunParaview = self._newIcon(str(path / 'ParaView.png'))
+        self._iconRunParaview = QIcon(str(path / 'ParaView.png'))
 
-        self._iconAxesOn = self._newIcon(str(path / 'axesOn.png'))
-        self._iconAxesOff = self._newIcon(str(path / 'axesOff.png'))
+        self._iconAxesOn = QIcon(str(path / 'axesOn.png'))
+        self._iconAxesOff = QIcon(str(path / 'axesOff.png'))
 
-        self._iconOriginAxesOn = self._newIcon(str(path / 'originAxesOn.png'))
-        self._iconOriginAxesOff = self._newIcon(str(path / 'originAxesOff.png'))
+        self._iconOriginAxesOn = QIcon(str(path / 'originAxesOn.png'))
+        self._iconOriginAxesOff = QIcon(str(path / 'originAxesOff.png'))
 
-        self._iconCubeAxesOn = self._newIcon(str(path / 'cubeAxesOn.png'))
-        self._iconCubeAxesOff = self._newIcon(str(path / 'cubeAxesOff.png'))
+        self._iconCubeAxesOn = QIcon(str(path / 'cubeAxesOn.png'))
+        self._iconCubeAxesOff = QIcon(str(path / 'cubeAxesOff.png'))
 
-        self._iconOrthogonalViewOn = self._newIcon(str(path / 'orthogonalOn.png'))
-        self._iconOrthogonalViewOff = self._newIcon(str(path / 'orthogonalOff.png'))
+        self._iconOrthogonalViewOn = QIcon(str(path / 'orthogonalOn.png'))
+        self._iconOrthogonalViewOff = QIcon(str(path / 'orthogonalOff.png'))
 
-        self._iconFit = self._newIcon(str(path / 'fit.png'))
+        self._iconFit = QIcon(str(path / 'fit.png'))
 
-        self._iconPlusX = self._newIcon(str(path / 'plusX.png'))
-        self._iconMinusX = self._newIcon(str(path / 'minusX.png'))
-        self._iconPlusY = self._newIcon(str(path / 'plusY.png'))
-        self._iconMinusY = self._newIcon(str(path / 'minusY.png'))
-        self._iconPlusZ = self._newIcon(str(path / 'plusZ.png'))
-        self._iconMinusZ = self._newIcon(str(path / 'minusZ.png'))
+        self._iconPlusX = QIcon(str(path / 'plusX.png'))
+        self._iconMinusX = QIcon(str(path / 'minusX.png'))
+        self._iconPlusY = QIcon(str(path / 'plusY.png'))
+        self._iconMinusY = QIcon(str(path / 'minusY.png'))
+        self._iconPlusZ = QIcon(str(path / 'plusZ.png'))
+        self._iconMinusZ = QIcon(str(path / 'minusZ.png'))
 
-        self._iconCullingOn = self._newIcon(str(path / 'cullingOn.png'))
-        self._iconCullingOff = self._newIcon(str(path / 'cullingOff.png'))
+        self._iconRotate = QIcon(str(resource.file('ionicons/reload.svg')))
 
-    def _newIcon(self, path):
-        wgIcon = QIcon()
-        wgIcon.addPixmap(QPixmap(path))
-        return wgIcon
+        self._iconCullingOn = QIcon(str(path / 'cullingOn.png'))
+        self._iconCullingOff = QIcon(str(path / 'cullingOff.png'))
 
     def _clickedVDisplayModeCombo(self, widget):
         if not self._model.isMesh():
@@ -424,6 +424,8 @@ class MeshDock(TabifiedDock):
             self._setCameraViewPlusZ()
         elif action == self._actionMinusZ:
             self._setCameraViewMinusZ()
+        elif action == self._actionRotate:
+            self.camera.Roll(-90)
 
         elif action == self._actionCulling:
             if self._cullingOn:
