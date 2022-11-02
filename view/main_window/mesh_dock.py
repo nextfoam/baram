@@ -39,12 +39,6 @@ DISPLAY_MODE_SURFACE        = 2
 DISPLAY_MODE_SURFACE_EDGE   = 3
 # DISPLAY_MODE_FEATURE        = 4
 
-CAMERA_VIEW_PLUS_X  = 0
-CAMERA_VIEW_MINUS_X = 1
-CAMERA_VIEW_PLUS_Y  = 2
-CAMERA_VIEW_MINUS_Y = 3
-CAMERA_VIEW_PLUS_Z  = 4
-CAMERA_VIEW_MINUS_Z = 5
 
 
 class MeshDock(TabifiedDock):
@@ -596,79 +590,39 @@ class MeshDock(TabifiedDock):
         self.camera = vtkCamera()
         self._renderer.SetActiveCamera(self.camera)
 
-    def _setCameraPosition(self, pos=(0.0, 0.0, 1.0), focal=(0.0, 0.0, 0.0), up=(0.0, 1.0, 0.0)):
-        self.camera.SetPosition(pos)
-        self.camera.SetFocalPoint(focal)
-        self.camera.SetViewUp(up)
-
-        # if self.bAlwaysFit:
-        #     self.renderer.ResetCamera()
-        return
-
     def _setCameraViewPlusX(self):
-        cameraPosition = [0.0, 0.0, 0.0]
-        centers = self.getMeshCenterPoint()
-        cameraPosition[0:3] = centers[0:3]
-        cameraPosition[2] = centers[2] + 2.0
-
-        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (0, 1, 0))
-        self._fitCamera()
+        d = self.camera.GetDistance()
+        fx, fy, fz = self.camera.GetFocalPoint()
+        self.camera.SetPosition(fx-d, fy, fz)
+        self.camera.SetViewUp(0, 0, 1)
 
     def _setCameraViewMinusX(self):
-        cameraPosition = [0.0, 0.0, 0.0]
-        centers = self.getMeshCenterPoint()
-        cameraPosition[0:3] = centers[0:3]
-        cameraPosition[2] = centers[2] - 2.0
-
-        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (0, 1, 0))
-        self._fitCamera()
+        d = self.camera.GetDistance()
+        fx, fy, fz = self.camera.GetFocalPoint()
+        self.camera.SetPosition(fx+d, fy, fz)
+        self.camera.SetViewUp(0, 0, 1)
 
     def _setCameraViewPlusY(self):
-        cameraPosition = [0.0, 0.0, 0.0]
-        centers = self.getMeshCenterPoint()
-        cameraPosition[0:3] = centers[0:3]
-        cameraPosition[2] = centers[2] - 2.0
-
-        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (1, 0, 0))
-        self._fitCamera()
+        d = self.camera.GetDistance()
+        fx, fy, fz = self.camera.GetFocalPoint()
+        self.camera.SetPosition(fx, fy-d, fz)
+        self.camera.SetViewUp(0, 0, 1)
 
     def _setCameraViewMinusY(self):
-        cameraPosition = [0.0, 0.0, 0.0]
-        centers = self.getMeshCenterPoint()
-        cameraPosition[0:3] = centers[0:3]
-        cameraPosition[2] = centers[2] + 2.0
-
-        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (1, 0, 0))
-        self._fitCamera()
+        d = self.camera.GetDistance()
+        fx, fy, fz = self.camera.GetFocalPoint()
+        self.camera.SetPosition(fx, fy+d, fz)
+        self.camera.SetViewUp(0, 0, 1)
 
     def _setCameraViewPlusZ(self):
-        cameraPosition = [0.0, 0.0, 0.0]
-        centers = self.getMeshCenterPoint()
-        cameraPosition[0:3] = centers[0:3]
-        cameraPosition[0] = centers[0] - 2.0
-
-        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (0, 1, 0))
-        self._fitCamera()
+        d = self.camera.GetDistance()
+        fx, fy, fz = self.camera.GetFocalPoint()
+        self.camera.SetPosition(fx, fy, fz-d)
+        self.camera.SetViewUp(0, 1, 0)
 
     def _setCameraViewMinusZ(self):
-        cameraPosition = [0.0, 0.0, 0.0]
-        centers = self.getMeshCenterPoint()
-        cameraPosition[0:3] = centers[0:3]
-        cameraPosition[0] = centers[0] + 2.0
+        d = self.camera.GetDistance()
+        fx, fy, fz = self.camera.GetFocalPoint()
+        self.camera.SetPosition(fx, fy, fz+d)
+        self.camera.SetViewUp(0, 1, 0)
 
-        self._setCameraPosition(tuple(cameraPosition), tuple(centers), (0, 1, 0))
-        self._fitCamera()
-
-    def _setCameraView(self, cameraView):
-        if cameraView == CAMERA_VIEW_PLUS_X:
-            self._setCameraViewPlusX()
-        elif cameraView == CAMERA_VIEW_MINUS_X:
-            self._setCameraViewMinusX()
-        elif cameraView == CAMERA_VIEW_PLUS_Y:
-            self._setCameraViewPlusY()
-        elif cameraView == CAMERA_VIEW_MINUS_Y:
-            self._setCameraViewMinusY()
-        elif cameraView == CAMERA_VIEW_PLUS_Z:
-            self._setCameraViewPlusZ()
-        elif cameraView == CAMERA_VIEW_MINUS_Z:
-            self._setCameraViewMinusZ()
