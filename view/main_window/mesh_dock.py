@@ -329,7 +329,7 @@ class MeshDock(TabifiedDock):
         self._iconOrthogonalViewOn = QIcon(str(path / 'orthogonalOn.png'))
         self._iconOrthogonalViewOff = QIcon(str(path / 'orthogonalOff.png'))
 
-        self._iconFit = QIcon(str(path / 'fit.png'))
+        self._iconFit = QIcon(str(resource.file('ionicons/expand.svg')))
 
         self._iconPlusX = QIcon(str(path / 'plusX.png'))
         self._iconMinusX = QIcon(str(path / 'minusX.png'))
