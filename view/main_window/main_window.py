@@ -128,6 +128,7 @@ class MainWindow(QMainWindow):
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN)
             self._chartDock.raise_()
         else:
+            self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL)
             self._meshDock.raise_()
 
         self._updateMenuEnables()
