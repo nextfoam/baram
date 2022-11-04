@@ -34,6 +34,7 @@ import vtk
 
 # To fix middle button issue in vtkmodules
 # Qt.MidButton that is not available in PySide6 is use in QVTKRenderWindowInteractor
+# Remove this line when vtk 9.2.2 or later is used
 Qt.MidButton = Qt.MiddleButton
 
 DISPLAY_MODE_POINTS         = 0
