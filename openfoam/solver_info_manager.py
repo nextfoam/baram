@@ -128,6 +128,9 @@ def getDataFrame(region, path) -> pd.DataFrame:
     with path.open(mode='r') as f:
         f.readline()  # skip '# Solver information' comment
         names = f.readline().split()  # read header
+        if len(names) == 0:
+            return None
+
         names.pop(0)  # remove '#' from the list
         if names[0] != 'Time':
             raise RuntimeError
