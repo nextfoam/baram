@@ -18,7 +18,7 @@ class InitializationDB:
         return float(coredb.CoreDB().getValue(cls.INITIAL_VALUES_XPATH + '/temperature'))
 
     @classmethod
-    def getScaleOfViscosity(cls):
+    def getScaleOfVelocity(cls):
         return float(coredb.CoreDB().getValue(cls.INITIAL_VALUES_XPATH + '/scaleOfVelocity'))
 
     @classmethod
