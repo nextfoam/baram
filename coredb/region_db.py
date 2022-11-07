@@ -29,7 +29,7 @@ class RegionDB:
             if self.isFluid():
                 p = InitializationDB.getPressure()
                 t = InitializationDB.getTemperature()
-                v = InitializationDB.getScaleOfViscosity()
+                v = InitializationDB.getScaleOfVelocity()
                 i = InitializationDB.getTurbulentIntensity()
                 b = InitializationDB.getTurbulentViscosity()
 
