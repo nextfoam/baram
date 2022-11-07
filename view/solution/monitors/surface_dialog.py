@@ -58,6 +58,7 @@ class SurfaceDialog(QDialog):
             return
 
         writer = CoreDBWriter()
+        writer.append(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
         writer.append(self._xpath + '/reportType', self._ui.reportType.currentData(), None)
         field = self._ui.fieldVariable.currentData()
         writer.append(self._xpath + '/field/field', field.field, None)
@@ -83,9 +84,11 @@ class SurfaceDialog(QDialog):
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectSurface)
+        self._ui.reportType.currentTextChanged.connect(self._reportTypeChanged)
 
     def _load(self):
         self._ui.name.setText(self._name)
+        self._ui.writeInterval.setText(self._db.getValue(self._xpath + '/writeInterval'))
         self._ui.reportType.setCurrentText(MonitorDB.dbSurfaceReportTypeToText(self._db.getValue(self._xpath + '/reportType')))
         self._ui.fieldVariable.setCurrentText(
             FieldHelper.DBFieldKeyToText(self._db.getValue(self._xpath + '/field/field'),
@@ -114,3 +117,7 @@ class SurfaceDialog(QDialog):
     def _setupFieldVariableCombo(self, fields):
         for f in fields:
             self._ui.fieldVariable.addItem(f.text, f.key)
+
+    def _reportTypeChanged(self):
+        self._ui.fieldVariable.setDisabled(self._ui.reportType.currentData() == SurfaceReportType.MASS_FLOW_RATE
+                                           or self._ui.reportType.currentData() == SurfaceReportType.VOLUME_FLOW_RATE)

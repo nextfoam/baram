@@ -56,6 +56,7 @@ class ForceDialog(QDialog):
             return
 
         writer = CoreDBWriter()
+        writer.append(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
         writer.append(self._xpath + '/dragDirection/x', self._ui.dragDirectionX.text(), self.tr("Drag Direction X"))
         writer.append(self._xpath + '/dragDirection/y', self._ui.dragDirectionY.text(), self.tr("Drag Direction Y"))
         writer.append(self._xpath + '/dragDirection/z', self._ui.dragDirectionZ.text(), self.tr("Drag Direction Z"))
@@ -100,6 +101,7 @@ class ForceDialog(QDialog):
 
     def _load(self):
         self._ui.name.setText(self._name)
+        self._ui.writeInterval.setText(self._db.getValue(self._xpath + '/writeInterval'))
         self._ui.dragDirectionX.setText(self._db.getValue(self._xpath + '/dragDirection/x'))
         self._ui.dragDirectionY.setText(self._db.getValue(self._xpath + '/dragDirection/y'))
         self._ui.dragDirectionZ.setText(self._db.getValue(self._xpath + '/dragDirection/z'))

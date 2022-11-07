@@ -58,6 +58,7 @@ class VolumeDialog(QDialog):
             return
 
         writer = CoreDBWriter()
+        writer.append(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
         writer.append(self._xpath + '/reportType', self._ui.reportType.currentData(), None)
         field = self._ui.fieldVariable.currentData()
         writer.append(self._xpath + '/field/field', field.field, None)
@@ -86,6 +87,7 @@ class VolumeDialog(QDialog):
 
     def _load(self):
         self._ui.name.setText(self._name)
+        self._ui.writeInterval.setText(self._db.getValue(self._xpath + '/writeInterval'))
         self._ui.reportType.setCurrentText(
             MonitorDB.dbVolumeReportTypeToText(self._db.getValue(self._xpath + '/reportType')))
         self._ui.fieldVariable.setCurrentText(

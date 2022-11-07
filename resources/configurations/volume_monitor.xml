@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <volumeMonitor xmlns="http://www.baramcfd.org/baram">
     <name>default</name>
+    <showChart>true</showChart>
+    <writeInterval>1</writeInterval>
     <reportType>volumeAverage</reportType>
     <field>
         <field>pressure</field>
