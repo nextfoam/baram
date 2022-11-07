@@ -98,7 +98,6 @@ class ProcessInformationPage(QWidget):
             logger.info(ex, exc_info=True)
             progress.error(self.tr('Error occurred:\n' + str(ex)))
 
-        print(self._solvers)
         process = launchSolver(self._solvers[0], Path(self._caseRoot), self._project.uuid, int(numCores))
         if process:
             self._project.setSolverProcess(process)
@@ -152,17 +151,15 @@ class ProcessInformationPage(QWidget):
     def _updateStatus(self):
         status = self._project.solverStatus()
 
-        if status == SolverStatus.NONE:
-            text = self.tr('Not Running')
-            if self._stopDialog is not None:
-                self._stopDialog.close()
-                self._stopDialog = None
-        elif status == SolverStatus.WAITING:
+        if status == SolverStatus.WAITING:
             text = self.tr('Waiting')
         elif status == SolverStatus.RUNNING:
             text = self.tr('Running')
         else:
-            text = '-'
+            text = self.tr('Not Running')
+            if self._stopDialog is not None:
+                self._stopDialog.close()
+                self._stopDialog = None
 
         pid, startTime = self._project.solverProcess()
         if startTime:
@@ -174,8 +171,13 @@ class ProcessInformationPage(QWidget):
         self._ui.createTime.setText(createTime)
         self._ui.status.setText(text)
 
-        self._ui.startCalculation.setVisible(status == SolverStatus.NONE)
-        self._ui.cancelCalculation.setVisible(status != SolverStatus.NONE)
-        self._ui.saveAndStopCalculation.setEnabled(status != SolverStatus.NONE)
-        self._ui.updateConfiguration.setEnabled(status != SolverStatus.NONE)
-
+        if self._project.isSolverActive():
+            self._ui.startCalculation.hide()
+            self._ui.cancelCalculation.show()
+            self._ui.saveAndStopCalculation.setEnabled(True)
+            self._ui.updateConfiguration.setEnabled(True)
+        else:
+            self._ui.startCalculation.show()
+            self._ui.cancelCalculation.hide()
+            self._ui.saveAndStopCalculation.setDisabled(True)
+            self._ui.updateConfiguration.setDisabled(True)

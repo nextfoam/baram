@@ -10,6 +10,7 @@ import yaml
 from PySide6.QtCore import QObject, Signal, QTimer
 from pathlib import Path
 
+import openfoam.run as run
 from openfoam.run import isProcessRunning
 from coredb import coredb
 from .project_settings import ProjectSettings, ProjectSettingKey
@@ -25,6 +26,7 @@ class SolverStatus(Enum):
     NONE = 0
     WAITING = auto()
     RUNNING = auto()
+    ENDED = auto()
 
 
 class RunType(Enum):
@@ -39,7 +41,7 @@ class ProjectOpenType(Enum):
 
 
 class _Project(QObject):
-    meshStatusChanged = Signal(bool)
+    meshChanged = Signal(bool)
     solverStatusChanged = Signal(SolverStatus)
     projectChanged = Signal()
 
@@ -130,15 +132,24 @@ class _Project(QObject):
     def isSolverRunning(self):
         return self._status == SolverStatus.RUNNING
 
-    def setMeshLoaded(self, loaded):
+    def isSolverActive(self):
+        return self._status == SolverStatus.WAITING or self._status == SolverStatus.RUNNING
+
+    def setMeshLoaded(self, loaded, updated=True):
         self._meshLoaded = loaded
-        self.meshStatusChanged.emit(loaded)
+        self.meshChanged.emit(updated)
 
     def setSolverProcess(self, process):
         self._runType = RunType.PROCESS
         self._projectSettings.setProcess(process)
-        if self._updateProcessStatus() != SolverStatus.NONE:
-            self._startProcessMonitor(process)
+        self._startProcessMonitor(process)
+
+    def setSolverStatus(self, status):
+        if self._status != status:
+            self._status = status
+            if status == SolverStatus.NONE:
+                self._projectSettings.setProcess(None)
+            self.solverStatusChanged.emit(status)
 
     def save(self):
         self._fileDB.save()
@@ -193,23 +204,20 @@ class _Project(QObject):
 
         self._meshLoaded = True if self._coreDB.getRegions() else False
 
-        process = self._projectSettings.getProcess()
-        if process:
-            self._runType = RunType.PROCESS
-            self.setSolverProcess(self._projectSettings.getProcess())
+        pid, startTime = self._projectSettings.getProcess()
+        if pid and startTime:
+            if run.isProcessRunning(pid, startTime):
+                self.setSolverProcess((pid, startTime))
+            else:
+                self.setSolverStatus(SolverStatus.ENDED)
         else:
-            self._status = SolverStatus.NONE
+            self.setSolverStatus(SolverStatus.NONE)
 
     def _close(self):
         self._settings = None
         coredb.destroy()
         if self._projectLock:
             self._projectLock.release()
-
-    def _setStatus(self, status):
-        if self._status != status:
-            self._status = status
-            self.solverStatusChanged.emit(status)
 
     def _startProcessMonitor(self, process):
         self._timer = QTimer()
@@ -219,11 +227,9 @@ class _Project(QObject):
 
     def _updateProcessStatus(self):
         if isProcessRunning(*self.solverProcess()):
-            self._setStatus(SolverStatus.RUNNING)
+            self.setSolverStatus(SolverStatus.RUNNING)
         else:
-            self._projectSettings.setProcess(None)
-            self._setStatus(SolverStatus.NONE)
-            self._runType = None
+            self.setSolverStatus(SolverStatus.ENDED)
             self._stopMonitor()
 
         return self._status

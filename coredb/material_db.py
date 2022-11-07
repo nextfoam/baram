@@ -45,6 +45,10 @@ class MaterialDB(object):
         return f'{cls.MATERIALS_XPATH}/material[@mid="{mid}"]'
 
     @classmethod
+    def getName(cls, mid):
+        return cls.dbTextToPhase(coredb.CoreDB().getValue(cls.getXPath(mid) + '/name'))
+
+    @classmethod
     def getPhase(cls, mid) -> Phase:
         return cls.dbTextToPhase(coredb.CoreDB().getValue(cls.getXPath(mid) + '/phase'))
 

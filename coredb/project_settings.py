@@ -7,7 +7,6 @@ from filelock import FileLock
 
 import yaml
 
-import openfoam.run as run
 from coredb.app_settings import AppSettings
 
 
@@ -36,8 +35,6 @@ class ProjectSettings:
     @property
     def path(self):
         return self.get(ProjectSettingKey.PATH)
-        # path = self.get(ProjectSettingKey.PATH)
-        # return Path(path) if path else None
 
     def get(self, key):
         if self._settings:
@@ -56,14 +53,7 @@ class ProjectSettings:
         self.save()
 
     def getProcess(self):
-        pid = self.get(ProjectSettingKey.PROCESS_ID)
-        startTime = self.get(ProjectSettingKey.PROCESS_START_TIME)
-
-        if run.isProcessRunning(pid, startTime):
-            return pid, startTime
-
-        self.setProcess(None)
-        return None
+        return self.get(ProjectSettingKey.PROCESS_ID), self.get(ProjectSettingKey.PROCESS_START_TIME)
 
     def acquireLock(self, timeout):
         lock = FileLock(self._settingsPath / 'case.lock')

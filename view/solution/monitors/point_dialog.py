@@ -56,9 +56,9 @@ class PointDialog(QDialog):
 
         writer = CoreDBWriter()
         field = self._ui.field.currentData()
+        writer.append(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
         writer.append(self._xpath + '/field/field', field.field, None)
         writer.append(self._xpath + '/field/mid', field.mid, None)
-        writer.append(self._xpath + '/interval', self._ui.interval.text(), self.tr("Interval"))
         writer.append(self._xpath + '/coordinate/x', self._ui.coordinateX.text(), self.tr("Coordinate X"))
         writer.append(self._xpath + '/coordinate/y', self._ui.coordinateY.text(), self.tr("Coordinate Y"))
         writer.append(self._xpath + '/coordinate/z', self._ui.coordinateZ.text(), self.tr("Coordinate Z"))
@@ -91,10 +91,10 @@ class PointDialog(QDialog):
 
     def _load(self):
         self._ui.name.setText(self._name)
+        self._ui.writeInterval.setText(self._db.getValue(self._xpath + '/writeInterval'))
         self._ui.field.setCurrentText(
             FieldHelper.DBFieldKeyToText(self._db.getValue(self._xpath + '/field/field'),
                                          self._db.getValue(self._xpath + '/field/mid')))
-        self._ui.interval.setText(self._db.getValue(self._xpath + '/interval'))
         self._ui.coordinateX.setText(self._db.getValue(self._xpath + '/coordinate/x'))
         self._ui.coordinateY.setText(self._db.getValue(self._xpath + '/coordinate/y'))
         self._ui.coordinateZ.setText(self._db.getValue(self._xpath + '/coordinate/z'))

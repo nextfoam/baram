@@ -6,7 +6,7 @@ from enum import Enum, auto
 from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import QObject, Signal
 
-from coredb.project import Project, SolverStatus
+from coredb.project import Project
 
 
 class MenuItem(Enum):
@@ -73,16 +73,16 @@ class NavigatorView(QObject):
     def updateMenu(self):
         project = Project.instance()
         noMesh = not project.meshLoaded
-        solverSubmitted = project.solverStatus() != SolverStatus.NONE
+        solverActivated = project.isSolverActive()
 
-        self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(solverSubmitted)
-        self._menu[MenuItem.MENU_SETUP_MODELS.value].setDisabled(solverSubmitted)
-        self._menu[MenuItem.MENU_SETUP_MATERIALS.value].setDisabled(solverSubmitted)
-        self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(noMesh or solverSubmitted)
-        self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(noMesh or solverSubmitted)
-        self._menu[MenuItem.MENU_SETUP_REFERENCE_VALUES.value].setDisabled(solverSubmitted)
+        self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(solverActivated)
+        self._menu[MenuItem.MENU_SETUP_MODELS.value].setDisabled(solverActivated)
+        self._menu[MenuItem.MENU_SETUP_MATERIALS.value].setDisabled(solverActivated)
+        self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(noMesh or solverActivated)
+        self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(noMesh or solverActivated)
+        self._menu[MenuItem.MENU_SETUP_REFERENCE_VALUES.value].setDisabled(solverActivated)
 
-        self._menu[MenuItem.MENU_SOLUTION_INITIALIZATION.value].setDisabled(solverSubmitted)
+        self._menu[MenuItem.MENU_SOLUTION_INITIALIZATION.value].setDisabled(solverActivated)
         self._menu[MenuItem.MENU_SOLUTION_RUN.value].setDisabled(noMesh)
 
     def _connectSignalsSlots(self):

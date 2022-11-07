@@ -6,6 +6,7 @@ import os
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 
+from openfoam import run
 from .recent_widget_ui import Ui_RecentWidget
 
 
@@ -19,7 +20,8 @@ class RecentWidget(QWidget):
 
         path = settings.path
         self._ui.name.setText(os.path.basename(path))
-        if settings.getProcess():
+        pid, startTime = settings.getProcess()
+        if run.isProcessRunning(pid, startTime):
             self._ui.status.setText('Running')
 
         self._ui.path.setText(path)

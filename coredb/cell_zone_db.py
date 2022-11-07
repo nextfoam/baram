@@ -65,7 +65,7 @@ class CellZoneDB:
             for rname in db.getRegions():
                 r = '' if rname == '' else rname + ':'
                 for czid, czname in db.getCellZones(rname):
-                    if czname != cls.NAME_FOR_ALL:
-                        cls._cellzones.append(SelectorItem(f'{r}{czname}', czname, str(czid)))
+                    # if czname != cls.NAME_FOR_ALL:
+                    cls._cellzones.append(SelectorItem(f'{r}{czname}', czname, str(czid)))
 
         return cls._cellzones

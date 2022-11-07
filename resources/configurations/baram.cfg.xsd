@@ -114,7 +114,7 @@
     <xs:complexType name="referenceValuesType">
         <xs:sequence>
             <xs:element name="area" type="inputNumberType" default="1"/>
-            <xs:element name="density" type="inputNumberType" default="1"/>
+            <xs:element name="density" type="inputNumberType" default="1.225"/>
             <xs:element name="length" type="inputNumberType" default="1"/>
             <xs:element name="velocity" type="inputNumberType" default="1"/>
             <xs:element name="pressure" type="inputNumberType" default="0"/>
@@ -1237,6 +1237,8 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="name" type="xs:string"/>
+                <xs:element name="showChart" type="xs:boolean"/>
+                <xs:element name="writeInterval" type="inputNumberType"/>
                 <xs:element name="dragDirection" type="vector"/>
                 <xs:element name="liftDirection" type="vector"/>
                 <xs:element name="pitchAxisDirection" type="vector"/>
@@ -1255,6 +1257,8 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="name" type="xs:string"/>
+                <xs:element name="showChart" type="xs:boolean"/>
+                <xs:element name="writeInterval" type="inputNumberType"/>
                 <xs:element name="field" type="scalarFieldType"/>
                 <xs:element name="interval" type="xs:positiveInteger" default="1"/>
                 <xs:element name="coordinate" type="vector"/>
@@ -1269,12 +1273,16 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="name" type="xs:string"/>
+                <xs:element name="showChart" type="xs:boolean"/>
+                <xs:element name="writeInterval" type="inputNumberType"/>
                 <xs:element name="reportType" default="areaWeightedAverage">
                     <xs:simpleType>
                         <xs:restriction base="xs:string">
                             <xs:enumeration value="areaWeightedAverage"/>
+                            <xs:enumeration value="massWeightedAverage"/>
                             <xs:enumeration value="Integral"/>
-                            <xs:enumeration value="flowRate"/>
+                            <xs:enumeration value="massFlowRate"/>
+                            <xs:enumeration value="volumeFlowRate"/>
                             <xs:enumeration value="minimum"/>
                             <xs:enumeration value="maximum"/>
                             <xs:enumeration value="cov"/>
@@ -1291,6 +1299,8 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="name" type="xs:string" default="volumeAverage"/>
+                <xs:element name="showChart" type="xs:boolean"/>
+                <xs:element name="writeInterval" type="inputNumberType"/>
                 <xs:element name="reportType">
                     <xs:simpleType>
                         <xs:restriction base="xs:string">
