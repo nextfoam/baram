@@ -28,12 +28,18 @@ class ReferenceValuesPage(QWidget):
         writer = CoreDBWriter()
         xpath = ReferenceValuesDB.REFERENCE_VALUES_XPATH
 
+        writer.append(xpath + '/area', self._ui.area.text(), self.tr("Area"))
+        writer.append(xpath + '/density', self._ui.density.text(), self.tr("Density"))
+        writer.append(xpath + '/length', self._ui.length.text(), self.tr("Length"))
+        writer.append(xpath + '/velocity', self._ui.velocity.text(), self.tr("Velocity"))
+        writer.append(xpath + '/pressure', self._ui.pressure.text(), self.tr("Pressure"))
+
         writer.append(xpath + '/referencePressureLocation/x',
-                      self._ui.referencePressureLocationX.text(), self.tr("Reference Pressure Location X"))
+                      self._ui.pressureLocationX.text(), self.tr("Reference Pressure Location X"))
         writer.append(xpath + '/referencePressureLocation/y',
-                      self._ui.referencePressureLocationY.text(), self.tr("Reference Pressure Location Y"))
+                      self._ui.pressureLocationY.text(), self.tr("Reference Pressure Location Y"))
         writer.append(xpath + '/referencePressureLocation/z',
-                      self._ui.referencePressureLocationZ.text(), self.tr("Reference Pressure Location Z"))
+                      self._ui.pressureLocationZ.text(), self.tr("Reference Pressure Location Z"))
 
         errorCount = writer.write()
         if errorCount > 0:
@@ -44,6 +50,12 @@ class ReferenceValuesPage(QWidget):
 
     def _load(self):
         xpath = ReferenceValuesDB.REFERENCE_VALUES_XPATH
-        self._ui.referencePressureLocationX.setText(self._db.getValue(xpath + '/referencePressureLocation/x'))
-        self._ui.referencePressureLocationY.setText(self._db.getValue(xpath + '/referencePressureLocation/y'))
-        self._ui.referencePressureLocationZ.setText(self._db.getValue(xpath + '/referencePressureLocation/z'))
+        self._ui.area.setText(self._db.getValue(xpath + '/area'))
+        self._ui.density.setText(self._db.getValue(xpath + '/density'))
+        self._ui.length.setText(self._db.getValue(xpath + '/length'))
+        self._ui.velocity.setText(self._db.getValue(xpath + '/velocity'))
+        self._ui.pressure.setText(self._db.getValue(xpath + '/pressure'))
+
+        self._ui.pressureLocationX.setText(self._db.getValue(xpath + '/referencePressureLocation/x'))
+        self._ui.pressureLocationY.setText(self._db.getValue(xpath + '/referencePressureLocation/y'))
+        self._ui.pressureLocationZ.setText(self._db.getValue(xpath + '/referencePressureLocation/z'))
