@@ -352,12 +352,19 @@ class ControlDict(DictionaryFile):
         return data
 
     def _generateVolumes(self, xpath):
+        field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
+                                              self._db.getValue(xpath + '/field/mid'))
+
+        if field == 'mag(U)':
+            self._appendMagFieldFunctionObject()
+        elif field in ('Ux', 'Uy', 'Uz'):
+            self._appendComponentsFunctionObject()
+
         data = {
             'type': 'volFieldValue',
             'libs': ['"libfieldFunctionObjects.so"'],
 
-            'fields': [FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
-                                                     self._db.getValue(xpath + '/field/mid'))],
+            'fields': [field],
             'operation': VOLUME_MONITOR_OPERATION[self._db.getValue(xpath + '/reportType')],
             'writeFields': 'false',
 
