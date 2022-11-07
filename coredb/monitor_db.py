@@ -29,8 +29,10 @@ class Field(Enum):
 
 class SurfaceReportType(Enum):
     AREA_WEIGHTED_AVERAGE = 'areaWeightedAverage'
+    MASS_WEIGHTED_AVERAGE = 'massWeightedAverage'
     INTEGRAL = 'Integral'
-    FLOW_RATE = 'flowRate'
+    MASS_FLOW_RATE = 'massFlowRate'
+    VOLUME_FLOW_RATE = 'volumeFlowRate'
     MINIMUM = 'minimum'
     MAXIMUM = 'maximum'
     COEFFICIENT_OF_VARIATION = 'cov'
@@ -52,8 +54,10 @@ class MonitorDB:
 
     _surfaceReportTypes = {
         SurfaceReportType.AREA_WEIGHTED_AVERAGE.value: QCoreApplication.translate('MonitorDB', 'Area-Weighted Average'),
+        SurfaceReportType.MASS_WEIGHTED_AVERAGE.value: QCoreApplication.translate('MonitorDB', 'Mass-Weighted Average'),
         SurfaceReportType.INTEGRAL.value: QCoreApplication.translate('MonitorDB', 'Integral'),
-        SurfaceReportType.FLOW_RATE.value: QCoreApplication.translate('MonitorDB', 'Flow Rate'),
+        SurfaceReportType.MASS_FLOW_RATE.value: QCoreApplication.translate('MonitorDB', 'Mass Flow Rate'),
+        SurfaceReportType.VOLUME_FLOW_RATE.value: QCoreApplication.translate('MonitorDB', 'Volume Flow Rate'),
         SurfaceReportType.MINIMUM.value: QCoreApplication.translate('MonitorDB', 'Minimum'),
         SurfaceReportType.MAXIMUM.value: QCoreApplication.translate('MonitorDB', 'Maximum'),
         SurfaceReportType.COEFFICIENT_OF_VARIATION.value:
@@ -109,6 +113,21 @@ class FieldHelper:
         Field.DENSITY: QCoreApplication.translate('MonitorField', 'Density'),
         Field.MODIFIED_PRESSURE: QCoreApplication.translate('MonitorField', 'Modified Pressure'),
         Field.MATERIAL: QCoreApplication.translate('MonitorField', 'material'),
+    }
+
+    FIELDS = {
+        Field.PRESSURE: 'p',
+        Field.SPEED: 'mag(U)',
+        Field.X_VELOCITY: 'Ux',
+        Field.Y_VELOCITY: 'Uy',
+        Field.Z_VELOCITY: 'Uz',
+        Field.TURBULENT_KINETIC_ENERGY: 'k',
+        Field.TURBULENT_DISSIPATION_RATE: 'epsilon',
+        Field.SPECIFIC_DISSIPATION_RATE: 'omega',
+        Field.MODIFIED_TURBULENT_VISCOSITY: 'nuTilda',
+        Field.TEMPERATURE: 'T',
+        Field.DENSITY: 'rho',
+        Field.MODIFIED_PRESSURE: 'p_rgh',
     }
 
     class FieldItem:
@@ -187,6 +206,13 @@ class FieldHelper:
     @classmethod
     def DBFieldKeyToText(cls, field, mid):
         if field == Field.MATERIAL.value:
-            return coredb.CoreDB().getValue(MaterialDB.getXPath(mid) + '/name')
+            return MaterialDB.getName(mid)
         else:
             return cls.FIELD_TEXTS[Field(field)]
+
+    @classmethod
+    def DBFieldKeyToField(cls, field, mid):
+        if field == Field.MATERIAL.value:
+            return MaterialDB.getName(mid)
+        else:
+            return cls.FIELDS[Field(field)]
