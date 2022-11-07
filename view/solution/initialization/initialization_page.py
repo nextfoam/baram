@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QWidget, QFileDialog, QMessageBox
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.app_settings import AppSettings
+from coredb.project import Project, SolverStatus
 from openfoam.file_system import FileSystem
 from .initialization_page_ui import Ui_InitializationPage
 from .option_dialog import OptionDialog
@@ -114,6 +115,7 @@ class InitializationPage(QWidget):
         if confirm == QMessageBox.Yes:
             regions = self._db.getRegions()
             FileSystem.initialize(regions)
+            Project.instance().setSolverStatus(SolverStatus.NONE)
 
     def _sourceCaseSelected(self):
         if dirs := self._dialog.selectedFiles():

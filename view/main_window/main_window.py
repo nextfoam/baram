@@ -42,6 +42,7 @@ from .navigator_view import NavigatorView, MenuItem
 from .mesh_dock import MeshDock
 from .console_dock import ConsoleDock
 from .chart_dock import ChartDock
+# from .monitor_dock import MonitorDock
 
 
 logger = logging.getLogger(__name__)
@@ -90,10 +91,12 @@ class MainWindow(QMainWindow):
         self._meshDock = MeshDock(self)
         self._consoleDock = ConsoleDock(self)
         self._chartDock = ChartDock(self)
+        # self._monitorDock = MonitorDock(self)
 
-        self._addDockTabified(self._consoleDock)
-        self._addDockTabified(self._meshDock)
-        self._addDockTabified(self._chartDock)
+        self._addTabifiedDock(self._consoleDock)
+        self._addTabifiedDock(self._meshDock)
+        self._addTabifiedDock(self._chartDock)
+        # self._addTabifiedDock(self._monitorDock)
 
         self._menuPages = {
             MenuItem.MENU_TOP.value: MenuPage(),
@@ -183,10 +186,10 @@ class MainWindow(QMainWindow):
         self._ui.actionLanguage.triggered.connect(self._changeLanguage)
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
 
-        self._project.meshStatusChanged.connect(self._updateMenuEnables)
+        self._project.meshChanged.connect(self._meshChanged)
         self._project.solverStatusChanged.connect(self._updateMenuEnables)
         self._project.projectChanged.connect(self._projectChanged)
-        self._meshManager.meshChanged.connect(self._meshChanged, Qt.ConnectionType.QueuedConnection)
+        self._meshManager.meshChanged.connect(self._vtkChanged, Qt.ConnectionType.QueuedConnection)
 
     def _save(self):
         if self._saveCurrentPage():
@@ -244,7 +247,7 @@ class MainWindow(QMainWindow):
         self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _meshChanged(self):
+    async def _vtkChanged(self):
         await PolyMeshLoader().loadVtk()
 
     def _changeForm(self, currentMenu):
@@ -255,21 +258,22 @@ class MainWindow(QMainWindow):
 
         self._contentView.changePane(page.index)
 
-    def _updateMenuEnables(self):
-        self._ui.menuMesh.setEnabled(self._project.meshLoaded)
-        self._navigatorView.updateMenu()
-
-        if self._project.meshLoaded:
+    def _meshChanged(self, updated):
+        if self._project.meshLoaded and updated:
             self._clearPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
             self._clearPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
             self._clearPage(MenuItem.MENU_SOLUTION_MONITORS)
             self._loadPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
             self._loadPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
 
+    def _updateMenuEnables(self):
+        self._ui.menuMesh.setEnabled(self._project.meshLoaded)
+        self._navigatorView.updateMenu()
+
     def _projectChanged(self):
         self.setWindowTitle(f'{self.tr("Baram")} - {self._project.path}')
 
-    def _addDockTabified(self, dock):
+    def _addTabifiedDock(self, dock):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
         self.tabifyDock(dock)
         self._ui.menuView.addAction(dock.toggleViewAction())

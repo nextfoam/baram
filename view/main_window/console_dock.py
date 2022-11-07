@@ -68,10 +68,10 @@ class ConsoleDock(TabifiedDock):
         self.stopReading = True
 
     def solverStatusChanged(self, status):
-        if status == SolverStatus.NONE:
-            self.stopCollecting()
-        elif status == SolverStatus.RUNNING:
+        if status == SolverStatus.RUNNING:
             self.startCollecting()
+        else:
+            self.stopCollecting()
 
     def _mainWindowClosed(self, result):
         if self.readTask is not None:

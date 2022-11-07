@@ -104,9 +104,9 @@ class PolyMeshLoader:
     async def loadMesh(self, srcPath=None):
         boundaries = await self._loadBoundaries(srcPath)
         vtkMesh = await self._loadVtkMesh(self._buildPatchArrayStatus(boundaries))
-        self._updateDB(vtkMesh, boundaries)
+        updated = self._updateDB(vtkMesh, boundaries)
         app.updateVtkMesh(VtkMesh(vtkMesh))
-        Project.instance().setMeshLoaded(True)
+        Project.instance().setMeshLoaded(True, updated)
 
     async def loadVtk(self):
         vtkMesh = await self._loadVtkMesh(self._buildPatchArrayStatusFromDB())
@@ -213,7 +213,7 @@ class PolyMeshLoader:
         if set(db.getRegions()) == set(r for r in vtkMesh if 'boundary' in vtkMesh[r]) and \
                 all(oldBoundaries(rname) == newBoundareis(rname) and oldCellZones(rname) == newCellZones(rname)
                     for rname in boundaries):
-            return
+            return False
 
         db.clearRegions()
         db.clearMonitors()
@@ -227,3 +227,5 @@ class PolyMeshLoader:
             if 'zones' in vtkMesh[rname] and 'cellZones' in vtkMesh[rname]['zones']:
                 for czname in vtkMesh[rname]['zones']['cellZones']:
                     db.addCellZone(rname, czname)
+
+        return True

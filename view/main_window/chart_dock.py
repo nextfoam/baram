@@ -91,10 +91,10 @@ class ChartDock(TabifiedDock):
         self.solverInfoManager.stopCollecting()
 
     def solverStatusChanged(self, status):
-        if status == SolverStatus.NONE:
-            self.stopDrawing()
-        elif status == SolverStatus.RUNNING:
+        if status == SolverStatus.RUNNING:
             self.startDrawing()
+        else:
+            self.stopDrawing()
 
     def _mainWindowClosed(self, result):
         self.stopDrawing()
