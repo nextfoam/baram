@@ -82,6 +82,7 @@ class MainWindow(QMainWindow):
 
         self._project = Project.instance()
         self._projectChanged()
+        FileSystem.setupForProject()
 
         self._navigatorView = NavigatorView(self._ui.navigatorView)
         self._contentView = ContentView(self._ui.formView, self._ui)
@@ -125,7 +126,6 @@ class MainWindow(QMainWindow):
 
         if self._project.meshLoaded:
             self._meshManager.meshChanged.emit()
-        FileSystem.setupForProject()
 
         if self._project.isSolverRunning():
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN)
@@ -259,6 +259,7 @@ class MainWindow(QMainWindow):
         self._contentView.changePane(page.index)
 
     def _meshChanged(self, updated):
+        self._updateMenuEnables()
         if self._project.meshLoaded and updated:
             self._clearPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
             self._clearPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
