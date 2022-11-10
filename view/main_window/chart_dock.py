@@ -110,8 +110,6 @@ class ChartDock(TabifiedDock):
         for c in columns:
             if c not in self._lines:
                 self._lines[c], = self._axes.plot('Time', c, '', label=c[:-8], data=d)
-                arrStyleLine = ["-", "--", "-.", ":"]
-                self._lines[c].set_linestyle(arrStyleLine[random.randrange(3)])
                 self._lines[c].set_linewidth(0.8)
             else:
                 self._lines[c].set_data(d[['Time', c]].to_numpy().transpose())
@@ -144,7 +142,9 @@ class ChartDock(TabifiedDock):
 
         self._adjustYRange(data, minX, maxX)
 
-        self._axes.legend()
+        legend = self._axes.legend()
+        for h in legend.legendHandles:
+            h.set_linewidth(1.6)
 
         self._canvas.draw()
         # self._canvas.draw_idle()
@@ -192,8 +192,10 @@ class ChartDock(TabifiedDock):
                               data.columns.values.tolist()))
         d = data[(data.index >= minX) & (data.index <= maxX)][columns]
 
-        if minY is None or minY > d.min().min():
-            minY = d.min().min()
+        minimum = d[d > 0].min().min()  # Residual value of "0" has been shown once
+        if minY is None or minY > minimum:
+            minY = minimum
+
         if maxY is None or maxY < d.max().max():
             maxY = d.max().max()
 
