@@ -6,6 +6,7 @@ from PySide6.QtCore import QCoreApplication
 from coredb import coredb
 from coredb.region_db import RegionDB
 from coredb.boundary_db import BoundaryDB
+from openfoam.constant.dynamic_mesh_dict import DynamicMeshDict
 from openfoam.constant.thermophysical_properties import ThermophysicalProperties
 from openfoam.constant.operating_conditions import OperatingConditions
 from openfoam.constant.MRF_properties import MRFProperties
@@ -51,6 +52,7 @@ class CaseGenerator:
             ThermophysicalProperties(rname).build().write()
             OperatingConditions(rname).build().write()
             MRFProperties(rname).build().write()
+            DynamicMeshDict(rname).build().write()
 
             if region.isFluid():
                 TurbulenceProperties(rname).build().write()
