@@ -47,8 +47,8 @@ class FvSolution(DictionaryFile):
 
             self._data = {
                 'solvers': {
-                    'p': (p := self._constructSolversP()),
-                    'pFinal': p,
+                    '"(p|pcorr)"': (p := self._constructSolversP()),
+                    '"(p|pcorr)Final"': p,
                     'p_rgh': (p_rgh := {
                         'solver': 'PCG',
                         'preconditioner': {
