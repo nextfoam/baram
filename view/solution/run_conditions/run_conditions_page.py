@@ -98,7 +98,7 @@ class RunConditionsPage(QWidget):
 
         self._ui.numberOfCores.setText(self._db.getValue(self._xpath + '/parallel/numberOfCores'))
         self._ui.cluster.setChecked(
-            self._db.getValue(self._xpath + '/parallel/localhost') == 'true')
+            self._db.getValue(self._xpath + '/parallel/localhost') == 'false')
         self._ui.hostFile.setText(self._db.getValue(self._xpath + '/parallel/hostfile'))
 
         return super().showEvent(ev)
@@ -143,7 +143,7 @@ class RunConditionsPage(QWidget):
         writer.append(self._xpath + '/parallel/numberOfCores', self._ui.numberOfCores.text(),
                       self.tr('Number of Cores'))
         writer.append(self._xpath + '/parallel/localhost',
-                      'true' if self._ui.cluster.isChecked() else 'false',
+                      'false' if self._ui.cluster.isChecked() else 'true',
                       self.tr('Cluster'))
         writer.append(self._xpath + '/parallel/hostfile', self._ui.hostFile.text(), None)
 
