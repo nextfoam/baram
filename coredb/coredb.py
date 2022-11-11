@@ -18,6 +18,7 @@ import pandas as pd
 import resource_rc
 
 from resources import resource
+from coredb import migrate
 
 ns = 'http://www.baramcfd.org/baram'
 nsmap = {'': ns}
@@ -944,8 +945,13 @@ class _CoreDB(object):
             ds = f['configuration']
             if h5py.check_string_dtype(ds.dtype) is None:
                 raise ValueError
-            root = etree.fromstring(ds[()], self._xmlParser)
-            self._xmlTree = etree.ElementTree(root)
+
+            root = etree.fromstring(ds[()])
+            migrate.migrate(root)
+
+            tree = etree.ElementTree(root)
+            self._xmlSchema.assertValid(tree)
+            self._xmlTree = tree
 
         self._configCountAtSave = self._configCount
 

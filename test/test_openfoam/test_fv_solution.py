@@ -23,12 +23,12 @@ class TestFvSolution(unittest.TestCase):
     def testCompressible(self):
         self._db.setValue(GeneralDB.GENERAL_XPATH + '/flowType', "compressible")
         content = FvSolution(region).build().asDict()
-        self.assertEqual('PBiCGStab', content['solvers']['p']['solver'])
+        self.assertEqual('PBiCGStab', content['solvers']['"(p|pcorr)"']['solver'])
 
     def testIncompressible(self):
         self._db.setValue(GeneralDB.GENERAL_XPATH + '/flowType', "incompressible")
         content = FvSolution(region).build().asDict()
-        self.assertEqual('PCG', content['solvers']['p']['solver'])
+        self.assertEqual('PCG', content['solvers']['"(p|pcorr)"']['solver'])
 
     def testSolid(self):
         self._db.setValue(RegionDB.getXPath(region) + '/material', self._steel)
