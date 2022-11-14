@@ -8,6 +8,7 @@ from coredb.general_db import GeneralDB
 from coredb.region_db import RegionDB
 from coredb.material_db import Phase
 from coredb.models_db import ModelsDB
+from coredb.reference_values_db import ReferenceValuesDB
 from openfoam.dictionary_file import DictionaryFile
 
 
@@ -87,8 +88,11 @@ class FvSolution(DictionaryFile):
                 'SIMPLE': {
                     'consistent': consistent,
                     'nNonOrthogonalCorrectors': '0',
-                    'pRefCell': '0',        # only for fluid
-                    'pRefValue': '0.0',     # only for fluid
+                    # only for fluid
+                    'pRefPoint': self._db.getVector(
+                        ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation'),
+                    # only for fluid
+                    'pRefValue': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'),
                     'solveEnergy': 'yes' if energyOn else 'no',  # NEXTfoam custom option
                     'residualControl': {
                         'p': self._db.getValue('.//convergenceCriteria/pressure/absolute'),
@@ -112,8 +116,11 @@ class FvSolution(DictionaryFile):
                     'maxCo': self._db.getValue('.//runConditions/maxCourantNumber'),
                     'nonOrthogonalityThreshold': '80',
                     'skewnessThreshold': '0.95',
-                    'pRefCell': '0',        # only for fluid
-                    'pRefValue': '0.0',     # only for fluid
+                    # only for fluid
+                    'pRefPoint': self._db.getVector(
+                        ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation'),
+                    # only for fluid
+                    'pRefValue': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'),
                     'rDeltaTSmoothingCoeff': '0.05',
                     'rDeltaTDampingCoeff': '0.5',
                     'solveEnergy': 'yes' if energyOn else 'no',  # NEXTfoam custom option
