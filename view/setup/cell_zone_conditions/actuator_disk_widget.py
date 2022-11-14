@@ -35,6 +35,9 @@ class ActuatorDiskWidget(QWidget):
         self._ui.powerCoefficient.setText(self._db.getValue(self._xpath + '/powerCoefficient'))
         self._ui.thrustCoefficient.setText(self._db.getValue(self._xpath + '/thrustCoefficient'))
         self._ui.diskArea.setText(self._db.getValue(self._xpath + '/diskArea'))
+        self._ui.upstreamPointX.setText(self._db.getValue(self._xpath + '/upstreamPoint/x'))
+        self._ui.upstreamPointY.setText(self._db.getValue(self._xpath + '/upstreamPoint/y'))
+        self._ui.upstreamPointZ.setText(self._db.getValue(self._xpath + '/upstreamPoint/z'))
         self._getForceComputationRadio(self._db.getValue(self._xpath + '/forceComputation')).setChecked(True)
 
     def appendToWriter(self, writer):
@@ -46,6 +49,9 @@ class ActuatorDiskWidget(QWidget):
         writer.append(self._xpath + '/thrustCoefficient',
                       self._ui.thrustCoefficient.text(), self.tr("Thrust Coefficient"))
         writer.append(self._xpath + '/diskArea', self._ui.diskArea.text(), self.tr("Disk Area"))
+        writer.append(self._xpath + '/upstreamPoint/x', self._ui.upstreamPointX.text(), self.tr("Upstream Point X"))
+        writer.append(self._xpath + '/upstreamPoint/y', self._ui.upstreamPointY.text(), self.tr("Upstream Point Y"))
+        writer.append(self._xpath + '/upstreamPoint/z', self._ui.upstreamPointZ.text(), self.tr("Upstream Point Z"))
         writer.append(self._xpath + '/forceComputation', self._getForceComputationRadioValue(), None)
 
     def _getForceComputationRadio(self, value):

@@ -128,6 +128,10 @@ class FvOptions(DictionaryFile):
             'Cp': powerCoefficient,
             'Ct': thrustCoefficient,
             'diskArea': diskArea,
+            'monitorMethod': 'points',
+            'monitorCoeffs': {
+                'points' : [self._db.getVector(xpath + '/upstreamPoint')]
+            },
             'variant': forceComputation
         }
         if czname == 'All':

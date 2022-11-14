@@ -73,6 +73,9 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual(self._db.getValue(xpath + '/thrustCoefficient'), content[f'actuationDiskSource_{self.czname}']['Ct'])
         self.assertEqual(self._db.getValue(xpath + '/diskArea'), content[f'actuationDiskSource_{self.czname}']['diskArea'])
         self.assertEqual('Froude', content[f'actuationDiskSource_{self.czname}']['variant'])
+        self.assertEqual('points', content[f'actuationDiskSource_{self.czname}']['monitorMethod'])
+        self.assertEqual(self._db.getVector(xpath + '/upstreamPoint'),
+                         content[f'actuationDiskSource_{self.czname}']['monitorCoeffs']['points'][0])
         self.assertEqual('cellZone', content[f'actuationDiskSource_{self.czname}']['selectionMode'])
         self.assertEqual(self.czname, content[f'actuationDiskSource_{self.czname}']['cellZone'])
 
