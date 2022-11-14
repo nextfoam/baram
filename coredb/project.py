@@ -135,6 +135,9 @@ class _Project(QObject):
     def isSolverActive(self):
         return self._status == SolverStatus.WAITING or self._status == SolverStatus.RUNNING
 
+    def hasSolved(self):
+        return self._status == SolverStatus.RUNNING or self._status == SolverStatus.ENDED
+
     def setMeshLoaded(self, loaded, updated=True):
         self._meshLoaded = loaded
         self.meshChanged.emit(updated)

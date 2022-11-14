@@ -1237,7 +1237,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="name" type="xs:string"/>
-                <xs:element name="showChart" type="xs:boolean"/>
+                <xs:element name="showChart" type="xs:boolean" default="true"/>
                 <xs:element name="writeInterval" type="inputNumberType"/>
                 <xs:element name="dragDirection" type="vector"/>
                 <xs:element name="liftDirection" type="vector"/>
@@ -1257,7 +1257,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="name" type="xs:string"/>
-                <xs:element name="showChart" type="xs:boolean"/>
+                <xs:element name="showChart" type="xs:boolean" default="true"/>
                 <xs:element name="writeInterval" type="inputNumberType"/>
                 <xs:element name="field" type="scalarFieldType"/>
                 <xs:element name="interval" type="xs:positiveInteger" default="1"/>
@@ -1273,7 +1273,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="name" type="xs:string"/>
-                <xs:element name="showChart" type="xs:boolean"/>
+                <xs:element name="showChart" type="xs:boolean" default="true"/>
                 <xs:element name="writeInterval" type="inputNumberType"/>
                 <xs:element name="reportType" default="areaWeightedAverage">
                     <xs:simpleType>
@@ -1299,7 +1299,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="name" type="xs:string" default="volumeAverage"/>
-                <xs:element name="showChart" type="xs:boolean"/>
+                <xs:element name="showChart" type="xs:boolean" default="true"/>
                 <xs:element name="writeInterval" type="inputNumberType"/>
                 <xs:element name="reportType">
                     <xs:simpleType>

@@ -23,6 +23,7 @@ class FileSystem:
     BOUNDARY_DATA_DIRECTORY_NAME = 'boundaryData'
     REGION_PROPERTIES_FILE_NAME = 'regionProperties'
     FOAM_FILE_NAME = 'baram.foam'
+    POST_PROCESSING_DIRECTORY_NAME = 'postProcessing'
 
     _casePath: Optional[Path] = None
     _constantPath = None
@@ -79,6 +80,10 @@ class FileSystem:
     @classmethod
     def boundaryDataPath(cls, rname):
         return cls.constantPath(rname) / rname / cls.BOUNDARY_DATA_DIRECTORY_NAME
+
+    @classmethod
+    def postProcessingPath(cls, name):
+        return cls._casePath / cls.POST_PROCESSING_DIRECTORY_NAME / name
 
     @classmethod
     def foamFilePath(cls):

@@ -40,9 +40,9 @@ class ForceMonitorWidget(MonitorWidget):
         xpath = MonitorDB.getForceMonitorXPath(self._name)
 
         region = db.getValue(xpath + '/region')
-        boundaries = db.getValue(xpath + '/boundaries')
+        boundaries = db.getValue(xpath + '/boundaries').split()
 
-        region = f' ({region}' if region else ''
+        region = f' ({region})' if region else ''
         self._ui.name.setText(f'{self._name}{region}')
         self._ui.type.setText(
             f'Force on {len(boundaries)} Boundaries including {BoundaryDB.getBoundaryName(boundaries[0])}')

@@ -183,8 +183,8 @@ class ControlDict(DictionaryFile):
         for name in self._db.getForceMonitors():
             xpath = MonitorDB.getForceMonitorXPath(name)
             patches = [BoundaryDB.getBoundaryName(bcid) for bcid in self._db.getValue(xpath + '/boundaries').split()]
-            self._data['functions'][name] = self._generateForces(xpath, patches)
-            self._data['functions'][name + '_coeffs'] = self._generateForcesCoeffs(xpath, patches)
+            self._data['functions'][name + '_forces'] = self._generateForces(xpath, patches)
+            self._data['functions'][name] = self._generateForcesCoeffs(xpath, patches)
 
         for name in self._db.getPointMonitors():
             self._data['functions'][name] = self._generatePoints(MonitorDB.getPointMonitorXPath(name))
