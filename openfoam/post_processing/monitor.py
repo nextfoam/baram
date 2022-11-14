@@ -167,7 +167,7 @@ class ForceMonitor(Monitor):
         if self._running:
             self._chart1.appendData(pd.DataFrame(data, columns=['Cd']))
             self._chart2.appendData(pd.DataFrame(data, columns=['Cl']))
-            self._chart3.appendData(pd.DataFrame(data, columns=['CmPitch']))
+            self._chart3.appendData(pd.DataFrame(data, columns=['CmPitch']).rename(columns={'CmPitch': 'Cm'}))
 
 
 class PointMonitor(Monitor):

@@ -61,7 +61,7 @@ class MonitorDock(TabifiedDock):
             self._stopMonitor()
 
     def _mainWindowClosed(self, result):
-        self._stopMonitor()
+        self.clear()
 
     def clear(self):
         self._quitMonitor()

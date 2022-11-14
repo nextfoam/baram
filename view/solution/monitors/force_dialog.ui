@@ -176,7 +176,7 @@
          <item row="1" column="0">
           <widget class="QGroupBox" name="groupBox_4">
            <property name="title">
-            <string>Pitch Axis Direction</string>
+            <string>Axis of Moment</string>
            </property>
            <layout class="QFormLayout" name="formLayout_4">
             <item row="0" column="0">
