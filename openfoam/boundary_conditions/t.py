@@ -3,7 +3,7 @@
 
 from coredb import coredb
 from coredb.filedb import BcFileRole
-from coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallVelocityCondition
+from coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallVelocityCondition, WallTemperature
 from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution, InterfaceMode
 from coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT
 from coredb.models_db import ModelsDB
@@ -131,5 +131,28 @@ class T(BoundaryCondition):
         if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
             return self._constructFixedValue(constant)
         else:
-            return self._constructZeroGradient()
+            spec = self._db.getValue(xpath + '/wall/temperature/type')
+            if spec == WallTemperature.ADIABATIC.value:
+                return self._constructZeroGradient()
+            elif spec == WallTemperature.CONSTANT_TEMPERATURE.value:
+                t = self._db.getValue(xpath + '/wall/temperature/temperature')
+                return self._constructFixedValue(t)
+            elif spec == WallTemperature.CONSTANT_HEAT_FLUX.value:
+                q = self._db.getValue(xpath + '/wall/temperature/heatFlux')
+                return {
+                    'type': 'externalWallHeatFluxTemperature',
+                    'mode': 'flux',
+                    'q': ('uniform', q),
+                    'value': ('uniform', self._initialValue)
+                }
+            elif spec == WallTemperature.CONVECTION.value:
+                h = self._db.getValue(xpath + '/wall/temperature/heatTransferCoefficient')
+                ta = self._db.getValue(xpath + '/wall/temperature/freeStreamTemperature')
+                return {
+                    'type': 'externalWallHeatFluxTemperature',
+                    'mode': 'coefficient',
+                    'h': ('uniform', h),
+                    'Ta': ('uniform', ta),
+                    'value': ('uniform', self._initialValue)
+                }
 

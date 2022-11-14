@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 from enum import Enum, auto
 from pathlib import Path
@@ -84,6 +85,11 @@ class MainWindow(QMainWindow):
         self._projectChanged()
         FileSystem.setupForProject()
 
+        # 10MB(=10,485,760=1024*1024*10)
+        self._handler = RotatingFileHandler(self._project.path/'baram.log', maxBytes=10485760, backupCount=5)
+        self._handler.setFormatter(logging.Formatter("[%(asctime)s][%(name)s] ==> %(message)s"))
+        logging.getLogger().addHandler(self._handler)
+
         self._navigatorView = NavigatorView(self._ui.navigatorView)
         self._contentView = ContentView(self._ui.formView, self._ui)
 
@@ -158,6 +164,8 @@ class MainWindow(QMainWindow):
         else:
             event.ignore()
             return
+
+        logging.getLogger().removeHandler(self._handler)
 
         super().closeEvent(event)
         self.windowClosed.emit(self._closeType)

@@ -23,11 +23,22 @@ from view.main_window.start_window import Baram
 from coredb.app_settings import AppSettings
 
 
+def handle_exception(eType, eValue, eTraceback):
+    if issubclass(eType, KeyboardInterrupt):
+        sys.__excepthook__(eType, eValue, eTraceback)
+        return
+
+    logger.critical("Uncaught exception", exc_info=(eType, eValue, eTraceback))
+
+
+sys.excepthook = handle_exception
+
+
 if __name__ == '__main__':
     os.environ["QT_SCALE_FACTOR"] = AppSettings.getUiScaling()
 
     logger = logging.getLogger()
-    formatter = logging.Formatter("[%(name)s] %(message)s")
+    formatter = logging.Formatter("[%(asctime)s][%(name)s] ==> %(message)s")
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     logger.addHandler(handler)

@@ -155,12 +155,42 @@ class TestT(unittest.TestCase):
         content = T(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
 
-    def testWall(self):
+    def testWallAdiabatic(self):
         self._db.setValue(self._xpath + '/physicalType', 'wall')
         self._db.setValue(self._xpath + '/wall/velocity/type', 'noSlip')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
+
         content = T(RegionDB.getRegionProperties(region)).build().asDict()
+
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
+
+    def testWallConstantTemperature(self):
+        t = 321.1
+        self._db.setValue(self._xpath + '/physicalType', 'wall')
+        self._db.setValue(self._xpath + '/wall/velocity/type', 'slip')
+        self._db.setValue(self._xpath + '/wall/temperature/type', 'constantTemperature')
+        self._db.setValue(self._xpath + '/wall/temperature/temperature', str(t))
+
+        content = T(RegionDB.getRegionProperties(region)).build().asDict()
+
+        self.assertEqual('fixedValue', content['boundaryField'][boundary]['type'])
+        self.assertEqual(t, float(content['boundaryField'][boundary]['value'][1]))
+
+    def testWallConvection(self):
+        h = 123.4
+        ta = 321.1
+        self._db.setValue(self._xpath + '/physicalType', 'wall')
+        self._db.setValue(self._xpath + '/wall/velocity/type', 'movingWall')
+        self._db.setValue(self._xpath + '/wall/temperature/type', 'convection')
+        self._db.setValue(self._xpath + '/wall/temperature/heatTransferCoefficient', str(h))
+        self._db.setValue(self._xpath + '/wall/temperature/freeStreamTemperature', str(ta))
+
+        content = T(RegionDB.getRegionProperties(region)).build().asDict()
+
+        self.assertEqual('externalWallHeatFluxTemperature', content['boundaryField'][boundary]['type'])
+        self.assertEqual('coefficient', content['boundaryField'][boundary]['mode'])
+        self.assertEqual(h, float(content['boundaryField'][boundary]['h'][1]))
+        self.assertEqual(ta, float(content['boundaryField'][boundary]['Ta'][1]))
 
     def testThermoCoupledWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')

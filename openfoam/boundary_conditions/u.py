@@ -134,7 +134,7 @@ class U(BoundaryCondition):
             'type': 'rotatingWallVelocity',
             'origin': self._db.getVector(xpath + '/rotationAxisOrigin'),
             'axis': self._db.getVector(xpath + '/rotationAxisDirection'),
-            'omega': self._db.getValue(xpath + '/speed'),
+            'omega': float(self._db.getValue(xpath + '/speed')) * 2 * 3.141592 / 60,
         }
 
     def _constructVelocityInletU(self, xpath, bcid, name):
