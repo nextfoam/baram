@@ -38,6 +38,7 @@ class Worker(QObject):
 
     def __init__(self, name):
         super().__init__()
+        self._project = Project.instance()
         self._name = name
         self._reader = None
         self._timer = None
@@ -46,24 +47,26 @@ class Worker(QObject):
         self._reader = PostFileReader(self._name, fileName, extension)
 
     def startMonitor(self):
-        changedFiles = None
-        while not changedFiles:
-            if changedFiles := self._reader.chagedFiles():
-                for path in changedFiles[1:]:
-                    data = self._reader.readDataFrame(path)
-                    self.dataUpdated.emit(data)
-            time.sleep(1)
+        changedFiles = self._reader.chagedFiles()
+        while not changedFiles and self._project.isSolverRunning():
+            time.sleep(0.5)
+            changedFiles = self._reader.chagedFiles()
 
-        self._reader.openMonitor()
-        self._monitor()
+        if changedFiles:
+            for path in changedFiles[1:]:
+                data = self._reader.readDataFrame(path)
+                self.dataUpdated.emit(data)
 
-        if Project.instance().isSolverRunning():
-            self._timer = QTimer()
-            self._timer.setInterval(500)
-            self._timer.timeout.connect(self._monitor)
-            self._timer.start()
-        else:
-            self._reader.closeMonitor()
+            self._reader.openMonitor()
+            self._monitor()
+
+            if self._project.isSolverRunning():
+                self._timer = QTimer()
+                self._timer.setInterval(500)
+                self._timer.timeout.connect(self._monitor)
+                self._timer.start()
+            else:
+                self._reader.closeMonitor()
 
     def stopMonitor(self):
         if self._timer:
