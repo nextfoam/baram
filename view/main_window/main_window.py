@@ -8,6 +8,7 @@ from enum import Enum, auto
 from pathlib import Path
 
 import qasync
+import asyncio
 
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QThreadPool, Signal
@@ -32,6 +33,7 @@ from view.main_window.menu.mesh.mesh_scale_dialog import MeshScaleDialog
 from view.main_window.menu.mesh.mesh_translate_dialog import MeshTranslateDialog
 from view.main_window.menu.mesh.mesh_rotate_dialog import MeshRotateDialog
 from view.main_window.menu.settings_language import SettingLanguageDialog
+from view.widgets.progress_dialog import ProgressDialog
 from mesh.mesh_manager import MeshManager, MeshType
 from openfoam.file_system import FileSystem
 from openfoam.case_generator import CaseGenerator
@@ -224,7 +226,7 @@ class MainWindow(QMainWindow):
         self._importMesh(MeshType.FLUENT_2D, self.tr('Fluent2D (*.msh)'))
 
     def _importFluent3D(self):
-        self._importMesh(MeshType.FLUENT_3D, self.tr('Fluent3D (*.msh)'))
+        self._importMesh(MeshType.FLUENT_3D, self.tr('Fluent3D (*.cas)'))
 
     def _importStarCcmPlus(self):
         self._importMesh(MeshType.STAR_CCM, self.tr('StarCCM+ (*.ccm)'))
@@ -295,7 +297,8 @@ class MainWindow(QMainWindow):
         self._dialogSettingLanguage = SettingLanguageDialog(self)
         self._dialogSettingLanguage.open()
 
-    def _projectDirectorySelected(self):
+    @qasync.asyncSlot()
+    async def _projectDirectorySelected(self, result):
         # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
         self._ui.menubar.repaint()
 
@@ -313,8 +316,10 @@ class MainWindow(QMainWindow):
             path.mkdir(exist_ok=True)
 
             if self._saveCurrentPage():
-                FileSystem.saveAs(path)
+                progress = ProgressDialog(self, self.tr('Save As'), self.tr('Saving case'))
+                await asyncio.to_thread(FileSystem.saveAs, path)
                 self._project.saveAs(path)
+                progress.close()
 
     def _clearPage(self, menu):
         page = self._menuPages[menu.value]
