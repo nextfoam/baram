@@ -261,7 +261,7 @@ class TestU(unittest.TestCase):
                          content['boundaryField'][boundary]['origin'])
         self.assertEqual(self._db.getVector(self._xpath + '/wall/velocity/rotationalMovingWall/rotationAxisDirection'),
                          content['boundaryField'][boundary]['axis'])
-        self.assertEqual(self._db.getValue(self._xpath + '/wall/velocity/rotationalMovingWall/speed'),
+        self.assertEqual(float(self._db.getValue(self._xpath + '/wall/velocity/rotationalMovingWall/speed')) * 2 * 3.141592 / 60,
                          content['boundaryField'][boundary]['omega'])
 
     def testThermoCoupledWall(self):
