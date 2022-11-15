@@ -67,7 +67,7 @@ class ModelsPage(QWidget):
             self._dialog.open()
         elif model == Model.ENERGY.value:
             self._dialog = EnergyDialog(self)
-            self._dialog.accepted.connect(self._loadEnergyModel())
+            self._dialog.accepted.connect(self._loadEnergyModel)
             self._dialog.open()
         # elif model == Model.RADIATION.value:
         #     if self._radiationDialog is None:
