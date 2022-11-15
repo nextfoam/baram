@@ -31,12 +31,25 @@ def _addShowChartAndWriteIntervalV1(parent):
 
 def _version_1(root: etree.Element):
     logger.debug('  Upgrading to v2')
+    # print(etree.tostring(root, xml_declaration=True, encoding='UTF-8'))
+    root.set('version', '2')
 
     for p in root.findall(f'.//material/density', namespaces=_nsmap):
         if p.find('polynomial', namespaces=_nsmap) is None:
             logger.debug(f'    Adding polynomial to {p}')
             # Add "polynomial" at the end of child elements
             etree.SubElement(p, f'{{{_ns}}}polynomial').text = ''
+
+    for p in root.findall(f'.//cellZone/actuatorDisk', namespaces=_nsmap):
+        if p.find('upstreamPoint', namespaces=_nsmap) is None:
+            e = etree.fromstring('''
+                <upstreamPoint xmlns="http://www.baramcfd.org/baram">
+                    <x>0</x>
+                    <y>0</y>
+                    <z>0</z>
+                </upstreamPoint>
+            ''')
+            p.insert(4, e)
 
     for p in root.findall(f'.//monitors/forces/forceMonitor', namespaces=_nsmap):
         _addShowChartAndWriteIntervalV1(p)
@@ -54,6 +67,8 @@ def _version_1(root: etree.Element):
 
     for p in root.findall(f'.//monitor/volumes/volumeMonitor', namespaces=_nsmap):
         _addShowChartAndWriteIntervalV1(p)
+
+    # print(etree.tostring(root, xml_declaration=True, encoding='UTF-8'))
 
 
 _fTable = [
