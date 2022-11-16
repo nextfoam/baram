@@ -53,7 +53,7 @@
         </multiphaseModels>
         <energyModels>off</energyModels>
         <turbulenceModels>
-            <model>laminar</model>
+            <model>k-epsilon</model>
             <k-epsilon>
                 <model>standard</model>
                 <realizable>
@@ -101,19 +101,19 @@
         <convergenceCriteria>
             <pressure>
                 <absolute>0.001</absolute>
-                <relative>0.5</relative>
+                <relative>0.05</relative>
             </pressure>
             <momentum>
                 <absolute>0.001</absolute>
-                <relative>0.5</relative>
+                <relative>0.05</relative>
             </momentum>
             <energy>
                 <absolute>0.001</absolute>
-                <relative>0.5</relative>
+                <relative>0.05</relative>
             </energy>
             <turbulence>
                 <absolute>0.001</absolute>
-                <relative>0.5</relative>
+                <relative>0.05</relative>
             </turbulence>
         </convergenceCriteria>
         <advanced>
