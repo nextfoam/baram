@@ -92,7 +92,7 @@ class FileSystem:
     @classmethod
     def makeDir(cls, parent, directory):
         path = parent / directory
-        path.mkdir(exist_ok=True)
+        path.mkdir(parents=True, exist_ok=True)
         return path
 
     @classmethod
