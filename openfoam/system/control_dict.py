@@ -184,16 +184,16 @@ class ControlDict(DictionaryFile):
             xpath = MonitorDB.getForceMonitorXPath(name)
             patches = [BoundaryDB.getBoundaryName(bcid) for bcid in self._db.getValue(xpath + '/boundaries').split()]
             self._data['functions'][name + '_forces'] = self._generateForces(xpath, patches)
-            self._data['functions'][name] = self._generateForcesCoeffs(xpath, patches)
+            self._data['functions'][name] = self._generateForceMonitor(xpath, patches)
 
         for name in self._db.getPointMonitors():
-            self._data['functions'][name] = self._generatePoints(MonitorDB.getPointMonitorXPath(name))
+            self._data['functions'][name] = self._generatePointMonitor(MonitorDB.getPointMonitorXPath(name))
 
         for name in self._db.getSurfaceMonitors():
-            self._data['functions'][name] = self._generateSurfaces(MonitorDB.getSurfaceMonitorXPath(name))
+            self._data['functions'][name] = self._generateSurfaceMonitor(MonitorDB.getSurfaceMonitorXPath(name))
 
         for name in self._db.getVolumeMonitors():
-            self._data['functions'][name] = self._generateVolumes(MonitorDB.getVolumeMonitorXPath(name))
+            self._data['functions'][name] = self._generateVolumeMonitor(MonitorDB.getVolumeMonitorXPath(name))
 
     def _generateResiduals(self) -> dict:
         regions = self._db.getRegions()
@@ -237,7 +237,7 @@ class ControlDict(DictionaryFile):
 
             'writeControl': 'timeStep',
             'writeInterval': self._db.getValue(xpath + '/writeInterval'),
-            'log': 'true',
+            'log': 'false',
         }
 
         if region := self._db.getValue(xpath + '/region'):
@@ -245,7 +245,7 @@ class ControlDict(DictionaryFile):
 
         return data
 
-    def _generateForcesCoeffs(self, xpath, patches):
+    def _generateForceMonitor(self, xpath, patches):
         data = {
             'type': 'forceCoeffs',
             'libs': ['"libforces.so"'],
@@ -263,7 +263,7 @@ class ControlDict(DictionaryFile):
 
             'writeControl': 'timeStep',
             'writeInterval': self._db.getValue(xpath + '/writeInterval'),
-            'log': 'true',
+            'log': 'false',
         }
 
         if region := self._db.getValue(xpath + '/region'):
@@ -271,7 +271,7 @@ class ControlDict(DictionaryFile):
 
         return data
 
-    def _generatePoints(self, xpath):
+    def _generatePointMonitor(self, xpath):
         field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
                                               self._db.getValue(xpath + '/field/mid'))
 
@@ -291,7 +291,7 @@ class ControlDict(DictionaryFile):
 
                 'writeControl': 'timeStep',
                 'writeInterval': self._db.getValue(xpath + '/writeInterval'),
-                'log': 'true',
+                'log': 'false',
             }
 
         return {
@@ -303,10 +303,10 @@ class ControlDict(DictionaryFile):
 
             'writeControl': 'timeStep',
             'writeInterval': self._db.getValue(xpath + '/writeInterval'),
-            'log': 'true',
+            'log': 'false',
         }
 
-    def _generateSurfaces(self, xpath):
+    def _generateSurfaceMonitor(self, xpath):
         reportType = self._db.getValue(xpath + 'reportType')
         field = None
         if reportType == SurfaceReportType.MASS_FLOW_RATE.value:
@@ -343,7 +343,7 @@ class ControlDict(DictionaryFile):
             'log': 'false',
         }
 
-        if reportType == SurfaceReportType.MASS_WEIGHTED_AVERAGE:
+        if reportType == SurfaceReportType.MASS_WEIGHTED_AVERAGE.value:
             data['weightField'] = 'phi'
 
         if region := BoundaryDB.getBoundaryRegion(surface):
@@ -351,7 +351,7 @@ class ControlDict(DictionaryFile):
 
         return data
 
-    def _generateVolumes(self, xpath):
+    def _generateVolumeMonitor(self, xpath):
         field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
                                               self._db.getValue(xpath + '/field/mid'))
 
@@ -370,7 +370,7 @@ class ControlDict(DictionaryFile):
 
             'writeControl': 'timeStep',
             'writeInterval': '1',
-            'log': 'true',
+            'log': 'false',
         }
 
         volume = self._db.getValue(xpath + '/volume')
@@ -395,7 +395,7 @@ class ControlDict(DictionaryFile):
                 'field':           '"U"',
 
                 'enabled':         'true',
-                'log':             'true',
+                'log':             'false',
                 'executeControl':  'timeStep',
                 'executeInterval': 1,
                 'writeControl':    'none'
@@ -410,7 +410,7 @@ class ControlDict(DictionaryFile):
                 'field':           '"U"',
 
                 'enabled':         'true',
-                'log':             'true',
+                'log':             'false',
                 'executeControl':  'timeStep',
                 'executeInterval': 1,
                 'writeControl':    'none'
