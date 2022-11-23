@@ -143,6 +143,7 @@ class T(BoundaryCondition):
                     'type': 'externalWallHeatFluxTemperature',
                     'mode': 'flux',
                     'q': ('uniform', q),
+                    'kappaMethod': 'fluidThermo' if self._region.isFluid() else 'solidThermo',
                     'value': ('uniform', self._initialValue)
                 }
             elif spec == WallTemperature.CONVECTION.value:
@@ -153,6 +154,7 @@ class T(BoundaryCondition):
                     'mode': 'coefficient',
                     'h': ('uniform', h),
                     'Ta': ('uniform', ta),
+                    'kappaMethod': 'fluidThermo' if self._region.isFluid() else 'solidThermo',
                     'value': ('uniform', self._initialValue)
                 }
 
