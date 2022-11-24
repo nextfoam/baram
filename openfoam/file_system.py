@@ -29,6 +29,7 @@ class FileSystem:
     _constantPath = None
     _boundaryConditionsPath = None
     _systemPath = None
+    _postProcessingPath = None
 
     @classmethod
     def setupNewCase(cls):
@@ -82,8 +83,8 @@ class FileSystem:
         return cls.constantPath(rname) / rname / cls.BOUNDARY_DATA_DIRECTORY_NAME
 
     @classmethod
-    def postProcessingPath(cls, name):
-        return cls._casePath / cls.POST_PROCESSING_DIRECTORY_NAME / name
+    def postProcessingPath(cls, rname):
+        return cls._postProcessingPath / rname if rname else cls._postProcessingPath
 
     @classmethod
     def foamFilePath(cls):
@@ -188,6 +189,7 @@ class FileSystem:
         cls._constantPath = cls._casePath / cls.CONSTANT_DIRECTORY_NAME
         cls._boundaryConditionsPath = cls._casePath / cls.BOUNDARY_CONDITIONS_DIRECTORY_NAME
         cls._systemPath = cls._casePath / cls.SYSTEM_DIRECTORY_NAME
+        cls._postProcessingPath = cls._casePath / cls.POST_PROCESSING_DIRECTORY_NAME
 
     @classmethod
     def _clearDirectory(cls, directory, filesToKeep):

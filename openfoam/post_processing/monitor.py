@@ -12,6 +12,8 @@ from coredb.monitor_db import MonitorDB
 from coredb.general_db import GeneralDB
 from coredb.run_calculation_db import RunCalculationDB
 from coredb.monitor_db import FieldHelper
+from coredb.boundary_db import BoundaryDB
+from coredb.cell_zone_db import CellZoneDB
 from openfoam.post_processing.post_file_reader import PostFileReader
 
 
@@ -43,8 +45,8 @@ class Worker(QObject):
         self._reader = None
         self._timer = None
 
-    def createReader(self, fileName, extension):
-        self._reader = PostFileReader(self._name, fileName, extension)
+    def createReader(self, region, fileName, extension):
+        self._reader = PostFileReader(self._name, region, fileName, extension)
 
     def startMonitor(self):
         changedFiles = self._reader.chagedFiles()
@@ -89,7 +91,9 @@ class Monitor(QObject):
     def __init__(self, name):
         super().__init__()
 
+        self._db = coredb.CoreDB()
         self._name = name
+        self._region = None
         self._thread = None
         self._worker = None
         self._showChart = True
@@ -114,7 +118,7 @@ class Monitor(QObject):
         self._thread = QThread()
         self._worker = Worker(self.name)
         self._worker.moveToThread(self._thread)
-        self._worker.createReader(self.fileName, self.extension)
+        self._worker.createReader(self._region, self.fileName, self.extension)
         self._worker.dataUpdated.connect(self._updateChart, type=Qt.ConnectionType.QueuedConnection)
         self._worker.stopped.connect(self._stopped, type=Qt.ConnectionType.QueuedConnection)
 
@@ -153,7 +157,10 @@ class ForceMonitor(Monitor):
     def __init__(self, name, chart1, chart2, chart3):
         super().__init__(name)
 
-        self._showChart = coredb.CoreDB().getValue(MonitorDB.getForceMonitorXPath(name) + '/showChart') == 'true'
+        xpath = MonitorDB.getForceMonitorXPath(name)
+
+        self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
+        self._region = self._db.getValue(xpath + '/region')
         self._chart1 = chart1
         self._chart2 = chart2
         self._chart3 = chart3
@@ -178,15 +185,17 @@ class PointMonitor(Monitor):
         super().__init__(name)
 
         self._xpath = MonitorDB.getPointMonitorXPath(name)
-        self._showChart = coredb.CoreDB().getValue(self._xpath + '/showChart') == 'true'
+
+        self._showChart = self._db.getValue(self._xpath + '/showChart') == 'true'
+        # self._region = self._db.getValue(self._xpath + '/region')
         self._chart = chart
 
         self._chart.setTitle(name)
 
     @property
     def fileName(self):
-        return FieldHelper.DBFieldKeyToField(coredb.CoreDB().getValue(self._xpath + '/field/field'),
-                                             coredb.CoreDB().getValue(self._xpath + '/field/mid'))
+        return FieldHelper.DBFieldKeyToField(self._db.getValue(self._xpath + '/field/field'),
+                                             self._db.getValue(self._xpath + '/field/mid'))
 
     @property
     def extension(self):
@@ -201,7 +210,10 @@ class SurfaceMonitor(Monitor):
     def __init__(self, name, chart):
         super().__init__(name)
 
-        self._showChart = coredb.CoreDB().getValue(MonitorDB.getSurfaceMonitorXPath(name) + '/showChart') == 'true'
+        xpath = MonitorDB.getSurfaceMonitorXPath(name)
+
+        self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
+        self._region = BoundaryDB.getBoundaryRegion(self._db.getValue(xpath + '/surface'))
         self._chart = chart
 
         self._chart.setTitle(name)
@@ -219,7 +231,10 @@ class VolumeMonitor(Monitor):
     def __init__(self, name, chart):
         super().__init__(name)
 
-        self._showChart = coredb.CoreDB().getValue(MonitorDB.getVolumeMonitorXPath(name) + '/showChart') == 'true'
+        xpath = MonitorDB.getSurfaceMonitorXPath(name)
+
+        self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
+        self._region = CellZoneDB.getCellZoneRegion(self._db.getValue(xpath + '/volume'))
         self._chart = chart
 
         self._chart.setTitle(name)
