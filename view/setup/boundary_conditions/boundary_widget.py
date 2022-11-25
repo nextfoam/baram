@@ -22,10 +22,11 @@ class BoundaryWidget(QWidget):
 
         self._rname = rname
         self._bcid = bcid
-        self._bctype = bctype
         self._bcname = bcname
+        self._bctype = None
 
         self._ui.name.setText(bcname)
+        self._setType(bctype)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
@@ -43,13 +44,12 @@ class BoundaryWidget(QWidget):
     def bcname(self):
         return self._bcname
 
-    @bctype.setter
-    def bctype(self, bctype):
+    def reloadType(self):
+        self._setType(BoundaryDB.getBoundaryType(self._bcid))
+
+    def _setType(self, bctype):
         self._bctype = bctype
         self._ui.type.setText(BoundaryDB.dbBoundaryTypeToText(bctype))
-
-    def reloadType(self):
-        self.bctype = BoundaryDB.getBoundaryType(self._bcid)
 
     def _connectSignalsSlots(self):
         self.customContextMenuRequested.connect(self._popupRequested)
