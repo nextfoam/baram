@@ -63,8 +63,7 @@
     <widget class="QTreeWidget" name="boundaries">
      <property name="styleSheet">
       <string notr="true">QTreeView::indicator:unchecked {image: url(:/icons/eye-off.svg);}
-QTreeView::indicator:checked {image: url(:/icons/eye.svg);}
-QTreeView {color: red}</string>
+QTreeView::indicator:checked {image: url(:/icons/eye.svg);}</string>
      </property>
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>

@@ -170,15 +170,17 @@ class BoundaryConditionsPage(QWidget):
         self._boundaries[bcid].reloadType()
 
     def _edit(self):
-        bcid = self._ui.boundaries.currentItem().type()
-        if bcid:
-            bctype = self._boundaries[bcid].bctype
-            dialogClass = DIALOGS[bctype]
-            if dialogClass:
-                self._dialog = dialogClass(self, str(bcid))
-                if BoundaryDB.needsCoupledBoundary(bctype):
-                    self._dialog.boundaryTypeChanged.connect(self._boundaryTypeChanged)
-                self._dialog.open()
+        item = self._ui.boundaries.currentItem()
+        if item:
+            bcid = item.type()
+            if bcid:
+                bctype = self._boundaries[bcid].bctype
+                dialogClass = DIALOGS[bctype]
+                if dialogClass:
+                    self._dialog = dialogClass(self, str(bcid))
+                    if BoundaryDB.needsCoupledBoundary(bctype):
+                        self._dialog.boundaryTypeChanged.connect(self._boundaryTypeChanged)
+                    self._dialog.open()
 
     def _showTypePicker(self, bcid, point):
         self._typePicker = BoundaryTypePicker(bcid, point,
