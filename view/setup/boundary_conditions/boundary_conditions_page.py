@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtWidgets import QWidget, QTreeWidgetItem, QMessageBox
+from PySide6.QtCore import Qt
 
+from app import app
 from coredb import coredb
 from coredb.boundary_db import BoundaryType, BoundaryDB
 from .boundary_conditions_page_ui import Ui_BoundaryConditionsPage
@@ -83,9 +85,11 @@ class BoundaryConditionsPage(QWidget):
         else:
             for rname in regions:
                 item = QTreeWidgetItem(self._ui.boundaries, [rname], 0)
+                item.setFirstColumnSpanned(True)
                 self._addBoundaryItems(item, rname)
 
         self._ui.boundaries.expandAll()
+        self._ui.boundaries.resizeColumnToContents(0)
 
     def clear(self):
         self._ui.boundaries.clear()
@@ -95,6 +99,7 @@ class BoundaryConditionsPage(QWidget):
         self._ui.filter.textChanged.connect(self._filterChanged)
         self._ui.boundaries.currentItemChanged.connect(self._updateEditEnabled)
         self._ui.boundaries.doubleClicked.connect(self._edit)
+        self._ui.boundaries.itemChanged.connect(self._itemChanged)
         self._ui.edit.clicked.connect(self._edit)
 
     def _filterChanged(self):
@@ -113,11 +118,14 @@ class BoundaryConditionsPage(QWidget):
     def _addBoundaryItems(self, parent, rname):
         boundaries = self._db.getBoundaryConditions(rname)
         for bcid, bcname, bctype in boundaries:
-            item = QTreeWidgetItem(parent, bcid)
-            boundaryWidget = BoundaryWidget(bcid, bcname, bctype)
-            self._ui.boundaries.setItemWidget(item, 0, boundaryWidget)
-            self._boundaries[bcid] = boundaryWidget
+            boundaryWidget = BoundaryWidget(rname, bcid, bcname, bctype)
             boundaryWidget.rightClicked.connect(self._showTypePicker)
+            self._boundaries[bcid] = boundaryWidget
+
+            item = QTreeWidgetItem(parent, bcid)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(0, Qt.Checked)
+            self._ui.boundaries.setItemWidget(item, 1, boundaryWidget)
 
     def _updateEditEnabled(self):
         bcid = self._ui.boundaries.currentItem().type()
@@ -128,6 +136,15 @@ class BoundaryConditionsPage(QWidget):
                 return
 
         self._ui.edit.setEnabled(False)
+
+    def _itemChanged(self, item, column):
+        bcid = item.type()
+        if bcid:
+            boundaryWidget = self._boundaries[bcid]
+            if item.checkState(column) == Qt.CheckState.Checked:
+                app.vtkMesh().showActor(boundaryWidget.rname, boundaryWidget.bcname)
+            else:
+                app.vtkMesh().hideActor(boundaryWidget.rname, boundaryWidget.bcname)
 
     def _changeBoundaryType(self, bcid, bctype):
         currentType = BoundaryDB.getBoundaryType(bcid)

@@ -3,7 +3,6 @@
 
 from pathlib import Path
 
-
 APP_PATH = Path(__file__).parent.resolve()
 
 
@@ -15,6 +14,9 @@ class App:
     @property
     def window(self):
         return self._window
+
+    def vtkMesh(self):
+        return self._vtkMesh
 
     def setMainWindow(self, window):
         self._window = window

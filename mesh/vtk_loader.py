@@ -85,6 +85,14 @@ class VtkMesh(VtkViewModel):
                 for bcname, actorInfo in vtkMesh[rname]['boundary'].items():
                     self._addActorInfo(actorInfo)
 
+    def showActor(self, rname, boundary):
+        self._view.addActor(self._vtkMesh[rname]['boundary'][boundary])
+        self._view.render()
+
+    def hideActor(self, rname, boundary):
+        self._view.removeActor(self._vtkMesh[rname]['boundary'][boundary])
+        self._view.render()
+
     def isMesh(self):
         return True
 

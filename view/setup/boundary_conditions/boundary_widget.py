@@ -13,15 +13,16 @@ from .boundary_widget_ui import Ui_BoundaryWidget
 class BoundaryWidget(QWidget):
     rightClicked = Signal(int, QPoint)
 
-    def __init__(self, bcid, bcname, bctype):
+    def __init__(self, rname, bcid, bcname, bctype):
         super().__init__()
         self._ui = Ui_BoundaryWidget()
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
 
+        self._rname = rname
         self._bcid = bcid
-        self.bctype = bctype
+        self._bctype = bctype
         self._bcname = bcname
 
         self._ui.name.setText(bcname)
@@ -29,6 +30,10 @@ class BoundaryWidget(QWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self._connectSignalsSlots()
+
+    @property
+    def rname(self):
+        return self._rname
 
     @property
     def bctype(self):
