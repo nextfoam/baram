@@ -37,6 +37,7 @@ class App:
     def updateVtkMesh(self, mesh):
         self._vtkMesh = mesh
         mesh.activate()
+        self._window.vtkMeshLoaded()
 
     def close(self):
         self._closed = True

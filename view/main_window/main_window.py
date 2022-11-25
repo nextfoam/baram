@@ -178,6 +178,10 @@ class MainWindow(QMainWindow):
     def meshDock(self):
         return self._meshDock
 
+    def vtkMeshLoaded(self):
+        self._ui.menuMesh.setEnabled(True)
+        self._navigatorView.updateMenu()
+
     def _connectSignalsSlots(self):
         self._ui.actionSave.triggered.connect(self._save)
         self._ui.actionSaveAs.triggered.connect(self._saveAs)
@@ -263,8 +267,7 @@ class MainWindow(QMainWindow):
     async def _vtkChanged(self):
         # progress = ProgressDialog(self, self.tr('Case Loading.'), self.tr('Loading VTK Mesh.'))
         await PolyMeshLoader().loadVtk()
-        self._ui.menuMesh.setEnabled(True)
-        self._navigatorView.updateMenu()
+        self.vtkMeshLoaded()
         # progress.close()
 
     def _changeForm(self, currentMenu):
