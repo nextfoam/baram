@@ -22,6 +22,7 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 import vtkmodules.vtkRenderingOpenGL2
 import vtkmodules.vtkInteractionStyle
 
+from app import app
 from coredb.app_settings import AppSettings
 from coredb.project import Project
 from resources import resource
@@ -632,3 +633,9 @@ class MeshDock(TabifiedDock):
         self.camera.SetPosition(fx, fy, fz+d)
         self.camera.SetViewUp(0, 1, 0)
 
+    def closeEvent(self, event):
+        if app.closed():
+            event.accept()
+        else:
+            self.hide()
+            event.ignore()

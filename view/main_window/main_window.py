@@ -14,6 +14,7 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QThreadPool, Signal
 from PySide6.QtGui import QIcon
 
+from app import app
 from coredb.project import Project
 from coredb.app_settings import AppSettings
 from coredb import coredb
@@ -169,7 +170,8 @@ class MainWindow(QMainWindow):
 
         logging.getLogger().removeHandler(self._handler)
 
-        super().closeEvent(event)
+        app.close()
+        event.accept()
         self.windowClosed.emit(self._closeType)
 
     def meshDock(self):
@@ -258,7 +260,9 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _vtkChanged(self):
+        # progress = ProgressDialog(self, self.tr('Case Loading.'), self.tr('Loading VTK Mesh.'))
         await PolyMeshLoader().loadVtk()
+        # progress.close()
 
     def _changeForm(self, currentMenu):
         page = self._menuPages[currentMenu]
