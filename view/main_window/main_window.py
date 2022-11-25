@@ -143,7 +143,8 @@ class MainWindow(QMainWindow):
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL)
             self._meshDock.raise_()
 
-        self._updateMenuEnables()
+        # self._updateMenuEnables()
+        self._ui.menuMesh.setDisabled(True)
         self.show()
 
     def tabifyDock(self, dock):
@@ -262,6 +263,8 @@ class MainWindow(QMainWindow):
     async def _vtkChanged(self):
         # progress = ProgressDialog(self, self.tr('Case Loading.'), self.tr('Loading VTK Mesh.'))
         await PolyMeshLoader().loadVtk()
+        self._ui.menuMesh.setEnabled(True)
+        self._navigatorView.updateMenu()
         # progress.close()
 
     def _changeForm(self, currentMenu):
@@ -273,7 +276,7 @@ class MainWindow(QMainWindow):
         self._contentView.changePane(page.index)
 
     def _meshChanged(self, updated):
-        self._updateMenuEnables()
+        # self._updateMenuEnables()
         if self._project.meshLoaded and updated:
             self._clearPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
             self._clearPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
@@ -282,7 +285,7 @@ class MainWindow(QMainWindow):
             self._loadPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
 
     def _updateMenuEnables(self):
-        self._ui.menuMesh.setEnabled(self._project.meshLoaded)
+        # self._ui.menuMesh.setEnabled(self._project.meshLoaded)
         self._navigatorView.updateMenu()
 
     def _projectChanged(self):
