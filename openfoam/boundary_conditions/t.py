@@ -46,7 +46,7 @@ class T(BoundaryCondition):
                     BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(constant)),
                     BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFlowRateInletT(xpath, constant)),
                     BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletTotalTemperature(constant)),
-                    BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletT(xpath, constant)),
+                    BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletT(xpath)),
                     BoundaryType.ABL_INLET.value:           (lambda: self._constructFixedValue(constant)),
                     BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructFixedValue(constant)),
                     BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructFixedValue(constant)),
@@ -113,8 +113,9 @@ class T(BoundaryCondition):
         elif spec == FlowRateInletSpecification.MASS_FLOW_RATE.value:
             return self._constructInletOutletTotalTemperature(constant)
 
-    def _constructPressureOutletT(self, xpath, constant):
+    def _constructPressureOutletT(self, xpath):
         if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+            constant = self._db.getValue(xpath + '/pressureOutlet/backflowTotalTemperature')
             return self._constructInletOutletTotalTemperature(constant)
         else:
             return self._constructZeroGradient()
