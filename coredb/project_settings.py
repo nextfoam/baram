@@ -90,7 +90,7 @@ class ProjectSettings:
         self._settingsPath = AppSettings.casesPath() / uuid_
         self._settingsFile = self._settingsPath / SETTINGS_FILE_NAME
         if create:
-            self._settingsPath.mkdir()
+            self._settingsPath.mkdir(exist_ok=True)
 
     def _set(self, key, value):
         self._settings[key.value] = value
