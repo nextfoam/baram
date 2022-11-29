@@ -136,9 +136,9 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = K(RegionDB.getRegionProperties(region)).build().asDict()
-        self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
-        self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentIntensity'))/100.0,
-                         content['boundaryField'][boundary]['turbIntensity'][1])
+        self.assertEqual('freestream', content['boundaryField'][boundary]['type'])
+        self.assertEqual(K(RegionDB.getRegionProperties(region))._calculateFreeStreamKE(self._xpath, region)[0],
+                         content['boundaryField'][boundary]['freestreamValue'][1])
 
     # Free Stream
     def testFreeStreamKAndOmega(self):
@@ -156,9 +156,9 @@ class TestK(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = K(RegionDB.getRegionProperties(region)).build().asDict()
-        self.assertEqual('turbulentIntensityInletOutletTKE', content['boundaryField'][boundary]['type'])
-        self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentIntensity'))/100.0,
-                         content['boundaryField'][boundary]['turbIntensity'][1])
+        self.assertEqual('freestream', content['boundaryField'][boundary]['type'])
+        self.assertEqual(K(RegionDB.getRegionProperties(region))._calculateFreeStreamKW(self._xpath, region)[0],
+                         content['boundaryField'][boundary]['freestreamValue'][1])
 
     def testFarFieldRiemann(self):
         self._db.setValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model', 'k-omega')

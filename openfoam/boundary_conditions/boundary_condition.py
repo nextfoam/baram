@@ -2,8 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum, auto
+from math import sqrt
 
 from coredb import coredb
+from coredb.material_db import MaterialDB
+from coredb.models_db import TurbulenceModel
+from coredb.region_db import RegionDB
 from openfoam.dictionary_file import DictionaryFile, DataClass
 from openfoam.constant.boundary_data import BoundaryData
 
@@ -174,3 +178,45 @@ class BoundaryCondition(DictionaryFile):
             'viscosityRatio': ('uniform', viscosityRatio),
             'value': ('uniform', initialValue)
         }
+
+    def _calculateFreeStreamTurbulentValues(self, xpath, region, model):
+        ux = float(self._db.getValue(xpath + 'freeStream/streamVelocity/x'))
+        uy = float(self._db.getValue(xpath + 'freeStream/streamVelocity/y'))
+        uz = float(self._db.getValue(xpath + 'freeStream/streamVelocity/z'))
+
+        v = sqrt(ux**2 + uy**2 + uz**2)
+
+        p = float(self._db.getValue(xpath + '/freeStream/pressure'))
+        t = float(self._db.getValue(xpath + '/temperature/constant'))
+
+        if model == TurbulenceModel.K_EPSILON:
+            mstr = 'k-epsilon'
+        elif model == TurbulenceModel.K_OMEGA:
+            mstr = 'k-omega'
+        else:
+            raise AssertionError
+
+        i = float(self._db.getValue(xpath + '/turbulence/' + mstr + '/turbulentIntensity'))/100
+        b = float(self._db.getValue(xpath + '/turbulence/' + mstr + '/turbulentViscosityRatio'))
+
+        mid = RegionDB.getMaterial(region)
+        rho = MaterialDB.getDensity(mid, t, p)  # Density
+        mu = MaterialDB.getViscosity(mid, t)  # Viscosity
+
+        nu = mu / rho  # Kinetic Viscosity
+
+        nut = b * nu
+
+        k = 1.5 * (v*i) ** 2
+        e = 0.09 * k ** 2 / nut
+        w = k / nut
+
+        return k, e, w
+
+    def _calculateFreeStreamKE(self, xpath, region):
+        k, e, w = self._calculateFreeStreamTurbulentValues(xpath, region, TurbulenceModel.K_EPSILON)
+        return k, e
+
+    def _calculateFreeStreamKW(self, xpath, region):
+        k, e, w = self._calculateFreeStreamTurbulentValues(xpath, region, TurbulenceModel.K_OMEGA)
+        return k, w

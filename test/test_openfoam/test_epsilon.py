@@ -145,9 +145,9 @@ class TestEpsilon(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
-        self.assertEqual('viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'),
-                         content['boundaryField'][boundary]['viscosityRatio'][1])
+        self.assertEqual('freestream', content['boundaryField'][boundary]['type'])
+        self.assertEqual(Epsilon(RegionDB.getRegionProperties(region))._calculateFreeStreamKE(self._xpath, region)[1],
+                         content['boundaryField'][boundary]['freestreamValue'][1])
 
     def testFarFieldRiemann(self):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'kAndEpsilon')
