@@ -79,6 +79,7 @@ class Omega(BoundaryCondition):
         return {
             # 'type': 'omegaBlendedWallFunction',  # This type has not ported to OpenFOAM N yet
             'type': 'omegaWallFunction',
+            'blending': 'tanh',
             'value': ('uniform', self._initialValue)
         }
 

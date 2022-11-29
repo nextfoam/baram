@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, InterfaceMode
+from coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, InterfaceMode, WallTemperature
 from coredb.models_db import ModelsDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -88,7 +88,11 @@ class Alphat(BoundaryCondition):
         if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
             return self._constructCalculated(self._initialValue)
         else:
-            return self._constructCompressibleAlphatWallFunction()
+            spec = self._db.getValue(xpath + '/wall/temperature/type')
+            if spec == WallTemperature.ADIABATIC.value:
+                return self._constructCompressibleAlphatWallFunction()
+            else:
+                return self._constructCompressibleAlphatJayatillekeWallFunction()
 
     def _constructInterfaceAlphat(self, xpath):
         spec = self._db.getValue(xpath + '/interface/mode')
