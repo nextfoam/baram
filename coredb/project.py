@@ -189,7 +189,7 @@ class _Project(QObject):
                 # And if projectPath is not None and does not exist in file system,
                 # then the project has been moved(renamed)
                 # So, update project settings with correct projectPath.
-                self._projectSettings.save()
+                self._projectSettings.saveAs(self)
         else:
             raise FileNotFoundError
 
