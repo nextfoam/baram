@@ -81,6 +81,7 @@ class BoundaryConditionsPage(QWidget):
         regions = self._db.getRegions()
         if len(regions) == 1 and not regions[0]:
             item = QTreeWidgetItem(self._ui.boundaries, [DEFAULT_REGION_NAME], 0)
+            item.setFirstColumnSpanned(True)
             self._addBoundaryItems(item, '')
         else:
             for rname in regions:
@@ -98,7 +99,7 @@ class BoundaryConditionsPage(QWidget):
     def _connectSignalsSlots(self):
         self._ui.filter.textChanged.connect(self._filterChanged)
         self._ui.boundaries.currentItemChanged.connect(self._updateEditEnabled)
-        self._ui.boundaries.doubleClicked.connect(self._edit)
+        self._ui.boundaries.itemDoubleClicked.connect(self._doubleClicked)
         self._ui.boundaries.itemChanged.connect(self._itemChanged)
         self._ui.edit.clicked.connect(self._edit)
 
@@ -145,6 +146,10 @@ class BoundaryConditionsPage(QWidget):
                 app.vtkMesh().showActor(boundaryWidget.rname, boundaryWidget.bcname)
             else:
                 app.vtkMesh().hideActor(boundaryWidget.rname, boundaryWidget.bcname)
+
+    def _doubleClicked(self, item, column):
+        if column:
+            self._edit()
 
     def _changeBoundaryType(self, bcid, bctype):
         currentType = BoundaryDB.getBoundaryType(bcid)
