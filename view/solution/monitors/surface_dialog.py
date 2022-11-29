@@ -119,5 +119,6 @@ class SurfaceDialog(QDialog):
             self._ui.fieldVariable.addItem(f.text, f.key)
 
     def _reportTypeChanged(self):
-        self._ui.fieldVariable.setDisabled(self._ui.reportType.currentData() == SurfaceReportType.MASS_FLOW_RATE
-                                           or self._ui.reportType.currentData() == SurfaceReportType.VOLUME_FLOW_RATE)
+        self._ui.fieldVariable.setDisabled(
+            self._ui.reportType.currentData() == SurfaceReportType.MASS_FLOW_RATE.value
+            or self._ui.reportType.currentData() == SurfaceReportType.VOLUME_FLOW_RATE.value)
