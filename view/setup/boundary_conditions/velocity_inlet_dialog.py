@@ -17,6 +17,7 @@ from .velocity_inlet_dialog_ui import Ui_VelocityInletDialog
 from .turbulence_model_helper import TurbulenceModelHelper
 from .temperature_widget import TemperatureWidget
 
+PROFILE_TYPE_SPATIAL_DISTRIBUTION_INDEX = 1
 
 class VelocityInletDialog(ResizableDialog):
     RELATIVE_XPATH = '/velocityInlet'
@@ -186,6 +187,14 @@ class VelocityInletDialog(ResizableDialog):
     def _comboChanged(self):
         specification = self._ui.velocitySpecificationMethod.currentData()
         profile = self._ui.profileType.currentData()
+
+        if specification == VelocitySpecification.MAGNITUDE.value:
+            self._ui.profileType.model().item(PROFILE_TYPE_SPATIAL_DISTRIBUTION_INDEX).setEnabled(False)
+            if self._ui.profileType.currentData() == VelocityProfile.SPATIAL_DISTRIBUTION.value:
+                profile = VelocityProfile.CONSTANT.value
+                self._ui.profileType.setCurrentText(self._profileTypes[profile])
+        else:
+            self._ui.profileType.model().item(PROFILE_TYPE_SPATIAL_DISTRIBUTION_INDEX).setEnabled(True)
 
         self._ui.componentConstant.setVisible(
             specification == VelocitySpecification.COMPONENT.value
