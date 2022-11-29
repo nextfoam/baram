@@ -82,9 +82,9 @@ class TestT(unittest.TestCase):
         content = T(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('inletOutletTotalTemperature', content['boundaryField'][boundary]['type'])
         self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
-                         content['boundaryField'][boundary]['inletValue'][1])
+                         float(content['boundaryField'][boundary]['inletValue'][1]))
         self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
-                         content['boundaryField'][boundary]['T0'][1])
+                         float(content['boundaryField'][boundary]['T0'][1]))
 
     # Pressure Outlet
     def testPressureOutlet(self):
