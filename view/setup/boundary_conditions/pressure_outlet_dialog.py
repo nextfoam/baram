@@ -43,8 +43,9 @@ class PressureOutletDialog(ResizableDialog):
             if self._turbulenceWidget:
                 self._turbulenceWidget.appendToWriter(writer)
 
-            writer.append(path + '/backflowTotalTemperature',
-                          self._ui.backflowTotalTemperature.text(), self.tr("Backflow Total Temperature"))
+            if self._ui.backflowTotalTemperatureWidget.isVisible():
+                writer.append(path + '/backflowTotalTemperature',
+                              self._ui.backflowTotalTemperature.text(), self.tr("Backflow Total Temperature"))
         else:
             writer.append(path + '/calculatedBackflow', "false", None)
 
