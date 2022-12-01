@@ -133,13 +133,13 @@ class TestOmega(unittest.TestCase):
                          content['boundaryField'][boundary]['freestreamValue'][1])
 
     # Free Stream
-    def testFreeStreamKEpsilonIntensityAndViscosityRatio(self):
+    def testFreeStreamKOmegaIntensityAndViscosityRatio(self):
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         content = Omega(RegionDB.getRegionProperties(region)).build().asDict()
-        self.assertEqual('viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
-        self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-omega/turbulentViscosityRatio'),
-                         content['boundaryField'][boundary]['viscosityRatio'][1])
+        self.assertEqual('freestream', content['boundaryField'][boundary]['type'])
+        self.assertEqual(Omega(RegionDB.getRegionProperties(region))._calculateFreeStreamKW(self._xpath, region)[1],
+                         content['boundaryField'][boundary]['freestreamValue'][1])
 
     def testFarFieldRiemann(self):
         self._db.setValue(self._xpath + '/turbulence/k-omega/specification', 'kAndOmega')

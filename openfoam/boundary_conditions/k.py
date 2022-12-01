@@ -120,18 +120,15 @@ class K(BoundaryCondition):
             spec = self._db.getValue(xpath + '/turbulence/k-epsilon/specification')
             if spec == KEpsilonSpecification.K_AND_EPSILON.value:
                 k = float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentKineticEnergy'))
-                return self._constructFreestream(k)
             elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-                return self._constructNEXTTurbulentIntensityInletOutletTKE(
-                    float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentIntensity'))/100.0, self._initialValue)
+                k, _ = self._calculateFreeStreamKE(xpath, self._region.rname)
         elif self._model == TurbulenceModel.K_OMEGA:
             spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
             if spec == KOmegaSpecification.K_AND_OMEGA.value:
-                k = float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentKineticEnergy'))
-                return self._constructFreestream(k)
+                k = float(self._db.getValue(xpath + '/turbulence/k-omega/turbulentKineticEnergy'))
             elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-                return self._constructNEXTTurbulentIntensityInletOutletTKE(
-                    float(self._db.getValue(xpath + '/turbulence/k-omega/turbulentIntensity'))/100.0, self._initialValue)
+                k, _ = self._calculateFreeStreamKW(xpath, self._region.rname)
+        return self._constructFreestream(k)
 
     def _constructInterfaceK(self, xpath):
         spec = self._db.getValue(xpath + '/interface/mode')
