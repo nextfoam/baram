@@ -63,12 +63,6 @@ class ForceDialog(QDialog):
         writer.append(self._xpath + '/liftDirection/x', self._ui.liftDirectionX.text(), self.tr("Lift Direction X"))
         writer.append(self._xpath + '/liftDirection/y', self._ui.liftDirectionY.text(), self.tr("Lift Direction Y"))
         writer.append(self._xpath + '/liftDirection/z', self._ui.liftDirectionZ.text(), self.tr("Lift Direction Z"))
-        writer.append(self._xpath + '/pitchAxisDirection/x',
-                      self._ui.pitchAxisDirectionX.text(), self.tr("Pitch Axis Direction X"))
-        writer.append(self._xpath + '/pitchAxisDirection/y',
-                      self._ui.pitchAxisDirectionY.text(), self.tr("Pitch Axis Direction Y"))
-        writer.append(self._xpath + '/pitchAxisDirection/z',
-                      self._ui.pitchAxisDirectionZ.text(), self.tr("Pitch Axis Direction Z"))
         writer.append(self._xpath + '/centerOfRotation/x',
                       self._ui.centerOfRotationX.text(), self.tr("Center of Rotation X"))
         writer.append(self._xpath + '/centerOfRotation/y',
@@ -108,9 +102,6 @@ class ForceDialog(QDialog):
         self._ui.liftDirectionX.setText(self._db.getValue(self._xpath + '/liftDirection/x'))
         self._ui.liftDirectionY.setText(self._db.getValue(self._xpath + '/liftDirection/y'))
         self._ui.liftDirectionZ.setText(self._db.getValue(self._xpath + '/liftDirection/z'))
-        self._ui.pitchAxisDirectionX.setText(self._db.getValue(self._xpath + '/pitchAxisDirection/x'))
-        self._ui.pitchAxisDirectionY.setText(self._db.getValue(self._xpath + '/pitchAxisDirection/y'))
-        self._ui.pitchAxisDirectionZ.setText(self._db.getValue(self._xpath + '/pitchAxisDirection/z'))
         self._ui.centerOfRotationX.setText(self._db.getValue(self._xpath + '/centerOfRotation/x'))
         self._ui.centerOfRotationY.setText(self._db.getValue(self._xpath + '/centerOfRotation/y'))
         self._ui.centerOfRotationZ.setText(self._db.getValue(self._xpath + '/centerOfRotation/z'))

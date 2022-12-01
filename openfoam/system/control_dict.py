@@ -258,7 +258,6 @@ class ControlDict(DictionaryFile):
             'rhoInf': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/density'),
             'dragDir': self._db.getVector(xpath + '/dragDirection'),
             'liftDir': self._db.getVector(xpath + '/liftDirection'),
-            'pitchAxis': self._db.getVector(xpath + '/pitchAxisDirection'),
             'CofR': self._db.getVector(xpath + '/centerOfRotation'),
 
             'writeControl': 'timeStep',
