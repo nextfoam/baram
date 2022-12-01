@@ -123,6 +123,7 @@ class MeshDock(TabifiedDock):
                 for actorInfo in actors:
                     if actorInfo.visibility:
                         self._renderer.RemoveActor(actorInfo.actor)
+            self._widget.Render()
 
     def _mainWindowClosed(self, result):
         self._widget.close()
