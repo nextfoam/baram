@@ -352,17 +352,20 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Fluent2D</string>
+    <string>Fluent Mesh</string>
    </property>
   </action>
   <action name="actionFluent3D">
    <property name="text">
-    <string>Fluent3D</string>
+    <string>Fluent Case</string>
    </property>
   </action>
   <action name="actionStarCCM">
    <property name="text">
     <string>StarCCM+</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionGmsh">
@@ -372,7 +375,7 @@
   </action>
   <action name="actionIdeas">
    <property name="text">
-    <string>Ideas</string>
+    <string>I-deas Universal</string>
    </property>
   </action>
   <action name="actionNasaPlot3d">
@@ -380,7 +383,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>PLOT3D</string>
+    <string>PLOT3D GRID</string>
    </property>
   </action>
   <action name="actionParaview">
