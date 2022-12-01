@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
-from coredb.filedb import BcFileRole
 from coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallVelocityCondition, WallTemperature
 from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution, InterfaceMode
 from coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT
@@ -70,7 +69,8 @@ class T(BoundaryCondition):
             elif profile == TemperatureProfile.SPATIAL_DISTRIBUTION.value:
                 field[name] = self._constructTimeVaryingMappedFixedValue(
                     self._region.rname, name, 'T',
-                    Project.instance().fileDB().getBcFile(bcid, BcFileRole.BC_TEMPERATURE))
+                    Project.instance().fileDB().getFileContents(
+                        self._db.getValue(xpath + '/temperature/spatialDistribution')))
             elif profile == TemperatureProfile.TEMPORAL_DISTRIBUTION.value:
                 spec = self._db.getValue(xpath + '/temperature/temporalDistribution/specification')
                 if spec == TemperatureTemporalDistribution.PIECEWISE_LINEAR.value:

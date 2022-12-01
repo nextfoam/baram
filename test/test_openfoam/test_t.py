@@ -291,7 +291,8 @@ class TestT(unittest.TestCase):
             f.write('0,0,0,1\n0,0,1,2\n')
 
         self._db.setValue(self._xpath + '/temperature/profile', 'spatialDistribution')
-        project.fileDB().putBcFile(self._bcid, BcFileRole.BC_TEMPERATURE, csvFile)
+        self._db.setValue(self._xpath + '/temperature/spatialDistribution',
+                          project.fileDB().putBcFile(self._bcid, BcFileRole.BC_TEMPERATURE, csvFile))
         content = T(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('timeVaryingMappedFixedValue', content['boundaryField'][boundary]['type'])
 

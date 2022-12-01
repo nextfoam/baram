@@ -41,13 +41,26 @@ class FileDB:
         return self._modifiedAfterSaved
 
     def putBcFile(self, bcid, role, filePath):
-        self._saveFile(self._bcKey(bcid, role), Path(filePath), self._columnCounts[role])
+        key = self._bcKey(bcid, role)
+        self._saveFile(key, Path(filePath), self._columnCounts[role])
 
-    def getBcFile(self, bcid, role):
-        return self._loadFile(self._bcKey(bcid, role))
+        return key
 
-    def getBcFileName(self, bcid, role):
-        return self._getFileName(self._bcKey(bcid, role))
+    def getFileContents(self, key):
+        if key:
+            with pd.HDFStore(self._tmpPath) as store:
+                if f'/{key}' in store.keys():
+                    return store.get(key)
+                else:
+                    return None
+
+    def getUserFileName(self, key):
+        if key:
+            with pd.HDFStore(self._tmpPath) as store:
+                if f'/{key}' in store.keys():
+                    return store.get_storer(key).attrs.fileName
+                else:
+                    return None
 
     def putText(self, key, data):
         with h5py.File(self._tmpPath, 'a') as f:
@@ -101,20 +114,6 @@ class FileDB:
             store.get_storer(key).attrs.fileName = filePath.name
 
         self._modifiedAfterSaved = True
-
-    def _loadFile(self, key):
-        with pd.HDFStore(self._tmpPath) as store:
-            if f'/{key}' in store.keys():
-                return store.get(key)
-            else:
-                return None
-
-    def _getFileName(self, key):
-        with pd.HDFStore(self._tmpPath) as store:
-            if f'/{key}' in store.keys():
-                return store.get_storer(key).attrs.fileName
-            else:
-                return None
 
     def _save(self, filePath):
         if self._tmpPath.is_file():
