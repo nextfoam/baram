@@ -56,8 +56,8 @@ class TemperatureWidget(QWidget):
             self._ui.temporalDistributionRadioGroup, self._temporalDistributionRadios,
             self._db.getValue(self._xpath + '/temporalDistribution/specification')
         ).setChecked(True)
-        self._spatialDistributionFileName = Project.instance().fileDB().getBcFileName(
-            self._bcid, BcFileRole.BC_TEMPERATURE)
+        self._spatialDistributionFileName = Project.instance().fileDB().getUserFileName(
+            self._db.getValue(self._xpath + '/spatialDistribution'))
         self._ui.spatialDistributionFileName.setText(self._spatialDistributionFileName)
         self._profileTypeChanged()
         self._temporalDistributionTypeChanged()
@@ -71,8 +71,9 @@ class TemperatureWidget(QWidget):
         elif profile == TemperatureProfile.SPATIAL_DISTRIBUTION.value:
             if self._spatialDistributionFile:
                 try:
-                    Project.instance().fileDB().putBcFile(
+                    key = Project.instance().fileDB().putBcFile(
                         self._bcid, BcFileRole.BC_TEMPERATURE, self._spatialDistributionFile)
+                    writer.append(self._xpath + '/spatialDistribution', key, None)
                 except FileFormatError:
                     QMessageBox.critical(self, self.tr("Input Error"), self.tr("CSV File is wrong"))
                     return False
