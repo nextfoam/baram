@@ -107,23 +107,22 @@ class MeshDock(TabifiedDock):
 
     def setModel(self, model):
         if self._model:
-            self.clear()
             self._model.deactivate()
 
         self._model = model
 
-        for actorInfo in self._model.actorInfos():
-            if actorInfo.visibility:
-                self._renderer.AddActor(actorInfo.actor)
-        self.render()
+        if self._model:
+            for actorInfo in self._model.actorInfos():
+                if actorInfo.visibility:
+                    self._renderer.AddActor(actorInfo.actor)
+            self.render()
 
     def clear(self):
-        for actorInfo in self._model.actorInfos():
-            if actorInfo.visibility:
-                self._renderer.RemoveActor(actorInfo.actor)
-
-        self._renderer.RemoveAllViewProps()
-        self._widget.Render()
+        if self._model:
+            if actors := self._model.actorInfos():
+                for actorInfo in actors:
+                    if actorInfo.visibility:
+                        self._renderer.RemoveActor(actorInfo.actor)
 
     def _mainWindowClosed(self, result):
         self._widget.close()
