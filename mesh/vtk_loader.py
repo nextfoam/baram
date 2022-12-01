@@ -69,6 +69,7 @@ class VtkViewModel:
 
     def deactivate(self):
         self._active = False
+        self._view.clear()
 
     def isActive(self):
         return self._active

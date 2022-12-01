@@ -36,8 +36,12 @@ class App:
 
     def updateVtkMesh(self, mesh):
         self._vtkMesh = mesh
-        mesh.activate()
+        self.showVtkMesh()
         self._window.vtkMeshLoaded()
+
+    def showVtkMesh(self):
+        if self._vtkMesh:
+            self._vtkMesh.activate()
 
     def close(self):
         self._closed = True
