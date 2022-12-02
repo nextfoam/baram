@@ -97,8 +97,14 @@ class FileSystem:
         return path
 
     @classmethod
-    def isPolyMesh(cls, path):
-        return all([path.joinpath(f).is_file() for f in ['boundary', 'faces', 'neighbour', 'owner', 'points']])
+    def isPolyMesh(cls, path: Path):
+        checkFiles = ['boundary', 'faces', 'neighbour', 'owner', 'points']
+        for f in checkFiles:
+            if path.joinpath(f).is_file() or path.joinpath(f'{f}.gz').is_file():
+                continue
+            else:
+                return False
+        return True
 
     @classmethod
     def _copyMeshFromInternal(cls, directory, regions):

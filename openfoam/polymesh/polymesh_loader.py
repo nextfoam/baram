@@ -141,7 +141,7 @@ class PolyMeshLoader:
 
         return boundaries
 
-    def _loadRegions(self, srcPath):
+    def _loadRegions(self, srcPath: Path):
         fileName = srcPath / FileSystem.REGION_PROPERTIES_FILE_NAME
         if fileName.is_file():
             regions = []
