@@ -89,10 +89,11 @@ class BoundaryCondition(DictionaryFile):
         }
 
     def _constructTimeVaryingMappedFixedValue(self, rname, bname, field, data):
-        BoundaryData.write(rname, bname, field, data)
+        points = BoundaryData.write(rname, bname, field, data)
 
         return {
-            'type': 'timeVaryingMappedFixedValue'
+            'type': 'timeVaryingMappedFixedValue',
+            'points': points
         }
 
     def _constructUniformFixedValue(self, xpath, type_):
