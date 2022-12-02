@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from os import path
+from pathlib import Path
 
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 
 from coredb import coredb
+from coredb.project import Project
+from coredb.filedb import BcFileRole
 from coredb.coredb_writer import CoreDBWriter
 from coredb.boundary_db import BoundaryDB, BoundaryType
 from view.widgets.selector_dialog import SelectorDialog
@@ -25,6 +27,9 @@ class FanDialog(CoupledBoundaryConditionDialog):
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
         self._coupledBoundary = None
+        self._pqCurveFile = None
+        self._pqCurveFileName = None
+
         self._boundarySelector = None
         self._dialog = None
 
@@ -36,10 +41,17 @@ class FanDialog(CoupledBoundaryConditionDialog):
             QMessageBox.critical(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
             return
 
+        key = None
+        if self._pqCurveFile:
+            key = Project.instance().fileDB().putBcFile(self._bcid, BcFileRole.BC_FAN_CURVE, self._pqCurveFile)
+        elif not self._pqCurveFileName:
+            QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Fan P-Q Curve File."))
+            return False
+
         writer = CoreDBWriter()
         coupleTypeChanged = self._changeCoupledBoundary(writer, self._coupledBoundary, self.BOUNDARY_TYPE)
-        self._writeConditions(writer, self._xpath + self.RELATIVE_XPATH)
-        self._writeConditions(writer, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH)
+        self._writeConditions(writer, self._xpath + self.RELATIVE_XPATH, key)
+        self._writeConditions(writer, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH, key)
 
         errorCount = writer.write()
         if errorCount == 0:
@@ -57,8 +69,9 @@ class FanDialog(CoupledBoundaryConditionDialog):
     def _load(self):
         xpath = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.reverseDirection.setChecked(self._db.getValue(xpath + '/reverseDirection') == 'true')
         self._setCoupledBoundary(self._db.getValue(self._xpath + '/coupledBoundary'))
+        self._pqCurveFileName = Project.instance().fileDB().getUserFileName(self._db.getValue(xpath + '/fanCurveFile'))
+        self._ui.fanPQCurveFileName.setText(self._pqCurveFileName)
 
     def _selectFanPQCurveFile(self):
         self._dialog = QFileDialog(self, self.tr('Select CSV File'), '', 'CSV (*.csv)')
@@ -79,7 +92,8 @@ class FanDialog(CoupledBoundaryConditionDialog):
 
     def _fanPQCurveFileSelected(self):
         if files := self._dialog.selectedFiles():
-            self._ui.fanPQCurveFileName.setText(path.basename(files[0]))
+            self._pqCurveFile = Path(files[0])
+            self._ui.fanPQCurveFileName.setText(self._pqCurveFile.name)
 
     def _setCoupledBoundary(self, bcid):
         if bcid != '0':
@@ -89,5 +103,6 @@ class FanDialog(CoupledBoundaryConditionDialog):
             self._coupledBoundary = 0
             self._ui.coupledBoundary.setText('')
 
-    def _writeConditions(self, writer, xpath):
-        writer.append(xpath + '/reverseDirection', 'true' if self._ui.reverseDirection.isChecked() else 'false', None)
+    def _writeConditions(self, writer, xpath, fanCurveFileKey):
+        if fanCurveFileKey:
+            writer.append(xpath + '/fanCurveFile', fanCurveFileKey, None)

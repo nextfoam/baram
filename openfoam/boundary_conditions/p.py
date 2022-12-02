@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from coredb import coredb
+from coredb.project import Project
 from coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from coredb.general_db import GeneralDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 import openfoam.solver
+from openfoam.file_system import FileSystem
 
 TYPE_MAP = {
     BoundaryType.VELOCITY_INLET.value: 'calculated',
@@ -120,7 +122,7 @@ class P(BoundaryCondition):
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfacePressure(self._db.getValue(xpath + '/interface/mode'))),
                     BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump', self.initialPressure + self.operatingPressure)),
-                    BoundaryType.FAN.value:                 (lambda: self._constructFan(xpath + '/fan', self.initialPressure + self.operatingPressure)),
+                    BoundaryType.FAN.value:                 (lambda: self._constructFan(xpath + '/fan', self.initialPressure + self.operatingPressure, bcid)),
                     BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                     BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
                     BoundaryType.WEDGE.value:               (lambda: self._constructWedge())
@@ -151,20 +153,23 @@ class P(BoundaryCondition):
         else:
             return self._constructCyclicAMI()
 
-    def _constructFan(self, xpath, value):
+    def _constructFan(self, xpath, value, bcid):
+        fanCurveFileName = f'UvsPressure{bcid}'
+        Project.instance().fileDB().getFileContents(self._db.getValue(xpath + '/fanCurveFile')).to_csv(
+            FileSystem.constantPath() / fanCurveFileName, sep=',', header=False, index=False
+        )
+
         return {
             'type': 'fan',
             'patchType': 'cyclic',
-            'fanCurve': 'csvFile',
-            'nHeaderLine': 0,
-            'refColumn': 0,
-            'componentColumns': '( 1 )',
-            'separator': '","',
-            'mergeSeparators': 'no',
-            'outOfBounds': 'clamp',
-            'interpolationScheme': 'linear',
-            # ToDo: set fanCurveFile according to the coredb's file handling structure
-            'file': self._db.getValue(xpath + '/fanCurveFile'),
-            'reverse': self._db.getValue(xpath + '/reverseDirection'),
+            'jumpTable': 'csvFile',
+            'jumpTableCoeffs': {
+                'nHeaderLine': 0,
+                'refColumn': 0,
+                'componentColumns': [1],
+                'separator': '","',
+                'mergeSeparators': 'no',
+                'file': f'<constant>/{fanCurveFileName}'
+            },
             'value': ('uniform', value)
         }
