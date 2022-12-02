@@ -231,7 +231,7 @@ class VolumeMonitor(Monitor):
     def __init__(self, name, chart):
         super().__init__(name)
 
-        xpath = MonitorDB.getSurfaceMonitorXPath(name)
+        xpath = MonitorDB.getVolumeMonitorXPath(name)
 
         self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
         self._region = CellZoneDB.getCellZoneRegion(self._db.getValue(xpath + '/volume'))
