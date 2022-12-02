@@ -50,10 +50,12 @@ if platform.system() == 'Windows':
         'PATH': library + os.pathsep + os.environ['PATH']
     })
 else:
-    mpiPath = glob.glob(str(OPENFOAM / 'lib' / 'openmpi*'))[0]  # No Validity Check. It should exist.
+    ompiPath = glob.glob(str(OPENFOAM / 'lib' / 'openmpi*'))[0]  # No Validity Check. It should exist.
+    tmpiPath = glob.glob(str(OPENFOAM / 'tlib' / 'openmpi*'))[0]  # No Validity Check. It should exist.
     library = str(OPENFOAM / 'lib') + os.pathsep \
-              + mpiPath + os.pathsep \
+              + ompiPath + os.pathsep \
               + str(OPENFOAM / 'lib' / 'dummy') + os.pathsep \
+              + tmpiPath + os.pathsep \
               + str(OPENFOAM / 'tlib')
 
     if 'LD_LIBRARY_PATH' not in os.environ:
