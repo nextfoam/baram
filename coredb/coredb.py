@@ -352,7 +352,8 @@ class _CoreDB(object):
             oldValue = element.text
             element.text = value.strip()
             if element.text != oldValue:
-                self._configCount += 1
+                if element.text or oldValue:  # the case of (element.text=='' and oldValue is None) happens because of XML processing
+                    self._configCount += 1
 
             logger.debug(f'setValue( {xpath} -> {element.text} )')
 
