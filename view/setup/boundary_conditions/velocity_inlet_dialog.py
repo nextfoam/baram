@@ -83,8 +83,9 @@ class VelocityInletDialog(ResizableDialog):
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 if self._componentSpatialDistributionFile:
                     try:
-                        Project.instance().fileDB().putBcFile(self._bcid, BcFileRole.BC_VELOCITY_COMPONENT,
-                                         self._componentSpatialDistributionFile)
+                        key = Project.instance().fileDB().putBcFile(self._bcid, BcFileRole.BC_VELOCITY_COMPONENT,
+                                                                    self._componentSpatialDistributionFile)
+                        writer.append(xpath + '/velocity/component/spatialDistribution', key, None)
                     except FileFormatError:
                         QMessageBox.critical(self, self.tr("Input Error"), self.tr("Velocity CSV File is wrong"))
                         return
@@ -116,8 +117,9 @@ class VelocityInletDialog(ResizableDialog):
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 if self._magnitudeSpatialDistributionFile:
                     try:
-                        Project.instance().fileDB().putBcFile(self._bcid, BcFileRole.BC_VELOCITY_MAGNITUDE,
-                                                              self._magnitudeSpatialDistributionFile)
+                        key = Project.instance().fileDB().putBcFile(self._bcid, BcFileRole.BC_VELOCITY_MAGNITUDE,
+                                                                    self._magnitudeSpatialDistributionFile)
+                        writer.append(xpath + '/velocity/magnitudeNormal/spatialDistribution', key, None)
                     except FileFormatError:
                         QMessageBox.critical(self, self.tr("Input Error"), self.tr("Velocity CSV File is wrong"))
                         return
@@ -166,8 +168,10 @@ class VelocityInletDialog(ResizableDialog):
             profile = self._db.getValue(xpath + '/velocity/component/profile')
         elif specification == VelocitySpecification.MAGNITUDE.value:
             profile = self._db.getValue(xpath + '/velocity/magnitudeNormal/profile')
-        self._componentSpatialDistributionFileName = filedb.getBcFileName(self._bcid, BcFileRole.BC_VELOCITY_COMPONENT)
-        self._magnitudeSpatialDistributionFileName = filedb.getBcFileName(self._bcid, BcFileRole.BC_VELOCITY_MAGNITUDE)
+        self._componentSpatialDistributionFileName = filedb.getUserFileName(
+            self._db.getValue(xpath + '/velocity/component/spatialDistribution'))
+        self._magnitudeSpatialDistributionFileName = filedb.getUserFileName(
+            self._db.getValue(xpath + '/velocity/magnitudeNormal/spatialDistribution'))
         self._ui.profileType.setCurrentText(self._profileTypes[profile])
         self._ui.xVelocity.setText(self._db.getValue(xpath + '/velocity/component/constant/x'))
         self._ui.yVelocity.setText(self._db.getValue(xpath + '/velocity/component/constant/y'))

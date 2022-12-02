@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>128</height>
+    <height>102</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -93,13 +93,6 @@
           </widget>
          </item>
         </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="reverseDirection">
-        <property name="text">
-         <string>reverse Direction</string>
-        </property>
        </widget>
       </item>
      </layout>

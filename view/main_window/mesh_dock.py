@@ -138,6 +138,9 @@ class MeshDock(TabifiedDock):
             self._renderer.RemoveActor(actorInfo.actor)
             actorInfo.visibility = False
 
+    def update(self):
+        self._widget.Render()
+
     def render(self):
         if self._cubeAxesOn:
             self._showCubeAxes()

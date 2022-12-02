@@ -32,12 +32,12 @@ class MeshType(Enum):
 
 OPENFOAM_MESH_CONVERTERS = {
     MeshType.POLY_MESH: None,
-    MeshType.FLUENT_2D: 'fluentMeshToFoam',
-    MeshType.FLUENT_3D: 'fluent3DMeshToFoam',
-    MeshType.STAR_CCM: 'ccmToFoam',
-    MeshType.GMSH: 'gmshToFoam',
-    MeshType.IDEAS: 'ideasUnvToFoam',
-    MeshType.NAMS_PLOT3D: 'plot3dToFoam',
+    MeshType.FLUENT_2D: ('fluentMeshToFoam', '-writeSets', '-writeZones'),
+    MeshType.FLUENT_3D: ('fluent3DMeshToFoam',),
+    MeshType.STAR_CCM: ('ccmToFoam',),
+    MeshType.GMSH: ('gmshToFoam',),
+    MeshType.IDEAS: ('ideasUnvToFoam',),
+    MeshType.NAMS_PLOT3D: ('plot3dToFoam',),
 }
 
 
@@ -125,7 +125,7 @@ class MeshManager(QObject):
         try:
             await FileSystem.copyFileToCase(path)
 
-            proc = await runUtility(OPENFOAM_MESH_CONVERTERS[meshType], path.name, cwd=FileSystem.caseRoot())
+            proc = await runUtility(*OPENFOAM_MESH_CONVERTERS[meshType], path.name, cwd=FileSystem.caseRoot())
             progress.setProcess(proc)
             if await proc.wait():
                 progress.error(self.tr('File conversion failed.'))

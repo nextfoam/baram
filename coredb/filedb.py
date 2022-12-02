@@ -15,6 +15,7 @@ class BcFileRole(Enum):
     BC_VELOCITY_COMPONENT = 'VelocityComponent'
     BC_VELOCITY_MAGNITUDE = 'VelocityMagnitude'
     BC_TEMPERATURE = 'Temperature'
+    BC_FAN_CURVE = 'FanCurve'
 
 
 class FileFormatError(Exception):
@@ -26,6 +27,7 @@ class FileDB:
         BcFileRole.BC_VELOCITY_COMPONENT: 6,
         BcFileRole.BC_VELOCITY_MAGNITUDE: 4,
         BcFileRole.BC_TEMPERATURE: 4,
+        BcFileRole.BC_FAN_CURVE: 0
     }
 
     def __init__(self, projectPath):
@@ -106,7 +108,7 @@ class FileDB:
 
     def _saveFile(self, key, filePath, columnCount):
         df = pd.read_csv(filePath, header=None, index_col=None)
-        if len(df.columns) != columnCount:
+        if columnCount and len(df.columns) != columnCount:
             raise FileFormatError
 
         with pd.HDFStore(self._tmpPath) as store:
