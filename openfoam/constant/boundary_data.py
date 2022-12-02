@@ -13,7 +13,8 @@ class BoundaryData:
         pointsPath = FileSystem.makeDir(rpath, bname)
         fieldTablePath = FileSystem.makeDir(pointsPath, '0')
 
-        pointsFile = os.path.join(pointsPath, 'points')
+        pointFileName = f'points_{field}'
+        pointsFile = os.path.join(pointsPath, pointFileName)
         fieldTableFile = os.path.join(fieldTablePath, field)
         with open(pointsFile, 'w') as points, open(fieldTableFile, 'w') as fieldTable:
             rows = len(data)
@@ -31,3 +32,5 @@ class BoundaryData:
 
             points.write(f')')
             fieldTable.write(f')')
+
+        return pointFileName
