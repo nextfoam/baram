@@ -2,20 +2,23 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtWidgets import QDialog, QMessageBox
+from PySide6.QtCore import QLocale
 
 from coredb.app_settings import AppSettings
 from .settings_language_ui import Ui_SettingLanguageDialog
 
 
 languages = [
-    ['lang_de', 'lang_en', 'lang_es', 'lang_fr', 'lang_it',
-     'lang_ja', 'lang_ko', 'lang_nl', 'lang_pl', 'lang_pt',
-     'lang_ru', 'lang_sv', 'lang_tr', 'lang_zh'
-     ],
-    ['Deutsch', 'English', 'Español', 'Français', 'Italiano',
-     '日本語', '한국어', 'Nederlands', 'Polski', 'Português',
-     'русском', 'Svenska', 'Türkçe', '简体中文'
-     ]
+    [  # ISO 639-1 Two-Letter codes
+        'de', 'en', 'es', 'fr', 'it',
+        'ja', 'ko', 'nl', 'pl', 'pt',
+        'ru', 'sv', 'tr', 'zh'
+    ],
+    [  # Display String for each language
+        'Deutsch', 'English', 'Español', 'Français', 'Italiano',
+        '日本語', '한국어', 'Nederlands', 'Polski', 'Português',
+        'русском', 'Svenska', 'Türkçe', '简体中文'
+    ]
 ]
 
 class SettingLanguageDialog(QDialog):
@@ -25,15 +28,15 @@ class SettingLanguageDialog(QDialog):
         self._ui.setupUi(self)
 
         self._ui.language.addItems(languages[1])
-        index = languages[0].index(AppSettings.getDefaultLanguage())
+        index = languages[0].index(QLocale.languageToCode(AppSettings.getLocale().language()))
         self._ui.language.setCurrentIndex(index)
 
     def accept(self):
         index = self._ui.language.currentIndex()
 
-        preIndex = languages[0].index(AppSettings.getDefaultLanguage())
+        preIndex = languages[0].index(QLocale.languageToCode(AppSettings.getLocale().language()))
         if preIndex != index:
-            QMessageBox.information(self, self.tr("Change UI language"), self.tr('Requires UI restart'))
-            AppSettings.updateDefaultLanguage(languages[0][index])
+            QMessageBox.information(self, self.tr("Change Locale"), self.tr('Locale change will be effective from next start'))
+            AppSettings.setLocale(QLocale(languages[0][index]))
 
         super().accept()

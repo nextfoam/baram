@@ -6,6 +6,8 @@ import screeninfo
 from enum import Enum
 from pathlib import Path
 
+from PySide6.QtCore import QLocale
+
 import yaml
 from filelock import FileLock
 
@@ -24,7 +26,7 @@ casesPath.mkdir(exist_ok=True)
 class SettingKey(Enum):
     FORMAT_VERSION = 'format_version'
     UI_SCALING = 'ui_scaling'
-    DEFAULT_LANGUAGE = 'default_language'
+    LOCALE = 'default_language'
     RECENT_DIRECTORY = 'recent_directory'
     RECENT_CASES = 'recent_cases'
     RECENT_MESH_DIRECTORY = 'recent_mesh_directory'
@@ -155,14 +157,16 @@ class AppSettings:
         settings[SettingKey.UI_SCALING.value] = scaling
         cls._save(settings)
 
+    # Territory is not considered for now
     @classmethod
-    def getDefaultLanguage(cls):
-        return cls._get(SettingKey.DEFAULT_LANGUAGE, 'lang_en')
+    def getLocale(cls) -> QLocale:
+        return QLocale(cls._get(SettingKey.LOCALE, 'en'))
 
+    # Territory is not considered for now
     @classmethod
-    def updateDefaultLanguage(cls, lang):
+    def setLocale(cls, locale: QLocale):
         settings = cls._load()
-        settings[SettingKey.DEFAULT_LANGUAGE.value] = lang
+        settings[SettingKey.LOCALE.value] = QLocale.languageToCode(locale.language())
         cls._save(settings)
 
     @classmethod

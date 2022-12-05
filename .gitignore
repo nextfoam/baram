@@ -143,8 +143,5 @@ dmypy.json
 # idea Setting
 .idea/
 
-# Language files
-resources/locale/*.ts
-
 # Solver
 solvers/
