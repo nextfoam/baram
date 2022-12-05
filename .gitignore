@@ -1,5 +1,6 @@
 *_ui.py
 *_rc.py
+*.qm
 
 .gradle/
 # Ignore Gradle GUI config
