@@ -1,5 +1,6 @@
 *_ui.py
 *_rc.py
+*.qm
 
 .gradle/
 # Ignore Gradle GUI config
@@ -142,9 +143,6 @@ dmypy.json
 
 # idea Setting
 .idea/
-
-# Language files
-resources/locale/*.ts
 
 # Solver
 solvers/

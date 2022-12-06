@@ -19,6 +19,8 @@ import PySide6.QtSvg
 # noinspection PyUnresolvedReferences
 import resource_rc
 
+from resources import resource
+
 from view.main_window.start_window import Baram
 from coredb.app_settings import AppSettings
 
@@ -56,9 +58,9 @@ if __name__ == '__main__':
 
     #app.setStyleSheet(app.styleSheet() + '\n' + stream.readAll())
 
+    locale = AppSettings.getLocale()
     translator = QTranslator()
-    lang = AppSettings.getDefaultLanguage()
-    translator.load(f'./resources/locale/{lang}.qm')
+    translator.load(locale, 'baram', '_', str(resource.file('locale')))
     QCoreApplication.installTranslator(translator)
 
     background_tasks = set()

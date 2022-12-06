@@ -520,13 +520,6 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="modifyConditions">
-        <property name="text">
-         <string>Modify Conditions</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>

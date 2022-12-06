@@ -3,7 +3,7 @@
 
 import logging
 import qasync
-import os
+
 from enum import Enum, auto
 from pathlib import Path
 
@@ -105,7 +105,7 @@ class MeshManager(QObject):
             logger.info(ex, exc_info=True)
             progress.error(self.tr('Error occurred:\n' + str(ex)))
 
-    async def importOpenFoamMesh(self, path):
+    async def importOpenFoamMesh(self, path: Path):
         progress = ProgressDialog(self._window, self.tr('Mesh Loading'), self.tr('Checking the mesh.'))
 
         try:
@@ -138,33 +138,31 @@ class MeshManager(QObject):
             logger.info(ex, exc_info=True)
             progress.error(self.tr('Error occurred:\n' + str(ex)))
 
-    def _checkPolyMesh(self, path):
+    def _checkPolyMesh(self, path: Path):
         regions = []
-        regionPropFile = f'{path}/regionProperties'
+        regionPropFile = path / 'regionProperties'
 
-        if os.path.exists(regionPropFile):
-            regionsDict = ParsedParameterFile(regionPropFile).content['regions']
+        if regionPropFile.is_file():
+            regionsDict = ParsedParameterFile(str(regionPropFile)).content['regions']
             for i in range(1, len(regionsDict), 2):
                 for region in regionsDict[i]:
-                    if not os.path.exists(f'{path}/{region}'):
+                    if not path.joinpath(region).is_dir():
                         return False
                     regions.append(region)
-            path = Path(path)
         else:
-            if os.path.exists(f'{path}/boundary'):
-                path = Path(path).parent
-            elif os.path.exists(f'{path}/polyMesh/boundary'):
-                path = Path(path)
+            if path.joinpath('boundary').is_file():
+                path = path.parent
+            elif path.joinpath('polyMesh', 'boundary').is_file():
+                pass
             else:
                 return False
 
-        checkFiles = ['boundary', 'faces', 'neighbour', 'owner', 'points']
-        for f in checkFiles:
-            if regions:
-                for g in regions:
-                    if not os.path.exists(f'{path}/{g}/polyMesh/{f}'):
-                        return False
-            else:
-                if not os.path.exists(f'{path}/polyMesh/{f}'):
+        if regions:
+            for g in regions:
+                if not FileSystem.isPolyMesh(path.joinpath(f'{g}/polyMesh')):
                     return False
+        else:
+            if not FileSystem.isPolyMesh(path.joinpath('polyMesh')):
+                return False
+
         return path
