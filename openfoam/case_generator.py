@@ -92,7 +92,7 @@ class CaseGenerator:
     @classmethod
     def createCase(cls):
         FileSystem.setupNewCase()
-        ControlDict().build().write()
+        ControlDict().copyFromResource('openfoam/controlDict')
 
     def _validate(self):
         self._errors = ''
