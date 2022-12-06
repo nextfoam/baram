@@ -41,26 +41,37 @@ class FanDialog(CoupledBoundaryConditionDialog):
             QMessageBox.critical(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
             return
 
-        key = None
+        xpath = self._xpath + self.RELATIVE_XPATH
+        fileDB = Project.instance().fileDB()
+
+        oldFanCurveFile = None
+        fanCurveFileKey = None
         if self._pqCurveFile:
-            key = Project.instance().fileDB().putBcFile(self._bcid, BcFileRole.BC_FAN_CURVE, self._pqCurveFile)
+            oldFanCurveFile = self._db.getValue(xpath + '/fanCurveFile')
+            fanCurveFileKey = fileDB.putBcFile(self._bcid, BcFileRole.BC_FAN_CURVE, self._pqCurveFile)
         elif not self._pqCurveFileName:
             QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Fan P-Q Curve File."))
             return False
 
         writer = CoreDBWriter()
         coupleTypeChanged = self._changeCoupledBoundary(writer, self._coupledBoundary, self.BOUNDARY_TYPE)
-        self._writeConditions(writer, self._xpath + self.RELATIVE_XPATH, key)
-        self._writeConditions(writer, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH, key)
+        self._writeConditions(writer, xpath, fanCurveFileKey)
+        self._writeConditions(writer, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH, fanCurveFileKey)
 
         errorCount = writer.write()
-        if errorCount == 0:
+        if errorCount > 0:
+            if fanCurveFileKey:
+                fileDB.delete(fanCurveFileKey)
+
+            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
+        else:
+            if fanCurveFileKey and oldFanCurveFile:
+                fileDB.delete(oldFanCurveFile)
+
             if coupleTypeChanged:
                 self.boundaryTypeChanged.emit(int(self._coupledBoundary))
 
             super().accept()
-        else:
-            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
 
     def _connectSignalsSlots(self):
         self._ui.fanPQCurveFileSelect.clicked.connect(self._selectFanPQCurveFile)
@@ -93,6 +104,7 @@ class FanDialog(CoupledBoundaryConditionDialog):
     def _fanPQCurveFileSelected(self):
         if files := self._dialog.selectedFiles():
             self._pqCurveFile = Path(files[0])
+            print(self._pqCurveFile)
             self._ui.fanPQCurveFileName.setText(self._pqCurveFile.name)
 
     def _setCoupledBoundary(self, bcid):

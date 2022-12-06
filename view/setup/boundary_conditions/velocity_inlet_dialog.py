@@ -66,6 +66,10 @@ class VelocityInletDialog(ResizableDialog):
 
     def accept(self):
         xpath = self._xpath + self.RELATIVE_XPATH
+        fileDB = Project.instance().fileDB()
+
+        oldDistributionFileKey = None
+        distributionFileKey = None
 
         writer = CoreDBWriter()
         specification = self._ui.velocitySpecificationMethod.currentData()
@@ -83,9 +87,10 @@ class VelocityInletDialog(ResizableDialog):
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 if self._componentSpatialDistributionFile:
                     try:
-                        key = Project.instance().fileDB().putBcFile(self._bcid, BcFileRole.BC_VELOCITY_COMPONENT,
-                                                                    self._componentSpatialDistributionFile)
-                        writer.append(xpath + '/velocity/component/spatialDistribution', key, None)
+                        oldDistributionFileKey = self._db.getValue(xpath + '/velocity/component/spatialDistribution')
+                        distributionFileKey = fileDB.putBcFile(self._bcid, BcFileRole.BC_VELOCITY_COMPONENT,
+                                                               self._componentSpatialDistributionFile)
+                        writer.append(xpath + '/velocity/component/spatialDistribution', distributionFileKey, None)
                     except FileFormatError:
                         QMessageBox.critical(self, self.tr("Input Error"), self.tr("Velocity CSV File is wrong"))
                         return
@@ -117,9 +122,12 @@ class VelocityInletDialog(ResizableDialog):
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 if self._magnitudeSpatialDistributionFile:
                     try:
-                        key = Project.instance().fileDB().putBcFile(self._bcid, BcFileRole.BC_VELOCITY_MAGNITUDE,
-                                                                    self._magnitudeSpatialDistributionFile)
-                        writer.append(xpath + '/velocity/magnitudeNormal/spatialDistribution', key, None)
+                        oldDistributionFileKey = self._db.getVale(
+                            xpath + '/velocity/magnitudeNormal/spatialDistribution')
+                        distributionFileKey = fileDB.putBcFile(self._bcid, BcFileRole.BC_VELOCITY_MAGNITUDE,
+                                                               self._magnitudeSpatialDistributionFile)
+                        writer.append(xpath + '/velocity/magnitudeNormal/spatialDistribution',
+                                      distributionFileKey, None)
                     except FileFormatError:
                         QMessageBox.critical(self, self.tr("Input Error"), self.tr("Velocity CSV File is wrong"))
                         return
@@ -146,8 +154,16 @@ class VelocityInletDialog(ResizableDialog):
 
         errorCount = writer.write()
         if errorCount > 0:
+            if distributionFileKey:
+                fileDB.delete(distributionFileKey)
+
+            self._temperatureWidget.rollbackWriting()
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
+            if distributionFileKey and oldDistributionFileKey:
+                fileDB.delete(oldDistributionFileKey)
+
+            self._temperatureWidget.completeWriting()
             super().accept()
 
     def _connectSignalsSlots(self):

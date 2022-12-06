@@ -43,10 +43,7 @@ class FileDB:
         return self._modifiedAfterSaved
 
     def putBcFile(self, bcid, role, filePath):
-        key = self._bcKey(bcid, role)
-        self._saveFile(key, Path(filePath), self._columnCounts[role])
-
-        return key
+        return self._saveFile(self._bcKey(bcid, role), Path(filePath), self._columnCounts[role])
 
     def getFileContents(self, key):
         if key:
@@ -103,8 +100,27 @@ class FileDB:
         self._save(directory / 'configuration.h5')
         self._modifiedAfterSaved = False
 
+    def delete(self, key):
+        if key:
+            path = f'/{key}'
+            with pd.HDFStore(self._tmpPath) as store:
+                if path in store.keys():
+                    del store[path]
+
+            self._modifiedAfterSaved = True
+
     def _bcKey(self, bcid, role):
         return f'bc{bcid}{role.value}'
+
+    def _uniqKey(self, newKey, keys):
+        key = newKey
+        i = 1
+
+        while f'/{key}' in keys:
+            key = f'{newKey}_{i}'
+            i += 1
+
+        return key
 
     def _saveFile(self, key, filePath, columnCount):
         df = pd.read_csv(filePath, header=None, index_col=None)
@@ -112,10 +128,14 @@ class FileDB:
             raise FileFormatError
 
         with pd.HDFStore(self._tmpPath) as store:
+            key = self._uniqKey(key, store.keys())
+            print(key)
             store.put(key, df)
             store.get_storer(key).attrs.fileName = filePath.name
 
         self._modifiedAfterSaved = True
+
+        return key
 
     def _save(self, filePath):
         if self._tmpPath.is_file():

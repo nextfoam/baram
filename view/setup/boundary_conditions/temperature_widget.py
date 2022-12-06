@@ -44,6 +44,8 @@ class TemperatureWidget(QWidget):
         self._polynomial = None
         self._spatialDistributionFile = None
         self._spatialDistributionFileName = None
+        self._spatialDistributionFileKey = None
+        self._spatialDistributionFileOldKey = None
 
         self._dialog = None
 
@@ -63,6 +65,18 @@ class TemperatureWidget(QWidget):
         self._temporalDistributionTypeChanged()
 
     def appendToWriter(self, writer):
+        """
+        Append this widget's data to the writer so that it is saved by the parent dialog.
+        After the writer's writing, it is recommended to call completeWriting or rollbackWriting
+        to delete unnecessary spatial distribution file data from the FileDB.
+
+        Args:
+            writer: CoreDBWriter created by the dialog containing this widget.
+
+        Returns:
+            True if the data is valid, False otherwise
+
+        """
         profile = self._ui.profileType.currentData()
         writer.append(self._xpath + '/profile', profile, None)
 
@@ -71,9 +85,10 @@ class TemperatureWidget(QWidget):
         elif profile == TemperatureProfile.SPATIAL_DISTRIBUTION.value:
             if self._spatialDistributionFile:
                 try:
-                    key = Project.instance().fileDB().putBcFile(
+                    self._spatialDistributionFileOldKey = self._db.getValue(self._xpath + '/spatialDistribution')
+                    self._spatialDistributionFileKey = Project.instance().fileDB().putBcFile(
                         self._bcid, BcFileRole.BC_TEMPERATURE, self._spatialDistributionFile)
-                    writer.append(self._xpath + '/spatialDistribution', key, None)
+                    writer.append(self._xpath + '/spatialDistribution', self._spatialDistributionFileKey, None)
                 except FileFormatError:
                     QMessageBox.critical(self, self.tr("Input Error"), self.tr("CSV File is wrong"))
                     return False
@@ -102,6 +117,22 @@ class TemperatureWidget(QWidget):
                     return False
 
         return True
+
+    def completeWriting(self):
+        """
+        Delete the old key of the spatial distribution file if it has been updated.
+        This function should be called after all the data of the dialog containing this widget has been written to coredb.
+        """
+        if self._spatialDistributionFileKey and self._spatialDistributionFileOldKey:
+            Project.instance().fileDB().delete(self._spatialDistributionFileOldKey)
+
+    def rollbackWriting(self):
+        """
+        Delete the new key of the spatial distribution file.
+        This function should be called if the dialog containing this widget fails to write data to coredb.
+        """
+        if self._spatialDistributionFileKey:
+            Project.instance().fileDB().delete(self._spatialDistributionFileKey)
 
     def _connectSignalsSlots(self):
         self._ui.profileType.currentIndexChanged.connect(self._profileTypeChanged)

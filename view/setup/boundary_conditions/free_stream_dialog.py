@@ -31,7 +31,6 @@ class FreeStreamDialog(ResizableDialog):
             layout.addWidget(self._turbulenceWidget)
         if ModelsDB.isEnergyModelOn():
             self._temperatureWidget = TemperatureWidget(self._xpath, bcid)
-            self._temperatureWidget.freezeProfileToConstant()
             layout.addWidget(self._temperatureWidget)
 
         self._load()
@@ -53,8 +52,10 @@ class FreeStreamDialog(ResizableDialog):
 
         errorCount = writer.write()
         if errorCount > 0:
+            self._temperatureWidget.rollbackWriting()
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
+            self._temperatureWidget.completeWriting()
             super().accept()
 
     def _load(self):
@@ -69,3 +70,4 @@ class FreeStreamDialog(ResizableDialog):
             self._turbulenceWidget.load()
         if self._temperatureWidget:
             self._temperatureWidget.load()
+            self._temperatureWidget.freezeProfileToConstant()
