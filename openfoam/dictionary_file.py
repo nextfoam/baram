@@ -8,6 +8,7 @@ from pathlib import Path
 
 from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
 
+from resources import resource
 from .file_system import FileSystem
 
 
@@ -52,7 +53,7 @@ class DictionaryFile:
 
     @classmethod
     def polyMeshLocation(cls, rname=None):
-        return os.path.join(FileSystem.CONSTANT_DIRECTORY_NAME, rname, FileSystem.POLY_MESH_DIRECTORY_NAME)\
+        return os.path.join(FileSystem.CONSTANT_DIRECTORY_NAME, rname, FileSystem.POLY_MESH_DIRECTORY_NAME) \
             if rname else cls.constantLocation(FileSystem.POLY_MESH_DIRECTORY_NAME)
 
     def fullPath(self):
@@ -72,6 +73,9 @@ class DictionaryFile:
                 f.write(str(FoamFileGenerator(self._data, header=self._header)))
                 p = Path(f.name)
             p.replace(self.fullPath())
+
+    def copyFromResource(self, src):
+        resource.copy(src, self.fullPath())
 
     def _setFormat(self, fileFormat: Format):
         self._header['format'] = fileFormat.value
