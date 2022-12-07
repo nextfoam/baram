@@ -229,7 +229,10 @@ class _CoreDB(object):
 
         logger.debug(f'getValue( {xpath} -> {element.text} )')
 
-        return element.text
+        if element.text is None:
+            return ''
+        else:
+            return element.text
 
     def setValue(self, xpath: str, value: str) -> Error:
         """Sets configuration value in specified path
