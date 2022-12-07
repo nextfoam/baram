@@ -74,13 +74,6 @@ class TestU(unittest.TestCase):
 
         shutil.rmtree(testDir)                          # 테스트 디렉토리 삭제
 
-        self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')
-        self._db.setValue(self._xpath + '/velocityInlet/velocity/specification', 'component')
-        self._db.setValue(self._xpath + '/velocityInlet/velocity/component/profile', 'spatialDistribution')
-        # ToDo: Add check according to boundary field spec
-        # content = U(RegionDB.getRegionProperties(region)).build().asDict()
-        # self.assertEqual('timeVaryingMappedFixedValue', content['boundaryField'][boundary]['type'])
-
     # Velocity Inlet
     def testVelocityInletComponentTemporal(self):
         self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')
