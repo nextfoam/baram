@@ -23,5 +23,5 @@ print('\n>> Convert QT Designer Files')
 paths = list(Path('view').glob('**/*.ui'))  # Convert to 'list' to get the length of it
 totalNum = len(paths)
 for i, p in enumerate(paths):
-    print(f'  [{i}/{totalNum}] Converting... {p.name} -> {p.stem}_ui.py')
+    print(f'  [{i+1}/{totalNum}] Converting... {p.name} -> {p.stem}_ui.py')
     subprocess.run(['pyside6-uic',  p, '-o', f'{p.parent/p.stem}_ui.py'])
