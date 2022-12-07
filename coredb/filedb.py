@@ -129,7 +129,6 @@ class FileDB:
 
         with pd.HDFStore(self._tmpPath) as store:
             key = self._uniqKey(key, store.keys())
-            print(key)
             store.put(key, df)
             store.get_storer(key).attrs.fileName = filePath.name
 
