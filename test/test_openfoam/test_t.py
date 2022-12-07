@@ -5,10 +5,10 @@ from pathlib import Path
 
 from coredb import coredb
 from coredb.filedb import FileDB, BcFileRole
+from coredb.project import Project, _Project
 from coredb.boundary_db import BoundaryDB
 from coredb.region_db import RegionDB
 from coredb.material_db import Phase
-from coredb.project import Project, _Project
 from coredb.models_db import ModelsDB
 from openfoam.boundary_conditions.t import T
 from openfoam.file_system import FileSystem
@@ -285,16 +285,21 @@ class TestT(unittest.TestCase):
         FileSystem._boundaryConditionsPath = FileSystem.makeDir(
             FileSystem._casePath, FileSystem.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
         FileSystem._systemPath = FileSystem.makeDir(FileSystem._casePath, FileSystem.SYSTEM_DIRECTORY_NAME)
-                                                        # CaseGenerator애서 호출
         FileSystem.initRegionDirs(region)               # CaseGenerator에서 호출
         with open(csvFile, 'w') as f:
             f.write('0,0,0,1\n0,0,1,2\n')
+
+        pointsFilePath = FileSystem.constantPath(region) / 'boundaryData' / boundary / 'points_T'
+        fieldTableFilePath = FileSystem.constantPath(region) / 'boundaryData' / boundary / '0/T'
 
         self._db.setValue(self._xpath + '/temperature/profile', 'spatialDistribution')
         self._db.setValue(self._xpath + '/temperature/spatialDistribution',
                           project.fileDB().putBcFile(self._bcid, BcFileRole.BC_TEMPERATURE, csvFile))
         content = T(RegionDB.getRegionProperties(region)).build().asDict()
         self.assertEqual('timeVaryingMappedFixedValue', content['boundaryField'][boundary]['type'])
+        self.assertEqual('points_T', content['boundaryField'][boundary]['points'])
+        self.assertTrue(pointsFilePath.is_file())
+        self.assertTrue(fieldTableFilePath.is_file())
 
         shutil.rmtree(testDir)                          # 테스트 디렉토리 삭제
 

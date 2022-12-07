@@ -1,9 +1,15 @@
 import unittest
+import os
+import shutil
+from pathlib import Path
 
 from coredb import coredb
+from coredb.filedb import FileDB, BcFileRole
+from coredb.project import Project, _Project
 from coredb.boundary_db import BoundaryDB
 from coredb.region_db import RegionDB
 from openfoam.boundary_conditions.u import U
+from openfoam.file_system import FileSystem
 
 dimensions = '[0 1 -1 0 0 0 0]'
 region = "testRegion_1"
@@ -14,8 +20,8 @@ class TestU(unittest.TestCase):
     def setUp(self):
         self._db = coredb.createDB()
         self._db.addRegion(region)
-        bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
-        self._xpath = BoundaryDB.getXPath(bcid)
+        self._bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
+        self._xpath = BoundaryDB.getXPath(self._bcid)
         self._initialValue = self._db.getVector('.//initialization/initialValues/velocity')
 
     def tearDown(self) -> None:
@@ -35,6 +41,39 @@ class TestU(unittest.TestCase):
 
     # Velocity Inlet
     def testVelocityInletComponentSpatial(self):
+        testDir = Path('testUSpatialDistribution')
+        csvFile = Path('testUSpatialDistribution/testUSpatial.csv')
+
+        os.makedirs(testDir, exist_ok=True)             # 사용자가 Working Directory 선택할 때 이미 존재하는 디렉토리
+        project = _Project()
+        Project._instance = project                     # MainWindow 생성 전에 Project 객체 생성
+        project._fileDB = FileDB(testDir)               # Project.open에서 fileDB 생성
+        FileSystem._casePath = FileSystem.makeDir(testDir, FileSystem.CASE_DIRECTORY_NAME)
+        FileSystem._constantPath = FileSystem.makeDir(FileSystem.caseRoot(), FileSystem.CONSTANT_DIRECTORY_NAME)
+        # 사용자가 선택한 mesh directory 복사해 올 때 생성됨
+        FileSystem._boundaryConditionsPath = FileSystem.makeDir(
+            FileSystem._casePath, FileSystem.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
+        FileSystem._systemPath = FileSystem.makeDir(FileSystem._casePath, FileSystem.SYSTEM_DIRECTORY_NAME)
+        FileSystem.initRegionDirs(region)               # CaseGenerator에서 호출
+        with open(csvFile, 'w') as f:
+            f.write('0,0,0,1,1,1\n0,0,1,2,2,2\n')
+
+        pointsFilePath = FileSystem.constantPath(region) / 'boundaryData' / boundary / 'points_U'
+        fieldTableFilePath = FileSystem.constantPath(region) / 'boundaryData' / boundary / '0/U'
+
+        self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')
+        self._db.setValue(self._xpath + '/velocityInlet/velocity/specification', 'component')
+        self._db.setValue(self._xpath + '/velocityInlet/velocity/component/profile', 'spatialDistribution')
+        self._db.setValue(self._xpath + '/velocityInlet/velocity/component/spatialDistribution',
+                          project.fileDB().putBcFile(self._bcid, BcFileRole.BC_VELOCITY_COMPONENT, csvFile))
+        content = U(RegionDB.getRegionProperties(region)).build().asDict()
+        self.assertEqual('timeVaryingMappedFixedValue', content['boundaryField'][boundary]['type'])
+        self.assertEqual('points_U', content['boundaryField'][boundary]['points'])
+        self.assertTrue(pointsFilePath.is_file())
+        self.assertTrue(fieldTableFilePath.is_file())
+
+        shutil.rmtree(testDir)                          # 테스트 디렉토리 삭제
+
         self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')
         self._db.setValue(self._xpath + '/velocityInlet/velocity/specification', 'component')
         self._db.setValue(self._xpath + '/velocityInlet/velocity/component/profile', 'spatialDistribution')
