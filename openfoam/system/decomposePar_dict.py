@@ -5,6 +5,7 @@ from enum import Enum
 from coredb import coredb
 from openfoam.dictionary_file import DictionaryFile
 
+
 class MethodType(Enum):
     NONE         = 'none'
     MANUAL       = 'manual'
@@ -16,8 +17,9 @@ class MethodType(Enum):
     STRUCTURED   = 'structured'
     MULTILEVEL   = 'multiLevel'
 
+
 class DecomposeParDict(DictionaryFile):
-    def __init__(self, rname: str = None):
+    def __init__(self, rname: str = ''):
         super().__init__(self.systemLocation(rname), 'decomposeParDict')
 
         self._rname = rname

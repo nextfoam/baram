@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 from enum import Enum
 import tempfile
 from pathlib import Path
@@ -31,30 +30,26 @@ class DictionaryFile:
             'version': VERSION,
             'format': format_.value,
             'class': class_.value,
-            'location': location,
+            'location': str(location),
             'object': objectName
         }
         self._data = None
 
     @classmethod
-    def constantLocation(cls, subPath=None):
-        return os.path.join(FileSystem.CONSTANT_DIRECTORY_NAME, subPath) if subPath else\
-            FileSystem.CONSTANT_DIRECTORY_NAME
+    def constantLocation(cls, subPath=''):
+        return Path(FileSystem.CONSTANT_DIRECTORY_NAME) / subPath
 
     @classmethod
-    def boundaryLocation(cls, subPath=None):
-        return os.path.join(FileSystem.BOUNDARY_CONDITIONS_DIRECTORY_NAME, subPath) if subPath else\
-            FileSystem.BOUNDARY_CONDITIONS_DIRECTORY_NAME
+    def boundaryLocation(cls, subPath=''):
+        return Path(FileSystem.BOUNDARY_CONDITIONS_DIRECTORY_NAME) / subPath
 
     @classmethod
-    def systemLocation(cls, subPath=None):
-        return os.path.join(FileSystem.SYSTEM_DIRECTORY_NAME, subPath) if subPath else\
-            FileSystem.SYSTEM_DIRECTORY_NAME
+    def systemLocation(cls, subPath=''):
+        return Path(FileSystem.SYSTEM_DIRECTORY_NAME) / subPath
 
     @classmethod
-    def polyMeshLocation(cls, rname=None):
-        return os.path.join(FileSystem.CONSTANT_DIRECTORY_NAME, rname, FileSystem.POLY_MESH_DIRECTORY_NAME) \
-            if rname else cls.constantLocation(FileSystem.POLY_MESH_DIRECTORY_NAME)
+    def polyMeshLocation(cls, rname='', processor=''):
+        return processor / Path(FileSystem.CONSTANT_DIRECTORY_NAME) / rname / FileSystem.POLY_MESH_DIRECTORY_NAME
 
     def fullPath(self):
         return FileSystem.caseRoot() / self._header["location"] / self._header["object"]

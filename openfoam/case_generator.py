@@ -77,6 +77,10 @@ class CaseGenerator:
             DecomposeParDict(rname).build().write()
 
             Boundary(rname).build().write()
+            processorNo = 0
+            while FileSystem.hasProcessor(processorNo):
+                Boundary(rname, processorNo).build().write()
+                processorNo += 1
 
         if len(regions) > 1:
             FvSolution().build().write()
