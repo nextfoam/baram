@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
-
 import pandas as pd
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt
 
 import numpy as np
-import random
 
 from matplotlib.backends.qt_compat import QtWidgets
 from matplotlib.backends.backend_qtagg import (
@@ -76,16 +73,17 @@ class ChartDock(TabifiedDock):
         self.solverInfoManager.residualsUpdated.connect(self.updated)
 
         self._project = Project.instance()
+        self._project.projectChanged.connect(self._projectChanged)
         self._project.solverStatusChanged.connect(self.solverStatusChanged)
 
         self._main_window.windowClosed.connect(self._mainWindowClosed)
 
+        self._projectChanged()
+
     def startDrawing(self):
         self._timeMax = None
         self._timeMin = None
-        self.solverInfoManager.startCollecting(
-            Path(FileSystem.caseRoot()).resolve(),
-            coredb.CoreDB().getRegions())
+        self.solverInfoManager.startCollecting()
 
     def stopDrawing(self):
         self.solverInfoManager.stopCollecting()
@@ -98,6 +96,10 @@ class ChartDock(TabifiedDock):
 
     def _mainWindowClosed(self, result):
         self.stopDrawing()
+
+    def _projectChanged(self):
+        if self._project.hasSolved():
+            self.startDrawing()
 
     def updated(self, data: pd.DataFrame):
         self._data = data

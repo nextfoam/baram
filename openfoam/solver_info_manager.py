@@ -11,6 +11,10 @@ import logging
 
 import numpy as np
 import pandas as pd
+
+from coredb import coredb
+from coredb.project import Project
+from openfoam.file_system import FileSystem
 from PySide6.QtCore import Qt, QTimer, QObject, QThread, Signal
 
 
@@ -147,13 +151,17 @@ class Worker(QObject):
     updateResiduals = Signal()
     residualsUpdated = Signal(pd.DataFrame)
 
-    def __init__(self, casePath: Path, regions: [str]):
+    def __init__(self):
         super().__init__()
+
+        casePath = Path(FileSystem.caseRoot()).resolve()
+        if not casePath.is_absolute():
+            raise AssertionError
 
         self.mrGlobPattern = casePath / 'postProcessing' / '*' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
         self.srGlobPattern = casePath / 'postProcessing' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
 
-        self.regions = regions
+        self.regions = coredb.CoreDB().getRegions()
 
         self.changingFiles = None
         self.data = None
@@ -172,23 +180,30 @@ class Worker(QObject):
         if self.running:
             return
 
-        self.running = True
+        self.running = Project.instance().isSolverRunning()
 
         self.collectionReady = False
 
         self.changingFiles = {r: None for r in self.regions}
         self.data = {r: None for r in self.regions}
 
-        # Get current snapshot of info files
-        self.infoFiles = self.getInfoFiles()
+        if self.running:
+            # Get current snapshot of info files
+            self.infoFiles = self.getInfoFiles()
 
-        self.timer = QTimer()
-        self.timer.setInterval(500)
-        self.timer.timeout.connect(self.process)
-        self.timer.start()
+            self.timer = QTimer()
+            self.timer.setInterval(500)
+            self.timer.timeout.connect(self.process)
+            self.timer.start()
+        else:
+            self.infoFiles = {}
+            self.process()
+            self.stopRun()
 
     def stopRun(self):
-        self.timer.stop()
+        if self.running:
+            self.timer.stop()
+
         for s in self.changingFiles.values():
             if s is not None:  # "s" could remain "None" if the solver stops by error as soon as it starts
                 s.f.close()
@@ -298,15 +313,12 @@ class SolverInfoManager(QObject):
         self.worker = None
         self.thread = None
 
-    def startCollecting(self, casePath: Path, regions: [str]):
+    def startCollecting(self):
         if self.thread is not None:
             return
 
-        if not casePath.is_absolute():
-            raise AssertionError
-
         self.thread = QThread()
-        self.worker = Worker(casePath, regions)
+        self.worker = Worker()
 
         self.worker.moveToThread(self.thread)
 
