@@ -15,6 +15,7 @@ from app import app
 from coredb import coredb
 from coredb.project import Project
 from openfoam.file_system import FileSystem, FileLoadingError
+from openfoam.constant.region_properties import RegionProperties
 from mesh.vtk_loader import ActorInfo, VtkMesh
 
 
@@ -52,26 +53,26 @@ def build(mBlock):
     return vtkMesh
 
 
-"""
-VtkMesh dict
-{
-    <region> : {
-        "boundary" : {
-            <boundary> : <ActorInfo>
-            ...
-        },
-        "internalMesh" : <ActorInfo>,
-        "zones" : {
-            "cellZones" : {
-                <cellZone> : <ActorInfo>,
-                ...
-            }
-        }
-    },
-    ...
-}
-"""
 def getVtkMesh(foamFilePath: Path, statusConfig: dict):
+    """
+    VtkMesh dict
+    {
+        <region> : {
+            "boundary" : {
+                <boundary> : <ActorInfo>
+                ...
+            },
+            "internalMesh" : <ActorInfo>,
+            "zones" : {
+                "cellZones" : {
+                    <cellZone> : <ActorInfo>,
+                    ...
+                }
+            }
+        },
+        ...
+    }
+    """
     r = vtkOpenFOAMReader()
     r.SetFileName(str(foamFilePath))
     r.DecomposePolyhedraOn()
@@ -118,11 +119,15 @@ class PolyMeshLoader:
         path = srcPath
         if not path:
             path = FileSystem.constantPath()
-        regions = self._loadRegions(path)
-        if regions is None:
-            # single region
-            regions = ['']
 
+        regions = RegionProperties.loadRegions(path)
+        if regions[0] == '':
+            if not FileSystem.isPolyMesh(path.joinpath('polyMesh')):
+                path = path.parent
+                if not FileSystem.isPolyMesh(path.joinpath('polyMesh')):
+                    raise FileLoadingError(f'PolyMesh files not found.')
+
+            # single region
             if not FileSystem.isPolyMesh(path):
                 path = path / FileSystem.POLY_MESH_DIRECTORY_NAME
                 if not FileSystem.isPolyMesh(path):
@@ -140,22 +145,6 @@ class PolyMeshLoader:
             await FileSystem.copyMeshFrom(path, regions)
 
         return boundaries
-
-    def _loadRegions(self, srcPath: Path):
-        fileName = srcPath / FileSystem.REGION_PROPERTIES_FILE_NAME
-        if fileName.is_file():
-            regions = []
-            regionsDict = ParsedParameterFile(fileName).content['regions']
-            for i in range(1, len(regionsDict), 2):
-                for region in regionsDict[i]:
-                    regions.append(region)
-
-            if regions:
-                return regions
-            else:
-                raise FileLoadingError('Failed to load regionProperties file.')
-
-        return None
 
     async def _loadVtkMesh(self, statusConfig):
         return await asyncio.to_thread(getVtkMesh, FileSystem.foamFilePath(), statusConfig)
