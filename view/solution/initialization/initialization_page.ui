@@ -139,7 +139,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="groupBox_4">
+           <widget class="QGroupBox" name="turbulence">
             <property name="title">
              <string>Turbulence</string>
             </property>

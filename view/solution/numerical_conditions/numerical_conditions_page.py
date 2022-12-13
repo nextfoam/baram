@@ -8,6 +8,7 @@ from coredb.coredb_writer import CoreDBWriter
 from coredb.general_db import GeneralDB
 from coredb.numerical_db import PressureVelocityCouplingScheme, ImplicitDiscretizationScheme, UpwindDiscretizationScheme
 from coredb.numerical_db import NumericalDB
+from coredb.models_db import ModelsDB, TurbulenceModel
 from .numerical_conditions_page_ui import Ui_NumericalConditionsPage
 from .advanced_dialog import AdvancedDialog
 
@@ -50,19 +51,32 @@ class NumericalConditionsPage(QWidget):
             return super().showEvent(ev)
 
         timeIsTransient = GeneralDB.isTimeTransient()
+        energyModelOn = ModelsDB.isEnergyModelOn()
+        turbulenceOn = ModelsDB.getTurbulenceModel() not in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR)
+
         self._ui.useMomentumPredictor.setVisible(timeIsTransient)
+
         self._ui.discretizationSchemeTime.setEnabled(timeIsTransient)
+        self._ui.discretizationSchemeEnergy.setEnabled(energyModelOn)
+        self._ui.discretizationSchemeTurbulence.setEnabled(turbulenceOn)
+
         self._ui.underRelaxationFactorPressureFinal.setEnabled(timeIsTransient)
         self._ui.underRelaxationFactorMomentumFinal.setEnabled(timeIsTransient)
-        self._ui.underRelaxationFactorEnergyFinal.setEnabled(timeIsTransient)
-        self._ui.underRelaxationFactorTurbulenceFinal.setEnabled(timeIsTransient)
+        self._ui.underRelaxationFactorEnergy.setEnabled(energyModelOn)
+        self._ui.underRelaxationFactorEnergyFinal.setEnabled(timeIsTransient and energyModelOn)
+        self._ui.underRelaxationFactorTurbulence.setEnabled(turbulenceOn)
+        self._ui.underRelaxationFactorTurbulenceFinal.setEnabled(timeIsTransient and turbulenceOn)
         self._ui.underRelaxationFactorDensityFinal.setEnabled(timeIsTransient)
+
         self._ui.maxIterationsPerTimeStep.setEnabled(timeIsTransient)
         self._ui.numberOfCorrectors.setEnabled(timeIsTransient)
+
         self._ui.relativePressure.setEnabled(timeIsTransient)
         self._ui.relativeMomentum.setEnabled(timeIsTransient)
-        self._ui.relativeEnergy.setEnabled(timeIsTransient)
-        self._ui.relativeTurbulence.setEnabled(timeIsTransient)
+        self._ui.absoluteEnergy.setEnabled(energyModelOn)
+        self._ui.relativeEnergy.setEnabled(timeIsTransient and energyModelOn)
+        self._ui.absoluteTurbulence.setEnabled(turbulenceOn)
+        self._ui.relativeTurbulence.setEnabled(timeIsTransient and turbulenceOn)
 
         self._ui.pressureVelocityCouplingScheme.setCurrentText(
             self._pressureVelocityCouplingSchemes[self._db.getValue(self._xpath + '/pressureVelocityCouplingScheme')])

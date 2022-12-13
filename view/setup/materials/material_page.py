@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QMessageBox
+from PySide6.QtCore import Signal
 
 from coredb import coredb
 from coredb.material_db import MaterialDB
@@ -14,6 +15,8 @@ from .material_card import MaterialCard
 
 
 class MaterialPage(QWidget):
+    pageReload = Signal()
+
     def __init__(self):
         super().__init__()
         self._ui = Ui_MaterialPage()
@@ -34,6 +37,12 @@ class MaterialPage(QWidget):
 
     def save(self):
         return True
+
+    def showEvent(self, ev):
+        if not ev.spontaneous():
+            self.pageReload.emit()
+
+        return super().showEvent(ev)
 
     def _remove(self, card):
         # The count of the layout returns one more than the number of cards, because of the stretch.
@@ -79,6 +88,7 @@ class MaterialPage(QWidget):
         card = MaterialCard(mid)
         self._cardListLayout.insertWidget(0, card)
         card.removeClicked.connect(self._remove)
+        self.pageReload.connect(card.load)
 
     def _addDialogAccepted(self):
         self._addCard(self._db.addMaterial(self._addDialog.selectedItem()))

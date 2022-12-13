@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from coredb.models_db import TurbulenceModelHelper
+from coredb.models_db import TurbulenceModelHelper, ModelsDB
 from coredb.cell_zone_db import CellZoneDB, ZoneType
 from coredb.general_db import GeneralDB
 from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
@@ -68,28 +68,23 @@ class CellZoneConditionDialog(QDialog):
 
         # Source Terms Widgets
         self._massSourceTerm = VariableSourceWidget(self.tr("Mass"), self._xpath + '/sourceTerms/mass')
-        self._energySourceTerm = VariableSourceWidget(self.tr("Energy"), self._xpath + '/sourceTerms/energy')
+        self._energySourceTerm = None
         self._turbulenceSourceTerms = {}
         self._materialSourceTerms = {}
 
-        layout = self._ui.sourceTerms.layout()
-        layout.addWidget(self._massSourceTerm)
-        layout.addWidget(self._energySourceTerm)
+        self._ui.sourceTerms.layout().addWidget(self._massSourceTerm)
 
         # Fixed Value Widgets
-        self._xVelocity = FixedValueWidget(
-            self.tr("X-Velocity"), self.tr("U<sub>x</sub> (m/s)"), self._xpath + '/fixedValues/xVelocity')
-        self._yVelocity = FixedValueWidget(
-            self.tr("Y-Velocity"), self.tr("U<sub>y</sub> (m/s)"), self._xpath + '/fixedValues/yVelocity')
-        self._zVelocity = FixedValueWidget(
-            self.tr("Z-Velocity"), self.tr("U<sub>z</sub> (m/s)"), self._xpath + '/fixedValues/zVelocity')
-
         self._turbulenceFixedValues = {}
-        self._temperature = FixedValueWidget(
-            self.tr("Temperature"), self.tr("Value (K)"), self._xpath + '/fixedValues/temperature')
+        self._temperature = None
 
-        layout = self._ui.fixedValues.layout()
-        layout.addWidget(self._temperature)
+        if ModelsDB.isEnergyModelOn():
+            self._energySourceTerm = VariableSourceWidget(self.tr("Energy"), self._xpath + '/sourceTerms/energy')
+            self._ui.sourceTerms.layout().addWidget(self._energySourceTerm)
+
+            self._temperature = FixedValueWidget(
+                self.tr("Temperature"), self.tr("Value (K)"), self._xpath + '/fixedValues/temperature')
+            self._ui.fixedValues.layout().addWidget(self._temperature)
 
         self._setupTurbulenceWidgets()
         self._setupMaterialWidgets(["O2"])
@@ -117,7 +112,7 @@ class CellZoneConditionDialog(QDialog):
 
         if not self._massSourceTerm.appendToWriter(writer):
             return
-        if not self._energySourceTerm.appendToWriter(writer):
+        if self._energySourceTerm and not self._energySourceTerm.appendToWriter(writer):
             return
         for field, widget in self._turbulenceSourceTerms.items():
             widget.appendToWriter(writer)
@@ -135,7 +130,8 @@ class CellZoneConditionDialog(QDialog):
         else:
             writer.setAttribute(self._xpath + 'fixedValues/velocity', 'disabled', 'true')
 
-        self._temperature.appendToWriter(writer)
+        if self._temperature:
+            self._temperature.appendToWriter(writer)
         for field, widget in self._turbulenceFixedValues.items():
             widget.appendToWriter(writer)
 
@@ -157,7 +153,6 @@ class CellZoneConditionDialog(QDialog):
             self._actuatorDiskZone.load()
 
         self._massSourceTerm.load()
-        self._energySourceTerm.load()
         for field, widget in self._turbulenceSourceTerms.items():
             widget.load()
 
@@ -168,7 +163,10 @@ class CellZoneConditionDialog(QDialog):
         self._ui.zVelocity.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/velocity/z'))
         self._ui.relaxation.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/relaxation'))
 
-        self._temperature.load()
+        if ModelsDB.isEnergyModelOn():
+            self._energySourceTerm.load()
+            self._temperature.load()
+
         for field, widget in self._turbulenceFixedValues.items():
             widget.load()
 
