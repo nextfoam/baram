@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QWidget, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from coredb.general_db import GeneralDB
+from coredb.general_db import GeneralDB, SolverType
 from .general_page_ui import Ui_GeneralPage
 
 
@@ -24,6 +24,9 @@ class GeneralPage(QWidget):
 
         self._db = coredb.CoreDB()
         self._load()
+
+        if GeneralDB.getSolverType() == SolverType.DENSITY_BASED:
+            self._ui.transient_.setEnabled(False)
 
     def hideEvent(self, ev):
         if not ev.spontaneous():
