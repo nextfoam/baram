@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
+
 import pandas as pd
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt
@@ -83,7 +85,9 @@ class ChartDock(TabifiedDock):
     def startDrawing(self):
         self._timeMax = None
         self._timeMin = None
-        self.solverInfoManager.startCollecting()
+        self.solverInfoManager.startCollecting(
+            Path(FileSystem.caseRoot()).resolve(),
+            coredb.CoreDB().getRegions())
 
     def stopDrawing(self):
         self.solverInfoManager.stopCollecting()

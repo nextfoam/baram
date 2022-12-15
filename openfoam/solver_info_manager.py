@@ -12,9 +12,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from coredb import coredb
 from coredb.project import Project
-from openfoam.file_system import FileSystem
 from PySide6.QtCore import Qt, QTimer, QObject, QThread, Signal
 
 
@@ -151,17 +149,13 @@ class Worker(QObject):
     updateResiduals = Signal()
     residualsUpdated = Signal(pd.DataFrame)
 
-    def __init__(self):
+    def __init__(self, casePath: Path, regions: [str]):
         super().__init__()
-
-        casePath = Path(FileSystem.caseRoot()).resolve()
-        if not casePath.is_absolute():
-            raise AssertionError
 
         self.mrGlobPattern = casePath / 'postProcessing' / '*' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
         self.srGlobPattern = casePath / 'postProcessing' / 'solverInfo_*' / '*' / 'solverInfo*.dat'
 
-        self.regions = coredb.CoreDB().getRegions()
+        self.regions = regions
 
         self.changingFiles = None
         self.data = None
@@ -313,12 +307,15 @@ class SolverInfoManager(QObject):
         self.worker = None
         self.thread = None
 
-    def startCollecting(self):
+    def startCollecting(self, casePath: Path, regions: [str]):
         if self.thread is not None:
             self.stopCollecting()
 
+        if not casePath.is_absolute():
+            raise AssertionError
+
         self.thread = QThread()
-        self.worker = Worker()
+        self.worker = Worker(casePath, regions)
 
         self.worker.moveToThread(self.thread)
 
