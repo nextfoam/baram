@@ -10,14 +10,14 @@ from .settings_language_ui import Ui_SettingLanguageDialog
 
 languages = [
     [  # ISO 639-1 Two-Letter codes
-        'de', 'en', 'es', 'fr', 'it',
-        'ja', 'ko', 'nl', 'pl', 'pt',
-        'ru', 'sv', 'tr', 'zh'
+        'de', 'en', 'es', 'fi', 'fr',
+        'it', 'ja', 'ko', 'nl', 'pl',
+        'pt', 'ru', 'sv', 'tr', 'zh'
     ],
     [  # Display String for each language
-        'Deutsch', 'English', 'Español', 'Français', 'Italiano',
-        '日本語', '한국어', 'Nederlands', 'Polski', 'Português',
-        'русском', 'Svenska', 'Türkçe', '简体中文'
+        'Deutsch', 'English', 'Español', 'Suomi', 'Français',
+        'Italiano', '日本語', '한국어', 'Nederlands', 'Polski',
+        'Português', 'русском', 'Svenska', 'Türkçe', '简体中文'
     ]
 ]
 
