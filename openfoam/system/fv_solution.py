@@ -14,7 +14,7 @@ from openfoam.dictionary_file import DictionaryFile
 
 class FvSolution(DictionaryFile):
     def __init__(self, rname: str = None):
-        super().__init__(self.systemLocation(rname), 'fvSolution')
+        super().__init__(self.systemLocation('' if rname is None else rname), 'fvSolution')
 
         self._rname = rname
         self._db = coredb.CoreDB()

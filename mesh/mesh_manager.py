@@ -9,7 +9,6 @@ from pathlib import Path
 
 from PySide6.QtCore import QObject
 from PySide6.QtCore import Signal
-from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
 from openfoam.run import runUtility
 from openfoam.file_system import FileSystem
@@ -109,12 +108,9 @@ class MeshManager(QObject):
         progress = ProgressDialog(self._window, self.tr('Mesh Loading'), self.tr('Checking the mesh.'))
 
         try:
-            if polyMeshPath := self._checkPolyMesh(path):
-                progress.setText(self.tr('Loading the boundaries.'))
-                await PolyMeshLoader().loadMesh(polyMeshPath)
-                progress.close()
-            else:
-                progress.error(self.tr('Cannot find polyMesh folder'))
+            progress.setText(self.tr('Loading the boundaries.'))
+            await PolyMeshLoader().loadMesh(path)
+            progress.close()
         except Exception as ex:
             logger.info(ex, exc_info=True)
             progress.error(self.tr('Error occurred:\n' + str(ex)))
@@ -137,32 +133,3 @@ class MeshManager(QObject):
         except Exception as ex:
             logger.info(ex, exc_info=True)
             progress.error(self.tr('Error occurred:\n' + str(ex)))
-
-    def _checkPolyMesh(self, path: Path):
-        regions = []
-        regionPropFile = path / 'regionProperties'
-
-        if regionPropFile.is_file():
-            regionsDict = ParsedParameterFile(str(regionPropFile)).content['regions']
-            for i in range(1, len(regionsDict), 2):
-                for region in regionsDict[i]:
-                    if not path.joinpath(region).is_dir():
-                        return False
-                    regions.append(region)
-        else:
-            if path.joinpath('boundary').is_file():
-                path = path.parent
-            elif path.joinpath('polyMesh', 'boundary').is_file():
-                pass
-            else:
-                return False
-
-        if regions:
-            for g in regions:
-                if not FileSystem.isPolyMesh(path.joinpath(f'{g}/polyMesh')):
-                    return False
-        else:
-            if not FileSystem.isPolyMesh(path.joinpath('polyMesh')):
-                return False
-
-        return path

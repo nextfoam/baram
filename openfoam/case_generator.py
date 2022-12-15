@@ -13,6 +13,7 @@ from openfoam.constant.MRF_properties import MRFProperties
 from openfoam.constant.turbulence_properties import TurbulenceProperties
 from openfoam.constant.transport_properties import TransportProperties
 from openfoam.constant.g import G
+from openfoam.constant.region_properties import RegionProperties
 from openfoam.boundary_conditions.p import P
 from openfoam.boundary_conditions.u import U
 from openfoam.boundary_conditions.t import T
@@ -77,9 +78,14 @@ class CaseGenerator:
             DecomposeParDict(rname).build().write()
 
             Boundary(rname).build().write()
+            processorNo = 0
+            while FileSystem.hasProcessor(processorNo):
+                Boundary(rname, processorNo).build().write()
+                processorNo += 1
 
         if len(regions) > 1:
             FvSolution().build().write()
+            RegionProperties().build().write()
 
         G().build().write()
 

@@ -26,9 +26,10 @@ class PressureOutletDialog(ResizableDialog):
 
         if self._turbulenceWidget:
             self._ui.calculateBackflow.layout().insertWidget(0, self._turbulenceWidget)
-
-        if not ModelsDB.isEnergyModelOn():
-            self._ui.backflowTotalTemperatureWidget.hide()
+            if not ModelsDB.isEnergyModelOn():
+                self._ui.backflowTotalTemperatureWidget.hide()
+        elif not ModelsDB.isEnergyModelOn():
+            self._ui.calculateBackflow.hide()
 
         self._load()
 

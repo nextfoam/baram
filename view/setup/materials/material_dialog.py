@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QFormLayout, QMessageBox
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.material_db import MaterialDB, Specification, Phase
+from coredb.models_db import ModelsDB
 from coredb.project import Project
 from view.widgets.number_input_dialog import PolynomialDialog
 from .material_dialog_ui import Ui_MaterialDialog
@@ -65,7 +66,10 @@ class MaterialDialog(ResizableDialog):
         self._name = self._db.getValue(self._xpath + '/name')
         self._ui.name.setText(self._name)
 
-        specification = self._db.getValue(self._xpath + '/density/specification')
+        energyModelOn = ModelsDB.isEnergyModelOn()
+
+        specification = self._db.getValue(self._xpath + '/density/specification') if energyModelOn\
+            else Specification.CONSTANT.value
         self._ui.densityType.setCurrentText(MaterialDB.dbSpecificationToText(specification))
         self._ui.constantDensity.setText(self._db.getValue(self._xpath + '/density/constant'))
         self._densityTypeChanged()
@@ -76,7 +80,8 @@ class MaterialDialog(ResizableDialog):
         self._specificHeatTypeChanged()
 
         if self._phase != Phase.SOLID:
-            specification = self._db.getValue(self._xpath + '/viscosity/specification')
+            specification = self._db.getValue(self._xpath + '/viscosity/specification') if energyModelOn\
+                else Specification.CONSTANT.value
             self._ui.viscosityType.setCurrentText(MaterialDB.dbSpecificationToText(specification))
             self._ui.constantViscosity.setText(self._db.getValue(self._xpath + '/viscosity/constant'))
             if self._phase == Phase.GAS:

@@ -6,6 +6,7 @@ from PySide6.QtCore import Signal
 
 from coredb import coredb
 from coredb.material_db import MaterialDB, Specification, Phase
+from coredb.models_db import ModelsDB
 from .material_card_ui import Ui_MaterialCard
 from .material_dialog import MaterialDialog
 
@@ -25,20 +26,21 @@ class MaterialCard(QWidget):
         self._xpath = MaterialDB.getXPath(mid)
 
         self._connectSignalsSlots()
-        self._load()
+        self.load()
 
     @property
     def name(self):
         return self._ui.name.text()
 
-    def _load(self):
+    def load(self):
         self._ui.name.setText(self._db.getValue(self._xpath + '/name'))
 
         phase = MaterialDB.dbTextToPhase(self._db.getValue(self._xpath + '/phase'))
         self._ui.phase.setText("(" + MaterialDB.getPhaseText(phase) + ")")
 
+        energyModelOn = ModelsDB.isEnergyModelOn()
         specification = self._db.getValue(self._xpath + '/density/specification')
-        if specification == Specification.CONSTANT.value:
+        if specification == Specification.CONSTANT.value or not energyModelOn:
             self._ui.density.setText(self._db.getValue(self._xpath + '/density/constant') + ' kg/m<sup>3</sup>')
         else:
             self._ui.density.setText(MaterialDB.dbSpecificationToText(specification))
@@ -53,7 +55,7 @@ class MaterialCard(QWidget):
             self._ui.viscosistyWidget.hide()
         else:
             specification = self._db.getValue(self._xpath + '/viscosity/specification')
-            if specification == Specification.CONSTANT.value:
+            if specification == Specification.CONSTANT.value or not energyModelOn:
                 self._ui.viscosity.setText(self._db.getValue(self._xpath + '/viscosity/constant') + ' kg/m·s')
             else:
                 self._ui.viscosity.setText(MaterialDB.dbSpecificationToText(specification))
@@ -68,7 +70,7 @@ class MaterialCard(QWidget):
     def _edit(self):
         if self._dialog is None:
             self._dialog = MaterialDialog(self, self._xpath)
-            self._dialog.accepted.connect(self._load)
+            self._dialog.accepted.connect(self.load)
 
         self._dialog.open()
 

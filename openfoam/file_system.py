@@ -191,6 +191,10 @@ class FileSystem:
         cls._clearDirectory(cls._systemPath, ['controlDict'])
 
     @classmethod
+    def hasProcessor(cls, processorNo):
+        return (cls._casePath / f'processor{processorNo}').is_dir()
+
+    @classmethod
     def _setCaseRoot(cls, path):
         cls._casePath = path
         cls._constantPath = cls._casePath / cls.CONSTANT_DIRECTORY_NAME

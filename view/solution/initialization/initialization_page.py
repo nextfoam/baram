@@ -9,6 +9,7 @@ from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.app_settings import AppSettings
 from coredb.project import Project, SolverStatus
+from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.file_system import FileSystem
 from .initialization_page_ui import Ui_InitializationPage
 from .option_dialog import OptionDialog
@@ -60,6 +61,10 @@ class InitializationPage(QWidget):
         self._ui.scaleOfVelocity.setText(self._db.getValue(self._xpath + '/initialValues/scaleOfVelocity'))
         self._ui.turbulentIntensity.setText(self._db.getValue(self._xpath + '/initialValues/turbulentIntensity'))
         self._ui.turbulentViscosityRatio.setText(self._db.getValue(self._xpath + '/initialValues/turbulentViscosity'))
+
+        self._ui.temperature.setEnabled(ModelsDB.isEnergyModelOn())
+        self._ui.turbulence.setEnabled(
+            ModelsDB.getTurbulenceModel() not in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR))
 
         return super().showEvent(ev)
 

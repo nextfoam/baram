@@ -42,7 +42,10 @@ class WallDialog(ResizableDialog):
         self._addVelocityConditionComboItem(WallVelocityCondition.TRANSLATIONAL_MOVING_WALL)
         self._addVelocityConditionComboItem(WallVelocityCondition.ROTATIONAL_MOVING_WALL)
 
-        self._setupTemperatureCombo()
+        if ModelsDB.isEnergyModelOn():
+            self._setupTemperatureCombo()
+        else:
+            self._ui.temperatureGroup.hide()
 
         if not ModelsDB.isRadiationModelOn():
             self._ui.radiation.hide()
@@ -72,15 +75,16 @@ class WallDialog(ResizableDialog):
             writer.append(path + '/velocity/rotationalMovingWall/rotationAxisDirection/y', self._ui.rotationDirectionY.text(), self.tr("Rotation-Axis Direction Y"))
             writer.append(path + '/velocity/rotationalMovingWall/rotationAxisDirection/z', self._ui.rotationDirectionZ.text(), self.tr("Rotation-Axis Direction Z"))
 
-        type_ = self._ui.temperatureType.currentData()
-        writer.append(path + '/temperature/type', type_, None)
-        if type_ == WallTemperature.CONSTANT_TEMPERATURE.value:
-            writer.append(path + '/temperature/temperature', self._ui.temperature.text(), self.tr("Temperature"))
-        elif type_ == WallTemperature.CONSTANT_HEAT_FLUX.value:
-            writer.append(path + '/temperature/heatFlux', self._ui.heatFlux.text(), self.tr("Heat Flux"))
-        elif type_ == WallTemperature.CONVECTION.value:
-            writer.append(path + '/temperature/heatTransferCoefficient', self._ui.heatTransferCoefficient.text(), self.tr("Heat Transfer Coefficient"))
-            writer.append(path + '/temperature/freeStreamTemperature', self._ui.freeStreamTemperature.text(), self.tr("Free Stream Temperature"))
+        if ModelsDB.isEnergyModelOn():
+            type_ = self._ui.temperatureType.currentData()
+            writer.append(path + '/temperature/type', type_, None)
+            if type_ == WallTemperature.CONSTANT_TEMPERATURE.value:
+                writer.append(path + '/temperature/temperature', self._ui.temperature.text(), self.tr("Temperature"))
+            elif type_ == WallTemperature.CONSTANT_HEAT_FLUX.value:
+                writer.append(path + '/temperature/heatFlux', self._ui.heatFlux.text(), self.tr("Heat Flux"))
+            elif type_ == WallTemperature.CONVECTION.value:
+                writer.append(path + '/temperature/heatTransferCoefficient', self._ui.heatTransferCoefficient.text(), self.tr("Heat Transfer Coefficient"))
+                writer.append(path + '/temperature/freeStreamTemperature', self._ui.freeStreamTemperature.text(), self.tr("Free Stream Temperature"))
 
         if ModelsDB.isRadiationModelOn():
             writer.append(path + '/radiation/wallEmissivity', self._ui.wallEmissivity.text(), self.tr("Wall Emissivity"))
@@ -116,13 +120,14 @@ class WallDialog(ResizableDialog):
             self._db.getValue(path + '/velocity/rotationalMovingWall/rotationAxisDirection/z'))
         self._velocityConditionChanged()
 
-        type_ = self._db.getValue(path + '/temperature/type')
-        self._ui.temperatureType.setCurrentText(self._temperatureTypes[type_])
-        self._ui.temperature.setText(self._db.getValue(path + '/temperature/temperature'))
-        self._ui.heatFlux.setText(self._db.getValue(path + '/temperature/heatFlux'))
-        self._ui.heatTransferCoefficient.setText(self._db.getValue(path + '/temperature/heatTransferCoefficient'))
-        self._ui.freeStreamTemperature.setText(self._db.getValue(path + '/temperature/freeStreamTemperature'))
-        self._temperatureTypeChanged()
+        if ModelsDB.isEnergyModelOn():
+            type_ = self._db.getValue(path + '/temperature/type')
+            self._ui.temperatureType.setCurrentText(self._temperatureTypes[type_])
+            self._ui.temperature.setText(self._db.getValue(path + '/temperature/temperature'))
+            self._ui.heatFlux.setText(self._db.getValue(path + '/temperature/heatFlux'))
+            self._ui.heatTransferCoefficient.setText(self._db.getValue(path + '/temperature/heatTransferCoefficient'))
+            self._ui.freeStreamTemperature.setText(self._db.getValue(path + '/temperature/freeStreamTemperature'))
+            self._temperatureTypeChanged()
 
         if ModelsDB.isRadiationModelOn():
             self._ui.wallEmissivity.setText(self._db.getValue(path + '/radiation/wallEmissivity'))

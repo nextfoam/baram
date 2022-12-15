@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from coredb import coredb
 from openfoam.dictionary_file import DictionaryFile
 from coredb.boundary_db import BoundaryType, BoundaryDB, InterfaceMode
@@ -36,8 +35,9 @@ TYPE_MAP = {
 
 
 class Boundary(DictionaryFile):
-    def __init__(self, rname: str):
-        super().__init__(self.polyMeshLocation(rname), 'boundary')
+    def __init__(self, rname: str, processorNo=None):
+        super().__init__(
+            self.polyMeshLocation(rname, '' if processorNo is None else f'processor{processorNo}'), 'boundary')
 
         self._rname = rname
         self._boundaryDict = None
@@ -53,36 +53,36 @@ class Boundary(DictionaryFile):
         self._boundaryDict = PolyMeshLoader.loadBoundaryDict(fullPath)
         for bcname in self._boundaryDict.content:
             xpath = BoundaryDB.getXPathByName(self._rname, bcname)
-            bctype = self._db.getValue(xpath + '/physicalType')
+            if self._db.exists(xpath):
+                bctype = self._db.getValue(xpath + '/physicalType')
 
-            self._boundaryDict.content[bcname]['type'] = TYPE_MAP[bctype]
+                self._boundaryDict.content[bcname]['type'] = TYPE_MAP[bctype]
 
-            if BoundaryDB.needsCoupledBoundary(bctype):
-                couple = self._db.getValue(xpath + '/coupledBoundary')
-                if bctype == BoundaryType.THERMO_COUPLED_WALL.value:
-                    self._generateMappedWall(bcname, xpath, couple)
-                elif bctype == BoundaryType.INTERFACE.value:
-                    spec = self._db.getValue(xpath + '/interface/mode')
-                    if spec == InterfaceMode.INTERNAL_INTERFACE.value:
-                        self._generateCyclicAmiNoOrdering(bcname, xpath, couple)
-                    elif spec == InterfaceMode.ROTATIONAL_PERIODIC.value:
-                        self._generateCyclicAmiRotational(bcname, xpath, couple)
-                    elif spec == InterfaceMode.TRANSLATIONAL_PERIODIC.value:
-                        self._generateCyclicAmiTranslational(bcname, xpath, couple)
-                    elif spec == InterfaceMode.REGION_INTERFACE.value:
+                if BoundaryDB.needsCoupledBoundary(bctype):
+                    couple = self._db.getValue(xpath + '/coupledBoundary')
+                    if bctype == BoundaryType.THERMO_COUPLED_WALL.value:
                         self._generateMappedWall(bcname, xpath, couple)
+                    elif bctype == BoundaryType.INTERFACE.value:
+                        spec = self._db.getValue(xpath + '/interface/mode')
+                        if spec == InterfaceMode.INTERNAL_INTERFACE.value:
+                            self._generateCyclicAmiNoOrdering(bcname, xpath, couple)
+                        elif spec == InterfaceMode.ROTATIONAL_PERIODIC.value:
+                            self._generateCyclicAmiRotational(bcname, xpath, couple)
+                        elif spec == InterfaceMode.TRANSLATIONAL_PERIODIC.value:
+                            self._generateCyclicAmiTranslational(bcname, xpath, couple)
+                        elif spec == InterfaceMode.REGION_INTERFACE.value:
+                            self._generateMappedWall(bcname, xpath, couple)
+                    else:
+                        self._generateCyclic(bcname, xpath, couple)
                 else:
-                    self._generateCyclic(bcname, xpath, couple)
-            else:
-                self._removeEntry(bcname, 'sampleMode')
-                self._removeEntry(bcname, 'sampleRegion')
-                self._removeEntry(bcname, 'samplePatch')
-                self._removeEntry(bcname, 'transform')
-                self._removeEntry(bcname, 'neighbourPatch')
-                self._removeEntry(bcname, 'rotationAxis')
-                self._removeEntry(bcname, 'rotationCentre')
-                self._removeEntry(bcname, 'separationVector')
-
+                    self._removeEntry(bcname, 'sampleMode')
+                    self._removeEntry(bcname, 'sampleRegion')
+                    self._removeEntry(bcname, 'samplePatch')
+                    self._removeEntry(bcname, 'transform')
+                    self._removeEntry(bcname, 'neighbourPatch')
+                    self._removeEntry(bcname, 'rotationAxis')
+                    self._removeEntry(bcname, 'rotationCentre')
+                    self._removeEntry(bcname, 'separationVector')
 
         return self
 

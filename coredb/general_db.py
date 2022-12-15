@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from enum import Enum
+
 from coredb import coredb
+
+
+class SolverType(Enum):
+    PRESSURE_BASED = 'pressureBased'
+    DENSITY_BASED = 'densityBased'
 
 
 class GeneralDB:
@@ -20,3 +27,6 @@ class GeneralDB:
     def isGravityModelOn(cls):
         return coredb.CoreDB().getAttribute(cls.OPERATING_CONDITIONS_XPATH + '/gravity', 'disabled') == 'false'
 
+    @classmethod
+    def getSolverType(cls):
+        return SolverType(coredb.CoreDB().getValue(cls.GENERAL_XPATH + '/solverType'))
