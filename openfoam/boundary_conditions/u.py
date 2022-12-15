@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from coredb import coredb
 from coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
 from coredb.boundary_db import FlowRateInletSpecification, WallVelocityCondition, InterfaceMode
 from coredb.project import Project
@@ -12,16 +11,12 @@ from openfoam.dictionary_file import DataClass
 class U(BoundaryCondition):
     DIMENSIONS = '[0 1 -1 0 0 0 0]'
 
-    def __init__(self, region):
-        super().__init__(self.boundaryLocation(region.rname), 'U', DataClass.CLASS_VOL_VECTOR_FIELD)
+    def __init__(self, region, time, processorNo):
+        super().__init__(region, time, processorNo, 'U', DataClass.CLASS_VOL_VECTOR_FIELD)
 
-        self._region = region
-        self._db = coredb.CoreDB()
         self._initialValue = self._db.getVector('.//initialization/initialValues/velocity')
 
-        self._data = None
-
-    def build(self):
+    def build0(self):
         self._data = None
 
         self._data = {
@@ -83,7 +78,7 @@ class U(BoundaryCondition):
     def _constructPressureInletOutletVelocity(self):
         return {
             'type': 'pressureInletOutletVelocity',
-            'value': ('uniform', self._initialValue)
+            'value': self._initialValueByTime()
         }
 
     def _constructAtmBoundaryLayerInletVelocity(self):
@@ -102,7 +97,7 @@ class U(BoundaryCondition):
             'type': 'variableHeightFlowRateInletVelocity',
             'alpha': 'alpha.liquid',
             'flowRate': flowRate,
-            'value': ('uniform', self._initialValue)
+            'value': self._initialValueByTime()
         }
 
     def _constructOutletPhaseMeanVelocity(self, Umean):

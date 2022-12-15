@@ -36,11 +36,10 @@ TYPE_MAP = {
 
 class Boundary(DictionaryFile):
     def __init__(self, rname: str, processorNo=None):
-        super().__init__(
-            self.polyMeshLocation(rname, '' if processorNo is None else f'processor{processorNo}'), 'boundary')
-
+        super().__init__(self.polyMeshLocation(rname), 'boundary')
         self._rname = rname
         self._boundaryDict = None
+        self._processorNo = processorNo
 
         self._db = coredb.CoreDB()
 
@@ -48,7 +47,7 @@ class Boundary(DictionaryFile):
         if self._boundaryDict is not None:
             return self
 
-        fullPath = self.fullPath()
+        fullPath = self.fullPath(self._processorNo)
 
         self._boundaryDict = PolyMeshLoader.loadBoundaryDict(fullPath)
         for bcname in self._boundaryDict.content:

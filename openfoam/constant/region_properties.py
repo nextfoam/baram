@@ -22,7 +22,7 @@ class RegionProperties(DictionaryFile):
         regionPropFile = path / FileSystem.REGION_PROPERTIES_FILE_NAME
 
         if regionPropFile.is_file():
-            regionsDict = ParsedParameterFile(str(regionPropFile)).content['regions']
+            regionsDict = ParsedParameterFile(regionPropFile).content['regions']
             for i in range(1, len(regionsDict), 2):
                 for region in regionsDict[i]:
                     if not path.joinpath(region).is_dir():

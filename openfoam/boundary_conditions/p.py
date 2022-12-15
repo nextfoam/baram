@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from coredb import coredb
 from coredb.project import Project
 from coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from coredb.general_db import GeneralDB
@@ -39,16 +38,13 @@ TYPE_MAP = {
 class P(BoundaryCondition):
     DIMENSIONS = '[1 -1 -2 0 0 0 0]'
 
-    def __init__(self, region, field='p'):
-        super().__init__(self.boundaryLocation(region.rname), field)
+    def __init__(self, region, time, processorNo, field):
+        super().__init__(region, time, processorNo, field)
 
-        self._region = region
-        self._db = coredb.CoreDB()
-        self.initialPressure = float(self._db.getValue('.//initialization/initialValues/pressure'))
-        self.operatingPressure = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
+        self._initialPressure = float(self._db.getValue('.//initialization/initialValues/pressure'))
+        self._operatingPressure = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
 
         self._field = field
-        self._data = None
         self._usePrgh = False
 
         solvers = openfoam.solver.findSolvers()
@@ -59,9 +55,11 @@ class P(BoundaryCondition):
         self._usePrgh = cap['usePrgh']
 
         if field == 'p_rgh' and cap['useGaugePressureInPrgh']:
-            self.operatingPressure = 0  # This makes Gauge Pressure value unchanged
+            self._operatingPressure = 0  # This makes Gauge Pressure value unchanged
 
-    def build(self):
+        self._initialValue = self._initialPressure + self._operatingPressure
+
+    def build0(self):
         self._data = None
 
         forceCalculatedType = False
@@ -74,7 +72,7 @@ class P(BoundaryCondition):
 
         self._data = {
             'dimensions': self.DIMENSIONS,
-            'internalField': ('uniform', self.initialPressure + self.operatingPressure),
+            'internalField': ('uniform', self._initialValue),
             'boundaryField': self._constructBoundaryField(forceCalculatedType)
         }
 
@@ -92,7 +90,7 @@ class P(BoundaryCondition):
 
             if forceCalculatedType:
                 field[name] = {
-                    'calculated': (lambda: self._constructCalculated(self.initialPressure + self.operatingPressure)),
+                    'calculated': (lambda: self._constructCalculated()),
                     'cyclic':     (lambda: self._constructCyclic()),
                     'symmetry':   (lambda: self._constructSymmetry()),
                     'cyclicAMI':  (lambda: self._constructCyclicAMI()),
@@ -105,24 +103,24 @@ class P(BoundaryCondition):
                 field[name] = {
                     BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructZeroGradient()),
                     BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructZeroGradient()),
-                    BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructTotalPressure(self.operatingPressure + float(self._db.getValue(xpath + '/pressureInlet/pressure')))),
-                    BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructTotalPressure(self.operatingPressure + float(self._db.getValue(xpath + '/pressureOutlet/totalPressure')))),
+                    BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructTotalPressure(self._operatingPressure + float(self._db.getValue(xpath + '/pressureInlet/pressure')))),
+                    BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructTotalPressure(self._operatingPressure + float(self._db.getValue(xpath + '/pressureOutlet/totalPressure')))),
                     BoundaryType.ABL_INLET.value:           (lambda: self._constructZeroGradient()),
                     BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructZeroGradient()),
                     BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
-                    BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestreamPressure(self.operatingPressure + float(self._db.getValue(xpath + '/freeStream/pressure')))),
+                    BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestreamPressure(self._operatingPressure + float(self._db.getValue(xpath + '/freeStream/pressure')))),
                     BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann')),
                     BoundaryType.SUBSONIC_INFLOW.value:     (lambda: self._constructSubsonicInflow(xpath + '/subsonicInflow')),
                     BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructSubsonicOutflow(xpath + '/subsonicOutflow')),
-                    BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(self.operatingPressure + float(self._db.getValue(xpath + '/supersonicInflow/staticPressure')))),
+                    BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(self._operatingPressure + float(self._db.getValue(xpath + '/supersonicInflow/staticPressure')))),
                     BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.WALL.value:                (lambda: self._constructFluxPressure()),
                     BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructFluxPressure()),
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfacePressure(self._db.getValue(xpath + '/interface/mode'))),
-                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump', self.initialPressure + self.operatingPressure)),
-                    BoundaryType.FAN.value:                 (lambda: self._constructFan(xpath + '/fan', self.initialPressure + self.operatingPressure, bcid)),
+                    BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump')),
+                    BoundaryType.FAN.value:                 (lambda: self._constructFan(xpath + '/fan', bcid)),
                     BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                     BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
                     BoundaryType.WEDGE.value:               (lambda: self._constructWedge())
@@ -153,7 +151,17 @@ class P(BoundaryCondition):
         else:
             return self._constructCyclicAMI()
 
-    def _constructFan(self, xpath, value, bcid):
+    def _constructPorousBafflePressure(self, xpath):
+        return {
+            'type': 'porousBafflePressure',
+            'patchType': 'cyclic',
+            'D': self._db.getValue(xpath + '/darcyCoefficient'),
+            'I': self._db.getValue(xpath + '/inertialCoefficient'),
+            'length': self._db.getValue(xpath + '/porousMediaThickness'),
+            'value': self._initialValueByTime()
+        }
+
+    def _constructFan(self, xpath, bcid):
         fanCurveFileName = f'UvsPressure{bcid}'
         Project.instance().fileDB().getFileContents(self._db.getValue(xpath + '/fanCurveFile')).to_csv(
             FileSystem.constantPath() / fanCurveFileName, sep=',', header=False, index=False
@@ -171,5 +179,5 @@ class P(BoundaryCondition):
                 'mergeSeparators': 'no',
                 'file': f'<constant>/{fanCurveFileName}'
             },
-            'value': ('uniform', value)
+            'value': self._initialValueByTime()
         }

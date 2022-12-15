@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from coredb import coredb
 from coredb.boundary_db import BoundaryDB, BoundaryType, SpalartAllmarasSpecification, InterfaceMode
 from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
@@ -10,20 +9,15 @@ from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 class NuTilda(BoundaryCondition):
     DIMENSIONS = '[0 2 -1 0 0 0 0]'
 
-    def __init__(self, region):
-        super().__init__(self.boundaryLocation(region.rname), 'nuTilda')
-
-        self._region = region
-        self._db = coredb.CoreDB()
+    def __init__(self, region, time, processorNo):
+        super().__init__(region, time, processorNo, 'nuTilda')
 
         self._initialValue = region.initialNut  # nut can be used for the INITIAL value of nuTilda
 
+    def build0(self):
         self._data = None
 
-    def build(self):
-        self._data = None
-
-        if ModelsDB.getTurbulenceModel() == TurbulenceModel.SPALART_ALLMARAS:
+        if ModelsDB.getTurbulenceModel() == TurbulenceModel.SPALART_ALLMARAS and self._region.isFluid():
             self._data = {
                 'dimensions': self.DIMENSIONS,
                 'internalField': ('uniform', self._initialValue),
@@ -81,7 +75,7 @@ class NuTilda(BoundaryCondition):
         spec = self._db.getValue(xpath + '/turbulence/spalartAllmaras/specification')
         if spec == SpalartAllmarasSpecification.MODIFIED_TURBULENT_VISCOSITY.value:
             return self._constructInletOutlet(
-                self._db.getValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity'), self._initialValue)
+                self._db.getValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity'))
         elif spec == SpalartAllmarasSpecification.TURBULENT_VISCOSITY_RATIO.value:
             # ToDo: Setting according to boundary field spec
             return {

@@ -4,6 +4,8 @@
 from enum import Enum, auto
 from math import sqrt
 
+from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
+
 from coredb import coredb
 from coredb.material_db import MaterialDB
 from coredb.models_db import TurbulenceModel
@@ -18,15 +20,46 @@ class BoundaryCondition(DictionaryFile):
         TEMPORAL_SCALAR_LIST = auto()
         TEMPORAL_VECTOR_LIST = auto()
 
-    def __init__(self, location, field, class_=DataClass.CLASS_VOL_SCALAR_FIELD):
-        super().__init__(location, field, class_)
+    def __init__(self, region, time, processorNo, field, class_=DataClass.CLASS_VOL_SCALAR_FIELD):
+        super().__init__(self.boundaryLocation(region.rname, time), field, class_)
 
+        self._initialValue = None
+        self._region = region
+        self._time = time
+        self._processorNo = processorNo
         self._db = coredb.CoreDB()
 
-    def _constructCalculated(self, value):
+    def build(self):
+        self.build0()
+        if self._time == '0' or not self._data:
+            return self
+
+        path = self.fullPath(self._processorNo)
+        if path.is_file():
+            dict0 = self._data
+            self._data = ParsedParameterFile(path)
+
+            for name in dict0['boundaryField']:
+                self._data.content['boundaryField'][name].update(
+                    {k: v for k, v in dict0['boundaryField'][name].items() if v is not None})
+        else:
+            self._data = None
+
+        return self
+
+    def write(self):
+        if self._time == '0':
+            super().write()
+        elif self._data:
+            self._data.writeFile()
+
+    def _initialValueByTime(self):
+        return ('uniform', self._initialValue) if self._time == '0' else None
+
+    def _constructCalculated(self):
         return {
             'type': 'calculated',
-            'value': ('uniform', value)
+            'value': self._initialValueByTime()
         }
 
     def _constructZeroGradient(self):
@@ -150,34 +183,24 @@ class BoundaryCondition(DictionaryFile):
             'type': 'slip'
         }
 
-    def _constructPorousBafflePressure(self, xpath, value):
-        return {
-            'type': 'porousBafflePressure',
-            'patchType': 'cyclic',
-            'D': self._db.getValue(xpath + '/darcyCoefficient'),
-            'I': self._db.getValue(xpath + '/inertialCoefficient'),
-            'length': self._db.getValue(xpath + '/porousMediaThickness'),
-            'value': ('uniform', value)
-        }
-
     def _constructFreestream(self, value):
         return {
             'type': 'freestream',
             'freestreamValue': ('uniform', value)
         }
 
-    def _constructInletOutlet(self, inletValue, value):
+    def _constructInletOutlet(self, inletValue):
         return {
             'type': 'inletOutlet',
             'inletValue': ('uniform', inletValue),
-            'value': ('uniform', value)
+            'value': self._initialValueByTime()
         }
 
-    def _constructNEXTViscosityRatioInletOutletTDR(self, viscosityRatio, initialValue):
+    def _constructNEXTViscosityRatioInletOutletTDR(self, viscosityRatio):
         return {
             'type': 'viscosityRatioInletOutletTDR',
             'viscosityRatio': ('uniform', viscosityRatio),
-            'value': ('uniform', initialValue)
+            'value': self._initialValueByTime()
         }
 
     def _calculateFreeStreamTurbulentValues(self, xpath, region, model):

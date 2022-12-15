@@ -91,6 +91,12 @@ class FileSystem:
         return cls._casePath / cls.FOAM_FILE_NAME
 
     @classmethod
+    def processorPath(cls, no):
+        path = (cls._casePath / f'processor{no}')
+
+        return path if path.is_dir() else None
+
+    @classmethod
     def makeDir(cls, parent, directory):
         path = parent / directory
         path.mkdir(parents=True, exist_ok=True)
@@ -189,10 +195,6 @@ class FileSystem:
                     cls._remove(file)
 
         cls._clearDirectory(cls._systemPath, ['controlDict'])
-
-    @classmethod
-    def hasProcessor(cls, processorNo):
-        return (cls._casePath / f'processor{processorNo}').is_dir()
 
     @classmethod
     def _setCaseRoot(cls, path):

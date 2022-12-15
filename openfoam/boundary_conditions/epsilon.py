@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from coredb import coredb
 from coredb.boundary_db import BoundaryDB, BoundaryType, KEpsilonSpecification, WallVelocityCondition, InterfaceMode
 from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
@@ -10,20 +9,15 @@ from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 class Epsilon(BoundaryCondition):
     DIMENSIONS = '[0 2 -3 0 0 0 0]'
 
-    def __init__(self, region):
-        super().__init__(self.boundaryLocation(region.rname), 'epsilon')
-
-        self._region = region
-        self._db = coredb.CoreDB()
+    def __init__(self, region, time, processorNo):
+        super().__init__(region, time, processorNo, 'epsilon')
 
         self._initialValue = region.initialEpsilon
 
+    def build0(self):
         self._data = None
 
-    def build(self):
-        self._data = None
-
-        if ModelsDB.getTurbulenceModel() == TurbulenceModel.K_EPSILON:
+        if ModelsDB.getTurbulenceModel() == TurbulenceModel.K_EPSILON and self._region.isFluid():
             self._data = {
                 'dimensions': self.DIMENSIONS,
                 'internalField': ('uniform', self._initialValue),
@@ -70,10 +64,10 @@ class Epsilon(BoundaryCondition):
         spec = self._db.getValue(xpath + '/turbulence/k-epsilon/specification')
         if spec == KEpsilonSpecification.K_AND_EPSILON.value:
             return self._constructInletOutlet(
-                self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'), self._initialValue)
+                self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
         elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
             return self._constructNEXTViscosityRatioInletOutletTDR(
-                self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'), self._initialValue)
+                self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'))
 
     def _constructAtmBoundaryLayerInletEpsilon(self):
         return {
@@ -89,7 +83,7 @@ class Epsilon(BoundaryCondition):
     def _constructNEXTEpsilonWallFunction(self):
         return {
             'type': 'epsilonWallFunction',
-            'value': ('uniform', self._initialValue)
+            'value': self._initialValueByTime()
         }
 
     def _constructAtmEpsilonWallFunction(self):
@@ -97,7 +91,7 @@ class Epsilon(BoundaryCondition):
             'type': 'atmEpsilonWallFunction',
             'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
             'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate'),
-            'value': ('uniform', self._initialValue)
+            'value': self._initialValueByTime()
         }
 
     def _constructWallEpsilon(self, xpath):
@@ -115,6 +109,7 @@ class Epsilon(BoundaryCondition):
 
     def _constructFreeStreamEpsilon(self, xpath):
         spec = self._db.getValue(xpath + '/turbulence/k-epsilon/specification')
+        epsilon = None
         if spec == KEpsilonSpecification.K_AND_EPSILON.value:
             epsilon = float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
         elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:

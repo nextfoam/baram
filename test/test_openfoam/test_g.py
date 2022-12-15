@@ -20,7 +20,7 @@ class TestG(unittest.TestCase):
 
     def testG(self):
         self.db.setValue(self.path + '/model', 'inviscid')
-        content = G(self.region).build().asDict()
+        content = G().build().asDict()
         self.assertEqual('[0 1 -2 0 0 0 0]', content['dimensions'])
         self.assertEqual(self.db.getVector('.//operatingConditions/gravity/direction'), content['value'])
 

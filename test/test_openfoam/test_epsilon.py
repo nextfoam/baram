@@ -1,5 +1,4 @@
 import unittest
-import math
 
 from coredb import coredb
 from coredb.boundary_db import BoundaryDB
@@ -49,7 +48,7 @@ class TestEpsilon(unittest.TestCase):
     def testVelocityInlet(self):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'kAndEpsilon')
         self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual(dimensions, content['dimensions'])
         self.assertEqual(self._initialValue, content['internalField'][1])
         self.assertEqual('inletOutlet', content['boundaryField'][boundary]['type'])
@@ -61,7 +60,7 @@ class TestEpsilon(unittest.TestCase):
     def testFlowRateInletVolume(self):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'flowRateInlet')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'),
                          content['boundaryField'][boundary]['viscosityRatio'][1])
@@ -69,7 +68,7 @@ class TestEpsilon(unittest.TestCase):
     def testPressureInlet(self):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'kAndEpsilon')
         self._db.setValue(self._xpath + '/physicalType', 'pressureInlet')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('inletOutlet', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentDissipationRate'),
                          content['boundaryField'][boundary]['inletValue'][1])
@@ -80,7 +79,7 @@ class TestEpsilon(unittest.TestCase):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'pressureOutlet')
         self._db.setValue(self._xpath + '/pressureOutlet/calculatedBackflow', 'true')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'),
                          content['boundaryField'][boundary]['viscosityRatio'][1])
@@ -89,12 +88,12 @@ class TestEpsilon(unittest.TestCase):
     def testPressureOutlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'pressureOutlet')
         self._db.setValue(self._xpath + '/pressureOutlet/calculatedBackflow', 'false')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
 
     def testAblInlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'ablInlet')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('atmBoundaryLayerInletEpsilon', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection'),
                          content['boundaryField'][boundary]['flowDir'])
@@ -112,7 +111,7 @@ class TestEpsilon(unittest.TestCase):
     def testOpenChannelInlet(self):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'kAndEpsilon')
         self._db.setValue(self._xpath + '/physicalType', 'openChannelInlet')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('inletOutlet', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentDissipationRate'),
                          content['boundaryField'][boundary]['inletValue'][1])
@@ -121,21 +120,21 @@ class TestEpsilon(unittest.TestCase):
     def testOpenChannelOutlet(self):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'openChannelOutlet')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'),
                          content['boundaryField'][boundary]['viscosityRatio'][1])
 
     def testOutflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'outflow')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
 
     # Free Stream
     def testFreeStreamKAndEpsilon(self):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'kAndEpsilon')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('freestream', content['boundaryField'][boundary]['type'])
         self.assertEqual(float(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentDissipationRate')),
                          content['boundaryField'][boundary]['freestreamValue'][1])
@@ -144,15 +143,16 @@ class TestEpsilon(unittest.TestCase):
     def testFreeStreamKEpsilonIntensityAndViscosityRatio(self):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('freestream', content['boundaryField'][boundary]['type'])
-        self.assertEqual(Epsilon(RegionDB.getRegionProperties(region))._calculateFreeStreamKE(self._xpath, region)[1],
-                         content['boundaryField'][boundary]['freestreamValue'][1])
+        self.assertEqual(
+            Epsilon(RegionDB.getRegionProperties(region), '0', None)._calculateFreeStreamKE(self._xpath, region)[1],
+            content['boundaryField'][boundary]['freestreamValue'][1])
 
     def testFarFieldRiemann(self):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'kAndEpsilon')
         self._db.setValue(self._xpath + '/physicalType', 'farFieldRiemann')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('inletOutlet', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentDissipationRate'),
                          content['boundaryField'][boundary]['inletValue'][1])
@@ -161,20 +161,20 @@ class TestEpsilon(unittest.TestCase):
     def testSubsonicInflow(self):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'intensityAndViscosityRatio')
         self._db.setValue(self._xpath + '/physicalType', 'subsonicInflow')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('viscosityRatioInletOutletTDR', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'),
                          content['boundaryField'][boundary]['viscosityRatio'][1])
 
     def testSubsonicOutflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'subsonicOutflow')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
 
     def testSupersonicInflow(self):
         self._db.setValue(self._xpath + '/turbulence/k-epsilon/specification', 'kAndEpsilon')
         self._db.setValue(self._xpath + '/physicalType', 'supersonicInflow')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('inletOutlet', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/turbulence/k-epsilon/turbulentDissipationRate'),
                          content['boundaryField'][boundary]['inletValue'][1])
@@ -182,78 +182,78 @@ class TestEpsilon(unittest.TestCase):
 
     def testSupersonicOutflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'supersonicOutflow')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
 
     def testWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'wall')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('epsilonWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testThermoCoupledWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('epsilonWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testSymmetry(self):
         self._db.setValue(self._xpath + '/physicalType', 'symmetry')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('symmetry', content['boundaryField'][boundary]['type'])
 
     # Interface
     def testInternalInterface(self):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'internalInterface')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('cyclicAMI', content['boundaryField'][boundary]['type'])
 
     # Interface
     def testRotationalPeriodic(self):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'rotationalPeriodic')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('cyclicAMI', content['boundaryField'][boundary]['type'])
 
     # Interface
     def testTranslationalPeriodic(self):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'translationalPeriodic')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('cyclicAMI', content['boundaryField'][boundary]['type'])
 
     # Interface
     def testRegionInterface(self):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'regionInterface')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('epsilonWallFunction', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testPorousJump(self):
         self._db.setValue(self._xpath + '/physicalType', 'porousJump')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('cyclic', content['boundaryField'][boundary]['type'])
 
     def testFan(self):
         self._db.setValue(self._xpath + '/physicalType', 'fan')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('cyclic', content['boundaryField'][boundary]['type'])
 
     def testEmpty(self):
         self._db.setValue(self._xpath + '/physicalType', 'empty')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('empty', content['boundaryField'][boundary]['type'])
 
     def testCyclic(self):
         self._db.setValue(self._xpath + '/physicalType', 'cyclic')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('cyclic', content['boundaryField'][boundary]['type'])
 
     def testWedge(self):
         self._db.setValue(self._xpath + '/physicalType', 'wedge')
-        content = Epsilon(RegionDB.getRegionProperties(region)).build().asDict()
+        content = Epsilon(RegionDB.getRegionProperties(region), '0', None).build().asDict()
         self.assertEqual('wedge', content['boundaryField'][boundary]['type'])
 
 

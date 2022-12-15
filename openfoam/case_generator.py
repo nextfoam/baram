@@ -59,29 +59,21 @@ class CaseGenerator:
                 TurbulenceProperties(rname).build().write()
                 TransportProperties(rname).build().write()
 
-                Alphat(region).build().write()
+            Boundary(rname).build().write()
 
-                K(region).build().write()
-                Nut(region).build().write()
-                Epsilon(region).build().write()
-                Omega(region).build().write()
-                NuTilda(region).build().write()
+            processorNo = 0
+            while path := FileSystem.processorPath(processorNo):
+                Boundary(rname, processorNo).build().write()
+                self._generateBoundaryConditionsFiles(region, path, processorNo)
+                processorNo += 1
 
-            P(region, 'p_rgh').build().write()
-            P(region).build().write()
-            U(region).build().write()
-            T(region).build().write()
+            if processorNo == 0:
+                self._generateBoundaryConditionsFiles(region, FileSystem.caseRoot())
 
             FvSchemes(rname).build().write()
             FvSolution(rname).build().write()
             FvOptions(rname).build().write()
             DecomposeParDict(rname).build().write()
-
-            Boundary(rname).build().write()
-            processorNo = 0
-            while FileSystem.hasProcessor(processorNo):
-                Boundary(rname, processorNo).build().write()
-                processorNo += 1
 
         if len(regions) > 1:
             FvSolution().build().write()
@@ -114,3 +106,20 @@ class CaseGenerator:
                         f'{BoundaryDB.dbBoundaryTypeToText(bctype)} boundary "{bcname}" needs a coupled boundary.\n')
 
         return self._errors
+
+    def _generateBoundaryConditionsFiles(self, region, path, processorNo=None):
+        times = [d.name for d in path.glob('[0-9]*')]
+        time = max(times, key=lambda x: float(x)) if times else '0'
+
+        Alphat(region, time, processorNo).build().write()
+
+        K(region, time, processorNo).build().write()
+        Nut(region, time, processorNo).build().write()
+        Epsilon(region, time, processorNo).build().write()
+        Omega(region, time, processorNo).build().write()
+        NuTilda(region, time, processorNo).build().write()
+
+        P(region, time, processorNo, 'p_rgh').build().write()
+        P(region, time, processorNo, 'p').build().write()
+        U(region, time, processorNo).build().write()
+        T(region, time, processorNo).build().write()

@@ -40,19 +40,20 @@ class DictionaryFile:
         return Path(FileSystem.CONSTANT_DIRECTORY_NAME) / subPath
 
     @classmethod
-    def boundaryLocation(cls, subPath=''):
-        return Path(FileSystem.BOUNDARY_CONDITIONS_DIRECTORY_NAME) / subPath
+    def boundaryLocation(cls, rname, time):
+        return Path(time) / rname if time == '0' else Path(time) / rname / 'boundaryFields'
 
     @classmethod
     def systemLocation(cls, subPath=''):
         return Path(FileSystem.SYSTEM_DIRECTORY_NAME) / subPath
 
     @classmethod
-    def polyMeshLocation(cls, rname='', processor=''):
-        return processor / Path(FileSystem.CONSTANT_DIRECTORY_NAME) / rname / FileSystem.POLY_MESH_DIRECTORY_NAME
+    def polyMeshLocation(cls, rname=''):
+        return Path(FileSystem.CONSTANT_DIRECTORY_NAME) / rname / FileSystem.POLY_MESH_DIRECTORY_NAME
 
-    def fullPath(self):
-        return FileSystem.caseRoot() / self._header["location"] / self._header["object"]
+    def fullPath(self, processorNo=None):
+        processorDir = '' if processorNo is None else f'processor{processorNo}'
+        return FileSystem.caseRoot() / processorDir / self._header['location'] / self._header['object']
 
     def asDict(self):
         return self._data

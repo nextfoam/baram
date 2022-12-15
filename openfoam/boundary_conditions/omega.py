@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from coredb import coredb
 from coredb.boundary_db import BoundaryDB, BoundaryType, KOmegaSpecification, WallVelocityCondition, InterfaceMode
 from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
@@ -10,20 +9,15 @@ from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 class Omega(BoundaryCondition):
     DIMENSIONS = '[0 0 -1 0 0 0 0]'
 
-    def __init__(self, region):
-        super().__init__(self.boundaryLocation(region.rname), 'omega')
-
-        self._region = region
-        self._db = coredb.CoreDB()
+    def __init__(self, region, time, processorNo):
+        super().__init__(region, time, processorNo, 'omega')
 
         self._initialValue = region.initialOmega
 
+    def build0(self):
         self._data = None
 
-    def build(self):
-        self._data = None
-
-        if ModelsDB.getTurbulenceModel() == TurbulenceModel.K_OMEGA:
+        if ModelsDB.getTurbulenceModel() == TurbulenceModel.K_OMEGA and self._region.isFluid():
             self._data = {
                 'dimensions': self.DIMENSIONS,
                 'internalField': ('uniform', self._initialValue),
@@ -43,7 +37,7 @@ class Omega(BoundaryCondition):
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletOmega(xpath)),
-                BoundaryType.ABL_INLET.value:           (lambda: self._constructInletOutlet(self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'), self._initialValue)),
+                BoundaryType.ABL_INLET.value:           (lambda: self._constructInletOutlet(self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))),
                 BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
@@ -70,17 +64,17 @@ class Omega(BoundaryCondition):
         spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
         if spec == KOmegaSpecification.K_AND_OMEGA.value:
             return self._constructInletOutlet(
-                self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'), self._initialValue)
+                self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))
         elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
             return self._constructNEXTViscosityRatioInletOutletTDR(
-                self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'), self._initialValue)
+                self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'))
 
     def _constructNEXTOmegaBlendedWallFunction(self):
         return {
             # 'type': 'omegaBlendedWallFunction',  # This type has not ported to OpenFOAM N yet
             'type': 'omegaWallFunction',
             'blending': 'tanh',
-            'value': ('uniform', self._initialValue)
+            'value': self._initialValueByTime()
         }
 
     def _constructAtmOmegaWallFunction(self):
@@ -88,7 +82,7 @@ class Omega(BoundaryCondition):
             'type': 'atmOmegaWallFunction',
             'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
             'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate'),
-            'value': ('uniform', self._initialValue)
+            'value': self._initialValueByTime()
         }
 
     def _constructPressureOutletOmega(self, xpath):
@@ -99,6 +93,7 @@ class Omega(BoundaryCondition):
 
     def _constructFreeStreamOmega(self, xpath):
         spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
+        omega = None
         if spec == KOmegaSpecification.K_AND_OMEGA.value:
             omega = float(self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))
         elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:

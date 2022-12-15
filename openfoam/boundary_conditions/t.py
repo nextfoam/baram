@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from coredb import coredb
 from coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallVelocityCondition, WallTemperature
 from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution, InterfaceMode
 from coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT
@@ -13,16 +12,12 @@ from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 class T(BoundaryCondition):
     DIMENSIONS = '[0 0 0 1 0 0 0]'
 
-    def __init__(self, region):
-        super().__init__(self.boundaryLocation(region.rname), 'T')
+    def __init__(self, region, time, processorNo):
+        super().__init__(region, time, processorNo, 'T')
 
-        self._region = region
-        self._db = coredb.CoreDB()
         self._initialValue = self._db.getValue('.//initialization/initialValues/temperature')
 
-        self._data = None
-
-    def build(self):
+    def build0(self):
         self._data = {
             'dimensions': self.DIMENSIONS,
             'internalField': ('uniform', self._initialValue),
@@ -103,7 +98,7 @@ class T(BoundaryCondition):
             'type': 'compressible::turbulentTemperatureCoupledBaffleMixed',
             'Tnbr': 'T',
             'kappaMethod': 'fluidThermo' if self._region.isFluid() else 'solidThermo',
-            'value': ('uniform', self._initialValue)
+            'value': self._initialValueByTime()
         }
 
     def _constructFlowRateInletT(self, xpath, constant):
@@ -145,7 +140,7 @@ class T(BoundaryCondition):
                     'mode': 'flux',
                     'q': ('uniform', q),
                     'kappaMethod': 'fluidThermo' if self._region.isFluid() else 'solidThermo',
-                    'value': ('uniform', self._initialValue)
+                    'value': self._initialValueByTime()
                 }
             elif spec == WallTemperature.CONVECTION.value:
                 h = self._db.getValue(xpath + '/wall/temperature/heatTransferCoefficient')
@@ -156,6 +151,6 @@ class T(BoundaryCondition):
                     'h': ('uniform', h),
                     'Ta': ('uniform', ta),
                     'kappaMethod': 'fluidThermo' if self._region.isFluid() else 'solidThermo',
-                    'value': ('uniform', self._initialValue)
+                    'value': self._initialValueByTime()
                 }
 

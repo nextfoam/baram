@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
 import psutil
 import signal
 import time
@@ -9,6 +8,7 @@ import platform
 import qasync
 import asyncio
 import logging
+import shutil
 
 from PySide6.QtWidgets import QWidget, QMessageBox
 
@@ -63,36 +63,48 @@ class ProcessInformationPage(QWidget):
 
     @qasync.asyncSlot()
     async def _startCalculationClicked(self):
-        numCores = self._db.getValue('.//runCalculation/parallel/numberOfCores')
+        caseRoot = FileSystem.caseRoot()
+
+        numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
+        processorFolders = list(caseRoot.glob('processor[0-9]*'))
+        nProcessorFolders = len(processorFolders)
+        solvers = openfoam.solver.findSolvers()
 
         progress = ProgressDialog(self, self.tr('Calculation Run.'), self.tr('Generating case'))
 
         try:
-            self._solvers = openfoam.solver.findSolvers()
-            self._caseRoot = FileSystem.caseRoot()
+            # Reconstruct the case if necessary.
+            if nProcessorFolders > 0 and nProcessorFolders != numCores:
+                proc = await runUtility('reconstructPar', '-allRegions', '-newTimes', '-case', caseRoot, cwd=caseRoot)
+                progress.setProcess(proc, self.tr('Reconstructing the case.'))
+                result = await proc.wait()
+                if progress.canceled():
+                    return
+                elif result:
+                    progress.error(self.tr('Reconstruction failed.'))
+                    return
+                nProcessorFolders = 0
 
+                for folder in processorFolders:
+                    shutil.rmtree(folder)
+
+            # Generate dictionary files
             caseGenerator = CaseGenerator()
             result = await asyncio.to_thread(caseGenerator.generateFiles)
             if not result:
                 progress.error(self.tr('Case generating fail. - ' + caseGenerator.getErrors()))
                 return
 
-            controlDict = ControlDict().build()
-            controlDict.asDict()['startFrom'] = 'latestTime'
-            controlDict.asDict()['stopAt'] = 'endTime'
-            controlDict.writeAtomic()
-
-            if int(numCores) > 1:
-                cwd = FileSystem.caseRoot()
-                proc = None
-                if FileSystem.hasProcessor(0):
-                    proc = await runUtility('decomposePar', '-force', '-allRegions', '-case', '-field', cwd, cwd=cwd)
-                else:
-                    proc = await runUtility('decomposePar', '-force', '-allRegions', '-case', cwd, cwd=cwd)
+            # Decompose the case if necessary.
+            if numCores > 1 and nProcessorFolders == 0:
+                proc = await runUtility('decomposePar', '-allRegions', '-case', caseRoot, cwd=caseRoot)
 
                 progress.setProcess(proc, self.tr('Decomposing the case.'))
-                await proc.wait()
+                result = await proc.wait()
                 if progress.canceled():
+                    return
+                elif result:
+                    progress.error(self.tr('Decomposing failed.'))
                     return
 
             progress.close()
@@ -100,7 +112,7 @@ class ProcessInformationPage(QWidget):
             logger.info(ex, exc_info=True)
             progress.error(self.tr('Error occurred:\n' + str(ex)))
 
-        process = launchSolver(self._solvers[0], Path(self._caseRoot), self._project.uuid, int(numCores))
+        process = launchSolver(solvers[0], caseRoot, self._project.uuid, numCores)
         if process:
             self._project.setSolverProcess(process)
         else:
