@@ -218,7 +218,7 @@ class Worker(QObject):
             else:
                 self.infoFiles[p] = s
 
-            if self.changingFiles[s.region] is None:
+            if self.changingFiles[s.region] is None or self.infoFiles[p].time > self.changingFiles[s.region].time:
                 self.changingFiles[s.region] = self.infoFiles[p]
 
         if not self.collectionReady:
@@ -315,7 +315,7 @@ class SolverInfoManager(QObject):
 
     def startCollecting(self):
         if self.thread is not None:
-            return
+            self.stopCollecting()
 
         self.thread = QThread()
         self.worker = Worker()
