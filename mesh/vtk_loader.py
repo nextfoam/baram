@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import vtk
+# import vtkmodules
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper
 from vtkmodules.vtkIOLegacy import vtkPolyDataReader
+from PySide6.QtCore import QObject, Signal
 
 from app import app
 
@@ -55,13 +56,23 @@ class ActorInfo:
         self._visibility = visibility
 
 
-class VtkViewModel:
+class VtkViewModel(QObject):
+    actorPicked = Signal()
+
     def __init__(self):
+        super().__init__()
+
         self._active = False
         self._view = app.meshDock
+        self._actorInfos = {}
+        self._isMesh = False
+        self._pickedId = None
+
+    def setToMesh(self):
+        self._isMesh = True
 
     def isMesh(self):
-        return False
+        return self._isMesh
 
     def activate(self):
         self._active = True
@@ -74,31 +85,34 @@ class VtkViewModel:
     def isActive(self):
         return self._active
 
-
-class VtkMesh(VtkViewModel):
-    def __init__(self, vtkMesh):
-        super().__init__()
-        self._vtkMesh = vtkMesh
-        self._actorInfos = []
-
-        for rname in vtkMesh:
-            if 'boundary' in vtkMesh[rname]:
-                for bcname, actorInfo in vtkMesh[rname]['boundary'].items():
-                    self._addActorInfo(actorInfo)
-
-    def showActor(self, rname, boundary):
-        self._view.addActor(self._vtkMesh[rname]['boundary'][boundary])
-        self._view.update()
-
-    def hideActor(self, rname, boundary):
-        self._view.removeActor(self._vtkMesh[rname]['boundary'][boundary])
-        self._view.update()
-
-    def isMesh(self):
-        return True
-
     def actorInfos(self):
-        return self._actorInfos
+        return self._actorInfos.values()
 
-    def _addActorInfo(self, actorInfo):
-        self._actorInfos.append(actorInfo)
+    def addActorInfo(self, id_, actorInfo):
+        self._actorInfos[id_] = actorInfo
+
+    def pickedId(self):
+        return self._pickedId
+
+    def showActor(self, id_):
+        self._view.addActor(self._actorInfos[id_])
+        self._view.update()
+
+    def hideActor(self, id_):
+        self._view.removeActor(self._actorInfos[id_])
+        self._view.update()
+
+    def setPickedActor(self, actor):
+        self._pickedId = self._findActorInfo(actor)
+        self.actorPicked.emit()
+
+    def pickActor(self, id_):
+        self._pickedId = id_
+        self._view.pickActor(self._actorInfos[id_].actor if id_ else None)
+
+    def _findActorInfo(self, actor):
+        for id_ in self._actorInfos:
+            if self._actorInfos[id_].actor == actor:
+                return id_
+
+        return None

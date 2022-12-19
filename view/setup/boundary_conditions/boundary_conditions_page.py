@@ -92,16 +92,25 @@ class BoundaryConditionsPage(QWidget):
         self._ui.boundaries.expandAll()
         self._ui.boundaries.resizeColumnToContents(0)
 
+        if app.vtkMesh():
+            self._selectPickedBoundary()
+            self._meshUpdated()
+
     def clear(self):
         self._ui.boundaries.clear()
         self._boundaries = {}
 
     def _connectSignalsSlots(self):
+        app.meshUpdated.connect(self._meshUpdated)
         self._ui.filter.textChanged.connect(self._filterChanged)
         self._ui.boundaries.currentItemChanged.connect(self._updateEditEnabled)
         self._ui.boundaries.itemDoubleClicked.connect(self._doubleClicked)
         self._ui.boundaries.itemChanged.connect(self._itemChanged)
+        self._ui.boundaries.currentItemChanged.connect(self._currentBoundaryChanged)
         self._ui.edit.clicked.connect(self._edit)
+
+    def _meshUpdated(self):
+        app.vtkMesh().actorPicked.connect(self._selectPickedBoundary)
 
     def _filterChanged(self):
         filterText = self._ui.filter.text().lower()
@@ -119,13 +128,14 @@ class BoundaryConditionsPage(QWidget):
     def _addBoundaryItems(self, parent, rname):
         boundaries = self._db.getBoundaryConditions(rname)
         for bcid, bcname, bctype in boundaries:
-            boundaryWidget = BoundaryWidget(rname, bcid, bcname, bctype)
-            boundaryWidget.rightClicked.connect(self._showTypePicker)
-            self._boundaries[bcid] = boundaryWidget
-
             item = QTreeWidgetItem(parent, bcid)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(0, Qt.Checked)
+
+            boundaryWidget = BoundaryWidget(rname, bcid, bcname, bctype, item)
+            boundaryWidget.rightClicked.connect(self._showTypePicker)
+            self._boundaries[bcid] = boundaryWidget
+
             self._ui.boundaries.setItemWidget(item, 1, boundaryWidget)
 
     def _updateEditEnabled(self):
@@ -141,11 +151,10 @@ class BoundaryConditionsPage(QWidget):
     def _itemChanged(self, item, column):
         bcid = item.type()
         if bcid:
-            boundaryWidget = self._boundaries[bcid]
             if item.checkState(column) == Qt.CheckState.Checked:
-                app.vtkMesh().showActor(boundaryWidget.rname, boundaryWidget.bcname)
+                app.vtkMesh().showActor(bcid)
             else:
-                app.vtkMesh().hideActor(boundaryWidget.rname, boundaryWidget.bcname)
+                app.vtkMesh().hideActor(bcid)
 
     def _doubleClicked(self, item, column):
         if column:
@@ -193,3 +202,11 @@ class BoundaryConditionsPage(QWidget):
         self._typePicker.picked.connect(self._changeBoundaryType)
         self._typePicker.show()
 
+    def _currentBoundaryChanged(self, current):
+        app.vtkMesh().pickActor(current.type())
+
+    def _selectPickedBoundary(self):
+        if app.vtkMesh().pickedId():
+            self._ui.boundaries.setCurrentItem(self._boundaries[app.vtkMesh().pickedId()].parent)
+        else:
+            self._ui.boundaries.clearSelection()
