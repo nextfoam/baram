@@ -6,7 +6,7 @@ import asyncio
 from pathlib import Path
 
 import vtk
-from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict, ParsedParameterFile
+from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
 from vtkmodules.vtkIOGeometry import vtkOpenFOAMReader
 from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
 from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
@@ -16,7 +16,7 @@ from coredb import coredb
 from coredb.project import Project
 from openfoam.file_system import FileSystem, FileLoadingError
 from openfoam.constant.region_properties import RegionProperties
-from mesh.vtk_loader import ActorInfo, VtkMesh
+from mesh.vtk_loader import ActorInfo, VtkViewModel
 
 
 logger = logging.getLogger(__name__)
@@ -106,12 +106,12 @@ class PolyMeshLoader:
         boundaries = await self._loadBoundaries(srcPath)
         vtkMesh = await self._loadVtkMesh(self._buildPatchArrayStatus(boundaries))
         updated = self._updateDB(vtkMesh, boundaries)
-        app.updateVtkMesh(VtkMesh(vtkMesh))
+        self._updateVtkMesh(vtkMesh)
         Project.instance().setMeshLoaded(True, updated)
 
     async def loadVtk(self):
         vtkMesh = await self._loadVtkMesh(self._buildPatchArrayStatusFromDB())
-        app.updateVtkMesh(VtkMesh(vtkMesh))
+        self._updateVtkMesh(vtkMesh)
 
     async def _loadBoundaries(self, srcPath):
         boundaries = {}
@@ -218,3 +218,13 @@ class PolyMeshLoader:
                     db.addCellZone(rname, czname)
 
         return True
+
+    def _updateVtkMesh(self, vtkMesh):
+        db = coredb.CoreDB()
+
+        viewModel = VtkViewModel()
+        for rname in db.getRegions():
+            for bcid, bcname, _ in db.getBoundaryConditions(rname):
+                viewModel.addActorInfo(bcid, vtkMesh[rname]['boundary'][bcname])
+
+        app.updateVtkMesh(viewModel)

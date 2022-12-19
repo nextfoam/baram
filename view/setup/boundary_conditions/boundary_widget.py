@@ -13,7 +13,7 @@ from .boundary_widget_ui import Ui_BoundaryWidget
 class BoundaryWidget(QWidget):
     rightClicked = Signal(int, QPoint)
 
-    def __init__(self, rname, bcid, bcname, bctype):
+    def __init__(self, rname, bcid, bcname, bctype, parent):
         super().__init__()
         self._ui = Ui_BoundaryWidget()
         self._ui.setupUi(self)
@@ -24,6 +24,7 @@ class BoundaryWidget(QWidget):
         self._bcid = bcid
         self._bcname = bcname
         self._bctype = None
+        self._parent = parent
 
         self._ui.name.setText(bcname)
         self._setType(bctype)
@@ -43,6 +44,10 @@ class BoundaryWidget(QWidget):
     @property
     def bcname(self):
         return self._bcname
+
+    @property
+    def parent(self):
+        return self._parent
 
     def reloadType(self):
         self._setType(BoundaryDB.getBoundaryType(self._bcid))

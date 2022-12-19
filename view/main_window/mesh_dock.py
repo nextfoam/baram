@@ -11,16 +11,17 @@ from typing import Optional
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QComboBox, QFrame, QToolBar, QVBoxLayout, QWidgetAction, QFileDialog
-from PySide6.QtGui import QAction, QIcon, QPixmap
+from PySide6.QtGui import QAction, QIcon
 
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkFiltersSources import vtkLineSource
 from vtkmodules.vtkRenderingAnnotation import vtkCubeAxesActor
-from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer, vtkCamera
+from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer, vtkCamera, vtkPropPicker
 from vtkmodules.vtkCommonColor import vtkNamedColors
 # load implementations for rendering and interaction factory classes
 import vtkmodules.vtkRenderingOpenGL2
 import vtkmodules.vtkInteractionStyle
+from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
 
 from app import app
 from coredb.app_settings import AppSettings
@@ -38,17 +39,82 @@ import vtk
 # Remove this line when vtk 9.2.2 or later is used
 Qt.MidButton = Qt.MiddleButton
 
-DISPLAY_MODE_POINTS         = 0
-DISPLAY_MODE_WIREFRAME      = 1
-DISPLAY_MODE_SURFACE        = 2
-DISPLAY_MODE_SURFACE_EDGE   = 3
-# DISPLAY_MODE_FEATURE        = 4
+colors = vtkNamedColors()
 
+
+class DisplayMode():
+    DISPLAY_MODE_POINTS         = 0
+    DISPLAY_MODE_WIREFRAME      = 1
+    DISPLAY_MODE_SURFACE        = 2
+    DISPLAY_MODE_SURFACE_EDGE   = 3
+    # DISPLAY_MODE_FEATURE        = 4
+
+    _apply = {
+        DISPLAY_MODE_POINTS         : lambda actor: DisplayMode._applyPointsMode(actor),
+        DISPLAY_MODE_WIREFRAME      : lambda actor: DisplayMode._applyWireframeMode(actor),
+        DISPLAY_MODE_SURFACE        : lambda actor: DisplayMode._applySurfaceMode(actor),
+        DISPLAY_MODE_SURFACE_EDGE   : lambda actor: DisplayMode._applySurfaceEdgeMode(actor),
+    }
+
+    @classmethod
+    def apply(cls, mode, actor):
+        cls._apply[mode](actor)
+
+    @classmethod
+    def _applyPointsMode(cls, actor):
+        actor.GetProperty().SetPointSize(3)
+        actor.GetProperty().SetColor(0.1, 0.0, 0.3)
+        actor.GetProperty().SetRepresentationToPoints()
+
+    @classmethod
+    def _applyWireframeMode(cls, actor):
+        actor.GetProperty().SetColor(0.1, 0.0, 0.3)
+        actor.GetProperty().SetLineWidth(1.0)
+        actor.GetProperty().SetRepresentationToWireframe()
+
+    @classmethod
+    def _applySurfaceMode(cls, actor):
+        actor.GetProperty().SetColor(0.1, 0.0, 0.3)
+        actor.GetProperty().SetRepresentationToSurface()
+        actor.GetProperty().EdgeVisibilityOff()
+
+    @classmethod
+    def _applySurfaceEdgeMode(cls, actor):
+        actor.GetProperty().SetColor(0.1, 0.0, 0.3)
+        actor.GetProperty().SetRepresentationToSurface()
+        actor.GetProperty().EdgeVisibilityOn()
+        actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
+        actor.GetProperty().SetLineWidth(1.0)
+
+
+class MouseInteractorHighLightActor(vtkInteractorStyleTrackballCamera):
+    def __init__(self, parent=None):
+        self.AddObserver('LeftButtonPressEvent', self.leftButtonPressEvent)
+        self.AddObserver('LeftButtonReleaseEvent', self.leftButtonReleaseEvent)
+
+        self._parent = parent
+        self._pressPos = None
+
+    def leftButtonPressEvent(self, obj, event):
+        self._pressPos = self.GetInteractor().GetEventPosition()
+        self.OnLeftButtonDown()
+
+    def leftButtonReleaseEvent(self, obj, event):
+        clickPos = self.GetInteractor().GetEventPosition()
+
+        if clickPos == self._pressPos:
+            picker = vtkPropPicker()
+            picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+
+            self._parent.actorPicked.emit(picker.GetActor())
+
+        self.OnLeftButtonUp()
 
 
 class MeshDock(TabifiedDock):
     reloadMesh = Signal()
     meshLoaded = Signal()
+    actorPicked = Signal(vtkActor)
 
     def __init__(self, parent: Optional['MainWindow'] = None):
         super().__init__(parent)
@@ -71,27 +137,30 @@ class MeshDock(TabifiedDock):
         self._cubeAxesActor = None
 
         self._orthogonalViewOn = False
-        self._displayMode = DISPLAY_MODE_SURFACE_EDGE
         self._cullingOn = False
 
         self._meshOn = False
         self._model = None
 
+        self._currentActor = None
+
         self._main_window.windowClosed.connect(self._mainWindowClosed)
 
         frame = QFrame()
 
+        style = MouseInteractorHighLightActor(self)
         self._widget = QVTKRenderWindowInteractor(frame)
-        self._widget.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+        self._widget.SetInteractorStyle(style)
+
         self._renderer = vtkRenderer()
         self._widget.GetRenderWindow().AddRenderer(self._renderer)
+        style.SetDefaultRenderer(self._renderer)
+        self.actorPicked.connect(self._actorPicked)
 
         self._widget.Initialize()
         self._widget.Start()
 
         self._addCamera()
-
-        self._namedColors = vtkNamedColors()
 
         self._graphicsPage = QVBoxLayout()
         self._graphicsPage.setSpacing(0)
@@ -119,11 +188,17 @@ class MeshDock(TabifiedDock):
 
     def clear(self):
         if self._model:
-            if actors := self._model.actorInfos():
-                for actorInfo in actors:
-                    if actorInfo.visibility:
-                        self._renderer.RemoveActor(actorInfo.actor)
+            for actorInfo in self._model.actorInfos():
+                if actorInfo.visibility:
+                    self._renderer.RemoveActor(actorInfo.actor)
             self._widget.Render()
+
+    def closeEvent(self, event):
+        if app.closed():
+            event.accept()
+        else:
+            self.hide()
+            event.ignore()
 
     def _mainWindowClosed(self, result):
         self._widget.close()
@@ -150,6 +225,24 @@ class MeshDock(TabifiedDock):
 
         self._fitCamera()
         self._widget.Render()
+
+    def pickActor(self, actor):
+        # If we picked something before, reset the property of the other actors
+        if self._currentActor:
+            DisplayMode.apply(self._displayModeCombo.currentIndex(), self._currentActor)
+
+        if actor:
+            # Highlight the picked actor by changing its properties
+            actor.GetProperty().SetColor(colors.GetColor3d('White'))
+            actor.GetProperty().SetEdgeColor(colors.GetColor3d('White'))
+            actor.GetProperty().EdgeVisibilityOn()
+            actor.GetProperty().SetRepresentationToSurface()
+
+        if actor != self._currentActor:
+            self._widget.Render()
+
+        # save the last picked actor
+        self._currentActor = actor
 
     def _setDefaults(self):
         self._actionAxesOnOff.setChecked(self._axesOn)
@@ -200,9 +293,9 @@ class MeshDock(TabifiedDock):
         self._originAxes.SetInteractor(self._widget)
 
     def _addCubeAxes(self, bounds):
-        axisXColor = self._namedColors.GetColor3d("Salmon")
-        axisYColor = self._namedColors.GetColor3d("PaleGreen")
-        axisZColor = self._namedColors.GetColor3d("LightSkyBlue")
+        axisXColor = colors.GetColor3d("Salmon")
+        axisYColor = colors.GetColor3d("PaleGreen")
+        axisZColor = colors.GetColor3d("LightSkyBlue")
 
         self._cubeAxesActor = vtkCubeAxesActor()
         self._cubeAxesActor.SetUseTextActor3D(1)
@@ -307,7 +400,7 @@ class MeshDock(TabifiedDock):
 
         self._displayModeCombo = QComboBox()
         self._displayModeCombo.addItems(['Points', 'Wireframe', 'Surface', 'SurfaceEdge'])  # 'Feature'
-        self._displayModeCombo.setCurrentIndex(DISPLAY_MODE_SURFACE_EDGE)
+        self._displayModeCombo.setCurrentIndex(DisplayMode.DISPLAY_MODE_SURFACE_EDGE)
         self._displayModeCombo.currentIndexChanged.connect(self._clickedVDisplayModeCombo)
         self._actionShowMode = QWidgetAction(self._main_window)
         self._actionShowMode.setDefaultWidget(self._displayModeCombo)
@@ -356,36 +449,8 @@ class MeshDock(TabifiedDock):
             return
 
         actorInfos = self._model.actorInfos()
-        curIndex = self._displayModeCombo.currentIndex()
-
-        if curIndex == DISPLAY_MODE_POINTS:
-            for a in actorInfos:
-                a.actor.GetProperty().SetPointSize(3)
-                a.actor.GetProperty().SetColor(0.1, 0.0, 0.3)
-                a.actor.GetProperty().SetRepresentationToPoints()
-
-        elif curIndex == DISPLAY_MODE_WIREFRAME:
-            for a in actorInfos:
-                a.actor.GetProperty().SetColor(0.1, 0.0, 0.3)
-                a.actor.GetProperty().SetLineWidth(1.0)
-                a.actor.GetProperty().SetRepresentationToWireframe()
-
-        elif curIndex == DISPLAY_MODE_SURFACE:
-            for a in actorInfos:
-                a.actor.GetProperty().SetColor(0.8, 0.8, 0.8)
-                a.actor.GetProperty().SetRepresentationToSurface()
-                a.actor.GetProperty().EdgeVisibilityOff()
-
-        elif curIndex == DISPLAY_MODE_SURFACE_EDGE:
-            for a in actorInfos:
-                a.actor.GetProperty().SetColor(0.8, 0.8, 0.8)
-                a.actor.GetProperty().SetRepresentationToSurface()
-                a.actor.GetProperty().EdgeVisibilityOn()
-                a.actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
-                a.actor.GetProperty().SetLineWidth(1.0)
-
-        # elif curIndex == DISPLAY_MODE_FEATURE:
-        #     for a in actors:
+        for a in actorInfos:
+            DisplayMode.apply(self._displayModeCombo.currentIndex(), a.actor)
 
         self._widget.Render()
 
@@ -636,9 +701,6 @@ class MeshDock(TabifiedDock):
         self.camera.SetPosition(fx, fy, fz+d)
         self.camera.SetViewUp(0, 1, 0)
 
-    def closeEvent(self, event):
-        if app.closed():
-            event.accept()
-        else:
-            self.hide()
-            event.ignore()
+    def _actorPicked(self, actor):
+        self.pickActor(actor)
+        self._model.setPickedActor(actor)
