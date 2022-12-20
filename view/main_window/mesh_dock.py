@@ -111,6 +111,13 @@ class MouseInteractorHighLightActor(vtkInteractorStyleTrackballCamera):
         self.OnLeftButtonUp()
 
 
+class RenderWindowInteractor(QVTKRenderWindowInteractor):
+    def Finalize(self):
+        if self._RenderWindow is not None:
+            self._RenderWindow.Finalize()
+            self._RenderWindow = None
+
+
 class MeshDock(TabifiedDock):
     reloadMesh = Signal()
     meshLoaded = Signal()
@@ -149,7 +156,7 @@ class MeshDock(TabifiedDock):
         frame = QFrame()
 
         style = MouseInteractorHighLightActor(self)
-        self._widget = QVTKRenderWindowInteractor(frame)
+        self._widget = RenderWindowInteractor(frame)
         self._widget.SetInteractorStyle(style)
 
         self._renderer = vtkRenderer()
