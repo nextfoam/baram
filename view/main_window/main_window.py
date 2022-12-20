@@ -265,10 +265,17 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _vtkChanged(self):
-        # progress = ProgressDialog(self, self.tr('Case Loading.'), self.tr('Loading VTK Mesh.'))
+        progress = ProgressDialog(self, self.tr('Case Loading.'), self.tr('Loading VTK Mesh.'))
+
+        # Workaround to give some time for QT to set up timer or event loop.
+        # This workaround is not necessary on Windows because BARAM for Windows
+        #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
+        await asyncio.sleep(0.1)
+
         await PolyMeshLoader().loadVtk()
+
         self.vtkMeshLoaded()
-        # progress.close()
+        progress.close()
 
     def _changeForm(self, currentMenu):
         page = self._menuPages[currentMenu]
