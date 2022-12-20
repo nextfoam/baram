@@ -311,15 +311,21 @@ class MeshDock(TabifiedDock):
 
         self._cubeAxesActor.GetTitleTextProperty(0).SetColor(axisXColor)
         self._cubeAxesActor.GetTitleTextProperty(0).SetFontSize(48)
+        self._cubeAxesActor.GetTitleTextProperty(0).BoldOn()
         self._cubeAxesActor.GetLabelTextProperty(0).SetColor(axisXColor)
+        self._cubeAxesActor.GetLabelTextProperty(0).BoldOn()
 
         self._cubeAxesActor.GetTitleTextProperty(1).SetColor(axisYColor)
         self._cubeAxesActor.GetTitleTextProperty(1).SetFontSize(48)
+        self._cubeAxesActor.GetTitleTextProperty(1).BoldOn()
         self._cubeAxesActor.GetLabelTextProperty(1).SetColor(axisYColor)
+        self._cubeAxesActor.GetLabelTextProperty(1).BoldOn()
 
         self._cubeAxesActor.GetTitleTextProperty(2).SetColor(axisZColor)
         self._cubeAxesActor.GetTitleTextProperty(2).SetFontSize(48)
+        self._cubeAxesActor.GetTitleTextProperty(2).BoldOn()
         self._cubeAxesActor.GetLabelTextProperty(2).SetColor(axisZColor)
+        self._cubeAxesActor.GetLabelTextProperty(2).BoldOn()
 
         self._cubeAxesActor.DrawXGridlinesOn()
         self._cubeAxesActor.DrawYGridlinesOn()
@@ -330,7 +336,7 @@ class MeshDock(TabifiedDock):
         self._cubeAxesActor.YAxisMinorTickVisibilityOff()
         self._cubeAxesActor.ZAxisMinorTickVisibilityOff()
 
-        self._cubeAxesActor.SetFlyModeToStaticEdges()
+        self._cubeAxesActor.SetFlyModeToOuterEdges()
 
     def _drawLine(self, startPoint=(-1.0, 0.0, 0.0), endPoint=(1.0, 0.0, 0.0), color=(0.8, 0.8, 0.8)):
         lineSource = vtkLineSource()
@@ -370,7 +376,7 @@ class MeshDock(TabifiedDock):
         self._actionOriginAxesOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionOriginAxesOnOff)
 
-        self._actionCubeAxesOnOff = QAction(self._iconCubeAxesOff, 'Cube Axes On/Off', self._main_window)
+        self._actionCubeAxesOnOff = QAction(self._iconCubeAxes, 'Cube Axes On/Off', self._main_window)
         self._actionCubeAxesOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionCubeAxesOnOff)
 
@@ -415,7 +421,7 @@ class MeshDock(TabifiedDock):
 
         self._toolBar.addSeparator()
 
-        self._actionCulling = QAction(self._iconCullingOff, 'Surface Culling', self._main_window)
+        self._actionCulling = QAction(self._iconCullingOff, 'Front-face Culling', self._main_window)
         self._actionCulling.setCheckable(True)
         self._toolBar.addAction(self._actionCulling)
         self._toolBar.addSeparator()
@@ -431,8 +437,7 @@ class MeshDock(TabifiedDock):
         self._iconOriginAxesOn = QIcon(str(path / 'originAxesOn.png'))
         self._iconOriginAxesOff = QIcon(str(path / 'originAxesOff.png'))
 
-        self._iconCubeAxesOn = QIcon(str(path / 'cubeAxesOn.png'))
-        self._iconCubeAxesOff = QIcon(str(path / 'cubeAxesOff.png'))
+        self._iconCubeAxes = QIcon(str(path / 'ruler.ico'))
 
         self._iconOrthogonalViewOn = QIcon(str(path / 'orthogonalOn.png'))
         self._iconOrthogonalViewOff = QIcon(str(path / 'orthogonalOff.png'))
@@ -603,7 +608,6 @@ class MeshDock(TabifiedDock):
         if self._cubeAxesActor is not None:
             self._renderer.RemoveActor(self._cubeAxesActor)
         self._cubeAxesOn = True
-        self._actionCubeAxesOnOff.setIcon(self._iconCubeAxesOn)
         self._addCubeAxes(self.getMeshTotalBounds())
         self._renderer.AddActor(self._cubeAxesActor)
 
@@ -638,7 +642,6 @@ class MeshDock(TabifiedDock):
     def _hideCubeAxes(self):
         if self._cubeAxesActor is not None:
             self._cubeAxesOn = False
-            self._actionCubeAxesOnOff.setIcon(self._iconCubeAxesOff)
             self._renderer.RemoveActor(self._cubeAxesActor)
 
     def _fitCamera(self):
