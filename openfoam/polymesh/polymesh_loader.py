@@ -16,7 +16,7 @@ from coredb import coredb
 from coredb.project import Project
 from openfoam.file_system import FileSystem, FileLoadingError
 from openfoam.constant.region_properties import RegionProperties
-from mesh.vtk_loader import ActorInfo, VtkViewModel
+from mesh.vtk_loader import ActorInfo, MeshActors
 
 
 logger = logging.getLogger(__name__)
@@ -222,9 +222,9 @@ class PolyMeshLoader:
     def _updateVtkMesh(self, vtkMesh):
         db = coredb.CoreDB()
 
-        viewModel = VtkViewModel()
+        viewModel = MeshActors()
         for rname in db.getRegions():
             for bcid, bcname, _ in db.getBoundaryConditions(rname):
-                viewModel.addActorInfo(bcid, vtkMesh[rname]['boundary'][bcname])
+                viewModel.setActorInfo(bcid, vtkMesh[rname]['boundary'][bcname])
 
         app.updateVtkMesh(viewModel)

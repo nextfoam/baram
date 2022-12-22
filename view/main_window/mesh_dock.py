@@ -74,13 +74,13 @@ class DisplayMode():
 
     @classmethod
     def _applySurfaceMode(cls, actor):
-        actor.GetProperty().SetColor(0.1, 0.0, 0.3)
+        actor.GetProperty().SetColor(0.5, 0.2, 1.0)
         actor.GetProperty().SetRepresentationToSurface()
         actor.GetProperty().EdgeVisibilityOff()
 
     @classmethod
     def _applySurfaceEdgeMode(cls, actor):
-        actor.GetProperty().SetColor(0.1, 0.0, 0.3)
+        actor.GetProperty().SetColor(0.5, 0.2, 1.0)
         actor.GetProperty().SetRepresentationToSurface()
         actor.GetProperty().EdgeVisibilityOn()
         actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
@@ -149,8 +149,6 @@ class MeshDock(TabifiedDock):
         self._meshOn = False
         self._model = None
 
-        self._currentActor = None
-
         self._main_window.windowClosed.connect(self._mainWindowClosed)
 
         frame = QFrame()
@@ -190,6 +188,7 @@ class MeshDock(TabifiedDock):
         if self._model:
             for actorInfo in self._model.actorInfos():
                 if actorInfo.visibility:
+                    self.applyDisplayMode(actorInfo.actor)
                     self._renderer.AddActor(actorInfo.actor)
             self.render()
 
@@ -212,6 +211,7 @@ class MeshDock(TabifiedDock):
 
     def addActor(self, actorInfo):
         if not actorInfo.visibility:
+            self.applyDisplayMode(actorInfo.actor)
             self._renderer.AddActor(actorInfo.actor)
             actorInfo.visibility = True
 
@@ -233,23 +233,8 @@ class MeshDock(TabifiedDock):
         self._fitCamera()
         self._widget.Render()
 
-    def pickActor(self, actor):
-        # If we picked something before, reset the property of the other actors
-        if self._currentActor:
-            DisplayMode.apply(self._displayModeCombo.currentIndex(), self._currentActor)
-
-        if actor:
-            # Highlight the picked actor by changing its properties
-            actor.GetProperty().SetColor(colors.GetColor3d('White'))
-            actor.GetProperty().SetEdgeColor(colors.GetColor3d('White'))
-            actor.GetProperty().EdgeVisibilityOn()
-            actor.GetProperty().SetRepresentationToSurface()
-
-        if actor != self._currentActor:
-            self._widget.Render()
-
-        # save the last picked actor
-        self._currentActor = actor
+    def applyDisplayMode(self, actor):
+        DisplayMode.apply(self._displayModeCombo.currentIndex(), actor)
 
     def _setDefaults(self):
         self._actionAxesOnOff.setChecked(self._axesOn)
@@ -457,7 +442,8 @@ class MeshDock(TabifiedDock):
 
         actorInfos = self._model.actorInfos()
         for a in actorInfos:
-            DisplayMode.apply(self._displayModeCombo.currentIndex(), a.actor)
+            if a.actor != self._model.currentActor():
+                self.applyDisplayMode(a.actor)
 
         self._widget.Render()
 
@@ -709,5 +695,4 @@ class MeshDock(TabifiedDock):
         self.camera.SetViewUp(0, 1, 0)
 
     def _actorPicked(self, actor):
-        self.pickActor(actor)
-        self._model.setPickedActor(actor)
+        self._model.actorPicked(actor)

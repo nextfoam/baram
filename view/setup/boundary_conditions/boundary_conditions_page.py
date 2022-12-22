@@ -110,7 +110,7 @@ class BoundaryConditionsPage(QWidget):
         self._ui.edit.clicked.connect(self._edit)
 
     def _meshUpdated(self):
-        app.vtkMesh().actorPicked.connect(self._selectPickedBoundary)
+        app.vtkMesh().currentActorChanged.connect(self._selectPickedBoundary)
 
     def _filterChanged(self):
         filterText = self._ui.filter.text().lower()
@@ -203,10 +203,10 @@ class BoundaryConditionsPage(QWidget):
         self._typePicker.show()
 
     def _currentBoundaryChanged(self, current):
-        app.vtkMesh().pickActor(current.type())
+        app.vtkMesh().setCurrentId(current.type())
 
     def _selectPickedBoundary(self):
-        if app.vtkMesh().pickedId():
-            self._ui.boundaries.setCurrentItem(self._boundaries[app.vtkMesh().pickedId()].parent)
+        if app.vtkMesh().currentId():
+            self._ui.boundaries.setCurrentItem(self._boundaries[app.vtkMesh().currentId()].parent)
         else:
             self._ui.boundaries.clearSelection()

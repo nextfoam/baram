@@ -43,7 +43,6 @@ class App(QObject):
 
     def updateVtkMesh(self, mesh):
         self._vtkMesh = mesh
-        self._vtkMesh.setToMesh()
         self.showVtkMesh()
         self._window.vtkMeshLoaded()
         self.meshUpdated.emit()

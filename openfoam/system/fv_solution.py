@@ -13,7 +13,7 @@ from openfoam.dictionary_file import DictionaryFile
 
 
 class FvSolution(DictionaryFile):
-    def __init__(self, rname: str = None):
+    def __init__(self, rname: str = ''):
         super().__init__(self.systemLocation('' if rname is None else rname), 'fvSolution')
 
         self._rname = rname

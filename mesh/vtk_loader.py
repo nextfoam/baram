@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import vtk
-# import vtkmodules
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper
 from vtkmodules.vtkIOLegacy import vtkPolyDataReader
 from PySide6.QtCore import QObject, Signal
@@ -37,11 +36,11 @@ class ActorInfo:
 
         self._mapper.SetInputData(inputData)
         self._actor.SetMapper(self._mapper)
-        self._actor.GetProperty().SetColor(0.8, 0.8, 0.8)
-        self._actor.GetProperty().SetOpacity(1.0)
-        self._actor.GetProperty().SetEdgeVisibility(True)
-        self._actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
-        self._actor.GetProperty().SetLineWidth(1.0)
+        # self._actor.GetProperty().SetColor(0.8, 0.8, 0.8)
+        # self._actor.GetProperty().SetOpacity(1.0)
+        # self._actor.GetProperty().SetEdgeVisibility(True)
+        # self._actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
+        # self._actor.GetProperty().SetLineWidth(1.0)
 
     @property
     def actor(self):
@@ -57,7 +56,7 @@ class ActorInfo:
 
 
 class VtkViewModel(QObject):
-    actorPicked = Signal()
+    currentActorChanged = Signal()
 
     def __init__(self):
         super().__init__()
@@ -65,14 +64,10 @@ class VtkViewModel(QObject):
         self._active = False
         self._view = app.meshDock
         self._actorInfos = {}
-        self._isMesh = False
-        self._pickedId = None
-
-    def setToMesh(self):
-        self._isMesh = True
+        self._currentId = None
 
     def isMesh(self):
-        return self._isMesh
+        return False
 
     def activate(self):
         self._active = True
@@ -88,11 +83,21 @@ class VtkViewModel(QObject):
     def actorInfos(self):
         return self._actorInfos.values()
 
-    def addActorInfo(self, id_, actorInfo):
+    def setActorInfo(self, id_, actorInfo):
         self._actorInfos[id_] = actorInfo
 
-    def pickedId(self):
-        return self._pickedId
+    def actorInfo(self, id_):
+        if id_ in self._actorInfos:
+            return self._actorInfos[id_]
+
+    def currentId(self):
+        return self._currentId
+
+    def currentActor(self):
+        if self._currentId:
+            return self._actorInfos[self._currentId].actor
+
+        return None
 
     def showActor(self, id_):
         self._view.addActor(self._actorInfos[id_])
@@ -102,13 +107,13 @@ class VtkViewModel(QObject):
         self._view.removeActor(self._actorInfos[id_])
         self._view.update()
 
-    def setPickedActor(self, actor):
-        self._pickedId = self._findActorInfo(actor)
-        self.actorPicked.emit()
+    def actorPicked(self, actor):
+        self.setCurrentId(self._findActorInfo(actor))
+        self.currentActorChanged.emit()
 
-    def pickActor(self, id_):
-        self._pickedId = id_
-        self._view.pickActor(self._actorInfos[id_].actor if id_ else None)
+    def setCurrentId(self, id_):
+        self._highlightActor(id_)
+        self._currentId = id_
 
     def _findActorInfo(self, actor):
         for id_ in self._actorInfos:
@@ -116,3 +121,31 @@ class VtkViewModel(QObject):
                 return id_
 
         return None
+
+    def _highlightActor(self, id_):
+        return
+
+
+class MeshActors(VtkViewModel):
+    def __init__(self):
+        super().__init__()
+
+    def isMesh(self):
+        return True
+
+    def _highlightActor(self, id_):
+        # If we picked something before, reset the property of the other actors
+        if currentActor := self.currentActor():
+            self._view.applyDisplayMode(currentActor)
+
+        actor = None
+        if id_:
+            # Highlight the picked actor by changing its properties
+            actor = self._actorInfos[id_].actor
+            actor.GetProperty().SetColor(1, 1, 1)
+            actor.GetProperty().SetEdgeColor(1, 1, 1)
+            actor.GetProperty().EdgeVisibilityOn()
+            actor.GetProperty().SetRepresentationToSurface()
+
+        if actor != currentActor:
+            self._view.update()
