@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
 from enum import Enum, auto
 
 from PySide6.QtWidgets import QWidget, QFileDialog, QMessageBox
@@ -11,6 +12,7 @@ from coredb.app_settings import AppSettings
 from coredb.project import Project, SolverStatus
 from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.file_system import FileSystem
+from view.widgets.progress_dialog import ProgressDialog
 from .initialization_page_ui import Ui_InitializationPage
 from .option_dialog import OptionDialog
 
@@ -115,12 +117,15 @@ class InitializationPage(QWidget):
         self._dialog.accepted.connect(self._sourceCaseSelected)
         self._dialog.open()
 
-    def _initialize(self):
+    @qasync.asyncSlot()
+    async def _initialize(self):
         confirm = QMessageBox.question(self, self.tr("Initialize"), self.tr("All saved data will be deleted. OK?"))
         if confirm == QMessageBox.Yes:
+            progress = ProgressDialog(self, self.tr('Case Initialization'), self.tr('Initializing the case.'))
             regions = self._db.getRegions()
-            FileSystem.initialize(regions)
+            await FileSystem.initialize(regions)
             Project.instance().setSolverStatus(SolverStatus.NONE)
+            progress.close()
 
     def _sourceCaseSelected(self):
         if dirs := self._dialog.selectedFiles():

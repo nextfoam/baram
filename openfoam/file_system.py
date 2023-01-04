@@ -160,7 +160,7 @@ class FileSystem:
         cls._setCaseRoot(targetPath)
 
     @classmethod
-    def initialize(cls, regions):
+    async def initialize(cls, regions):
         ###
         ### This corresponds to a feature of "preserving last calculation result".
         ### The feature will be provided in other form in the future,
