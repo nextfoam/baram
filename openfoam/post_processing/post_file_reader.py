@@ -28,7 +28,8 @@ class PostFileReader(QObject):
         self._currentFilePath = None
         changedFiles = []
 
-        dirs = sorted([(d.name, d) for d in self._path.glob('*') if d.name.isnumeric()], key=lambda x: float(x[0]))
+        dirs = sorted([(d.name, d) for d in self._path.glob('[0-9.]*') if d.name.count('.') < 2],
+                      key=lambda x: float(x[0]))
         for dirTime, dirPath in dirs:
             path = dirPath / self._fileName
             if path.is_file() and self._updateFileInfo(path):

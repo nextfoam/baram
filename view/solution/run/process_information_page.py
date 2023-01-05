@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import psutil
 import signal
 import time
@@ -63,6 +62,12 @@ class ProcessInformationPage(QWidget):
 
     @qasync.asyncSlot()
     async def _startCalculationClicked(self):
+        async def monitor_reconstruct(stream):
+            while line := await stream.readline():
+                log = line.decode('utf-8')
+                if log.startswith('Time = '):
+                    progress.setText(self.tr(f'Reconstructing the case. ({log.strip()}/{latestTime})'))
+
         caseRoot = FileSystem.caseRoot()
 
         numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
@@ -75,8 +80,13 @@ class ProcessInformationPage(QWidget):
         try:
             # Reconstruct the case if necessary.
             if nProcessorFolders > 0 and nProcessorFolders != numCores:
+                latestTime = max([f.name for f in (caseRoot / 'processor0').glob('[0-9.]*') if f.name.count('.') < 2],
+                                 key=lambda x: float(x))
                 proc = await runUtility('reconstructPar', '-allRegions', '-newTimes', '-case', caseRoot, cwd=caseRoot)
+
                 progress.setProcess(proc, self.tr('Reconstructing the case.'))
+
+                await asyncio.wait([monitor_reconstruct(proc.stdout)])
                 result = await proc.wait()
                 if progress.canceled():
                     return
