@@ -24,13 +24,12 @@ class FreeStreamDialog(ResizableDialog):
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
         self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
-        self._temperatureWidget = None
+        self._temperatureWidget = TemperatureWidget(self._xpath, bcid)
 
         layout = self._ui.dialogContents.layout()
         if self._turbulenceWidget:
             layout.addWidget(self._turbulenceWidget)
         if ModelsDB.isEnergyModelOn():
-            self._temperatureWidget = TemperatureWidget(self._xpath, bcid)
             layout.addWidget(self._temperatureWidget)
 
         self._load()
@@ -46,9 +45,9 @@ class FreeStreamDialog(ResizableDialog):
 
         if self._turbulenceWidget:
             self._turbulenceWidget.appendToWriter(writer)
-        if self._temperatureWidget:
-            if not self._temperatureWidget.appendToWriter(writer):
-                return
+
+        if not self._temperatureWidget.appendToWriter(writer):
+            return
 
         errorCount = writer.write()
         if errorCount > 0:
@@ -68,6 +67,6 @@ class FreeStreamDialog(ResizableDialog):
 
         if self._turbulenceWidget:
             self._turbulenceWidget.load()
-        if self._temperatureWidget:
-            self._temperatureWidget.load()
-            self._temperatureWidget.freezeProfileToConstant()
+
+        self._temperatureWidget.load()
+        self._temperatureWidget.freezeProfileToConstant()

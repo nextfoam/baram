@@ -19,6 +19,7 @@ from .temperature_widget import TemperatureWidget
 
 PROFILE_TYPE_SPATIAL_DISTRIBUTION_INDEX = 1
 
+
 class VelocityInletDialog(ResizableDialog):
     RELATIVE_XPATH = '/velocityInlet'
 
@@ -44,13 +45,12 @@ class VelocityInletDialog(ResizableDialog):
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
         self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
-        self._temperatureWidget = None
+        self._temperatureWidget = TemperatureWidget(self._xpath, bcid)
 
         layout = self._ui.dialogContents.layout()
         if self._turbulenceWidget is not None:
             layout.addWidget(self._turbulenceWidget)
         if ModelsDB.isEnergyModelOn():
-            self._temperatureWidget = TemperatureWidget(self._xpath, bcid)
             layout.addWidget(self._temperatureWidget)
 
         self._componentSpatialDistributionFile = None
@@ -148,9 +148,9 @@ class VelocityInletDialog(ResizableDialog):
 
         if self._turbulenceWidget:
             self._turbulenceWidget.appendToWriter(writer)
-        if self._temperatureWidget:
-            if not self._temperatureWidget.appendToWriter(writer):
-                return
+
+        if not self._temperatureWidget.appendToWriter(writer):
+            return
 
         errorCount = writer.write()
         if errorCount > 0:
@@ -197,8 +197,8 @@ class VelocityInletDialog(ResizableDialog):
 
         if self._turbulenceWidget is not None:
             self._turbulenceWidget.load()
-        if self._temperatureWidget is not None:
-            self._temperatureWidget.load()
+
+        self._temperatureWidget.load()
 
     def _setupCombo(self, combo, items):
         for value, text in items.items():

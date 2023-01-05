@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QWidget, QFileDialog, QMessageBox
 from coredb import coredb
 from coredb.filedb import BcFileRole, FileFormatError
 from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution
+from coredb.models_db import ModelsDB
 from coredb.project import Project
 from view.widgets.number_input_dialog import PiecewiseLinearDialog, PolynomialDialog
 from .temperature_widget_ui import Ui_temperatureWidget
@@ -22,6 +23,7 @@ class TemperatureWidget(QWidget):
         self._ui.setupUi(self)
 
         self._bcid = bcid
+        self._energyModelOn = ModelsDB.isEnergyModelOn()
 
         self._profileTypes = {
             TemperatureProfile.CONSTANT.value: self.tr("Constant"),
@@ -52,6 +54,9 @@ class TemperatureWidget(QWidget):
         self._connectSignalsSlots()
 
     def load(self):
+        if not self._energyModelOn:
+            return
+
         self._ui.profileType.setCurrentText(self._profileTypes[self._db.getValue(self._xpath + '/profile')])
         self._ui.temperature.setText(self._db.getValue(self._xpath + '/constant'))
         self._getRadio(
@@ -77,6 +82,9 @@ class TemperatureWidget(QWidget):
             True if the data is valid, False otherwise
 
         """
+        if not self._energyModelOn:
+            return True
+
         profile = self._ui.profileType.currentData()
         writer.append(self._xpath + '/profile', profile, None)
 
