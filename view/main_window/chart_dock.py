@@ -51,36 +51,17 @@ class ChartDock(TabifiedDock):
         layout.addWidget(self._canvas)
 
         self._axes = self._canvas.figure.subplots()
-        self._axes.grid(alpha=0.6, linestyle='--')
-        self._axes.xaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
-        self._axes.yaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
-        self._axes.set_yscale('log')
 
-        if GeneralDB.isTimeTransient():
-            # 10% of total case time
-            endTime = float(coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/endTime'))
-            maxX = endTime / 10
-        else:
-            # 10% of total iteration count or iteration count if it is less than MIN_COUNT
-            MIN_COUNT = 100
-            count = int(coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/numberOfIterations'))
-            if count < MIN_COUNT:
-                maxX = count
-            else:
-                maxX = MIN_COUNT + count / 10
-
-        self._axes.set_xlim([-(maxX * END_MARGIN), maxX])
+        self._clear()
 
         self.solverInfoManager = SolverInfoManager()
         self.solverInfoManager.residualsUpdated.connect(self.updated)
 
         self._project = Project.instance()
-        self._project.projectChanged.connect(self._projectChanged)
+        self._project.projectOpened.connect(self._projectChanged)
         self._project.solverStatusChanged.connect(self.solverStatusChanged)
 
         self._main_window.windowClosed.connect(self._mainWindowClosed)
-
-        self._projectChanged()
 
     def startDrawing(self):
         self._timeMax = None
@@ -93,7 +74,9 @@ class ChartDock(TabifiedDock):
         self.solverInfoManager.stopCollecting()
 
     def solverStatusChanged(self, status):
-        if status == SolverStatus.RUNNING:
+        if status == SolverStatus.NONE:
+            self._clear()
+        elif status == SolverStatus.RUNNING:
             self.startDrawing()
         else:
             self.stopDrawing()
@@ -102,7 +85,7 @@ class ChartDock(TabifiedDock):
         self.stopDrawing()
 
     def _projectChanged(self):
-        if self._project.hasSolved():
+        if self._project.isSolverRunning() or self._project.hasSolved():
             self.startDrawing()
 
     def updated(self, data: pd.DataFrame):
@@ -213,4 +196,32 @@ class ChartDock(TabifiedDock):
 
         self._axes.set_ylim([minY, maxY])
 
+    def _clear(self):
+        self._axes.cla()
 
+        self._data = None
+        self._timeMax = None
+        self._timeMin = None
+        self._lines = {}
+
+        self._axes.grid(alpha=0.6, linestyle='--')
+        self._axes.xaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
+        self._axes.yaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
+        self._axes.set_yscale('log')
+
+        if GeneralDB.isTimeTransient():
+            # 10% of total case time
+            endTime = float(coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/endTime'))
+            maxX = endTime / 10
+        else:
+            # 10% of total iteration count or iteration count if it is less than MIN_COUNT
+            MIN_COUNT = 100
+            count = int(coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/numberOfIterations'))
+            if count < MIN_COUNT:
+                maxX = count
+            else:
+                maxX = MIN_COUNT + count / 10
+
+        self._axes.set_xlim([-(maxX * END_MARGIN), maxX])
+
+        self._canvas.draw()

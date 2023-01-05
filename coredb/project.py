@@ -43,7 +43,7 @@ class ProjectOpenType(Enum):
 class _Project(QObject):
     meshChanged = Signal(bool)
     solverStatusChanged = Signal(SolverStatus)
-    projectChanged = Signal()
+    projectOpened = Signal()
 
     materialChanged = Signal()
 
@@ -136,7 +136,7 @@ class _Project(QObject):
         return self._status == SolverStatus.WAITING or self._status == SolverStatus.RUNNING
 
     def hasSolved(self):
-        return self._status == SolverStatus.RUNNING or self._status == SolverStatus.ENDED
+        return self._status == SolverStatus.ENDED
 
     def setMeshLoaded(self, loaded, updated=True):
         self._meshLoaded = loaded
@@ -161,7 +161,9 @@ class _Project(QObject):
         self._fileDB.saveAs(directory)
         self._close()
         self._open(directory, ProjectOpenType.SAVE_AS)
-        self.projectChanged.emit()
+
+    def opened(self):
+        self.projectOpened.emit()
 
     def _open(self, directory, route=ProjectOpenType.EXISTING):
         path = Path(directory).resolve()

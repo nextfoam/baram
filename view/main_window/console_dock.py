@@ -3,6 +3,7 @@
 
 from typing import Optional
 import asyncio
+import qasync
 
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QPlainTextEdit, QCheckBox
 from PySide6.QtCore import Qt
@@ -53,11 +54,9 @@ class ConsoleDock(TabifiedDock):
 
         self._project = Project.instance()
         self._project.solverStatusChanged.connect(self.solverStatusChanged)
+        self._project.projectOpened.connect(self._projectChanged)
 
         self._main_window.windowClosed.connect(self._mainWindowClosed)
-
-        if self._project.isSolverRunning():
-            self.startCollecting()
 
     def startCollecting(self):
         if self.readTask is None:
@@ -68,7 +67,9 @@ class ConsoleDock(TabifiedDock):
         self.stopReading = True
 
     def solverStatusChanged(self, status):
-        if status == SolverStatus.RUNNING:
+        if status == SolverStatus.NONE:
+            self._textView.clear()
+        elif status == SolverStatus.RUNNING:
             self.startCollecting()
         else:
             self.stopCollecting()
@@ -89,16 +90,14 @@ class ConsoleDock(TabifiedDock):
             stdout = open(root/'stdout.log', 'r')
             stderr = open(root/'stderr.log', 'r')
 
-            self._textView.clear()
-
             idleCount = 0
             while True:
                 hasOutput = False
                 while lines := stdout.readlines():
-                    self._textView.appendPlainText(''.join(lines).rstrip())
+                    self._appendLog(''.join(lines).rstrip())
                     hasOutput = True
                 while lines := stderr.readlines():
-                    self._textView.appendPlainText(''.join(lines).rstrip())
+                    self._appendLog(''.join(lines).rstrip())
                     hasOutput = True
                 if hasOutput:
                     await asyncio.sleep(0.1)
@@ -117,3 +116,24 @@ class ConsoleDock(TabifiedDock):
             stdout.close()
             stderr.close()
             self.readTask = None
+
+    @qasync.asyncSlot()
+    async def _projectChanged(self):
+        if self._project.isSolverRunning():
+            self.startCollecting()
+        elif self._project.hasSolved():
+            await self._readAllLog()
+
+    async def _readAllLog(self):
+        async def _readLog(path):
+            if path.is_file():
+                with path.open() as file:
+                    self._appendLog(file.read())
+
+        root = FileSystem.caseRoot()
+        await _readLog(root / 'stdout.log')
+        await _readLog(root / 'stderr.log')
+
+    def _appendLog(self, log):
+        self._textView.appendPlainText(log)
+        self._textView.verticalScrollBar().setValue(self._textView.verticalScrollBar().maximum())

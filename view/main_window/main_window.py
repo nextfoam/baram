@@ -143,6 +143,8 @@ class MainWindow(QMainWindow):
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL)
             self._meshDock.raise_()
 
+        self._project.opened()
+
         # self._updateMenuEnables()
         self._ui.menuMesh.setDisabled(True)
         self.show()
@@ -205,7 +207,7 @@ class MainWindow(QMainWindow):
 
         self._project.meshChanged.connect(self._meshChanged)
         self._project.solverStatusChanged.connect(self._updateMenuEnables)
-        self._project.projectChanged.connect(self._projectChanged)
+        self._project.projectOpened.connect(self._projectChanged)
         self._meshManager.meshChanged.connect(self._vtkChanged, Qt.ConnectionType.QueuedConnection)
 
     def _save(self):
