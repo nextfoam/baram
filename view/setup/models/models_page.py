@@ -1,22 +1,47 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, auto
-
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QListWidgetItem
+from PySide6.QtGui import QBrush, QColor
 
-from coredb.models_db import ModelsDB
+from coredb.models_db import ModelsDB, MultiphaseModel, TurbulenceModel
+from coredb.general_db import GeneralDB, SolverType
 from .models_page_ui import Ui_ModelsPage
 from .turbulence_dialog import TurbulenceModelDialog
 from .energy_dialog import EnergyDialog
 # from .radiation_dialog import RadiationDialog
 
 
-class Model(Enum):
-    TURBULENCE = QListWidgetItem.ItemType.UserType
-    ENERGY = auto()
-    RADIATION = auto()
-    SPECIES = auto()
+grayBrush = QBrush(QColor('#5c5c5c'))
+
+
+class ModelItem(QListWidgetItem):
+
+    def __init__(self, parent, title, loadFunction, dialogClass=None):
+        super().__init__(parent)
+        self._title = title + ' / '
+        self._load = loadFunction
+        self._dialogClass = dialogClass
+
+        if not self.isEditable():
+            self.setFlags(~Qt.ItemIsSelectable)
+            self.setForeground(grayBrush)
+
+    def isEditable(self):
+        return self._dialogClass is not None
+
+    def openDialog(self, parent):
+        if self._dialogClass:
+            dialog = self._dialogClass(parent)
+            dialog.accepted.connect(self.load)
+            dialog.open()
+            return dialog
+
+        return None
+
+    def load(self):
+        self.setText(self._title + self._load())
 
 
 class ModelsPage(QWidget):
@@ -27,8 +52,41 @@ class ModelsPage(QWidget):
 
         self._dialog = None
 
-        self._turbulenceModelItem = QListWidgetItem(self._ui.list, Model.TURBULENCE.value)
-        self._energyModelItem = QListWidgetItem(self._ui.list, Model.ENERGY.value)
+        self._items = {}
+
+        multiphaseModelText = {
+            MultiphaseModel.OFF: self.tr('Off'),
+            MultiphaseModel.VOLUME_OF_FLUID: self.tr('Volume of Fluid'),
+        }
+
+        turbulenceModelText = {
+            TurbulenceModel.INVISCID: self.tr('Inviscid'),
+            TurbulenceModel.LAMINAR: self.tr('Laminar'),
+            TurbulenceModel.SPALART_ALLMARAS: self.tr('Spalart-Allmaras'),
+            TurbulenceModel.K_EPSILON: self.tr('k-epsilon'),
+            TurbulenceModel.K_OMEGA: self.tr('k-omega'),
+            TurbulenceModel.LES: self.tr('LES'),
+        }
+
+        solverTypeText = {
+            SolverType.PRESSURE_BASED: self.tr('Pressure-based'),
+            SolverType.DENSITY_BASED: self.tr('Density-based'),
+        }
+
+        self._addModelItem(
+            self.tr('Turbulence'), lambda: turbulenceModelText[ModelsDB.getTurbulenceModel()], TurbulenceModelDialog)
+        self._addModelItem(
+            self.tr('Energy'),
+            lambda: self.tr('Include') if ModelsDB.isEnergyModelOn() else self.tr('Not Include'), EnergyDialog)
+
+        self._addModelItem(
+            self.tr('Flow Type'),
+            lambda: self.tr('Compressible') if GeneralDB.isCompressible() else self.tr('Incompressible'))
+        self._addModelItem(self.tr('Multiphase'), lambda: multiphaseModelText[ModelsDB.getMultiphaseModel()])
+        self._addModelItem(self.tr('Solver Type'), lambda: solverTypeText[GeneralDB.getSolverType()])
+        self._addModelItem(
+            self.tr('Species'),
+            lambda: self.tr('Include') if ModelsDB.isSpeciesModelOn() else self.tr('Not Include'))
 
         self._connectSignalsSlots()
 
@@ -43,35 +101,14 @@ class ModelsPage(QWidget):
         self._ui.edit.clicked.connect(self._edit)
 
     def _load(self):
-        self._loadTurbulenceModel()
-        self._loadEnergyModel()
+        for i in range(self._ui.list.count()):
+            self._ui.list.item(i).load()
 
-    def _loadMultiphaseModel(self):
-        self._multiphaseModelItem.setText(self.tr("Multiphase") + "/" + ModelsDB.getMultiphaseModelText())
-
-    def _loadTurbulenceModel(self):
-        self._turbulenceModelItem.setText(self.tr("Turbulence") + "/" + ModelsDB.getTurbulenceModelText())
-
-    def _loadEnergyModel(self):
-        self._energyModelItem.setText(self.tr("Energy") + "/" + ModelsDB.getEnergyModelText())
-
-    def _modelSelected(self):
-        self._ui.edit.setEnabled(True)
+    def _modelSelected(self, item):
+        self._ui.edit.setEnabled(item.isEditable())
 
     def _edit(self):
-        model = self._ui.list.currentItem().type()
+        self._dialog = self._ui.list.currentItem().openDialog(self)
 
-        if model == Model.TURBULENCE.value:
-            self._dialog = TurbulenceModelDialog(self)
-            self._dialog.accepted.connect(self._loadTurbulenceModel)
-            self._dialog.open()
-        elif model == Model.ENERGY.value:
-            self._dialog = EnergyDialog(self)
-            self._dialog.accepted.connect(self._loadEnergyModel)
-            self._dialog.open()
-        # elif model == Model.RADIATION.value:
-        #     if self._radiationDialog is None:
-        #         self._radiationDialog = RadiationDialog()
-        #     self._radiationDialog.open()
-        elif model == Model.SPECIES.value:
-            pass
+    def _addModelItem(self, title, loadFunction, dialogClass=None):
+        self._ui.list.addItem(ModelItem(self._ui.list, title, loadFunction, dialogClass))

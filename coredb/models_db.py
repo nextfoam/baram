@@ -51,35 +51,13 @@ class ModelsDB:
     SPECIES_MODELS_XPATH = './/speciesModels'
     ENERGY_MODELS_XPATH = './/energyModels'
 
-    _multiphaseModelText = {
-        MultiphaseModel.OFF: QCoreApplication.translate("ModelsDB", "Off"),
-        MultiphaseModel.VOLUME_OF_FLUID: QCoreApplication.translate("ModelsDB", "Volume of Fluid"),
-    }
-
-    _turbulenceModelText = {
-        TurbulenceModel.INVISCID: QCoreApplication.translate("ModelsDB", "Inviscid"),
-        TurbulenceModel.LAMINAR: QCoreApplication.translate("ModelsDB", "Laminar"),
-        TurbulenceModel.SPALART_ALLMARAS: QCoreApplication.translate("ModelsDB", "Spalart-Allmaras"),
-        TurbulenceModel.K_EPSILON: QCoreApplication.translate("ModelsDB", "k-epsilon"),
-        TurbulenceModel.K_OMEGA: QCoreApplication.translate("ModelsDB", "k-omega"),
-        TurbulenceModel.LES: QCoreApplication.translate("ModelsDB", "LES"),
-    }
-
     @classmethod
     def getMultiphaseModel(cls):
         return MultiphaseModel(coredb.CoreDB().getValue(ModelsDB.MULTIPHASE_MODELS_XPATH + '/model'))
 
     @classmethod
-    def getMultiphaseModelText(cls):
-        return cls._multiphaseModelText[cls.getMultiphaseModel()]
-
-    @classmethod
     def getTurbulenceModel(cls):
         return TurbulenceModel(coredb.CoreDB().getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model'))
-
-    @classmethod
-    def getTurbulenceModelText(cls):
-        return cls._turbulenceModelText[cls.getTurbulenceModel()]
 
     @classmethod
     def isMultiphaseModelOn(cls):
@@ -96,10 +74,6 @@ class ModelsDB:
     @classmethod
     def isEnergyModelOn(cls):
         return coredb.CoreDB().getValue(ModelsDB.ENERGY_MODELS_XPATH) == 'on'
-
-    @classmethod
-    def getEnergyModelText(cls):
-        return 'Include' if cls.isEnergyModelOn() else 'Not Include'
 
 
 class TurbulenceField:
