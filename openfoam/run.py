@@ -153,7 +153,8 @@ async def runUtility(program: str, *args, cwd=None):
     proc = await asyncio.create_subprocess_exec(OPENFOAM/'bin'/program, *args,
                                                 env=ENV, cwd=cwd,
                                                 creationflags=creationflags,
-                                                startupinfo=startupinfo)
+                                                startupinfo=startupinfo,
+                                                stdout=asyncio.subprocess.PIPE)
 
     return proc
 
