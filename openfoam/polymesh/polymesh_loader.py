@@ -7,7 +7,7 @@ from pathlib import Path
 
 import vtk
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
-from vtkmodules.vtkIOGeometry import vtkOpenFOAMReader
+from vtkmodules.vtkIOParallel import vtkPOpenFOAMReader
 from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
 from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper
@@ -96,7 +96,9 @@ def getVtkMesh(foamFilePath: Path, statusConfig: dict):
         ...
     }
     """
-    r = vtkOpenFOAMReader()
+    r = vtkPOpenFOAMReader()
+    r.SetCaseType(
+        vtkPOpenFOAMReader.DECOMPOSED_CASE if FileSystem.processorPath(0) else vtkPOpenFOAMReader.RECONSTRUCTED_CASE)
     r.SetFileName(str(foamFilePath))
     r.DecomposePolyhedraOn()
     r.EnableAllCellArrays()
