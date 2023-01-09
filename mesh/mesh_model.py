@@ -82,7 +82,7 @@ class ActorInfo:
         self._visibility = visibility
 
 
-class VtkViewModel(QObject):
+class MeshModel(QObject):
     currentActorChanged = Signal()
 
     def __init__(self):
