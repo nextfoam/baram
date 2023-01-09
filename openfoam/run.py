@@ -188,3 +188,7 @@ def isProcessRunning(pid, startTime):
             return False
 
     return False
+
+
+def hasUtility(program: str):
+    return (OPENFOAM / 'bin' / program).is_file()

@@ -33,7 +33,7 @@ OPENFOAM_MESH_CONVERTERS = {
     MeshType.POLY_MESH: None,
     MeshType.FLUENT_2D: ('fluentMeshToFoam', '-writeSets', '-writeZones'),
     MeshType.FLUENT_3D: ('fluent3DMeshToFoam',),
-    MeshType.STAR_CCM: ('ccmToFoam',),
+    MeshType.STAR_CCM: ('ccm26ToFoam',),
     MeshType.GMSH: ('gmshToFoam',),
     MeshType.IDEAS: ('ideasUnvToFoam',),
     MeshType.NAMS_PLOT3D: ('plot3dToFoam',),
@@ -133,3 +133,7 @@ class MeshManager(QObject):
         except Exception as ex:
             logger.info(ex, exc_info=True)
             progress.error(self.tr('Error occurred:\n' + str(ex)))
+
+    @classmethod
+    def convertUtility(cls, meshType):
+        return OPENFOAM_MESH_CONVERTERS[meshType][0]

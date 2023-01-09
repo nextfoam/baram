@@ -39,6 +39,7 @@ from mesh.mesh_manager import MeshManager, MeshType
 from openfoam.file_system import FileSystem
 from openfoam.case_generator import CaseGenerator
 from openfoam.polymesh.polymesh_loader import PolyMeshLoader
+from openfoam.run import hasUtility
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu.settings_scaling import SettingScalingDialog
@@ -50,6 +51,8 @@ from .monitor_dock import MonitorDock
 
 
 logger = logging.getLogger(__name__)
+
+CCM_TO_FOAM_URL = 'https://openfoamwiki.net/index.php/Ccm26ToFoam'
 
 
 class CloseType(Enum):
@@ -238,7 +241,14 @@ class MainWindow(QMainWindow):
         self._importMesh(MeshType.FLUENT_3D, self.tr('Fluent3D (*.cas)'))
 
     def _importStarCcmPlus(self):
-        self._importMesh(MeshType.STAR_CCM, self.tr('StarCCM+ (*.ccm)'))
+        if hasUtility(self._meshManager.convertUtility(MeshType.STAR_CCM)):
+            self._importMesh(MeshType.STAR_CCM, self.tr('StarCCM+ (*.ccm)'))
+        else:
+            QMessageBox.information(
+                self, self.tr('Mesh Convert'),
+                self.tr(f'Converter not found.<br>'
+                        f'Install <a href="{CCM_TO_FOAM_URL}">ccn26ToFoam</a> to convert StarCCM+ Mesh.'
+                        f'(Linux only)</a>'))
 
     def _importGmsh(self):
         self._importMesh(MeshType.GMSH, self.tr('Gmsh (*.msh)'))
