@@ -43,13 +43,15 @@ class App(QObject):
 
     def updateVtkMesh(self, mesh):
         self._vtkMesh = mesh
-        self.showVtkMesh()
+        self.showMesh()
         self._window.vtkMeshLoaded()
         self.meshUpdated.emit()
 
-    def showVtkMesh(self):
-        if self._vtkMesh:
-            self._vtkMesh.activate()
+    def showMesh(self, mesh=None):
+        if mesh:
+            self.meshDock.setModel(mesh)
+        elif self._vtkMesh:
+            self.meshDock.setModel(self._vtkMesh)
 
     def close(self):
         self._closed = True

@@ -10,24 +10,47 @@ from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
 from vtkmodules.vtkIOGeometry import vtkOpenFOAMReader
 from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
 from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
+from vtkmodules.vtkRenderingCore import vtkPolyDataMapper
 
 from app import app
 from coredb import coredb
 from coredb.project import Project
 from openfoam.file_system import FileSystem, FileLoadingError
 from openfoam.constant.region_properties import RegionProperties
-from mesh.vtk_loader import ActorInfo, MeshActors
+from mesh.vtk_loader import ActorInfo
+from mesh.mesh_model import VtkViewModel
 
 
 logger = logging.getLogger(__name__)
 
 
-def getActorInfo(dataset) -> ActorInfo:
+def getActor(dataset):
     gFilter = vtkGeometryFilter()
     gFilter.SetInputData(dataset)
     gFilter.Update()
 
-    return ActorInfo(gFilter.GetOutput())
+    mapper = vtkPolyDataMapper()
+    mapper.SetInputData(gFilter.GetOutput())
+
+    actor = vtk.vtkQuadricLODActor()    # vtkActor()
+    actor.SetMapper(mapper)
+
+    return actor
+
+
+def getFeatureActor(dataset):
+    edges = vtk.vtkFeatureEdges()
+    edges.SetInputData(dataset)
+    edges.Update()
+
+    mapper = vtkPolyDataMapper()
+    mapper.SetInputData(edges.GetOutput())
+    mapper.ScalarVisibilityOff()
+
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+
+    return actor
 
 
 def build(mBlock):
@@ -44,9 +67,9 @@ def build(mBlock):
             vtkMesh[name] = build(ds)
         elif dsType == vtk.VTK_UNSTRUCTURED_GRID:
             if ds.GetNumberOfCells() > 0:
-                vtkMesh[name] = getActorInfo(ds)
+                vtkMesh[name] = ActorInfo(getActor(ds))
         elif dsType == vtk.VTK_POLY_DATA:
-            vtkMesh[name] = getActorInfo(ds)
+            vtkMesh[name] = ActorInfo(getActor(ds), getFeatureActor(ds))
         else:
             vtkMesh[name] = f'Type {dsType}'  # ds
 
@@ -222,7 +245,7 @@ class PolyMeshLoader:
     def _updateVtkMesh(self, vtkMesh):
         db = coredb.CoreDB()
 
-        viewModel = MeshActors()
+        viewModel = VtkViewModel()
         for rname in db.getRegions():
             for bcid, bcname, _ in db.getBoundaryConditions(rname):
                 viewModel.setActorInfo(bcid, vtkMesh[rname]['boundary'][bcname])

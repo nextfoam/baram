@@ -6,8 +6,8 @@ import os
 import platform
 import subprocess
 from typing import TYPE_CHECKING
-
 from typing import Optional
+from enum import Enum, auto
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QComboBox, QFrame, QToolBar, QVBoxLayout, QWidgetAction, QFileDialog
@@ -42,49 +42,12 @@ Qt.MidButton = Qt.MiddleButton
 colors = vtkNamedColors()
 
 
-class DisplayMode():
+class DisplayMode(Enum):
     DISPLAY_MODE_POINTS         = 0
-    DISPLAY_MODE_WIREFRAME      = 1
-    DISPLAY_MODE_SURFACE        = 2
-    DISPLAY_MODE_SURFACE_EDGE   = 3
-    # DISPLAY_MODE_FEATURE        = 4
-
-    _apply = {
-        DISPLAY_MODE_POINTS         : lambda actor: DisplayMode._applyPointsMode(actor),
-        DISPLAY_MODE_WIREFRAME      : lambda actor: DisplayMode._applyWireframeMode(actor),
-        DISPLAY_MODE_SURFACE        : lambda actor: DisplayMode._applySurfaceMode(actor),
-        DISPLAY_MODE_SURFACE_EDGE   : lambda actor: DisplayMode._applySurfaceEdgeMode(actor),
-    }
-
-    @classmethod
-    def apply(cls, mode, actor):
-        cls._apply[mode](actor)
-
-    @classmethod
-    def _applyPointsMode(cls, actor):
-        actor.GetProperty().SetPointSize(3)
-        actor.GetProperty().SetColor(0.1, 0.0, 0.3)
-        actor.GetProperty().SetRepresentationToPoints()
-
-    @classmethod
-    def _applyWireframeMode(cls, actor):
-        actor.GetProperty().SetColor(0.1, 0.0, 0.3)
-        actor.GetProperty().SetLineWidth(1.0)
-        actor.GetProperty().SetRepresentationToWireframe()
-
-    @classmethod
-    def _applySurfaceMode(cls, actor):
-        actor.GetProperty().SetColor(0.5, 0.2, 1.0)
-        actor.GetProperty().SetRepresentationToSurface()
-        actor.GetProperty().EdgeVisibilityOff()
-
-    @classmethod
-    def _applySurfaceEdgeMode(cls, actor):
-        actor.GetProperty().SetColor(0.5, 0.2, 1.0)
-        actor.GetProperty().SetRepresentationToSurface()
-        actor.GetProperty().EdgeVisibilityOn()
-        actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
-        actor.GetProperty().SetLineWidth(1.0)
+    DISPLAY_MODE_WIREFRAME      = auto()
+    DISPLAY_MODE_SURFACE        = auto()
+    DISPLAY_MODE_SURFACE_EDGE   = auto()
+    DISPLAY_MODE_FEATURE        = auto()
 
 
 class MouseInteractorHighLightActor(vtkInteractorStyleTrackballCamera):
@@ -140,7 +103,6 @@ class MeshDock(TabifiedDock):
         self._originAxesOn = False
         self._originActor = None
 
-        self._cubeAxesOn = False
         self._cubeAxesActor = None
 
         self._orthogonalViewOn = False
@@ -184,20 +146,10 @@ class MeshDock(TabifiedDock):
             self._model.deactivate()
 
         self._model = model
-
         if self._model:
-            for actorInfo in self._model.actorInfos():
-                if actorInfo.visibility:
-                    self.applyDisplayMode(actorInfo.actor)
-                    self._renderer.AddActor(actorInfo.actor)
-            self.render()
+            self._model.activate()
 
-    def clear(self):
-        if self._model:
-            for actorInfo in self._model.actorInfos():
-                if actorInfo.visibility:
-                    self._renderer.RemoveActor(actorInfo.actor)
-            self._widget.Render()
+        self.render()
 
     def closeEvent(self, event):
         if app.closed():
@@ -209,22 +161,17 @@ class MeshDock(TabifiedDock):
     def _mainWindowClosed(self, result):
         self._widget.close()
 
-    def addActor(self, actorInfo):
-        if not actorInfo.visibility:
-            self.applyDisplayMode(actorInfo.actor)
-            self._renderer.AddActor(actorInfo.actor)
-            actorInfo.visibility = True
+    def addActor(self, actor):
+        self._renderer.AddActor(actor)
 
-    def removeActor(self, actorInfo):
-        if actorInfo.visibility:
-            self._renderer.RemoveActor(actorInfo.actor)
-            actorInfo.visibility = False
+    def removeActor(self, actor):
+        self._renderer.RemoveActor(actor)
 
     def update(self):
         self._widget.Render()
 
     def render(self):
-        if self._cubeAxesOn:
+        if self._cubeAxesActor:
             self._showCubeAxes()
 
         if self._originAxesOn:
@@ -233,13 +180,13 @@ class MeshDock(TabifiedDock):
         self._fitCamera()
         self._widget.Render()
 
-    def applyDisplayMode(self, actor):
-        DisplayMode.apply(self._displayModeCombo.currentIndex(), actor)
+    def displayMode(self):
+        return self._displayModeCombo.currentIndex()
 
     def _setDefaults(self):
         self._actionAxesOnOff.setChecked(self._axesOn)
         self._actionOriginAxesOnOff.setChecked(self._originAxesOn)
-        self._actionCubeAxesOnOff.setChecked(self._cubeAxesOn)
+        self._actionCubeAxesOnOff.setChecked(self._cubeAxesActor is not None)
         self._actionOrthogonalViewOnOff.setChecked(self._orthogonalViewOn)
 
         self._showAxes()
@@ -323,6 +270,8 @@ class MeshDock(TabifiedDock):
 
         self._cubeAxesActor.SetFlyModeToOuterEdges()
 
+        self._renderer.AddActor(self._cubeAxesActor)
+
     def _drawLine(self, startPoint=(-1.0, 0.0, 0.0), endPoint=(1.0, 0.0, 0.0), color=(0.8, 0.8, 0.8)):
         lineSource = vtkLineSource()
         lineSource.SetPoint1(startPoint)
@@ -397,8 +346,8 @@ class MeshDock(TabifiedDock):
         self._toolBar.addSeparator()
 
         self._displayModeCombo = QComboBox()
-        self._displayModeCombo.addItems(['Points', 'Wireframe', 'Surface', 'SurfaceEdge'])  # 'Feature'
-        self._displayModeCombo.setCurrentIndex(DisplayMode.DISPLAY_MODE_SURFACE_EDGE)
+        self._displayModeCombo.addItems(['Points', 'Wireframe', 'Surface', 'SurfaceEdge', 'Feature'])
+        self._displayModeCombo.setCurrentIndex(DisplayMode.DISPLAY_MODE_SURFACE_EDGE.value)
         self._displayModeCombo.currentIndexChanged.connect(self._clickedVDisplayModeCombo)
         self._actionShowMode = QWidgetAction(self._main_window)
         self._actionShowMode.setDefaultWidget(self._displayModeCombo)
@@ -441,14 +390,9 @@ class MeshDock(TabifiedDock):
         self._iconCullingOn = QIcon(str(path / 'cullingOn.png'))
         self._iconCullingOff = QIcon(str(path / 'cullingOff.png'))
 
-    def _clickedVDisplayModeCombo(self, widget):
-        if not self._model.isMesh():
-            return
-
-        actorInfos = self._model.actorInfos()
-        for a in actorInfos:
-            if a.actor != self._model.currentActor():
-                self.applyDisplayMode(a.actor)
+    def _clickedVDisplayModeCombo(self, index):
+        if self._model:
+            self._model.changeDisplayMode(index)
 
         self._widget.Render()
 
@@ -469,10 +413,12 @@ class MeshDock(TabifiedDock):
                 self._showOriginAxes()
 
         elif action == self._actionCubeAxesOnOff:
-            if self._cubeAxesOn:
+            if self._cubeAxesActor:
                 self._hideCubeAxes()
             else:
                 self._showCubeAxes()
+
+            self._actionCubeAxesOnOff.setChecked(self._cubeAxesActor is not None)
 
         elif action == self._actionOrthogonalViewOnOff:
             if self._orthogonalViewOn:
@@ -563,16 +509,17 @@ class MeshDock(TabifiedDock):
         if self._originActor is not None:
             self._renderer.RemoveActor(self._originActor)
 
-        bounds = self.getMeshTotalBounds()
-        xSize = abs(bounds[1]-bounds[0]) * 2.0
-        ySize = abs(bounds[3]-bounds[2]) * 2.0
-        zSize = abs(bounds[5]-bounds[4]) * 2.0
-        maxSize = max(xSize, ySize, zSize)
+        if self._model:
+            bounds = self._model.fullBounds()
+            xSize = abs(bounds[1]-bounds[0]) * 2.0
+            ySize = abs(bounds[3]-bounds[2]) * 2.0
+            zSize = abs(bounds[5]-bounds[4]) * 2.0
+            maxSize = max(xSize, ySize, zSize)
 
-        self._addOriginAxes(maxSize)
-        self._originAxesOn = True
-        self._actionOriginAxesOnOff.setIcon(self._iconOriginAxesOn)
-        self._renderer.AddActor(self._originActor)
+            self._addOriginAxes(maxSize)
+            self._originAxesOn = True
+            self._actionOriginAxesOnOff.setIcon(self._iconOriginAxesOn)
+            self._renderer.AddActor(self._originActor)
 
     def _hideOriginAxes(self):
         if self._originActor is not None:
@@ -591,31 +538,10 @@ class MeshDock(TabifiedDock):
         self._renderer.GetActiveCamera().ParallelProjectionOff()
 
     def _showCubeAxes(self):
-        if self._cubeAxesActor is not None:
-            self._renderer.RemoveActor(self._cubeAxesActor)
-        self._cubeAxesOn = True
-        self._addCubeAxes(self.getMeshTotalBounds())
-        self._renderer.AddActor(self._cubeAxesActor)
-
-    def getMeshTotalBounds(self) -> list:
-        checkFirst = True
-        bounds = [0, 0, 0, 0, 0, 0]
+        self._hideCubeAxes()
 
         if self._model:
-            for actorInfo in self._model.actorInfos():
-                getBounds = actorInfo.actor.GetBounds()
-                if checkFirst:
-                    bounds = list(getBounds)
-                    checkFirst = False
-                else:
-                    bounds[0] = min(bounds[0], getBounds[0])
-                    bounds[1] = max(bounds[1], getBounds[1])
-                    bounds[2] = min(bounds[2], getBounds[2])
-                    bounds[3] = max(bounds[3], getBounds[3])
-                    bounds[4] = min(bounds[4], getBounds[4])
-                    bounds[5] = max(bounds[5], getBounds[5])
-
-        return bounds
+            self._addCubeAxes(self._model.fullBounds())
 
     def getMeshCenterPoint(self) -> list:
         center = []
@@ -627,8 +553,8 @@ class MeshDock(TabifiedDock):
 
     def _hideCubeAxes(self):
         if self._cubeAxesActor is not None:
-            self._cubeAxesOn = False
             self._renderer.RemoveActor(self._cubeAxesActor)
+            self._cubeAxesActor = None
 
     def _fitCamera(self):
         if self._originAxesOn:
@@ -638,7 +564,7 @@ class MeshDock(TabifiedDock):
         else:
             self._renderer.ResetCamera()
 
-        if self._cubeAxesOn:
+        if self._cubeAxesActor:
             self._showCubeAxes()
 
     def _showCulling(self):
@@ -646,16 +572,14 @@ class MeshDock(TabifiedDock):
         self._actionCulling.setIcon(self._iconCullingOn)
 
         if self._model:
-            for a in self._model.actorInfos():
-                a.actor.GetProperty().FrontfaceCullingOn()
+            self._model.showCulling()
 
     def _hideCulling(self):
         self._cullingOn = False
         self._actionCulling.setIcon(self._iconCullingOff)
 
         if self._model:
-            for a in self._model.actorInfos():
-                a.actor.GetProperty().FrontfaceCullingOff()
+            self._model.hideCulling()
 
     def _addCamera(self):
         self.camera = vtkCamera()
