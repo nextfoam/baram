@@ -14,7 +14,7 @@ from openfoam.dictionary_file import DictionaryFile
 
 class FvSolution(DictionaryFile):
     def __init__(self, rname: str = ''):
-        super().__init__(self.systemLocation('' if rname is None else rname), 'fvSolution')
+        super().__init__(self.systemLocation(rname), 'fvSolution')
 
         self._rname = rname
         self._db = coredb.CoreDB()
@@ -23,16 +23,7 @@ class FvSolution(DictionaryFile):
         if self._data is not None:
             return self
 
-        if self._rname is None:
-            # Global fvSolution in multi region case
-            self._data = {
-                'PIMPLE': {
-                    'nOuterCorrectors':
-                        self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/maxIterationsPerTimeStep'),
-                }
-
-            }
-        else:
+        if self._rname:
             # If region name is empty string, the only fvSolution in single region case.
             # Otherwise, fvSolution of specified region.
             scheme = self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/pressureVelocityCouplingScheme')
@@ -165,6 +156,15 @@ class FvSolution(DictionaryFile):
                         '"(k|epsilon|omega|nuTilda)Final"': self._db.getValue('.//underRelaxationFactors/turbulenceFinal'),
                     }
                 }
+            }
+        else:
+            # Global fvSolution in multi region case
+            self._data = {
+                'PIMPLE': {
+                    'nOuterCorrectors':
+                        self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/maxIterationsPerTimeStep'),
+                }
+
             }
 
         return self
