@@ -235,10 +235,10 @@ class MainWindow(QMainWindow):
         self._importMesh(MeshType.POLY_MESH)
 
     def _importFluent2D(self):
-        self._importMesh(MeshType.FLUENT_2D, self.tr('Fluent2D (*.msh)'))
+        self._importMesh(MeshType.FLUENT_2D, self.tr('Fluent (*.msh)'))
 
     def _importFluent3D(self):
-        self._importMesh(MeshType.FLUENT_3D, self.tr('Fluent3D (*.cas)'))
+        self._importMesh(MeshType.FLUENT_3D, self.tr('Fluent (*.cas)'))
 
     def _importStarCcmPlus(self):
         if hasUtility(self._meshManager.convertUtility(MeshType.STAR_CCM)):
@@ -257,7 +257,7 @@ class MainWindow(QMainWindow):
         self._importMesh(MeshType.IDEAS, self.tr('Ideas (*.unv)'))
 
     def _importNasaPlot3D(self):
-        self._importMesh(MeshType.NAMS_PLOT3D, self.tr('NASA plot3d (*.unv)'))
+        self._importMesh(MeshType.NAMS_PLOT3D, self.tr('Plot3d (*.unv)'))
 
     def _closeProject(self):
         self._closeType = CloseType.CLOSE_PROJECT
@@ -277,7 +277,7 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _vtkChanged(self):
-        progress = ProgressDialog(self, self.tr('Case Loading.'), self.tr('Loading VTK Mesh.'))
+        progress = ProgressDialog(self, self.tr('Case Loading.'), self.tr('Loading Mesh.'))
 
         # Workaround to give some time for QT to set up timer or event loop.
         # This workaround is not necessary on Windows because BARAM for Windows
