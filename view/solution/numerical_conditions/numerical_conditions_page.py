@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QWidget, QMessageBox
+from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
@@ -9,11 +9,12 @@ from coredb.general_db import GeneralDB
 from coredb.numerical_db import PressureVelocityCouplingScheme, ImplicitDiscretizationScheme, UpwindDiscretizationScheme
 from coredb.numerical_db import NumericalDB
 from coredb.models_db import ModelsDB, TurbulenceModel
+from view.widgets.content_page import ContentPage
 from .numerical_conditions_page_ui import Ui_NumericalConditionsPage
 from .advanced_dialog import AdvancedDialog
 
 
-class NumericalConditionsPage(QWidget):
+class NumericalConditionsPage(ContentPage):
     def __init__(self):
         super().__init__()
         self._ui = Ui_NumericalConditionsPage()

@@ -9,7 +9,7 @@ import asyncio
 import logging
 import shutil
 
-from PySide6.QtWidgets import QWidget, QMessageBox
+from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.project import Project, SolverStatus
@@ -21,6 +21,7 @@ from openfoam.system.fv_schemes import FvSchemes
 import openfoam.solver
 from openfoam.file_system import FileSystem
 from view.widgets.progress_dialog import ProgressDialog
+from view.widgets.content_page import ContentPage
 from .process_information_page_ui import Ui_ProcessInformationPage
 
 
@@ -29,7 +30,7 @@ logger = logging.getLogger(__name__)
 SOLVER_CHECK_INTERVAL = 3000
 
 
-class ProcessInformationPage(QWidget):
+class ProcessInformationPage(ContentPage):
     def __init__(self):
         super().__init__()
         self._ui = Ui_ProcessInformationPage()

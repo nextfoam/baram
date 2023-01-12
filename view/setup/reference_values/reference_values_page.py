@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QWidget, QMessageBox
+from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.reference_values_db import ReferenceValuesDB
+from view.widgets.content_page import ContentPage
 from .reference_values_page_ui import Ui_ReferenceValuesPage
 
 
-class ReferenceValuesPage(QWidget):
+class ReferenceValuesPage(ContentPage):
     def __init__(self):
         super().__init__()
         self._ui = Ui_ReferenceValuesPage()

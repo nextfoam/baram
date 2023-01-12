@@ -3,11 +3,12 @@
 
 import logging
 
-from PySide6.QtWidgets import QWidget, QMessageBox
+from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.general_db import GeneralDB, SolverType
+from view.widgets.content_page import ContentPage
 from .general_page_ui import Ui_GeneralPage
 
 
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 GRAVITY_XPATH = GeneralDB.OPERATING_CONDITIONS_XPATH + '/gravity/direction'
 
 
-class GeneralPage(QWidget):
+class GeneralPage(ContentPage):
     def __init__(self):
         super().__init__()
         self._ui = Ui_GeneralPage()

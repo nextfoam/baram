@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QDialog, QMessageBox
-from PySide6.QtCore import QLocale
+from PySide6.QtWidgets import QDialog
 
+from app import app
 from coredb.app_settings import AppSettings
 from .settings_language_ui import Ui_SettingLanguageDialog
 
@@ -21,22 +21,24 @@ languages = [
     ]
 ]
 
+
 class SettingLanguageDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self._ui = Ui_SettingLanguageDialog()
         self._ui.setupUi(self)
 
-        self._ui.language.addItems(languages[1])
-        index = languages[0].index(QLocale.languageToCode(AppSettings.getLocale().language()))
-        self._ui.language.setCurrentIndex(index)
+        language = AppSettings.getLanguage()
+        for i in range(len(languages[1])):
+            self._ui.language.addItem(languages[1][i], languages[0][i])
+            if language == languages[0][i]:
+                self._ui.language.setCurrentIndex(i)
 
     def accept(self):
-        index = self._ui.language.currentIndex()
+        language = self._ui.language.currentData()
 
-        preIndex = languages[0].index(QLocale.languageToCode(AppSettings.getLocale().language()))
-        if preIndex != index:
-            QMessageBox.information(self, self.tr("Change Locale"), self.tr('Locale change will be effective from next start'))
-            AppSettings.setLocale(QLocale(languages[0][index]))
+        if language != AppSettings.getLanguage():
+            AppSettings.setLanguage(language)
+            app.setLanguage(language)
 
         super().accept()

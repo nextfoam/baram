@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QWidget, QMessageBox, QTreeWidgetItem, QComboBox
+from PySide6.QtWidgets import QMessageBox, QTreeWidgetItem, QComboBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.region_db import RegionDB
 from coredb.project import Project
+from view.widgets.content_page import ContentPage
 from .cell_zone_conditions_page_ui import Ui_CellZoneConditionsPage
 from .cell_zone_condition_dialog import CellZoneConditionDialog
 from .cell_zone_widget import CellZoneWidget
@@ -15,7 +16,7 @@ from .cell_zone_widget import CellZoneWidget
 DEFAULT_REGION_NAME = 'region0'
 
 
-class CellZoneConditionsPage(QWidget):
+class CellZoneConditionsPage(ContentPage):
     def __init__(self):
         super().__init__()
         self._ui = Ui_CellZoneConditionsPage()

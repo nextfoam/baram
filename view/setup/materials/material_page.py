@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QMessageBox
+from PySide6.QtWidgets import QVBoxLayout, QMessageBox
 from PySide6.QtCore import Signal
 
 from coredb import coredb
@@ -10,11 +10,12 @@ from coredb.project import Project
 from coredb.coredb import Error
 from view.widgets.selector_dialog import SelectorDialog
 from view.widgets.multi_selector_dialog import SelectorItem
+from view.widgets.content_page import ContentPage
 from .material_page_ui import Ui_MaterialPage
 from .material_card import MaterialCard
 
 
-class MaterialPage(QWidget):
+class MaterialPage(ContentPage):
     pageReload = Signal()
 
     def __init__(self):

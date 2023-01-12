@@ -11,7 +11,9 @@ from coredb.project import Project
 
 
 class MenuItem(Enum):
-    MENU_TOP = QTreeWidgetItem.UserType
+    MENU_SETUP = QTreeWidgetItem.UserType
+    MENU_SOLUTION = auto()
+
     # Setup
     MENU_SETUP_GENERAL = auto()
     MENU_SETUP_MODELS = auto()
@@ -34,33 +36,41 @@ class NavigatorView(QObject):
         super().__init__()
 
         self._view = tree
-        
-        self._setupMenu = self._addTopMenu(self.tr('Setup'))
-        self._solutionMenu = self._addTopMenu(self.tr('Solution'))
+
+        self._menuTexts = {
+            MenuItem.MENU_SETUP.value: lambda: self.tr('Setup'),
+            MenuItem.MENU_SOLUTION.value: lambda: self.tr('Solution'),
+            # Setup
+            MenuItem.MENU_SETUP_GENERAL.value: lambda: self.tr('General'),
+            MenuItem.MENU_SETUP_MODELS.value: lambda: self.tr('Models'),
+            MenuItem.MENU_SETUP_MATERIALS.value: lambda: self.tr('Materials'),
+            MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value: lambda: self.tr('Cell Zone Conditions'),
+            MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value: lambda: self.tr('Boundary Conditions'),
+            MenuItem.MENU_SETUP_REFERENCE_VALUES.value: lambda: self.tr('Reference Values'),
+            # Solution
+            MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value: lambda: self.tr('Numerical Conditions'),
+            MenuItem.MENU_SOLUTION_MONITORS.value: lambda: self.tr('Monitors'),
+            MenuItem.MENU_SOLUTION_INITIALIZATION.value: lambda: self.tr('Initialization'),
+            MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value: lambda: self.tr('Run Conditions'),
+            MenuItem.MENU_SOLUTION_RUN.value: lambda: self.tr('Run'),
+        }
 
         self._menu = {}
-        self._addMenu(MenuItem.MENU_SETUP_GENERAL, self._setupMenu,
-                      self.tr('General'))
-        self._addMenu(MenuItem.MENU_SETUP_MODELS, self._setupMenu,
-                      self.tr('Models'))
-        self._addMenu(MenuItem.MENU_SETUP_MATERIALS, self._setupMenu,
-                      self.tr('Materials'))
-        self._addMenu(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS, self._setupMenu,
-                      self.tr('Cell Zone Conditions'))
-        self._addMenu(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS, self._setupMenu,
-                      self.tr('Boundary Conditions'))
-        self._addMenu(MenuItem.MENU_SETUP_REFERENCE_VALUES, self._setupMenu,
-                      self.tr('Reference Values'))
-        self._addMenu(MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS, self._solutionMenu,
-                      self.tr('Numerical Conditions'))
-        self._addMenu(MenuItem.MENU_SOLUTION_MONITORS, self._solutionMenu,
-                      self.tr('Monitors'))
-        self._addMenu(MenuItem.MENU_SOLUTION_INITIALIZATION, self._solutionMenu,
-                      self.tr('Initialization'))
-        self._addMenu(MenuItem.MENU_SOLUTION_RUN_CONDITIONS, self._solutionMenu,
-                      self.tr('Run Conditions'))
-        self._addMenu(MenuItem.MENU_SOLUTION_RUN, self._solutionMenu,
-                      self.tr('Run'))
+
+        setupMenu = self._addTopMenu(MenuItem.MENU_SETUP)
+        self._addMenu(MenuItem.MENU_SETUP_GENERAL, setupMenu)
+        self._addMenu(MenuItem.MENU_SETUP_MODELS, setupMenu)
+        self._addMenu(MenuItem.MENU_SETUP_MATERIALS, setupMenu)
+        self._addMenu(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS, setupMenu)
+        self._addMenu(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS, setupMenu)
+        self._addMenu(MenuItem.MENU_SETUP_REFERENCE_VALUES, setupMenu)
+
+        solutionMenu = self._addTopMenu(MenuItem.MENU_SOLUTION)
+        self._addMenu(MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS, solutionMenu)
+        self._addMenu(MenuItem.MENU_SOLUTION_MONITORS, solutionMenu)
+        self._addMenu(MenuItem.MENU_SOLUTION_INITIALIZATION, solutionMenu)
+        self._addMenu(MenuItem.MENU_SOLUTION_RUN_CONDITIONS, solutionMenu)
+        self._addMenu(MenuItem.MENU_SOLUTION_RUN, solutionMenu)
 
         self._connectSignalsSlots()
 
@@ -89,16 +99,21 @@ class NavigatorView(QObject):
         self._menu[MenuItem.MENU_SOLUTION_INITIALIZATION.value].setDisabled(solverActivated)
         self._menu[MenuItem.MENU_SOLUTION_RUN.value].setDisabled(noMesh)
 
+    def translate(self):
+        for key, menu in self._menu.items():
+            menu.setText(0, self._menuTexts[key]())
+
     def _connectSignalsSlots(self):
         self._view.currentItemChanged.connect(self._currentMenuChanged)
 
-    def _addTopMenu(self, text):
-        item = QTreeWidgetItem(self._view, [text], MenuItem.MENU_TOP.value)
-        item.setExpanded(True)
-        return item
+    def _addTopMenu(self, menuItem):
+        self._menu[menuItem.value] = QTreeWidgetItem(self._view, [self._menuTexts[menuItem.value]()], menuItem.value)
+        self._menu[menuItem.value].setExpanded(True)
 
-    def _addMenu(self, key, parent, text):
-        self._menu[key.value] = QTreeWidgetItem(parent, [text], key.value)
+        return self._menu[menuItem.value]
+
+    def _addMenu(self, menuItem, parent):
+        self._menu[menuItem.value] = QTreeWidgetItem(parent, [self._menuTexts[menuItem.value]()], menuItem.value)
 
     def _currentMenuChanged(self, current):
         self.currentMenuChanged.emit(current.type())

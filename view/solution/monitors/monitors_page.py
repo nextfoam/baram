@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QWidget, QMenu, QListWidgetItem, QMessageBox
+from PySide6.QtWidgets import QMenu, QListWidgetItem, QMessageBox
 
 from coredb import coredb
+from view.widgets.content_page import ContentPage
 from .monitors_page_ui import Ui_MonitorsPage
 from .force_dialog import ForceDialog
 from .point_dialog import PointDialog
@@ -12,7 +13,7 @@ from .volume_dialog import VolumeDialog
 from .monitor_widget import ForceMonitorWidget, PointMonitorWidget, SurfaceMonitorWidget, VolumeMonitorWidget
 
 
-class MonitorsPage(QWidget):
+class MonitorsPage(ContentPage):
     def __init__(self):
         super().__init__()
         self._ui = Ui_MonitorsPage()

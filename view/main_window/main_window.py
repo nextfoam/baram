@@ -11,7 +11,7 @@ import qasync
 import asyncio
 
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
-from PySide6.QtCore import Qt, QThreadPool, Signal
+from PySide6.QtCore import Qt, QThreadPool, Signal, QEvent
 from PySide6.QtGui import QIcon
 
 from app import app
@@ -112,7 +112,8 @@ class MainWindow(QMainWindow):
         self._addTabifiedDock(self._monitorDock)
 
         self._menuPages = {
-            MenuItem.MENU_TOP.value: MenuPage(),
+            MenuItem.MENU_SETUP.value: MenuPage(),
+            MenuItem.MENU_SOLUTION.value: MenuPage(),
             MenuItem.MENU_SETUP_GENERAL.value: MenuPage(GeneralPage),
             MenuItem.MENU_SETUP_MATERIALS.value: MenuPage(MaterialPage),
             MenuItem.MENU_SETUP_MODELS.value: MenuPage(ModelsPage),
@@ -398,3 +399,16 @@ class MainWindow(QMainWindow):
                 await self._meshManager.importOpenFoamMesh(file)
             else:
                 await self._meshManager.importMesh(file, meshType)
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.LanguageChange:
+            self._ui.retranslateUi(self)
+            self._navigatorView.translate()
+
+            for page in self._menuPages.values():
+                if page.index > 0:
+                    self._contentView.removePage(page.index)
+                    page.index = -1
+            self._changeForm(self._navigatorView.currentMenu())
+
+        super().changeEvent(event)

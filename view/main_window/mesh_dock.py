@@ -91,7 +91,6 @@ class MeshDock(TabifiedDock):
 
         self._main_window = parent
 
-        self.setWindowTitle(self.tr("Mesh"))
         self.setAllowedAreas(Qt.RightDockWidgetArea)
 
         self._widget = None
@@ -141,6 +140,8 @@ class MeshDock(TabifiedDock):
 
         self._setDefaults()
 
+        self._translate()
+
     def setModel(self, model):
         if self._model:
             self._model.deactivate()
@@ -182,6 +183,28 @@ class MeshDock(TabifiedDock):
 
     def displayMode(self):
         return self._displayModeCombo.currentIndex()
+
+    def _translate(self):
+        self.setWindowTitle(self.tr("Mesh"))
+        self._actionRunParaview.setText(self.tr('Run ParaView'))
+        self._actionAxesOnOff.setText(self.tr('Axes On/Off'))
+        self._actionOriginAxesOnOff.setText(self.tr('Origin Axes On/Off'))
+        self._actionCubeAxesOnOff.setText(self.tr('Cube Axes On/Off'))
+        self._actionOrthogonalViewOnOff.setText(self.tr('Orthogonal/Perspective View'))
+        self._actionFit.setText(self.tr('Fit'))
+        self._actionRotate.setText(self.tr('Rotate'))
+        self._actionCulling.setText(self.tr('Front-face Culling'))
+
+        displayModes = {
+            DisplayMode.DISPLAY_MODE_POINTS.value       : self.tr('Points'),
+            DisplayMode.DISPLAY_MODE_WIREFRAME.value    : self.tr('Wireframe'),
+            DisplayMode.DISPLAY_MODE_SURFACE.value      : self.tr('Surface'),
+            DisplayMode.DISPLAY_MODE_SURFACE_EDGE.value : self.tr('SurfaceEdge'),
+            DisplayMode.DISPLAY_MODE_FEATURE .value     : self.tr('Feature'),
+        }
+
+        for index, text in displayModes.items():
+            self._displayModeCombo.setItemText(index, text)
 
     def _setDefaults(self):
         self._actionAxesOnOff.setChecked(self._axesOn)
@@ -297,24 +320,24 @@ class MeshDock(TabifiedDock):
         self._toolBar = QToolBar()
         self._addIcons(resource.file('graphicsIcons'))
 
-        self._actionRunParaview = QAction(self._iconRunParaview, 'Run ParaView', self._main_window)
+        self._actionRunParaview = QAction(self._iconRunParaview, '', self._main_window)
         self._toolBar.addAction(self._actionRunParaview)
 
         self._toolBar.addSeparator()
 
-        self._actionAxesOnOff = QAction(self._iconAxesOn, 'Axes On/Off', self._main_window)
+        self._actionAxesOnOff = QAction(self._iconAxesOn, '', self._main_window)
         self._actionAxesOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionAxesOnOff)
 
-        self._actionOriginAxesOnOff = QAction(self._iconOriginAxesOff, 'Origin Axes On/Off', self._main_window)
+        self._actionOriginAxesOnOff = QAction(self._iconOriginAxesOff, '', self._main_window)
         self._actionOriginAxesOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionOriginAxesOnOff)
 
-        self._actionCubeAxesOnOff = QAction(self._iconCubeAxes, 'Cube Axes On/Off', self._main_window)
+        self._actionCubeAxesOnOff = QAction(self._iconCubeAxes, '', self._main_window)
         self._actionCubeAxesOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionCubeAxesOnOff)
 
-        self._actionOrthogonalViewOnOff = QAction(self._iconOrthogonalViewOn, 'Orthogonal/Perspective View', self._main_window)
+        self._actionOrthogonalViewOnOff = QAction(self._iconOrthogonalViewOn, '', self._main_window)
         self._actionOrthogonalViewOnOff.setCheckable(True)
         self._toolBar.addAction(self._actionOrthogonalViewOnOff)
 
@@ -340,7 +363,7 @@ class MeshDock(TabifiedDock):
         self._actionMinusZ = QAction(self._iconMinusZ, '-Z', self._main_window)
         self._toolBar.addAction(self._actionMinusZ)
 
-        self._actionRotate = QAction(self._iconRotate, 'Rotate', self._main_window)
+        self._actionRotate = QAction(self._iconRotate, '', self._main_window)
         self._toolBar.addAction(self._actionRotate)
 
         self._toolBar.addSeparator()

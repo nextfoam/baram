@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtWidgets import QDockWidget
+from PySide6.QtCore import QEvent
 
 
 class TabifiedDock(QDockWidget):
@@ -23,3 +24,12 @@ class TabifiedDock(QDockWidget):
     def _connectTabifySlots(self):
         self.topLevelChanged.connect(self._dockTopLevelChanged)
         self.toggleViewAction().toggled.connect(self._dockToggled)
+
+    def _translate(self):
+        return
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.LanguageChange:
+            self._translate()
+
+        super().changeEvent(event)

@@ -23,7 +23,6 @@ class ConsoleDock(TabifiedDock):
         self.stopReading = False
         self.readTask: Optional[asyncio.Task] = None
 
-        self.setWindowTitle(self.tr("Console"))
         self.setAllowedAreas(Qt.RightDockWidgetArea)
 
         self._widget = QWidget()
@@ -46,7 +45,7 @@ class ConsoleDock(TabifiedDock):
 
         layout.addWidget(self._textView)
 
-        self._lineWrap = QCheckBox(self.tr('Line-Wrap'))
+        self._lineWrap = QCheckBox()
         self._lineWrap.setChecked(False)
         self._lineWrap.stateChanged.connect(self._lineWrapStateChanged)
 
@@ -57,6 +56,8 @@ class ConsoleDock(TabifiedDock):
         self._project.projectOpened.connect(self._projectChanged)
 
         self._main_window.windowClosed.connect(self._mainWindowClosed)
+
+        self._translate()
 
     def startCollecting(self):
         if self.readTask is None:
@@ -73,6 +74,10 @@ class ConsoleDock(TabifiedDock):
             self.startCollecting()
         else:
             self.stopCollecting()
+
+    def _translate(self):
+        self.setWindowTitle(self.tr("Console"))
+        self._lineWrap.setText(self.tr('Line-Wrap'))
 
     def _mainWindowClosed(self, result):
         if self.readTask is not None:

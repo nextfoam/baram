@@ -8,7 +8,7 @@ import asyncio
 
 import qasync
 
-from PySide6.QtCore import QFile, QTextStream, QIODevice, QTranslator, QCoreApplication
+from PySide6.QtCore import QFile, QTextStream, QIODevice
 from PySide6.QtWidgets import QApplication
 
 # To render SVG files.
@@ -19,8 +19,7 @@ import PySide6.QtSvg
 # noinspection PyUnresolvedReferences
 import resource_rc
 
-from resources import resource
-
+from app import app
 from view.main_window.start_window import Baram
 from coredb.app_settings import AppSettings
 
@@ -46,10 +45,10 @@ if __name__ == '__main__':
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
 
-    app = QApplication(sys.argv)
-    app.setQuitOnLastWindowClosed(False)
+    application = QApplication(sys.argv)
+    application.setQuitOnLastWindowClosed(False)
 
-    loop = qasync.QEventLoop(app)
+    loop = qasync.QEventLoop(application)
     asyncio.set_event_loop(loop)
 
     file = QFile(u":/ElegantDark.qss")
@@ -58,11 +57,7 @@ if __name__ == '__main__':
 
     #app.setStyleSheet(app.styleSheet() + '\n' + stream.readAll())
 
-    locale = AppSettings.getLocale()
-    translator = QTranslator()
-    translator.load(locale, 'baram', '_', str(resource.file('locale')))
-    QCoreApplication.installTranslator(translator)
-
+    app.setLanguage(AppSettings.getLanguage())
     background_tasks = set()
 
     baram = Baram()

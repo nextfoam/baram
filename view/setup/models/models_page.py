@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QListWidgetItem
+from PySide6.QtWidgets import QListWidgetItem
 from PySide6.QtGui import QBrush, QColor
 
 from coredb.models_db import ModelsDB, MultiphaseModel, TurbulenceModel
 from coredb.general_db import GeneralDB, SolverType
+from view.widgets.content_page import ContentPage
 from .models_page_ui import Ui_ModelsPage
 from .turbulence_dialog import TurbulenceModelDialog
 from .energy_dialog import EnergyDialog
@@ -44,7 +45,7 @@ class ModelItem(QListWidgetItem):
         self.setText(self._title + self._load())
 
 
-class ModelsPage(QWidget):
+class ModelsPage(ContentPage):
     def __init__(self):
         super().__init__()
         self._ui = Ui_ModelsPage()

@@ -4,7 +4,9 @@
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Signal, QTranslator, QCoreApplication, QLocale
+
+from resources import resource
 
 
 if getattr(sys, 'frozen', False):
@@ -22,6 +24,7 @@ class App(QObject):
         self._window = None
         self._vtkMesh = None
         self._closed = False
+        self._translator = None
 
     @property
     def window(self):
@@ -55,6 +58,13 @@ class App(QObject):
 
     def close(self):
         self._closed = True
+
+    def setLanguage(self, language):
+        QCoreApplication.removeTranslator(self._translator)
+        self._translator = QTranslator()
+        self._translator.load(QLocale(QLocale.languageToCode(QLocale(language).language())),
+                              'baram', '_', str(resource.file('locale')))
+        QCoreApplication.installTranslator(self._translator)
 
 
 app = App()

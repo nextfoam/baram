@@ -160,13 +160,16 @@ class AppSettings:
     # Territory is not considered for now
     @classmethod
     def getLocale(cls) -> QLocale:
-        return QLocale(cls._get(SettingKey.LOCALE, 'en'))
+        return QLocale(QLocale.languageToCode(QLocale(cls.getLanguage()).language()))
 
-    # Territory is not considered for now
     @classmethod
-    def setLocale(cls, locale: QLocale):
+    def getLanguage(cls):
+        return cls._get(SettingKey.LOCALE, 'en')
+
+    @classmethod
+    def setLanguage(cls, language):
         settings = cls._load()
-        settings[SettingKey.LOCALE.value] = QLocale.languageToCode(locale.language())
+        settings[SettingKey.LOCALE.value] = language
         cls._save(settings)
 
     @classmethod

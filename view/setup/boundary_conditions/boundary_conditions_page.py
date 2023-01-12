@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QWidget, QTreeWidgetItem, QMessageBox
+from PySide6.QtWidgets import QTreeWidgetItem, QMessageBox
 from PySide6.QtCore import Qt
 
 from app import app
 from coredb import coredb
 from coredb.boundary_db import BoundaryType, BoundaryDB
+from view.widgets.content_page import ContentPage
 from .boundary_conditions_page_ui import Ui_BoundaryConditionsPage
 from .velocity_inlet_dialog import VelocityInletDialog
 from .flow_rate_inlet_dialog import FlowRateInletDialog
@@ -59,7 +60,7 @@ DIALOGS = {
 }
 
 
-class BoundaryConditionsPage(QWidget):
+class BoundaryConditionsPage(ContentPage):
     def __init__(self):
         super().__init__()
         self._ui = Ui_BoundaryConditionsPage()

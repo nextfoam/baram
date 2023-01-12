@@ -20,5 +20,8 @@ class ContentView:
     def addPage(self, page):
         return self._view.addWidget(page)
 
+    def removePage(self, index):
+        self._view.removeWidget(self._view.widget(index))
+
     def currentPage(self):
         return self._view.currentWidget() if self._view.currentIndex() > 0 else None

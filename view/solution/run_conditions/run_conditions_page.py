@@ -5,13 +5,14 @@ from os import path
 from enum import Enum, Flag, auto
 from pathlib import Path
 
-from PySide6.QtWidgets import QWidget, QMessageBox, QFormLayout, QFileDialog
+from PySide6.QtWidgets import QMessageBox, QFormLayout, QFileDialog
 
 from coredb import coredb
 from coredb.app_settings import AppSettings
 from coredb.coredb_writer import CoreDBWriter
 from coredb.general_db import GeneralDB
 from coredb.run_calculation_db import TimeSteppingMethod, DataWriteFormat, RunCalculationDB
+from view.widgets.content_page import ContentPage
 from .run_conditions_page_ui import Ui_RunConditionsPage
 
 
@@ -27,7 +28,7 @@ class TimeSteppingMethodFlag(Flag):
     ADAPTIVE = auto()
 
 
-class RunConditionsPage(QWidget):
+class RunConditionsPage(ContentPage):
     def __init__(self):
         super().__init__()
         self._ui = Ui_RunConditionsPage()

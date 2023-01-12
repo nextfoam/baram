@@ -27,8 +27,12 @@ class MonitorDock(TabifiedDock):
 
         self._main_window.windowClosed.connect(self._mainWindowClosed)
 
-    def _setupUi(self):
+        self._translate()
+
+    def _translate(self):
         self.setWindowTitle(self.tr("Monitor"))
+
+    def _setupUi(self):
         self.setAllowedAreas(Qt.RightDockWidgetArea)
 
         self._widget = QWidget()

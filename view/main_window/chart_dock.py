@@ -37,7 +37,6 @@ class ChartDock(TabifiedDock):
         self._timeMin = None
         self._lines = {}
 
-        self.setWindowTitle(self.tr("Residuals"))
         self.setAllowedAreas(Qt.RightDockWidgetArea)
 
         self._widget = QWidget()
@@ -62,6 +61,8 @@ class ChartDock(TabifiedDock):
         self._project.solverStatusChanged.connect(self.solverStatusChanged)
 
         self._main_window.windowClosed.connect(self._mainWindowClosed)
+
+        self._translate()
 
     def startDrawing(self):
         self._timeMax = None
@@ -172,6 +173,11 @@ class ChartDock(TabifiedDock):
 
         self._canvas.draw()  # force re-draw the next time the GUI refreshes
         # self._canvas.draw_idle()
+
+        self._translate()
+
+    def _translate(self):
+        self.setWindowTitle(self.tr("Residuals"))
 
     def _adjustYRange(self, data: [pd.DataFrame], minX: float, maxX: float):
         minY = None

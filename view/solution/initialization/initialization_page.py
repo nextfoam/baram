@@ -4,7 +4,7 @@
 import qasync
 from enum import Enum, auto
 
-from PySide6.QtWidgets import QWidget, QFileDialog, QMessageBox
+from PySide6.QtWidgets import QFileDialog, QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
@@ -13,6 +13,7 @@ from coredb.project import Project, SolverStatus
 from coredb.models_db import ModelsDB, TurbulenceModel
 from openfoam.file_system import FileSystem
 from view.widgets.progress_dialog import ProgressDialog
+from view.widgets.content_page import ContentPage
 from .initialization_page_ui import Ui_InitializationPage
 from .option_dialog import OptionDialog
 
@@ -24,7 +25,7 @@ class OptionType(Enum):
     POTENTIAL_FLOW = auto()
 
 
-class InitializationPage(QWidget):
+class InitializationPage(ContentPage):
     INITIALIZATION_XPATH = './/initialization'
 
     def __init__(self):
