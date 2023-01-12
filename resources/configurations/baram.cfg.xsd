@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="2">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="3">
 
     <!-- type definitions -->
     <xs:simpleType name="inputNumberType">
@@ -361,6 +361,20 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="volumeFractionType">
+        <xs:sequence>
+            <xs:element name="material" type="xs:positiveInteger"/> <!-- material mid -->
+            <xs:element name="fraction" default="0">
+                <xs:simpleType>
+                    <xs:restriction base="inputNumberType">
+                        <xs:minInclusive value="0"/>
+                        <xs:maxInclusive value="1"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:element name="cellZone">
         <xs:complexType>
             <xs:sequence>
@@ -417,6 +431,49 @@
                                     </xs:sequence>
                                     <xs:attribute name="disabled" type="xs:boolean"
                                                   use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="materials">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="materialSource" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="material" type="xs:positiveInteger"/> <!-- material mid -->
+                                                    <xs:element name="unit"
+                                                                default="valueForEntireCellZone">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration
+                                                                        value="valuePerUnitVolume"/>
+                                                                <xs:enumeration
+                                                                        value="valueForEntireCellZone"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="specification" default="constant">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration
+                                                                        value="constant"/>
+                                                                <xs:enumeration
+                                                                        value="piecewiseLinear"/>
+                                                                <xs:enumeration
+                                                                        value="polynomial"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="constant"
+                                                                type="inputNumberType" default="0"/>
+                                                    <xs:element
+                                                            name="piecewiseLinear" type="temporalScalarListType"/>
+                                                    <xs:element name="polynomial" type="inputNumberListType"/>
+                                                </xs:sequence>
+                                                <xs:attribute name="disabled" type="xs:boolean"
+                                                              use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="energy">
@@ -715,6 +772,12 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="volumeFractionsBoundaryConditionType">
+        <xs:sequence>
+            <xs:element name="volumeFraction" type="volumeFractionType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="velocityInletType">
         <xs:sequence>
             <xs:element name="velocity">
@@ -959,6 +1022,46 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="wallAdhesion">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="model" default="none">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="none"/>
+                                    <xs:enumeration value="constantContactAngle"/>
+                                    <xs:enumeration value="dynamicContactAngle"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="contactAngle" default="90">
+                            <xs:simpleType>
+                                <xs:restriction base="inputNumberType">
+                                    <xs:minInclusive value="0"/>
+                                    <xs:maxInclusive value="180"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="advancingContactAngle" default="90">
+                            <xs:simpleType>
+                                <xs:restriction base="inputNumberType">
+                                    <xs:minInclusive value="0"/>
+                                    <xs:maxInclusive value="180"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="recedingContactAngle" default="90">
+                            <xs:simpleType>
+                                <xs:restriction base="inputNumberType">
+                                    <xs:minInclusive value="0"/>
+                                    <xs:maxInclusive value="180"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="characteristicVelocityScale" type="inputNumberType" default="0.001"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -1084,6 +1187,7 @@
                 <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
                 <xs:element name="temperature" type="temperatureBoundaryConditionType"/>
                 <xs:element name="coupledBoundary" type="xs:nonNegativeInteger" default="0"/>
+                <xs:element name="volumeFractions" type="volumeFractionsBoundaryConditionType"/>
             </xs:sequence>
             <xs:attribute name="bcid" type="xs:positiveInteger" use="required"/>
         </xs:complexType>
@@ -1159,6 +1263,8 @@
                         <xs:element name="energyFinal" type="inputNumberType" default="1"/>
                         <xs:element name="turbulence" type="inputNumberType" default="0.7"/>
                         <xs:element name="turbulenceFinal" type="inputNumberType" default="1"/>
+                        <xs:element name="volumeFraction" type="inputNumberType" default="0.7"/>
+                        <xs:element name="volumeFractionFinal" type="inputNumberType" default="1"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1179,6 +1285,17 @@
             </xs:element>
             <xs:element name="maxIterationsPerTimeStep" type="xs:positiveInteger" default="20"/>
             <xs:element name="numberOfCorrectors" type="xs:positiveInteger" default="4"/>
+            <xs:element name="multiphase">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="maxIterationsPerTimeStep" type="xs:positiveInteger" default="2"/>
+                        <xs:element name="numberOfCorrectors" type="xs:positiveInteger" default="1"/>
+                        <xs:element name="useSemiImplicitMules" type="xs:boolean" default="true"/>
+                        <xs:element name="phaseInterfaceCompressionFactor" type="inputNumberType" default="1"/>
+                        <xs:element name="numberOfMulesIterations" type="xs:positiveInteger" default="3"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="convergenceCriteria">
                 <xs:complexType>
                     <xs:sequence>
@@ -1186,7 +1303,7 @@
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="absolute" type="inputNumberType" default="0.001"/>
-                                    <xs:element name="relative" type="inputNumberType" default="0.5"/>
+                                    <xs:element name="relative" type="inputNumberType" default="0.05"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
@@ -1194,7 +1311,7 @@
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="absolute" type="inputNumberType" default="0.001"/>
-                                    <xs:element name="relative" type="inputNumberType" default="0.5"/>
+                                    <xs:element name="relative" type="inputNumberType" default="0.05"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
@@ -1202,7 +1319,7 @@
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="absolute" type="inputNumberType" default="0.001"/>
-                                    <xs:element name="relative" type="inputNumberType" default="0.5"/>
+                                    <xs:element name="relative" type="inputNumberType" default="0.05"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
@@ -1210,7 +1327,15 @@
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="absolute" type="inputNumberType" default="0.001"/>
-                                    <xs:element name="relative" type="inputNumberType" default="0.5"/>
+                                    <xs:element name="relative" type="inputNumberType" default="0.05"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="volumeFraction">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="absolute" type="inputNumberType" default="0.001"/>
+                                    <xs:element name="relative" type="inputNumberType" default="0.05"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
@@ -1370,6 +1495,32 @@
                                     <xs:sequence>
                                         <xs:element name="name" type="xs:string"/>
                                         <xs:element name="material" type="xs:positiveInteger"/> <!-- material mid -->
+                                        <xs:element name="secondaryMaterials">
+                                            <xs:simpleType>
+                                                <xs:list itemType="xs:positiveInteger"/>  <!-- secondary material mid -->
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="phaseInteractions">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="surfaceTensions">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="surfaceTension" minOccurs="0" maxOccurs="unbounded">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="material1" type="xs:positiveInteger"/> <!-- material mid -->
+                                                                            <xs:element name="material2" type="xs:positiveInteger"/> <!-- material mid -->
+                                                                            <xs:element name="surfaceTension" type="inputNumberType" default="0"/>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
                                         <xs:element name="cellZones">
                                             <xs:complexType>
                                                 <xs:sequence>
@@ -1452,6 +1603,7 @@
                                             </xs:simpleType>
                                         </xs:element>
                                         <xs:element name="turbulentViscosity" type="inputNumberType" default="10"/>
+                                        <xs:element name="volumeFraction" type="volumeFractionType" minOccurs="0" maxOccurs="unbounded"/>
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>

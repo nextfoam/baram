@@ -613,6 +613,9 @@ class _CoreDB(object):
 
         # use the first material for default material for the region
         etree.SubElement(region, f'{{{ns}}}material').text = str(materials[0][0])
+        etree.SubElement(region, f'{{{ns}}}secondaryMaterials')
+        phaseInteraction = etree.SubElement(region, f'{{{ns}}}phaseInteractions')
+        etree.SubElement(phaseInteraction, f'{{{ns}}}surfaceTensions')
 
         cellZones = etree.SubElement(region, f'{{{ns}}}cellZones')
         etree.SubElement(region, f'{{{ns}}}boundaryConditions')

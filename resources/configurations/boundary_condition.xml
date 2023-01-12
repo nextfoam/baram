@@ -135,6 +135,13 @@
             <wallEmissivity>1</wallEmissivity>
             <radiativeFluxRelaxation>1</radiativeFluxRelaxation>
         </radiation>
+        <wallAdhesion>
+            <model>none</model>
+            <contactAngle>90</contactAngle>
+            <advancingContactAngle>90</advancingContactAngle>
+            <recedingContactAngle>90</recedingContactAngle>
+            <characteristicVelocityScale>0.001</characteristicVelocityScale>
+        </wallAdhesion>
     </wall>
     <interface>
         <mode>internalInterface</mode>
@@ -198,4 +205,5 @@
         </temporalDistribution>
     </temperature>
     <coupledBoundary>0</coupledBoundary>
+    <volumeFractions></volumeFractions>
 </boundaryCondition>
