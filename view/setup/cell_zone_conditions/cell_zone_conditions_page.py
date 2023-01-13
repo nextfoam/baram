@@ -86,10 +86,11 @@ class CellZoneConditionsPage(ContentPage):
                     combo.setCurrentText(name)
 
     def _edit(self):
-        czid = self._ui.cellZones.currentItem().type()
-        if czid:
+        item = self._ui.cellZones.currentItem()
+        if czid := item.type():
             self._dialog = CellZoneConditionDialog(self, czid)
             self._dialog.open()
+            self._dialog.accepted.connect(self._ui.cellZones.itemWidget(item, 0).updateType)
 
     def _addCellZones(self, parent, rname):
         cellZones = self._db.getCellZones(rname)

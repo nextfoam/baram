@@ -132,12 +132,9 @@ class BoundaryConditionsPage(ContentPage):
             item = QTreeWidgetItem(parent, bcid)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(0, Qt.Checked)
-
-            boundaryWidget = BoundaryWidget(rname, bcid, bcname, bctype, item)
-            boundaryWidget.rightClicked.connect(self._showTypePicker)
-            self._boundaries[bcid] = boundaryWidget
-
-            self._ui.boundaries.setItemWidget(item, 1, boundaryWidget)
+            self._boundaries[bcid] = BoundaryWidget(rname, bcid, bcname, bctype, item)
+            self._boundaries[bcid].rightClicked.connect(self._showTypePicker)
+            self._ui.boundaries.setItemWidget(item, 1, self._boundaries[bcid])
 
     def _updateEditEnabled(self):
         bcid = self._ui.boundaries.currentItem().type()

@@ -162,7 +162,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>actuator Disk</string>
+                   <string>Actuator Disk</string>
                   </property>
                   <attribute name="buttonGroup">
                    <string notr="true">zoneTypeRadioGroup</string>

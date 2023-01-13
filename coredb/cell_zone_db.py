@@ -8,16 +8,16 @@ from view.widgets.multi_selector_dialog import SelectorItem
 
 
 class ZoneType(Enum):
-    NONE = "none"
-    MRF = "mrf"
-    POROUS = "porous"
-    SLIDING_MESH = "slidingMesh"
-    ACTUATOR_DISK = "actuatorDisk"
+    NONE = 'none'
+    MRF = 'mrf'
+    POROUS = 'porous'
+    SLIDING_MESH = 'slidingMesh'
+    ACTUATOR_DISK = 'actuatorDisk'
 
 
 class PorousZoneModel(Enum):
-    DARCY_FORCHHEIMER = "darcyForchheimer"
-    POWER_LAW = "powerLaw"
+    DARCY_FORCHHEIMER = 'darcyForchheimer'
+    POWER_LAW = 'powerLaw'
 
 
 class SpecificationMethod(Enum):
@@ -54,6 +54,10 @@ class CellZoneDB:
         rname = cls.getCellZoneRegion(czid)
         r = '' if rname == '' else rname + ':'
         return f'{r}{cls.getCellZoneName(czid)}' if czid else ''
+
+    @classmethod
+    def getCellZoneType(cls, czid):
+        return coredb.CoreDB().getValue(cls.getXPath(czid) + '/zoneType')
 
     @classmethod
     def getCellZoneSelectorItems(cls):
