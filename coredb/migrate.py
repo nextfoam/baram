@@ -71,9 +71,90 @@ def _version_1(root: etree.Element):
     # print(etree.tostring(root, xml_declaration=True, encoding='UTF-8'))
 
 
+def _version_2(root: etree.Element):
+    logger.debug('  Upgrading to v3')
+
+    # print(etree.tostring(root, xml_declaration=True, encoding='UTF-8'))
+
+    # Keep this commented until official v3 spec. is released
+    # root.set('version', '3')
+
+    for p in root.findall(f'.//regions/region', namespaces=_nsmap):
+        if p.find('secondaryMaterials', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "secondaryMaterials" to {p}')
+            e = etree.Element(f'{{{_ns}}}secondaryMaterials')
+            p.insert(2, e)
+        if p.find('phaseInteractions', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "phaseInteractions" to {p}')
+            e = etree.fromstring('''
+                <phaseInteractions xmlns="http://www.baramcfd.org/baram">
+                    <surfaceTensions></surfaceTensions>
+                </phaseInteractions>
+            ''')
+            p.insert(3, e)
+
+    for p in root.findall(f'.//cellZone/sourceTerms', namespaces=_nsmap):
+        if p.find('materials', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "materials" to {p}')
+            e = etree.Element(f'{{{_ns}}}materials')
+            p.insert(1, e)
+
+    for p in root.findall(f'.//boundaryConditions/boundaryCondition', namespaces=_nsmap):
+        if p.find('volumeFractions', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "volumeFractions" to {p}')
+            etree.SubElement(p, f'{{{_ns}}}volumeFractions')
+
+    for p in root.findall(f'.//boundaryCondition/wall', namespaces=_nsmap):
+        if p.find('wallAdhesion', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "wallAdhesion" to {p}')
+            e = etree.fromstring('''
+                <wallAdhesion xmlns="http://www.baramcfd.org/baram">
+                    <model>none</model>
+                    <contactAngle>90</contactAngle>
+                    <advancingContactAngle>90</advancingContactAngle>
+                    <recedingContactAngle>90</recedingContactAngle>
+                    <characteristicVelocityScale>0.001</characteristicVelocityScale>
+                </wallAdhesion>
+            ''')
+            p.append(e)
+
+    for p in root.findall(f'.//numericalConditions/underRelaxationFactors', namespaces=_nsmap):
+        if p.find('volumeFraction', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "volumeFraction" to {p}')
+            etree.SubElement(p, f'{{{_ns}}}volumeFraction').text = '0.7'
+            etree.SubElement(p, f'{{{_ns}}}volumeFractionFinal').text = '1'
+
+    for p in root.findall(f'.//numericalConditions', namespaces=_nsmap):
+        if p.find('multiphase', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "multiphase" to {p}')
+            e = etree.fromstring('''
+                <multiphase xmlns="http://www.baramcfd.org/baram">
+                    <maxIterationsPerTimeStep>2</maxIterationsPerTimeStep>
+                    <numberOfCorrectors>1</numberOfCorrectors>
+                    <useSemiImplicitMules>true</useSemiImplicitMules>
+                    <phaseInterfaceCompressionFactor>1</phaseInterfaceCompressionFactor>
+                    <numberOfMulesIterations>3</numberOfMulesIterations>
+                </multiphase>
+            ''')
+            p.insert(7, e)
+
+    for p in root.findall(f'.//numericalConditions/convergenceCriteria', namespaces=_nsmap):
+        if p.find('volumeFraction', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "volumeFraction" to {p}')
+            e = etree.fromstring('''
+                <volumeFraction xmlns="http://www.baramcfd.org/baram">
+                    <absolute>0.001</absolute>
+                    <relative>0.05</relative>
+                </volumeFraction>
+            ''')
+            p.append(e)
+
+
+
 _fTable = [
     None,
     _version_1,
+    _version_2
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))

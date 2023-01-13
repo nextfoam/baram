@@ -85,6 +85,7 @@
             </piecewiseLinear>
             <polynomial>0</polynomial>
         </mass>
+        <materials></materials>
         <energy disabled="true">
             <unit>valueForEntireCellZone</unit>
             <specification>constant</specification>

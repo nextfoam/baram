@@ -92,12 +92,21 @@
             <energyFinal>1</energyFinal>
             <turbulence>0.7</turbulence>
             <turbulenceFinal>1</turbulenceFinal>
+            <volumeFraction>0.7</volumeFraction>
+            <volumeFractionFinal>1</volumeFractionFinal>
         </underRelaxationFactors>
         <highOrderTermRelaxation disabled="true">
             <relaxationFactor>0.5</relaxationFactor>
         </highOrderTermRelaxation>
         <maxIterationsPerTimeStep>20</maxIterationsPerTimeStep>
         <numberOfCorrectors>4</numberOfCorrectors>
+        <multiphase>
+            <maxIterationsPerTimeStep>2</maxIterationsPerTimeStep>
+            <numberOfCorrectors>1</numberOfCorrectors>
+            <useSemiImplicitMules>true</useSemiImplicitMules>
+            <phaseInterfaceCompressionFactor>1</phaseInterfaceCompressionFactor>
+            <numberOfMulesIterations>3</numberOfMulesIterations>
+        </multiphase>
         <convergenceCriteria>
             <pressure>
                 <absolute>0.001</absolute>
@@ -115,6 +124,10 @@
                 <absolute>0.001</absolute>
                 <relative>0.05</relative>
             </turbulence>
+            <volumeFraction>
+                <absolute>0.001</absolute>
+                <relative>0.05</relative>
+            </volumeFraction>
         </convergenceCriteria>
         <advanced>
             <limits>
