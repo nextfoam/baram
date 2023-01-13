@@ -17,6 +17,7 @@ from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkFiltersSources import vtkLineSource
 from vtkmodules.vtkRenderingAnnotation import vtkCubeAxesActor
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer, vtkCamera, vtkPropPicker
+from vtkmodules.vtkRenderingCore import vtkCoordinate
 from vtkmodules.vtkCommonColor import vtkNamedColors
 # load implementations for rendering and interaction factory classes
 import vtkmodules.vtkRenderingOpenGL2
@@ -54,6 +55,7 @@ class MouseInteractorHighLightActor(vtkInteractorStyleTrackballCamera):
     def __init__(self, parent=None):
         self.AddObserver('LeftButtonPressEvent', self.leftButtonPressEvent)
         self.AddObserver('LeftButtonReleaseEvent', self.leftButtonReleaseEvent)
+        # self.AddObserver('MouseWheelForwardEvent', self.mouseWheelForwardEvent)
 
         self._parent = parent
         self._pressPos = None
@@ -72,6 +74,10 @@ class MouseInteractorHighLightActor(vtkInteractorStyleTrackballCamera):
             self._parent.actorPicked.emit(picker.GetActor())
 
         self.OnLeftButtonUp()
+
+    def mouseWheelForwardEvent(self, obj, event):
+        self.OnMouseWheelForward()
+        self._parent.resizeOriginActor()
 
 
 class RenderWindowInteractor(QVTKRenderWindowInteractor):
@@ -184,6 +190,14 @@ class MeshDock(TabifiedDock):
     def displayMode(self):
         return self._displayModeCombo.currentIndex()
 
+    def resizeOriginActor(self):
+        coordinate = vtkCoordinate()
+        coordinate.SetCoordinateSystemToWorld()
+        coordinate.SetViewport(self._renderer)
+        coordinate.SetValue(10, 10, 10)
+        coordinate.SetCoordinateSystemToDisplay()
+        print(coordinate.GetValue())
+
     def _translate(self):
         self.setWindowTitle(self.tr("Mesh"))
         self._actionRunParaview.setText(self.tr('Run ParaView'))
@@ -243,16 +257,16 @@ class MeshDock(TabifiedDock):
         self._originActor = vtk.vtkAxesActor()
         self._originActor.SetVisibility(True)
 
-        self._originActor.SetConeRadius(0.2)
+        self._originActor.SetConeRadius(0)
         self._originActor.SetShaftTypeToLine()
         self._originActor.SetTotalLength(size, size, size)
 
         self._originActor.SetNormalizedLabelPosition(1.0, 1.0, 1.0)
 
-        self._originAxes = vtk.vtkOrientationMarkerWidget()
-        self._originAxes.SetViewport(0.0, 0.0, 0.2, 0.2)
-        self._originAxes.SetOrientationMarker(self._originActor)
-        self._originAxes.SetInteractor(self._widget)
+        # self._originAxes = vtk.vtkOrientationMarkerWidget()
+        # self._originAxes.SetViewport(0.0, 0.0, 0.2, 0.2)
+        # self._originAxes.SetOrientationMarker(self._originActor)
+        # self._originAxes.SetInteractor(self._widget)
 
     def _addCubeAxes(self, bounds):
         axisXColor = colors.GetColor3d("Salmon")
@@ -529,8 +543,9 @@ class MeshDock(TabifiedDock):
             self._axes.EnabledOff()
 
     def _showOriginAxes(self):
-        if self._originActor is not None:
-            self._renderer.RemoveActor(self._originActor)
+        if self._originActor:
+            return
+            # self._renderer.RemoveActor(self._originActor)
 
         if self._model:
             bounds = self._model.fullBounds()
@@ -581,9 +596,9 @@ class MeshDock(TabifiedDock):
 
     def _fitCamera(self):
         if self._originAxesOn:
-            self._hideOriginAxes()
+            # self._hideOriginAxes()
             self._renderer.ResetCamera()
-            self._showOriginAxes()
+            # self._showOriginAxes()
         else:
             self._renderer.ResetCamera()
 
