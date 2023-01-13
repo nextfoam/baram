@@ -53,18 +53,20 @@ class DisplayMode(Enum):
 
 class MouseInteractorHighLightActor(vtkInteractorStyleTrackballCamera):
     def __init__(self, parent=None):
-        self.AddObserver('LeftButtonPressEvent', self.leftButtonPressEvent)
-        self.AddObserver('LeftButtonReleaseEvent', self.leftButtonReleaseEvent)
-        # self.AddObserver('MouseWheelForwardEvent', self.mouseWheelForwardEvent)
+        self.AddObserver('LeftButtonPressEvent', self._leftButtonPressEvent)
+        self.AddObserver('LeftButtonReleaseEvent', self._leftButtonReleaseEvent)
+        self.AddObserver('MouseWheelForwardEvent', self._mouseWheelForwardEvent)
+        self.AddObserver('MouseWheelBackwardEvent', self._mouseWheelBackwardEvent)
+        self.AddObserver('InteractionEvent', self._interactionEvent)
 
         self._parent = parent
         self._pressPos = None
 
-    def leftButtonPressEvent(self, obj, event):
+    def _leftButtonPressEvent(self, obj, event):
         self._pressPos = self.GetInteractor().GetEventPosition()
         self.OnLeftButtonDown()
 
-    def leftButtonReleaseEvent(self, obj, event):
+    def _leftButtonReleaseEvent(self, obj, event):
         clickPos = self.GetInteractor().GetEventPosition()
 
         if clickPos == self._pressPos:
@@ -75,9 +77,31 @@ class MouseInteractorHighLightActor(vtkInteractorStyleTrackballCamera):
 
         self.OnLeftButtonUp()
 
-    def mouseWheelForwardEvent(self, obj, event):
-        self.OnMouseWheelForward()
-        self._parent.resizeOriginActor()
+    def _mouseWheelForwardEvent(self, obj, event):
+        super().OnMouseWheelForward()
+        self._resizeOriginActor()
+
+    def _mouseWheelBackwardEvent(self, obj, event):
+        super().OnMouseWheelBackward()
+        self._resizeOriginActor()
+
+    def _interactionEvent(self, obj, event):
+        self._resizeOriginActor()
+
+    def _resizeOriginActor(self):
+        p0 = [0, 0, 0]
+        p1 = [0, 0, 0, 0]
+        p2 = [0, 0, 0, 0]
+
+        x, y = self._parent._renderer.GetSize()
+
+        self.ComputeWorldToDisplay(self._parent._renderer, 0, 0, 0, p0)
+        self.ComputeDisplayToWorld(self._parent._renderer, 0, 0, p0[2], p1)
+        self.ComputeDisplayToWorld(self._parent._renderer, x, y, p0[2], p2)
+
+        length = abs(p1[0] - p2[0]) if x < y else abs(p1[1] - p2[1])
+
+        self._parent.resizeOriginActor(length * 0.5)
 
 
 class RenderWindowInteractor(QVTKRenderWindowInteractor):
@@ -190,13 +214,15 @@ class MeshDock(TabifiedDock):
     def displayMode(self):
         return self._displayModeCombo.currentIndex()
 
-    def resizeOriginActor(self):
-        coordinate = vtkCoordinate()
-        coordinate.SetCoordinateSystemToWorld()
-        coordinate.SetViewport(self._renderer)
-        coordinate.SetValue(10, 10, 10)
-        coordinate.SetCoordinateSystemToDisplay()
-        print(coordinate.GetValue())
+    def resizeOriginActor(self, length):
+        self._originActor.SetTotalLength(length, length, length)
+        self._renderer.Render()
+        # coordinate = vtkCoordinate()
+        # coordinate.SetCoordinateSystemToWorld()
+        # coordinate.SetViewport(self._renderer)
+        # coordinate.SetValue(10, 10, 10)
+        # coordinate.SetCoordinateSystemToDisplay()
+        # print(coordinate.GetValue())
 
     def _translate(self):
         self.setWindowTitle(self.tr("Mesh"))
