@@ -79,29 +79,29 @@ class MouseInteractorHighLightActor(vtkInteractorStyleTrackballCamera):
 
     def _mouseWheelForwardEvent(self, obj, event):
         super().OnMouseWheelForward()
-        self._resizeOriginActor()
+        self._parent.resizeOriginActor()
 
     def _mouseWheelBackwardEvent(self, obj, event):
         super().OnMouseWheelBackward()
-        self._resizeOriginActor()
+        self._parent.resizeOriginActor()
 
     def _interactionEvent(self, obj, event):
-        self._resizeOriginActor()
+        self._parent.resizeOriginActor()
 
-    def _resizeOriginActor(self):
+    def getOriginActorLength(self):
         p0 = [0, 0, 0]
         p1 = [0, 0, 0, 0]
         p2 = [0, 0, 0, 0]
 
-        x, y = self._parent._renderer.GetSize()
+        x, y = self.GetDefaultRenderer().GetSize()
 
-        self.ComputeWorldToDisplay(self._parent._renderer, 0, 0, 0, p0)
-        self.ComputeDisplayToWorld(self._parent._renderer, 0, 0, p0[2], p1)
-        self.ComputeDisplayToWorld(self._parent._renderer, x, y, p0[2], p2)
+        self.ComputeWorldToDisplay(self.GetDefaultRenderer(), 0, 0, 0, p0)
+        self.ComputeDisplayToWorld(self.GetDefaultRenderer(), 0, 0, p0[2], p1)
+        self.ComputeDisplayToWorld(self.GetDefaultRenderer(), x, y, p0[2], p2)
 
         length = abs(p1[0] - p2[0]) if x < y else abs(p1[1] - p2[1])
 
-        self._parent.resizeOriginActor(length * 0.5)
+        return length * 0.4
 
 
 class RenderWindowInteractor(QVTKRenderWindowInteractor):
@@ -144,13 +144,13 @@ class MeshDock(TabifiedDock):
 
         frame = QFrame()
 
-        style = MouseInteractorHighLightActor(self)
+        self._style = MouseInteractorHighLightActor(self)
         self._widget = RenderWindowInteractor(frame)
-        self._widget.SetInteractorStyle(style)
+        self._widget.SetInteractorStyle(self._style)
 
         self._renderer = vtkRenderer()
         self._widget.GetRenderWindow().AddRenderer(self._renderer)
-        style.SetDefaultRenderer(self._renderer)
+        self._style.SetDefaultRenderer(self._renderer)
         self.actorPicked.connect(self._actorPicked)
 
         self._widget.Initialize()
@@ -214,15 +214,11 @@ class MeshDock(TabifiedDock):
     def displayMode(self):
         return self._displayModeCombo.currentIndex()
 
-    def resizeOriginActor(self, length):
-        self._originActor.SetTotalLength(length, length, length)
-        self._renderer.Render()
-        # coordinate = vtkCoordinate()
-        # coordinate.SetCoordinateSystemToWorld()
-        # coordinate.SetViewport(self._renderer)
-        # coordinate.SetValue(10, 10, 10)
-        # coordinate.SetCoordinateSystemToDisplay()
-        # print(coordinate.GetValue())
+    def resizeOriginActor(self):
+        if self._originActor:
+            length = self._style.getOriginActorLength()
+            self._originActor.SetTotalLength(length, length, length)
+            self._widget.Render()
 
     def _translate(self):
         self.setWindowTitle(self.tr("Mesh"))
@@ -283,11 +279,13 @@ class MeshDock(TabifiedDock):
         self._originActor = vtk.vtkAxesActor()
         self._originActor.SetVisibility(True)
 
-        self._originActor.SetConeRadius(0)
+        self._originActor.SetConeRadius(0.1)
         self._originActor.SetShaftTypeToLine()
-        self._originActor.SetTotalLength(size, size, size)
-
+        self._originActor.SetNormalizedShaftLength(0.9, 0.9, 0.9)
+        self._originActor.SetNormalizedTipLength(0.1, 0.1, 0.1)
         self._originActor.SetNormalizedLabelPosition(1.0, 1.0, 1.0)
+        # xLabel = self._originActor.GetCaptionTextProperty().SetFontSize(1)
+        self.resizeOriginActor()
 
         # self._originAxes = vtk.vtkOrientationMarkerWidget()
         # self._originAxes.SetViewport(0.0, 0.0, 0.2, 0.2)
