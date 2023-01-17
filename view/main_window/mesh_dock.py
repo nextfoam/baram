@@ -79,14 +79,14 @@ class MouseInteractorHighLightActor(vtkInteractorStyleTrackballCamera):
 
     def _mouseWheelForwardEvent(self, obj, event):
         super().OnMouseWheelForward()
-        self._parent.resizeOriginActor()
+        self._parent.render()
 
     def _mouseWheelBackwardEvent(self, obj, event):
         super().OnMouseWheelBackward()
-        self._parent.resizeOriginActor()
+        self._parent.render()
 
     def _interactionEvent(self, obj, event):
-        self._parent.resizeOriginActor()
+        self._parent.render()
 
     def getOriginActorLength(self):
         p0 = [0, 0, 0]
@@ -180,7 +180,7 @@ class MeshDock(TabifiedDock):
         if self._model:
             self._model.activate()
 
-        self.render()
+        self.reload()
 
     def closeEvent(self, event):
         if app.closed():
@@ -198,10 +198,13 @@ class MeshDock(TabifiedDock):
     def removeActor(self, actor):
         self._renderer.RemoveActor(actor)
 
-    def update(self):
+    def render(self):
+        if self._originActor:
+            length = self._style.getOriginActorLength()
+            self._originActor.SetTotalLength(length, length, length)
         self._widget.Render()
 
-    def render(self):
+    def reload(self):
         if self._cubeAxesActor:
             self._showCubeAxes()
 
@@ -209,16 +212,10 @@ class MeshDock(TabifiedDock):
             self._showOriginAxes()
 
         self._fitCamera()
-        self._widget.Render()
+        self.render()
 
     def displayMode(self):
         return self._displayModeCombo.currentIndex()
-
-    def resizeOriginActor(self):
-        if self._originActor:
-            length = self._style.getOriginActorLength()
-            self._originActor.SetTotalLength(length, length, length)
-            self._widget.Render()
 
     def _translate(self):
         self.setWindowTitle(self.tr("Mesh"))
@@ -279,13 +276,13 @@ class MeshDock(TabifiedDock):
         self._originActor = vtk.vtkAxesActor()
         self._originActor.SetVisibility(True)
 
-        self._originActor.SetConeRadius(0.1)
+        self._originActor.SetConeRadius(0.2)
         self._originActor.SetShaftTypeToLine()
         self._originActor.SetNormalizedShaftLength(0.9, 0.9, 0.9)
         self._originActor.SetNormalizedTipLength(0.1, 0.1, 0.1)
         self._originActor.SetNormalizedLabelPosition(1.0, 1.0, 1.0)
         # xLabel = self._originActor.GetCaptionTextProperty().SetFontSize(1)
-        self.resizeOriginActor()
+        self.render()
 
         # self._originAxes = vtk.vtkOrientationMarkerWidget()
         # self._originAxes.SetViewport(0.0, 0.0, 0.2, 0.2)
@@ -511,7 +508,7 @@ class MeshDock(TabifiedDock):
             else:
                 self._showCulling()
 
-        self._widget.Render()
+        self.render()
 
     def _runParaview(self):
         casePath = ''

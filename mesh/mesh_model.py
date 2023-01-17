@@ -133,14 +133,14 @@ class MeshModel(QObject):
             self._applyDisplayMode(actor)
 
         self._actorInfos[id_].visibility = True
-        self._view.update()
+        self._view.render()
 
     def hideActor(self, id_):
         if self._actorInfos[id_].visibility:
             self._view.removeActor(self._actorInfos[id_].actor(self._featureMode))
 
         self._actorInfos[id_].visibility = False
-        self._view.update()
+        self._view.render()
 
     def actorPicked(self, actor):
         self.setCurrentId(self._findActorInfo(actor))
@@ -206,7 +206,7 @@ class MeshModel(QObject):
             _applyHighlight(self._actorInfos[id_].actor(self._featureMode))
 
         if actor != currentActor:
-            self._view.update()
+            self._view.render()
 
     def _applyDisplayMode(self, actor):
         if actor == self.currentActor():
