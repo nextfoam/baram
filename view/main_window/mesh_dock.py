@@ -8,6 +8,7 @@ import subprocess
 from typing import TYPE_CHECKING
 from typing import Optional
 from enum import Enum, auto
+import math
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QComboBox, QFrame, QToolBar, QVBoxLayout, QWidgetAction, QFileDialog
@@ -89,19 +90,13 @@ class MouseInteractorHighLightActor(vtkInteractorStyleTrackballCamera):
         self._parent.render()
 
     def getOriginActorLength(self):
-        p0 = [0, 0, 0]
-        p1 = [0, 0, 0, 0]
-        p2 = [0, 0, 0, 0]
+        d = self._parent.camera.GetDirectionOfProjection()
+        p = self._parent.camera.GetPosition()
+        distance = -p[0]*d[0]-p[1]*d[1]-p[2]*d[2]
 
-        x, y = self.GetDefaultRenderer().GetSize()
-
-        self.ComputeWorldToDisplay(self.GetDefaultRenderer(), 0, 0, 0, p0)
-        self.ComputeDisplayToWorld(self.GetDefaultRenderer(), 0, 0, p0[2], p1)
-        self.ComputeDisplayToWorld(self.GetDefaultRenderer(), x, y, p0[2], p2)
-
-        length = abs(p1[0] - p2[0]) if x < y else abs(p1[1] - p2[1])
-
-        return length * 0.4
+        degree = self._parent.camera.GetViewAngle()
+        radian = math.radians(degree/3.0)
+        return distance * math.tan(radian)
 
 
 class RenderWindowInteractor(QVTKRenderWindowInteractor):
@@ -276,6 +271,7 @@ class MeshDock(TabifiedDock):
         self._originActor = vtk.vtkAxesActor()
         self._originActor.SetVisibility(True)
 
+        self._originActor.AxisLabelsOff()
         self._originActor.SetConeRadius(0.2)
         self._originActor.SetShaftTypeToLine()
         self._originActor.SetNormalizedShaftLength(0.9, 0.9, 0.9)
