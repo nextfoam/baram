@@ -157,6 +157,9 @@
             <turbulentIntensity>1</turbulentIntensity>
             <turbulentViscosity>10</turbulentViscosity>
         </initialValues>
+        <advanced>
+            <sections></sections>
+        </advanced>
     </initialization>
 
     <runCalculation>
