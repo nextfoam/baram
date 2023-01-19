@@ -9,4 +9,4 @@ class ContentPage(QWidget):
         super().__init__()
 
     def save(self):
-        return
+        return True

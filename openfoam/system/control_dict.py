@@ -374,7 +374,7 @@ class ControlDict(DictionaryFile):
 
         volume = self._db.getValue(xpath + '/volume')
         name = CellZoneDB.getCellZoneName(volume)
-        if name == CellZoneDB.NAME_FOR_ALL:
+        if name == CellZoneDB.NAME_FOR_REGION:
             data['regionType'] = 'all'
         else:
             data['regionType'] = 'cellZone'

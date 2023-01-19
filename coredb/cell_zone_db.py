@@ -33,7 +33,7 @@ class TemporalProfileType(Enum):
 
 class CellZoneDB:
     CELL_ZONE_CONDITIONS_XPATH = './/cellZones'
-    NAME_FOR_ALL = 'All'
+    NAME_FOR_REGION = 'All'
 
     _cellzones = None
 
@@ -58,6 +58,10 @@ class CellZoneDB:
     @classmethod
     def getCellZoneType(cls, czid):
         return coredb.CoreDB().getValue(cls.getXPath(czid) + '/zoneType')
+
+    @classmethod
+    def isRegion(cls, czname):
+        return czname == cls.NAME_FOR_REGION
 
     @classmethod
     def getCellZoneSelectorItems(cls):

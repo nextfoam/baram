@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import math
-
 from coredb import coredb
 from coredb.material_db import MaterialDB, Phase
 from coredb.initialization_db import InitializationDB
 from coredb.models_db import ModelsDB
+
+
+DEFAULT_REGION_NAME = 'region0'
 
 
 class RegionDB:

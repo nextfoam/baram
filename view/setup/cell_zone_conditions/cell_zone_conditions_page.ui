@@ -48,6 +48,9 @@
      <property name="animated">
       <bool>true</bool>
      </property>
+     <property name="expandsOnDoubleClick">
+      <bool>false</bool>
+     </property>
      <property name="columnCount">
       <number>3</number>
      </property>
@@ -90,7 +93,7 @@
       <item>
        <widget class="QPushButton" name="edit">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="text">
          <string>Edit</string>

@@ -8,6 +8,7 @@ from coredb.coredb_writer import CoreDBWriter
 from coredb.models_db import TurbulenceModelHelper, ModelsDB
 from coredb.cell_zone_db import CellZoneDB, ZoneType
 from coredb.general_db import GeneralDB
+from coredb.region_db import DEFAULT_REGION_NAME
 from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
 from .MRF_widget import MRFWidget
 from .porous_zone_widget import PorousZoneWidget
@@ -16,10 +17,11 @@ from .actuator_disk_widget import ActuatorDiskWidget
 from .variable_source_widget import VariableSourceWidget
 from .constant_source_widget import ConstantSourceWidget
 from .fixed_value_widget import FixedValueWidget
+from .materials_widget import MaterialsWidget
 
 
 class CellZoneConditionDialog(QDialog):
-    def __init__(self, parent, czid):
+    def __init__(self, parent, czid, rname=None):
         super().__init__(parent)
         self._ui = Ui_CellZoneConditionDialog()
         self._ui.setupUi(self)
@@ -33,23 +35,33 @@ class CellZoneConditionDialog(QDialog):
         }
 
         self._czid = czid
+        self._rname = rname
         self._db = coredb.CoreDB()
         self._xpath = CellZoneDB.getXPath(self._czid)
         self._name = self._db.getValue(self._xpath + '/name')
 
+        self._materialsWidget = None
         # Zone Type Widgets
         self._MRFZone = None
         self._porousZone = None
         self._slidingMeshZone = None
         self._actuatorDiskZone = None
 
-        if self._isAll():
-            self._ui.MRF.setEnabled(False)
-            self._ui.porousZone.setEnabled(False)
-            self._ui.slidingMesh.setEnabled(False)
-            self._ui.actuatorDisk.setEnabled(False)
+        layout = self._ui.setting.layout()
+        if CellZoneDB.isRegion(self._name):
+            self.setWindowTitle(self.tr('Region Condition'))
+            self._ui.zoneType.setVisible(False)
+
+            self._ui.singleMaterial.setVisible(False)
+            self._materialsWidget = MaterialsWidget(self._rname, ModelsDB.isMultiphaseModelOn())
+            layout.addWidget(self._materialsWidget)
+
+            if self._rname:
+                self._ui.zoneName.setText(self._rname)
+            else:
+                self._ui.zoneName.setText(DEFAULT_REGION_NAME)
         else:
-            layout = self._ui.zoneType.layout()
+            self._ui.zoneName.setText(self._name)
 
             self._MRFZone = MRFWidget(self._xpath)
             layout.addWidget(self._MRFZone)
@@ -65,6 +77,9 @@ class CellZoneConditionDialog(QDialog):
 
             self._actuatorDiskZone = ActuatorDiskWidget(self._xpath)
             layout.addWidget(self._actuatorDiskZone)
+
+            self._ui.zoneTypeRadioGroup.idToggled.connect(self._zoneTypeChanged)
+        layout.addStretch()
 
         # Source Terms Widgets
         self._massSourceTerm = VariableSourceWidget(self.tr("Mass"), self._xpath + '/sourceTerms/mass')
@@ -89,26 +104,30 @@ class CellZoneConditionDialog(QDialog):
         self._setupTurbulenceWidgets()
         self._setupMaterialWidgets(["O2"])
 
-        self._ui.zoneType.layout().addStretch()
         self._ui.sourceTerms.layout().addStretch()
         self._ui.fixedValues.layout().addStretch()
 
-        self._connectSignalsSlots()
         self._load()
 
     def accept(self):
         writer = CoreDBWriter()
 
-        zoneType = self._getZoneTypeRadioValue()
-        writer.append(self._xpath + '/zoneType', zoneType, None)
-        if zoneType == ZoneType.MRF.value:
-            self._MRFZone.appendToWriter(writer)
-        elif zoneType == ZoneType.POROUS.value:
-            self._porousZone.appendToWriter(writer)
-        elif zoneType == ZoneType.SLIDING_MESH.value:
-            self._slidingMeshZone.appendToWriter(writer)
-        elif zoneType == ZoneType.ACTUATOR_DISK.value:
-            self._actuatorDiskZone.appendToWriter(writer)
+        if CellZoneDB.isRegion(self._name):
+            if self._materialsWidget:
+                self._materialsWidget.appendToWriter(writer)
+            else:
+                writer.append(self._xpath + '/material', self._ui.singleMaterial.currentData(), None)
+        else:
+            zoneType = self._getZoneTypeRadioValue()
+            writer.append(self._xpath + '/zoneType', zoneType, None)
+            if zoneType == ZoneType.MRF.value:
+                self._MRFZone.appendToWriter(writer)
+            elif zoneType == ZoneType.POROUS.value:
+                self._porousZone.appendToWriter(writer)
+            elif zoneType == ZoneType.SLIDING_MESH.value:
+                self._slidingMeshZone.appendToWriter(writer)
+            elif zoneType == ZoneType.ACTUATOR_DISK.value:
+                self._actuatorDiskZone.appendToWriter(writer)
 
         if not self._massSourceTerm.appendToWriter(writer):
             return
@@ -142,10 +161,14 @@ class CellZoneConditionDialog(QDialog):
             super().accept()
 
     def _load(self):
-        self._ui.zoneName.setText(self._name)
         self._getZoneTypeRadio(self._db.getValue(self._xpath + '/zoneType')).setChecked(True)
 
-        if not self._isAll():
+        if CellZoneDB.isRegion(self._name):
+            if self._materialsWidget:
+                self._materialsWidget.load()
+            else:
+                pass
+        else:
             self._MRFZone.load()
             self._porousZone.load()
             if self._slidingMeshZone:
@@ -187,10 +210,6 @@ class CellZoneConditionDialog(QDialog):
         #     self._materialSourceTerms[material] = VariableSourceWidget(material)
         #     layout.addWidget(self._materialSourceTerms[material])
 
-    def _connectSignalsSlots(self):
-        if not self._isAll():
-            self._ui.zoneTypeRadioGroup.idToggled.connect(self._zoneTypeChanged)
-
     def _zoneTypeChanged(self, id_, checked):
         if checked:
             self._MRFZone.setVisible(self._ui.MRF.isChecked())
@@ -205,6 +224,3 @@ class CellZoneConditionDialog(QDialog):
 
     def _getZoneTypeRadioValue(self):
         return self._zoneTypeRadios[self._ui.zoneTypeRadioGroup.id(self._ui.zoneTypeRadioGroup.checkedButton())]
-
-    def _isAll(self):
-        return self._name == CellZoneDB.NAME_FOR_ALL

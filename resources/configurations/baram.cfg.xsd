@@ -1506,15 +1506,9 @@
                                                     <xs:element name="surfaceTensions">
                                                         <xs:complexType>
                                                             <xs:sequence>
-                                                                <xs:element name="surfaceTension" minOccurs="0" maxOccurs="unbounded">
-                                                                    <xs:complexType>
-                                                                        <xs:sequence>
-                                                                            <xs:element name="material1" type="xs:positiveInteger"/> <!-- material mid -->
-                                                                            <xs:element name="material2" type="xs:positiveInteger"/> <!-- material mid -->
-                                                                            <xs:element name="surfaceTension" type="inputNumberType" default="0"/>
-                                                                        </xs:sequence>
-                                                                    </xs:complexType>
-                                                                </xs:element>
+                                                                <xs:element name="material1" type="inputNumberListType"/> <!-- material mid -->
+                                                                <xs:element name="material2" type="inputNumberListType"/> <!-- material mid -->
+                                                                <xs:element name="surfaceTension" type="inputNumberListType"/>
                                                             </xs:sequence>
                                                         </xs:complexType>
                                                     </xs:element>

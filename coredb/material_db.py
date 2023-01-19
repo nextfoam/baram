@@ -46,7 +46,7 @@ class MaterialDB(object):
 
     @classmethod
     def getName(cls, mid):
-        return cls.dbTextToPhase(coredb.CoreDB().getValue(cls.getXPath(mid) + '/name'))
+        return coredb.CoreDB().getValue(cls.getXPath(mid) + '/name')
 
     @classmethod
     def getPhase(cls, mid) -> Phase:
@@ -136,3 +136,7 @@ class MaterialDB(object):
     @classmethod
     def isMaterialExists(cls, name) -> bool:
         return coredb.CoreDB().exists(f'{cls.MATERIALS_XPATH}/material[name="{name}"]')
+
+    @classmethod
+    def isFluid(cls, mid):
+        return coredb.CoreDB().getValue(cls.getXPath(mid) + '/phase') != Phase.SOLID.value

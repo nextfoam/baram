@@ -63,7 +63,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QWidget" name="zoneType" native="true">
+           <widget class="QWidget" name="setting" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -90,7 +90,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QGroupBox" name="groupBox">
+              <widget class="QGroupBox" name="zoneType">
                <property name="title">
                 <string>Zone Type</string>
                </property>
@@ -168,6 +168,25 @@
                    <string notr="true">zoneTypeRadioGroup</string>
                   </attribute>
                  </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="singleMaterial">
+               <property name="title">
+                <string>Materail</string>
+               </property>
+               <layout class="QFormLayout" name="formLayout_2">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label">
+                  <property name="text">
+                   <string>Material</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QComboBox" name="material"/>
                 </item>
                </layout>
               </widget>

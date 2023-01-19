@@ -88,7 +88,7 @@ def _version_2(root: etree.Element):
             logger.debug(f'    Adding "phaseInteractions" to {p}')
             e = etree.fromstring('''
                 <phaseInteractions xmlns="http://www.baramcfd.org/baram">
-                    <surfaceTensions></surfaceTensions>
+                    <surfaceTensions><material1/><material2/><surfaceTension/></surfaceTensions>
                 </phaseInteractions>
             ''')
             p.insert(3, e)

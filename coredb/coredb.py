@@ -615,7 +615,10 @@ class _CoreDB(object):
         etree.SubElement(region, f'{{{ns}}}material').text = str(materials[0][0])
         etree.SubElement(region, f'{{{ns}}}secondaryMaterials')
         phaseInteraction = etree.SubElement(region, f'{{{ns}}}phaseInteractions')
-        etree.SubElement(phaseInteraction, f'{{{ns}}}surfaceTensions')
+        sufraceTensions = etree.SubElement(phaseInteraction, f'{{{ns}}}surfaceTensions')
+        etree.SubElement(sufraceTensions, f'{{{ns}}}material1')
+        etree.SubElement(sufraceTensions, f'{{{ns}}}material2')
+        etree.SubElement(sufraceTensions, f'{{{ns}}}surfaceTension')
 
         cellZones = etree.SubElement(region, f'{{{ns}}}cellZones')
         etree.SubElement(region, f'{{{ns}}}boundaryConditions')

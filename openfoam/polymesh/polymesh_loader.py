@@ -15,6 +15,7 @@ from vtkmodules.vtkRenderingCore import vtkPolyDataMapper
 from app import app
 from coredb import coredb
 from coredb.project import Project
+from coredb.cell_zone_db import CellZoneDB
 from openfoam.file_system import FileSystem, FileLoadingError
 from openfoam.constant.region_properties import RegionProperties
 from mesh.vtk_loader import ActorInfo
@@ -216,7 +217,7 @@ class PolyMeshLoader:
             return set(vtkMesh[region]['boundary'].keys())
 
         def oldCellZones(region):
-            return set(czname for _, czname in db.getCellZones(region) if czname != 'All')
+            return set(czname for _, czname in db.getCellZones(region) if czname != CellZoneDB.NAME_FOR_REGION)
 
         def newCellZones(region):
             return set(vtkMesh[region]['zones']['cellZones'].keys()) \
