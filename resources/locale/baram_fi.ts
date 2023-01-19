@@ -3201,7 +3201,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/boundary_conditions/open_channel_inlet_dialog.ui" line="44"/>
         <source>Volume Flow Rate (m3/s)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tilavuusvirtausnopeus (m3/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/open_channel_inlet_dialog.py" line="35"/>
