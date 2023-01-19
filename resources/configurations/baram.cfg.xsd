@@ -1601,7 +1601,43 @@
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
-                            <!-- ToDo: Options -->
+                            <xs:element name="advanced">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="sections">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="section" minOccurs="0">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="name" type="xs:string"/>
+                                                                <xs:element name="type">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:enumeration value="hex"/>
+                                                                            <xs:enumeration value="cylinder"/>
+                                                                            <xs:enumeration value="sphere"/>
+                                                                            <xs:enumeration value="cellZone"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="point1" type="vector"/> <!-- Used as hexMin, axisPoint1, centerPoint -->
+                                                                <xs:element name="point2" type="vector"/> <!-- Used as hexMax, axisPoint2 -->
+                                                                <xs:element name="radius" type="inputNumberType" default="0"/>
+                                                                <xs:element name="cellZone" type="xs:positiveInteger"/>   <!-- cellZone czid -->
+                                                                <xs:element name="velocity" type="vector" minOccurs="0"/>
+                                                                <xs:element name="pressure" type="inputNumberType" default="0" minOccurs="0"/>
+                                                                <xs:element name="temperature" type="inputNumberType" default="300" minOccurs="0"/>
+                                                                <xs:element name="volumeFraction" type="volumeFractionType" minOccurs="0" maxOccurs="unbounded"/>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>

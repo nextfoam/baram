@@ -297,7 +297,7 @@
         <translation type="unfinished">편집</translation>
     </message>
     <message>
-        <location filename="../../view/setup/boundary_conditions/boundary_conditions_page.py" line="179"/>
+        <location filename="../../view/setup/boundary_conditions/boundary_conditions_page.py" line="176"/>
         <source>Need to edit boundary condition</source>
         <translation type="unfinished"></translation>
     </message>
@@ -547,7 +547,7 @@
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="165"/>
-        <source>actuator Disk</source>
+        <source>Actuator Disk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -622,6 +622,31 @@
         <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../../view/setup/cell_zone_conditions/cell_zone_widget.py" line="22"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/cell_zone_conditions/cell_zone_widget.py" line="23"/>
+        <source>Multiple Refernce Frame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/cell_zone_conditions/cell_zone_widget.py" line="24"/>
+        <source>Porous Zone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/cell_zone_conditions/cell_zone_widget.py" line="25"/>
+        <source>Sliding Mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/cell_zone_conditions/cell_zone_widget.py" line="26"/>
+        <source>Actuator Disk</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>CellZonesSelector</name>
@@ -634,7 +659,7 @@
 <context>
     <name>ChartDock</name>
     <message>
-        <location filename="../../view/main_window/chart_dock.py" line="178"/>
+        <location filename="../../view/main_window/chart_dock.py" line="180"/>
         <source>Residuals</source>
         <translation>Residuals</translation>
     </message>
@@ -1872,97 +1897,122 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="162"/>
-        <source>Save Changed</source>
+        <location filename="../../view/main_window/main_window.ui" line="355"/>
+        <source>Fluent Mesh  (ASCII)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.ui" line="360"/>
+        <source>Fluent Case (ASCII)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.ui" line="376"/>
+        <source>Gmsh (ASCII)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.ui" line="381"/>
+        <source>I-deas Universal (ASCII)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.ui" line="389"/>
+        <source>PLOT3D GRID (ASCII)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../view/main_window/main_window.py" line="163"/>
+        <source>Save Changed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.py" line="164"/>
         <source>Do you want save your changes?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="222"/>
+        <location filename="../../view/main_window/main_window.py" line="223"/>
         <source>Select Project Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="238"/>
+        <location filename="../../view/main_window/main_window.py" line="239"/>
         <source>Fluent (*.msh)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="241"/>
+        <location filename="../../view/main_window/main_window.py" line="242"/>
         <source>Fluent (*.cas)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="245"/>
+        <location filename="../../view/main_window/main_window.py" line="246"/>
         <source>StarCCM+ (*.ccm)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="248"/>
+        <location filename="../../view/main_window/main_window.py" line="249"/>
         <source>Mesh Convert</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="254"/>
+        <location filename="../../view/main_window/main_window.py" line="255"/>
         <source>Gmsh (*.msh)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="257"/>
+        <location filename="../../view/main_window/main_window.py" line="258"/>
         <source>Ideas (*.unv)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="260"/>
+        <location filename="../../view/main_window/main_window.py" line="261"/>
         <source>Plot3d (*.unv)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="280"/>
+        <location filename="../../view/main_window/main_window.py" line="281"/>
         <source>Case Loading.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="280"/>
+        <location filename="../../view/main_window/main_window.py" line="281"/>
         <source>Loading Mesh.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="339"/>
-        <location filename="../../view/main_window/main_window.py" line="343"/>
+        <location filename="../../view/main_window/main_window.py" line="340"/>
+        <location filename="../../view/main_window/main_window.py" line="344"/>
         <source>Case Directory Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="348"/>
+        <location filename="../../view/main_window/main_window.py" line="349"/>
         <location filename="../../view/main_window/main_window.ui" line="307"/>
         <source>Save As</source>
         <translation>다른 이름으로 저장</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="348"/>
+        <location filename="../../view/main_window/main_window.py" line="349"/>
         <source>Saving case</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="366"/>
+        <location filename="../../view/main_window/main_window.py" line="367"/>
         <location filename="../../view/main_window/main_window.ui" line="209"/>
         <source>Load Mesh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="368"/>
+        <location filename="../../view/main_window/main_window.py" line="369"/>
         <source>Current mesh and monitor configurations will be cleared.
 Would you like to load another mesh?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="376"/>
-        <location filename="../../view/main_window/main_window.py" line="381"/>
+        <location filename="../../view/main_window/main_window.py" line="377"/>
+        <location filename="../../view/main_window/main_window.py" line="382"/>
         <source>Select Mesh Directory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1998,33 +2048,8 @@ Would you like to load another mesh?</source>
         <translation>오픈폼</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.ui" line="355"/>
-        <source>Fluent Mesh</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/main_window.ui" line="360"/>
-        <source>Fluent Case</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../view/main_window/main_window.ui" line="368"/>
         <source>StarCCM+</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/main_window.ui" line="376"/>
-        <source>Gmsh</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/main_window.ui" line="381"/>
-        <source>I-deas Universal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/main_window.ui" line="389"/>
-        <source>PLOT3D GRID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2322,72 +2347,77 @@ Would you like to load another mesh?</source>
 <context>
     <name>MeshDock</name>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="188"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="216"/>
         <source>Mesh</source>
         <translation>격자</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="189"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="217"/>
         <source>Run ParaView</source>
         <translation>Paraview 실행</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="190"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="218"/>
         <source>Axes On/Off</source>
         <translation>축 표시</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="191"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="219"/>
         <source>Origin Axes On/Off</source>
         <translation>원점 표시</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="192"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="220"/>
         <source>Cube Axes On/Off</source>
         <translation>범위 표시</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="193"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="221"/>
         <source>Orthogonal/Perspective View</source>
         <translation>원근 적용</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="194"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="222"/>
         <source>Fit</source>
         <translation>맞춤</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="195"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="223"/>
         <source>Rotate</source>
         <translation>회전</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="198"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="224"/>
+        <source>Front-face Culling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/mesh_dock.py" line="227"/>
         <source>Points</source>
         <translation>점</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="199"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="228"/>
         <source>Wireframe</source>
         <translation>선</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="200"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="229"/>
         <source>Surface</source>
         <translation>면</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="201"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="230"/>
         <source>SurfaceEdge</source>
         <translation>격자면</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="202"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="231"/>
         <source>Feature</source>
         <translation>윤곽</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="498"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="530"/>
         <source>Select Paraview Program</source>
         <translation>Paraview 프로그램 선택</translation>
     </message>
@@ -2822,17 +2852,17 @@ Would you like to load another mesh?</source>
 <context>
     <name>NavigatorView</name>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="38"/>
+        <location filename="../../view/main_window/navigator_view.py" line="41"/>
         <source>Setup</source>
         <translation>셋업</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="39"/>
+        <location filename="../../view/main_window/navigator_view.py" line="42"/>
         <source>Solution</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="43"/>
+        <location filename="../../view/main_window/navigator_view.py" line="44"/>
         <source>General</source>
         <translation>일반</translation>
     </message>
@@ -2842,47 +2872,47 @@ Would you like to load another mesh?</source>
         <translation>모델</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="47"/>
+        <location filename="../../view/main_window/navigator_view.py" line="46"/>
         <source>Materials</source>
         <translation>물질</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="49"/>
+        <location filename="../../view/main_window/navigator_view.py" line="47"/>
         <source>Cell Zone Conditions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="51"/>
+        <location filename="../../view/main_window/navigator_view.py" line="48"/>
         <source>Boundary Conditions</source>
         <translation>경계조건</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="53"/>
+        <location filename="../../view/main_window/navigator_view.py" line="49"/>
         <source>Reference Values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="55"/>
+        <location filename="../../view/main_window/navigator_view.py" line="51"/>
         <source>Numerical Conditions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="57"/>
+        <location filename="../../view/main_window/navigator_view.py" line="52"/>
         <source>Monitors</source>
         <translation>모니터</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="59"/>
+        <location filename="../../view/main_window/navigator_view.py" line="53"/>
         <source>Initialization</source>
         <translation>초기화</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="61"/>
+        <location filename="../../view/main_window/navigator_view.py" line="54"/>
         <source>Run Conditions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="63"/>
+        <location filename="../../view/main_window/navigator_view.py" line="55"/>
         <source>Run</source>
         <translation>실행</translation>
     </message>
@@ -2903,54 +2933,36 @@ Would you like to load another mesh?</source>
 <context>
     <name>NumericalConditionsPage</name>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="14"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="20"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="14"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="26"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="32"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="26"/>
         <source>Numerical Conditions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="91"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="97"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="91"/>
         <source>Pressure-Velocity Coupling Scheme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="111"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="110"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="104"/>
         <source>Use Momentum Predictor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="118"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="117"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="111"/>
         <source>Discretization Schemes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="124"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="123"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="117"/>
         <source>Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="141"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="226"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="389"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="133"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="197"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="360"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="127"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="191"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="354"/>
@@ -2958,12 +2970,6 @@ Would you like to load another mesh?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="158"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="236"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="418"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="143"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="207"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="389"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="137"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="201"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="383"/>
@@ -2971,12 +2977,6 @@ Would you like to load another mesh?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="175"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="246"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="447"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="153"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="217"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="418"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="147"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="211"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="412"/>
@@ -2984,96 +2984,64 @@ Would you like to load another mesh?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="195"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="166"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="160"/>
         <source>Under-Relaxation Factors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="216"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="360"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="187"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="331"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="181"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="325"/>
         <source>Pressure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="256"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="227"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="221"/>
         <source>Density</source>
         <translation type="unfinished">밀도</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="272"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="243"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="237"/>
         <source>Pressure Final</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="282"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="253"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="247"/>
         <source>Momentum Final</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="292"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="263"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="257"/>
         <source>Energy Final</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="302"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="273"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="267"/>
         <source>Turbulence Final</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="312"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="283"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="277"/>
         <source>Density Final</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="331"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="302"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="177"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="296"/>
         <source>Max Iterations per Time Step</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="341"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="312"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="179"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="306"/>
         <source>Number of Correctors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="354"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="325"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="319"/>
         <source>Convergence Criteria</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="366"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="395"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="424"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="453"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="337"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="366"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="395"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="424"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="331"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="360"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="389"/>
@@ -3082,14 +3050,6 @@ Would you like to load another mesh?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="376"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="405"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="434"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="463"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="347"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="376"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="405"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="434"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="341"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="370"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="399"/>
@@ -3098,8 +3058,6 @@ Would you like to load another mesh?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="512"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="483"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="477"/>
         <source>Advanced</source>
         <translation type="unfinished"></translation>
@@ -3517,7 +3475,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/solution/monitors/points_widget.py" line="13"/>
         <source>Points</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">점</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/points_widget.py" line="35"/>
@@ -4877,7 +4835,7 @@ Calculation stops as soon as possible</source>
         <location filename="../../view/solution/monitors/surface_dialog.py" line="66"/>
         <location filename="../../view/solution/monitors/surface_dialog.ui" line="112"/>
         <source>Surface</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">면</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/surface_dialog.py" line="69"/>

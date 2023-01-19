@@ -11,7 +11,7 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.ui" line="35"/>
         <source>Flow Direction</source>
-        <translation type="unfinished"></translation>
+        <translation>Virtaussuunta</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.ui" line="41"/>
@@ -34,57 +34,57 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.ui" line="95"/>
         <source>Ground-Normal Direction</source>
-        <translation type="unfinished"></translation>
+        <translation>Maa-normaali suunta</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.ui" line="158"/>
         <source>Reference Flow Speed, U&lt;sub&gt;ref&lt;/sub&gt; (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Viitevirtausnopeus, U&lt;sub&gt;ref&lt;/sub&gt; (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.ui" line="175"/>
         <source>Reference Height, Z&lt;sub&gt;ref&lt;/sub&gt; (m)</source>
-        <translation type="unfinished"></translation>
+        <translation>Viitekorkeus, Z&lt;sub&gt;viite&lt;/sub&gt; (m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.ui" line="192"/>
         <source>Surface Roughness Length, z&lt;sub&gt;0&lt;/sub&gt; (m)</source>
-        <translation type="unfinished"></translation>
+        <translation>Pinnan karheuden pituus, z&lt;sub&gt;0&lt;/sub&gt; (m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.ui" line="209"/>
         <source>Minimum z-coordinate (m)</source>
-        <translation type="unfinished"></translation>
+        <translation>Pienin z-koordinaatti (m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.py" line="26"/>
         <source>Flow Direction X-Component</source>
-        <translation type="unfinished"></translation>
+        <translation>Virtaussuunta X-komponentti</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.py" line="28"/>
         <source>Flow Direction Y-Component</source>
-        <translation type="unfinished"></translation>
+        <translation>Virtaussuunta Y-komponentti</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.py" line="30"/>
         <source>Flow Direction Z-Component</source>
-        <translation type="unfinished"></translation>
+        <translation>Virtaussuunta Z-komponentti</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.py" line="32"/>
         <source>Ground-Normal Direction X-Component</source>
-        <translation type="unfinished"></translation>
+        <translation>Maa-normaali suunta X-komponentti</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.py" line="34"/>
         <source>Ground-Normal Direction Y-Component</source>
-        <translation type="unfinished"></translation>
+        <translation>Maa-normaali suunta Y-komponentti</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.py" line="36"/>
         <source>Ground-Normal Direction Z-Component</source>
-        <translation type="unfinished"></translation>
+        <translation>Maa-normaali suunta Z-komponentti</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.py" line="38"/>
@@ -109,7 +109,7 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/ABL_inlet_dialog.py" line="48"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -117,17 +117,17 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.ui" line="32"/>
         <source>Actuator Disk</source>
-        <translation type="unfinished"></translation>
+        <translation>Toimilaitteen levy</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.ui" line="38"/>
         <source>Disk Direction</source>
-        <translation type="unfinished"></translation>
+        <translation>Levyn suunta</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.ui" line="44"/>
@@ -170,7 +170,7 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.ui" line="152"/>
         <source>Force Computation</source>
-        <translation type="unfinished"></translation>
+        <translation>Voiman laskenta</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.ui" line="158"/>
@@ -180,27 +180,27 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.ui" line="168"/>
         <source>Variable Scaling</source>
-        <translation type="unfinished"></translation>
+        <translation>Muuttujan skaalaus</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.py" line="44"/>
         <source>Disk Direction X</source>
-        <translation type="unfinished"></translation>
+        <translation>Levyn suunta X</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.py" line="45"/>
         <source>Disk Direction Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Levyn suunta Y</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.py" line="46"/>
         <source>Disk Direction Z</source>
-        <translation type="unfinished"></translation>
+        <translation>Levyn suunta Z</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.py" line="48"/>
         <source>Power Coefficient</source>
-        <translation type="unfinished"></translation>
+        <translation>Tehokerroin</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.py" line="50"/>
@@ -210,7 +210,7 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.py" line="51"/>
         <source>Disk Area</source>
-        <translation type="unfinished"></translation>
+        <translation>Levyn ala</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/actuator_disk_widget.py" line="52"/>
@@ -253,17 +253,17 @@
     <message>
         <location filename="../../view/solution/numerical_conditions/advanced_dialog.py" line="28"/>
         <source>Minimum Static Temperature</source>
-        <translation type="unfinished"></translation>
+        <translation>Vähimmäistattinen lämpötila</translation>
     </message>
     <message>
         <location filename="../../view/solution/numerical_conditions/advanced_dialog.py" line="30"/>
         <source>Maximum Static Temperature</source>
-        <translation type="unfinished"></translation>
+        <translation>Enimmäistattinen lämpötila</translation>
     </message>
     <message>
         <location filename="../../view/solution/numerical_conditions/advanced_dialog.py" line="34"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -271,7 +271,7 @@
     <message>
         <location filename="../../view/solution/monitors/region_objects_selector.py" line="117"/>
         <source>Select Boundaries</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse rajat</translation>
     </message>
 </context>
 <context>
@@ -279,7 +279,7 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_conditions_page.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_conditions_page.ui" line="32"/>
@@ -297,9 +297,9 @@
         <translation>Muokkaa</translation>
     </message>
     <message>
-        <location filename="../../view/setup/boundary_conditions/boundary_conditions_page.py" line="179"/>
+        <location filename="../../view/setup/boundary_conditions/boundary_conditions_page.py" line="176"/>
         <source>Need to edit boundary condition</source>
-        <translation type="unfinished"></translation>
+        <translation>Rajaehtoa on muokattava</translation>
     </message>
 </context>
 <context>
@@ -307,7 +307,7 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="62"/>
@@ -352,12 +352,12 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="133"/>
         <source>Subsonic Inflow</source>
-        <translation type="unfinished"></translation>
+        <translation>Aliäänen sisäänvirtaus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="138"/>
         <source>Supersonic Inflow</source>
-        <translation type="unfinished"></translation>
+        <translation>Yliäänen sisäänvirtaus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="164"/>
@@ -377,17 +377,17 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="207"/>
         <source>Outflow</source>
-        <translation type="unfinished"></translation>
+        <translation>Ulosvirtaus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="212"/>
         <source>Subsonic Outflow</source>
-        <translation type="unfinished"></translation>
+        <translation>Aliäänien ulosirtaus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="217"/>
         <source>Supersonic Outflow</source>
-        <translation type="unfinished"></translation>
+        <translation>Yliäänien ulosirtaus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="261"/>
@@ -403,7 +403,7 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="322"/>
         <source>Misc.</source>
-        <translation type="unfinished"></translation>
+        <translation>Muut</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="346"/>
@@ -428,7 +428,7 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="366"/>
         <source>Wedge</source>
-        <translation type="unfinished"></translation>
+        <translation>Kiila</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="371"/>
@@ -438,7 +438,7 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_type_picker.ui" line="376"/>
         <source>FAN</source>
-        <translation type="unfinished"></translation>
+        <translation>FAN</translation>
     </message>
 </context>
 <context>
@@ -446,7 +446,7 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_widget.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/boundary_widget.ui" line="108"/>
@@ -473,17 +473,17 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="25"/>
         <source>TextLabel</source>
-        <translation type="unfinished">Tekstin nimiö</translation>
+        <translation>Tekstin nimiö</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="95"/>
         <source>Zone Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Alueen tyyppi</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="107"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Ei mitään</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="123"/>
@@ -502,8 +502,8 @@
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="165"/>
-        <source>actuator Disk</source>
-        <translation type="unfinished"></translation>
+        <source>Actuator Disk</source>
+        <translation type="unfinished">Toimilaitteen levy</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="197"/>
@@ -513,27 +513,27 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="205"/>
         <source>Fixed Values</source>
-        <translation type="unfinished"></translation>
+        <translation>Korjatut arvot</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="211"/>
         <source>Velocity</source>
-        <translation type="unfinished">Nopeus</translation>
+        <translation>Nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="223"/>
         <source>X-Velocity, U&lt;sub&gt;x&lt;/sub&gt; (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation>X-nopeus, U&lt;sub&gt;x&lt;/sub&gt; (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="233"/>
         <source>Y-Velocity, U&lt;sub&gt;y&lt;/sub&gt; (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Y-nopeus, U&lt;sub&gt;y&lt;/sub&gt; (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="243"/>
         <source>Z-Velocity, U&lt;sub&gt;z&lt;/sub&gt; (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Z-nopeus, U&lt;sub&gt;z&lt;/sub&gt; (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.ui" line="253"/>
@@ -543,37 +543,37 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.py" line="70"/>
         <source>Mass</source>
-        <translation type="unfinished"></translation>
+        <translation>Massa</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.py" line="82"/>
         <source>Energy</source>
-        <translation type="unfinished">Energia</translation>
+        <translation>Energia</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.py" line="86"/>
         <source>Temperature</source>
-        <translation type="unfinished">Lämpötila</translation>
+        <translation>Lämpötila</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.py" line="86"/>
         <source>Value (K)</source>
-        <translation type="unfinished"></translation>
+        <translation>Arvo (K)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.py" line="123"/>
         <source>X-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>X-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.py" line="125"/>
         <source>Y-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Y-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.py" line="127"/>
         <source>Z-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Z-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.py" line="129"/>
@@ -583,7 +583,7 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_condition_dialog.py" line="140"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -591,7 +591,7 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_conditions_page.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_conditions_page.ui" line="35"/>
@@ -606,7 +606,7 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_conditions_page.py" line="46"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -614,7 +614,7 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_widget.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/cell_zone_widget.ui" line="108"/>
@@ -622,21 +622,46 @@
         <source>TextLabel</source>
         <translation>Tekstin nimiö</translation>
     </message>
+    <message>
+        <location filename="../../view/setup/cell_zone_conditions/cell_zone_widget.py" line="22"/>
+        <source>None</source>
+        <translation type="unfinished">Ei mitään</translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/cell_zone_conditions/cell_zone_widget.py" line="23"/>
+        <source>Multiple Refernce Frame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/cell_zone_conditions/cell_zone_widget.py" line="24"/>
+        <source>Porous Zone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/cell_zone_conditions/cell_zone_widget.py" line="25"/>
+        <source>Sliding Mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/cell_zone_conditions/cell_zone_widget.py" line="26"/>
+        <source>Actuator Disk</source>
+        <translation type="unfinished">Toimilaitteen levy</translation>
+    </message>
 </context>
 <context>
     <name>CellZonesSelector</name>
     <message>
         <location filename="../../view/solution/monitors/region_objects_selector.py" line="127"/>
         <source>Select Cell Zones</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse solualueet</translation>
     </message>
 </context>
 <context>
     <name>ChartDock</name>
     <message>
-        <location filename="../../view/main_window/chart_dock.py" line="178"/>
+        <location filename="../../view/main_window/chart_dock.py" line="180"/>
         <source>Residuals</source>
-        <translation type="unfinished"></translation>
+        <translation>Jäännökset</translation>
     </message>
 </context>
 <context>
@@ -644,12 +669,12 @@
     <message>
         <location filename="../../view/main_window/console_dock.py" line="79"/>
         <source>Console</source>
-        <translation type="unfinished"></translation>
+        <translation>Konsoli</translation>
     </message>
     <message>
         <location filename="../../view/main_window/console_dock.py" line="80"/>
         <source>Line-Wrap</source>
-        <translation type="unfinished"></translation>
+        <translation>Linja kääre</translation>
     </message>
 </context>
 <context>
@@ -657,7 +682,7 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/constant_source_widget.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/constant_source_widget.ui" line="32"/>
@@ -677,12 +702,12 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/constant_source_widget.py" line="25"/>
         <source>Value per Unit Volume</source>
-        <translation type="unfinished"></translation>
+        <translation>Arvo per tilavuusyksikkö</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/constant_source_widget.py" line="26"/>
         <source>Value for Entire Cell Zone</source>
-        <translation type="unfinished"></translation>
+        <translation>Arvo koko solualueelle</translation>
     </message>
 </context>
 <context>
@@ -690,12 +715,12 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/cyclic_dialog.ui" line="20"/>
         <source>Cyclic Boundary Condition</source>
-        <translation type="unfinished"></translation>
+        <translation>Syklinen rajaehto</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/cyclic_dialog.ui" line="35"/>
         <source>Coupled Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Yhdistetty raja</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/cyclic_dialog.ui" line="49"/>
@@ -706,17 +731,17 @@
         <location filename="../../view/setup/boundary_conditions/cyclic_dialog.py" line="33"/>
         <location filename="../../view/setup/boundary_conditions/cyclic_dialog.py" line="46"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/cyclic_dialog.py" line="33"/>
         <source>Select Coupled Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse yhdistetty raja</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/cyclic_dialog.py" line="56"/>
         <source>Select Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse raja</translation>
     </message>
 </context>
 <context>
@@ -744,7 +769,7 @@
     <message>
         <location filename="../../view/setup/models/energy_dialog.py" line="33"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -786,24 +811,24 @@
         <location filename="../../view/setup/boundary_conditions/fan_dialog.ui" line="63"/>
         <location filename="../../view/setup/boundary_conditions/fan_dialog.ui" line="91"/>
         <source>Select</source>
-        <translation type="unfinished">Valitse</translation>
+        <translation>Valitse</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/fan_dialog.ui" line="77"/>
         <source>Coupled Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Yhdistetty raja</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/fan_dialog.py" line="41"/>
         <location filename="../../view/setup/boundary_conditions/fan_dialog.py" line="53"/>
         <location filename="../../view/setup/boundary_conditions/fan_dialog.py" line="66"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/fan_dialog.py" line="41"/>
         <source>Select Coupled Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse yhdistetty raja</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/fan_dialog.py" line="53"/>
@@ -813,12 +838,12 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/fan_dialog.py" line="88"/>
         <source>Select CSV File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Valitse CSV-tiedosto</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/fan_dialog.py" line="95"/>
         <source>Select Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse raja</translation>
     </message>
 </context>
 <context>
@@ -831,7 +856,7 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/farfield_riemann_dialog.ui" line="41"/>
         <source>Flow Direction</source>
-        <translation type="unfinished"></translation>
+        <translation>Virtaussuunta</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/farfield_riemann_dialog.ui" line="47"/>
@@ -866,17 +891,17 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/farfield_riemann_dialog.py" line="35"/>
         <source>X-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>X-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/farfield_riemann_dialog.py" line="36"/>
         <source>Y-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Y-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/farfield_riemann_dialog.py" line="37"/>
         <source>Z-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Z-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/farfield_riemann_dialog.py" line="38"/>
@@ -896,7 +921,7 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/farfield_riemann_dialog.py" line="47"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -904,7 +929,7 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/fixed_value_widget.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/fixed_value_widget.ui" line="32"/>
@@ -920,23 +945,6 @@
 <context>
     <name>FlowRateInletDialog</name>
     <message>
-        <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.py" line="23"/>
-        <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.py" line="49"/>
-        <source>Volume Flow Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.py" line="24"/>
-        <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.py" line="51"/>
-        <source>Mass Flow Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.py" line="62"/>
-        <source>Input Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.ui" line="26"/>
         <source>Flow Rate Inlet Boundary Condition</source>
         <translation type="unfinished"></translation>
@@ -944,22 +952,39 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.ui" line="59"/>
         <source>Flow Rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Virtausnopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.ui" line="80"/>
         <source>Flow Rate Specification Method</source>
-        <translation type="unfinished"></translation>
+        <translation>Virtausnopeuden määrittelymenetelmä</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.ui" line="103"/>
         <source>Volume Flow Rate (m3/s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tilavuusvirtausnopeus (m3/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.ui" line="126"/>
         <source>Mass Flow Rate (kg/s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Massavirtausnopeus (kg/s)</translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.py" line="23"/>
+        <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.py" line="49"/>
+        <source>Volume Flow Rate</source>
+        <translation>Tilavuusvirtausnopeus</translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.py" line="24"/>
+        <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.py" line="51"/>
+        <source>Mass Flow Rate</source>
+        <translation>Massavirtausnopeus</translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/boundary_conditions/flow_rate_inlet_dialog.py" line="62"/>
+        <source>Input Error</source>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -967,22 +992,22 @@
     <message>
         <location filename="../../view/case_wizard/flow_type_page.ui" line="19"/>
         <source>WizardPage</source>
-        <translation type="unfinished">Velhosivu</translation>
+        <translation>Velhosivu</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/flow_type_page.ui" line="22"/>
         <source>Flow Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Virtaustyyppi</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/flow_type_page.ui" line="43"/>
         <source>Compressible</source>
-        <translation type="unfinished"></translation>
+        <translation>Kokoonpuristuva</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/flow_type_page.ui" line="50"/>
         <source>Incompressible</source>
-        <translation type="unfinished"></translation>
+        <translation>Kokoonpuristamaton</translation>
     </message>
 </context>
 <context>
@@ -998,12 +1023,12 @@
         <location filename="../../view/solution/monitors/force_dialog.py" line="55"/>
         <location filename="../../view/solution/monitors/force_dialog.py" line="81"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/force_dialog.py" line="51"/>
         <source>Enter Monitor Name.</source>
-        <translation type="unfinished"></translation>
+        <translation>Syötä valvonnan nimi</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/force_dialog.py" line="55"/>
@@ -1058,7 +1083,7 @@
     <message>
         <location filename="../../view/solution/monitors/force_dialog.py" line="72"/>
         <source>Region</source>
-        <translation type="unfinished"></translation>
+        <translation>Alue</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/force_dialog.py" line="77"/>
@@ -1125,12 +1150,12 @@
     <message>
         <location filename="../../view/solution/monitors/forces_widget.py" line="13"/>
         <source>Forces</source>
-        <translation type="unfinished"></translation>
+        <translation>Voimat</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/forces_widget.py" line="35"/>
         <source>Remove monitor item</source>
-        <translation type="unfinished"></translation>
+        <translation>Poista valvonnan kohde</translation>
     </message>
 </context>
 <context>
@@ -1148,47 +1173,47 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/free_stream_dialog.ui" line="47"/>
         <source>X-Velocity, Ux (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation>X-nopeus, Ux (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/free_stream_dialog.ui" line="64"/>
         <source>Y-Velocity, Uy (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Y-nopeus, Ux (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/free_stream_dialog.ui" line="81"/>
         <source>Z-Velocity, Uz (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Z-nopeus, Ux (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/free_stream_dialog.ui" line="104"/>
         <source>Pressure (Pa)</source>
-        <translation type="unfinished">Paine (Pa)</translation>
+        <translation>Paine (Pa)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/free_stream_dialog.py" line="41"/>
         <source>X-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>X-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/free_stream_dialog.py" line="42"/>
         <source>Y-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Y-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/free_stream_dialog.py" line="43"/>
         <source>Z-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Z-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/free_stream_dialog.py" line="44"/>
         <source>Pressure</source>
-        <translation type="unfinished">Paine</translation>
+        <translation>Paine</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/free_stream_dialog.py" line="55"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -1196,7 +1221,7 @@
     <message>
         <location filename="../../view/setup/general/general_page.ui" line="26"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/general/general_page.ui" line="44"/>
@@ -1211,12 +1236,12 @@
     <message>
         <location filename="../../view/setup/general/general_page.ui" line="70"/>
         <source>Steady</source>
-        <translation type="unfinished"></translation>
+        <translation>Tasainen</translation>
     </message>
     <message>
         <location filename="../../view/setup/general/general_page.ui" line="77"/>
         <source>Transient</source>
-        <translation type="unfinished"></translation>
+        <translation>Ohimenevä</translation>
     </message>
     <message>
         <location filename="../../view/setup/general/general_page.ui" line="87"/>
@@ -1246,27 +1271,27 @@
     <message>
         <location filename="../../view/setup/general/general_page.py" line="43"/>
         <source>Gravity X</source>
-        <translation type="unfinished"></translation>
+        <translation>Painovoima X</translation>
     </message>
     <message>
         <location filename="../../view/setup/general/general_page.py" line="44"/>
         <source>Gravity Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Painovoima Y</translation>
     </message>
     <message>
         <location filename="../../view/setup/general/general_page.py" line="45"/>
         <source>Gravity Z</source>
-        <translation type="unfinished"></translation>
+        <translation>Painovoima Z</translation>
     </message>
     <message>
         <location filename="../../view/setup/general/general_page.py" line="47"/>
         <source>Operating Pressure</source>
-        <translation type="unfinished"></translation>
+        <translation>Käyttöpaine</translation>
     </message>
     <message>
         <location filename="../../view/setup/general/general_page.py" line="51"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -1274,7 +1299,7 @@
     <message>
         <location filename="../../view/case_wizard/gravity_model_page.ui" line="19"/>
         <source>WizardPage</source>
-        <translation type="unfinished">Velhosivu</translation>
+        <translation>Velhosivu</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/gravity_model_page.ui" line="22"/>
@@ -1312,7 +1337,7 @@
     <message>
         <location filename="../../view/solution/initialization/initialization_page.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/solution/initialization/initialization_page.ui" line="26"/>
@@ -1417,27 +1442,27 @@
     <message>
         <location filename="../../view/solution/initialization/initialization_page.py" line="82"/>
         <source>X-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>X-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/solution/initialization/initialization_page.py" line="83"/>
         <source>Y-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Y-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/solution/initialization/initialization_page.py" line="84"/>
         <source>Z-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Z-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/solution/initialization/initialization_page.py" line="85"/>
         <source>Pressure</source>
-        <translation type="unfinished">Paine</translation>
+        <translation>Paine</translation>
     </message>
     <message>
         <location filename="../../view/solution/initialization/initialization_page.py" line="86"/>
         <source>Temperature</source>
-        <translation type="unfinished">Lämpötila</translation>
+        <translation>Lämpötila</translation>
     </message>
     <message>
         <location filename="../../view/solution/initialization/initialization_page.py" line="88"/>
@@ -1447,7 +1472,7 @@
     <message>
         <location filename="../../view/solution/initialization/initialization_page.py" line="90"/>
         <source>Turbulent Intensity</source>
-        <translation type="unfinished"></translation>
+        <translation>Turbulenttinen intensiteetti</translation>
     </message>
     <message>
         <location filename="../../view/solution/initialization/initialization_page.py" line="92"/>
@@ -1457,7 +1482,7 @@
     <message>
         <location filename="../../view/solution/initialization/initialization_page.py" line="96"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/solution/initialization/initialization_page.py" line="116"/>
@@ -1507,55 +1532,55 @@
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="51"/>
         <source>Coupled Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Yhdistetty raja</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="80"/>
         <source>Select</source>
-        <translation type="unfinished">Valitse</translation>
+        <translation>Valitse</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="108"/>
         <source>Rotation-Axis Origin</source>
-        <translation type="unfinished">Pyörimisakselin kohta</translation>
+        <translation>Pyörimisakselin kohta</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="114"/>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="264"/>
         <source>X (m)</source>
-        <translation type="unfinished">X (m)</translation>
+        <translation>X (m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="131"/>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="281"/>
         <source>Y (m)</source>
-        <translation type="unfinished">Y (m)</translation>
+        <translation>Y (m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="148"/>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="298"/>
         <source>Z (m)</source>
-        <translation type="unfinished">Z (m)</translation>
+        <translation>Z (m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="168"/>
         <source>Rotation-Axis Direction</source>
-        <translation type="unfinished">Pyörimisakselin suunta</translation>
+        <translation>Pyörimisakselin suunta</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="174"/>
         <source>X</source>
-        <translation type="unfinished">X</translation>
+        <translation>X</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="191"/>
         <source>Y</source>
-        <translation type="unfinished">Y</translation>
+        <translation>Y</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="208"/>
         <source>Z</source>
-        <translation type="unfinished">Z</translation>
+        <translation>Z</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.ui" line="258"/>
@@ -1586,17 +1611,17 @@
         <location filename="../../view/setup/boundary_conditions/interface_dialog.py" line="41"/>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.py" line="56"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.py" line="41"/>
         <source>Select Coupled Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse yhdistetty raja</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.py" line="89"/>
         <source>Select Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse raja</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/interface_dialog.py" line="112"/>
@@ -1649,7 +1674,7 @@
     <message>
         <location filename="../../view/solution/run/job_information_page.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/job_information_page.ui" line="26"/>
@@ -1717,7 +1742,7 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/MRF_widget.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/MRF_widget.ui" line="38"/>
@@ -1727,12 +1752,12 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/MRF_widget.ui" line="59"/>
         <source>Rotating Speed (RPM)</source>
-        <translation type="unfinished"></translation>
+        <translation>Pyörimisnopeus (kier/min)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/MRF_widget.ui" line="72"/>
         <source>Rotation-Axis Origin</source>
-        <translation type="unfinished">Pyörimisakselin kohta</translation>
+        <translation>Pyörimisakselin kohta</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/MRF_widget.ui" line="78"/>
@@ -1752,27 +1777,22 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/MRF_widget.ui" line="111"/>
         <source>Rotation-Axis Direction</source>
-        <translation type="unfinished">Pyörimisakselin suunta</translation>
+        <translation>Pyörimisakselin suunta</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/MRF_widget.ui" line="117"/>
         <source>X</source>
-        <translation type="unfinished">X</translation>
+        <translation>X</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/MRF_widget.ui" line="127"/>
         <source>Y</source>
-        <translation type="unfinished">Y</translation>
+        <translation>Y</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/MRF_widget.ui" line="137"/>
         <source>Z</source>
-        <translation type="unfinished">Z</translation>
-    </message>
-    <message>
-        <location filename="../../view/setup/cell_zone_conditions/MRF_widget.ui" line="185"/>
-        <source>Select</source>
-        <translation type="unfinished">Valitse</translation>
+        <translation>Z</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/MRF_widget.py" line="39"/>
@@ -1818,7 +1838,12 @@
     <message>
         <location filename="../../view/setup/cell_zone_conditions/MRF_widget.py" line="66"/>
         <source>Select Boundaries</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Valitse rajat</translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/cell_zone_conditions/MRF_widget.ui" line="185"/>
+        <source>Select</source>
+        <translation>Valitse</translation>
     </message>
 </context>
 <context>
@@ -1844,91 +1869,91 @@
         <translation>Tiedosto</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="162"/>
-        <source>Save Changed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../view/main_window/main_window.py" line="163"/>
+        <source>Save Changed</source>
+        <translation>Tallennus muutettu</translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.py" line="164"/>
         <source>Do you want save your changes?</source>
-        <translation type="unfinished"></translation>
+        <translation>Haluatko tallentaa tekemäsi muutokset?</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="222"/>
+        <location filename="../../view/main_window/main_window.py" line="223"/>
         <source>Select Project Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse hankehakemisto</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="238"/>
-        <source>Fluent (*.msh)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/main_window.py" line="241"/>
-        <source>Fluent (*.cas)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/main_window.py" line="245"/>
+        <location filename="../../view/main_window/main_window.py" line="246"/>
         <source>StarCCM+ (*.ccm)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="248"/>
-        <source>Mesh Convert</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/main_window.py" line="254"/>
+        <location filename="../../view/main_window/main_window.py" line="255"/>
         <source>Gmsh (*.msh)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="257"/>
+        <location filename="../../view/main_window/main_window.py" line="258"/>
         <source>Ideas (*.unv)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="260"/>
-        <source>Plot3d (*.unv)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/main_window.py" line="280"/>
+        <location filename="../../view/main_window/main_window.py" line="281"/>
         <source>Case Loading.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="280"/>
+        <location filename="../../view/main_window/main_window.py" line="239"/>
+        <source>Fluent (*.msh)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.py" line="242"/>
+        <source>Fluent (*.cas)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.py" line="249"/>
+        <source>Mesh Convert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.py" line="261"/>
+        <source>Plot3d (*.unv)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.py" line="281"/>
         <source>Loading Mesh.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="339"/>
-        <location filename="../../view/main_window/main_window.py" line="343"/>
+        <location filename="../../view/main_window/main_window.py" line="340"/>
+        <location filename="../../view/main_window/main_window.py" line="344"/>
         <source>Case Directory Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Tapaushakemistovirhe</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="348"/>
+        <location filename="../../view/main_window/main_window.py" line="349"/>
         <source>Saving case</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="366"/>
+        <location filename="../../view/main_window/main_window.py" line="367"/>
         <location filename="../../view/main_window/main_window.ui" line="209"/>
         <source>Load Mesh</source>
         <translation>Lataa mesh</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="368"/>
+        <location filename="../../view/main_window/main_window.py" line="369"/>
         <source>Current mesh and monitor configurations will be cleared.
 Would you like to load another mesh?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="376"/>
-        <location filename="../../view/main_window/main_window.py" line="381"/>
+        <location filename="../../view/main_window/main_window.py" line="377"/>
+        <location filename="../../view/main_window/main_window.py" line="382"/>
         <source>Select Mesh Directory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1958,7 +1983,7 @@ Would you like to load another mesh?</source>
         <translation>Tallenna</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/main_window.py" line="348"/>
+        <location filename="../../view/main_window/main_window.py" line="349"/>
         <location filename="../../view/main_window/main_window.ui" line="307"/>
         <source>Save As</source>
         <translation>Tallenna nimellä</translation>
@@ -2001,33 +2026,33 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <location filename="../../view/main_window/main_window.ui" line="355"/>
-        <source>Fluent Mesh</source>
-        <translation>Sujuva mesh</translation>
+        <source>Fluent Mesh  (ASCII)</source>
+        <translation>Sujuva mesh  (ASCII)</translation>
     </message>
     <message>
         <location filename="../../view/main_window/main_window.ui" line="360"/>
-        <source>Fluent Case</source>
-        <translation>Sujuva tapaus</translation>
+        <source>Fluent Case (ASCII)</source>
+        <translation>Sujuva tapaus (ASCII)</translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.ui" line="376"/>
+        <source>Gmsh (ASCII)</source>
+        <translation>Gmsh (ASCII)</translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.ui" line="381"/>
+        <source>I-deas Universal (ASCII)</source>
+        <translation>I-deas Universal (ASCII)</translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/main_window.ui" line="389"/>
+        <source>PLOT3D GRID (ASCII)</source>
+        <translation>PLOT3D GRID (ASCII)</translation>
     </message>
     <message>
         <location filename="../../view/main_window/main_window.ui" line="368"/>
         <source>StarCCM+</source>
         <translation>StarCCM+</translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/main_window.ui" line="376"/>
-        <source>Gmsh</source>
-        <translation>Gmsh</translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/main_window.ui" line="381"/>
-        <source>I-deas Universal</source>
-        <translation>I-deas Universal</translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/main_window.ui" line="389"/>
-        <source>PLOT3D GRID</source>
-        <translation>PLOT3D GRID</translation>
     </message>
     <message>
         <location filename="../../view/main_window/main_window.ui" line="394"/>
@@ -2040,7 +2065,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/materials/material_card.ui" line="20"/>
         <source>Form</source>
-        <translation type="unfinished">Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_card.ui" line="57"/>
@@ -2050,27 +2075,27 @@ Would you like to load another mesh?</source>
         <location filename="../../view/setup/materials/material_card.ui" line="206"/>
         <location filename="../../view/setup/materials/material_card.ui" line="244"/>
         <source>TextLabel</source>
-        <translation type="unfinished">Tekstin nimiö</translation>
+        <translation>Tekstin nimiö</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_card.ui" line="135"/>
         <source>Density</source>
-        <translation type="unfinished">Tiheys</translation>
+        <translation>Tiheys</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_card.ui" line="164"/>
         <source>Specific Heat, C&lt;sub&gt;P&lt;/sub&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Ominaislämpö, C&lt;sub&gt;P&lt;/sub&gt;</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_card.ui" line="193"/>
         <source>Viscosisty</source>
-        <translation type="unfinished"></translation>
+        <translation>Viskositeetti</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_card.ui" line="228"/>
         <source>Thermal Conductivity</source>
-        <translation type="unfinished"></translation>
+        <translation>Lämmönjohtokyky</translation>
     </message>
 </context>
 <context>
@@ -2078,18 +2103,18 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/materials/material_dialog.ui" line="14"/>
         <source>Material</source>
-        <translation type="unfinished">Materiaali</translation>
+        <translation>Materiaali</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_dialog.ui" line="23"/>
         <source>Name</source>
-        <translation type="unfinished">Nimi</translation>
+        <translation>Nimi</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_dialog.ui" line="36"/>
         <location filename="../../view/setup/materials/material_dialog.ui" line="42"/>
         <source>Density</source>
-        <translation type="unfinished">Tiheys</translation>
+        <translation>Tiheys</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_dialog.ui" line="61"/>
@@ -2097,7 +2122,7 @@ Would you like to load another mesh?</source>
         <location filename="../../view/setup/materials/material_dialog.ui" line="200"/>
         <location filename="../../view/setup/materials/material_dialog.ui" line="287"/>
         <source>Edit</source>
-        <translation type="unfinished">Muokkaa</translation>
+        <translation>Muokkaa</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_dialog.ui" line="70"/>
@@ -2144,7 +2169,7 @@ Would you like to load another mesh?</source>
         <location filename="../../view/setup/materials/material_dialog.ui" line="243"/>
         <location filename="../../view/setup/materials/material_dialog.ui" line="249"/>
         <source>Thermal Conductivity</source>
-        <translation type="unfinished"></translation>
+        <translation>Lämmönjohtokyky</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_dialog.ui" line="297"/>
@@ -2159,7 +2184,7 @@ Would you like to load another mesh?</source>
         <location filename="../../view/setup/materials/material_dialog.py" line="180"/>
         <location filename="../../view/setup/materials/material_dialog.py" line="199"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_dialog.py" line="129"/>
@@ -2232,12 +2257,6 @@ Would you like to load another mesh?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/setup/materials/material_dialog.py" line="184"/>
-        <location filename="../../view/setup/materials/material_dialog.ui" line="353"/>
-        <source>Emissivity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../view/setup/materials/material_dialog.py" line="187"/>
         <location filename="../../view/setup/materials/material_dialog.ui" line="313"/>
         <source>Molecular Weight</source>
@@ -2281,13 +2300,19 @@ Would you like to load another mesh?</source>
         <source>Polynomial Thermal Conductivity</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../../view/setup/materials/material_dialog.py" line="184"/>
+        <location filename="../../view/setup/materials/material_dialog.ui" line="353"/>
+        <source>Emissivity</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MaterialPage</name>
     <message>
         <location filename="../../view/setup/materials/material_page.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_page.ui" line="50"/>
@@ -2298,100 +2323,105 @@ Would you like to load another mesh?</source>
         <location filename="../../view/setup/materials/material_page.py" line="51"/>
         <location filename="../../view/setup/materials/material_page.py" line="56"/>
         <source>Remove material</source>
-        <translation type="unfinished"></translation>
+        <translation>Poista materiaali</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_page.py" line="52"/>
         <source>At least one material is required and cannot be removed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Vähintään yksi materiaali vaaditaan, eikä sitä voi poistaa.</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_page.py" line="64"/>
         <source>Remove Meterial Failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Materiaalin poistaminen epäonnistui</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_page.py" line="83"/>
         <source>Material</source>
-        <translation type="unfinished">Materiaali</translation>
+        <translation>Materiaali</translation>
     </message>
     <message>
         <location filename="../../view/setup/materials/material_page.py" line="83"/>
         <source>Select material to add</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse lisättävä materiaali</translation>
     </message>
 </context>
 <context>
     <name>MeshDock</name>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="188"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="216"/>
         <source>Mesh</source>
-        <translation type="unfinished">Mesh</translation>
+        <translation>Mesh</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="189"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="217"/>
         <source>Run ParaView</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="190"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="218"/>
         <source>Axes On/Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="191"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="219"/>
         <source>Origin Axes On/Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="192"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="220"/>
         <source>Cube Axes On/Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="193"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="221"/>
         <source>Orthogonal/Perspective View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="194"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="222"/>
         <source>Fit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="195"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="223"/>
         <source>Rotate</source>
         <translation type="unfinished">Kierrä</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="198"/>
-        <source>Points</source>
+        <location filename="../../view/main_window/mesh_dock.py" line="224"/>
+        <source>Front-face Culling</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="199"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="227"/>
+        <source>Points</source>
+        <translation type="unfinished">Pisteet</translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/mesh_dock.py" line="228"/>
         <source>Wireframe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="200"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="229"/>
         <source>Surface</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Pinta</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="201"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="230"/>
         <source>SurfaceEdge</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="202"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="231"/>
         <source>Feature</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../view/main_window/mesh_dock.py" line="498"/>
+        <location filename="../../view/main_window/mesh_dock.py" line="530"/>
         <source>Select Paraview Program</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse Paraview-ohjelma</translation>
     </message>
 </context>
 <context>
@@ -2399,7 +2429,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation type="unfinished">Vuoropuhelu</translation>
+        <translation>Vuoropuhelu</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="23"/>
@@ -2409,7 +2439,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="30"/>
         <source>10</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">10</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="55"/>
@@ -2419,12 +2449,12 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="61"/>
         <source>X (m)</source>
-        <translation type="unfinished">X (m)</translation>
+        <translation>X (m)</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="68"/>
         <source>Y (m)</source>
-        <translation type="unfinished">Y (m)</translation>
+        <translation>Y (m)</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="75"/>
@@ -2433,12 +2463,12 @@ Would you like to load another mesh?</source>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="126"/>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="147"/>
         <source>0</source>
-        <translation type="unfinished"></translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="82"/>
         <source>Z (m)</source>
-        <translation type="unfinished">Z (m)</translation>
+        <translation>Z (m)</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="106"/>
@@ -2448,22 +2478,22 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="112"/>
         <source>X</source>
-        <translation type="unfinished">X</translation>
+        <translation>X</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="119"/>
         <source>Y</source>
-        <translation type="unfinished">Y</translation>
+        <translation>Y</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="133"/>
         <source>Z</source>
-        <translation type="unfinished">Z</translation>
+        <translation>Z</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_ratate_dialog.ui" line="140"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
 </context>
 <context>
@@ -2471,34 +2501,34 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_scale_dialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation type="unfinished">Vuoropuhelu</translation>
+        <translation>Vuoropuhelu</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_scale_dialog.ui" line="20"/>
         <source>Scaling Factors</source>
-        <translation type="unfinished"></translation>
+        <translation>Skaalaustekijät</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_scale_dialog.ui" line="26"/>
         <source>X</source>
-        <translation type="unfinished">X</translation>
+        <translation>X</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_scale_dialog.ui" line="33"/>
         <source>Y</source>
-        <translation type="unfinished">Y</translation>
+        <translation>Y</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_scale_dialog.ui" line="40"/>
         <location filename="../../view/main_window/menu/mesh/mesh_scale_dialog.ui" line="54"/>
         <location filename="../../view/main_window/menu/mesh/mesh_scale_dialog.ui" line="61"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_scale_dialog.ui" line="47"/>
         <source>Z</source>
-        <translation type="unfinished">Z</translation>
+        <translation>Z</translation>
     </message>
 </context>
 <context>
@@ -2506,7 +2536,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_translate_dialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation type="unfinished">Vuoropuhelu</translation>
+        <translation>Vuoropuhelu</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_translate_dialog.ui" line="20"/>
@@ -2516,24 +2546,24 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_translate_dialog.ui" line="26"/>
         <source>X (m)</source>
-        <translation type="unfinished">X (m)</translation>
+        <translation>X (m)</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_translate_dialog.ui" line="33"/>
         <location filename="../../view/main_window/menu/mesh/mesh_translate_dialog.ui" line="47"/>
         <location filename="../../view/main_window/menu/mesh/mesh_translate_dialog.ui" line="61"/>
         <source>0</source>
-        <translation type="unfinished"></translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_translate_dialog.ui" line="40"/>
         <source>Y (m)</source>
-        <translation type="unfinished">Y (m)</translation>
+        <translation>Y (m)</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/mesh/mesh_translate_dialog.ui" line="54"/>
         <source>Z (m)</source>
-        <translation type="unfinished">Z (m)</translation>
+        <translation>Z (m)</translation>
     </message>
 </context>
 <context>
@@ -2541,7 +2571,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/models/models_page.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/models/models_page.ui" line="32"/>
@@ -2554,6 +2584,16 @@ Would you like to load another mesh?</source>
         <translation>Muokkaa</translation>
     </message>
     <message>
+        <location filename="../../view/setup/models/models_page.py" line="86"/>
+        <source>Multiphase</source>
+        <translation>Monivaiheinen</translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/models/models_page.py" line="78"/>
+        <source>Turbulence</source>
+        <translation>Turbulenssi</translation>
+    </message>
+    <message>
         <location filename="../../view/setup/models/models_page.py" line="59"/>
         <source>Off</source>
         <translation type="unfinished"></translation>
@@ -2561,7 +2601,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/models/models_page.py" line="60"/>
         <source>Volume of Fluid</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nesteen tilavuus</translation>
     </message>
     <message>
         <location filename="../../view/setup/models/models_page.py" line="64"/>
@@ -2596,22 +2636,17 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/models/models_page.py" line="73"/>
         <source>Pressure-based</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Painepohjainen</translation>
     </message>
     <message>
         <location filename="../../view/setup/models/models_page.py" line="74"/>
         <source>Density-based</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/setup/models/models_page.py" line="78"/>
-        <source>Turbulence</source>
-        <translation type="unfinished">Turbulenssi</translation>
+        <translation type="unfinished">Tiheyspohjainen</translation>
     </message>
     <message>
         <location filename="../../view/setup/models/models_page.py" line="80"/>
         <source>Energy</source>
-        <translation type="unfinished">Energia</translation>
+        <translation>Energia</translation>
     </message>
     <message>
         <location filename="../../view/setup/models/models_page.py" line="81"/>
@@ -2628,27 +2663,22 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/models/models_page.py" line="84"/>
         <source>Flow Type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Virtaustyyppi</translation>
     </message>
     <message>
         <location filename="../../view/setup/models/models_page.py" line="85"/>
         <source>Compressible</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Kokoonpuristuva</translation>
     </message>
     <message>
         <location filename="../../view/setup/models/models_page.py" line="85"/>
         <source>Incompressible</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/setup/models/models_page.py" line="86"/>
-        <source>Multiphase</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Kokoonpuristamaton</translation>
     </message>
     <message>
         <location filename="../../view/setup/models/models_page.py" line="87"/>
         <source>Solver Type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ratkaisijatyyppi</translation>
     </message>
     <message>
         <location filename="../../view/setup/models/models_page.py" line="89"/>
@@ -2661,7 +2691,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/main_window/monitor_dock.py" line="33"/>
         <source>Monitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Näyttö</translation>
     </message>
 </context>
 <context>
@@ -2669,7 +2699,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/solution/monitors/monitor_widget.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/monitor_widget.ui" line="108"/>
@@ -2683,12 +2713,12 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/solution/monitors/monitors_page.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/monitors_page.ui" line="35"/>
         <source>Monitors</source>
-        <translation>valvonnat</translation>
+        <translation>Näytöt</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/monitors_page.ui" line="86"/>
@@ -2709,7 +2739,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/solution/monitors/monitors_page.py" line="112"/>
         <source>Remove monitor item</source>
-        <translation type="unfinished"></translation>
+        <translation>Poista valvonnan kohde</translation>
     </message>
 </context>
 <context>
@@ -2717,7 +2747,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/solution/monitors/monitors_widget.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/monitors_widget.ui" line="20"/>
@@ -2778,12 +2808,12 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/models/multiphase_dialog.ui" line="36"/>
         <source>Volume of Fluid</source>
-        <translation type="unfinished"></translation>
+        <translation>Nesteen tilavuus</translation>
     </message>
     <message>
         <location filename="../../view/setup/models/multiphase_dialog.ui" line="46"/>
         <source>Mixture (cavitation)</source>
-        <translation type="unfinished"></translation>
+        <translation>Seos (kavitaatio)</translation>
     </message>
 </context>
 <context>
@@ -2791,7 +2821,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/models/multiphase_dialog.py" line="46"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -2814,80 +2844,80 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/case_wizard/multiphase_model_page.ui" line="47"/>
         <source>Volume of Fluid</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/multiphase_model_page.ui" line="57"/>
         <source>Mixture (cavitation)</source>
-        <translation type="unfinished"></translation>
+        <translation>Seos (kavitaatio)</translation>
     </message>
 </context>
 <context>
     <name>NavigatorView</name>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="38"/>
+        <location filename="../../view/main_window/navigator_view.py" line="41"/>
         <source>Setup</source>
-        <translation type="unfinished"></translation>
+        <translation>Kokoonpano</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="39"/>
+        <location filename="../../view/main_window/navigator_view.py" line="42"/>
         <source>Solution</source>
-        <translation type="unfinished"></translation>
+        <translation>Ratkaisu</translation>
     </message>
     <message>
-        <location filename="../../view/main_window/navigator_view.py" line="43"/>
+        <location filename="../../view/main_window/navigator_view.py" line="44"/>
         <source>General</source>
-        <translation type="unfinished">Yleinen</translation>
+        <translation>Yleinen</translation>
     </message>
     <message>
         <location filename="../../view/main_window/navigator_view.py" line="45"/>
         <source>Models</source>
-        <translation type="unfinished">Mallit</translation>
+        <translation>Mallit</translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/navigator_view.py" line="46"/>
+        <source>Materials</source>
+        <translation>Materiaalit</translation>
     </message>
     <message>
         <location filename="../../view/main_window/navigator_view.py" line="47"/>
-        <source>Materials</source>
-        <translation type="unfinished">Materiaalit</translation>
+        <source>Cell Zone Conditions</source>
+        <translation>Soluvyöhykkeen olosuhteet</translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/navigator_view.py" line="48"/>
+        <source>Boundary Conditions</source>
+        <translation>Raja olosuhteet</translation>
     </message>
     <message>
         <location filename="../../view/main_window/navigator_view.py" line="49"/>
-        <source>Cell Zone Conditions</source>
-        <translation type="unfinished">Soluvyöhykkeen olosuhteet</translation>
+        <source>Reference Values</source>
+        <translation>Viitearvot</translation>
     </message>
     <message>
         <location filename="../../view/main_window/navigator_view.py" line="51"/>
-        <source>Boundary Conditions</source>
-        <translation type="unfinished">Raja olosuhteet</translation>
+        <source>Numerical Conditions</source>
+        <translation>Numeeriset ehdot</translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/navigator_view.py" line="52"/>
+        <source>Monitors</source>
+        <translation>Näytöt</translation>
     </message>
     <message>
         <location filename="../../view/main_window/navigator_view.py" line="53"/>
-        <source>Reference Values</source>
-        <translation type="unfinished"></translation>
+        <source>Initialization</source>
+        <translation>Alustus</translation>
+    </message>
+    <message>
+        <location filename="../../view/main_window/navigator_view.py" line="54"/>
+        <source>Run Conditions</source>
+        <translation>Ajoehdot</translation>
     </message>
     <message>
         <location filename="../../view/main_window/navigator_view.py" line="55"/>
-        <source>Numerical Conditions</source>
-        <translation type="unfinished">Numeeriset ehdot</translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/navigator_view.py" line="57"/>
-        <source>Monitors</source>
-        <translation type="unfinished">valvonnat</translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/navigator_view.py" line="59"/>
-        <source>Initialization</source>
-        <translation type="unfinished">Alustus</translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/navigator_view.py" line="61"/>
-        <source>Run Conditions</source>
-        <translation type="unfinished">Ajoehdot</translation>
-    </message>
-    <message>
-        <location filename="../../view/main_window/navigator_view.py" line="63"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>Aja</translation>
     </message>
 </context>
 <context>
@@ -2906,54 +2936,36 @@ Would you like to load another mesh?</source>
 <context>
     <name>NumericalConditionsPage</name>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="14"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="20"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="26"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="32"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="26"/>
         <source>Numerical Conditions</source>
         <translation>Numeeriset ehdot</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="91"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="97"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="91"/>
         <source>Pressure-Velocity Coupling Scheme</source>
         <translation>Paine-nopeus-kytkentäkaavio</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="111"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="110"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="104"/>
         <source>Use Momentum Predictor</source>
         <translation>Käytä liikemäärän ennustajaa</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="118"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="117"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="111"/>
         <source>Discretization Schemes</source>
         <translation>Diskretisointikaaviot</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="124"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="123"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="117"/>
         <source>Time</source>
         <translation>Aika</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="141"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="226"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="389"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="133"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="197"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="360"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="127"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="191"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="354"/>
@@ -2961,12 +2973,6 @@ Would you like to load another mesh?</source>
         <translation>Liikemäärä</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="158"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="236"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="418"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="143"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="207"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="389"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="137"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="201"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="383"/>
@@ -2974,12 +2980,6 @@ Would you like to load another mesh?</source>
         <translation>Energia</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="175"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="246"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="447"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="153"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="217"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="418"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="147"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="211"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="412"/>
@@ -2987,125 +2987,45 @@ Would you like to load another mesh?</source>
         <translation>Turbulenssi</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="195"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="166"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="160"/>
         <source>Under-Relaxation Factors</source>
         <translation>Alirentoutumistekijät</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="216"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="360"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="187"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="331"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="181"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="325"/>
         <source>Pressure</source>
         <translation>Paine</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="256"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="227"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="221"/>
         <source>Density</source>
         <translation>Tiheys</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="272"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="243"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="237"/>
         <source>Pressure Final</source>
         <translation>Lopullinen paine</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="282"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="253"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="247"/>
         <source>Momentum Final</source>
         <translation>Lopullinen liikemäärä</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="292"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="263"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="257"/>
         <source>Energy Final</source>
         <translation>Lopullinen energia</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="302"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="273"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="267"/>
         <source>Turbulence Final</source>
         <translation>Lopullinen turbulenssi</translation>
     </message>
     <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="312"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="283"/>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="277"/>
         <source>Density Final</source>
         <translation>Lopullinen tiheys</translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="331"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="302"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="177"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="296"/>
-        <source>Max Iterations per Time Step</source>
-        <translation>Iteraatioiden ennimäismäärä aikavaihetta kohti</translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="341"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="312"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="179"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="306"/>
-        <source>Number of Correctors</source>
-        <translation>Korjaajien määrä</translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="354"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="325"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="319"/>
-        <source>Convergence Criteria</source>
-        <translation>Konvergenssikriteerit</translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="366"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="395"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="424"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="453"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="337"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="366"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="395"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="424"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="331"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="360"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="389"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="418"/>
-        <source>Absolute</source>
-        <translation>Absoluuttinen</translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="376"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="405"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="434"/>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="463"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="347"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="376"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="405"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="434"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="341"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="370"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="399"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="428"/>
-        <source>Relative</source>
-        <translation>Suhteellinen</translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/numerical_conditions/__numerical_conditions_page.ui" line="512"/>
-        <location filename="../../view/solution/numerical_conditions/_numerical_conditions_page.ui" line="483"/>
-        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="477"/>
-        <source>Advanced</source>
-        <translation>Edistynyt</translation>
     </message>
     <message>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="24"/>
@@ -3188,63 +3108,91 @@ Would you like to load another mesh?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="177"/>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="296"/>
+        <source>Max Iterations per Time Step</source>
+        <translation>Iteraatioiden ennimäismäärä aikavaihetta kohti</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="179"/>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="306"/>
+        <source>Number of Correctors</source>
+        <translation>Korjaajien määrä</translation>
+    </message>
+    <message>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="182"/>
         <source>Convergence Criteria Absolute Pressure</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Konvergenssikriteerit Absoluuttinen Paine</translation>
     </message>
     <message>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="184"/>
         <source>Convergence Criteria Relative Pressure</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Konvergenssikriteerit Suhteellinen Paine</translation>
     </message>
     <message>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="186"/>
         <source>Convergence Criteria Absolute Moment</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Konvergenssikriteerit Absoluuttinen Liikemäärä</translation>
     </message>
     <message>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="188"/>
         <source>Convergence Criteria Relative Moment</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Konvergenssikriteerit Suhteellinen Liikemäärä</translation>
     </message>
     <message>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="190"/>
         <source>Convergence Criteria Absolute Energy</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Konvergenssikriteerit Absoluuttinen Energia</translation>
     </message>
     <message>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="192"/>
         <source>Convergence Criteria Relative Energy</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Konvergenssikriteerit Suhteellinen Energia</translation>
     </message>
     <message>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="194"/>
         <source>Convergence Criteria Absolute Turbulence</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Konvergenssikriteerit Absoluuttinen Turbulenssi</translation>
     </message>
     <message>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="196"/>
         <source>Convergence Criteria Relative Turbulence</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Konvergenssikriteerit Suhteellinen Turbulenssi</translation>
     </message>
     <message>
         <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.py" line="200"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="319"/>
+        <source>Convergence Criteria</source>
+        <translation>Konvergenssikriteerit</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="331"/>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="360"/>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="389"/>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="418"/>
+        <source>Absolute</source>
+        <translation>Absoluuttinen</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="341"/>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="370"/>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="399"/>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="428"/>
+        <source>Relative</source>
+        <translation>Suhteellinen</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/numerical_conditions/numerical_conditions_page.ui" line="477"/>
+        <source>Advanced</source>
+        <translation>Edistynyt</translation>
     </message>
 </context>
 <context>
     <name>OpenChannelInletDialog</name>
-    <message>
-        <location filename="../../view/setup/boundary_conditions/open_channel_inlet_dialog.py" line="35"/>
-        <source>Volume Flow Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/setup/boundary_conditions/open_channel_inlet_dialog.py" line="42"/>
-        <source>Input Error</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/open_channel_inlet_dialog.ui" line="20"/>
         <source>Open Channel Inlet Boundary Condition</source>
@@ -3253,21 +3201,21 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/boundary_conditions/open_channel_inlet_dialog.ui" line="44"/>
         <source>Volume Flow Rate (m3/s)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tilavuusvirtausnopeus (m3/s)</translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/boundary_conditions/open_channel_inlet_dialog.py" line="35"/>
+        <source>Volume Flow Rate</source>
+        <translation type="unfinished">Tilavuusvirtausnopeus</translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/boundary_conditions/open_channel_inlet_dialog.py" line="42"/>
+        <source>Input Error</source>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
     <name>OpenChannelOutletDialog</name>
-    <message>
-        <location filename="../../view/setup/boundary_conditions/open_channel_outlet_dialog.py" line="35"/>
-        <source>Mean Velocity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/setup/boundary_conditions/open_channel_outlet_dialog.py" line="42"/>
-        <source>Input Error</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/open_channel_outlet_dialog.ui" line="20"/>
         <source>Open Channel Outlet Boundary Condition</source>
@@ -3276,7 +3224,17 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/boundary_conditions/open_channel_outlet_dialog.ui" line="44"/>
         <source>Mean Velocity, U&lt;sub&gt;mean&lt;/sub&gt; (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Keskinopeus, U&lt;sub&gt;keskiarvo&lt;/sub&gt; (m/s)</translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/boundary_conditions/open_channel_outlet_dialog.py" line="35"/>
+        <source>Mean Velocity</source>
+        <translation>Keskinopeus,</translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/boundary_conditions/open_channel_outlet_dialog.py" line="42"/>
+        <source>Input Error</source>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -3319,7 +3277,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/operating_conditions_dialog.py" line="24"/>
         <source>Operating Pressure</source>
-        <translation type="unfinished"></translation>
+        <translation>Käyttöpaine</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/operating_conditions_dialog.py" line="26"/>
@@ -3339,7 +3297,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/operating_conditions_dialog.py" line="34"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -3425,7 +3383,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/widgets/number_input_dialog.py" line="171"/>
         <source>Select CSV File</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse CSV-tiedosto</translation>
     </message>
 </context>
 <context>
@@ -3440,27 +3398,27 @@ Would you like to load another mesh?</source>
         <location filename="../../view/solution/monitors/point_dialog.py" line="54"/>
         <location filename="../../view/solution/monitors/point_dialog.py" line="77"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/point_dialog.py" line="54"/>
         <source>Enter Monitor Name.</source>
-        <translation type="unfinished"></translation>
+        <translation>Syötä valvonnan nimi</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/point_dialog.py" line="62"/>
         <source>Coordinate X</source>
-        <translation type="unfinished"></translation>
+        <translation>Koordinaatti X</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/point_dialog.py" line="63"/>
         <source>Coordinate Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Koordinaatti Y</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/point_dialog.py" line="64"/>
         <source>Coordinate Z</source>
-        <translation type="unfinished"></translation>
+        <translation>Koordinaatti Z</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/point_dialog.py" line="73"/>
@@ -3471,7 +3429,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/solution/monitors/point_dialog.py" line="115"/>
         <source>Select Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse raja</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/point_dialog.py" line="59"/>
@@ -3520,12 +3478,12 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/solution/monitors/points_widget.py" line="13"/>
         <source>Points</source>
-        <translation type="unfinished"></translation>
+        <translation>Pisteet</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/points_widget.py" line="35"/>
         <source>Remove monitor item</source>
-        <translation type="unfinished"></translation>
+        <translation>Poista valvonnan kohde</translation>
     </message>
 </context>
 <context>
@@ -3533,7 +3491,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/widgets/number_input_dialog.py" line="227"/>
         <source>Coefficient</source>
-        <translation type="unfinished"></translation>
+        <translation>Kerroin</translation>
     </message>
 </context>
 <context>
@@ -3561,28 +3519,28 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/boundary_conditions/porous_jump_dialog.ui" line="59"/>
         <source>Coupled Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Yhdistetty raja</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/porous_jump_dialog.ui" line="88"/>
         <source>Select</source>
-        <translation type="unfinished">Valitse</translation>
+        <translation>Valitse</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/porous_jump_dialog.py" line="33"/>
         <location filename="../../view/setup/boundary_conditions/porous_jump_dialog.py" line="48"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/porous_jump_dialog.py" line="33"/>
         <source>Select Coupled Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse yhdistetty raja</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/porous_jump_dialog.py" line="63"/>
         <source>Select Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse raja</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/porous_jump_dialog.py" line="81"/>
@@ -3605,72 +3563,72 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="55"/>
         <source>Direction-1 Vector X</source>
-        <translation type="unfinished"></translation>
+        <translation>Suunta-1 vektori X</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="57"/>
         <source>Direction-1 Vector Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Suunta-1 vektori Y</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="59"/>
         <source>Direction-1 Vector Z</source>
-        <translation type="unfinished"></translation>
+        <translation>Suunta-1 vektori Z</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="61"/>
         <source>Direction-2 Vector X</source>
-        <translation type="unfinished"></translation>
+        <translation>Suunta-2 vektori X</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="63"/>
         <source>Direction-2 Vector Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Suunta-2 vektori Y</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="65"/>
         <source>Direction-2 Vector Z</source>
-        <translation type="unfinished"></translation>
+        <translation>Suunta-2 vektori Z</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="67"/>
         <source>Inertial Resistance Coefficient X</source>
-        <translation type="unfinished"></translation>
+        <translation>Inertiavastuskerroin X</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="69"/>
         <source>Inertial Resistance Coefficient Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Inertiavastuskerroin Y</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="71"/>
         <source>Inertial Resistance Coefficient Z</source>
-        <translation type="unfinished"></translation>
+        <translation>Inertiavastuskerroin Z</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="73"/>
         <source>Viscous Resistance Coefficient X</source>
-        <translation type="unfinished"></translation>
+        <translation>Viskoosivastuskerroin X</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="75"/>
         <source>Viscous Resistance Coefficient Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Viskoosivastuskerroin Y</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="77"/>
         <source>Viscous Resistance Coefficient Z</source>
-        <translation type="unfinished"></translation>
+        <translation>Viskoosivastuskerroin Z</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="79"/>
         <source>C0</source>
-        <translation type="unfinished"></translation>
+        <translation>C0</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="80"/>
         <source>C1</source>
-        <translation type="unfinished"></translation>
+        <translation>C1</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.py" line="83"/>
@@ -3703,12 +3661,12 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/boundary_conditions/pressure_inlet_dialog.py" line="41"/>
         <source>Total Pressure</source>
-        <translation type="unfinished"></translation>
+        <translation>Kokonaispaine</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/pressure_inlet_dialog.py" line="52"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -3721,7 +3679,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/boundary_conditions/pressure_outlet_dialog.ui" line="41"/>
         <source>Pressure</source>
-        <translation type="unfinished">Paine</translation>
+        <translation>Paine</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/pressure_outlet_dialog.ui" line="47"/>
@@ -3741,7 +3699,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/boundary_conditions/pressure_outlet_dialog.py" line="40"/>
         <source>Total Pressure</source>
-        <translation type="unfinished"></translation>
+        <translation>Kokonaispaine</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/pressure_outlet_dialog.py" line="49"/>
@@ -3751,7 +3709,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/setup/boundary_conditions/pressure_outlet_dialog.py" line="55"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -3759,7 +3717,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/solution/run/process_information_page.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.ui" line="26"/>
@@ -3790,84 +3748,86 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="79"/>
         <source>Calculation Run.</source>
-        <translation type="unfinished"></translation>
+        <translation>Laskentaajo</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="79"/>
         <source>Generating case</source>
-        <translation type="unfinished"></translation>
+        <translation>Luodaan tapausta</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="88"/>
         <source>Reconstructing the case.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tapauksen uudelleen rakentaminen</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="95"/>
         <source>Reconstruction failed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Jälleenrakennus epäonnistui.</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="106"/>
         <source>Case generating fail. - </source>
-        <translation type="unfinished"></translation>
+        <translation>Tapauksen luonti epäonnistui. -</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="113"/>
         <source>Decomposing the case.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tapauksen purkaminen.</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="118"/>
         <source>Decomposing failed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hajotus epäonnistui.</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="124"/>
         <source>Error occurred:
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Tapahtui virhe:
+</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="130"/>
         <source>Calculation Execution Failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Laskennan suoritus epäonnistui</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="131"/>
         <source>Solver execution failed or terminated.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ratkaisijan suoritus epäonnistui tai keskeytettiin.</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="150"/>
         <source>Waiting for the solver to stop after final calculation. You can &quot;Force Stop&quot;,
 yet it could corrupt the final iteration result.</source>
-        <translation type="unfinished"></translation>
+        <translation>Odotetaan, että ratkaisija pysähtyy lopullisen laskennan jälkeen. Voit &quot;Pakota lopettamaan&quot;,
+silti se voi turmella lopullisen iteroinnin tuloksen</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="150"/>
         <source>Calculation Canceling</source>
-        <translation type="unfinished"></translation>
+        <translation>Laskenta peruutetaan</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="151"/>
         <source>Force Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Pakota lopettamaan</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="165"/>
         <source>Unsupported OS</source>
-        <translation type="unfinished"></translation>
+        <translation>Käyttöjärjestelmää ei tueta</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="181"/>
         <source>Waiting</source>
-        <translation type="unfinished"></translation>
+        <translation>Odotetaan</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="183"/>
         <source>Running</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajetaan</translation>
     </message>
     <message>
         <location filename="../../view/solution/run/process_information_page.py" line="185"/>
@@ -3922,7 +3882,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/widgets/progress_dialog.py" line="61"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Sulje</translation>
     </message>
 </context>
 <context>
@@ -3993,7 +3953,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/main_window/recent_widget.ui" line="20"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/main_window/recent_widget.ui" line="135"/>
@@ -4012,12 +3972,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.ui" line="32"/>
         <source>Reference Values</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Viitearvot</translation>
     </message>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.ui" line="49"/>
@@ -4052,17 +4012,17 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.ui" line="143"/>
         <source>X (m)</source>
-        <translation type="unfinished">X (m)</translation>
+        <translation>X (m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.ui" line="160"/>
         <source>Y (m)</source>
-        <translation type="unfinished">Y (m)</translation>
+        <translation>Y (m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.ui" line="177"/>
         <source>Z (m)</source>
-        <translation type="unfinished">Z (m)</translation>
+        <translation>Z (m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.py" line="32"/>
@@ -4072,7 +4032,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.py" line="33"/>
         <source>Density</source>
-        <translation type="unfinished">Tiheys</translation>
+        <translation>Tiheys</translation>
     </message>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.py" line="34"/>
@@ -4082,12 +4042,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.py" line="35"/>
         <source>Velocity</source>
-        <translation type="unfinished">Nopeus</translation>
+        <translation>Nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.py" line="36"/>
         <source>Pressure</source>
-        <translation type="unfinished">Paine</translation>
+        <translation>Paine</translation>
     </message>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.py" line="39"/>
@@ -4107,7 +4067,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/reference_values/reference_values_page.py" line="47"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -4115,22 +4075,22 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/solution/monitors/region_objects_selector.ui" line="14"/>
         <source>Dialog</source>
-        <translation type="unfinished">Vuoropuhelu</translation>
+        <translation>Vuoropuhelu</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/region_objects_selector.ui" line="26"/>
         <source>Region</source>
-        <translation type="unfinished"></translation>
+        <translation>Alue</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/region_objects_selector.ui" line="86"/>
         <source>Add &gt;&gt;</source>
-        <translation type="unfinished">Lisää &gt;&gt;</translation>
+        <translation>Lisää &gt;&gt;</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/region_objects_selector.ui" line="93"/>
         <source>&lt;&lt; Remove</source>
-        <translation type="unfinished">&lt;&lt; Poista</translation>
+        <translation>&lt;&lt; Poista</translation>
     </message>
 </context>
 <context>
@@ -4139,7 +4099,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/setup/boundary_conditions/region_widget.ui" line="14"/>
         <location filename="../../view/setup/cell_zone_conditions/region_widget.ui" line="20"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/region_widget.ui" line="32"/>
@@ -4190,12 +4150,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/region_widget.py" line="72"/>
         <source>Subsonic Inflow</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Aliäänen sisäänvirtaus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/region_widget.py" line="73"/>
         <source>Supersonic Inflow</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Yliäänen sisäänvirtaus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/region_widget.py" line="75"/>
@@ -4210,17 +4170,17 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/region_widget.py" line="77"/>
         <source>Outflow</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ulosvirtaus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/region_widget.py" line="78"/>
         <source>Subsonic Outflow</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Aliäänien ulosirtaus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/region_widget.py" line="79"/>
         <source>Supersonic Outflow</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Yliäänien ulosirtaus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/region_widget.py" line="81"/>
@@ -4240,7 +4200,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/region_widget.py" line="84"/>
         <source>FAN</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">FAN</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/region_widget.py" line="86"/>
@@ -4265,7 +4225,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/region_widget.py" line="90"/>
         <source>Wedge</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Kiila</translation>
     </message>
 </context>
 <context>
@@ -4273,7 +4233,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="26"/>
@@ -4292,44 +4252,29 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <translation>Aika-askellusmenetelmä</translation>
     </message>
     <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="345"/>
-        <source>Host File</source>
-        <translation type="unfinished"></translation>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="40"/>
+        <source>Fixed</source>
+        <translation>Korjattu</translation>
     </message>
     <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="415"/>
-        <source>Patch</source>
-        <translation type="unfinished"></translation>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="41"/>
+        <source>Adaptive</source>
+        <translation>Mukautuva</translation>
     </message>
     <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="425"/>
-        <source>Min. Value</source>
-        <translation type="unfinished"></translation>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="50"/>
+        <source>Binary</source>
+        <translation>Binääri</translation>
     </message>
     <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="435"/>
-        <source>Max. Value</source>
-        <translation type="unfinished"></translation>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="51"/>
+        <source>ASCII</source>
+        <translation>ASCII</translation>
     </message>
     <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="445"/>
-        <source>Value Increment</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="470"/>
-        <source>Case to Plot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="519"/>
-        <source>Create/Initialize Batch Cases</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="548"/>
-        <source>Plot monitor</source>
-        <translation type="unfinished"></translation>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="116"/>
+        <source>Number of Iteration</source>
+        <translation>Iteraatioiden määrä</translation>
     </message>
     <message>
         <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="122"/>
@@ -4342,6 +4287,42 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="148"/>
         <source>Max Courant Number</source>
         <translation>Loppuaika</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="126"/>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="155"/>
+        <source>End Time</source>
+        <translation>Loppumisaika</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="129"/>
+        <source>Report Interval Interation Steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="131"/>
+        <source>Report Interval Seconds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="140"/>
+        <source>Data Write Precision</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="142"/>
+        <source>Time Precision</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="153"/>
+        <source>Input Error</source>
+        <translation>Syöttövirhe</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="193"/>
+        <source>Select host file</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="171"/>
@@ -4357,47 +4338,6 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="202"/>
         <source>Every (Seconds)</source>
         <translation>Joka (sekunti)</translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="40"/>
-        <source>Fixed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="41"/>
-        <source>Adaptive</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="50"/>
-        <source>Binary</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="51"/>
-        <source>ASCII</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="116"/>
-        <source>Number of Iteration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="126"/>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="155"/>
-        <source>End Time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="129"/>
-        <source>Report Interval Interation Steps</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="131"/>
-        <source>Report Interval Seconds</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="134"/>
@@ -4416,32 +4356,6 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="255"/>
         <source>Data Write Format</source>
         <translation>Tietojen kirjoitusmuoto</translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="140"/>
-        <source>Data Write Precision</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="142"/>
-        <source>Time Precision</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="148"/>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="330"/>
-        <source>Cluster</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="153"/>
-        <source>Input Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="193"/>
-        <source>Select host file</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="265"/>
@@ -4469,6 +4383,17 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <translation>Ydinten lukumäärä</translation>
     </message>
     <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.py" line="148"/>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="330"/>
+        <source>Cluster</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="345"/>
+        <source>Host File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="374"/>
         <source>Select</source>
         <translation>Valitse</translation>
@@ -4482,6 +4407,41 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="405"/>
         <source>Field</source>
         <translation>Kenttä</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="415"/>
+        <source>Patch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="425"/>
+        <source>Min. Value</source>
+        <translation>Vähimmäisarvo</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="435"/>
+        <source>Max. Value</source>
+        <translation>Enimmäisarvo</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="445"/>
+        <source>Value Increment</source>
+        <translation>Arvolisäys</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="470"/>
+        <source>Case to Plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="519"/>
+        <source>Create/Initialize Batch Cases</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/run_conditions/run_conditions_page.ui" line="548"/>
+        <source>Plot monitor</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4509,6 +4469,14 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <source>&lt; Language &gt;</source>
         <translation>&lt; Kieli &gt;</translation>
     </message>
+    <message>
+        <source>Change Locale</source>
+        <translation type="vanished">Vaihda kieli</translation>
+    </message>
+    <message>
+        <source>Locale change will be effective from next start</source>
+        <translation type="vanished">Kielimuutos tulee voimaan seuraavasta käynnistyksestä</translation>
+    </message>
 </context>
 <context>
     <name>SettingScalingDialog</name>
@@ -4525,12 +4493,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/main_window/menu/settings_scaling.py" line="25"/>
         <source>Change UI language</source>
-        <translation type="unfinished"></translation>
+        <translation>Vaihda käyttöliittymän kieli</translation>
     </message>
     <message>
         <location filename="../../view/main_window/menu/settings_scaling.py" line="25"/>
         <source>Requires UI restart</source>
-        <translation type="unfinished"></translation>
+        <translation>Vaatii käyttöliittymän uudelleenkäynnistyksen</translation>
     </message>
 </context>
 <context>
@@ -4538,7 +4506,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/sliding_mesh_widget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/sliding_mesh_widget.ui" line="32"/>
@@ -4548,47 +4516,47 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/sliding_mesh_widget.ui" line="53"/>
         <source>Rotating Speed (RPM)</source>
-        <translation type="unfinished"></translation>
+        <translation>Pyörimisnopeus (kier/min)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/sliding_mesh_widget.ui" line="66"/>
         <source>Rotation-Axis Origin</source>
-        <translation type="unfinished">Pyörimisakselin kohta</translation>
+        <translation>Pyörimisakselin kohta</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/sliding_mesh_widget.ui" line="72"/>
         <source>X (m)</source>
-        <translation type="unfinished">X (m)</translation>
+        <translation>X (m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/sliding_mesh_widget.ui" line="82"/>
         <source>Y (m)</source>
-        <translation type="unfinished">Y (m)</translation>
+        <translation>Y (m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/sliding_mesh_widget.ui" line="92"/>
         <source>Z (m)</source>
-        <translation type="unfinished">Z (m)</translation>
+        <translation>Z (m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/sliding_mesh_widget.ui" line="105"/>
         <source>Rotation-Axis Direction</source>
-        <translation type="unfinished">Pyörimisakselin suunta</translation>
+        <translation>Pyörimisakselin suunta</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/sliding_mesh_widget.ui" line="111"/>
         <source>X</source>
-        <translation type="unfinished">X</translation>
+        <translation>X</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/sliding_mesh_widget.ui" line="121"/>
         <source>Y</source>
-        <translation type="unfinished">Y</translation>
+        <translation>Y</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/sliding_mesh_widget.ui" line="131"/>
         <source>Z</source>
-        <translation type="unfinished">Z</translation>
+        <translation>Z</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/sliding_mesh_widget.py" line="31"/>
@@ -4631,22 +4599,22 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/case_wizard/solver_type_page.ui" line="19"/>
         <source>WizardPage</source>
-        <translation type="unfinished">Velhosivu</translation>
+        <translation>Velhosivu</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/solver_type_page.ui" line="22"/>
         <source>Solver Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Ratkaisijatyyppi</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/solver_type_page.ui" line="37"/>
         <source>Pressure-based</source>
-        <translation type="unfinished"></translation>
+        <translation>Painepohjainen</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/solver_type_page.ui" line="44"/>
         <source>Density-based</source>
-        <translation type="unfinished"></translation>
+        <translation>Tiheyspohjainen</translation>
     </message>
 </context>
 <context>
@@ -4654,17 +4622,17 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/case_wizard/species_model_page.ui" line="19"/>
         <source>WizardPage</source>
-        <translation type="unfinished">Velhosivu</translation>
+        <translation>Velhosivu</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/species_model_page.ui" line="22"/>
         <source>Species Model</source>
-        <translation type="unfinished"></translation>
+        <translation>Lajimalli</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/species_model_page.ui" line="37"/>
         <source>Include</source>
-        <translation type="unfinished">Sisällytä</translation>
+        <translation>Sisällytä</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/species_model_page.ui" line="44"/>
@@ -4687,34 +4655,44 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/main_window/start_window.ui" line="49"/>
         <source>Open</source>
-        <translation>Open</translation>
+        <translation>Avaa</translation>
     </message>
     <message>
         <location filename="../../view/main_window/start_window.py" line="87"/>
         <source>Remove from list</source>
-        <translation type="unfinished"></translation>
+        <translation>Poista luettelosta</translation>
     </message>
     <message>
         <location filename="../../view/main_window/start_window.py" line="106"/>
         <source>Select Project Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse hankehakemisto</translation>
     </message>
     <message>
         <location filename="../../view/main_window/start_window.py" line="133"/>
         <location filename="../../view/main_window/start_window.py" line="136"/>
         <location filename="../../view/main_window/start_window.py" line="140"/>
         <source>Case Open Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Tapauksen avausvirhe</translation>
     </message>
     <message>
         <location filename="../../view/main_window/start_window.py" line="141"/>
         <source>Fail to open case
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Tapauksen avaaminen epäonnistui</translation>
     </message>
 </context>
 <context>
     <name>SubsonicInflowDialog</name>
+    <message>
+        <location filename="../../view/setup/boundary_conditions/subsonic_inflow_dialog.ui" line="20"/>
+        <source>Subsonic Inflow Boundary Condition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/boundary_conditions/subsonic_inflow_dialog.ui" line="41"/>
+        <source>Flow Direction</source>
+        <translation>Virtaussuunta</translation>
+    </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/subsonic_inflow_dialog.py" line="35"/>
         <location filename="../../view/setup/boundary_conditions/subsonic_inflow_dialog.ui" line="47"/>
@@ -4737,22 +4715,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/setup/boundary_conditions/subsonic_inflow_dialog.py" line="38"/>
         <location filename="../../view/setup/boundary_conditions/subsonic_inflow_dialog.py" line="39"/>
         <source>Pressure</source>
-        <translation type="unfinished">Paine</translation>
+        <translation>Paine</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/subsonic_inflow_dialog.py" line="46"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/setup/boundary_conditions/subsonic_inflow_dialog.ui" line="20"/>
-        <source>Subsonic Inflow Boundary Condition</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/setup/boundary_conditions/subsonic_inflow_dialog.ui" line="41"/>
-        <source>Flow Direction</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/subsonic_inflow_dialog.ui" line="104"/>
@@ -4762,21 +4730,11 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/subsonic_inflow_dialog.ui" line="121"/>
         <source>Total Temperature, T&lt;sub&gt;0&lt;/sub&gt; (K)</source>
-        <translation type="unfinished"></translation>
+        <translation>Kokonaislämpötila, T&lt;sub&gt;0&lt;/sub&gt; (K)</translation>
     </message>
 </context>
 <context>
     <name>SubsonicOutflowDialog</name>
-    <message>
-        <location filename="../../view/setup/boundary_conditions/subsonic_outflow_dialog.py" line="29"/>
-        <source>Pressure</source>
-        <translation type="unfinished">Paine</translation>
-    </message>
-    <message>
-        <location filename="../../view/setup/boundary_conditions/subsonic_outflow_dialog.py" line="33"/>
-        <source>Input Error</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/subsonic_outflow_dialog.ui" line="14"/>
         <source>Subsonic Outflow Boundary Condition</source>
@@ -4786,6 +4744,16 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/setup/boundary_conditions/subsonic_outflow_dialog.ui" line="38"/>
         <source>Static Pressure, P&lt;sub&gt;Exit&lt;/sub&gt; (Pa)</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/boundary_conditions/subsonic_outflow_dialog.py" line="29"/>
+        <source>Pressure</source>
+        <translation>Paine</translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/boundary_conditions/subsonic_outflow_dialog.py" line="33"/>
+        <source>Input Error</source>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -4798,22 +4766,22 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/supersonic_inflow_dialog.ui" line="41"/>
         <source>Velocity</source>
-        <translation type="unfinished">Nopeus</translation>
+        <translation>Nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/supersonic_inflow_dialog.ui" line="47"/>
         <source>X-Velocity, Ux (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">X-nopeus, Ux (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/supersonic_inflow_dialog.ui" line="64"/>
         <source>Y-Velocity, Uy (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Y-nopeus, Ux (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/supersonic_inflow_dialog.ui" line="81"/>
         <source>Z-Velocity, Uz (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Z-nopeus, Ux (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/supersonic_inflow_dialog.ui" line="104"/>
@@ -4828,17 +4796,17 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/supersonic_inflow_dialog.py" line="35"/>
         <source>X-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>X-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/supersonic_inflow_dialog.py" line="36"/>
         <source>Y-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Y-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/supersonic_inflow_dialog.py" line="37"/>
         <source>Z-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Z-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/supersonic_inflow_dialog.py" line="38"/>
@@ -4853,71 +4821,71 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/supersonic_inflow_dialog.py" line="46"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
     <name>SurfaceDialog</name>
     <message>
+        <location filename="../../view/solution/monitors/surface_dialog.ui" line="14"/>
+        <location filename="../../view/solution/monitors/surface_dialog.ui" line="48"/>
+        <source>Surface Monitor</source>
+        <translation>Pintavalvonta</translation>
+    </message>
+    <message>
         <location filename="../../view/solution/monitors/surface_dialog.py" line="53"/>
         <location filename="../../view/solution/monitors/surface_dialog.py" line="57"/>
         <location filename="../../view/solution/monitors/surface_dialog.py" line="73"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/surface_dialog.py" line="53"/>
         <source>Enter Monitor Name.</source>
-        <translation type="unfinished"></translation>
+        <translation>Syötä valvonnan nimi</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/surface_dialog.py" line="57"/>
         <source>Select Surface.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/monitors/surface_dialog.py" line="66"/>
-        <location filename="../../view/solution/monitors/surface_dialog.ui" line="112"/>
-        <source>Surface</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse pinta</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/surface_dialog.py" line="69"/>
         <location filename="../../view/solution/monitors/surface_dialog.ui" line="35"/>
         <source>Name</source>
-        <translation type="unfinished">Nimi</translation>
+        <translation>Nimi</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/surface_dialog.py" line="105"/>
         <source>Select Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse raja</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/surface_dialog.py" line="61"/>
         <location filename="../../view/solution/monitors/surface_dialog.ui" line="60"/>
         <source>Write Interval</source>
-        <translation type="unfinished">Kirjoitusväli</translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/monitors/surface_dialog.ui" line="14"/>
-        <location filename="../../view/solution/monitors/surface_dialog.ui" line="48"/>
-        <source>Surface Monitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Kirjoitusväli</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/surface_dialog.ui" line="74"/>
         <source>Report Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Raporttityyppi</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/surface_dialog.ui" line="84"/>
         <source>Field Variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Kenttämuuttuja</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/monitors/surface_dialog.py" line="66"/>
+        <location filename="../../view/solution/monitors/surface_dialog.ui" line="112"/>
+        <source>Surface</source>
+        <translation>Pinta</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/surface_dialog.ui" line="126"/>
         <source>Select</source>
-        <translation type="unfinished">Valitse</translation>
+        <translation>Valitse</translation>
     </message>
 </context>
 <context>
@@ -4925,12 +4893,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/solution/monitors/surfaces_widget.py" line="13"/>
         <source>Surfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Pinnat</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/surfaces_widget.py" line="35"/>
         <source>Remove monitor item</source>
-        <translation type="unfinished"></translation>
+        <translation>Poista valvonnan kohde</translation>
     </message>
 </context>
 <context>
@@ -4938,7 +4906,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.py" line="29"/>
         <source>Constant</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Jatkuva</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.py" line="30"/>
@@ -4955,7 +4923,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.py" line="92"/>
         <source>Temperature</source>
-        <translation type="unfinished">Lämpötila</translation>
+        <translation>Lämpötila</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.py" line="101"/>
@@ -4963,7 +4931,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.py" line="117"/>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.py" line="124"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.py" line="101"/>
@@ -4999,12 +4967,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.py" line="163"/>
         <source>Select CSV File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Valitse CSV-tiedosto</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.py" line="178"/>
         <source>t</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">t</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.py" line="178"/>
@@ -5022,7 +4990,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/thermo_coupled_wall_dialog.ui" line="35"/>
         <source>Coupled Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Yhdistetty raja</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/thermo_coupled_wall_dialog.ui" line="49"/>
@@ -5036,17 +5004,17 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/setup/boundary_conditions/thermo_coupled_wall_dialog.py" line="33"/>
         <location filename="../../view/setup/boundary_conditions/thermo_coupled_wall_dialog.py" line="46"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/thermo_coupled_wall_dialog.py" line="33"/>
         <source>Select Coupled Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse yhdistetty raja</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/thermo_coupled_wall_dialog.py" line="56"/>
         <source>Select Boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse raja</translation>
     </message>
 </context>
 <context>
@@ -5162,27 +5130,27 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_epsilon_widget.py" line="21"/>
         <source>Intensity and Viscosity Ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>Intensiteetin ja viskositeetin suhde</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_epsilon_widget.py" line="50"/>
         <source>Turbulent Kinetic Energy</source>
-        <translation type="unfinished"></translation>
+        <translation>Turbulenttinen kineettinen energia</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_epsilon_widget.py" line="52"/>
         <source>Turbulent Dissipation Rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Turbulenttinen hajoamisnopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_epsilon_widget.py" line="55"/>
         <source>Turbulent Intensity</source>
-        <translation type="unfinished"></translation>
+        <translation>Turbulenttinen intensiteetti</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_epsilon_widget.py" line="57"/>
         <source>Turbulent Viscosity Ratio</source>
-        <translation type="unfinished">Turbulenttinen viskositeettisuhde</translation>
+        <translation>Turbulenttinen viskositeettisuhde</translation>
     </message>
 </context>
 <context>
@@ -5195,27 +5163,27 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_omega_widget.py" line="21"/>
         <source>Intensity and Viscosity Ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>Intensiteetin ja viskositeetin suhde</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_omega_widget.py" line="48"/>
         <source>Turbulent Kinetic Energy</source>
-        <translation type="unfinished"></translation>
+        <translation>Turbulenttinen kineettinen energia</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_omega_widget.py" line="50"/>
         <source>Specific Dissipation Rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Ominaishäviönopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_omega_widget.py" line="53"/>
         <source>Turbulent Intensity</source>
-        <translation type="unfinished"></translation>
+        <translation>Turbulenttinen intensiteetti</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_omega_widget.py" line="55"/>
         <source>Turbulent Viscosity Ratio</source>
-        <translation type="unfinished">Turbulenttinen viskositeettisuhde</translation>
+        <translation>Turbulenttinen viskositeettisuhde</translation>
     </message>
 </context>
 <context>
@@ -5233,7 +5201,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/models/turbulence_dialog.py" line="81"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
 </context>
 <context>
@@ -5242,13 +5210,13 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/setup/boundary_conditions/turbulence_spalart_allmaras_widget.py" line="20"/>
         <location filename="../../view/setup/boundary_conditions/turbulence_spalart_allmaras_widget.py" line="46"/>
         <source>Modified Turbulent Viscosity</source>
-        <translation type="unfinished"></translation>
+        <translation>Muokattu turbulenttinen viskositeetti</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_spalart_allmaras_widget.py" line="21"/>
         <location filename="../../view/setup/boundary_conditions/turbulence_spalart_allmaras_widget.py" line="49"/>
         <source>Turbulent Viscosity Ratio</source>
-        <translation type="unfinished">Turbulenttinen viskositeettisuhde</translation>
+        <translation>Turbulenttinen viskositeettisuhde</translation>
     </message>
 </context>
 <context>
@@ -5256,47 +5224,47 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.ui" line="32"/>
         <source>GroupBox</source>
-        <translation type="unfinished">Ryhmälaatikko</translation>
+        <translation>Ryhmälaatikko</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.ui" line="44"/>
         <source>Specification Method</source>
-        <translation type="unfinished">Määrittelymenetelmä</translation>
+        <translation>Määrittelymenetelmä</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.ui" line="61"/>
         <source>Temporal Profile Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Aikaprofiilin tyyppi</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.ui" line="114"/>
         <source>Edit</source>
-        <translation type="unfinished">Muokkaa</translation>
+        <translation>Muokkaa</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.ui" line="127"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Arvo</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="19"/>
         <source>Value per Unit Volume</source>
-        <translation type="unfinished"></translation>
+        <translation>Arvo per tilavuusyksikkö</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="20"/>
         <source>Value for Entire Cell Zone</source>
-        <translation type="unfinished"></translation>
+        <translation>Arvo koko solualueelle</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="24"/>
         <source>Constant</source>
-        <translation type="unfinished"></translation>
+        <translation>Jatkuva</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="25"/>
@@ -5309,29 +5277,29 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="26"/>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="128"/>
         <source>Polynomial</source>
-        <translation type="unfinished"></translation>
+        <translation>Polynomi</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="65"/>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="73"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="110"/>
-        <source>Energy</source>
-        <translation type="unfinished">Energia</translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="110"/>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="121"/>
         <source>t</source>
-        <translation type="unfinished"></translation>
+        <translation>t</translation>
+    </message>
+    <message>
+        <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="110"/>
+        <source>Energy</source>
+        <translation>Energia</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/variable_source_widget.py" line="121"/>
         <source>Flow Rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Virtausnopeus</translation>
     </message>
 </context>
 <context>
@@ -5344,7 +5312,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.ui" line="41"/>
         <source>Velocity</source>
-        <translation type="unfinished">Nopeus</translation>
+        <translation>Nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.ui" line="74"/>
@@ -5354,22 +5322,22 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.ui" line="84"/>
         <source>Profile Type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Profiilin tyyppi</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.ui" line="100"/>
         <source>X-Velocity, Ux (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">X-nopeus, Ux (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.ui" line="110"/>
         <source>Y-Velocity, Uy (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Y-nopeus, Ux (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.ui" line="120"/>
         <source>Z-Velocity, Uz (m/s)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Z-nopeus, Ux (m/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.ui" line="136"/>
@@ -5379,12 +5347,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.ui" line="152"/>
         <source>CSV File Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">CSV-tiedoston nimi</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.ui" line="166"/>
         <source>Select</source>
-        <translation type="unfinished">Valitse</translation>
+        <translation>Valitse</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.ui" line="206"/>
@@ -5394,7 +5362,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.ui" line="213"/>
         <source>Edit</source>
-        <translation type="unfinished">Muokkaa</translation>
+        <translation>Muokkaa</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="34"/>
@@ -5409,7 +5377,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="38"/>
         <source>Constant</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Jatkuva</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="39"/>
@@ -5426,17 +5394,17 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="82"/>
         <source>X-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>X-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="84"/>
         <source>Y-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Y-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="86"/>
         <source>Z-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Z-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="95"/>
@@ -5447,7 +5415,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="146"/>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="161"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="95"/>
@@ -5485,13 +5453,13 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="240"/>
         <source>Select CSV File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Valitse CSV-tiedosto</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="259"/>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="272"/>
         <source>t</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">t</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/velocity_inlet_dialog.py" line="259"/>
@@ -5517,65 +5485,65 @@ Laskenta pysähtyy mahdollisimman pian</translation>
 <context>
     <name>VolumeDialog</name>
     <message>
-        <location filename="../../view/solution/monitors/volume_dialog.py" line="53"/>
-        <location filename="../../view/solution/monitors/volume_dialog.py" line="57"/>
-        <location filename="../../view/solution/monitors/volume_dialog.py" line="73"/>
-        <source>Input Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/monitors/volume_dialog.py" line="53"/>
-        <source>Enter Monitor Name.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/monitors/volume_dialog.py" line="57"/>
-        <source>Select Volume.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/monitors/volume_dialog.py" line="66"/>
-        <location filename="../../view/solution/monitors/volume_dialog.ui" line="112"/>
-        <source>Volumes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/monitors/volume_dialog.py" line="69"/>
-        <location filename="../../view/solution/monitors/volume_dialog.ui" line="35"/>
-        <source>Name</source>
-        <translation type="unfinished">Nimi</translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/monitors/volume_dialog.py" line="105"/>
-        <source>Select Cell Zone</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../view/solution/monitors/volume_dialog.py" line="61"/>
-        <location filename="../../view/solution/monitors/volume_dialog.ui" line="60"/>
-        <source>Write Interval</source>
-        <translation type="unfinished">Kirjoitusväli</translation>
-    </message>
-    <message>
         <location filename="../../view/solution/monitors/volume_dialog.ui" line="14"/>
         <location filename="../../view/solution/monitors/volume_dialog.ui" line="48"/>
         <source>Volume Monitor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../view/solution/monitors/volume_dialog.py" line="53"/>
+        <location filename="../../view/solution/monitors/volume_dialog.py" line="57"/>
+        <location filename="../../view/solution/monitors/volume_dialog.py" line="73"/>
+        <source>Input Error</source>
+        <translation>Syöttövirhe</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/monitors/volume_dialog.py" line="53"/>
+        <source>Enter Monitor Name.</source>
+        <translation>Syötä valvonnan nimi</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/monitors/volume_dialog.py" line="57"/>
+        <source>Select Volume.</source>
+        <translation>Valitse tilavuus</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/monitors/volume_dialog.py" line="69"/>
+        <location filename="../../view/solution/monitors/volume_dialog.ui" line="35"/>
+        <source>Name</source>
+        <translation>Nimi</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/monitors/volume_dialog.py" line="105"/>
+        <source>Select Cell Zone</source>
+        <translation>Valitse solualue</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/monitors/volume_dialog.py" line="61"/>
+        <location filename="../../view/solution/monitors/volume_dialog.ui" line="60"/>
+        <source>Write Interval</source>
+        <translation>Kirjoitusväli</translation>
+    </message>
+    <message>
         <location filename="../../view/solution/monitors/volume_dialog.ui" line="74"/>
         <source>Report Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Raporttityyppi</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/volume_dialog.ui" line="84"/>
         <source>Field Variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Kenttämuuttuja</translation>
+    </message>
+    <message>
+        <location filename="../../view/solution/monitors/volume_dialog.py" line="66"/>
+        <location filename="../../view/solution/monitors/volume_dialog.ui" line="112"/>
+        <source>Volumes</source>
+        <translation>Tilavuudet</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/volume_dialog.ui" line="126"/>
         <source>Select</source>
-        <translation type="unfinished">Valitse</translation>
+        <translation>Valitse</translation>
     </message>
 </context>
 <context>
@@ -5583,12 +5551,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/solution/monitors/volumes_widget.py" line="13"/>
         <source>Volumes</source>
-        <translation type="unfinished"></translation>
+        <translation>Tilavuudet</translation>
     </message>
     <message>
         <location filename="../../view/solution/monitors/volumes_widget.py" line="35"/>
         <source>Remove monitor item</source>
-        <translation type="unfinished"></translation>
+        <translation>Poista valvonnan kohde</translation>
     </message>
 </context>
 <context>
@@ -5722,17 +5690,17 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/wall_dialog.py" line="66"/>
         <source>X-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>X-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/wall_dialog.py" line="67"/>
         <source>Y-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Y-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/wall_dialog.py" line="68"/>
         <source>Z-Velocity</source>
-        <translation type="unfinished"></translation>
+        <translation>Z-nopeus</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/wall_dialog.py" line="70"/>
@@ -5804,7 +5772,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/wall_dialog.py" line="95"/>
         <source>Input Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Syöttövirhe</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/wall_dialog.ui" line="336"/>
@@ -5847,32 +5815,32 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/case_wizard/workspace_page.ui" line="19"/>
         <source>WizardPage</source>
-        <translation type="unfinished">Velhosivu</translation>
+        <translation>Velhosivu</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/workspace_page.ui" line="22"/>
         <source>Working Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Työhakemisto</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/workspace_page.ui" line="37"/>
         <source>Projet Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Hankkee nimi</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/workspace_page.ui" line="51"/>
         <source>Projet Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Hankkeen sijainti</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/workspace_page.ui" line="92"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/workspace_page.py" line="58"/>
         <source>Select Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Valitse sijainti</translation>
     </message>
 </context>
 <context>
@@ -5880,7 +5848,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="14"/>
         <source>Form</source>
-        <translation>Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="32"/>
@@ -5890,7 +5858,7 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="53"/>
         <source>Model</source>
-        <translation type="unfinished">Malli</translation>
+        <translation>Malli</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="66"/>
@@ -5900,30 +5868,30 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="72"/>
         <source>Direction-1 Vector</source>
-        <translation type="unfinished"></translation>
+        <translation>Suunta-1 vektori</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="78"/>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="117"/>
         <source>X</source>
-        <translation type="unfinished">X</translation>
+        <translation>X</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="88"/>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="127"/>
         <source>Y</source>
-        <translation type="unfinished">Y</translation>
+        <translation>Y</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="98"/>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="137"/>
         <source>Z</source>
-        <translation type="unfinished">Z</translation>
+        <translation>Z</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="111"/>
         <source>Direction-2 Vector</source>
-        <translation type="unfinished"></translation>
+        <translation>Suunta-2 vektori</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="150"/>
@@ -5933,37 +5901,37 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="156"/>
         <source>X (1/m)</source>
-        <translation type="unfinished"></translation>
+        <translation>X (1/m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="166"/>
         <source>Y (1/m)</source>
-        <translation type="unfinished"></translation>
+        <translation>Y (1/m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="176"/>
         <source>Z (1/m)</source>
-        <translation type="unfinished"></translation>
+        <translation>Z (1/m)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="189"/>
         <source>Viscous Resistance Coefficient</source>
-        <translation type="unfinished"></translation>
+        <translation>Viskoosivastuskerroin</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="195"/>
         <source>X (1/m&lt;sup&gt;2&lt;/sup&gt;)</source>
-        <translation type="unfinished"></translation>
+        <translation>X (1/m&lt;sup&gt;2&lt;/sup&gt;)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="205"/>
         <source>Y (1/m&lt;sup&gt;2&lt;/sup&gt;)</source>
-        <translation type="unfinished"></translation>
+        <translation>Y (1/m&lt;sup&gt;2&lt;/sup&gt;)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="215"/>
         <source>Z (1/m&lt;sup&gt;2&lt;/sup&gt;)</source>
-        <translation type="unfinished"></translation>
+        <translation>Z (1/m&lt;sup&gt;2&lt;/sup&gt;)</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="231"/>
@@ -5973,12 +5941,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="237"/>
         <source>C0</source>
-        <translation type="unfinished"></translation>
+        <translation>C0</translation>
     </message>
     <message>
         <location filename="../../view/setup/cell_zone_conditions/porous_zone_widget.ui" line="247"/>
         <source>C1</source>
-        <translation type="unfinished"></translation>
+        <translation>C1</translation>
     </message>
 </context>
 <context>
@@ -5986,32 +5954,32 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.ui" line="32"/>
         <source>Temperature</source>
-        <translation type="unfinished">Lämpötila</translation>
+        <translation>Lämpötila</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.ui" line="65"/>
         <source>Profile Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Profiilin tyyppi</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.ui" line="88"/>
         <source>Temperature (K)</source>
-        <translation type="unfinished">Lämpötila (K)</translation>
+        <translation>Lämpötila (K)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.ui" line="111"/>
         <source>CSV File Name</source>
-        <translation type="unfinished"></translation>
+        <translation>CSV-tiedoston nimi</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.ui" line="137"/>
         <source>Select</source>
-        <translation type="unfinished">Valitse</translation>
+        <translation>Valitse</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.ui" line="171"/>
@@ -6022,12 +5990,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.ui" line="184"/>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.ui" line="225"/>
         <source>Edit</source>
-        <translation type="unfinished">Muokkaa</translation>
+        <translation>Muokkaa</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/temperature_widget.ui" line="215"/>
         <source>Polynomial</source>
-        <translation type="unfinished"></translation>
+        <translation>Polynomi</translation>
     </message>
 </context>
 <context>
@@ -6035,17 +6003,17 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_epsilon_widget.ui" line="20"/>
         <source>Form</source>
-        <translation type="unfinished">Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_epsilon_widget.ui" line="44"/>
         <source>Turbulence</source>
-        <translation type="unfinished">Turbulenssi</translation>
+        <translation>Turbulenssi</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_epsilon_widget.ui" line="77"/>
         <source>Specification method</source>
-        <translation type="unfinished"></translation>
+        <translation>Määrittelymenetelmä</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_epsilon_widget.ui" line="93"/>
@@ -6060,12 +6028,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_epsilon_widget.ui" line="119"/>
         <source>Turbulent Intensity (%)</source>
-        <translation type="unfinished">Turbulenssin voimakkuus (%)</translation>
+        <translation>Turbulenssin voimakkuus (%)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_epsilon_widget.ui" line="129"/>
         <source>Turbulent Visocosity Ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>Turbulenttisen viskositeetin suhde</translation>
     </message>
 </context>
 <context>
@@ -6073,17 +6041,17 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_omega_widget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_omega_widget.ui" line="32"/>
         <source>Turbulence</source>
-        <translation type="unfinished">Turbulenssi</translation>
+        <translation>Turbulenssi</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_omega_widget.ui" line="65"/>
         <source>Specification method</source>
-        <translation type="unfinished"></translation>
+        <translation>Määrittelymenetelmä</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_omega_widget.ui" line="81"/>
@@ -6093,17 +6061,17 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_omega_widget.ui" line="91"/>
         <source>Specific Dissipation Rate (1/s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Ominaishäviönopeus (1/s)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_omega_widget.ui" line="107"/>
         <source>Turbulent Intensity (%)</source>
-        <translation type="unfinished">Turbulenssin voimakkuus (%)</translation>
+        <translation>Turbulenssin voimakkuus (%)</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_k_omega_widget.ui" line="117"/>
         <source>Turbulent Visocosity Ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>Turbulenttisen viskositeetin suhde</translation>
     </message>
 </context>
 <context>
@@ -6111,27 +6079,27 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_spalart_allmaras_widget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Muoto</translation>
+        <translation>Lomake</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_spalart_allmaras_widget.ui" line="32"/>
         <source>Turbulence</source>
-        <translation type="unfinished">Turbulenssi</translation>
+        <translation>Turbulenssi</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_spalart_allmaras_widget.ui" line="65"/>
         <source>Specification method</source>
-        <translation type="unfinished"></translation>
+        <translation>Määrittelymenetelmä</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_spalart_allmaras_widget.ui" line="81"/>
         <source>Modified Turbulent Viscosity</source>
-        <translation type="unfinished"></translation>
+        <translation>Muokattu turbulenttinen viskositeetti</translation>
     </message>
     <message>
         <location filename="../../view/setup/boundary_conditions/turbulence_spalart_allmaras_widget.ui" line="104"/>
         <source>Turbulent Visocosity Ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>Turbulenttisen viskositeetin suhde</translation>
     </message>
 </context>
 </TS>

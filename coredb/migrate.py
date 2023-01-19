@@ -149,6 +149,15 @@ def _version_2(root: etree.Element):
             ''')
             p.append(e)
 
+    p = root.find(f'.//initialization', namespaces=_nsmap)
+    if p.find('advanced', namespaces=_nsmap) is None:
+        logger.debug(f'    Adding "advanced" to {p}')
+        e = etree.fromstring('''
+                <advanced xmlns="http://www.baramcfd.org/baram">
+                    <sections></sections>
+                </advanced>
+            ''')
+        p.append(e)
 
 
 _fTable = [
