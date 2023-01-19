@@ -2027,12 +2027,12 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../view/main_window/main_window.ui" line="355"/>
         <source>Fluent Mesh  (ASCII)</source>
-        <translation>Sujuva mesh</translation>
+        <translation>Sujuva mesh  (ASCII)</translation>
     </message>
     <message>
         <location filename="../../view/main_window/main_window.ui" line="360"/>
         <source>Fluent Case (ASCII)</source>
-        <translation>Sujuva tapaus</translation>
+        <translation>Sujuva tapaus (ASCII)</translation>
     </message>
     <message>
         <location filename="../../view/main_window/main_window.ui" line="376"/>
