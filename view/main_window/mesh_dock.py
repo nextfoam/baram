@@ -80,23 +80,35 @@ class MouseInteractorHighLightActor(vtkInteractorStyleTrackballCamera):
 
     def _mouseWheelForwardEvent(self, obj, event):
         super().OnMouseWheelForward()
-        self._parent.render()
+        self._parent.resizeOriginAxis()
 
     def _mouseWheelBackwardEvent(self, obj, event):
         super().OnMouseWheelBackward()
-        self._parent.render()
+        self._parent.resizeOriginAxis()
 
     def _interactionEvent(self, obj, event):
-        self._parent.render()
-
-    def getOriginActorLength(self):
-        d = self._parent.camera.GetDirectionOfProjection()
-        p = self._parent.camera.GetPosition()
-        distance = -p[0]*d[0]-p[1]*d[1]-p[2]*d[2]
-
-        degree = self._parent.camera.GetViewAngle()
-        radian = math.radians(degree/3.0)
-        return distance * math.tan(radian)
+        self._parent.resizeOriginAxis()
+    #
+    # def getOriginActorLength(self):
+    #     def displayToWorldCoordinate(p, depth):
+    #         coordinate = [0, 0, 0, 0]
+    #         self.ComputeDisplayToWorld(self.GetDefaultRenderer(), p[0], p[1], depth, coordinate)
+    #
+    #         return coordinate
+    #
+    #     # Display Coordinates
+    #     x, y = self.GetDefaultRenderer().GetSize()
+    #     displayMinPoint = (0, 0)
+    #     displayMaxPoint = (x, 0) if x < y else (0, y)
+    #
+    #     p0 = [0, 0, 0]
+    #     self.ComputeWorldToDisplay(self.GetDefaultRenderer(), 0, 0, 0, p0)
+    #
+    #     # World Coordinates: minBoundary(x1, y1, z1) and maxBoundary(x2, y2, z2)
+    #     x1, y1, z1, w1 = displayToWorldCoordinate(displayMinPoint, p0[2])
+    #     x2, y2, z2, w2 = displayToWorldCoordinate(displayMaxPoint, p0[2])
+    #
+    #     return math.sqrt(math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2) + math.pow(z1 - z2, 2)) * 0.4
 
 
 class RenderWindowInteractor(QVTKRenderWindowInteractor):
@@ -194,9 +206,6 @@ class MeshDock(TabifiedDock):
         self._renderer.RemoveActor(actor)
 
     def render(self):
-        if self._originActor:
-            length = self._style.getOriginActorLength()
-            self._originActor.SetTotalLength(length, length, length)
         self._widget.Render()
 
     def reload(self):
@@ -207,10 +216,24 @@ class MeshDock(TabifiedDock):
             self._showOriginAxes()
 
         self._fitCamera()
-        self.render()
+        self.resizeOriginAxis()
 
     def displayMode(self):
         return self._displayModeCombo.currentIndex()
+
+    def resizeOriginAxis(self):
+        if self._originActor:
+            d = self.camera.GetDirectionOfProjection()
+            p = self.camera.GetPosition()
+            distance = -p[0]*d[0]-p[1]*d[1]-p[2]*d[2]
+
+            degree = self.camera.GetViewAngle()
+            radian = math.radians(degree/3.0)
+            length = distance * math.tan(radian)
+
+            # length = self._style.getOriginActorLength()
+            self._originActor.SetTotalLength(length, length, length)
+            self.render()
 
     def _translate(self):
         self.setWindowTitle(self.tr("Mesh"))
@@ -278,7 +301,7 @@ class MeshDock(TabifiedDock):
         self._originActor.SetNormalizedTipLength(0.1, 0.1, 0.1)
         self._originActor.SetNormalizedLabelPosition(1.0, 1.0, 1.0)
         # xLabel = self._originActor.GetCaptionTextProperty().SetFontSize(1)
-        self.render()
+        self.resizeOriginAxis()
 
         # self._originAxes = vtk.vtkOrientationMarkerWidget()
         # self._originAxes.SetViewport(0.0, 0.0, 0.2, 0.2)
@@ -504,7 +527,7 @@ class MeshDock(TabifiedDock):
             else:
                 self._showCulling()
 
-        self.render()
+        self.resizeOriginAxis()
 
     def _runParaview(self):
         casePath = ''
