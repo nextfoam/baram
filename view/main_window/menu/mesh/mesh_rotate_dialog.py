@@ -5,13 +5,13 @@ import qasync
 
 from PySide6.QtWidgets import QDialog
 
-from .mesh_ratate_dialog_ui import Ui_MeshRatateDialog
+from .mesh_rotate_dialog_ui import Ui_MeshRotateDialog
 
 
 class MeshRotateDialog(QDialog):
     def __init__(self, parent, manager):
         super().__init__(parent)
-        self._ui = Ui_MeshRatateDialog()
+        self._ui = Ui_MeshRotateDialog()
         self._ui.setupUi(self)
 
         self._manager = manager
