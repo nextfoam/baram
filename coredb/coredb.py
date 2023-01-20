@@ -902,6 +902,37 @@ class _CoreDB(object):
         self.clearSurfacesMonitors()
         self.clearVolumeMonitors()
 
+    def addElementFromString(self, xpath, text):
+        parent = self._xmlTree.find(xpath, namespaces=nsmap)
+        if parent is None:
+            raise LookupError
+
+        parent.append(etree.fromstring(text))
+
+        try:
+            self._xmlSchema.assertValid(self._xmlTree)
+        except etree.DocumentInvalid as ex:
+            message = str(ex)
+            start = message.find(']') + 1
+            end = message.rfind(',')
+            self._lastError = message[start:end] if start < end else message
+
+            return self._lastError
+
+        self._configCount += 1
+
+        return None
+
+    def clearElement(self, xpath):
+        element = self._xmlTree.find(xpath, namespaces=nsmap)
+        if element is None:
+            raise LookupError
+
+        element.clear()
+
+    def getList(self, xpath, key) -> list[str]:
+        return [e.find(key, namespaces=nsmap).text for e in self._xmlTree.findall(xpath, namespaces=nsmap)]
+
     def exists(self, xpath: str):
         """Returns if specified configuration path is exists.
 

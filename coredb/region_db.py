@@ -104,5 +104,9 @@ class RegionDB:
         return coredb.CoreDB().getValue(cls.getXPath(rname) + '/material')
 
     @classmethod
+    def getSecondaryMaterials(cls, rname):
+        return coredb.CoreDB().getValue(cls.getXPath(rname) + '/secondaryMaterials').split()
+
+    @classmethod
     def getRegionProperties(cls, rname):
         return cls.Region(rname)

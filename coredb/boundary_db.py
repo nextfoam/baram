@@ -211,3 +211,12 @@ class BoundaryDB:
                         items.append(SelectorItem(f'{r}{bcname}', bcname, bcid))
 
         return items
+
+    @classmethod
+    def buildVolumeFractionElement(cls, mid, fraction):
+        return f'''
+                <volumeFraction xmlns="http://www.baramcfd.org/baram">
+                    <material>{mid}</material>
+                    <fraction>{fraction}</fraction>
+                </volumeFraction>
+        '''

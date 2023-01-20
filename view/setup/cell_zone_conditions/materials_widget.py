@@ -112,7 +112,7 @@ class MaterialsWidget(QWidget):
 
             self._ui.primaryMaterial.setText(self._addMaterialToMap(self._material))
             if MaterialDB.isFluid(self._material):
-                self._setSecondaryMaterials(self._db.getValue(self._xpath + '/secondaryMaterials').split())
+                self._setSecondaryMaterials(RegionDB.getSecondaryMaterials(self._rname))
         else:
             self._ui.material.setCurrentText(MaterialDB.getName(self._material))
 
