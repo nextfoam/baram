@@ -28,30 +28,30 @@ class TurbulenceKOmegaWidget(QWidget):
         self._connectSignalsSlots()
 
     def load(self):
-        path = self._xpath + self.RELATIVE_XPATH
+        xpath = self._xpath + self.RELATIVE_XPATH
 
         self._ui.specificationMethod.setCurrentText(
-            self._specificationMethods[self._db.getValue(path + '/specification')])
-        self._ui.turbulentKineticEnergy.setText(self._db.getValue(path + '/turbulentKineticEnergy'))
-        self._ui.specificDissipationRate.setText(self._db.getValue(path + '/specificDissipationRate'))
-        self._ui.turbulentIntensity.setText(self._db.getValue(path + '/turbulentIntensity'))
-        self._ui.turbulentViscosityRatio.setText(self._db.getValue(path + '/turbulentViscosityRatio'))
+            self._specificationMethods[self._db.getValue(xpath + '/specification')])
+        self._ui.turbulentKineticEnergy.setText(self._db.getValue(xpath + '/turbulentKineticEnergy'))
+        self._ui.specificDissipationRate.setText(self._db.getValue(xpath + '/specificDissipationRate'))
+        self._ui.turbulentIntensity.setText(self._db.getValue(xpath + '/turbulentIntensity'))
+        self._ui.turbulentViscosityRatio.setText(self._db.getValue(xpath + '/turbulentViscosityRatio'))
         self._specificationMethodChanged()
 
     def appendToWriter(self, writer):
-        path = self._xpath + self.RELATIVE_XPATH
+        xpath = self._xpath + self.RELATIVE_XPATH
 
         specification = self._ui.specificationMethod.currentData()
-        writer.append(path + '/specification', specification, None)
+        writer.append(xpath + '/specification', specification, None)
         if specification == KOmegaSpecification.K_AND_OMEGA.value:
-            writer.append(path + '/turbulentKineticEnergy', self._ui.turbulentKineticEnergy.text(),
+            writer.append(xpath + '/turbulentKineticEnergy', self._ui.turbulentKineticEnergy.text(),
                           self.tr("Turbulent Kinetic Energy"))
-            writer.append(path + '/specificDissipationRate', self._ui.specificDissipationRate.text(),
+            writer.append(xpath + '/specificDissipationRate', self._ui.specificDissipationRate.text(),
                           self.tr("Specific Dissipation Rate"))
         elif specification == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-            writer.append(path + '/turbulentIntensity', self._ui.turbulentIntensity.text(),
+            writer.append(xpath + '/turbulentIntensity', self._ui.turbulentIntensity.text(),
                           self.tr("Turbulent Intensity"))
-            writer.append(path + '/turbulentViscosityRatio', self._ui.turbulentViscosityRatio.text(),
+            writer.append(xpath + '/turbulentViscosityRatio', self._ui.turbulentViscosityRatio.text(),
                           self.tr("Turbulent Viscosity Ratio"))
 
     def _connectSignalsSlots(self):

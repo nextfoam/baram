@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QFormLayout, QLineEdit
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QFormLayout, QLineEdit, QMessageBox
 
 from coredb import coredb
 from coredb.models_db import ModelsDB
@@ -63,6 +63,15 @@ class VolumeFractionWidget(QWidget):
         if self._on:
             writer.clearElement(self._xpath + '/volumeFractions')
             for mid in self._fractions:
+                value = self._fractions[mid].value
+                try:
+                    decimal = float(value)
+                except ValueError:
+                    QMessageBox.critical(self, self.tr("Input Error"),
+                                         self.tr(f'{self._fractions[mid].label} must be a float.'))
+                    return False
+
                 writer.addElement(self._xpath + '/volumeFractions',
-                                  BoundaryDB.buildVolumeFractionElement(mid, self._fractions[mid].value),
-                                  self._fractions[mid].label)
+                                  BoundaryDB.buildVolumeFractionElement(mid, value), self._fractions[mid].label)
+
+        return True

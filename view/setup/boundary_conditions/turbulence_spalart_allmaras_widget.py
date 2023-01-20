@@ -28,24 +28,24 @@ class TurbulenceSpalartAllmarasWidget(QWidget):
         self._connectSignalsSlots()
 
     def load(self):
-        path = self._xpath + self.RELATIVE_XPATH
+        xpath = self._xpath + self.RELATIVE_XPATH
 
         self._ui.specificationMethod.setCurrentText(
-            self._specificationMethods[self._db.getValue(path + '/specification')])
-        self._ui.modifiedTurbulentViscosity.setText(self._db.getValue(path + '/modifiedTurbulentViscosity'))
-        self._ui.turbulentViscosityRatio.setText(self._db.getValue(path + '/turbulentViscosityRatio'))
+            self._specificationMethods[self._db.getValue(xpath + '/specification')])
+        self._ui.modifiedTurbulentViscosity.setText(self._db.getValue(xpath + '/modifiedTurbulentViscosity'))
+        self._ui.turbulentViscosityRatio.setText(self._db.getValue(xpath + '/turbulentViscosityRatio'))
         self._specificationMethodChanged()
 
     def appendToWriter(self, writer):
-        path = self._xpath + self.RELATIVE_XPATH
+        xpath = self._xpath + self.RELATIVE_XPATH
 
         specification = self._ui.specificationMethod.currentData()
-        writer.append(path + '/specification', specification, None)
+        writer.append(xpath + '/specification', specification, None)
         if specification == SpalartAllmarasSpecification.MODIFIED_TURBULENT_VISCOSITY.value:
-            writer.append(path + '/modifiedTurbulentViscosity', self._ui.modifiedTurbulentViscosity.text(),
+            writer.append(xpath + '/modifiedTurbulentViscosity', self._ui.modifiedTurbulentViscosity.text(),
                           self.tr("Modified Turbulent Viscosity"))
         elif specification == SpalartAllmarasSpecification.TURBULENT_VISCOSITY_RATIO.value:
-            writer.append(path + '/turbulentViscosityRatio', self._ui.turbulentViscosityRatio.text(),
+            writer.append(xpath + '/turbulentViscosityRatio', self._ui.turbulentViscosityRatio.text(),
                           self.tr("Turbulent Viscosity Ratio"))
 
     def _connectSignalsSlots(self):

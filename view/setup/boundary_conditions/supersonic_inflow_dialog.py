@@ -23,12 +23,13 @@ class SupersonicInflowDialog(ResizableDialog):
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
         self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
-        self._volumeFractionWidget = VolumeFractionWidget(bcid)
 
         layout = self._ui.dialogContents.layout()
+
         if self._turbulenceWidget:
             layout.addWidget(self._turbulenceWidget)
 
+        self._volumeFractionWidget = VolumeFractionWidget(bcid)
         if self._volumeFractionWidget.on():
             layout.addWidget(self._volumeFractionWidget)
 
@@ -47,7 +48,8 @@ class SupersonicInflowDialog(ResizableDialog):
         if self._turbulenceWidget:
             self._turbulenceWidget.appendToWriter(writer)
 
-        self._volumeFractionWidget.appendToWriter(writer)
+        if not self._volumeFractionWidget.appendToWriter(writer):
+            return
 
         errorCount = writer.write()
         if errorCount > 0:

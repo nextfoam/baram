@@ -10,6 +10,7 @@ from coredb.boundary_db import BoundaryDB
 from view.widgets.resizable_dialog import ResizableDialog
 from .pressure_outlet_dialog_ui import Ui_PressureOutletDialog
 from .turbulence_model_helper import TurbulenceModelHelper
+from .volume_franction_widget import VolumeFractionWidget
 
 
 class PressureOutletDialog(ResizableDialog):
@@ -31,6 +32,11 @@ class PressureOutletDialog(ResizableDialog):
         elif not ModelsDB.isEnergyModelOn():
             self._ui.calculateBackflow.hide()
 
+        layout = self._ui.dialogContents.layout()
+        self._volumeFractionWidget = VolumeFractionWidget(bcid)
+        if self._volumeFractionWidget.on():
+            layout.addWidget(self._volumeFractionWidget)
+
         self._load()
 
     def accept(self):
@@ -50,6 +56,9 @@ class PressureOutletDialog(ResizableDialog):
         else:
             writer.append(path + '/calculatedBackflow', "false", None)
 
+        if not self._volumeFractionWidget.appendToWriter(writer):
+            return
+
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
@@ -65,3 +74,5 @@ class PressureOutletDialog(ResizableDialog):
             self._turbulenceWidget.load()
         if ModelsDB.isEnergyModelOn():
             self._ui.backflowTotalTemperature.setText(self._db.getValue(path + '/backflowTotalTemperature'))
+
+        self._volumeFractionWidget.load()

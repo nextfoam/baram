@@ -16,6 +16,7 @@ from view.widgets.number_input_dialog import PiecewiseLinearDialog
 from .velocity_inlet_dialog_ui import Ui_VelocityInletDialog
 from .turbulence_model_helper import TurbulenceModelHelper
 from .temperature_widget import TemperatureWidget
+from .volume_franction_widget import VolumeFractionWidget
 
 PROFILE_TYPE_SPATIAL_DISTRIBUTION_INDEX = 1
 
@@ -48,10 +49,15 @@ class VelocityInletDialog(ResizableDialog):
         self._temperatureWidget = TemperatureWidget(self._xpath, bcid)
 
         layout = self._ui.dialogContents.layout()
+
         if self._turbulenceWidget is not None:
             layout.addWidget(self._turbulenceWidget)
         if ModelsDB.isEnergyModelOn():
             layout.addWidget(self._temperatureWidget)
+
+        self._volumeFractionWidget = VolumeFractionWidget(bcid)
+        if self._volumeFractionWidget.on():
+            layout.addWidget(self._volumeFractionWidget)
 
         self._componentSpatialDistributionFile = None
         self._componentSpatialDistributionFileName = None
@@ -152,6 +158,9 @@ class VelocityInletDialog(ResizableDialog):
         if not self._temperatureWidget.appendToWriter(writer):
             return
 
+        if not self._volumeFractionWidget.appendToWriter(writer):
+            return
+
         errorCount = writer.write()
         if errorCount > 0:
             if distributionFileKey:
@@ -199,6 +208,8 @@ class VelocityInletDialog(ResizableDialog):
             self._turbulenceWidget.load()
 
         self._temperatureWidget.load()
+
+        self._volumeFractionWidget.load()
 
     def _setupCombo(self, combo, items):
         for value, text in items.items():

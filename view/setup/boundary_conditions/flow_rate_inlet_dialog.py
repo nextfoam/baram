@@ -11,6 +11,7 @@ from view.widgets.resizable_dialog import ResizableDialog
 from .flow_rate_inlet_dialog_ui import Ui_FlowRateInletDialog
 from .turbulence_model_helper import TurbulenceModelHelper
 from .temperature_widget import TemperatureWidget
+from .volume_franction_widget import VolumeFractionWidget
 
 
 class FlowRateInletDialog(ResizableDialog):
@@ -31,10 +32,15 @@ class FlowRateInletDialog(ResizableDialog):
         self._temperatureWidget = TemperatureWidget(self._xpath, bcid)
 
         layout = self._ui.dialogContents.layout()
+
         if self._turbulenceWidget:
             layout.addWidget(self._turbulenceWidget)
         if ModelsDB.isEnergyModelOn():
             layout.addWidget(self._temperatureWidget)
+
+        self._volumeFractionWidget = VolumeFractionWidget(bcid)
+        if self._volumeFractionWidget.on():
+            layout.addWidget(self._volumeFractionWidget)
 
         self._connectSignalsSlots()
         self._load()
@@ -54,6 +60,9 @@ class FlowRateInletDialog(ResizableDialog):
             self._turbulenceWidget.appendToWriter(writer)
 
         if not self._temperatureWidget.appendToWriter(writer):
+            return
+
+        if not self._volumeFractionWidget.appendToWriter(writer):
             return
 
         errorCount = writer.write()
@@ -81,6 +90,8 @@ class FlowRateInletDialog(ResizableDialog):
 
         self._temperatureWidget.load()
         self._temperatureWidget.freezeProfileToConstant()
+
+        self._volumeFractionWidget.load()
 
     def _setupSpecificationMethodCombo(self):
         for value, text in self._specificationMethods.items():
