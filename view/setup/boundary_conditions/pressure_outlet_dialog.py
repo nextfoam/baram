@@ -10,7 +10,7 @@ from coredb.boundary_db import BoundaryDB
 from view.widgets.resizable_dialog import ResizableDialog
 from .pressure_outlet_dialog_ui import Ui_PressureOutletDialog
 from .turbulence_model_helper import TurbulenceModelHelper
-from .volume_franction_widget import VolumeFractionWidget
+from view.widgets.volume_fraction_widget import VolumeFractionWidget
 
 
 class PressureOutletDialog(ResizableDialog):
@@ -32,9 +32,10 @@ class PressureOutletDialog(ResizableDialog):
         elif not ModelsDB.isEnergyModelOn():
             self._ui.calculateBackflow.hide()
 
-        layout = self._ui.dialogContents.layout()
-        self._volumeFractionWidget = VolumeFractionWidget(bcid)
+        region = BoundaryDB.getBoundaryRegion(bcid)
+        self._volumeFractionWidget = VolumeFractionWidget(region, self._xpath)
         if self._volumeFractionWidget.on():
+            layout = self._ui.dialogContents.layout()
             layout.addWidget(self._volumeFractionWidget)
 
         self._load()

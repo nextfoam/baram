@@ -16,7 +16,7 @@ from view.widgets.number_input_dialog import PiecewiseLinearDialog
 from .velocity_inlet_dialog_ui import Ui_VelocityInletDialog
 from .turbulence_model_helper import TurbulenceModelHelper
 from .temperature_widget import TemperatureWidget
-from .volume_franction_widget import VolumeFractionWidget
+from view.widgets.volume_fraction_widget import VolumeFractionWidget
 
 PROFILE_TYPE_SPATIAL_DISTRIBUTION_INDEX = 1
 
@@ -55,7 +55,8 @@ class VelocityInletDialog(ResizableDialog):
         if ModelsDB.isEnergyModelOn():
             layout.addWidget(self._temperatureWidget)
 
-        self._volumeFractionWidget = VolumeFractionWidget(bcid)
+        region = BoundaryDB.getBoundaryRegion(bcid)
+        self._volumeFractionWidget = VolumeFractionWidget(region, self._xpath)
         if self._volumeFractionWidget.on():
             layout.addWidget(self._volumeFractionWidget)
 

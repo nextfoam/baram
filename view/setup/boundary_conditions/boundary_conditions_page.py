@@ -7,6 +7,7 @@ from PySide6.QtCore import Qt
 from app import app
 from coredb import coredb
 from coredb.boundary_db import BoundaryType, BoundaryDB
+from coredb.region_db import DEFAULT_REGION_NAME
 from view.widgets.content_page import ContentPage
 from .boundary_conditions_page_ui import Ui_BoundaryConditionsPage
 from .velocity_inlet_dialog import VelocityInletDialog
@@ -30,8 +31,6 @@ from .cyclic_dialog import CyclicDialog
 from .boundary_widget import BoundaryWidget
 from .boundary_type_picker import BoundaryTypePicker
 
-
-DEFAULT_REGION_NAME = 'region0'
 
 DIALOGS = {
     BoundaryType.VELOCITY_INLET.value: VelocityInletDialog,

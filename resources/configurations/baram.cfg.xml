@@ -144,24 +144,6 @@
         <volumes></volumes>
     </monitors>
 
-    <initialization>
-        <initialValues>
-            <velocity>
-                <x>0</x>
-                <y>0</y>
-                <z>0</z>
-            </velocity>
-            <pressure>0</pressure>
-            <temperature>300</temperature>
-            <scaleOfVelocity>1</scaleOfVelocity>
-            <turbulentIntensity>1</turbulentIntensity>
-            <turbulentViscosity>10</turbulentViscosity>
-        </initialValues>
-        <advanced>
-            <sections></sections>
-        </advanced>
-    </initialization>
-
     <runCalculation>
         <runConditions>
             <numberOfIterations>1000</numberOfIterations>

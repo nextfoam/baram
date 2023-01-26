@@ -11,7 +11,7 @@ from view.widgets.resizable_dialog import ResizableDialog
 from .pressure_inlet_dialog_ui import Ui_PressureInletDialog
 from .turbulence_model_helper import TurbulenceModelHelper
 from .temperature_widget import TemperatureWidget
-from .volume_franction_widget import VolumeFractionWidget
+from view.widgets.volume_fraction_widget import VolumeFractionWidget
 
 
 class PressureInletDialog(ResizableDialog):
@@ -34,7 +34,8 @@ class PressureInletDialog(ResizableDialog):
         if ModelsDB.isEnergyModelOn():
             layout.addWidget(self._temperatureWidget)
 
-        self._volumeFractionWidget = VolumeFractionWidget(bcid)
+        region = BoundaryDB.getBoundaryRegion(bcid)
+        self._volumeFractionWidget = VolumeFractionWidget(region, self._xpath)
         if self._volumeFractionWidget.on():
             layout.addWidget(self._volumeFractionWidget)
 

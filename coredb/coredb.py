@@ -234,7 +234,7 @@ class _CoreDB(object):
         else:
             return element.text
 
-    def setValue(self, xpath: str, value: str) -> Error:
+    def setValue(self, xpath: str, value: str) -> Optional[Error]:
         """Sets configuration value in specified path
 
         Sets configuration value in specified path
@@ -571,7 +571,7 @@ class _CoreDB(object):
 
         return index
 
-    def removeMaterial(self, name: str) -> Error:
+    def removeMaterial(self, name: str) -> Optional[Error]:
         parent = self._xmlTree.find(f'.//materials', namespaces=nsmap)
         material = parent.find(f'material[name="{name}"]', namespaces=nsmap)
         if material is None:
@@ -615,13 +615,35 @@ class _CoreDB(object):
         etree.SubElement(region, f'{{{ns}}}material').text = str(materials[0][0])
         etree.SubElement(region, f'{{{ns}}}secondaryMaterials')
         phaseInteraction = etree.SubElement(region, f'{{{ns}}}phaseInteractions')
-        sufraceTensions = etree.SubElement(phaseInteraction, f'{{{ns}}}surfaceTensions')
-        etree.SubElement(sufraceTensions, f'{{{ns}}}material1')
-        etree.SubElement(sufraceTensions, f'{{{ns}}}material2')
-        etree.SubElement(sufraceTensions, f'{{{ns}}}surfaceTension')
+        surfaceTensions = etree.SubElement(phaseInteraction, f'{{{ns}}}surfaceTensions')
+        etree.SubElement(surfaceTensions, f'{{{ns}}}material1')
+        etree.SubElement(surfaceTensions, f'{{{ns}}}material2')
+        etree.SubElement(surfaceTensions, f'{{{ns}}}surfaceTension')
 
         cellZones = etree.SubElement(region, f'{{{ns}}}cellZones')
         etree.SubElement(region, f'{{{ns}}}boundaryConditions')
+
+        e = etree.fromstring('''
+                <initialization xmlns="http://www.baramcfd.org/baram">
+                    <initialValues>
+                        <velocity>
+                            <x>0</x>
+                            <y>0</y>
+                            <z>0</z>
+                        </velocity>
+                        <pressure>0</pressure>
+                        <temperature>300</temperature>
+                        <scaleOfVelocity>1</scaleOfVelocity>
+                        <turbulentIntensity>1</turbulentIntensity>
+                        <turbulentViscosity>10</turbulentViscosity>
+                        <volumeFractions></volumeFractions>
+                    </initialValues>
+                    <advanced>
+                        <sections></sections>
+                    </advanced>
+                </initialization>
+            ''')
+        region.append(e)
 
         # add default cell zone named "All"
         self.addCellZone(rname, 'All')
@@ -926,12 +948,13 @@ class _CoreDB(object):
     def clearElement(self, xpath):
         element = self._xmlTree.find(xpath, namespaces=nsmap)
         if element is None:
-            raise LookupError
+            return
 
-        element.clear()
+        parent = self._xmlTree.find(xpath+'/..', namespaces=nsmap)
+        parent.remove(element)
 
-    def getList(self, xpath, key) -> list[str]:
-        return [e.find(key, namespaces=nsmap).text for e in self._xmlTree.findall(xpath, namespaces=nsmap)]
+    def getList(self, xpath) -> list[str]:
+        return [e.text for e in self._xmlTree.findall(xpath, namespaces=nsmap)]
 
     def exists(self, xpath: str):
         """Returns if specified configuration path is exists.

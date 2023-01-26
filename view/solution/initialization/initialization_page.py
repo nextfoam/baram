@@ -2,72 +2,41 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from enum import Enum, auto
 
-from PySide6.QtWidgets import QFileDialog, QMessageBox
+from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
-from coredb.coredb_writer import CoreDBWriter
-from coredb.app_settings import AppSettings
 from coredb.project import Project, SolverStatus
-from coredb.models_db import ModelsDB, TurbulenceModel
+from coredb.region_db import DEFAULT_REGION_NAME
 from openfoam.file_system import FileSystem
 from view.widgets.progress_dialog import ProgressDialog
 from view.widgets.content_page import ContentPage
 from .initialization_page_ui import Ui_InitializationPage
-from .option_dialog import OptionDialog
-
-
-class OptionType(Enum):
-    OFF = auto()
-    SET_FIELDS = auto()
-    MAP_FIELDS = auto()
-    POTENTIAL_FLOW = auto()
+from .initialization_widget import InitializationWidget
 
 
 class InitializationPage(ContentPage):
-    INITIALIZATION_XPATH = './/initialization'
-
     def __init__(self):
         super().__init__()
         self._ui = Ui_InitializationPage()
         self._ui.setupUi(self)
 
-        self._ui.optionRadioGroup.setId(self._ui.off, OptionType.OFF.value)
-        self._ui.optionRadioGroup.setId(self._ui.setFields, OptionType.SET_FIELDS.value)
-        self._ui.optionRadioGroup.setId(self._ui.mapFields, OptionType.MAP_FIELDS.value)
-        self._ui.optionRadioGroup.setId(self._ui.potentialFlow, OptionType.POTENTIAL_FLOW.value)
-
         self._db = coredb.CoreDB()
-        self._xpath = self.INITIALIZATION_XPATH
-        self._dialog = None
 
         self._connectSignalsSlots()
 
+        self.load()
+
     def _connectSignalsSlots(self):
-        self._ui.create.clicked.connect(self._createOption)
-        self._ui.delete_.clicked.connect(self._deleteOption)
-        self._ui.display.clicked.connect(self._displayOption)
-        self._ui.edit.clicked.connect(self._editOption)
-        self._ui.selectSourceCase.clicked.connect(self._selectSourceCase)
         self._ui.initialize.clicked.connect(self._initialize)
 
     def showEvent(self, ev):
         if ev.spontaneous():
             return super().showEvent(ev)
 
-        self._ui.xVelocity.setText(self._db.getValue(self._xpath + '/initialValues/velocity/x'))
-        self._ui.yVelocity.setText(self._db.getValue(self._xpath + '/initialValues/velocity/y'))
-        self._ui.zVelocity.setText(self._db.getValue(self._xpath + '/initialValues/velocity/z'))
-        self._ui.pressure.setText(self._db.getValue(self._xpath + '/initialValues/pressure'))
-        self._ui.temperature.setText(self._db.getValue(self._xpath + '/initialValues/temperature'))
-        self._ui.scaleOfVelocity.setText(self._db.getValue(self._xpath + '/initialValues/scaleOfVelocity'))
-        self._ui.turbulentIntensity.setText(self._db.getValue(self._xpath + '/initialValues/turbulentIntensity'))
-        self._ui.turbulentViscosityRatio.setText(self._db.getValue(self._xpath + '/initialValues/turbulentViscosity'))
-
-        self._ui.temperature.setEnabled(ModelsDB.isEnergyModelOn())
-        self._ui.turbulence.setEnabled(
-            ModelsDB.getTurbulenceModel() not in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR))
+        for i in range(self._ui.tabWidget.count()):
+            widget: InitializationWidget = self._ui.tabWidget.widget(i)
+            widget.load()
 
         return super().showEvent(ev)
 
@@ -77,46 +46,33 @@ class InitializationPage(ContentPage):
 
         return super().hideEvent(ev)
 
-    def save(self):
-        writer = CoreDBWriter()
-        writer.append(self._xpath + '/initialValues/velocity/x', self._ui.xVelocity.text(), self.tr("X-Velocity"))
-        writer.append(self._xpath + '/initialValues/velocity/y', self._ui.yVelocity.text(), self.tr("Y-Velocity"))
-        writer.append(self._xpath + '/initialValues/velocity/z', self._ui.zVelocity.text(), self.tr("Z-Velocity"))
-        writer.append(self._xpath + '/initialValues/pressure', self._ui.pressure.text(), self.tr("Pressure"))
-        writer.append(self._xpath + '/initialValues/temperature', self._ui.temperature.text(), self.tr("Temperature"))
-        writer.append(self._xpath + '/initialValues/scaleOfVelocity',
-                      self._ui.scaleOfVelocity.text(), self.tr("Scale of Velocity"))
-        writer.append(self._xpath + '/initialValues/turbulentIntensity',
-                      self._ui.turbulentIntensity.text(), self.tr("Turbulent Intensity"))
-        writer.append(self._xpath + '/initialValues/turbulentViscosity',
-                      self._ui.turbulentViscosityRatio.text(), self.tr("Turbulent Viscosity"))
+    def load(self):
+        regions = self._db.getRegions()
+        if len(regions) == 1 and not regions[0]:
+            widget = InitializationWidget('')
+            self._ui.tabWidget.addTab(widget, DEFAULT_REGION_NAME)
+        else:
+            for rname in regions:
+                widget = InitializationWidget(rname)
+                self._ui.tabWidget.addTab(widget, rname)
 
-        errorCount = writer.write()
-        if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
-            return False
+        for i in range(self._ui.tabWidget.count()):
+            widget: InitializationWidget = self._ui.tabWidget.widget(i)
+            widget.load()
+
+    def clear(self):
+        for i in range(self._ui.tabWidget.count()):
+            widget: InitializationWidget = self._ui.tabWidget.widget(0)
+            self._ui.tabWidget.removeTab(0)
+            widget.close()
+
+    def save(self):
+        for i in range(self._ui.tabWidget.count()):
+            widget: InitializationWidget = self._ui.tabWidget.widget(i)
+            if not widget.save():
+                return False
 
         return True
-
-    def _createOption(self):
-        self._dialog = OptionDialog()
-        self._dialog.open()
-
-    def _deleteOption(self):
-        pass
-
-    def _displayOption(self):
-        pass
-
-    def _editOption(self):
-        self._dialog = OptionDialog()
-        self._dialog.open()
-
-    def _selectSourceCase(self):
-        self._dialog = QFileDialog(self, self.tr('Select Source Case'), AppSettings.getRecentLocation())
-        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        self._dialog.accepted.connect(self._sourceCaseSelected)
-        self._dialog.open()
 
     @qasync.asyncSlot()
     async def _initialize(self):
@@ -127,7 +83,3 @@ class InitializationPage(ContentPage):
             await FileSystem.initialize(regions)
             Project.instance().setSolverStatus(SolverStatus.NONE)
             progress.close()
-
-    def _sourceCaseSelected(self):
-        if dirs := self._dialog.selectedFiles():
-            pass

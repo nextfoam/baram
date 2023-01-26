@@ -303,9 +303,11 @@ class MainWindow(QMainWindow):
         if self._project.meshLoaded and updated:
             self._clearPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
             self._clearPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
+            self._clearPage(MenuItem.MENU_SOLUTION_INITIALIZATION)
             self._clearPage(MenuItem.MENU_SOLUTION_MONITORS)
             self._loadPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
             self._loadPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
+            self._loadPage(MenuItem.MENU_SOLUTION_INITIALIZATION)
 
     def _updateMenuEnables(self):
         # self._ui.menuMesh.setEnabled(self._project.meshLoaded)

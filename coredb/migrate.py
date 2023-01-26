@@ -149,15 +149,38 @@ def _version_2(root: etree.Element):
             ''')
             p.append(e)
 
-    p = root.find(f'.//initialization', namespaces=_nsmap)
-    if p.find('advanced', namespaces=_nsmap) is None:
-        logger.debug(f'    Adding "advanced" to {p}')
-        e = etree.fromstring('''
-                <advanced xmlns="http://www.baramcfd.org/baram">
-                    <sections></sections>
-                </advanced>
-            ''')
-        p.append(e)
+    if (p := root.find('initialization/initialValues', namespaces=_nsmap)) is not None:
+        ux = p.find('velocity/x', namespaces=_nsmap).text
+        uy = p.find('velocity/y', namespaces=_nsmap).text
+        uz = p.find('velocity/z', namespaces=_nsmap).text
+        pr = p.find('pressure', namespaces=_nsmap).text
+        t = p.find('temperature', namespaces=_nsmap).text
+        v = p.find('scaleOfVelocity', namespaces=_nsmap).text
+        i = p.find('turbulentIntensity', namespaces=_nsmap).text
+        b = p.find('turbulentViscosity', namespaces=_nsmap).text
+
+        e = root.find('initialization', namespaces=_nsmap)
+        root.remove(e)
+
+        for p in root.findall(f'regions/region', namespaces=_nsmap):
+            logger.debug(f'    Adding "initialization" to {p}')
+            e = etree.fromstring(f'''
+                    <initialization xmlns="http://www.baramcfd.org/baram">
+                        <initialValues>
+                            <velocity><x>{ux}</x><y>{uy}</y><z>{uz}</z></velocity>
+                            <pressure>{pr}</pressure>
+                            <temperature>{t}</temperature>
+                            <scaleOfVelocity>{v}</scaleOfVelocity>
+                            <turbulentIntensity>{i}</turbulentIntensity>
+                            <turbulentViscosity>{b}</turbulentViscosity>
+                            <volumeFractions></volumeFractions>
+                        </initialValues>
+                        <advanced>
+                            <sections></sections>
+                        </advanced>
+                    </initialization>
+                ''')
+            p.append(e)
 
 
 _fTable = [

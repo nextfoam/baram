@@ -772,7 +772,7 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="volumeFractionsBoundaryConditionType">
+    <xs:complexType name="volumeFractionListType">
         <xs:sequence>
             <xs:element name="volumeFraction" type="volumeFractionType" minOccurs="0" maxOccurs="unbounded" />
         </xs:sequence>
@@ -1187,7 +1187,7 @@
                 <xs:element name="turbulence" type="turbulenceBoundaryConditionType"/>
                 <xs:element name="temperature" type="temperatureBoundaryConditionType"/>
                 <xs:element name="coupledBoundary" type="xs:nonNegativeInteger" default="0"/>
-                <xs:element name="volumeFractions" type="volumeFractionsBoundaryConditionType"/>
+                <xs:element name="volumeFractions" type="volumeFractionListType"/>
             </xs:sequence>
             <xs:attribute name="bcid" type="xs:positiveInteger" use="required"/>
         </xs:complexType>
@@ -1529,6 +1529,101 @@
                                                 </xs:sequence>
                                             </xs:complexType>
                                         </xs:element>
+                                        <xs:element name="initialization">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="initialValues">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="velocity" type="vector"/>
+                                                                <xs:element name="pressure" type="inputNumberType" default="0"/>
+                                                                <xs:element name="temperature" type="inputNumberType" default="300"/>
+                                                                <xs:element name="scaleOfVelocity" type="inputNumberType" default="1"/>
+                                                                <xs:element name="turbulentIntensity" default="1">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="inputNumberType">
+                                                                            <xs:minInclusive value="0"/>
+                                                                            <xs:maxInclusive value="100"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="turbulentViscosity" type="inputNumberType" default="10"/>
+                                                                <xs:element name="volumeFractions" type="volumeFractionListType"/>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="advanced">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="sections">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="section" minOccurs="0" maxOccurs="unbounded">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="name" type="xs:string"/>
+                                                                                        <xs:element name="type">
+                                                                                            <xs:simpleType>
+                                                                                                <xs:restriction base="xs:string">
+                                                                                                    <xs:enumeration value="hex"/>
+                                                                                                    <xs:enumeration value="cylinder"/>
+                                                                                                    <xs:enumeration value="sphere"/>
+                                                                                                    <xs:enumeration value="cellZone"/>
+                                                                                                </xs:restriction>
+                                                                                            </xs:simpleType>
+                                                                                        </xs:element>
+                                                                                        <xs:element name="point1" type="vector"/> <!-- Used as hexMin, axisPoint1, centerPoint -->
+                                                                                        <xs:element name="point2" type="vector"/> <!-- Used as hexMax, axisPoint2 -->
+                                                                                        <xs:element name="radius" type="inputNumberType" default="0"/>
+                                                                                        <xs:element name="cellZone" type="xs:positiveInteger"/>   <!-- cellZone czid -->
+                                                                                        <xs:element name="velocity">
+                                                                                            <xs:complexType>
+                                                                                                <xs:complexContent>
+                                                                                                    <xs:extension base="vector">
+                                                                                                        <xs:attribute name="disabled" type="xs:boolean" use="required"/>
+                                                                                                    </xs:extension>
+                                                                                                </xs:complexContent>
+                                                                                            </xs:complexType>
+                                                                                        </xs:element>
+                                                                                        <xs:element name="pressure">
+                                                                                            <xs:complexType>
+                                                                                                <xs:simpleContent>
+                                                                                                    <xs:extension base="inputNumberType">
+                                                                                                        <xs:attribute name="disabled" type="xs:boolean" use="required"/>
+                                                                                                    </xs:extension>
+                                                                                                </xs:simpleContent>
+                                                                                            </xs:complexType>
+                                                                                        </xs:element>
+                                                                                        <xs:element name="temperature">
+                                                                                            <xs:complexType>
+                                                                                                <xs:simpleContent>
+                                                                                                    <xs:extension base="inputNumberType">
+                                                                                                        <xs:attribute name="disabled" type="xs:boolean" use="required"/>
+                                                                                                    </xs:extension>
+                                                                                                </xs:simpleContent>
+                                                                                            </xs:complexType>
+                                                                                        </xs:element>
+                                                                                        <xs:element name="volumeFractions">
+                                                                                            <xs:complexType>
+                                                                                                <xs:complexContent>
+                                                                                                    <xs:extension base="volumeFractionListType">
+                                                                                                        <xs:attribute name="disabled" type="xs:boolean" use="required"/>
+                                                                                                    </xs:extension>
+                                                                                                </xs:complexContent>
+                                                                                            </xs:complexType>
+                                                                                        </xs:element>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
@@ -1570,71 +1665,6 @@
                                     <xs:sequence>
                                         <xs:element ref="volumeMonitor" minOccurs="0"
                                                     maxOccurs="unbounded"/>
-                                    </xs:sequence>
-                                </xs:complexType>
-                            </xs:element>
-
-                        </xs:sequence>
-                    </xs:complexType>
-                </xs:element>
-
-                <xs:element name="initialization">
-                    <xs:complexType>
-                        <xs:sequence>
-                            <xs:element name="initialValues">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="velocity" type="vector"/>
-                                        <xs:element name="pressure" type="inputNumberType" default="0"/>
-                                        <xs:element name="temperature" type="inputNumberType" default="300"/>
-                                        <xs:element name="scaleOfVelocity" type="inputNumberType" default="1"/>
-                                        <xs:element name="turbulentIntensity" default="1">
-                                            <xs:simpleType>
-                                                <xs:restriction base="inputNumberType">
-                                                    <xs:minInclusive value="0"/>
-                                                    <xs:maxInclusive value="100"/>
-                                                </xs:restriction>
-                                            </xs:simpleType>
-                                        </xs:element>
-                                        <xs:element name="turbulentViscosity" type="inputNumberType" default="10"/>
-                                        <xs:element name="volumeFraction" type="volumeFractionType" minOccurs="0" maxOccurs="unbounded"/>
-                                    </xs:sequence>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="advanced">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="sections">
-                                            <xs:complexType>
-                                                <xs:sequence>
-                                                    <xs:element name="section" minOccurs="0">
-                                                        <xs:complexType>
-                                                            <xs:sequence>
-                                                                <xs:element name="name" type="xs:string"/>
-                                                                <xs:element name="type">
-                                                                    <xs:simpleType>
-                                                                        <xs:restriction base="xs:string">
-                                                                            <xs:enumeration value="hex"/>
-                                                                            <xs:enumeration value="cylinder"/>
-                                                                            <xs:enumeration value="sphere"/>
-                                                                            <xs:enumeration value="cellZone"/>
-                                                                        </xs:restriction>
-                                                                    </xs:simpleType>
-                                                                </xs:element>
-                                                                <xs:element name="point1" type="vector"/> <!-- Used as hexMin, axisPoint1, centerPoint -->
-                                                                <xs:element name="point2" type="vector"/> <!-- Used as hexMax, axisPoint2 -->
-                                                                <xs:element name="radius" type="inputNumberType" default="0"/>
-                                                                <xs:element name="cellZone" type="xs:positiveInteger"/>   <!-- cellZone czid -->
-                                                                <xs:element name="velocity" type="vector" minOccurs="0"/>
-                                                                <xs:element name="pressure" type="inputNumberType" default="0" minOccurs="0"/>
-                                                                <xs:element name="temperature" type="inputNumberType" default="300" minOccurs="0"/>
-                                                                <xs:element name="volumeFraction" type="volumeFractionType" minOccurs="0" maxOccurs="unbounded"/>
-                                                            </xs:sequence>
-                                                        </xs:complexType>
-                                                    </xs:element>
-                                                </xs:sequence>
-                                            </xs:complexType>
-                                        </xs:element>
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>

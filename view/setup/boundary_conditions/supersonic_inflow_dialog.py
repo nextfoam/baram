@@ -9,7 +9,7 @@ from coredb.boundary_db import BoundaryDB
 from view.widgets.resizable_dialog import ResizableDialog
 from .supersonic_inflow_dialog_ui import Ui_SupersonicInflowDialog
 from .turbulence_model_helper import TurbulenceModelHelper
-from .volume_franction_widget import VolumeFractionWidget
+from view.widgets.volume_fraction_widget import VolumeFractionWidget
 
 
 class SupersonicInflowDialog(ResizableDialog):
@@ -29,7 +29,8 @@ class SupersonicInflowDialog(ResizableDialog):
         if self._turbulenceWidget:
             layout.addWidget(self._turbulenceWidget)
 
-        self._volumeFractionWidget = VolumeFractionWidget(bcid)
+        region = BoundaryDB.getBoundaryRegion(bcid)
+        self._volumeFractionWidget = VolumeFractionWidget(region, self._xpath)
         if self._volumeFractionWidget.on():
             layout.addWidget(self._volumeFractionWidget)
 
