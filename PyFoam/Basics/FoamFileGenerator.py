@@ -211,7 +211,7 @@ class FoamFileGenerator(object):
                     s+="\n"
                     s+=self.strList(v,indent+2)
                 elif type(v)==tuple:
-                    s+=" "+self.strTuple(v,indent+2)+" "
+                    s+=" "+self.strTuple(v,indent+2)+"\n"
                 else:
                     s+=(" "*(indent+2))+str(v)+"\n"
 
