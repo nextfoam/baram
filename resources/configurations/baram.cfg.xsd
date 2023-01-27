@@ -1612,6 +1612,7 @@
                                                                                                 </xs:complexContent>
                                                                                             </xs:complexType>
                                                                                         </xs:element>
+                                                                                        <xs:element name="overrideBoundaryValue" type="xs:boolean" default="false"/>
                                                                                     </xs:sequence>
                                                                                 </xs:complexType>
                                                                             </xs:element>
