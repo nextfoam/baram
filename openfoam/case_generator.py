@@ -28,6 +28,7 @@ from openfoam.system.control_dict import ControlDict
 from openfoam.system.fv_schemes import FvSchemes
 from openfoam.system.fv_options import FvOptions
 from openfoam.system.decomposePar_dict import DecomposeParDict
+from openfoam.system.set_fields_dict import SetFieldsDict
 from openfoam.polymesh.boundary import Boundary
 from openfoam.file_system import FileSystem
 
@@ -74,6 +75,7 @@ class CaseGenerator:
             FvSolution(rname).build().write()
             FvOptions(rname).build().write()
             DecomposeParDict(rname).build().write()
+            SetFieldsDict(rname).build().write()
 
         if len(regions) > 1:
             FvSolution().build().write()
