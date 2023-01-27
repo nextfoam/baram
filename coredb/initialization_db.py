@@ -5,26 +5,29 @@ from coredb import coredb
 
 
 class InitializationDB:
-    INITIAL_VALUES_XPATH = './/initialization/initialValues'
+    @classmethod
+    def getVelocity(cls, region: str) -> float:
+        db = coredb.CoreDB()
+        return db.getVector(f'.//regions/region[name="{region}"]/initialization/initialValues/velocity')
 
     @classmethod
-    def getPressure(cls):
+    def getPressure(cls, region: str) -> float:
         db = coredb.CoreDB()
-        return float(db.getValue(cls.INITIAL_VALUES_XPATH + '/pressure'))\
+        return float(db.getValue(f'.//regions/region[name="{region}"]/initialization/initialValues/pressure'))\
             + float(db.getValue('.//operatingConditions/pressure'))
 
     @classmethod
-    def getTemperature(cls):
-        return float(coredb.CoreDB().getValue(cls.INITIAL_VALUES_XPATH + '/temperature'))
+    def getTemperature(cls, region: str) -> float:
+        return float(coredb.CoreDB().getValue(f'.//regions/region[name="{region}"]/initialization/initialValues/temperature'))
 
     @classmethod
-    def getScaleOfVelocity(cls):
-        return float(coredb.CoreDB().getValue(cls.INITIAL_VALUES_XPATH + '/scaleOfVelocity'))
+    def getScaleOfVelocity(cls, region: str) -> float:
+        return float(coredb.CoreDB().getValue(f'.//regions/region[name="{region}"]/initialization/initialValues/scaleOfVelocity'))
 
     @classmethod
-    def getTurbulentViscosity(cls):
-        return float(coredb.CoreDB().getValue(cls.INITIAL_VALUES_XPATH + '/turbulentViscosity'))
+    def getTurbulentViscosity(cls, region: str) -> float:
+        return float(coredb.CoreDB().getValue(f'.//regions/region[name="{region}"]/initialization/initialValues/turbulentViscosity'))
 
     @classmethod
-    def getTurbulentIntensity(cls):
-        return float(coredb.CoreDB().getValue(cls.INITIAL_VALUES_XPATH + '/turbulentIntensity')) / 100.0
+    def getTurbulentIntensity(cls, region: str) -> float:
+        return float(coredb.CoreDB().getValue(f'.//regions/region[name="{region}"]/initialization/initialValues/turbulentIntensity')) / 100.0

@@ -4,6 +4,7 @@
 from coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
 from coredb.boundary_db import FlowRateInletSpecification, WallVelocityCondition, InterfaceMode
 from coredb.project import Project
+from coredb.initialization_db import InitializationDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from openfoam.dictionary_file import DataClass
 
@@ -14,7 +15,7 @@ class U(BoundaryCondition):
     def __init__(self, region, time, processorNo):
         super().__init__(region, time, processorNo, 'U', DataClass.CLASS_VOL_VECTOR_FIELD)
 
-        self._initialValue = self._db.getVector('.//initialization/initialValues/velocity')
+        self._initialValue = InitializationDB.getVelocity(region.rname)
 
     def build0(self):
         self._data = None
