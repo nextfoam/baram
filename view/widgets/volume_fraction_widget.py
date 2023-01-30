@@ -86,6 +86,6 @@ class VolumeFractionWidget(QGroupBox):
                                       BoundaryDB.buildVolumeFractionElement(mid, inputValue), self._fractions[mid].label)
                 else:
                     if inputValue != savedValue:
-                        writer.append(fractionPath, inputValue, self.tr('In'))
+                        writer.append(fractionPath, inputValue, self._fractions[mid].label)
 
         return True

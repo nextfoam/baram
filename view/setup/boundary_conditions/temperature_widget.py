@@ -23,7 +23,7 @@ class TemperatureWidget(QWidget):
         self._ui.setupUi(self)
 
         self._bcid = bcid
-        self._energyModelOn = ModelsDB.isEnergyModelOn()
+        self._on = ModelsDB.isEnergyModelOn()
 
         self._profileTypes = {
             TemperatureProfile.CONSTANT.value: self.tr("Constant"),
@@ -53,8 +53,11 @@ class TemperatureWidget(QWidget):
 
         self._connectSignalsSlots()
 
+    def on(self):
+        return self._on
+
     def load(self):
-        if not self._energyModelOn:
+        if not self._on:
             return
 
         self._ui.profileType.setCurrentText(self._profileTypes[self._db.getValue(self._xpath + '/profile')])
@@ -82,7 +85,7 @@ class TemperatureWidget(QWidget):
             True if the data is valid, False otherwise
 
         """
-        if not self._energyModelOn:
+        if not self._on:
             return True
 
         profile = self._ui.profileType.currentData()

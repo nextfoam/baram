@@ -52,7 +52,6 @@ class CellZoneConditionDialog(QDialog):
             self.setWindowTitle(self.tr('Region Condition'))
             self._ui.zoneType.setVisible(False)
 
-            self._ui.singleMaterial.setVisible(False)
             self._materialsWidget = MaterialsWidget(self._rname, ModelsDB.isMultiphaseModelOn())
             layout.addWidget(self._materialsWidget)
 
@@ -113,28 +112,32 @@ class CellZoneConditionDialog(QDialog):
         writer = CoreDBWriter()
 
         if CellZoneDB.isRegion(self._name):
-            if self._materialsWidget:
-                self._materialsWidget.appendToWriter(writer)
-            else:
-                writer.append(self._xpath + '/material', self._ui.singleMaterial.currentData(), None)
+            if not self._materialsWidget.appendToWriter(writer):
+                return
         else:
             zoneType = self._getZoneTypeRadioValue()
             writer.append(self._xpath + '/zoneType', zoneType, None)
+
+            result = True
             if zoneType == ZoneType.MRF.value:
-                self._MRFZone.appendToWriter(writer)
+                result = self._MRFZone.appendToWriter(writer)
             elif zoneType == ZoneType.POROUS.value:
-                self._porousZone.appendToWriter(writer)
+                result = self._porousZone.appendToWriter(writer)
             elif zoneType == ZoneType.SLIDING_MESH.value:
-                self._slidingMeshZone.appendToWriter(writer)
+                result = self._slidingMeshZone.appendToWriter(writer)
             elif zoneType == ZoneType.ACTUATOR_DISK.value:
-                self._actuatorDiskZone.appendToWriter(writer)
+                result = self._actuatorDiskZone.appendToWriter(writer)
+
+            if not result:
+                return
 
         if not self._massSourceTerm.appendToWriter(writer):
             return
         if self._energySourceTerm and not self._energySourceTerm.appendToWriter(writer):
             return
         for field, widget in self._turbulenceSourceTerms.items():
-            widget.appendToWriter(writer)
+            if not widget.appendToWriter(writer):
+                return
 
         if self._ui.velocityGroup.isChecked():
             writer.setAttribute(self._xpath + 'fixedValues/velocity', 'disabled', 'false')
@@ -149,10 +152,12 @@ class CellZoneConditionDialog(QDialog):
         else:
             writer.setAttribute(self._xpath + 'fixedValues/velocity', 'disabled', 'true')
 
-        if self._temperature:
-            self._temperature.appendToWriter(writer)
+        if self._temperature and not self._temperature.appendToWriter(writer):
+            return
+
         for field, widget in self._turbulenceFixedValues.items():
-            widget.appendToWriter(writer)
+            if not widget.appendToWriter(writer):
+                return
 
         errorCount = writer.write()
         if errorCount > 0:

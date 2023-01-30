@@ -50,9 +50,13 @@ class SurfaceTensionWidget(QWidget):
         super().__init__(parent)
         layout = QGridLayout(self)
         layout.setColumnMinimumWidth(0, 10)
-        layout.setColumnMinimumWidth(1, 120)
-        layout.setColumnMinimumWidth(2, 140)
+        layout.setColumnMinimumWidth(1, 50)
+        layout.setColumnMinimumWidth(2, 120)
         layout.setColumnMinimumWidth(3, 60)
+        layout.setColumnStretch(0, 1)
+        layout.setColumnStretch(1, 0)
+        layout.setColumnStretch(2, 0)
+        layout.setColumnStretch(3, 1)
 
         self._rows = {}
 
@@ -132,6 +136,8 @@ class MaterialsWidget(QWidget):
             writer.append(self._xpath + '/phaseInteractions/surfaceTensions/material1', lists[0], None)
             writer.append(self._xpath + '/phaseInteractions/surfaceTensions/material2', lists[1], None)
             writer.append(self._xpath + '/phaseInteractions/surfaceTensions/surfaceTension', lists[2], None)
+
+        return True
 
     def _connectSignalsSlots(self):
         self._ui.materialsSelect.clicked.connect(self._selectMaterials)

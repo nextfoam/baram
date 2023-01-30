@@ -148,8 +148,8 @@ class InitializationWidget(QWidget):
         writer.append(self._initialValuesPath + '/turbulentViscosity',
                       self._ui.turbulentViscosityRatio.text(), self.tr("Turbulent Viscosity"))
 
-        if self._volumeFractionWidget.on():
-            self._volumeFractionWidget.appendToWriter(writer)
+        if not self._volumeFractionWidget.appendToWriter(writer):
+            return
 
         errorCount = writer.write()
         if errorCount > 0:

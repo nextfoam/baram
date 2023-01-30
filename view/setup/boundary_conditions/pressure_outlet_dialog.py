@@ -9,8 +9,7 @@ from coredb.models_db import ModelsDB
 from coredb.boundary_db import BoundaryDB
 from view.widgets.resizable_dialog import ResizableDialog
 from .pressure_outlet_dialog_ui import Ui_PressureOutletDialog
-from .turbulence_model_helper import TurbulenceModelHelper
-from view.widgets.volume_fraction_widget import VolumeFractionWidget
+from .conditional_widget_helper import ConditionalWidgetHelper
 
 
 class PressureOutletDialog(ResizableDialog):
@@ -23,20 +22,19 @@ class PressureOutletDialog(ResizableDialog):
 
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
-        self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
 
-        if self._turbulenceWidget:
-            self._ui.calculateBackflow.layout().insertWidget(0, self._turbulenceWidget)
-            if not ModelsDB.isEnergyModelOn():
+        self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath,
+                                                                          self._ui.calculateBackflow.layout())
+
+        if not ModelsDB.isEnergyModelOn():
+            if self._turbulenceWidget.on():
                 self._ui.backflowTotalTemperatureWidget.hide()
-        elif not ModelsDB.isEnergyModelOn():
-            self._ui.calculateBackflow.hide()
+            else:
+                self._ui.calculateBackflow.hide()
 
-        region = BoundaryDB.getBoundaryRegion(bcid)
-        self._volumeFractionWidget = VolumeFractionWidget(region, self._xpath)
-        if self._volumeFractionWidget.on():
-            layout = self._ui.dialogContents.layout()
-            layout.addWidget(self._volumeFractionWidget)
+        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(BoundaryDB.getBoundaryRegion(bcid),
+                                                                                  self._xpath,
+                                                                                  self._ui.dialogContents.layout())
 
         self._load()
 
@@ -48,10 +46,10 @@ class PressureOutletDialog(ResizableDialog):
         if self._ui.calculateBackflow.isChecked():
             writer.append(path + '/calculatedBackflow', "true", None)
 
-            if self._turbulenceWidget:
-                self._turbulenceWidget.appendToWriter(writer)
+            if not self._turbulenceWidget.appendToWriter(writer):
+                return
 
-            if self._ui.backflowTotalTemperatureWidget.isVisible():
+            if ModelsDB.isEnergyModelOn():
                 writer.append(path + '/backflowTotalTemperature',
                               self._ui.backflowTotalTemperature.text(), self.tr("Backflow Total Temperature"))
         else:
@@ -70,10 +68,8 @@ class PressureOutletDialog(ResizableDialog):
         path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.totalPressure.setText(self._db.getValue(path + '/totalPressure'))
-        self._ui.calculateBackflow.setChecked(self._db.getValue(path + '/calculatedBackflow') == "true")
-        if self._turbulenceWidget:
-            self._turbulenceWidget.load()
-        if ModelsDB.isEnergyModelOn():
-            self._ui.backflowTotalTemperature.setText(self._db.getValue(path + '/backflowTotalTemperature'))
 
+        self._ui.calculateBackflow.setChecked(self._db.getValue(path + '/calculatedBackflow') == "true")
+        self._turbulenceWidget.load()
+        self._ui.backflowTotalTemperature.setText(self._db.getValue(path + '/backflowTotalTemperature'))
         self._volumeFractionWidget.load()

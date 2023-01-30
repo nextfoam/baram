@@ -5,13 +5,10 @@ from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from coredb.models_db import ModelsDB
 from coredb.boundary_db import BoundaryDB
 from view.widgets.resizable_dialog import ResizableDialog
 from .pressure_inlet_dialog_ui import Ui_PressureInletDialog
-from .turbulence_model_helper import TurbulenceModelHelper
-from .temperature_widget import TemperatureWidget
-from view.widgets.volume_fraction_widget import VolumeFractionWidget
+from .conditional_widget_helper import ConditionalWidgetHelper
 
 
 class PressureInletDialog(ResizableDialog):
@@ -24,20 +21,12 @@ class PressureInletDialog(ResizableDialog):
 
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
-        self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
-        self._temperatureWidget = TemperatureWidget(self._xpath, bcid)
 
         layout = self._ui.dialogContents.layout()
-
-        if self._turbulenceWidget:
-            layout.addWidget(self._turbulenceWidget)
-        if ModelsDB.isEnergyModelOn():
-            layout.addWidget(self._temperatureWidget)
-
-        region = BoundaryDB.getBoundaryRegion(bcid)
-        self._volumeFractionWidget = VolumeFractionWidget(region, self._xpath)
-        if self._volumeFractionWidget.on():
-            layout.addWidget(self._volumeFractionWidget)
+        self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
+        self._temperatureWidget = ConditionalWidgetHelper.temperatureWidget(self._xpath, bcid, layout)
+        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(BoundaryDB.getBoundaryRegion(bcid),
+                                                                                  self._xpath, layout)
 
         self._load()
 
@@ -47,8 +36,8 @@ class PressureInletDialog(ResizableDialog):
         writer = CoreDBWriter()
         writer.append(path + '/pressure', self._ui.totalPressure.text(), self.tr("Total Pressure"))
 
-        if self._turbulenceWidget:
-            self._turbulenceWidget.appendToWriter(writer)
+        if not self._turbulenceWidget.appendToWriter(writer):
+            return
 
         if not self._temperatureWidget.appendToWriter(writer):
             return
@@ -69,10 +58,7 @@ class PressureInletDialog(ResizableDialog):
 
         self._ui.totalPressure.setText(self._db.getValue(path + '/pressure'))
 
-        if self._turbulenceWidget:
-            self._turbulenceWidget.load()
-
+        self._turbulenceWidget.load()
         self._temperatureWidget.load()
         self._temperatureWidget.freezeProfileToConstant()
-
         self._volumeFractionWidget.load()

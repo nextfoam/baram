@@ -49,6 +49,8 @@ class ConstantSourceWidget(QWidget):
         else:
             writer.setAttribute(self._xpath, 'disabled', 'true')
 
+        return True
+
     def _setupSpecificationCombo(self):
         for value, text in self._specificationMethods.items():
             self._ui.specificationMethod.addItem(text, value)

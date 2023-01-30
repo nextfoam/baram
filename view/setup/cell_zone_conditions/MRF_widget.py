@@ -52,6 +52,8 @@ class MRFWidget(QWidget):
         writer.append(self._xpath + '/staticBoundaries',
                       ' '.join(b for b in self._staticBoundaries), self.tr("Static Boundary"))
 
+        return True
+
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectStaticBoundaries)
 

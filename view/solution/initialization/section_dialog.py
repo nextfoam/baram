@@ -335,7 +335,8 @@ class SectionDialog(ResizableDialog):
         if self._volumeFractionWidget.on():
             if self._volumeFractionWidget.isChecked():
                 writer.setAttribute(sectionPath + '/volumeFractions', 'disabled', 'false')
-                self._volumeFractionWidget.appendToWriter(writer)
+                if not self._volumeFractionWidget.appendToWriter(writer):
+                    return
                 parameterConfigured = True
             else:
                 writer.setAttribute(sectionPath + '/volumeFractions', 'disabled', 'true')

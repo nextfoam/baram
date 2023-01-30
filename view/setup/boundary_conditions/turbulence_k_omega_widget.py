@@ -27,6 +27,9 @@ class TurbulenceKOmegaWidget(QWidget):
 
         self._connectSignalsSlots()
 
+    def on(self):
+        return True
+
     def load(self):
         xpath = self._xpath + self.RELATIVE_XPATH
 
@@ -53,6 +56,8 @@ class TurbulenceKOmegaWidget(QWidget):
                           self.tr("Turbulent Intensity"))
             writer.append(xpath + '/turbulentViscosityRatio', self._ui.turbulentViscosityRatio.text(),
                           self.tr("Turbulent Viscosity Ratio"))
+
+        return True
 
     def _connectSignalsSlots(self):
         self._ui.specificationMethod.currentIndexChanged.connect(self._specificationMethodChanged)
