@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from coredb import coredb
 from coredb.material_db import MaterialDB
+from coredb.region_db import RegionDB
+
 from openfoam.dictionary_file import DictionaryFile
 
 
@@ -34,3 +38,46 @@ class TransportProperties(DictionaryFile):
             self._data['nu'] = f'[ 0 2 -1 0 0 0 0 ] {nu}'
 
         return self
+
+    def _buildForInterFoam(self) -> Optional[dict]:
+        secondaryMaterials = RegionDB.getSecondaryMaterials(self._rname)
+        if len(secondaryMaterials) == 0:
+            return None
+
+        baseMaterialId = RegionDB.getMaterial(self._rname)
+        secondaryMaterialId = secondaryMaterials[0]  # "interFoam" can handle only two phases
+
+        baseMaterialName = MaterialDB.getName(baseMaterialId)
+        secondaryMaterialName = MaterialDB.getName(secondaryMaterialId)
+
+        # temperature and pressure are used because interFoam works only when energy off
+        #     i.e. constant density and viscosity
+
+        baseDensity = MaterialDB.getDensity(baseMaterialId, 0, 0)
+        secondaryDensity = MaterialDB.getDensity(secondaryMaterialId, 0, 0)
+
+        baseViscosity = MaterialDB.getViscosity(baseMaterialId, 0)
+        secondaryViscosity = MaterialDB.getViscosity(secondaryMaterialId, 0)
+
+        baseNu = baseViscosity / baseDensity
+        secondaryNu = secondaryViscosity / secondaryDensity
+
+        surfaceTension = 0  # ToDo: get surface tension
+
+        data = {
+            'phases': [secondaryMaterialName, baseMaterialName],
+            secondaryMaterialName: {
+                'transportModel': 'Newtonian',
+                'nu': secondaryNu,
+                'rho': secondaryDensity
+            },
+            baseMaterialName: {
+                'transportModel': 'Newtonian',
+                'nu': baseNu,
+                'rho': baseDensity
+            },
+            'sigma': surfaceTension
+        }
+
+        return data
+
