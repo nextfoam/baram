@@ -14,15 +14,15 @@ from openfoam.boundary_conditions.t import T
 from openfoam.file_system import FileSystem
 
 dimensions = '[0 0 0 1 0 0 0]'
-region = "testRegion_1"
+rname = "testRegion_1"
 boundary = "testBoundary_1"
 
 
 class TestT(unittest.TestCase):
     def setUp(self):
         self._db = coredb.createDB()
-        self._db.addRegion(region)
-        self._bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
+        self._db.addRegion(rname)
+        self._bcid = self._db.addBoundaryCondition(rname, boundary, 'wall')
         self._xpath = BoundaryDB.getXPath(self._bcid)
         self._initialValue = self._db.getValue('.//initialization/initialValues/temperature')
 
@@ -35,7 +35,7 @@ class TestT(unittest.TestCase):
     def testVelocityInlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'velocityInlet')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual(dimensions, content['dimensions'])
         self.assertEqual(self._initialValue, content['internalField'][1])
         self.assertEqual('fixedValue', content['boundaryField'][boundary]['type'])
@@ -47,7 +47,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'flowRateInlet')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         self._db.setValue(self._xpath + '/flowRateInlet/flowRate/specification', 'volumeFlowRate')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('fixedValue', content['boundaryField'][boundary]['type'])
         self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['value'][1])
@@ -57,7 +57,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'flowRateInlet')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         self._db.setValue(self._xpath + '/flowRateInlet/flowRate/specification', 'massFlowRate')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('inletOutletTotalTemperature', content['boundaryField'][boundary]['type'])
         self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['T0'][1])
@@ -67,7 +67,7 @@ class TestT(unittest.TestCase):
     def testPressureInlet(self):
         self._db.setValue(self._xpath + '/physicalType', 'pressureInlet')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('inletOutletTotalTemperature', content['boundaryField'][boundary]['type'])
         self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['T0'][1])
@@ -79,7 +79,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'pressureOutlet')
         self._db.setValue(self._xpath + '/pressureOutlet/calculatedBackflow', 'true')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('inletOutletTotalTemperature', content['boundaryField'][boundary]['type'])
         self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          float(content['boundaryField'][boundary]['inletValue'][1]))
@@ -91,18 +91,18 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'pressureOutlet')
         self._db.setValue(self._xpath + '/pressureOutlet/calculatedBackflow', 'false')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
 
     def testOutflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'outflow')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
 
     def testFreeStream(self):
         self._db.setValue(self._xpath + '/physicalType', 'freeStream')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('freestream', content['boundaryField'][boundary]['type'])
         self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['freestreamValue'][1])
@@ -110,7 +110,7 @@ class TestT(unittest.TestCase):
     def testFarFieldRiemann(self):
         self._db.setValue(self._xpath + '/physicalType', 'farFieldRiemann')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('farfieldRiemann', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getVector(self._xpath + '/farFieldRiemann/flowDirection'),
                          content['boundaryField'][boundary]['flowDir'])
@@ -124,7 +124,7 @@ class TestT(unittest.TestCase):
     def testSubsonicInflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'subsonicInflow')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('subsonicInflow', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getVector(self._xpath + '/subsonicInflow/flowDirection'),
                          content['boundaryField'][boundary]['flowDir'])
@@ -136,7 +136,7 @@ class TestT(unittest.TestCase):
     def testSubsonicOutflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'subsonicOutflow')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('subsonicOutflow', content['boundaryField'][boundary]['type'])
         self.assertEqual(self._db.getValue(self._xpath + '/subsonicOutflow/staticPressure'),
                          content['boundaryField'][boundary]['pExit'])
@@ -144,7 +144,7 @@ class TestT(unittest.TestCase):
     def testSupersonicInflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'supersonicInflow')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('fixedValue', content['boundaryField'][boundary]['type'])
         self.assertEqual(float(self._db.getValue(self._xpath + '/temperature/constant')),
                          content['boundaryField'][boundary]['value'][1])
@@ -152,7 +152,7 @@ class TestT(unittest.TestCase):
     def testSupersonicOutflow(self):
         self._db.setValue(self._xpath + '/physicalType', 'supersonicOutflow')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
 
     def testWallAdiabatic(self):
@@ -160,7 +160,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/wall/velocity/type', 'noSlip')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
 
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
 
         self.assertEqual('zeroGradient', content['boundaryField'][boundary]['type'])
 
@@ -171,7 +171,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/wall/temperature/type', 'constantTemperature')
         self._db.setValue(self._xpath + '/wall/temperature/temperature', str(t))
 
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
 
         self.assertEqual('fixedValue', content['boundaryField'][boundary]['type'])
         self.assertEqual(t, float(content['boundaryField'][boundary]['value'][1]))
@@ -185,7 +185,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/wall/temperature/heatTransferCoefficient', str(h))
         self._db.setValue(self._xpath + '/wall/temperature/freeStreamTemperature', str(ta))
 
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
 
         self.assertEqual('externalWallHeatFluxTemperature', content['boundaryField'][boundary]['type'])
         self.assertEqual('coefficient', content['boundaryField'][boundary]['mode'])
@@ -195,15 +195,15 @@ class TestT(unittest.TestCase):
     def testThermoCoupledWall(self):
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('compressible::turbulentTemperatureCoupledBaffleMixed', content['boundaryField'][boundary]['type'])
-        self.assertEqual('solidThermo' if RegionDB.getPhase(region) == Phase.SOLID else 'fluidThermo',
+        self.assertEqual('solidThermo' if RegionDB.getPhase(rname) == Phase.SOLID else 'fluidThermo',
                          content['boundaryField'][boundary]['kappaMethod'])
 
     def testSymmetry(self):
         self._db.setValue(self._xpath + '/physicalType', 'symmetry')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('symmetry', content['boundaryField'][boundary]['type'])
 
     # Interface
@@ -211,7 +211,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'internalInterface')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('cyclicAMI', content['boundaryField'][boundary]['type'])
 
     # Interface
@@ -219,7 +219,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'rotationalPeriodic')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('cyclicAMI', content['boundaryField'][boundary]['type'])
 
     # Interface
@@ -227,7 +227,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'translationalPeriodic')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('cyclicAMI', content['boundaryField'][boundary]['type'])
 
     # Interface
@@ -235,39 +235,39 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'interface')
         self._db.setValue(self._xpath + '/interface/mode', 'regionInterface')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('compressible::turbulentTemperatureCoupledBaffleMixed', content['boundaryField'][boundary]['type'])
-        self.assertEqual('solidThermo' if RegionDB.getPhase(region) == Phase.SOLID else 'fluidThermo',
+        self.assertEqual('solidThermo' if RegionDB.getPhase(rname) == Phase.SOLID else 'fluidThermo',
                          content['boundaryField'][boundary]['kappaMethod'])
 
     def testPorousJump(self):
         self._db.setValue(self._xpath + '/physicalType', 'porousJump')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('cyclic', content['boundaryField'][boundary]['type'])
 
     def testFan(self):
         self._db.setValue(self._xpath + '/physicalType', 'fan')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('cyclic', content['boundaryField'][boundary]['type'])
 
     def testEmpty(self):
         self._db.setValue(self._xpath + '/physicalType', 'empty')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('empty', content['boundaryField'][boundary]['type'])
 
     def testCyclic(self):
         self._db.setValue(self._xpath + '/physicalType', 'cyclic')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('cyclic', content['boundaryField'][boundary]['type'])
 
     def testWedge(self):
         self._db.setValue(self._xpath + '/physicalType', 'wedge')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('wedge', content['boundaryField'][boundary]['type'])
 
     # Temperature Profile is spatial distribution
@@ -285,17 +285,17 @@ class TestT(unittest.TestCase):
         FileSystem._boundaryConditionsPath = FileSystem.makeDir(
             FileSystem._casePath, FileSystem.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
         FileSystem._systemPath = FileSystem.makeDir(FileSystem._casePath, FileSystem.SYSTEM_DIRECTORY_NAME)
-        FileSystem.initRegionDirs(region)               # CaseGenerator에서 호출
+        FileSystem.initRegionDirs(rname)               # CaseGenerator에서 호출
         with open(csvFile, 'w') as f:
             f.write('0,0,0,1\n0,0,1,2\n')
 
-        pointsFilePath = FileSystem.constantPath(region) / 'boundaryData' / boundary / 'points_T'
-        fieldTableFilePath = FileSystem.constantPath(region) / 'boundaryData' / boundary / '0/T'
+        pointsFilePath = FileSystem.constantPath(rname) / 'boundaryData' / boundary / 'points_T'
+        fieldTableFilePath = FileSystem.constantPath(rname) / 'boundaryData' / boundary / '0/T'
 
         self._db.setValue(self._xpath + '/temperature/profile', 'spatialDistribution')
         self._db.setValue(self._xpath + '/temperature/spatialDistribution',
                           project.fileDB().putBcFile(self._bcid, BcFileRole.BC_TEMPERATURE, csvFile))
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('timeVaryingMappedFixedValue', content['boundaryField'][boundary]['type'])
         self.assertEqual('points_T', content['boundaryField'][boundary]['points'])
         self.assertTrue(pointsFilePath.is_file())
@@ -307,7 +307,7 @@ class TestT(unittest.TestCase):
     def testTemperaturePiecewiseLinear(self):
         self._db.setValue(self._xpath + '/temperature/profile', 'temporalDistribution')
         self._db.setValue(self._xpath + '/temperature/temporalDistribution/specification', 'piecewiseLinear')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         t = self._db.getValue(self._xpath + '/temperature/temporalDistribution/piecewiseLinear/t').split()
         v = self._db.getValue(self._xpath + '/temperature/temporalDistribution/piecewiseLinear/v').split()
         self.assertEqual('uniformFixedValue', content['boundaryField'][boundary]['type'])
@@ -317,7 +317,7 @@ class TestT(unittest.TestCase):
     def testTemperaturePolynomial(self):
         self._db.setValue(self._xpath + '/temperature/profile', 'temporalDistribution')
         self._db.setValue(self._xpath + '/temperature/temporalDistribution/specification', 'polynomial')
-        content = T(RegionDB.getRegionProperties(region), '0', None).build().asDict()
+        content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         t = self._db.getValue(self._xpath + '/temperature/temporalDistribution/piecewiseLinear/t').split()
         v = self._db.getValue(self._xpath + '/temperature/temporalDistribution/piecewiseLinear/v').split()
         self.assertEqual('uniformFixedValue', content['boundaryField'][boundary]['type'])

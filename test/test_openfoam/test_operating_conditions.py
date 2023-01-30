@@ -12,14 +12,14 @@ class TestOperatingConditions(unittest.TestCase):
         coredb.destroy()
 
     def testBuild(self):
-        region = 'testRegion_1'
+        rname = 'testRegion_1'
         zone = 'testZone_1'
         pressure = '0'
-        self.db.addRegion(region)
-        self.db.addCellZone(region, zone)
+        self.db.addRegion(rname)
+        self.db.addCellZone(rname, zone)
         self.db.setValue('.//operatingConditions/pressure', pressure)
 
-        content = OperatingConditions(region).build().asDict()
+        content = OperatingConditions(rname).build().asDict()
         self.assertEqual(('Op [1 -1 -2 0 0 0 0]', pressure), content['Op'])
 
 

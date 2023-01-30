@@ -6,6 +6,7 @@ from coredb import coredb
 class TestContextManager(unittest.TestCase):
     def setUp(self):
         self.db = coredb.createDB()
+        self.db.addRegion('dummyRegion')
         self.pathFirst = './/runConditions/numberOfIterations'
         # turbulentIntensity should be in 0~100
         self.pathSecond = './/initialValues/turbulentIntensity'

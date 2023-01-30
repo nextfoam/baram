@@ -10,10 +10,10 @@ from openfoam.file_system import FileSystem
 
 
 class PostFileReader(QObject):
-    def __init__(self, name, region, fileName, extension=None):
+    def __init__(self, name, rname, fileName, extension=None):
         super().__init__()
         self._name = name
-        self._path = FileSystem.postProcessingPath(region) / name
+        self._path = FileSystem.postProcessingPath(rname) / name
         self._fileName = f'{fileName}{extension}'
         self._pattern = f'{fileName}_*{extension}'
         self._nameLen = len(fileName) + 1

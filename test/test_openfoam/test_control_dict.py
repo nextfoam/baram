@@ -5,9 +5,10 @@ from coredb.monitor_db import MonitorDB, Field, SurfaceReportType, VolumeReportT
 from coredb.reference_values_db import ReferenceValuesDB
 from openfoam.system.control_dict import ControlDict
 
-region = 'testRegion_1'
+rname = 'testRegion_1'
 boundary = 'testBoundary_1'
 cellZone = 'testCellZone_1'
+
 
 class TestSolver(unittest.TestCase):
     def setUp(self):
@@ -99,12 +100,12 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(self._db.getValue(xpath + '/writeInterval'), content['functions'][name]['writeInterval'])
 
     def testForceMonitorMultiRegion(self):
-        self._db.addRegion(region)
-        bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
+        self._db.addRegion(rname)
+        bcid = self._db.addBoundaryCondition(rname, boundary, 'wall')
         name = self._db.addForceMonitor()
         xpath = MonitorDB.getForceMonitorXPath(name)
         self._db.setValue(xpath + '/boundaries', str(bcid))
-        self._db.setValue(xpath + '/region', region)
+        self._db.setValue(xpath + '/region', rname)
 
         content = ControlDict().build().asDict()
         forcesName = name + '_forces'
@@ -114,7 +115,7 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(boundary, content['functions'][forcesName]['patches'][0])
         self.assertEqual('timeStep', content['functions'][forcesName]['writeControl'])
         self.assertEqual(self._db.getValue(xpath + '/writeInterval'), content['functions'][forcesName]['writeInterval'])
-        self.assertEqual(region, content['functions'][forcesName]['region'])
+        self.assertEqual(rname, content['functions'][forcesName]['region'])
 
         self.assertEqual('forceCoeffs', content['functions'][name]['type'])
         self.assertEqual('"libforces.so"', content['functions'][name]['libs'][0])
@@ -131,7 +132,7 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(self._db.getVector(xpath + '/dragDirection'), content['functions'][name]['dragDir'])
         self.assertEqual(self._db.getVector(xpath + '/liftDirection'), content['functions'][name]['liftDir'])
         self.assertEqual(self._db.getVector(xpath + '/centerOfRotation'), content['functions'][name]['CofR'])
-        self.assertEqual(region, content['functions'][name]['region'])
+        self.assertEqual(rname, content['functions'][name]['region'])
         self.assertEqual('timeStep', content['functions'][name]['writeControl'])
         self.assertEqual(self._db.getValue(xpath + '/writeInterval'), content['functions'][name]['writeInterval'])
 
@@ -178,8 +179,8 @@ class TestSolver(unittest.TestCase):
         self.assertEqual('none', content['functions']['mag1']['writeControl'])
 
     def testSurfaceMonitor(self):
-        self._db.addRegion(region)
-        bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
+        self._db.addRegion(rname)
+        bcid = self._db.addBoundaryCondition(rname, boundary, 'wall')
         name = self._db.addSurfaceMonitor()
         xpath = MonitorDB.getSurfaceMonitorXPath(name)
         self._db.setValue(xpath + '/reportType', SurfaceReportType.AREA_WEIGHTED_AVERAGE.value)
@@ -195,7 +196,7 @@ class TestSolver(unittest.TestCase):
         self.assertEqual('none', content['functions'][name]['surfaceFormat'])
         self.assertEqual('Ux', content['functions'][name]['fields'][0])
         self.assertEqual('areaAverage', content['functions'][name]['operation'])
-        self.assertEqual(region, content['functions'][name]['region'])
+        self.assertEqual(rname, content['functions'][name]['region'])
         self.assertEqual('false', content['functions'][name]['writeFields'])
         self.assertEqual('timeStep', content['functions'][name]['executeControl'])
         self.assertEqual(1, content['functions'][name]['executeInterval'])
@@ -237,8 +238,8 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(self._db.getValue(xpath + '/writeInterval'), content['functions'][name]['writeInterval'])
 
     def testSurfaceMonitorMassFlowRate(self):
-        self._db.addRegion(region)
-        bcid = self._db.addBoundaryCondition(region, boundary, 'wall')
+        self._db.addRegion(rname)
+        bcid = self._db.addBoundaryCondition(rname, boundary, 'wall')
         name = self._db.addSurfaceMonitor()
         xpath = MonitorDB.getSurfaceMonitorXPath(name)
         self._db.setValue(xpath + '/reportType', SurfaceReportType.MASS_FLOW_RATE.value)
@@ -253,7 +254,7 @@ class TestSolver(unittest.TestCase):
         self.assertEqual('none', content['functions'][name]['surfaceFormat'])
         self.assertEqual('phi', content['functions'][name]['fields'][0])
         self.assertEqual('sum', content['functions'][name]['operation'])
-        self.assertEqual(region, content['functions'][name]['region'])
+        self.assertEqual(rname, content['functions'][name]['region'])
         self.assertEqual('false', content['functions'][name]['writeFields'])
         self.assertEqual('timeStep', content['functions'][name]['executeControl'])
         self.assertEqual(1, content['functions'][name]['executeInterval'])
@@ -284,7 +285,7 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(self._db.getValue(xpath + '/writeInterval'), content['functions'][name]['writeInterval'])
 
     def testVolumeMonitorAll(self):
-        self._db.addRegion(region)
+        self._db.addRegion(rname)
         name = self._db.addVolumeMonitor()
         xpath = MonitorDB.getVolumeMonitorXPath(name)
         self._db.setValue(xpath + '/reportType', VolumeReportType.VOLUME_AVERAGE.value)
@@ -298,7 +299,7 @@ class TestSolver(unittest.TestCase):
         self.assertEqual('epsilon', content['functions'][name]['fields'][0])
         self.assertEqual('volAverage', content['functions'][name]['operation'])
         self.assertEqual('all', content['functions'][name]['regionType'])
-        self.assertEqual(region, content['functions'][name]['region'])
+        self.assertEqual(rname, content['functions'][name]['region'])
         self.assertEqual('false', content['functions'][name]['writeFields'])
         self.assertEqual('timeStep', content['functions'][name]['writeControl'])
         self.assertEqual(self._db.getValue(xpath + '/writeInterval'), content['functions'][name]['writeInterval'])

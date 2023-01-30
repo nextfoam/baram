@@ -27,7 +27,7 @@ from PySide6.QtCore import Qt, QTimer, QObject, QThread, Signal
 ...
 """
 
-mrRegexPattern = r'(?P<region>[^/\\]+)[/\\]solverInfo_\d+[/\\](?P<time>[0-9]+(?:\.[0-9]+)?)[/\\]solverInfo(?:_(?P<dup>[0-9]+(?:\.[0-9]+)?))?\.dat'
+mrRegexPattern = r'(?P<rname>[^/\\]+)[/\\]solverInfo_\d+[/\\](?P<time>[0-9]+(?:\.[0-9]+)?)[/\\]solverInfo(?:_(?P<dup>[0-9]+(?:\.[0-9]+)?))?\.dat'
 srRegexPattern = r'[/\\]solverInfo_\d+[/\\](?P<time>[0-9]+(?:\.[0-9]+)?)[/\\]solverInfo(?:_(?P<dup>[0-9]+(?:\.[0-9]+)?))?\.dat'
 
 
@@ -37,7 +37,7 @@ logger.setLevel(logging.INFO)
 
 @dataclass
 class _SolverInfo:
-    region: str
+    rname: str
     time: float
     dup: str
     size: int
@@ -109,13 +109,13 @@ def updateData(target, source):
         return mergeDataFrames([filtered, source])
 
 
-def updateDataFromFile(target: pd.DataFrame, region: str, f: TextIO) -> (bool, pd.DataFrame):
+def updateDataFromFile(target: pd.DataFrame, rname: str, f: TextIO) -> (bool, pd.DataFrame):
     lines, names = readOutFile(f)
     if not lines:
         return False, target
 
-    if region != '':
-        names = [k if k == 'Time' else region + ':' + k for k in names]
+    if rname != '':
+        names = [k if k == 'Time' else rname + ':' + k for k in names]
 
     stream = StringIO(lines)
     df = pd.read_csv(stream, sep=r'\s+', names=names, dtype={'Time': np.float64})
@@ -126,7 +126,7 @@ def updateDataFromFile(target: pd.DataFrame, region: str, f: TextIO) -> (bool, p
     return True, updateData(target, df)
 
 
-def getDataFrame(region, path) -> pd.DataFrame:
+def getDataFrame(rname, path) -> pd.DataFrame:
     with path.open(mode='r') as f:
         f.readline()  # skip '# Solver information' comment
         names = f.readline().split()  # read header
@@ -136,8 +136,8 @@ def getDataFrame(region, path) -> pd.DataFrame:
         names.pop(0)  # remove '#' from the list
         if names[0] != 'Time':
             raise RuntimeError
-        if region != '':
-            names = [k if k == 'Time' else region + ':' + k for k in names]
+        if rname != '':
+            names = [k if k == 'Time' else rname + ':' + k for k in names]
         df = pd.read_csv(f, sep=r'\s+', names=names, skiprows=0)
         df.set_index('Time', inplace=True)
         return df
@@ -212,8 +212,8 @@ class Worker(QObject):
             else:
                 self.infoFiles[p] = s
 
-            if self.changingFiles[s.region] is None or self.infoFiles[p].time > self.changingFiles[s.region].time:
-                self.changingFiles[s.region] = self.infoFiles[p]
+            if self.changingFiles[s.rname] is None or self.infoFiles[p].time > self.changingFiles[s.rname].time:
+                self.changingFiles[s.rname] = self.infoFiles[p]
 
         if not self.collectionReady:
             collectionReady = all(self.changingFiles.values())
@@ -224,15 +224,15 @@ class Worker(QObject):
                 hasUpdate = False
                 for s in self.infoFiles.values():
                     if s not in self.changingFiles.values():  # not-changing files
-                        df = getDataFrame(s.region, s.path)
+                        df = getDataFrame(s.rname, s.path)
                         if df is not None:
-                            self.data[s.region] = updateData(self.data[s.region], df)
+                            self.data[s.rname] = updateData(self.data[s.rname], df)
 
                 for s in self.changingFiles.values():
                     s.f = open(s.path, 'r')
-                    updated, df = updateDataFromFile(self.data[s.region], s.region, s.f)
+                    updated, df = updateDataFromFile(self.data[s.rname], s.rname, s.f)
                     if updated:
-                        self.data[s.region] = updateData(self.data[s.region], df)
+                        self.data[s.rname] = updateData(self.data[s.rname], df)
                         hasUpdate = True
 
                 if hasUpdate:
@@ -243,9 +243,9 @@ class Worker(QObject):
         # regular update routine
         hasUpdate = False
         for s in updatedFiles.values():
-            updated, df = updateDataFromFile(self.data[s.region], s.region, self.infoFiles[s.path].f)
+            updated, df = updateDataFromFile(self.data[s.rname], s.rname, self.infoFiles[s.path].f)
             if updated:
-                self.data[s.region] = df
+                self.data[s.rname] = df
                 hasUpdate = True
 
         if hasUpdate:
@@ -267,9 +267,9 @@ class Worker(QObject):
         infoFiles = {}
         for path, size in mrFiles:
             m = re.search(mrRegexPattern, str(path))
-            if m.group('region') not in self.regions:
+            if m.group('rname') not in self.regions:
                 continue
-            infoFiles[path] = _SolverInfo(m.group('region'), float(m.group('time')), m.group('dup'), size, path, None)
+            infoFiles[path] = _SolverInfo(m.group('rname'), float(m.group('time')), m.group('dup'), size, path, None)
         return infoFiles
 
     def _getInfoFilesSingleRegion(self) -> {Path: _SolverInfo}:
@@ -290,7 +290,7 @@ class Worker(QObject):
         newerFiles = [p.parent for p, s in infoFiles.items() if s.dup is not None]
         infoFiles = {p: s for p, s in infoFiles.items() if s.dup is not None or s.path.parent not in newerFiles}
 
-        infoFiles = dict(sorted(infoFiles.items(), key=lambda x: (x[1].region, x[1].time)))
+        infoFiles = dict(sorted(infoFiles.items(), key=lambda x: (x[1].rname, x[1].time)))
 
         return infoFiles
 

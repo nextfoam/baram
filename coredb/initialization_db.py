@@ -6,28 +6,28 @@ from coredb import coredb
 
 class InitializationDB:
     @classmethod
-    def getVelocity(cls, region: str) -> float:
+    def getVelocity(cls, rname: str) -> float:
         db = coredb.CoreDB()
-        return db.getVector(f'.//regions/region[name="{region}"]/initialization/initialValues/velocity')
+        return db.getVector(f'.//regions/region[name="{rname}"]/initialization/initialValues/velocity')
 
     @classmethod
-    def getPressure(cls, region: str) -> float:
+    def getPressure(cls, rname: str) -> float:
         db = coredb.CoreDB()
-        return float(db.getValue(f'.//regions/region[name="{region}"]/initialization/initialValues/pressure'))\
+        return float(db.getValue(f'.//regions/region[name="{rname}"]/initialization/initialValues/pressure'))\
             + float(db.getValue('.//operatingConditions/pressure'))
 
     @classmethod
-    def getTemperature(cls, region: str) -> float:
-        return float(coredb.CoreDB().getValue(f'.//regions/region[name="{region}"]/initialization/initialValues/temperature'))
+    def getTemperature(cls, rname: str) -> float:
+        return float(coredb.CoreDB().getValue(f'.//regions/region[name="{rname}"]/initialization/initialValues/temperature'))
 
     @classmethod
-    def getScaleOfVelocity(cls, region: str) -> float:
-        return float(coredb.CoreDB().getValue(f'.//regions/region[name="{region}"]/initialization/initialValues/scaleOfVelocity'))
+    def getScaleOfVelocity(cls, rname: str) -> float:
+        return float(coredb.CoreDB().getValue(f'.//regions/region[name="{rname}"]/initialization/initialValues/scaleOfVelocity'))
 
     @classmethod
-    def getTurbulentViscosity(cls, region: str) -> float:
-        return float(coredb.CoreDB().getValue(f'.//regions/region[name="{region}"]/initialization/initialValues/turbulentViscosity'))
+    def getTurbulentViscosity(cls, rname: str) -> float:
+        return float(coredb.CoreDB().getValue(f'.//regions/region[name="{rname}"]/initialization/initialValues/turbulentViscosity'))
 
     @classmethod
-    def getTurbulentIntensity(cls, region: str) -> float:
-        return float(coredb.CoreDB().getValue(f'.//regions/region[name="{region}"]/initialization/initialValues/turbulentIntensity')) / 100.0
+    def getTurbulentIntensity(cls, rname: str) -> float:
+        return float(coredb.CoreDB().getValue(f'.//regions/region[name="{rname}"]/initialization/initialValues/turbulentIntensity')) / 100.0

@@ -56,21 +56,21 @@ class TestThermophysicalProperties(unittest.TestCase):
         coredb.destroy()
 
     def testBasicGeneration(self):
-        region = 'testRegion_1'
+        rname = 'testRegion_1'
         zone = 'testZone_1'
-        self.db.addRegion(region)
-        self.db.addCellZone(region, zone)
+        self.db.addRegion(rname)
+        self.db.addCellZone(rname, zone)
         self.db.setValue('.//general/flowType', 'compressible')
-        content = str(ThermophysicalProperties(region))
+        content = str(ThermophysicalProperties(rname))
         # self.assertEqual(_DEF_CONTENT, content)
 
     def testPolynomialViscosity(self):
-        region = 'testRegion_1'
+        rname = 'testRegion_1'
         zone = 'testZone_1'
         viscosityCoeffs = '1.1 2.2 3.3 4.4 5.5'
         conductivityCcoeffs = '6.6 7.7 8.8 9.9'
-        self.db.addRegion(region)
-        self.db.addCellZone(region, zone)
+        self.db.addRegion(rname)
+        self.db.addCellZone(rname, zone)
         self.db.setValue('.//general/flowType', 'incompressible')
         self.db.setValue('.//material[name="air"]/thermalConductivity/specification', 'polynomial')
         self.db.setValue('.//material[name="air"]/thermalConductivity/polynomial', conductivityCcoeffs)
@@ -78,7 +78,7 @@ class TestThermophysicalProperties(unittest.TestCase):
         self.db.setValue('.//material[name="air"]/viscosity/specification', 'polynomial')
         self.db.setValue('.//material[name="air"]/viscosity/polynomial', viscosityCoeffs)
 
-        content = ThermophysicalProperties(region).build().asDict()
+        content = ThermophysicalProperties(rname).build().asDict()
         self.assertEqual('polynomial', content['thermoType']['transport'])
         coeffs: list[float] = [0] * 8
         for i, n in enumerate(map(float, viscosityCoeffs.split())):
@@ -90,19 +90,19 @@ class TestThermophysicalProperties(unittest.TestCase):
         self.assertEqual(coeffs, content['mixture']['transport']['kappaCoeffs<8>'])
 
     def testSutherlandViscosity(self):
-        region = 'testRegion_1'
+        rname = 'testRegion_1'
         zone = 'testZone_1'
         As = '1.1'
         Ts = '2.2'
-        self.db.addRegion(region)
-        self.db.addCellZone(region, zone)
+        self.db.addRegion(rname)
+        self.db.addCellZone(rname, zone)
 
         self.db.setValue('.//general/flowType', 'incompressible')
         self.db.setValue('.//material[name="air"]/viscosity/specification', 'sutherland')
         self.db.setValue('.//material[name="air"]/viscosity/sutherland/coefficient', As)
         self.db.setValue('.//material[name="air"]/viscosity/sutherland/temperature', Ts)
 
-        content = ThermophysicalProperties(region).build().asDict()
+        content = ThermophysicalProperties(rname).build().asDict()
         self.assertEqual('sutherland', content['thermoType']['transport'])
         self.assertEqual(As, content['mixture']['transport']['As'])
         self.assertEqual(Ts, content['mixture']['transport']['Ts'])

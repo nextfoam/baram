@@ -8,10 +8,10 @@ class TestFvSchemes(unittest.TestCase):
     def setUp(self):
         self.db = coredb.createDB()
 
-        self.region = 'testRegion_1'
+        self.rname = 'testRegion_1'
         zone = 'testZone_1'
-        self.db.addRegion(self.region)
-        self.db.addCellZone(self.region, zone)
+        self.db.addRegion(self.rname)
+        self.db.addCellZone(self.rname, zone)
 
         self.db.setValue('.//general/solverType', 'pressureBased')
 
@@ -35,7 +35,7 @@ class TestFvSchemes(unittest.TestCase):
         self.db.setValue('.//discretizationSchemes/energy', 'secondOrderUpwind')
         self.db.setValue('.//discretizationSchemes/turbulentKineticEnergy', 'secondOrderUpwind')
 
-        content = FvSchemes(self.region).build().asDict()
+        content = FvSchemes(self.rname).build().asDict()
 
         self.assertEqual('backward', content['ddtSchemes']['default'])
 
@@ -56,7 +56,7 @@ class TestFvSchemes(unittest.TestCase):
         self.db.setValue('.//discretizationSchemes/energy', 'firstOrderUpwind')
         self.db.setValue('.//discretizationSchemes/turbulentKineticEnergy', 'firstOrderUpwind')
 
-        content = FvSchemes(self.region).build().asDict()
+        content = FvSchemes(self.rname).build().asDict()
 
         self.assertEqual('localEuler', content['ddtSchemes']['default'])
 
@@ -77,7 +77,7 @@ class TestFvSchemes(unittest.TestCase):
         self.db.setValue('.//discretizationSchemes/energy', 'firstOrderUpwind')
         self.db.setValue('.//discretizationSchemes/turbulentKineticEnergy', 'firstOrderUpwind')
 
-        content = FvSchemes(self.region).build().asDict()
+        content = FvSchemes(self.rname).build().asDict()
 
         self.assertEqual('steadyState', content['ddtSchemes']['default'])
 
@@ -98,7 +98,7 @@ class TestFvSchemes(unittest.TestCase):
         self.db.setValue('.//discretizationSchemes/energy', 'firstOrderUpwind')
         self.db.setValue('.//discretizationSchemes/turbulentKineticEnergy', 'secondOrderUpwind')
 
-        content = FvSchemes(self.region).build().asDict()
+        content = FvSchemes(self.rname).build().asDict()
 
         self.assertEqual('localEuler', content['ddtSchemes']['default'])
 

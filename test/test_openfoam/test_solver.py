@@ -8,10 +8,10 @@ class TestSolver(unittest.TestCase):
     def setUp(self):
         self.db = coredb.createDB()
 
-        self.region = 'testRegion_1'
+        self.rname = 'testRegion_1'
         zone = 'testZone_1'
-        self.db.addRegion(self.region)
-        self.db.addCellZone(self.region, zone)
+        self.db.addRegion(self.rname)
+        self.db.addCellZone(self.rname, zone)
 
     def tearDown(self) -> None:
         coredb.destroy()
