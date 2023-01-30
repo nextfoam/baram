@@ -6,6 +6,7 @@ from coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistributi
 from coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT
 from coredb.models_db import ModelsDB
 from coredb.project import Project
+from coredb.initialization_db import InitializationDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -15,7 +16,7 @@ class T(BoundaryCondition):
     def __init__(self, region, time, processorNo):
         super().__init__(region, time, processorNo, 'T')
 
-        self._initialValue = self._db.getValue('.//initialization/initialValues/temperature')
+        self._initialValue = InitializationDB.getTemperature(region.rname)
 
     def build0(self):
         self._data = {

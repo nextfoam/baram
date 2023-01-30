@@ -45,8 +45,8 @@ class Worker(QObject):
         self._reader = None
         self._timer = None
 
-    def createReader(self, region, fileName, extension):
-        self._reader = PostFileReader(self._name, region, fileName, extension)
+    def createReader(self, rname, fileName, extension):
+        self._reader = PostFileReader(self._name, rname, fileName, extension)
 
     def startMonitor(self):
         changedFiles = self._reader.chagedFiles()

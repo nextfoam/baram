@@ -203,6 +203,7 @@ class SectionDialog(ResizableDialog):
                                     <pressure disabled="true">0</pressure>
                                     <temperature disabled="true">300</temperature>
                                     <volumeFractions disabled="true"></volumeFractions>
+                                    <overrideBoundaryValue>false</overrideBoundaryValue>
                                 </section>
                             ''', '')
 
@@ -284,6 +285,11 @@ class SectionDialog(ResizableDialog):
                 if radio.isChecked():
                     writer.append(sectionPath + '/cellZone', czid, self.tr("Cell Zone"))
                     break
+
+        if self._ui.overrideBoundaryValue.isChecked():
+            writer.append(sectionPath + '/overrideBoundaryValue', 'true', self.tr("Override Boundary Value"))
+        else:
+            writer.append(sectionPath + '/overrideBoundaryValue', 'false', self.tr("Override Boundary Value"))
 
         # Parameter processing
 

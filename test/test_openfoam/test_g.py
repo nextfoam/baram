@@ -10,10 +10,10 @@ class TestG(unittest.TestCase):
         self.db = coredb.createDB()
         self.path = ModelsDB.TURBULENCE_MODELS_XPATH
 
-        self.region = 'testRegion_1'
+        self.rname = 'testRegion_1'
         zone = 'testZone_1'
-        self.db.addRegion(self.region)
-        self.db.addCellZone(self.region, zone)
+        self.db.addRegion(self.rname)
+        self.db.addCellZone(self.rname, zone)
 
     def tearDown(self) -> None:
         coredb.destroy()

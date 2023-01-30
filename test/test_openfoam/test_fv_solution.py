@@ -7,13 +7,13 @@ from coredb.region_db import RegionDB
 from coredb.material_db import MaterialDB
 from coredb.numerical_db import NumericalDB
 
-region = "testRegion_1"
+rname = "testRegion_1"
 
 
 class TestFvSolution(unittest.TestCase):
     def setUp(self):
         self._db = coredb.createDB()
-        self._db.addRegion(region)
+        self._db.addRegion(rname)
         self._air = self._db.getAttribute(f'{MaterialDB.MATERIALS_XPATH}/material[name="air"]', 'mid')
         self._steel = str(self._db.addMaterial('steel'))
 
@@ -22,28 +22,28 @@ class TestFvSolution(unittest.TestCase):
 
     def testCompressible(self):
         self._db.setValue(GeneralDB.GENERAL_XPATH + '/flowType', "compressible")
-        content = FvSolution(region).build().asDict()
+        content = FvSolution(rname).build().asDict()
         self.assertEqual('PBiCGStab', content['solvers']['"(p|pcorr)"']['solver'])
 
     def testIncompressible(self):
         self._db.setValue(GeneralDB.GENERAL_XPATH + '/flowType', "incompressible")
-        content = FvSolution(region).build().asDict()
+        content = FvSolution(rname).build().asDict()
         self.assertEqual('PCG', content['solvers']['"(p|pcorr)"']['solver'])
 
     def testSolid(self):
-        self._db.setValue(RegionDB.getXPath(region) + '/material', self._steel)
-        content = FvSolution(region).build().asDict()
+        self._db.setValue(RegionDB.getXPath(rname) + '/material', self._steel)
+        content = FvSolution(rname).build().asDict()
         self.assertEqual('DIC', content['solvers']['h']['preconditioner']['smoother'])
 
     def testFluid(self):
-        self._db.setValue(RegionDB.getXPath(region) + '/material', self._air)
-        content = FvSolution(region).build().asDict()
+        self._db.setValue(RegionDB.getXPath(rname) + '/material', self._air)
+        content = FvSolution(rname).build().asDict()
         self.assertEqual('DILU', content['solvers']['h']['preconditioner']['smoother'])
 
     def testSimpleSolid(self):
         self._db.setValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/pressureVelocityCouplingScheme', 'SIMPLE')
-        self._db.setValue(RegionDB.getXPath(region) + '/material', self._steel)
-        content = FvSolution(region).build().asDict()
+        self._db.setValue(RegionDB.getXPath(rname) + '/material', self._steel)
+        content = FvSolution(rname).build().asDict()
         self.assertEqual('no', content['SIMPLE']['consistent'])
         self.assertEqual(self._db.getValue('.//convergenceCriteria/pressure/absolute'),
                          content['SIMPLE']['residualControl']['p'])
@@ -59,8 +59,8 @@ class TestFvSolution(unittest.TestCase):
 
     def testSimpleFluid(self):
         self._db.setValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/pressureVelocityCouplingScheme', 'SIMPLE')
-        self._db.setValue(RegionDB.getXPath(region) + '/material', self._air)
-        content = FvSolution(region).build().asDict()
+        self._db.setValue(RegionDB.getXPath(rname) + '/material', self._air)
+        content = FvSolution(rname).build().asDict()
         self.assertEqual('no', content['SIMPLE']['consistent'])
         self.assertEqual(self._db.getValue('.//convergenceCriteria/pressure/absolute'),
                          content['SIMPLE']['residualControl']['p'])
@@ -78,8 +78,8 @@ class TestFvSolution(unittest.TestCase):
 
     def testSimplecSolid(self):
         self._db.setValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/pressureVelocityCouplingScheme', 'SIMPLEC')
-        self._db.setValue(RegionDB.getXPath(region) + '/material', self._steel)
-        content = FvSolution(region).build().asDict()
+        self._db.setValue(RegionDB.getXPath(rname) + '/material', self._steel)
+        content = FvSolution(rname).build().asDict()
         self.assertEqual('no', content['SIMPLE']['consistent'])
         self.assertEqual(self._db.getValue('.//convergenceCriteria/pressure/absolute'),
                          content['SIMPLE']['residualControl']['p'])
@@ -95,8 +95,8 @@ class TestFvSolution(unittest.TestCase):
 
     def testSimplecFluid(self):
         self._db.setValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/pressureVelocityCouplingScheme', 'SIMPLEC')
-        self._db.setValue(RegionDB.getXPath(region) + '/material', self._air)
-        content = FvSolution(region).build().asDict()
+        self._db.setValue(RegionDB.getXPath(rname) + '/material', self._air)
+        content = FvSolution(rname).build().asDict()
         self.assertEqual('yes', content['SIMPLE']['consistent'])
         self.assertEqual(self._db.getValue('.//convergenceCriteria/pressure/absolute'),
                          content['SIMPLE']['residualControl']['p'])
@@ -115,19 +115,19 @@ class TestFvSolution(unittest.TestCase):
     def testUseMomentumPredictor(self):
         self._db.setValue(GeneralDB.GENERAL_XPATH + '/timeTransient', 'true')
         self._db.setValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/useMomentumPredictor', 'true')
-        content = FvSolution(region).build().asDict()
+        content = FvSolution(rname).build().asDict()
         self.assertEqual('on', content['PIMPLE']['momentumPredictor'])
         self.assertEqual(self._db.getValue('.//runConditions/maxCourantNumber'), content['PIMPLE']['maxCo'])
 
     def testNotUseMomentumPredictor(self):
         self._db.setValue(GeneralDB.GENERAL_XPATH + '/timeTransient', 'true')
         self._db.setValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/useMomentumPredictor', 'false')
-        content = FvSolution(region).build().asDict()
+        content = FvSolution(rname).build().asDict()
         self.assertEqual('off', content['PIMPLE']['momentumPredictor'])
         self.assertEqual(self._db.getValue('.//runConditions/maxCourantNumber'), content['PIMPLE']['maxCo'])
 
     def testRegion(self):
-        content = FvSolution(region).build().asDict()
+        content = FvSolution(rname).build().asDict()
         self.assertEqual(self._db.getValue('.//convergenceCriteria/pressure/absolute'),
                          content['PIMPLE']['residualControl']['p']['tolerance'])
         self.assertEqual(self._db.getValue('.//convergenceCriteria/pressure/relative'),

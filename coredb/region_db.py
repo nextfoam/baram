@@ -28,11 +28,11 @@ class RegionDB:
             self._w = None
 
             if self.isFluid():
-                p = InitializationDB.getPressure()
-                t = InitializationDB.getTemperature()
-                v = InitializationDB.getScaleOfVelocity()
-                i = InitializationDB.getTurbulentIntensity()
-                b = InitializationDB.getTurbulentViscosity()
+                p = InitializationDB.getPressure(rname)
+                t = InitializationDB.getTemperature(rname)
+                v = InitializationDB.getScaleOfVelocity(rname)
+                i = InitializationDB.getTurbulentIntensity(rname)
+                b = InitializationDB.getTurbulentViscosity(rname)
 
                 self._rho = MaterialDB.getDensity(self._mid, t, p)  # Density
                 mu = MaterialDB.getViscosity(self._mid, t)  # Viscosity

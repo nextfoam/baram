@@ -6,6 +6,7 @@ from coredb import coredb
 class TestInputNumberTypeWithRestriction(unittest.TestCase):
     def setUp(self):
         self.db = coredb.createDB()
+        self.db.addRegion('dummyRegion')
         self.path = './/initialValues/turbulentIntensity'
 
     def testValidDecimalNotation(self):

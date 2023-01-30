@@ -4,6 +4,8 @@
 from coredb.project import Project
 from coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from coredb.general_db import GeneralDB
+from coredb.initialization_db import InitializationDB
+from coredb.region_db import RegionDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 import openfoam.solver
 from openfoam.file_system import FileSystem
@@ -38,10 +40,10 @@ TYPE_MAP = {
 class P(BoundaryCondition):
     DIMENSIONS = '[1 -1 -2 0 0 0 0]'
 
-    def __init__(self, region, time, processorNo, field):
+    def __init__(self, region: RegionDB.Region, time, processorNo, field):
         super().__init__(region, time, processorNo, field)
 
-        self._initialPressure = float(self._db.getValue('.//initialization/initialValues/pressure'))
+        self._initialPressure = InitializationDB.getPressure(region.rname)
         self._operatingPressure = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
 
         self._field = field

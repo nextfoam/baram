@@ -15,19 +15,19 @@ class TestMRFProperties(unittest.TestCase):
         coredb.destroy()
 
     def testBuild(self):
-        region = 'testRegion_1'
+        rname = 'testRegion_1'
         zone = 'testZone_1'
-        self.db.addRegion(region)
-        czid = self.db.addCellZone(region, zone)
-        boundaries = [self.db.addBoundaryCondition(region, 'boundary1', 'wall'),
-                      self.db.addBoundaryCondition(region, 'boundary2', 'wall')]
+        self.db.addRegion(rname)
+        czid = self.db.addCellZone(rname, zone)
+        boundaries = [self.db.addBoundaryCondition(rname, 'boundary1', 'wall'),
+                      self.db.addBoundaryCondition(rname, 'boundary2', 'wall')]
         xpath = f'.//cellZones/cellZone[@czid="{czid}"]'
         self.db.setValue(xpath + '/zoneType', 'mrf')
         self.db.setValue(xpath + '/mrf/staticBoundaries', ' '.join([str(b) for b in boundaries]))
         self.db.setValue('.//general/flowType', 'compressible')
 
-        content = MRFProperties(region).build().asDict()
-        patches = [self.db.getValue(f'.//regions/region[name="{region}"]/boundaryConditions/boundaryCondition[@bcid="{bcid}"]/name')
+        content = MRFProperties(rname).build().asDict()
+        patches = [self.db.getValue(f'.//regions/region[name="{rname}"]/boundaryConditions/boundaryCondition[@bcid="{bcid}"]/name')
                    for bcid in boundaries]
 
         self.assertEqual(patches, content['MRFCellZone_testZone_1']['nonRotatingPatches'])

@@ -240,8 +240,8 @@ class ControlDict(DictionaryFile):
             'log': 'false',
         }
 
-        if region := self._db.getValue(xpath + '/region'):
-            data['region'] = region
+        if rname := self._db.getValue(xpath + '/region'):
+            data['region'] = rname
 
         return data
 
@@ -265,8 +265,8 @@ class ControlDict(DictionaryFile):
             'log': 'false',
         }
 
-        if region := self._db.getValue(xpath + '/region'):
-            data['region'] = region
+        if rname := self._db.getValue(xpath + '/region'):
+            data['region'] = rname
 
         return data
 
@@ -345,8 +345,8 @@ class ControlDict(DictionaryFile):
         if reportType == SurfaceReportType.MASS_WEIGHTED_AVERAGE.value:
             data['weightField'] = 'phi'
 
-        if region := BoundaryDB.getBoundaryRegion(surface):
-            data['region'] = region
+        if rname := BoundaryDB.getBoundaryRegion(surface):
+            data['region'] = rname
 
         return data
 
@@ -380,8 +380,8 @@ class ControlDict(DictionaryFile):
             data['regionType'] = 'cellZone'
             data['name'] = name
 
-        if region := CellZoneDB.getCellZoneRegion(volume):
-            data['region'] = region
+        if rname := CellZoneDB.getCellZoneRegion(volume):
+            data['region'] = rname
 
         return data
 

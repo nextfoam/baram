@@ -12,14 +12,14 @@ class TestDynamicMeshDict(unittest.TestCase):
         coredb.destroy()
 
     def testBuild(self):
-        region = 'testRegion_1'
+        rname = 'testRegion_1'
         zone = 'testZone_1'
         origin = [1, 2, 3]
         axis = [4, 5, 6]
         rpm = 60
 
-        self.db.addRegion(region)
-        czid = self.db.addCellZone(region, zone)
+        self.db.addRegion(rname)
+        czid = self.db.addCellZone(rname, zone)
         xpath = f'.//cellZones/cellZone[@czid="{czid}"]'
         self.db.setValue(xpath + '/zoneType', 'slidingMesh')
         self.db.setValue(xpath + '/slidingMesh/rotatingSpeed', str(rpm))  # in RPM
@@ -31,7 +31,7 @@ class TestDynamicMeshDict(unittest.TestCase):
         self.db.setValue(xpath + '/slidingMesh/rotationAxisDirection/z', str(axis[2]))
         self.db.setValue('.//general/flowType', 'compressible')
 
-        content = DynamicMeshDict(region).build().asDict()
+        content = DynamicMeshDict(rname).build().asDict()
 
         self.assertEqual('dynamicMotionSolverListFvMesh', content['dynamicFvMesh'])
         self.assertIn('"libfvMotionSolvers.so"', content['motionSolverLibs'])

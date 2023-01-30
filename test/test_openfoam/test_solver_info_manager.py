@@ -70,7 +70,7 @@ class TestSolverInfoManager(unittest.TestCase):
         solverInfo = infoFiles[Path(files[1])]
         self.assertEqual(FILE_SIZE, solverInfo.size)
         self.assertIsNone(solverInfo.dup)
-        self.assertEqual('bottomWater', solverInfo.region)
+        self.assertEqual('bottomWater', solverInfo.rname)
 
         self.assertIn(Path(files[2]), infoFiles)
         solverInfo = infoFiles[Path(files[2])]
@@ -80,7 +80,7 @@ class TestSolverInfoManager(unittest.TestCase):
 
         self.assertIn(Path(files[4]), infoFiles)
         solverInfo = infoFiles[Path(files[4])]
-        self.assertEqual('topAir', solverInfo.region)
+        self.assertEqual('topAir', solverInfo.rname)
 
     @patch('glob.glob')
     @patch.object(Path, 'stat')
@@ -105,7 +105,7 @@ class TestSolverInfoManager(unittest.TestCase):
         solverInfo = infoFiles[Path(files[1])]
         self.assertEqual(FILE_SIZE, solverInfo.size)
         self.assertIsNone(solverInfo.dup)
-        self.assertEqual('', solverInfo.region)
+        self.assertEqual('', solverInfo.rname)
 
         self.assertIn(Path(files[2]), infoFiles)
         solverInfo = infoFiles[Path(files[2])]
