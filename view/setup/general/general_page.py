@@ -29,12 +29,6 @@ class GeneralPage(ContentPage):
         if GeneralDB.getSolverType() == SolverType.DENSITY_BASED:
             self._ui.transient_.setEnabled(False)
 
-    def hideEvent(self, ev):
-        if not ev.spontaneous():
-            self.save()
-
-        return super().hideEvent(ev)
-
     def save(self):
         writer = CoreDBWriter()
 

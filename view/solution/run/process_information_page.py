@@ -43,16 +43,14 @@ class ProcessInformationPage(ContentPage):
 
         self._connectSignalsSlots()
 
-    def showEvent(self, ev):
-        if ev.spontaneous():
-            return super().showEvent(ev)
-
+    def _load(self):
         self._updateStatus()
 
-        return super().showEvent(ev)
+    def showEvent(self, ev):
+        if not ev.spontaneous():
+            self._load()
 
-    def save(self):
-        return True
+        return super().showEvent(ev)
 
     def _connectSignalsSlots(self):
         self._ui.startCalculation.clicked.connect(self._startCalculationClicked)

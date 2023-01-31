@@ -30,7 +30,7 @@ class MenuItem(Enum):
 
 
 class NavigatorView(QObject):
-    currentMenuChanged = Signal(int)
+    currentMenuChanged = Signal(int, int)
 
     def __init__(self, tree):
         super().__init__()
@@ -81,8 +81,8 @@ class NavigatorView(QObject):
     def currentMenu(self):
         return self._view.currentItem().type()
 
-    def setCurrentMenu(self, menuItem):
-        self._view.setCurrentItem(self._menu[menuItem.value])
+    def setCurrentMenu(self, value):
+        self._view.setCurrentItem(self._menu[value])
 
     def updateMenu(self):
         project = Project.instance()
@@ -115,5 +115,5 @@ class NavigatorView(QObject):
     def _addMenu(self, menuItem, parent):
         self._menu[menuItem.value] = QTreeWidgetItem(parent, [self._menuTexts[menuItem.value]()], menuItem.value)
 
-    def _currentMenuChanged(self, current):
-        self.currentMenuChanged.emit(current.type())
+    def _currentMenuChanged(self, current, previous):
+        self.currentMenuChanged.emit(current.type(), previous.type() if previous else -1)

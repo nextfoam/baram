@@ -36,9 +36,6 @@ class MaterialPage(ContentPage):
         self._connectSignalsSlots()
         self._load()
 
-    def save(self):
-        return True
-
     def showEvent(self, ev):
         if not ev.spontaneous():
             self.pageReload.emit()

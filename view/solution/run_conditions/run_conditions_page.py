@@ -68,10 +68,7 @@ class RunConditionsPage(ContentPage):
 
         self._connectSignalsSlots()
 
-    def showEvent(self, ev):
-        if ev.spontaneous():
-            return super().showEvent(ev)
-
+    def _load(self):
         timeIsTransient = GeneralDB.isTimeTransient()
         self._ui.steadyConditions.setVisible(not timeIsTransient)
         self._ui.transientConditions.setVisible(timeIsTransient)
@@ -101,14 +98,6 @@ class RunConditionsPage(ContentPage):
         self._ui.cluster.setChecked(
             self._db.getValue(self._xpath + '/parallel/localhost') == 'false')
         self._ui.hostFile.setText(self._db.getValue(self._xpath + '/parallel/hostfile'))
-
-        return super().showEvent(ev)
-
-    def hideEvent(self, ev):
-        if not ev.spontaneous():
-            self.save()
-
-        return super().hideEvent(ev)
 
     def save(self):
         writer = CoreDBWriter()
@@ -154,6 +143,12 @@ class RunConditionsPage(ContentPage):
             return False
 
         return True
+
+    def showEvent(self, ev):
+        if not ev.spontaneous():
+            self._load()
+
+        return super().showEvent(ev)
 
     def _connectSignalsSlots(self):
         self._ui.timeSteppingMethod.currentIndexChanged.connect(self._timeSteppingMethodChanged)

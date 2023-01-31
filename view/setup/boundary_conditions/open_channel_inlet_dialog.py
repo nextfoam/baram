@@ -8,7 +8,7 @@ from coredb.coredb_writer import CoreDBWriter
 from coredb.boundary_db import BoundaryDB
 from view.widgets.resizable_dialog import ResizableDialog
 from .open_channel_inlet_dialog_ui import Ui_OpenChannelInletDialog
-from .turbulence_model_helper import TurbulenceModelHelper
+from .conditional_widget_helper import ConditionalWidgetHelper
 
 
 class OpenChannelInletDialog(ResizableDialog):
@@ -21,10 +21,7 @@ class OpenChannelInletDialog(ResizableDialog):
 
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
-        self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
-
-        if self._turbulenceWidget:
-            self._ui.dialogContents.layout().addWidget(self._turbulenceWidget)
+        self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, self._ui.dialogContents.layout())
 
         self._load()
 
@@ -34,8 +31,8 @@ class OpenChannelInletDialog(ResizableDialog):
         writer = CoreDBWriter()
         writer.append(path + '/volumeFlowRate', self._ui.volumeFlowRate.text(), self.tr("Volume Flow Rate"))
 
-        if self._turbulenceWidget:
-            self._turbulenceWidget.appendToWriter(writer)
+        if not self._turbulenceWidget.appendToWriter(writer):
+            return
 
         errorCount = writer.write()
         if errorCount > 0:
@@ -48,5 +45,4 @@ class OpenChannelInletDialog(ResizableDialog):
 
         self._ui.volumeFlowRate.setText(self._db.getValue(path + '/volumeFlowRate'))
 
-        if self._turbulenceWidget:
-            self._turbulenceWidget.load()
+        self._turbulenceWidget.load()

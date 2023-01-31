@@ -25,7 +25,7 @@ class InitializationPage(ContentPage):
 
         self._connectSignalsSlots()
 
-        self.load()
+        self._load()
 
     def _connectSignalsSlots(self):
         self._ui.initialize.clicked.connect(self._initialize)
@@ -40,13 +40,7 @@ class InitializationPage(ContentPage):
 
         return super().showEvent(ev)
 
-    def hideEvent(self, ev):
-        if not ev.spontaneous():
-            self.save()
-
-        return super().hideEvent(ev)
-
-    def load(self):
+    def _load(self):
         regions = self._db.getRegions()
         if len(regions) == 1 and not regions[0]:
             widget = InitializationWidget('')

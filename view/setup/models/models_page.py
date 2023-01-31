@@ -91,19 +91,13 @@ class ModelsPage(ContentPage):
 
         self._connectSignalsSlots()
 
-        self._load()
-
-    def save(self):
-        return True
+        for i in range(self._ui.list.count()):
+            self._ui.list.item(i).load()
 
     def _connectSignalsSlots(self):
         self._ui.list.currentItemChanged.connect(self._modelSelected)
         self._ui.list.itemDoubleClicked.connect(self._edit)
         self._ui.edit.clicked.connect(self._edit)
-
-    def _load(self):
-        for i in range(self._ui.list.count()):
-            self._ui.list.item(i).load()
 
     def _modelSelected(self, item):
         self._ui.edit.setEnabled(item.isEditable())

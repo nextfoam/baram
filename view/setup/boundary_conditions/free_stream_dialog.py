@@ -5,12 +5,10 @@ from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
-from coredb.models_db import ModelsDB
 from coredb.boundary_db import BoundaryDB
 from view.widgets.resizable_dialog import ResizableDialog
 from .free_stream_dialog_ui import Ui_FreeStreamDialog
-from .turbulence_model_helper import TurbulenceModelHelper
-from .temperature_widget import TemperatureWidget
+from .conditional_widget_helper import ConditionalWidgetHelper
 
 
 class FreeStreamDialog(ResizableDialog):
@@ -23,14 +21,10 @@ class FreeStreamDialog(ResizableDialog):
 
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
-        self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
-        self._temperatureWidget = TemperatureWidget(self._xpath, bcid)
 
         layout = self._ui.dialogContents.layout()
-        if self._turbulenceWidget:
-            layout.addWidget(self._turbulenceWidget)
-        if ModelsDB.isEnergyModelOn():
-            layout.addWidget(self._temperatureWidget)
+        self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
+        self._temperatureWidget = ConditionalWidgetHelper.temperatureWidget(self._xpath, bcid, layout)
 
         self._load()
 
@@ -43,8 +37,8 @@ class FreeStreamDialog(ResizableDialog):
         writer.append(path + '/streamVelocity/z', self._ui.zVelocity.text(), self.tr("Z-Velocity"))
         writer.append(path + '/pressure', self._ui.pressure.text(), self.tr("Pressure"))
 
-        if self._turbulenceWidget:
-            self._turbulenceWidget.appendToWriter(writer)
+        if not self._turbulenceWidget.appendToWriter(writer):
+            return
 
         if not self._temperatureWidget.appendToWriter(writer):
             return
@@ -65,8 +59,6 @@ class FreeStreamDialog(ResizableDialog):
         self._ui.zVelocity.setText(self._db.getValue(path + '/streamVelocity/z'))
         self._ui.pressure.setText(self._db.getValue(path + '/pressure'))
 
-        if self._turbulenceWidget:
-            self._turbulenceWidget.load()
-
+        self._turbulenceWidget.load()
         self._temperatureWidget.load()
         self._temperatureWidget.freezeProfileToConstant()

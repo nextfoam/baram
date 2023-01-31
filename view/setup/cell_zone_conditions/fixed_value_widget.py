@@ -37,3 +37,5 @@ class FixedValueWidget(QWidget):
             writer.append(self._xpath, self._ui.value.text(), self._title)
         else:
             writer.setAttribute(self._xpath, 'disabled', 'true')
+
+        return True

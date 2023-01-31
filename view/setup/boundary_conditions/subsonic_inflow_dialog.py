@@ -8,8 +8,7 @@ from coredb.coredb_writer import CoreDBWriter
 from coredb.boundary_db import BoundaryDB
 from view.widgets.resizable_dialog import ResizableDialog
 from .subsonic_inflow_dialog_ui import Ui_SubsonicInflowDialog
-from .turbulence_model_helper import TurbulenceModelHelper
-from view.widgets.volume_fraction_widget import VolumeFractionWidget
+from .conditional_widget_helper import ConditionalWidgetHelper
 
 
 class SubsonicInflowDialog(ResizableDialog):
@@ -22,17 +21,12 @@ class SubsonicInflowDialog(ResizableDialog):
 
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
-        self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
 
         layout = self._ui.dialogContents.layout()
 
-        if self._turbulenceWidget:
-            layout.layout().addWidget(self._turbulenceWidget)
-
-        region = BoundaryDB.getBoundaryRegion(bcid)
-        self._volumeFractionWidget = VolumeFractionWidget(region, self._xpath)
-        if self._volumeFractionWidget.on():
-            layout.addWidget(self._volumeFractionWidget)
+        self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
+        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(BoundaryDB.getBoundaryRegion(bcid),
+                                                                                  self._xpath, layout)
 
         self._load()
 
@@ -46,8 +40,8 @@ class SubsonicInflowDialog(ResizableDialog):
         writer.append(path + '/totalPressure', self._ui.totalPressure.text(), self.tr("Pressure"))
         writer.append(path + '/totalTemperature', self._ui.totalTemperature.text(), self.tr("Pressure"))
 
-        if self._turbulenceWidget:
-            self._turbulenceWidget.appendToWriter(writer)
+        if not self._turbulenceWidget.appendToWriter(writer):
+            return
 
         if not self._volumeFractionWidget.appendToWriter(writer):
             return
@@ -67,7 +61,5 @@ class SubsonicInflowDialog(ResizableDialog):
         self._ui.totalPressure.setText(self._db.getValue(path + '/totalPressure'))
         self._ui.totalTemperature.setText(self._db.getValue(path + '/totalTemperature'))
 
-        if self._turbulenceWidget:
-            self._turbulenceWidget.load()
-
+        self._turbulenceWidget.load()
         self._volumeFractionWidget.load()

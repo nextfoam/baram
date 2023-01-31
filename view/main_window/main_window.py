@@ -11,7 +11,7 @@ import qasync
 import asyncio
 
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
-from PySide6.QtCore import Qt, QThreadPool, Signal, QEvent
+from PySide6.QtCore import Qt, QThreadPool, Signal, QEvent, QTimer
 from PySide6.QtGui import QIcon
 
 from app import app
@@ -63,18 +63,21 @@ class CloseType(Enum):
 class MenuPage:
     def __init__(self, pageClass=None):
         self._pageClass = pageClass
-        self._index = -1 if pageClass else 0
+        self._widget = None
 
     @property
-    def index(self):
-        return self._index
-
-    @index.setter
-    def index(self, index):
-        self._index = index
+    def widget(self):
+        return self._widget
 
     def createPage(self):
-        return self._pageClass()
+        self._widget = self._pageClass()
+        return self._widget
+
+    def removePage(self):
+        self._widget = None
+
+    def isCreated(self):
+        return self._widget or not self._pageClass
 
 
 class MainWindow(QMainWindow):
@@ -141,10 +144,10 @@ class MainWindow(QMainWindow):
             self._meshManager.meshChanged.emit()
 
         if self._project.isSolverRunning():
-            self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN)
+            self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN.value)
             self._chartDock.raise_()
         else:
-            self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL)
+            self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL.value)
             self._meshDock.raise_()
 
         self._project.opened()
@@ -290,24 +293,39 @@ class MainWindow(QMainWindow):
         self.vtkMeshLoaded()
         progress.close()
 
-    def _changeForm(self, currentMenu):
-        page = self._menuPages[currentMenu]
-        if page.index < 0:
-            newPage = page.createPage()
-            page.index = self._contentView.addPage(newPage)
+    def _changeForm(self, currentMenu, previousMenu=-1):
+        if previousMenu > -1:
+            previousPage = self._menuPages[previousMenu]
+            if previousPage and previousPage.widget == self._contentView.currentPage():
+                if not previousPage.widget.save():
+                    QTimer.singleShot(0, lambda: self._navigatorView.setCurrentMenu(previousMenu))
+                    return
 
-        self._contentView.changePane(page.index)
+        page = self._menuPages[currentMenu]
+        if not page.isCreated():
+            print('create')
+            page.createPage()
+            self._contentView.addPage(page)
+
+        self._contentView.changePane(page)
 
     def _meshChanged(self, updated):
-        # self._updateMenuEnables()
+        targets = [
+            MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value,
+            MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value,
+            MenuItem.MENU_SOLUTION_INITIALIZATION.value,
+            MenuItem.MENU_SOLUTION_MONITORS.value,
+        ]
+
         if self._project.meshLoaded and updated:
-            self._clearPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
-            self._clearPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
-            self._clearPage(MenuItem.MENU_SOLUTION_INITIALIZATION)
-            self._clearPage(MenuItem.MENU_SOLUTION_MONITORS)
-            self._loadPage(MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS)
-            self._loadPage(MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS)
-            self._loadPage(MenuItem.MENU_SOLUTION_INITIALIZATION)
+            for page in [self._menuPages[menu] for menu in targets]:
+                if page.isCreated():
+                    self._contentView.removePage(page)
+                    page.removePage()
+
+            currentMenu = self._navigatorView.currentMenu()
+            if currentMenu in targets:
+                self._changeForm(currentMenu)
 
     def _updateMenuEnables(self):
         # self._ui.menuMesh.setEnabled(self._project.meshLoaded)
@@ -352,16 +370,6 @@ class MainWindow(QMainWindow):
                 await asyncio.to_thread(FileSystem.saveAs, path)
                 self._project.saveAs(path)
                 progress.close()
-
-    def _clearPage(self, menu):
-        page = self._menuPages[menu.value]
-        if page.index > 0:
-            self._contentView.page(page.index).clear()
-
-    def _loadPage(self, menu):
-        page = self._menuPages[menu.value]
-        if page.index > 0:
-            self._contentView.page(page.index).load()
 
     def _importMesh(self, meshType, fileFilter=None):
         if coredb.CoreDB().getRegions():
@@ -408,9 +416,9 @@ class MainWindow(QMainWindow):
             self._navigatorView.translate()
 
             for page in self._menuPages.values():
-                if page.index > 0:
-                    self._contentView.removePage(page.index)
-                    page.index = -1
+                if page.isCreated():
+                    self._contentView.removePage(page)
+
             self._changeForm(self._navigatorView.currentMenu())
 
         super().changeEvent(event)

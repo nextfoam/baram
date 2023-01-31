@@ -41,3 +41,5 @@ class SlidingMeshWidget(QWidget):
                       self._ui.rotationAxisDirectionY.text(), self.tr("Rotating-Axis Direction Y"))
         writer.append(self._xpath + '/rotationAxisDirection/z',
                       self._ui.rotationAxisDirectionZ.text(), self.tr("Rotating-Axis Direction Z"))
+
+        return True

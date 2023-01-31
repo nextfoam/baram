@@ -8,8 +8,7 @@ from coredb.coredb_writer import CoreDBWriter
 from coredb.boundary_db import BoundaryDB
 from view.widgets.resizable_dialog import ResizableDialog
 from .supersonic_inflow_dialog_ui import Ui_SupersonicInflowDialog
-from .turbulence_model_helper import TurbulenceModelHelper
-from view.widgets.volume_fraction_widget import VolumeFractionWidget
+from .conditional_widget_helper import ConditionalWidgetHelper
 
 
 class SupersonicInflowDialog(ResizableDialog):
@@ -22,17 +21,12 @@ class SupersonicInflowDialog(ResizableDialog):
 
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
-        self._turbulenceWidget = TurbulenceModelHelper.createWidget(self._xpath)
 
         layout = self._ui.dialogContents.layout()
 
-        if self._turbulenceWidget:
-            layout.addWidget(self._turbulenceWidget)
-
-        region = BoundaryDB.getBoundaryRegion(bcid)
-        self._volumeFractionWidget = VolumeFractionWidget(region, self._xpath)
-        if self._volumeFractionWidget.on():
-            layout.addWidget(self._volumeFractionWidget)
+        self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
+        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(BoundaryDB.getBoundaryRegion(bcid),
+                                                                                  self._xpath, layout)
 
         self._load()
 
@@ -46,8 +40,8 @@ class SupersonicInflowDialog(ResizableDialog):
         writer.append(xpath + '/staticPressure', self._ui.staticPressure.text(), self.tr("Static Pressure"))
         writer.append(xpath + '/staticTemperature', self._ui.staticTemperature.text(), self.tr("Static Temperature"))
 
-        if self._turbulenceWidget:
-            self._turbulenceWidget.appendToWriter(writer)
+        if not self._turbulenceWidget.appendToWriter(writer):
+            return
 
         if not self._volumeFractionWidget.appendToWriter(writer):
             return
@@ -67,7 +61,5 @@ class SupersonicInflowDialog(ResizableDialog):
         self._ui.staticPressure.setText(self._db.getValue(xpath + '/staticPressure'))
         self._ui.staticTemperature.setText(self._db.getValue(xpath + '/staticTemperature'))
 
-        if self._turbulenceWidget:
-            self._turbulenceWidget.load()
-
+        self._turbulenceWidget.load()
         self._volumeFractionWidget.load()

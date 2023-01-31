@@ -79,6 +79,8 @@ class PorousZoneWidget(QWidget):
             writer.append(self._xpath + '/powerLaw/c0', self._ui.c0.text(), self.tr("C0"))
             writer.append(self._xpath + '/powerLaw/c1', self._ui.c1.text(), self.tr("C1"))
 
+        return True
+
     def _setupModelCombo(self, current):
         self._addModelComboItem(current, PorousZoneModel.DARCY_FORCHHEIMER, self.tr("Darcy Forchheimer"))
         self._addModelComboItem(current, PorousZoneModel.POWER_LAW, self.tr("Power Law"))

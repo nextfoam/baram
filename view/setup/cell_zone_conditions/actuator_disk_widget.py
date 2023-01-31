@@ -13,6 +13,7 @@ class ForceComputation(Enum):
     FROUDE = 'Froude'
     VARIABLE_SCALING = 'variableScaling'
 
+
 class ActuatorDiskWidget(QWidget):
     def __init__(self, xpath):
         super().__init__()
@@ -53,6 +54,8 @@ class ActuatorDiskWidget(QWidget):
         writer.append(self._xpath + '/upstreamPoint/y', self._ui.upstreamPointY.text(), self.tr("Upstream Point Y"))
         writer.append(self._xpath + '/upstreamPoint/z', self._ui.upstreamPointZ.text(), self.tr("Upstream Point Z"))
         writer.append(self._xpath + '/forceComputation', self._getForceComputationRadioValue(), None)
+
+        return True
 
     def _getForceComputationRadio(self, value):
         return self._ui.forceComputationRadioGroup.button(

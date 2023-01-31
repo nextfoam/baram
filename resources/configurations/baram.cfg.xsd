@@ -1243,7 +1243,7 @@
                             <xs:simpleType>
                                 <xs:restriction base='xs:string'>
                                     <xs:enumeration value='firstOrderUpwind'/>
-                                    <xs:enumeration value='secondOrder'/>
+                                    <xs:enumeration value='secondOrderUpwind'/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>

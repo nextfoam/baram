@@ -19,12 +19,6 @@ class ReferenceValuesPage(ContentPage):
         self._db = coredb.CoreDB()
         self._load()
 
-    def hideEvent(self, ev):
-        if not ev.spontaneous():
-            self.save()
-
-        return super().hideEvent(ev)
-
     def save(self):
         writer = CoreDBWriter()
         xpath = ReferenceValuesDB.REFERENCE_VALUES_XPATH
