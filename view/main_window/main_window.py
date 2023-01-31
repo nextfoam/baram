@@ -303,7 +303,6 @@ class MainWindow(QMainWindow):
 
         page = self._menuPages[currentMenu]
         if not page.isCreated():
-            print('create')
             page.createPage()
             self._contentView.addPage(page)
 
@@ -418,6 +417,7 @@ class MainWindow(QMainWindow):
             for page in self._menuPages.values():
                 if page.isCreated():
                     self._contentView.removePage(page)
+                    page.removePage()
 
             self._changeForm(self._navigatorView.currentMenu())
 
