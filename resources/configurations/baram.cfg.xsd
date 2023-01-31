@@ -1690,6 +1690,7 @@
                                         </xs:element>
                                         <xs:element name="timeStepSize" type="inputNumberType" default="0.01"/>
                                         <xs:element name="maxCourantNumber" type="inputNumberType" default="1"/>
+                                        <xs:element name="VoFMaxCourantNumber" type="inputNumberType" default="1"/>
                                         <xs:element name="endTime" type="inputNumberType" default="0"/>
                                         <xs:element name="reportIntervalSteps" type="xs:positiveInteger" default="1"/>
                                         <xs:element name="reportIntervalSeconds" type="inputNumberType" default="0.01"/>

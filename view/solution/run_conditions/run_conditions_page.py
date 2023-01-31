@@ -12,6 +12,7 @@ from coredb.app_settings import AppSettings
 from coredb.coredb_writer import CoreDBWriter
 from coredb.general_db import GeneralDB
 from coredb.run_calculation_db import TimeSteppingMethod, DataWriteFormat, RunCalculationDB
+from coredb.models_db import ModelsDB, MultiphaseModel
 from view.widgets.content_page import ContentPage
 from .run_conditions_page_ui import Ui_RunConditionsPage
 
@@ -20,6 +21,7 @@ class TimeCondition(Enum):
     TIME_STEPPING_METHOD = 0
     TIME_STEP_SIZE = auto()
     MAX_COURANT_NUMBER = auto()
+    MAX_COURANT_NUMBER_VOF = auto()
     END_TIME = auto()
 
 
@@ -59,6 +61,9 @@ class RunConditionsPage(ContentPage):
                                 TimeSteppingMethodFlag.FIXED),
             self._getRowWidgets(TimeCondition.MAX_COURANT_NUMBER.value,
                                 TimeSteppingMethodFlag.ADAPTIVE),
+            self._getRowWidgets(TimeCondition.MAX_COURANT_NUMBER_VOF.value,
+                                TimeSteppingMethodFlag.ADAPTIVE,
+                                ModelsDB.getMultiphaseModel() == MultiphaseModel.VOLUME_OF_FLUID),
             self._getRowWidgets(TimeCondition.END_TIME.value,
                                 TimeSteppingMethodFlag.FIXED | TimeSteppingMethodFlag.ADAPTIVE),
         ]
@@ -80,15 +85,18 @@ class RunConditionsPage(ContentPage):
         self._ui.timeSteppingMethod.setCurrentText(
             self._timeSteppingMethods[self._db.getValue(self._xpath + '/runConditions/timeSteppingMethod')])
         self._ui.maxCourantNumber.setText(self._db.getValue(self._xpath + '/runConditions/maxCourantNumber'))
+        self._ui.maxCourantNumberForVoF.setText(self._db.getValue(self._xpath + '/runConditions/VoFMaxCourantNumber'))
         self._ui.timeStepSize.setText(self._db.getValue(self._xpath + '/runConditions/timeStepSize'))
         self._ui.endTime.setText(self._db.getValue(self._xpath + '/runConditions/endTime'))
         self._timeSteppingMethodChanged()
 
-        self._ui.reportIntervalIterationSteps.setText(self._db.getValue(self._xpath + '/runConditions/reportIntervalSteps'))
+        self._ui.reportIntervalIterationSteps.setText(
+            self._db.getValue(self._xpath + '/runConditions/reportIntervalSteps'))
         self._ui.reportIntervalSeconds.setText(self._db.getValue(self._xpath + '/runConditions/reportIntervalSeconds'))
         self._ui.retainOnlyTheMostRecentFiles.setChecked(
             self._db.getValue(self._xpath + '/runConditions/retainOnlyTheMostRecentFiles') == 'true')
-        self._ui.maximumNumberODataFiles.setText(self._db.getValue(self._xpath + '/runConditions/maximumNumberOfDataFiles'))
+        self._ui.maximumNumberODataFiles.setText(
+            self._db.getValue(self._xpath + '/runConditions/maximumNumberOfDataFiles'))
         self._ui.dataWriteFormat.setCurrentText(
             self._dataWriteFormats[self._db.getValue(self._xpath + '/runConditions/dataWriteFormat')])
         self._ui.dataWritePrecision.setText(self._db.getValue(self._xpath + '/runConditions/dataWritePrecision'))
@@ -101,28 +109,37 @@ class RunConditionsPage(ContentPage):
 
     def save(self):
         writer = CoreDBWriter()
-        writer.append(self._xpath + '/runConditions/numberOfIterations', self._ui.numberOfIterations.text(),
-                      self.tr('Number of Iteration'))
 
-        timeSteppingMethod = self._ui.timeSteppingMethod.currentData()
-        writer.append(self._xpath + '/runConditions/timeSteppingMethod', timeSteppingMethod, None)
-        if timeSteppingMethod == TimeSteppingMethod.FIXED.value:
-            writer.append(self._xpath + '/runConditions/timeStepSize', self._ui.timeStepSize.text(),
-                          self.tr('Time Step Size'))
-        elif timeSteppingMethod == TimeSteppingMethod.ADAPTIVE.value:
-            writer.append(self._xpath + '/runConditions/maxCourantNumber', self._ui.maxCourantNumber.text(),
-                          self.tr('Max Courant Number'))
-        writer.append(self._xpath + '/runConditions/endTime', self._ui.endTime.text(), self.tr('End Time'))
+        if GeneralDB.isTimeTransient():
+            timeSteppingMethod = self._ui.timeSteppingMethod.currentData()
+            writer.append(self._xpath + '/runConditions/timeSteppingMethod', timeSteppingMethod, None)
+            if timeSteppingMethod == TimeSteppingMethod.FIXED.value:
+                writer.append(self._xpath + '/runConditions/timeStepSize', self._ui.timeStepSize.text(),
+                              self.tr('Time Step Size'))
+            elif timeSteppingMethod == TimeSteppingMethod.ADAPTIVE.value:
+                writer.append(self._xpath + '/runConditions/maxCourantNumber', self._ui.maxCourantNumber.text(),
+                              self.tr('Max Courant Number'))
+                if ModelsDB.getMultiphaseModel() == MultiphaseModel.VOLUME_OF_FLUID:
+                    writer.append(self._xpath + '/runConditions/VoFMaxCourantNumber',
+                                  self._ui.maxCourantNumberForVoF.text(), self.tr('Max Courant Number For VoF'))
+            writer.append(self._xpath + '/runConditions/endTime', self._ui.endTime.text(), self.tr('End Time'))
 
-        writer.append(self._xpath + '/runConditions/reportIntervalSteps', self._ui.reportIntervalIterationSteps.text(),
-                      self.tr('Report Interval Interation Steps'))
-        writer.append(self._xpath + '/runConditions/reportIntervalSeconds', self._ui.reportIntervalSeconds.text(),
-                      self.tr('Report Interval Seconds'))
-        writer.append(self._xpath + '/runConditions/retainOnlyTheMostRecentFiles',
-                      'true' if self._ui.retainOnlyTheMostRecentFiles.isChecked() else 'false',
-                      self.tr('Retain Only the Most Recent Files'))
-        writer.append(self._xpath + '/runConditions/maximumNumberOfDataFiles', self._ui.maximumNumberODataFiles.text(),
-                      self.tr('Maximum Number of Data Files'))
+            writer.append(self._xpath + '/runConditions/reportIntervalSeconds', self._ui.reportIntervalSeconds.text(),
+                          self.tr('Report Interval Seconds'))
+        else:
+            writer.append(self._xpath + '/runConditions/numberOfIterations', self._ui.numberOfIterations.text(),
+                          self.tr('Number of Iteration'))
+
+            writer.append(self._xpath + '/runConditions/reportIntervalSteps',
+                          self._ui.reportIntervalIterationSteps.text(), self.tr('Report Interval Interation Steps'))
+
+        if self._ui.retainOnlyTheMostRecentFiles.isChecked():
+            writer.append(self._xpath + '/runConditions/retainOnlyTheMostRecentFiles', 'true', None)
+            writer.append(self._xpath + '/runConditions/maximumNumberOfDataFiles',
+                          self._ui.maximumNumberODataFiles.text(), self.tr('Maximum Number of Data Files'))
+        else:
+            writer.append(self._xpath + '/runConditions/retainOnlyTheMostRecentFiles', 'false', None)
+
         writer.append(self._xpath + '/runConditions/dataWriteFormat', self._ui.dataWriteFormat.currentData(),
                       self.tr('Data Write Format'))
         writer.append(self._xpath + '/runConditions/dataWritePrecision', self._ui.dataWritePrecision.text(),
@@ -158,10 +175,11 @@ class RunConditionsPage(ContentPage):
         for value, text in items.items():
             combo.addItem(text, value)
 
-    def _getRowWidgets(self, row, flag):
+    def _getRowWidgets(self, row, flag, visibility=True):
         return (flag,
                 self._timeConditionForm.itemAt(row, QFormLayout.LabelRole).widget(),
-                self._timeConditionForm.itemAt(row, QFormLayout.FieldRole).widget())
+                self._timeConditionForm.itemAt(row, QFormLayout.FieldRole).widget(),
+                visibility)
 
     def _timeSteppingMethodChanged(self):
         rowCount = self._timeConditionForm.rowCount()
@@ -177,10 +195,10 @@ class RunConditionsPage(ContentPage):
             label.setParent(None)
             field.setParent(None)
 
-        flag = self._timeSteppingMethodFlags[self._ui.timeSteppingMethod.currentData()]
-        for c in self._timeConditions:
-            if c[0] & flag:
-                self._timeConditionForm.addRow(c[1], c[2])
+        currentFlag = self._timeSteppingMethodFlags[self._ui.timeSteppingMethod.currentData()]
+        for flag, label, editor, visibility in self._timeConditions:
+            if flag & currentFlag and visibility:
+                self._timeConditionForm.addRow(label, editor)
 
     def _selectHostFileClicked(self, widget):
         _locationParent = Path(AppSettings.getRecentLocation()).resolve()
