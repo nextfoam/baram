@@ -72,12 +72,9 @@ class BoundaryConditionsPage(ContentPage):
         self._typePicker = None
 
         self._connectSignalsSlots()
-        self.load()
+        self._load()
 
-    def save(self):
-        return True
-
-    def load(self):
+    def _load(self):
         regions = self._db.getRegions()
         if len(regions) == 1 and not regions[0]:
             item = QTreeWidgetItem(self._ui.boundaries, [DEFAULT_REGION_NAME], 0)
@@ -95,10 +92,6 @@ class BoundaryConditionsPage(ContentPage):
         if app.vtkMesh():
             self._selectPickedBoundary()
             self._meshUpdated()
-
-    def clear(self):
-        self._ui.boundaries.clear()
-        self._boundaries = {}
 
     def _connectSignalsSlots(self):
         app.meshUpdated.connect(self._meshUpdated)

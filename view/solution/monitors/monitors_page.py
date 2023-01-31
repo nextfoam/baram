@@ -31,11 +31,9 @@ class MonitorsPage(ContentPage):
         self._connectSignalsSlots()
         self._load()
 
-    def save(self):
-        return True
-
     def _load(self):
-        self.clear()
+        self._ui.list.clear()
+
         db = coredb.CoreDB()
         for m in db.getForceMonitors():
             self._addItem(ForceMonitorWidget(m))
@@ -45,9 +43,6 @@ class MonitorsPage(ContentPage):
             self._addItem(SurfaceMonitorWidget(m))
         for m in db.getVolumeMonitors():
             self._addItem(VolumeMonitorWidget(m))
-
-    def clear(self):
-        self._ui.list.clear()
 
     def _connectSignalsSlots(self):
         self._forcesAdd.triggered.connect(self._openForcesAddDialog)

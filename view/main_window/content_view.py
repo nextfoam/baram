@@ -5,23 +5,18 @@ from view.main_window.empty_page import EmptyPage
 
 
 class ContentView:
-    _EMPTY_PAGE_INDEX = 0
-
     def __init__(self, stackedWidget, mainWindow):
         self._view = stackedWidget
         self._emptyPage = EmptyPage(mainWindow)
 
-    def changePane(self, index):
-        self._view.setCurrentIndex(index)
-
-    def page(self, index):
-        return self._view.widget(index)
+    def changePane(self, page):
+        self._view.setCurrentWidget(page.widget)
 
     def addPage(self, page):
-        return self._view.addWidget(page)
+        return self._view.addWidget(page.widget)
 
-    def removePage(self, index):
-        self._view.removeWidget(self._view.widget(index))
+    def removePage(self, page):
+        self._view.removeWidget(page.widget)
 
     def currentPage(self):
         return self._view.currentWidget() if self._view.currentIndex() > 0 else None
