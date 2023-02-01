@@ -182,6 +182,12 @@ def _version_2(root: etree.Element):
                 ''')
             p.append(e)
 
+    for p in root.findall(f'.//runConditions', namespaces=_nsmap):
+        if p.find('VoFMaxCourantNumber', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "VoFMaxCourantNumber" to {p}')
+            e = etree.Element(f'{{{_ns}}}VoFMaxCourantNumber')
+            e.text = '1'
+            p.insert(4, e)
 
 _fTable = [
     None,

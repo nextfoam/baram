@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>429</width>
-    <height>700</height>
+    <height>720</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -60,7 +60,7 @@
         <x>0</x>
         <y>0</y>
         <width>394</width>
-        <height>948</height>
+        <height>976</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -149,18 +149,28 @@
                </property>
               </widget>
              </item>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="maxCourantNumber"/>
+             </item>
              <item row="3" column="0">
+              <widget class="QLabel" name="label_14">
+               <property name="text">
+                <string>Max Courant Number For VoF</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
               <widget class="QLabel" name="label_4">
                <property name="text">
                 <string>End Time</string>
                </property>
               </widget>
              </item>
-             <item row="3" column="1">
+             <item row="4" column="1">
               <widget class="QLineEdit" name="endTime"/>
              </item>
-             <item row="2" column="1">
-              <widget class="QLineEdit" name="maxCourantNumber"/>
+             <item row="3" column="1">
+              <widget class="QLineEdit" name="maxCourantNumberForVoF"/>
              </item>
             </layout>
            </widget>
@@ -554,6 +564,35 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>numberOfIterations</tabstop>
+  <tabstop>timeSteppingMethod</tabstop>
+  <tabstop>timeStepSize</tabstop>
+  <tabstop>maxCourantNumber</tabstop>
+  <tabstop>maxCourantNumberForVoF</tabstop>
+  <tabstop>endTime</tabstop>
+  <tabstop>reportIntervalIterationSteps</tabstop>
+  <tabstop>reportIntervalSeconds</tabstop>
+  <tabstop>retainOnlyTheMostRecentFiles</tabstop>
+  <tabstop>maximumNumberODataFiles</tabstop>
+  <tabstop>dataWriteFormat</tabstop>
+  <tabstop>dataWritePrecision</tabstop>
+  <tabstop>timePrecision</tabstop>
+  <tabstop>numberOfCores</tabstop>
+  <tabstop>cluster</tabstop>
+  <tabstop>selectHostFile</tabstop>
+  <tabstop>groupBox_5</tabstop>
+  <tabstop>field</tabstop>
+  <tabstop>patch</tabstop>
+  <tabstop>minValue</tabstop>
+  <tabstop>maxValue</tabstop>
+  <tabstop>valueIncrement</tabstop>
+  <tabstop>caseToPlot</tabstop>
+  <tabstop>batchCase</tabstop>
+  <tabstop>plotMonitor</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>hostFile</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
