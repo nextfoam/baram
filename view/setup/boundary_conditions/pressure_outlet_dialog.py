@@ -23,18 +23,16 @@ class PressureOutletDialog(ResizableDialog):
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
-        self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath,
-                                                                          self._ui.calculateBackflow.layout())
-
+        layout = self._ui.calculateBackflow.layout()
+        self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
+        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(BoundaryDB.getBoundaryRegion(bcid),
+                                                                                  self._xpath,
+                                                                                  layout)
         if not ModelsDB.isEnergyModelOn():
-            if self._turbulenceWidget.on():
+            if self._turbulenceWidget.on() or self._volumeFractionWidget.on():
                 self._ui.backflowTotalTemperatureWidget.hide()
             else:
                 self._ui.calculateBackflow.hide()
-
-        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(BoundaryDB.getBoundaryRegion(bcid),
-                                                                                  self._xpath,
-                                                                                  self._ui.dialogContents.layout())
 
         self._load()
 
@@ -52,11 +50,11 @@ class PressureOutletDialog(ResizableDialog):
             if ModelsDB.isEnergyModelOn():
                 writer.append(path + '/backflowTotalTemperature',
                               self._ui.backflowTotalTemperature.text(), self.tr("Backflow Total Temperature"))
+
+            if not self._volumeFractionWidget.appendToWriter(writer):
+                return
         else:
             writer.append(path + '/calculatedBackflow', "false", None)
-
-        if not self._volumeFractionWidget.appendToWriter(writer):
-            return
 
         errorCount = writer.write()
         if errorCount > 0:
