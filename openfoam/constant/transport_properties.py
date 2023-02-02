@@ -8,6 +8,7 @@ from coredb.material_db import MaterialDB
 from coredb.region_db import RegionDB
 
 from openfoam.dictionary_file import DictionaryFile
+import openfoam.solver
 
 
 class TransportProperties(DictionaryFile):
@@ -20,6 +21,12 @@ class TransportProperties(DictionaryFile):
     def build(self):
         if self._data is not None:
             return self
+
+        solvers = openfoam.solver.findSolvers()
+        if len(solvers) == 1 and solvers[0] == 'interFoam':
+            self._data = self._buildForInterFoam()
+            return self
+
         self._data = {}
 
         mid = self._db.getValue(f'.//regions/region[name="{self._rname}"]/material')
@@ -62,7 +69,15 @@ class TransportProperties(DictionaryFile):
         baseNu = baseViscosity / baseDensity
         secondaryNu = secondaryViscosity / secondaryDensity
 
-        surfaceTension = 0  # ToDo: get surface tension
+        surfaceTension = None
+        surfaceTensions = RegionDB.getSurfaceTensionList(self._rname)
+        for mid1, mid2, tension in surfaceTensions:
+            if mid1 == baseMaterialId or mid2 == baseMaterialId:
+                surfaceTension = tension
+                break  # "interFoam" handles only two phases
+
+        if surfaceTension is None:
+            return None
 
         data = {
             'phases': [secondaryMaterialName, baseMaterialName],
