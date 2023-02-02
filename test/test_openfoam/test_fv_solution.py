@@ -6,6 +6,7 @@ from coredb.general_db import GeneralDB
 from coredb.region_db import RegionDB
 from coredb.material_db import MaterialDB
 from coredb.numerical_db import NumericalDB
+from coredb.reference_values_db import ReferenceValuesDB
 
 rname = "testRegion_1"
 
@@ -97,6 +98,10 @@ class TestFvSolution(unittest.TestCase):
         self._db.setValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/pressureVelocityCouplingScheme', 'SIMPLEC')
         self._db.setValue(RegionDB.getXPath(rname) + '/material', self._air)
         content = FvSolution(rname).build().asDict()
+        self.assertEqual(self._db.getVector(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation'),
+                         content['SIMPLE']['pRefPoint'])
+        self.assertEqual(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'),
+                         content['SIMPLE']['pRefValue'])
         self.assertEqual('yes', content['SIMPLE']['consistent'])
         self.assertEqual(self._db.getValue('.//convergenceCriteria/pressure/absolute'),
                          content['SIMPLE']['residualControl']['p'])
@@ -177,6 +182,39 @@ class TestFvSolution(unittest.TestCase):
         content = FvSolution().build().asDict()
         self.assertEqual(self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/maxIterationsPerTimeStep'),
                          content['PIMPLE']['nOuterCorrectors'])
+
+    def testMultiphase(self):
+        material = 'oxygen'
+        mid = self._db.addMaterial(material)
+        self._db.setValue(RegionDB.getXPath(rname) + '/secondaryMaterials', str(mid))
+        content = FvSolution(rname).build().asDict()
+        self.assertEqual(self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/numberOfCorrectors'),
+                         content['solvers']['"alpha.*"']['nAlphaCorr'])
+        self.assertEqual(
+            self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/maxIterationsPerTimeStep'),
+            content['solvers']['"alpha.*"']['nAlphaSubCycles'])
+        self.assertEqual(
+            self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/phaseInterfaceCompressionFactor'),
+            content['solvers']['"alpha.*"']['cAlpha'])
+        self.assertEqual(
+            'yes'
+            if self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/useSemiImplicitMules') == 'true'
+            else 'no',
+            content['solvers']['"alpha.*"']['MULESCorr'])
+        self.assertEqual(self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/useSemiImplicitMules'),
+                         content['solvers']['"alpha.*"']['nLimiterIter'])
+        self.assertEqual(self._db.getValue('.//convergenceCriteria/volumeFraction/absolute'),
+                         content['SIMPLE']['residualControl']['"alpha.*"'])
+        self.assertEqual(self._db.getValue('.//convergenceCriteria/volumeFraction/absolute'),
+                         content['PIMPLE']['residualControl']['"alpha.*"']['tolerance'])
+        self.assertEqual(self._db.getValue('.//convergenceCriteria/volumeFraction/relative'),
+                         content['PIMPLE']['residualControl']['"alpha.*"']['relTol'])
+        self.assertEqual(
+            self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors/volumeFraction'),
+            content['relaxationFactors']['equations'][f'alpha.{material}'])
+        self.assertEqual(
+            self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors/volumeFraction'),
+            content['relaxationFactors']['equations'][f'alpha.{material}'])
 
 
 if __name__ == '__main__':
