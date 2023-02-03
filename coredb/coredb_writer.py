@@ -44,12 +44,12 @@ class ElementAdd(WriteItem):
         return db.addElementFromString(self._xpath, self._element)
 
 
-class ElementClear(WriteItem):
+class ElementRemove(WriteItem):
     def __init__(self, xpath):
         super().__init__(xpath)
 
     def apply(self, db):
-        return db.clearElement(self._xpath)
+        return db.removeElement(self._xpath)
 
 
 class DBWriterError:
@@ -84,8 +84,8 @@ class CoreDBWriter:
     def setAttribute(self, xpath, name, value):
         self._items.append(AttributeSet(xpath, name, value))
 
-    def clearElement(self, xpath):
-        self._items.append(ElementClear(xpath))
+    def removeElement(self, xpath):
+        self._items.append(ElementRemove(xpath))
 
     def addElement(self, xpath, element, label):
         self._items.append(ElementAdd(xpath, element, label))

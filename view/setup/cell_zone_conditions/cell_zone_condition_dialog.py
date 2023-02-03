@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QDialog, QMessageBox
+from PySide6.QtWidgets import QDialog, QMessageBox, QVBoxLayout
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.models_db import TurbulenceModelHelper, ModelsDB
 from coredb.cell_zone_db import CellZoneDB, ZoneType
 from coredb.general_db import GeneralDB
-from coredb.region_db import DEFAULT_REGION_NAME
+from coredb.region_db import DEFAULT_REGION_NAME, RegionDB
+from coredb.material_db import MaterialDB
 from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
 from .MRF_widget import MRFWidget
 from .porous_zone_widget import PorousZoneWidget
@@ -40,6 +41,8 @@ class CellZoneConditionDialog(QDialog):
         self._xpath = CellZoneDB.getXPath(self._czid)
         self._name = self._db.getValue(self._xpath + '/name')
 
+        self._secondaryMaterials = []
+
         self._materialsWidget = None
         # Zone Type Widgets
         self._MRFZone = None
@@ -53,6 +56,7 @@ class CellZoneConditionDialog(QDialog):
             self._ui.zoneType.setVisible(False)
 
             self._materialsWidget = MaterialsWidget(self._rname, ModelsDB.isMultiphaseModelOn())
+            self._materialsWidget.materialsChanged.connect(self._setupMaterialSourceWidgets)
             layout.addWidget(self._materialsWidget)
 
             if self._rname:
@@ -60,6 +64,8 @@ class CellZoneConditionDialog(QDialog):
             else:
                 self._ui.zoneName.setText(DEFAULT_REGION_NAME)
         else:
+            self._rname = CellZoneDB.getCellZoneRegion(self._czid)
+
             self._ui.zoneName.setText(self._name)
 
             self._MRFZone = MRFWidget(self._xpath)
@@ -81,12 +87,23 @@ class CellZoneConditionDialog(QDialog):
         layout.addStretch()
 
         # Source Terms Widgets
-        self._massSourceTerm = VariableSourceWidget(self.tr("Mass"), self._xpath + '/sourceTerms/mass')
+        self._massSourceTerm = None
+        self._materialSourceTerms = {}
         self._energySourceTerm = None
         self._turbulenceSourceTerms = {}
-        self._materialSourceTerms = {}
 
-        self._ui.sourceTerms.layout().addWidget(self._massSourceTerm)
+        self._materialSourceTermsLayout = None
+
+        layout = self._ui.sourceTerms.layout()
+        if ModelsDB.isMultiphaseModelOn():
+            self._materialSourceTermsLayout = QVBoxLayout()
+            layout.addLayout(self._materialSourceTermsLayout)
+            self._setupMaterialSourceWidgets(RegionDB.getSecondaryMaterials(self._rname))
+        elif ModelsDB.isSpeciesModelOn():
+            pass
+        else:
+            self._massSourceTerm = VariableSourceWidget(self.tr("Mass"), self._xpath + '/sourceTerms/mass')
+            layout.addWidget(self._massSourceTerm)
 
         # Fixed Value Widgets
         self._turbulenceFixedValues = {}
@@ -101,7 +118,6 @@ class CellZoneConditionDialog(QDialog):
             self._ui.fixedValues.layout().addWidget(self._temperature)
 
         self._setupTurbulenceWidgets()
-        self._setupMaterialWidgets(["O2"])
 
         self._ui.sourceTerms.layout().addStretch()
         self._ui.fixedValues.layout().addStretch()
@@ -131,10 +147,15 @@ class CellZoneConditionDialog(QDialog):
             if not result:
                 return
 
-        if not self._massSourceTerm.appendToWriter(writer):
+        if self._massSourceTerm and not self._massSourceTerm.appendToWriter(writer):
             return
+
+        for mid in self._secondaryMaterials:
+            self._materialSourceTerms[mid].appendToWriter(writer)
+
         if self._energySourceTerm and not self._energySourceTerm.appendToWriter(writer):
             return
+
         for field, widget in self._turbulenceSourceTerms.items():
             if not widget.appendToWriter(writer):
                 return
@@ -180,7 +201,9 @@ class CellZoneConditionDialog(QDialog):
                 self._slidingMeshZone.load()
             self._actuatorDiskZone.load()
 
-        self._massSourceTerm.load()
+        if self._massSourceTerm:
+            self._massSourceTerm.load()
+
         for field, widget in self._turbulenceSourceTerms.items():
             widget.load()
 
@@ -209,11 +232,25 @@ class CellZoneConditionDialog(QDialog):
                 field.getTitleText(), field.getLabelText(), self._xpath + '/fixedValues/' + field.xpathName)
             fixedValuesLayout.addWidget(self._turbulenceFixedValues[field])
 
-    def _setupMaterialWidgets(self, materials):
-        layout = self._ui.sourceTerms.layout()
-        # for material in materials:
-        #     self._materialSourceTerms[material] = VariableSourceWidget(material)
-        #     layout.addWidget(self._materialSourceTerms[material])
+    def _setupMaterialSourceWidgets(self, materials):
+        for mid in self._secondaryMaterials:
+            if mid not in materials:
+                self._materialSourceTerms[mid].hide()
+
+        for mid in materials:
+            xpath = f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]'
+            if not self._db.exists(xpath):
+                CellZoneDB.addMaterialSourceTerm(self._czid, mid)
+
+            if mid in self._materialSourceTerms:
+                self._materialSourceTerms[mid].show()
+            else:
+                widget = VariableSourceWidget(MaterialDB.getName(mid), xpath)
+                self._materialSourceTerms[mid] = widget
+                self._materialSourceTermsLayout.addWidget(widget)
+                widget.load()
+
+        self._secondaryMaterials = materials
 
     def _zoneTypeChanged(self, id_, checked):
         if checked:

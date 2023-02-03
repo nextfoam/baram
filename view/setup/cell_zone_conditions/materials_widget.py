@@ -3,6 +3,7 @@
 
 from functools import reduce
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QCheckBox, QLabel, QLineEdit
+from PySide6.QtCore import Signal
 
 from coredb import coredb
 from coredb.region_db import RegionDB
@@ -71,6 +72,8 @@ class SurfaceTensionWidget(QWidget):
 
 
 class MaterialsWidget(QWidget):
+    materialsChanged = Signal(list)
+
     def __init__(self, rname, multiphase):
         super().__init__()
         self._ui = Ui_MaterialsWidget()
@@ -187,8 +190,10 @@ class MaterialsWidget(QWidget):
         self._dialog.accepted.connect(self._materialsSelected)
 
     def _materialsSelected(self):
+        secondaryMaterials = self._dialog.getSecondaries()
         self._setMaterial(self._dialog.getMaterial())
-        self._setSecondaryMaterials(self._dialog.getSecondaries(), '0')
+        self._setSecondaryMaterials(secondaryMaterials, '0')
+        self.materialsChanged.emit(secondaryMaterials)
 
     def _addSurfaceTensionRows(self, mid, index, default):
         for i in range(index, len(self._secondaryMaterials)):
