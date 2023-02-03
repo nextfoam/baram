@@ -7,11 +7,7 @@ import uuid
 from pathlib import Path
 
 
-backgroundTasks = set()
-
-
-async def _rmtreeBackground(path, ignore_errors=False, onerror=None):
-    shutil.rmtree(path, ignore_errors, onerror)
+_backgroundTasks = set()
 
 
 def rmtree(path, ignore_errors=False, onerror=None):
@@ -30,7 +26,11 @@ def rmtree(path, ignore_errors=False, onerror=None):
     p = Path(path)
     target = p.parent / ('delete_me_' + str(uuid.uuid4()))
     p.rename(target)
-    task = asyncio.create_task(_rmtreeBackground(target, ignore_errors, onerror))
-    backgroundTasks.add(task)
-    task.add_done_callback(backgroundTasks.discard)
+
+    coro = asyncio.to_thread(shutil.rmtree, target, ignore_errors, onerror)
+    task = asyncio.create_task(coro)
+
+    _backgroundTasks.add(task)
+
+    task.add_done_callback(_backgroundTasks.discard)
 
