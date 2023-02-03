@@ -7,6 +7,7 @@ from typing import Optional
 from pathlib import Path
 
 from coredb.project import Project
+from libbaram import utils
 
 
 class FileLoadingError(Exception):
@@ -35,7 +36,7 @@ class FileSystem:
     def setupNewCase(cls):
         cls._setCaseRoot(Project.instance().path / cls.TEMP_DIRECTORY_NAME)
         if cls._casePath.exists():
-            shutil.rmtree(cls._casePath)
+            utils.rmtree(cls._casePath)
 
         cls._casePath.mkdir(exist_ok=True)
         with open(cls.foamFilePath(), 'a'):
@@ -115,7 +116,7 @@ class FileSystem:
     @classmethod
     def _copyMeshFromInternal(cls, directory, regions):
         if cls._constantPath.exists():
-            shutil.rmtree(cls._constantPath)
+            utils.rmtree(cls._constantPath)
         cls._constantPath.mkdir(exist_ok=True)
 
         srcFile = directory / cls.REGION_PROPERTIES_FILE_NAME
@@ -149,7 +150,7 @@ class FileSystem:
         targetPath = Project.instance().path / cls.CASE_DIRECTORY_NAME
         if cls._casePath != targetPath:
             if targetPath.exists():
-                shutil.rmtree(targetPath)
+                utils.rmtree(targetPath)
             cls._casePath.rename(targetPath)
             cls._setCaseRoot(targetPath)
 
@@ -213,6 +214,6 @@ class FileSystem:
     @classmethod
     def _remove(cls, file):
         if file.is_dir():
-            shutil.rmtree(file)
+            utils.rmtree(file)
         else:
             file.unlink()

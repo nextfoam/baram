@@ -7,7 +7,6 @@ import platform
 import qasync
 import asyncio
 import logging
-import shutil
 
 from PySide6.QtWidgets import QMessageBox
 
@@ -23,6 +22,7 @@ from openfoam.file_system import FileSystem
 from view.widgets.progress_dialog import ProgressDialog
 from view.widgets.content_page import ContentPage
 from .process_information_page_ui import Ui_ProcessInformationPage
+from libbaram import utils
 
 
 logger = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ class ProcessInformationPage(ContentPage):
                 nProcessorFolders = 0
 
                 for folder in processorFolders:
-                    shutil.rmtree(folder)
+                    utils.rmtree(folder)
 
             # Generate dictionary files
             caseGenerator = CaseGenerator()
