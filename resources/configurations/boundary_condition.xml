@@ -135,13 +135,9 @@
             <wallEmissivity>1</wallEmissivity>
             <radiativeFluxRelaxation>1</radiativeFluxRelaxation>
         </radiation>
-        <wallAdhesion>
+        <wallAdhesions>
             <model>none</model>
-            <contactAngle>90</contactAngle>
-            <advancingContactAngle>90</advancingContactAngle>
-            <recedingContactAngle>90</recedingContactAngle>
-            <characteristicVelocityScale>0.001</characteristicVelocityScale>
-        </wallAdhesion>
+        </wallAdhesions>
     </wall>
     <interface>
         <mode>internalInterface</mode>

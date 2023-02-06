@@ -124,11 +124,8 @@ class MaterialsWidget(QWidget):
             self._ui.material.setCurrentText(MaterialDB.getName(self._material))
 
     def appendToWriter(self, writer):
-        writer.append(self._xpath + '/material',
-                      self._material if self._multiphase else self._ui.material.currentData(), None)
-
         if self._multiphase:
-            writer.append(self._xpath + '/secondaryMaterials', ' '.join(self._secondaryMaterials), None)
+            writer.callFunction('updateRegionMaterials', self._rname, str(self._material), self._secondaryMaterials)
 
             lists = ['', '', '']
             if self._surfaceTensionWidget:
@@ -139,6 +136,8 @@ class MaterialsWidget(QWidget):
             writer.append(self._xpath + '/phaseInteractions/surfaceTensions/material1', lists[0], None)
             writer.append(self._xpath + '/phaseInteractions/surfaceTensions/material2', lists[1], None)
             writer.append(self._xpath + '/phaseInteractions/surfaceTensions/surfaceTension', lists[2], None)
+        else:
+            writer.append(self._xpath + '/material', self._ui.material.currentData())
 
         return True
 
@@ -195,8 +194,8 @@ class MaterialsWidget(QWidget):
         self._setSecondaryMaterials(secondaryMaterials, '0')
         self.materialsChanged.emit(secondaryMaterials)
 
-    def _addSurfaceTensionRows(self, mid, index, default):
-        for i in range(index, len(self._secondaryMaterials)):
+    def _addSurfaceTensionRows(self, mid, offset, default):
+        for i in range(offset, len(self._secondaryMaterials)):
             key = (mid, self._secondaryMaterials[i])
             self._surfaceTensionWidget.addRow(
                 key, self._materialsMap[mid], self._materialsMap[self._secondaryMaterials[i]],

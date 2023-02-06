@@ -104,6 +104,12 @@ class TemperatureTemporalDistribution(Enum):
     POLYNOMIAL = 'polynomial'
 
 
+class ContactAngleModel(Enum):
+    DISABLE = 'none'
+    CONSTANT = 'constantContactAngle'
+    DYNAMIC = 'dynamicContactAngle'
+
+
 class BoundaryDB:
     BOUNDARY_CONDITIONS_XPATH = './/boundaryConditions'
     ABL_INLET_CONDITIONS_XPATH = './/atmosphericBoundaryLayer'
@@ -215,8 +221,8 @@ class BoundaryDB:
     @classmethod
     def buildVolumeFractionElement(cls, mid, fraction):
         return f'''
-                <volumeFraction xmlns="http://www.baramcfd.org/baram">
-                    <material>{mid}</material>
-                    <fraction>{fraction}</fraction>
-                </volumeFraction>
-        '''
+                    <volumeFraction xmlns="http://www.baramcfd.org/baram">
+                        <material>{mid}</material>
+                        <fraction>{fraction}</fraction>
+                    </volumeFraction>
+                '''

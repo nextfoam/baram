@@ -46,6 +46,7 @@ def CoreDB():
 
     return __instance
 
+
 def createDB():
     global __instance
     assert(__instance is None)
@@ -54,6 +55,7 @@ def createDB():
     __instance.loadDefault()
 
     return __instance
+
 
 def loadDB(file):
     global __instance
@@ -64,9 +66,11 @@ def loadDB(file):
 
     return __instance
 
+
 def loaded():
     global __instance
     return __instance is not None
+
 
 def destroy():
     global __instance
@@ -536,7 +540,6 @@ class _CoreDB(object):
         _materialPropertySubElement(material, 'phase', 'phase')
         _materialPropertySubElement(material, 'molecularWeight', 'molecularWeight')
         _materialPropertySubElement(material, 'absorptionCoefficient', 'absorptionCoefficient')
-        _materialPropertySubElement(material, 'surfaceTension', 'surfaceTension')
         _materialPropertySubElement(material, 'saturationPressure', 'saturationPressure')
         _materialPropertySubElement(material, 'emissivity', 'emissivity')
 
@@ -923,6 +926,34 @@ class _CoreDB(object):
         self.clearPointMonitors()
         self.clearSurfacesMonitors()
         self.clearVolumeMonitors()
+
+    def updateRegionMaterials(self, rname, primary, secondaries):
+        def updateWallAdhesions(mid, offset):
+            for j in range(offset, len(secondaries)):
+                if adhesions.find(f'wallAdhesion[mid="{mid}"][mid="{secondaries[j]}"]', namespaces=nsmap) is None:
+                    xml = f'''
+                                <wallAdhesion xmlns="http://www.baramcfd.org/baram">
+                                    <mid>{mid}</mid>
+                                    <mid>{secondaries[j]}</mid>
+                                    <contactAngle>90</contactAngle>
+                                    <equilibriumContactAngle>90</equilibriumContactAngle>
+                                    <advancingContactAngle>90</advancingContactAngle>
+                                    <recedingContactAngle>90</recedingContactAngle>
+                                    <characteristicVelocityScale>0.001</characteristicVelocityScale>
+                                </wallAdhesion>
+                            '''
+                    adhesions.append(etree.fromstring(xml))
+
+        mid = str(primary)
+
+        region = self._xmlTree.find(f'.//region[name="{rname}"]', namespaces=nsmap)
+        region.find('material', namespaces=nsmap).text = mid
+        region.find('secondaryMaterials', namespaces=nsmap).text = ' '.join(secondaries)
+
+        for adhesions in region.findall('boundaryConditions/boundaryCondition/wall/wallAdhesions', namespaces=nsmap):
+            updateWallAdhesions(mid, 0)
+            for i in range(len(secondaries)):
+                updateWallAdhesions(secondaries[i], i + 1)
 
     def addElementFromString(self, xpath, text):
         parent = self._xmlTree.find(xpath, namespaces=nsmap)

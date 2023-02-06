@@ -211,7 +211,6 @@
             </xs:element>
             <xs:element name="molecularWeight" type="inputNumberType" minOccurs="0"/>
             <xs:element name="absorptionCoefficient" type="inputNumberType" minOccurs="0"/>
-            <xs:element name="surfaceTension" type="inputNumberType" minOccurs="0"/>
             <xs:element name="saturationPressure" type="inputNumberType" minOccurs="0"/>
             <xs:element name="emissivity" type="inputNumberType" minOccurs="0"/>
         </xs:all>
@@ -1022,7 +1021,7 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="wallAdhesion">
+            <xs:element name="wallAdhesions">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="model" default="none">
@@ -1034,31 +1033,46 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-                        <xs:element name="contactAngle" default="90">
-                            <xs:simpleType>
-                                <xs:restriction base="inputNumberType">
-                                    <xs:minInclusive value="0"/>
-                                    <xs:maxInclusive value="180"/>
-                                </xs:restriction>
-                            </xs:simpleType>
+                        <xs:element name="wallAdhesion" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="mid" type="xs:positiveInteger" minOccurs="2" maxOccurs="2"/>
+                                    <xs:element name="contactAngle" default="90">
+                                        <xs:simpleType>
+                                            <xs:restriction base="inputNumberType">
+                                                <xs:minInclusive value="0"/>
+                                                <xs:maxInclusive value="180"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:element>
+                                    <xs:element name="equilibriumContactAngle" default="90">
+                                        <xs:simpleType>
+                                            <xs:restriction base="inputNumberType">
+                                                <xs:minInclusive value="0"/>
+                                                <xs:maxInclusive value="180"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:element>
+                                    <xs:element name="advancingContactAngle" default="90">
+                                        <xs:simpleType>
+                                            <xs:restriction base="inputNumberType">
+                                                <xs:minInclusive value="0"/>
+                                                <xs:maxInclusive value="180"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:element>
+                                    <xs:element name="recedingContactAngle" default="90">
+                                        <xs:simpleType>
+                                            <xs:restriction base="inputNumberType">
+                                                <xs:minInclusive value="0"/>
+                                                <xs:maxInclusive value="180"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:element>
+                                    <xs:element name="characteristicVelocityScale" type="inputNumberType" default="0.001"/>
+                                </xs:sequence>
+                            </xs:complexType>
                         </xs:element>
-                        <xs:element name="advancingContactAngle" default="90">
-                            <xs:simpleType>
-                                <xs:restriction base="inputNumberType">
-                                    <xs:minInclusive value="0"/>
-                                    <xs:maxInclusive value="180"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:element>
-                        <xs:element name="recedingContactAngle" default="90">
-                            <xs:simpleType>
-                                <xs:restriction base="inputNumberType">
-                                    <xs:minInclusive value="0"/>
-                                    <xs:maxInclusive value="180"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:element>
-                        <xs:element name="characteristicVelocityScale" type="inputNumberType" default="0.001"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>

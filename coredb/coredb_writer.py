@@ -52,6 +52,16 @@ class ElementRemove(WriteItem):
         return db.removeElement(self._xpath)
 
 
+class FunctionCall(WriteItem):
+    def __init__(self, function, *args):
+        super().__init__(None, 'Materials configuration update failed.')
+        self._function = function
+        self._args = args
+
+    def apply(self, db):
+        return getattr(db, self._function)(*self._args)
+
+
 class DBWriterError:
     def __init__(self, name, error, message=None):
         self._name = name
@@ -89,6 +99,9 @@ class CoreDBWriter:
 
     def addElement(self, xpath, element, label):
         self._items.append(ElementAdd(xpath, element, label))
+
+    def callFunction(self, func, *args):
+        self._items.append(FunctionCall(func, *args))
 
     def write(self):
         self._errors = []

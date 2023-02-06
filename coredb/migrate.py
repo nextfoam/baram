@@ -105,16 +105,12 @@ def _version_2(root: etree.Element):
             etree.SubElement(p, f'{{{_ns}}}volumeFractions')
 
     for p in root.findall(f'.//boundaryCondition/wall', namespaces=_nsmap):
-        if p.find('wallAdhesion', namespaces=_nsmap) is None:
-            logger.debug(f'    Adding "wallAdhesion" to {p}')
+        if p.find('wallAdhesions', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "wallAdhesions" to {p}')
             e = etree.fromstring('''
-                <wallAdhesion xmlns="http://www.baramcfd.org/baram">
+                <wallAdhesions xmlns="http://www.baramcfd.org/baram">
                     <model>none</model>
-                    <contactAngle>90</contactAngle>
-                    <advancingContactAngle>90</advancingContactAngle>
-                    <recedingContactAngle>90</recedingContactAngle>
-                    <characteristicVelocityScale>0.001</characteristicVelocityScale>
-                </wallAdhesion>
+                </wallAdhesions>
             ''')
             p.append(e)
 
@@ -188,6 +184,16 @@ def _version_2(root: etree.Element):
             e = etree.Element(f'{{{_ns}}}VoFMaxCourantNumber')
             e.text = '1'
             p.insert(4, e)
+
+    for p in root.findall(f'.//materials/material', namespaces=_nsmap):
+        if (e := p.find('surfaceTension', namespaces=_nsmap)) is not None:
+            p.remove(e)
+
+    # ToDo: release 전에 삭제 (release에 포함되지 않은 개발 버전에만 적용)
+    for p in root.findall(f'.//boundaryCondition/wall', namespaces=_nsmap):
+        if (w := p.find('wallAdhesion', namespaces=_nsmap)) is not None:
+            p.remove(w)
+
 
 _fTable = [
     None,

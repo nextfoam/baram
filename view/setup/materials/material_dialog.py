@@ -19,7 +19,6 @@ from .material_dialog_ui import Ui_MaterialDialog
 class PropertyFormRow(Enum):
     MOLECULAR_WEIGHT = 0
     ABSORPTION_COEFFICIENT = auto()
-    SURFACE_TENSION = auto()
     SATURATION_PRESSURE = auto()
     EMISSIVITY = auto()
 
@@ -28,7 +27,6 @@ class MaterialDialog(ResizableDialog):
     _propertyFormRows = {
         PropertyFormRow.MOLECULAR_WEIGHT.value: Phase.FLUID,
         PropertyFormRow.ABSORPTION_COEFFICIENT.value: Phase.GAS,
-        PropertyFormRow.SURFACE_TENSION.value: Phase.LIQUID,
         PropertyFormRow.SATURATION_PRESSURE.value: Phase.LIQUID,
         PropertyFormRow.EMISSIVITY.value: Phase.SOLID,
     }
@@ -103,7 +101,6 @@ class MaterialDialog(ResizableDialog):
             if self._phase == Phase.GAS:
                 self._ui.absorptionCoefficient.setText(self._db.getValue(self._xpath + '/absorptionCoefficient'))
             elif self._phase == Phase.LIQUID:
-                self._ui.surfaceTension.setText(self._db.getValue(self._xpath + '/surfaceTension'))
                 self._ui.saturationPressure.setText(self._db.getValue(self._xpath + '/saturationPressure'))
 
         self._polynomialDensity = None
@@ -189,8 +186,6 @@ class MaterialDialog(ResizableDialog):
                 writer.append(self._xpath + '/absorptionCoefficient',
                               self._ui.absorptionCoefficient.text(), self.tr("Absorption Coefficient"))
             elif self._phase == Phase.LIQUID:
-                writer.append(self._xpath + '/surfaceTension',
-                              self._ui.surfaceTension.text(), self.tr("Surface Tension"))
                 writer.append(self._xpath + '/saturationPressure',
                               self._ui.saturationPressure.text(), self.tr("Saturation Pressure"))
 
