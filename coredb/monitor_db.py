@@ -195,8 +195,8 @@ class FieldHelper:
         if (not GeneralDB.isCompressible() and energyOn) or ModelsDB.isMultiphaseModelOn():
             _appendField(Field.MODIFIED_PRESSURE)
 
-        # Material fields when species model is on
-        if ModelsDB.isSpeciesModelOn():
+        # Material fields on multiphase model
+        if ModelsDB.isMultiphaseModelOn():
             for mid, name, formula, phase in coredb.CoreDB().getMaterials():
                 if MaterialDB.dbTextToPhase(phase) != Phase.SOLID:
                     _appendMaterial(mid, name)
