@@ -170,6 +170,10 @@ async def runParallelUtility(program: str, *args, np: int = 1, cwd=None):
             wShowWindow=subprocess.SW_HIDE
         )
 
+    if np > 1:
+        args = list(args)
+        args.append('-parallel')
+
     proc = await asyncio.create_subprocess_exec(MPICMD, '-np', str(np), OPENFOAM/'bin'/program, *args,
                                                 env=ENV, cwd=cwd,
                                                 creationflags=creationflags,
