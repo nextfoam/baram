@@ -5,14 +5,13 @@ import signal
 import time
 import platform
 import qasync
-import asyncio
 import logging
 
 from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.project import Project, SolverStatus
-from openfoam.run import launchSolver, runUtility
+from openfoam.run import launchSolver
 from openfoam.case_generator import CaseGenerator
 from openfoam.system.fv_solution import FvSolution
 from openfoam.system.control_dict import ControlDict
@@ -21,8 +20,8 @@ import openfoam.solver
 from openfoam.file_system import FileSystem
 from view.widgets.progress_dialog import ProgressDialog
 from view.widgets.content_page import ContentPage
+from view.widgets.progress_dialog_simple import ProgressDialogSimple
 from .process_information_page_ui import Ui_ProcessInformationPage
-from libbaram import utils
 
 
 logger = logging.getLogger(__name__)
@@ -61,65 +60,26 @@ class ProcessInformationPage(ContentPage):
 
     @qasync.asyncSlot()
     async def _startCalculationClicked(self):
-        async def monitor_reconstruct(stream):
-            while line := await stream.readline():
-                log = line.decode('utf-8')
-                if log.startswith('Time = '):
-                    progress.setText(self.tr(f'Reconstructing the case. ({log.strip()}/{latestTime})'))
+        progressDialog = ProgressDialogSimple(self, self.tr('Calculation Run.'), True)
 
-        caseRoot = FileSystem.caseRoot()
+        caseGenerator = CaseGenerator()
+        caseGenerator.progress.connect(progressDialog.setLabelText)
 
-        numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
-        processorFolders = list(caseRoot.glob('processor[0-9]*'))
-        nProcessorFolders = len(processorFolders)
-        solvers = openfoam.solver.findSolvers()
-
-        progress = ProgressDialog(self, self.tr('Calculation Run.'), self.tr('Generating case'))
+        progressDialog.cancelClicked.connect(caseGenerator.cancel)
+        progressDialog.open()
 
         try:
-            # Reconstruct the case if necessary.
-            if nProcessorFolders > 0 and nProcessorFolders != numCores:
-                latestTime = max([f.name for f in (caseRoot / 'processor0').glob('[0-9.]*') if f.name.count('.') < 2],
-                                 key=lambda x: float(x))
-                proc = await runUtility('reconstructPar', '-allRegions', '-newTimes', '-case', caseRoot, cwd=caseRoot)
-
-                progress.setProcess(proc, self.tr('Reconstructing the case.'))
-
-                await asyncio.wait([monitor_reconstruct(proc.stdout)])
-                result = await proc.wait()
-                if progress.canceled():
-                    return
-                elif result:
-                    progress.error(self.tr('Reconstruction failed.'))
-                    return
-                nProcessorFolders = 0
-
-                for folder in processorFolders:
-                    utils.rmtree(folder)
-
-            # Generate dictionary files
-            caseGenerator = CaseGenerator()
-            result = await asyncio.to_thread(caseGenerator.generateFiles)
-            if not result:
-                progress.error(self.tr('Case generating fail. - ' + caseGenerator.getErrors()))
+            cancelled = await caseGenerator.setupCase()
+            if cancelled:
+                progressDialog.finish(self.tr('Calculation cancelled'))
                 return
+        except RuntimeError as e:
+            progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
+            return
 
-            # Decompose the case if necessary.
-            if numCores > 1 and nProcessorFolders == 0:
-                proc = await runUtility('decomposePar', '-allRegions', '-case', caseRoot, cwd=caseRoot)
-
-                progress.setProcess(proc, self.tr('Decomposing the case.'))
-                result = await proc.wait()
-                if progress.canceled():
-                    return
-                elif result:
-                    progress.error(self.tr('Decomposing failed.'))
-                    return
-
-            progress.close()
-        except Exception as ex:
-            logger.info(ex, exc_info=True)
-            progress.error(self.tr('Error occurred:\n' + str(ex)))
+        numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
+        caseRoot = FileSystem.caseRoot()
+        solvers = openfoam.solver.findSolvers()
 
         process = launchSolver(solvers[0], caseRoot, self._project.uuid, numCores)
         if process:
@@ -127,6 +87,8 @@ class ProcessInformationPage(ContentPage):
         else:
             QMessageBox.critical(self, self.tr('Calculation Execution Failed'),
                                  self.tr('Solver execution failed or terminated.'))
+
+        progressDialog.finish(self.tr('Calculation started'))
 
     def _cancelCalculationClicked(self):
         controlDict = ControlDict().build()

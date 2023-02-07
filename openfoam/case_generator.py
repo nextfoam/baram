@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtCore import QCoreApplication
+import asyncio
+import logging
+from typing import Optional
+
+from PySide6.QtCore import QCoreApplication, QObject, Signal
 
 from coredb import coredb
 from coredb.region_db import RegionDB
@@ -23,6 +27,7 @@ from openfoam.boundary_conditions.omega import Omega
 from openfoam.boundary_conditions.nut import Nut
 from openfoam.boundary_conditions.nuTilda import NuTilda
 from openfoam.boundary_conditions.alphat import Alphat
+from openfoam.run import runUtility
 from openfoam.system.fv_solution import FvSolution
 from openfoam.system.control_dict import ControlDict
 from openfoam.system.fv_schemes import FvSchemes
@@ -31,19 +36,28 @@ from openfoam.system.decomposePar_dict import DecomposeParDict
 from openfoam.system.set_fields_dict import SetFieldsDict
 from openfoam.polymesh.boundary import Boundary
 from openfoam.file_system import FileSystem
+from libbaram import utils
 
 
-class CaseGenerator:
+logger = logging.getLogger(__name__)
+
+
+class CaseGenerator(QObject):
+    progress = Signal(str)
+
     def __init__(self):
+        super().__init__()
         self._db = coredb.CoreDB()
         self._errors = None
+        self._proc: Optional[asyncio.subprocess.Process] = None
+        self._cancelled: bool = False
 
     def getErrors(self):
         return self._errors
 
-    def generateFiles(self):
-        if self._validate():
-            return False
+    def _generateFiles(self):
+        if errors := self._validate():
+            return errors
 
         regions = self._db.getRegions()
         for rname in regions:
@@ -87,7 +101,7 @@ class CaseGenerator:
 
         DecomposeParDict().build().write()
 
-        return True
+        return errors
 
     @classmethod
     def createCase(cls):
@@ -95,7 +109,7 @@ class CaseGenerator:
         ControlDict().copyFromResource('openfoam/controlDict')
 
     def _validate(self):
-        self._errors = ''
+        errors = ''
 
         regions = self._db.getRegions()
         for rname in regions:
@@ -103,11 +117,11 @@ class CaseGenerator:
             for bcid, bcname, bctype in boundaries:
                 xpath = BoundaryDB.getXPath(bcid)
                 if BoundaryDB.needsCoupledBoundary(bctype) and self._db.getValue(xpath + '/coupledBoundary') == '0':
-                    self._errors += QCoreApplication.translate(
+                    errors += QCoreApplication.translate(
                         'CaseGenerator',
                         f'{BoundaryDB.dbBoundaryTypeToText(bctype)} boundary "{bcname}" needs a coupled boundary.\n')
 
-        return self._errors
+        return errors
 
     def _generateBoundaryConditionsFiles(self, region, path, processorNo=None):
         times = [d.name for d in path.glob('[0-9]*')]
@@ -125,3 +139,72 @@ class CaseGenerator:
         P(region, time, processorNo, 'p').build().write()
         U(region, time, processorNo).build().write()
         T(region, time, processorNo).build().write()
+
+    async def setupCase(self):
+        self._cancelled = False
+        self.progress.emit(self.tr('Generating case'))
+
+        caseRoot = FileSystem.caseRoot()
+
+        numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
+        processorFolders = list(caseRoot.glob('processor[0-9]*'))
+        nProcessorFolders = len(processorFolders)
+
+        try:
+            # Reconstruct the case if necessary.
+            if nProcessorFolders > 0 and nProcessorFolders != numCores:
+                latestTime = max([f.name for f in (caseRoot / 'processor0').glob('[0-9.]*') if f.name.count('.') < 2],
+                                 key=lambda x: float(x))
+                self._proc = await runUtility('reconstructPar', '-allRegions', '-newTimes', '-case', caseRoot, cwd=caseRoot)
+
+                self.progress.emit(self.tr('Reconstructing the case.'))
+
+                # This loop will end if the PIPE is closed (i.e. the process terminates)
+                async for line in self._proc.stdout:
+                    log = line.decode('utf-8')
+                    if log.startswith('Time = '):
+                        self.progress.emit(self.tr(f'Reconstructing the case. ({log.strip()}/{latestTime})'))
+
+                result = await self._proc.wait()
+                self._proc = None
+                if self._cancelled:
+                    return self._cancelled
+                elif result != 0:
+                    raise RuntimeError(self.tr('Reconstruction failed.'))
+
+                nProcessorFolders = 0
+
+                for folder in processorFolders:
+                    utils.rmtree(folder)
+
+            self.progress.emit(self.tr(f'Generating Files...'))
+
+            errors = await asyncio.to_thread(self._generateFiles)
+            if self._cancelled:
+                return self._cancelled
+            elif errors:
+                raise RuntimeError(self.tr('Case generating fail. - ' + errors))
+
+            # Decompose the case if necessary.
+            if numCores > 1 and nProcessorFolders == 0:
+                self._proc = await runUtility('decomposePar', '-allRegions', '-case', caseRoot, cwd=caseRoot)
+
+                self.progress.emit(self.tr('Decomposing the case.'))
+
+                result = await self._proc.wait()
+                self._proc = None
+                if self._cancelled:
+                    return self._cancelled
+                elif result != 0:
+                    raise RuntimeError(self.tr('Decomposing failed.'))
+
+            return self._cancelled
+
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            raise
+
+    def cancel(self):
+        self._cancelled = True
+        if self._proc is not None:
+            self._proc.terminate()
