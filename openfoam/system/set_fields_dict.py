@@ -71,56 +71,44 @@ class SetFieldsDict(DictionaryFile):
 
             stype = db.getValue(sPath + '/type')
             if stype == 'hex':
+                data = {
+                    'box': (
+                        db.getVector(sPath + '/point1'),
+                        db.getVector(sPath + '/point2'),
+                    ),
+                    'fieldValues': fieldValues
+                }
+                sections.append(('boxToCell', data))
                 if overrideBoundaryValue:
-                    typeKey = '"(boxToCell|boxToFace)"'
-                else:
-                    typeKey = 'boxToCell'
-                sections.append((
-                    typeKey, {
-                        'box': (
-                            db.getVector(sPath + '/point1'),
-                            db.getVector(sPath + '/point2'),
-                        ),
-                        'fieldValues': fieldValues
-                    }
-                ))
+                    sections.append(('boxToFace', data))
             elif stype == 'cylinder':
+                data = {
+                    'point1': db.getVector(sPath + '/point1'),
+                    'point2': db.getVector(sPath + '/point2'),
+                    'radius': db.getValue(sPath + '/radius'),
+                    'fieldValues': fieldValues
+                }
+                sections.append(('cylinderToCell', data))
                 if overrideBoundaryValue:
-                    typeKey = '"(cylinderToCell|cylinderToFace)"'
-                else:
-                    typeKey = 'cylinderToCell'
-                sections.append((
-                    typeKey, {
-                        'point1': db.getVector(sPath + '/point1'),
-                        'point2': db.getVector(sPath + '/point2'),
-                        'radius': db.getValue(sPath + '/radius'),
-                        'fieldValues': fieldValues
-                    }
-                ))
+                    sections.append(('cylinderToFace', data))
             elif stype == 'sphere':
+                data = {
+                    'origin': db.getVector(sPath + '/point1'),
+                    'radius': db.getValue(sPath + '/radius'),
+                    'fieldValues': fieldValues
+                }
+                sections.append(('sphereToCell', data))
                 if overrideBoundaryValue:
-                    typeKey = '"(sphereToCell|sphereToFace)"'
-                else:
-                    typeKey = 'sphereToCell'
-                sections.append((
-                    typeKey, {
-                        'origin': db.getVector(sPath + '/point1'),
-                        'radius': db.getValue(sPath + '/radius'),
-                        'fieldValues': fieldValues
-                    }
-                ))
+                    sections.append(('sphereToFace', data))
             elif stype == 'cellZone':
-                if overrideBoundaryValue:
-                    typeKey = '"(zoneToCell|zoneToFace)"'
-                else:
-                    typeKey = 'zoneToCell'
                 czid = db.getValue(sPath + '/cellZone')
-                sections.append((
-                    typeKey, {
-                        'zone': CellZoneDB.getCellZoneName(czid),
-                        'fieldValues': fieldValues
-                    }
-                ))
+                data = {
+                    'zone': CellZoneDB.getCellZoneName(czid),
+                    'fieldValues': fieldValues
+                }
+                sections.append(('zoneToCell', data))
+                if overrideBoundaryValue:
+                    sections.append(('zoneToFace', data))
 
         self._data = {
             'defaultFieldValues': defaultFieldValues,

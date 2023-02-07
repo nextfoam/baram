@@ -8,8 +8,10 @@ from PySide6.QtWidgets import QMessageBox
 from coredb import coredb
 from coredb.project import Project, SolverStatus
 from coredb.region_db import DEFAULT_REGION_NAME
+from openfoam.case_generator import CaseGenerator
 from openfoam.file_system import FileSystem
-from view.widgets.progress_dialog import ProgressDialog
+from openfoam.run import runParallelUtility
+from view.widgets.progress_dialog_simple import ProgressDialogSimple
 from view.widgets.content_page import ContentPage
 from .initialization_page_ui import Ui_InitializationPage
 from .initialization_widget import InitializationWidget
@@ -70,10 +72,41 @@ class InitializationPage(ContentPage):
 
     @qasync.asyncSlot()
     async def _initialize(self):
-        confirm = QMessageBox.question(self, self.tr("Initialize"), self.tr("All saved data will be deleted. OK?"))
+        confirm = QMessageBox.question(self, self.tr("Initialization"), self.tr("All saved data will be deleted. OK?"))
         if confirm == QMessageBox.Yes:
-            progress = ProgressDialog(self, self.tr('Case Initialization'), self.tr('Initializing the case.'))
+            progressDialog = ProgressDialogSimple(self, self.tr('Case Initialization'))
+            progressDialog.open()
+
+            progressDialog.setLabelText('Clean-up Files')
+
             regions = self._db.getRegions()
-            await FileSystem.initialize(regions)
+            try:
+                await FileSystem.initialize(regions)
+            except PermissionError:
+                progressDialog.finish('Permission error')
+                return
+
             Project.instance().setSolverStatus(SolverStatus.NONE)
-            progress.close()
+
+            caseGenerator = CaseGenerator()
+            caseGenerator.progress.connect(progressDialog.setLabelText)
+
+            try:
+                await caseGenerator.setupCase()
+            except RuntimeError as e:
+                progressDialog.finish(self.tr('Case generation failed. - ') + str(e))
+                return
+
+            progressDialog.setLabelText('Setting Section Values')
+
+            numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
+            caseRoot = FileSystem.caseRoot()
+
+            proc = await runParallelUtility('setFields', '-case', caseRoot, np=numCores, cwd=caseRoot)
+            result = await proc.wait()
+
+            if result != 0:
+                progressDialog.finish(self.tr('Setting Section Values failed.'))
+                return
+
+            progressDialog.finish(self.tr('Initialization Completed'))
