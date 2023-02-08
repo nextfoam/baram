@@ -700,4 +700,5 @@ class MeshDock(TabifiedDock):
         self.camera.SetViewUp(0, 1, 0)
 
     def _actorPicked(self, actor):
-        self._model.actorPicked(actor)
+        if self._model:
+            self._model.actorPicked(actor)

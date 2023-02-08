@@ -30,10 +30,6 @@ from view.solution.monitors.monitors_page import MonitorsPage
 from view.solution.initialization.initialization_page import InitializationPage
 from view.solution.run_conditions.run_conditions_page import RunConditionsPage
 from view.solution.run.process_information_page import ProcessInformationPage
-from view.main_window.menu.mesh.mesh_scale_dialog import MeshScaleDialog
-from view.main_window.menu.mesh.mesh_translate_dialog import MeshTranslateDialog
-from view.main_window.menu.mesh.mesh_rotate_dialog import MeshRotateDialog
-from view.main_window.menu.settings_language import SettingLanguageDialog
 from view.widgets.progress_dialog import ProgressDialog
 from mesh.mesh_manager import MeshManager, MeshType
 from openfoam.file_system import FileSystem
@@ -48,6 +44,11 @@ from .mesh_dock import MeshDock
 from .console_dock import ConsoleDock
 from .chart_dock import ChartDock
 from .monitor_dock import MonitorDock
+from .menu.mesh.mesh_scale_dialog import MeshScaleDialog
+from .menu.mesh.mesh_translate_dialog import MeshTranslateDialog
+from .menu.mesh.mesh_rotate_dialog import MeshRotateDialog
+from .menu.settings_language import SettingLanguageDialog
+from .menu.help.about_dialog import AboutDialog
 
 
 logger = logging.getLogger(__name__)
@@ -156,6 +157,9 @@ class MainWindow(QMainWindow):
         self._ui.menuMesh.setDisabled(True)
         self.show()
 
+    def meshDock(self):
+        return self._meshDock
+
     def tabifyDock(self, dock):
         self.tabifyDockWidget(self._emptyDock, dock)
 
@@ -184,8 +188,19 @@ class MainWindow(QMainWindow):
         event.accept()
         self.windowClosed.emit(self._closeType)
 
-    def meshDock(self):
-        return self._meshDock
+    def changeEvent(self, event):
+        if event.type() == QEvent.LanguageChange:
+            self._ui.retranslateUi(self)
+            self._navigatorView.translate()
+
+            for page in self._menuPages.values():
+                if page.isCreated():
+                    self._contentView.removePage(page)
+                    page.removePage()
+
+            self._changeForm(self._navigatorView.currentMenu())
+
+        super().changeEvent(event)
 
     def vtkMeshLoaded(self):
         self._ui.menuMesh.setEnabled(True)
@@ -211,6 +226,8 @@ class MainWindow(QMainWindow):
         self._ui.actionScale.triggered.connect(self._changeScale)
         self._ui.actionLanguage.triggered.connect(self._changeLanguage)
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
+
+        self._ui.actionAbout.triggered.connect(self._showAboutDialog)
 
         self._project.meshChanged.connect(self._meshChanged)
         self._project.solverStatusChanged.connect(self._updateMenuEnables)
@@ -308,15 +325,19 @@ class MainWindow(QMainWindow):
 
         self._contentView.changePane(page)
 
-    def _meshChanged(self, updated):
-        targets = [
-            MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value,
-            MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value,
-            MenuItem.MENU_SOLUTION_INITIALIZATION.value,
-            MenuItem.MENU_SOLUTION_MONITORS.value,
-        ]
+    def _showAboutDialog(self):
+        self._dialog = AboutDialog(self)
+        self._dialog.open()
 
+    def _meshChanged(self, updated):
         if self._project.meshLoaded and updated:
+            targets = [
+                MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value,
+                MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value,
+                MenuItem.MENU_SOLUTION_INITIALIZATION.value,
+                MenuItem.MENU_SOLUTION_MONITORS.value,
+            ]
+
             for page in [self._menuPages[menu] for menu in targets]:
                 if page.isCreated():
                     self._contentView.removePage(page)
@@ -408,17 +429,3 @@ class MainWindow(QMainWindow):
                 await self._meshManager.importOpenFoamMesh(file)
             else:
                 await self._meshManager.importMesh(file, meshType)
-
-    def changeEvent(self, event):
-        if event.type() == QEvent.LanguageChange:
-            self._ui.retranslateUi(self)
-            self._navigatorView.translate()
-
-            for page in self._menuPages.values():
-                if page.isCreated():
-                    self._contentView.removePage(page)
-                    page.removePage()
-
-            self._changeForm(self._navigatorView.currentMenu())
-
-        super().changeEvent(event)
