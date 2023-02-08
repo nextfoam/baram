@@ -31,21 +31,21 @@ class FractionRow:
 
 
 class VolumeFractionWidget(QGroupBox):
-    def __init__(self, region, xpath):
+    def __init__(self, rname, xpath):
         super().__init__(self.tr('Volume Fraction'))
 
         self._on = ModelsDB.isMultiphaseModelOn() or ModelsDB.isSpeciesModelOn()
         self._fractions = {}
 
         self._db = coredb.CoreDB()
-        self._region = region
+        self._rname = rname
         self._xpath = xpath
 
         self._volumeFractionsLayout = None
 
         if self._on:
             self._volumeFractionsLayout = QFormLayout(self)
-            for mid in RegionDB.getSecondaryMaterials(region):
+            for mid in RegionDB.getSecondaryMaterials(rname):
                 self._fractions[mid] = FractionRow(self._volumeFractionsLayout, mid)
 
     def on(self):
@@ -55,7 +55,7 @@ class VolumeFractionWidget(QGroupBox):
         if self._on:
             xpath = self._xpath + '/volumeFractions/volumeFraction'
 
-            for mid in RegionDB.getSecondaryMaterials(self._region):
+            for mid in RegionDB.getSecondaryMaterials(self._rname):
                 if mid not in self._fractions:
                     self._fractions[mid] = FractionRow(self._volumeFractionsLayout, mid)
 

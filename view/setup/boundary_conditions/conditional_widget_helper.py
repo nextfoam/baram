@@ -53,8 +53,8 @@ class ConditionalWidgetHelper:
         return widget
 
     @classmethod
-    def volumeFractionWidget(cls, region, xpath, layout):
-        widget = VolumeFractionWidget(region, xpath)
+    def volumeFractionWidget(cls, rname, xpath, layout):
+        widget = VolumeFractionWidget(rname, xpath)
         if widget.on():
             layout.addWidget(widget)
 

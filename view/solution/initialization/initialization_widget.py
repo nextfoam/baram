@@ -82,21 +82,21 @@ class SectionRow(QWidget):
 
 
 class InitializationWidget(QWidget):
-    def __init__(self, region: str):
+    def __init__(self, rname: str):
         super().__init__()
         self._ui = Ui_initializationWidget()
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
 
-        self._region = region
-        self._initialValuesPath = f'.//regions/region[name="{region}"]/initialization/initialValues'
+        self._rname = rname
+        self._initialValuesPath = f'.//regions/region[name="{rname}"]/initialization/initialValues'
         self._dialog = None
         self._sectionDialog: Optional[SectionDialog] = None
         self._rows = {}
         self._currentRow: Optional[SectionRow] = None
 
-        self._volumeFractionWidget = VolumeFractionWidget(region, self._initialValuesPath)
+        self._volumeFractionWidget = VolumeFractionWidget(rname, self._initialValuesPath)
         if self._volumeFractionWidget.on():
             self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
 
@@ -124,7 +124,7 @@ class InitializationWidget(QWidget):
         if self._volumeFractionWidget.on():
             self._volumeFractionWidget.load()
 
-        sections: [str] = self._db.getList(f'.//regions/region[name="{self._region}"]/initialization/advanced/sections/section/name')
+        sections: [str] = self._db.getList(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section/name')
         for name in sections:
             if name not in self._rows:
                 row = SectionRow(name)
@@ -159,7 +159,7 @@ class InitializationWidget(QWidget):
         return True
 
     def _createOption(self):
-        self._sectionDialog = SectionDialog(self, self._region)
+        self._sectionDialog = SectionDialog(self, self._rname)
         self._sectionDialog.accepted.connect(self._updateSectionList)
         self._sectionDialog.open()
 
@@ -172,7 +172,7 @@ class InitializationWidget(QWidget):
         if button == QMessageBox.StandardButton.No:
             return
 
-        sectionPath = f'.//regions/region[name="{self._region}"]/initialization/advanced/sections/section[name="{self._currentRow.name}"]'
+        sectionPath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._currentRow.name}"]'
 
         writer = CoreDBWriter()
         writer.clearElement(sectionPath)
@@ -192,7 +192,7 @@ class InitializationWidget(QWidget):
             QMessageBox.warning(self, self.tr('Warning'), self.tr('Please select a section to edit'))
             return
 
-        self._sectionDialog = SectionDialog(self, self._region, self._currentRow.name)
+        self._sectionDialog = SectionDialog(self, self._rname, self._currentRow.name)
         self._sectionDialog.accepted.connect(self._updateSectionList)
         self._sectionDialog.open()
 
