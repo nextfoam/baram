@@ -97,16 +97,18 @@ class InitializationPage(ContentPage):
                 progressDialog.finish(self.tr('Case generation failed. - ') + str(e))
                 return
 
-            progressDialog.setLabelText('Setting Section Values')
+            sectionNames: [str] = self._db.getList(f'.//regions/region/initialization/advanced/sections/section/name')
+            if len(sectionNames) > 0:
+                progressDialog.setLabelText('Setting Section Values')
 
-            numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
-            caseRoot = FileSystem.caseRoot()
+                numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
+                caseRoot = FileSystem.caseRoot()
 
-            proc = await runParallelUtility('setFields', '-case', caseRoot, np=numCores, cwd=caseRoot)
-            result = await proc.wait()
+                proc = await runParallelUtility('setFields', '-case', caseRoot, np=numCores, cwd=caseRoot)
+                result = await proc.wait()
 
-            if result != 0:
-                progressDialog.finish(self.tr('Setting Section Values failed.'))
-                return
+                if result != 0:
+                    progressDialog.finish(self.tr('Setting Section Values failed.'))
+                    return
 
             progressDialog.finish(self.tr('Initialization Completed'))
