@@ -34,12 +34,12 @@ class PageType(Enum):
 
 
 class SectionDialog(ResizableDialog):
-    def __init__(self, parent=None, region='', name=None):
+    def __init__(self, parent=None, rname='', name=None):
         super().__init__(parent)
         self._ui = Ui_sectionDialog()
         self._ui.setupUi(self)
 
-        self._region = region
+        self._rname = rname
         self._sectionName = name
         self._sectionType: Optional[SectionType] = None
         self._cellZoneRadio = {}
@@ -50,7 +50,7 @@ class SectionDialog(ResizableDialog):
 
         if name is not None:  # Open Edit page with the parameters from coreDB
             self._pageType = PageType.EDIT
-            sectionPath = f'.//regions/region[name="{self._region}"]/initialization/advanced/sections/section[name="{name}"]'
+            sectionPath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{name}"]'
 
             self._ui.sectionName.setText(name)
 
@@ -81,7 +81,7 @@ class SectionDialog(ResizableDialog):
             elif typeString == 'cellZone':
                 self._sectionType = SectionType.CELL_ZONE
                 savedId = self._db.getValue(sectionPath+'/cellZone')
-                cellZones = self._db.getCellZones(self._region)
+                cellZones = self._db.getCellZones(self._rname)
                 for czid, czname in cellZones:
                     if czname == 'All':
                         continue
@@ -107,7 +107,7 @@ class SectionDialog(ResizableDialog):
             if self._db.getAttribute(sectionPath+'/temperature', 'disabled') == 'false':
                 self._ui.temperatureCheckBox.setChecked(True)
 
-            self._volumeFractionWidget = VolumeFractionWidget(self._region, sectionPath)
+            self._volumeFractionWidget = VolumeFractionWidget(self._rname, sectionPath)
             if self._volumeFractionWidget.on():
                 self._volumeFractionWidget.load()
                 self._volumeFractionWidget.setCheckable(True)
@@ -137,7 +137,7 @@ class SectionDialog(ResizableDialog):
         self._sectionName = self._ui.sectionNameInput.text()
 
         # Check if the name already exists
-        sectionPath = f'.//regions/region[name="{self._region}"]/initialization/advanced/sections/section[name="{self._sectionName}"]'
+        sectionPath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._sectionName}"]'
         try:
             _ = self._db.getValue(sectionPath + '/type')
         except LookupError:  # Ok, No Duplication
@@ -156,7 +156,7 @@ class SectionDialog(ResizableDialog):
             self._sectionType = SectionType.SPHERE
         elif self._ui.cellZoneType.isChecked():
             self._sectionType = SectionType.CELL_ZONE
-            cellZones = self._db.getCellZones(self._region)
+            cellZones = self._db.getCellZones(self._rname)
             if len(cellZones) == 1:  # 'All' only
                 QMessageBox.warning(self, self.tr('Warning'), self.tr('No Cell Zone found in the region'))
                 return
@@ -173,7 +173,7 @@ class SectionDialog(ResizableDialog):
         else:
             raise AssertionError
 
-        self._volumeFractionWidget = VolumeFractionWidget(self._region, sectionPath)
+        self._volumeFractionWidget = VolumeFractionWidget(self._rname, sectionPath)
         if self._volumeFractionWidget.on():
             self._volumeFractionWidget.setCheckable(True)
             self._volumeFractionWidget.setChecked(False)
@@ -190,7 +190,7 @@ class SectionDialog(ResizableDialog):
 
         if self._pageType == PageType.CREATE:
             # Create an element with given name and default values
-            writer.addElement(f'.//regions/region[name="{self._region}"]/initialization/advanced/sections',
+            writer.addElement(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections',
                               f'''
                                 <section xmlns="http://www.baramcfd.org/baram">
                                     <name>{self._sectionName}</name>
@@ -207,7 +207,7 @@ class SectionDialog(ResizableDialog):
                                 </section>
                             ''', '')
 
-        sectionPath = f'.//regions/region[name="{self._region}"]/initialization/advanced/sections/section[name="{self._sectionName}"]'
+        sectionPath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._sectionName}"]'
 
         if self._sectionType == SectionType.HEX:
             try:  # ensure input text as decimal number
