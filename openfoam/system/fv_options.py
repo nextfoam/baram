@@ -5,6 +5,8 @@ import logging
 
 from coredb import coredb
 from coredb.cell_zone_db import CellZoneDB
+from coredb.material_db import MaterialDB
+from coredb.models_db import ModelsDB
 from openfoam.dictionary_file import DictionaryFile
 
 logger = logging.getLogger(__name__)
@@ -141,7 +143,14 @@ class FvOptions(DictionaryFile):
             self._data[dictName]['cellZone'] = czname
 
     def _generateSourceTerms(self, czname, xpath):
-        self._generateSourceFields(czname, xpath + '/mass', 'rho')
+        if ModelsDB.isMultiphaseModelOn():
+            materials: [str] = self._db.getList(xpath+'/materials/materialSource/material')
+            for mid in materials:
+                name = MaterialDB.getName(mid)
+                self._generateSourceFields(czname, xpath + f'/materials/materialSource[material="{mid}"]', f'alpha.{name}')
+        else:
+            self._generateSourceFields(czname, xpath + '/mass', 'rho')
+
         self._generateSourceFields(czname, xpath + '/energy', 'h')
 
         modelsType = self._db.getValue('.//models/turbulenceModels/model')
