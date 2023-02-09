@@ -110,6 +110,13 @@ class ContactAngleModel(Enum):
     DYNAMIC = 'dynamicContactAngle'
 
 
+class ContactAngleLimit(Enum):
+    NONE = 'none'
+    GRADIENT = 'gradient'
+    ZERO_GRADIENT = 'zeroGradient'
+    ALPHA = 'alpha'
+
+
 class BoundaryDB:
     BOUNDARY_CONDITIONS_XPATH = './/boundaryConditions'
     ABL_INLET_CONDITIONS_XPATH = './/atmosphericBoundaryLayer'

@@ -213,6 +213,6 @@ class FieldHelper:
     @classmethod
     def DBFieldKeyToField(cls, field, mid):
         if field == Field.MATERIAL.value:
-            return MaterialDB.getName(mid)
+            return 'alpha.' + MaterialDB.getName(mid)
         else:
             return cls.FIELDS[Field(field)]

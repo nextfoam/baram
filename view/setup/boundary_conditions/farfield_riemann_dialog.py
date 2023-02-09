@@ -24,8 +24,6 @@ class FarfieldRiemannDialog(ResizableDialog):
 
         layout = self._ui.dialogContents.layout()
         self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
-        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(BoundaryDB.getBoundaryRegion(bcid),
-                                                                                  self._xpath, layout)
 
         self._load()
 
@@ -41,9 +39,6 @@ class FarfieldRiemannDialog(ResizableDialog):
         writer.append(path + '/staticTemperature', self._ui.staticTemperature.text(), self.tr("Static Temperature"))
 
         if not self._turbulenceWidget.appendToWriter(writer):
-            return
-
-        if not self._volumeFractionWidget.appendToWriter(writer):
             return
 
         errorCount = writer.write()
@@ -63,4 +58,3 @@ class FarfieldRiemannDialog(ResizableDialog):
         self._ui.staticTemperature.setText(self._db.getValue(path + '/staticTemperature'))
 
         self._turbulenceWidget.load()
-        self._volumeFractionWidget.load()

@@ -178,6 +178,24 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(1, content['functions']['mag1']['executeInterval'])
         self.assertEqual('none', content['functions']['mag1']['writeControl'])
 
+    def testPointMaterialMonitor(self):
+        mid = self._db.addMaterial('water-liquid')
+        name = self._db.addPointMonitor()
+        xpath = MonitorDB.getPointMonitorXPath(name)
+        self._db.setValue(xpath + '/field/field', Field.MATERIAL.value)
+        self._db.setValue(xpath + '/field/mid', str(mid))
+
+        self._db.setValue('.//models/multiphaseModels/model', 'volumeOfFluid')
+
+        content = ControlDict().build().asDict()
+
+        self.assertEqual('probes', content['functions'][name]['type'])
+        self.assertEqual('"libsampling.so"', content['functions'][name]['libs'][0])
+        self.assertEqual('alpha.water-liquid', content['functions'][name]['fields'][0])
+        self.assertEqual(self._db.getVector(xpath + '/coordinate'), content['functions'][name]['probeLocations'][0])
+        self.assertEqual('timeStep', content['functions'][name]['writeControl'])
+        self.assertEqual(self._db.getValue(xpath + '/writeInterval'), content['functions'][name]['writeInterval'])
+
     def testSurfaceMonitor(self):
         self._db.addRegion(rname)
         bcid = self._db.addBoundaryCondition(rname, boundary, 'wall')

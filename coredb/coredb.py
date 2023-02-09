@@ -928,32 +928,55 @@ class _CoreDB(object):
         self.clearVolumeMonitors()
 
     def updateRegionMaterials(self, rname, primary, secondaries):
-        def updateWallAdhesions(mid, offset):
+        def updateWallAdhesions(element, mid, offset):
             for j in range(offset, len(secondaries)):
-                if adhesions.find(f'wallAdhesion[mid="{mid}"][mid="{secondaries[j]}"]', namespaces=nsmap) is None:
+                if element.find(f'wallAdhesion[mid="{mid}"][mid="{secondaries[j]}"]', namespaces=nsmap) is None:
                     xml = f'''
                                 <wallAdhesion xmlns="http://www.baramcfd.org/baram">
                                     <mid>{mid}</mid>
                                     <mid>{secondaries[j]}</mid>
                                     <contactAngle>90</contactAngle>
-                                    <equilibriumContactAngle>90</equilibriumContactAngle>
                                     <advancingContactAngle>90</advancingContactAngle>
                                     <recedingContactAngle>90</recedingContactAngle>
                                     <characteristicVelocityScale>0.001</characteristicVelocityScale>
                                 </wallAdhesion>
                             '''
-                    adhesions.append(etree.fromstring(xml))
+                    element.append(etree.fromstring(xml))
 
-        mid = str(primary)
+        pmid = str(primary)
 
         region = self._xmlTree.find(f'.//region[name="{rname}"]', namespaces=nsmap)
-        region.find('material', namespaces=nsmap).text = mid
+        region.find('material', namespaces=nsmap).text = pmid
         region.find('secondaryMaterials', namespaces=nsmap).text = ' '.join(secondaries)
 
-        for adhesions in region.findall('boundaryConditions/boundaryCondition/wall/wallAdhesions', namespaces=nsmap):
-            updateWallAdhesions(mid, 0)
+        for bc in region.findall('boundaryConditions/boundaryCondition', namespaces=nsmap):
+            wallAdhesions = bc.find('wall/wallAdhesions', namespaces=nsmap)
+            updateWallAdhesions(wallAdhesions, pmid, 0)
+
+            volumeFractions = bc.find('volumeFractions', namespaces=nsmap)
             for i in range(len(secondaries)):
-                updateWallAdhesions(secondaries[i], i + 1)
+                updateWallAdhesions(wallAdhesions, secondaries[i], i + 1)
+                xml = f'''
+                            <volumeFraction xmlns="http://www.baramcfd.org/baram">
+                                <material>{secondaries[i]}</material>
+                                <fraction>0</fraction>
+                            </volumeFraction>
+                        '''
+                volumeFractions.append(etree.fromstring(xml))
+
+        initialVolumeFractions = region.find('initialization/initialValues/volumeFractions', namespaces=nsmap)
+        for mid in secondaries:
+            xml = f'''
+                        <volumeFraction xmlns="http://www.baramcfd.org/baram">
+                            <material>{mid}</material>
+                            <fraction>0</fraction>
+                        </volumeFraction>
+                    '''
+            initialVolumeFractions.append(etree.fromstring(xml))
+
+        self._configCount += 1
+
+        self._xmlSchema.assertValid(self._xmlTree)
 
     def addElementFromString(self, xpath, text):
         parent = self._xmlTree.find(xpath, namespaces=nsmap)

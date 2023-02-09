@@ -174,17 +174,27 @@ class TestU(unittest.TestCase):
                          content['boundaryField'][boundary]['d'])
 
     def testOpenChannelInlet(self):
+        self._db.setValue(RegionDB.getXPath(rname) + '/secondaryMaterials', str(self._db.addMaterial('water-liquid')))
         self._db.setValue(self._xpath + '/physicalType', 'openChannelInlet')
+
+        self._db.setValue('.//models/multiphaseModels/model', 'volumeOfFluid')
+
         content = U(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('variableHeightFlowRateInletVelocity', content['boundaryField'][boundary]['type'])
+        self.assertEqual('alpha.water-liquid', content['boundaryField'][boundary]['alpha'])
         self.assertEqual(self._db.getValue(self._xpath + '/openChannelInlet/volumeFlowRate'),
                          content['boundaryField'][boundary]['flowRate'])
         self.assertEqual(self._initialValue, content['boundaryField'][boundary]['value'][1])
 
     def testOpenChannelOutlet(self):
+        self._db.setValue(RegionDB.getXPath(rname) + '/secondaryMaterials', str(self._db.addMaterial('water-liquid')))
         self._db.setValue(self._xpath + '/physicalType', 'openChannelOutlet')
+
+        self._db.setValue('.//models/multiphaseModels/model', 'volumeOfFluid')
+
         content = U(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
         self.assertEqual('outletPhaseMeanVelocity', content['boundaryField'][boundary]['type'])
+        self.assertEqual('alpha.water-liquid', content['boundaryField'][boundary]['alpha'])
         self.assertEqual(self._db.getValue(self._xpath + '/openChannelOutlet/meanVelocity'),
                          content['boundaryField'][boundary]['Umean'])
 

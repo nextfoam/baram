@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>906</height>
+    <height>932</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -424,7 +424,7 @@
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
           <widget class="QWidget" name="widget_4" native="true">
-           <layout class="QFormLayout" name="formLayout_6">
+           <layout class="QFormLayout" name="contactAngleFormLayout">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -446,6 +446,16 @@
             </item>
             <item row="0" column="1">
              <widget class="QComboBox" name="contactAngleModel"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="contactAngleLimitLabel">
+              <property name="text">
+               <string>Limit</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="contactAngleLimit"/>
             </item>
            </layout>
           </widget>

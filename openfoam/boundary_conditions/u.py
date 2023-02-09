@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from coredb.project import Project
 from coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
 from coredb.boundary_db import FlowRateInletSpecification, WallVelocityCondition, InterfaceMode
-from coredb.project import Project
 from coredb.initialization_db import InitializationDB
+from coredb.material_db import MaterialDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from openfoam.dictionary_file import DataClass
 
@@ -96,7 +97,7 @@ class U(BoundaryCondition):
     def _constructVariableHeightFlowRateInletVelocity(self, flowRate):
         return {
             'type': 'variableHeightFlowRateInletVelocity',
-            'alpha': 'alpha.liquid',
+            'alpha': 'alpha.' + MaterialDB.getName(self._region.secondaryMaterials[0]),
             'flowRate': flowRate,
             'value': self._initialValueByTime()
         }
@@ -104,7 +105,7 @@ class U(BoundaryCondition):
     def _constructOutletPhaseMeanVelocity(self, Umean):
         return {
             'type': 'outletPhaseMeanVelocity',
-            'alpha': 'alpha.liquid',
+            'alpha': 'alpha.' + MaterialDB.getName(self._region.secondaryMaterials[0]),
             'Umean': Umean
         }
 

@@ -1033,19 +1033,21 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
+                        <xs:element name="limit" default="none">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="none"/>
+                                    <xs:enumeration value="gradient"/>
+                                    <xs:enumeration value="zeroGradient"/>
+                                    <xs:enumeration value="alpha"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
                         <xs:element name="wallAdhesion" minOccurs="0" maxOccurs="unbounded">
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="mid" type="xs:positiveInteger" minOccurs="2" maxOccurs="2"/>
                                     <xs:element name="contactAngle" default="90">
-                                        <xs:simpleType>
-                                            <xs:restriction base="inputNumberType">
-                                                <xs:minInclusive value="0"/>
-                                                <xs:maxInclusive value="180"/>
-                                            </xs:restriction>
-                                        </xs:simpleType>
-                                    </xs:element>
-                                    <xs:element name="equilibriumContactAngle" default="90">
                                         <xs:simpleType>
                                             <xs:restriction base="inputNumberType">
                                                 <xs:minInclusive value="0"/>

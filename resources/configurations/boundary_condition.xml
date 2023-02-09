@@ -137,6 +137,7 @@
         </radiation>
         <wallAdhesions>
             <model>none</model>
+            <limit>none</limit>
         </wallAdhesions>
     </wall>
     <interface>

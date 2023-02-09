@@ -25,8 +25,6 @@ class SubsonicInflowDialog(ResizableDialog):
         layout = self._ui.dialogContents.layout()
 
         self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
-        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(BoundaryDB.getBoundaryRegion(bcid),
-                                                                                  self._xpath, layout)
 
         self._load()
 
@@ -41,9 +39,6 @@ class SubsonicInflowDialog(ResizableDialog):
         writer.append(path + '/totalTemperature', self._ui.totalTemperature.text(), self.tr("Pressure"))
 
         if not self._turbulenceWidget.appendToWriter(writer):
-            return
-
-        if not self._volumeFractionWidget.appendToWriter(writer):
             return
 
         errorCount = writer.write()
@@ -62,4 +57,3 @@ class SubsonicInflowDialog(ResizableDialog):
         self._ui.totalTemperature.setText(self._db.getValue(path + '/totalTemperature'))
 
         self._turbulenceWidget.load()
-        self._volumeFractionWidget.load()

@@ -16,6 +16,7 @@ class RegionDB:
             self._rname = rname
 
             self._mid = RegionDB.getMaterial(rname)
+            self._secondaryMaterials = RegionDB.getSecondaryMaterials(rname)
             self._phase = MaterialDB.getPhase(self._mid)
             self._boundaries = coredb.CoreDB().getBoundaryConditions(self._rname)
 
@@ -87,6 +88,10 @@ class RegionDB:
         @property
         def initialOmega(self):
             return self._w
+
+        @property
+        def secondaryMaterials(self):
+            return self._secondaryMaterials
 
         def isFluid(self):
             return self._phase & Phase.FLUID

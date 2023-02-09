@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QMessageBox, QWidget, QGridLayout, QLabel, QLineEdit
+from PySide6.QtWidgets import QMessageBox, QWidget, QGridLayout, QLabel, QLineEdit, QFormLayout
 
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.models_db import ModelsDB
 from coredb.material_db import MaterialDB
-from coredb.boundary_db import BoundaryDB, WallVelocityCondition, WallTemperature, ContactAngleModel
+from coredb.boundary_db import BoundaryDB, WallVelocityCondition, WallTemperature, ContactAngleModel, ContactAngleLimit
 from coredb.region_db import RegionDB
 from view.widgets.resizable_dialog import ResizableDialog
 from view.widgets.enum_combo_box import EnumComboBox
@@ -70,6 +70,7 @@ class WallDialog(ResizableDialog):
         self._velocityConditionCombo = None
         self._temperatureTypeCombo = None
         self._contactAngleModelCombo = None
+        self._contactAngleLimitCombo = None
 
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
@@ -120,6 +121,9 @@ class WallDialog(ResizableDialog):
 
         if self._ui.contactAngleGroup.isVisible():
             writer.append(xpath + '/wallAdhesions/model', self._contactAngleModelCombo.currentValue(), None)
+            if self._ui.contactAngleLimit:
+                writer.append(xpath + '/wallAdhesions/limit', self._contactAngleLimitCombo.currentValue(), None)
+
             if self._contactAngleModelCombo.isCurrent(ContactAngleModel.CONSTANT):
                 for i in range(self._constantContactAngles.count()):
                     mid1, mid2, name1, name2, [ca] = self._constantContactAngles.row(i)
@@ -129,7 +133,7 @@ class WallDialog(ResizableDialog):
                 for i in range(self._constantContactAngles.count()):
                     mid1, mid2, name1, name2, [ca1, ca2, ca3, scale] = self._dynamicContactAngles.row(i)
                     caxpath = f'{xpath}/wallAdhesions/wallAdhesion[mid="{mid1}"][mid="{mid2}"]'
-                    writer.append(caxpath + '/equilibriumContactAngle', ca1,
+                    writer.append(caxpath + '/contactAngle', ca1,
                                   self.tr(f'Equilibrium CA of ({name1}, {name2})'))
                     writer.append(caxpath + '/advancingContactAngle', ca2,
                                   self.tr(f'Advancing CA of ({name1}, {name2})'))
@@ -183,8 +187,13 @@ class WallDialog(ResizableDialog):
             rname = BoundaryDB.getBoundaryRegion(self._bcid)
             if secondaryMaterials := RegionDB.getSecondaryMaterials(rname):
                 self._loadContactAngles(rname, secondaryMaterials)
-                self._setupContactAngleCombo()
+                self._setupContactAngleModelCombo()
+                if len(secondaryMaterials) > 1:
+                    self._ui.contactAngleFormLayout.removeRow(self._ui.contactAngleLimit)
+                else:
+                    self._setupContactAngleLimitCombo()
                 self._contactAngleModelCombo.setCurrentValue(self._db.getValue(xpath + '/wallAdhesions/model'))
+                self._contactAngleLimitCombo.setCurrentValue(self._db.getValue(xpath + '/wallAdhesions/limit'))
         else:
             self._ui.contactAngleGroup.hide()
 
@@ -200,7 +209,7 @@ class WallDialog(ResizableDialog):
             self._constantContactAngles.addRow(mid1, mid2, materials[mid1], materials[mid2],
                                                [self._db.getValue(xpath + '/contactAngle')])
             self._dynamicContactAngles.addRow(mid1, mid2, materials[mid1], materials[mid2],
-                                              [self._db.getValue(xpath + '/equilibriumContactAngle'),
+                                              [self._db.getValue(xpath + '/contactAngle'),
                                                self._db.getValue(xpath + '/advancingContactAngle'),
                                                self._db.getValue(xpath + '/recedingContactAngle'),
                                                self._db.getValue(xpath + '/characteristicVelocityScale')])
@@ -248,13 +257,21 @@ class WallDialog(ResizableDialog):
         self._temperatureTypeCombo.addItem(WallTemperature.CONSTANT_HEAT_FLUX, self.tr("Constant Heat Flux"))
         self._temperatureTypeCombo.addItem(WallTemperature.CONVECTION, self.tr("Convection"))
 
-    def _setupContactAngleCombo(self):
+    def _setupContactAngleModelCombo(self):
         self._contactAngleModelCombo = EnumComboBox(self._ui.contactAngleModel)
         self._contactAngleModelCombo.currentValueChanged.connect(self._contactAngleTypeChanged)
 
         self._contactAngleModelCombo.addItem(ContactAngleModel.DISABLE, self.tr("Disable"))
         self._contactAngleModelCombo.addItem(ContactAngleModel.CONSTANT, self.tr("Constant"))
         self._contactAngleModelCombo.addItem(ContactAngleModel.DYNAMIC, self.tr("Dynamic"))
+
+    def _setupContactAngleLimitCombo(self):
+        self._contactAngleLimitCombo = EnumComboBox(self._ui.contactAngleLimit)
+
+        self._contactAngleLimitCombo.addItem(ContactAngleLimit.NONE, self.tr("None"))
+        self._contactAngleLimitCombo.addItem(ContactAngleLimit.GRADIENT, self.tr("Gradient"))
+        self._contactAngleLimitCombo.addItem(ContactAngleLimit.ZERO_GRADIENT, self.tr("Zero Gradient"))
+        self._contactAngleLimitCombo.addItem(ContactAngleLimit.ALPHA, self.tr("Alpha"))
 
     def _velocityConditionChanged(self):
         self._ui.translationalMovingWall.setVisible(
@@ -269,5 +286,17 @@ class WallDialog(ResizableDialog):
         self._ui.convection.setVisible(self._temperatureTypeCombo.isCurrent(WallTemperature.CONVECTION))
 
     def _contactAngleTypeChanged(self):
+        if self._contactAngleLimitCombo:
+            if self._contactAngleModelCombo.isCurrent(ContactAngleModel.DISABLE):
+                if self._ui.contactAngleFormLayout.rowCount() > 1:
+                    self._ui.contactAngleFormLayout.removeItem(
+                        self._ui.contactAngleFormLayout.itemAt(1, QFormLayout.LabelRole))
+                    self._ui.contactAngleFormLayout.removeItem(
+                        self._ui.contactAngleFormLayout.itemAt(1, QFormLayout.FieldRole))
+                    self._ui.contactAngleFormLayout.removeRow(1)
+                    self._ui.contactAngleLimitLabel.setParent(None)
+                    self._ui.contactAngleLimit.setParent(None)
+            elif self._ui.contactAngleFormLayout.rowCount() < 2:
+                self._ui.contactAngleFormLayout.addRow(self._ui.contactAngleLimitLabel, self._ui.contactAngleLimit)
         self._constantContactAngles.setVisible(self._contactAngleModelCombo.isCurrent(ContactAngleModel.CONSTANT))
         self._dynamicContactAngles.setVisible(self._contactAngleModelCombo.isCurrent(ContactAngleModel.DYNAMIC))
