@@ -24,9 +24,5 @@ class GeneralDB:
         return coredb.CoreDB().getValue(cls.GENERAL_XPATH + '/flowType') == 'compressible'
 
     @classmethod
-    def isGravityModelOn(cls):
-        return coredb.CoreDB().getAttribute(cls.OPERATING_CONDITIONS_XPATH + '/gravity', 'disabled') == 'false'
-
-    @classmethod
     def getSolverType(cls):
         return SolverType(coredb.CoreDB().getValue(cls.GENERAL_XPATH + '/solverType'))

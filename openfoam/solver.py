@@ -19,7 +19,7 @@ def findSolvers() -> list[str]:
     flowType        = db.getValue('.//general/flowType')
     solverType      = db.getValue('.//general/solverType')
     energyModel     = db.getValue('.//models/energyModels')
-    gravityDisabled = db.getAttribute('.//operatingConditions/gravity', 'disabled')
+    gravityDisabled = all([v == 0.0 for v in db.getVector('.//operatingConditions/gravity/direction')])
     speciesModel    = db.getValue('.//models/speciesModels')
     multiphaseModel = db.getValue('.//models/multiphaseModels/model')
 
@@ -45,7 +45,7 @@ def findSolvers() -> list[str]:
     else:
         pcs.append('energyOn')
 
-    if gravityDisabled == 'true':
+    if gravityDisabled:
         pcs.append('gravityOff')
     else:  # gravity enabled
         pcs.append('gravityOn')
