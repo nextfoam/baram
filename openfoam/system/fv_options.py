@@ -89,8 +89,8 @@ class FvOptions(DictionaryFile):
                     'coordinateSystem': {
                         'type': 'cartesian',
                         'origin': '(0 0 0)',
-                        'coordinateRotation': {
-                            'type': 'axesRotation',
+                        'rotation': {
+                            'type': 'axes',
                             'e1': d1,
                             'e2': d2
                         }
