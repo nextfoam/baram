@@ -27,31 +27,30 @@ class BoundaryCondition(DictionaryFile):
         self._region = region
         self._time = time
         self._processorNo = processorNo
+        self._fieldsData = None
         self._db = coredb.CoreDB()
 
     def build(self):
         self.build0()
-        if self._time == '0' or not self._data:
+        if not self._data:
+            self._fieldsData = None
             return self
 
         path = self.fullPath(self._processorNo)
         if path.is_file():
-            dict0 = self._data
-            self._data = ParsedParameterFile(path)
+            self._fieldsData = ParsedParameterFile(path)
 
-            for name in dict0['boundaryField']:
-                self._data.content['boundaryField'][name].update(
-                    {k: v for k, v in dict0['boundaryField'][name].items() if v is not None})
-        else:
-            self._data = None
+            for name in self._fieldsData['boundaryField']:
+                self._fieldsData.content['boundaryField'][name].update(
+                    {k: v for k, v in self._fieldsData['boundaryField'][name].items() if v is not None})
 
         return self
 
     def write(self):
-        if self._time == '0':
-            super().write()
+        if self._fieldsData:
+            self._fieldsData.writeFile()
         elif self._data:
-            self._data.writeFile()
+            self._write(self._processorNo)
 
     def _initialValueByTime(self):
         return ('uniform', self._initialValue) if self._time == '0' else None

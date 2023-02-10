@@ -59,9 +59,7 @@ class DictionaryFile:
         return self._data
 
     def write(self):
-        if self._data:
-            with open(self.fullPath(), 'w') as f:
-                f.write(str(FoamFileGenerator(self._data, header=self._header)))
+        self._write()
 
     def writeAtomic(self):
         if self._data:
@@ -78,3 +76,8 @@ class DictionaryFile:
 
     def _setClass(self, dataClass: DataClass):
         self._header['class'] = dataClass.value
+
+    def _write(self, processorNo=None):
+        if self._data:
+            with open(self.fullPath(processorNo), 'w') as f:
+                f.write(str(FoamFileGenerator(self._data, header=self._header)))
