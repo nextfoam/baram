@@ -175,6 +175,10 @@ class ControlDict(DictionaryFile):
             'maxCo': self._db.getValue(xpath + '/maxCourantNumber'),
             'functions': self._generateResiduals()
         }
+
+        if ModelsDB.isMultiphaseModelOn():
+            self._data['maxAlphaCo'] = self._db.getValue(xpath + '/VoFMaxCourantNumber')
+
         self._appendMonitoringFunctionObjects()
 
         return self

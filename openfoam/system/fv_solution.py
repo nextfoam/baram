@@ -72,7 +72,7 @@ class FvSolution(DictionaryFile):
                             NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/useSemiImplicitMules') == 'true'
                         else 'no',
                     'nLimiterIter':
-                        self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/useSemiImplicitMules'),
+                        self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/numberOfMulesIterations'),
                     'alphaApplyPrevCorr': 'yes',
                     'solver': 'smoothSolver',
                     'smoother': 'symGaussSeidel',
