@@ -956,23 +956,25 @@ class _CoreDB(object):
             volumeFractions = bc.find('volumeFractions', namespaces=nsmap)
             for i in range(len(secondaries)):
                 updateWallAdhesions(wallAdhesions, secondaries[i], i + 1)
-                xml = f'''
-                            <volumeFraction xmlns="http://www.baramcfd.org/baram">
-                                <material>{secondaries[i]}</material>
-                                <fraction>0</fraction>
-                            </volumeFraction>
-                        '''
-                volumeFractions.append(etree.fromstring(xml))
+                if volumeFractions.find(f'volumeFraction[material="{secondaries[i]}"]', namespaces=nsmap) is None:
+                    xml = f'''
+                                <volumeFraction xmlns="http://www.baramcfd.org/baram">
+                                    <material>{secondaries[i]}</material>
+                                    <fraction>0</fraction>
+                                </volumeFraction>
+                            '''
+                    volumeFractions.append(etree.fromstring(xml))
 
         initialVolumeFractions = region.find('initialization/initialValues/volumeFractions', namespaces=nsmap)
         for mid in secondaries:
-            xml = f'''
-                        <volumeFraction xmlns="http://www.baramcfd.org/baram">
-                            <material>{mid}</material>
-                            <fraction>0</fraction>
-                        </volumeFraction>
-                    '''
-            initialVolumeFractions.append(etree.fromstring(xml))
+            if initialVolumeFractions.find(f'volumeFraction[material="{mid}"]', namespaces=nsmap) is None:
+                xml = f'''
+                            <volumeFraction xmlns="http://www.baramcfd.org/baram">
+                                <material>{mid}</material>
+                                <fraction>0</fraction>
+                            </volumeFraction>
+                        '''
+                initialVolumeFractions.append(etree.fromstring(xml))
 
         self._configCount += 1
 

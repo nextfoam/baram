@@ -10,6 +10,7 @@ from PySide6.QtCore import QCoreApplication, QObject, Signal
 from coredb import coredb
 from coredb.region_db import RegionDB
 from coredb.boundary_db import BoundaryDB
+from coredb.models_db import ModelsDB
 from openfoam.constant.dynamic_mesh_dict import DynamicMeshDict
 from openfoam.constant.thermophysical_properties import ThermophysicalProperties
 from openfoam.constant.operating_conditions import OperatingConditions
@@ -27,6 +28,7 @@ from openfoam.boundary_conditions.omega import Omega
 from openfoam.boundary_conditions.nut import Nut
 from openfoam.boundary_conditions.nuTilda import NuTilda
 from openfoam.boundary_conditions.alphat import Alphat
+from openfoam.boundary_conditions.alpha import Alpha
 from openfoam.run import runUtility
 from openfoam.system.fv_solution import FvSolution
 from openfoam.system.control_dict import ControlDict
@@ -139,6 +141,10 @@ class CaseGenerator(QObject):
         P(region, time, processorNo, 'p').build().write()
         U(region, time, processorNo).build().write()
         T(region, time, processorNo).build().write()
+
+        if ModelsDB.isMultiphaseModelOn():
+            for mid in region.secondaryMaterials:
+                Alpha(region, time, processorNo, mid).build().write()
 
     async def setupCase(self):
         self._cancelled = False

@@ -208,13 +208,14 @@ def _version_2(root: etree.Element):
         for bc in bcs:
             volumeFractions = bc.find(f'volumeFractions', namespaces=_nsmap)
             for mid in materials:
-                e = etree.fromstring(f'''
-                        <volumeFraction xmlns="http://www.baramcfd.org/baram">
-                            <material>{mid}</material>
-                            <fraction>0</fraction>
-                        </volumeFraction>
-                    ''')
-                volumeFractions.append(e)
+                if volumeFractions.find(f'volumeFraction[material="{mid}"]', namespaces=_nsmap) is None:
+                    e = etree.fromstring(f'''
+                            <volumeFraction xmlns="http://www.baramcfd.org/baram">
+                                <material>{mid}</material>
+                                <fraction>0</fraction>
+                            </volumeFraction>
+                        ''')
+                    volumeFractions.append(e)
 
 
 _fTable = [
