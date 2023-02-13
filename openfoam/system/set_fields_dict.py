@@ -67,7 +67,7 @@ class SetFieldsDict(DictionaryFile):
             if db.getValue(sPath + '/overrideBoundaryValue') == 'true':
                 overrideBoundaryValue = True
             else:
-                overrideBoundaryValue = True
+                overrideBoundaryValue = False
 
             stype = db.getValue(sPath + '/type')
             if stype == 'hex':
