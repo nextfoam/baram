@@ -34,8 +34,8 @@ class TestFvOptions(unittest.TestCase):
         self.assertEqual('DarcyForchheimer', content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['type'])
         self.assertEqual([0.0, 0.0, 0.0], content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['DarcyForchheimerCoeffs']['d'][2])
         self.assertEqual([0.0, 0.0, 0.0], content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['DarcyForchheimerCoeffs']['f'][2])
-        self.assertEqual([1.0, 0.0, 0.0], content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['DarcyForchheimerCoeffs']['coordinateSystem']['coordinateRotation']['e1'])
-        self.assertEqual([0.0, 0.0, 1.0], content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['DarcyForchheimerCoeffs']['coordinateSystem']['coordinateRotation']['e2'])
+        self.assertEqual([1.0, 0.0, 0.0], content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['DarcyForchheimerCoeffs']['coordinateSystem']['rotation']['e1'])
+        self.assertEqual([0.0, 0.0, 1.0], content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['DarcyForchheimerCoeffs']['coordinateSystem']['rotation']['e2'])
         self.assertEqual('cellZone', content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['selectionMode'])
         self.assertEqual(self.czname, content[f'porosity_{self.czname}']['explicitPorositySourceCoeffs']['cellZone'])
 

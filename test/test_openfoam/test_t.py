@@ -24,7 +24,7 @@ class TestT(unittest.TestCase):
         self._db.addRegion(rname)
         self._bcid = self._db.addBoundaryCondition(rname, boundary, 'wall')
         self._xpath = BoundaryDB.getXPath(self._bcid)
-        self._initialValue = self._db.getValue('.//initialization/initialValues/temperature')
+        self._initialValue = float(self._db.getValue('.//initialization/initialValues/temperature'))
 
         self._db.setValue(ModelsDB.ENERGY_MODELS_XPATH, 'on')
 

@@ -201,7 +201,7 @@ class TestFvSolution(unittest.TestCase):
             if self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/useSemiImplicitMules') == 'true'
             else 'no',
             content['solvers']['"alpha.*"']['MULESCorr'])
-        self.assertEqual(self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/useSemiImplicitMules'),
+        self.assertEqual(self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/multiphase/numberOfMulesIterations'),
                          content['solvers']['"alpha.*"']['nLimiterIter'])
         self.assertEqual(self._db.getValue('.//convergenceCriteria/volumeFraction/absolute'),
                          content['SIMPLE']['residualControl']['"alpha.*"'])
