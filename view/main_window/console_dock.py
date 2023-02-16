@@ -99,10 +99,10 @@ class ConsoleDock(TabifiedDock):
             while True:
                 hasOutput = False
                 while lines := stdout.readlines():
-                    self._appendLog(''.join(lines).rstrip())
+                    self._textView.appendPlainText(''.join(lines).rstrip())
                     hasOutput = True
                 while lines := stderr.readlines():
-                    self._appendLog(''.join(lines).rstrip())
+                    self._textView.appendPlainText(''.join(lines).rstrip())
                     hasOutput = True
                 if hasOutput:
                     await asyncio.sleep(0.1)
@@ -133,12 +133,9 @@ class ConsoleDock(TabifiedDock):
         async def _readLog(path):
             if path.is_file():
                 with path.open() as file:
-                    self._appendLog(file.read())
+                    self._textView.appendPlainText(file.read())
+                    self._textView.verticalScrollBar().setValue(self._textView.verticalScrollBar().maximum())
 
         root = FileSystem.caseRoot()
         await _readLog(root / 'stdout.log')
         await _readLog(root / 'stderr.log')
-
-    def _appendLog(self, log):
-        self._textView.appendPlainText(log)
-        self._textView.verticalScrollBar().setValue(self._textView.verticalScrollBar().maximum())
