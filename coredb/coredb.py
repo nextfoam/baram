@@ -1001,13 +1001,15 @@ class _CoreDB(object):
 
         return None
 
-    def clearElement(self, xpath):
+    def removeElement(self, xpath):
         element = self._xmlTree.find(xpath, namespaces=nsmap)
         if element is None:
             return
 
         parent = self._xmlTree.find(xpath+'/..', namespaces=nsmap)
         parent.remove(element)
+
+        self._configCount += 1
 
     def getList(self, xpath) -> list[str]:
         return [e.text for e in self._xmlTree.findall(xpath, namespaces=nsmap)]

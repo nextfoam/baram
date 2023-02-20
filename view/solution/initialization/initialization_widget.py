@@ -175,7 +175,7 @@ class InitializationWidget(QWidget):
         sectionPath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._currentRow.name}"]'
 
         writer = CoreDBWriter()
-        writer.clearElement(sectionPath)
+        writer.removeElement(sectionPath)
 
         errorCount = writer.write()
         if errorCount > 0:
