@@ -15,8 +15,9 @@ from PySide6.QtWidgets import QComboBox, QFrame, QToolBar, QVBoxLayout, QWidgetA
 from PySide6.QtGui import QAction, QIcon
 
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from vtkmodules.vtkCommonCore import vtkCommand
 from vtkmodules.vtkFiltersSources import vtkLineSource
-from vtkmodules.vtkRenderingAnnotation import vtkCubeAxesActor
+from vtkmodules.vtkRenderingAnnotation import vtkAxesActor, vtkCubeAxesActor
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer, vtkCamera, vtkPropPicker
 from vtkmodules.vtkRenderingCore import vtkCoordinate
 from vtkmodules.vtkCommonColor import vtkNamedColors
@@ -54,11 +55,11 @@ class DisplayMode(Enum):
 
 class MouseInteractorHighLightActor(vtkInteractorStyleTrackballCamera):
     def __init__(self, parent=None):
-        self.AddObserver('LeftButtonPressEvent', self._leftButtonPressEvent)
-        self.AddObserver('LeftButtonReleaseEvent', self._leftButtonReleaseEvent)
-        self.AddObserver('MouseWheelForwardEvent', self._mouseWheelForwardEvent)
-        self.AddObserver('MouseWheelBackwardEvent', self._mouseWheelBackwardEvent)
-        self.AddObserver('InteractionEvent', self._interactionEvent)
+        self.AddObserver(vtkCommand.LeftButtonPressEvent, self._leftButtonPressEvent)
+        self.AddObserver(vtkCommand.LeftButtonReleaseEvent, self._leftButtonReleaseEvent)
+        self.AddObserver(vtkCommand.MouseWheelForwardEvent, self._mouseWheelForwardEvent)
+        self.AddObserver(vtkCommand.MouseWheelBackwardEvent, self._mouseWheelBackwardEvent)
+        self.AddObserver(vtkCommand.InteractionEvent, self._interactionEvent)
 
         self._parent = parent
         self._pressPos = None
@@ -271,7 +272,7 @@ class MeshDock(TabifiedDock):
         self._perspectiveView()
 
     def _addAxes(self):
-        self._axesActor = vtk.vtkAxesActor()
+        self._axesActor = vtkAxesActor()
         self._axesActor.SetVisibility(True)
 
         self._axesActor.SetShaftTypeToCylinder()
@@ -291,7 +292,7 @@ class MeshDock(TabifiedDock):
         self._axes.InteractiveOn()
 
     def _addOriginAxes(self, size=10.0):
-        self._originActor = vtk.vtkAxesActor()
+        self._originActor = vtkAxesActor()
         self._originActor.SetVisibility(True)
 
         self._originActor.AxisLabelsOff()

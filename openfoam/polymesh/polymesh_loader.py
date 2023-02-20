@@ -8,9 +8,12 @@ from pathlib import Path
 import vtk
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
 from vtkmodules.vtkIOParallel import vtkPOpenFOAMReader
+from vtkmodules.vtkFiltersCore import vtkFeatureEdges
 from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
 from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
-from vtkmodules.vtkRenderingCore import vtkPolyDataMapper
+from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
+from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
+from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA
 
 from app import app
 from coredb import coredb
@@ -33,14 +36,14 @@ def getActor(dataset):
     mapper = vtkPolyDataMapper()
     mapper.SetInputData(gFilter.GetOutput())
 
-    actor = vtk.vtkQuadricLODActor()    # vtkActor()
+    actor = vtkQuadricLODActor()    # vtkActor()
     actor.SetMapper(mapper)
 
     return actor
 
 
 def getFeatureActor(dataset):
-    edges = vtk.vtkFeatureEdges()
+    edges = vtkFeatureEdges()
     edges.SetInputData(dataset)
     edges.Update()
 
@@ -48,7 +51,7 @@ def getFeatureActor(dataset):
     mapper.SetInputData(edges.GetOutput())
     mapper.ScalarVisibilityOff()
 
-    actor = vtk.vtkActor()
+    actor = vtkActor()
     actor.SetMapper(mapper)
 
     return actor
@@ -64,12 +67,12 @@ def build(mBlock):
             name = ''
         ds = mBlock.GetBlock(i)
         dsType = ds.GetDataObjectType()
-        if dsType == vtk.VTK_MULTIBLOCK_DATA_SET:
+        if dsType == VTK_MULTIBLOCK_DATA_SET:
             vtkMesh[name] = build(ds)
-        elif dsType == vtk.VTK_UNSTRUCTURED_GRID:
+        elif dsType == VTK_UNSTRUCTURED_GRID:
             if ds.GetNumberOfCells() > 0:
                 vtkMesh[name] = ActorInfo(getActor(ds))
-        elif dsType == vtk.VTK_POLY_DATA:
+        elif dsType == VTK_POLY_DATA:
             vtkMesh[name] = ActorInfo(getActor(ds), getFeatureActor(ds))
         else:
             vtkMesh[name] = f'Type {dsType}'  # ds
