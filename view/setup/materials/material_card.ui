@@ -156,7 +156,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QWidget" name="widget_3" native="true">
+          <widget class="QWidget" name="specificHeatWidget" native="true">
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
              <widget class="QLabel" name="label_4">
@@ -214,7 +214,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QWidget" name="widget_5" native="true">
+          <widget class="QWidget" name="thermalConductivityWidget" native="true">
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
              <widget class="QLabel" name="label_3">

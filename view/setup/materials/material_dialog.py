@@ -64,23 +64,49 @@ class MaterialDialog(ResizableDialog):
         self._name = self._db.getValue(self._xpath + '/name')
         self._ui.name.setText(self._name)
 
-        energyModelOn = ModelsDB.isEnergyModelOn()
+        viscositySpecification = None
+        densitySpecification = None
 
-        specification = self._db.getValue(self._xpath + '/density/specification') if energyModelOn\
-            else Specification.CONSTANT.value
-        self._ui.densityType.setCurrentText(MaterialDB.dbSpecificationToText(specification))
+        if ModelsDB.isEnergyModelOn():
+            densitySpecification = self._db.getValue(self._xpath + '/density/specification')
+
+            specification = self._db.getValue(self._xpath + '/specificHeat/specification')
+            self._ui.specificHeatType.setCurrentText(MaterialDB.dbSpecificationToText(specification))
+            self._ui.constantSpecificHeat.setText(self._db.getValue(self._xpath + '/specificHeat/constant'))
+            self._specificHeatTypeChanged()
+
+            if self._phase != Phase.SOLID:
+                viscositySpecification = self._db.getValue(self._xpath + '/viscosity/specification')
+
+            specification = self._db.getValue(self._xpath + '/thermalConductivity/specification')
+            self._ui.thermalConductivityType.setCurrentText(MaterialDB.dbSpecificationToText(specification))
+            self._ui.constantThermalConductivity.setText(self._db.getValue(self._xpath + '/thermalConductivity/constant'))
+            self._thermalConductivityTypeChanged()
+
+            if self._phase == Phase.SOLID:
+                self._ui.emissivity.setText(self._db.getValue(self._xpath + '/emissivity'))
+            else:
+                self._ui.molecularWeight.setText(self._db.getValue(self._xpath + '/molecularWeight'))
+                if self._phase == Phase.GAS:
+                    self._ui.absorptionCoefficient.setText(self._db.getValue(self._xpath + '/absorptionCoefficient'))
+                elif self._phase == Phase.LIQUID:
+                    self._ui.saturationPressure.setText(self._db.getValue(self._xpath + '/saturationPressure'))
+        else:
+            densitySpecification = Specification.CONSTANT.value
+            viscositySpecification = Specification.CONSTANT.value
+
+            self._ui.densityType.setEnabled(False)
+            self._ui.specificHeat.hide()
+            self._ui.viscosityType.setEnabled(False)
+            self._ui.thermalConductivity.hide()
+            self._ui.properties.hide()
+
+        self._ui.densityType.setCurrentText(MaterialDB.dbSpecificationToText(densitySpecification))
         self._ui.constantDensity.setText(self._db.getValue(self._xpath + '/density/constant'))
         self._densityTypeChanged()
 
-        specification = self._db.getValue(self._xpath + '/specificHeat/specification')
-        self._ui.specificHeatType.setCurrentText(MaterialDB.dbSpecificationToText(specification))
-        self._ui.constantSpecificHeat.setText(self._db.getValue(self._xpath + '/specificHeat/constant'))
-        self._specificHeatTypeChanged()
-
         if self._phase != Phase.SOLID:
-            specification = self._db.getValue(self._xpath + '/viscosity/specification') if energyModelOn\
-                else Specification.CONSTANT.value
-            self._ui.viscosityType.setCurrentText(MaterialDB.dbSpecificationToText(specification))
+            self._ui.viscosityType.setCurrentText(MaterialDB.dbSpecificationToText(viscositySpecification))
             self._ui.constantViscosity.setText(self._db.getValue(self._xpath + '/viscosity/constant'))
             if self._phase == Phase.GAS:
                 self._ui.sutherlandCoefficient.setText(
@@ -88,20 +114,6 @@ class MaterialDialog(ResizableDialog):
                 self._ui.sutherlandTemperature.setText(
                     self._db.getValue(self._xpath + '/viscosity/sutherland/temperature'))
             self._viscosityTypeChanged()
-
-        specification = self._db.getValue(self._xpath + '/thermalConductivity/specification')
-        self._ui.thermalConductivityType.setCurrentText(MaterialDB.dbSpecificationToText(specification))
-        self._ui.constantThermalConductivity.setText(self._db.getValue(self._xpath + '/thermalConductivity/constant'))
-        self._thermalConductivityTypeChanged()
-
-        if self._phase == Phase.SOLID:
-            self._ui.emissivity.setText(self._db.getValue(self._xpath + '/emissivity'))
-        else:
-            self._ui.molecularWeight.setText(self._db.getValue(self._xpath + '/molecularWeight'))
-            if self._phase == Phase.GAS:
-                self._ui.absorptionCoefficient.setText(self._db.getValue(self._xpath + '/absorptionCoefficient'))
-            elif self._phase == Phase.LIQUID:
-                self._ui.saturationPressure.setText(self._db.getValue(self._xpath + '/saturationPressure'))
 
         self._polynomialDensity = None
         self._polynomialSpecificHeat = None
@@ -120,6 +132,7 @@ class MaterialDialog(ResizableDialog):
         writer = CoreDBWriter()
 
         writer.append(self._xpath + '/name', name, "Name")
+
         specification = self._ui.densityType.currentData()
         writer.append(self._xpath + '/density/specification', specification.value, None)
         if specification == Specification.CONSTANT:
@@ -130,19 +143,6 @@ class MaterialDialog(ResizableDialog):
                               self._polynomialDensity, self.tr("Density Polynomial"))
             elif self._db.getValue(self._xpath + '/density/polynomial') == '':
                 QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Density Polynomial."))
-                return
-
-        specification = self._ui.specificHeatType.currentData()
-        writer.append(self._xpath + '/specificHeat/specification', specification.value, None)
-        if specification == Specification.CONSTANT:
-            writer.append(self._xpath + '/specificHeat/constant',
-                          self._ui.constantSpecificHeat.text(), self.tr("Specific Heat Value"))
-        elif specification == Specification.POLYNOMIAL:
-            if self._polynomialSpecificHeat is not None:
-                writer.append(self._xpath + '/specificHeat/polynomial',
-                              self._polynomialSpecificHeat, self.tr("Specific Heat Polynomial"))
-            elif self._db.getValue(self._xpath + '/specificHeat/polynomial') == '':
-                QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Specific Heat Polynomial."))
                 return
 
         if self._phase != Phase.SOLID:
@@ -164,30 +164,44 @@ class MaterialDialog(ResizableDialog):
                     QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Viscosity Polynomial."))
                     return
 
-        specification = self._ui.thermalConductivityType.currentData()
-        writer.append(self._xpath + '/thermalConductivity/specification', specification.value, None)
-        if specification == Specification.CONSTANT:
-            writer.append(self._xpath + '/thermalConductivity/constant',
-                          self._ui.constantThermalConductivity.text(), self.tr("Thermal Conductivity Value"))
-        elif specification == Specification.POLYNOMIAL:
-            if self._polynomialThermalConductivity is not None:
-                writer.append(self._xpath + '/thermalConductivity/polynomial',
-                              self._polynomialThermalConductivity, self.tr("Thermal Conductivity Polynomial"))
-            elif self._db.getValue(self._xpath + '/thermalConductivity/polynomial') == '':
-                QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Thermal Conductivity Polynomial."))
-                return
+        if ModelsDB.isEnergyModelOn():
+            specification = self._ui.specificHeatType.currentData()
+            writer.append(self._xpath + '/specificHeat/specification', specification.value, None)
+            if specification == Specification.CONSTANT:
+                writer.append(self._xpath + '/specificHeat/constant',
+                              self._ui.constantSpecificHeat.text(), self.tr("Specific Heat Value"))
+            elif specification == Specification.POLYNOMIAL:
+                if self._polynomialSpecificHeat is not None:
+                    writer.append(self._xpath + '/specificHeat/polynomial',
+                                  self._polynomialSpecificHeat, self.tr("Specific Heat Polynomial"))
+                elif self._db.getValue(self._xpath + '/specificHeat/polynomial') == '':
+                    QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Specific Heat Polynomial."))
+                    return
 
-        if self._phase == Phase.SOLID:
-            writer.append(self._xpath + '/emissivity', self._ui.emissivity.text(), self.tr("Emissivity"))
-        else:
-            writer.append(self._xpath + '/molecularWeight',
-                          self._ui.molecularWeight.text(), self.tr("Molecular Weight"))
-            if self._phase == Phase.GAS:
-                writer.append(self._xpath + '/absorptionCoefficient',
-                              self._ui.absorptionCoefficient.text(), self.tr("Absorption Coefficient"))
-            elif self._phase == Phase.LIQUID:
-                writer.append(self._xpath + '/saturationPressure',
-                              self._ui.saturationPressure.text(), self.tr("Saturation Pressure"))
+            specification = self._ui.thermalConductivityType.currentData()
+            writer.append(self._xpath + '/thermalConductivity/specification', specification.value, None)
+            if specification == Specification.CONSTANT:
+                writer.append(self._xpath + '/thermalConductivity/constant',
+                              self._ui.constantThermalConductivity.text(), self.tr("Thermal Conductivity Value"))
+            elif specification == Specification.POLYNOMIAL:
+                if self._polynomialThermalConductivity is not None:
+                    writer.append(self._xpath + '/thermalConductivity/polynomial',
+                                  self._polynomialThermalConductivity, self.tr("Thermal Conductivity Polynomial"))
+                elif self._db.getValue(self._xpath + '/thermalConductivity/polynomial') == '':
+                    QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Thermal Conductivity Polynomial."))
+                    return
+
+            if self._phase == Phase.SOLID:
+                writer.append(self._xpath + '/emissivity', self._ui.emissivity.text(), self.tr("Emissivity"))
+            else:
+                writer.append(self._xpath + '/molecularWeight',
+                              self._ui.molecularWeight.text(), self.tr("Molecular Weight"))
+                if self._phase == Phase.GAS:
+                    writer.append(self._xpath + '/absorptionCoefficient',
+                                  self._ui.absorptionCoefficient.text(), self.tr("Absorption Coefficient"))
+                elif self._phase == Phase.LIQUID:
+                    writer.append(self._xpath + '/saturationPressure',
+                                  self._ui.saturationPressure.text(), self.tr("Saturation Pressure"))
 
         errorCount = writer.write()
         if errorCount > 0:
