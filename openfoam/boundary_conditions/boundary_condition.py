@@ -12,6 +12,7 @@ from coredb.models_db import TurbulenceModel
 from coredb.region_db import RegionDB
 from openfoam.dictionary_file import DictionaryFile, DataClass
 from openfoam.constant.boundary_data import BoundaryData
+from openfoam.file_system import FileSystem
 
 
 class BoundaryCondition(DictionaryFile):
@@ -40,11 +41,20 @@ class BoundaryCondition(DictionaryFile):
         if path.is_file():
             self._fieldsData = ParsedParameterFile(path)
 
-            for name in self._fieldsData['boundaryField']:
+            for name in self._data['boundaryField']:
                 self._fieldsData.content['boundaryField'][name].update(
-                    {k: v for k, v in self._fieldsData['boundaryField'][name].items() if v is not None})
+                    {k: v for k, v in self._data['boundaryField'][name].items() if v is not None})
 
         return self
+
+    def fullPath(self, processorNo=None):
+        processorDir = '' if processorNo is None else f'processor{processorNo}'
+
+        timeDirPath = FileSystem.caseRoot() / processorDir / self._header['location']
+        boundaryFilePath = timeDirPath / self._header['object']
+        boundaryFieldsPath = timeDirPath / 'boundaryFields' / self._header['object']
+
+        return boundaryFieldsPath if boundaryFieldsPath.exists() else boundaryFilePath
 
     def write(self):
         if self._fieldsData:

@@ -41,7 +41,7 @@ class DictionaryFile:
 
     @classmethod
     def boundaryLocation(cls, rname, time):
-        return Path(time) / rname if time == '0' else Path(time) / rname / 'boundaryFields'
+        return Path(time) / rname
 
     @classmethod
     def systemLocation(cls, subPath=''):
