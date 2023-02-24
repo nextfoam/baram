@@ -115,6 +115,11 @@ class SectionDialog(ResizableDialog):
                     self._volumeFractionWidget.setChecked(True)
                 self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
 
+            if self._db.getValue(sectionPath+'/overrideBoundaryValue') == 'true':
+                self._ui.overrideBoundaryValue.setChecked(True)
+            else:
+                self._ui.overrideBoundaryValue.setChecked(False)
+
             self._showEditPage()
         else:
             self._pageType = PageType.CREATE
