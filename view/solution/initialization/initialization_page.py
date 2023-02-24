@@ -104,7 +104,7 @@ class InitializationPage(ContentPage):
                 numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
                 caseRoot = FileSystem.caseRoot()
 
-                proc = await runParallelUtility('setFields', '-case', caseRoot, np=numCores, cwd=caseRoot)
+                proc = await runParallelUtility('setFields', '-writeBoundaryFields', '-case', caseRoot, np=numCores, cwd=caseRoot)
                 result = await proc.wait()
 
                 if result != 0:
