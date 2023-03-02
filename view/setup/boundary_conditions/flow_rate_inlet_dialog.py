@@ -6,7 +6,9 @@ from PySide6.QtWidgets import QMessageBox
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.boundary_db import FlowRateInletSpecification, BoundaryDB
+from coredb.general_db import GeneralDB
 from view.widgets.resizable_dialog import ResizableDialog
+from view.widgets.enum_combo_box import EnumComboBox
 from .flow_rate_inlet_dialog_ui import Ui_FlowRateInletDialog
 from .conditional_widget_helper import ConditionalWidgetHelper
 
@@ -17,21 +19,19 @@ class FlowRateInletDialog(ResizableDialog):
         self._ui = Ui_FlowRateInletDialog()
         self._ui.setupUi(self)
 
-        self._specificationMethods = {
-            FlowRateInletSpecification.VOLUME_FLOW_RATE.value: self.tr("Volume Flow Rate"),
-            FlowRateInletSpecification.MASS_FLOW_RATE.value: self.tr("Mass Flow Rate"),
-        }
-        self._setupSpecificationMethodCombo()
-
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
         layout = self._ui.dialogContents.layout()
 
+        self._flowRateSpecificationMethodsCombo = EnumComboBox(self._ui.flowRateSpecificationMethod)
+
         self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
         self._temperatureWidget = ConditionalWidgetHelper.temperatureWidget(self._xpath, bcid, layout)
         self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(BoundaryDB.getBoundaryRegion(bcid),
                                                                                   self._xpath, layout)
+
+        self._setupSpecificationMethodCombo()
 
         self._connectSignalsSlots()
         self._load()
@@ -42,10 +42,11 @@ class FlowRateInletDialog(ResizableDialog):
         writer = CoreDBWriter()
         specification = self._ui.flowRateSpecificationMethod.currentData()
         writer.append(path + '/flowRate/specification', specification, None)
-        if specification == FlowRateInletSpecification.VOLUME_FLOW_RATE.value:
-            writer.append(path + '/flowRate/volumeFlowRate', self._ui.volumeFlowRate.text(), self.tr("Volume Flow Rate"))
-        elif specification == FlowRateInletSpecification.MASS_FLOW_RATE.value:
-            writer.append(path + '/flowRate/massFlowRate', self._ui.massFlowRate.text(), self.tr("Mass Flow Rate"))
+        if self._flowRateSpecificationMethodsCombo.isSelected(FlowRateInletSpecification.VOLUME_FLOW_RATE):
+            writer.append(path + '/flowRate/volumeFlowRate', self._ui.volumeFlowRate.text(),
+                          self.tr('Volume Flow Rate'))
+        elif self._flowRateSpecificationMethodsCombo.isSelected(FlowRateInletSpecification.MASS_FLOW_RATE):
+            writer.append(path + '/flowRate/massFlowRate', self._ui.massFlowRate.text(), self.tr('Mass Flow Rate'))
 
         if not self._turbulenceWidget.appendToWriter(writer):
             return
@@ -65,13 +66,12 @@ class FlowRateInletDialog(ResizableDialog):
             super().accept()
 
     def _connectSignalsSlots(self):
-        self._ui.flowRateSpecificationMethod.currentIndexChanged.connect(self._flowRateSpecificationMethodChanged)
+        self._flowRateSpecificationMethodsCombo.currentValueChanged.connect(self._flowRateSpecificationMethodChanged)
 
     def _load(self):
         path = self._xpath + '/flowRateInlet'
 
-        self._ui.flowRateSpecificationMethod.setCurrentText(
-            self._specificationMethods[self._db.getValue(path + '/flowRate/specification')])
+        self._flowRateSpecificationMethodsCombo.setCurrentValue(self._db.getValue(path + '/flowRate/specification'))
         self._ui.volumeFlowRate.setText(self._db.getValue(path + '/flowRate/volumeFlowRate'))
         self._ui.massFlowRate.setText(self._db.getValue(path + '/flowRate/massFlowRate'))
         self._flowRateSpecificationMethodChanged()
@@ -82,14 +82,16 @@ class FlowRateInletDialog(ResizableDialog):
         self._volumeFractionWidget.load()
 
     def _setupSpecificationMethodCombo(self):
-        for value, text in self._specificationMethods.items():
-            self._ui.flowRateSpecificationMethod.addItem(text, value)
+        if not GeneralDB.isCompressible():
+            self._flowRateSpecificationMethodsCombo.addItem(FlowRateInletSpecification.VOLUME_FLOW_RATE,
+                                                            self.tr('Volume Flow Rate'))
+        self._flowRateSpecificationMethodsCombo.addItem(FlowRateInletSpecification.MASS_FLOW_RATE,
+                                                        self.tr('Mass Flow Rate'))
 
     def _flowRateSpecificationMethodChanged(self):
-        specification = self._ui.flowRateSpecificationMethod.currentData()
         self._ui.volumeFlowRateWidget.setVisible(
-            specification == FlowRateInletSpecification.VOLUME_FLOW_RATE.value
+            self._flowRateSpecificationMethodsCombo.isSelected(FlowRateInletSpecification.VOLUME_FLOW_RATE)
         )
         self._ui.massFlowRateWidget.setVisible(
-            specification == FlowRateInletSpecification.MASS_FLOW_RATE.value
+            self._flowRateSpecificationMethodsCombo.isSelected(FlowRateInletSpecification.MASS_FLOW_RATE)
         )

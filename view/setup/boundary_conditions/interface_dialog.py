@@ -6,7 +6,10 @@ from PySide6.QtWidgets import QMessageBox
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
+from coredb.general_db import GeneralDB
+from coredb.models_db import ModelsDB
 from view.widgets.selector_dialog import SelectorDialog
+from view.widgets.enum_combo_box import EnumComboBox
 from .interface_dialog_ui import Ui_InterfaceDialog
 from .coupled_boundary_condition_dialog import CoupledBoundaryConditionDialog
 
@@ -20,18 +23,14 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
         self._ui = Ui_InterfaceDialog()
         self._ui.setupUi(self)
 
-        self._modes = {
-            InterfaceMode.INTERNAL_INTERFACE.value: self.tr('Internal Interface'),
-            InterfaceMode.ROTATIONAL_PERIODIC.value: self.tr('Rotational Periodic'),
-            InterfaceMode.TRANSLATIONAL_PERIODIC.value: self.tr('Translational Periodic'),
-            InterfaceMode.REGION_INTERFACE.value: self.tr('Region Interface'),
-        }
-        self._setupModeCombo()
+        self._modeCombo = EnumComboBox(self._ui.mode)
 
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
         self._coupledBoundary = None
         self._dialog = None
+
+        self._setupModeCombo()
 
         self._connectSignalsSlots()
         self._load()
@@ -56,18 +55,17 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
             QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
 
     def _connectSignalsSlots(self):
-        self._ui.mode.currentIndexChanged.connect(self._modeChanged)
+        self._modeCombo.currentValueChanged.connect(self._modeChanged)
         self._ui.select.clicked.connect(self._selectCoupledBoundary)
 
     def _modeChanged(self):
-        mode = self._ui.mode.currentData()
-        self._ui.rotationalPeriodic.setVisible(mode == InterfaceMode.ROTATIONAL_PERIODIC.value)
-        self._ui.translationalPeriodic.setVisible(mode == InterfaceMode.TRANSLATIONAL_PERIODIC.value)
+        self._ui.rotationalPeriodic.setVisible(self._modeCombo.isSelected(InterfaceMode.ROTATIONAL_PERIODIC))
+        self._ui.translationalPeriodic.setVisible(self._modeCombo.isSelected(InterfaceMode.TRANSLATIONAL_PERIODIC))
 
     def _load(self):
         path = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.mode.setCurrentText(self._modes[self._db.getValue(path + '/mode')])
+        self._modeCombo.setCurrentValue(self._db.getValue(path + '/mode'))
         self._setCoupledBoundary(self._db.getValue(self._xpath + '/coupledBoundary'))
         self._ui.rotationAxisX.setText(self._db.getValue(path + '/rotationAxisOrigin/x'))
         self._ui.rotationAxisY.setText(self._db.getValue(path + '/rotationAxisOrigin/y'))
@@ -81,8 +79,12 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
         self._modeChanged()
 
     def _setupModeCombo(self):
-        for value, text in self._modes.items():
-            self._ui.mode.addItem(text, value)
+        self._modeCombo.addItem(InterfaceMode.INTERNAL_INTERFACE, self.tr('Internal Interface'))
+        self._modeCombo.addItem(InterfaceMode.ROTATIONAL_PERIODIC, self.tr('Rotational Periodic'))
+        self._modeCombo.addItem(InterfaceMode.TRANSLATIONAL_PERIODIC, self.tr('Translational Periodic'))
+        if not GeneralDB.isCompressible() and not ModelsDB.isMultiphaseModelOn() and ModelsDB.isSpeciesModelOn()\
+                and len(self._db.getRegions()) > 1:
+            self._modeCombo.addItem(InterfaceMode.REGION_INTERFACE, self.tr('Region Interface'))
 
     def _selectCoupledBoundary(self):
         if not self._dialog:
@@ -104,7 +106,7 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
             self._ui.coupledBoundary.setText('')
 
     def _writeConditions(self, writer, xpath, couple=False):
-        mode = self._ui.mode.currentData()
+        mode = self._modeCombo.currentValue()
         writer.append(xpath + '/mode', mode, None)
 
         if mode == InterfaceMode.ROTATIONAL_PERIODIC.value:

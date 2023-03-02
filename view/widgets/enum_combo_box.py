@@ -26,7 +26,7 @@ class EnumComboBox(QObject):
     def currentValue(self):
         return self._comboBox.currentData()
 
-    def isCurrent(self, enum):
+    def isSelected(self, enum):
         return enum.value == self._comboBox.currentData()
 
     def _currentIndexChanged(self):

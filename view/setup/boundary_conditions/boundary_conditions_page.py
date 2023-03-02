@@ -187,10 +187,9 @@ class BoundaryConditionsPage(ContentPage):
                     self._dialog.open()
 
     def _showTypePicker(self, bcid, point):
-        self._typePicker = BoundaryTypePicker(bcid, point,
-                                              self.window().windowHandle().screen().availableSize().height())
+        self._typePicker = BoundaryTypePicker(self)
         self._typePicker.picked.connect(self._changeBoundaryType)
-        self._typePicker.show()
+        self._typePicker.open(bcid, point)
 
     def _currentBoundaryChanged(self, current):
         app.vtkMesh().setCurrentId(current.type())
