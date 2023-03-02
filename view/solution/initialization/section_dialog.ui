@@ -725,6 +725,41 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>sectionNameInput</tabstop>
+  <tabstop>hexType</tabstop>
+  <tabstop>cylinderType</tabstop>
+  <tabstop>sphereType</tabstop>
+  <tabstop>cellZoneType</tabstop>
+  <tabstop>minPointX</tabstop>
+  <tabstop>minPointY</tabstop>
+  <tabstop>minPointZ</tabstop>
+  <tabstop>maxPointX</tabstop>
+  <tabstop>maxPointY</tabstop>
+  <tabstop>maxPointZ</tabstop>
+  <tabstop>p1x</tabstop>
+  <tabstop>p1y</tabstop>
+  <tabstop>p1z</tabstop>
+  <tabstop>p2x</tabstop>
+  <tabstop>p2y</tabstop>
+  <tabstop>p2z</tabstop>
+  <tabstop>cylinderRadius</tabstop>
+  <tabstop>cx</tabstop>
+  <tabstop>cy</tabstop>
+  <tabstop>cz</tabstop>
+  <tabstop>sphereRadius</tabstop>
+  <tabstop>velocityGroup</tabstop>
+  <tabstop>ux</tabstop>
+  <tabstop>uy</tabstop>
+  <tabstop>uz</tabstop>
+  <tabstop>pressureCheckBox</tabstop>
+  <tabstop>pressure</tabstop>
+  <tabstop>temperatureCheckBox</tabstop>
+  <tabstop>temperature</tabstop>
+  <tabstop>overrideBoundaryValue</tabstop>
+  <tabstop>nextButton</tabstop>
+  <tabstop>cancelButton</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
