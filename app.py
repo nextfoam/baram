@@ -31,8 +31,8 @@ class App(QObject):
         return self._window
 
     @property
-    def meshDock(self):
-        return self._window.meshDock()
+    def renderingView(self):
+        return self._window.renderingView()
 
     def vtkMesh(self):
         return self._vtkMesh
@@ -45,16 +45,16 @@ class App(QObject):
         self._closed = False
 
     def updateVtkMesh(self, mesh):
+        if self._vtkMesh:
+            self._vtkMesh.deactivate()
+
         self._vtkMesh = mesh
-        self.showMesh()
         self._window.vtkMeshLoaded()
         self.meshUpdated.emit()
+        self.showMesh()
 
-    def showMesh(self, mesh=None):
-        if mesh:
-            self.meshDock.setModel(mesh)
-        elif self._vtkMesh:
-            self.meshDock.setModel(self._vtkMesh)
+    def showMesh(self):
+        self._vtkMesh.activate()
 
     def close(self):
         self._closed = True

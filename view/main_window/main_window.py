@@ -40,7 +40,7 @@ from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu.settings_scaling import SettingScalingDialog
 from .navigator_view import NavigatorView, MenuItem
-from .mesh_dock import MeshDock
+from .rendering_dock import RenderingDock
 from .console_dock import ConsoleDock
 from .chart_dock import ChartDock
 from .monitor_dock import MonitorDock
@@ -105,13 +105,13 @@ class MainWindow(QMainWindow):
 
         self._emptyDock = self._ui.emptyDock
         self._emptyDock.setTitleBarWidget(QWidget())
-        self._meshDock = MeshDock(self)
+        self._renderingDock = RenderingDock(self)
         self._consoleDock = ConsoleDock(self)
         self._chartDock = ChartDock(self)
         self._monitorDock = MonitorDock(self)
 
         self._addTabifiedDock(self._consoleDock)
-        self._addTabifiedDock(self._meshDock)
+        self._addTabifiedDock(self._renderingDock)
         self._addTabifiedDock(self._chartDock)
         self._addTabifiedDock(self._monitorDock)
 
@@ -149,7 +149,7 @@ class MainWindow(QMainWindow):
             self._chartDock.raise_()
         else:
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL.value)
-            self._meshDock.raise_()
+            self._renderingDock.raise_()
 
         self._project.opened()
 
@@ -157,8 +157,8 @@ class MainWindow(QMainWindow):
         self._ui.menuMesh.setDisabled(True)
         self.show()
 
-    def meshDock(self):
-        return self._meshDock
+    def renderingView(self):
+        return self._renderingDock.view
 
     def tabifyDock(self, dock):
         self.tabifyDockWidget(self._emptyDock, dock)

@@ -4,15 +4,15 @@
 from PySide6.QtCore import QObject, Signal
 
 from app import app
-from view.main_window.mesh_dock import DisplayMode
+from view.main_window.rendering_view import DisplayMode
 
 
 _applyDisplayMode = {
-    DisplayMode.DISPLAY_MODE_POINTS.value         : lambda actor: _applyPointsMode(actor),
-    DisplayMode.DISPLAY_MODE_WIREFRAME.value      : lambda actor: _applyWireframeMode(actor),
-    DisplayMode.DISPLAY_MODE_SURFACE.value        : lambda actor: _applySurfaceMode(actor),
-    DisplayMode.DISPLAY_MODE_SURFACE_EDGE.value   : lambda actor: _applySurfaceEdgeMode(actor),
-    DisplayMode.DISPLAY_MODE_FEATURE.value        : lambda actor: _applyFeatureMode(actor)
+    DisplayMode.DISPLAY_MODE_POINTS         : lambda actor: _applyPointsMode(actor),
+    DisplayMode.DISPLAY_MODE_WIREFRAME      : lambda actor: _applyWireframeMode(actor),
+    DisplayMode.DISPLAY_MODE_SURFACE        : lambda actor: _applySurfaceMode(actor),
+    DisplayMode.DISPLAY_MODE_SURFACE_EDGE   : lambda actor: _applySurfaceEdgeMode(actor),
+    DisplayMode.DISPLAY_MODE_FEATURE        : lambda actor: _applyFeatureMode(actor)
 }
 
 
@@ -82,32 +82,47 @@ class ActorInfo:
         self._visibility = visibility
 
 
-class MeshModel(QObject):
+class RenderingModel(QObject):
+    def __init__(self):
+        super().__init__()
+
+        self._view = app.renderingView
+
+
+class MeshModel(RenderingModel):
     currentActorChanged = Signal()
 
     def __init__(self):
         super().__init__()
 
-        self._view = app.meshDock
         self._actorInfos = {}
         self._currentId = None
         self._featureMode = False
         self._hasFeatures = True
         self._bounds = None
+        self._activation = False
+
+        self._connectSignalsSlots()
 
     def activate(self):
-        displayMode = self._view.displayMode()
-        self._featureMode = displayMode == DisplayMode.DISPLAY_MODE_FEATURE and self._hasFeatures
-        for actorInfo in self._actorInfos.values():
-            if actorInfo.visibility:
-                actor = actorInfo.actor(self._featureMode)
-                _applyDisplayMode[displayMode](actor)
-                self._view.addActor(actor)
+        if not self._activation:
+            renderingMode = self._view.renderingMode()
+            self._featureMode = renderingMode == DisplayMode.DISPLAY_MODE_FEATURE and self._hasFeatures
+            for actorInfo in self._actorInfos.values():
+                if actorInfo.visibility:
+                    actor = actorInfo.actor(self._featureMode)
+                    _applyDisplayMode[renderingMode](actor)
+                    self._view.addActor(actor)
+
+            self._view.fitCamera()
+            self._activation = True
 
     def deactivate(self):
         for actorInfo in self._actorInfos.values():
             if actorInfo.visibility:
                 self._view.removeActor(actorInfo.actor(self._featureMode))
+
+        self._activation = False
 
     def setActorInfo(self, id_, actorInfo):
         self._actorInfos[id_] = actorInfo
@@ -131,42 +146,18 @@ class MeshModel(QObject):
             actor = self._actorInfos[id_].actor(self._featureMode)
             self._view.addActor(actor)
             self._applyDisplayMode(actor)
-
-        self._actorInfos[id_].visibility = True
-        self._view.render()
+            self._actorInfos[id_].visibility = True
+            self._view.refresh()
 
     def hideActor(self, id_):
         if self._actorInfos[id_].visibility:
             self._view.removeActor(self._actorInfos[id_].actor(self._featureMode))
-
-        self._actorInfos[id_].visibility = False
-        self._view.render()
-
-    def actorPicked(self, actor):
-        self.setCurrentId(self._findActorInfo(actor))
-        self.currentActorChanged.emit()
+            self._actorInfos[id_].visibility = False
+            self._view.refresh()
 
     def setCurrentId(self, id_):
         self._highlightActor(id_)
         self._currentId = id_
-
-    def changeDisplayMode(self, displayMode):
-        if displayMode == DisplayMode.DISPLAY_MODE_FEATURE.value and self._hasFeatures:
-            self._featureMode = True
-            for a in self._actorInfos.values():
-                if a.visibility:
-                    self._view.removeActor(a.face)
-                    self._view.addActor(a.feature)
-                self._applyDisplayMode(a.feature)
-        else:
-            featureModeChanged = self._featureMode
-            self._featureMode = False
-            for a in self._actorInfos.values():
-                if a.visibility:
-                    if featureModeChanged:
-                        self._view.removeActor(a.feature)
-                        self._view.addActor(a.face)
-                    self._applyDisplayMode(a.face)
 
     def showCulling(self):
         for a in self._actorInfos.values():
@@ -189,6 +180,30 @@ class MeshModel(QObject):
 
         return self._bounds
 
+    def _connectSignalsSlots(self):
+        self._view.renderingModeChanged.connect(self._changeRenderingMode)
+        self._view.actorPicked.connect(self._actorPicked)
+
+    def _changeRenderingMode(self, displayMode):
+        if displayMode == DisplayMode.DISPLAY_MODE_FEATURE and self._hasFeatures:
+            self._featureMode = True
+            for a in self._actorInfos.values():
+                if a.visibility:
+                    self._view.removeActor(a.face)
+                    self._view.addActor(a.feature)
+                self._applyDisplayMode(a.feature)
+        else:
+            featureModeChanged = self._featureMode
+            self._featureMode = False
+            for a in self._actorInfos.values():
+                if a.visibility:
+                    if featureModeChanged:
+                        self._view.removeActor(a.feature)
+                        self._view.addActor(a.face)
+                    self._applyDisplayMode(a.face)
+
+        self._view.refresh()
+
     def _findActorInfo(self, actor):
         for id_ in self._actorInfos:
             if self._actorInfos[id_].actor(self._featureMode) == actor:
@@ -199,17 +214,21 @@ class MeshModel(QObject):
     def _highlightActor(self, id_):
         # Reset properties of unselected actors
         if currentActor := self.currentActor():
-            _applyDisplayMode[self._view.displayMode()](currentActor)
+            _applyDisplayMode[self._view.renderingMode()](currentActor)
 
         actor = None
         if id_:
             _applyHighlight(self._actorInfos[id_].actor(self._featureMode))
 
         if actor != currentActor:
-            self._view.render()
+            self._view.refresh()
 
     def _applyDisplayMode(self, actor):
         if actor == self.currentActor():
             _applyHighlight(actor)
         else:
-            _applyDisplayMode[self._view.displayMode()](actor)
+            _applyDisplayMode[self._view.renderingMode()](actor)
+
+    def _actorPicked(self, actor):
+        self.setCurrentId(self._findActorInfo(actor))
+        self.currentActorChanged.emit()

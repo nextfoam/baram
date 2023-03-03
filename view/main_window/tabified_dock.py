@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtWidgets import QDockWidget
-from PySide6.QtCore import QEvent
+from PySide6.QtCore import QEvent, Qt
 
 
 class TabifiedDock(QDockWidget):
@@ -10,6 +10,7 @@ class TabifiedDock(QDockWidget):
         super().__init__()
         self._mainWindow = mainWindow
 
+        self.setAllowedAreas(Qt.RightDockWidgetArea)
         self._connectTabifySlots()
 
     def _dockTopLevelChanged(self, topLevel):
