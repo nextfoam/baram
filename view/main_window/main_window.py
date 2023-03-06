@@ -268,7 +268,7 @@ class MainWindow(QMainWindow):
             QMessageBox.information(
                 self, self.tr('Mesh Convert'),
                 self.tr(f'Converter not found.<br>'
-                        f'Install <a href="{CCM_TO_FOAM_URL}">ccn26ToFoam</a> to convert StarCCM+ Mesh.'
+                        f'Install <a href="{CCM_TO_FOAM_URL}">ccm26ToFoam</a> to convert StarCCM+ Mesh.'
                         f'(Linux only)</a>'))
 
     def _importGmsh(self):

@@ -23,8 +23,12 @@ class LicenseDialog(QDialog):
         layout = self._ui.licenses.layout()
         row = 1
         for software, version, url, licence, licneceUrl in softwares:
-            layout.addWidget(QLabel(f'<a href="{url}">{software}</a> {version}'), row, 0)
-            layout.addWidget(QLabel(f'<a href="{licneceUrl}">{licence}</a>'), row, 1)
+            softwareLink = QLabel(f'<a href="{url}">{software}</a>')
+            softwareLink.setOpenExternalLinks(True)
+            layout.addWidget(softwareLink, row, 0)
+            licenceLink = QLabel(f'<a href="{licneceUrl}">{licence}</a>')
+            licenceLink.setOpenExternalLinks(True)
+            layout.addWidget(licenceLink, row, 1)
             row += 1
 
         self._connectSignalsSlots()
