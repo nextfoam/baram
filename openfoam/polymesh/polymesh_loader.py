@@ -5,7 +5,6 @@ import logging
 import asyncio
 from pathlib import Path
 
-import vtk
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
 from vtkmodules.vtkIOParallel import vtkPOpenFOAMReader
 from vtkmodules.vtkFiltersCore import vtkFeatureEdges
@@ -252,8 +251,13 @@ class PolyMeshLoader:
         db = coredb.CoreDB()
 
         viewModel = MeshModel()
+        cellZones = {}
         for rname in db.getRegions():
             for bcid, bcname, _ in db.getBoundaryConditions(rname):
                 viewModel.setActorInfo(bcid, vtkMesh[rname]['boundary'][bcname])
 
-        app.updateVtkMesh(viewModel)
+            for czid, czname in db.getCellZones(rname):
+                if not CellZoneDB.isRegion(czname):
+                    cellZones[czid] = vtkMesh[rname]['zones']['cellZones'][czname]
+
+        app.updateVtkMesh(viewModel, cellZones)

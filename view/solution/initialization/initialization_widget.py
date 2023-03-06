@@ -9,10 +9,12 @@ from PySide6.QtWidgets import QSizePolicy
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import Signal
 
+from app import app
 from coredb import coredb
 from coredb.coredb_writer import CoreDBWriter
 from coredb.models_db import ModelsDB, TurbulenceModel
 from resources import resource
+from mesh.vtk_loader import hexActor, cylinderActor, sphereActor
 from view.widgets.flat_push_button import FlatPushButton
 from view.widgets.volume_fraction_widget import VolumeFractionWidget
 from .initialization_widget_ui import Ui_initializationWidget
@@ -29,11 +31,14 @@ class OptionType(Enum):
 class SectionRow(QWidget):
     doubleClicked = Signal()
     toggled = Signal(bool)
+    eyeToggled = Signal(bool)
 
-    def __init__(self, name):
+    def __init__(self, name, rname):
         super().__init__()
 
         self._name = name
+        self._rname = rname
+        self._actor = None
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -66,13 +71,39 @@ class SectionRow(QWidget):
         self._name = value
         self._button.setText(value)
 
+    @property
+    def rname(self):
+        return self._rname
+
+    def actor(self):
+        if self._actor is None:
+            db = coredb.CoreDB()
+            xpath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._name}"]'
+
+            typeString = db.getValue(xpath + '/type')
+            if typeString == 'hex':
+                self._actor = hexActor(db.getVector(xpath + '/point1'), db.getVector(xpath + '/point2'))
+            elif typeString == 'cylinder':
+                self._actor = cylinderActor(db.getVector(xpath + '/point1'),
+                                            db.getVector(xpath + '/point2'),
+                                            float(db.getValue(xpath + '/radius')))
+            elif typeString == 'sphere':
+                self._actor = sphereActor(db.getVector(xpath + '/point1'), float(db.getValue(xpath + '/radius')))
+            elif typeString == 'cellZone':
+                self._actor = app.cellZoneActor(int(db.getValue(xpath + '/cellZone')))
+
+        return self._actor
+
+    def isDisplayOn(self):
+        return self._eyeOn
+
     def onClicked(self, checked):
         if self._eyeOn:
-            self._eyeOn = False
-            self._eye.setIcon(QIcon(str(resource.file('ionicons/eye-off-outline.svg'))))
+            self.displayOff()
         else:
-            self._eyeOn = True
-            self._eye.setIcon(QIcon(str(resource.file('ionicons/eye-outline.svg'))))
+            self.displayOn()
+
+        self.eyeToggled.emit(self._eyeOn)
 
     def check(self):
         self._button.setChecked(True)
@@ -80,8 +111,22 @@ class SectionRow(QWidget):
     def uncheck(self):
         self._button.setChecked(False)
 
+    def displayOn(self):
+        self._eyeOn = True
+        self._eye.setIcon(QIcon(str(resource.file('ionicons/eye-outline.svg'))))
+
+    def displayOff(self):
+        self._eyeOn = False
+        self._eye.setIcon(QIcon(str(resource.file('ionicons/eye-off-outline.svg'))))
+
+    def removeActor(self):
+        self._actor = None
+
 
 class InitializationWidget(QWidget):
+    displayChecked = Signal(SectionRow)
+    displayUnchecked = Signal(SectionRow)
+
     def __init__(self, rname: str):
         super().__init__()
         self._ui = Ui_initializationWidget()
@@ -126,11 +171,14 @@ class InitializationWidget(QWidget):
 
         sections: [str] = self._db.getList(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section/name')
         for name in sections:
-            if name not in self._rows:
-                row = SectionRow(name)
+            if name in self._rows:
+                self._rows[name].displayOff()
+            else:
+                row = SectionRow(name, self._rname)
                 self._rows[name] = row
                 row.toggled.connect(self._rowSelectionChanged)
                 row.doubleClicked.connect(self._rowDoubleClicked)
+                row.eyeToggled.connect(self._rowEyeToggled)
                 idx = self._ui.sectionListLayout.count() - 1
                 self._ui.sectionListLayout.insertWidget(idx, row)
 
@@ -202,8 +250,14 @@ class InitializationWidget(QWidget):
 
         name = self._sectionDialog.sectionName
 
-        if name not in self._rows:
-            row = SectionRow(name)
+        if name in self._rows:
+            row = self._rows[name]
+            self.displayUnchecked.emit(row)
+            row.removeActor()
+            if row.isDisplayOn():
+                self.displayChecked.emit(row)
+        else:
+            row = SectionRow(name, self._rname)
             self._rows[name] = row
             row.toggled.connect(self._rowSelectionChanged)
             row.doubleClicked.connect(self._rowDoubleClicked)
@@ -232,3 +286,10 @@ class InitializationWidget(QWidget):
 
         self._editOption()
 
+    def _rowEyeToggled(self, checked):
+        row: SectionRow = self.sender()
+
+        if checked:
+            self.displayChecked.emit(row)
+        else:
+            self.displayUnchecked.emit(row)

@@ -5,6 +5,7 @@ import qasync
 
 from PySide6.QtWidgets import QMessageBox
 
+from app import app
 from coredb import coredb
 from coredb.project import Project, SolverStatus
 from coredb.region_db import DEFAULT_REGION_NAME
@@ -27,29 +28,45 @@ class InitializationPage(ContentPage):
 
         self._connectSignalsSlots()
 
+        self._sectionActors = {}
+
         self._load()
 
     def _connectSignalsSlots(self):
         self._ui.initialize.clicked.connect(self._initialize)
 
     def showEvent(self, ev):
-        if ev.spontaneous():
-            return super().showEvent(ev)
-
-        for i in range(self._ui.tabWidget.count()):
-            widget: InitializationWidget = self._ui.tabWidget.widget(i)
-            widget.load()
+        if not ev.spontaneous():
+            for i in range(self._ui.tabWidget.count()):
+                widget: InitializationWidget = self._ui.tabWidget.widget(i)
+                widget.load()
 
         return super().showEvent(ev)
+
+    def hideEvent(self, ev):
+        if not ev.spontaneous():
+            view = app.renderingView
+            for actor in self._sectionActors.values():
+                if actor:
+                    view.removeActor(actor)
+
+            view.refresh()
+            self._sectionActors = {}
+
+        return super().hideEvent(ev)
 
     def _load(self):
         regions = self._db.getRegions()
         if len(regions) == 1 and not regions[0]:
             widget = InitializationWidget('')
+            widget.displayChecked.connect(self._showSectionActor)
+            widget.displayUnchecked.connect(self._hideSectionActor)
             self._ui.tabWidget.addTab(widget, DEFAULT_REGION_NAME)
         else:
             for rname in regions:
                 widget = InitializationWidget(rname)
+                widget.displayChecked.connect(self._showSectionActor)
+                widget.displayUnchecked.connect(self._hideSectionActor)
                 self._ui.tabWidget.addTab(widget, rname)
 
         for i in range(self._ui.tabWidget.count()):
@@ -112,3 +129,18 @@ class InitializationPage(ContentPage):
                     return
 
             progressDialog.finish(self.tr('Initialization Completed'))
+
+    def _showSectionActor(self, section):
+        view = app.renderingView
+
+        self._sectionActors[f'{section.rname}:{section.name}'] = section.actor()
+        view.addActor(section.actor())
+        view.refresh()
+
+    def _hideSectionActor(self, section):
+        view = app.renderingView
+
+        if self._sectionActors[f'{section.rname}:{section.name}']:
+            self._sectionActors[f'{section.rname}:{section.name}'] = None
+            view.removeActor(section.actor())
+            view.refresh()
