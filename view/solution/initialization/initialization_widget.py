@@ -230,7 +230,10 @@ class InitializationWidget(QWidget):
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
             return
 
-        del self._rows[self._currentRow.name]
+        row = self._rows.pop(self._currentRow.name)
+        if row.isDisplayOn():
+            self.displayUnchecked.emit(row)
+
         self._ui.sectionListLayout.removeWidget(self._currentRow)
         self._currentRow.close()
         self._currentRow = None
