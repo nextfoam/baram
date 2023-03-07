@@ -198,6 +198,8 @@ class Worker(QObject):
         if self.running:
             self.timer.stop()
 
+        self.process()
+
         for s in self.changingFiles.values():
             if s is not None:  # "s" could remain "None" if the solver stops by error as soon as it starts
                 s.f.close()
