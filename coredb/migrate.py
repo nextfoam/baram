@@ -202,20 +202,6 @@ def _version_2(root: etree.Element):
     for p in root.findall(f'.//boundaryCondition/wall/wallAdhesions/wallAdhesion', namespaces=_nsmap):
         if (w := p.find('equilibriumContactAngle', namespaces=_nsmap)) is not None:
             p.remove(w)
-    for p in root.findall(f'.//regions/region', namespaces=_nsmap):
-        materials = p.find('secondaryMaterials', namespaces=_nsmap).text.split()
-        bcs = p.findall(f'boundaryConditions/boundaryCondition', namespaces=_nsmap)
-        for bc in bcs:
-            volumeFractions = bc.find(f'volumeFractions', namespaces=_nsmap)
-            for mid in materials:
-                if volumeFractions.find(f'volumeFraction[material="{mid}"]', namespaces=_nsmap) is None:
-                    e = etree.fromstring(f'''
-                            <volumeFraction xmlns="http://www.baramcfd.org/baram">
-                                <material>{mid}</material>
-                                <fraction>0</fraction>
-                            </volumeFraction>
-                        ''')
-                    volumeFractions.append(e)
 
 
 _fTable = [
