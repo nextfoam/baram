@@ -19,7 +19,7 @@
    <string>WizardPage</string>
   </property>
   <property name="title">
-   <string>Working Directory</string>
+   <string>Project Directory</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
