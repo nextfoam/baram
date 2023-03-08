@@ -4,10 +4,12 @@
 from PySide6.QtWidgets import QWizard
 
 from coredb import coredb
+from coredb.models_db import MultiphaseModel
 from .case_wizard_ui import Ui_CaseWizard
 from .flow_type_page import FlowTypePage
 from .solver_type_page import SolverTypePage
 from .multiphase_model_page import MultiphaseModelPage
+from .gravity_model_page import GravityModelPage
 from .species_model_page import SpeciesModelPage
 from .workspace_page import WorkspacePage
 
@@ -34,6 +36,7 @@ class CaseWizard(QWizard):
         self.setPage(FLOW_TYPE, FlowTypePage(self))
         self.setPage(SOLVER_TYPE, SolverTypePage(self))
         self.setPage(MULTIPHASE_MODEL, MultiphaseModelPage(self))
+        self.setPage(GRAVITY_MODEL, GravityModelPage(self))
         self.setPage(SPECIES_MODEL, SpeciesModelPage(self))
         self.setStartId(WORKSPACE)
 
@@ -49,6 +52,11 @@ class CaseWizard(QWizard):
         elif curId == SOLVER_TYPE:
             return SPECIES_MODEL
         elif curId == MULTIPHASE_MODEL:
+            if self.field('multiphaseModel') == MultiphaseModel.OFF.value:
+                return SPECIES_MODEL
+            else:
+                return GRAVITY_MODEL
+        elif curId == GRAVITY_MODEL:
             return SPECIES_MODEL
         elif curId == SPECIES_MODEL:
             return LAST
@@ -57,6 +65,7 @@ class CaseWizard(QWizard):
 
     def accept(self):
         generalXPath = './/general'
+        gravityXPath = './/general/operatingConditions/gravity'
         modelsXPath = './/models'
 
         if self.field('flowTypeCompressible'):
@@ -71,10 +80,15 @@ class CaseWizard(QWizard):
         else:
             self._db.setValue(f'{generalXPath}/solverType', 'densityBased')
 
-        if self.field('multiphaseVolumeOfFluid'):
-            self._db.setValue(f'{modelsXPath}/multiphaseModels/model', 'volumeOfFluid')
+        self._db.setValue(f'{modelsXPath}/multiphaseModels/model', self.field('multiphaseModel'))
+
+        if self.field('multiphaseModels') != MultiphaseModel.OFF.value:
+            self._db.setAttribute(f'{gravityXPath}', 'disabled', 'false')
+            self._db.setValue(f'{gravityXPath}/direction/x', self.field('gravityX'))
+            self._db.setValue(f'{gravityXPath}/direction/y', self.field('gravityY'))
+            self._db.setValue(f'{gravityXPath}/direction/z', self.field('gravityZ'))
         else:
-            self._db.setValue(f'{modelsXPath}/multiphaseModels/model', 'off')
+            self._db.setAttribute(f'{gravityXPath}', 'disabled', 'true')
 
         if self.field('speciesModelsInclude'):
             self._db.setValue(f'{modelsXPath}/speciesModels', 'on')
