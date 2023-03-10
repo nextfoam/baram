@@ -61,6 +61,10 @@ class App(QObject):
     def showMesh(self):
         self._vtkMesh.activate()
 
+    def hideMesh(self):
+        if self._vtkMesh:
+            self._vtkMesh.deactivate()
+
     def close(self):
         self._closed = True
 

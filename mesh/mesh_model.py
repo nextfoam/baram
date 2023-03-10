@@ -122,6 +122,7 @@ class MeshModel(RenderingModel):
             if actorInfo.visibility:
                 self._view.removeActor(actorInfo.actor(self._featureMode))
 
+        self._view.refresh()
         self._activation = False
 
     def setActorInfo(self, id_, actorInfo):

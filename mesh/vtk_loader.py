@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor
 from vtkmodules.vtkIOLegacy import vtkPolyDataReader
-from vtkmodules.vtkCommonCore import vtkPoints, vtkMath
+from vtkmodules.vtkCommonCore import vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkHexahedron, vtkCellArray, vtkUnstructuredGrid
 from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 from vtkmodules.vtkFiltersSources import vtkLineSource, vtkSphereSource
 from vtkmodules.vtkFiltersCore import vtkTubeFilter
-from .mesh_model import ActorInfo
 
 
 def loadVtkFile(file):
@@ -24,10 +23,7 @@ def loadVtkFile(file):
     actor = vtkQuadricLODActor()    # vtkActor()
     actor.SetMapper(mapper)
 
-    actorInfo = ActorInfo(actor)
-    actorInfo.visibility = False
-
-    return actorInfo
+    return actor
 
 
 def hexActor(point1, point2):
