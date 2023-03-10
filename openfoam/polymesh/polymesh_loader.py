@@ -20,8 +20,7 @@ from coredb.project import Project
 from coredb.cell_zone_db import CellZoneDB
 from openfoam.file_system import FileSystem, FileLoadingError
 from openfoam.constant.region_properties import RegionProperties
-from mesh.vtk_loader import ActorInfo
-from mesh.mesh_model import MeshModel
+from mesh.mesh_model import ActorInfo, MeshModel
 
 
 logger = logging.getLogger(__name__)
