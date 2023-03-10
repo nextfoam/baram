@@ -137,7 +137,7 @@ class MaterialsWidget(QWidget):
             writer.append(self._xpath + '/phaseInteractions/surfaceTensions/material2', lists[1], None)
             writer.append(self._xpath + '/phaseInteractions/surfaceTensions/surfaceTension', lists[2], None)
         else:
-            writer.append(self._xpath + '/material', self._ui.material.currentData())
+            writer.append(self._xpath + '/material', self._ui.material.currentData(), None)
 
         return True
 
