@@ -190,19 +190,6 @@ def _version_2(root: etree.Element):
         if (e := p.find('surfaceTension', namespaces=_nsmap)) is not None:
             p.remove(e)
 
-    # ToDo: release 전에 삭제 (release에 포함되지 않은 개발 버전에만 적용)
-    for p in root.findall(f'.//boundaryCondition/wall', namespaces=_nsmap):
-        if (w := p.find('wallAdhesion', namespaces=_nsmap)) is not None:
-            p.remove(w)
-    for p in root.findall(f'.//boundaryCondition/wall/wallAdhesions', namespaces=_nsmap):
-        if p.find('limit', namespaces=_nsmap) is None:
-            e = etree.Element(f'{{{_ns}}}limit')
-            e.text = 'none'
-            p.insert(1, e)
-    for p in root.findall(f'.//boundaryCondition/wall/wallAdhesions/wallAdhesion', namespaces=_nsmap):
-        if (w := p.find('equilibriumContactAngle', namespaces=_nsmap)) is not None:
-            p.remove(w)
-
 
 _fTable = [
     None,
