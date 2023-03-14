@@ -14,7 +14,7 @@ from .general_page_ui import Ui_GeneralPage
 
 logger = logging.getLogger(__name__)
 
-GRAVITY_XPATH = GeneralDB.OPERATING_CONDITIONS_XPATH + '/gravity/direction'
+GRAVITY_XPATH = GeneralDB.OPERATING_CONDITIONS_XPATH + '/gravity'
 
 
 class GeneralPage(ContentPage):
@@ -34,9 +34,9 @@ class GeneralPage(ContentPage):
 
         writer.append(GeneralDB.GENERAL_XPATH + '/timeTransient',
                       'true' if self._ui.transient_.isChecked() else 'false', None)
-        writer.append(GRAVITY_XPATH + '/x', self._ui.gravityX.text(), self.tr('Gravity X'))
-        writer.append(GRAVITY_XPATH + '/y', self._ui.gravityY.text(), self.tr('Gravity Y'))
-        writer.append(GRAVITY_XPATH + '/z', self._ui.gravityZ.text(), self.tr('Gravity Z'))
+        writer.append(GRAVITY_XPATH + '/direction/x', self._ui.gravityX.text(), self.tr('Gravity X'))
+        writer.append(GRAVITY_XPATH + '/direction/y', self._ui.gravityY.text(), self.tr('Gravity Y'))
+        writer.append(GRAVITY_XPATH + '/direction/z', self._ui.gravityZ.text(), self.tr('Gravity Z'))
         writer.append(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure',
                       self._ui.operatingPressure.text(), self.tr("Operating Pressure"))
 
@@ -55,8 +55,10 @@ class GeneralPage(ContentPage):
         else:
             self._ui.steady.setChecked(True)
 
-        self._ui.gravityX.setText(self._db.getValue(GRAVITY_XPATH + '/x'))
-        self._ui.gravityY.setText(self._db.getValue(GRAVITY_XPATH + '/y'))
-        self._ui.gravityZ.setText(self._db.getValue(GRAVITY_XPATH + '/z'))
+        self._ui.gravityX.setText(self._db.getValue(GRAVITY_XPATH + '/direction/x'))
+        self._ui.gravityY.setText(self._db.getValue(GRAVITY_XPATH + '/direction/y'))
+        self._ui.gravityZ.setText(self._db.getValue(GRAVITY_XPATH + '/direction/z'))
         self._ui.operatingPressure.setText(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
+
+        self._ui.gravity.setDisabled(self._db.getAttribute(GRAVITY_XPATH, 'disabled') == 'true')
 

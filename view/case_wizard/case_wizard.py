@@ -71,9 +71,11 @@ class CaseWizard(QWizard):
         if self.field('flowTypeCompressible'):
             self._db.setValue(f'{generalXPath}/flowType', 'compressible')
             self._db.setValue(f'{modelsXPath}/energyModels', 'on')
+            self._db.setAttribute(f'{gravityXPath}', 'disabled', 'true')
         else:
             self._db.setValue(f'{generalXPath}/flowType', 'incompressible')
             self._db.setValue(f'{modelsXPath}/energyModels', 'off')
+            self._db.setAttribute(f'{gravityXPath}', 'disabled', 'false')
 
         if self.field('solverTypePressureBased'):
             self._db.setValue(f'{generalXPath}/solverType', 'pressureBased')
@@ -83,7 +85,6 @@ class CaseWizard(QWizard):
         self._db.setValue(f'{modelsXPath}/multiphaseModels/model', self.field('multiphaseModel'))
 
         if self.field('multiphaseModels') != MultiphaseModel.OFF.value:
-            self._db.setAttribute(f'{gravityXPath}', 'disabled', 'false')
             self._db.setValue(f'{gravityXPath}/direction/x', self.field('gravityX'))
             self._db.setValue(f'{gravityXPath}/direction/y', self.field('gravityY'))
             self._db.setValue(f'{gravityXPath}/direction/z', self.field('gravityZ'))
