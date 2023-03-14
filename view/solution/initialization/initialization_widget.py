@@ -38,6 +38,7 @@ class SectionRow(QWidget):
 
         self._name = name
         self._rname = rname
+        self._key = f'{rname}:{name}'
         self._actor = None
 
         layout = QHBoxLayout(self)
@@ -72,8 +73,8 @@ class SectionRow(QWidget):
         self._button.setText(value)
 
     @property
-    def rname(self):
-        return self._rname
+    def key(self):
+        return f'{self._rname}:{self._name}'
 
     def actor(self):
         if self._actor is None:

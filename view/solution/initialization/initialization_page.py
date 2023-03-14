@@ -133,14 +133,14 @@ class InitializationPage(ContentPage):
     def _showSectionActor(self, section):
         view = app.renderingView
 
-        self._sectionActors[f'{section.rname}:{section.name}'] = section.actor()
+        self._sectionActors[section.key] = section.actor()
         view.addActor(section.actor())
         view.refresh()
 
     def _hideSectionActor(self, section):
         view = app.renderingView
 
-        if self._sectionActors[f'{section.rname}:{section.name}']:
-            self._sectionActors[f'{section.rname}:{section.name}'] = None
+        if section.key in self._sectionActors and self._sectionActors[section.key]:
+            self._sectionActors[section.key] = None
             view.removeActor(section.actor())
             view.refresh()
