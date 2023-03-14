@@ -108,11 +108,20 @@ class InitializationPage(ContentPage):
             caseGenerator = CaseGenerator()
             caseGenerator.progress.connect(progressDialog.setLabelText)
 
+            progressDialog.showCancelButton()
+            progressDialog.cancelClicked.connect(caseGenerator.cancel)
+            progressDialog.open()
+
             try:
-                await caseGenerator.setupCase()
+                cancelled = await caseGenerator.setupCase()
+                if cancelled:
+                    progressDialog.finish(self.tr('Initialization cancelled'))
+                    return
             except RuntimeError as e:
                 progressDialog.finish(self.tr('Case generation failed. - ') + str(e))
                 return
+
+            progressDialog.hideCancelButton()
 
             sectionNames: [str] = self._db.getList(f'.//regions/region/initialization/advanced/sections/section/name')
             if len(sectionNames) > 0:

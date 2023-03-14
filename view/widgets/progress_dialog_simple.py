@@ -25,10 +25,20 @@ class ProgressDialogSimple(QDialog):
 
         self._ui.button.setVisible(cancelable)
 
-        self._ui.button.clicked.connect(self.cancelClicked)
+        self._ui.button.clicked.connect(self._cancelClicked)
+
+    def isCanceled(self):
+        return self._canceled
 
     def setLabelText(self, text: str):
         self._ui.label.setText(text)
+
+    def showCancelButton(self, text='Cancel'):
+        self._ui.button.setText(text)
+        self._ui.button.setVisible(True)
+
+    def hideCancelButton(self):
+        self._ui.button.setVisible(False)
 
     def finish(self, text: str):
         self._ui.label.setText(text)
@@ -40,3 +50,9 @@ class ProgressDialogSimple(QDialog):
 
     def cancel(self):
         self.close()
+
+    def _cancelClicked(self):
+        self.cancelClicked.emit()
+        self._canceled = True
+        self.close()
+

@@ -19,6 +19,11 @@ from coredb.project import Project
 from coredb.app_settings import AppSettings
 from coredb import coredb
 from resources import resource
+from mesh.mesh_manager import MeshManager, MeshType
+from openfoam.file_system import FileSystem
+from openfoam.case_generator import CaseGenerator
+from openfoam.polymesh.polymesh_loader import PolyMeshLoader
+from openfoam.run import hasUtility
 from view.setup.general.general_page import GeneralPage
 from view.setup.materials.material_page import MaterialPage
 from view.setup.models.models_page import ModelsPage
@@ -30,12 +35,7 @@ from view.solution.monitors.monitors_page import MonitorsPage
 from view.solution.initialization.initialization_page import InitializationPage
 from view.solution.run_conditions.run_conditions_page import RunConditionsPage
 from view.solution.run.process_information_page import ProcessInformationPage
-from view.widgets.progress_dialog import ProgressDialog
-from mesh.mesh_manager import MeshManager, MeshType
-from openfoam.file_system import FileSystem
-from openfoam.case_generator import CaseGenerator
-from openfoam.polymesh.polymesh_loader import PolyMeshLoader
-from openfoam.run import hasUtility
+from view.widgets.progress_dialog_simple import ProgressDialogSimple
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu.settings_scaling import SettingScalingDialog
@@ -298,7 +298,10 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _vtkChanged(self):
-        progress = ProgressDialog(self, self.tr('Case Loading.'), self.tr('Loading Mesh.'))
+        progressDialog = ProgressDialogSimple(self, self.tr('Case Loading.'))
+        progressDialog.open()
+
+        progressDialog.setLabelText(self.tr('Loading Mesh.'))
 
         # Workaround to give some time for QT to set up timer or event loop.
         # This workaround is not necessary on Windows because BARAM for Windows
@@ -308,7 +311,7 @@ class MainWindow(QMainWindow):
         await PolyMeshLoader().loadVtk()
 
         self.vtkMeshLoaded()
-        progress.close()
+        progressDialog.close()
 
     def _changeForm(self, currentMenu, previousMenu=-1):
         if previousMenu > -1:
@@ -386,10 +389,14 @@ class MainWindow(QMainWindow):
             path.mkdir(exist_ok=True)
 
             if self._saveCurrentPage():
-                progress = ProgressDialog(self, self.tr('Save As'), self.tr('Saving case'))
+                progressDialog = ProgressDialogSimple(self, self.tr('Save As'))
+                progressDialog.open()
+
+                progressDialog.setLabelText(self.tr('Saving case'))
+
                 await asyncio.to_thread(FileSystem.saveAs, path)
                 self._project.saveAs(path)
-                progress.close()
+                progressDialog.close()
 
     def _importMesh(self, meshType, fileFilter=None):
         if coredb.CoreDB().getRegions():

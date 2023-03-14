@@ -157,7 +157,8 @@ class FileSystem:
     @classmethod
     def saveAs(cls, projectPath):
         targetPath = projectPath / cls.CASE_DIRECTORY_NAME
-        shutil.copytree(cls._casePath, targetPath, dirs_exist_ok=True)
+        if cls._casePath.exists():
+            shutil.copytree(cls._casePath, targetPath, dirs_exist_ok=True)
         cls._setCaseRoot(targetPath)
 
     @classmethod

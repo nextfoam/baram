@@ -18,7 +18,6 @@ from openfoam.system.control_dict import ControlDict
 from openfoam.system.fv_schemes import FvSchemes
 import openfoam.solver
 from openfoam.file_system import FileSystem
-from view.widgets.progress_dialog import ProgressDialog
 from view.widgets.content_page import ContentPage
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
 from .process_information_page_ui import Ui_ProcessInformationPage
@@ -105,10 +104,14 @@ class ProcessInformationPage(ContentPage):
         self._waitingStop()
 
     def _waitingStop(self):
-        message = self.tr('Waiting for the solver to stop after final calculation. You can "Force Stop",\n'
-                          'yet it could corrupt the final iteration result.')
-        self._stopDialog = ProgressDialog(self, self.tr('Calculation Canceling'), message)
-        self._stopDialog.setButtonToCancel(self._forceStop, self.tr('Force Stop'))
+        self._stopDialog = ProgressDialogSimple(self, self.tr('Calculation Canceling'))
+        self._stopDialog.open()
+
+        self._stopDialog.setLabelText(
+            self.tr('Waiting for the solver to stop after final calculation. You can "Force Stop",\n'
+                    'yet it could corrupt the final iteration result.'))
+        self._stopDialog.showCancelButton(self.tr('Force Stop'))
+        self._stopDialog.cancelClicked.connect(self._forceStop)
 
     def _forceStop(self):
         if self._project.solverStatus() == SolverStatus.RUNNING:

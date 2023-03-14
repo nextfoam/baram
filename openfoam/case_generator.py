@@ -53,57 +53,65 @@ class CaseGenerator(QObject):
         self._errors = None
         self._proc: Optional[asyncio.subprocess.Process] = None
         self._cancelled: bool = False
+        self._files = None
 
     def getErrors(self):
         return self._errors
 
-    def _generateFiles(self):
+    def _gatherFiles(self):
         if errors := self._validate():
             return errors
 
         regions = self._db.getRegions()
+        self._files = []
         for rname in regions:
             region = RegionDB.getRegionProperties(rname)
 
             FileSystem.initRegionDirs(rname)
 
-            ThermophysicalProperties(rname).build().write()
-            OperatingConditions(rname).build().write()
-            MRFProperties(rname).build().write()
-            DynamicMeshDict(rname).build().write()
+            self._files.append(ThermophysicalProperties(rname))
+            self._files.append(OperatingConditions(rname))
+            self._files.append(MRFProperties(rname))
+            self._files.append(DynamicMeshDict(rname))
 
             if region.isFluid():
-                TurbulenceProperties(rname).build().write()
-                TransportProperties(rname).build().write()
+                self._files.append(TurbulenceProperties(rname))
+                self._files.append(TransportProperties(rname))
 
-            Boundary(rname).build().write()
+            self._files.append(Boundary(rname))
 
             processorNo = 0
             while path := FileSystem.processorPath(processorNo):
-                Boundary(rname, processorNo).build().write()
-                self._generateBoundaryConditionsFiles(region, path, processorNo)
+                self._files.append(Boundary(rname, processorNo))
+                self._gatherBoundaryConditionsFiles(region, path, processorNo)
                 processorNo += 1
 
             if processorNo == 0:
-                self._generateBoundaryConditionsFiles(region, FileSystem.caseRoot())
+                self._gatherBoundaryConditionsFiles(region, FileSystem.caseRoot())
 
-            FvSchemes(rname).build().write()
-            FvSolution(rname).build().write()
-            FvOptions(rname).build().write()
-            DecomposeParDict(rname).build().write()
-            SetFieldsDict(rname).build().write()
+            self._files.append(FvSchemes(rname))
+            self._files.append(FvSolution(rname))
+            self._files.append(FvOptions(rname))
+            self._files.append(DecomposeParDict(rname))
+            self._files.append(SetFieldsDict(rname))
 
         if len(regions) > 1:
-            FvSolution().build().write()
-            RegionProperties().build().write()
+            self._files.append(FvSolution())
+            self._files.append(RegionProperties())
 
-        G().build().write()
+        self._files.append(G())
 
-        ControlDict().build().write()
+        self._files.append(ControlDict())
 
-        DecomposeParDict().build().write()
+        self._files.append(DecomposeParDict())
 
         return errors
+
+    def _generateFiles(self):
+        for file in self._files:
+            if self._cancelled:
+                return
+            file.build().write()
 
     @classmethod
     def createCase(cls):
@@ -125,26 +133,26 @@ class CaseGenerator(QObject):
 
         return errors
 
-    def _generateBoundaryConditionsFiles(self, region, path, processorNo=None):
+    def _gatherBoundaryConditionsFiles(self, region, path, processorNo=None):
         times = [d.name for d in path.glob('[0-9]*')]
         time = max(times, key=lambda x: float(x)) if times else '0'
 
-        Alphat(region, time, processorNo).build().write()
+        self._files.append(Alphat(region, time, processorNo))
 
-        K(region, time, processorNo).build().write()
-        Nut(region, time, processorNo).build().write()
-        Epsilon(region, time, processorNo).build().write()
-        Omega(region, time, processorNo).build().write()
-        NuTilda(region, time, processorNo).build().write()
+        self._files.append(K(region, time, processorNo))
+        self._files.append(Nut(region, time, processorNo))
+        self._files.append(Epsilon(region, time, processorNo))
+        self._files.append(Omega(region, time, processorNo))
+        self._files.append(NuTilda(region, time, processorNo))
 
-        P(region, time, processorNo, 'p_rgh').build().write()
-        P(region, time, processorNo, 'p').build().write()
-        U(region, time, processorNo).build().write()
-        T(region, time, processorNo).build().write()
+        self._files.append(P(region, time, processorNo, 'p_rgh'))
+        self._files.append(P(region, time, processorNo, 'p'))
+        self._files.append(U(region, time, processorNo))
+        self._files.append(T(region, time, processorNo))
 
         if ModelsDB.isMultiphaseModelOn():
             for mid in region.secondaryMaterials:
-                Alpha(region, time, processorNo, mid).build().write()
+                self._files.append(Alpha(region, time, processorNo, mid))
 
     async def setupCase(self):
         self._cancelled = False
@@ -185,6 +193,7 @@ class CaseGenerator(QObject):
 
             self.progress.emit(self.tr(f'Generating Files...'))
 
+            self._gatherFiles()
             errors = await asyncio.to_thread(self._generateFiles)
             if self._cancelled:
                 return self._cancelled
