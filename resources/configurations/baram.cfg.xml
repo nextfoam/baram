@@ -5,7 +5,7 @@
         <timeTransient>false</timeTransient>
         <solverType>pressureBased</solverType>
         <operatingConditions>
-            <gravity disabled="true">
+            <gravity disabled="false">
                 <direction>
                     <x>0</x>
                     <y>0</y>

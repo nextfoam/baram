@@ -190,6 +190,9 @@ def _version_2(root: etree.Element):
         if (e := p.find('surfaceTension', namespaces=_nsmap)) is not None:
             p.remove(e)
 
+    if (p := root.find('general/operatingConditions/gravity', namespaces=_nsmap)) is not None:
+        p.set('disabled', 'false')
+
 
 _fTable = [
     None,
