@@ -17,6 +17,11 @@ class InitializationDB:
             + float(db.getValue('.//operatingConditions/pressure'))
 
     @classmethod
+    def getGaugePressure(cls, rname: str) -> float:
+        db = coredb.CoreDB()
+        return float(db.getValue(f'.//regions/region[name="{rname}"]/initialization/initialValues/pressure'))
+
+    @classmethod
     def getTemperature(cls, rname: str) -> float:
         return float(coredb.CoreDB().getValue(f'.//regions/region[name="{rname}"]/initialization/initialValues/temperature'))
 
