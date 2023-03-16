@@ -58,14 +58,29 @@ else:
               + tmpiPath + os.pathsep \
               + str(OPENFOAM / 'tlib')
 
-    if 'LD_LIBRARY_PATH' not in os.environ:
-        os.environ['LD_LIBRARY_PATH'] = ''
+    if platform.system() == 'Darwin':
+        library = library + os.pathsep + str(Path(tmpiPath).joinpath('lib'))
+
+    if platform.system() == 'Darwin':
+        LIBRARY_PATH_NAME = 'DYLD_LIBRARY_PATH'
+    else:
+        LIBRARY_PATH_NAME = 'LD_LIBRARY_PATH'
+
+    if LIBRARY_PATH_NAME not in os.environ:
+        os.environ[LIBRARY_PATH_NAME] = ''
 
     ENV = os.environ.copy()
     ENV.update({
         'WM_PROJECT_DIR': str(OPENFOAM),
-        'LD_LIBRARY_PATH': library + os.pathsep + os.environ['LD_LIBRARY_PATH']
+        LIBRARY_PATH_NAME: library + os.pathsep + os.environ[LIBRARY_PATH_NAME]
     })
+
+    if platform.system() == 'Darwin':
+        ENV['OPAL_PREFIX'] = tmpiPath
+        ENV['OPAL_LIBDIR'] = str(Path(tmpiPath).joinpath('lib'))
+        ENV.update({
+            'PATH': str(Path(tmpiPath).joinpath('bin')) + os.pathsep + os.environ['PATH']
+        })
 
 
 def openSolverProcess(cmd, casePath, inParallel):
@@ -102,7 +117,7 @@ def launchSolverOnLinux(solver: str, casePath: Path, uuid, np: int = 1) -> (int,
     process = openSolverProcess(args, casePath, np > 1)
     process.wait()
 
-    processes = [p for p in psutil.process_iter(['pid', 'cmdline', 'create_time']) if uuid in p.info['cmdline']]
+    processes = [p for p in psutil.process_iter(['pid', 'cmdline', 'create_time']) if (p.info['cmdline'] is not None) and (uuid in p.info['cmdline'])]
     if processes:
         ps = max(processes, key=lambda p: p.create_time())
         return ps.pid, ps.create_time()

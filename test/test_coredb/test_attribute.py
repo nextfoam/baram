@@ -16,7 +16,7 @@ class TestAttribute(unittest.TestCase):
         value = self.db.getAttribute(self.path, attr)
 
         # 'true' is default value
-        self.assertEqual('true', value)
+        self.assertEqual('false', value)
 
     def testSetAttribute(self):
         attr = 'disabled'

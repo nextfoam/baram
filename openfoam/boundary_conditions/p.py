@@ -4,6 +4,7 @@
 from coredb.project import Project
 from coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from coredb.general_db import GeneralDB
+from coredb.initialization_db import InitializationDB
 from coredb.region_db import RegionDB
 from openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 import openfoam.solver
@@ -42,7 +43,7 @@ class P(BoundaryCondition):
     def __init__(self, region: RegionDB.Region, time, processorNo, field):
         super().__init__(region, time, processorNo, field)
 
-        self._initialGaugePressure = float(self._db.getValue('.//initialization/initialValues/pressure'))
+        self._initialGaugePressure = InitializationDB.getGaugePressure(region.rname)
         self._operatingPressure = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
 
         self._field = field
