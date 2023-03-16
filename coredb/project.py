@@ -164,9 +164,7 @@ class _Project(QObject):
     def opened(self):
         self.projectOpened.emit()
 
-    def _open(self, directory, route=ProjectOpenType.EXISTING):
-        path = Path(directory).resolve()
-
+    def _open(self, path: Path, route=ProjectOpenType.EXISTING):
         self._settings = self.LocalSettings(path)
         self._projectSettings = ProjectSettings()
 

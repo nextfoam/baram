@@ -27,7 +27,7 @@ class CaseWizard(QWizard):
     def __init__(self, *args, **kwargs):
         super(CaseWizard, self).__init__(*args, **kwargs)
 
-        self._db = coredb.CoreDB()
+        self._db = coredb.createDB()
 
         self._ui = Ui_CaseWizard()
         self._ui.setupUi(self)
@@ -97,3 +97,8 @@ class CaseWizard(QWizard):
             self._db.setValue(f'{modelsXPath}/speciesModels', 'off')
 
         super().accept()
+
+    def reject(self):
+        coredb.destroy()
+
+        super().reject()

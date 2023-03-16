@@ -21,6 +21,7 @@ import resource_rc
 
 from app import app
 from view.main_window.start_window import Baram
+from view.main_window.main_window import MainWindow
 from coredb.app_settings import AppSettings
 
 
@@ -30,6 +31,10 @@ def handle_exception(eType, eValue, eTraceback):
         return
 
     logger.critical("Uncaught exception", exc_info=(eType, eValue, eTraceback))
+
+
+def create_main_window():
+    app.setMainWindow(MainWindow())
 
 
 sys.excepthook = handle_exception
@@ -58,6 +63,7 @@ if __name__ == '__main__':
     #app.setStyleSheet(app.styleSheet() + '\n' + stream.readAll())
 
     app.setLanguage(AppSettings.getLanguage())
+    app.projectPrepared.connect(create_main_window)
     background_tasks = set()
 
     baram = Baram()

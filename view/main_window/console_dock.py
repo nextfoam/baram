@@ -79,7 +79,7 @@ class ConsoleDock(TabifiedDock):
         self.setWindowTitle(self.tr("Console"))
         self._lineWrap.setText(self.tr('Line-Wrap'))
 
-    def _mainWindowClosed(self, result):
+    def _mainWindowClosed(self):
         if self.readTask is not None:
             self.readTask.cancel()
 

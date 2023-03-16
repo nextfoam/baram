@@ -7,15 +7,15 @@ from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 
 from openfoam import run
-from .recent_widget_ui import Ui_RecentWidget
+from .project_widget_ui import Ui_ProjectWidget
 
 
-class RecentWidget(QWidget):
-    removeClicked = Signal(QWidget)
+class ProjectWidget(QWidget):
+    removeClicked = Signal()
 
     def __init__(self, settings):
         super().__init__()
-        self._ui = Ui_RecentWidget()
+        self._ui = Ui_ProjectWidget()
         self._ui.setupUi(self)
 
         path = settings.path
@@ -36,5 +36,5 @@ class RecentWidget(QWidget):
         return self._ui.path.text()
 
     def _remove(self):
-        self.removeClicked.emit(self)
+        self.removeClicked.emit()
 

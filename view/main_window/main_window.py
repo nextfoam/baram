@@ -11,7 +11,7 @@ import qasync
 import asyncio
 
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
-from PySide6.QtCore import Qt, QThreadPool, Signal, QEvent, QTimer
+from PySide6.QtCore import Qt, QThreadPool, Signal, QEvent, QTimer, QRect
 from PySide6.QtGui import QIcon
 
 from app import app
@@ -82,7 +82,7 @@ class MenuPage:
 
 
 class MainWindow(QMainWindow):
-    windowClosed = Signal(CloseType)
+    windowClosed = Signal()
 
     def __init__(self):
         super().__init__()
@@ -134,7 +134,6 @@ class MainWindow(QMainWindow):
         self._dialog = None
 
         self._threadPool = QThreadPool()
-        self._quit = True
 
         self._closeType = CloseType.EXIT_APP
 
@@ -155,6 +154,10 @@ class MainWindow(QMainWindow):
 
         # self._updateMenuEnables()
         self._ui.menuMesh.setDisabled(True)
+
+        rect = AppSettings.getLastMainWindowPosition()
+        self.setGeometry(QRect(rect[0], rect[1], rect[2], rect[3]))
+
         self.show()
 
     def renderingView(self):
@@ -184,9 +187,18 @@ class MainWindow(QMainWindow):
 
         logging.getLogger().removeHandler(self._handler)
 
-        app.close()
+        rect = self.geometry()
+        getRect = [rect.x(), rect.y(), rect.width(), rect.height()]
+        AppSettings.updateLastMainWindowPosition(getRect)
+
+        self.windowClosed.emit()
+
+        if self._closeType == CloseType.CLOSE_PROJECT:
+            app.restart()
+        else:
+            app.close()
+
         event.accept()
-        self.windowClosed.emit(self._closeType)
 
     def changeEvent(self, event):
         if event.type() == QEvent.LanguageChange:

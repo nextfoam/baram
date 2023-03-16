@@ -67,9 +67,7 @@ class ChartDock(TabifiedDock):
     def startDrawing(self):
         self._timeMax = None
         self._timeMin = None
-        self.solverInfoManager.startCollecting(
-            Path(FileSystem.caseRoot()).resolve(),
-            coredb.CoreDB().getRegions())
+        self.solverInfoManager.startCollecting(Path(FileSystem.caseRoot()).resolve(), coredb.CoreDB().getRegions())
 
     def stopDrawing(self):
         self.solverInfoManager.stopCollecting()
@@ -82,7 +80,7 @@ class ChartDock(TabifiedDock):
         else:
             self.stopDrawing()
 
-    def _mainWindowClosed(self, result):
+    def _mainWindowClosed(self):
         self.stopDrawing()
 
     def _projectChanged(self):

@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import QObject, Signal, QTranslator, QCoreApplication, QLocale
+from PySide6.QtWidgets import QApplication
 
 from resources import resource
 
@@ -17,6 +18,8 @@ else:
 
 class App(QObject):
     meshUpdated = Signal()
+    projectPrepared = Signal()
+    closedForRestart = Signal()
 
     def __init__(self):
         super().__init__()
@@ -67,6 +70,11 @@ class App(QObject):
 
     def close(self):
         self._closed = True
+        QApplication.quit()
+
+    def restart(self):
+        self._closed = True
+        self.closedForRestart.emit()
 
     def setLanguage(self, language):
         QCoreApplication.removeTranslator(self._translator)

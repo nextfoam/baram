@@ -63,7 +63,7 @@ class MonitorDock(TabifiedDock):
         elif status == SolverStatus.ENDED:
             self._stopMonitor()
 
-    def _mainWindowClosed(self, result):
+    def _mainWindowClosed(self):
         self._clear()
 
     def _clear(self):
