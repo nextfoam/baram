@@ -18,8 +18,7 @@ else:
 
 class App(QObject):
     meshUpdated = Signal()
-    projectPrepared = Signal()
-    closedForRestart = Signal()
+    restarted = Signal()
 
     def __init__(self):
         super().__init__()
@@ -27,8 +26,8 @@ class App(QObject):
         self._window = None
         self._vtkMesh = None
         self._cellZoneActors = None
-        self._closed = False
         self._translator = None
+        self._plug = None
 
     @property
     def window(self):
@@ -38,6 +37,13 @@ class App(QObject):
     def renderingView(self):
         return self._window.renderingView()
 
+    @property
+    def plug(self):
+        return self._plug
+
+    def setPlug(self, plug):
+        self._plug = plug
+
     def vtkMesh(self):
         return self._vtkMesh
 
@@ -45,11 +51,11 @@ class App(QObject):
         return self._cellZoneActors[czid].face
 
     def closed(self):
-        return self._closed
+        return self._window is None
 
-    def setMainWindow(self, window):
-        self._window = window
-        self._closed = False
+    def openMainWindow(self):
+        self._window = self._plug.createMainWindow()
+        self._window.show()
 
     def updateVtkMesh(self, mesh, cellZoneActors):
         if self._vtkMesh:
@@ -69,12 +75,12 @@ class App(QObject):
             self._vtkMesh.deactivate()
 
     def close(self):
-        self._closed = True
+        self._window = None
         QApplication.quit()
 
     def restart(self):
-        self._closed = True
-        self.closedForRestart.emit()
+        self._window = None
+        self.restarted.emit()
 
     def setLanguage(self, language):
         QCoreApplication.removeTranslator(self._translator)

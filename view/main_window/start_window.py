@@ -14,7 +14,6 @@ from filelock import Timeout
 from app import app
 from coredb.app_settings import AppSettings
 from coredb.project import Project, ProjectOpenType
-from view.case_wizard.case_wizard import CaseWizard
 from view.widgets.project_selector import ProjectSelector
 
 
@@ -27,11 +26,11 @@ class Baram(QObject):
 
         self._projectSelector = None
         self._applicationLock = None
-        app.closedForRestart.connect(self._restart)
+
+        app.restarted.connect(self._restart)
+        app.plug.projectCreated.connect(self._openNewProject)
 
     async def start(self):
-        Project.close()
-
         try:
             self._applicationLock = AppSettings.acquireLock(5)
         except Timeout:
@@ -39,9 +38,12 @@ class Baram(QObject):
 
         self._projectSelector = ProjectSelector()
         self._projectSelector.finished.connect(self._projectSelectorClosed, type=Qt.ConnectionType.QueuedConnection)
-        self._projectSelector.actionNewSelected.connect(self._openCaseWizard)
-        self._projectSelector.projectSelected.connect(self._openProject)
+        self._projectSelector.actionNewSelected.connect(self._createProject)
+        self._projectSelector.projectSelected.connect(self._openExistingProject)
         self._projectSelector.open()
+
+    def _createProject(self):
+        app.plug.createProject(self._projectSelector)
 
     def _projectSelectorClosed(self, result):
         self._applicationLock.release()
@@ -49,29 +51,22 @@ class Baram(QObject):
         if result == QDialog.Rejected:
             QApplication.quit()
 
-    def _openCaseWizard(self):
-        self._caseWizard = CaseWizard(self._projectSelector)
-        self._caseWizard.accepted.connect(self._createCaseFromWizard)
-        self._caseWizard.open()
-
-    def _createCaseFromWizard(self):
-        path = Path(self._caseWizard.field('projectLocation'))
-        path.mkdir()
-        self._openProject(path, ProjectOpenType.WIZARD)
-
     @qasync.asyncSlot()
     async def _restart(self):
         Project.close()
         await self.start()
 
-    def _openProject(self, directory, openType=ProjectOpenType.EXISTING):
+    def _openExistingProject(self, directory):
+        self._openProject(Path(directory), ProjectOpenType.EXISTING)
+
+    def _openNewProject(self, path):
+        self._openProject(path, ProjectOpenType.NEW)
+
+    def _openProject(self, path, openType):
         try:
-            path = Path(directory)
-
-            Project.open(path, openType)
+            Project.open(path.resolve(), openType)
             self._projectSelector.accept()
-
-            app.projectPrepared.emit()
+            app.openMainWindow()
 
             return
         except FileNotFoundError:
@@ -85,4 +80,3 @@ class Baram(QObject):
                                  self.tr('Fail to open case\n' + str(ex)))
 
         Project.close()
-        return False

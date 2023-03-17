@@ -158,8 +158,6 @@ class MainWindow(QMainWindow):
         rect = AppSettings.getLastMainWindowPosition()
         self.setGeometry(QRect(rect[0], rect[1], rect[2], rect[3]))
 
-        self.show()
-
     def renderingView(self):
         return self._renderingDock.view
 
@@ -191,12 +189,12 @@ class MainWindow(QMainWindow):
         getRect = [rect.x(), rect.y(), rect.width(), rect.height()]
         AppSettings.updateLastMainWindowPosition(getRect)
 
-        self.windowClosed.emit()
-
         if self._closeType == CloseType.CLOSE_PROJECT:
             app.restart()
         else:
             app.close()
+
+        self.windowClosed.emit()
 
         event.accept()
 

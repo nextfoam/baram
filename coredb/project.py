@@ -34,7 +34,7 @@ class RunType(Enum):
 
 
 class ProjectOpenType(Enum):
-    WIZARD = auto()
+    NEW = auto()
     SAVE_AS = auto()
     EXISTING = auto()
 
@@ -196,7 +196,7 @@ class _Project(QObject):
         AppSettings.updateRecents(self, route != ProjectOpenType.EXISTING)
 
         self._fileDB = FileDB(self.path)
-        if route == ProjectOpenType.WIZARD:
+        if route == ProjectOpenType.NEW:
             # CoreDB should have been created by the wizard,
             # Save that configurations as new project.
             self._fileDB.saveCoreDB()
