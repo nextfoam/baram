@@ -6,7 +6,7 @@ import screeninfo
 from enum import Enum
 from pathlib import Path
 
-from PySide6.QtCore import QLocale
+from PySide6.QtCore import QLocale, QRect
 
 import yaml
 from filelock import FileLock
@@ -102,8 +102,8 @@ class AppSettings:
         return [x, y, width, height]
 
     @classmethod
-    def getWindowProperPosition(cls, position):
-        x, y, width, height = position[0], position[1], position[2], position[3]
+    def _getWindowProperPosition(cls, position):
+        x, y, width, height = position
         minX, minY, maxX, maxY = 0, 0, 0, 0
         scaling = float(AppSettings.getUiScaling())
 
@@ -128,7 +128,7 @@ class AppSettings:
     @classmethod
     def getLastStartWindowPosition(cls):
         position = cls._get(SettingKey.LAST_START_WINDOW_POSITION, cls.getWindowCenterPosition(400, 300))
-        return cls.getWindowProperPosition(position)
+        return cls._getWindowProperPosition(position)
 
     @classmethod
     def updateLastStartWindowPosition(cls, rect):
@@ -137,14 +137,14 @@ class AppSettings:
         cls._save(settings)
 
     @classmethod
-    def getLastMainWindowPosition(cls):
+    def getLastMainWindowPosition(cls) -> QRect:
         position = cls._get(SettingKey.LAST_MAIN_WINDOW_POSITION, cls.getWindowCenterPosition(1280, 770))
-        return cls.getWindowProperPosition(position)
+        return QRect(*cls._getWindowProperPosition(position))
 
     @classmethod
-    def updateLastMainWindowPosition(cls, rect):
+    def updateLastMainWindowPosition(cls, rect: QRect):
         settings = cls._load()
-        settings[SettingKey.LAST_MAIN_WINDOW_POSITION.value] = [rect[0], rect[1], rect[2], rect[3]]
+        settings[SettingKey.LAST_MAIN_WINDOW_POSITION.value] = rect.getRect()
         cls._save(settings)
 
     @classmethod

@@ -28,20 +28,16 @@ class WorkspacePage(QWizardPage):
         self._connectSignalsSlots()
 
     def isComplete(self):
-        # complete = super().isComplete()
-        # if complete:
-        complete = True
+        complete = False
 
         if not self._locationParent.exists():
             self._ui.validationMessage.setText(self.tr(f'{self._locationParent} is not a directory.'))
-            complete = False
         elif not self._ui.projectName.text():
             self._ui.validationMessage.clear()
-            complete = False
         elif Path(self._ui.projectLocation.text()).exists():
             self._ui.validationMessage.setText(self.tr(f'{self._ui.projectLocation.text()} already exists.'))
-            complete = False
         else:
+            complete = True
             self._ui.validationMessage.clear()
 
         if complete != self._complete:

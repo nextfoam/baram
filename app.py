@@ -17,6 +17,7 @@ else:
 
 
 class App(QObject):
+    projectCreated = Signal(Path)
     meshUpdated = Signal()
     restarted = Signal()
 

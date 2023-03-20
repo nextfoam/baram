@@ -28,7 +28,7 @@ class Baram(QObject):
         self._applicationLock = None
 
         app.restarted.connect(self._restart)
-        app.plug.projectCreated.connect(self._openNewProject)
+        app.projectCreated.connect(self._openNewProject)
 
     async def start(self):
         try:

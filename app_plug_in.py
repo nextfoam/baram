@@ -3,15 +3,14 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject
 
+from app import app
 from view.main_window.main_window import MainWindow
 from view.case_wizard.case_wizard import CaseWizard
 
 
 class AppPlugIn(QObject):
-    projectCreated = Signal(Path)
-
     def __init__(self):
         super().__init__()
 
@@ -27,8 +26,9 @@ class AppPlugIn(QObject):
 
     def createProject(self, parent):
         """
-        Creates a new project and emit projectCreated signal.
+        Creates a new project.
         Called when new button is clicked by the project selection dialog.
+        Must create coreDB and emit app.projectCreated signal.
 
         """
         self._caseWizard = CaseWizard(parent)
@@ -38,4 +38,4 @@ class AppPlugIn(QObject):
     def _createCase(self):
         path = Path(self._caseWizard.field('projectLocation'))
         path.mkdir()
-        self.projectCreated.emit(path)
+        app.projectCreated.emit(path)

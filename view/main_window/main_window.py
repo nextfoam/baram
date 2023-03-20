@@ -11,7 +11,7 @@ import qasync
 import asyncio
 
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
-from PySide6.QtCore import Qt, QThreadPool, Signal, QEvent, QTimer, QRect
+from PySide6.QtCore import Qt, QThreadPool, Signal, QEvent, QTimer
 from PySide6.QtGui import QIcon
 
 from app import app
@@ -155,8 +155,7 @@ class MainWindow(QMainWindow):
         # self._updateMenuEnables()
         self._ui.menuMesh.setDisabled(True)
 
-        rect = AppSettings.getLastMainWindowPosition()
-        self.setGeometry(QRect(rect[0], rect[1], rect[2], rect[3]))
+        self.setGeometry(AppSettings.getLastMainWindowPosition())
 
     def renderingView(self):
         return self._renderingDock.view
@@ -185,9 +184,7 @@ class MainWindow(QMainWindow):
 
         logging.getLogger().removeHandler(self._handler)
 
-        rect = self.geometry()
-        getRect = [rect.x(), rect.y(), rect.width(), rect.height()]
-        AppSettings.updateLastMainWindowPosition(getRect)
+        AppSettings.updateLastMainWindowPosition(self.geometry())
 
         if self._closeType == CloseType.CLOSE_PROJECT:
             app.restart()
