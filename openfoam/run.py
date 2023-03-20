@@ -197,17 +197,5 @@ async def runParallelUtility(program: str, *args, np: int = 1, cwd=None):
     return proc
 
 
-def isProcessRunning(pid, startTime):
-    if pid and startTime:
-        try:
-            ps = psutil.Process(pid)
-            if ps.create_time() == startTime:
-                return True
-        except psutil.NoSuchProcess:
-            return False
-
-    return False
-
-
 def hasUtility(program: str):
     return (OPENFOAM / 'bin' / program).is_file()

@@ -10,7 +10,7 @@ import yaml
 from PySide6.QtCore import QObject, Signal, QTimer
 from pathlib import Path
 
-import openfoam.run as run
+from libbaram import process
 from coredb import coredb
 from .project_settings import ProjectSettings, ProjectSettingKey
 from .app_settings import AppSettings
@@ -208,7 +208,7 @@ class _Project(QObject):
 
         pid, startTime = self._projectSettings.getProcess()
         if pid and startTime:
-            if run.isProcessRunning(pid, startTime):
+            if process.isRunning(pid, startTime):
                 self.setSolverProcess((pid, startTime))
             else:
                 self.setSolverStatus(SolverStatus.ENDED)
@@ -228,7 +228,7 @@ class _Project(QObject):
         self._timer.start()
 
     def _updateProcessStatus(self):
-        if run.isProcessRunning(*self.solverProcess()):
+        if process.isRunning(*self.solverProcess()):
             self.setSolverStatus(SolverStatus.RUNNING)
         else:
             self.setSolverStatus(SolverStatus.ENDED)

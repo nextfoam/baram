@@ -6,7 +6,7 @@ import os
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 
-from openfoam import run
+from libbaram import process
 from .project_widget_ui import Ui_ProjectWidget
 
 
@@ -21,7 +21,7 @@ class ProjectWidget(QWidget):
         path = settings.path
         self._ui.name.setText(os.path.basename(path))
         pid, startTime = settings.getProcess()
-        if run.isProcessRunning(pid, startTime):
+        if process.isRunning(pid, startTime):
             self._ui.status.setText('Running')
 
         self._ui.path.setText(path)
