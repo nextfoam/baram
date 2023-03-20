@@ -55,6 +55,7 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
 class RenderingView(QWidget):
     actorPicked = Signal(vtkActor)
     renderingModeChanged = Signal(DisplayMode)
+    viewClosed = Signal()
 
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
@@ -118,6 +119,7 @@ class RenderingView(QWidget):
         self._widget.Render()
 
     def close(self):
+        self.viewClosed.emit()
         self._widget.close()
 
         return super().close()

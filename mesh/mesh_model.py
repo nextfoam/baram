@@ -87,6 +87,10 @@ class RenderingModel(QObject):
         super().__init__()
 
         self._view = app.renderingView
+        self._view.viewClosed.connect(self._viewClosed)
+
+    def _viewClosed(self):
+        self._view = None
 
 
 class MeshModel(RenderingModel):
@@ -118,6 +122,9 @@ class MeshModel(RenderingModel):
             self._activation = True
 
     def deactivate(self):
+        if self._view is None:
+            return
+
         for actorInfo in self._actorInfos.values():
             if actorInfo.visibility:
                 self._view.removeActor(actorInfo.actor(self._featureMode))
