@@ -116,6 +116,7 @@ class FileSystem:
 
         cls._boundaryConditionsPath = cls.makeDir(cls._casePath, cls.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
         cls._systemPath = cls.makeDir(cls._casePath, cls.SYSTEM_DIRECTORY_NAME)
+        cls._constantPath = cls.makeDir(cls._casePath, cls.CONSTANT_DIRECTORY_NAME)
 
     @classmethod
     def _copyMeshFromInternal(cls, directory, regions):
