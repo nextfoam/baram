@@ -27,7 +27,7 @@ class AppPlugIn(QObject):
     def createProject(self, parent):
         """
         Creates a new project.
-        Called when new button is clicked by the project selection dialog.
+        Called when the new button is clicked in the project selection dialog.
         Must create coreDB and emit app.projectCreated signal.
 
         """

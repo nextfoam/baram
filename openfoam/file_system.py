@@ -33,17 +33,13 @@ class FileSystem:
     _postProcessingPath = None
 
     @classmethod
-    def setupNewCase(cls):
+    def createCase(cls):
         cls._setCaseRoot(Project.instance().path / cls.TEMP_DIRECTORY_NAME)
         if cls._casePath.exists():
             utils.rmtree(cls._casePath)
 
         cls._casePath.mkdir(exist_ok=True)
-        with open(cls.foamFilePath(), 'a'):
-            pass
-
-        cls._boundaryConditionsPath = cls.makeDir(cls._casePath, cls.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
-        cls._systemPath = cls.makeDir(cls._casePath, cls.SYSTEM_DIRECTORY_NAME)
+        cls._setupNewCase()
 
     @classmethod
     def setupForProject(cls):
@@ -114,6 +110,14 @@ class FileSystem:
         return True
 
     @classmethod
+    def _setupNewCase(cls):
+        with open(cls.foamFilePath(), 'a'):
+            pass
+
+        cls._boundaryConditionsPath = cls.makeDir(cls._casePath, cls.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
+        cls._systemPath = cls.makeDir(cls._casePath, cls.SYSTEM_DIRECTORY_NAME)
+
+    @classmethod
     def _copyMeshFromInternal(cls, directory, regions):
         if cls._constantPath.exists():
             utils.rmtree(cls._constantPath)
@@ -156,10 +160,14 @@ class FileSystem:
 
     @classmethod
     def saveAs(cls, projectPath):
-        targetPath = projectPath / cls.CASE_DIRECTORY_NAME
-        if cls._casePath.exists():
-            shutil.copytree(cls._casePath, targetPath, dirs_exist_ok=True)
-        cls._setCaseRoot(targetPath)
+        sourceConstantPath = cls._constantPath
+
+        cls._setCaseRoot(projectPath / cls.CASE_DIRECTORY_NAME)
+        cls._casePath.mkdir(parents=True, exist_ok=True)
+        cls._setupNewCase()
+
+        if sourceConstantPath.exists():
+            shutil.copytree(sourceConstantPath, cls._constantPath, dirs_exist_ok=True)
 
     @classmethod
     async def initialize(cls, regions):

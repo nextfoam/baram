@@ -43,6 +43,7 @@ class _Project(QObject):
     meshChanged = Signal(bool)
     solverStatusChanged = Signal(SolverStatus)
     projectOpened = Signal()
+    projectClosed = Signal()
 
     materialChanged = Signal()
 
@@ -160,6 +161,7 @@ class _Project(QObject):
         self._fileDB.saveAs(directory)
         self._close()
         self._open(directory, ProjectOpenType.SAVE_AS)
+        self.projectOpened.emit()
 
     def opened(self):
         self.projectOpened.emit()
@@ -218,6 +220,7 @@ class _Project(QObject):
     def _close(self):
         self._settings = None
         coredb.destroy()
+        self.projectClosed.emit()
         if self._projectLock:
             self._projectLock.release()
 

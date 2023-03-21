@@ -82,8 +82,6 @@ class MenuPage:
 
 
 class MainWindow(QMainWindow):
-    windowClosed = Signal()
-
     def __init__(self):
         super().__init__()
         self._ui = Ui_MainWindow()
@@ -92,7 +90,6 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(str(resource.file('baram.ico'))))
 
         self._project = Project.instance()
-        self._projectChanged()
         FileSystem.setupForProject()
 
         # 10MB(=10,485,760=1024*1024*10)
@@ -140,9 +137,6 @@ class MainWindow(QMainWindow):
         self._meshManager = MeshManager(self)
         self._connectSignalsSlots()
 
-        if self._project.meshLoaded:
-            self._meshManager.meshChanged.emit()
-
         if self._project.isSolverRunning():
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN.value)
             self._chartDock.raise_()
@@ -182,6 +176,7 @@ class MainWindow(QMainWindow):
             event.ignore()
             return
 
+        self._renderingDock.close()
         logging.getLogger().removeHandler(self._handler)
 
         AppSettings.updateLastMainWindowPosition(self.geometry())
@@ -189,9 +184,7 @@ class MainWindow(QMainWindow):
         if self._closeType == CloseType.CLOSE_PROJECT:
             app.restart()
         else:
-            app.close()
-
-        self.windowClosed.emit()
+            app.quit()
 
         event.accept()
 
@@ -237,8 +230,8 @@ class MainWindow(QMainWindow):
         self._ui.actionAbout.triggered.connect(self._showAboutDialog)
 
         self._project.meshChanged.connect(self._meshChanged)
+        self._project.projectOpened.connect(self._projectOpened)
         self._project.solverStatusChanged.connect(self._updateMenuEnables)
-        self._project.projectOpened.connect(self._projectChanged)
         self._meshManager.meshChanged.connect(self._vtkChanged, Qt.ConnectionType.QueuedConnection)
 
     def _save(self):
@@ -317,7 +310,6 @@ class MainWindow(QMainWindow):
 
         await PolyMeshLoader().loadVtk()
 
-        self.vtkMeshLoaded()
         progressDialog.close()
 
     def _changeForm(self, currentMenu, previousMenu=-1):
@@ -358,11 +350,13 @@ class MainWindow(QMainWindow):
                 self._changeForm(currentMenu)
 
     def _updateMenuEnables(self):
-        # self._ui.menuMesh.setEnabled(self._project.meshLoaded)
         self._navigatorView.updateMenu()
 
-    def _projectChanged(self):
+    def _projectOpened(self):
         self.setWindowTitle(f'{self.tr("Baram")} - {self._project.path}')
+
+        if self._project.meshLoaded:
+            self._meshManager.meshChanged.emit()
 
     def _addTabifiedDock(self, dock):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
@@ -393,7 +387,6 @@ class MainWindow(QMainWindow):
                 elif os.listdir(path):
                     QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirs[0]} is not empty.'))
                     return
-            path.mkdir(exist_ok=True)
 
             if self._saveCurrentPage():
                 progressDialog = ProgressDialogSimple(self, self.tr('Save As'))
@@ -402,6 +395,7 @@ class MainWindow(QMainWindow):
                 progressDialog.setLabelText(self.tr('Saving case'))
 
                 await asyncio.to_thread(FileSystem.saveAs, path)
+                CaseGenerator.createDefaults()
                 self._project.saveAs(path)
                 progressDialog.close()
 

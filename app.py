@@ -51,9 +51,6 @@ class App(QObject):
     def cellZoneActor(self, czid):
         return self._cellZoneActors[czid].face
 
-    def closed(self):
-        return self._window is None
-
     def openMainWindow(self):
         self._window = self._plug.createMainWindow()
         self._window.show()
@@ -76,12 +73,11 @@ class App(QObject):
         if self._vtkMesh:
             self._vtkMesh.deactivate()
 
-    def close(self):
+    def quit(self):
         self._window = None
         QApplication.quit()
 
     def restart(self):
-        self._window = None
         self.restarted.emit()
 
     def setLanguage(self, language):

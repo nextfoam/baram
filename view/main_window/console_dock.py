@@ -52,10 +52,9 @@ class ConsoleDock(TabifiedDock):
         layout.addWidget(self._lineWrap)
 
         self._project = Project.instance()
-        self._project.solverStatusChanged.connect(self.solverStatusChanged)
-        self._project.projectOpened.connect(self._projectChanged)
-
-        self._main_window.windowClosed.connect(self._mainWindowClosed)
+        self._project.projectOpened.connect(self._projectOpened)
+        self._project.projectClosed.connect(self._projectClosed)
+        self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
         self._translate()
 
@@ -67,21 +66,9 @@ class ConsoleDock(TabifiedDock):
     def stopCollecting(self):
         self.stopReading = True
 
-    def solverStatusChanged(self, status):
-        if status == SolverStatus.NONE:
-            self._textView.clear()
-        elif status == SolverStatus.RUNNING:
-            self.startCollecting()
-        else:
-            self.stopCollecting()
-
     def _translate(self):
         self.setWindowTitle(self.tr("Console"))
         self._lineWrap.setText(self.tr('Line-Wrap'))
-
-    def _mainWindowClosed(self):
-        if self.readTask is not None:
-            self.readTask.cancel()
 
     def _lineWrapStateChanged(self):
         if self._lineWrap.isChecked():
@@ -123,11 +110,23 @@ class ConsoleDock(TabifiedDock):
             self.readTask = None
 
     @qasync.asyncSlot()
-    async def _projectChanged(self):
+    async def _projectOpened(self):
         if self._project.isSolverRunning():
             self.startCollecting()
         elif self._project.hasSolved():
             await self._readAllLog()
+
+    def _projectClosed(self):
+        if self.readTask is not None:
+            self.readTask.cancel()
+
+    def _solverStatusChanged(self, status):
+        if status == SolverStatus.NONE:
+            self._textView.clear()
+        elif status == SolverStatus.RUNNING:
+            self.startCollecting()
+        else:
+            self.stopCollecting()
 
     async def _readAllLog(self):
         async def _readLog(path):

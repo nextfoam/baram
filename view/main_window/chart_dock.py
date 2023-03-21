@@ -57,10 +57,9 @@ class ChartDock(TabifiedDock):
         self.solverInfoManager.residualsUpdated.connect(self.updated)
 
         self._project = Project.instance()
-        self._project.projectOpened.connect(self._projectChanged)
-        self._project.solverStatusChanged.connect(self.solverStatusChanged)
-
-        self._main_window.windowClosed.connect(self._mainWindowClosed)
+        self._project.projectOpened.connect(self._projectOpened)
+        self._project.projectClosed.connect(self._projectClosed)
+        self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
         self._translate()
 
@@ -72,20 +71,20 @@ class ChartDock(TabifiedDock):
     def stopDrawing(self):
         self.solverInfoManager.stopCollecting()
 
-    def solverStatusChanged(self, status):
+    def _projectOpened(self):
+        if self._project.isSolverRunning() or self._project.hasSolved():
+            self.startDrawing()
+
+    def _projectClosed(self):
+        self.stopDrawing()
+
+    def _solverStatusChanged(self, status):
         if status == SolverStatus.NONE:
             self._clear()
         elif status == SolverStatus.RUNNING:
             self.startDrawing()
         else:
             self.stopDrawing()
-
-    def _mainWindowClosed(self):
-        self.stopDrawing()
-
-    def _projectChanged(self):
-        if self._project.isSolverRunning() or self._project.hasSolved():
-            self.startDrawing()
 
     def updated(self, data: pd.DataFrame):
         self._data = data
