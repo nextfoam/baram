@@ -109,7 +109,7 @@ class MeshModel(RenderingModel):
         self._connectSignalsSlots()
 
     def activate(self):
-        if not self._activation:
+        if not self._activation and self._view:
             renderingMode = self._view.renderingMode()
             self._featureMode = renderingMode == DisplayMode.DISPLAY_MODE_FEATURE and self._hasFeatures
             for actorInfo in self._actorInfos.values():
