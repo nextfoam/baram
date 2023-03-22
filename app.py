@@ -62,8 +62,8 @@ class App(QObject):
         self._vtkMesh = mesh
         self._cellZoneActors = cellZoneActors
         self._window.vtkMeshLoaded()
-        self.meshUpdated.emit()
         self.showMesh()
+        self.meshUpdated.emit()
 
     def showMesh(self):
         if self._vtkMesh:
