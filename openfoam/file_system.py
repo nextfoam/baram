@@ -160,14 +160,10 @@ class FileSystem:
 
     @classmethod
     def saveAs(cls, projectPath):
-        sourceConstantPath = cls._constantPath
-
-        cls._setCaseRoot(projectPath / cls.CASE_DIRECTORY_NAME)
-        cls._casePath.mkdir(parents=True, exist_ok=True)
-        cls._setupNewCase()
-
-        if sourceConstantPath.exists():
-            shutil.copytree(sourceConstantPath, cls._constantPath, dirs_exist_ok=True)
+        targetPath = projectPath / cls.CASE_DIRECTORY_NAME
+        if cls._casePath.exists():
+            shutil.copytree(cls._casePath, targetPath, dirs_exist_ok=True)
+        cls._setCaseRoot(targetPath)
 
     @classmethod
     async def initialize(cls, regions):

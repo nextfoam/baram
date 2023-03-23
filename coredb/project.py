@@ -168,7 +168,8 @@ class _Project(QObject):
 
     def _open(self, path: Path, route=ProjectOpenType.EXISTING):
         self._settings = self.LocalSettings(path)
-        self._projectSettings = ProjectSettings()
+        if route != ProjectOpenType.SAVE_AS:
+            self._projectSettings = ProjectSettings()
 
         self._settings.set(ProjectSettingKey.PATH, path)
 
