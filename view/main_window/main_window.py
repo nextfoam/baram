@@ -11,11 +11,11 @@ import qasync
 import asyncio
 
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
-from PySide6.QtCore import Qt, QThreadPool, Signal, QEvent, QTimer
+from PySide6.QtCore import Qt, QThreadPool, QEvent, QTimer
 from PySide6.QtGui import QIcon
 
 from app import app
-from coredb.project import Project
+from coredb.project import Project, SolverStatus
 from coredb.app_settings import AppSettings
 from coredb import coredb
 from resources import resource
@@ -231,7 +231,7 @@ class MainWindow(QMainWindow):
 
         self._project.meshChanged.connect(self._meshChanged)
         self._project.projectOpened.connect(self._projectOpened)
-        self._project.solverStatusChanged.connect(self._updateMenuEnables)
+        self._project.solverStatusChanged.connect(self._solverStatusChanged)
         self._meshManager.meshChanged.connect(self._vtkChanged, Qt.ConnectionType.QueuedConnection)
 
     def _save(self):
@@ -349,7 +349,14 @@ class MainWindow(QMainWindow):
             if currentMenu in targets:
                 self._changeForm(currentMenu)
 
-    def _updateMenuEnables(self):
+    def _solverStatusChanged(self, status):
+        isNotSolverRunning = status != SolverStatus.RUNNING
+
+        self._ui.actionSave.setEnabled(isNotSolverRunning)
+        self._ui.actionSaveAs.setEnabled(isNotSolverRunning)
+        self._ui.menuLoadMesh.setEnabled(isNotSolverRunning)
+        self._ui.menuMesh.setEnabled(isNotSolverRunning)
+
         self._navigatorView.updateMenu()
 
     def _projectOpened(self):
