@@ -53,7 +53,7 @@ class T(BoundaryCondition):
                     BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(constant)),
                     BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.WALL.value:                (lambda: self._constructWallT(xpath, constant)),
-                    BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructCompressibleTurbulentTemperatureCoupledBaffleMixed()),
+                    BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructCompressibleturbulentTemperatureRadCoupledMixed()),
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceT(xpath)),
                     BoundaryType.POROUS_JUMP.value:         (lambda: self._constructCyclic()),
@@ -94,9 +94,9 @@ class T(BoundaryCondition):
             'T0': ('uniform', constant)
         }
 
-    def _constructCompressibleTurbulentTemperatureCoupledBaffleMixed(self):
+    def _constructCompressibleturbulentTemperatureRadCoupledMixed(self):
         return {
-            'type': 'compressible::turbulentTemperatureCoupledBaffleMixed',
+            'type': 'compressible::turbulentTemperatureRadCoupledMixed',
             'Tnbr': 'T',
             'kappaMethod': 'fluidThermo' if self._region.isFluid() else 'solidThermo',
             'value': self._initialValueByTime()
@@ -119,7 +119,7 @@ class T(BoundaryCondition):
     def _constructInterfaceT(self, xpath):
         spec = self._db.getValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
-            return self._constructCompressibleTurbulentTemperatureCoupledBaffleMixed()
+            return self._constructCompressibleturbulentTemperatureRadCoupledMixed()
         else:
             return self._constructCyclicAMI()
 

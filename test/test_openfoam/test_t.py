@@ -196,7 +196,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/physicalType', 'thermoCoupledWall')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
-        self.assertEqual('compressible::turbulentTemperatureCoupledBaffleMixed', content['boundaryField'][boundary]['type'])
+        self.assertEqual('compressible::turbulentTemperatureRadCoupledMixed', content['boundaryField'][boundary]['type'])
         self.assertEqual('solidThermo' if RegionDB.getPhase(rname) == Phase.SOLID else 'fluidThermo',
                          content['boundaryField'][boundary]['kappaMethod'])
 
@@ -236,7 +236,7 @@ class TestT(unittest.TestCase):
         self._db.setValue(self._xpath + '/interface/mode', 'regionInterface')
         self._db.setValue(self._xpath + '/temperature/profile', 'constant')
         content = T(RegionDB.getRegionProperties(rname), '0', None).build().asDict()
-        self.assertEqual('compressible::turbulentTemperatureCoupledBaffleMixed', content['boundaryField'][boundary]['type'])
+        self.assertEqual('compressible::turbulentTemperatureRadCoupledMixed', content['boundaryField'][boundary]['type'])
         self.assertEqual('solidThermo' if RegionDB.getPhase(rname) == Phase.SOLID else 'fluidThermo',
                          content['boundaryField'][boundary]['kappaMethod'])
 
