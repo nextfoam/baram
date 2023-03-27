@@ -178,6 +178,7 @@ class MainWindow(QMainWindow):
 
         self._renderingDock.close()
         logging.getLogger().removeHandler(self._handler)
+        self._handler.close()
 
         AppSettings.updateLastMainWindowPosition(self.geometry())
 
