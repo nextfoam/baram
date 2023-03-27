@@ -77,6 +77,18 @@ class FileDB:
         except KeyError:
             return None
 
+    def putDataFrame(self, key, df):
+        with pd.HDFStore(self._tmpPath) as store:
+            store.put(key, df)
+
+    def getDataFrame(self, key):
+        if key:
+            with pd.HDFStore(self._tmpPath) as store:
+                if f'/{key}' in store.keys():
+                    return store.get(key)
+                else:
+                    return None
+
     def loadCoreDB(self):
         if coredb.loaded():
             raise AssertionError('Coredb has not been freed for a fresh load.')
