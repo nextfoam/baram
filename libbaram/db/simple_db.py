@@ -69,6 +69,9 @@ class SimpleDB:
 
         return db[key]
 
+    def getFloat(self, path):
+        return float(self.getValue(path))
+
     def setValue(self, path, value, name=None):
         if not self._editable:
             raise LookupError('Not editable')
