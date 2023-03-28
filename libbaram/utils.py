@@ -27,10 +27,18 @@ def rmtree(path, ignore_errors=False, onerror=None):
     target = p.parent / ('delete_me_' + str(uuid.uuid4()))
     p.rename(target)
 
-    coro = asyncio.to_thread(shutil.rmtree, target, ignore_errors, onerror)
-    task = asyncio.create_task(coro)
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:  # This function might be called in a thread
+        loop = None
 
-    _backgroundTasks.add(task)
+    if loop is not None:
+        coro = asyncio.to_thread(shutil.rmtree, target, ignore_errors, onerror)
+        task = asyncio.create_task(coro)
 
-    task.add_done_callback(_backgroundTasks.discard)
+        _backgroundTasks.add(task)
+
+        task.add_done_callback(_backgroundTasks.discard)
+    else:  # loop is None
+        shutil.rmtree(target, ignore_errors, onerror)
 
