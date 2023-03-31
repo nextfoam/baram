@@ -20,7 +20,7 @@ def isRunning(pid, startTime):
     return False
 
 
-async def runExternalScript(program: str, *args, cwd=None, useVenv=True):
+async def runExternalScript(program: str, *args, cwd=None, useVenv=True, stderr=None):
     ENV = os.environ.copy()
     if not useVenv:
         excluding = [os.path.join('venv', 'bin'), os.path.join('venv', 'Lib'), os.path.join('venv', 'Scripts')]
@@ -39,5 +39,6 @@ async def runExternalScript(program: str, *args, cwd=None, useVenv=True):
     proc = await asyncio.create_subprocess_exec(program, *args,
                                                 env=ENV, cwd=cwd,
                                                 creationflags=creationflags,
-                                                startupinfo=startupinfo)
+                                                startupinfo=startupinfo,
+                                                stderr=stderr)
     return proc

@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+from pathlib import Path
+
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor
 from vtkmodules.vtkIOLegacy import vtkPolyDataReader
 from vtkmodules.vtkCommonCore import vtkPoints
@@ -7,6 +10,7 @@ from vtkmodules.vtkCommonDataModel import vtkHexahedron, vtkCellArray, vtkUnstru
 from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 from vtkmodules.vtkFiltersSources import vtkLineSource, vtkSphereSource
 from vtkmodules.vtkFiltersCore import vtkTubeFilter
+from vtkmodules.vtkIOGeometry import vtkSTLReader
 
 
 def loadVtkFile(file):
@@ -23,6 +27,18 @@ def loadVtkFile(file):
     actor = vtkQuadricLODActor()    # vtkActor()
     actor.SetMapper(mapper)
 
+    return actor
+
+
+def loadSTL(path: Path):
+    reader = vtkSTLReader()
+    reader.SetFileName(str(path))
+    reader.Update()
+
+    mapper = vtkPolyDataMapper()
+    mapper.SetInputData(reader.GetOutput())
+    actor = vtkActor()
+    actor.SetMapper(mapper)
     return actor
 
 
