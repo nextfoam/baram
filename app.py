@@ -8,6 +8,7 @@ from PySide6.QtCore import QObject, Signal, QTranslator, QCoreApplication, QLoca
 from PySide6.QtWidgets import QApplication
 
 from resources import resource
+from coredb.app_settings import AppSettings
 
 
 if getattr(sys, 'frozen', False):
@@ -28,7 +29,17 @@ class App(QObject):
         self._vtkMesh = None
         self._cellZoneActors = None
         self._translator = None
+
+        self._properties = None
         self._plug = None
+
+    def setupApplication(self, properties):
+        self._properties = properties
+        AppSettings.setup(properties.name)
+
+    @property
+    def properties(self):
+        return self._properties
 
     @property
     def window(self):

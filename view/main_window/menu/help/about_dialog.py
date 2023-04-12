@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtWidgets import QDialog
-from PySide6.QtGui import QPixmap
 
-from resources import resource
+from app import app
 from .about_dialog_ui import Ui_AboutDialog
 from .license_dialog import LicenseDialog
 
@@ -18,7 +17,7 @@ class AboutDialog(QDialog):
         self._ui = Ui_AboutDialog()
         self._ui.setupUi(self)
 
-        self._ui.logo.setPixmap(QPixmap(str(resource.file('baram.ico'))))
+        self._ui.logo.setPixmap(app.properties.logo())
 
         self._dialog = None
 

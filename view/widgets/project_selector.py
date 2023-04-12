@@ -3,11 +3,10 @@
 
 from PySide6.QtCore import Signal, QRect
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QFileDialog, QMessageBox
-from PySide6.QtGui import QIcon
 
+from app import app
 from coredb.app_settings import AppSettings
 from coredb.project_settings import ProjectSettings
-from resources import resource
 from .project_selector_ui import Ui_ProjectSelector
 from .project_widget import ProjectWidget
 
@@ -23,7 +22,7 @@ class ProjectSelector(QDialog):
         self._ui = Ui_ProjectSelector()
         self._ui.setupUi(self)
 
-        self.setWindowIcon(QIcon(str(resource.file('baram.ico'))))
+        self.setWindowIcon(app.properties.icon())
 
         self._dialog = None
         self._projectDirectory = None

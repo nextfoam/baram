@@ -20,6 +20,7 @@ import PySide6.QtSvg
 import resource_rc
 
 from app import app
+from app_properties import AppProperties
 from app_plug_in import AppPlugIn
 from view.main_window.start_window import Baram
 from coredb.app_settings import AppSettings
@@ -37,6 +38,14 @@ sys.excepthook = handle_exception
 
 
 if __name__ == '__main__':
+    app.setupApplication(AppProperties({
+        'name': 'baram',
+        'fullName': QApplication.translate('Main', 'Baram'),
+        'iconResource': 'baram.ico',
+        'logoResource': 'baram.ico',
+    }))
+    app.setPlug(AppPlugIn())
+
     os.environ["QT_SCALE_FACTOR"] = AppSettings.getUiScaling()
 
     logger = logging.getLogger()
@@ -58,7 +67,6 @@ if __name__ == '__main__':
 
     #app.setStyleSheet(app.styleSheet() + '\n' + stream.readAll())
 
-    app.setPlug(AppPlugIn())
     app.setLanguage(AppSettings.getLanguage())
     background_tasks = set()
 

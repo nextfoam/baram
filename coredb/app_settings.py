@@ -15,13 +15,6 @@ from filelock import FileLock
 FORMAT_VERSION = 1
 RECENT_PROJECTS_NUMBER = 100
 
-settingsPath = Path.home() / '.baram'
-casesPath = settingsPath / 'cases'
-settingsFile = settingsPath / 'baram.cfg.yaml'
-
-settingsPath.mkdir(exist_ok=True)
-casesPath.mkdir(exist_ok=True)
-
 
 class SettingKey(Enum):
     FORMAT_VERSION = 'format_version'
@@ -36,11 +29,24 @@ class SettingKey(Enum):
 
 
 class AppSettings:
-    _applicationLockFile = settingsPath / 'baram.lock'
+    _settingsPath = None
+    _casesPath = None
+    _settingsFile = None
+    _applicationLockFile = None
+
+    @classmethod
+    def setup(cls, name):
+        cls._settingsPath = Path.home() / f'.{name}'
+        cls._casesPath = cls._settingsPath / 'cases'
+        cls._settingsFile = cls._settingsPath / 'baram.cfg.yaml'
+        cls._applicationLockFile = cls._settingsPath / 'baram.lock'
+
+        cls._settingsPath.mkdir(exist_ok=True)
+        cls._casesPath.mkdir(exist_ok=True)
 
     @classmethod
     def casesPath(cls):
-        return casesPath
+        return cls._casesPath
 
     @classmethod
     def acquireLock(cls, timeout):
@@ -184,8 +190,8 @@ class AppSettings:
 
     @classmethod
     def _load(cls):
-        if settingsFile.is_file():
-            with open(settingsFile) as file:
+        if cls._settingsFile.is_file():
+            with open(cls._settingsFile) as file:
                 return yaml.load(file, Loader=yaml.FullLoader)
         else:
             return {}
@@ -194,7 +200,7 @@ class AppSettings:
     def _save(cls, settings):
         settings[SettingKey.FORMAT_VERSION.value] = FORMAT_VERSION
 
-        with open(settingsFile, 'w') as file:
+        with open(cls._settingsFile, 'w') as file:
             yaml.dump(settings, file)
 
     @classmethod

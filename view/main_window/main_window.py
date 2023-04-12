@@ -12,13 +12,11 @@ import asyncio
 
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QThreadPool, QEvent, QTimer
-from PySide6.QtGui import QIcon
 
 from app import app
 from coredb.project import Project, SolverStatus
 from coredb.app_settings import AppSettings
 from coredb import coredb
-from resources import resource
 from mesh.mesh_manager import MeshManager, MeshType
 from openfoam.file_system import FileSystem
 from openfoam.case_generator import CaseGenerator
@@ -87,7 +85,7 @@ class MainWindow(QMainWindow):
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
 
-        self.setWindowIcon(QIcon(str(resource.file('baram.ico'))))
+        self.setWindowIcon(app.properties.icon())
 
         self._project = Project.instance()
         FileSystem.setupForProject()
@@ -361,7 +359,7 @@ class MainWindow(QMainWindow):
         self._navigatorView.updateMenu()
 
     def _projectOpened(self):
-        self.setWindowTitle(f'{self.tr("Baram")} - {self._project.path}')
+        self.setWindowTitle(f'{app.properties.fullName} - {self._project.path}')
 
         if self._project.meshLoaded:
             self._meshManager.meshChanged.emit()
