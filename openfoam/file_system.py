@@ -32,6 +32,8 @@ class FileSystem:
     _systemPath = None
     _postProcessingPath = None
 
+    _constantFilesToKeep = [POLY_MESH_DIRECTORY_NAME, REGION_PROPERTIES_FILE_NAME]
+
     @classmethod
     def createCase(cls):
         cls._setCaseRoot(Project.instance().path / cls.TEMP_DIRECTORY_NAME)
@@ -193,15 +195,19 @@ class FileSystem:
                 cls._remove(file)
 
         if len(regions) == 1 and not regions[0]:
-            cls._clearDirectory(cls._constantPath, [cls.POLY_MESH_DIRECTORY_NAME])
+            cls._clearDirectory(cls._constantPath, cls._constantFilesToKeep)
         else:
             for file in cls._constantPath.glob('*'):
                 if file.name in regions:
-                    cls._clearDirectory(file, [cls.POLY_MESH_DIRECTORY_NAME])
-                elif file.name != cls.REGION_PROPERTIES_FILE_NAME:
+                    cls._clearDirectory(file, cls._constantFilesToKeep)
+                elif file.name not in cls._constantFilesToKeep:
                     cls._remove(file)
 
         cls._clearDirectory(cls._systemPath, ['controlDict'])
+
+    @classmethod
+    def addConstantFileToKeep(cls, fileName):
+        cls._constantFilesToKeep.append(fileName)
 
     @classmethod
     def _setCaseRoot(cls, path):
