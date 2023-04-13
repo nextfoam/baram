@@ -23,6 +23,7 @@ class ProjectSelector(QDialog):
         self._ui.setupUi(self)
 
         self.setWindowIcon(app.properties.icon())
+        self.setWindowTitle(f'{app.properties.fullName} Start')
 
         self._dialog = None
         self._projectDirectory = None
