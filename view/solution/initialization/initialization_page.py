@@ -45,13 +45,14 @@ class InitializationPage(ContentPage):
 
     def hideEvent(self, ev):
         if not ev.spontaneous():
-            view = app.renderingView
-            for actor in self._sectionActors.values():
-                if actor:
-                    view.removeActor(actor)
+            if app.window:
+                view = app.renderingView
+                for actor in self._sectionActors.values():
+                    if actor:
+                        view.removeActor(actor)
 
-            view.refresh()
-            self._sectionActors = {}
+                view.refresh()
+                self._sectionActors = {}
 
         return super().hideEvent(ev)
 
