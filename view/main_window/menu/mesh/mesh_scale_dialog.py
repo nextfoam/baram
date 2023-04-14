@@ -14,8 +14,5 @@ class MeshScaleDialog(QDialog):
 
         self._manager = manager
 
-    def accept(self):
-        self.close()
-        self._manager.scale(self._ui.factorX.text(), self._ui.factorY.text(), self._ui.factorZ.text())
-        super().accept()
-
+    def data(self):
+        return self._ui.factorX.text(), self._ui.factorY.text(), self._ui.factorZ.text()

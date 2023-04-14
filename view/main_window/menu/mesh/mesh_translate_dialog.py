@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import qasync
-
 from PySide6.QtWidgets import QDialog
 
 from .mesh_translate_dialog_ui import Ui_MeshTranslateDialog
@@ -16,8 +14,5 @@ class MeshTranslateDialog(QDialog):
 
         self._manager = manager
 
-    @qasync.asyncSlot()
-    async def accept(self):
-        self.close()
-        self._manager.translate(self._ui.offsetX.text(), self._ui.offsetY.text(), self._ui.offsetZ.text())
-        super().accept()
+    def data(self):
+        return self._ui.offsetX.text(), self._ui.offsetY.text(), self._ui.offsetZ.text()

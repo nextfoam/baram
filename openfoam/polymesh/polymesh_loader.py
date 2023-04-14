@@ -12,7 +12,8 @@ from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
 from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
-from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA
+from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA, vtkCommand
+from PySide6.QtCore import QObject, Signal
 
 from app import app
 from coredb import coredb
@@ -78,53 +79,9 @@ def build(mBlock):
     return vtkMesh
 
 
-def getVtkMesh(foamFilePath: Path, statusConfig: dict):
-    """
-    VtkMesh dict
-    {
-        <region> : {
-            "boundary" : {
-                <boundary> : <ActorInfo>
-                ...
-            },
-            "internalMesh" : <ActorInfo>,
-            "zones" : {
-                "cellZones" : {
-                    <cellZone> : <ActorInfo>,
-                    ...
-                }
-            }
-        },
-        ...
-    }
-    """
-    r = vtkPOpenFOAMReader()
-    r.SetCaseType(
-        vtkPOpenFOAMReader.DECOMPOSED_CASE if FileSystem.processorPath(0) else vtkPOpenFOAMReader.RECONSTRUCTED_CASE)
-    r.SetFileName(str(foamFilePath))
-    r.DecomposePolyhedraOn()
-    r.EnableAllCellArrays()
-    r.EnableAllPointArrays()
-    r.EnableAllPatchArrays()
-    r.EnableAllLagrangianArrays()
-    r.CreateCellToPointOn()
-    r.CacheMeshOn()
-    r.ReadZonesOn()
+class PolyMeshLoader(QObject):
+    progress = Signal(str)
 
-    for patchName, status in statusConfig.items():
-        r.SetPatchArrayStatus(patchName, status)
-
-    r.Update()
-
-    vtkMesh = build(r.GetOutput())
-
-    if 'boundary' in vtkMesh:  # single region mesh
-        vtkMesh = {'': vtkMesh}
-
-    return vtkMesh
-
-
-class PolyMeshLoader:
     @classmethod
     def loadBoundaryDict(cls, path, listLengthUnparsed=None):
         return ParsedBoundaryDict(path, listLengthUnparsed=listLengthUnparsed, treatBinaryAsASCII=True)
@@ -174,7 +131,7 @@ class PolyMeshLoader:
         return boundaries
 
     async def _loadVtkMesh(self, statusConfig):
-        return await asyncio.to_thread(getVtkMesh, FileSystem.foamFilePath(), statusConfig)
+        return await asyncio.to_thread(self._getVtkMesh, FileSystem.foamFilePath(), statusConfig)
 
     def _buildPatchArrayStatusFromDB(self):
         statusConfig = {'internalMesh': 0}
@@ -209,6 +166,56 @@ class PolyMeshLoader:
                 statusConfig[f'{r}patch/{b}'] = 1
 
         return statusConfig
+
+    def _getVtkMesh(self, foamFilePath: Path, statusConfig: dict):
+        """
+        VtkMesh dict
+        {
+            <region> : {
+                "boundary" : {
+                    <boundary> : <ActorInfo>
+                    ...
+                },
+                "internalMesh" : <ActorInfo>,
+                "zones" : {
+                    "cellZones" : {
+                        <cellZone> : <ActorInfo>,
+                        ...
+                    }
+                }
+            },
+            ...
+        }
+        """
+        def readerProgressEvent(caller: vtkPOpenFOAMReader, ev):
+            self.progress.emit(self.tr('Loading Mesh : ') + f'{int(float(caller.GetProgress()) * 100)}%')
+
+        r = vtkPOpenFOAMReader()
+        r.SetCaseType(
+            vtkPOpenFOAMReader.DECOMPOSED_CASE if FileSystem.processorPath(0) else vtkPOpenFOAMReader.RECONSTRUCTED_CASE)
+        r.SetFileName(str(foamFilePath))
+        r.DecomposePolyhedraOn()
+        r.EnableAllCellArrays()
+        r.EnableAllPointArrays()
+        r.EnableAllPatchArrays()
+        r.EnableAllLagrangianArrays()
+        r.CreateCellToPointOn()
+        r.CacheMeshOn()
+        r.ReadZonesOn()
+
+        r.AddObserver(vtkCommand.ProgressEvent, readerProgressEvent)
+
+        for patchName, status in statusConfig.items():
+            r.SetPatchArrayStatus(patchName, status)
+
+        r.Update()
+
+        vtkMesh = build(r.GetOutput())
+
+        if 'boundary' in vtkMesh:  # single region mesh
+            vtkMesh = {'': vtkMesh}
+
+        return vtkMesh
 
     def _updateDB(self, vtkMesh, boundaries):
         def oldBoundaries(region):

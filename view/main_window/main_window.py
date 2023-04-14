@@ -218,9 +218,9 @@ class MainWindow(QMainWindow):
         self._ui.actionCloseCase.triggered.connect(self._closeProject)
         self._ui.actionExit.triggered.connect(self.close)
 
-        self._ui.actionMeshScale.triggered.connect(self._scaleMesh)
-        self._ui.actionMeshTranslate.triggered.connect(self._translateMesh)
-        self._ui.actionMeshRotate.triggered.connect(self._rotateMesh)
+        self._ui.actionMeshScale.triggered.connect(self._openMeshScaleDialog)
+        self._ui.actionMeshTranslate.triggered.connect(self._openMeshTranslateDialog)
+        self._ui.actionMeshRotate.triggered.connect(self._openMeshRotateDialog)
 
         self._ui.actionScale.triggered.connect(self._changeScale)
         self._ui.actionLanguage.triggered.connect(self._changeLanguage)
@@ -231,7 +231,6 @@ class MainWindow(QMainWindow):
         self._project.meshChanged.connect(self._meshChanged)
         self._project.projectOpened.connect(self._projectOpened)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
-        self._meshManager.meshChanged.connect(self._vtkChanged, Qt.ConnectionType.QueuedConnection)
 
     def _save(self):
         if self._saveCurrentPage():
@@ -283,31 +282,95 @@ class MainWindow(QMainWindow):
         self._closeType = CloseType.CLOSE_PROJECT
         self.close()
 
-    def _scaleMesh(self):
+    def _openMeshScaleDialog(self):
         self._dialog = MeshScaleDialog(self, self._meshManager)
         self._dialog.open()
+        self._dialog.accepted.connect(self._scaleMesh)
 
-    def _translateMesh(self):
+    def _openMeshTranslateDialog(self):
         self._dialog = MeshTranslateDialog(self, self._meshManager)
         self._dialog.open()
+        self._dialog.accepted.connect(self._translateMesh)
 
-    def _rotateMesh(self):
+    def _openMeshRotateDialog(self):
         self._dialog = MeshRotateDialog(self, self._meshManager)
         self._dialog.open()
+        self._dialog.accepted.connect(self._rotateMesh)
 
     @qasync.asyncSlot()
-    async def _vtkChanged(self):
+    async def _scaleMesh(self):
+        progressDialog = ProgressDialogSimple(self, self.tr('Mesh Scaling'))
+        progressDialog.open()
+
+        try:
+            progressDialog.setLabelText(self.tr('Scaling the mesh.'))
+            if await self._meshManager.scale(*self._dialog.data()):
+                progressDialog.finish(self.tr('Mesh scaling failed.'))
+                return
+
+            loader = PolyMeshLoader()
+            loader.progress.connect(progressDialog.setLabelText)
+            await loader.loadVtk()
+
+            progressDialog.finish(self.tr('Mesh scaling is complete'))
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+
+    @qasync.asyncSlot()
+    async def _translateMesh(self):
+        progressDialog = ProgressDialogSimple(self, self.tr('Mesh Translation'))
+        progressDialog.open()
+
+        try:
+            progressDialog.setLabelText(self.tr('Translating the mesh.'))
+            if await self._meshManager.translate(*self._dialog.data()):
+                progressDialog.finish(self.tr('Mesh translation failed.'))
+                return
+
+            loader = PolyMeshLoader()
+            loader.progress.connect(progressDialog.setLabelText)
+            await loader.loadVtk()
+
+            progressDialog.finish(self.tr('Mesh translation is complete'))
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+
+    @qasync.asyncSlot()
+    async def _rotateMesh(self):
+        progressDialog = ProgressDialogSimple(self, self.tr('Mesh Rotation'))
+        progressDialog.open()
+
+        try:
+            progressDialog.setLabelText(self.tr('Rotating the mesh.'))
+            if await self._meshManager.rotate(*self._dialog.data()):
+                progressDialog.finish(self.tr('Mesh rotation failed.'))
+                return
+
+            loader = PolyMeshLoader()
+            loader.progress.connect(progressDialog.setLabelText)
+            await loader.loadVtk()
+
+            progressDialog.finish(self.tr('Mesh rotation is complete'))
+        except Exception as ex:
+            logger.info(ex, exc_info=True)
+            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+
+    @qasync.asyncSlot()
+    async def _loadVtkMesh(self):
         progressDialog = ProgressDialogSimple(self, self.tr('Case Loading.'))
         progressDialog.open()
 
-        progressDialog.setLabelText(self.tr('Loading Mesh.'))
+        loader = PolyMeshLoader()
+        loader.progress.connect(progressDialog.setLabelText)
 
         # Workaround to give some time for QT to set up timer or event loop.
         # This workaround is not necessary on Windows because BARAM for Windows
         #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
         await asyncio.sleep(0.1)
 
-        await PolyMeshLoader().loadVtk()
+        await loader.loadVtk()
 
         progressDialog.close()
 
@@ -362,7 +425,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(f'{app.properties.fullName} - {self._project.path}')
 
         if self._project.meshLoaded:
-            self._meshManager.meshChanged.emit()
+            self._loadVtkMesh()
 
     def _addTabifiedDock(self, dock):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)

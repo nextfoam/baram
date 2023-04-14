@@ -8,7 +8,6 @@ from enum import Enum, auto
 from pathlib import Path
 
 from PySide6.QtCore import QObject
-from PySide6.QtCore import Signal
 
 from openfoam.run import runUtility
 from openfoam.file_system import FileSystem
@@ -41,8 +40,6 @@ OPENFOAM_MESH_CONVERTERS = {
 
 
 class MeshManager(QObject):
-    meshChanged = Signal()
-
     def __init__(self, window):
         super().__init__()
 
@@ -50,68 +47,22 @@ class MeshManager(QObject):
 
     @qasync.asyncSlot()
     async def scale(self, x, y, z):
-        progressDialog = ProgressDialogSimple(self._window, self.tr('Mesh Scaling'))
-        progressDialog.open()
-
-        progressDialog.setLabelText(self.tr('Scaling the mesh.'))
-
-        try:
-            proc = await runUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
-                                    cwd=FileSystem.caseRoot())
-            result = await proc.wait()
-
-            if result:
-                progressDialog.finish(self.tr('Mesh scaling failed.'))
-            else:
-                progressDialog.finish(self.tr('Mesh scaling is complete'))
-                self.meshChanged.emit()
-        except Exception as ex:
-            logger.info(ex, exc_info=True)
-            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+        proc = await runUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})', cwd=FileSystem.caseRoot())
+        return await proc.wait()
 
     @qasync.asyncSlot()
     async def translate(self, x, y, z):
-        progressDialog = ProgressDialogSimple(self._window, self.tr('Mesh Translation'))
-        progressDialog.open()
-
-        progressDialog.setLabelText(self.tr('Translating the mesh.'))
-
-        try:
-            proc = await runUtility(
-                'transformPoints', '-allRegions', '-translate', f'({x} {y} {z})', cwd=FileSystem.caseRoot())
-            result = await proc.wait()
-
-            if result:
-                progressDialog.finish(self.tr('Mesh translation failed.'))
-            else:
-                progressDialog.finish(self.tr('Mesh translation is complete'))
-                self.meshChanged.emit()
-        except Exception as ex:
-            logger.info(ex, exc_info=True)
-            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+        proc = await runUtility(
+            'transformPoints', '-allRegions', '-translate', f'({x} {y} {z})', cwd=FileSystem.caseRoot())
+        return await proc.wait()
 
     @qasync.asyncSlot()
     async def rotate(self, origin, axis, angle):
-        progressDialog = ProgressDialogSimple(self._window, self.tr('Mesh Rotation'))
-        progressDialog.open()
-
-        progressDialog.setLabelText(self.tr('Rotating the mesh.'))
-
-        try:
-            proc = await runUtility('transformPoints', '-allRegions',
-                                    '-origin', f'({" ".join(origin)})',
-                                    '-rotate-angle', f'(({" ".join(axis)}) {angle})',
-                                    cwd=FileSystem.caseRoot())
-            result = await proc.wait()
-
-            if result:
-                progressDialog.finish(self.tr('Mesh rotation failed.'))
-            else:
-                progressDialog.finish(self.tr('Mesh rotation is complete'))
-                self.meshChanged.emit()
-        except Exception as ex:
-            logger.info(ex, exc_info=True)
-            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+        proc = await runUtility('transformPoints', '-allRegions',
+                                '-origin', f'({" ".join(origin)})',
+                                '-rotate-angle', f'(({" ".join(axis)}) {angle})',
+                                cwd=FileSystem.caseRoot())
+        return await proc.wait()
 
     async def importOpenFoamMesh(self, path: Path):
         progressDialog = ProgressDialogSimple(self._window, self.tr('Mesh Loading'))
