@@ -7,11 +7,10 @@ import qasync
 from enum import Enum, auto
 from pathlib import Path
 
-from PySide6.QtCore import QObject
-
 from openfoam.run import runUtility
 from openfoam.file_system import FileSystem
 from openfoam.polymesh.polymesh_loader import PolyMeshLoader
+from libbaram.process import Processor
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
 
 
@@ -39,7 +38,7 @@ OPENFOAM_MESH_CONVERTERS = {
 }
 
 
-class MeshManager(QObject):
+class MeshManager(Processor):
     def __init__(self, window):
         super().__init__()
 
@@ -47,22 +46,23 @@ class MeshManager(QObject):
 
     @qasync.asyncSlot()
     async def scale(self, x, y, z):
-        proc = await runUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})', cwd=FileSystem.caseRoot())
-        return await proc.wait()
+        self._proc = await runUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
+                                      cwd=FileSystem.caseRoot())
+        return await self._proc.wait()
 
     @qasync.asyncSlot()
     async def translate(self, x, y, z):
-        proc = await runUtility(
+        self._proc = await runUtility(
             'transformPoints', '-allRegions', '-translate', f'({x} {y} {z})', cwd=FileSystem.caseRoot())
-        return await proc.wait()
+        return await self._proc.wait()
 
     @qasync.asyncSlot()
     async def rotate(self, origin, axis, angle):
-        proc = await runUtility('transformPoints', '-allRegions',
-                                '-origin', f'({" ".join(origin)})',
-                                '-rotate-angle', f'(({" ".join(axis)}) {angle})',
-                                cwd=FileSystem.caseRoot())
-        return await proc.wait()
+        self._proc = await runUtility('transformPoints', '-allRegions',
+                                      '-origin', f'({" ".join(origin)})',
+                                      '-rotate-angle', f'(({" ".join(axis)}) {angle})',
+                                      cwd=FileSystem.caseRoot())
+        return await self._proc.wait()
 
     async def importOpenFoamMesh(self, path: Path):
         progressDialog = ProgressDialogSimple(self._window, self.tr('Mesh Loading'))

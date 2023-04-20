@@ -7,6 +7,8 @@ import os
 import platform
 import subprocess
 
+from PySide6.QtCore import QObject, Signal
+
 
 def isRunning(pid, startTime):
     if pid and startTime:
@@ -42,3 +44,20 @@ async def runExternalScript(program: str, *args, cwd=None, useVenv=True, stderr=
                                                 startupinfo=startupinfo,
                                                 stderr=stderr)
     return proc
+
+
+class Processor(QObject):
+    progress = Signal(str)
+
+    def __init__(self):
+        super().__init__()
+        self._proc = None
+
+    def cancel(self):
+        if self._proc:
+            self._proc.terminate()
+            self._proc = None
+
+
+class ProcessCanceledException(Exception):
+    pass
