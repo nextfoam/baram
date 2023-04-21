@@ -52,11 +52,17 @@ class Processor(QObject):
     def __init__(self):
         super().__init__()
         self._proc = None
+        self._cancel = False
 
     def cancel(self):
         if self._proc:
             self._proc.terminate()
             self._proc = None
+
+        self._cancel = True
+
+    def canceled(self):
+        return self._cancel
 
 
 class ProcessCanceledException(Exception):
