@@ -109,40 +109,6 @@ def updateData(target, source):
         return mergeDataFrames([filtered, source])
 
 
-def updateDataFromFile(target: pd.DataFrame, rname: str, f: TextIO) -> (bool, pd.DataFrame):
-    lines, names = readOutFile(f)
-    if not lines:
-        return False, target
-
-    if rname != '':
-        names = [k if k == 'Time' else rname + ':' + k for k in names]
-
-    stream = StringIO(lines)
-    df = pd.read_csv(stream, sep=r'\s+', names=names, dtype={'Time': np.float64})
-    stream.close()
-
-    df.set_index('Time', inplace=True)
-
-    return True, updateData(target, df)
-
-
-def getDataFrame(rname, path) -> pd.DataFrame:
-    with path.open(mode='r') as f:
-        f.readline()  # skip '# Solver information' comment
-        names = f.readline().split()  # read header
-        if len(names) == 0:
-            return None
-
-        names.pop(0)  # remove '#' from the list
-        if names[0] != 'Time':
-            raise RuntimeError
-        if rname != '':
-            names = [k if k == 'Time' else rname + ':' + k for k in names]
-        df = pd.read_csv(f, sep=r'\s+', names=names, skiprows=0)
-        df.set_index('Time', inplace=True)
-        return df
-
-
 class Worker(QObject):
     start = Signal()
     stop = Signal()
@@ -166,6 +132,9 @@ class Worker(QObject):
 
         self.timer = None
         self.running = False
+
+        self._header = None
+        self._columns = None
 
         self.start.connect(self.startRun, type=Qt.ConnectionType.QueuedConnection)
         self.stop.connect(self.stopRun, type=Qt.ConnectionType.QueuedConnection)
@@ -226,13 +195,13 @@ class Worker(QObject):
                 hasUpdate = False
                 for s in self.infoFiles.values():
                     if s not in self.changingFiles.values():  # not-changing files
-                        df = getDataFrame(s.rname, s.path)
+                        df = self._getDataFrame(s.rname, s.path)
                         if df is not None:
                             self.data[s.rname] = updateData(self.data[s.rname], df)
 
                 for s in self.changingFiles.values():
                     s.f = open(s.path, 'r')
-                    updated, df = updateDataFromFile(self.data[s.rname], s.rname, s.f)
+                    updated, df = self._updateDataFromFile(self.data[s.rname], s.rname, s.f)
                     if updated:
                         self.data[s.rname] = updateData(self.data[s.rname], df)
                         hasUpdate = True
@@ -245,7 +214,7 @@ class Worker(QObject):
         # regular update routine
         hasUpdate = False
         for s in updatedFiles.values():
-            updated, df = updateDataFromFile(self.data[s.rname], s.rname, self.infoFiles[s.path].f)
+            updated, df = self._updateDataFromFile(self.data[s.rname], s.rname, self.infoFiles[s.path].f)
             if updated:
                 self.data[s.rname] = df
                 hasUpdate = True
@@ -298,6 +267,53 @@ class Worker(QObject):
 
     def update(self):
         self.residualsUpdated.emit(mergeDataFrames(self.data.values()))
+
+    def _updateDataFromFile(self, target: pd.DataFrame, rname: str, f: TextIO) -> (bool, pd.DataFrame):
+        lines, names = readOutFile(f)
+        if not lines:
+            return False, target
+
+        self._setHeader(names)
+        names = self._header
+        if rname != '':
+            names = [k if k == 'Time' else rname + ':' + k for k in self._header]
+
+        stream = StringIO(lines)
+        df = pd.read_csv(stream, sep=r'\s+', names=names, dtype={'Time': np.float64})[self._columns]
+        stream.close()
+
+        df.set_index('Time', inplace=True)
+
+        return True, updateData(target, df)
+
+    def _getDataFrame(self, rname, path) -> pd.DataFrame:
+        with path.open(mode='r') as f:
+            f.readline()  # skip '# Solver information' comment
+            names = f.readline().split()  # read header
+            if len(names) == 0:
+                return None
+
+            names.pop(0)  # remove '#' from the list
+            if names[0] != 'Time':
+                raise RuntimeError
+
+            self._setHeader(names)
+            names = self._header
+            if rname != '':
+                names = [k if k == 'Time' else rname + ':' + k for k in self._header]
+
+            df = pd.read_csv(f, sep=r'\s+', names=names, skiprows=0)[self._columns]
+            df.set_index('Time', inplace=True)
+            return df
+
+    def _setHeader(self, header):
+        if self._header is None:
+            self._header = header
+            self._columns = [header[0]]     # Time
+            for i in range(1, len(header)):
+                if header[i].endswith('_initial'):
+                    self._header[i] = header[i][:-8]
+                    self._columns.append(self._header[i])
 
 
 class SolverInfoManager(QObject):

@@ -15,13 +15,14 @@ END_MARGIN = 0.05  # 5% margin between line end and right axis
 
 
 class ChartWidget(QWidget):
-    def __init__(self, maxX):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
         self._data = None
         self._timeMax = None
         self._timeMin = None
         self._lines = {}
+        self._logScale = False
 
         layout = QtWidgets.QVBoxLayout(self)
 
@@ -31,15 +32,17 @@ class ChartWidget(QWidget):
         layout.addWidget(self._canvas)
 
         self._axes = self._canvas.figure.subplots()
-        self._axes.grid(alpha=0.6, linestyle='--')
-        self._axes.xaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
-        self._axes.yaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
-        # self._axes.set_yscale('log')
-
-        self._axes.set_xlim([-(maxX * END_MARGIN), maxX])
+        self.clear()
 
     def setTitle(self, title):
         self._axes.set_title(title)
+
+    def logScaleOn(self):
+        self._logScale = True
+
+    def setData(self, data):
+        self._data = data
+        self._updateChart()
 
     def appendData(self, data):
         if self._data is None:
@@ -48,6 +51,24 @@ class ChartWidget(QWidget):
             self._data = pd.concat([self._data[self._data.index < data.first_valid_index()], data])
 
         self._updateChart()
+
+    def clear(self):
+        self._axes.cla()
+
+        self._data = None
+        self._timeMax = None
+        self._timeMin = None
+        self._lines = {}
+
+        self._axes.grid(alpha=0.6, linestyle='--')
+        self._axes.xaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
+        self._axes.yaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
+        if self._logScale:
+            self._axes.set_yscale('log')
+
+        self._axes.set_xlim([0, 10])
+
+        self._canvas.draw()
 
     def _updateChart(self):
         d = self._data.reset_index()  # "Time" is back to a column to serve as X value in numpy transpose below

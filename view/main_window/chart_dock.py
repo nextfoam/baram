@@ -90,13 +90,13 @@ class ChartDock(TabifiedDock):
         self._data = data
 
         d = data.reset_index()  # "Time" is back to a column to serve as X value in numpy transpose below
-
-        columns = list(filter(lambda x: x.endswith('_initial'),
-                              data.columns.values.tolist()))
-
-        for c in columns:
+        #
+        # columns = list(filter(lambda x: x.endswith('_initial'),
+        #                       data.columns.values.tolist()))
+        #
+        for c in data.columns.values.tolist():
             if c not in self._lines:
-                self._lines[c], = self._axes.plot('Time', c, '', label=c[:-8], data=d)
+                self._lines[c], = self._axes.plot('Time', c, '', label=c, data=d)
                 self._lines[c].set_linewidth(0.8)
             else:
                 self._lines[c].set_data(d[['Time', c]].to_numpy().transpose())
@@ -180,10 +180,10 @@ class ChartDock(TabifiedDock):
         minY = None
         maxY = None
 
-        columns = list(filter(lambda x: x.endswith('_initial'),
-                              data.columns.values.tolist()))
-        d = data[(data.index >= minX) & (data.index <= maxX)][columns]
-
+        # columns = list(filter(lambda x: x.endswith('_initial'),
+        #                       data.columns.values.tolist()))
+        # d = data[(data.index >= minX) & (data.index <= maxX)][columns]
+        d = data[(data.index >= minX) & (data.index <= maxX)]
         minimum = d[d > 0].min().min()  # Residual value of "0" has been shown once
         if minY is None or minY > minimum:
             minY = minimum
