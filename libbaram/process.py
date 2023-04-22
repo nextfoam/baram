@@ -6,6 +6,7 @@ import asyncio
 import os
 import platform
 import subprocess
+import signal
 
 from PySide6.QtCore import QObject, Signal
 
@@ -46,23 +47,38 @@ async def runExternalScript(program: str, *args, cwd=None, useVenv=True, stderr=
     return proc
 
 
+def stopProcess(pid, startTime=None):
+    try:
+        ps = psutil.Process(pid)
+        with ps.oneshot():
+            if ps.is_running() and (ps.create_time() == startTime or startTime is None):
+                if platform.system() == "Windows":
+                    ps.send_signal(signal.CTRL_C_EVENT)
+                elif platform.system() == "Linux":
+                    ps.send_signal(signal.SIGTERM)
+                else:
+                    raise OSError
+    except psutil.NoSuchProcess:
+        pass
+
+
 class Processor(QObject):
     progress = Signal(str)
 
-    def __init__(self):
+    def __init__(self, proc=None):
         super().__init__()
-        self._proc = None
-        self._cancel = False
+        self._proc = proc
+        self._canceled = False
 
     def cancel(self):
         if self._proc:
             self._proc.terminate()
             self._proc = None
 
-        self._cancel = True
+        self._canceled = True
 
-    def canceled(self):
-        return self._cancel
+    def isCanceled(self):
+        return self._canceled
 
 
 class ProcessCanceledException(Exception):
