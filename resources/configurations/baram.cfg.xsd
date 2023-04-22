@@ -1304,7 +1304,7 @@
             <xs:element name="multiphase">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="maxIterationsPerTimeStep" type="xs:positiveInteger" default="2"/>
+                        <xs:element name="maxIterationsPerTimeStep" type="xs:nonNegativeInteger" default="2"/>
                         <xs:element name="numberOfCorrectors" type="xs:positiveInteger" default="1"/>
                         <xs:element name="useSemiImplicitMules" type="xs:boolean" default="true"/>
                         <xs:element name="phaseInterfaceCompressionFactor" type="inputNumberType" default="1"/>
