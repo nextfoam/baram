@@ -112,7 +112,7 @@ class MonitorDock(TabifiedDock):
             del self._deletedMonitors[name]
 
     def _createChart(self, maxX):
-        chart = ChartWidget(maxX)
+        chart = ChartWidget()
         self._chartsLayout.addWidget(chart)
         return chart
 
