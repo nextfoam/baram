@@ -23,6 +23,7 @@ class ChartWidget(QWidget):
         self._timeMin = None
         self._lines = {}
         self._logScale = False
+        self._initialMaxX = 10
 
         layout = QtWidgets.QVBoxLayout(self)
 
@@ -36,6 +37,9 @@ class ChartWidget(QWidget):
 
     def setTitle(self, title):
         self._axes.set_title(title)
+
+    def setMaxX(self, maxX):
+        self._initialMaxX = maxX
 
     def logScaleOn(self):
         self._logScale = True
@@ -66,9 +70,15 @@ class ChartWidget(QWidget):
         if self._logScale:
             self._axes.set_yscale('log')
 
-        self._axes.set_xlim([0, 10])
+        self._axes.set_xlim([-(self._initialMaxX * END_MARGIN), self._initialMaxX])
 
         self._canvas.draw()
+
+    def draw(self):
+        if self._data is None:
+            self.clear()
+        else:
+            self._updateChart()
 
     def _updateChart(self):
         d = self._data.reset_index()  # "Time" is back to a column to serve as X value in numpy transpose below
@@ -161,10 +171,17 @@ class ChartWidget(QWidget):
         if maxY is None or maxY < d.max().max():
             maxY = d.max().max()
 
-        m = (maxY - minY) * 0.05
-        if m == 0:
-            m = 1
-        maxY += m
-        minY -= m
+        if self._logScale:
+            minY = minY / 10  # margin in log scale
+            if maxY < 0.1:
+                maxY = maxY * 10  # margin in log scale
+            else:
+                maxY = 1
+        else:
+            m = (maxY - minY) * 0.05
+            if m == 0:
+                m = 1
+            maxY += m
+            minY -= m
 
         self._axes.set_ylim([minY, maxY])
