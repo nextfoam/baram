@@ -52,12 +52,7 @@ def stopProcess(pid, startTime=None):
         ps = psutil.Process(pid)
         with ps.oneshot():
             if ps.is_running() and (ps.create_time() == startTime or startTime is None):
-                if platform.system() == "Windows":
-                    ps.send_signal(signal.CTRL_C_EVENT)
-                elif platform.system() == "Linux":
-                    ps.send_signal(signal.SIGTERM)
-                else:
-                    raise OSError
+                ps.terminate()
     except psutil.NoSuchProcess:
         pass
 
