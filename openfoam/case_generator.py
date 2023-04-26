@@ -173,7 +173,7 @@ class CaseGenerator(QObject):
             if nProcessorFolders > 0 and nProcessorFolders != numCores:
                 latestTime = max([f.name for f in (caseRoot / 'processor0').glob('[0-9.]*') if f.name.count('.') < 2],
                                  key=lambda x: float(x))
-                self._proc = await runUtility('reconstructPar', '-allRegions', '-newTimes', '-case', caseRoot, cwd=caseRoot)
+                self._proc = await runUtility('reconstructPar', '-allRegions', '-newTimes', '-case', caseRoot, cwd=caseRoot, stdout=asyncio.subprocess.PIPE)
 
                 self.progress.emit(self.tr('Reconstructing the case.'))
 

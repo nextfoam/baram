@@ -154,7 +154,7 @@ def launchSolver(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float)
         return launchSolverOnLinux(solver, casePath, uuid, np)
 
 
-async def runUtility(program: str, *args, cwd=None):
+async def runUtility(program: str, *args, cwd=None, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
     global creationflags
     global startupinfo
 
@@ -169,12 +169,13 @@ async def runUtility(program: str, *args, cwd=None):
                                                 env=ENV, cwd=cwd,
                                                 creationflags=creationflags,
                                                 startupinfo=startupinfo,
-                                                stdout=asyncio.subprocess.PIPE)
+                                                stdout=stdout,
+                                                stderr=stderr)
 
     return proc
 
 
-async def runParallelUtility(program: str, *args, np: int = 1, cwd=None):
+async def runParallelUtility(program: str, *args, np: int = 1, cwd=None, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
     global creationflags
     global startupinfo
 
@@ -192,7 +193,9 @@ async def runParallelUtility(program: str, *args, np: int = 1, cwd=None):
     proc = await asyncio.create_subprocess_exec(MPICMD, '-np', str(np), OPENFOAM/'bin'/program, *args,
                                                 env=ENV, cwd=cwd,
                                                 creationflags=creationflags,
-                                                startupinfo=startupinfo)
+                                                startupinfo=startupinfo,
+                                                stdout=stdout,
+                                                stderr=stderr)
 
     return proc
 
