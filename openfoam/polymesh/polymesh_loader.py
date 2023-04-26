@@ -94,6 +94,7 @@ class PolyMeshLoader(QObject):
         Project.instance().setMeshLoaded(True, updated)
 
     async def loadVtk(self):
+        self.progress.emit(self.tr("Loading Mesh..."))
         vtkMesh = await self._loadVtkMesh(self._buildPatchArrayStatusFromDB())
         self._updateVtkMesh(vtkMesh)
 
