@@ -498,7 +498,7 @@ class MainWindow(QMainWindow):
         self._ui.menubar.repaint()
 
         if result == QFileDialog.Accepted:
-            CaseGenerator.createCase()
+            self._renewCase()
 
             file = Path(self._dialog.selectedFiles()[0])
             AppSettings.updateRecentMeshDirectory(str(file))
@@ -506,3 +506,7 @@ class MainWindow(QMainWindow):
                 await self._meshManager.importOpenFoamMesh(file)
             else:
                 await self._meshManager.importMesh(file, meshType)
+
+    def _renewCase(self):
+        self._project.renew()
+        CaseGenerator.createCase()

@@ -39,6 +39,12 @@ class ProjectOpenType(Enum):
     EXISTING = auto()
 
 
+class SettingKey(Enum):
+    FORMAT_VERSION = 'format_version'
+    UUID = 'case_uuid'
+    PATH = 'case_full_path'
+
+
 class _Project(QObject):
     meshChanged = Signal(bool)
     solverStatusChanged = Signal(SolverStatus)
@@ -61,8 +67,9 @@ class _Project(QObject):
             return None
 
         def set(self, key, value):
-            self._settings[key.value] = str(value)
-            self._save()
+            if self.get(key) != value:
+                self._settings[key.value] = str(value)
+                self._save()
 
         def _load(self):
             if self._settingsFile.is_file():
@@ -70,7 +77,7 @@ class _Project(QObject):
                     self._settings = yaml.load(file, Loader=yaml.FullLoader)
 
         def _save(self):
-            self._settings[ProjectSettingKey.FORMAT_VERSION.value] = FORMAT_VERSION
+            self._settings[SettingKey.FORMAT_VERSION.value] = FORMAT_VERSION
 
             with open(self._settingsFile, 'w') as file:
                 yaml.dump(self._settings, file)
@@ -80,6 +87,7 @@ class _Project(QObject):
 
         self._meshLoaded = False
         self._status = SolverStatus.NONE
+        self._process = None
         self._runType = None
 
         self._settings = None
@@ -91,13 +99,15 @@ class _Project(QObject):
 
         self._timer = None
 
+        self._renewed = False
+
     @property
     def uuid(self):
-        return self._settings.get(ProjectSettingKey.UUID)
+        return self._settings.get(SettingKey.UUID)
 
     @property
     def path(self):
-        return Path(self._settings.get(ProjectSettingKey.PATH))
+        return Path(self._settings.get(SettingKey.PATH))
 
     @property
     def name(self):
@@ -117,12 +127,15 @@ class _Project(QObject):
 
     @uuid.setter
     def uuid(self, uuid_):
-        self._settings.set(ProjectSettingKey.UUID, uuid_)
+        self._settings.set(SettingKey.UUID, uuid_)
 
     def fileDB(self):
         return self._fileDB
 
     def solverProcess(self):
+        if self._renewed:
+            return self._process
+
         return self._projectSettings.get(ProjectSettingKey.PROCESS_ID),\
                self._projectSettings.get(ProjectSettingKey.PROCESS_START_TIME)
 
@@ -144,13 +157,16 @@ class _Project(QObject):
 
     def setSolverProcess(self, process):
         self._runType = RunType.PROCESS
-        self._projectSettings.setProcess(process)
+        self._process = process
+
+        if not self._renewed:
+            self._projectSettings.setProcess(process)
         self._startProcessMonitor(process)
 
     def setSolverStatus(self, status):
         if self._status != status:
             self._status = status
-            if status == SolverStatus.NONE:
+            if status == SolverStatus.NONE and not self._renewed:
                 self._projectSettings.setProcess(None)
             self.solverStatusChanged.emit(status)
 
@@ -166,12 +182,15 @@ class _Project(QObject):
     def opened(self):
         self.projectOpened.emit()
 
+    def renew(self):
+        self._renewed = True
+
     def _open(self, path: Path, route=ProjectOpenType.EXISTING):
         self._settings = self.LocalSettings(path)
         if route != ProjectOpenType.SAVE_AS:
             self._projectSettings = ProjectSettings()
 
-        self._settings.set(ProjectSettingKey.PATH, path)
+        self._settings.set(SettingKey.PATH, path)
 
         if route != ProjectOpenType.EXISTING or self.uuid:
             projectPath = None

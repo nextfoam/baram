@@ -34,6 +34,7 @@ VOLUME_MONITOR_OPERATION = {
     VolumeReportType.COEFFICIENT_OF_VARIATION.value: 'CoV',
 }
 
+
 def _getAvailableFields():
     fields = ['U']
 
@@ -60,6 +61,11 @@ def _getAvailableFields():
 
     if ModelsDB.isEnergyModelOn():
         fields.append('h')
+
+    if ModelsDB.isMultiphaseModelOn():
+        for mid, name, _, phase in coredb.CoreDB().getMaterials():
+            if MaterialDB.dbTextToPhase(phase) != Phase.SOLID:
+                fields.append(f'alpha.{name}')
 
     return fields
 
