@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 import uuid
 from enum import auto, Enum
 from typing import Optional
@@ -131,6 +130,12 @@ class _Project(QObject):
 
     def fileDB(self):
         return self._fileDB
+
+    def getLocalSetting(self, key):
+        return self._settings.get(key)
+
+    def setLocalSetting(self, key, value):
+        self._settings.set(key, value)
 
     def solverProcess(self):
         if self._renewed:
