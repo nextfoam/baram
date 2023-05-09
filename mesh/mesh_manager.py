@@ -7,7 +7,8 @@ import qasync
 from enum import Enum, auto
 from pathlib import Path
 
-from openfoam.run import runUtility
+from coredb import coredb
+from openfoam.run import runUtility, runParallelUtility
 from openfoam.file_system import FileSystem
 from openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from libbaram.process import Processor
@@ -46,22 +47,31 @@ class MeshManager(Processor):
 
     @qasync.asyncSlot()
     async def scale(self, x, y, z):
-        self._proc = await runUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
-                                      cwd=FileSystem.caseRoot())
+        numCores = int(coredb.CoreDB().getValue('.//runCalculation/parallel/numberOfCores'))
+        caseRoot = FileSystem.caseRoot()
+
+        self._proc = await runParallelUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
+                                              '-case', caseRoot, np=numCores, cwd=caseRoot)
         return await self._proc.wait()
 
     @qasync.asyncSlot()
     async def translate(self, x, y, z):
-        self._proc = await runUtility(
-            'transformPoints', '-allRegions', '-translate', f'({x} {y} {z})', cwd=FileSystem.caseRoot())
+        numCores = int(coredb.CoreDB().getValue('.//runCalculation/parallel/numberOfCores'))
+        caseRoot = FileSystem.caseRoot()
+
+        self._proc = await runParallelUtility('transformPoints', '-allRegions', '-translate', f'({x} {y} {z})',
+                                              '-case', caseRoot, np=numCores, cwd=caseRoot)
         return await self._proc.wait()
 
     @qasync.asyncSlot()
     async def rotate(self, origin, axis, angle):
-        self._proc = await runUtility('transformPoints', '-allRegions',
-                                      '-origin', f'({" ".join(origin)})',
-                                      '-rotate-angle', f'(({" ".join(axis)}) {angle})',
-                                      cwd=FileSystem.caseRoot())
+        numCores = int(coredb.CoreDB().getValue('.//runCalculation/parallel/numberOfCores'))
+        caseRoot = FileSystem.caseRoot()
+
+        self._proc = await runParallelUtility('transformPoints', '-allRegions',
+                                              '-origin', f'({" ".join(origin)})',
+                                              '-rotate-angle', f'(({" ".join(axis)}) {angle})',
+                                              '-case', caseRoot, np=numCores, cwd=caseRoot)
         return await self._proc.wait()
 
     async def importOpenFoamMesh(self, path: Path):
