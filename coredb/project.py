@@ -190,6 +190,9 @@ class _Project(QObject):
     def renew(self):
         self._renewed = True
 
+    def isRenewed(self):
+        return self._renewed
+
     def _open(self, path: Path, route=ProjectOpenType.EXISTING):
         self._settings = self.LocalSettings(path)
         if route != ProjectOpenType.SAVE_AS:
