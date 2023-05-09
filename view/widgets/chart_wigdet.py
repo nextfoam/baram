@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+
 from PySide6.QtWidgets import QWidget
 
 import numpy as np
@@ -26,6 +28,7 @@ class ChartWidget(QWidget):
         self._initialMaxX = 10
 
         layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         self._canvas = FigureCanvas(Figure(figsize=(5, 3)))
         self._canvas.mpl_connect('scroll_event', self._onScroll)
@@ -172,6 +175,9 @@ class ChartWidget(QWidget):
             maxY = d.max().max()
 
         if self._logScale:
+            minY = max(minY, sys.float_info.epsilon)
+            maxY = max(maxY, sys.float_info.epsilon)
+
             minY = minY / 10  # margin in log scale
             if maxY < 0.1:
                 maxY = maxY * 10  # margin in log scale
