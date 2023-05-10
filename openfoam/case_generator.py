@@ -165,7 +165,7 @@ class CaseGenerator(QObject):
         caseRoot = FileSystem.caseRoot()
 
         numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
-        processorFolders = list(caseRoot.glob('processor[0-9]*'))
+        processorFolders = FileSystem.processorFolders()
         nProcessorFolders = len(processorFolders)
 
         try:
