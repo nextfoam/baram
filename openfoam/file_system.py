@@ -14,6 +14,19 @@ class FileLoadingError(Exception):
     pass
 
 
+def clearDirectory(directory, filesToKeep):
+    for file in directory.glob('*'):
+        if file.name not in filesToKeep:
+            remove(file)
+
+
+def remove(file):
+    if file.is_dir():
+        utils.rmtree(file)
+    else:
+        file.unlink()
+
+
 class FileSystem:
     TEMP_DIRECTORY_NAME = 'temp'
     CASE_DIRECTORY_NAME = 'case'
@@ -32,6 +45,12 @@ class FileSystem:
     _systemPath = None
     _postProcessingPath = None
 
+    _caseFilesToKeep = [
+        CONSTANT_DIRECTORY_NAME,
+        SYSTEM_DIRECTORY_NAME,
+        FOAM_FILE_NAME,
+        BOUNDARY_CONDITIONS_DIRECTORY_NAME
+    ]
     _constantFilesToKeep = [POLY_MESH_DIRECTORY_NAME, REGION_PROPERTIES_FILE_NAME]
 
     @classmethod
@@ -197,21 +216,27 @@ class FileSystem:
         # if latestTimeDir != cls._boundaryConditionsPath:
         #     latestTimeDir.replace(cls._boundaryConditionsPath)
 
-        keepFiles = [cls.CONSTANT_DIRECTORY_NAME, cls.SYSTEM_DIRECTORY_NAME, cls.FOAM_FILE_NAME]
+        def _clearConstant(path):
+            constantPath = path / cls.CONSTANT_DIRECTORY_NAME
+            if len(regions) > 1:
+                for f in constantPath.glob('*'):
+                    if f.name in regions:
+                        clearDirectory(f, cls._constantFilesToKeep)
+                    elif f.name not in cls._constantFilesToKeep:
+                        remove(f)
+
+        processors = cls.processorFolders()
+
         for file in cls._casePath.glob('*'):
-            if file.name not in keepFiles:
-                cls._remove(file)
+            if file.name not in cls._caseFilesToKeep and not file.name.startswith('processor'):
+                remove(file)
+        _clearConstant(cls._casePath)
 
-        if len(regions) == 1 and not regions[0]:
-            cls._clearDirectory(cls._constantPath, cls._constantFilesToKeep)
-        else:
-            for file in cls._constantPath.glob('*'):
-                if file.name in regions:
-                    cls._clearDirectory(file, cls._constantFilesToKeep)
-                elif file.name not in cls._constantFilesToKeep:
-                    cls._remove(file)
+        for processor in processors:
+            clearDirectory(processor, cls._caseFilesToKeep)
+            _clearConstant(processor)
 
-        cls._clearDirectory(cls._systemPath, ['controlDict'])
+        clearDirectory(cls._systemPath, ['controlDict'])
 
     @classmethod
     def addConstantFileToKeep(cls, fileName):
@@ -224,16 +249,3 @@ class FileSystem:
         cls._boundaryConditionsPath = cls._casePath / cls.BOUNDARY_CONDITIONS_DIRECTORY_NAME
         cls._systemPath = cls._casePath / cls.SYSTEM_DIRECTORY_NAME
         cls._postProcessingPath = cls._casePath / cls.POST_PROCESSING_DIRECTORY_NAME
-
-    @classmethod
-    def _clearDirectory(cls, directory, filesToKeep):
-        for file in directory.glob('*'):
-            if file.name not in filesToKeep:
-                cls._remove(file)
-
-    @classmethod
-    def _remove(cls, file):
-        if file.is_dir():
-            utils.rmtree(file)
-        else:
-            file.unlink()
