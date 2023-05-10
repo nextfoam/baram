@@ -112,6 +112,14 @@ class FileSystem:
         return True
 
     @classmethod
+    def processorFolders(cls):
+        return list(cls._casePath.glob('processor[0-9]*'))
+
+    @classmethod
+    def numberOfProcessorFolders(cls):
+        return len(cls.processorFolders())
+
+    @classmethod
     def _setupNewCase(cls):
         with open(cls.foamFilePath(), 'a'):
             pass
