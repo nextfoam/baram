@@ -14,9 +14,9 @@ class FileLoadingError(Exception):
     pass
 
 
-def clearDirectory(directory, filesToKeep):
+def clearDirectory(directory, filesToKeep, fileToKeep=None):
     for file in directory.glob('*'):
-        if file.name not in filesToKeep:
+        if file.name not in filesToKeep and file.name != fileToKeep:
             remove(file)
 
 
@@ -49,7 +49,7 @@ class FileSystem:
         CONSTANT_DIRECTORY_NAME,
         SYSTEM_DIRECTORY_NAME,
         FOAM_FILE_NAME,
-        BOUNDARY_CONDITIONS_DIRECTORY_NAME
+        # BOUNDARY_CONDITIONS_DIRECTORY_NAME
     ]
     _constantFilesToKeep = [POLY_MESH_DIRECTORY_NAME, REGION_PROPERTIES_FILE_NAME]
 
@@ -196,7 +196,7 @@ class FileSystem:
         cls._setCaseRoot(targetPath)
 
     @classmethod
-    async def initialize(cls, regions):
+    async def initialize(cls, regions, time: str = None):
         ###
         ### This corresponds to a feature of "preserving last calculation result".
         ### The feature will be provided in other form in the future,
@@ -216,26 +216,27 @@ class FileSystem:
         # if latestTimeDir != cls._boundaryConditionsPath:
         #     latestTimeDir.replace(cls._boundaryConditionsPath)
 
-        def _clearConstant(path):
+        def clearConstant(path):
             constantPath = path / cls.CONSTANT_DIRECTORY_NAME
             if len(regions) > 1:
-                for f in constantPath.glob('*'):
-                    if f.name in regions:
-                        clearDirectory(f, cls._constantFilesToKeep)
-                    elif f.name not in cls._constantFilesToKeep:
-                        remove(f)
+                for file in constantPath.glob('*'):
+                    if file.name in regions:
+                        clearDirectory(file, cls._constantFilesToKeep)
+                    elif file.name not in cls._constantFilesToKeep:
+                        remove(file)
 
-        processors = cls.processorFolders()
+        if time is None:
+            clearDirectory(cls._casePath, cls._caseFilesToKeep)
+        else:
+            for f in cls._casePath.glob('*'):
+                if f.name not in cls._caseFilesToKeep and f.name != time and not f.name.startswith('processor'):
+                    remove(f)
 
-        for file in cls._casePath.glob('*'):
-            if file.name not in cls._caseFilesToKeep and not file.name.startswith('processor'):
-                remove(file)
-        _clearConstant(cls._casePath)
+            for processor in cls.processorFolders():
+                clearDirectory(processor, cls._caseFilesToKeep, time)
+                clearConstant(processor)
 
-        for processor in processors:
-            clearDirectory(processor, cls._caseFilesToKeep)
-            _clearConstant(processor)
-
+        clearConstant(cls._casePath)
         clearDirectory(cls._systemPath, ['controlDict'])
 
     @classmethod
