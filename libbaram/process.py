@@ -67,14 +67,24 @@ class Processor(QObject):
         self._canceled = False
 
     def cancel(self):
-        if self._proc:
-            self._proc.terminate()
-            self._proc = None
-
-        self._canceled = True
+        try:
+            if self._proc:
+                self._proc.terminate()
+        except ProcessLookupError:
+            return
 
     def isCanceled(self):
         return self._canceled
+
+    async def run(self, stream):
+        while not stream.at_eof() and not self._canceled:
+            if line := await stream.readline():
+                self.progress.emit(line.decode('UTF-8'))
+            else:
+                await asyncio.sleep(1)
+
+        await self._proc.communicate()
+        self._proc = None
 
 
 class ProcessCanceledException(Exception):
