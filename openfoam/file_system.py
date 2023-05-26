@@ -27,6 +27,11 @@ def remove(file):
         file.unlink()
 
 
+def copyDirectory(src, dst):
+    if src.is_dir():
+        shutil.copytree(src, dst, dirs_exist_ok=True)
+
+
 class FileSystem:
     TEMP_DIRECTORY_NAME = 'temp'
     CASE_DIRECTORY_NAME = 'case'
@@ -190,9 +195,21 @@ class FileSystem:
 
     @classmethod
     def saveAs(cls, projectPath):
+        def copyConfigurationFiles(src, dst):
+            copyDirectory(src / cls.BOUNDARY_CONDITIONS_DIRECTORY_NAME, dst / cls.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
+            copyDirectory(src / cls.CONSTANT_DIRECTORY_NAME, dst / cls.CONSTANT_DIRECTORY_NAME)
+            copyDirectory(src / cls.SYSTEM_DIRECTORY_NAME, dst / cls.SYSTEM_DIRECTORY_NAME)
+
         targetPath = projectPath / cls.CASE_DIRECTORY_NAME
-        if cls._casePath.exists():
-            shutil.copytree(cls._casePath, targetPath, dirs_exist_ok=True)
+        if cls._casePath.is_dir():
+            with open(cls.foamFilePath(), 'a'):
+                pass
+
+            copyConfigurationFiles(cls._casePath, targetPath)
+
+            for processor in cls.processorFolders():
+                copyConfigurationFiles(processor, targetPath / processor.name)
+
         cls._setCaseRoot(targetPath)
 
     @classmethod
