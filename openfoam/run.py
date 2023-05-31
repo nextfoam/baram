@@ -28,6 +28,9 @@ OPENFOAM = app.APP_PATH/'solvers'/'openfoam'
 creationflags = 0
 startupinfo = None
 
+STDOUT_FILE_NAME = 'stdout.log'
+STDERR_FILE_NAME = 'stderr.log'
+
 if platform.system() == 'Windows':
     MPICMD = 'mpiexec'
     MINGW = app.APP_PATH/'solvers'/'mingw64'
@@ -84,8 +87,8 @@ else:
 
 
 def openSolverProcess(cmd, casePath, inParallel):
-    stdout = open(casePath/'stdout.log', 'w')
-    stderr = open(casePath/'stderr.log', 'w')
+    stdout = open(casePath / STDOUT_FILE_NAME, 'w')
+    stderr = open(casePath / STDERR_FILE_NAME, 'w')
 
     if inParallel:
         cmd.append('-parallel')
