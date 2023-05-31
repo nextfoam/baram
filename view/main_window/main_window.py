@@ -238,6 +238,9 @@ class MainWindow(QMainWindow):
             self._project.save()
 
     def _saveAs(self):
+        QMessageBox.information(self, self.tr('Save as a new project'),
+                                self.tr('Only configuration and mesh are saved. (Calculation results are not copied)'))
+
         self._dialog = QFileDialog(self, self.tr('Select Project Directory'), AppSettings.getRecentLocation())
         self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         self._dialog.finished.connect(self._projectDirectorySelected)

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from enum import Enum
 from filelock import FileLock
 
@@ -64,10 +63,10 @@ class ProjectSettings:
         self._setPath(project.uuid, True)
         self._set(ProjectSettingKey.UUID, project.uuid)
         self._set(ProjectSettingKey.PATH, str(project.path))
-        # self._remove(ProjectSettingKey.PROCESS_ID)
-        # self._remove(ProjectSettingKey.PROCESS_START_TIME)
-        # self._remove(ProjectSettingKey.JOB_ID)
-        # self._remove(ProjectSettingKey.JOB_START_TIME)
+        self._remove(ProjectSettingKey.PROCESS_ID)
+        self._remove(ProjectSettingKey.PROCESS_START_TIME)
+        self._remove(ProjectSettingKey.JOB_ID)
+        self._remove(ProjectSettingKey.JOB_START_TIME)
         self.save()
 
     def save(self):

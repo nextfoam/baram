@@ -185,8 +185,14 @@ class ChartWidget(QWidget):
                 maxY = 1
         else:
             m = (maxY - minY) * 0.05
-            if m == 0:
-                m = 1
+            if m < sys.float_info.epsilon:
+                maxY += 1
+                minY -= 1
+
+                m = maxY - minY
+                if m < sys.float_info.epsilon:
+                    m = minY
+
             maxY += m
             minY -= m
 
