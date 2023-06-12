@@ -3,7 +3,7 @@
 
 from pathlib import Path
 
-from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor
+from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor, vtkFollower
 from vtkmodules.vtkIOLegacy import vtkPolyDataReader
 from vtkmodules.vtkCommonCore import vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkHexahedron, vtkCellArray, vtkUnstructuredGrid
@@ -11,6 +11,7 @@ from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 from vtkmodules.vtkFiltersSources import vtkLineSource, vtkSphereSource
 from vtkmodules.vtkFiltersCore import vtkTubeFilter
 from vtkmodules.vtkIOGeometry import vtkSTLReader
+from vtkmodules.vtkRenderingFreeType import vtkVectorText
 
 
 def loadVtkFile(file):
@@ -114,5 +115,32 @@ def sphereActor(point, radius):
     actor = vtkActor()
     actor.SetMapper(mapper)
     actor.GetProperty().SetColor(0.8, 0.8, 0.8)
+
+    return actor
+
+
+def lineActor(point1, point2):
+    lineSource = vtkLineSource()
+    lineSource.SetPoint1(point1)
+    lineSource.SetPoint2(point2)
+
+    mapper = vtkPolyDataMapper()
+    mapper.SetInputConnection(lineSource.GetOutputPort())
+
+    actor = vtkActor()
+    actor.SetMapper(mapper)
+
+    return actor
+
+
+def labelActor(text):
+    label = vtkVectorText()
+    label.SetText(text)
+
+    mapper = vtkPolyDataMapper()
+    mapper.SetInputConnection(label.GetOutputPort())
+
+    actor = vtkFollower()
+    actor.SetMapper(mapper)
 
     return actor
