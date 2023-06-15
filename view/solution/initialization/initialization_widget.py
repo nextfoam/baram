@@ -175,13 +175,7 @@ class InitializationWidget(QWidget):
             if name in self._rows:
                 self._rows[name].displayOff()
             else:
-                row = SectionRow(name, self._rname)
-                self._rows[name] = row
-                row.toggled.connect(self._rowSelectionChanged)
-                row.doubleClicked.connect(self._rowDoubleClicked)
-                row.eyeToggled.connect(self._rowEyeToggled)
-                idx = self._ui.sectionListLayout.count() - 1
-                self._ui.sectionListLayout.insertWidget(idx, row)
+                self._addSectionRow(name)
 
     def save(self):
         writer = CoreDBWriter()
@@ -261,12 +255,7 @@ class InitializationWidget(QWidget):
             if row.isDisplayOn():
                 self.displayChecked.emit(row)
         else:
-            row = SectionRow(name, self._rname)
-            self._rows[name] = row
-            row.toggled.connect(self._rowSelectionChanged)
-            row.doubleClicked.connect(self._rowDoubleClicked)
-            idx = self._ui.sectionListLayout.count() - 1
-            self._ui.sectionListLayout.insertWidget(idx, row)
+            self._addSectionRow(name)
 
         self._sectionDialog = None
 
@@ -297,3 +286,12 @@ class InitializationWidget(QWidget):
             self.displayChecked.emit(row)
         else:
             self.displayUnchecked.emit(row)
+
+    def _addSectionRow(self, name):
+        row = SectionRow(name, self._rname)
+        self._rows[name] = row
+        row.toggled.connect(self._rowSelectionChanged)
+        row.doubleClicked.connect(self._rowDoubleClicked)
+        row.eyeToggled.connect(self._rowEyeToggled)
+        idx = self._ui.sectionListLayout.count() - 1
+        self._ui.sectionListLayout.insertWidget(idx, row)
