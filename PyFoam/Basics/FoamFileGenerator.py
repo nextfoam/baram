@@ -182,7 +182,7 @@ class FoamFileGenerator(object):
 
         if len(lst)>2 and len(lst)%2==0:
             if isinstance(lst[0],string_types) and (type(lst[1]) in [dict,DictProxy]):
-                theLen=len(lst)/2
+                theLen=len(lst)//2
 
         isFixedType=False
         if self.useFixedType and (len(lst)==3 or len(lst)==9 or len(lst)==6):
