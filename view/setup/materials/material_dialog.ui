@@ -151,7 +151,7 @@
      </property>
      <layout class="QFormLayout" name="formLayout_4">
       <item row="0" column="0">
-       <widget class="QLabel" name="visocosityLabel">
+       <widget class="QLabel" name="viscosityLabel">
         <property name="text">
          <string>Viscosity</string>
         </property>
@@ -205,7 +205,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="visocosityLabel_2">
+       <widget class="QLabel" name="viscosityLabel_2">
         <property name="text">
          <string>Value (kg/m·s)</string>
         </property>
