@@ -84,7 +84,7 @@ class CaseWizard(QWizard):
 
         self._db.setValue(f'{modelsXPath}/multiphaseModels/model', self.field('multiphaseModel'))
 
-        if self.field('multiphaseModels') != MultiphaseModel.OFF.value:
+        if self.field('multiphaseModel') != MultiphaseModel.OFF.value:
             self._db.setValue(f'{gravityXPath}/direction/x', self.field('gravityX'))
             self._db.setValue(f'{gravityXPath}/direction/y', self.field('gravityY'))
             self._db.setValue(f'{gravityXPath}/direction/z', self.field('gravityZ'))
