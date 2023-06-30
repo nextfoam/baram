@@ -1,0 +1,202 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from pathlib import Path
+
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
+from PySide6.QtCore import Signal, QEvent
+from filelock import Timeout
+
+from app import app
+from view.widgets.project_dialog import ProjectDialog
+from view.widgets.new_project_dialog import NewProjectDialog
+from view.widgets.settings_scaling_dialog import SettingScalingDialog
+from view.widgets.language_dialog import LanugageDialog
+from view.menu.mesh_quality.mesh_quality_parameters_dialog import MeshQualityParametersDialog
+from view.menu.help.about_dialog import AboutDialog
+from .recent_files_menu import RecentFilesMenu
+from .naviagtion_view import NavigationView, Step
+from .content_view import ContentView
+from .main_window_ui import Ui_MainWindow
+
+
+class MainWindow(QMainWindow):
+    _vtkReaderProgress = Signal(str)
+
+    def __init__(self):
+        super().__init__()
+        self._ui = Ui_MainWindow()
+        self._ui.setupUi(self)
+
+        self._recentFilesMenu = RecentFilesMenu(self._ui.menuOpen_Recent)
+        self._recentFilesMenu.setRecents(app.settings.getRecentProjects())
+
+        self._navigationView = NavigationView(self._ui.navigation)
+        self._contentView = ContentView(self._ui)
+
+        self._startDialog = ProjectDialog()
+        self._dialog = None
+
+        self.setWindowIcon(app.properties.icon())
+
+        app.window = self
+
+        self._connectSignalsSlots()
+
+    def closeEvent(self, event):
+        if False:
+            event.ingore()
+
+        if app.project:
+            app.closeProject()
+
+        event.accept()
+
+    def start(self):
+        self._startDialog.setRecents(app.settings.getRecentProjects())
+        self._startDialog.open()
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.LanguageChange:
+            self._ui.retranslateUi(self)
+            # self._navigatorView.translate()
+            #
+            # for page in self._menuPages.values():
+            #     if page.isCreated():
+            #         self._contentView.removePage(page)
+            #         page.removePage()
+            #
+            # self._changeForm(self._navigatorView.currentMenu())
+
+        super().changeEvent(event)
+
+    def _connectSignalsSlots(self):
+        self._ui.actionNew.triggered.connect(self._actionNew)
+        self._ui.actionOpen.triggered.connect(self._actionOpen)
+        self._ui.actionSave.triggered.connect(self._actionSave)
+        self._ui.actionSave_As.triggered.connect(self._actionSaveAs)
+        self._ui.actionExport.triggered.connect(self._actionExport)
+        self._ui.actionClose.triggered.connect(self._actionClose)
+        self._ui.actionExit.triggered.connect(self.close)
+        self._ui.actionParameters.triggered.connect(self._actionParameters)
+        self._ui.actionScale.triggered.connect(self._actionScale)
+        self._ui.actionLanguage.triggered.connect(self._actionLanguage)
+        self._ui.actionAbout.triggered.connect(self._actionAbout)
+
+        self._recentFilesMenu.projectSelected.connect(self._openRecent)
+        self._navigationView.stepSelected.connect(self._stepSelected)
+
+        self._startDialog.actionNewSelected.connect(self._actionNew)
+        self._startDialog.actionOpenSelected.connect(self._actionOpen)
+        self._startDialog.actionProjectSelected.connect(self._openProject)
+        self._startDialog.finished.connect(self._startDialogClosed)
+
+    def _openRecent(self, path):
+        self._closeProject()
+        self._openProject(path)
+
+    def _actionNew(self):
+        self._closeProject()
+
+        self._dialog = NewProjectDialog(self)
+        self._dialog.setBaseLocation(Path(app.settings.getRecentLocation()).resolve())
+        self._dialog.accepted.connect(self._createProject)
+        self._dialog.open()
+
+    def _actionOpen(self):
+        self._closeProject()
+
+        self._dialog = QFileDialog(self, self.tr('Select Project Directory'), app.settings.getRecentLocation())
+        self._dialog.setFileMode(QFileDialog.FileMode.Directory)
+        self._dialog.fileSelected.connect(self._openProject)
+        self._dialog.open()
+
+    def _actionSave(self):
+        app.project.save()
+
+    def _actionSaveAs(self):
+        return
+
+    def _actionExport(self):
+        return
+
+    def _actionClose(self):
+        self._closeProject()
+        self._projectClosed()
+
+    def _actionParameters(self):
+        self._dialog = MeshQualityParametersDialog(self)
+        self._dialog.open()
+
+    def _actionScale(self):
+        self._dialog = SettingScalingDialog(self, app.settings.getScale())
+        self._dialog.accepted.connect(self._changeScale)
+        self._dialog.open()
+
+    def _actionLanguage(self):
+        self._dialog = LanugageDialog(self)
+        self._dialog.accepted.connect(self._changeLanguage)
+        self._dialog.open()
+
+    def _actionAbout(self):
+        self._dialog = AboutDialog(self)
+        self._dialog.open()
+
+    def _createProject(self):
+        if app.createProject(self._dialog.projectLocation()):
+            self._recentFilesMenu.addRecentest(app.project.path)
+            self._projectOpened()
+
+    def _openProject(self, file):
+        path = Path(file)
+        try:
+            app.openProject(path.resolve())
+            self._recentFilesMenu.updateRecentest(app.project.path)
+            self._projectOpened()
+        except FileNotFoundError:
+            QMessageBox.information(self, self.tr('Case Open Error'), self.tr(f'{path.name} is not a baram case.'))
+        except Timeout:
+            QMessageBox.information(self, self.tr('Case Open Error'), self.tr(f'{path.name} is open in another program.'))
+        # except Exception as ex:
+        #     QMessageBox.information(self, self.tr('Case Open Error'), self.tr('Fail to open case\n' + str(ex)))
+
+    def _startDialogClosed(self):
+        if app.project is None:
+            self.close()
+
+    def _closeProject(self):
+        app.closeProject()
+
+    def _changeScale(self):
+        if app.settings.setScale(self._dialog.scale()):
+            QMessageBox.information(self, self.tr("Change Scale"), self.tr('Application restart is required.'))
+
+    def _changeLanguage(self):
+        language = self._dialog.selectedLanguage()
+        if app.settings.setLanguage(language):
+            app.applyLanguage()
+
+    def _projectOpened(self):
+        if self._startDialog.isVisible():
+            self._startDialog.close()
+            self.show()
+
+        self._moveToCurrentStep()
+
+        self.setWindowTitle(f'{app.properties.fullName} - {app.project.path}')
+
+    def _projectClosed(self):
+        self.setWindowTitle(f'{app.properties.fullName}')
+
+        self._navigationView.setCurrentStep(Step.NONE)
+
+        self._startDialog.setRecents(app.settings.getRecentProjects())
+        self._startDialog.open()
+
+    def _moveToCurrentStep(self):
+        step = Step.GEOMETRY
+        self._navigationView.setCurrentStep(step)
+
+    def _stepSelected(self, step):
+        self._contentView.moveToStep(step)
+

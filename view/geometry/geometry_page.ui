@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GeometryPage</class>
+ <widget class="QWidget" name="GeometryPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>426</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTreeWidget" name="list">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="columnCount">
+      <number>5</number>
+     </property>
+     <attribute name="headerVisible">
+      <bool>false</bool>
+     </attribute>
+     <column>
+      <property name="text">
+       <string notr="true">1</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string notr="true">2</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string notr="true">3</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string notr="true">4</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string notr="true">5</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="import_">
+        <property name="text">
+         <string>Import</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="add">
+        <property name="text">
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="edit">
+        <property name="text">
+         <string>Edit</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="remove">
+        <property name="text">
+         <string>Remove</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="../../resource.qrc"/>
+ </resources>
+ <connections/>
+</ui>

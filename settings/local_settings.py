@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from enum import Enum
+from pathlib import Path
+
+import yaml
+from filelock import FileLock
+
+FORMAT_VERSION = 1
+
+
+class LocalSettingKey(Enum):
+    FORMAT_VERSION = 'format_version'
+    PATH = 'case_full_path'
+
+
+class LocalSettings:
+    def __init__(self, path):
+        self._settingsFile = path / 'baram.cfg'
+
+        self._settings = {}
+        self._lock = None
+
+        self._load()
+        if self.path is not None:
+            pass
+        self.set(LocalSettingKey.PATH, str(path.resolve()))
+
+    @property
+    def path(self):
+        if path := self.get(LocalSettingKey.PATH):
+            return Path(path)
+
+        return None
+
+    def acquireLock(self, timeout):
+        self._lock = FileLock(self.path / 'case.lock')
+        self._lock.acquire(timeout=timeout)
+
+    def releaseLock(self):
+        self._lock.release()
+
+    def get(self, key):
+        if self._settings and key.value in self._settings:
+            return self._settings[key.value]
+
+        return None
+
+    def set(self, key, value):
+        if self.get(key) != value:
+            self._settings[key.value] = value
+            self._save()
+
+    def _load(self):
+        if self._settingsFile.is_file():
+            with open(self._settingsFile) as file:
+                self._settings = yaml.load(file, Loader=yaml.FullLoader)
+
+    def _save(self):
+        self._settings[LocalSettingKey.FORMAT_VERSION.value] = FORMAT_VERSION
+
+        with open(self._settingsFile, 'w') as file:
+            yaml.dump(self._settings, file)

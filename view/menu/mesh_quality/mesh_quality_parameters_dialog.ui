@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MeshQualityParametersDialog</class>
+ <widget class="QDialog" name="MeshQualityParametersDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>418</width>
+    <height>546</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Mesh Qualitiy Parameters</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Max. Face non-ortho, Angle</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="maxNonOrtho"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Max. Face non-ortho, Angle (Relaxed)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Max. Boundary Skewness</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Min. Internal Face Skewness</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Max. Cell Concavity</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Min. Cell Pyramid Volume (m&lt;sup&gt;3&lt;/sup&gt;)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Min. Tetrahedron Quality</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Min. Volume Collapse Ratio</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Min. Face Area (m&lt;sup&gt;2&lt;/sup&gt;)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Min. Twist</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>Min. Cell Determinant</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>Min. Face Interpolation Weight</string>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0">
+       <widget class="QLabel" name="label_13">
+        <property name="text">
+         <string>Min. Face Flatness</string>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="0">
+       <widget class="QLabel" name="label_14">
+        <property name="text">
+         <string>Min. Volume Ratio</string>
+        </property>
+       </widget>
+      </item>
+      <item row="14" column="0">
+       <widget class="QLabel" name="label_15">
+        <property name="text">
+         <string>Min. Triangle Twist</string>
+        </property>
+       </widget>
+      </item>
+      <item row="15" column="0">
+       <widget class="QLabel" name="label_16">
+        <property name="text">
+         <string>smoothing Iteration</string>
+        </property>
+       </widget>
+      </item>
+      <item row="16" column="0">
+       <widget class="QLabel" name="label_17">
+        <property name="text">
+         <string>Error Reduction</string>
+        </property>
+       </widget>
+      </item>
+      <item row="17" column="0">
+       <widget class="QLabel" name="label_18">
+        <property name="text">
+         <string>Merge Tolerance</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="maNonOrthoRelaxed"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="maxBoundarySkewness"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="minInternalSkewness"/>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="maxConcave"/>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLineEdit" name="minVol"/>
+      </item>
+      <item row="6" column="1">
+       <widget class="QLineEdit" name="minTetQuality"/>
+      </item>
+      <item row="7" column="1">
+       <widget class="QLineEdit" name="minVolCollapseRatio"/>
+      </item>
+      <item row="8" column="1">
+       <widget class="QLineEdit" name="minArea"/>
+      </item>
+      <item row="9" column="1">
+       <widget class="QLineEdit" name="minTwist"/>
+      </item>
+      <item row="10" column="1">
+       <widget class="QLineEdit" name="minDeterminant"/>
+      </item>
+      <item row="11" column="1">
+       <widget class="QLineEdit" name="minFaceWeight"/>
+      </item>
+      <item row="12" column="1">
+       <widget class="QLineEdit" name="minFaceFlatness"/>
+      </item>
+      <item row="13" column="1">
+       <widget class="QLineEdit" name="minVolRatio"/>
+      </item>
+      <item row="14" column="1">
+       <widget class="QLineEdit" name="minTriangleTwist"/>
+      </item>
+      <item row="15" column="1">
+       <widget class="QLineEdit" name="nSmoothScale"/>
+      </item>
+      <item row="16" column="1">
+       <widget class="QLineEdit" name="errorReduction"/>
+      </item>
+      <item row="17" column="1">
+       <widget class="QLineEdit" name="mergeTolerance"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>MeshQualityParametersDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>MeshQualityParametersDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
