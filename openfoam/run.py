@@ -19,7 +19,10 @@ import app
 #     openfoam/
 #         bin/ : solvers reside here
 #         lib/
+#         lib/sys-openmpi
+#         lib/dummy
 #         etc/ : OpenFOAM system 'etc'
+#         tlib/ : Third-Party Library, only for Linux and macOS
 
 MPICMD = 'mpirun'
 
@@ -50,16 +53,13 @@ if platform.system() == 'Windows':
         'PATH': library + os.pathsep + os.environ['PATH']
     })
 else:
-    ompiPath = glob.glob(str(OPENFOAM / 'lib' / 'openmpi*'))[0]  # No Validity Check. It should exist.
-    tmpiPath = glob.glob(str(OPENFOAM / 'tlib' / 'openmpi*'))[0]  # No Validity Check. It should exist.
-    library = str(OPENFOAM / 'lib') + os.pathsep \
-              + ompiPath + os.pathsep \
-              + str(OPENFOAM / 'lib' / 'dummy') + os.pathsep \
-              + tmpiPath + os.pathsep \
-              + str(OPENFOAM / 'tlib')
+    library = str(OPENFOAM/'lib') + os.pathsep \
+              + str(OPENFOAM/'lib'/'sys-openmpi') + os.pathsep \
+              + str(OPENFOAM/'lib'/'dummy') + os.pathsep \
+              + str(OPENFOAM/'tlib')
 
     if platform.system() == 'Darwin':
-        library = library + os.pathsep + str(Path(tmpiPath).joinpath('lib'))
+        library = library + os.pathsep + str(OPENFOAM/'tlib'/'lib')
 
     if platform.system() == 'Darwin':
         LIBRARY_PATH_NAME = 'DYLD_LIBRARY_PATH'
@@ -75,12 +75,12 @@ else:
         LIBRARY_PATH_NAME: library + os.pathsep + os.environ[LIBRARY_PATH_NAME]
     })
 
-    if platform.system() == 'Darwin':
-        ENV['OPAL_PREFIX'] = tmpiPath
-        ENV['OPAL_LIBDIR'] = str(Path(tmpiPath).joinpath('lib'))
-        ENV.update({
-            'PATH': str(Path(tmpiPath).joinpath('bin')) + os.pathsep + os.environ['PATH']
-        })
+    # if platform.system() == 'Darwin':
+    #     ENV['OPAL_PREFIX'] = tmpiPath
+    #     ENV['OPAL_LIBDIR'] = str(Path(tmpiPath).joinpath('lib'))
+    #     ENV.update({
+    #         'PATH': str(Path(tmpiPath).joinpath('bin')) + os.pathsep + os.environ['PATH']
+    #     })
 
 
 def openSolverProcess(cmd, casePath, inParallel):
