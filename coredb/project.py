@@ -86,7 +86,7 @@ class _Project(QObject):
 
         self._meshLoaded = False
         self._status = SolverStatus.NONE
-        self._process = None
+        self._process = (None, None)
         self._runType = None
 
         self._settings = None
