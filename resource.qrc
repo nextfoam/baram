@@ -1,6 +1,5 @@
 <RCC>
   <qresource prefix="/">
-    <file alias="ElegantDark.qss">resources/ElegantDark.qss</file>
   </qresource>
   <qresource prefix="graphicsIcons">
     <file alias="axesOff.png">resources/graphicsIcons/axesOff.png</file>
