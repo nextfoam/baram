@@ -10,6 +10,7 @@ from PySide6.QtCore import QObject, Signal
 class Step(Enum):
     NONE = -1
     GEOMETRY = auto()
+    REGION = auto()
     BASE_GRID = auto()
     CASTELLATION = auto()
     SNAP = auto()

@@ -5,14 +5,28 @@ import copy
 
 import yaml
 
-from .schema import Schema, SchemaList
+from .simple_schema import SimpleSchema, SchemaList, PrimitiveType
 
 
-class SimpleDB(Schema):
-    def __init__(self, schema, editable=False):
+def elementToVector(element):
+    if 'x' not in element or 'y' not in element or 'z' not in element:
+        raise LookupError
+
+    return float(element['x']), float(element['y']), float(element['z'])
+
+
+def elementToTuple(element, schema, keys):
+    if not all(field in element and isinstance(schema[field], PrimitiveType) for field in keys):
+        raise LookupError
+
+    return [element[field] for field in keys]
+
+
+class SimpleDB(SimpleSchema):
+    def __init__(self, schema):
         super().__init__(schema)
         self._db = None
-        self._editable = editable
+        self._editable = False
         self._modified = False
         self._base = ''
 
@@ -34,11 +48,16 @@ class SimpleDB(Schema):
         subSchema = self._schema
         subDB = self._db
         if path != self._base:
-            schema, db, key = self._get(path)
-            subSchema = schema[key]
-            subDB = db[key]
+            schema, db, field = self._get(path)
 
-        subData = SimpleDB(subSchema)
+            if isinstance(schema, SchemaList):
+                subSchema = schema.elementSchema().schema()
+            else:
+                subSchema = schema[field]
+
+            subDB = db[field]
+
+        subData = self._newDB(subSchema)
         subData._db = copy.deepcopy(subDB)
         subData._editable = True
         subData._base = f'{self._base}/{path}' if self._base else path
@@ -59,38 +78,39 @@ class SimpleDB(Schema):
         if data._base == self._base:
             self._db = data._db
         else:
-            path = data._base[len(self._base) + 1:]
-            schema, db, key = self._get(path)
-            db[key] = data._db
+            path = data._base[len(self._base) + 1:] if self._base else data._base
+            schema, db, field = self._get(path)
+            db[field] = data._db
 
         data._modified = False
+        data._editable = False
         self._modified = True
 
     def getValue(self, path):
-        schema, db, key = self._get(path)
-        if isinstance(db[key], dict):
+        schema, db, field = self._get(path)
+        if isinstance(db[field], dict):
             raise LookupError
 
-        return db[key]
+        return db[field]
 
     def getFloat(self, path):
         return float(self.getValue(path))
 
     def getVector(self, path):
-        schema, db, key = self._get(path)
-        if not isinstance(db[key], dict):
+        schema, db, field = self._get(path)
+        if not isinstance(db[field], dict):
             raise LookupError
 
-        return db[key]['x'], db[key]['y'], db[key]['z']
+        return elementToTuple(db[field], schema[field], ['x', 'y', 'z'])
 
     def setValue(self, path, value, name=None):
         if not self._editable:
             raise LookupError
 
-        schema, db, key = self._get(path)
-        value = schema[key].validate(value, name)
-        if db[key] != value:
-            db[key] = value
+        schema, db, field = self._get(path)
+        value = schema[field].validate(value, name)
+        if db[field] != value:
+            db[field] = value
             self._modified = True
 
             return True
@@ -98,94 +118,126 @@ class SimpleDB(Schema):
         return False
 
     def newElement(self, path):
-        schema, _, key = self._get(path)
+        schema, _, field = self._get(path)
 
-        schema = schema[key]
+        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        db = SimpleDB(schema.elementSchema().schema(), True)
+        db = self._newDB(schema.elementSchema().schema(), True)
         db.createData()
 
         return db
 
-    def addElement(self, path, newdb, index=None):
+    def addElement(self, path, newdb, key=None):
         if not self._editable:
             raise LookupError
 
-        schema, db, key = self._get(path)
+        schema, db, field = self._get(path)
 
-        schema = schema[key]
+        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        index = schema.index(index, db[key])
-        if index in db[key]:
+        key = schema.key(key, db[field])
+        if key in db[field]:
             raise KeyError
 
         if schema.elementSchema().schema() == newdb._schema:
-            db[key][index] = schema.elementSchema().validateElement(newdb)
+            db[field][key] = schema.elementSchema().validateElement(newdb)
         else:
             raise TypeError
 
+        newdb._editable = False
         self._modified = True
 
-        return index
+        return key
 
-    def getElement(self, path, idx, columns=None):
-        schema, db, key = self._get(path)
+    def getElement(self, path, key, columns=None):
+        schema, db, field = self._get(path)
 
-        schema = schema[key]
+        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        if idx not in db[key]:
+        if key not in db[field]:
             raise LookupError
 
         if columns is None:
-            return copy.deepcopy(db[key][idx])
+            return copy.deepcopy(db[field][key])
 
-        return {k: copy.deepcopy(db[key][idx][k]) for k in columns}
+        return {k: copy.deepcopy(db[field][key][k]) for k in columns}
 
-    def getElements(self, path, columns=None):
-        schema, db, key = self._get(path)
+    def getElements(self, path, filter_=None, columns=None):
+        schema, db, field = self._get(path)
 
-        schema = schema[key]
+        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
         if columns is None:
-            return copy.deepcopy(db[key])
+            return copy.deepcopy({key: db[field][key] for key in db[field] if filter_(key, db[field][key])})
 
-        return {idx: {k: copy.deepcopy(db[key][idx][k]) for k in columns} for idx in db[key]}
+        return {
+            key: {k: copy.deepcopy(db[field][key][k]) for k in columns}
+            for key in db[field] if filter_(key, db[field][key])}
 
-    def getFilteredElements(self, path, function, columns=None):
-        schema, db, key = self._get(path)
+    def getKeys(self, path, function=None):
+        schema, db, field = self._get(path)
 
-        schema = schema[key]
+        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        elements = dict(filter(lambda elem: function(elem[0], elem[1]), db[key].items()))
-        if columns is None:
-            return copy.deepcopy(elements)
+        return [key for key in db[field] if function(key, db[field][key])]
 
-        return {idx: {k: copy.deepcopy(db[key][idx][k]) for k in columns} for idx in elements}
-
-    def removeElement(self, path, index):
+    def removeElement(self, path, key):
         if not self._editable:
             raise LookupError
 
-        schema, db, key = self._get(path)
+        schema, db, field = self._get(path)
 
-        schema = schema[key]
+        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        if index not in db[key]:
+        if key not in db[field]:
             raise KeyError
 
-        del db[key][index]
+        del db[field][key]
+
+        self._modified = True
+
+    def removeElements(self, path, indices):
+        if not self._editable:
+            raise LookupError
+
+        schema, db, field = self._get(path)
+
+        schema = schema[field]
+        if not isinstance(schema, SchemaList):
+            raise TypeError
+
+        if any(key not in db[field] for key in indices):
+            raise KeyError
+
+        for key in indices:
+            del db[field][key]
+
+        self._modified = True
+
+    def removeElementsByFilter(self, path, function):
+        if not self._editable:
+            raise LookupError
+
+        schema, db, field = self._get(path)
+
+        schema = schema[field]
+        if not isinstance(schema, SchemaList):
+            raise TypeError
+
+        for key in [e[0] for e in db[field].items() if function(e[0], e[1])]:
+            del db[field][key]
 
         self._modified = True
 
@@ -196,13 +248,23 @@ class SimpleDB(Schema):
         self._db = self.validateData(yaml.full_load(data), fillWithDefault=fillWithDefault)
 
     def _get(self, path):
-        keys = path.split('/')
+        fields = path.split('/')
         schema = self._schema
         data = self._db
 
-        depth = len(keys) - 1
+        depth = len(fields) - 1
         for i in range(depth):
-            schema = schema[keys[i]]
-            data = data[keys[i]]
+            if isinstance(schema, SchemaList):
+                schema = schema.elementSchema().schema()
+                data = data[fields[i]]
+            else:
+                schema = schema[fields[i]]
+                data = data[fields[i]]
 
-        return schema, data, keys[depth]
+        return schema, data, fields[depth]
+
+    def _newDB(self, schema, editable=False):
+        db = SimpleDB(schema)
+        db._editable = editable
+
+        return db

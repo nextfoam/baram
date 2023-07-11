@@ -15,8 +15,10 @@ def generateData(schema):
     for key in schema:
         if isinstance(schema[key], dict):
             configuration[key] = generateData(schema[key])
-        else:
+        elif schema[key].isRequired():
             configuration[key] = schema[key].default()
+        else:
+            configuration[key] = ''
 
     return configuration
 
@@ -85,11 +87,10 @@ class DBError(ValueError):
         return f'{self._name} - {self._message}'
 
 
-class SimpleType:
+class PrimitiveType:
     def __init__(self):
         self._required = True
         self._default = None
-        self._optional = False
 
     def setDefault(self, default):
         self._default = str(self.validate(default))
@@ -97,22 +98,25 @@ class SimpleType:
         return self
 
     def setOptional(self):
-        self._optional = True
+        self._required = False
 
         return self
 
     def default(self):
         return self._default
 
+    def isRequired(self):
+        return self._required
+
     def validate(self, value, name=None):
         value = str(value).strip()
-        if not self._optional and (value is None or value == ''):
+        if self._required and (value is None or value == ''):
             raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', name)
 
         return value
 
 
-class EnumType(SimpleType):
+class EnumType(PrimitiveType):
     def __init__(self, enumClass):
         super().__init__()
         self._cls = enumClass
@@ -120,6 +124,9 @@ class EnumType(SimpleType):
         self._values = [e.value for e in enumClass]
 
     def validate(self, value, name=None):
+        if not self._required and value == '':
+            return value
+
         if isinstance(value, self._cls):
             return value.value
 
@@ -129,7 +136,7 @@ class EnumType(SimpleType):
         raise DBError(ErrorType.EnumError, f'Only {self._cls} are allowed.', name)
 
 
-class FloatType(SimpleType):
+class FloatType(PrimitiveType):
     def __init__(self):
         super().__init__()
         self._default = '0'
@@ -137,14 +144,15 @@ class FloatType(SimpleType):
     def validate(self, value, name=None):
         value = super().validate(value, name)
         try:
-            float(value)
+            if value != '':
+                float(value)
         except Exception as e:
             raise DBError(ErrorType.TypeError, repr(e), name)
 
         return value
 
 
-class IntType(SimpleType):
+class IntType(PrimitiveType):
     def __init__(self):
         super().__init__()
         self._default = '0'
@@ -152,22 +160,41 @@ class IntType(SimpleType):
     def validate(self, value, name=None):
         value = super().validate(value, name)
         try:
-            f = float(value)
-            if int(f) != f:
-                raise DBError(ErrorType.TypeError, 'Only integers allowed', name)
+            if value != '':
+                f = float(value)
+                if int(f) != f:
+                    raise DBError(ErrorType.TypeError, 'Only integers allowed', name)
         except Exception as e:
             raise DBError(ErrorType.TypeError, repr(e), name)
 
         return value
 
 
-class TextType(SimpleType):
+class TextType(PrimitiveType):
     def __init__(self):
         super().__init__()
         self._default = ''
 
 
-class BoolType(SimpleType):
+class KeyType(PrimitiveType):
+    def __init__(self):
+        super().__init__()
+        self._default = '0'
+
+    def validate(self, value, name=None):
+        value = super().validate(value, name)
+        try:
+            if value != '':
+                f = float(value)
+                if int(f) != f:
+                    raise DBError(ErrorType.TypeError, 'Only integers allowed', name)
+        except Exception as e:
+            raise DBError(ErrorType.TypeError, repr(e), name)
+
+        return value
+
+
+class BoolType(PrimitiveType):
     def __init__(self, default: bool):
         super().__init__()
         self.setDefault(default)
@@ -186,6 +213,9 @@ class SchemaList:
     def default(self):
         return {}
 
+    def isRequired(self):
+        return True
+
     def validate(self, value, name=None, fillWithDefault=False):
         data = {}
 
@@ -197,25 +227,30 @@ class SchemaList:
     def newElement(self):
         return self._schema.generateData()
 
-    def index(self, index, data):
-        if index is None:
+    def key(self, key, data):
+        if key is None:
             raise KeyError
 
-        return index
+        return str(key)
 
 
 class IntKeyList(SchemaList):
     def __init__(self, schema):
         super().__init__(schema)
 
-    def index(self, index, data):
-        if index is None:
+    def key(self, key, data):
+        if key is None:
             if data:
-                return max(data.keys()) + 1
+                key = max([int(k) for k in data.keys()]) + 1
             else:
-                return 1
+                key = 1
+        else:
+            try:
+                int(key)
+            except KeyError as ke:
+                raise DBError(ErrorType.TypeError, repr(ke), 'Key of List')
 
-        return index
+        return str(key)
 
 
 class TextKeyList(SchemaList):
@@ -247,7 +282,7 @@ class VectorComposite(SchemaComposite):
         return self
 
 
-class Schema:
+class SimpleSchema:
     def __init__(self, schema):
         self._schema = schema
 
@@ -261,7 +296,7 @@ class Schema:
         return validateData(data, self._schema, fillWithDefault=fillWithDefault)
 
 
-class ElementSchema(Schema):
+class ElementSchema(SimpleSchema):
     def __init__(self, schema):
         super().__init__(schema)
 

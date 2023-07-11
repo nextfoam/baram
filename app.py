@@ -9,6 +9,7 @@ from PySide6.QtCore import QObject, QTranslator, QCoreApplication, QLocale
 from resources import resource
 from settings.app_settings import AppSettings
 from settings.project_manager import ProjectManager
+from openfoam.file_system import FileSystem
 
 
 if getattr(sys, 'frozen', False):
@@ -24,6 +25,7 @@ class App(QObject):
         self._properties = None
         self._settings = None
         self._project = None
+        self._fileSystem = None
 
         self._window = None
         self._translator = None
@@ -44,6 +46,14 @@ class App(QObject):
     @property
     def project(self):
         return self._project
+
+    @property
+    def fileSystem(self):
+        return self._fileSystem
+
+    @property
+    def renderingView(self):
+        return self._window.renderingView()
 
     @property
     def db(self):
@@ -69,6 +79,8 @@ class App(QObject):
 
         self._project = self._projectManager.createProject(path)
         self._settings.updateRecents(self._project.path, True)
+        self._fileSystem = FileSystem(self._project.path)
+        self._fileSystem.createCase(APP_PATH / 'resources/openfoam/case')
 
         return self._project
 
@@ -77,6 +89,7 @@ class App(QObject):
 
         self._project = self._projectManager.openProject(path)
         self._settings.updateRecents(self._project.path)
+        self._fileSystem = FileSystem(self._project.path)
 
         return self._project
 

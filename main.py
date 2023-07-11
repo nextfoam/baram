@@ -4,7 +4,9 @@
 import sys
 import os
 import logging
+import asyncio
 
+import qasync
 from PySide6.QtWidgets import QApplication
 
 # To render SVG files.
@@ -49,9 +51,20 @@ if __name__ == '__main__':
     os.environ["QT_SCALE_FACTOR"] = app.settings.getScale()
 
     application = QApplication(sys.argv)
+
+    loop = qasync.QEventLoop(application)
+    asyncio.set_event_loop(loop)
+
     app.applyLanguage()
 
     app.window = MainWindow()
-    app.window.start()
 
-    application.exec()
+    background_tasks = set()
+    task = asyncio.create_task(app.window.start())
+    background_tasks.add(task)
+    task.add_done_callback(background_tasks.discard)
+
+    with loop:
+        loop.run_forever()
+
+    loop.close()

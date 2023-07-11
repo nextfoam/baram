@@ -88,6 +88,9 @@ class RenderingView(QWidget):
         self._style.AddObserver(vtkCommand.MouseWheelBackwardEvent, self._mouseWheelBackwardEvent)
         self._style.AddObserver(vtkCommand.InteractionEvent, self._interactionEvent)
 
+    def interactor(self):
+        return self._widget
+
     def addActor(self, actor: vtkActor):
         self._renderer.AddActor(actor)
 
@@ -114,45 +117,45 @@ class RenderingView(QWidget):
         camera.SetPosition(fx+orientation[0]*d, fy+orientation[1]*d, fz+orientation[2]*d)
         camera.SetViewUp(up[0], up[1], up[2])
 
-    def _plusXClicked(self):
+    def turnTowardX(self):
         self._turnCamera((-1, 0, 0), (0, 0, 1))
         self._widget.Render()
 
-    def _plusYClicked(self):
+    def tunTowardY(self):
         self._turnCamera((0, -1, 0), (0, 0, 1))
         self._widget.Render()
 
-    def _plusZClicked(self):
+    def turnTowardZ(self):
         self._turnCamera((0, 0, -1), (0, 1, 0))
         self._widget.Render()
 
-    def _minusXClicked(self):
+    def turnAwayFromX(self):
         self._turnCamera((1, 0, 0), (0, 0, 1))
         self._widget.Render()
 
-    def _minusYClicked(self):
+    def turnAwayFromY(self):
         self._turnCamera((0, 1, 0), (0, 0, 1))
         self._widget.Render()
 
-    def _minusZClicked(self):
+    def turnAwayFromZ(self):
         self._turnCamera((0, 0, 1), (0, 1, 0))
         self._widget.Render()
 
     def _fitCameraClicked(self):
         self.fitCamera()
 
-    def _rotateClicked(self):
+    def rollCamera(self):
         self._renderer.GetActiveCamera().Roll(-90)
         self._widget.Render()
 
-    def _perspectiveToggled(self, checked):
+    def setPerspective(self, checked):
         if checked:
             self._renderer.GetActiveCamera().ParallelProjectionOff()
         else:
             self._renderer.GetActiveCamera().ParallelProjectionOn()
         self._widget.Render()
 
-    def _axisToggled(self, checked):
+    def setAxisVisible(self, checked):
         if checked:
             self._showOriginAxes()
         else:
@@ -161,7 +164,7 @@ class RenderingView(QWidget):
         self._resizeOriginAxis()
         self._widget.Render()
 
-    def _cubeAxisToggled(self, checked):
+    def setCubeAxisVisible(self, checked):
         if checked:
             self._showCubeAxes()
         else:

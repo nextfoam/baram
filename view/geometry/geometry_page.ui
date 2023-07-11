@@ -15,39 +15,69 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QLabel" name="label">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Geometry</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QTreeWidget" name="list">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
      <property name="columnCount">
-      <number>5</number>
+      <number>7</number>
      </property>
      <attribute name="headerVisible">
-      <bool>false</bool>
+      <bool>true</bool>
      </attribute>
      <column>
       <property name="text">
-       <string notr="true">1</string>
+       <string notr="true"/>
       </property>
      </column>
      <column>
       <property name="text">
-       <string notr="true">2</string>
+       <string/>
       </property>
      </column>
      <column>
       <property name="text">
-       <string notr="true">3</string>
+       <string>Name</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string notr="true">4</string>
+       <string>Type</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string notr="true">5</string>
+       <string notr="true"/>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string notr="true"/>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string/>
       </property>
      </column>
     </widget>
@@ -77,6 +107,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="edit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Edit</string>
         </property>
@@ -84,6 +117,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="remove">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Remove</string>
         </property>

@@ -8,6 +8,7 @@ from PySide6.QtCore import Signal, QEvent
 from filelock import Timeout
 
 from app import app
+from rendering.actor_manager import ActorManager
 from view.widgets.project_dialog import ProjectDialog
 from view.widgets.new_project_dialog import NewProjectDialog
 from view.widgets.settings_scaling_dialog import SettingScalingDialog
@@ -17,6 +18,7 @@ from view.menu.help.about_dialog import AboutDialog
 from .recent_files_menu import RecentFilesMenu
 from .naviagtion_view import NavigationView, Step
 from .content_view import ContentView
+from .rendering_tool import RenderingTool
 from .main_window_ui import Ui_MainWindow
 
 
@@ -33,6 +35,9 @@ class MainWindow(QMainWindow):
 
         self._navigationView = NavigationView(self._ui.navigation)
         self._contentView = ContentView(self._ui)
+        self._renderingTool = RenderingTool(self._ui)
+
+        self._actors = ActorManager(self._ui.renderingView)
 
         self._startDialog = ProjectDialog()
         self._dialog = None
@@ -43,6 +48,12 @@ class MainWindow(QMainWindow):
 
         self._connectSignalsSlots()
 
+    def actorManager(self):
+        return self._actors
+
+    def renderingView(self):
+        return self._ui.renderingView
+
     def closeEvent(self, event):
         if False:
             event.ingore()
@@ -52,7 +63,7 @@ class MainWindow(QMainWindow):
 
         event.accept()
 
-    def start(self):
+    async def start(self):
         self._startDialog.setRecents(app.settings.getRecentProjects())
         self._startDialog.open()
 
@@ -118,7 +129,8 @@ class MainWindow(QMainWindow):
         return
 
     def _actionExport(self):
-        return
+        print(app.db.toYaml())
+        print(app.db._files)
 
     def _actionClose(self):
         self._closeProject()

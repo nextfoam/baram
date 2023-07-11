@@ -1,30 +1,60 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from .file_db import writeConfigurations, readConfigurations, FileGroup, newFiles
 from .simple_db import SimpleDB
-from .file_db import FileDB
-from .configurations_schema import schema
 
 
+FILE_NAME = 'configurations.h5'
 DB_KEY = 'configurations'
 
 
 class Configurations(SimpleDB):
-    def __init__(self, path):
+    _geometryNextKey = 0
+
+    def __init__(self, schema):
         super().__init__(schema)
 
-        self._fileDB = FileDB(path)
+        self._path = None
+        self._files = newFiles()
 
-    def load(self):
-        if self._fileDB.exists() and (data := self._fileDB.getText(DB_KEY)):
+    def load(self, path):
+        self._path = path / FILE_NAME
+        if self._path.exists():
+            data, files, maxIds = readConfigurations(self._path)
             self.loadYaml(data, fillWithDefault=True)
+            self._files = files
+            Configurations._geometryNextKey = maxIds[FileGroup.GEOMETRY_POLY_DATA.value]
         else:
             self.createData()
-            self._modified = True
 
     def save(self):
         if self.isModified():
-            self._fileDB.putText(DB_KEY, self.toYaml())
-            self._modified = False
+            writeConfigurations(self._path, self.toYaml(), self._files)
 
-        self._fileDB.save()
+    def addGeometryPolyData(self, pd):
+        Configurations._geometryNextKey += 1
+        key = f'Geometry{Configurations._geometryNextKey}'
+
+        self._files['geometry'][key] = pd
+        self._modified = True
+
+        return key
+
+    def removeGeometryPolyData(self, key):
+        self._files['geometry'][key] = None
+
+    def geometryPolyData(self, key):
+        return self._files['geometry'][key]
+
+    def commit(self, data):
+        for key in data._files:
+            self._files[key].update(data._files[key])
+
+        super().commit(data)
+
+    def _newDB(self, schema, editable=False):
+        db = Configurations(schema)
+        db._editable = editable
+
+        return db

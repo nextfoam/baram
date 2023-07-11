@@ -10,8 +10,10 @@ softwares = [
     ('PySide6', '6.5.1', 'https://pypi.org/project/PySide6/', 'Commercial, GPLv2, LGPLv3', 'https://pypi.org/project/PySide6/'),
     # ('Paraview', '', 'https://www.paraview.org/', 'permissive BSD', 'https://www.paraview.org/license/'),
     ('ionicons', '', 'https://ionic.io/ionicons', 'Completely open source, MIT licensed', 'https://ionic.io/ionicons'),
-    # ('PyFoam', '', 'https://pypi.org/project/PyFoam', 'GPLv2+', 'https://pypi.org/project/PyFoam/'),
-    ('h5py', '3.9.0', 'https://docs.h5py.org/en/stable/', 'h5py', 'https://docs.h5py.org/en/stable/licenses.html')
+    ('PyFoam', '2022.9', 'https://pypi.org/project/PyFoam', 'GPLv2+', 'https://pypi.org/project/PyFoam/'),
+    ('h5py', '3.9.0', 'https://docs.h5py.org/en/stable/', 'h5py', 'https://docs.h5py.org/en/stable/licenses.html'),
+    ('qasync', '0.24.0', 'https://pypi.org/project/qasync/', 'BSD', 'https://pypi.org/project/qasync/'),
+    ('psutil', '5.9.5', 'https://pypi.org/project/psutil/', 'BSD', 'https://pypi.org/project/psutil/'),
 ]
 
 class LicenseDialog(QDialog):

@@ -1,51 +1,65 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import shutil
+from enum import Enum
 
 import h5py
+from vtkmodules.vtkIOXML import vtkXMLPolyDataWriter, vtkXMLPolyDataReader
+
+CONFIGURATIONS_KEY = 'configurations'
+
+POLYDATA_PREFIX = 'polyData'
 
 
-class FileDB:
-    def __init__(self, projectPath):
-        self._filePath = projectPath / 'configuration.h5'
-        self._tmpPath = projectPath / 'configuration'
-        self._modifiedAfterSaved = False
+class FileGroup(Enum):
+    GEOMETRY_POLY_DATA = 'geometry'
 
-        if self._filePath.is_file():
-            shutil.copy(self._filePath, self._tmpPath)
 
-    def isModified(self):
-        return self._modifiedAfterSaved
+def newFiles():
+    return {
+        FileGroup.GEOMETRY_POLY_DATA.value: {}
+    }
 
-    def exists(self):
-        return self._filePath.is_file()
 
-    def putText(self, key, data):
-        with h5py.File(self._tmpPath, 'a') as f:
-            if key in f.keys():
-                del f[key]
-            f[key] = data
+def writeConfigurations(path, configurations, files):
+    with h5py.File(path, 'w') as f:
+        f[CONFIGURATIONS_KEY] = configurations
 
-        self._modifiedAfterSaved = True
+        geometryPolyData = f.create_group(FileGroup.GEOMETRY_POLY_DATA.value)
+        polyData = files[FileGroup.GEOMETRY_POLY_DATA.value]
+        for key in polyData:
+            if polyData[key]:
+                writer = vtkXMLPolyDataWriter()
+                writer.SetInputData(polyData[key])
+                writer.WriteToOutputStringOn()
+                writer.Update()
 
-    def getText(self, key):
-        try:
-            with h5py.File(self._tmpPath, 'r') as f:
-                ds = f[key]
-                return ds[()]
-        except KeyError:
-            return None
+                geometryPolyData[key] = writer.GetOutputString()
 
-    def save(self):
-        self._save(self._filePath)
 
-    def saveAs(self, directory):
-        self._save(directory / 'configuration.h5')
-        self._modifiedAfterSaved = False
+def readConfigurations(path):
+    with h5py.File(path, 'r') as f:
+        configurations = f[CONFIGURATIONS_KEY][()]
 
-    def _save(self, filePath):
-        if self._tmpPath.is_file():
-            shutil.copy(self._tmpPath, filePath)
+        files = {}
+        maxIds = {}
 
-        self._modifiedAfterSaved = False
+        geometryPolyData = f[FileGroup.GEOMETRY_POLY_DATA.value]
+        polyData = {}
+        maxIndex = 0
+        prefixLen = len(POLYDATA_PREFIX)
+        for key in geometryPolyData.keys():
+            reader = vtkXMLPolyDataReader()
+            reader.ReadFromInputStringOn()
+            reader.SetInputString(geometryPolyData[key][()])
+            reader.Update()
+            polyData[key] = reader.GetOutput()
+
+            index = int(key[prefixLen:])
+            if index > maxIndex:
+                maxIndex = index
+
+        files[FileGroup.GEOMETRY_POLY_DATA.value] = polyData
+        maxIds[FileGroup.GEOMETRY_POLY_DATA.value] = maxIndex
+
+        return configurations, files, maxIds

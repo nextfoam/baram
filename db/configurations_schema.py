@@ -4,8 +4,8 @@
 
 from enum import Enum
 
-from .schema import FloatType, IntKeyList, EnumType, IntType, TextType, ElementSchema, BoolType, TextKeyList
-from .schema import VectorComposite
+from .simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, ElementSchema, BoolType, TextKeyList
+from .simple_schema import VectorComposite
 
 
 class GeometryType(Enum):
@@ -13,12 +13,33 @@ class GeometryType(Enum):
     VOLUME = 'volume'
 
 
-class ShapeType(Enum):
+class Shape(Enum):
     TRI_SURFACE_MESH = 'triSurfaceMesh'
     HEX = 'hex'
     CYLINDER = 'cylinder'
     SPHERE = 'sphere'
     HEX6 = 'hex6'
+    X_MIN = 'xMin'
+    X_MAX = 'xMax'
+    Y_MIN = 'yMin'
+    Y_MAX = 'yMax'
+    Z_MIN = 'zMin'
+    Z_MAX = 'zMax'
+
+    PLATES = [X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX]
+
+
+class CFDType(Enum):
+    NONE = 'none'
+    CELL_ZONE = 'cellZone'
+    BOUNDARY = 'boundary'
+    CONFORMAL_MESH = 'conformalMesh'
+    NON_CONFORMAL_MESH = 'nonConformalMesh'
+
+
+class RegionType(Enum):
+    FLUID = 'fluid'
+    SOLID = 'solid'
 
 
 class ThicknessModel(Enum):
@@ -32,13 +53,19 @@ class ThicknessModel(Enum):
 
 geometry = {
     'gType': EnumType(GeometryType),
-    'volume': IntType(),
+    'volume': IntType().setOptional(),
     'name': TextType(),
-    'shape': EnumType(ShapeType),
+    'shape': EnumType(Shape),
+    'cfdType': EnumType(CFDType),
     'path': TextType().setOptional(),
     'point1': VectorComposite().schema(),
     'point2': VectorComposite().setDefault(1, 1, 1).schema(),
-    'radius': FloatType().setDefault(1)
+    'radius': FloatType().setDefault(1),
+}
+
+region = {
+    'type': EnumType(RegionType),
+    'point': VectorComposite().schema()
 }
 
 refinement = {
@@ -76,8 +103,14 @@ class LayerSchema(ElementSchema):
         super().__init__(layer)
 
 
+class RegionSchema(ElementSchema):
+    def __init__(self):
+        super().__init__(region)
+
+
 schema = {
     'geometry': IntKeyList(GeometrySchema()),
+    'region': TextKeyList(RegionSchema()),
     'baseGrid': {
         'numCellsX': FloatType().setDefault(10),
         'numCellsY': FloatType().setDefault(10),

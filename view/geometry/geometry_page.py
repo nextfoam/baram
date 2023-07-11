@@ -1,76 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QWidget, QTreeWidgetItem
-from PySide6.QtCore import Signal, QObject
-from PySide6.QtGui import QIcon
+import qasync
+from PySide6.QtWidgets import QWidget
 
 from app import app
-from view.widgets.icon_check_box import IconCheckBox
+from db.configurations_schema import CFDType, Shape, GeometryType
+from db.simple_db import elementToVector
+from rendering.vtk_loader import hexActor, cylinderActor, sphereActor, polygonActor, polyDataToActor
 from .geometry_add_dialog import GeometryAddDialog
-from .geometry_dialog import GeometryDialog
+from .stl_file_loader import STLFileLoader
+from .geometry_import_dialog import ImportDialog
+from .volume_dialog import VolumeDialog
+from .surface_dialog import SurfaceDialog
+from .geometry_list import GeometryList
 from .geometry_page_ui import Ui_GeometryPage
-
-
-class GeometryItem(QObject):
-    checkStateChanged = Signal(int)
-
-    icon = QIcon(':/icons/prism.svg')
-
-    def __init__(self, tree, gId, geometry):
-        super().__init__()
-        self._tree = tree
-        self._item = QTreeWidgetItem(tree, gId)
-        self._checkBox = IconCheckBox(':/icons/eye.svg', ':/icons/eye-off.svg')
-
-        tree.setItemWidget(self._item, 1, self._checkBox)
-        self._item.setIcon(2, self.icon)
-        self._item.setText(3, geometry['name'])
-
-        self._checkBox.checkStateChanged.connect(self._checkStateChanged)
-
-    def _checkStateChanged(self, state):
-        self.checkStateChanged.emit(self._item.type())
-
-    def isChecked(self):
-        return self._checkBox.isChecked()
-
-
-class GeometryList(QObject):
-    geometryCheckStateChanged = Signal(int)
-
-    def __init__(self, tree):
-        super().__init__()
-        self._tree = tree
-        self._tree.expandAll()
-        self._items = {}
-
-        self._tree.setColumnWidth(0, 0)
-        self._tree.setColumnWidth(1, 40)
-        self._tree.setColumnWidth(2, 20)
-
-    def add(self, gId, geometry):
-        self._items[gId] = GeometryItem(self._tree, gId, geometry)
-        self._items[gId].checkStateChanged.connect(self.geometryCheckStateChanged)
-
-    def remove(self, gId):
-        index = -1
-
-        for i in range(self._tree.topLevelItemCount()):
-            if self._tree.topLevelItem(i).type() == gId:
-                index = i
-                break
-
-        if index > -1:
-            item = self._tree.takeTopLevelItem(index)
-            del self._items[gId]
-            del item
-
-    def isGeometryChecked(self, gId):
-        return self._items[gId].isChecked()
-
-    def currentGId(self):
-        return self._tree.currentItem().type()
 
 
 class GeometryPage(QWidget):
@@ -80,60 +24,211 @@ class GeometryPage(QWidget):
         self._ui.setupUi(self)
 
         self._list = GeometryList(self._ui.list)
-        self._addDialog = None
-        self._dialog = GeometryDialog(self)
+
+        self._actors = app.window.actorManager()
+
+        self._dialog = None
+        self._geometryDialog = None
 
         self._connectSignalsSlots()
         self._load()
 
-    def title(self):
-        return self.tr('Geometry')
-
     def _connectSignalsSlots(self):
-        self._list.geometryCheckStateChanged.connect(self._setGeometryVisibliity)
+        self._list.eyeToggled.connect(self._setGeometryVisibliity)
+        self._ui.list.currentItemChanged.connect(self._currentGeometryChanged)
 
         self._ui.import_.clicked.connect(self._importClicked)
         self._ui.add.clicked.connect(self._addClicked)
-        self._ui.edit.clicked.connect(self._editClicked)
+        self._ui.edit.clicked.connect(self._openEditDialog)
         self._ui.remove.clicked.connect(self._removeGeometry)
 
-        self._dialog.geometryAdded.connect(self._addToList)
-        self._dialog.geometryEdited.connect(self._updateGeometry)
-
-    def _importClicked(self):
-        return
+    @qasync.asyncSlot()
+    async def _importClicked(self):
+        self._dialog = ImportDialog(self)
+        self._dialog.accepted.connect(self._importSTL)
+        self._dialog.open()
 
     def _addClicked(self):
-        self._addDialog = GeometryAddDialog(self)
-        self._addDialog.accepted.connect(self._openDialogToAdd)
-        self._addDialog.open()
+        self._dialog = GeometryAddDialog(self)
+        self._dialog.accepted.connect(self._openAddDialog)
+        self._dialog.open()
 
-    def _editClicked(self):
-        return
+    def _openAddDialog(self):
+        self._geometryDialog = VolumeDialog(self)
+        self._geometryDialog.setupForAdding(*self._dialog.geometryInfo())
+        self._geometryDialog.accepted.connect(self._geometryAddAccepted)
+        self._geometryDialog.open()
+
+    def _openEditDialog(self):
+        geometry = self._list.currentGeometry()
+        if geometry['gType'] == GeometryType.VOLUME.value:
+            self._geometryDialog = VolumeDialog(self)
+            self._geometryDialog.setupForEdit(self._list.currentGeometryID())
+            self._geometryDialog.accepted.connect(self._updateVolume)
+            self._geometryDialog.open()
+        else:
+            self._geometryDialog = SurfaceDialog(self, self._list.currentGeometryID())
+            self._geometryDialog.accepted.connect(self._updateSurface)
+            self._geometryDialog.open()
 
     def _removeGeometry(self):
-        gId = self._list.currentGId()
+        gId = self._list.currentGeometryID()
 
         db = app.db.checkout()
-        db.removeElement('geometry', gId)
+        geometries = db.getElements('geometry', lambda i, e: i == gId or e['volume'] == str(gId), ['path'])
+
+        for g in geometries:
+            self._actors.remove(g)
+            db.removeGeometryPolyData(geometries[g]['path'])
+            db.removeElement('geometry', g)
+        self._actors.refresh()
+
         app.db.commit(db)
 
         self._list.remove(gId)
 
     def _load(self):
-        geometry = app.db.getElements('geometry', ['name', 'gType'])
-        for gid in geometry:
-            self._list.add(gid, geometry[gid])
+        geometries = app.db.getElements('geometry', lambda i, e: e['volume'] == '')
+        for gId in geometries:
+            self._addGeometry(gId, geometries[gId])
 
-    def _setGeometryVisibliity(self, gId):
-        print('eye toggled', gId, self._list.isGeometryChecked(gId))
+        geometries = app.db.getElements('geometry', lambda i, e: e['volume'])
+        for gId in geometries:
+            self._addGeometry(gId, geometries[gId])
 
-    def _openDialogToAdd(self):
-        self._dialog.setupForAdding(*self._addDialog.geometryInfo())
-        self._dialog.open()
+        self._actors.fitCamera()
 
-    def _addToList(self, gId):
-        self._list.add(gId, app.db.getElement('geometry', gId))
+    def _setGeometryVisibliity(self, gId, state):
+        if state:
+            self._actors.show(gId)
+        else:
+            self._actors.hide(gId)
 
-    def _updateGeometry(self):
-        return
+    def _currentGeometryChanged(self):
+        geometry = self._list.currentGeometry()
+
+        self._ui.edit.setEnabled(geometry is not None)
+        self._ui.remove.setEnabled(geometry is not None and not geometry['volume'])
+
+    @qasync.asyncSlot()
+    async def _importSTL(self):
+        path = self._dialog.filePath()
+
+        loader = STLFileLoader()
+        volumes, surfaces = await loader.load(path, self._dialog.featureAngle())
+
+        added = []
+
+        baseName = path.stem
+        name = baseName
+        i = 1
+        while app.db.getKeys('geometry', lambda i, e: e['name'] == name or e['name'].startswith(name + '_')):
+            name = f'{baseName}{i}'
+            i += 1
+
+        db = app.db.checkout()
+        i = 0
+        for polyData in volumes:
+            volumeName = f'{name}_{i}'
+            element = db.newElement('geometry')
+            element.setValue('gType', GeometryType.VOLUME)
+            element.setValue('name', volumeName)
+            element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
+            element.setValue('cfdType', CFDType.NONE.value)
+            volumeId = db.addElement('geometry', element)
+            added.append(volumeId)
+            i += 1
+
+            for j in range(len(polyData)):
+                element = db.newElement('geometry')
+                element.setValue('gType', GeometryType.SURFACE)
+                element.setValue('volume', volumeId)
+                element.setValue('name', f'{volumeName}_{j}')
+                element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
+                element.setValue('cfdType', CFDType.NONE.value)
+                element.setValue('path', db.addGeometryPolyData(polyData[j]))
+                db.addElement('geometry', element)
+
+        for polyData in surfaces:
+            element = db.newElement('geometry')
+            element.setValue('gType', GeometryType.SURFACE)
+            element.setValue('name', f'{name}_{i}')
+            element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
+            element.setValue('cfdType', CFDType.NONE.value)
+            element.setValue('path', db.addGeometryPolyData(polyData))
+            gId = db.addElement('geometry', element)
+            added.append(gId)
+            i += 1
+
+        app.db.commit(db)
+
+        for gId in added:
+            self._geometryCreated(gId)
+        self._actors.refresh()
+
+    def _geometryAddAccepted(self):
+        self._geometryCreated(self._geometryDialog.gId())
+        self._actors.refresh()
+
+    def _updateVolume(self):
+        gId = self._geometryDialog.gId()
+        geometry = app.db.getElement('geometry',  gId)
+        self._list.update(gId, geometry)
+
+        if geometry['shape'] != Shape.TRI_SURFACE_MESH.value:
+            for item in self._list.childSurfaces(gId):
+                self._actors.replace(self._createActor(item.gId(), item.geometry()), str(item.gId()))
+
+    def _updateSurface(self):
+        gId = self._geometryDialog.gId()
+        geometry = app.db.getElement('geometry',  gId)
+        self._list.update(gId, geometry)
+
+    def _geometryCreated(self, gId):
+        geometry = app.db.getElement('geometry',  gId)
+        self._addGeometry(gId, geometry)
+
+        if geometry['gType'] == GeometryType.VOLUME.value:
+            surfaces = app.db.getElements('geometry', lambda i, e: e['volume'] == gId)
+            for surfaceId in surfaces:
+                self._addGeometry(surfaceId, surfaces[surfaceId])
+
+    def _addGeometry(self, gId, geometry):
+        self._list.add(gId, geometry)
+
+        if geometry['gType'] == GeometryType.SURFACE.value:
+            self._actors.add(self._createActor(gId, geometry), gId)
+
+    def _createActor(self, gId, surface):
+        volume = self._list.geometry(surface['volume'])
+        shape = surface['shape']
+
+        actor = None
+        if shape == Shape.TRI_SURFACE_MESH.value:
+            actor = polyDataToActor(app.db.geometryPolyData(surface['path']))
+        elif shape == Shape.HEX.value:
+            actor = hexActor(elementToVector(volume['point1']), elementToVector(volume['point2']))
+        elif shape == Shape.SPHERE.value:
+            actor = sphereActor(elementToVector(volume['point1']), float(volume['radius']))
+        elif shape == Shape.CYLINDER.value:
+            actor = cylinderActor(
+                elementToVector(volume['point1']), elementToVector(volume['point2']), float(volume['radius']))
+        elif shape in Shape.PLATES.value:
+            x1, y1, z1 = elementToVector(volume['point1'])
+            x2, y2, z2 = elementToVector(volume['point2'])
+
+            if shape == Shape.X_MIN.value:
+                actor = polygonActor([(x1, y1, z1), (x1, y1, z2), (x1, y2, z2), (x1, y2, z1)])
+            elif shape == Shape.X_MAX.value:
+                actor = polygonActor([(x2, y1, z1), (x2, y1, z2), (x2, y2, z2), (x2, y2, z1)])
+            elif shape == Shape.Y_MIN.value:
+                actor = polygonActor([(x1, y1, z1), (x2, y1, z1), (x2, y1, z2), (x1, y1, z2)])
+            elif shape == Shape.Y_MAX.value:
+                actor = polygonActor([(x1, y2, z1), (x2, y2, z1), (x2, y2, z2), (x1, y2, z2)])
+            elif shape == Shape.Z_MIN.value:
+                actor = polygonActor([(x1, y1, z1), (x1, y2, z1), (x2, y2, z1), (x2, y1, z1)])
+            elif shape == Shape.Z_MAX.value:
+                actor = polygonActor([(x1, y1, z2), (x1, y2, z2), (x2, y2, z2), (x2, y1, z2)])
+
+        actor.SetObjectName(gId)
+        return actor

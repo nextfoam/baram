@@ -5,6 +5,7 @@ from PySide6.QtCore import QObject
 
 from settings.local_settings import LocalSettings
 from db.configurations import Configurations
+from db.configurations_schema import schema
 
 
 class Project(QObject):
@@ -12,12 +13,13 @@ class Project(QObject):
         super().__init__()
 
         self._settings = LocalSettings(path)
+        self._path = self._settings.path
         self._lock = None
-        self._db = Configurations(path)
+        self._db = Configurations(schema)
 
     @property
     def path(self):
-        return self._settings.path
+        return self._path
 
     def name(self):
         return self.path.name
@@ -43,7 +45,7 @@ class Project(QObject):
 
     def open(self):
         self._settings.acquireLock(0.01)
-        self._db.load()
+        self._db.load(self._path)
 
     def close(self):
         self._settings.releaseLock()

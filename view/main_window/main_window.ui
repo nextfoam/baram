@@ -47,27 +47,32 @@
       </item>
       <item>
        <property name="text">
-        <string>2. Base Grid</string>
+        <string>2. Region</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>3. Castellation</string>
+        <string>3. Base Grid</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>4. Snap</string>
+        <string>4. Castellation</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>5. Boundary Layer</string>
+        <string>5. Snap</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>6. Refinement</string>
+        <string>6. Boundary Layer</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>7. Refinement</string>
        </property>
       </item>
      </widget>
@@ -106,26 +111,6 @@
            <property name="bottomMargin">
             <number>0</number>
            </property>
-           <item>
-            <widget class="QLabel" name="title">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="Line" name="line">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QWidget" name="content" native="true">
              <property name="sizePolicy">
@@ -185,7 +170,7 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="QWidget" name="widget_3" native="true">
+            <widget class="QWidget" name="toolbar" native="true">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
                <horstretch>0</horstretch>
@@ -481,22 +466,12 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>Points</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
                   <string>Surface</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
                   <string>Surface With Edges</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Wireframe</string>
                  </property>
                 </item>
                </widget>
@@ -650,7 +625,7 @@
   </action>
   <action name="action">
    <property name="text">
-    <string>  </string>
+    <string/>
    </property>
   </action>
  </widget>
