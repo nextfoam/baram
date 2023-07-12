@@ -46,7 +46,10 @@ class FileSystem:
         return self._triSurfacePath
 
     async def copyTriSurfaceFrom(self, srcPath, fileName):
-        await asyncio.to_thread(shutil.copyfile, srcPath, self._triSurfacePath / fileName)
+        targetFile = self._triSurfacePath / fileName
+        await asyncio.to_thread(shutil.copyfile, srcPath, targetFile)
+
+        return targetFile
 
     def _setCaseRoot(self, path):
         self._casePath = path

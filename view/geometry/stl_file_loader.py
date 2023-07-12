@@ -5,13 +5,13 @@ from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData
 
 from app import app
 from openfoam.system.surface_patch_dict import SurfacePatchDict, SurfacePatchData
-from openfoam.run import runUtility
+from openfoam.run import runUtility, OpenFOAMError
 from rendering.vtk_loader import loadSTL
 
 
 import qasync
 
-SURFACE_PATCH_FILE_NAME = 'geometry.stl'
+SURFACE_PATCH_SRC_FILE_NAME = 'geometry.stl'
 SURFACE_PATCHED_FILE_NAME = 'geometry_patched.stl'
 
 
@@ -25,22 +25,28 @@ class STLFileLoader:
         volumes = []
         surfaces = []
 
+        solids = None
         if featureAngle:
-            await self._fileSystem.copyTriSurfaceFrom(path, SURFACE_PATCH_FILE_NAME)
+            patchSrcFile = await self._fileSystem.copyTriSurfaceFrom(path, SURFACE_PATCH_SRC_FILE_NAME)
 
-            SurfacePatchDict().build(SurfacePatchData(SURFACE_PATCH_FILE_NAME, featureAngle)).write()
+            SurfacePatchDict().build(SurfacePatchData(SURFACE_PATCH_SRC_FILE_NAME, featureAngle)).write()
+
+            patchedFile = self._fileSystem.triSurfacePath() / SURFACE_PATCHED_FILE_NAME
+            patchedFile.unlink(missing_ok=True)
 
             proc = await runUtility('surfacePatch', cwd=self._fileSystem.caseRoot())
             await proc.wait()
 
-            patchFile = self._fileSystem.triSurfacePath() / SURFACE_PATCH_FILE_NAME
-            patchedFile = self._fileSystem.triSurfacePath() / SURFACE_PATCHED_FILE_NAME
+            if proc.returncode:
+                raise OpenFOAMError(proc.returncode, 'An error occurred while running surfacePatch.')
 
-            solids = loadSTL(patchedFile)
+            if patchedFile.exists():
+                solids = loadSTL(patchedFile)
+                patchedFile.unlink()
 
-            patchFile.unlink()
-            patchedFile.unlink()
-        else:
+            patchSrcFile.unlink()
+
+        if solids is None:
             solids = loadSTL(path)
 
         appendFilter = vtkAppendPolyData()

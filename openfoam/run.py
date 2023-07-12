@@ -206,3 +206,8 @@ async def runParallelUtility(program: str, *args, np: int = 1, cwd=None, stdout=
 
 def hasUtility(program: str):
     return (OPENFOAM / 'bin' / program).is_file()
+
+
+class OpenFOAMError(Exception):
+    def __init__(self, returncode, message):
+        super().__init__(returncode, message)
