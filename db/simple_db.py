@@ -241,6 +241,23 @@ class SimpleDB(SimpleSchema):
 
         self._modified = True
 
+    def getUniqueValue(self, path, field, value):
+        return f'{value}{self.getUniqueSeq(path, field, value)}'
+
+    def getUniqueSeq(self, path, field, value, start=''):
+        if start:
+            seq = int(start)
+            result = f'{value}{seq}'
+        else:
+            seq = 0
+            result = value
+
+        while self.getElements(path, lambda i, e: e[field] == result, []):
+            seq += 1
+            result = f'{value}{seq}'
+
+        return str(seq) if seq or start else ''
+
     def toYaml(self):
         return yaml.dump(self._db)
 

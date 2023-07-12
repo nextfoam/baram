@@ -84,7 +84,7 @@ class VolumeDialog(QDialog):
                         element = app.db.newElement('geometry')
                         element.setValue('gType', GeometryType.SURFACE.value)
                         element.setValue('volume', self._gId)
-                        element.setValue('name', f'{name}_{plate}')
+                        element.setValue('name', db.getUniqueValue('geometry', 'name', f'{name}_{plate}'))
                         element.setValue('shape', plate)
                         element.setValue('cfdType', CFDType.BOUNDARY.value)
                         db.addElement('geometry', element)
@@ -92,7 +92,7 @@ class VolumeDialog(QDialog):
                     element = app.db.newElement('geometry')
                     element.setValue('gType', GeometryType.SURFACE.value)
                     element.setValue('volume', self._gId)
-                    element.setValue('name', f'{name}_surface')
+                    element.setValue('name', db.getUniqueValue('geometry', 'name', f'{name}_surface'))
                     element.setValue('shape', self._shape)
                     element.setValue('cfdType', CFDType.BOUNDARY.value)
                     db.addElement('geometry', element)
@@ -166,22 +166,6 @@ class VolumeDialog(QDialog):
                 self, self.tr('Add Geometry Failed'),
                 self.tr('geometry {0} already exists.').format(name))
             return False
-
-        if self._creationMode is True:
-            if self._shape == Shape.HEX6.value:
-                duplicate = app.db.getElements(
-                    'geometry',
-                    lambda i, e: e['name'] in [f'{name}_{p}' for p in Shape.PLATES.value] and e['volume'] != self._gId,
-                    ['name'])
-            else:
-                duplicate = app.db.getElements(
-                    'geometry', lambda i, e: e['name'] == f'{name}_surface' and e['volume'] != self._gId, ['name'])
-
-            if duplicate:
-                QMessageBox.information(
-                    self, self.tr('Add Geometry Failed'),
-                    self.tr('geometry {0} already exists.').format(list(duplicate.values())[0]['name']))
-                return False
 
         self._dbElement.setValue('gType', GeometryType.VOLUME.value)
         self._dbElement.setValue('name', name)

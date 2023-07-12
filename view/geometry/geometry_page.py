@@ -119,17 +119,12 @@ class GeometryPage(QWidget):
 
         added = []
 
-        baseName = path.stem
-        name = baseName
-        i = 1
-        while app.db.getKeys('geometry', lambda i, e: e['name'] == name or e['name'].startswith(name + '_')):
-            name = f'{baseName}{i}'
-            i += 1
-
         db = app.db.checkout()
-        i = 0
-        for polyData in volumes:
-            volumeName = f'{name}_{i}'
+        name = path.stem
+        seq = ''
+        for volume in volumes:
+            seq = db.getUniqueSeq('geometry', 'name', name, seq)
+            volumeName = f'{name}{seq}'
             element = db.newElement('geometry')
             element.setValue('gType', GeometryType.VOLUME)
             element.setValue('name', volumeName)
@@ -137,28 +132,30 @@ class GeometryPage(QWidget):
             element.setValue('cfdType', CFDType.NONE.value)
             volumeId = db.addElement('geometry', element)
             added.append(volumeId)
-            i += 1
 
-            for j in range(len(polyData)):
+            surfaceName = f'{volumeName}_surface_'
+            sseq = '0'
+            for polyData in volume:
+                sseq = db.getUniqueSeq('geometry', 'name', surfaceName, sseq)
                 element = db.newElement('geometry')
-                element.setValue('gType', GeometryType.SURFACE)
+                element.setValue('gType', GeometryType.SURFACE.value)
                 element.setValue('volume', volumeId)
-                element.setValue('name', f'{volumeName}_{j}')
+                element.setValue('name', f'{surfaceName}{sseq}')
                 element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
                 element.setValue('cfdType', CFDType.NONE.value)
-                element.setValue('path', db.addGeometryPolyData(polyData[j]))
+                element.setValue('path', db.addGeometryPolyData(polyData))
                 db.addElement('geometry', element)
 
         for polyData in surfaces:
+            seq = db.getUniqueSeq('geometry', 'name', name, seq)
             element = db.newElement('geometry')
-            element.setValue('gType', GeometryType.SURFACE)
-            element.setValue('name', f'{name}_{i}')
+            element.setValue('gType', GeometryType.SURFACE.value)
+            element.setValue('name', f'{name}{seq}')
             element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
             element.setValue('cfdType', CFDType.NONE.value)
             element.setValue('path', db.addGeometryPolyData(polyData))
             gId = db.addElement('geometry', element)
             added.append(gId)
-            i += 1
 
         app.db.commit(db)
 
