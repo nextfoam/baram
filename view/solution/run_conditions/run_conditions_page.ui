@@ -349,13 +349,6 @@
           <property name="rowWrapPolicy">
            <enum>QFormLayout::WrapLongRows</enum>
           </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_24">
-            <property name="text">
-             <string>Host File</string>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="1">
            <widget class="QWidget" name="widget_8" native="true">
             <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -372,16 +365,29 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QLineEdit" name="hostFile">
-               <property name="enabled">
-                <bool>false</bool>
+              <widget class="QLabel" name="label_24">
+               <property name="text">
+                <string>Node List (hostfile)</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="selectHostFile">
+              <spacer name="horizontalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="editHostFile">
                <property name="text">
-                <string>Select</string>
+                <string>View/Edit</string>
                </property>
               </widget>
              </item>
@@ -580,7 +586,7 @@
   <tabstop>timePrecision</tabstop>
   <tabstop>numberOfCores</tabstop>
   <tabstop>cluster</tabstop>
-  <tabstop>selectHostFile</tabstop>
+  <tabstop>editHostFile</tabstop>
   <tabstop>groupBox_5</tabstop>
   <tabstop>field</tabstop>
   <tabstop>patch</tabstop>
@@ -591,7 +597,6 @@
   <tabstop>batchCase</tabstop>
   <tabstop>plotMonitor</tabstop>
   <tabstop>scrollArea</tabstop>
-  <tabstop>hostFile</tabstop>
  </tabstops>
  <resources/>
  <connections/>

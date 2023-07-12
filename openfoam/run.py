@@ -6,8 +6,8 @@ import subprocess
 import psutil
 from pathlib import Path
 import asyncio
-import glob
 
+from coredb import coredb
 import app
 
 # Solver Directory Structure
@@ -107,6 +107,12 @@ def openSolverProcess(cmd, casePath, inParallel):
 
 def launchSolverOnWindow(solver: str, casePath: Path, np: int = 1) -> (int, float):
     args = [MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
+    if coredb.CoreDB().getValue('.//parallel/localhost') != 'true':
+        hosts = coredb.CoreDB().getValue('.//parallel/hostfile')
+        path = casePath / 'hostfile'
+        with path.open(mode='w') as f:
+            f.write(hosts)
+        args[3:3] = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME, '-machinefile', str(path)]
 
     process = openSolverProcess(args, casePath, np > 1)
 
@@ -116,6 +122,12 @@ def launchSolverOnWindow(solver: str, casePath: Path, np: int = 1) -> (int, floa
 
 def launchSolverOnLinux(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float):
     args = [OPENFOAM/'bin'/'baramd', '-project', uuid, '-cmdline', MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
+    if coredb.CoreDB().getValue('.//parallel/localhost') != 'true':
+        hosts = coredb.CoreDB().getValue('.//parallel/hostfile')
+        path = casePath / 'hostfile'
+        with path.open(mode='w') as f:
+            f.write(hosts)
+        args[7:7] = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME, '-hostfile', str(path)]
 
     process = openSolverProcess(args, casePath, np > 1)
     process.wait()
@@ -178,7 +190,7 @@ async def runUtility(program: str, *args, cwd=None, stdout=asyncio.subprocess.DE
     return proc
 
 
-async def runParallelUtility(program: str, *args, np: int = 1, cwd=None, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
+async def runParallelUtility(program: str, *args, np: int = 1, cwd: Path = None, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
     global creationflags
     global startupinfo
 
@@ -193,7 +205,18 @@ async def runParallelUtility(program: str, *args, np: int = 1, cwd=None, stdout=
         args = list(args)
         args.append('-parallel')
 
-    proc = await asyncio.create_subprocess_exec(MPICMD, '-np', str(np), OPENFOAM/'bin'/program, *args,
+    cmdline = [MPICMD, '-np', str(np)]
+    if coredb.CoreDB().getValue('.//parallel/localhost') != 'true':
+        hosts = coredb.CoreDB().getValue('.//parallel/hostfile')
+        path = cwd / 'hostfile'
+        with path.open(mode='w') as f:
+            f.write(hosts)
+        if platform.system() == 'Windows':
+            cmdline[-1:-1] = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME, '-machinefile', str(path)]
+        else:
+            cmdline[-1:-1] = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME, '-hostfile', str(path)]
+
+    proc = await asyncio.create_subprocess_exec(*cmdline, OPENFOAM/'bin'/program, *args,
                                                 env=ENV, cwd=cwd,
                                                 creationflags=creationflags,
                                                 startupinfo=startupinfo,

@@ -1732,7 +1732,7 @@
                                     <xs:sequence>
                                         <xs:element name="numberOfCores" type="xs:positiveInteger"/>
                                         <xs:element name="localhost" type="xs:boolean"/>
-                                        <xs:element name="hostfile" type="xs:string"/> <!-- HDF5 Dataset -->
+                                        <xs:element name="hostfile" type="xs:string"/>
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
