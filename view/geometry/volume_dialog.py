@@ -117,6 +117,8 @@ class VolumeDialog(QDialog):
             self._loadSpherePage()
         elif self._shape == Shape.CYLINDER.value:
             self._loadCylinderpage()
+        else:
+            showStackPage(self._ui.geometryStack, None)     # triSurfaceMesh
 
     def _loadHexPage(self):
         showStackPage(self._ui.geometryStack, 'hex')
@@ -191,6 +193,8 @@ class VolumeDialog(QDialog):
             return self._updateSphereData()
         elif self._shape == Shape.CYLINDER.value:
             return self._updateCylinderData()
+        else:
+            return True     # triSurfaceMesh
 
         return False
 
