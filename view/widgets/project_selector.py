@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtCore import Signal, QRect
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QFileDialog, QMessageBox
 
 from app import app
 from coredb.app_settings import AppSettings
 from coredb.project_settings import ProjectSettings
+from libbaram.utils import getFit
 from .project_selector_ui import Ui_ProjectSelector
 from .project_widget import ProjectWidget
 
@@ -31,20 +32,22 @@ class ProjectSelector(QDialog):
 
         self._setupRecentCases()
 
-        rect = AppSettings.getLastStartWindowPosition()
-        self.setGeometry(QRect(rect[0], rect[1], rect[2], rect[3]))
+        geometry = AppSettings.getLastStartWindowGeometry()
+        display = app.qApplication.primaryScreen().availableVirtualGeometry()
+        fit = getFit(geometry, display)
+        self.setGeometry(fit)
 
         self._connectSignalsSlots()
 
     def getProjectDirectory(self):
         return self._projectDirectory
 
-    def accepted(self):
-        rect = self.geometry()
-        getRect = [rect.x(), rect.y(), rect.width(), rect.height()]
-        AppSettings.updateLastStartWindowPosition(getRect)
+    def _finished(self, result):
+        AppSettings.updateLastStartWindowGeometry(self.geometry())
 
     def _connectSignalsSlots(self):
+        self.finished.connect(self._finished)
+
         self._ui.newCase.clicked.connect(self._new)
         self._ui.open.clicked.connect(self._open)
         self._ui.recentCases.itemClicked.connect(self._openRecentProject)

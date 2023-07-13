@@ -17,6 +17,7 @@ from app import app
 from coredb.project import Project, SolverStatus
 from coredb.app_settings import AppSettings
 from coredb import coredb
+from libbaram.utils import getFit
 from mesh.mesh_manager import MeshManager, MeshType
 from openfoam.file_system import FileSystem
 from openfoam.case_generator import CaseGenerator
@@ -147,7 +148,10 @@ class MainWindow(QMainWindow):
         # self._updateMenuEnables()
         self._ui.menuMesh.setDisabled(True)
 
-        self.setGeometry(AppSettings.getLastMainWindowPosition())
+        geometry = AppSettings.getLastMainWindowGeometry()
+        display = app.qApplication.primaryScreen().availableVirtualGeometry()
+        fit = getFit(geometry, display)
+        self.setGeometry(fit)
 
     def renderingView(self):
         return self._renderingDock.view
@@ -178,7 +182,7 @@ class MainWindow(QMainWindow):
         logging.getLogger().removeHandler(self._handler)
         self._handler.close()
 
-        AppSettings.updateLastMainWindowPosition(self.geometry())
+        AppSettings.updateLastMainWindowGeometry(self.geometry())
 
         if self._closeType == CloseType.CLOSE_PROJECT:
             app.restart()
@@ -431,7 +435,7 @@ class MainWindow(QMainWindow):
             self._loadVtkMesh()
 
     def _addTabifiedDock(self, dock):
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
         self.tabifyDock(dock)
         self._ui.menuView.addAction(dock.toggleViewAction())
 
@@ -500,7 +504,7 @@ class MainWindow(QMainWindow):
         # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
         self._ui.menubar.repaint()
 
-        if result == QFileDialog.Accepted:
+        if result == QFileDialog.DialogCode.Accepted:
             self._renewCase()
 
             file = Path(self._dialog.selectedFiles()[0])

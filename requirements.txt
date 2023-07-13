@@ -12,7 +12,7 @@ h5py==3.6.0
 idna==3.3
 kiwisolver==1.4.4
 lxml==4.9.1
-matplotlib==3.5.2
+matplotlib==3.6.3
 multidict==6.0.2
 numexpr==2.8.3
 numpy==1.23.5
@@ -21,15 +21,13 @@ pandas==1.4.2
 Pillow==9.3.0
 psutil==5.9.1
 pyparsing==3.0.9
-PySide6==6.2.4
+PySide6-Essentials==6.4.3
 python-dateutil==2.8.2
 pytz==2022.1
 PyYAML==6.0
 qasync==0.23.0
-shiboken6==6.2.4
 six==1.16.0
 tables==3.7.0
 vtk==9.2.2
 xmlschema==1.10.0
 yarl==1.7.2
-screeninfo==0.8

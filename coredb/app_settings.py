@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-import screeninfo
+
 from enum import Enum
 from pathlib import Path
 
@@ -23,8 +23,8 @@ class SettingKey(Enum):
     RECENT_DIRECTORY = 'recent_directory'
     RECENT_CASES = 'recent_cases'
     RECENT_MESH_DIRECTORY = 'recent_mesh_directory'
-    LAST_START_WINDOW_POSITION = 'last_start_window_position'
-    LAST_MAIN_WINDOW_POSITION = 'last_main_window_position'
+    LAST_START_WINDOW_GEOMETRY = 'last_start_window_position'
+    LAST_MAIN_WINDOW_GEOMETRY = 'last_main_window_position'
     PARAVIEW_INSTALLED_PATH = 'paraview_installed_path'
 
 
@@ -88,69 +88,25 @@ class AppSettings:
         cls._save(settings)
 
     @classmethod
-    def getPrimaryMonitor(cls):
-        monitorsInfo = screeninfo.get_monitors()
-        for i, d in enumerate(monitorsInfo):
-            if d.is_primary:
-                return i
-        return 0
+    def getLastStartWindowGeometry(cls) -> QRect:
+        x, y, width, height = cls._get(SettingKey.LAST_START_WINDOW_GEOMETRY, [200, 100, 400, 300])
+        return QRect(x, y, width, height)
 
     @classmethod
-    def getMonitorSize(cls, monitorNum=-1):
-        monitorsInfo = screeninfo.get_monitors()
-        if monitorNum < 0 or monitorNum >= len(monitorsInfo):
-            monitorNum = cls.getPrimaryMonitor()
-
-        x = monitorsInfo[monitorNum].x
-        y = monitorsInfo[monitorNum].y
-        width = monitorsInfo[monitorNum].width
-        height = monitorsInfo[monitorNum].height
-        return [x, y, width, height]
-
-    @classmethod
-    def _getWindowProperPosition(cls, position):
-        x, y, width, height = position
-        minX, minY, maxX, maxY = 0, 0, 0, 0
-        scaling = float(AppSettings.getUiScaling())
-
-        monitorsInfo = screeninfo.get_monitors()
-        for d in monitorsInfo:
-            minX = (min(minX, d.x) / scaling)
-            minY = (min(minY, d.y) / scaling)
-            maxX = (max(maxX, d.x + d.width) / scaling)
-            maxY = (max(maxY, d.y + d.height) / scaling)
-
-        if minX <= (x / scaling) <= (maxX - (width / scaling)) and minY <= (y / scaling) <= (maxY - (height / scaling)):
-            return [x, y, width, height]
-        return cls.getWindowCenterPosition(width, height, scaling)
-
-    @classmethod
-    def getWindowCenterPosition(cls, width=400, height=300, scaling=1.0):
-        monitorSize = cls.getMonitorSize()
-        x = ((monitorSize[2] / 2) - (width / 2) + monitorSize[0]) / scaling
-        y = ((monitorSize[3] / 2) - (height / 2)) / scaling
-        return [x, y, width, height]
-
-    @classmethod
-    def getLastStartWindowPosition(cls):
-        position = cls._get(SettingKey.LAST_START_WINDOW_POSITION, cls.getWindowCenterPosition(400, 300))
-        return cls._getWindowProperPosition(position)
-
-    @classmethod
-    def updateLastStartWindowPosition(cls, rect):
+    def updateLastStartWindowGeometry(cls, geometry: QRect):
         settings = cls._load()
-        settings[SettingKey.LAST_START_WINDOW_POSITION.value] = [rect[0], rect[1], rect[2], rect[3]]
+        settings[SettingKey.LAST_START_WINDOW_GEOMETRY.value] = [geometry.x(), geometry.y(), geometry.width(), geometry.height()]
         cls._save(settings)
 
     @classmethod
-    def getLastMainWindowPosition(cls) -> QRect:
-        position = cls._get(SettingKey.LAST_MAIN_WINDOW_POSITION, cls.getWindowCenterPosition(1280, 770))
-        return QRect(*cls._getWindowProperPosition(position))
+    def getLastMainWindowGeometry(cls) -> QRect:
+        x, y, width, height = cls._get(SettingKey.LAST_MAIN_WINDOW_GEOMETRY, [200, 100, 1280, 770])
+        return QRect(x, y, width, height)
 
     @classmethod
-    def updateLastMainWindowPosition(cls, rect: QRect):
+    def updateLastMainWindowGeometry(cls, geometry: QRect):
         settings = cls._load()
-        settings[SettingKey.LAST_MAIN_WINDOW_POSITION.value] = rect.getRect()
+        settings[SettingKey.LAST_MAIN_WINDOW_GEOMETRY.value] = [geometry.x(), geometry.y(), geometry.width(), geometry.height()]
         cls._save(settings)
 
     @classmethod
