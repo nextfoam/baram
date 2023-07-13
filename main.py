@@ -58,6 +58,8 @@ if __name__ == '__main__':
     application = QApplication(sys.argv)
     application.setQuitOnLastWindowClosed(False)
 
+    app.qApplication = application
+
     loop = qasync.QEventLoop(application)
     asyncio.set_event_loop(loop)
 

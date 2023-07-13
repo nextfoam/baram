@@ -3,6 +3,7 @@
 
 import sys
 from pathlib import Path
+from typing import Optional
 
 from PySide6.QtCore import QObject, Signal, QTranslator, QCoreApplication, QLocale
 from PySide6.QtWidgets import QApplication
@@ -33,6 +34,8 @@ class App(QObject):
         self._properties = None
         self._plug = None
 
+        self._qApplication: Optional[QApplication] = None
+
     def setupApplication(self, properties):
         self._properties = properties
         AppSettings.setup(properties.name)
@@ -55,6 +58,14 @@ class App(QObject):
 
     def setPlug(self, plug):
         self._plug = plug
+
+    @property
+    def qApplication(self):
+        return self._qApplication
+
+    @qApplication.setter
+    def qApplication(self, application):
+        self._qApplication = application
 
     def vtkMesh(self):
         return self._vtkMesh

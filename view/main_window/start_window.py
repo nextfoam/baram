@@ -48,7 +48,7 @@ class Baram(QObject):
     def _projectSelectorClosed(self, result):
         self._applicationLock.release()
 
-        if result == QDialog.Rejected:
+        if result == QDialog.DialogCode.Rejected:
             QApplication.quit()
 
     @qasync.asyncSlot()
@@ -65,7 +65,7 @@ class Baram(QObject):
     def _openProject(self, path, openType):
         try:
             Project.open(path.resolve(), openType)
-            self._projectSelector.accept()
+            self._projectSelector.accept()  # To close project selector dialog
             app.openMainWindow()
 
             return
