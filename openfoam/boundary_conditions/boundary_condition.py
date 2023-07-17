@@ -63,7 +63,11 @@ class BoundaryCondition(DictionaryFile):
             self._write(self._processorNo)
 
     def _initialValueByTime(self):
-        return ('uniform', self._initialValue) if self._time == '0' else None
+        path = self.fullPath(self._processorNo)
+        if self._time == '0' or not path.is_file():
+            return 'uniform', self._initialValue
+        else:
+            return None
 
     def _constructCalculated(self):
         return {
