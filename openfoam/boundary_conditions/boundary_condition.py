@@ -31,6 +31,9 @@ class BoundaryCondition(DictionaryFile):
         self._fieldsData = None
         self._db = coredb.CoreDB()
 
+    def build0(self):
+        raise AssertionError  # This method should be overwritten by descendants
+
     def build(self):
         self.build0()
         if not self._data:
