@@ -62,9 +62,6 @@ else:
               + str(OPENFOAM/'tlib')
 
     if platform.system() == 'Darwin':
-        library = library + os.pathsep + str(OPENFOAM/'tlib'/'lib')
-
-    if platform.system() == 'Darwin':
         LIBRARY_PATH_NAME = 'DYLD_LIBRARY_PATH'
     else:
         LIBRARY_PATH_NAME = 'LD_LIBRARY_PATH'
@@ -77,13 +74,6 @@ else:
         'WM_PROJECT_DIR': str(OPENFOAM),
         LIBRARY_PATH_NAME: library + os.pathsep + os.environ[LIBRARY_PATH_NAME]
     })
-
-    # if platform.system() == 'Darwin':
-    #     ENV['OPAL_PREFIX'] = tmpiPath
-    #     ENV['OPAL_LIBDIR'] = str(Path(tmpiPath).joinpath('lib'))
-    #     ENV.update({
-    #         'PATH': str(Path(tmpiPath).joinpath('bin')) + os.pathsep + os.environ['PATH']
-    #     })
 
 
 def openSolverProcess(cmd, casePath, inParallel):
