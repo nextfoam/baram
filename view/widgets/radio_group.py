@@ -12,17 +12,22 @@ class RadioGroup(QObject):
 
         self._group = radioGroup
         self._values = {}
+        self._buttons = {}
 
         self._connectSignalsSlots()
 
     def setObjectMap(self, map, currentValue=None):
         for radio in self._group.buttons():
             self._values[self._group.id(radio)] = map[radio.objectName()]
+            self._buttons[map[radio.objectName()]] = radio
             if currentValue == map[radio.objectName()]:
                 radio.setChecked(True)
 
     def value(self):
         return self._values[self._group.checkedId()]
+
+    def setValue(self, value):
+        self._buttons[value].setChecked(True)
 
     def _connectSignalsSlots(self):
         self._group.buttonClicked.connect(self._radioClicked)

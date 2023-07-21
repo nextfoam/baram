@@ -120,20 +120,29 @@ class EnumType(PrimitiveType):
     def __init__(self, enumClass):
         super().__init__()
         self._cls = enumClass
-        self._default = list(enumClass)[0].value
         self._values = [e.value for e in enumClass]
+        self.setDefault(list(enumClass)[0])
 
     def validate(self, value, name=None):
         if not self._required and value == '':
             return value
 
-        if isinstance(value, self._cls):
-            return value.value
-
         if value in self._values:
+            return value if isinstance(value, str) else self._cls(value).name
+
+        if isinstance(value, self._cls):
+            return value.value if isinstance(value.value, str) else value.name
+
+        if value in self._cls.__members__:
             return value
 
         raise DBError(ErrorType.EnumError, f'Only {self._cls} are allowed.', name)
+
+    def valueToEnum(self, value):
+        return self._cls(value) if isinstance(value, self._cls) else self._cls[value]
+
+    def enumValue(self, value):
+        return value if isinstance(value, self._cls) else self._cls[value].value
 
 
 class FloatType(PrimitiveType):
@@ -164,6 +173,23 @@ class IntType(PrimitiveType):
                 f = float(value)
                 if int(f) != f:
                     raise DBError(ErrorType.TypeError, 'Only integers allowed', name)
+        except Exception as e:
+            raise DBError(ErrorType.TypeError, repr(e), name)
+
+        return value
+
+
+class PositiveIntType(IntType):
+    def __init__(self):
+        super().__init__()
+        self._default = '1'
+
+    def validate(self, value, name=None):
+        value = super().validate(value, name)
+        try:
+            if value != '':
+                if int(value) < 1:
+                    raise DBError(ErrorType.TypeError, 'Only positive integers allowed', name)
         except Exception as e:
             raise DBError(ErrorType.TypeError, repr(e), name)
 

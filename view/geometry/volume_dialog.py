@@ -86,7 +86,7 @@ class VolumeDialog(QDialog):
                         element.setValue('volume', self._gId)
                         element.setValue('name', db.getUniqueValue('geometry', 'name', f'{name}_{plate}'))
                         element.setValue('shape', plate)
-                        element.setValue('cfdType', CFDType.BOUNDARY.value)
+                        element.setValue('cfdType', CFDType.NONE.value)
                         db.addElement('geometry', element)
                 else:
                     element = app.db.newElement('geometry')
@@ -94,7 +94,7 @@ class VolumeDialog(QDialog):
                     element.setValue('volume', self._gId)
                     element.setValue('name', db.getUniqueValue('geometry', 'name', f'{name}_surface'))
                     element.setValue('shape', self._shape)
-                    element.setValue('cfdType', CFDType.BOUNDARY.value)
+                    element.setValue('cfdType', CFDType.NONE.value)
                     db.addElement('geometry', element)
 
                 app.db.commit(db)
@@ -161,10 +161,9 @@ class VolumeDialog(QDialog):
     def _updateElement(self):
         name = self._ui.name.text()
 
-        if app.db.getElements('geometry', lambda i, e: e['name'] == name and i != self._gId, ['name']):
-            QMessageBox.information(
-                self, self.tr('Add Geometry Failed'),
-                self.tr('geometry {0} already exists.').format(name))
+        if app.db.getElements('geometry', lambda i, e: e['name'] == name and i != self._gId, []):
+            QMessageBox.information(self, self.tr('Failed to Add Geometry'),
+                                    self.tr('geometry {0} already exists.').format(name))
             return False
 
         self._dbElement.setValue('gType', GeometryType.VOLUME.value)
@@ -179,8 +178,6 @@ class VolumeDialog(QDialog):
             return self._updateCylinderData()
         else:
             return True     # triSurfaceMesh
-
-        return False
 
     def _updateHexData(self):
         def validate(minText, maxText):

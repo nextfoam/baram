@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import shutil
+
 import asyncio
 
 from libbaram import utils
@@ -22,6 +23,7 @@ class FileSystem:
     FOAM_FILE_NAME = 'baram.foam'
     TRI_SURFACE_DIRECTORY_NAME = 'triSurface'
     POLY_MESH_DIRECTORY_NAME = 'polyMesh'
+    BOUNDARY_FILE_NAME = 'boundary'
 
     def __init__(self, path):
         self._casePath = None
@@ -33,6 +35,21 @@ class FileSystem:
     def caseRoot(self):
         return self._casePath
 
+    def constantPath(self, rname=None):
+        return self._constantPath / rname if rname else self._constantPath
+
+    def triSurfacePath(self):
+        return self._triSurfacePath
+
+    def polyMeshPath(self, rname=None):
+        return self.constantPath(rname) / self.POLY_MESH_DIRECTORY_NAME
+
+    def boundaryFilePath(self, rname=None):
+        return self.constantPath(rname) / self.POLY_MESH_DIRECTORY_NAME / 'boundary'
+
+    def foamFilePath(self):
+        return self._casePath / self.FOAM_FILE_NAME
+
     def createCase(self, src):
         if self._casePath.exists():
             utils.rmtree(self._casePath)
@@ -41,9 +58,6 @@ class FileSystem:
 
         self._constantPath = makeDir(self._casePath, self.CONSTANT_DIRECTORY_NAME)
         self._triSurfacePath = makeDir(self._constantPath, self.TRI_SURFACE_DIRECTORY_NAME)
-
-    def triSurfacePath(self):
-        return self._triSurfacePath
 
     async def copyTriSurfaceFrom(self, srcPath, fileName):
         targetFile = self._triSurfacePath / fileName

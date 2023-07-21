@@ -2,10 +2,21 @@
 # -*- coding: utf-8 -*-
 
 
-from enum import Enum
+from enum import Enum, auto
 
-from .simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, ElementSchema, BoolType, TextKeyList
+from .simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, TextKeyList, PositiveIntType
+from .simple_schema import ElementSchema
 from .simple_schema import VectorComposite
+
+
+class Step(Enum):
+    GEOMETRY = 0
+    BASE_GRID = auto()
+    # REGION = auto()
+    CASTELLATION = auto()
+    SNAP = auto()
+    BOUNDARY_LAYER = auto()
+    REFINEMENT = auto()
 
 
 class GeometryType(Enum):
@@ -64,6 +75,7 @@ geometry = {
 }
 
 region = {
+    'name': TextType(),
     'type': EnumType(RegionType),
     'point': VectorComposite().schema()
 }
@@ -109,12 +121,13 @@ class RegionSchema(ElementSchema):
 
 
 schema = {
+    'step': EnumType(Step),
     'geometry': IntKeyList(GeometrySchema()),
-    'region': TextKeyList(RegionSchema()),
+    'region': IntKeyList(RegionSchema()),
     'baseGrid': {
-        'numCellsX': FloatType().setDefault(10),
-        'numCellsY': FloatType().setDefault(10),
-        'numCellsZ': FloatType().setDefault(10)
+        'numCellsX': PositiveIntType().setDefault(10),
+        'numCellsY': PositiveIntType().setDefault(10),
+        'numCellsZ': PositiveIntType().setDefault(10)
     },
     'castellation': {
         'vtkNonManifoldEdges': BoolType(False),

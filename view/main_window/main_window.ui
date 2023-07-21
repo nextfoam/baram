@@ -44,35 +44,48 @@
        <property name="text">
         <string>1. Geometry</string>
        </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>2. Region</string>
+       <property name="flags">
+        <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsDropEnabled|ItemIsUserCheckable</set>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>3. Base Grid</string>
+        <string>2. Base Grid</string>
+       </property>
+       <property name="flags">
+        <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsDropEnabled|ItemIsUserCheckable</set>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>4. Castellation</string>
+        <string>3. Castellation</string>
+       </property>
+       <property name="flags">
+        <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsDropEnabled|ItemIsUserCheckable</set>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>5. Snap</string>
+        <string>4. Snap</string>
+       </property>
+       <property name="flags">
+        <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsDropEnabled|ItemIsUserCheckable</set>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>6. Boundary Layer</string>
+        <string>5. Boundary Layer</string>
+       </property>
+       <property name="flags">
+        <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsDropEnabled|ItemIsUserCheckable</set>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>7. Refinement</string>
+        <string>6. Refinement</string>
+       </property>
+       <property name="flags">
+        <set>ItemIsSelectable|ItemIsDragEnabled|ItemIsDropEnabled|ItemIsUserCheckable</set>
        </property>
       </item>
      </widget>
@@ -141,7 +154,17 @@
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton">
+               <widget class="QPushButton" name="unlock">
+                <property name="text">
+                 <string>Unlock</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="next">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
                  <string>Next</string>
                 </property>
@@ -461,17 +484,17 @@
                 </property>
                 <item>
                  <property name="text">
-                  <string>Feature Edges</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
                   <string>Surface</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
                   <string>Surface With Edges</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Feature Edges</string>
                  </property>
                 </item>
                </widget>

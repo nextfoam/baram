@@ -1,22 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, auto
-
-from PySide6.QtCore import QObject, Signal
+from rendering.rendering_manager import rendering
 
 
-class RenderingMode(Enum):
-    DISPLAY_MODE_FEATURE        = 0
-    DISPLAY_MODE_SURFACE        = auto()
-    DISPLAY_MODE_SURFACE_EDGE   = auto()
-
-
-class RenderingTool(QObject):
-    renderingModeChanged = Signal(RenderingMode)
-
+class RenderingTool:
     def __init__(self, ui):
-        super().__init__()
 
         self._view = ui.renderingView
 
@@ -34,4 +23,4 @@ class RenderingTool(QObject):
         ui.renderingMode.currentIndexChanged.connect(self._changeRenderingMode)
 
     def _changeRenderingMode(self, index):
-        self.renderingModeChanged.emit(RenderingMode(index))
+        rendering.setRenderingMode(index)

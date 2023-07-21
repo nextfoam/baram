@@ -4,6 +4,7 @@
 import asyncio
 import shutil
 import uuid
+import math
 from pathlib import Path
 
 
@@ -42,3 +43,18 @@ def rmtree(path, ignore_errors=False, onerror=None):
     else:  # loop is None
         shutil.rmtree(target, ignore_errors, onerror)
 
+
+def formatWithSignificants(value: float, significants):
+    result = str(value).lower()
+
+    if abs(value) < math.pow(10, significants):
+        ePos = result.index('e') if 'e' in result else len(result)
+        if value < 0:
+            ePos -= 1
+
+        if '.' not in result or ePos < significants + 2:
+            return result
+
+    scentific = f'{{:.{significants - 1}e}}'
+
+    return scentific.format(value)

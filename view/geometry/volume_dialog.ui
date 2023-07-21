@@ -537,6 +537,30 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>name</tabstop>
+  <tabstop>none</tabstop>
+  <tabstop>cellZone</tabstop>
+  <tabstop>minX</tabstop>
+  <tabstop>maxX</tabstop>
+  <tabstop>minY</tabstop>
+  <tabstop>maxY</tabstop>
+  <tabstop>minZ</tabstop>
+  <tabstop>maxZ</tabstop>
+  <tabstop>centerX</tabstop>
+  <tabstop>centerY</tabstop>
+  <tabstop>centerZ</tabstop>
+  <tabstop>sphereRadius</tabstop>
+  <tabstop>axis1X</tabstop>
+  <tabstop>axis2X</tabstop>
+  <tabstop>axis1Y</tabstop>
+  <tabstop>axis2Y</tabstop>
+  <tabstop>axis1Z</tabstop>
+  <tabstop>axis2Z</tabstop>
+  <tabstop>cylinderRadius</tabstop>
+  <tabstop>innerRadius</tabstop>
+  <tabstop>outerRadius</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

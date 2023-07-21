@@ -46,15 +46,11 @@ class GeometryNameWidget(QWidget):
 class GeometryItem(QTreeWidgetItem):
     def __init__(self, gId, geometry):
         super().__init__(int(gId))
-        self._geometry = geometry
         self._eyeCheckBox = None
         self._nameWidget = None
 
     def gId(self):
         return str(self.type())
-
-    def geometry(self):
-        return self._geometry
 
     def setCheckBox(self, checkBox):
         self._eyeCheckBox = checkBox
@@ -63,7 +59,6 @@ class GeometryItem(QTreeWidgetItem):
         self._nameWidget = widget
 
     def updateGeometry(self, geometry):
-        self._geometry = geometry
         if self._nameWidget:
             self._nameWidget.setText(geometry['name'])
         else:
@@ -93,7 +88,7 @@ class GeometryList(QObject):
     volumeIcon = QIcon(VOLUME_ICON_FILE)
     surfaceIcon = QIcon(SURFACE_ICON_FILE)
 
-    def __init__(self, tree):
+    def __init__(self, tree, geometries):
         super().__init__()
         self._tree = tree
         self._eyeBottons = QWidget(self._tree.header())
@@ -116,6 +111,10 @@ class GeometryList(QObject):
         self._headerPositionChanged()
 
         self._connectSignalsSlots()
+
+        elements = geometries.geometries()
+        for gId in elements:
+            self.add(gId, elements[gId])
 
     def add(self, gId, geometry):
         item = GeometryItem(gId, geometry)
@@ -165,16 +164,10 @@ class GeometryList(QObject):
     def currentGeometryID(self):
         return str(self._tree.currentItem().gId()) if self._tree.currentItem() else None
 
-    def currentGeometry(self):
-        return self.geometry(self.currentGeometryID())
-
-    def geometry(self, gId):
-        return self._items[gId].geometry() if gId in self._items else None
-
     def childSurfaces(self, gId):
         item = self._items[gId]
         for i in range(item.childCount()):
-            yield item.child(i)
+            yield str(item.child(i).type())
 
     def _connectSignalsSlots(self):
         self._tree.header().sectionResized.connect(self._headerPositionChanged)

@@ -5,7 +5,7 @@ import copy
 
 import yaml
 
-from .simple_schema import SimpleSchema, SchemaList, PrimitiveType
+from .simple_schema import SimpleSchema, SchemaList, PrimitiveType, EnumType
 
 
 def elementToVector(element):
@@ -103,6 +103,20 @@ class SimpleDB(SimpleSchema):
 
         return elementToTuple(db[field], schema[field], ['x', 'y', 'z'])
 
+    def getEnum(self, path):
+        schema, db, field = self._get(path)
+        if not isinstance(schema[field], EnumType):
+            raise LookupError
+
+        return schema[field].valueToEnum(db[field])
+
+    def getEnumValue(self, path):
+        schema, db, field = self._get(path)
+        if not isinstance(schema[field], EnumType):
+            raise LookupError
+
+        return schema[field].enumValue(db[field])
+
     def setValue(self, path, value, name=None):
         if not self._editable:
             raise LookupError
@@ -176,11 +190,12 @@ class SimpleDB(SimpleSchema):
             raise TypeError
 
         if columns is None:
-            return copy.deepcopy({key: db[field][key] for key in db[field] if filter_(key, db[field][key])})
+            return copy.deepcopy(
+                {key: db[field][key] for key in db[field] if filter_ is None or filter_(key, db[field][key])})
 
         return {
             key: {k: copy.deepcopy(db[field][key][k]) for k in columns}
-            for key in db[field] if filter_(key, db[field][key])}
+            for key in db[field] if filter_ is None or filter_(key, db[field][key])}
 
     def getKeys(self, path, function=None):
         schema, db, field = self._get(path)
@@ -257,6 +272,15 @@ class SimpleDB(SimpleSchema):
             result = f'{value}{seq}'
 
         return str(seq) if seq or start else ''
+
+    def keyExists(self, path, key):
+        schema, db, field = self._get(path)
+
+        schema = schema[field]
+        if not isinstance(schema, SchemaList):
+            raise TypeError
+
+        return key in db[field]
 
     def toYaml(self):
         return yaml.dump(self._db)

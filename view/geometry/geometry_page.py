@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from PySide6.QtWidgets import QWidget, QMessageBox
+from PySide6.QtWidgets import QMessageBox
 
 from app import app
 from db.configurations_schema import CFDType, Shape, GeometryType
-from db.simple_db import elementToVector
-from rendering.vtk_loader import hexActor, cylinderActor, sphereActor, polygonActor, polyDataToActor
 from openfoam.run import OpenFOAMError
+from view.step_page import StepPage
 from .geometry_add_dialog import GeometryAddDialog
 from .stl_file_loader import STLFileLoader
 from .geometry_import_dialog import ImportDialog
@@ -18,23 +17,35 @@ from .geometry_list import GeometryList
 from .geometry_page_ui import Ui_GeometryPage
 
 
-class GeometryPage(QWidget):
+class GeometryPage(StepPage):
     def __init__(self):
         super().__init__()
         self._ui = Ui_GeometryPage()
         self._ui.setupUi(self)
 
-        self._list = GeometryList(self._ui.list)
-
         self._actors = app.window.actorManager()
+        self._geometries = app.window.geometryManager()
+        self._list = GeometryList(self._ui.list, self._geometries)
 
         self._dialog = None
         self._geometryDialog = None
 
         self._connectSignalsSlots()
-        self._load()
+        #
+        # self._geometries.showAll()
+
+    @classmethod
+    def nextStepAvailable(cls):
+        return not app.window.geometryManager().isEmpty()
+
+    def lock(self):
+        self._ui.buttons.setEnabled(False)
+
+    def unlock(self):
+        self._ui.buttons.setEnabled(True)
 
     def _connectSignalsSlots(self):
+        self._geometries.listChanged.connect(self._updateNextStepAvailable)
         self._list.eyeToggled.connect(self._setGeometryVisibliity)
         self._ui.list.currentItemChanged.connect(self._currentGeometryChanged)
 
@@ -61,7 +72,7 @@ class GeometryPage(QWidget):
         self._geometryDialog.open()
 
     def _openEditDialog(self):
-        geometry = self._list.currentGeometry()
+        geometry = self._geometries.geometry(self._list.currentGeometryID())
         if geometry['gType'] == GeometryType.VOLUME.value:
             self._geometryDialog = VolumeDialog(self)
             self._geometryDialog.setupForEdit(self._list.currentGeometryID())
@@ -77,39 +88,28 @@ class GeometryPage(QWidget):
 
         db = app.db.checkout()
         geometries = db.getElements('geometry', lambda i, e: i == gId or e['volume'] == str(gId), ['path'])
+        self._geometries.remove(geometries)
 
         for g in geometries:
-            self._actors.remove(g)
             db.removeGeometryPolyData(geometries[g]['path'])
             db.removeElement('geometry', g)
-        self._actors.refresh()
 
         app.db.commit(db)
 
         self._list.remove(gId)
 
-    def _load(self):
-        geometries = app.db.getElements('geometry', lambda i, e: e['volume'] == '')
-        for gId in geometries:
-            self._addGeometry(gId, geometries[gId])
-
-        geometries = app.db.getElements('geometry', lambda i, e: e['volume'])
-        for gId in geometries:
-            self._addGeometry(gId, geometries[gId])
-
-        self._actors.fitCamera()
-
     def _setGeometryVisibliity(self, gId, state):
         if state:
-            self._actors.show(gId)
+            self._geometries.showActor(gId)
         else:
-            self._actors.hide(gId)
+            self._geometries.hideActor(gId)
 
     def _currentGeometryChanged(self):
-        geometry = self._list.currentGeometry()
-
-        self._ui.edit.setEnabled(geometry is not None)
-        self._ui.remove.setEnabled(geometry is not None and not geometry['volume'])
+        gId = self._list.currentGeometryID()
+        if gId:
+            geometry = self._geometries.geometry(gId)
+            self._ui.edit.setEnabled(True)
+            self._ui.remove.setEnabled(not geometry['volume'])
 
     @qasync.asyncSlot()
     async def _importSTL(self):
@@ -163,27 +163,23 @@ class GeometryPage(QWidget):
 
             for gId in added:
                 self._geometryCreated(gId)
-            self._actors.refresh()
         except OpenFOAMError as ex:
             code, message = ex.args
             QMessageBox.information(self, self.tr('STL Loading Error'), f'{message} [{code}]')
 
     def _geometryAddAccepted(self):
         self._geometryCreated(self._geometryDialog.gId())
-        self._actors.refresh()
 
     def _updateVolume(self):
         gId = self._geometryDialog.gId()
         geometry = app.db.getElement('geometry',  gId)
+        self._geometries.update(gId, geometry, self._list.childSurfaces(gId))
         self._list.update(gId, geometry)
-
-        if geometry['shape'] != Shape.TRI_SURFACE_MESH.value:
-            for item in self._list.childSurfaces(gId):
-                self._actors.replace(self._createActor(item.gId(), item.geometry()), str(item.gId()))
 
     def _updateSurface(self):
         gId = self._geometryDialog.gId()
         geometry = app.db.getElement('geometry',  gId)
+        self._geometries.update(gId, geometry)
         self._list.update(gId, geometry)
 
     def _geometryCreated(self, gId):
@@ -196,41 +192,5 @@ class GeometryPage(QWidget):
                 self._addGeometry(surfaceId, surfaces[surfaceId])
 
     def _addGeometry(self, gId, geometry):
+        self._geometries.add(gId, geometry)
         self._list.add(gId, geometry)
-
-        if geometry['gType'] == GeometryType.SURFACE.value:
-            self._actors.add(self._createActor(gId, geometry), gId)
-
-    def _createActor(self, gId, surface):
-        volume = self._list.geometry(surface['volume'])
-        shape = surface['shape']
-
-        actor = None
-        if shape == Shape.TRI_SURFACE_MESH.value:
-            actor = polyDataToActor(app.db.geometryPolyData(surface['path']))
-        elif shape == Shape.HEX.value:
-            actor = hexActor(elementToVector(volume['point1']), elementToVector(volume['point2']))
-        elif shape == Shape.SPHERE.value:
-            actor = sphereActor(elementToVector(volume['point1']), float(volume['radius']))
-        elif shape == Shape.CYLINDER.value:
-            actor = cylinderActor(
-                elementToVector(volume['point1']), elementToVector(volume['point2']), float(volume['radius']))
-        elif shape in Shape.PLATES.value:
-            x1, y1, z1 = elementToVector(volume['point1'])
-            x2, y2, z2 = elementToVector(volume['point2'])
-
-            if shape == Shape.X_MIN.value:
-                actor = polygonActor([(x1, y1, z1), (x1, y1, z2), (x1, y2, z2), (x1, y2, z1)])
-            elif shape == Shape.X_MAX.value:
-                actor = polygonActor([(x2, y1, z1), (x2, y1, z2), (x2, y2, z2), (x2, y2, z1)])
-            elif shape == Shape.Y_MIN.value:
-                actor = polygonActor([(x1, y1, z1), (x2, y1, z1), (x2, y1, z2), (x1, y1, z2)])
-            elif shape == Shape.Y_MAX.value:
-                actor = polygonActor([(x1, y2, z1), (x2, y2, z1), (x2, y2, z2), (x1, y2, z2)])
-            elif shape == Shape.Z_MIN.value:
-                actor = polygonActor([(x1, y1, z1), (x1, y2, z1), (x2, y2, z1), (x2, y1, z1)])
-            elif shape == Shape.Z_MAX.value:
-                actor = polygonActor([(x1, y1, z2), (x1, y2, z2), (x2, y2, z2), (x2, y1, z2)])
-
-        actor.SetObjectName(gId)
-        return actor

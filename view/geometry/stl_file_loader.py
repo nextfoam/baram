@@ -6,7 +6,7 @@ from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData
 from app import app
 from openfoam.system.surface_patch_dict import SurfacePatchDict, SurfacePatchData
 from openfoam.run import runUtility, OpenFOAMError
-from rendering.vtk_loader import loadSTL
+from rendering.vtk_loader import loadSTLFile
 
 
 import qasync
@@ -41,13 +41,13 @@ class STLFileLoader:
                 raise OpenFOAMError(proc.returncode, 'An error occurred while running surfacePatch.')
 
             if patchedFile.exists():
-                solids = loadSTL(patchedFile)
+                solids = loadSTLFile(patchedFile)
                 patchedFile.unlink()
 
             patchSrcFile.unlink()
 
         if solids is None:
-            solids = loadSTL(path)
+            solids = loadSTLFile(path)
 
         appendFilter = vtkAppendPolyData()
 

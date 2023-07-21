@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor, vtkFollower
-from vtkmodules.vtkIOLegacy import vtkPolyDataReader
 from vtkmodules.vtkCommonCore import vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkHexahedron, vtkCellArray, vtkUnstructuredGrid, vtkPolygon, vtkPolyData
 from vtkmodules.vtkCommonDataModel import vtkDataObject
@@ -14,36 +13,7 @@ from vtkmodules.vtkIOGeometry import vtkSTLReader
 from vtkmodules.vtkRenderingFreeType import vtkVectorText
 
 
-def loadVtkFile(file):
-    if not file.exists():
-        return None
-
-    r = vtkPolyDataReader()
-    r.SetFileName(file)
-    r.Update()
-
-    mapper = vtkPolyDataMapper()
-    mapper.SetInputData(r.GetOutput())
-
-    actor = vtkQuadricLODActor()    # vtkActor()
-    actor.SetMapper(mapper)
-
-    return actor
-
-
-# def loadSTL(path: Path):
-#     reader = vtkSTLReader()
-#     reader.SetFileName(str(path))
-#     reader.Update()
-#
-#     mapper = vtkPolyDataMapper()
-#     mapper.SetInputData(reader.GetOutput())
-#     actor = vtkActor()
-#     actor.SetMapper(mapper)
-#     return actor
-
-
-def loadSTL(path):
+def loadSTLFile(path):
     reader: vtkSTLReader = vtkSTLReader()
     reader.SetFileName(str(path))
     reader.ScalarTagsOn()
@@ -81,19 +51,19 @@ def polyDataToActor(polyData):
     return actor
 
 
-def hexActor(point1, point2):
-    minX, minY, minZ = point1
-    maxX, maxY, maxZ = point2
+def hexPolyData(point1, point2):
+    xMin, yMin, zMin = point1
+    xMax, yMax, zMax = point2
 
     pointCoordinates = list()
-    pointCoordinates.append([minX, minY, minZ])
-    pointCoordinates.append([maxX, minY, minZ])
-    pointCoordinates.append([maxX, maxY, minZ])
-    pointCoordinates.append([minX, maxY, minZ])
-    pointCoordinates.append([minX, minY, maxZ])
-    pointCoordinates.append([maxX, minY, maxZ])
-    pointCoordinates.append([maxX, maxY, maxZ])
-    pointCoordinates.append([minX, maxY, maxZ])
+    pointCoordinates.append([xMin, yMin, zMin])
+    pointCoordinates.append([xMax, yMin, zMin])
+    pointCoordinates.append([xMax, yMax, zMin])
+    pointCoordinates.append([xMin, yMax, zMin])
+    pointCoordinates.append([xMin, yMin, zMax])
+    pointCoordinates.append([xMax, yMin, zMax])
+    pointCoordinates.append([xMax, yMax, zMax])
+    pointCoordinates.append([xMin, yMax, zMax])
 
     points = vtkPoints()
 
@@ -110,14 +80,18 @@ def hexActor(point1, point2):
     uGrid.SetPoints(points)
     uGrid.InsertNextCell(hexahedron.GetCellType(), hexahedron.GetPointIds())
 
-    mapper = vtkDataSetMapper()
-    mapper.SetInputData(uGrid)
+    geometryFilter = vtkGeometryFilter()
+    geometryFilter.SetInputData(uGrid)
+    geometryFilter.Update()
+    #
+    # mapper = vtkDataSetMapper()
+    # mapper.SetInputData(geometryFilter.GetOutput())
+    #
+    # actor = vtkActor()
+    # actor.SetMapper(mapper)
+    # actor.GetProperty().SetColor(0.8, 0.8, 0.8)
 
-    actor = vtkActor()
-    actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(0.8, 0.8, 0.8)
-
-    return actor
+    return geometryFilter.GetOutput()
 
 
 def cylinderActor(point1, point2, radius):
@@ -152,9 +126,35 @@ def sphereActor(point, radius):
 
     actor = vtkActor()
     actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(0.8, 0.8, 0.8)
+    # actor.GetProperty().SetColor(0.8, 0.8, 0.8)
 
     return actor
+
+
+def polygonPolyData(points):
+    vPoints = vtkPoints()
+    for p in points:
+        vPoints.InsertNextPoint(*p)
+
+    polygon = vtkPolygon()
+    polygon.GetPointIds().SetNumberOfIds(len(points))
+    for i in range(len(points)):
+        polygon.GetPointIds().SetId(i, i)
+
+    polygons = vtkCellArray()
+    polygons.InsertNextCell(polygon)
+
+    polygonPolyData = vtkPolyData()
+    polygonPolyData.SetPoints(vPoints)
+    polygonPolyData.SetPolys(polygons)
+    #
+    # mapper = vtkPolyDataMapper()
+    # mapper.SetInputData(polygonPolyData)
+    #
+    # actor = vtkActor()
+    # actor.SetMapper(mapper)
+
+    return polygonPolyData
 
 
 def lineActor(point1, point2):
@@ -179,32 +179,6 @@ def labelActor(text):
     mapper.SetInputConnection(label.GetOutputPort())
 
     actor = vtkFollower()
-    actor.SetMapper(mapper)
-
-    return actor
-
-
-def polygonActor(points):
-    vPoints = vtkPoints()
-    for p in points:
-        vPoints.InsertNextPoint(*p)
-
-    polygon = vtkPolygon()
-    polygon.GetPointIds().SetNumberOfIds(len(points))
-    for i in range(len(points)):
-        polygon.GetPointIds().SetId(i, i)
-
-    polygons = vtkCellArray()
-    polygons.InsertNextCell(polygon)
-
-    polygonPolyData = vtkPolyData()
-    polygonPolyData.SetPoints(vPoints)
-    polygonPolyData.SetPolys(polygons)
-
-    mapper = vtkPolyDataMapper()
-    mapper.SetInputData(polygonPolyData)
-
-    actor = vtkActor()
     actor.SetMapper(mapper)
 
     return actor
