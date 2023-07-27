@@ -25,6 +25,9 @@ def rmtree(path, ignore_errors=False, onerror=None):
 
     """
     p = Path(path)
+    if not p.exists():
+        return
+
     target = p.parent / ('delete_me_' + str(uuid.uuid4()))
     p.rename(target)
 
