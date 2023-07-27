@@ -79,5 +79,7 @@ class DictionaryFile:
 
     def _write(self, processorNo=None):
         if self._data:
-            with open(self.fullPath(processorNo), 'w') as f:
+            path = self.fullPath(processorNo)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, 'w') as f:
                 f.write(str(FoamFileGenerator(self._data, header=self._header)))
