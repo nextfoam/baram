@@ -133,9 +133,6 @@ class Worker(QObject):
         self.timer = None
         self.running = False
 
-        self._header = None
-        self._columns = None
-
         self.start.connect(self.startRun, type=Qt.ConnectionType.QueuedConnection)
         self.stop.connect(self.stopRun, type=Qt.ConnectionType.QueuedConnection)
 
@@ -273,13 +270,10 @@ class Worker(QObject):
         if not lines:
             return False, target
 
-        self._setHeader(names)
-        names = self._header
-        if rname != '':
-            names = [k if k == 'Time' else rname + ':' + k for k in self._header]
+        names, columns = self._getResidualHeader(names, rname)
 
         stream = StringIO(lines)
-        df = pd.read_csv(stream, sep=r'\s+', names=names, dtype={'Time': np.float64})[self._columns]
+        df = pd.read_csv(stream, sep=r'\s+', names=names, dtype={'Time': np.float64})[columns]
         stream.close()
 
         df.set_index('Time', inplace=True)
@@ -297,23 +291,25 @@ class Worker(QObject):
             if names[0] != 'Time':
                 raise RuntimeError
 
-            self._setHeader(names)
-            names = self._header
-            if rname != '':
-                names = [k if k == 'Time' else rname + ':' + k for k in self._header]
+            names, columns = self._getResidualHeader(names, rname)
 
-            df = pd.read_csv(f, sep=r'\s+', names=names, skiprows=0)[self._columns]
+            df = pd.read_csv(f, sep=r'\s+', names=names, dtype={'Time': np.float64}, skiprows=0)[columns]
             df.set_index('Time', inplace=True)
             return df
 
-    def _setHeader(self, header):
-        if self._header is None:
-            self._header = header
-            self._columns = [header[0]]     # Time
-            for i in range(1, len(header)):
-                if header[i].endswith('_initial'):
-                    self._header[i] = header[i][:-8]
-                    self._columns.append(self._header[i])
+    def _getResidualHeader(self, names: [str], rname: str):
+        header = names.copy()
+        columns = [names[0]]     # Time
+        for i in range(1, len(names)):
+            if names[i].endswith('_initial'):
+                header[i] = names[i][:-8]
+                columns.append(header[i])
+
+        if rname != '':
+            header = [k if k == 'Time' else rname + ':' + k for k in header]
+            columns = [k if k == 'Time' else rname + ':' + k for k in columns]
+
+        return header, columns
 
 
 class SolverInfoManager(QObject):
