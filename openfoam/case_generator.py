@@ -71,6 +71,8 @@ class CaseGenerator(QObject):
         if errors := self._validate():
             return errors
 
+        # Files that can be in case root folder or region folders
+
         regions = self._db.getRegions()
         self._files = []
         for rname in regions:
@@ -102,10 +104,14 @@ class CaseGenerator(QObject):
             self._files.append(DecomposeParDict(rname))
             self._files.append(SetFieldsDict(rname))
 
+        # Files that should be created in case root folder in addition to the region folders.
+
         if len(regions) > 1:
             self._files.append(FvSolution())
             self._files.append(RegionProperties())
             self._files.append(DecomposeParDict())
+
+        # Files that should be in case root folder only
 
         self._files.append(G())
 
