@@ -8,6 +8,7 @@ from enum import Enum, auto
 from pathlib import Path
 
 from coredb import coredb
+from openfoam.redistribution_task import RedistributionTask
 from openfoam.run import runUtility, runParallelUtility
 from openfoam.file_system import FileSystem
 from openfoam.polymesh.polymesh_loader import PolyMeshLoader
@@ -82,7 +83,13 @@ class MeshManager(Processor):
 
         try:
             progressDialog.setLabelText(self.tr('Loading the boundaries.'))
+            # Need to load mesh to get region information though redistribution loads mesh in next lines
             await PolyMeshLoader().loadMesh(path)
+
+            redistributeTask = RedistributionTask()
+            redistributeTask.progress.connect(progressDialog.setLabelText)
+            await redistributeTask.redistribute()
+
             progressDialog.close()
         except Exception as ex:
             logger.info(ex, exc_info=True)
@@ -106,8 +113,14 @@ class MeshManager(Processor):
                 progressDialog.finish(self.tr('File conversion failed.'))
             elif not progressDialog.isCanceled():
                 progressDialog.setLabelText(self.tr('Loading the boundaries.'))
+                # Need to load mesh to get region information though redistribution loads mesh in next lines
                 await PolyMeshLoader().loadMesh()
                 await FileSystem.removeFile(path.name)
+
+                redistributeTask = RedistributionTask()
+                redistributeTask.progress.connect(progressDialog.setLabelText)
+                await redistributeTask.redistribute()
+
                 progressDialog.close()
         except Exception as ex:
             logger.info(ex, exc_info=True)

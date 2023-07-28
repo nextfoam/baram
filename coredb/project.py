@@ -42,6 +42,9 @@ class SettingKey(Enum):
     FORMAT_VERSION = 'format_version'
     UUID = 'case_uuid'
     PATH = 'case_full_path'
+    NP = 'np'
+    PARALLEL_TYPE = 'parallel_type'
+    HOSTFILE = 'hostfile'
 
 
 class _Project(QObject):
@@ -101,12 +104,40 @@ class _Project(QObject):
         self._renewed = False
 
     @property
-    def uuid(self):
+    def uuid(self) -> str:
         return self._settings.get(SettingKey.UUID)
+
+    @uuid.setter
+    def uuid(self, uuid_):
+        self._settings.set(SettingKey.UUID, uuid_)
 
     @property
     def path(self):
         return Path(self._settings.get(SettingKey.PATH))
+
+    @property
+    def np(self):
+        return self._settings.get(SettingKey.NP)
+
+    @np.setter
+    def np(self, np_):
+        self._settings.set(SettingKey.NP, np_)
+
+    @property
+    def pType(self):
+        return self._settings.get(SettingKey.PARALLEL_TYPE)
+
+    @pType.setter
+    def pType(self, type_):
+        self._settings.set(SettingKey.PARALLEL_TYPE, type_)
+
+    @property
+    def hostfile(self):
+        return self._settings.get(SettingKey.HOSTFILE)
+
+    @hostfile.setter
+    def hostfile(self, hostfile_):
+        self._settings.set(SettingKey.HOSTFILE, hostfile_)
 
     @property
     def name(self):
@@ -123,10 +154,6 @@ class _Project(QObject):
     @property
     def isModified(self):
         return self._fileDB.isModified or self._coreDB.isModified
-
-    @uuid.setter
-    def uuid(self, uuid_):
-        self._settings.set(SettingKey.UUID, uuid_)
 
     def fileDB(self):
         return self._fileDB
@@ -277,7 +304,7 @@ class _Project(QObject):
 
 
 class Project:
-    _instance = None
+    _instance: Optional[_Project] = None
 
     @classmethod
     def open(cls, directory, openType):

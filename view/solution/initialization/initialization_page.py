@@ -9,6 +9,7 @@ from app import app
 from coredb import coredb
 from coredb.project import Project, SolverStatus
 from coredb.region_db import DEFAULT_REGION_NAME
+from openfoam import parallel
 from openfoam.case_generator import CaseGenerator
 from openfoam.file_system import FileSystem
 from openfoam.run import runParallelUtility
@@ -97,9 +98,8 @@ class InitializationPage(ContentPage):
 
             progressDialog.setLabelText('Clean-up Files')
 
-            regions = self._db.getRegions()
             try:
-                await FileSystem.initialize(regions)
+                await FileSystem.initialize()
             except PermissionError:
                 progressDialog.finish('Permission error')
                 return
@@ -128,7 +128,7 @@ class InitializationPage(ContentPage):
             if len(sectionNames) > 0:
                 progressDialog.setLabelText('Setting Section Values')
 
-                numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
+                numCores = parallel.getNP()
                 caseRoot = FileSystem.caseRoot()
 
                 proc = await runParallelUtility('setFields', '-writeBoundaryFields', '-case', caseRoot, np=numCores, cwd=caseRoot)

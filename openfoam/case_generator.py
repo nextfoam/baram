@@ -92,11 +92,9 @@ class CaseGenerator(QObject):
             processorNo = 0
             while path := FileSystem.processorPath(processorNo):
                 self._files.append(Boundary(rname, processorNo))
-                self._gatherBoundaryConditionsFiles(region, path, processorNo)
                 processorNo += 1
 
-            if processorNo == 0:
-                self._gatherBoundaryConditionsFiles(region, FileSystem.caseRoot())
+            self._gatherBoundaryConditionsFiles(region, FileSystem.caseRoot())
 
             self._files.append(FvSchemes(rname))
             self._files.append(FvSolution(rname))
@@ -107,12 +105,11 @@ class CaseGenerator(QObject):
         if len(regions) > 1:
             self._files.append(FvSolution())
             self._files.append(RegionProperties())
+            self._files.append(DecomposeParDict())
 
         self._files.append(G())
 
         self._files.append(ControlDict())
-
-        self._files.append(DecomposeParDict())
 
         return errors
 
@@ -164,38 +161,21 @@ class CaseGenerator(QObject):
 
         caseRoot = FileSystem.caseRoot()
 
-        numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
         processorFolders = FileSystem.processorFolders()
         nProcessorFolders = len(processorFolders)
 
         try:
-            # Reconstruct the case if necessary.
-            if nProcessorFolders > 0 and nProcessorFolders != numCores:
-                latestTime = max([f.name for f in (caseRoot / 'processor0').glob('[0-9.]*') if f.name.count('.') < 2],
-                                 key=lambda x: float(x))
-                self._proc = await runUtility('reconstructPar', '-allRegions', '-newTimes', '-withZero',
-                                              '-case', caseRoot,
-                                              cwd=caseRoot, stdout=asyncio.subprocess.PIPE)
+            if nProcessorFolders > 0 and len(FileSystem.times()) > 0:
+                self.progress.emit(self.tr(f'Reconstructing Field Data...'))
 
-                self.progress.emit(self.tr('Reconstructing the case.'))
-
-                # This loop will end if the PIPE is closed (i.e. the process terminates)
-                async for line in self._proc.stdout:
-                    log = line.decode('utf-8')
-                    if log.startswith('Time = '):
-                        self.progress.emit(self.tr(f'Reconstructing the case. ({log.strip()}/{latestTime})'))
-
+                if FileSystem.latestTime() == '0':
+                    self._proc = await runUtility('reconstructPar', '-allRegions', '-withZero', '-case', caseRoot, cwd=caseRoot)
+                else:
+                    self._proc = await runUtility('reconstructPar', '-allRegions', '-latestTime', '-case', caseRoot, cwd=caseRoot)
                 result = await self._proc.wait()
                 self._proc = None
-                if self._cancelled:
-                    return self._cancelled
-                elif result != 0:
-                    raise RuntimeError(self.tr('Reconstruction failed.'))
-
-                nProcessorFolders = 0
-
-                for folder in processorFolders:
-                    utils.rmtree(folder)
+                if result != 0:
+                    raise RuntimeError(self.tr('Reconstructing Field Data failed. 0'))
 
             self.progress.emit(self.tr(f'Generating Files...'))
 
@@ -206,18 +186,22 @@ class CaseGenerator(QObject):
             elif errors:
                 raise RuntimeError(self.tr('Case generating fail. - ' + errors))
 
-            # Decompose the case if necessary.
-            if numCores > 1 and nProcessorFolders == 0:
-                self._proc = await runUtility('decomposePar', '-allRegions', '-case', caseRoot, cwd=caseRoot)
+            if nProcessorFolders > 1:
+                self.progress.emit(self.tr('Decomposing Field Data...'))
 
-                self.progress.emit(self.tr('Decomposing the case.'))
+                self._proc = await runUtility('decomposePar', '-allRegions', '-fields', '-latestTime', '-case', caseRoot, cwd=caseRoot)
 
                 result = await self._proc.wait()
                 self._proc = None
                 if self._cancelled:
                     return self._cancelled
                 elif result != 0:
-                    raise RuntimeError(self.tr('Decomposing failed.'))
+                    raise RuntimeError(self.tr('Decomposing Field Data failed.'))
+
+                self.progress.emit(self.tr(f'Field Data Decomposition Done'))
+
+                for time in FileSystem.times(parent=caseRoot):
+                    utils.rmtree(caseRoot / time)
 
             return self._cancelled
 

@@ -48,7 +48,7 @@ from .menu.mesh.mesh_translate_dialog import MeshTranslateDialog
 from .menu.mesh.mesh_rotate_dialog import MeshRotateDialog
 from .menu.settings_language import SettingLanguageDialog
 from .menu.help.about_dialog import AboutDialog
-
+from .menu.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +147,7 @@ class MainWindow(QMainWindow):
 
         # self._updateMenuEnables()
         self._ui.menuMesh.setDisabled(True)
+        self._ui.menuParallel.setDisabled(True)
 
         geometry = AppSettings.getLastMainWindowGeometry()
         display = app.qApplication.primaryScreen().availableVirtualGeometry()
@@ -207,6 +208,7 @@ class MainWindow(QMainWindow):
 
     def vtkMeshLoaded(self):
         self._ui.menuMesh.setEnabled(True)
+        self._ui.menuParallel.setEnabled(True)
         self._navigatorView.updateMenu()
 
     def _connectSignalsSlots(self):
@@ -225,6 +227,8 @@ class MainWindow(QMainWindow):
         self._ui.actionMeshScale.triggered.connect(self._openMeshScaleDialog)
         self._ui.actionMeshTranslate.triggered.connect(self._openMeshTranslateDialog)
         self._ui.actionMeshRotate.triggered.connect(self._openMeshRotateDialog)
+
+        self._ui.actionParallelEnvironment.triggered.connect(self._openParallelEnvironmentDialog)
 
         self._ui.actionScale.triggered.connect(self._changeScale)
         self._ui.actionLanguage.triggered.connect(self._changeLanguage)
@@ -303,6 +307,11 @@ class MainWindow(QMainWindow):
         self._dialog = MeshRotateDialog(self, self._meshManager)
         self._dialog.open()
         self._dialog.accepted.connect(self._rotateMesh)
+
+    @qasync.asyncSlot()
+    async def _openParallelEnvironmentDialog(self):
+        self._dialog = ParallelEnvironmentDialog(self)
+        self._dialog.open()
 
     @qasync.asyncSlot()
     async def _scaleMesh(self):

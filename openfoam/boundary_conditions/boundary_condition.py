@@ -51,9 +51,10 @@ class BoundaryCondition(DictionaryFile):
         return self
 
     def fullPath(self, processorNo=None):
-        processorDir = '' if processorNo is None else f'processor{processorNo}'
-
-        timeDirPath = FileSystem.caseRoot() / processorDir / self._header['location']
+        # Boundary Conditions reside in Field Data Files
+        # Field Data Files are reconstructed, updated, and decomposed in sequence
+        # so that no need to handle the data under processors folders
+        timeDirPath = FileSystem.caseRoot() / self._header['location']
         boundaryFilePath = timeDirPath / self._header['object']
         boundaryFieldsPath = timeDirPath / 'boundaryFields' / self._header['object']
 

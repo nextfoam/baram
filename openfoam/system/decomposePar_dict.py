@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum
-from coredb import coredb
+from openfoam import parallel
 from openfoam.dictionary_file import DictionaryFile
 
 
@@ -28,9 +28,7 @@ class DecomposeParDict(DictionaryFile):
         if self._data is not None:
             return self
 
-        db = coredb.CoreDB()
-
-        numCores = db.getValue('.//runCalculation/parallel/numberOfCores')
+        numCores = parallel.getNP()
 
         self._data = {
             'numberOfSubdomains': numCores,

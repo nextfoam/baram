@@ -249,9 +249,16 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuParallel">
+    <property name="title">
+     <string>Parallel</string>
+    </property>
+    <addaction name="actionParallelEnvironment"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMesh"/>
    <addaction name="menuView"/>
+   <addaction name="menuParallel"/>
    <addaction name="menuSetting"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -404,6 +411,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionParallelEnvironment">
+   <property name="text">
+    <string>Environment</string>
    </property>
   </action>
  </widget>

@@ -2,19 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum, Flag, auto
-from pathlib import Path
 
 from PySide6.QtWidgets import QMessageBox, QFormLayout
 
 from coredb import coredb
-from coredb.app_settings import AppSettings
 from coredb.coredb_writer import CoreDBWriter
 from coredb.general_db import GeneralDB
 from coredb.run_calculation_db import TimeSteppingMethod, DataWriteFormat, RunCalculationDB
 from coredb.models_db import ModelsDB, MultiphaseModel
 from view.widgets.content_page import ContentPage
 from .run_conditions_page_ui import Ui_RunConditionsPage
-from .edit_hostfile_dialog import EditHostfileDialog
+
 
 class TimeCondition(Enum):
     TIME_STEPPING_METHOD = 0
@@ -101,10 +99,6 @@ class RunConditionsPage(ContentPage):
         self._ui.dataWritePrecision.setText(self._db.getValue(self._xpath + '/runConditions/dataWritePrecision'))
         self._ui.timePrecision.setText(self._db.getValue(self._xpath + '/runConditions/timePrecision'))
 
-        self._ui.numberOfCores.setText(self._db.getValue(self._xpath + '/parallel/numberOfCores'))
-        self._ui.cluster.setChecked(
-            self._db.getValue(self._xpath + '/parallel/localhost') == 'false')
-
     def save(self):
         writer = CoreDBWriter()
 
@@ -145,12 +139,6 @@ class RunConditionsPage(ContentPage):
         writer.append(self._xpath + '/runConditions/timePrecision', self._ui.timePrecision.text(),
                       self.tr('Time Precision'))
 
-        writer.append(self._xpath + '/parallel/numberOfCores', self._ui.numberOfCores.text(),
-                      self.tr('Number of Cores'))
-        writer.append(self._xpath + '/parallel/localhost',
-                      'false' if self._ui.cluster.isChecked() else 'true',
-                      self.tr('Cluster'))
-
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
@@ -166,7 +154,6 @@ class RunConditionsPage(ContentPage):
 
     def _connectSignalsSlots(self):
         self._ui.timeSteppingMethod.currentIndexChanged.connect(self._timeSteppingMethodChanged)
-        self._ui.editHostFile.clicked.connect(self._editHostFileClicked)
 
     def _setupCombo(self, combo, items):
         for value, text in items.items():
@@ -196,10 +183,3 @@ class RunConditionsPage(ContentPage):
         for flag, label, editor, visibility in self._timeConditions:
             if flag & currentFlag and visibility:
                 self._timeConditionForm.addRow(label, editor)
-
-    def _editHostFileClicked(self, widget):
-        _locationParent = Path(AppSettings.getRecentLocation()).resolve()
-
-        self._dialogHostFile = EditHostfileDialog(self)
-        self._dialogHostFile.open()
-

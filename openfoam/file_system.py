@@ -82,16 +82,33 @@ class FileSystem:
         return cls._casePath
 
     @classmethod
-    def constantPath(cls, rname=None):
-        return cls._constantPath / rname if rname else cls._constantPath
+    def constantPath(cls, rname=''):
+        return cls._constantPath / rname
 
     @classmethod
-    def boundaryConditionsPath(cls, rname=None):
-        return cls._boundaryConditionsPath / rname if rname else cls._boundaryConditionsPath
+    def boundaryConditionsPath(cls, rname=''):
+        return cls._boundaryConditionsPath / rname
 
     @classmethod
-    def systemPath(cls, rname=None):
-        return cls._systemPath / rname if rname else cls._systemPath
+    def systemPath(cls, rname=''):
+        return cls._systemPath / rname
+
+    @classmethod
+    def latestTime(cls) -> str:
+        times = cls.times()
+        if len(times) == 0:
+            return '0'
+
+        return max(times, key=lambda x: float(x))
+
+    @classmethod
+    def times(cls, parent: Optional[Path] = None):
+        if parent is None:
+            parent = cls.processorPath(0)
+            if not parent.exists():
+                parent = cls._casePath
+
+        return [f.name for f in parent.glob('[0-9.]*') if f.name.count('.') < 2]
 
     @classmethod
     def boundaryFilePath(cls, rname):
@@ -106,8 +123,8 @@ class FileSystem:
         return cls.constantPath(rname) / rname / cls.BOUNDARY_DATA_DIRECTORY_NAME
 
     @classmethod
-    def postProcessingPath(cls, rname):
-        return cls._postProcessingPath / rname if rname else cls._postProcessingPath
+    def postProcessingPath(cls, rname=''):
+        return cls._postProcessingPath / rname
 
     @classmethod
     def foamFilePath(cls):
@@ -213,7 +230,7 @@ class FileSystem:
         cls._setCaseRoot(targetPath)
 
     @classmethod
-    async def initialize(cls, regions, time: str = None):
+    async def initialize(cls, time: str = None):
         ###
         ### This corresponds to a feature of "preserving last calculation result".
         ### The feature will be provided in other form in the future,
@@ -233,28 +250,14 @@ class FileSystem:
         # if latestTimeDir != cls._boundaryConditionsPath:
         #     latestTimeDir.replace(cls._boundaryConditionsPath)
 
-        def clearConstant(path):
-            constantPath = path / cls.CONSTANT_DIRECTORY_NAME
-            if len(regions) > 1:
-                for file in constantPath.glob('*'):
-                    if file.name in regions:
-                        clearDirectory(file, cls._constantFilesToKeep)
-                    elif file.name not in cls._constantFilesToKeep:
-                        remove(file)
+        folders = [cls._postProcessingPath]
 
-        if time is None:
-            clearDirectory(cls._casePath, cls._caseFilesToKeep)
-        else:
-            for f in cls._casePath.glob('*'):
-                if f.name not in cls._caseFilesToKeep and f.name != time and not f.name.startswith('processor'):
-                    remove(f)
+        for parent in [cls._casePath, *cls.processorFolders()]:
+            times = [t for t in cls.times(parent=parent) if t != time]
+            folders.extend([parent/t for t in times])
 
-            for processor in cls.processorFolders():
-                clearDirectory(processor, cls._caseFilesToKeep, time)
-                clearConstant(processor)
-
-        clearConstant(cls._casePath)
-        clearDirectory(cls._systemPath, ['controlDict'])
+        for path in folders:
+            utils.rmtree(path)
 
     @classmethod
     def addConstantFileToKeep(cls, fileName):

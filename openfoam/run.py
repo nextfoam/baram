@@ -7,7 +7,8 @@ import psutil
 from pathlib import Path
 import asyncio
 
-from coredb import coredb
+from openfoam import parallel
+from openfoam.parallel import ParallelType
 import app
 
 # Solver Directory Structure
@@ -34,6 +35,8 @@ startupinfo = None
 STDOUT_FILE_NAME = 'stdout.log'
 STDERR_FILE_NAME = 'stderr.log'
 
+WM_PROJECT_DIR = str(OPENFOAM)
+
 if platform.system() == 'Windows':
     MPICMD = 'mpiexec'
     MINGW = app.APP_PATH/'solvers'/'mingw64'
@@ -50,10 +53,13 @@ if platform.system() == 'Windows':
         dwFlags=subprocess.STARTF_USESHOWWINDOW,
         wShowWindow=subprocess.SW_HIDE
     )
+
+    PATH = library + os.pathsep + os.environ['PATH']
+
     ENV = os.environ.copy()
     ENV.update({
-        'WM_PROJECT_DIR': str(OPENFOAM),
-        'PATH': library + os.pathsep + os.environ['PATH']
+        'WM_PROJECT_DIR': WM_PROJECT_DIR,
+        'PATH': PATH
     })
 else:
     library = str(OPENFOAM/'lib') + os.pathsep \
@@ -69,10 +75,12 @@ else:
     if LIBRARY_PATH_NAME not in os.environ:
         os.environ[LIBRARY_PATH_NAME] = ''
 
+    LIBRARY_PATH = library + os.pathsep + os.environ[LIBRARY_PATH_NAME]
+
     ENV = os.environ.copy()
     ENV.update({
-        'WM_PROJECT_DIR': str(OPENFOAM),
-        LIBRARY_PATH_NAME: library + os.pathsep + os.environ[LIBRARY_PATH_NAME]
+        'WM_PROJECT_DIR': WM_PROJECT_DIR,
+        LIBRARY_PATH_NAME: LIBRARY_PATH
     })
 
 
@@ -97,12 +105,12 @@ def openSolverProcess(cmd, casePath, inParallel):
 
 def launchSolverOnWindow(solver: str, casePath: Path, np: int = 1) -> (int, float):
     args = [MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
-    if coredb.CoreDB().getValue('.//parallel/localhost') != 'true':
-        hosts = coredb.CoreDB().getValue('.//parallel/hostfile')
+    if parallel.getParallelType() == ParallelType.CLUSTER:
+        hosts = parallel.getHostfile()
         path = casePath / 'hostfile'
         with path.open(mode='w') as f:
             f.write(hosts)
-        args[3:3] = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME, '-machinefile', str(path)]
+        args[3:3] = ['-env', 'WM_PROJECT_DIR', WM_PROJECT_DIR, '-env', 'PATH', PATH, '-machinefile', str(path)]
 
     process = openSolverProcess(args, casePath, np > 1)
 
@@ -112,8 +120,8 @@ def launchSolverOnWindow(solver: str, casePath: Path, np: int = 1) -> (int, floa
 
 def launchSolverOnLinux(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float):
     args = [OPENFOAM/'bin'/'baramd', '-project', uuid, '-cmdline', MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
-    if coredb.CoreDB().getValue('.//parallel/localhost') != 'true':
-        hosts = coredb.CoreDB().getValue('.//parallel/hostfile')
+    if parallel.getParallelType() == ParallelType.CLUSTER:
+        hosts = parallel.getHostfile()
         path = casePath / 'hostfile'
         with path.open(mode='w') as f:
             f.write(hosts)
@@ -144,6 +152,7 @@ def launchSolver(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float)
     Args:
         solver: solver name
         casePath: case folder absolute path
+        uuid: UUID for the process
         np: number of process
 
     Returns:
@@ -196,13 +205,13 @@ async def runParallelUtility(program: str, *args, np: int = 1, cwd: Path = None,
         args.append('-parallel')
 
     cmdline = [MPICMD, '-np', str(np)]
-    if coredb.CoreDB().getValue('.//parallel/localhost') != 'true':
-        hosts = coredb.CoreDB().getValue('.//parallel/hostfile')
+    if parallel.getParallelType() == ParallelType.CLUSTER:
+        hosts = parallel.getHostfile()
         path = cwd / 'hostfile'
         with path.open(mode='w') as f:
             f.write(hosts)
         if platform.system() == 'Windows':
-            cmdline[-1:-1] = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME, '-machinefile', str(path)]
+            cmdline[-1:-1] = ['-env', 'WM_PROJECT_DIR', WM_PROJECT_DIR, '-env', 'PATH', PATH, '-machinefile', str(path)]
         else:
             cmdline[-1:-1] = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME, '-hostfile', str(path)]
 

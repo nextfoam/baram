@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import psutil
-import signal
 import time
-import platform
 import qasync
 import logging
 
@@ -11,6 +9,7 @@ from PySide6.QtWidgets import QMessageBox
 
 from coredb import coredb
 from coredb.project import Project, SolverStatus
+from openfoam import parallel
 from openfoam.run import launchSolver
 from openfoam.case_generator import CaseGenerator
 from openfoam.system.fv_solution import FvSolution
@@ -76,7 +75,7 @@ class ProcessInformationPage(ContentPage):
             progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
             return
 
-        numCores = int(self._db.getValue('.//runCalculation/parallel/numberOfCores'))
+        numCores = parallel.getNP()
         caseRoot = FileSystem.caseRoot()
         solvers = openfoam.solver.findSolvers()
 
@@ -120,12 +119,7 @@ class ProcessInformationPage(ContentPage):
                 ps = psutil.Process(pid)
                 with ps.oneshot():
                     if ps.is_running() and ps.create_time() == startTime:
-                        if platform.system() == "Windows":
-                            ps.send_signal(signal.CTRL_C_EVENT)
-                        elif platform.system() == "Linux":
-                            ps.send_signal(signal.SIGTERM)
-                        else:
-                            raise Exception(self.tr('Unsupported OS'))
+                        ps.terminate()
             except psutil.NoSuchProcess:
                 pass
 
