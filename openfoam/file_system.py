@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import shutil
-import asyncio
 from typing import Optional
 from pathlib import Path
+
+import asyncio
 
 from coredb.project import Project
 from libbaram import utils
@@ -105,7 +106,7 @@ class FileSystem:
     def times(cls, parent: Optional[Path] = None):
         if parent is None:
             parent = cls.processorPath(0)
-            if not parent.exists():
+            if parent is None:
                 parent = cls._casePath
 
         return [f.name for f in parent.glob('[0-9.]*') if f.name.count('.') < 2]
