@@ -44,7 +44,7 @@ class GeometryNameWidget(QWidget):
 
 
 class GeometryItem(QTreeWidgetItem):
-    def __init__(self, gId, geometry):
+    def __init__(self, gId):
         super().__init__(int(gId))
         self._eyeCheckBox = None
         self._nameWidget = None
@@ -112,12 +112,11 @@ class GeometryList(QObject):
 
         self._connectSignalsSlots()
 
-        elements = geometries.geometries()
-        for gId in elements:
-            self.add(gId, elements[gId])
+        for gId, geometry in geometries.geometries().items():
+            self.add(gId, geometry)
 
     def add(self, gId, geometry):
-        item = GeometryItem(gId, geometry)
+        item = GeometryItem(gId)
 
         if geometry['volume']:
             self._items[geometry['volume']].addChild(item)

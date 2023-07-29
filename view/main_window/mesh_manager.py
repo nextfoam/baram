@@ -5,7 +5,7 @@ from PySide6.QtCore import QObject, Signal
 
 from app import app
 from openfoam.poly_mesh.poly_mesh_loader import PolyMeshLoader
-from rendering.actor_manager import ActorGroup
+from view.main_window.actor_manager import ActorGroup
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
 
 
@@ -18,13 +18,13 @@ class MeshManager(QObject):
         self._loaded = False
 
     async def load(self):
-        loader = PolyMeshLoader(app.fileSystem)
+        self._actors.showGroup(ActorGroup.MESH)
+
+        loader = PolyMeshLoader(app.fileSystem.foamFilePath())
         loader.progress.connect(self.progress)
         vtkMesh = await loader.loadMesh()
 
         if vtkMesh:
-            self._actors.showGroup(ActorGroup.MESH)
-
             for rname, region in vtkMesh.items():
                 for bname, actorInfo in region['boundary'].items():
                     actorInfo.name = f'{region}:{bname}'
@@ -32,8 +32,11 @@ class MeshManager(QObject):
 
             self._loaded = True
 
+    def clear(self):
+        self._actors.clearGroup(ActorGroup.MESH)
+
     @qasync.asyncSlot()
-    async def show(self):
+    async def showActors(self):
         self._actors.showGroup(ActorGroup.MESH)
 
         if not self._loaded:
@@ -46,5 +49,5 @@ class MeshManager(QObject):
 
             progressDialog.close()
 
-    def hide(self):
+    def hideActors(self):
         self._actors.hideGroup(ActorGroup.MESH)

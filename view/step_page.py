@@ -4,16 +4,15 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 
+from app import app
+
 
 class StepPage(QWidget):
     nextStepAvailableChanged = Signal(bool)
 
     def __init__(self):
         super().__init__()
-
-    @classmethod
-    def nextStepAvailable(cls):
-        return False
+        self._updateNextStepAvailable()
 
     def lock(self):
         self.setEnabled(False)
@@ -21,8 +20,5 @@ class StepPage(QWidget):
     def unlock(self):
         self.setEnabled(True)
 
-    def clearResult(self):
-        return
-
     def _updateNextStepAvailable(self):
-        self.nextStepAvailableChanged.emit(self.nextStepAvailable())
+        app.window.updateNextButtonEnabled()

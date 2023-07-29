@@ -3,13 +3,11 @@
 
 from pathlib import Path
 
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
 from PySide6.QtCore import Signal, QEvent
 from filelock import Timeout
 
 from app import app
-from db.configurations_schema import Step
-from rendering.actor_manager import ActorManager
 from view.widgets.project_dialog import ProjectDialog
 from view.widgets.new_project_dialog import NewProjectDialog
 from view.widgets.settings_scaling_dialog import SettingScalingDialog
@@ -17,11 +15,12 @@ from view.widgets.language_dialog import LanugageDialog
 from view.menu.mesh_quality.mesh_quality_parameters_dialog import MeshQualityParametersDialog
 from view.menu.help.about_dialog import AboutDialog
 from view.geometry.geometry_manager import GeometryManager
+from .actor_manager import ActorManager
 from .recent_files_menu import RecentFilesMenu
 from .naviagtion_view import NavigationView
-from .content_view import ContentView, isStepCompleted
 from .rendering_tool import RenderingTool
 from .mesh_manager import MeshManager
+from .step_manager import StepManager
 from .main_window_ui import Ui_MainWindow
 
 
@@ -37,9 +36,9 @@ class MainWindow(QMainWindow):
         self._recentFilesMenu.setRecents(app.settings.getRecentProjects())
 
         self._navigationView = NavigationView(self._ui.navigation)
-        self._contentView = ContentView(self._ui)
         self._renderingTool = RenderingTool(self._ui)
 
+        self._stepManager = StepManager(self._navigationView, self._ui)
         self._actors = ActorManager(self._ui.renderingView)
         self._geometries = GeometryManager(self._actors)
         self._meshManager = MeshManager(self._actors)
@@ -49,17 +48,28 @@ class MainWindow(QMainWindow):
 
         self.setWindowIcon(app.properties.icon())
 
+        self._contentLayout = QVBoxLayout(self._ui.content)
+        self._contentLayout.setContentsMargins(0, 0, 0, 0)
+
         self._connectSignalsSlots()
 
-    def actorManager(self):
-        return self._actors
+    @property
+    def stepManager(self):
+        return self._stepManager
+    #
+    # @property
+    # def actorManager(self):
+    #     return self._actors
 
+    @property
     def geometryManager(self):
         return self._geometries
 
+    @property
     def meshManager(self):
         return self._meshManager
 
+    @property
     def renderingView(self):
         return self._ui.renderingView
 
@@ -90,6 +100,9 @@ class MainWindow(QMainWindow):
 
         super().changeEvent(event)
 
+    def updateNextButtonEnabled(self):
+        self._ui.next.setEnabled(self._stepManager.isStepCompleted(self._navigationView.currentStep()))
+
     def _connectSignalsSlots(self):
         self._ui.actionNew.triggered.connect(self._actionNew)
         self._ui.actionOpen.triggered.connect(self._actionOpen)
@@ -104,10 +117,6 @@ class MainWindow(QMainWindow):
         self._ui.actionAbout.triggered.connect(self._actionAbout)
 
         self._recentFilesMenu.projectSelected.connect(self._openRecent)
-        self._navigationView.stepSelected.connect(self._stepSelected)
-        self._contentView.nextStepAvailableChanged.connect(self._ui.next.setEnabled)
-        self._ui.next.clicked.connect(self._openNextStep)
-        self._ui.unlock.clicked.connect(self._unlockCurrentStep)
 
         self._startDialog.actionNewSelected.connect(self._actionNew)
         self._startDialog.actionOpenSelected.connect(self._actionOpen)
@@ -207,58 +216,11 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(f'{app.properties.fullName} - {app.project.path}')
         self._geometries.load(False)
-        self._loadOpenedStep()
+
+        self._stepManager.load()
 
     def _projectClosed(self):
         self.setWindowTitle(f'{app.properties.fullName}')
 
         self._startDialog.setRecents(app.settings.getRecentProjects())
         self._startDialog.open()
-
-    def _loadOpenedStep(self):
-        step = app.db.getEnumValue('step')
-
-        for s in range(step):
-            if isStepCompleted(s):
-                self._navigationView.enableStep(s)
-            else:
-                step = s
-                break
-
-        self._navigationView.setOpenedStep(step)
-
-    def _stepSelected(self, step):
-        self._contentView.moveToStep(step, self._navigationView.isOpenedStep(step))
-
-        if self._navigationView.isOpenedStep(step):
-            self._ui.next.show()
-            self._ui.unlock.hide()
-        else:
-            self._ui.next.hide()
-            self._ui.unlock.show()
-
-        nextStepAvailable = self._contentView.nextStepAvailable()
-        self._ui.next.setEnabled(nextStepAvailable)
-
-        self._geometries.show()
-
-        if step == Step.BASE_GRID.value and nextStepAvailable:
-            self._meshManager.show()
-        else:
-            self._meshManager.hide()
-
-    def _openNextStep(self):
-        db = app.db.checkout()
-        db.setValue('step', self._navigationView.openNextStep())
-        app.db.commit(db)
-
-    def _unlockCurrentStep(self):
-        self._navigationView.unlockCurrentStep()
-        self._contentView.unlock()
-        self._ui.next.setEnabled(True)
-        self._ui.next.show()
-        self._ui.unlock.hide()
-
-        db = app.db.checkout()
-        db.setValue('step', self._navigationView.currentStep())
-        app.db.commit(db)

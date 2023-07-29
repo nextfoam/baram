@@ -136,10 +136,12 @@ schema = {
         'resolveFeatureAngle': FloatType().setDefault(30),
         'maxGlobalCells': IntType().setDefault('1e8'),
         'maxLocalCells': IntType().setDefault('1e7'),
-        'maxRefinementCells': IntType().setDefault(0),
+        'minRefinementCells': IntType().setDefault(0),
         'maxLoadUnbalance': FloatType().setDefault('0.5'),
         'allowFreeStandingZoneFaces': BoolType(True),
-        'refinementSurfaces': TextKeyList(RefinementSchema()),
+        'refinementSurfaces': IntKeyList(RefinementSchema()),
+        'refinementRegions': IntKeyList(RefinementSchema()),
+        'features': IntKeyList(RefinementSchema())
     },
     'snap': {
         'nSmoothPatch': IntType().setDefault(3),
@@ -158,7 +160,7 @@ schema = {
         'firstLayerThickness': FloatType().setDefault(0.001),
         'finalLayerThickness': FloatType().setDefault('1.0'),
         'thickness': FloatType().setDefault('2.0'),
-        'expansionRation': FloatType().setDefault(1.2),
+        'expansionRatio': FloatType().setDefault(1.2),
         'minThickness': FloatType().setDefault(1.2),
         'layers': TextKeyList(LayerSchema()),
         'nGrow': IntType().setDefault(0),
@@ -191,6 +193,7 @@ schema = {
         'minTriangleTwist': FloatType().setDefault(-1),
         'nSmoothScale': IntType().setDefault(4),
         'errorReduction': FloatType().setDefault(0.75),
+        'mergeTolerance': FloatType().setDefault(1e-6),
         'relaxed': {
             'maxNonOrtho': FloatType().setDefault(65)
         }

@@ -5,17 +5,17 @@ import copy
 
 import yaml
 
-from .simple_schema import SimpleSchema, SchemaList, PrimitiveType, EnumType
+from .simple_schema import SimpleSchema, SchemaList, PrimitiveType, EnumType, BoolType
 
 
 def elementToVector(element):
     if 'x' not in element or 'y' not in element or 'z' not in element:
         raise LookupError
 
-    return float(element['x']), float(element['y']), float(element['z'])
+    return [float(element['x']), float(element['y']), float(element['z'])]
 
 
-def elementToTuple(element, schema, keys):
+def elementToList(element, schema, keys):
     if not all(field in element and isinstance(schema[field], PrimitiveType) for field in keys):
         raise LookupError
 
@@ -101,7 +101,7 @@ class SimpleDB(SimpleSchema):
         if not isinstance(db[field], dict):
             raise LookupError
 
-        return elementToTuple(db[field], schema[field], ['x', 'y', 'z'])
+        return elementToList(db[field], schema[field], ['x', 'y', 'z'])
 
     def getEnum(self, path):
         schema, db, field = self._get(path)
@@ -116,6 +116,13 @@ class SimpleDB(SimpleSchema):
             raise LookupError
 
         return schema[field].enumValue(db[field])
+
+    def getBool(self, path):
+        schema, db, field = self._get(path)
+        if not isinstance(schema[field], BoolType):
+            raise LookupError
+
+        return db[field] == 'true'
 
     def setValue(self, path, value, name=None):
         if not self._editable:
@@ -253,6 +260,20 @@ class SimpleDB(SimpleSchema):
 
         for key in [e[0] for e in db[field].items() if function(e[0], e[1])]:
             del db[field][key]
+
+        self._modified = True
+
+    def removeAllElements(self, path):
+        if not self._editable:
+            raise LookupError
+
+        schema, db, field = self._get(path)
+
+        schema = schema[field]
+        if not isinstance(schema, SchemaList):
+            raise TypeError
+
+        db[field] = {}
 
         self._modified = True
 

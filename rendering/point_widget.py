@@ -4,6 +4,8 @@
 from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkInteractionWidgets import vtkPointWidget
 
+from app import app
+
 
 class PointWidget(QObject):
     pointMoved = Signal(tuple)
@@ -37,6 +39,7 @@ class PointWidget(QObject):
         z = max(z, self._bounds.zMin)
         z = min(z, self._bounds.zMax)
         self._widget.SetPosition(x, y, z)
+        app.window.renderingView.refresh()
 
         return x, y, z
 

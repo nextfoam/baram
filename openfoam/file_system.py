@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import shutil
+from typing import Optional
+from pathlib import Path
 
 import asyncio
 
@@ -49,6 +51,28 @@ class FileSystem:
 
     def foamFilePath(self):
         return self._casePath / self.FOAM_FILE_NAME
+
+    def processorPath(self, no):
+        path = (self._casePath / f'processor{no}')
+
+        return path if path.is_dir() else None
+
+    def timePath(self, time):
+        return self._casePath / str(time)
+
+    def times(self, parent: Optional[Path] = None):
+        if parent is None:
+            parent = self.processorPath(0)
+            if parent is None:
+                parent = self._casePath
+
+        return [f.name for f in parent.glob('[0-9]*')]
+
+    def processorFolders(self):
+        return list(self._casePath.glob('processor[0-9]*'))
+
+    def numberOfProcessorFolders(self):
+        return len(self.processorFolders())
 
     def createCase(self, src):
         if self._casePath.exists():

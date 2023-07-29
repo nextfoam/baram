@@ -13,6 +13,7 @@ from view.widgets.radio_group import RadioGroup
 class RegionForm(QObject):
     regionAdded = Signal(str)
     regionEdited = Signal(str)
+    pointChanged = Signal()
 
     _types = {
         'fluid': RegionType.FLUID.value,
@@ -43,6 +44,7 @@ class RegionForm(QObject):
         self._ui.x.setText(x)
         self._ui.y.setText(y)
         self._ui.z.setText(z)
+        self.pointChanged.emit()
         self._ui.ok.setText(self.tr('Update'))
 
     def _connectSignalsSlots(self):

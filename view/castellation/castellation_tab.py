@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from PySide6.QtCore import QObject
+from PySide6.QtWidgets import QTreeWidgetItem, QMessageBox
+
+from app import app
+from db.simple_schema import DBError
+from .refinement_item import RefinementItem
+
+DEFAULT_REFINEMENT_SURFACE_LEVEL = '1'
+DEFAULT_REFINEMENT_REGION_LEVEL = '1'
+
+
+class CastellationTab(QObject):
+    def __init__(self, parent, ui):
+        super().__init__()
+
+        self._parent = parent
+        self._ui = ui
+
+        self._surfaceItem = QTreeWidgetItem(self._ui.refinements, [self.tr('Surface')])
+        self._volumeItem = QTreeWidgetItem(self._ui.refinements, [self.tr('Volume')])
+
+        self._ui.refinements.header().setStretchLastSection(False)
+        self._ui.refinements.setColumnWidth(0, 60)
+        self._ui.refinements.setColumnWidth(2, 60)
+        self._surfaceItem.setFirstColumnSpanned(True)
+        self._surfaceItem.setExpanded(True)
+        self._volumeItem.setFirstColumnSpanned(True)
+        self._volumeItem.setExpanded(True)
+
+    def save(self):
+        try:
+            db = app.db.checkout('castellation')
+
+            db.setValue('nCellsBetweenLevels', self._ui.nCellsBetweenLevels.text(),
+                              self.tr('Number of Cells between Levels'))
+            db.setValue('resolveFeatureAngle', self._ui.resolveFeatureAngle.text(),
+                              self.tr('Feature Angle Threshold'))
+            db.setValue('vtkNonManifoldEdges', self._ui.keepNonManifoldEdges.isChecked())
+            db.setValue('vtkBoundaryEdges', self._ui.keepOpenEdges.isChecked())
+
+            db.removeAllElements('refinementSurfaces')
+            for i in range(self._surfaceItem.childCount()):
+                item = self._surfaceItem.child(i)
+                e = db.newElement('refinementSurfaces')
+                e.setValue('level', item.level(), item.name() + self.tr(' Refinement Level'))
+                db.addElement('refinementSurfaces', e, item.type())
+
+            db.removeAllElements('refinementRegions')
+            for i in range(self._volumeItem.childCount()):
+                item = self._volumeItem.child(i)
+                e = db.newElement('refinementRegions')
+                e.setValue('level', item.level(), item.name() + self.tr(' Refinement Level'))
+                db.addElement('refinementRegions', e, item.type())
+
+            app.db.commit(db)
+        except DBError as e:
+            QMessageBox.information(self._parent, self.tr("Input Error"), e.toMessage())
+
+    def load(self, surfaces, volumes):
+        def level(gId, refinements, default):
+            return refinements[gId]['level'] if gId in refinements else default
+
+        self._ui.nCellsBetweenLevels.setText(app.db.getValue('castellation/nCellsBetweenLevels'))
+        self._ui.resolveFeatureAngle.setText(app.db.getValue('castellation/resolveFeatureAngle'))
+        self._ui.keepNonManifoldEdges.setChecked(app.db.getBool('castellation/vtkNonManifoldEdges'))
+        self._ui.keepOpenEdges.setChecked(app.db.getBool('castellation/vtkBoundaryEdges'))
+
+        refinementSurfaces = app.db.getElements('castellation/refinementSurfaces')
+        refinementRegions = app.db.getElements('castellation/refinementRegions')
+
+        for geometry in surfaces:
+            item = RefinementItem(geometry['gId'], geometry['name'],
+                                  level(geometry['gId'], refinementSurfaces, DEFAULT_REFINEMENT_SURFACE_LEVEL))
+            item.addAsChild(self._surfaceItem)
+
+        for geometry in volumes:
+            item = RefinementItem(geometry['gId'], geometry['name'],
+                                  level(geometry['gId'], refinementRegions, DEFAULT_REFINEMENT_REGION_LEVEL))
+            item.addAsChild(self._volumeItem)

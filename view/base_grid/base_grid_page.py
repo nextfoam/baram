@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QMessageBox
 
 from app import app
 from libbaram.run import runUtility
-from libbaram.utils import formatWithSignificants, rmtree
+from libbaram.utils import formatWithSignificants
 from openfoam.system.block_mesh_dict import BlockMeshDict
 from db.simple_schema import DBError
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
@@ -27,25 +27,22 @@ class BaseGridPage(StepPage):
 
         self._load()
 
-    @classmethod
-    def nextStepAvailable(cls):
-        return app.fileSystem.boundaryFilePath().exists()
+    def showEvent(self, ev):
+        if not ev.spontaneous():
+            app.window.geometryManager.showActors()
 
-    def clearResult(self):
-        resultPath = app.fileSystem.polyMeshPath()
-        if resultPath.exists():
-            rmtree(app.fileSystem.polyMeshPath())
+            if app.fileSystem.boundaryFilePath().exists():
+                app.window.meshManager.showActors()
+            else:
+                app.window.meshManager.hideActors()
+
+        return super().showEvent(ev)
 
     def _connectSignalsSlots(self):
         self._ui.generate.clicked.connect(self._generate)
 
     def _load(self):
-        # geometries = app.window.geometryManager()
-        # geometries.showAll()
-        self._bounds = app.window.geometryManager().getBounds()
-        #
-        # if self.nextStepAvailable():
-        #     app.window.meshManager().show()
+        self._bounds = app.window.geometryManager.getBounds()
 
         self._ui.xMin.setText(formatWithSignificants(float(self._bounds.xMin), 4))
         self._ui.xMax.setText(formatWithSignificants(float(self._bounds.xMax), 4))
@@ -73,7 +70,7 @@ class BaseGridPage(StepPage):
             QMessageBox.information(self, self.tr("Input Error"), e.toMessage())
             return
 
-        progressDialog = ProgressDialogSimple(self, self.tr('Generating Mesh'))
+        progressDialog = ProgressDialogSimple(self, self.tr('Base Grid Generating'))
         progressDialog.setLabelText(self.tr('Generating Block Mesh'))
         progressDialog.open()
 
@@ -82,7 +79,8 @@ class BaseGridPage(StepPage):
         if await proc.wait():
             progressDialog.finish(self.tr('Mesh Generation Failed.'))
 
-        meshManager = app.window.meshManager()
+        progressDialog.hideCancelButton()
+        meshManager = app.window.meshManager
         meshManager.progress.connect(progressDialog.setLabelText)
         await meshManager.load()
 

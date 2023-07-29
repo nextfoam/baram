@@ -17,7 +17,7 @@ class BlockMeshDict(DictionaryFile):
 
         gradingRatio = [1, 1, 1]
 
-        bounds = app.window.geometryManager().getBounds()
+        bounds = app.window.geometryManager.getBounds()
         xMin = bounds.xMin
         xMax = bounds.xMax
         yMin = bounds.yMin

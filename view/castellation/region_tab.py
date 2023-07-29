@@ -19,7 +19,7 @@ class RegionTab(QObject):
 
         self._cards = {}
 
-        self._pointWidget = PointWidget(app.renderingView)
+        self._pointWidget = PointWidget(app.window.renderingView)
 
         layout = QVBoxLayout(self._ui.list)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -28,7 +28,7 @@ class RegionTab(QObject):
 
         # geometries = app.window.geometryManager()
         # geometries.showAll()
-        point = self._pointWidget.setBounds(app.window.geometryManager().getBounds())
+        point = self._pointWidget.setBounds(app.window.geometryManager.getBounds())
         self._setPoint(point)
         self._pointWidget.on()
 
@@ -37,6 +37,8 @@ class RegionTab(QObject):
         self._load()
 
     def activated(self):
+        app.window.geometryManager.showActors()
+        app.window.meshManager.hideActors()
         self._pointWidget.on()
 
     def deactivated(self):
@@ -53,6 +55,7 @@ class RegionTab(QObject):
         self._ui.x.editingFinished.connect(self._movePointWidget)
         self._ui.y.editingFinished.connect(self._movePointWidget)
         self._ui.z.editingFinished.connect(self._movePointWidget)
+        self._form.pointChanged.connect(self._movePointWidget)
         self._pointWidget.pointMoved.connect(self._setPoint)
 
     def _load(self):

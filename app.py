@@ -52,10 +52,6 @@ class App(QObject):
         return self._fileSystem
 
     @property
-    def renderingView(self):
-        return self._window.renderingView()
-
-    @property
     def db(self):
         return self._project.db() if self._project else None
 

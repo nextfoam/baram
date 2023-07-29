@@ -3,7 +3,7 @@
 
 from enum import Enum, auto
 
-from .rendering_manager import RenderingMode, rendering
+from rendering.rendering_manager import RenderingMode, rendering
 
 
 _applySurfaceRednderingMode = {
@@ -149,6 +149,10 @@ class ActorManager:
 
             self._view.fitCamera()
             self._actorInfos[group].setVisible(False)
+
+    def clearGroup(self, group):
+        self.hideGroup(group)
+        self._actorInfos[group] = self.ActorInfoGroup()
 
     def getBounds(self, group):
         return self._actorInfos[group].getBounds()

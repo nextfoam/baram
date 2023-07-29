@@ -23,26 +23,26 @@ class GeometryPage(StepPage):
         self._ui = Ui_GeometryPage()
         self._ui.setupUi(self)
 
-        self._actors = app.window.actorManager()
-        self._geometries = app.window.geometryManager()
+        self._geometries = app.window.geometryManager
         self._list = GeometryList(self._ui.list, self._geometries)
 
         self._dialog = None
         self._geometryDialog = None
 
         self._connectSignalsSlots()
-        #
-        # self._geometries.showAll()
-
-    @classmethod
-    def nextStepAvailable(cls):
-        return not app.window.geometryManager().isEmpty()
 
     def lock(self):
         self._ui.buttons.setEnabled(False)
 
     def unlock(self):
         self._ui.buttons.setEnabled(True)
+
+    def showEvent(self, ev):
+        if not ev.spontaneous():
+            app.window.geometryManager.showActors()
+            app.window.meshManager.hideActors()
+
+        return super().showEvent(ev)
 
     def _connectSignalsSlots(self):
         self._geometries.listChanged.connect(self._updateNextStepAvailable)
