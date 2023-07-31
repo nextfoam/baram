@@ -3,9 +3,11 @@
 
 import sys
 from pathlib import Path
+from typing import Optional
 
 from PySide6.QtCore import QObject, QTranslator, QCoreApplication, QLocale
 
+from db.project import Project
 from resources import resource
 from settings.app_settings import AppSettings
 from settings.project_manager import ProjectManager
@@ -24,7 +26,7 @@ class App(QObject):
 
         self._properties = None
         self._settings = None
-        self._project = None
+        self._project: Optional[Project] = None
         self._fileSystem = None
 
         self._window = None
