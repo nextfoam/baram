@@ -20,6 +20,12 @@ def loadSTLFile(path):
     reader.Update()
 
     ds: vtkPolyData = reader.GetOutput()
+
+    if reader.GetBinaryHeader() is not None:  # BINARY STL
+        return [ds]
+
+    # ASCII STL
+
     minSolid, maxSolid = ds.GetCellData().GetScalars('STLSolidLabeling').GetRange()
     if minSolid == maxSolid:
         return [ds]
