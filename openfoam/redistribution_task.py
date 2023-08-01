@@ -24,8 +24,6 @@ class RedistributionTask(QObject):
         caseRoot = FileSystem.caseRoot()
         db = coredb.CoreDB()
 
-        # ToDo: If no polyMesh just return
-
         numCores = parallel.getNP()
 
         processorFolders = FileSystem.processorFolders()
