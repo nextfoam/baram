@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import re
 import shutil
 from typing import Optional
 from pathlib import Path
@@ -66,7 +66,15 @@ class FileSystem:
             if parent is None:
                 parent = self._casePath
 
-        return [f.name for f in parent.glob('[0-9]*')]
+        times = []
+        for f in parent.iterdir():
+            if not f.is_dir():
+                continue
+
+            if re.fullmatch(r'^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$', f.name):
+                times.append(f.name)
+
+        return times
 
     def processorFolders(self):
         return list(self._casePath.glob('processor[0-9]*'))
