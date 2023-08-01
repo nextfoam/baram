@@ -18,12 +18,15 @@ class BlockMeshDict(DictionaryFile):
         gradingRatio = [1, 1, 1]
 
         bounds = app.window.geometryManager.getBounds()
-        xMin = bounds.xMin
-        xMax = bounds.xMax
-        yMin = bounds.yMin
-        yMax = bounds.yMax
-        zMin = bounds.zMin
-        zMax = bounds.zMax
+        cellCounts = app.db.getValues('baseGrid', ['numCellsX', 'numCellsY', 'numCellsZ'])
+        padding = min([s / int(c) for s, c in zip(bounds.size(), cellCounts)]) / 100
+
+        xMin = bounds.xMin - padding
+        xMax = bounds.xMax + padding
+        yMin = bounds.yMin - padding
+        yMax = bounds.yMax + padding
+        zMin = bounds.zMin - padding
+        zMax = bounds.zMax + padding
 
         self._data = {
             'scale': 1.0,
@@ -39,11 +42,7 @@ class BlockMeshDict(DictionaryFile):
             ],
             'blocks': [
                 ('hex', [0, 1, 2, 3, 4, 5, 6, 7]),
-                [  # Cell Count for each direction
-                    app.db.getValue('baseGrid/numCellsX'),
-                    app.db.getValue('baseGrid/numCellsY'),
-                    app.db.getValue('baseGrid/numCellsZ')
-                ],
+                cellCounts,
                 ('simpleGrading', gradingRatio)
             ],
             'boundary': [
