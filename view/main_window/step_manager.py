@@ -45,13 +45,13 @@ class StepManager:
         self._contentPages = {}
 
         self._pages = {
-            Step.NONE.value: StepPage(ui, None),
-            Step.GEOMETRY.value: GeometryPage(ui),
-            Step.BASE_GRID.value: BaseGridPage(ui),
-            Step.CASTELLATION.value: CastellationPage(ui),
-            Step.SNAP.value: SnapPage(ui),
-            Step.BOUNDARY_LAYER.value: None,
-            Step.REFINEMENT.value: None,
+            Step.NONE: StepPage(ui, None),
+            Step.GEOMETRY: GeometryPage(ui),
+            Step.BASE_GRID: BaseGridPage(ui),
+            Step.CASTELLATION: CastellationPage(ui),
+            Step.SNAP: SnapPage(ui),
+            Step.BOUNDARY_LAYER: None,
+            Step.REFINEMENT: None,
         }
 
         self._connectSignalsSlots()
@@ -82,7 +82,8 @@ class StepManager:
         self._buttons.unlockButton.clicked.connect(self._unlockCurrentStep)
 
     def _open(self, step):
-        # self._pages[step].clearResult()
+        self._pages[step].clearResult()
+        self._pages[step].unlock()
         self._pages[step].open()
 
         self._navigation.enableStep(step)

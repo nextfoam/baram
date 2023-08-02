@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 
-from enum import Enum, auto
+from enum import Enum, auto, IntEnum
 
 from .simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, TextKeyList, PositiveIntType
 from .simple_schema import ElementSchema
 from .simple_schema import VectorComposite
 
 
-class Step(Enum):
+class Step(IntEnum):
     NONE = -1
     GEOMETRY = 0
     BASE_GRID = auto()
