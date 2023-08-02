@@ -14,22 +14,21 @@ from .geometry_import_dialog import ImportDialog
 from .volume_dialog import VolumeDialog
 from .surface_dialog import SurfaceDialog
 from .geometry_list import GeometryList
-from .geometry_page_ui import Ui_GeometryPage
 
 
 class GeometryPage(StepPage):
-    def __init__(self):
-        super().__init__()
-        self._ui = Ui_GeometryPage()
-        self._ui.setupUi(self)
+    def __init__(self, ui):
+        super().__init__(ui, ui.geometryPage)
 
-        self._geometries = app.window.geometryManager
-        self._list = GeometryList(self._ui.list, self._geometries)
+        self._geometries = None
+        self._list = None
+        self._initialized = False
 
         self._dialog = None
         self._geometryDialog = None
 
-        self._connectSignalsSlots()
+    def isNextStepAvailable(self):
+        return not app.window.geometryManager.isEmpty()
 
     def lock(self):
         self._ui.buttons.setEnabled(False)
@@ -37,17 +36,22 @@ class GeometryPage(StepPage):
     def unlock(self):
         self._ui.buttons.setEnabled(True)
 
-    def showEvent(self, ev):
-        if not ev.spontaneous():
-            app.window.geometryManager.showActors()
-            app.window.meshManager.hideActors()
+    def selected(self):
+        if not self._initialized:
+            self._geometries = app.window.geometryManager
+            self._list = GeometryList(self._ui.geometryList, self._geometries)
 
-        return super().showEvent(ev)
+            self._connectSignalsSlots()
+
+            self._initialized = True
+
+        app.window.geometryManager.showActors()
+        app.window.meshManager.hideActors()
 
     def _connectSignalsSlots(self):
         self._geometries.listChanged.connect(self._updateNextStepAvailable)
         self._list.eyeToggled.connect(self._setGeometryVisibliity)
-        self._ui.list.currentItemChanged.connect(self._currentGeometryChanged)
+        self._ui.geometryList.currentItemChanged.connect(self._currentGeometryChanged)
 
         self._ui.import_.clicked.connect(self._importClicked)
         self._ui.add.clicked.connect(self._addClicked)
@@ -56,17 +60,17 @@ class GeometryPage(StepPage):
 
     @qasync.asyncSlot()
     async def _importClicked(self):
-        self._dialog = ImportDialog(self)
+        self._dialog = ImportDialog(self._widget)
         self._dialog.accepted.connect(self._importSTL)
         self._dialog.open()
 
     def _addClicked(self):
-        self._dialog = GeometryAddDialog(self)
+        self._dialog = GeometryAddDialog(self._widget)
         self._dialog.accepted.connect(self._openAddDialog)
         self._dialog.open()
 
     def _openAddDialog(self):
-        self._geometryDialog = VolumeDialog(self)
+        self._geometryDialog = VolumeDialog(self._widget)
         self._geometryDialog.setupForAdding(*self._dialog.geometryInfo())
         self._geometryDialog.accepted.connect(self._geometryAddAccepted)
         self._geometryDialog.open()
@@ -74,12 +78,12 @@ class GeometryPage(StepPage):
     def _openEditDialog(self):
         geometry = self._geometries.geometry(self._list.currentGeometryID())
         if geometry['gType'] == GeometryType.VOLUME.value:
-            self._geometryDialog = VolumeDialog(self)
+            self._geometryDialog = VolumeDialog(self._widget)
             self._geometryDialog.setupForEdit(self._list.currentGeometryID())
             self._geometryDialog.accepted.connect(self._updateVolume)
             self._geometryDialog.open()
         else:
-            self._geometryDialog = SurfaceDialog(self, self._list.currentGeometryID())
+            self._geometryDialog = SurfaceDialog(self._widget, self._list.currentGeometryID())
             self._geometryDialog.accepted.connect(self._updateSurface)
             self._geometryDialog.open()
 
@@ -97,6 +101,9 @@ class GeometryPage(StepPage):
         app.db.commit(db)
 
         self._list.remove(gId)
+
+    def _updateNextStepAvailable(self):
+        self._setNextStepEnabled(self.isNextStepAvailable())
 
     def _setGeometryVisibliity(self, gId, state):
         if state:
@@ -165,7 +172,7 @@ class GeometryPage(StepPage):
                 self._geometryCreated(gId)
         except OpenFOAMError as ex:
             code, message = ex.args
-            QMessageBox.information(self, self.tr('STL Loading Error'), f'{message} [{code}]')
+            QMessageBox.information(self._widget, self.tr('STL Loading Error'), f'{message} [{code}]')
 
     def _geometryAddAccepted(self):
         self._geometryCreated(self._geometryDialog.gId())

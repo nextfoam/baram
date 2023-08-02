@@ -12,41 +12,56 @@ from .region_card import RegionCard
 
 
 class RegionTab(QObject):
-    def __init__(self, parent, ui):
+    def __init__(self, ui):
         super().__init__()
-        self._form = RegionForm(parent, ui)
         self._ui = ui
+        self._form = RegionForm(ui)
 
-        self._cards = {}
+        self._regions = {}
+        self._pointWidget = None
 
-        self._pointWidget = PointWidget(app.window.renderingView)
+        self._loaded = False
 
-        layout = QVBoxLayout(self._ui.list)
+        layout = QVBoxLayout(self._ui.regionList)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.addStretch()
 
-        # geometries = app.window.geometryManager()
-        # geometries.showAll()
-        point = self._pointWidget.setBounds(app.window.geometryManager.getBounds())
-        self._setPoint(point)
-        self._pointWidget.on()
-
-        self._connectSignalsSlots()
-
-        self._load()
-
     def activated(self):
         app.window.geometryManager.showActors()
         app.window.meshManager.hideActors()
+        self._form.setupForAdding()
+
         self._pointWidget.on()
 
     def deactivated(self):
         self._pointWidget.off()
 
-    def close(self):
-        self._pointWidget.close()
-        self._pointWidget = None
+    def lock(self):
+        for card in self._regions.values():
+            card.lock()
+
+        self._form.disable()
+
+    def unlock(self):
+        for card in self._regions.values():
+            card.unlock()
+
+        self._form.enable()
+
+    def load(self):
+        if not self._loaded:
+            self._pointWidget = PointWidget(app.window.renderingView)
+            point = self._pointWidget.setBounds(app.window.geometryManager.getBounds())
+            self._setPoint(point)
+
+            self._connectSignalsSlots()
+
+            regions = app.db.getElements('region', columns=[])
+            for id_ in regions:
+                self._add(id_)
+
+            self._loaded = True
 
     def _connectSignalsSlots(self):
         self._form.regionAdded.connect(self._add)
@@ -58,30 +73,25 @@ class RegionTab(QObject):
         self._form.pointChanged.connect(self._movePointWidget)
         self._pointWidget.pointMoved.connect(self._setPoint)
 
-    def _load(self):
-        regions = app.db.getElements('region', columns=[])
-        for id_ in regions:
-            self._add(id_)
-
     def _add(self, id_):
         card = RegionCard(id_)
-        self._cards[id_] = card
+        self._regions[id_] = card
         card.editClicked.connect(self._form.setupForEditing)
         card.removeClicked.connect(self._remove)
-        self._ui.list.layout().insertWidget(0, card)
+        self._ui.regionList.layout().insertWidget(0, card)
 
     def _update(self, id_):
-        self._cards[id_].load()
+        self._regions[id_].load()
 
     def _remove(self, id_):
         db = app.db.checkout()
         db.removeElement('region', id_)
         app.db.commit(db)
 
-        card = self._cards[id_]
-        self._ui.list.layout().removeWidget(card)
+        card = self._regions[id_]
+        self._ui.regionList.layout().removeWidget(card)
         card.deleteLater()
-        del self._cards[id_]
+        del self._regions[id_]
 
     def _movePointWidget(self):
         self._setPoint(

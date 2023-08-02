@@ -19,7 +19,6 @@ from view.widgets.progress_dialog_simple import ProgressDialogSimple
 from .region_tab import RegionTab
 from .castellation_tab import CastellationTab
 from .castellation_advanced_dialog import CastellationAdvancedDialog, DEFAULT_FEATURE_LEVEL
-from .castellation_page_ui import Ui_CastellationPage
 
 
 class Tab(Enum):
@@ -30,53 +29,49 @@ class Tab(Enum):
 class CastellationPage(StepPage):
     OUTPUT_TIME = 1
 
-    def __init__(self):
-        super().__init__()
-        self._ui = Ui_CastellationPage()
-        self._ui.setupUi(self)
+    def __init__(self, ui):
+        super().__init__(ui, ui.castellationPage)
 
         self._ui.tabWidget.setCurrentIndex(0)
 
-        self._regionTab = RegionTab(self, self._ui)
-        self._castellationTab = CastellationTab(self, self._ui)
+        self._regionTab = RegionTab(self._ui)
+        self._castellationTab = CastellationTab(self._ui)
 
-        self._refinementSurfaces = []
-        self._refinementVolumes = []
-        self._refinementFeatures = []
-
-        for gId, geometry in app.window.geometryManager.geometries().items():
-            if geometry['cfdType'] != CFDType.NONE.value:
-                if geometry['gType'] == GeometryType.SURFACE.value:
-                    self._refinementSurfaces.append(geometry)
-                    if geometry['shape'] not in (Shape.CYLINDER.value, Shape.SPHERE.value):
-                        self._refinementFeatures.append(geometry)
-                else:
-                    self._refinementVolumes.append(geometry)
-
-        self._castellationTab.load(self._refinementSurfaces, self._refinementVolumes)
+        self._refinementSurfaces = None
+        self._refinementVolumes = None
+        self._refinementFeatures = None
 
         self._advancedDialog = None
+        self._loaded = False
 
         self._connectSignalsSlots()
 
-        self._ui.reset.hide()
+    def lock(self):
+        self._regionTab.lock()
+        self._castellationTab.lock()
 
-    def showEvent(self, ev):
-        if not ev.spontaneous():
-            self._currentTabChanged(self._ui.tabWidget.currentIndex())
+    def unlock(self):
+        self._regionTab.unlock()
+        self._castellationTab.unlock()
 
-        return super().showEvent(ev)
+    def open(self):
+        self._load()
 
-    def hideEvent(self, ev):
-        if not ev.spontaneous():
-            self._regionTab.deactivated()
+    def selected(self):
+        if not self._loaded:
+            self._load()
 
-        return super().hideEvent(ev)
+        self._checkRefined()
+        self._currentTabChanged(self._ui.tabWidget.currentIndex())
+
+    def deselected(self):
+        self._regionTab.deactivated()
 
     def _connectSignalsSlots(self):
         self._ui.tabWidget.currentChanged.connect(self._currentTabChanged)
         self._ui.advanced.clicked.connect(self._advancedConfigure)
         self._ui.refine.clicked.connect(self._refine)
+        self._ui.castellationReset.clicked.connect(self._reset)
 
     def _currentTabChanged(self, index):
         if index == Tab.REGION.value:
@@ -92,13 +87,35 @@ class CastellationPage(StepPage):
                 app.window.geometryManager.showActors()
                 app.window.meshManager.hideActors()
 
+    def _load(self):
+        self._advancedDialog = None
+
+        self._refinementSurfaces = []
+        self._refinementVolumes = []
+        self._refinementFeatures = []
+
+        for gId, geometry in app.window.geometryManager.geometries().items():
+            if geometry['cfdType'] != CFDType.NONE.value:
+                if geometry['gType'] == GeometryType.SURFACE.value:
+                    self._refinementSurfaces.append(geometry)
+                    if geometry['shape'] not in (Shape.CYLINDER.value, Shape.SPHERE.value):
+                        self._refinementFeatures.append(geometry)
+                else:
+                    self._refinementVolumes.append(geometry)
+
+        self._regionTab.load()
+        self._castellationTab.load(self._refinementSurfaces, self._refinementVolumes)
+
+        self._loaded = True
+        self._checkRefined()
+
     def _advancedConfigure(self):
-        self._advancedDialog = CastellationAdvancedDialog(self, self._refinementFeatures)
+        self._advancedDialog = CastellationAdvancedDialog(self._widget, self._refinementFeatures)
         self._advancedDialog.open()
 
     @qasync.asyncSlot()
     async def _refine(self):
-        progressDialog = ProgressDialogSimple(self, self.tr('Castellation Refinement'), True)
+        progressDialog = ProgressDialogSimple(self._widget, self.tr('Castellation Refinement'), True)
         progressDialog.setLabelText(self.tr('Updating Configurations'))
         progressDialog.open()
 
@@ -114,13 +131,21 @@ class CastellationPage(StepPage):
         proc = await runUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot())
         if await proc.wait():
             progressDialog.finish(self.tr('Castellation Refinement Failed.'))
+            return
 
         progressDialog.hideCancelButton()
         meshManager = app.window.meshManager
+        meshManager.clear()
         meshManager.progress.connect(progressDialog.setLabelText)
         await meshManager.load()
 
         progressDialog.close()
+
+        self._checkRefined()
+
+    def _reset(self):
+        self.clearResult()
+        self._checkRefined()
 
     def _updateFeatureLevels(self):
         db = app.db.checkout('castellation')
@@ -187,3 +212,13 @@ class CastellationPage(StepPage):
                 cleanFilter.Update()
 
                 writeGeometryFile(geometry['name'], cleanFilter.GetOutput())
+
+    def _checkRefined(self):
+        if self.isNextStepAvailable():
+            self._ui.refine.hide()
+            self._ui.castellationReset.show()
+            self._setNextStepEnabled(True)
+        else:
+            self._ui.refine.show()
+            self._ui.castellationReset.hide()
+            self._setNextStepEnabled(False)

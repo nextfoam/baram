@@ -13,11 +13,11 @@ DEFAULT_REFINEMENT_REGION_LEVEL = '1'
 
 
 class CastellationTab(QObject):
-    def __init__(self, parent, ui):
+    def __init__(self, ui):
         super().__init__()
 
-        self._parent = parent
         self._ui = ui
+        self._widget = ui.castellation
 
         self._surfaceItem = QTreeWidgetItem(self._ui.refinements, [self.tr('Surface')])
         self._volumeItem = QTreeWidgetItem(self._ui.refinements, [self.tr('Volume')])
@@ -29,6 +29,28 @@ class CastellationTab(QObject):
         self._surfaceItem.setExpanded(True)
         self._volumeItem.setFirstColumnSpanned(True)
         self._volumeItem.setExpanded(True)
+
+    def lock(self):
+        self._ui.castellationConfiguration.setEnabled(False)
+
+        for i in range(self._surfaceItem.childCount()):
+            self._surfaceItem.child(i).lock()
+
+        for i in range(self._volumeItem.childCount()):
+            self._volumeItem.child(i).lock()
+
+        self._ui.castellationButtons.setEnabled(False)
+
+    def unlock(self):
+        self._ui.castellationConfiguration.setEnabled(True)
+
+        for i in range(self._surfaceItem.childCount()):
+            self._surfaceItem.child(i).unlock()
+
+        for i in range(self._volumeItem.childCount()):
+            self._volumeItem.child(i).unlock()
+
+        self._ui.castellationButtons.setEnabled(True)
 
     def save(self):
         try:
@@ -57,7 +79,7 @@ class CastellationTab(QObject):
 
             app.db.commit(db)
         except DBError as e:
-            QMessageBox.information(self._parent, self.tr("Input Error"), e.toMessage())
+            QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
 
     def load(self, surfaces, volumes):
         def level(gId, refinements, default):
@@ -70,6 +92,9 @@ class CastellationTab(QObject):
 
         refinementSurfaces = app.db.getElements('castellation/refinementSurfaces')
         refinementRegions = app.db.getElements('castellation/refinementRegions')
+
+        self._surfaceItem.takeChildren()
+        self._volumeItem.takeChildren()
 
         for geometry in surfaces:
             item = RefinementItem(geometry['gId'], geometry['name'],

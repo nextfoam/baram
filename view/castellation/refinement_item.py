@@ -20,6 +20,7 @@ class RefinementItem(QTreeWidgetItem):
     def __init__(self, gId, name, level):
         super().__init__(int(gId))
         self._eyeCheckBox = IconCheckBox(':/icons/eye.svg', ':/icons/eye-off.svg')
+        self._editable = True
 
         self._eyeCheckBox.setChecked(True)
         self.setText(Column.ICON_COLUMN.value, '')
@@ -61,6 +62,12 @@ class RefinementItem(QTreeWidgetItem):
     def eyeOff(self):
         self._eyeCheckBox.setChecked(False)
 
+    def lock(self):
+        self._editable = False
+
+    def unlock(self):
+        self._editable = True
+
     def _setupWithTreeWidget(self):
         self.treeWidget().setItemWidget(self, Column.ICON_COLUMN.value, self._eyeCheckBox)
         self.treeWidget().itemClicked.connect(self._clicked)
@@ -72,5 +79,5 @@ class RefinementItem(QTreeWidgetItem):
             app.window.geometryManager.hideActor(str(self.type()))
 
     def _clicked(self, item, column):
-        if column == Column.LEVEL_COLUMN.value:
+        if self._editable and column == Column.LEVEL_COLUMN.value:
             self.treeWidget().editItem(item, column)

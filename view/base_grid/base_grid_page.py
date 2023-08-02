@@ -6,37 +6,44 @@ from PySide6.QtWidgets import QMessageBox
 
 from app import app
 from libbaram.run import runUtility
-from libbaram.utils import formatWithSignificants
+from libbaram.utils import formatWithSignificants, rmtree
 from openfoam.system.block_mesh_dict import BlockMeshDict
 from db.simple_schema import DBError
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
 from view.step_page import StepPage
-from .base_grid_page_ui import Ui_BaseGridPage
 
 
 class BaseGridPage(StepPage):
-    def __init__(self):
-        super().__init__()
-        self._ui = Ui_BaseGridPage()
-        self._ui.setupUi(self)
+    def __init__(self, ui):
+        super().__init__(ui, ui.baseGridPage)
 
         self._dbElement = None
         self._bounds = None
+        self._loaded = False
 
         self._connectSignalsSlots()
 
+    def isNextStepAvailable(self):
+        return app.fileSystem.boundaryFilePath().exists()
+
+    def open(self):
         self._load()
 
-    def showEvent(self, ev):
-        if not ev.spontaneous():
-            app.window.geometryManager.showActors()
+    def selected(self):
+        if not self._loaded:
+            self._load()
 
-            if app.fileSystem.boundaryFilePath().exists():
-                app.window.meshManager.showActors()
-            else:
-                app.window.meshManager.hideActors()
+        app.window.geometryManager.showActors()
 
-        return super().showEvent(ev)
+        if app.fileSystem.boundaryFilePath().exists():
+            app.window.meshManager.showActors()
+        else:
+            app.window.meshManager.hideActors()
+
+    def clearResult(self):
+        path = app.fileSystem.polyMeshPath()
+        if path.exists():
+            rmtree(path)
 
     def _connectSignalsSlots(self):
         self._ui.generate.clicked.connect(self._generate)
@@ -56,6 +63,8 @@ class BaseGridPage(StepPage):
         self._ui.numCellsY.setText(self._dbElement.getValue('numCellsY'))
         self._ui.numCellsZ.setText(self._dbElement.getValue('numCellsZ'))
 
+        self._loaded = True
+
     @qasync.asyncSlot()
     async def _generate(self):
         try:
@@ -67,10 +76,10 @@ class BaseGridPage(StepPage):
 
             app.db.commit(db)
         except DBError as e:
-            QMessageBox.information(self, self.tr("Input Error"), e.toMessage())
+            QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
             return
 
-        progressDialog = ProgressDialogSimple(self, self.tr('Base Grid Generating'))
+        progressDialog = ProgressDialogSimple(self._widget, self.tr('Base Grid Generating'))
         progressDialog.setLabelText(self.tr('Generating Block Mesh'))
         progressDialog.open()
 
@@ -86,4 +95,4 @@ class BaseGridPage(StepPage):
 
         progressDialog.close()
 
-        self._updateNextStepAvailable()
+        self._setNextStepEnabled(True)

@@ -38,6 +38,12 @@ class RegionCard(QWidget):
         x, y, z = app.db.getVector(path + 'point')
         self._ui.point.setText(f'({x}, {y}, {z})')
 
+    def lock(self):
+        self._ui.remove.setEnabled(False)
+
+    def unlock(self):
+        self._ui.remove.setEnabled(True)
+
     def _connectSignalsSlots(self):
         self._ui.edit.clicked.connect(self._editClicked)
         self._ui.remove.clicked.connect(self._removeClicked)

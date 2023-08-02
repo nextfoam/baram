@@ -10,6 +10,7 @@ from .simple_schema import VectorComposite
 
 
 class Step(Enum):
+    NONE = -1
     GEOMETRY = 0
     BASE_GRID = auto()
     # REGION = auto()

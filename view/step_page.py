@@ -1,24 +1,45 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QWidget
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QObject
 
 from app import app
+from libbaram.utils import rmtree
 
 
-class StepPage(QWidget):
-    nextStepAvailableChanged = Signal(bool)
+class StepPage(QObject):
+    OUTPUT_TIME = -1
 
-    def __init__(self):
+    def __init__(self, ui, page):
         super().__init__()
-        self._updateNextStepAvailable()
+        self._ui = ui
+        self._widget = page
+
+    def isNextStepAvailable(self):
+        return app.fileSystem.timePath(self.OUTPUT_TIME).exists()
 
     def lock(self):
-        self.setEnabled(False)
+        self._widget.setEnabled(False)
 
     def unlock(self):
-        self.setEnabled(True)
+        self._widget.setEnabled(True)
 
-    def _updateNextStepAvailable(self):
-        app.window.updateNextButtonEnabled()
+    def open(self):
+        return
+
+    def selected(self):
+        return
+
+    def deselected(self):
+        return
+
+    def clearResult(self):
+        path = app.fileSystem.timePath(self.OUTPUT_TIME)
+        if path.exists():
+            rmtree(path)
+
+        for path in app.fileSystem.caseRoot().glob(f'processor*/{self.OUTPUT_TIME}'):
+            rmtree(path)
+
+    def _setNextStepEnabled(self, enabled):
+        self._ui.next.setEnabled(enabled)

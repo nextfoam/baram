@@ -38,10 +38,10 @@ class MainWindow(QMainWindow):
         self._navigationView = NavigationView(self._ui.navigation)
         self._renderingTool = RenderingTool(self._ui)
 
-        self._stepManager = StepManager(self._navigationView, self._ui)
         self._actors = ActorManager(self._ui.renderingView)
         self._geometries = GeometryManager(self._actors)
         self._meshManager = MeshManager(self._actors)
+        self._stepManager = StepManager(self._navigationView, self._ui)
 
         self._startDialog = ProjectDialog()
         self._dialog = None
@@ -99,9 +99,6 @@ class MainWindow(QMainWindow):
             # self._changeForm(self._navigatorView.currentMenu())
 
         super().changeEvent(event)
-
-    def updateNextButtonEnabled(self):
-        self._ui.next.setEnabled(self._stepManager.isStepCompleted(self._navigationView.currentStep()))
 
     def _connectSignalsSlots(self):
         self._ui.actionNew.triggered.connect(self._actionNew)
@@ -190,8 +187,8 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, self.tr('Case Open Error'), self.tr(f'{path.name} is not a baram case.'))
         except Timeout:
             QMessageBox.information(self, self.tr('Case Open Error'), self.tr(f'{path.name} is open in another program.'))
-        # except Exception as ex:
-        #     QMessageBox.information(self, self.tr('Case Open Error'), self.tr('Fail to open case\n' + str(ex)))
+        except Exception as ex:
+            QMessageBox.information(self, self.tr('Case Open Error'), self.tr('Fail to open case\n' + str(ex)))
 
     def _startDialogClosed(self):
         if app.project is None:
