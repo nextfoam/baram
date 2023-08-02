@@ -22,6 +22,9 @@ class Bounds:
         self.zMin = min(self.zMin, bounds.zMin)
         self.zMax = max(self.zMax, bounds.zMax)
 
+    def size(self):
+        return self.xMax - self.xMin, self.yMax - self.yMin, self.zMax - self.zMin
+
 
 class ActorInfo:
     def __init__(self, surface, feature=None):

@@ -93,6 +93,13 @@ class SimpleDB(SimpleSchema):
 
         return db[field]
 
+    def getValues(self, path, fields):
+        schema, db, field = self._get(path)
+        if not isinstance(db[field], dict):
+            raise LookupError
+
+        return elementToList(db[field], schema[field], fields)
+
     def getFloat(self, path):
         return float(self.getValue(path))
 
