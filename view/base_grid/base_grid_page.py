@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QMessageBox
 
 from app import app
 from libbaram.run import runUtility
-from libbaram.utils import formatWithSignificants, rmtree
+from libbaram.utils import rmtree
 from openfoam.system.block_mesh_dict import BlockMeshDict
 from db.simple_schema import DBError
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
@@ -51,12 +51,12 @@ class BaseGridPage(StepPage):
     def _load(self):
         self._bounds = app.window.geometryManager.getBounds()
 
-        self._ui.xMin.setText(formatWithSignificants(float(self._bounds.xMin), 4))
-        self._ui.xMax.setText(formatWithSignificants(float(self._bounds.xMax), 4))
-        self._ui.yMin.setText(formatWithSignificants(float(self._bounds.yMin), 4))
-        self._ui.yMax.setText(formatWithSignificants(float(self._bounds.yMax), 4))
-        self._ui.zMin.setText(formatWithSignificants(float(self._bounds.zMin), 4))
-        self._ui.zMax.setText(formatWithSignificants(float(self._bounds.zMax), 4))
+        self._ui.xMin.setText('{:.6g}'.format(self._bounds.xMin))
+        self._ui.xMax.setText('{:.6g}'.format(self._bounds.xMax))
+        self._ui.yMin.setText('{:.6g}'.format(self._bounds.yMin))
+        self._ui.yMax.setText('{:.6g}'.format(self._bounds.yMax))
+        self._ui.zMin.setText('{:.6g}'.format(self._bounds.zMin))
+        self._ui.zMax.setText('{:.6g}'.format(self._bounds.zMax))
 
         self._dbElement = app.db.checkout('baseGrid')
         self._ui.numCellsX.setText(self._dbElement.getValue('numCellsX'))

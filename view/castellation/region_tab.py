@@ -5,7 +5,6 @@ from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QVBoxLayout
 
 from app import app
-from libbaram.utils import formatWithSignificants
 from rendering.point_widget import PointWidget
 from .region_form import RegionForm
 from .region_card import RegionCard
@@ -99,7 +98,7 @@ class RegionTab(QObject):
 
     def _setPoint(self, point):
         x, y, z = point
-        self._ui.x.setText(formatWithSignificants(x, 4))
-        self._ui.y.setText(formatWithSignificants(y, 4))
-        self._ui.z.setText(formatWithSignificants(z, 4))
+        self._ui.x.setText('{:.6g}'.format(x))
+        self._ui.y.setText('{:.6g}'.format(y))
+        self._ui.z.setText('{:.6g}'.format(z))
 
