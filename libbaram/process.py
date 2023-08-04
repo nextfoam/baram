@@ -26,19 +26,19 @@ class Processor(QObject):
         return self._canceled
 
     async def run(self):
-        outOver = self._proc.stdout is None
-        errOver = self._proc.stderr is None
+        outOn = self._proc.stdout is not None
+        errOn = self._proc.stderr is not None
 
-        while not (outOver and errOver):
-            if not outOver:
+        while outOn or errOn:
+            if outOn:
                 while line := await self._proc.stdout.readline():
                     self.outputLogged.emit(line.decode('UTF-8').rstrip())
-                outOver = self._proc.stdout.at_eof()
+                outOn = not self._proc.stdout.at_eof()
 
-            if not errOver:
+            if errOn:
                 while line := await self._proc.stderr.readline():
                     self.outputLogged.emit(line.decode('UTF-8').rstrip())
-                errOver = self._proc.stderr.at_eof()
+                errOn = not self._proc.stderr.at_eof()
 
             await asyncio.sleep(1)
 
