@@ -84,6 +84,7 @@ class GeometryList(QObject):
 
     showAllClicked = Signal()
     hideAllClicked = Signal()
+    itemDoubleClicked = Signal(str)
 
     volumeIcon = QIcon(VOLUME_ICON_FILE)
     surfaceIcon = QIcon(SURFACE_ICON_FILE)
@@ -171,11 +172,15 @@ class GeometryList(QObject):
     def _connectSignalsSlots(self):
         self._tree.header().sectionResized.connect(self._headerPositionChanged)
         self._tree.header().sectionMoved.connect(self._headerPositionChanged)
+        self._tree.itemDoubleClicked.connect(self._doubleClicked)
         self._eyeOn.clicked.connect(self._showAllActors)
         self._eyeOff.clicked.connect(self._hideAllActors)
 
     def _headerPositionChanged(self):
         self._eyeBottons.move(self._tree.header().sectionPosition(1), 3)
+
+    def _doubleClicked(self, item, column):
+        self.itemDoubleClicked.emit(item.gId())
 
     def _showAllActors(self):
         for gId in self._items:

@@ -51,6 +51,7 @@ class GeometryPage(StepPage):
     def _connectSignalsSlots(self):
         self._geometries.listChanged.connect(self._updateNextStepAvailable)
         self._list.eyeToggled.connect(self._setGeometryVisibliity)
+        self._list.itemDoubleClicked.connect(self._openEditDialog)
         self._ui.geometryList.currentItemChanged.connect(self._currentGeometryChanged)
 
         self._ui.import_.clicked.connect(self._importClicked)
@@ -75,15 +76,18 @@ class GeometryPage(StepPage):
         self._geometryDialog.accepted.connect(self._geometryAddAccepted)
         self._geometryDialog.open()
 
-    def _openEditDialog(self):
-        geometry = self._geometries.geometry(self._list.currentGeometryID())
+    def _editClicked(self):
+        self._openEditDialog(self._list.currentGeometryID())
+
+    def _openEditDialog(self, gId):
+        geometry = self._geometries.geometry(gId)
         if geometry['gType'] == GeometryType.VOLUME.value:
             self._geometryDialog = VolumeDialog(self._widget)
-            self._geometryDialog.setupForEdit(self._list.currentGeometryID())
+            self._geometryDialog.setupForEdit(gId)
             self._geometryDialog.accepted.connect(self._updateVolume)
             self._geometryDialog.open()
         else:
-            self._geometryDialog = SurfaceDialog(self._widget, self._list.currentGeometryID())
+            self._geometryDialog = SurfaceDialog(self._widget, gId)
             self._geometryDialog.accepted.connect(self._updateSurface)
             self._geometryDialog.open()
 
