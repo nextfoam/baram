@@ -78,8 +78,12 @@ class CastellationTab(QObject):
                 db.addElement('refinementRegions', e, item.type())
 
             app.db.commit(db)
+
+            return True
         except DBError as e:
             QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
+
+            return False
 
     def load(self, surfaces, volumes):
         def level(gId, refinements, default):

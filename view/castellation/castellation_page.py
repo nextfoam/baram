@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import asyncio
 from enum import Enum, auto
 
 import qasync
 from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges
 from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
+from PySide6.QtWidgets import QMessageBox
 
 from app import app
 from db.configurations_schema import GeometryType, Shape, CFDType
@@ -13,6 +14,7 @@ from db.simple_db import elementToVector
 from openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from rendering.vtk_loader import hexPolyData
 from libbaram.run import runUtility
+from libbaram.process import Processor
 from view.geometry.geometry_manager import platePolyData
 from view.step_page import StepPage
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
@@ -115,33 +117,53 @@ class CastellationPage(StepPage):
 
     @qasync.asyncSlot()
     async def _refine(self):
-        progressDialog = ProgressDialogSimple(self._widget, self.tr('Castellation Refinement'), True)
-        progressDialog.setLabelText(self.tr('Updating Configurations'))
-        progressDialog.open()
+        try:
+            self.lock()
 
-        self._castellationTab.save()
-        if self._advancedDialog is None or not self._advancedDialog.isAccepted():
-            self._updateFeatureLevels()
+            progressDialog = ProgressDialogSimple(self._widget, self.tr('Castellation Refinement'))
+            progressDialog.setLabelText(self.tr('Updating Configurations'))
+            progressDialog.open()
 
-        progressDialog.setLabelText(self.tr('Writing Geometry Files'))
-        self._writeGeometryFiles(progressDialog)
-        SnappyHexMeshDict(castellationMesh=True).build().write()
+            if not self._castellationTab.save():
+                self.unlock()
+                return
 
-        progressDialog.setLabelText(self.tr('Refining Castellation'))
-        proc = await runUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot())
-        if await proc.wait():
-            progressDialog.finish(self.tr('Castellation Refinement Failed.'))
-            return
+            if self._advancedDialog is None or not self._advancedDialog.isAccepted():
+                self._updateFeatureLevels()
 
-        progressDialog.hideCancelButton()
-        meshManager = app.window.meshManager
-        meshManager.clear()
-        meshManager.progress.connect(progressDialog.setLabelText)
-        await meshManager.load()
+            progressDialog.setLabelText(self.tr('Writing Geometry Files'))
+            self._writeGeometryFiles(progressDialog)
+            SnappyHexMeshDict(castellationMesh=True).build().write()
 
-        progressDialog.close()
+            progressDialog.close()
 
-        self._checkRefined()
+            console = app.consoleView
+            console.clear()
+            proc = await runUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
+                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            processor = Processor(proc)
+            processor.outputLogged.connect(console.append)
+            processor.errorLogged.connect(console.appendError)
+            if returncode := await processor.run():
+                progressDialog.finish(self.tr('Castellation Refinement Failed. [') + returncode + ']')
+                self.unlock()
+                return
+
+            progressDialog = ProgressDialogSimple(self._widget, self.tr('Loading Mesh'), False)
+            progressDialog.setLabelText(self.tr('Loading Mesh'))
+            progressDialog.open()
+
+            meshManager = app.window.meshManager
+            meshManager.clear()
+            meshManager.progress.connect(progressDialog.setLabelText)
+            await meshManager.load()
+
+            progressDialog.close()
+        except Exception as ex:
+            QMessageBox.information(self._widget, self.tr("Castellation Refinement Failed."), str(ex))
+        finally:
+            self.unlock()
+            self._checkRefined()
 
     def _reset(self):
         self.clearResult()

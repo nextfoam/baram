@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1031</width>
-    <height>600</height>
+    <height>819</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -127,7 +127,7 @@
            <item>
             <widget class="QStackedWidget" name="content">
              <property name="currentIndex">
-              <number>2</number>
+              <number>4</number>
              </property>
              <widget class="QWidget" name="geometryPage">
               <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -155,6 +155,9 @@
                 <widget class="QTreeWidget" name="geometryList">
                  <property name="editTriggers">
                   <set>QAbstractItemView::NoEditTriggers</set>
+                 </property>
+                 <property name="expandsOnDoubleClick">
+                  <bool>false</bool>
                  </property>
                  <property name="columnCount">
                   <number>4</number>
@@ -425,7 +428,7 @@
                  <property name="sizeHint" stdset="0">
                   <size>
                    <width>20</width>
-                   <height>155</height>
+                   <height>275</height>
                   </size>
                  </property>
                 </spacer>
@@ -484,7 +487,7 @@
                         <x>0</x>
                         <y>0</y>
                         <width>264</width>
-                        <height>188</height>
+                        <height>308</height>
                        </rect>
                       </property>
                      </widget>
@@ -1108,6 +1111,244 @@
                </item>
               </layout>
              </widget>
+             <widget class="QWidget" name="boundaryLayerPage">
+              <layout class="QVBoxLayout" name="verticalLayout_18">
+               <item>
+                <widget class="QLabel" name="label_29">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Boundary Layer</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="Line" name="line_9">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QWidget" name="widget_10" native="true">
+                 <layout class="QVBoxLayout" name="verticalLayout_19">
+                  <item>
+                   <widget class="QGroupBox" name="groupBox_5">
+                    <property name="title">
+                     <string>Thickness Model Specification</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_21">
+                     <item>
+                      <widget class="QRadioButton" name="firstAndOverall">
+                       <property name="text">
+                        <string>First and Total</string>
+                       </property>
+                       <attribute name="buttonGroup">
+                        <string notr="true">thicknessModelSpecificationRadios</string>
+                       </attribute>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QRadioButton" name="firstAndExpansion">
+                       <property name="text">
+                        <string>First and Expansion</string>
+                       </property>
+                       <attribute name="buttonGroup">
+                        <string notr="true">thicknessModelSpecificationRadios</string>
+                       </attribute>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QRadioButton" name="finalAndOverall">
+                       <property name="text">
+                        <string>Final and Total</string>
+                       </property>
+                       <attribute name="buttonGroup">
+                        <string notr="true">thicknessModelSpecificationRadios</string>
+                       </attribute>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QRadioButton" name="finalAndExpansion">
+                       <property name="text">
+                        <string>Final and Expansion</string>
+                       </property>
+                       <attribute name="buttonGroup">
+                        <string notr="true">thicknessModelSpecificationRadios</string>
+                       </attribute>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QRadioButton" name="overallAndExpansion">
+                       <property name="text">
+                        <string>Total and Expansion</string>
+                       </property>
+                       <attribute name="buttonGroup">
+                        <string notr="true">thicknessModelSpecificationRadios</string>
+                       </attribute>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QRadioButton" name="firstAndRelativeFinal">
+                       <property name="text">
+                        <string>First and Relative Final</string>
+                       </property>
+                       <attribute name="buttonGroup">
+                        <string notr="true">thicknessModelSpecificationRadios</string>
+                       </attribute>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QWidget" name="thickness" native="true">
+                    <layout class="QFormLayout" name="formLayout_7">
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_31">
+                       <property name="text">
+                        <string>Size Specification</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="QCheckBox" name="sizeSpecificationRelative">
+                       <property name="text">
+                        <string>Relative</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_32">
+                       <property name="text">
+                        <string>First Layer Thickness</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="QLineEdit" name="firstLayerThickness"/>
+                     </item>
+                     <item row="2" column="1">
+                      <widget class="QLineEdit" name="finalLayerThickness"/>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QLabel" name="label_33">
+                       <property name="text">
+                        <string>Final Layer Thickness</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="3" column="0">
+                      <widget class="QLabel" name="label_34">
+                       <property name="text">
+                        <string>Total Thickness</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="3" column="1">
+                      <widget class="QLineEdit" name="totalThickness"/>
+                     </item>
+                     <item row="4" column="0">
+                      <widget class="QLabel" name="label_35">
+                       <property name="text">
+                        <string>Expansion Ratio</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="1">
+                      <widget class="QLineEdit" name="expansionRatio"/>
+                     </item>
+                     <item row="5" column="0">
+                      <widget class="QLabel" name="label_36">
+                       <property name="text">
+                        <string>Min. Total Tickness</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="5" column="1">
+                      <widget class="QLineEdit" name="minTotalTickness"/>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QWidget" name="widget_15" native="true">
+                 <layout class="QVBoxLayout" name="verticalLayout_20">
+                  <item>
+                   <widget class="QLabel" name="label_30">
+                    <property name="text">
+                     <string>Per-Boundary Setting</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="Line" name="line_10">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QListWidget" name="boundaryLayers"/>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QWidget" name="widget_21" native="true">
+                 <layout class="QHBoxLayout" name="horizontalLayout_11">
+                  <item>
+                   <spacer name="horizontalSpacer_8">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>99</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="boundaryLayerApply">
+                    <property name="text">
+                     <string>Apply</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="boundaryLayerReset">
+                    <property name="text">
+                     <string>Reset</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
             </widget>
            </item>
            <item>
@@ -1561,12 +1802,52 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMesh_Quality"/>
+   <addaction name="menuView"/>
    <addaction name="menuSettings"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="consoleView">
+   <property name="windowTitle">
+    <string>Console Log</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout_17">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QPlainTextEdit" name="console">
+       <property name="undoRedoEnabled">
+        <bool>false</bool>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionNew">
    <property name="text">
     <string>New</string>
@@ -1647,5 +1928,6 @@
  <connections/>
  <buttongroups>
   <buttongroup name="regionTypeRadios"/>
+  <buttongroup name="thicknessModelSpecificationRadios"/>
  </buttongroups>
 </ui>

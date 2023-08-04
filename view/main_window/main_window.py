@@ -19,6 +19,7 @@ from .actor_manager import ActorManager
 from .recent_files_menu import RecentFilesMenu
 from .naviagtion_view import NavigationView
 from .rendering_tool import RenderingTool
+from .console_view import ConsoleView
 from .mesh_manager import MeshManager
 from .step_manager import StepManager
 from .main_window_ui import Ui_MainWindow
@@ -37,6 +38,7 @@ class MainWindow(QMainWindow):
 
         self._navigationView = NavigationView(self._ui.navigation)
         self._renderingTool = RenderingTool(self._ui)
+        self._consoleView = ConsoleView(self._ui)
 
         self._actors = ActorManager(self._ui.renderingView)
         self._geometries = GeometryManager(self._actors)
@@ -73,6 +75,10 @@ class MainWindow(QMainWindow):
     def renderingView(self):
         return self._ui.renderingView
 
+    @property
+    def consoleView(self):
+        return self._consoleView
+
     def closeEvent(self, event):
         if False:
             event.ingore()
@@ -101,6 +107,8 @@ class MainWindow(QMainWindow):
         super().changeEvent(event)
 
     def _connectSignalsSlots(self):
+        self._ui.menuView.addAction(self._ui.consoleView.toggleViewAction())
+
         self._ui.actionNew.triggered.connect(self._actionNew)
         self._ui.actionOpen.triggered.connect(self._actionOpen)
         self._ui.actionSave.triggered.connect(self._actionSave)
