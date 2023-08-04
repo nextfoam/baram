@@ -137,6 +137,7 @@ class PolyMeshLoader(QObject):
         self._reader.CreateCellToPointOn()
         self._reader.CacheMeshOn()
         self._reader.ReadZonesOn()
+        self._reader.SkipZeroTimeOff()
 
         self._reader.AddObserver(vtkCommand.ProgressEvent, readerProgressEvent)
 
