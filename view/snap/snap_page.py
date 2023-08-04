@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
+
 import qasync
 from PySide6.QtWidgets import QMessageBox
 
@@ -8,6 +10,7 @@ from app import app
 from db.simple_schema import DBError
 from openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from libbaram.run import runUtility
+from libbaram.process import Processor
 from view.step_page import StepPage
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
 
@@ -45,11 +48,13 @@ class SnapPage(StepPage):
 
     @qasync.asyncSlot()
     async def _snap(self):
-        progressDialog = ProgressDialogSimple(self._widget, self.tr('Snapping'), True)
-        progressDialog.setLabelText(self.tr('Updating Configurations'))
-        progressDialog.open()
-
         try:
+            self.lock()
+
+            progressDialog = ProgressDialogSimple(self._widget, self.tr('Snapping'))
+            progressDialog.setLabelText(self.tr('Updating Configurations'))
+            progressDialog.open()
+
             db = app.db.checkout('snap')
 
             db.setValue('nSmoothPatch', self._ui.smootingForSurface.text(), self.tr('Smoothing for Surface'))
@@ -65,26 +70,40 @@ class SnapPage(StepPage):
             db.setValue('minAreaRation', self._ui.minAreaRatio.text(), self.tr('Min. Area Ratio'))
 
             app.db.commit(db)
+
+            SnappyHexMeshDict(snap=True).build().write()
+
+            progressDialog.close()
+
+            console = app.consoleView
+            console.clear()
+            proc = await runUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
+                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            processor = Processor(proc)
+            processor.outputLogged.connect(console.append)
+            processor.errorLogged.connect(console.appendError)
+            if returncode := await processor.run():
+                progressDialog.finish(self.tr('Snapping Failed. [') + returncode + ']')
+                self.unlock()
+                return
+
+            progressDialog = ProgressDialogSimple(self._widget, self.tr('Loading Mesh'), False)
+            progressDialog.setLabelText(self.tr('Loading Mesh'))
+            progressDialog.open()
+
+            meshManager = app.window.meshManager
+            meshManager.clear()
+            meshManager.progress.connect(progressDialog.setLabelText)
+            await meshManager.load()
+
+            progressDialog.close()
         except DBError as e:
             QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
-
-        SnappyHexMeshDict(snap=True).build().write()
-
-        progressDialog.setLabelText(self.tr('Snapping'))
-        proc = await runUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot())
-        if await proc.wait():
-            progressDialog.finish(self.tr('Snapping Failed.'))
-            return
-
-        progressDialog.hideCancelButton()
-        meshManager = app.window.meshManager
-        meshManager.clear()
-        meshManager.progress.connect(progressDialog.setLabelText)
-        await meshManager.load()
-
-        progressDialog.close()
-
-        self._checkSnapped()
+        except Exception as ex:
+            QMessageBox.information(self._widget, self.tr("Snapping Failed."), str(ex))
+        finally:
+            self.unlock()
+            self._checkSnapped()
 
     def _reset(self):
         self.clearResult()

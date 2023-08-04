@@ -57,6 +57,10 @@ class App(QObject):
     def db(self):
         return self._project.db() if self._project else None
 
+    @property
+    def consoleView(self):
+        return self._window.consoleView
+
     @window.setter
     def window(self, window):
         self._window = window
