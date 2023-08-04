@@ -112,6 +112,7 @@ class SnappyHexMeshDict(DictionaryFile):
                 if shape == Shape.TRI_SURFACE_MESH.value:
                     data[geometry['name'] + '.stl'] = {
                         'type': 'triSurfaceMesh',
+                        'name': geometry['name']
                     }
                 elif shape == Shape.HEX.value or shape == Shape.HEX6.value:
                     data[geometry['name']] = {
@@ -196,30 +197,28 @@ class SnappyHexMeshDict(DictionaryFile):
     def _constructRefinementSurfaces(self):
         data = {}
         for gId, surface in self._surfaces:
-            if surface['shape'] == Shape.TRI_SURFACE_MESH.value:
-                name = surface['name'] + '.stl'
-            else:
-                name = surface['name']
-
             level = app.db.getValue(f'castellation/refinementSurfaces/{gId}/level')
+            name = surface['name']
             data[name] = {
                 'level': [level, level],
                 'patchInfo': {
-                    'type': 'patch'
+                    'type': 'patch',
                 }
             }
+
+            if surface['cfdType'] == CFDType.CONFORMAL_MESH.value:
+                data[name]['faceZone'] = name
+                data[name]['faceType'] = 'baffle'
+            elif surface['cfdType'] == CFDType.NON_CONFORMAL_MESH.value:
+                data[name]['faceZone'] = name
+                data[name]['faceType'] = 'boundary'
 
         return data
 
     def _constructRefinementRegions(self):
         data = {}
         for gId, volume in self._volumes:
-            if volume['shape'] == Shape.TRI_SURFACE_MESH.value:
-                name = volume['name'] + '.stl'
-            else:
-                name = volume['name']
-
-            data[name] = {
+            data[volume['name']] = {
                 'mode': 'inside',
                 'levels': [[1E15, app.db.getValue(f'castellation/refinementRegions/{gId}/level')]],
                 'patchInfo': {
