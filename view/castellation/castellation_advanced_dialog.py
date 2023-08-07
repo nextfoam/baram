@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from app import app
 from db.simple_schema import DBError
-from .refinement_item import RefinementItem
+from .refinement_item import RefinementItem, Column
 from .castellation_advanced_dialog_ui import Ui_CastellationAdvancedDialog
 
 DEFAULT_FEATURE_LEVEL = '1'
@@ -22,6 +22,7 @@ class CastellationAdvancedDialog(QDialog):
 
         self._db = app.db.checkout('castellation')
 
+        self._connectSignalsSlots()
         self._load()
 
     def isAccepted(self):
@@ -51,6 +52,9 @@ class CastellationAdvancedDialog(QDialog):
         except DBError as e:
             QMessageBox.information(self, self.tr("Input Error"), e.toMessage())
 
+    def _connectSignalsSlots(self):
+        self._ui.refinements.itemClicked.connect(self._refinementItemClicked)
+
     def _load(self):
         self._ui.maxGlobalCells.setText(self._db.getValue('maxGlobalCells'))
         self._ui.maxLocalCells.setText(self._db.getValue('maxLocalCells'))
@@ -65,3 +69,7 @@ class CastellationAdvancedDialog(QDialog):
                 geometry['gId'], geometry['name'],
                 features[geometry['gId']]['level'] if geometry['gId'] in features else DEFAULT_FEATURE_LEVEL)
             item.addAsTopLevel(self._ui.refinements)
+
+    def _refinementItemClicked(self, item, column):
+        if column == Column.LEVEL_COLUMN.value:
+            self._ui.refinements.editItem(item, column)

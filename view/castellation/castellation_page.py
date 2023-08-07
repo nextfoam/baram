@@ -85,7 +85,7 @@ class CastellationPage(StepPage):
 
     def _connectSignalsSlots(self):
         self._ui.tabWidget.currentChanged.connect(self._currentTabChanged)
-        self._ui.advanced.clicked.connect(self._advancedConfigure)
+        self._ui.castellationAdvanced.clicked.connect(self._advancedConfigure)
         self._ui.refine.clicked.connect(self._refine)
         self._ui.castellationReset.clicked.connect(self._reset)
 

@@ -16,6 +16,7 @@ from view.widgets.progress_dialog_simple import ProgressDialogSimple
 from .thickness_form import ThicknessForm
 from .layer_item import LayerItem
 from .boundary_setting_dialog import BoundarySettingDialog
+from .boundary_layer_advanced_dialog import BoundaryLayerAdvancedDialog
 
 
 class BoundaryLayerPage(StepPage):
@@ -63,6 +64,7 @@ class BoundaryLayerPage(StepPage):
 
     def _connectSignalsSlots(self):
         self._ui.layers.itemDoubleClicked.connect(self._openLayerEditDialog)
+        self._ui.boundaryLayerAdvanced.clicked.connect(self._advancedConfigure)
         self._ui.boundaryLayerApply.clicked.connect(self._apply)
         self._ui.boundaryLayerReset.clicked.connect(self._reset)
 
@@ -89,6 +91,15 @@ class BoundaryLayerPage(StepPage):
 
         self._loaded = True
         self._checkAppylied()
+
+    def _openLayerEditDialog(self, item):
+        self._dialog = BoundarySettingDialog(self._widget, str(item.type()), self._thicknessForm)
+        self._dialog.accepted.connect(self._updateLayer)
+        self._dialog.open()
+
+    def _advancedConfigure(self):
+        self._advancedDialog = BoundaryLayerAdvancedDialog(self._widget)
+        self._advancedDialog.open()
 
     @qasync.asyncSlot()
     async def _apply(self):
@@ -130,8 +141,8 @@ class BoundaryLayerPage(StepPage):
             await meshManager.load()
 
             progressDialog.close()
-        # except Exception as ex:
-        #     QMessageBox.information(self._widget, self.tr("Boumdary Layers Applying Failed."), str(ex))
+        except Exception as ex:
+            QMessageBox.information(self._widget, self.tr("Boumdary Layers Applying Failed."), str(ex))
         finally:
             self.unlock()
             self._checkAppylied()
@@ -139,11 +150,6 @@ class BoundaryLayerPage(StepPage):
     def _reset(self):
         self.clearResult()
         self._checkAppylied()
-
-    def _openLayerEditDialog(self, item):
-        self._dialog = BoundarySettingDialog(self._widget, str(item.type()), self._thicknessForm)
-        self._dialog.accepted.connect(self._updateLayer)
-        self._dialog.open()
 
     def _updateLayer(self):
         gID = self._dialog.gID()
