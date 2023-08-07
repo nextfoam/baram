@@ -13,11 +13,11 @@ from view.widgets.icon_check_box import IconCheckBox
 class Column(IntEnum):
     ICON_COLUMN = 0
     NAME_COLUMN = auto()
-    LEVEL_COLUMN = auto()
+    LAYER_COLUMN = auto()
 
 
-class RefinementItem(QTreeWidgetItem):
-    def __init__(self, gId, name, level):
+class LayerItem(QTreeWidgetItem):
+    def __init__(self, gId, name, layers):
         super().__init__(int(gId))
         self._eyeCheckBox = IconCheckBox(':/icons/eye.svg', ':/icons/eye-off.svg')
         self._editable = True
@@ -25,18 +25,14 @@ class RefinementItem(QTreeWidgetItem):
         self._eyeCheckBox.setChecked(True)
         self.setText(Column.ICON_COLUMN, '')
         self.setText(Column.NAME_COLUMN, name)
-        self.setText(Column.LEVEL_COLUMN, level)
+        self.setText(Column.LAYER_COLUMN, layers)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
 
         self._eyeCheckBox.toggled.connect(self._eyeToggled)
 
-    def addAsTopLevel(self, tree):
+    def addTo(self, tree):
         tree.addTopLevelItem(self)
-        self._setupWithTreeWidget()
-
-    def addAsChild(self, parent):
-        parent.addChild(self)
-        self._setupWithTreeWidget()
+        self.treeWidget().setItemWidget(self, Column.ICON_COLUMN.value, self._eyeCheckBox)
 
     def gId(self):
         return str(self.type())
@@ -44,8 +40,8 @@ class RefinementItem(QTreeWidgetItem):
     def name(self):
         return self.text(Column.NAME_COLUMN)
 
-    def level(self):
-        return self.text(Column.LEVEL_COLUMN)
+    def setLayers(self, layers):
+        self.setText(Column.LAYER_COLUMN, layers)
 
     def isEyeOn(self):
         return self._eyeCheckBox and self._eyeCheckBox.isChecked()
@@ -64,9 +60,6 @@ class RefinementItem(QTreeWidgetItem):
 
     def unlock(self):
         self._editable = True
-
-    def _setupWithTreeWidget(self):
-        self.treeWidget().setItemWidget(self, Column.ICON_COLUMN.value, self._eyeCheckBox)
 
     def _eyeToggled(self, state):
         if state:

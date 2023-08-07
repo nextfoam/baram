@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QTreeWidgetItem, QMessageBox
 
 from app import app
 from db.simple_schema import DBError
-from .refinement_item import RefinementItem
+from .refinement_item import RefinementItem, Column
 
 DEFAULT_REFINEMENT_SURFACE_LEVEL = '1'
 DEFAULT_REFINEMENT_REGION_LEVEL = '1'
@@ -22,6 +22,8 @@ class CastellationTab(QObject):
         self._surfaceItem = QTreeWidgetItem(self._ui.refinements, [self.tr('Surface')])
         self._volumeItem = QTreeWidgetItem(self._ui.refinements, [self.tr('Volume')])
 
+        self._locked = False
+
         self._ui.refinements.header().setStretchLastSection(False)
         self._ui.refinements.setColumnWidth(0, 60)
         self._ui.refinements.setColumnWidth(2, 60)
@@ -29,6 +31,8 @@ class CastellationTab(QObject):
         self._surfaceItem.setExpanded(True)
         self._volumeItem.setFirstColumnSpanned(True)
         self._volumeItem.setExpanded(True)
+
+        self._connectSignalsSlots()
 
     def lock(self):
         self._ui.castellationConfiguration.setEnabled(False)
@@ -40,6 +44,7 @@ class CastellationTab(QObject):
             self._volumeItem.child(i).lock()
 
         self._ui.castellationButtons.setEnabled(False)
+        self._locked = True
 
     def unlock(self):
         self._ui.castellationConfiguration.setEnabled(True)
@@ -51,6 +56,7 @@ class CastellationTab(QObject):
             self._volumeItem.child(i).unlock()
 
         self._ui.castellationButtons.setEnabled(True)
+        self._locked = False
 
     def save(self):
         try:
@@ -91,8 +97,8 @@ class CastellationTab(QObject):
 
         self._ui.nCellsBetweenLevels.setText(app.db.getValue('castellation/nCellsBetweenLevels'))
         self._ui.resolveFeatureAngle.setText(app.db.getValue('castellation/resolveFeatureAngle'))
-        self._ui.keepNonManifoldEdges.setChecked(app.db.getBool('castellation/vtkNonManifoldEdges'))
-        self._ui.keepOpenEdges.setChecked(app.db.getBool('castellation/vtkBoundaryEdges'))
+        self._ui.keepNonManifoldEdges.setChecked(app.db.getValue('castellation/vtkNonManifoldEdges'))
+        self._ui.keepOpenEdges.setChecked(app.db.getValue('castellation/vtkBoundaryEdges'))
 
         refinementSurfaces = app.db.getElements('castellation/refinementSurfaces')
         refinementRegions = app.db.getElements('castellation/refinementRegions')
@@ -109,3 +115,10 @@ class CastellationTab(QObject):
             item = RefinementItem(geometry['gId'], geometry['name'],
                                   level(geometry['gId'], refinementRegions, DEFAULT_REFINEMENT_REGION_LEVEL))
             item.addAsChild(self._volumeItem)
+
+    def _connectSignalsSlots(self):
+        self._ui.refinements.itemClicked.connect(self._refinementItemClicked)
+
+    def _refinementItemClicked(self, item, column):
+        if not self._locked and column == Column.LEVEL_COLUMN.value:
+            self._ui.refinements.editItem(item, column)

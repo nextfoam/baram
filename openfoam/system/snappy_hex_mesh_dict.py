@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from app import app
-from db.configurations_schema import GeometryType, Shape, CFDType
+from db.configurations_schema import GeometryType, Shape, CFDType, ThicknessModel
 from db.simple_db import elementToVector
 from openfoam.dictionary_file import DictionaryFile
 
@@ -52,28 +52,7 @@ class SnappyHexMeshDict(DictionaryFile):
                 'concaveAngle': app.db.getValue('snap/concaveAngle'),
                 'minAreaRation': app.db.getValue('snap/concaveAngle')
             },
-            'addLayersControls': {
-                'relativeSizes': app.db.getValue('addLayers/relativeSizes'),
-                'expansionRatio': app.db.getValue('addLayers/expansionRatio'),
-                'finalLayerThickness': app.db.getValue('addLayers/finalLayerThickness'),
-                'firstLayerThickness': app.db.getValue('addLayers/firstLayerThickness'),
-                'thickness': app.db.getValue('addLayers/thickness'),
-                'minThickness': app.db.getValue('addLayers/minThickness'),
-
-                'nGrow': app.db.getValue('addLayers/nGrow'),
-                # 'featureAngle': app.db.getValue('addLayers/maxNonOrtho'),
-                'maxFaceThicknessRatio': app.db.getValue('addLayers/maxFaceThicknessRatio'),
-                'nSmoothSurfaceNormals': app.db.getValue('addLayers/nSmoothSurfaceNormals'),
-                'nSmoothThickness': app.db.getValue('addLayers/nSmoothThickness'),
-                'minMedialAxisAngle': app.db.getValue('addLayers/minMedialAxisAngle'),
-                'maxThicknessToMedialRatio': app.db.getValue('addLayers/maxThicknessToMedialRatio'),
-                'nSmoothNormals': app.db.getValue('addLayers/nSmoothNormals'),
-                'slipFeatureAngle': app.db.getValue('addLayers/slipFeatureAngle'),
-                'nRelaxIter': app.db.getValue('addLayers/nRelaxIter'),
-                'nBufferCellsNoExtrude': app.db.getValue('addLayers/nBufferCellsNoExtrude'),
-                'nLayerIter': app.db.getValue('addLayers/nLayerIter'),
-                'nRelaxedIter': app.db.getValue('addLayers/nRelaxedIter'),
-            },
+            'addLayersControls': self._constructAddLayerControls(),
             'meshQualityControls': {
                 'maxNonOrtho': app.db.getValue('meshQuality/maxNonOrtho'),
                 'maxBoundarySkewness': app.db.getValue('meshQuality/maxBoundarySkewness'),
@@ -234,3 +213,76 @@ class SnappyHexMeshDict(DictionaryFile):
             data.append([elementToVector(region['point']), region['name']])
 
         return data
+
+    def _constructAddLayerControls(self):
+        db = app.db.checkout('addLayers')
+
+        data = {
+            'layers': self._constructLayers(),
+            'nGrow': db.getValue('nGrow'),
+            'featureAngle': app.db.getValue('castellation/resolveFeatureAngle'),
+            'maxFaceThicknessRatio': db.getValue('maxFaceThicknessRatio'),
+            'nSmoothSurfaceNormals': db.getValue('nSmoothSurfaceNormals'),
+            'nSmoothThickness': db.getValue('nSmoothThickness'),
+            'minMedialAxisAngle': db.getValue('minMedialAxisAngle'),
+            'maxThicknessToMedialRatio': db.getValue('maxThicknessToMedialRatio'),
+            'nSmoothNormals': db.getValue('nSmoothNormals'),
+            'slipFeatureAngle': db.getValue('slipFeatureAngle'),
+            'nRelaxIter': db.getValue('nRelaxIter'),
+            'nBufferCellsNoExtrude': db.getValue('nBufferCellsNoExtrude'),
+            'nLayerIter': db.getValue('nLayerIter'),
+            'nRelaxedIter': db.getValue('nRelaxedIter'),
+        }
+
+        self._addLayerThickness(data, db)
+
+        return data
+
+    def _constructLayers(self):
+        data = {}
+
+        for gID, geometry in app.window.geometryManager.geometries().items():
+            if geometry['cfdType'] != CFDType.NONE.value and geometry['gType'] == GeometryType.SURFACE.value:
+                db = app.db.checkout(f'addLayers/layers/{gID}')
+                nSurfaceLayers = int(db.getValue('nSurfaceLayers'))
+                if nSurfaceLayers:
+                    data[geometry['name']] = {
+                        'nSurfaceLayers': nSurfaceLayers
+                    }
+                    if db.getValue('useLocalSetting'):
+                        self._addLayerThickness(data[geometry['name']], db)
+
+        return data
+
+    def _addLayerThickness(self, data, db):
+        model = db.getValue('thicknessModel')
+
+        data['thicknessModel'] = model
+
+        if model != ThicknessModel.FIRST_AND_RELATIVE_FINAL.value:
+            data['relativeSizes'] = 'on' if db.getValue('relativeSizes') else 'off'
+
+        if model in (ThicknessModel.FIRST_AND_EXPANSION.value,
+                     ThicknessModel.FINAL_AND_EXPANSION.value,
+                     ThicknessModel.OVERALL_AND_EXPANSION.value):
+            data['expansionRatio'] = db.getValue('expansionRatio')
+
+        if model in (ThicknessModel.FINAL_AND_OVERALL.value,
+                     ThicknessModel.FINAL_AND_EXPANSION.value,
+                     ThicknessModel.FIRST_AND_RELATIVE_FINAL.value):
+            data['finalLayerThickness'] = db.getValue('finalLayerThickness')
+
+        if model in (ThicknessModel.FIRST_AND_OVERALL.value,
+                     ThicknessModel.FIRST_AND_EXPANSION.value,
+                     ThicknessModel.FIRST_AND_RELATIVE_FINAL.value):
+            data['firstLayerThickness'] = db.getValue('firstLayerThickness')
+
+        if model in (ThicknessModel.FIRST_AND_OVERALL.value,
+                     ThicknessModel.FINAL_AND_OVERALL.value,
+                     ThicknessModel.OVERALL_AND_EXPANSION.value):
+            data['thickness'] = db.getValue('thickness')
+
+        data['minThickness'] = db.getValue('minThickness'),
+
+
+

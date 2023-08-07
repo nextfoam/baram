@@ -4,13 +4,14 @@
 
 from enum import Enum, auto, IntEnum
 
-from .simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, TextKeyList, PositiveIntType
+from .simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, PositiveIntType
 from .simple_schema import ElementSchema
 from .simple_schema import VectorComposite
 
 
 class Step(IntEnum):
     NONE = -1
+
     GEOMETRY = 0
     BASE_GRID = auto()
     # REGION = auto()
@@ -18,6 +19,8 @@ class Step(IntEnum):
     SNAP = auto()
     BOUNDARY_LAYER = auto()
     REFINEMENT = auto()
+
+    LAST_STEP = REFINEMENT
 
 
 class GeometryType(Enum):
@@ -93,7 +96,7 @@ layer = {
     'firstLayerThickness': FloatType().setDefault(0.001),
     'finalLayerThickness': FloatType().setDefault(1.0),
     'thickness': FloatType().setDefault(2.0),
-    'expansionRation': FloatType().setDefault(1.2),
+    'expansionRatio': FloatType().setDefault(1.2),
     'minThickness': FloatType().setDefault(1.2)
 }
 
@@ -101,9 +104,6 @@ layer = {
 class GeometrySchema(ElementSchema):
     def __init__(self):
         super().__init__(geometry)
-
-    def validateElement(self, db, fullCheck=False):
-        return db.data()
 
 
 class RefinementSchema(ElementSchema):
@@ -122,7 +122,7 @@ class RegionSchema(ElementSchema):
 
 
 schema = {
-    'step': EnumType(Step),
+    'step': EnumType(Step).setDefault(Step.GEOMETRY),
     'geometry': IntKeyList(GeometrySchema()),
     'region': IntKeyList(RegionSchema()),
     'baseGrid': {
@@ -163,7 +163,7 @@ schema = {
         'thickness': FloatType().setDefault('2.0'),
         'expansionRatio': FloatType().setDefault(1.2),
         'minThickness': FloatType().setDefault(1.2),
-        'layers': TextKeyList(LayerSchema()),
+        'layers': IntKeyList(LayerSchema()),
         'nGrow': IntType().setDefault(0),
         'maxFaceThicknessRatio': FloatType().setDefault(0.5),
         'nSmoothSurfaceNormals': IntType().setDefault(1),

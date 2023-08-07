@@ -149,6 +149,7 @@ class MainWindow(QMainWindow):
         self._dialog.open()
 
     def _actionSave(self):
+        self._stepManager.saveCurrentPage()
         app.project.save()
 
     def _actionSaveAs(self):

@@ -17,7 +17,6 @@ class BaseGridPage(StepPage):
     def __init__(self, ui):
         super().__init__(ui, ui.baseGridPage)
 
-        self._dbElement = None
         self._bounds = None
         self._loaded = False
 
@@ -45,6 +44,22 @@ class BaseGridPage(StepPage):
         if path.exists():
             rmtree(path)
 
+    def save(self):
+        try:
+            db = app.db.checkout('baseGrid')
+
+            db.setValue('numCellsX', self._ui.numCellsX.text(), self.tr('Number of Cells'))
+            db.setValue('numCellsY', self._ui.numCellsY.text(), self.tr('Number of Cells'))
+            db.setValue('numCellsZ', self._ui.numCellsZ.text(), self.tr('Number of Cells'))
+
+            app.db.commit(db)
+
+            return True
+        except DBError as e:
+            QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
+
+            return False
+
     def _connectSignalsSlots(self):
         self._ui.generate.clicked.connect(self._generate)
 
@@ -58,26 +73,15 @@ class BaseGridPage(StepPage):
         self._ui.zMin.setText('{:.6g}'.format(self._bounds.zMin))
         self._ui.zMax.setText('{:.6g}'.format(self._bounds.zMax))
 
-        self._dbElement = app.db.checkout('baseGrid')
-        self._ui.numCellsX.setText(self._dbElement.getValue('numCellsX'))
-        self._ui.numCellsY.setText(self._dbElement.getValue('numCellsY'))
-        self._ui.numCellsZ.setText(self._dbElement.getValue('numCellsZ'))
+        self._ui.numCellsX.setText(app.db.getValue('baseGrid/numCellsX'))
+        self._ui.numCellsY.setText(app.db.getValue('baseGrid/numCellsY'))
+        self._ui.numCellsZ.setText(app.db.getValue('baseGrid/numCellsZ'))
 
         self._loaded = True
 
     @qasync.asyncSlot()
     async def _generate(self):
-        try:
-            db = app.db.checkout('baseGrid')
-
-            db.setValue('numCellsX', self._ui.numCellsX.text(), self.tr('Number of Cells'))
-            db.setValue('numCellsY', self._ui.numCellsY.text(), self.tr('Number of Cells'))
-            db.setValue('numCellsZ', self._ui.numCellsZ.text(), self.tr('Number of Cells'))
-
-            app.db.commit(db)
-        except DBError as e:
-            QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
-            return
+        self.save()
 
         progressDialog = ProgressDialogSimple(self._widget, self.tr('Base Grid Generating'))
         progressDialog.setLabelText(self.tr('Generating Block Mesh'))

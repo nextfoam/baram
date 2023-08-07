@@ -226,7 +226,7 @@ class BoolType(PrimitiveType):
         self.setDefault(default)
 
     def validate(self, value, name=None):
-        return 'true' if value else 'false'
+        return True if value else False
 
 
 class SchemaList:

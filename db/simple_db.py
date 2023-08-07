@@ -5,7 +5,7 @@ import copy
 
 import yaml
 
-from .simple_schema import SimpleSchema, SchemaList, PrimitiveType, EnumType, BoolType
+from .simple_schema import SimpleSchema, SchemaList, PrimitiveType, EnumType
 
 
 def elementToVector(element):
@@ -124,13 +124,6 @@ class SimpleDB(SimpleSchema):
 
         return schema[field].enumValue(db[field])
 
-    def getBool(self, path):
-        schema, db, field = self._get(path)
-        if not isinstance(schema[field], BoolType):
-            raise LookupError
-
-        return db[field] == 'true'
-
     def setValue(self, path, value, name=None):
         if not self._editable:
             raise LookupError
@@ -180,6 +173,28 @@ class SimpleDB(SimpleSchema):
         self._modified = True
 
         return key
+
+    def addNewElement(self, path, key=None):
+        if not self._editable:
+            raise LookupError
+
+        schema, db, field = self._get(path)
+
+        schema = schema[field]
+        if not isinstance(schema, SchemaList):
+            raise TypeError
+
+        key = schema.key(key, db[field])
+        if key in db[field]:
+            raise KeyError
+
+        element = self._newDB(schema.elementSchema().schema())
+        element.createData()
+        db[field][key] = element._db
+
+        self._modified = True
+
+        return key, element
 
     def getElement(self, path, key, columns=None):
         schema, db, field = self._get(path)
@@ -237,7 +252,7 @@ class SimpleDB(SimpleSchema):
 
         self._modified = True
 
-    def removeElements(self, path, indices):
+    def removeElements(self, path, keys):
         if not self._editable:
             raise LookupError
 
@@ -247,10 +262,10 @@ class SimpleDB(SimpleSchema):
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        if any(key not in db[field] for key in indices):
+        if any(key not in db[field] for key in keys):
             raise KeyError
 
-        for key in indices:
+        for key in keys:
             del db[field][key]
 
         self._modified = True

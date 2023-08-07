@@ -29,32 +29,8 @@ class SnapPage(StepPage):
         if not self._loaded:
             self._load()
 
-    def _connectSignalsSlots(self):
-        self._ui.snap.clicked.connect(self._snap)
-        self._ui.snapReset.clicked.connect(self._reset)
-
-    def _load(self):
-        self._ui.smootingForSurface.setText(app.db.getValue('snap/nSmoothPatch'))
-        self._ui.smootingForInternal.setText(app.db.getValue('snap/nSmoothInternal'))
-        self._ui.meshDisplacementRelaxation.setText(app.db.getValue('snap/nSolveIter'))
-        self._ui.globalSnappingRelaxation.setText(app.db.getValue('snap/nRelaxIter'))
-        self._ui.featureSnappingRelaxation.setText(app.db.getValue('snap/nFeatureSnapIter'))
-        self._ui.multiSurfaceFeatureSnap.setChecked(app.db.getBool('snap/multiRegionFeatureSnap'))
-        self._ui.tolerance.setText(app.db.getValue('snap/tolerance'))
-        self._ui.concaveAngle.setText(app.db.getValue('snap/concaveAngle'))
-        self._ui.minAreaRatio.setText(app.db.getValue('snap/minAreaRation'))
-
-        self._checkSnapped()
-
-    @qasync.asyncSlot()
-    async def _snap(self):
+    def save(self):
         try:
-            self.lock()
-
-            progressDialog = ProgressDialogSimple(self._widget, self.tr('Snapping'))
-            progressDialog.setLabelText(self.tr('Updating Configurations'))
-            progressDialog.open()
-
             db = app.db.checkout('snap')
 
             db.setValue('nSmoothPatch', self._ui.smootingForSurface.text(), self.tr('Smoothing for Surface'))
@@ -70,6 +46,44 @@ class SnapPage(StepPage):
             db.setValue('minAreaRation', self._ui.minAreaRatio.text(), self.tr('Min. Area Ratio'))
 
             app.db.commit(db)
+
+            return True
+        except DBError as e:
+            QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
+
+            return False
+
+    def _connectSignalsSlots(self):
+        self._ui.snap.clicked.connect(self._snap)
+        self._ui.snapReset.clicked.connect(self._reset)
+
+    def _load(self):
+        dbElement = app.db.checkout('snap')
+        self._ui.smootingForSurface.setText(dbElement.getValue('nSmoothPatch'))
+        self._ui.smootingForInternal.setText(dbElement.getValue('nSmoothInternal'))
+        self._ui.meshDisplacementRelaxation.setText(dbElement.getValue('nSolveIter'))
+        self._ui.globalSnappingRelaxation.setText(dbElement.getValue('nRelaxIter'))
+        self._ui.featureSnappingRelaxation.setText(dbElement.getValue('nFeatureSnapIter'))
+        self._ui.multiSurfaceFeatureSnap.setChecked(dbElement.getValue('multiRegionFeatureSnap'))
+        self._ui.tolerance.setText(dbElement.getValue('tolerance'))
+        self._ui.concaveAngle.setText(dbElement.getValue('concaveAngle'))
+        self._ui.minAreaRatio.setText(dbElement.getValue('minAreaRation'))
+
+        self._checkSnapped()
+
+    @qasync.asyncSlot()
+    async def _snap(self):
+        try:
+            self.lock()
+
+            progressDialog = ProgressDialogSimple(self._widget, self.tr('Snapping'))
+            progressDialog.setLabelText(self.tr('Updating Configurations'))
+            progressDialog.open()
+
+            if not self.save():
+                self.unlock()
+                progressDialog.close()
+                return
 
             SnappyHexMeshDict(snap=True).build().write()
 
@@ -97,8 +111,6 @@ class SnapPage(StepPage):
             await meshManager.load()
 
             progressDialog.close()
-        except DBError as e:
-            QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
         except Exception as ex:
             QMessageBox.information(self._widget, self.tr("Snapping Failed."), str(ex))
         finally:

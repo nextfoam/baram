@@ -22,7 +22,7 @@ class GeometryPage(StepPage):
 
         self._geometries = None
         self._list = None
-        self._initialized = False
+        self._loaded = False
 
         self._dialog = None
         self._geometryDialog = None
@@ -37,13 +37,13 @@ class GeometryPage(StepPage):
         self._ui.buttons.setEnabled(True)
 
     def selected(self):
-        if not self._initialized:
+        if not self._loaded:
             self._geometries = app.window.geometryManager
             self._list = GeometryList(self._ui.geometryList, self._geometries)
 
             self._connectSignalsSlots()
 
-            self._initialized = True
+            self._loaded = True
 
         app.window.geometryManager.showActors()
         app.window.meshManager.hideActors()

@@ -33,6 +33,9 @@ class StepPage(QObject):
     def deselected(self):
         return
 
+    def save(self):
+        return
+
     def clearResult(self):
         path = app.fileSystem.timePath(self.OUTPUT_TIME)
         if path.exists():

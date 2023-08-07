@@ -69,6 +69,20 @@ class CastellationPage(StepPage):
     def deselected(self):
         self._regionTab.deactivated()
 
+    def save(self):
+        if self._advancedDialog is None or not self._advancedDialog.isAccepted():
+            db = app.db.checkout('castellation')
+            db.removeAllElements('features')
+
+            for geometry in self._refinementFeatures:
+                e = db.newElement('features')
+                e.setValue('level', DEFAULT_FEATURE_LEVEL)
+                db.addElement('features', e, geometry['gId'])
+
+            app.db.commit(db)
+
+        return self._castellationTab.save()
+
     def _connectSignalsSlots(self):
         self._ui.tabWidget.currentChanged.connect(self._currentTabChanged)
         self._ui.advanced.clicked.connect(self._advancedConfigure)
@@ -126,10 +140,8 @@ class CastellationPage(StepPage):
 
             if not self._castellationTab.save():
                 self.unlock()
+                progressDialog.close()
                 return
-
-            if self._advancedDialog is None or not self._advancedDialog.isAccepted():
-                self._updateFeatureLevels()
 
             progressDialog.setLabelText(self.tr('Writing Geometry Files'))
             self._writeGeometryFiles(progressDialog)
@@ -169,16 +181,6 @@ class CastellationPage(StepPage):
         self.clearResult()
         self._checkRefined()
 
-    def _updateFeatureLevels(self):
-        db = app.db.checkout('castellation')
-        for geometry in self._refinementFeatures:
-            if not db.keyExists('features', geometry['gId']):
-                e = db.newElement('features')
-                e.setValue('level', DEFAULT_FEATURE_LEVEL)
-                db.addElement('features', e, geometry['gId'])
-
-        app.db.commit(db)
-
     def _writeGeometryFiles(self, progressDialog):
         def writeGeometryFile(name, pd):
             writer = vtkSTLWriter()
@@ -189,8 +191,8 @@ class CastellationPage(StepPage):
         def writeFeatureFile(name, pd):
             edges = vtkFeatureEdges()
             edges.SetInputData(pd)
-            edges.SetNonManifoldEdges(app.db.getBool('castellation/vtkNonManifoldEdges'))
-            edges.SetBoundaryEdges(app.db.getBool('castellation/vtkBoundaryEdges'))
+            edges.SetNonManifoldEdges(app.db.getValue('castellation/vtkNonManifoldEdges'))
+            edges.SetBoundaryEdges(app.db.getValue('castellation/vtkBoundaryEdges'))
             edges.Update()
 
             writer = vtkOBJWriter()

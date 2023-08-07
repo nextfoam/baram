@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from .main_window_ui import Ui_MainWindow
 
 from app import app
 from db.configurations_schema import Step
+from libbaram.utils import rmtree
 from view.step_page import StepPage
 from view.geometry.geometry_page import GeometryPage
 from view.base_grid.base_grid_page import BaseGridPage
 from view.castellation.castellation_page import CastellationPage
 from view.snap.snap_page import SnapPage
+from view.boundaryLayer.boundary_layer_page import BoundaryLayerPage
+# from view.refinement.refinement_page import RefinementPage
 
 
 class StepControlButtons:
@@ -37,7 +39,7 @@ class StepControlButtons:
 
 
 class StepManager:
-    def __init__(self, navigation, ui:Ui_MainWindow):
+    def __init__(self, navigation, ui):
         self._navigation = navigation
         self._openedStep = None
         self._contentStack = ui.content
@@ -50,8 +52,8 @@ class StepManager:
             Step.BASE_GRID: BaseGridPage(ui),
             Step.CASTELLATION: CastellationPage(ui),
             Step.SNAP: SnapPage(ui),
-            Step.BOUNDARY_LAYER: None,
-            Step.REFINEMENT: None,
+            Step.BOUNDARY_LAYER: BoundaryLayerPage(ui),
+            # Step.REFINEMENT: RefinementPage(ui),
         }
 
         self._connectSignalsSlots()
@@ -68,32 +70,42 @@ class StepManager:
 
         self._open(step)
 
+        for t in app.fileSystem.times():
+            if float(t) > 5: #self._pages[Step.LAST_STEP].OUTPUT_TIME:
+                path = app.fileSystem.timePath(t)
+                if path.exists():
+                    rmtree(path)
+
+                for path in app.fileSystem.caseRoot().glob(f'processor*/{t}'):
+                    rmtree(path)
+
+    def saveCurrentPage(self):
+        self._pages[self._navigation.currentStep()].save()
+
     def isOpenedStep(self, step):
         return step == self._openedStep
 
     def openNextStep(self):
-        step = self._navigation.currentStep() + 1
-        self._open(step)
-        self._navigation.setCurrentStep(self._openedStep)
+        self._open(self._navigation.currentStep() + 1)
 
     def _connectSignalsSlots(self):
         self._navigation.currentStepChanged.connect(self._moveToStep)
         self._buttons.nextButton.clicked.connect(self.openNextStep)
         self._buttons.unlockButton.clicked.connect(self._unlockCurrentStep)
 
-    def _open(self, step):
-        self._pages[step].clearResult()
+    def _setOpendedStep(self, step):
         self._pages[step].unlock()
-        self._pages[step].open()
-
         self._navigation.enableStep(step)
         self._openedStep = step
-
-        self._navigation.setCurrentStep(self._openedStep)
 
         db = app.db.checkout()
         db.setValue('step', step)
         app.db.commit(db)
+
+    def _open(self, step):
+        self._pages[step].open()
+        self._setOpendedStep(step)
+        self._navigation.setCurrentStep(self._openedStep)
 
     def _moveToStep(self, step, prev):
         self._pages[prev].deselected()
@@ -111,16 +123,13 @@ class StepManager:
 
     def _unlockCurrentStep(self):
         currentStep = self._navigation.currentStep()
-        self._resetSteps(currentStep)
+
+        for step in range(currentStep + 1, self._openedStep + 1):
+            self._navigation.disableStep(step)
+            self._pages[step].clearResult()
 
         app.window.meshManager.clear()
-
-        self._pages[currentStep].unlock()
+        self._setOpendedStep(currentStep)
 
         self._buttons.nextButton.setEnabled(True)
         self._buttons.setToOpenedMode()
-
-    def _resetSteps(self, baseStep):
-        for step in range(baseStep + 1, self._openedStep + 1):
-            self._navigation.disableStep(step)
-            self._pages[step].clearResult()

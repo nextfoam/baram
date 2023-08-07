@@ -90,6 +90,7 @@ class FileSystem:
 
         self._constantPath = makeDir(self._casePath, self.CONSTANT_DIRECTORY_NAME)
         self._triSurfacePath = makeDir(self._constantPath, self.TRI_SURFACE_DIRECTORY_NAME)
+        makeDir(self._casePath, '0')
 
     async def copyTriSurfaceFrom(self, srcPath, fileName):
         targetFile = self._triSurfacePath / fileName

@@ -56,7 +56,7 @@ class CastellationAdvancedDialog(QDialog):
         self._ui.maxLocalCells.setText(self._db.getValue('maxLocalCells'))
         self._ui.minRefinementCells.setText(self._db.getValue('minRefinementCells'))
         self._ui.maxLoadUnbalance.setText(self._db.getValue('maxLoadUnbalance'))
-        self._ui.allowFreeStandingZoneFaces.setChecked(self._db.getBool('allowFreeStandingZoneFaces'))
+        self._ui.allowFreeStandingZoneFaces.setChecked(self._db.getValue('allowFreeStandingZoneFaces'))
 
         features = self._db.getElements('features')
 
