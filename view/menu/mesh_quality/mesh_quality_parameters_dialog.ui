@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>418</width>
-    <height>546</height>
+    <height>564</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,7 +44,7 @@
       <item row="3" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Min. Internal Face Skewness</string>
+         <string>Max. Internal Face Skewness</string>
         </property>
        </widget>
       </item>
@@ -147,13 +147,13 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="maNonOrthoRelaxed"/>
+       <widget class="QLineEdit" name="maxNonOrthoRelaxed"/>
       </item>
       <item row="2" column="1">
        <widget class="QLineEdit" name="maxBoundarySkewness"/>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="minInternalSkewness"/>
+       <widget class="QLineEdit" name="maxInternalSkewness"/>
       </item>
       <item row="4" column="1">
        <widget class="QLineEdit" name="maxConcave"/>
