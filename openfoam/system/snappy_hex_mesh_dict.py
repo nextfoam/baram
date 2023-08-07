@@ -175,22 +175,33 @@ class SnappyHexMeshDict(DictionaryFile):
 
     def _constructRefinementSurfaces(self):
         data = {}
-        for gId, surface in self._surfaces:
-            level = app.db.getValue(f'castellation/refinementSurfaces/{gId}/level')
-            name = surface['name']
-            data[name] = {
-                'level': [level, level],
-                'patchInfo': {
-                    'type': 'patch',
-                }
-            }
+        for gId, geometry in app.window.geometryManager.geometries().items():
+            if geometry['cfdType'] != CFDType.NONE.value:
+                name = geometry['name']
+                if geometry['gType'] == GeometryType.SURFACE.value:
+                    level = app.db.getValue(f'castellation/refinementSurfaces/{gId}/level')
+                    data[name] = {
+                        'level': [level, level],
+                        'patchInfo': {
+                            'type': 'patch',
+                        }
+                    }
 
-            if surface['cfdType'] == CFDType.CONFORMAL_MESH.value:
-                data[name]['faceZone'] = name
-                data[name]['faceType'] = 'baffle'
-            elif surface['cfdType'] == CFDType.NON_CONFORMAL_MESH.value:
-                data[name]['faceZone'] = name
-                data[name]['faceType'] = 'boundary'
+                    if geometry['cfdType'] == CFDType.CONFORMAL_MESH.value:
+                        data[name]['faceZone'] = name
+                        data[name]['faceType'] = 'baffle'
+                    elif geometry['cfdType'] == CFDType.NON_CONFORMAL_MESH.value:
+                        data[name]['faceZone'] = name
+                        data[name]['faceType'] = 'boundary'
+                else:
+                    level = app.db.getValue(f'castellation/refinementRegions/{gId}/level')
+                    data[name] = {
+                        'level': [level, level],
+                        'faceZone': name,
+                        'faceType': 'internal',
+                        'cellZone': name,
+                        'cellZoneInside': 'inside'
+                    }
 
         return data
 
@@ -199,10 +210,7 @@ class SnappyHexMeshDict(DictionaryFile):
         for gId, volume in self._volumes:
             data[volume['name']] = {
                 'mode': 'inside',
-                'levels': [[1E15, app.db.getValue(f'castellation/refinementRegions/{gId}/level')]],
-                'patchInfo': {
-                    'type': 'patch'
-                }
+                'levels': [[1E15, app.db.getValue(f'castellation/refinementRegions/{gId}/level')]]
             }
 
         return data
