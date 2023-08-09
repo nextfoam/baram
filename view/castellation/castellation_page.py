@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import asyncio
 from enum import Enum, auto
 
@@ -171,8 +172,8 @@ class CastellationPage(StepPage):
             await meshManager.load()
 
             progressDialog.close()
-        except Exception as ex:
-            QMessageBox.information(self._widget, self.tr("Castellation Refinement Failed."), str(ex))
+        # except Exception as ex:
+        #     QMessageBox.information(self._widget, self.tr("Castellation Refinement Failed."), str(ex))
         finally:
             self.unlock()
             self._checkRefined()

@@ -10,7 +10,7 @@ from view.base_grid.base_grid_page import BaseGridPage
 from view.castellation.castellation_page import CastellationPage
 from view.snap.snap_page import SnapPage
 from view.boundaryLayer.boundary_layer_page import BoundaryLayerPage
-# from view.refinement.refinement_page import RefinementPage
+from view.refinement.refinement_page import RefinementPage
 
 
 class StepControlButtons:
@@ -53,25 +53,27 @@ class StepManager:
             Step.CASTELLATION: CastellationPage(ui),
             Step.SNAP: SnapPage(ui),
             Step.BOUNDARY_LAYER: BoundaryLayerPage(ui),
-            # Step.REFINEMENT: RefinementPage(ui),
+            Step.REFINEMENT: RefinementPage(ui),
         }
 
         self._connectSignalsSlots()
 
     def load(self):
-        step = app.db.getEnumValue('step')
+        savedStep = app.db.getEnumValue('step')
 
-        for s in range(step):
-            if self._pages[s].isNextStepAvailable():
-                self._navigation.enableStep(s)
-            else:
-                step = s
-                break
+        step = 0
+        while step < savedStep and self._pages[step].isNextStepAvailable():
+            self._navigation.enableStep(step)
+            step += 1
+
+        for s in range(step + 1, self._pages[Step.LAST_STEP].OUTPUT_TIME + 1):
+            self._navigation.disableStep(s)
+            self._pages[s].clearResult()
 
         self._open(step)
 
         for t in app.fileSystem.times():
-            if float(t) > 5: #self._pages[Step.LAST_STEP].OUTPUT_TIME:
+            if float(t) > self._pages[Step.LAST_STEP].OUTPUT_TIME:
                 path = app.fileSystem.timePath(t)
                 if path.exists():
                     rmtree(path)
@@ -86,6 +88,7 @@ class StepManager:
         return step == self._openedStep
 
     def openNextStep(self):
+        self._pages[self._navigation.currentStep()].prepareNextStep()
         self._open(self._navigation.currentStep() + 1)
 
     def _connectSignalsSlots(self):

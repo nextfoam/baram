@@ -6,10 +6,8 @@ from openfoam.dictionary_file import DictionaryFile
 
 
 class BlockMeshDict(DictionaryFile):
-    def __init__(self, rname: str = ''):
-        super().__init__(self.systemLocation(rname), 'blockMeshDict')
-
-        self._rname = rname
+    def __init__(self):
+        super().__init__(self.systemLocation(), 'blockMeshDict')
 
     def build(self):
         if self._data is not None:

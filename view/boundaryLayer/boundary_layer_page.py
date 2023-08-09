@@ -9,6 +9,7 @@ from app import app
 from db.configurations_schema import GeometryType, CFDType
 from db.simple_schema import DBError
 from openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
+from openfoam.system.topo_set_dict import TopoSetDict
 from libbaram.run import runUtility
 from libbaram.process import Processor
 from view.step_page import StepPage
@@ -61,6 +62,16 @@ class BoundaryLayerPage(StepPage):
             QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
 
             return False
+
+    @qasync.asyncSlot()
+    async def prepareNextStep(self):
+        dialog = ProgressDialogSimple(self._widget, self.tr('Copy Files for Next Step'))
+        dialog.setLabelText(self.tr('Copying Files.'))
+        dialog.open()
+
+        await app.fileSystem.copyToNextTime(self.OUTPUT_TIME)
+
+        dialog.close()
 
     def _connectSignalsSlots(self):
         self._ui.layers.itemDoubleClicked.connect(self._openLayerEditDialog)
@@ -116,6 +127,7 @@ class BoundaryLayerPage(StepPage):
                 return
 
             SnappyHexMeshDict(addLayers=True).build().write()
+            TopoSetDict().build().write()
 
             progressDialog.close()
 
@@ -127,7 +139,19 @@ class BoundaryLayerPage(StepPage):
             processor.outputLogged.connect(console.append)
             processor.errorLogged.connect(console.appendError)
             if returncode := await processor.run():
-                progressDialog.finish(self.tr('Boumdary Layers Applying Failed. [') + str(returncode) + ']')
+                QMessageBox.information(self._widget, self.tr("Error"),
+                                        self.tr('Boumdary Layers Applying Failed. [') + str(returncode) + ']')
+                self.unlock()
+                return
+
+            proc = await runUtility('toposet', cwd=app.fileSystem.caseRoot(),
+                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            processor = Processor(proc)
+            processor.outputLogged.connect(console.append)
+            processor.errorLogged.connect(console.appendError)
+            if returncode := await processor.run():
+                QMessageBox.information(self._widget, self.tr("Error"),
+                                        self.tr('Cell Zones Creation Failed. [') + str(returncode) + ']')
                 self.unlock()
                 return
 
@@ -141,11 +165,13 @@ class BoundaryLayerPage(StepPage):
             await meshManager.load()
 
             progressDialog.close()
+
+            self._checkAppylied()
         except Exception as ex:
-            QMessageBox.information(self._widget, self.tr("Boumdary Layers Applying Failed."), str(ex))
+            QMessageBox.information(self._widget, self.tr('Error'),
+                                    self.tr('Boundary Layers Applying Failed. -' + str(ex)))
         finally:
             self.unlock()
-            self._checkAppylied()
 
     def _reset(self):
         self.clearResult()

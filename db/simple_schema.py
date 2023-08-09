@@ -223,7 +223,7 @@ class KeyType(PrimitiveType):
 class BoolType(PrimitiveType):
     def __init__(self, default: bool):
         super().__init__()
-        self.setDefault(default)
+        self._default = default
 
     def validate(self, value, name=None):
         return True if value else False
