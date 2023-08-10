@@ -71,6 +71,8 @@ class CastellationPage(StepPage):
         self._regionTab.deactivated()
 
     def save(self):
+        self._castellationTab.save()
+
         if self._advancedDialog is None or not self._advancedDialog.isAccepted():
             db = app.db.checkout('castellation')
             db.removeAllElements('features')
@@ -135,7 +137,7 @@ class CastellationPage(StepPage):
         try:
             self.lock()
 
-            if not self._castellationTab.save():
+            if not self.save():
                 return
 
             progressDialog = ProgressDialogSimple(self._widget, self.tr('Castellation Refinement'))
