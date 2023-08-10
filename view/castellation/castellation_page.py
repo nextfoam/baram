@@ -71,8 +71,6 @@ class CastellationPage(StepPage):
         self._regionTab.deactivated()
 
     def save(self):
-        self._castellationTab.save()
-
         if self._advancedDialog is None or not self._advancedDialog.isAccepted():
             db = app.db.checkout('castellation')
             db.removeAllElements('features')
