@@ -99,8 +99,7 @@ class FileSystem:
         return targetFile
 
     async def copyToNextTime(self, time_: int):
-        print(self.timePath(time_), self.timePath(time_ + 1))
-        await asyncio.to_thread(shutil.copyfile, self.timePath(time_), self.timePath(time_ + 1))
+        await asyncio.to_thread(shutil.copytree, self.timePath(time_), self.timePath(time_ + 1))
 
     def _setCaseRoot(self, path):
         self._casePath = path
