@@ -125,55 +125,54 @@ class GeometryPage(StepPage):
     @qasync.asyncSlot()
     async def _importSTL(self):
         try:
-            path = self._dialog.filePath()
+            for path in self._dialog.files():
+                loader = STLFileLoader()
+                volumes, surfaces = await loader.load(path, self._dialog.featureAngle())
 
-            loader = STLFileLoader()
-            volumes, surfaces = await loader.load(path, self._dialog.featureAngle())
+                added = []
 
-            added = []
+                db = app.db.checkout()
+                name = path.stem
+                seq = ''
+                for volume in volumes:
+                    seq = db.getUniqueSeq('geometry', 'name', name, seq)
+                    volumeName = f'{name}{seq}'
+                    element = db.newElement('geometry')
+                    element.setValue('gType', GeometryType.VOLUME)
+                    element.setValue('name', volumeName)
+                    element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
+                    element.setValue('cfdType', CFDType.NONE.value)
+                    volumeId = db.addElement('geometry', element)
+                    added.append(volumeId)
 
-            db = app.db.checkout()
-            name = path.stem
-            seq = ''
-            for volume in volumes:
-                seq = db.getUniqueSeq('geometry', 'name', name, seq)
-                volumeName = f'{name}{seq}'
-                element = db.newElement('geometry')
-                element.setValue('gType', GeometryType.VOLUME)
-                element.setValue('name', volumeName)
-                element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
-                element.setValue('cfdType', CFDType.NONE.value)
-                volumeId = db.addElement('geometry', element)
-                added.append(volumeId)
+                    surfaceName = f'{volumeName}_surface_'
+                    sseq = '0'
+                    for polyData in volume:
+                        sseq = db.getUniqueSeq('geometry', 'name', surfaceName, sseq)
+                        element = db.newElement('geometry')
+                        element.setValue('gType', GeometryType.SURFACE.value)
+                        element.setValue('volume', volumeId)
+                        element.setValue('name', f'{surfaceName}{sseq}')
+                        element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
+                        element.setValue('cfdType', CFDType.NONE.value)
+                        element.setValue('path', db.addGeometryPolyData(polyData))
+                        db.addElement('geometry', element)
 
-                surfaceName = f'{volumeName}_surface_'
-                sseq = '0'
-                for polyData in volume:
-                    sseq = db.getUniqueSeq('geometry', 'name', surfaceName, sseq)
+                for polyData in surfaces:
+                    seq = db.getUniqueSeq('geometry', 'name', name, seq)
                     element = db.newElement('geometry')
                     element.setValue('gType', GeometryType.SURFACE.value)
-                    element.setValue('volume', volumeId)
-                    element.setValue('name', f'{surfaceName}{sseq}')
+                    element.setValue('name', f'{name}{seq}')
                     element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
                     element.setValue('cfdType', CFDType.NONE.value)
                     element.setValue('path', db.addGeometryPolyData(polyData))
-                    db.addElement('geometry', element)
+                    gId = db.addElement('geometry', element)
+                    added.append(gId)
 
-            for polyData in surfaces:
-                seq = db.getUniqueSeq('geometry', 'name', name, seq)
-                element = db.newElement('geometry')
-                element.setValue('gType', GeometryType.SURFACE.value)
-                element.setValue('name', f'{name}{seq}')
-                element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
-                element.setValue('cfdType', CFDType.NONE.value)
-                element.setValue('path', db.addGeometryPolyData(polyData))
-                gId = db.addElement('geometry', element)
-                added.append(gId)
+                app.db.commit(db)
 
-            app.db.commit(db)
-
-            for gId in added:
-                self._geometryCreated(gId)
+                for gId in added:
+                    self._geometryCreated(gId)
         except OpenFOAMError as ex:
             code, message = ex.args
             QMessageBox.information(self._widget, self.tr('STL Loading Error'), f'{message} [{code}]')

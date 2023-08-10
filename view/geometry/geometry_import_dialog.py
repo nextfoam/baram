@@ -3,7 +3,7 @@
 
 from pathlib import Path
 
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QListWidgetItem
 
 from .geometry_import_dialog_ui import Ui_ImportDialog
 
@@ -20,8 +20,8 @@ class ImportDialog(QDialog):
 
         self._connectSignalsSlots()
 
-    def filePath(self):
-        return Path(self._ui.file.text())
+    def files(self):
+        return [Path(self._ui.files.item(i).text()) for i in range(self._ui.files.count())]
 
     def featureAngle(self):
         return self._ui.featureAngle.text() if self._ui.splitSurface.isChecked() else None
@@ -30,12 +30,15 @@ class ImportDialog(QDialog):
         self._ui.select.clicked.connect(self._openFileDialog)
 
     def _openFileDialog(self):
-        self._addDialog = QFileDialog(self, self.tr('Select STL File'), '', 'STL (*.stl)')
-        self._addDialog.setFileMode(QFileDialog.FileMode.ExistingFile)
-        self._addDialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
-        self._addDialog.fileSelected.connect(self._fileSelected)
-        self._addDialog.open()
+        self._dialog = QFileDialog(self, self.tr('Select STL File'), '', 'STL (*.stl)')
+        self._dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
+        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
+        self._dialog.filesSelected.connect(self._filesSelected)
+        self._dialog.open()
 
-    def _fileSelected(self, file):
-        self._ui.file.setText(file)
+    def _filesSelected(self, files):
+        self._ui.files.clear()
+        for f in files:
+            self._ui.files.addItem(QListWidgetItem(f))
+
         self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(True)
