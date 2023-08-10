@@ -71,8 +71,26 @@ class RefinementPage(StepPage):
         await app.fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME)
         dialog.close()
 
-    def _checkQuality(self):
-        return
+    @qasync.asyncSlot()
+    async def _checkQuality(self):
+        try:
+            self.lock()
+
+            console = app.consoleView
+            console.clear()
+
+            proc = await runUtility('checkMesh', '-writeAllFields', '-writeAllSurfaceFields',
+                                    cwd=app.fileSystem.caseRoot(),
+                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            processor = Processor(proc)
+            processor.outputLogged.connect(console.append)
+            processor.errorLogged.connect(console.appendError)
+            await processor.run()
+        except ProcessError as e:
+            QMessageBox.information(self._widget, self.tr('Error'),
+                                    self.tr('Failed to check quality. [') + e.returncode + ']')
+        finally:
+            self.unlock()
 
     @qasync.asyncSlot()
     async def _translate(self):
