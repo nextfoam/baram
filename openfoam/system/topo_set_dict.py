@@ -194,7 +194,7 @@ class TopoSetDict(DictionaryFile):
     def _constructNewSurfaceToCellAction(self, name):
         data = self._createNewCellActionBase(name)
         data['source'] = 'surfaceToCell'
-        data['file'] = name + '.stl'
+        data['file'] = f'constant/triSurface/{name}.stl'
         data['useSurfaceOrientation'] = 'true'
         data['includeInside'] = 'true'
         data['nearDistance'] = -1

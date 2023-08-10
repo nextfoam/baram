@@ -66,7 +66,7 @@ class StepManager:
             self._navigation.enableStep(step)
             step += 1
 
-        for s in range(step + 1, self._pages[Step.LAST_STEP].OUTPUT_TIME + 1):
+        for s in range(step + 1, Step.LAST_STEP +1):
             self._navigation.disableStep(s)
             self._pages[s].clearResult()
 
