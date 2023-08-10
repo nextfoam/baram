@@ -10,7 +10,7 @@ from app import app
 from db.simple_schema import DBError
 from openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from libbaram.run import runUtility
-from libbaram.process import Processor
+from libbaram.process import Processor, ProcessError
 from view.step_page import StepPage
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
 
@@ -69,21 +69,19 @@ class SnapPage(StepPage):
         self._ui.concaveAngle.setText(dbElement.getValue('concaveAngle'))
         self._ui.minAreaRatio.setText(dbElement.getValue('minAreaRation'))
 
-        self._checkSnapped()
+        self._updateControlButtons()
 
     @qasync.asyncSlot()
     async def _snap(self):
         try:
             self.lock()
 
+            if not self.save():
+                return
+
             progressDialog = ProgressDialogSimple(self._widget, self.tr('Snapping'))
             progressDialog.setLabelText(self.tr('Updating Configurations'))
             progressDialog.open()
-
-            if not self.save():
-                self.unlock()
-                progressDialog.close()
-                return
 
             SnappyHexMeshDict(snap=True).build().write()
 
@@ -96,10 +94,7 @@ class SnapPage(StepPage):
             processor = Processor(proc)
             processor.outputLogged.connect(console.append)
             processor.errorLogged.connect(console.appendError)
-            if returncode := await processor.run():
-                progressDialog.finish(self.tr('Snapping Failed. [') + returncode + ']')
-                self.unlock()
-                return
+            await processor.run()
 
             progressDialog = ProgressDialogSimple(self._widget, self.tr('Loading Mesh'), False)
             progressDialog.setLabelText(self.tr('Loading Mesh'))
@@ -110,18 +105,20 @@ class SnapPage(StepPage):
             meshManager.progress.connect(progressDialog.setLabelText)
             await meshManager.load()
 
+            self._updateControlButtons()
             progressDialog.close()
-        except Exception as ex:
-            QMessageBox.information(self._widget, self.tr("Snapping Failed."), str(ex))
+        except ProcessError as e:
+            self.clearResult()
+            QMessageBox.information(self._widget, self.tr('Error'),
+                                    self.tr('Snapping Failed. [') + e.returncode + ']')
         finally:
             self.unlock()
-            self._checkSnapped()
 
     def _reset(self):
         self.clearResult()
-        self._checkSnapped()
+        self._updateControlButtons()
 
-    def _checkSnapped(self):
+    def _updateControlButtons(self):
         if self.isNextStepAvailable():
             self._ui.snap.hide()
             self._ui.snapReset.show()

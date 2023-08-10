@@ -15,7 +15,7 @@ from db.simple_db import elementToVector
 from openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from rendering.vtk_loader import hexPolyData
 from libbaram.run import runUtility
-from libbaram.process import Processor
+from libbaram.process import Processor, ProcessError
 from view.geometry.geometry_manager import platePolyData
 from view.step_page import StepPage
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
@@ -64,7 +64,7 @@ class CastellationPage(StepPage):
         if not self._loaded:
             self._load()
 
-        self._checkRefined()
+        self._updateControlButtons()
         self._currentTabChanged(self._ui.tabWidget.currentIndex())
 
     def deselected(self):
@@ -124,7 +124,7 @@ class CastellationPage(StepPage):
         self._castellationTab.load(self._refinementSurfaces, self._refinementVolumes)
 
         self._loaded = True
-        self._checkRefined()
+        self._updateControlButtons()
 
     def _advancedConfigure(self):
         self._advancedDialog = CastellationAdvancedDialog(self._widget, self._refinementFeatures)
@@ -135,14 +135,12 @@ class CastellationPage(StepPage):
         try:
             self.lock()
 
+            if not self._castellationTab.save():
+                return
+
             progressDialog = ProgressDialogSimple(self._widget, self.tr('Castellation Refinement'))
             progressDialog.setLabelText(self.tr('Updating Configurations'))
             progressDialog.open()
-
-            if not self._castellationTab.save():
-                self.unlock()
-                progressDialog.close()
-                return
 
             progressDialog.setLabelText(self.tr('Writing Geometry Files'))
             self._writeGeometryFiles(progressDialog)
@@ -157,10 +155,7 @@ class CastellationPage(StepPage):
             processor = Processor(proc)
             processor.outputLogged.connect(console.append)
             processor.errorLogged.connect(console.appendError)
-            if returncode := await processor.run():
-                progressDialog.finish(self.tr('Castellation Refinement Failed. [') + returncode + ']')
-                self.unlock()
-                return
+            await processor.run()
 
             progressDialog = ProgressDialogSimple(self._widget, self.tr('Loading Mesh'), False)
             progressDialog.setLabelText(self.tr('Loading Mesh'))
@@ -171,16 +166,18 @@ class CastellationPage(StepPage):
             meshManager.progress.connect(progressDialog.setLabelText)
             await meshManager.load()
 
+            self._updateControlButtons()
             progressDialog.close()
-        # except Exception as ex:
-        #     QMessageBox.information(self._widget, self.tr("Castellation Refinement Failed."), str(ex))
+        except ProcessError as e:
+            self.clearResult()
+            QMessageBox.information(self._widget, self.tr('Error'),
+                                    self.tr('Castellation Refinement Failed. [') + e.returncode + ']')
         finally:
             self.unlock()
-            self._checkRefined()
 
     def _reset(self):
         self.clearResult()
-        self._checkRefined()
+        self._updateControlButtons()
 
     def _writeGeometryFiles(self, progressDialog):
         def writeGeometryFile(name, pd):
@@ -238,7 +235,7 @@ class CastellationPage(StepPage):
 
                 writeGeometryFile(geometry['name'], cleanFilter.GetOutput())
 
-    def _checkRefined(self):
+    def _updateControlButtons(self):
         if self.isNextStepAvailable():
             self._ui.refine.hide()
             self._ui.castellationReset.show()

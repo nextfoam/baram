@@ -88,7 +88,6 @@ class StepManager:
         return step == self._openedStep
 
     def openNextStep(self):
-        self._pages[self._navigation.currentStep()].prepareNextStep()
         self._open(self._navigation.currentStep() + 1)
 
     def _connectSignalsSlots(self):

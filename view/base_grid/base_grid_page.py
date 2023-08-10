@@ -91,6 +91,8 @@ class BaseGridPage(StepPage):
         proc = await runUtility('blockMesh', cwd=app.fileSystem.caseRoot())
         if await proc.wait():
             progressDialog.finish(self.tr('Mesh Generation Failed.'))
+            self.clearResult()
+            return
 
         progressDialog.hideCancelButton()
         meshManager = app.window.meshManager

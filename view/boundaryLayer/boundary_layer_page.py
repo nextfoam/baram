@@ -11,7 +11,7 @@ from db.simple_schema import DBError
 from openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from openfoam.system.topo_set_dict import TopoSetDict
 from libbaram.run import runUtility
-from libbaram.process import Processor
+from libbaram.process import Processor, ProcessError
 from view.step_page import StepPage
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
 from .thickness_form import ThicknessForm
@@ -63,16 +63,6 @@ class BoundaryLayerPage(StepPage):
 
             return False
 
-    @qasync.asyncSlot()
-    async def prepareNextStep(self):
-        dialog = ProgressDialogSimple(self._widget, self.tr('Copy Files for Next Step'))
-        dialog.setLabelText(self.tr('Copying Files.'))
-        dialog.open()
-
-        await app.fileSystem.copyToNextTime(self.OUTPUT_TIME)
-
-        dialog.close()
-
     def _connectSignalsSlots(self):
         self._ui.layers.itemDoubleClicked.connect(self._openLayerEditDialog)
         self._ui.boundaryLayerAdvanced.clicked.connect(self._advancedConfigure)
@@ -101,7 +91,7 @@ class BoundaryLayerPage(StepPage):
         app.db.commit(db)
 
         self._loaded = True
-        self._checkAppylied()
+        self._updateControlButtons()
 
     def _openLayerEditDialog(self, item):
         self._dialog = BoundarySettingDialog(self._widget, str(item.type()), self._thicknessForm)
@@ -117,14 +107,12 @@ class BoundaryLayerPage(StepPage):
         try:
             self.lock()
 
+            if not self.save():
+                return
+
             progressDialog = ProgressDialogSimple(self._widget, self.tr('Boundary Layers Applying'))
             progressDialog.setLabelText(self.tr('Updating Configurations'))
             progressDialog.open()
-
-            if not self.save():
-                self.unlock()
-                progressDialog.close()
-                return
 
             SnappyHexMeshDict(addLayers=True).build().write()
             TopoSetDict().build().write()
@@ -138,22 +126,14 @@ class BoundaryLayerPage(StepPage):
             processor = Processor(proc)
             processor.outputLogged.connect(console.append)
             processor.errorLogged.connect(console.appendError)
-            if returncode := await processor.run():
-                QMessageBox.information(self._widget, self.tr("Error"),
-                                        self.tr('Boumdary Layers Applying Failed. [') + str(returncode) + ']')
-                self.unlock()
-                return
+            await processor.run()
 
             proc = await runUtility('toposet', cwd=app.fileSystem.caseRoot(),
                                     stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             processor = Processor(proc)
             processor.outputLogged.connect(console.append)
             processor.errorLogged.connect(console.appendError)
-            if returncode := await processor.run():
-                QMessageBox.information(self._widget, self.tr("Error"),
-                                        self.tr('Cell Zones Creation Failed. [') + str(returncode) + ']')
-                self.unlock()
-                return
+            await processor.run()
 
             progressDialog = ProgressDialogSimple(self._widget, self.tr('Loading Mesh'), False)
             progressDialog.setLabelText(self.tr('Loading Mesh'))
@@ -164,24 +144,24 @@ class BoundaryLayerPage(StepPage):
             meshManager.progress.connect(progressDialog.setLabelText)
             await meshManager.load()
 
+            self._updateControlButtons()
             progressDialog.close()
-
-            self._checkAppylied()
-        except Exception as ex:
+        except ProcessError as e:
+            self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Boundary Layers Applying Failed. -' + str(ex)))
+                                    self.tr('Boundary Layers Applying Failed. [') + e.returncode + ']')
         finally:
             self.unlock()
 
     def _reset(self):
         self.clearResult()
-        self._checkAppylied()
+        self._updateControlButtons()
 
     def _updateLayer(self):
         gID = self._dialog.gID()
         self._layers[gID].setLayers(app.db.getValue(f'addLayers/layers/{gID}/nSurfaceLayers'))
 
-    def _checkAppylied(self):
+    def _updateControlButtons(self):
         if self.isNextStepAvailable():
             self._ui.boundaryLayerApply.hide()
             self._ui.boundaryLayerReset.show()

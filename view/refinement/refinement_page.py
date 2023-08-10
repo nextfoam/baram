@@ -9,7 +9,7 @@ from app import app
 from openfoam.system.topo_set_dict import TopoSetDict
 from openfoam.system.refine_mesh_dict import RefineMeshDict
 from libbaram.run import runUtility
-from libbaram.process import Processor
+from libbaram.process import Processor, ProcessError
 from view.step_page import StepPage
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
 from .mesh_translate_dialog import MeshTranslateDialog
@@ -29,6 +29,9 @@ class RefinementPage(StepPage):
         self._progressDialog = None
 
         self._connectSignalsSlots()
+
+    def open(self):
+        self._reset()
 
     def _connectSignalsSlots(self):
         self._ui.translate.clicked.connect(self._openTranslateDialog)
@@ -58,8 +61,15 @@ class RefinementPage(StepPage):
         self._dialog.open()
         self._dialog.accepted.connect(self._volumeRefine)
 
-    def _reset(self):
+    @qasync.asyncSlot()
+    async def _reset(self):
         self.clearResult()
+
+        dialog = ProgressDialogSimple(self._widget, self.tr('Copy Mesh Files for Refinement'))
+        dialog.setLabelText(self.tr('Copying Files.'))
+        dialog.open()
+        await app.fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME)
+        dialog.close()
 
     def _checkQuality(self):
         return
@@ -133,22 +143,14 @@ class RefinementPage(StepPage):
             processor = Processor(proc)
             processor.outputLogged.connect(console.append)
             processor.errorLogged.connect(console.appendError)
-            if returncode := await processor.run():
-                QMessageBox.information(self._widget, self.tr('Refinement Error'),
-                                        self.tr('Failed to create cellSet. [') + str(returncode) + ']')
-                self.unlock()
-                return
+            await processor.run()
 
             proc = await runUtility('refineMesh', '-overwrite', cwd=app.fileSystem.caseRoot(),
                                     stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             processor = Processor(proc)
             processor.outputLogged.connect(console.append)
             processor.errorLogged.connect(console.appendError)
-            if returncode := await processor.run():
-                QMessageBox.information(self._widget, self.tr('Refinement Error'),
-                                        self.tr('Refinement failed. [') + str(returncode) + ']')
-                self.unlock()
-                return
+            await processor.run()
 
             progressDialog = ProgressDialogSimple(self._widget, self.tr('Loading Mesh'), False)
             progressDialog.setLabelText(self.tr('Loading Mesh'))
@@ -160,24 +162,22 @@ class RefinementPage(StepPage):
             await meshManager.load()
 
             progressDialog.close()
-        # except Exception as ex:
-        #     QMessageBox.information(self._widget, self.tr("Refinement Failed."), str(ex))
+        except ProcessError as e:
+            await self._reset()
+            QMessageBox.information(self._widget, self.tr('Error'),
+                                    self.tr('Failed to create cellSet. [') + e.returncode + ']')
         finally:
             self.unlock()
 
     async def _transform(self, proc):
-        try:
-            if returncode := await proc.wait():
-                return returncode
+        if returncode := await proc.wait():
+            return returncode
 
-            self._progressDialog.setLabelText(self.tr('Loading Mesh'))
+        self._progressDialog.setLabelText(self.tr('Loading Mesh'))
 
-            meshManager = app.window.meshManager
-            meshManager.clear()
-            meshManager.progress.connect(self._progressDialog.setLabelText)
-            await meshManager.load()
+        meshManager = app.window.meshManager
+        meshManager.clear()
+        meshManager.progress.connect(self._progressDialog.setLabelText)
+        await meshManager.load()
 
-            return 0
-        except Exception as e:
-            print(e)
-
+        return 0

@@ -6,6 +6,15 @@ import asyncio
 from PySide6.QtCore import QObject, Signal
 
 
+class ProcessError(Exception):
+    def __init__(self, returncode):
+        self._returncode = returncode
+
+    @property
+    def returncode(self):
+        return self._returncode
+
+
 class Processor(QObject):
     outputLogged = Signal(str)
     errorLogged = Signal(str)
@@ -44,4 +53,5 @@ class Processor(QObject):
 
         await self._proc.communicate()
 
-        return self._proc.returncode
+        if returncode := self._proc.returncode:
+            raise ProcessError(returncode)
