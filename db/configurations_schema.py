@@ -156,7 +156,7 @@ schema = {
         'minAreaRation': FloatType().setDefault(0.3)
     },
     'addLayers': {
-        'thicknessModel': EnumType(ThicknessModel),
+        'thicknessModel': EnumType(ThicknessModel).setDefault(ThicknessModel.FINAL_AND_OVERALL),
         'relativeSizes': BoolType(True),
         'firstLayerThickness': FloatType().setDefault(0.001),
         'finalLayerThickness': FloatType().setDefault('1.0'),
