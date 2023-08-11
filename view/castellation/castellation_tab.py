@@ -17,7 +17,7 @@ class CastellationTab(QObject):
         super().__init__()
 
         self._ui = ui
-        self._widget = ui.castellation
+        self._widget = ui.castellationTab
 
         self._surfaceItem = QTreeWidgetItem(self._ui.refinements, [self.tr('Surface')])
         self._volumeItem = QTreeWidgetItem(self._ui.refinements, [self.tr('Volume')])

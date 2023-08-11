@@ -33,10 +33,15 @@ class MainWindow(QMainWindow):
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
 
+        self._ui.centralSplitter.setStretchFactor(0, 0)
+        self._ui.centralSplitter.setStretchFactor(1, 1)
+        self._ui.renderingSplitter.setStretchFactor(0, 0)
+        self._ui.renderingSplitter.setStretchFactor(1, 1)
+
         self._recentFilesMenu = RecentFilesMenu(self._ui.menuOpen_Recent)
         self._recentFilesMenu.setRecents(app.settings.getRecentProjects())
 
-        self._navigationView = NavigationView(self._ui.navigation)
+        self._navigationView = NavigationView(self._ui.stepButtons)
         self._renderingTool = RenderingTool(self._ui)
         self._consoleView = ConsoleView(self._ui)
 

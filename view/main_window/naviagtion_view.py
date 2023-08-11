@@ -3,32 +3,55 @@
 
 from PySide6.QtCore import QObject, Signal
 
+from db.configurations_schema import Step
+
+
+
+from PySide6.QtWidgets import QButtonGroup
+
+
+steps = {
+    'geometryStep': Step.GEOMETRY,
+    'baseGridStep': Step.BASE_GRID,
+    'castellationStep': Step.CASTELLATION,
+    'snapStep': Step.SNAP,
+    'boundaryLayerStep': Step.BOUNDARY_LAYER,
+    'refinementStep': Step.REFINEMENT
+}
+
 
 class NavigationView(QObject):
     currentStepChanged = Signal(int, int)
 
-    def __init__(self, view):
+    def __init__(self, buttons:QButtonGroup):
         super().__init__()
-        self._view = view
+        self._steps = buttons
+        self._currentStep = None
+
+        for b in self._steps.buttons():
+            self._steps.setId(b, steps[b.objectName()])
 
         self._connectSignalsSlots()
 
     def currentStep(self):
-        return self._view.indexOfTopLevelItem(self._view.currentItem())
+        return self._currentStep
 
     def setCurrentStep(self, step):
-        self._view.setCurrentItem(self._view.topLevelItem(step))
+        self._steps.button(step).setChecked(True)
+        self._stepChanged(step)
 
     def enableStep(self, step):
-        self._view.topLevelItem(step).setDisabled(False)
+        self._steps.button(step).setEnabled(True)
 
     def disableStep(self, step):
-        self._view.topLevelItem(step).setDisabled(True)
+        self._steps.button(step).setEnabled(False)
 
     def _connectSignalsSlots(self):
-        self._view.currentItemChanged.connect(self._stepSelected)
+        self._steps.idClicked.connect(self._stepChanged)
 
-    def _stepSelected(self, current, previous):
-        self.currentStepChanged.emit(self._view.indexOfTopLevelItem(current), self._view.indexOfTopLevelItem(previous))
+    def _stepChanged(self, step=None):
+        step = self._steps.id(self._steps.checkedButton())
+        self.currentStepChanged.emit(step, self._currentStep)
+        self._currentStep = step
 
 
