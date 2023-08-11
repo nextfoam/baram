@@ -149,7 +149,7 @@ class BoundaryLayerPage(StepPage):
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Boundary Layers Applying Failed. [') + e.returncode + ']')
+                                    self.tr('Boundary Layers Applying Failed. [') + str(e.returncode) + ']')
         finally:
             self.unlock()
 

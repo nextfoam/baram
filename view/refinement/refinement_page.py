@@ -88,7 +88,7 @@ class RefinementPage(StepPage):
             await processor.run()
         except ProcessError as e:
             QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Failed to check quality. [') + e.returncode + ']')
+                                    self.tr('Failed to check quality. [') + str(e.returncode) + ']')
         finally:
             self.unlock()
 
@@ -183,7 +183,7 @@ class RefinementPage(StepPage):
         except ProcessError as e:
             await self._reset()
             QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Failed to create cellSet. [') + e.returncode + ']')
+                                    self.tr('Failed to create cellSet. [') + str(e.returncode) + ']')
         finally:
             self.unlock()
 

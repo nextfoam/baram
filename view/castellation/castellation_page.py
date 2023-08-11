@@ -171,7 +171,7 @@ class CastellationPage(StepPage):
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Castellation Refinement Failed. [') + e.returncode + ']')
+                                    self.tr('Castellation Refinement Failed. [') + str(e.returncode) + ']')
         finally:
             self.unlock()
 

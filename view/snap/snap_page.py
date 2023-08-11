@@ -110,7 +110,7 @@ class SnapPage(StepPage):
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Snapping Failed. [') + e.returncode + ']')
+                                    self.tr('Snapping Failed. [') + str(e.returncode) + ']')
         finally:
             self.unlock()
 
