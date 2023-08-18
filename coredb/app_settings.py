@@ -141,7 +141,7 @@ class AppSettings:
     @classmethod
     def updateParaviewInstalledPath(cls, path):
         settings = cls._load()
-        settings[SettingKey.PARAVIEW_INSTALLED_PATH.value] = path
+        settings[SettingKey.PARAVIEW_INSTALLED_PATH.value] = str(path)
         cls._save(settings)
 
     @classmethod
