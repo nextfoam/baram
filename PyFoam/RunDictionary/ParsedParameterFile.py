@@ -890,6 +890,10 @@ class FoamFileParser(PlyParser):
     def p_list(self,p):
         '''list : '(' itemlist ')' '''
         p[0] = self.condenseAllPreFixLists(p[2])
+
+        if len(p[2])==1 and isinstance(p[2][0], (list, Vector, Tensor, SymmTensor)):  # it might not be a numbered list but a tuple
+            p[0] = [len(p[2][0]), p[2][0]]
+
         if not self.noVectorOrTensor and (
             len(p[2])==3 or len(p[2])==9 or len(p[2])==6):
             isVector=True
@@ -969,7 +973,10 @@ class FoamFileParser(PlyParser):
             if p[1]==None:
                 p[0]=[]
             else:
-                p[0]=[ p[1] ]
+                if isinstance(p[1],(NotAPrelist,)):
+                    p[0] = [p[1].a, p[1].b]
+                else:
+                    p[0]=[ p[1] ]
         else:
             p[0]=p[1]
             if isinstance(p[2],(NotAPrelist,)):
