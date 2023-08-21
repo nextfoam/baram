@@ -164,7 +164,10 @@ class BoundaryCondition(DictionaryFile):
 
             return {
                 'type': 'uniformFixedValue',
-                'uniformValue': ('table', [[t[i], v[i]] for i in range(len(t))])
+                'uniformValue': 'table',
+                'uniformValueCoeffs': {
+                    'values': [[t[i], v[i]] for i in range(len(t))]
+                }
             }
         elif type_ == self.TableType.TEMPORAL_VECTOR_LIST:
             t = self._db.getValue(xpath + '/t').split()
@@ -174,23 +177,29 @@ class BoundaryCondition(DictionaryFile):
 
             return {
                 'type': 'uniformFixedValue',
-                'uniformValue': ('table', [[t[i], [x[i], y[i], z[i]]] for i in range(len(t))])
+                'uniformValue': 'table',
+                'uniformValueCoeffs': {
+                    'values': [[t[i], [x[i], y[i], z[i]]] for i in range(len(t))]
+                }
             }
 
     def _constructUniformNormalFixedValue(self, xpath, type_):
-        value = None
+        values = None
 
         if type_ == self.TableType.TEMPORAL_SCALAR_LIST:
             t = self._db.getValue(xpath + '/t').split()
             v = self._db.getValue(xpath + '/v').split()
 
-            value = [[t[i], -float(v[i])] for i in range(len(t))]
+            values = [[t[i], -float(v[i])] for i in range(len(t))]
         elif type_ == self.TableType.TEMPORAL_VECTOR_LIST:
             pass
 
         return {
             'type': 'uniformNormalFixedValue',
-            'uniformValue': ('table', value)
+            'uniformValue': 'table',
+            'uniformValueCoeffs': {
+                'values': values
+            }
         }
 
     def _constructSurfaceNormalFixedValue(self, value):
