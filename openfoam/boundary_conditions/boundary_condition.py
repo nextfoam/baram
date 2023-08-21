@@ -3,6 +3,7 @@
 
 from enum import Enum, auto
 from math import sqrt
+import logging
 
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
@@ -13,6 +14,9 @@ from coredb.region_db import RegionDB
 from openfoam.dictionary_file import DictionaryFile, DataClass
 from openfoam.constant.boundary_data import BoundaryData
 from openfoam.file_system import FileSystem
+
+logger = logging.getLogger(__name__)
+# logger.setLevel(logging.INFO)
 
 
 class BoundaryCondition(DictionaryFile):
@@ -42,7 +46,7 @@ class BoundaryCondition(DictionaryFile):
 
         path = self.fullPath(self._processorNo)
         if path.is_file():
-            self._fieldsData = ParsedParameterFile(path)
+            self._fieldsData = ParsedParameterFile(path, debug=None)
 
             for name in self._data['boundaryField']:
                 self._fieldsData.content['boundaryField'][name].update(
