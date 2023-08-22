@@ -114,6 +114,7 @@ class Worker(QObject):
     stop = Signal()
     updateResiduals = Signal()
     residualsUpdated = Signal(pd.DataFrame)
+    flushed = Signal()
 
     def __init__(self, casePath: Path, regions: [str]):
         super().__init__()
@@ -159,6 +160,7 @@ class Worker(QObject):
             self.infoFiles = {}
             self.process()
             self.stopRun()
+            self.flushed.emit()
 
     def stopRun(self):
         if self.running:
@@ -314,6 +316,7 @@ class Worker(QObject):
 
 class SolverInfoManager(QObject):
     residualsUpdated = Signal(pd.DataFrame)
+    flushed = Signal()
 
     def __init__(self):
         super().__init__()
@@ -334,6 +337,7 @@ class SolverInfoManager(QObject):
         self.worker.moveToThread(self.thread)
 
         self.worker.residualsUpdated.connect(self.residualsUpdated, type=Qt.ConnectionType.QueuedConnection)
+        self.worker.flushed.connect(self.flushed, type=Qt.ConnectionType.QueuedConnection)
 
         self.thread.start()
 

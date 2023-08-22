@@ -37,6 +37,7 @@ def calculateMaxX():
 class Worker(QObject):
     dataUpdated = Signal(pd.DataFrame)
     stopped = Signal()
+    flushed = Signal()
 
     def __init__(self, name):
         super().__init__()
@@ -61,6 +62,8 @@ class Worker(QObject):
 
             self._reader.openMonitor()
             self._monitor()
+
+            self.flushed.emit()
 
             if self._project.isSolverRunning():
                 self._timer = QTimer()
@@ -121,6 +124,7 @@ class Monitor(QObject):
         self._worker.createReader(self._rname, self.fileName, self.extension)
         self._worker.dataUpdated.connect(self._updateChart, type=Qt.ConnectionType.QueuedConnection)
         self._worker.stopped.connect(self._stopped, type=Qt.ConnectionType.QueuedConnection)
+        self._worker.flushed.connect(self._fitChart, type=Qt.ConnectionType.QueuedConnection)
 
         self._thread.started.connect(self._worker.startMonitor, type=Qt.ConnectionType.QueuedConnection)
         self._thread.start()
@@ -148,6 +152,9 @@ class Monitor(QObject):
             self._thread = None
 
     def _updateChart(self, data):
+        pass
+
+    def _fitChart(self):
         pass
 
     def _stopped(self):
@@ -179,6 +186,12 @@ class ForceMonitor(Monitor):
             self._chart2.appendData(pd.DataFrame(data, columns=['Cl']))
             self._chart3.appendData(pd.DataFrame(data, columns=['CmPitch']).rename(columns={'CmPitch': 'Cm'}))
 
+    def _fitChart(self):
+        if self._running:
+            self._chart1.fitChart()
+            self._chart2.fitChart()
+            self._chart3.fitChart()
+
 
 class PointMonitor(Monitor):
     def __init__(self, name, chart):
@@ -205,6 +218,10 @@ class PointMonitor(Monitor):
         if self._running:
             self._chart.appendData(data)
 
+    def _fitChart(self):
+        if self._running:
+            self._chart.fitChart()
+
 
 class SurfaceMonitor(Monitor):
     def __init__(self, name, chart):
@@ -226,6 +243,10 @@ class SurfaceMonitor(Monitor):
         if self._running:
             self._chart.appendData(data)
 
+    def _fitChart(self):
+        if self._running:
+            self._chart.fitChart()
+
 
 class VolumeMonitor(Monitor):
     def __init__(self, name, chart):
@@ -246,3 +267,8 @@ class VolumeMonitor(Monitor):
     def _updateChart(self, data):
         if self._running:
             self._chart.appendData(data)
+
+    def _fitChart(self):
+        if self._running:
+            self._chart.fitChart()
+

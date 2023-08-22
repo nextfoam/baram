@@ -55,6 +55,7 @@ class ChartDock(TabifiedDock):
 
         self.solverInfoManager = SolverInfoManager()
         self.solverInfoManager.residualsUpdated.connect(self.updated)
+        self.solverInfoManager.flushed.connect(self.fitChart)
 
         self._project = Project.instance()
         self._project.projectOpened.connect(self._projectOpened)
@@ -83,6 +84,21 @@ class ChartDock(TabifiedDock):
             self.startDrawing()
         else:
             self.stopDrawing()
+
+    def fitChart(self):
+        if self._data is None:
+            return
+
+        minX = float(self._data.first_valid_index())
+        maxX = float(self._data.last_valid_index())
+
+        dataWidth = maxX - minX
+        margin = dataWidth * SIDE_MARGIN / (1 - 2 * SIDE_MARGIN)
+
+        self._axes.set_xlim([minX-margin, maxX+margin])
+        self._adjustYRange(minX, maxX)
+
+        self._canvas.draw()
 
     def updated(self, data: pd.DataFrame):
         self._data = data
@@ -174,18 +190,18 @@ class ChartDock(TabifiedDock):
             if timeSteppingMethod == TimeSteppingMethod.FIXED.value:
                 # 50 Residual points
                 timeStep = float(coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/timeStepSize'))
-                chartWidth = timeStep * 50
+                dataWidth = timeStep * 50
             else:
                 # 10% of total case time
                 endTime = float(coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/endTime'))
-                chartWidth = endTime / 10
+                dataWidth = endTime / 10
         else:
             # 50 Residual points
-            chartWidth = 50
+            dataWidth = 50
 
-        margin = chartWidth * SIDE_MARGIN
+        margin = dataWidth * SIDE_MARGIN / (1 - 2 * SIDE_MARGIN)
         minX = -margin
-        maxX = chartWidth + margin
+        maxX = dataWidth + margin
         self._axes.set_xlim([minX, maxX])
 
         self._canvas.draw()

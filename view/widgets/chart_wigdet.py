@@ -54,7 +54,22 @@ class ChartWidget(QWidget):
         self._data = data
         self._updateChart(1.0)
 
-    def appendData(self, data):
+    def fitChart(self):
+        if self._data is None:
+            return
+
+        minX = float(self._data.first_valid_index())
+        maxX = float(self._data.last_valid_index())
+
+        dataWidth = maxX - minX
+        margin = dataWidth * SIDE_MARGIN / (1 - 2 * SIDE_MARGIN)
+
+        self._axes.set_xlim([minX-margin, maxX+margin])
+        self._adjustYRange(minX, maxX)
+
+        self._canvas.draw()
+
+    def appendData(self, data: pd.DataFrame):
         if self._data is None:
             self._data = data
         else:
