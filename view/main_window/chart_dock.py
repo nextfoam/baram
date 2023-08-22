@@ -9,12 +9,12 @@ from PySide6.QtCore import Qt
 
 import numpy as np
 
+from matplotlib import ticker
 from matplotlib.backends.qt_compat import QtWidgets
 from matplotlib.backends.backend_qtagg import (
     FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
-import matplotlib.ticker as ticker
 
 from openfoam.solver_info_manager import SolverInfoManager
 from openfoam.file_system import FileSystem

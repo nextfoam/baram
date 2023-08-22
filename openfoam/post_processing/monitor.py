@@ -93,7 +93,7 @@ class Monitor(QObject):
 
         self._db = coredb.CoreDB()
         self._name = name
-        self._region = None
+        self._rname = ''
         self._thread = None
         self._worker = None
         self._showChart = True
@@ -118,7 +118,7 @@ class Monitor(QObject):
         self._thread = QThread()
         self._worker = Worker(self.name)
         self._worker.moveToThread(self._thread)
-        self._worker.createReader(self._region, self.fileName, self.extension)
+        self._worker.createReader(self._rname, self.fileName, self.extension)
         self._worker.dataUpdated.connect(self._updateChart, type=Qt.ConnectionType.QueuedConnection)
         self._worker.stopped.connect(self._stopped, type=Qt.ConnectionType.QueuedConnection)
 
@@ -160,7 +160,7 @@ class ForceMonitor(Monitor):
         xpath = MonitorDB.getForceMonitorXPath(name)
 
         self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
-        self._region = self._db.getValue(xpath + '/region')
+        self._rname = self._db.getValue(xpath + '/region')
         self._chart1 = chart1
         self._chart2 = chart2
         self._chart3 = chart3
@@ -187,7 +187,7 @@ class PointMonitor(Monitor):
         self._xpath = MonitorDB.getPointMonitorXPath(name)
 
         self._showChart = self._db.getValue(self._xpath + '/showChart') == 'true'
-        # self._region = self._db.getValue(self._xpath + '/region')
+        # self._rname = self._db.getValue(self._xpath + '/region')
         self._chart = chart
 
         self._chart.setTitle(name)
@@ -213,7 +213,7 @@ class SurfaceMonitor(Monitor):
         xpath = MonitorDB.getSurfaceMonitorXPath(name)
 
         self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
-        self._region = BoundaryDB.getBoundaryRegion(self._db.getValue(xpath + '/surface'))
+        self._rname = BoundaryDB.getBoundaryRegion(self._db.getValue(xpath + '/surface'))
         self._chart = chart
 
         self._chart.setTitle(name)
@@ -234,7 +234,7 @@ class VolumeMonitor(Monitor):
         xpath = MonitorDB.getVolumeMonitorXPath(name)
 
         self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
-        self._region = CellZoneDB.getCellZoneRegion(self._db.getValue(xpath + '/volume'))
+        self._rname = CellZoneDB.getCellZoneRegion(self._db.getValue(xpath + '/volume'))
         self._chart = chart
 
         self._chart.setTitle(name)
