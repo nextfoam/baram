@@ -28,7 +28,7 @@ class FvOptions(DictionaryFile):
             self._data = {
                 'limitT': {
                     'type': 'limitTemperature',
-                    'active': 'no',
+                    'active': 'yes',
                     'selectionMode': 'all',
                     'min': self._db.getValue('.//numericalConditions/advanced/limits/minimumStaticTemperature'),
                     'max': self._db.getValue('.//numericalConditions/advanced/limits/maximumStaticTemperature')
