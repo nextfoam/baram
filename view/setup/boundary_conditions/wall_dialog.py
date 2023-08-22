@@ -189,12 +189,12 @@ class WallDialog(ResizableDialog):
             if secondaryMaterials := RegionDB.getSecondaryMaterials(rname):
                 self._loadContactAngles(rname, secondaryMaterials)
                 self._setupContactAngleModelCombo()
+                self._contactAngleModelCombo.setCurrentValue(self._db.getValue(xpath + '/wallAdhesions/model'))
                 if len(secondaryMaterials) > 1:
                     self._ui.contactAngleFormLayout.removeRow(self._ui.contactAngleLimit)
                 else:
                     self._setupContactAngleLimitCombo()
-                self._contactAngleModelCombo.setCurrentValue(self._db.getValue(xpath + '/wallAdhesions/model'))
-                self._contactAngleLimitCombo.setCurrentValue(self._db.getValue(xpath + '/wallAdhesions/limit'))
+                    self._contactAngleLimitCombo.setCurrentValue(self._db.getValue(xpath + '/wallAdhesions/limit'))
         else:
             self._ui.contactAngleGroup.hide()
 
