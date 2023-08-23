@@ -129,6 +129,7 @@ class DisplayControl(QObject):
 
     def _connectSignalsSlots(self):
         self._list.customContextMenuRequested.connect(self._showContextMenu)
+        self._list.itemSelectionChanged.connect(self._selectedItemsChanged)
         self._view.actorPicked.connect(self._actorPicked)
 
     def _showContextMenu(self, pos):
@@ -228,7 +229,10 @@ class DisplayControl(QObject):
 
     def _actorPicked(self, actor):
         item = self._items[actor.GetObjectName()]
-        item.actorInfo().setHighlighted(True)
+        item.setSelected(True)
 
+    def _selectedItemsChanged(self):
+        for item in self._items.values():
+            item.actorInfo().setHighlighted(item.isSelected())
 
-
+        self._view.refresh()

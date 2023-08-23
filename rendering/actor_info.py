@@ -42,12 +42,6 @@ class ActorType(Enum):
     BOUNDARY = auto()
 
 
-@dataclass
-class MeshInfo:
-    name: str
-    type: ActorType
-
-
 class ActorInfo:
     @dataclass
     class Properties:
@@ -142,8 +136,9 @@ class ActorInfo:
         self._applyCut()
 
     def setHighlighted(self, highlighted):
-        self._properties.highlighted = highlighted
-        self._applyHighlight()
+        if self._properties.highlighted != highlighted:
+            self._properties.highlighted = highlighted
+            self._applyHighlight()
 
     def setProperties(self, properties):
         self._properties = properties
@@ -152,6 +147,7 @@ class ActorInfo:
         self._applyColor()
         self._applyDisplayMode()
         self._applyCut()
+        self._applyHighlight()
 
     def _applyVisibility(self):
         self._actor.SetVisibility(self._properties.visibility)
@@ -186,9 +182,12 @@ class ActorInfo:
         # print(self._actor.GetProperty().GetSpecular())
         # print(self._actor.GetProperty().GetSpecularColor())
         # print(self._actor.GetProperty().GetSpecularPower())
-
-        # self._actor.GetProperty().SetDiffuseColor(1, 1, 1)
-        # self._actor.GetProperty().SetDiffuse(0.8)
-        self._actor.GetProperty().SetSpecular(1)
-        # self._actor.GetProperty().SetSpecularColor(1, 1, 1)
-        self._actor.GetProperty().SetSpecularPower(30)
+        # print(self._actor.GetProperty().GetAmbient())
+        if self._properties.highlighted:
+            self._actor.GetProperty().SetAmbient(1)
+            self._actor.GetProperty().SetSpecular(1)
+            self._actor.GetProperty().SetSpecularPower(30)
+        else:
+            self._actor.GetProperty().SetAmbient(0)
+            self._actor.GetProperty().SetSpecular(0)
+            self._actor.GetProperty().SetSpecularPower(1)
