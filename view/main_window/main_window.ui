@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1105</width>
+    <width>1221</width>
     <height>891</height>
    </rect>
   </property>
@@ -199,7 +199,7 @@
               </sizepolicy>
              </property>
              <property name="currentIndex">
-              <number>3</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="geometryPage">
               <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -232,21 +232,14 @@
                   <bool>false</bool>
                  </property>
                  <property name="columnCount">
-                  <number>4</number>
+                  <number>2</number>
                  </property>
                  <attribute name="headerVisible">
                   <bool>true</bool>
                  </attribute>
-                 <column>
-                  <property name="text">
-                   <string notr="true"/>
-                  </property>
-                 </column>
-                 <column>
-                  <property name="text">
-                   <string/>
-                  </property>
-                 </column>
+                 <attribute name="headerStretchLastSection">
+                  <bool>false</bool>
+                 </attribute>
                  <column>
                   <property name="text">
                    <string>Name</string>
@@ -1716,6 +1709,9 @@
                  <attribute name="headerVisible">
                   <bool>true</bool>
                  </attribute>
+                 <attribute name="headerStretchLastSection">
+                  <bool>false</bool>
+                 </attribute>
                  <column>
                   <property name="text">
                    <string>Name</string>
@@ -2119,7 +2115,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1105</width>
+     <width>1221</width>
      <height>22</height>
     </rect>
    </property>

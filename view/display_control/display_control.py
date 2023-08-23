@@ -5,7 +5,7 @@ from enum import IntEnum, auto
 
 from PySide6.QtCore import QObject, QCoreApplication
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QTreeWidgetItem, QMenu, QLabel, QFrame,  QWidget, QHBoxLayout, QColorDialog
+from PySide6.QtWidgets import QTreeWidgetItem, QMenu, QLabel, QFrame,  QWidget, QHBoxLayout, QColorDialog, QHeaderView
 
 from app import app
 from rendering.actor_info import DisplayMode, ActorType
@@ -97,9 +97,12 @@ class DisplayControl(QObject):
         self._selectedItems = None
         self._dialog = None
 
-        self._list.setColumnWidth(2, 20)
-        self._list.setColumnWidth(3, 20)
-        self._list.setColumnWidth(4, 20)
+        self._list.setColumnWidth(Column.COLOR_COLUMN, 20)
+        self._list.setColumnWidth(Column.CUT_ICON_COLUMN, 20)
+        self._list.setColumnWidth(Column.VISIBLE_ICON_COLUMN, 20)
+
+        self._list.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
+        self._list.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
 
         self._connectSignalsSlots()
 
@@ -115,6 +118,12 @@ class DisplayControl(QObject):
             item.setupColorWidget(self._list)
 
         self._view.addActor(actorInfo.actor())
+
+    def update(self, actorInfo):
+        item = self._items[actorInfo.id()]
+        self._view.removeActor(item.actorInfo().actor())
+        self._view.addActor(actorInfo.actor())
+        item.setActorInfo(actorInfo)
 
     def remove(self, actorInfo):
         item = self._items[actorInfo.id()]

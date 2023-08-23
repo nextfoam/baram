@@ -33,6 +33,10 @@ class ActorManager(QObject):
         self._actorInfos[actorInfo.id()] = actorInfo
         self._displayController.add(actorInfo)
 
+    def update(self, actorInfo):
+        self._actorInfos[actorInfo.id()] = actorInfo
+        self._displayController.update(actorInfo)
+
     def remove(self, key):
         if actorInfo := self._actorInfos.pop(key, None):
             self._displayController.remove(actorInfo)

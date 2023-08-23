@@ -72,7 +72,7 @@ class GeometryManager(ActorManager):
             for gId in surfaces:
                 self.update(
                     ActorInfo(self._surfaceToPolyData(self._geometries[gId]),
-                              gId, geometry['name'], ActorInfo.Type.GEOMETRY))
+                              gId, geometry['name'], ActorType.GEOMETRY))
 
         self.applyToDisplay()
 
