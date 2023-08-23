@@ -15,13 +15,13 @@ from view.widgets.language_dialog import LanugageDialog
 from view.menu.mesh_quality.mesh_quality_parameters_dialog import MeshQualityParametersDialog
 from view.menu.help.about_dialog import AboutDialog
 from view.geometry.geometry_manager import GeometryManager
-from .actor_manager import ActorManager
 from .recent_files_menu import RecentFilesMenu
 from .naviagtion_view import NavigationView
 from .rendering_tool import RenderingTool
 from .console_view import ConsoleView
 from .mesh_manager import MeshManager
 from .step_manager import StepManager
+from view.display_control.display_control import DisplayControl
 from .main_window_ui import Ui_MainWindow
 
 
@@ -33,21 +33,22 @@ class MainWindow(QMainWindow):
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
 
-        self._ui.centralSplitter.setStretchFactor(0, 0)
-        self._ui.centralSplitter.setStretchFactor(1, 1)
         self._ui.renderingSplitter.setStretchFactor(0, 0)
         self._ui.renderingSplitter.setStretchFactor(1, 1)
+        self._ui.centralSplitter.setStretchFactor(0, 0)
+        self._ui.centralSplitter.setStretchFactor(1, 1)
+        self._ui.centralSplitter.adjustSize()
 
         self._recentFilesMenu = RecentFilesMenu(self._ui.menuOpen_Recent)
         self._recentFilesMenu.setRecents(app.settings.getRecentProjects())
 
         self._navigationView = NavigationView(self._ui.stepButtons)
+        self._displayControl = DisplayControl(self._ui)
         self._renderingTool = RenderingTool(self._ui)
         self._consoleView = ConsoleView(self._ui)
 
-        self._actors = ActorManager(self._ui.renderingView)
-        self._geometries = GeometryManager(self._actors)
-        self._meshManager = MeshManager(self._actors)
+        self._geometryManager = None
+        self._meshManager = None
         self._stepManager = StepManager(self._navigationView, self._ui)
 
         self._startDialog = ProjectDialog()
@@ -63,18 +64,6 @@ class MainWindow(QMainWindow):
     @property
     def stepManager(self):
         return self._stepManager
-    #
-    # @property
-    # def actorManager(self):
-    #     return self._actors
-
-    @property
-    def geometryManager(self):
-        return self._geometries
-
-    @property
-    def meshManager(self):
-        return self._meshManager
 
     @property
     def renderingView(self):
@@ -83,6 +72,18 @@ class MainWindow(QMainWindow):
     @property
     def consoleView(self):
         return self._consoleView
+
+    @property
+    def displayControl(self):
+        return self._displayControl
+
+    @property
+    def geometryManager(self):
+        return self._geometryManager
+
+    @property
+    def meshManager(self):
+        return self._meshManager
 
     def closeEvent(self, event):
         if False:
@@ -200,7 +201,8 @@ class MainWindow(QMainWindow):
         except FileNotFoundError:
             QMessageBox.information(self, self.tr('Case Open Error'), self.tr(f'{path.name} is not a baram case.'))
         except Timeout:
-            QMessageBox.information(self, self.tr('Case Open Error'), self.tr(f'{path.name} is open in another program.'))
+            QMessageBox.information(self, self.tr('Case Open Error'),
+                                    self.tr(f'{path.name} is already open in another program.'))
         except Exception as ex:
             QMessageBox.information(self, self.tr('Case Open Error'), self.tr('Fail to open case\n' + str(ex)))
 
@@ -226,8 +228,11 @@ class MainWindow(QMainWindow):
             self.show()
 
         self.setWindowTitle(f'{app.properties.fullName} - {app.project.path}')
-        self._geometries.load(False)
 
+        self._geometryManager = GeometryManager()
+        self._meshManager = MeshManager()
+
+        self._geometryManager.load()
         self._stepManager.load()
 
     def _projectClosed(self):

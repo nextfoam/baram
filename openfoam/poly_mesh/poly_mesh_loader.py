@@ -13,8 +13,6 @@ from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA, vtkCommand
 from PySide6.QtCore import QObject, Signal
 
-from rendering.actor_info import ActorInfo
-
 
 logger = logging.getLogger(__name__)
 
@@ -62,9 +60,15 @@ def build(mBlock):
             vtkMesh[name] = build(ds)
         elif dsType == VTK_UNSTRUCTURED_GRID:
             if ds.GetNumberOfCells() > 0:
-                vtkMesh[name] = ActorInfo(getActor(ds))
+                # vtkMesh[name] = ActorInfo(getActor(ds))
+                gFilter = vtkGeometryFilter()
+                gFilter.SetInputData(ds)
+                gFilter.Update()
+
+                vtkMesh[name] = gFilter.GetOutput()
         elif dsType == VTK_POLY_DATA:
-            vtkMesh[name] = ActorInfo(getActor(ds), getFeatureActor(ds))
+            # vtkMesh[name] = ActorInfo(getActor(ds), getFeatureActor(ds))
+            vtkMesh[name] = ds
         else:
             vtkMesh[name] = f'Type {dsType}'  # ds
 
@@ -81,16 +85,26 @@ class PolyMeshLoader(QObject):
 
         self._reader.SetCaseType(vtkPOpenFOAMReader.RECONSTRUCTED_CASE)
         self._reader.SetFileName(foamFile)
+        self._reader.DecomposePolyhedraOn()
+        self._reader.EnableAllCellArrays()
+        self._reader.EnableAllPointArrays()
+        self._reader.EnableAllPatchArrays()
+        self._reader.EnableAllLagrangianArrays()
+        self._reader.CreateCellToPointOn()
+        self._reader.CacheMeshOn()
+        self._reader.ReadZonesOn()
+        self._reader.SkipZeroTimeOff()
 
-    async def loadMesh(self):
-        vtkMesh = await self._loadVtkMesh(self._buildPatchArrayStatus())
-        return vtkMesh
+        self._reader.AddObserver(vtkCommand.ProgressEvent, self._readerProgressed)
 
-    async def _loadVtkMesh(self, statusConfig):
-        return await asyncio.to_thread(self._getVtkMesh, statusConfig)
+    async def loadMesh(self, time):
+        self._reader.UpdateInformation()
+        self._reader.SetTimeValue(time)
+        self._reader.Modified()
+        self._reader.Update()
+        return await asyncio.to_thread(self._getVtkMesh, self._buildPatchArrayStatus())
 
     def _buildPatchArrayStatus(self):
-        self._reader.UpdateInformation()
         #
         # for i in range(self._reader.GetNumberOfCellArrays()):
         #     name = self._reader.GetCellArrayName(i)
@@ -112,13 +126,13 @@ class PolyMeshLoader(QObject):
         {
             <region> : {
                 "boundary" : {
-                    <boundary> : <ActorInfo>
+                    <boundary> : <PolyData>
                     ...
                 },
                 "internalMesh" : <ActorInfo>,
                 "zones" : {
                     "cellZones" : {
-                        <cellZone> : <ActorInfo>,
+                        <cellZone> : <PolyData>,
                         ...
                     }
                 }
@@ -126,20 +140,6 @@ class PolyMeshLoader(QObject):
             ...
         }
         """
-        def readerProgressEvent(caller: vtkPOpenFOAMReader, ev):
-            self.progress.emit(self.tr('Loading Mesh : ') + f'{int(float(caller.GetProgress()) * 100)}%')
-
-        self._reader.DecomposePolyhedraOn()
-        self._reader.EnableAllCellArrays()
-        self._reader.EnableAllPointArrays()
-        self._reader.EnableAllPatchArrays()
-        self._reader.EnableAllLagrangianArrays()
-        self._reader.CreateCellToPointOn()
-        self._reader.CacheMeshOn()
-        self._reader.ReadZonesOn()
-        self._reader.SkipZeroTimeOff()
-
-        self._reader.AddObserver(vtkCommand.ProgressEvent, readerProgressEvent)
 
         if statusConfig:
             for patchName, status in statusConfig.items():
@@ -153,3 +153,6 @@ class PolyMeshLoader(QObject):
             vtkMesh = {'': vtkMesh}
 
         return vtkMesh
+
+    def _readerProgressed(self, caller: vtkPOpenFOAMReader, ev):
+        self.progress.emit(self.tr('Loading Mesh : ') + f'{int(float(caller.GetProgress()) * 100)}%')

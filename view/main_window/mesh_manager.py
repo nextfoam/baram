@@ -1,53 +1,55 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import qasync
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import Signal
 
 from app import app
 from openfoam.poly_mesh.poly_mesh_loader import PolyMeshLoader
-from view.main_window.actor_manager import ActorGroup
+from rendering.actor_info import ActorInfo, ActorType
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
+from view.main_window.actor_manager import ActorManager
 
 
-class MeshManager(QObject):
+class MeshManager(ActorManager):
     progress = Signal(str)
 
-    def __init__(self, actorManager):
+    def __init__(self):
         super().__init__()
-        self._actors = actorManager
-        self._loaded = False
 
-    async def load(self):
-        self._actors.showGroup(ActorGroup.MESH)
+        self._loader = PolyMeshLoader(app.fileSystem.foamFilePath())
+        self._time = None
 
-        loader = PolyMeshLoader(app.fileSystem.foamFilePath())
-        loader.progress.connect(self.progress)
-        vtkMesh = await loader.loadMesh()
+        self._name = 'Mesh'
+
+    async def load(self, time):
+        self.clear()
+        self._visibility = True
+
+        progressDialog = ProgressDialogSimple(app.window, self.tr('Loading Mesh'))
+        progressDialog.setLabelText(self.tr('Loading Mesh'))
+        progressDialog.open()
+
+        self._loader.progress.connect(progressDialog.setLabelText)
+
+        vtkMesh = await self._loader.loadMesh(time)
 
         if vtkMesh:
             for rname, region in vtkMesh.items():
-                for bname, actorInfo in region['boundary'].items():
-                    actorInfo.name = f'{region}:{bname}'
-                    self._actors.add(actorInfo, ActorGroup.MESH)
+                for bname, polyData in region['boundary'].items():
+                    self.add(ActorInfo(polyData, bname, bname, ActorType.BOUNDARY))
 
-            self._loaded = True
+        self._time = time
+        self.fitDisplay()
 
-    def clear(self):
-        self._actors.clearGroup(ActorGroup.MESH)
+        progressDialog.close()
 
     @qasync.asyncSlot()
-    async def showActors(self):
-        self._actors.showGroup(ActorGroup.MESH)
+    async def show(self, time):
+        if self._time == time:
+            self._show()
+        else:
+            await self.load(time)
 
-        if not self._loaded:
-            progressDialog = ProgressDialogSimple(app.window, self.tr('Loading Mesh'))
-            progressDialog.setLabelText(self.tr('Loading Mesh'))
-            progressDialog.open()
-
-            self.progress.connect(progressDialog.setLabelText)
-            await self.load()
-
-            progressDialog.close()
-
-    def hideActors(self):
-        self._actors.hideGroup(ActorGroup.MESH)
+    def _connectSignalsSlots(self):
+        self._loader.progress.connect(self.progress)

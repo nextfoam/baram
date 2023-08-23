@@ -14,6 +14,8 @@ from view.step_page import StepPage
 
 
 class BaseGridPage(StepPage):
+    OUTPUT_TIME = 0
+
     def __init__(self, ui):
         super().__init__(ui, ui.baseGridPage)
 
@@ -32,12 +34,7 @@ class BaseGridPage(StepPage):
         if not self._loaded:
             self._load()
 
-        app.window.geometryManager.showActors()
-
-        if app.fileSystem.boundaryFilePath().exists():
-            app.window.meshManager.showActors()
-        else:
-            app.window.meshManager.hideActors()
+        self._updateMesh()
 
     def clearResult(self):
         path = app.fileSystem.polyMeshPath()
@@ -94,11 +91,10 @@ class BaseGridPage(StepPage):
             self.clearResult()
             return
 
-        progressDialog.hideCancelButton()
-        meshManager = app.window.meshManager
-        meshManager.progress.connect(progressDialog.setLabelText)
-        await meshManager.load()
-
         progressDialog.close()
 
+        await app.window.meshManager.load(self.OUTPUT_TIME)
         self._setNextStepEnabled(True)
+
+    def _showPreviousMesh(self):
+        app.window.meshManager.hide()

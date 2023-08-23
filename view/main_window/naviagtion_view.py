@@ -6,10 +6,6 @@ from PySide6.QtCore import QObject, Signal
 from db.configurations_schema import Step
 
 
-
-from PySide6.QtWidgets import QButtonGroup
-
-
 steps = {
     'geometryStep': Step.GEOMETRY,
     'baseGridStep': Step.BASE_GRID,
@@ -23,7 +19,7 @@ steps = {
 class NavigationView(QObject):
     currentStepChanged = Signal(int, int)
 
-    def __init__(self, buttons:QButtonGroup):
+    def __init__(self, buttons):
         super().__init__()
         self._steps = buttons
         self._currentStep = None

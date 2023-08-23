@@ -22,7 +22,7 @@ class CastellationTab(QObject):
         self._surfaceItem = QTreeWidgetItem(self._ui.refinements, [self.tr('Surface')])
         self._volumeItem = QTreeWidgetItem(self._ui.refinements, [self.tr('Volume')])
 
-        self._locked = False
+        self._enabled = True
 
         self._ui.refinements.header().setStretchLastSection(False)
         self._ui.refinements.setColumnWidth(0, 60)
@@ -34,29 +34,29 @@ class CastellationTab(QObject):
 
         self._connectSignalsSlots()
 
-    def lock(self):
-        self._ui.castellationConfiguration.setEnabled(False)
-
-        for i in range(self._surfaceItem.childCount()):
-            self._surfaceItem.child(i).lock()
-
-        for i in range(self._volumeItem.childCount()):
-            self._volumeItem.child(i).lock()
-
-        self._ui.castellationButtons.setEnabled(False)
-        self._locked = True
-
-    def unlock(self):
+    def enable(self):
         self._ui.castellationConfiguration.setEnabled(True)
 
         for i in range(self._surfaceItem.childCount()):
-            self._surfaceItem.child(i).unlock()
+            self._surfaceItem.child(i).enable()
 
         for i in range(self._volumeItem.childCount()):
-            self._volumeItem.child(i).unlock()
+            self._volumeItem.child(i).enable()
 
         self._ui.castellationButtons.setEnabled(True)
-        self._locked = False
+        self._enabled = True
+
+    def disable(self):
+        self._ui.castellationConfiguration.setEnabled(False)
+
+        for i in range(self._surfaceItem.childCount()):
+            self._surfaceItem.child(i).disable()
+
+        for i in range(self._volumeItem.childCount()):
+            self._volumeItem.child(i).disable()
+
+        self._ui.castellationButtons.setEnabled(False)
+        self._enabled = False
 
     def save(self):
         try:
@@ -120,5 +120,5 @@ class CastellationTab(QObject):
         self._ui.refinements.itemClicked.connect(self._refinementItemClicked)
 
     def _refinementItemClicked(self, item, column):
-        if not self._locked and column == Column.LEVEL_COLUMN.value:
+        if self._enabled and column == Column.LEVEL_COLUMN.value:
             self._ui.refinements.editItem(item, column)

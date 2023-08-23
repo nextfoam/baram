@@ -4,6 +4,8 @@
   <qresource prefix="graphicsIcons">
     <file alias="axesOff.png">resources/graphicsIcons/axesOff.png</file>
     <file alias="axesOn.png">resources/graphicsIcons/axesOn.png</file>
+    <file alias="bulb-off.svg">resources/graphicsIcons/bulb-off.svg</file>
+    <file alias="bulb-on.svg">resources/graphicsIcons/bulb-on.svg</file>
     <file alias="cubeAxesOff.png">resources/graphicsIcons/cubeAxesOff.png</file>
     <file alias="cubeAxesOn.png">resources/graphicsIcons/cubeAxesOn.png</file>
     <file alias="cullingOff.png">resources/graphicsIcons/cullingOff.png</file>
@@ -13,6 +15,7 @@
     <file alias="minusY.png">resources/graphicsIcons/minusY.png</file>
     <file alias="minusZ.png">resources/graphicsIcons/minusZ.png</file>
     <file alias="noun-axis-405079">resources/graphicsIcons/noun-axis-405079.svg</file>
+    <file alias="no-cutter.svg">resources/graphicsIcons/do-not-use-cutter.svg</file>
     <file alias="originAxesOff.png">resources/graphicsIcons/originAxesOff.png</file>
     <file alias="originAxesOn.png">resources/graphicsIcons/originAxesOn.png</file>
     <file alias="orthogonalOn.png">resources/graphicsIcons/orthogonalOn.png</file>

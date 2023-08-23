@@ -59,11 +59,11 @@ class RefinementItem(QTreeWidgetItem):
     def eyeOff(self):
         self._eyeCheckBox.setChecked(False)
 
-    def lock(self):
-        self._editable = False
-
-    def unlock(self):
+    def enable(self):
         self._editable = True
+
+    def disable(self):
+        self._editable = False
 
     def _setupWithTreeWidget(self):
         self.treeWidget().setItemWidget(self, Column.ICON_COLUMN.value, self._eyeCheckBox)

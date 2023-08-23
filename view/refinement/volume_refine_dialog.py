@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QDialog, QWidget
 from PySide6.QtCore import QEvent, QTimer
 
 from app import app
-from rendering.vtk_loader import hexPolyData, polyDataToActor, sphereActor, cylinderActor
+from rendering.vtk_loader import hexPolyData, polyDataToActor, spherePolyData, cylinderPolyData
 from openfoam.system.topo_set_dict import HexSource, CylinderSource, SphereSource
 from .volume_refine_dialog_ui import Ui_VolumeRefineDialog
 
@@ -95,21 +95,21 @@ class VolumeRefineDialog(QDialog):
 
         shape = self._ui.shapeRadios.checkedButton().objectName()
         actor = self._actor
+        polyData = None
         if shape == 'hex':
-            hex = hexPolyData((float(self._ui.minX.text()), float(self._ui.minY.text()), float(self._ui.minZ.text())),
+            polyData = hexPolyData((float(self._ui.minX.text()), float(self._ui.minY.text()), float(self._ui.minZ.text())),
                               (float(self._ui.maxX.text()), float(self._ui.maxY.text()), float(self._ui.maxZ.text())))
-            actor = polyDataToActor(hex)
         elif shape == 'cylinder':
-            actor = cylinderActor(
+            polyData = cylinderPolyData(
                 (float(self._ui.axis1X.text()), float(self._ui.axis1Y.text()), float(self._ui.axis1Z.text())),
                 (float(self._ui.axis2X.text()), float(self._ui.axis2Y.text()), float(self._ui.axis2Z.text())),
                 float(self._ui.cylinderRadius.text()))
         elif shape == 'sphere':
-            actor = sphereActor(
+            polyData = spherePolyData(
                 (float(self._ui.centerX.text()), float(self._ui.centerY.text()), float(self._ui.centerZ.text())),
                 float(self._ui.sphereRadius.text()))
 
-        app.window.renderingView.addActor(actor)
+        app.window.renderingView.addActor(polyDataToActor(polyData))
         app.window.renderingView.refresh()
 
         self._actor = actor

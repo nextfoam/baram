@@ -38,18 +38,14 @@ class BoundaryLayerPage(StepPage):
 
         self._connectSignalsSlots()
 
-    def lock(self):
-        self._widget.setEnabled(False)
-
-    def unlock(self):
-        self._widget.setEnabled(True)
-
     def open(self):
         self._load()
 
     def selected(self):
         if not self._loaded:
             self._load()
+
+        self._updateMesh()
 
     def save(self):
         try:
@@ -75,7 +71,7 @@ class BoundaryLayerPage(StepPage):
 
         self._ui.layers.clear()
         layers = db.getElements('layers', None, ['useLocalSetting', 'nSurfaceLayers'])
-        for gID, geometry in app.window.geometryManager.geometries().items():
+        for gID, geometry in app.db.getElements('geometry').items():
             if geometry['cfdType'] != CFDType.NONE.value and geometry['gType'] == GeometryType.SURFACE.value:
                 if gID in layers:
                     nSurfaceLayers = layers.pop(gID)['nSurfaceLayers']
@@ -139,10 +135,7 @@ class BoundaryLayerPage(StepPage):
             progressDialog.setLabelText(self.tr('Loading Mesh'))
             progressDialog.open()
 
-            meshManager = app.window.meshManager
-            meshManager.clear()
-            meshManager.progress.connect(progressDialog.setLabelText)
-            await meshManager.load()
+            await app.window.meshManager.load(self.OUTPUT_TIME)
 
             self._updateControlButtons()
             progressDialog.close()
@@ -154,6 +147,7 @@ class BoundaryLayerPage(StepPage):
             self.unlock()
 
     def _reset(self):
+        self._showPreviousMesh()
         self.clearResult()
         self._updateControlButtons()
 

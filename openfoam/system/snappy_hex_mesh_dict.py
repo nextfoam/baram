@@ -240,7 +240,7 @@ class SnappyHexMeshDict(DictionaryFile):
             return {}
 
         data = {}
-        for gID, geometry in app.window.geometryManager.geometries().items():
+        for gID, geometry in app.db.getElements('geometry').items():
             if geometry['cfdType'] != CFDType.NONE.value and geometry['gType'] == GeometryType.SURFACE.value:
                 db = app.db.checkout(f'addLayers/layers/{gID}')
                 nSurfaceLayers = int(db.getValue('nSurfaceLayers'))

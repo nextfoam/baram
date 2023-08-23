@@ -29,6 +29,8 @@ class SnapPage(StepPage):
         if not self._loaded:
             self._load()
 
+        self._updateMesh()
+
     def save(self):
         try:
             db = app.db.checkout('snap')
@@ -100,10 +102,7 @@ class SnapPage(StepPage):
             progressDialog.setLabelText(self.tr('Loading Mesh'))
             progressDialog.open()
 
-            meshManager = app.window.meshManager
-            meshManager.clear()
-            meshManager.progress.connect(progressDialog.setLabelText)
-            await meshManager.load()
+            await app.window.meshManager.load(self.OUTPUT_TIME)
 
             self._updateControlButtons()
             progressDialog.close()
@@ -115,6 +114,7 @@ class SnapPage(StepPage):
             self.unlock()
 
     def _reset(self):
+        self._showPreviousMesh()
         self.clearResult()
         self._updateControlButtons()
 

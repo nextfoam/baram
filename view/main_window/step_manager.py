@@ -70,8 +70,6 @@ class StepManager:
             self._navigation.disableStep(s)
             self._pages[s].clearResult()
 
-        self._open(step)
-
         for t in app.fileSystem.times():
             if float(t) > self._pages[Step.LAST_STEP].OUTPUT_TIME:
                 path = app.fileSystem.timePath(t)
@@ -80,6 +78,8 @@ class StepManager:
 
                 for path in app.fileSystem.caseRoot().glob(f'processor*/{t}'):
                     rmtree(path)
+
+        self._open(step)
 
     def saveCurrentPage(self):
         self._pages[self._navigation.currentStep()].save()
@@ -130,7 +130,6 @@ class StepManager:
             self._navigation.disableStep(step)
             self._pages[step].clearResult()
 
-        app.window.meshManager.clear()
         self._setOpendedStep(currentStep)
 
         self._buttons.nextButton.setEnabled(True)

@@ -50,12 +50,12 @@ class CastellationPage(StepPage):
         self._connectSignalsSlots()
 
     def lock(self):
-        self._regionTab.lock()
-        self._castellationTab.lock()
+        self._regionTab.disable()
+        self._castellationTab.disable()
 
     def unlock(self):
-        self._regionTab.unlock()
-        self._castellationTab.unlock()
+        self._regionTab.enable()
+        self._castellationTab.enable()
 
     def open(self):
         self._load()
@@ -66,6 +66,8 @@ class CastellationPage(StepPage):
 
         self._updateControlButtons()
         self._currentTabChanged(self._ui.tabWidget.currentIndex())
+
+        self._updateMesh()
 
     def deselected(self):
         self._regionTab.deactivated()
@@ -92,17 +94,9 @@ class CastellationPage(StepPage):
 
     def _currentTabChanged(self, index):
         if index == Tab.REGION.value:
-            app.window.geometryManager.showActors()
-            app.window.meshManager.hideActors()
             self._regionTab.activated()
         else:
             self._regionTab.deactivated()
-            if app.fileSystem.timePath(self.OUTPUT_TIME).exists():
-                app.window.geometryManager.showActors()
-                app.window.meshManager.showActors()
-            else:
-                app.window.geometryManager.showActors()
-                app.window.meshManager.hideActors()
 
     def _load(self):
         self._advancedDialog = None
@@ -111,8 +105,9 @@ class CastellationPage(StepPage):
         self._refinementVolumes = []
         self._refinementFeatures = []
 
-        for gId, geometry in app.window.geometryManager.geometries().items():
+        for gId, geometry in app.db.getElements('geometry').items():
             if geometry['cfdType'] != CFDType.NONE.value:
+                geometry['gId'] = gId
                 if geometry['gType'] == GeometryType.SURFACE.value:
                     self._refinementSurfaces.append(geometry)
                     if geometry['shape'] not in (Shape.CYLINDER.value, Shape.SPHERE.value):
@@ -157,14 +152,7 @@ class CastellationPage(StepPage):
             processor.errorLogged.connect(console.appendError)
             await processor.run()
 
-            progressDialog = ProgressDialogSimple(self._widget, self.tr('Loading Mesh'), False)
-            progressDialog.setLabelText(self.tr('Loading Mesh'))
-            progressDialog.open()
-
-            meshManager = app.window.meshManager
-            meshManager.clear()
-            meshManager.progress.connect(progressDialog.setLabelText)
-            await meshManager.load()
+            await app.window.meshManager.load(self.OUTPUT_TIME)
 
             self._updateControlButtons()
             progressDialog.close()
@@ -176,6 +164,7 @@ class CastellationPage(StepPage):
             self.unlock()
 
     def _reset(self):
+        self._showPreviousMesh()
         self.clearResult()
         self._updateControlButtons()
 

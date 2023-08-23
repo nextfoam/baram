@@ -270,7 +270,8 @@ class RenderingView(QWidget):
             picker = vtkPropPicker()
             picker.PickProp(x, y, self._renderer)
             actor = picker.GetActor()
-            self.actorPicked.emit(actor)
+            if actor:
+                self.actorPicked.emit(actor)
 
         # The style does not run its own handler if observer is registered
         self._style.OnLeftButtonUp()

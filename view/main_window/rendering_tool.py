@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from rendering.rendering_manager import rendering
-
-
 class RenderingTool:
     def __init__(self, ui):
 
@@ -20,7 +17,3 @@ class RenderingTool:
         ui.fit.clicked.connect(self._view.fitCamera)
         ui.perspective.toggled.connect(self._view.setPerspective)
         ui.rotate.clicked.connect(self._view.rollCamera)
-        ui.renderingMode.currentIndexChanged.connect(self._changeRenderingMode)
-
-    def _changeRenderingMode(self, index):
-        rendering.setRenderingMode(index)

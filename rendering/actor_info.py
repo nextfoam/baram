@@ -1,8 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from rendering.rendering_manager import SURFACE_MODE, FEATURE_MODE
+from enum import Enum ,auto
+
+from PySide6.QtGui import QColor
+
 from dataclasses import dataclass
+
+from rendering.vtk_loader import polyDataToActor
+
+
+class DisplayMode(Enum):
+    WIREFRAME      = auto()
+    SURFACE        = auto()
+    SURFACE_EDGE   = auto()
 
 
 @dataclass
@@ -26,40 +37,158 @@ class Bounds:
         return self.xMax - self.xMin, self.yMax - self.yMin, self.zMax - self.zMin
 
 
+class ActorType(Enum):
+    GEOMETRY = auto()
+    BOUNDARY = auto()
+
+
+@dataclass
+class MeshInfo:
+    name: str
+    type: ActorType
+
+
 class ActorInfo:
-    def __init__(self, surface, feature=None):
-        self._actor = {
-            SURFACE_MODE: surface,
-            FEATURE_MODE: feature
+    @dataclass
+    class Properties:
+        visibility: bool
+        opacity: float
+        color: QColor
+        displayMode: DisplayMode
+        cutEnabled: bool
+        highlighted: bool
+
+        def merge(self, properties):
+            self.visibility = properties.visibility if properties.visibility == self.visibility else None
+            self.opacity = properties.opacity if properties.opacity == self.opacity else None
+            self.color = properties.color if properties.color == self.color else None
+            self.displayMode = properties.displayMode if properties.displayMode == self.displayMode else None
+            self.cutEnabled = properties.cutEnabled if properties.cutEnabled == self.cutEnabled else None
+
+    def __init__(self, polyData, id_, name, type):
+        self._id = id_
+        self._name = name
+        self._type = type
+        self._polyData = None
+
+        self._actor = polyDataToActor(polyData)
+        self._actor.SetObjectName(self._id)
+        self._properties = None
+
+        prop = self._actor.GetProperty()
+        self._properties = self.Properties(self._actor.GetVisibility(),
+                                           prop.GetOpacity(),
+                                           QColor.fromRgbF(*prop.GetColor()),
+                                           DisplayMode.SURFACE,
+                                           True, False)
+
+        self._displayModeApplicator = {
+            DisplayMode.WIREFRAME: self._applyWireframeMode,
+            DisplayMode.SURFACE: self._applySurfaceMode,
+            DisplayMode.SURFACE_EDGE: self._applySurfaceEdgeMode
         }
 
-        self._name = None
-        self._visible = True
+    def id(self):
+        return self._id
 
-    @property
-    def surface(self):
-        return self._actor[SURFACE_MODE]
-
-    @property
-    def feature(self):
-        return self._actor[FEATURE_MODE]
-
-    @property
     def name(self):
         return self._name
 
-    @name.setter
-    def name(self, name):
-        self._name = name
+    def type(self):
+        return self._type
+
+    def polyData(self):
+        return self._polyData
+
+    def actor(self):
+        return self._actor
+
+    def properties(self):
+        return self._properties
 
     def bounds(self):
-        return Bounds(*self._actor[SURFACE_MODE].GetBounds())
-
-    def actor(self, type_=SURFACE_MODE):
-        return self._actor[type_]
+        return Bounds(*self._actor.GetBounds())
 
     def isVisible(self):
-        return self._visible
+        return self._properties.visibility
 
-    def setVisible(self, visible):
-        self._visible = visible
+    def color(self):
+        return self._properties.color
+
+    def isCutEnabled(self):
+        return self._properties.cutEnabled
+
+    def isHighlighted(self):
+        return self._properties.highlighted
+
+    def setVisible(self, visibility):
+        self._properties.visibility = visibility
+        self._applyVisibility()
+
+    def setOpacity(self, opacity):
+        self._properties.opacity = opacity
+        self._applyOpacity()
+
+    def setColor(self, color: QColor):
+        self._properties.color = color
+        self._applyColor()
+
+    def setDisplayMode(self, mode):
+        self._properties.displayMode = mode
+        self._applyDisplayMode()
+
+    def setCutEnabled(self, cut):
+        self._properties.cut = cut
+        self._applyCut()
+
+    def setHighlighted(self, highlighted):
+        self._properties.highlighted = highlighted
+        self._applyHighlight()
+
+    def setProperties(self, properties):
+        self._properties = properties
+        self._applyVisibility()
+        self._applyOpacity()
+        self._applyColor()
+        self._applyDisplayMode()
+        self._applyCut()
+
+    def _applyVisibility(self):
+        self._actor.SetVisibility(self._properties.visibility)
+
+    def _applyOpacity(self):
+        self._actor.GetProperty().SetOpacity(self._properties.opacity)
+
+    def _applyColor(self):
+        color = self._properties.color
+        self._actor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
+
+    def _applyDisplayMode(self):
+        self._displayModeApplicator[self._properties.displayMode]()
+
+    def _applyCut(self):
+        return
+
+    def _applyWireframeMode(self):
+        self._actor.GetProperty().SetRepresentationToWireframe()
+
+    def _applySurfaceMode(self):
+        self._actor.GetProperty().SetRepresentationToSurface()
+        self._actor.GetProperty().EdgeVisibilityOff()
+
+    def _applySurfaceEdgeMode(self):
+        self._actor.GetProperty().SetRepresentationToSurface()
+        self._actor.GetProperty().EdgeVisibilityOn()
+        self._actor.GetProperty().SetLineWidth(1.0)
+
+    def _applyHighlight(self):
+        # print(self._actor.GetProperty().GetDiffuse())
+        # print(self._actor.GetProperty().GetSpecular())
+        # print(self._actor.GetProperty().GetSpecularColor())
+        # print(self._actor.GetProperty().GetSpecularPower())
+
+        # self._actor.GetProperty().SetDiffuseColor(1, 1, 1)
+        # self._actor.GetProperty().SetDiffuse(0.8)
+        self._actor.GetProperty().SetSpecular(1)
+        # self._actor.GetProperty().SetSpecularColor(1, 1, 1)
+        self._actor.GetProperty().SetSpecularPower(30)

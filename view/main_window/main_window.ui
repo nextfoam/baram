@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1087</width>
+    <width>1105</width>
     <height>891</height>
    </rect>
   </property>
@@ -161,13 +161,19 @@
        </property>
        <item>
         <widget class="QSplitter" name="centralSplitter">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
          <widget class="QWidget" name="widget" native="true">
           <property name="minimumSize">
            <size>
-            <width>300</width>
+            <width>320</width>
             <height>0</height>
            </size>
           </property>
@@ -187,13 +193,13 @@
            <item>
             <widget class="QStackedWidget" name="content">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
              <property name="currentIndex">
-              <number>0</number>
+              <number>3</number>
              </property>
              <widget class="QWidget" name="geometryPage">
               <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -552,8 +558,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>422</width>
-                        <height>235</height>
+                        <width>284</width>
+                        <height>306</height>
                        </rect>
                       </property>
                      </widget>
@@ -1619,10 +1625,22 @@
            </property>
            <item>
             <widget class="QSplitter" name="renderingSplitter">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
-             <widget class="QWidget" name="widget_22" native="true">
+             <widget class="QWidget" name="displayControl" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>340</width>
+                <height>0</height>
+               </size>
+              </property>
               <layout class="QVBoxLayout" name="verticalLayout_3">
                <property name="topMargin">
                 <number>0</number>
@@ -1679,7 +1697,51 @@
                 </widget>
                </item>
                <item>
-                <widget class="QTableWidget" name="actors"/>
+                <widget class="QTreeWidget" name="actors">
+                 <property name="contextMenuPolicy">
+                  <enum>Qt::CustomContextMenu</enum>
+                 </property>
+                 <property name="editTriggers">
+                  <set>QAbstractItemView::NoEditTriggers</set>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::ExtendedSelection</enum>
+                 </property>
+                 <property name="sortingEnabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="columnCount">
+                  <number>5</number>
+                 </property>
+                 <attribute name="headerVisible">
+                  <bool>true</bool>
+                 </attribute>
+                 <column>
+                  <property name="text">
+                   <string>Name</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Type</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </column>
+                </widget>
                </item>
               </layout>
              </widget>
@@ -2057,7 +2119,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1087</width>
+     <width>1105</width>
      <height>22</height>
     </rect>
    </property>

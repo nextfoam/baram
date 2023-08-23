@@ -27,8 +27,6 @@ class RegionTab(QObject):
         layout.addStretch()
 
     def activated(self):
-        app.window.geometryManager.showActors()
-        app.window.meshManager.hideActors()
         self._form.setupForAdding()
 
         self._pointWidget.on()
@@ -36,17 +34,17 @@ class RegionTab(QObject):
     def deactivated(self):
         self._pointWidget.off()
 
-    def lock(self):
+    def enable(self):
         for card in self._regions.values():
-            card.lock()
-
-        self._form.disable()
-
-    def unlock(self):
-        for card in self._regions.values():
-            card.unlock()
+            card.enable()
 
         self._form.enable()
+
+    def disable(self):
+        for card in self._regions.values():
+            card.disable()
+
+        self._form.disable()
 
     def load(self):
         if not self._loaded:

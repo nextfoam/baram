@@ -35,6 +35,7 @@ class GeometryPage(StepPage):
 
     def unlock(self):
         self._ui.buttons.setEnabled(True)
+        self._showPreviousMesh()
 
     def selected(self):
         if not self._loaded:
@@ -45,18 +46,15 @@ class GeometryPage(StepPage):
 
             self._loaded = True
 
-        app.window.geometryManager.showActors()
-        app.window.meshManager.hideActors()
+        app.window.meshManager.hide()
 
     def _connectSignalsSlots(self):
-        self._geometries.listChanged.connect(self._updateNextStepAvailable)
-        self._list.eyeToggled.connect(self._setGeometryVisibliity)
         self._list.itemDoubleClicked.connect(self._openEditDialog)
         self._ui.geometryList.currentItemChanged.connect(self._currentGeometryChanged)
 
         self._ui.import_.clicked.connect(self._importClicked)
         self._ui.add.clicked.connect(self._addClicked)
-        self._ui.edit.clicked.connect(self._openEditDialog)
+        self._ui.edit.clicked.connect(self._editClicked)
         self._ui.remove.clicked.connect(self._removeGeometry)
 
     @qasync.asyncSlot()
@@ -96,7 +94,7 @@ class GeometryPage(StepPage):
 
         db = app.db.checkout()
         geometries = db.getElements('geometry', lambda i, e: i == gId or e['volume'] == str(gId), ['path'])
-        self._geometries.remove(geometries)
+        self._geometries.removeGeometry(geometries)
 
         for g in geometries:
             db.removeGeometryPolyData(geometries[g]['path'])
@@ -105,15 +103,10 @@ class GeometryPage(StepPage):
         app.db.commit(db)
 
         self._list.remove(gId)
+        self._updateNextStepAvailable()
 
     def _updateNextStepAvailable(self):
         self._setNextStepEnabled(self.isNextStepAvailable())
-
-    def _setGeometryVisibliity(self, gId, state):
-        if state:
-            self._geometries.showActor(gId)
-        else:
-            self._geometries.hideActor(gId)
 
     def _currentGeometryChanged(self):
         gId = self._list.currentGeometryID()
@@ -183,13 +176,13 @@ class GeometryPage(StepPage):
     def _updateVolume(self):
         gId = self._geometryDialog.gId()
         geometry = app.db.getElement('geometry',  gId)
-        self._geometries.update(gId, geometry, self._list.childSurfaces(gId))
+        self._geometries.updateGeometry(gId, geometry, self._list.childSurfaces(gId))
         self._list.update(gId, geometry)
 
     def _updateSurface(self):
         gId = self._geometryDialog.gId()
         geometry = app.db.getElement('geometry',  gId)
-        self._geometries.update(gId, geometry)
+        self._geometries.updateGeometry(gId, geometry)
         self._list.update(gId, geometry)
 
     def _geometryCreated(self, gId):
@@ -202,5 +195,6 @@ class GeometryPage(StepPage):
                 self._addGeometry(surfaceId, surfaces[surfaceId])
 
     def _addGeometry(self, gId, geometry):
-        self._geometries.add(gId, geometry)
+        self._geometries.addGeometry(gId, geometry)
         self._list.add(gId, geometry)
+        self._updateNextStepAvailable()

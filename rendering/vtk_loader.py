@@ -7,7 +7,7 @@ from vtkmodules.vtkCommonDataModel import vtkHexahedron, vtkCellArray, vtkUnstru
 from vtkmodules.vtkCommonDataModel import vtkDataObject
 from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 from vtkmodules.vtkFiltersSources import vtkLineSource, vtkSphereSource
-from vtkmodules.vtkFiltersCore import vtkTubeFilter, vtkThreshold
+from vtkmodules.vtkFiltersCore import vtkTubeFilter, vtkThreshold, vtkFeatureEdges
 from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
 from vtkmodules.vtkIOGeometry import vtkSTLReader
 from vtkmodules.vtkRenderingFreeType import vtkVectorText
@@ -51,10 +51,19 @@ def loadSTLFile(path):
 def polyDataToActor(polyData):
     mapper = vtkPolyDataMapper()
     mapper.SetInputData(polyData)
+    mapper.ScalarVisibilityOff()
     actor = vtkActor()
     actor.SetMapper(mapper)
 
     return actor
+
+
+def polyDataToFeatureActor(polyData):
+    edges = vtkFeatureEdges()
+    edges.SetInputData(polyData)
+    edges.Update()
+
+    return polyDataToActor(edges.GetOutput())
 
 
 def hexPolyData(point1, point2):
@@ -100,7 +109,7 @@ def hexPolyData(point1, point2):
     return geometryFilter.GetOutput()
 
 
-def cylinderActor(point1, point2, radius):
+def cylinderPolyData(point1, point2, radius):
     line = vtkLineSource()
     line.SetPoint1(*point1)
     line.SetPoint2(*point2)
@@ -111,30 +120,29 @@ def cylinderActor(point1, point2, radius):
     cyl.SetNumberOfSides(32)
     cyl.CappingOn()
 
-    mapper = vtkDataSetMapper()
-    mapper.SetInputConnection(cyl.GetOutputPort())
+    geometryFilter = vtkGeometryFilter()
+    geometryFilter.SetInputConnection(cyl.GetOutputPort())
+    geometryFilter.Update()
 
-    actor = vtkQuadricLODActor()
-    actor.SetMapper(mapper)
-
-    return actor
+    return geometryFilter.GetOutput()
 
 
-def sphereActor(point, radius):
+def spherePolyData(point, radius):
     sphere = vtkSphereSource()
     sphere.SetCenter(*point)
     sphere.SetRadius(radius)
     sphere.SetPhiResolution(100)
     sphere.SetThetaResolution(100)
+    sphere.Update()
+    #
+    # mapper = vtkDataSetMapper()
+    # mapper.SetInputConnection(sphere.GetOutputPort())
+    #
+    # geometryFilter = vtkGeometryFilter()
+    # geometryFilter.SetInputConnection(mapper.GetOutputPort())
+    # geometryFilter.Update()
 
-    mapper = vtkDataSetMapper()
-    mapper.SetInputConnection(sphere.GetOutputPort())
-
-    actor = vtkActor()
-    actor.SetMapper(mapper)
-    # actor.GetProperty().SetColor(0.8, 0.8, 0.8)
-
-    return actor
+    return sphere.GetOutput()
 
 
 def polygonPolyData(points):
