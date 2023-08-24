@@ -19,8 +19,7 @@ from vtkmodules.vtkCommonCore import vtkCommand
 # load implementations for rendering and interaction factory classes
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor, vtkCubeAxesActor
-from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker
-
+from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vtkLightKit
 
 # To fix middle button issue in vtkmodules
 # Qt.MidButton that is not available in PySide6 is use in QVTKRenderWindowInteractor
@@ -74,6 +73,9 @@ class RenderingView(QWidget):
         self._renderer.GradientBackgroundOn()
         self._renderer.SetBackground(0.82, 0.82, 0.82)
         self._renderer.SetBackground2(0.22, 0.24, 0.33)
+
+        self._lightKit = vtkLightKit()
+        self._lightKit.AddLightsToRenderer(self._renderer)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
