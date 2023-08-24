@@ -52,19 +52,9 @@
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_21">
             <item>
-             <widget class="QRadioButton" name="firstAndOverall">
+             <widget class="QRadioButton" name="finalAndExpansion">
               <property name="text">
-               <string>First and Total</string>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">thicknessModelSpecificationRadios</string>
-              </attribute>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="firstAndExpansion">
-              <property name="text">
-               <string>First and Expansion</string>
+               <string>Final and Expansion</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">thicknessModelSpecificationRadios</string>
@@ -82,9 +72,19 @@
              </widget>
             </item>
             <item>
-             <widget class="QRadioButton" name="finalAndExpansion">
+             <widget class="QRadioButton" name="firstAndExpansion">
               <property name="text">
-               <string>Final and Expansion</string>
+               <string>First and Expansion</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">thicknessModelSpecificationRadios</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="firstAndOverall">
+              <property name="text">
+               <string>First and Total</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">thicknessModelSpecificationRadios</string>
