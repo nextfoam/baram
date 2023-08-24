@@ -94,11 +94,11 @@ layer = {
     'useLocalSetting': BoolType(False),
     'thicknessModel': EnumType(ThicknessModel),
     'relativeSizes': BoolType(True),
-    'firstLayerThickness': FloatType().setDefault(0.001),
-    'finalLayerThickness': FloatType().setDefault(1.0),
-    'thickness': FloatType().setDefault(2.0),
+    'firstLayerThickness': FloatType().setDefault(0.3),
+    'finalLayerThickness': FloatType().setDefault(0.5),
+    'thickness': FloatType().setDefault(0.5),
     'expansionRatio': FloatType().setDefault(1.2),
-    'minThickness': FloatType().setDefault(1.2)
+    'minThickness': FloatType().setDefault(0.3)
 }
 
 
@@ -159,11 +159,11 @@ schema = {
     'addLayers': {
         'thicknessModel': EnumType(ThicknessModel).setDefault(ThicknessModel.FINAL_AND_OVERALL),
         'relativeSizes': BoolType(True),
-        'firstLayerThickness': FloatType().setDefault(0.001),
-        'finalLayerThickness': FloatType().setDefault('1.0'),
-        'thickness': FloatType().setDefault('2.0'),
+        'firstLayerThickness': FloatType().setDefault(0.3),
+        'finalLayerThickness': FloatType().setDefault('0.5'),
+        'thickness': FloatType().setDefault('0.5'),
         'expansionRatio': FloatType().setDefault(1.2),
-        'minThickness': FloatType().setDefault(1.2),
+        'minThickness': FloatType().setDefault(0.3),
         'layers': IntKeyList(LayerSchema()),
         'nGrow': IntType().setDefault(0),
         'maxFaceThicknessRatio': FloatType().setDefault(0.5),
