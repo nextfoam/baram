@@ -185,12 +185,13 @@ class SnappyHexMeshDict(DictionaryFile):
                 }
             }
 
-            if surface['cfdType'] == CFDType.CONFORMAL_MESH.value:
-                data[name]['faceZone'] = name
-                data[name]['faceType'] = 'baffle'
-            elif surface['cfdType'] == CFDType.NON_CONFORMAL_MESH.value:
-                data[name]['faceZone'] = name
-                data[name]['faceType'] = 'boundary'
+            if surface['cfdType'] == CFDType.INTERFACE.value:
+                if surface['nonConformal']:
+                    data[name]['faceZone'] = name
+                    data[name]['faceType'] = 'boundary'
+                else:
+                    data[name]['faceZone'] = name
+                    data[name]['faceType'] = 'baffle'
 
         return data
 
