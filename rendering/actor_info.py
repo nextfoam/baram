@@ -184,10 +184,6 @@ class ActorInfo:
         # print(self._actor.GetProperty().GetSpecularPower())
         # print(self._actor.GetProperty().GetAmbient())
         if self._properties.highlighted:
-            self._actor.GetProperty().SetAmbient(1)
-            self._actor.GetProperty().SetSpecular(1)
-            self._actor.GetProperty().SetSpecularPower(30)
+            self._actor.GetProperty().SetDiffuse(0.6)
         else:
-            self._actor.GetProperty().SetAmbient(0)
-            self._actor.GetProperty().SetSpecular(0)
-            self._actor.GetProperty().SetSpecularPower(1)
+            self._actor.GetProperty().SetDiffuse(0.3)

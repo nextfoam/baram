@@ -54,6 +54,8 @@ def polyDataToActor(polyData):
     mapper.ScalarVisibilityOff()
     actor = vtkActor()
     actor.SetMapper(mapper)
+    actor.GetProperty().SetAmbient(0.2)
+    actor.GetProperty().SetDiffuse(0.3)
 
     return actor
 
