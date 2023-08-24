@@ -146,7 +146,7 @@ class GeometryPage(StepPage):
                         element.setValue('volume', volumeId)
                         element.setValue('name', f'{surfaceName}{sseq}')
                         element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
-                        element.setValue('cfdType', CFDType.NONE.value)
+                        element.setValue('cfdType', CFDType.BOUNDARY.value)
                         element.setValue('path', db.addGeometryPolyData(polyData))
                         db.addElement('geometry', element)
 
@@ -156,7 +156,7 @@ class GeometryPage(StepPage):
                     element.setValue('gType', GeometryType.SURFACE.value)
                     element.setValue('name', f'{name}{seq}')
                     element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
-                    element.setValue('cfdType', CFDType.NONE.value)
+                    element.setValue('cfdType', CFDType.BOUNDARY.value)
                     element.setValue('path', db.addGeometryPolyData(polyData))
                     gId = db.addElement('geometry', element)
                     added.append(gId)

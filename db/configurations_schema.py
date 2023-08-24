@@ -48,8 +48,7 @@ class CFDType(Enum):
     NONE = 'none'
     CELL_ZONE = 'cellZone'
     BOUNDARY = 'boundary'
-    CONFORMAL_MESH = 'conformalMesh'
-    NON_CONFORMAL_MESH = 'nonConformalMesh'
+    INTERFACE = 'interface'
 
 
 class RegionType(Enum):
@@ -72,6 +71,8 @@ geometry = {
     'name': TextType(),
     'shape': EnumType(Shape),
     'cfdType': EnumType(CFDType),
+    'nonConformal': BoolType(False),
+    'interRegion': BoolType(False),
     'path': TextType().setOptional(),
     'point1': VectorComposite().schema(),
     'point2': VectorComposite().setDefault(1, 1, 1).schema(),

@@ -111,26 +111,17 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QRadioButton" name="conformalMesh">
+             <widget class="QCheckBox" name="nonConformal">
               <property name="text">
-               <string>Conformal Mesh</string>
+               <string>Non-Conformal</string>
               </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">interfaceRadios</string>
-              </attribute>
              </widget>
             </item>
             <item>
-             <widget class="QRadioButton" name="nonConformalMesh">
+             <widget class="QCheckBox" name="interRegion">
               <property name="text">
-               <string>Non-Conformal Mesh</string>
+               <string>Inter-Region</string>
               </property>
-              <attribute name="buttonGroup">
-               <string notr="true">interfaceRadios</string>
-              </attribute>
              </widget>
             </item>
            </layout>
@@ -190,7 +181,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="typeRadios"/>
   <buttongroup name="interfaceRadios"/>
+  <buttongroup name="typeRadios"/>
  </buttongroups>
 </ui>

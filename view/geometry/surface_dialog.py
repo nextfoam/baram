@@ -15,12 +15,7 @@ class SurfaceDialog(QDialog):
     _cfdTypes = {
         'none': CFDType.NONE.value,
         'boundary': CFDType.BOUNDARY.value,
-        'interface_': 'interface'
-    }
-
-    _interfaceTypes = {
-        'conformalMesh': CFDType.CONFORMAL_MESH.value,
-        'nonConformalMesh': CFDType.NON_CONFORMAL_MESH.value
+        'interface_': CFDType.INTERFACE.value
     }
 
     def __init__(self, parent, gId):
@@ -29,7 +24,6 @@ class SurfaceDialog(QDialog):
         self._ui.setupUi(self)
 
         self._typeRadios = RadioGroup(self._ui.typeRadios)
-        self._interfaceRadios = RadioGroup(self._ui.interfaceRadios)
 
         self._gId = gId
         self._dbElement = None
@@ -52,11 +46,9 @@ class SurfaceDialog(QDialog):
 
             self._dbElement.setValue('name', name)
 
-            cfdType = self._typeRadios.value()
-            if cfdType == 'interface':
-                cfdType = self._interfaceRadios.value()
-
-            self._dbElement.setValue('cfdType', cfdType)
+            self._dbElement.setValue('cfdType', self._typeRadios.value())
+            self._dbElement.setValue('nonConformal', self._ui.nonConformal.isChecked())
+            self._dbElement.setValue('interRegion', self._ui.interRegion.isChecked())
 
             app.db.commit(self._dbElement)
 
@@ -73,12 +65,12 @@ class SurfaceDialog(QDialog):
         self._ui.name.setText(self._dbElement.getValue('name'))
 
         cfdType = self._dbElement.getValue('cfdType')
-        if cfdType in self._interfaceTypes.values():
-            cfdType = 'interface'
-            self._ui.interfaceType.setEnabled(True)
-
         self._typeRadios.setObjectMap(self._cfdTypes, cfdType)
-        self._interfaceRadios.setObjectMap(self._interfaceTypes, self._dbElement.getValue('cfdType'))
+        if cfdType == CFDType.INTERFACE.value:
+            self._ui.nonConformal.setChecked(self._dbElement.getValue('nonConformal'))
+            self._ui.interRegion.setChecked(self._dbElement.getValue('interRegion'))
+
+        self._typeChanged(self._typeRadios.value())
 
     def _typeChanged(self, value):
-        self._ui.interfaceType.setEnabled(value == 'interface')
+        self._ui.interfaceType.setEnabled(value == CFDType.INTERFACE.value)

@@ -85,7 +85,7 @@ class VolumeDialog(QDialog):
                         element.setValue('volume', self._gId)
                         element.setValue('name', db.getUniqueValue('geometry', 'name', f'{name}_{plate}'))
                         element.setValue('shape', plate)
-                        element.setValue('cfdType', CFDType.NONE.value)
+                        element.setValue('cfdType', CFDType.BOUNDARY.value)
                         db.addElement('geometry', element)
                 else:
                     element = app.db.newElement('geometry')
@@ -93,7 +93,7 @@ class VolumeDialog(QDialog):
                     element.setValue('volume', self._gId)
                     element.setValue('name', db.getUniqueValue('geometry', 'name', f'{name}_surface'))
                     element.setValue('shape', self._shape)
-                    element.setValue('cfdType', CFDType.NONE.value)
+                    element.setValue('cfdType', CFDType.BOUNDARY.value)
                     db.addElement('geometry', element)
 
                 app.db.commit(db)

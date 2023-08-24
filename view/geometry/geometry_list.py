@@ -16,8 +16,7 @@ CFDTypes = {
     CFDType.NONE.value: QCoreApplication.translate('GeometryPage', 'None'),
     CFDType.CELL_ZONE.value: QCoreApplication.translate('GeometryPage', 'CellZone'),
     CFDType.BOUNDARY.value: QCoreApplication.translate('GeometryPage', 'Boundary'),
-    CFDType.CONFORMAL_MESH.value: QCoreApplication.translate('GeometryPage', 'Interface'),
-    CFDType.NON_CONFORMAL_MESH.value: QCoreApplication.translate('GeometryPage', 'Intefarce')
+    CFDType.INTERFACE.value: QCoreApplication.translate('GeometryPage', 'Interface'),
 }
 
 

@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import yaml
+
 from .file_db import writeConfigurations, readConfigurations, FileGroup, newFiles
 from .simple_db import SimpleDB
+from .migrate import migrate
 
 
 FILE_NAME = 'configurations.h5'
@@ -22,7 +25,7 @@ class Configurations(SimpleDB):
         self._path = path / FILE_NAME
         if self._path.exists():
             data, files, maxIds = readConfigurations(self._path)
-            self.loadYaml(data, fillWithDefault=True)
+            self._db = self.validateData(migrate(yaml.full_load(data)), fillWithDefault=True)
             self._files = files
             Configurations._geometryNextKey = maxIds[FileGroup.GEOMETRY_POLY_DATA.value]
         else:
