@@ -225,12 +225,20 @@ class RenderingView(QWidget):
         self._originActor = vtkAxesActor()
 
         self._originActor.SetVisibility(True)
-        self._originActor.AxisLabelsOff()
         self._originActor.SetConeRadius(0.2)
         self._originActor.SetShaftTypeToLine()
         self._originActor.SetNormalizedShaftLength(0.9, 0.9, 0.9)
         self._originActor.SetNormalizedTipLength(0.1, 0.1, 0.1)
         self._originActor.SetNormalizedLabelPosition(1.0, 1.0, 1.0)
+
+        actor = self._originActor.GetXAxisCaptionActor2D()
+        actor.SetPosition2(0.25, 0.05)
+
+        actor = self._originActor.GetYAxisCaptionActor2D()
+        actor.SetPosition2(0.25, 0.05)
+
+        actor = self._originActor.GetZAxisCaptionActor2D()
+        actor.SetPosition2(0.25, 0.05)
 
         self._renderer.AddActor(self._originActor)
 
