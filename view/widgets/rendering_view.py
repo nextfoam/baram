@@ -184,8 +184,8 @@ class RenderingView(QWidget):
             return
 
         self._cubeAxesActor = vtkCubeAxesActor()
-        self._cubeAxesActor.SetUseTextActor3D(1)
         self._cubeAxesActor.SetBounds(self._getBounds())
+        self._cubeAxesActor.SetScreenSize(15)
         self._cubeAxesActor.SetCamera(self._renderer.GetActiveCamera())
 
         axisColors = (
@@ -195,10 +195,7 @@ class RenderingView(QWidget):
         )
         for i in range(3):
             self._cubeAxesActor.GetTitleTextProperty(i).SetColor(axisColors[i])
-            self._cubeAxesActor.GetTitleTextProperty(i).SetFontSize(48)
-            self._cubeAxesActor.GetTitleTextProperty(i).BoldOn()
             self._cubeAxesActor.GetLabelTextProperty(i).SetColor(axisColors[i])
-            self._cubeAxesActor.GetLabelTextProperty(i).BoldOn()
 
         self._cubeAxesActor.DrawXGridlinesOn()
         self._cubeAxesActor.DrawYGridlinesOn()
