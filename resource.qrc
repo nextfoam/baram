@@ -11,19 +11,13 @@
     <file alias="cullingOff.png">resources/graphicsIcons/cullingOff.png</file>
     <file alias="cullingOn.png">resources/graphicsIcons/cullingOn.png</file>
     <file alias="fit.png">resources/graphicsIcons/fit.png</file>
-    <file alias="minusX.png">resources/graphicsIcons/minusX.png</file>
-    <file alias="minusY.png">resources/graphicsIcons/minusY.png</file>
-    <file alias="minusZ.png">resources/graphicsIcons/minusZ.png</file>
     <file alias="noun-axis-405079">resources/graphicsIcons/noun-axis-405079.svg</file>
     <file alias="no-cutter.svg">resources/graphicsIcons/do-not-use-cutter.svg</file>
     <file alias="originAxesOff.png">resources/graphicsIcons/originAxesOff.png</file>
     <file alias="originAxesOn.png">resources/graphicsIcons/originAxesOn.png</file>
-    <file alias="orthogonalOn.png">resources/graphicsIcons/orthogonalOn.png</file>
+    <file alias="2d-label-icon.svg">resources/graphicsIcons/2d-label-icon.svg</file>
     <file alias="ParaView.png">resources/graphicsIcons/ParaView.png</file>
-    <file alias="perspective.png">resources/graphicsIcons/perspective.png</file>
-    <file alias="plusX.png">resources/graphicsIcons/plusX.png</file>
-    <file alias="plusY.png">resources/graphicsIcons/plusY.png</file>
-    <file alias="plusZ.png">resources/graphicsIcons/plusZ.png</file>
+    <file alias="alignAxis.svg">resources/graphicsIcons/alignAxis.svg</file>
     <file alias="ruler.ico">resources/graphicsIcons/ruler.ico</file>
   </qresource>
   <qresource prefix="icons">

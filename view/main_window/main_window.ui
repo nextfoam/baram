@@ -1797,7 +1797,7 @@
                      </size>
                     </property>
                     <property name="icon">
-                     <iconset resource="../../../baram/resource.qrc">
+                     <iconset resource="../../resource.qrc">
                       <normaloff>:/graphicsIcons/ParaView.png</normaloff>:/graphicsIcons/ParaView.png</iconset>
                     </property>
                     <property name="iconSize">
@@ -1823,7 +1823,7 @@
                      </size>
                     </property>
                     <property name="icon">
-                     <iconset resource="../../../baram/resource.qrc">
+                     <iconset resource="../../resource.qrc">
                       <normaloff>:/graphicsIcons/noun-axis-405079</normaloff>:/graphicsIcons/noun-axis-405079</iconset>
                     </property>
                     <property name="iconSize">
@@ -1872,8 +1872,8 @@
                      </size>
                     </property>
                     <property name="icon">
-                     <iconset resource="../../../baram/resource.qrc">
-                      <normaloff>:/graphicsIcons/perspective.png</normaloff>:/graphicsIcons/perspective.png</iconset>
+                     <iconset resource="../../resource.qrc">
+                      <normaloff>:/graphicsIcons/2d-label-icon.svg</normaloff>:/graphicsIcons/2d-label-icon.svg</iconset>
                     </property>
                     <property name="iconSize">
                      <size>
@@ -1882,9 +1882,6 @@
                      </size>
                     </property>
                     <property name="checkable">
-                     <bool>true</bool>
-                    </property>
-                    <property name="checked">
                      <bool>true</bool>
                     </property>
                    </widget>
@@ -1898,7 +1895,7 @@
                      </size>
                     </property>
                     <property name="icon">
-                     <iconset resource="../../../baram/resource.qrc">
+                     <iconset resource="../../resource.qrc">
                       <normaloff>:/icons/expand.svg</normaloff>:/icons/expand.svg</iconset>
                     </property>
                     <property name="iconSize">
@@ -1910,7 +1907,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="FlatPushButton" name="plusX">
+                   <widget class="FlatPushButton" name="alignAxis">
                     <property name="maximumSize">
                      <size>
                       <width>32</width>
@@ -1918,108 +1915,8 @@
                      </size>
                     </property>
                     <property name="icon">
-                     <iconset resource="../../../baram/resource.qrc">
-                      <normaloff>:/graphicsIcons/plusX.png</normaloff>:/graphicsIcons/plusX.png</iconset>
-                    </property>
-                    <property name="iconSize">
-                     <size>
-                      <width>24</width>
-                      <height>24</height>
-                     </size>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="FlatPushButton" name="minusX">
-                    <property name="maximumSize">
-                     <size>
-                      <width>32</width>
-                      <height>32</height>
-                     </size>
-                    </property>
-                    <property name="icon">
-                     <iconset>
-                      <normaloff>:/graphicsIcons/minusX</normaloff>:/graphicsIcons/minusX</iconset>
-                    </property>
-                    <property name="iconSize">
-                     <size>
-                      <width>24</width>
-                      <height>24</height>
-                     </size>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="FlatPushButton" name="plusY">
-                    <property name="maximumSize">
-                     <size>
-                      <width>32</width>
-                      <height>32</height>
-                     </size>
-                    </property>
-                    <property name="icon">
-                     <iconset>
-                      <normaloff>:/graphicsIcons/plusY</normaloff>:/graphicsIcons/plusY</iconset>
-                    </property>
-                    <property name="iconSize">
-                     <size>
-                      <width>24</width>
-                      <height>24</height>
-                     </size>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="FlatPushButton" name="minusY">
-                    <property name="maximumSize">
-                     <size>
-                      <width>32</width>
-                      <height>32</height>
-                     </size>
-                    </property>
-                    <property name="icon">
-                     <iconset>
-                      <normaloff>:/graphicsIcons/minusY</normaloff>:/graphicsIcons/minusY</iconset>
-                    </property>
-                    <property name="iconSize">
-                     <size>
-                      <width>24</width>
-                      <height>24</height>
-                     </size>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="FlatPushButton" name="plusZ">
-                    <property name="maximumSize">
-                     <size>
-                      <width>32</width>
-                      <height>32</height>
-                     </size>
-                    </property>
-                    <property name="icon">
-                     <iconset>
-                      <normaloff>:/graphicsIcons/plusZ</normaloff>:/graphicsIcons/plusZ</iconset>
-                    </property>
-                    <property name="iconSize">
-                     <size>
-                      <width>24</width>
-                      <height>24</height>
-                     </size>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="FlatPushButton" name="minusZ">
-                    <property name="maximumSize">
-                     <size>
-                      <width>32</width>
-                      <height>32</height>
-                     </size>
-                    </property>
-                    <property name="icon">
-                     <iconset>
-                      <normaloff>:/graphicsIcons/minusZ</normaloff>:/graphicsIcons/minusZ</iconset>
+                     <iconset resource="../../resource.qrc">
+                      <normaloff>:/graphicsIcons/alignAxis.svg</normaloff>:/graphicsIcons/alignAxis.svg</iconset>
                     </property>
                     <property name="iconSize">
                      <size>
@@ -2038,7 +1935,7 @@
                      </size>
                     </property>
                     <property name="icon">
-                     <iconset resource="../../../baram/resource.qrc">
+                     <iconset resource="../../resource.qrc">
                       <normaloff>:/icons/reload.svg</normaloff>:/icons/reload.svg</iconset>
                     </property>
                     <property name="iconSize">
@@ -2282,7 +2179,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../baram/resource.qrc"/>
+  <include location="../../resource.qrc"/>
  </resources>
  <connections/>
  <buttongroups>

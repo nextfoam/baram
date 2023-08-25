@@ -1,0 +1,21 @@
+<svg
+   id="icons"
+   viewBox="0 0 512 512"
+   xmlns="http://www.w3.org/2000/svg">
+  <path
+     style="fill:none;stroke:#000000;stroke-width:32;stroke-linecap:round;stroke-linejoin:round"
+     d="M 52.925144,91.061392 447.17911,91.828424"
+     id="path517" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:32;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+     d="m 250.05213,436.66451 c 0,-92.31337 0,-67.47689 0,-276.94011"
+     id="path521" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:32;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+     d="m 250.05213,159.7244 -61.06908,79.42814"
+     id="path898" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:32;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+     d="m 250.05213,159.7244 59.06908,79.42814"
+     id="path898-8" />
+</svg>

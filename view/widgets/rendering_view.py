@@ -53,7 +53,7 @@ class RenderingView(QWidget):
 
         self._dialog: Optional[QFileDialog] = None
 
-        self._originActor: Optional[vtkActor] = None
+        self._originActor: Optional[vtkAxesActor] = None
         self._cubeAxesActor: Optional[vtkCubeAxesActor] = None
 
         self._pressPos = None
@@ -112,35 +112,30 @@ class RenderingView(QWidget):
 
         return super().close()
 
-    def _turnCamera(self, orientation: tuple[int, int, int], up: tuple[int, int, int]):
+    def _turnCamera(self, orientation: (float, float, float), up: (float, float, float)):
         camera = self._renderer.GetActiveCamera()
         d = camera.GetDistance()
         fx, fy, fz = camera.GetFocalPoint()
-        camera.SetPosition(fx+orientation[0]*d, fy+orientation[1]*d, fz+orientation[2]*d)
+        camera.SetPosition(fx-orientation[0]*d, fy-orientation[1]*d, fz-orientation[2]*d)
         camera.SetViewUp(up[0], up[1], up[2])
 
-    def turnTowardX(self):
-        self._turnCamera((-1, 0, 0), (0, 0, 1))
-        self._widget.Render()
+    def _getClosestAxis(self, u: (float, float, float)) -> (float, float, float):
+        axis = [0, 0, 0]
+        i = u.index(max(u, key=abs))
+        v = 1 if u[i] > 0 else -1
+        axis[i] = v
+        return axis
 
-    def tunTowardY(self):
-        self._turnCamera((0, -1, 0), (0, 0, 1))
-        self._widget.Render()
+    def alignCamera(self):
+        camera = self._renderer.GetActiveCamera()
 
-    def turnTowardZ(self):
-        self._turnCamera((0, 0, -1), (0, 1, 0))
-        self._widget.Render()
+        orientation = camera.GetDirectionOfProjection()
+        orientation = self._getClosestAxis(orientation)
 
-    def turnAwayFromX(self):
-        self._turnCamera((1, 0, 0), (0, 0, 1))
-        self._widget.Render()
+        up = camera.GetViewUp()
+        up = self._getClosestAxis(up)
 
-    def turnAwayFromY(self):
-        self._turnCamera((0, 1, 0), (0, 0, 1))
-        self._widget.Render()
-
-    def turnAwayFromZ(self):
-        self._turnCamera((0, 0, 1), (0, 1, 0))
+        self._turnCamera(orientation, up)
         self._widget.Render()
 
     def _fitCameraClicked(self):
@@ -150,11 +145,11 @@ class RenderingView(QWidget):
         self._renderer.GetActiveCamera().Roll(-90)
         self._widget.Render()
 
-    def setPerspective(self, checked):
+    def setParallelProjection(self, checked):
         if checked:
-            self._renderer.GetActiveCamera().ParallelProjectionOff()
-        else:
             self._renderer.GetActiveCamera().ParallelProjectionOn()
+        else:
+            self._renderer.GetActiveCamera().ParallelProjectionOff()
         self._widget.Render()
 
     def setAxisVisible(self, checked):
