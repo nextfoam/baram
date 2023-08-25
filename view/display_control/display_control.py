@@ -49,6 +49,7 @@ class ActorItem(QTreeWidgetItem):
         layout.setContentsMargins(9, 1, 9, 1)
         layout.addWidget(self._colorWidget)
         self._colorWidget.setFrameShape(QFrame.Shape.Box)
+        self._colorWidget.setMinimumSize(16, 16)
         parent.setItemWidget(self, Column.COLOR_COLUMN, widget)
 
     def setActorInfo(self, actorInfo):
