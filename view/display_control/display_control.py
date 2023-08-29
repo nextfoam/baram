@@ -126,6 +126,19 @@ class DisplayControl(QObject):
         item.setActorInfo(actorInfo)
 
     def remove(self, actorInfo):
+        index = -1
+        for i in range(self._list.topLevelItemCount()):
+            if self._list.topLevelItem(i).actorInfo().id() == actorInfo.id():
+                index = i
+                break
+
+        if index > -1:
+            item = self._list.takeTopLevelItem(index)
+            self._view.removeActor(item.actorInfo().actor())
+            del self._items[str(actorInfo.id())]
+            del item
+
+    def hide(self, actorInfo):
         item = self._items[actorInfo.id()]
         self._view.removeActor(item.actorInfo().actor())
         item.setHidden(True)
