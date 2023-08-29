@@ -64,7 +64,7 @@ class ActorManager(QObject):
 
     def hide(self):
         for actorInfo in self._actorInfos.values():
-            self._displayController.remove(actorInfo)
+            self._displayController.hide(actorInfo)
 
         self._displayController.refreshView()
         self._visibility = False

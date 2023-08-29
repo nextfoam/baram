@@ -11,6 +11,7 @@ from view.castellation.castellation_page import CastellationPage
 from view.snap.snap_page import SnapPage
 from view.boundaryLayer.boundary_layer_page import BoundaryLayerPage
 from view.refinement.refinement_page import RefinementPage
+from view.region.region_page import RegionPage
 
 
 class StepControlButtons:
@@ -50,6 +51,7 @@ class StepManager:
             Step.NONE: StepPage(ui, None),
             Step.GEOMETRY: GeometryPage(ui),
             Step.BASE_GRID: BaseGridPage(ui),
+            Step.REGION: RegionPage(ui),
             Step.CASTELLATION: CastellationPage(ui),
             Step.SNAP: SnapPage(ui),
             Step.BOUNDARY_LAYER: BoundaryLayerPage(ui),
