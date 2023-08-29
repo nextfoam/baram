@@ -19,7 +19,9 @@ class BaseGridPage(StepPage):
     def __init__(self, ui):
         super().__init__(ui, ui.baseGridPage)
 
-        self._bounds = None
+        self._xLen = None
+        self._yLen = None
+        self._zLen = None
         self._loaded = False
 
         self._connectSignalsSlots()
@@ -29,11 +31,13 @@ class BaseGridPage(StepPage):
 
     def open(self):
         self._load()
+        self._updateControlButtons()
 
     def selected(self):
         if not self._loaded:
             self._load()
 
+        self._updateControlButtons()
         self._updateMesh()
 
     def clearResult(self):
@@ -58,23 +62,44 @@ class BaseGridPage(StepPage):
             return False
 
     def _connectSignalsSlots(self):
+        self._ui.numCellsX.editingFinished.connect(self._updateCellX)
+        self._ui.numCellsY.editingFinished.connect(self._updateCellY)
+        self._ui.numCellsZ.editingFinished.connect(self._updateCellZ)
         self._ui.generate.clicked.connect(self._generate)
+        self._ui.baseGridReset.clicked.connect(self._reset)
 
     def _load(self):
-        self._bounds = app.window.geometryManager.getBounds()
+        bounds = app.window.geometryManager.getBounds()
+        self._xLen, self._yLen, self._zLen = bounds.size()
 
-        self._ui.xMin.setText('{:.6g}'.format(self._bounds.xMin))
-        self._ui.xMax.setText('{:.6g}'.format(self._bounds.xMax))
-        self._ui.yMin.setText('{:.6g}'.format(self._bounds.yMin))
-        self._ui.yMax.setText('{:.6g}'.format(self._bounds.yMax))
-        self._ui.zMin.setText('{:.6g}'.format(self._bounds.zMin))
-        self._ui.zMax.setText('{:.6g}'.format(self._bounds.zMax))
+        self._ui.xMin.setText('{:.6g}'.format(bounds.xMin))
+        self._ui.xMax.setText('{:.6g}'.format(bounds.xMax))
+        self._ui.xLen.setText('{:.6g}'.format(self._xLen))
+        self._ui.yMin.setText('{:.6g}'.format(bounds.yMin))
+        self._ui.yMax.setText('{:.6g}'.format(bounds.yMax))
+        self._ui.yLen.setText('{:.6g}'.format(self._yLen))
+        self._ui.zMin.setText('{:.6g}'.format(bounds.zMin))
+        self._ui.zMax.setText('{:.6g}'.format(bounds.zMax))
+        self._ui.zLen.setText('{:.6g}'.format(self._zLen))
 
         self._ui.numCellsX.setText(app.db.getValue('baseGrid/numCellsX'))
         self._ui.numCellsY.setText(app.db.getValue('baseGrid/numCellsY'))
         self._ui.numCellsZ.setText(app.db.getValue('baseGrid/numCellsZ'))
 
+        self._updateCellX()
+        self._updateCellY()
+        self._updateCellZ()
+
         self._loaded = True
+
+    def _updateCellX(self):
+        self._ui.xCell.setText('{:.6g}'.format(self._xLen / int(self._ui.numCellsX.text())))
+
+    def _updateCellY(self):
+        self._ui.yCell.setText('{:.6g}'.format(self._yLen / int(self._ui.numCellsY.text())))
+
+    def _updateCellZ(self):
+        self._ui.zCell.setText('{:.6g}'.format(self._zLen / int(self._ui.numCellsZ.text())))
 
     @qasync.asyncSlot()
     async def _generate(self):
@@ -94,7 +119,22 @@ class BaseGridPage(StepPage):
         progressDialog.close()
 
         await app.window.meshManager.load(self.OUTPUT_TIME)
-        self._setNextStepEnabled(True)
+        self._updateControlButtons()
+
+    def _reset(self):
+        self._showPreviousMesh()
+        self.clearResult()
+        self._updateControlButtons()
+
+    def _updateControlButtons(self):
+        if self.isNextStepAvailable():
+            self._ui.generate.hide()
+            self._ui.baseGridReset.show()
+            self._setNextStepEnabled(True)
+        else:
+            self._ui.generate.show()
+            self._ui.baseGridReset.hide()
+            self._setNextStepEnabled(False)
 
     def _showPreviousMesh(self):
         app.window.meshManager.hide()
