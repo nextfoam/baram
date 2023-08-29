@@ -51,7 +51,7 @@ class SimpleDB(SimpleSchema):
             schema, db, field = self._get(path)
 
             if isinstance(schema, SchemaList):
-                subSchema = schema.elementSchema().schema()
+                subSchema = schema.elementSchema()
             else:
                 subSchema = schema[field]
 
@@ -145,7 +145,7 @@ class SimpleDB(SimpleSchema):
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        db = self._newDB(schema.elementSchema().schema(), True)
+        db = self._newDB(schema.elementSchema(), True)
         db.createData()
 
         return db
@@ -164,8 +164,8 @@ class SimpleDB(SimpleSchema):
         if key in db[field]:
             raise KeyError
 
-        if schema.elementSchema().schema() == newdb._schema:
-            db[field][key] = schema.elementSchema().validateElement(newdb)
+        if schema.elementSchema() == newdb._schema:
+            db[field][key] = schema.validateElement(newdb)
         else:
             raise TypeError
 
@@ -188,7 +188,7 @@ class SimpleDB(SimpleSchema):
         if key in db[field]:
             raise KeyError
 
-        element = self._newDB(schema.elementSchema().schema())
+        element = self._newDB(schema.elementSchema())
         element.createData()
         db[field][key] = element._db
 
@@ -339,7 +339,7 @@ class SimpleDB(SimpleSchema):
         depth = len(fields) - 1
         for i in range(depth):
             if isinstance(schema, SchemaList):
-                schema = schema.elementSchema().schema()
+                schema = schema.elementSchema()
                 data = data[fields[i]]
             else:
                 schema = schema[fields[i]]

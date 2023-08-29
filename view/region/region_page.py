@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QVBoxLayout
 
 from app import app
 from rendering.point_widget import PointWidget
+from view.step_page import StepPage
 from .region_form import RegionForm
 from .region_card import RegionCard
 
 
-class RegionTab(QObject):
+class RegionPage(StepPage):
+    OUTPUT_TIME = 0
+
     def __init__(self, ui):
-        super().__init__()
+        super().__init__(ui, ui.regionPage)
         self._ui = ui
         self._form = RegionForm(ui)
 
@@ -26,39 +28,36 @@ class RegionTab(QObject):
         layout.setSpacing(0)
         layout.addStretch()
 
-    def activated(self):
-        self._form.setupForAdding()
+    def isNextStepAvailable(self):
+        return True
 
-        self._pointWidget.on()
-
-    def deactivated(self):
-        self._pointWidget.off()
-
-    def enable(self):
-        for card in self._regions.values():
-            card.enable()
-
-        self._form.enable()
-
-    def disable(self):
+    def lock(self):
         for card in self._regions.values():
             card.disable()
 
         self._form.disable()
 
-    def load(self):
-        if not self._loaded:
-            self._pointWidget = PointWidget(app.window.renderingView)
-            point = self._pointWidget.setBounds(app.window.geometryManager.getBounds())
-            self._setPoint(point)
+    def unlock(self):
+        for card in self._regions.values():
+            card.enable()
 
-            self._connectSignalsSlots()
+        self._form.enable()
 
-            regions = app.db.getElements('region', columns=[])
-            for id_ in regions:
-                self._add(id_)
+    def open(self):
+        self._load()
+        self._updateBounds()
 
-            self._loaded = True
+    def selected(self):
+        self._load()
+        self._form.setupForAdding()
+        self._pointWidget.on()
+        app.window.meshManager.hide()
+
+    def deselected(self):
+        self._pointWidget.off()
+
+    def clearResult(self):
+        return
 
     def _connectSignalsSlots(self):
         self._form.regionAdded.connect(self._add)
@@ -69,6 +68,23 @@ class RegionTab(QObject):
         self._ui.z.editingFinished.connect(self._movePointWidget)
         self._form.pointChanged.connect(self._movePointWidget)
         self._pointWidget.pointMoved.connect(self._setPoint)
+
+    def _load(self):
+        if not self._loaded:
+            regions = app.db.getElements('region', columns=[])
+            for id_ in regions:
+                self._add(id_)
+
+            self._loaded = True
+            self._updateBounds()
+
+    def _updateBounds(self):
+        if not self._pointWidget:
+            self._pointWidget = PointWidget(app.window.renderingView)
+            self._connectSignalsSlots()
+
+        point = self._pointWidget.setBounds(app.window.geometryManager.getBounds())
+        self._setPoint(point)
 
     def _add(self, id_):
         card = RegionCard(id_)
@@ -99,4 +115,3 @@ class RegionTab(QObject):
         self._ui.x.setText('{:.6g}'.format(x))
         self._ui.y.setText('{:.6g}'.format(y))
         self._ui.z.setText('{:.6g}'.format(z))
-
