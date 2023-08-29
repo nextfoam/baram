@@ -9,6 +9,7 @@ from db.configurations_schema import Step
 steps = {
     'geometryStep': Step.GEOMETRY,
     'baseGridStep': Step.BASE_GRID,
+    'regionStep': Step.REGION,
     'castellationStep': Step.CASTELLATION,
     'snapStep': Step.SNAP,
     'boundaryLayerStep': Step.BOUNDARY_LAYER,

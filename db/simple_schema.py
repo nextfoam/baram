@@ -109,11 +109,11 @@ class PrimitiveType:
         return self._required
 
     def validate(self, value, name=None):
-        value = str(value).strip()
-        if self._required and (value is None or value == ''):
+        validated = str(value).strip()
+        if self._required and (value is None or validated == ''):
             raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', name)
 
-        return value
+        return validated
 
 
 class EnumType(PrimitiveType):
@@ -246,12 +246,18 @@ class SchemaList:
         data = {}
 
         for key in value:
-            data[key] = validateData(value[key], self._schema.schema(), name, fillWithDefault=fillWithDefault)
+            data[key] = validateData(value[key], self._schema, name, fillWithDefault=fillWithDefault)
 
         return data
 
+    def validateElement(self, db, fullCheck=False):
+        if fullCheck:
+            return validateData(db.data(), self._schema)
+
+        return db.data()
+
     def newElement(self):
-        return self._schema.generateData()
+        return generateData(self._schema)
 
     def key(self, key, data):
         if key is None:
@@ -322,12 +328,40 @@ class SimpleSchema:
         return validateData(data, self._schema, fillWithDefault=fillWithDefault)
 
 
-class ElementSchema(SimpleSchema):
-    def __init__(self, schema):
-        super().__init__(schema)
+class ArrayType(PrimitiveType):
+    def __init__(self):
+        super().__init__()
+        self._value = []
+        self._default = []
 
-    def validateElement(self, db, fullCheck=False):
-        if fullCheck:
-            return self.validateData(db.data())
+    def validate(self, value, name=None):
+        if not isinstance(value, list):
+            raise DBError(ErrorType.TypeError, 'A list is required', name)
 
-        return db.data()
+        for i in range(len(value)):
+            value[i] = self._validatElement(value[i])
+
+        return value
+
+    def _validatElement(self, value, name=None):
+        validated = str(value).strip()
+        if value is None or validated == '':
+            raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', name)
+
+        return validated
+
+
+class IntArray(ArrayType):
+    def __init__(self):
+        super().__init__()
+
+    def _validatElement(self, value, name=None):
+        value = super()._validatElement(value, name)
+        try:
+            f = float(value)
+            if int(f) != f:
+                raise DBError(ErrorType.TypeError, 'Only integers allowed', name)
+        except Exception as e:
+            raise DBError(ErrorType.TypeError, repr(e), name)
+
+        return value

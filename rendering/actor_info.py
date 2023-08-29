@@ -63,7 +63,7 @@ class ActorInfo:
         self._id = id_
         self._name = name
         self._type = type
-        self._polyData = None
+        self._polyData = polyData
 
         self._actor = polyDataToActor(polyData)
         self._actor.SetObjectName(self._id)

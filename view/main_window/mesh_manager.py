@@ -17,7 +17,7 @@ class MeshManager(ActorManager):
     def __init__(self):
         super().__init__()
 
-        self._loader = PolyMeshLoader(app.fileSystem.foamFilePath())
+        self._loader = None
         self._time = None
 
         self._name = 'Mesh'
@@ -30,6 +30,7 @@ class MeshManager(ActorManager):
         progressDialog.setLabelText(self.tr('Loading Mesh'))
         progressDialog.open()
 
+        self._loader = PolyMeshLoader(app.fileSystem.foamFilePath())
         self._loader.progress.connect(progressDialog.setLabelText)
 
         vtkMesh = await self._loader.loadMesh(time)

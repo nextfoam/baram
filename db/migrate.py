@@ -10,4 +10,9 @@ def migrate(data):
         if geometry['cfdType'] not in cfdTypes:
             geometry['cfdType'] = CFDType.INTERFACE.value
 
+    for i in data['castellation']['refinementSurfaces']:
+        if 'level' in data['castellation']['refinementSurfaces'][i]:
+            data['castellation']['refinementSurfaces'] = {}
+        break
+
     return data

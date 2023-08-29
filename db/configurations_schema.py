@@ -5,8 +5,7 @@
 from enum import Enum, auto, IntEnum
 
 from .simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, PositiveIntType
-from .simple_schema import ElementSchema
-from .simple_schema import VectorComposite
+from .simple_schema import VectorComposite, IntArray
 
 
 class Step(IntEnum):
@@ -14,7 +13,7 @@ class Step(IntEnum):
 
     GEOMETRY = 0
     BASE_GRID = auto()
-    # REGION = auto()
+    REGION = auto()
     CASTELLATION = auto()
     SNAP = auto()
     BOUNDARY_LAYER = auto()
@@ -85,8 +84,18 @@ region = {
     'point': VectorComposite().schema()
 }
 
-refinement = {
-    'level': IntType().setDefault(1)
+
+surfaceRefinement = {
+    'groupName': TextType(),
+    'surfaceRefinementLevel': IntType().setDefault(1),
+    'featureEdgeRefinementLevel': IntType().setDefault(0),
+    'surfaces': IntArray()
+}
+
+volumeRefinement = {
+    'groupName': TextType(),
+    'volumeRefinementLevel': IntType().setDefault(1),
+    'volumes': IntArray()
 }
 
 layer = {
@@ -102,30 +111,10 @@ layer = {
 }
 
 
-class GeometrySchema(ElementSchema):
-    def __init__(self):
-        super().__init__(geometry)
-
-
-class RefinementSchema(ElementSchema):
-    def __init__(self):
-        super().__init__(refinement)
-
-
-class LayerSchema(ElementSchema):
-    def __init__(self):
-        super().__init__(layer)
-
-
-class RegionSchema(ElementSchema):
-    def __init__(self):
-        super().__init__(region)
-
-
 schema = {
     'step': EnumType(Step).setDefault(Step.GEOMETRY),
-    'geometry': IntKeyList(GeometrySchema()),
-    'region': IntKeyList(RegionSchema()),
+    'geometry': IntKeyList(geometry),
+    'region': IntKeyList(region),
     'baseGrid': {
         'numCellsX': PositiveIntType().setDefault(10),
         'numCellsY': PositiveIntType().setDefault(10),
@@ -141,9 +130,8 @@ schema = {
         'minRefinementCells': IntType().setDefault(0),
         'maxLoadUnbalance': FloatType().setDefault('0.5'),
         'allowFreeStandingZoneFaces': BoolType(True),
-        'refinementSurfaces': IntKeyList(RefinementSchema()),
-        'refinementRegions': IntKeyList(RefinementSchema()),
-        'features': IntKeyList(RefinementSchema())
+        'refinementSurfaces': IntKeyList(surfaceRefinement),
+        'refinementVolumes': IntKeyList(volumeRefinement),
     },
     'snap': {
         'nSmoothPatch': IntType().setDefault(3),
@@ -164,7 +152,7 @@ schema = {
         'thickness': FloatType().setDefault('0.5'),
         'expansionRatio': FloatType().setDefault(1.2),
         'minThickness': FloatType().setDefault(0.3),
-        'layers': IntKeyList(LayerSchema()),
+        'layers': IntKeyList(layer),
         'nGrow': IntType().setDefault(0),
         'maxFaceThicknessRatio': FloatType().setDefault(0.5),
         'nSmoothSurfaceNormals': IntType().setDefault(1),

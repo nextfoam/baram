@@ -45,6 +45,9 @@ class GeometryManager(ActorManager):
     def subSurfaces(self, gId):
         return self._volumes[gId]
 
+    def polyData(self, gId):
+        return self._actorInfos[gId].polyData()
+
     def load(self):
         self.clear()
         self._visibility = True
