@@ -52,7 +52,7 @@ class GeometryManager(ActorManager):
         self.clear()
         self._visibility = True
 
-        geometries = app.db.getElements('geometry', lambda i, e: e['volume'] == '')
+        geometries = app.db.getElements('geometry', lambda i, e: e['volume'] is None)
         for gId, geometry in geometries.items():
             self._add(gId, geometry)
 
@@ -86,6 +86,9 @@ class GeometryManager(ActorManager):
                 self.remove(gId)
 
         self.applyToDisplay()
+
+    def updateGeometryPropety(self, gId, name, value):
+        self._geometries[gId][name] = value
 
     def show(self):
         self._show()

@@ -5,28 +5,31 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from app import app
 from db.simple_schema import DBError
+from db.configurations_schema import GeometryType
 from view.widgets.multi_selector_dialog import MultiSelectorDialog
+from view.widgets.multi_selector_dialog import SelectorItem
 from .surface_refinement_dialog_ui import Ui_SurfaceRefinementDialog
 
 
 class SurfaceRefinementDialog(QDialog):
-
-    def __init__(self, parent, availableSurfaces, dbElement=None, groupId=None):
+    def __init__(self, parent, db, groupId=None):
         super().__init__(parent)
         self._ui = Ui_SurfaceRefinementDialog()
         self._ui.setupUi(self)
 
+        self._db = db
         self._dbElement = None
-        self._creationMode = True
+        self._creationMode = groupId is None
         self._accepted = False
         self._dialog = None
         self._surfaces = None
+        self._oldSurfaces = None
         self._groupId = groupId
-        self._availableSurfaces = availableSurfaces
+        self._availableSurfaces = None
 
         self._connectSignalsSlots()
 
-        self._load(dbElement)
+        self._load()
 
     def dbElement(self):
         return self._dbElement
@@ -48,7 +51,22 @@ class SurfaceRefinementDialog(QDialog):
                 QMessageBox.information(self, self.tr('Input Error'), self.tr('Select surfaces'))
                 return
 
-            self._dbElement.setValue('surfaces', self._surfaces)
+            if self._groupId:
+                self._db.commit(self._dbElement)
+            else:
+                self._groupId = self._db.addElement('castellation/refinementSurfaces', self._dbElement)
+
+            surfaces = {gId: None for gId in self._oldSurfaces}
+            for gId in self._surfaces:
+                if gId in surfaces:
+                    surfaces.pop(gId)
+                else:
+                    surfaces[gId] = self._groupId
+
+            geometryManager = app.window.geometryManager
+            for gId, group in surfaces.items():
+                self._db.setValue(f'geometry/{gId}/castellationGroup', group)
+                geometryManager.updateGeometryPropety(gId, 'castellationGroup', group)
 
             super().accept()
         except DBError as e:
@@ -57,18 +75,30 @@ class SurfaceRefinementDialog(QDialog):
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectSurfaces)
 
-    def _load(self, dbElement):
-        if dbElement:
-            self._dbElement = dbElement
-            self._creationMode = False
+    def _load(self):
+        if self._groupId:
+            self._dbElement = self._db.checkout(f'castellation/refinementSurfaces/{self._groupId}')
         else:
-            self._dbElement = app.db.newElement('castellation/refinementSurfaces')
+            self._dbElement = self._db.newElement('castellation/refinementSurfaces')
 
         self._ui.groupName.setText(self._dbElement.getValue('groupName'))
         self._ui.surfaceRefinementLevel.setText(self._dbElement.getValue('surfaceRefinementLevel'))
         self._ui.featureEdgeRefinementLevel.setText(self._dbElement.getValue('featureEdgeRefinementLevel'))
 
-        self._setSurfaces(self._dbElement.getValue('surfaces'))
+        self._surfaces = []
+        self._availableSurfaces = []
+        for gId, geometry in app.window.geometryManager.geometries().items():
+            if geometry['gType'] == GeometryType.SURFACE.value:
+                name = geometry['name']
+                groupId = geometry['castellationGroup']
+                if groupId is None:
+                    self._availableSurfaces.append(SelectorItem(name, name, gId))
+                elif groupId == self._groupId:
+                    self._availableSurfaces.append(SelectorItem(name, name, gId))
+                    self._ui.surfaces.addItem(name)
+                    self._surfaces.append(gId)
+
+        self._oldSurfaces = self._surfaces
 
     def _selectSurfaces(self):
         self._dialog = MultiSelectorDialog(self, self.tr('Select Surfaces'), self._availableSurfaces, self._surfaces)
