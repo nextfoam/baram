@@ -5,7 +5,7 @@
 from enum import Enum, auto, IntEnum
 
 from .simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, PositiveIntType
-from .simple_schema import VectorComposite, IntArray
+from .simple_schema import VectorComposite
 
 
 class Step(IntEnum):
@@ -76,6 +76,7 @@ geometry = {
     'point1': VectorComposite().schema(),
     'point2': VectorComposite().setDefault(1, 1, 1).schema(),
     'radius': FloatType().setDefault(1),
+    'castellationGroup': IntType().setOptional().setDefault(None)
 }
 
 region = {
@@ -84,18 +85,15 @@ region = {
     'point': VectorComposite().schema()
 }
 
-
 surfaceRefinement = {
     'groupName': TextType(),
     'surfaceRefinementLevel': IntType().setDefault(1),
     'featureEdgeRefinementLevel': IntType().setDefault(0),
-    'surfaces': IntArray()
 }
 
 volumeRefinement = {
     'groupName': TextType(),
-    'volumeRefinementLevel': IntType().setDefault(1),
-    'volumes': IntArray()
+    'volumeRefinementLevel': PositiveIntType().setDefault(1)
 }
 
 layer = {
