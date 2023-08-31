@@ -39,7 +39,7 @@ class SnappyHexMeshDict(DictionaryFile):
                 'resolveFeatureAngle': app.db.getValue('castellation/resolveFeatureAngle'),
                 'refinementRegions': self._constructRefinementRegions(),
                 'allowFreeStandingZoneFaces': app.db.getValue('castellation/allowFreeStandingZoneFaces'),
-                'locationsInMesh': self._constructLocationsInMesh(),
+                'locationInMesh': elementToVector(list(app.db.getElements('region').values())[0]['point']),
                 # 'faceZoneControls': self._constructFaceZoneControls()
             },
             'snapControls': {
