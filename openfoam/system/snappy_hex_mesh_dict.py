@@ -196,23 +196,30 @@ class SnappyHexMeshDict(DictionaryFile):
                 level = int(refinements[group]['surfaceRefinementLevel'])
 
             name = surface['name']
-            data[name] = {
-                'level': [level, level],
-            }
+            cfdType = surface['cfdType']
 
-            if surface['cfdType'] != CFDType.NONE.value:
-                if surface['cfdType'] == CFDType.INTERFACE.value:
-                    data[name]['faceZone'] = name
-                    if self._addLayers or surface['interRegion']:
-                        data[name]['patchInfo'] = {'type': 'patch'}
-                        if surface['nonConformal']:
-                            data[name]['faceType'] = 'boundary'
-                        else:
-                            data[name]['faceType'] = 'baffle'
-                    else:
-                        data['faceType'] = 'internal'
+            if cfdType == CFDType.NONE.value:
+                data[name] = {
+                    'faceZone': name,
+                    'faceType': 'internal'
+                }
+            elif cfdType == CFDType.BOUNDARY.value:
+                data[name] = {
+                    'patchInfo': {'type': 'patch'}
+                }
+            else:
+                if self._addLayers or surface['interRegion']:
+                    faceType = 'boundary' if surface['nonConformal'] else 'baffle'
                 else:
-                    data[name]['patchInfo'] = {'type': 'patch'}
+                    faceType = 'internal'
+
+                data[name] = {
+                    'faceZone': name,
+                    'faceType': faceType,
+                    'patchInfo': {'type': 'patch'}
+                }
+
+            data[name]['level'] = [level, level]
 
         return data
 
