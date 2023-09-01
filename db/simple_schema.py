@@ -18,7 +18,7 @@ def generateData(schema):
         elif schema[key].isRequired():
             configuration[key] = schema[key].default()
         else:
-            configuration[key] = ''
+            configuration[key] = None
 
     return configuration
 
@@ -93,7 +93,7 @@ class PrimitiveType:
         self._default = None
 
     def setDefault(self, default):
-        self._default = str(self.validate(default))
+        self._default = self.validate(default)
 
         return self
 
@@ -109,8 +109,8 @@ class PrimitiveType:
         return self._required
 
     def validate(self, value, name=None):
-        validated = str(value).strip()
-        if self._required and (value is None or validated == ''):
+        validated = None if value is None else str(value).strip()
+        if self._required and (validated is None or validated == ''):
             raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', name)
 
         return validated
@@ -124,7 +124,7 @@ class EnumType(PrimitiveType):
         self.setDefault(list(enumClass)[0])
 
     def validate(self, value, name=None):
-        if not self._required and value == '':
+        if not self._required and value is None:
             return value
 
         if value in self._values:
@@ -152,9 +152,12 @@ class FloatType(PrimitiveType):
 
     def validate(self, value, name=None):
         value = super().validate(value, name)
+
+        if value is None or value == '':
+            return None
+
         try:
-            if value != '':
-                float(value)
+            float(value)
         except Exception as e:
             raise DBError(ErrorType.TypeError, repr(e), name)
 
@@ -168,11 +171,14 @@ class IntType(PrimitiveType):
 
     def validate(self, value, name=None):
         value = super().validate(value, name)
+
+        if value is None or value == '':
+            return None
+
         try:
-            if value != '':
-                f = float(value)
-                if int(f) != f:
-                    raise DBError(ErrorType.TypeError, 'Only integers allowed', name)
+            f = float(value)
+            if int(f) != f:
+                raise DBError(ErrorType.TypeError, 'Only integers allowed', name)
         except Exception as e:
             raise DBError(ErrorType.TypeError, repr(e), name)
 
@@ -186,10 +192,13 @@ class PositiveIntType(IntType):
 
     def validate(self, value, name=None):
         value = super().validate(value, name)
+
+        if value is None:
+            return None
+
         try:
-            if value != '':
-                if int(value) < 1:
-                    raise DBError(ErrorType.TypeError, 'Only positive integers allowed', name)
+            if int(value) < 1:
+                raise DBError(ErrorType.TypeError, 'Only positive integers allowed', name)
         except Exception as e:
             raise DBError(ErrorType.TypeError, repr(e), name)
 
@@ -200,24 +209,6 @@ class TextType(PrimitiveType):
     def __init__(self):
         super().__init__()
         self._default = ''
-
-
-class KeyType(PrimitiveType):
-    def __init__(self):
-        super().__init__()
-        self._default = '0'
-
-    def validate(self, value, name=None):
-        value = super().validate(value, name)
-        try:
-            if value != '':
-                f = float(value)
-                if int(f) != f:
-                    raise DBError(ErrorType.TypeError, 'Only integers allowed', name)
-        except Exception as e:
-            raise DBError(ErrorType.TypeError, repr(e), name)
-
-        return value
 
 
 class BoolType(PrimitiveType):

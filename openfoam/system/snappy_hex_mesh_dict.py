@@ -39,7 +39,7 @@ class SnappyHexMeshDict(DictionaryFile):
                 'resolveFeatureAngle': app.db.getValue('castellation/resolveFeatureAngle'),
                 'refinementRegions': self._constructRefinementRegions(),
                 'allowFreeStandingZoneFaces': app.db.getValue('castellation/allowFreeStandingZoneFaces'),
-                'locationsInMesh': self._constructLocationsInMesh(),
+                'locationInMesh': elementToVector(list(app.db.getElements('region').values())[0]['point']),
                 # 'faceZoneControls': self._constructFaceZoneControls()
             },
             'snapControls': {
@@ -158,11 +158,20 @@ class SnappyHexMeshDict(DictionaryFile):
         return data
 
     def _constructFeatures(self):
+        surfaces = {}
+        for geometry in app.db.getElements(
+                'geometry', lambda i, e: e['gType'] == GeometryType.SURFACE.value and e['castellationGroup'],
+                ['name', 'castellationGroup']).values():
+            group = geometry['castellationGroup']
+            if group in surfaces:
+                surfaces[group].append(geometry)
+            else:
+                surfaces[group] = [geometry]
+
         data = []
-        for group in app.db.getElements('castellation/refinementSurfaces').values():
-            for gId in group['surfaces']:
-                if level := int(group['featureEdgeRefinementLevel']):
-                    surface = self._geometries[gId]
+        for group, refinement in app.db.getElements('castellation/refinementSurfaces').items():
+            if level := int(refinement['featureEdgeRefinementLevel']):
+                for surface in surfaces[group]:
                     data.append({
                         'file': surface['name'] + '.obj',
                         'levels': [[0.01, level]]
@@ -172,36 +181,54 @@ class SnappyHexMeshDict(DictionaryFile):
 
     def _constructRefinementSurfaces(self):
         data = {}
-        for group in app.db.getElements('castellation/refinementSurfaces').values():
-            for gId in group['surfaces']:
-                level = int(group['surfaceRefinementLevel'])
-                surface = self._geometries[gId]
-                if level or surface['cfdType'] != CFDType.NONE.value:
-                    name = surface['name']
-                    data[name] = {
-                        'level': [level, level],
-                    }
 
-                    if surface['cfdType'] != CFDType.NONE.value:
-                        data[name]['patchInfo'] = {'type': 'patch'}
+        refinements = app.db.getElements('castellation/refinementSurfaces')
+        surfaces = app.db.getElements(
+            'geometry',
+            lambda i, e: e['gType'] == GeometryType.SURFACE.value
+                         and (e['cfdType'] != CFDType.NONE.value or e['castellationGroup']),
+            ['name', 'cfdType', 'nonConformal', 'interRegion', 'castellationGroup'])
 
-                        if surface['cfdType'] == CFDType.INTERFACE.value:
-                            if surface['nonConformal']:
-                                data[name]['faceZone'] = name
-                                data[name]['faceType'] = 'boundary'
-                            else:
-                                data[name]['faceZone'] = name
-                                data[name]['faceType'] = 'baffle'
+        for surface in surfaces.values():
+            level = 0
+            if group := surface['castellationGroup']:
+                level = int(refinements[group]['surfaceRefinementLevel'])
+
+            name = surface['name']
+            data[name] = {
+                'level': [level, level],
+            }
+
+            if surface['cfdType'] != CFDType.NONE.value:
+                data[name]['patchInfo'] = {'type': 'patch'}
+
+                if surface['cfdType'] == CFDType.INTERFACE.value:
+                    if surface['nonConformal']:
+                        data[name]['faceZone'] = name
+                        data[name]['faceType'] = 'boundary'
+                    else:
+                        data[name]['faceZone'] = name
+                        data[name]['faceType'] = 'baffle'
 
         return data
 
     def _constructRefinementRegions(self):
+        volumes = {}
+        for geometry in app.db.getElements(
+                'geometry', lambda i, e: e['gType'] == GeometryType.VOLUME.value and e['castellationGroup'],
+                ['name', 'castellationGroup']).values():
+            group = geometry['castellationGroup']
+            if group in volumes:
+                volumes[group].append(geometry)
+            else:
+                volumes[group] = [geometry]
+
         data = {}
-        for group in app.db.getElements('castellation/refinementVolumes').values():
-            for gId in group['volumes']:
-                data[self._geometries[gId]['name']] = {
+        for group, refinement in app.db.getElements('castellation/refinementVolumes').items():
+            for volume in volumes[group]:
+                data[volume['name']] = {
                     'mode': 'inside',
-                    'levels': [[1E15, group['volumeRefinementLevel']]]
+                    'levels': [[1E15, refinement['volumeRefinementLevel']]]
                 }
 
         return data

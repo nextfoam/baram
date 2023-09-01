@@ -92,27 +92,34 @@ class SphereSource(CellSetSource):
 
 
 class TopoSetDict(DictionaryFile):
-    def __init__(self, source=None):
+    class Mode(Enum):
+        CREATE_REGIONS = 0
+        CREATE_CELL_ZONES = 1
+
+    def __init__(self):
         super().__init__(self.systemLocation(), 'topoSetDict')
 
-        self._source = source
-
-    def build(self):
+    def build(self, mode):
         if self._data is not None:
             return self
 
-        if self._source is None:    # Create cell zones
-            actions = []
+        actions = []
+        if mode == self.Mode.CREATE_REGIONS:
+            for region in app.db.getElements('region').values():
+                actions.append(self._constructClearCellSetAction(region['name']))
+                actions.append(self._constuctNewRegionToCellAction(region))
+                actions.append(self._constructNewSetToCellZone(region['name'], region['name']))
+        elif mode == self.Mode.CREATE_CELL_ZONES:
             for gId, geometry in app.db.getElements('geometry').items():
                 if geometry['cfdType'] != CFDType.NONE.value and geometry['gType'] == GeometryType.VOLUME.value:
                     actions.append(self._constructClearCellSetAction(geometry['name']))
                     actions.append(self._constuctNewGeometryToCellAction(geometry))
                     actions.append(self._constructNewSetToCellZone(geometry['name'], geometry['name']))
-        else:                       # Create cell sets for volume refinement
-            actions = [
-                self._constructClearCellSetAction(self._source.name),
-                self._constructNewVolumeToCellAction(self._source)
-            ]
+        # else:                       # Create cell sets for volume refinement
+        #     actions = [
+        #         self._constructClearCellSetAction(self._source.name),
+        #         self._constructNewVolumeToCellAction(self._source)
+        #     ]
 
         self._data = {
             'actions': actions
@@ -126,6 +133,15 @@ class TopoSetDict(DictionaryFile):
             'type': 'cellSet',
             'action': 'clear'
         },
+
+    def _constuctNewRegionToCellAction(self, region):
+        return {
+            'name': region['name'],
+            'type': 'cellSet',
+            'action': 'new',
+            'source': 'regionToCell',
+            'insidePoints': [elementToVector(region['point'])]
+        }
 
     def _constructNewVolumeToCellAction(self, source):
         if source.shape == CellSetSource.Shape.HEX:

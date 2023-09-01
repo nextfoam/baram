@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QMessageBox
 from app import app
 from db.simple_schema import DBError
 from openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
+from openfoam.system.topo_set_dict import TopoSetDict
 from libbaram.run import runUtility
 from libbaram.process import Processor, ProcessError
 from view.step_page import StepPage
@@ -86,12 +87,20 @@ class SnapPage(StepPage):
             progressDialog.open()
 
             SnappyHexMeshDict(snap=True).build().write()
+            TopoSetDict().build(TopoSetDict.Mode.CREATE_REGIONS).write()
 
             progressDialog.close()
 
             console = app.consoleView
             console.clear()
             proc = await runUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
+                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            processor = Processor(proc)
+            processor.outputLogged.connect(console.append)
+            processor.errorLogged.connect(console.appendError)
+            await processor.run()
+
+            proc = await runUtility('toposet', cwd=app.fileSystem.caseRoot(),
                                     stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             processor = Processor(proc)
             processor.outputLogged.connect(console.append)

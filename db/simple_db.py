@@ -211,29 +211,39 @@ class SimpleDB(SimpleSchema):
 
         return {k: copy.deepcopy(db[field][key][k]) for k in columns}
 
-    def getElements(self, path, filter_=None, columns=None):
-        schema, db, field = self._get(path)
+    def getElements(self, path: str = None, filter_=None, columns=None):
+        if not path:
+            schema = self._schema
+            db = self._db
+        else:
+            schema, db, field = self._get(path)
+            schema = schema[field]
+            db = db[field]
 
-        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
         if columns is None:
             return copy.deepcopy(
-                {key: db[field][key] for key in db[field] if filter_ is None or filter_(key, db[field][key])})
+                {key: db[key] for key in db if filter_ is None or filter_(key, db[key])})
 
         return {
-            key: {k: copy.deepcopy(db[field][key][k]) for k in columns}
-            for key in db[field] if filter_ is None or filter_(key, db[field][key])}
+            key: {k: copy.deepcopy(db[key][k]) for k in columns}
+            for key in db if filter_ is None or filter_(key, db[key])}
 
-    def getKeys(self, path, function=None):
-        schema, db, field = self._get(path)
+    def getKeys(self, path: str = None, filter_=None):
+        if not path:
+            schema = self._schema
+            db = self._db
+        else:
+            schema, db, field = self._get(path)
+            schema = schema[field]
+            db = db[field]
 
-        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        return [key for key in db[field] if function(key, db[field][key])]
+        return [key for key in db if filter_ is None or filter_(key, db[key])]
 
     def removeElement(self, path, key):
         if not self._editable:
@@ -298,6 +308,27 @@ class SimpleDB(SimpleSchema):
         db[field] = {}
 
         self._modified = True
+
+    def updateElements(self, path, field, value, filter_=None, name=None):
+        if not path:
+            schema = self._schema
+            db = self._db
+        else:
+            schema, db, item = self._get(path)
+            schema = schema[item]
+            db = db[item]
+
+        if not isinstance(schema, SchemaList):
+            raise TypeError
+
+        value = schema.elementSchema()[field].validate(value, name)
+        keys = [key for key in db if filter_ is None or filter_(key, db[key])]
+        for key in keys:
+            if db[key][field] != value:
+                db[key][field] = value
+                self._modified = True
+
+        return keys
 
     def getUniqueValue(self, path, field, value):
         return f'{value}{self.getUniqueSeq(path, field, value)}'
