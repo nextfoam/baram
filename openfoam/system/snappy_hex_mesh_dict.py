@@ -183,6 +183,7 @@ class SnappyHexMeshDict(DictionaryFile):
         data = {}
 
         refinements = app.db.getElements('castellation/refinementSurfaces')
+        # Target is a boundary, interface, or surface included in a castellation group
         surfaces = app.db.getElements(
             'geometry',
             lambda i, e: e['gType'] == GeometryType.SURFACE.value
@@ -200,15 +201,18 @@ class SnappyHexMeshDict(DictionaryFile):
             }
 
             if surface['cfdType'] != CFDType.NONE.value:
-                data[name]['patchInfo'] = {'type': 'patch'}
-
                 if surface['cfdType'] == CFDType.INTERFACE.value:
-                    if surface['nonConformal']:
-                        data[name]['faceZone'] = name
-                        data[name]['faceType'] = 'boundary'
+                    data[name]['faceZone'] = name
+                    if self._addLayers or surface['interRegion']:
+                        data[name]['patchInfo'] = {'type': 'patch'}
+                        if surface['nonConformal']:
+                            data[name]['faceType'] = 'boundary'
+                        else:
+                            data[name]['faceType'] = 'baffle'
                     else:
-                        data[name]['faceZone'] = name
-                        data[name]['faceType'] = 'baffle'
+                        data['faceType'] = 'internal'
+                else:
+                    data[name]['patchInfo'] = {'type': 'patch'}
 
         return data
 
