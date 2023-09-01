@@ -17,9 +17,9 @@ class Step(IntEnum):
     CASTELLATION = auto()
     SNAP = auto()
     BOUNDARY_LAYER = auto()
-    REFINEMENT = auto()
+    EXPORT = auto()
 
-    LAST_STEP = REFINEMENT
+    LAST_STEP = EXPORT
 
 
 class GeometryType(Enum):

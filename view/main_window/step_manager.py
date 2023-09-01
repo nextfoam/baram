@@ -10,7 +10,7 @@ from view.base_grid.base_grid_page import BaseGridPage
 from view.castellation.castellation_page import CastellationPage
 from view.snap.snap_page import SnapPage
 from view.boundaryLayer.boundary_layer_page import BoundaryLayerPage
-from view.refinement.refinement_page import RefinementPage
+from view.export.export_page import ExportPage
 from view.region.region_page import RegionPage
 
 
@@ -55,7 +55,7 @@ class StepManager:
             Step.CASTELLATION: CastellationPage(ui),
             Step.SNAP: SnapPage(ui),
             Step.BOUNDARY_LAYER: BoundaryLayerPage(ui),
-            Step.REFINEMENT: RefinementPage(ui),
+            Step.EXPORT: ExportPage(ui),
         }
 
         self._connectSignalsSlots()

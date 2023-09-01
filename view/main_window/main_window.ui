@@ -142,7 +142,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="refinementStep">
+        <widget class="QPushButton" name="exportStep">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -150,7 +150,7 @@
           </size>
          </property>
          <property name="text">
-          <string>7. Refinement</string>
+          <string>7. Export</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -218,7 +218,7 @@
               </sizepolicy>
              </property>
              <property name="currentIndex">
-              <number>5</number>
+              <number>6</number>
              </property>
              <widget class="QWidget" name="geometryPage">
               <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -1603,7 +1603,7 @@
                     <x>0</x>
                     <y>-135</y>
                     <width>445</width>
-                    <height>655</height>
+                    <height>661</height>
                    </rect>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_20">
@@ -1947,6 +1947,19 @@
                         </layout>
                        </widget>
                       </item>
+                      <item>
+                       <spacer name="verticalSpacer_3">
+                        <property name="orientation">
+                         <enum>Qt::Vertical</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>20</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
                      </layout>
                     </widget>
                    </item>
@@ -1989,7 +2002,7 @@
                </item>
               </layout>
              </widget>
-             <widget class="QWidget" name="refinementPage">
+             <widget class="QWidget" name="exportPage">
               <layout class="QVBoxLayout" name="verticalLayout_22">
                <item>
                 <widget class="QLabel" name="label_37">
@@ -2000,7 +2013,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>Refinement</string>
+                  <string>Export</string>
                  </property>
                 </widget>
                </item>
@@ -2012,30 +2025,12 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="translate">
-                 <property name="text">
-                  <string>Translate</string>
+                <widget class="QLabel" name="validationMessage">
+                 <property name="styleSheet">
+                  <string notr="true">color: red</string>
                  </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="rotate_">
                  <property name="text">
-                  <string>Rotate</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="scale">
-                 <property name="text">
-                  <string>Scale</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="volumeRefine">
-                 <property name="text">
-                  <string>Volume Refine</string>
+                  <string/>
                  </property>
                 </widget>
                </item>
@@ -2056,13 +2051,6 @@
                 <widget class="QWidget" name="widget_20" native="true">
                  <layout class="QHBoxLayout" name="horizontalLayout_12">
                   <item>
-                   <widget class="QPushButton" name="refinementReset">
-                    <property name="text">
-                     <string>Reset</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
                    <spacer name="horizontalSpacer_9">
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
@@ -2076,9 +2064,9 @@
                    </spacer>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="checkQuality">
+                   <widget class="QPushButton" name="export_">
                     <property name="text">
-                     <string>check Quality</string>
+                     <string>Export</string>
                     </property>
                    </widget>
                   </item>
