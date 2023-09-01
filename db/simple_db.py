@@ -330,6 +330,20 @@ class SimpleDB(SimpleSchema):
 
         return keys
 
+    def elementCount(self, path=None):
+        if not path:
+            schema = self._schema
+            db = self._db
+        else:
+            schema, db, field = self._get(path)
+            schema = schema[field]
+            db = db[field]
+
+        if not isinstance(schema, SchemaList):
+            raise TypeError
+
+        return len(db)
+
     def getUniqueValue(self, path, field, value):
         return f'{value}{self.getUniqueSeq(path, field, value)}'
 

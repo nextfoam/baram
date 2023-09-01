@@ -13,7 +13,7 @@ steps = {
     'castellationStep': Step.CASTELLATION,
     'snapStep': Step.SNAP,
     'boundaryLayerStep': Step.BOUNDARY_LAYER,
-    'refinementStep': Step.REFINEMENT
+    'exportStep': Step.EXPORT
 }
 
 
