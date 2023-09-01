@@ -5,41 +5,67 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from app import app
 from db.simple_schema import DBError
+from db.configurations_schema import GeometryType
+from view.widgets.multi_selector_dialog import SelectorItem, MultiSelectorDialog
 from .thickness_form import ThicknessForm
 from .boundary_setting_dialog_ui import Ui_BoundarySettingDialog
 
 
 class BoundarySettingDialog(QDialog):
-    def __init__(self, parent, gID, globalForm):
+    def __init__(self, parent, db, groupId=None):
         super().__init__(parent)
         self._ui = Ui_BoundarySettingDialog()
         self._ui.setupUi(self)
 
         self._thicknessForm = ThicknessForm(self._ui)
 
-        self._gID = gID
-        self._dbElement = app.db.checkout(f'addLayers/layers/{self._gID}')
+        self._groupId = groupId
+        self._db = db
+        self._dbElement = None
+        self._creationMode = groupId is None
+        self._dialog = None
+        self._boundaries = None
+        self._oldBoundaries = None
+        self._availableBoundaries = None
 
         self._connectSignalsSlots()
 
-        useLocalSetting = self._dbElement.getValue('useLocalSetting')
-        self._ui.localSetting.setChecked(useLocalSetting)
-        self._ui.numberOfLayers.setText(self._dbElement.getValue('nSurfaceLayers'))
-        if useLocalSetting:
-            self._thicknessForm.setData(self._dbElement)
-        else:
-            self._thicknessForm.copyData(globalForm)
+        self._load()
 
-    def gID(self):
-        return self._gID
+    def dbElement(self):
+        return self._dbElement
+
+    def groupId(self):
+        return self._groupId
+
+    def isCreationMode(self):
+        return self._creationMode
 
     def accept(self):
         try:
-            self._dbElement.setValue('useLocalSetting', self._ui.localSetting.isChecked())
+            self._dbElement.setValue('groupName', self._ui.groupName.text(), self.tr('Group Name'))
             self._dbElement.setValue('nSurfaceLayers', self._ui.numberOfLayers.text(), self.tr('Number of Layers'))
             self._thicknessForm.save(self._dbElement)
+            if not self._boundaries:
+                QMessageBox.information(self, self.tr('Input Error'), self.tr('Select boundaries'))
+                return
 
-            app.db.commit(self._dbElement)
+            if self._groupId:
+                self._db.commit(self._dbElement)
+            else:
+                self._groupId = self._db.addElement('addLayers/layers', self._dbElement)
+
+            boundaries = {gId: None for gId in self._oldBoundaries}
+            for gId in self._boundaries:
+                if gId in boundaries:
+                    boundaries.pop(gId)
+                else:
+                    boundaries[gId] = self._groupId
+
+            geometryManager = app.window.geometryManager
+            for gId, group in boundaries.items():
+                self._db.setValue(f'geometry/{gId}/layerGroup', group)
+                geometryManager.updateGeometryPropety(gId, 'layerGroup', group)
 
             super().accept()
         except DBError as e:
@@ -47,3 +73,42 @@ class BoundarySettingDialog(QDialog):
 
     def _connectSignalsSlots(self):
         self._thicknessForm.modelChanged.connect(self.adjustSize)
+        self._ui.select.clicked.connect(self._selectBoundaries)
+
+    def _load(self):
+        if self._groupId:
+            self._dbElement = self._db.checkout(f'addLayers/layers/{self._groupId}')
+        else:
+            self._dbElement = self._db.newElement('addLayers/layers')
+
+        self._ui.groupName.setText(self._dbElement.getValue('groupName'))
+        self._ui.numberOfLayers.setText(self._dbElement.getValue('nSurfaceLayers'))
+        self._thicknessForm.setData(self._dbElement)
+
+        self._boundaries = []
+        self._availableBoundaries = []
+        for gId, geometry in app.window.geometryManager.geometries().items():
+            if geometry['gType'] == GeometryType.SURFACE.value:
+                name = geometry['name']
+                groupId = geometry['layerGroup']
+                if groupId is None:
+                    self._availableBoundaries.append(SelectorItem(name, name, gId))
+                elif groupId == self._groupId:
+                    self._availableBoundaries.append(SelectorItem(name, name, gId))
+                    self._ui.boundaries.addItem(name)
+                    self._boundaries.append(gId)
+
+        self._oldBoundaries = self._boundaries
+
+    def _selectBoundaries(self):
+        if self._dialog is None:
+            self._dialog = MultiSelectorDialog(self, self.tr('Select Boundaries'),
+                                               self._availableBoundaries, self._boundaries)
+            self._dialog.itemsSelected.connect(self._setBoundaries)
+        self._dialog.open()
+
+    def _setBoundaries(self, gIds):
+        self._boundaries = gIds
+        self._ui.boundaries.clear()
+        for gId in gIds:
+            self._ui.boundaries.addItem(app.window.geometryManager.geometry(gId)['name'])

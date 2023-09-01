@@ -76,7 +76,8 @@ geometry = {
     'point1': VectorComposite().schema(),
     'point2': VectorComposite().setDefault(1, 1, 1).schema(),
     'radius': FloatType().setDefault(1),
-    'castellationGroup': IntType().setOptional().setDefault(None)
+    'castellationGroup': IntType().setOptional().setDefault(None),
+    'layerGroup': IntType().setOptional().setDefault(None)
 }
 
 region = {
@@ -97,9 +98,9 @@ volumeRefinement = {
 }
 
 layer = {
-    'nSurfaceLayers': IntType().setDefault(0),
-    'useLocalSetting': BoolType(False),
-    'thicknessModel': EnumType(ThicknessModel),
+    'groupName': TextType(),
+    'nSurfaceLayers': PositiveIntType().setDefault(1),
+    'thicknessModel': EnumType(ThicknessModel).setDefault(ThicknessModel.FINAL_AND_EXPANSION),
     'relativeSizes': BoolType(True),
     'firstLayerThickness': FloatType().setDefault(0.3),
     'finalLayerThickness': FloatType().setDefault(0.5),
@@ -143,13 +144,13 @@ schema = {
         'minAreaRation': FloatType().setDefault(0.3)
     },
     'addLayers': {
-        'thicknessModel': EnumType(ThicknessModel).setDefault(ThicknessModel.FINAL_AND_OVERALL),
-        'relativeSizes': BoolType(True),
-        'firstLayerThickness': FloatType().setDefault(0.3),
-        'finalLayerThickness': FloatType().setDefault('0.5'),
-        'thickness': FloatType().setDefault('0.5'),
-        'expansionRatio': FloatType().setDefault(1.2),
-        'minThickness': FloatType().setDefault(0.3),
+        # 'thicknessModel': EnumType(ThicknessModel).setDefault(ThicknessModel.FINAL_AND_OVERALL),
+        # 'relativeSizes': BoolType(True),
+        # 'firstLayerThickness': FloatType().setDefault(0.3),
+        # 'finalLayerThickness': FloatType().setDefault('0.5'),
+        # 'thickness': FloatType().setDefault('0.5'),
+        # 'expansionRatio': FloatType().setDefault(1.2),
+        # 'minThickness': FloatType().setDefault(0.3),
         'layers': IntKeyList(layer),
         'nGrow': IntType().setDefault(0),
         'maxFaceThicknessRatio': FloatType().setDefault(0.5),
