@@ -183,6 +183,7 @@ class SnappyHexMeshDict(DictionaryFile):
         data = {}
 
         refinements = app.db.getElements('castellation/refinementSurfaces')
+        # Target is a boundary, interface, or surface included in a castellation group
         surfaces = app.db.getElements(
             'geometry',
             lambda i, e: e['gType'] == GeometryType.SURFACE.value
@@ -195,20 +196,30 @@ class SnappyHexMeshDict(DictionaryFile):
                 level = int(refinements[group]['surfaceRefinementLevel'])
 
             name = surface['name']
-            data[name] = {
-                'level': [level, level],
-            }
+            cfdType = surface['cfdType']
 
-            if surface['cfdType'] != CFDType.NONE.value:
-                data[name]['patchInfo'] = {'type': 'patch'}
+            if cfdType == CFDType.NONE.value:
+                data[name] = {
+                    'faceZone': name,
+                    'faceType': 'internal'
+                }
+            elif cfdType == CFDType.BOUNDARY.value:
+                data[name] = {
+                    'patchInfo': {'type': 'patch'}
+                }
+            else:
+                if self._addLayers or surface['interRegion']:
+                    faceType = 'boundary' if surface['nonConformal'] else 'baffle'
+                else:
+                    faceType = 'internal'
 
-                if surface['cfdType'] == CFDType.INTERFACE.value:
-                    if surface['nonConformal']:
-                        data[name]['faceZone'] = name
-                        data[name]['faceType'] = 'boundary'
-                    else:
-                        data[name]['faceZone'] = name
-                        data[name]['faceType'] = 'baffle'
+                data[name] = {
+                    'faceZone': name,
+                    'faceType': faceType,
+                    'patchInfo': {'type': 'patch'}
+                }
+
+            data[name]['level'] = [level, level]
 
         return data
 
@@ -258,9 +269,12 @@ class SnappyHexMeshDict(DictionaryFile):
             'nBufferCellsNoExtrude': db.getValue('nBufferCellsNoExtrude'),
             'nLayerIter': db.getValue('nLayerIter'),
             'nRelaxedIter': db.getValue('nRelaxedIter'),
+            'thicknessModel': 'finalAndExpansion',
+            'relativeSizes': 'on',
+            'finalLayerThickness': 0.5,
+            'expansionRatio': 1.2,
+            'minThickness': 0.3
         }
-
-        self._addLayerThickness(data, db)
 
         return data
 
@@ -268,49 +282,54 @@ class SnappyHexMeshDict(DictionaryFile):
         if not self._addLayers:
             return {}
 
+        boundaries = {}
+        for geometry in app.db.getElements(
+                'geometry', lambda i, e: e['layerGroup'], ['name', 'layerGroup']).values():
+            group = geometry['layerGroup']
+            if group in boundaries:
+                boundaries[group].append(geometry)
+            else:
+                boundaries[group] = [geometry]
+
         data = {}
-        for gID, geometry in app.db.getElements('geometry').items():
-            if geometry['cfdType'] != CFDType.NONE.value and geometry['gType'] == GeometryType.SURFACE.value:
-                db = app.db.checkout(f'addLayers/layers/{gID}')
-                nSurfaceLayers = int(db.getValue('nSurfaceLayers'))
-                if nSurfaceLayers:
-                    data[geometry['name']] = {
-                        'nSurfaceLayers': nSurfaceLayers
-                    }
-                    if db.getValue('useLocalSetting'):
-                        self._addLayerThickness(data[geometry['name']], db)
+        for group, layer in app.db.getElements('addLayers/layers').items():
+            for boundary in boundaries[group]:
+                data[boundary['name']] = {
+                    'nSurfaceLayers': layer['nSurfaceLayers']
+                }
+                self._addLayerThickness(data[boundary['name']], layer)
 
         return data
 
-    def _addLayerThickness(self, data, db):
-        model = db.getValue('thicknessModel')
+    def _addLayerThickness(self, data, thickness):
+        model = thickness['thicknessModel']
 
         data['thicknessModel'] = model
 
         if model != ThicknessModel.FIRST_AND_RELATIVE_FINAL.value:
-            data['relativeSizes'] = 'on' if db.getValue('relativeSizes') else 'off'
+            data['relativeSizes'] = 'on' if thickness['relativeSizes'] else 'off'
 
         if model in (ThicknessModel.FIRST_AND_EXPANSION.value,
                      ThicknessModel.FINAL_AND_EXPANSION.value,
                      ThicknessModel.OVERALL_AND_EXPANSION.value):
-            data['expansionRatio'] = db.getValue('expansionRatio')
+            data['expansionRatio'] = thickness['expansionRatio']
 
         if model in (ThicknessModel.FINAL_AND_OVERALL.value,
                      ThicknessModel.FINAL_AND_EXPANSION.value,
                      ThicknessModel.FIRST_AND_RELATIVE_FINAL.value):
-            data['finalLayerThickness'] = db.getValue('finalLayerThickness')
+            data['finalLayerThickness'] = thickness['finalLayerThickness']
 
         if model in (ThicknessModel.FIRST_AND_OVERALL.value,
                      ThicknessModel.FIRST_AND_EXPANSION.value,
                      ThicknessModel.FIRST_AND_RELATIVE_FINAL.value):
-            data['firstLayerThickness'] = db.getValue('firstLayerThickness')
+            data['firstLayerThickness'] = thickness['firstLayerThickness']
 
         if model in (ThicknessModel.FIRST_AND_OVERALL.value,
                      ThicknessModel.FINAL_AND_OVERALL.value,
                      ThicknessModel.OVERALL_AND_EXPANSION.value):
-            data['thickness'] = db.getValue('thickness')
+            data['thickness'] = thickness['thickness']
 
-        data['minThickness'] = db.getValue('minThickness'),
+        data['minThickness'] = thickness['minThickness']
 
 
 
