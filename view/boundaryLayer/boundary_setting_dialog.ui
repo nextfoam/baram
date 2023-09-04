@@ -225,7 +225,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QListWidget" name="boundaries"/>
+       <widget class="QListWidget" name="boundaries">
+        <property name="selectionMode">
+         <enum>QAbstractItemView::NoSelection</enum>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

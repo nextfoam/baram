@@ -89,7 +89,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QListWidget" name="volumes"/>
+       <widget class="QListWidget" name="volumes">
+        <property name="selectionMode">
+         <enum>QAbstractItemView::NoSelection</enum>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
