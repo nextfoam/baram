@@ -241,7 +241,7 @@ class DisplayControl(QObject):
         self._view.refresh()
 
     def _applyOpacity(self):
-        opacity = self._dialog.value()
+        opacity = self._dialog.opacity()
         for item in self._selectedItems:
             item.actorInfo().setOpacity(opacity)
 
