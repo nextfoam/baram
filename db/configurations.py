@@ -34,6 +34,7 @@ class Configurations(SimpleDB):
     def save(self):
         if self.isModified():
             writeConfigurations(self._path, self.toYaml(), self._files)
+            self._modified = False
 
     def addGeometryPolyData(self, pd):
         Configurations._geometryNextKey += 1
