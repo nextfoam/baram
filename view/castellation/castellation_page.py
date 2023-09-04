@@ -70,7 +70,6 @@ class CastellationPage(StepPage):
             castellation.setValue('allowFreeStandingZoneFaces', self._ui.allowFreeStandingZoneFaces.isChecked())
 
             self._db.commit(castellation)
-
             app.db.commit(self._db)
 
             self._db = app.db.checkout()
@@ -162,9 +161,7 @@ class CastellationPage(StepPage):
             await processor.run()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
-
             self._updateControlButtons()
-            progressDialog.close()
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),

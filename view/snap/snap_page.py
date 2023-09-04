@@ -107,14 +107,8 @@ class SnapPage(StepPage):
             processor.errorLogged.connect(console.appendError)
             await processor.run()
 
-            progressDialog = ProgressDialogSimple(self._widget, self.tr('Loading Mesh'), False)
-            progressDialog.setLabelText(self.tr('Loading Mesh'))
-            progressDialog.open()
-
             await app.window.meshManager.load(self.OUTPUT_TIME)
-
             self._updateControlButtons()
-            progressDialog.close()
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),

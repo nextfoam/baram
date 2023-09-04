@@ -101,6 +101,9 @@ class ListTable(QFrame):
     def item(self, id_):
         return self._items[id_]
 
+    def count(self):
+        return len(self._items)
+
     def clear(self):
         for i in [key for key in self._items]:
             self.removeItem(i)

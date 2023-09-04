@@ -99,7 +99,12 @@ class FileSystem:
         return targetFile
 
     async def copyTimeDrectory(self, srcTime, destTime):
-        await asyncio.to_thread(shutil.copytree, self.timePath(srcTime), self.timePath(destTime))
+        srcPath = self.timePath(srcTime)
+        if any(srcPath.iterdir()):
+            await asyncio.to_thread(shutil.copytree, self.timePath(srcTime), self.timePath(destTime))
+            return True
+
+        return False
 
     def _setCaseRoot(self, path):
         self._casePath = path

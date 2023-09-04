@@ -55,7 +55,8 @@ class ExportPage(StepPage):
             self.lock()
 
             outputPath = app.fileSystem.timePath(self.OUTPUT_TIME)
-            rmtree(outputPath)
+            if outputPath.exists():
+                rmtree(outputPath)
 
             console = app.consoleView
             console.clear()
@@ -73,7 +74,8 @@ class ExportPage(StepPage):
                 progressDialog.setLabelText(self.tr('Generating Block Mesh'))
                 progressDialog.open()
 
-                await app.fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME)
+                if not await app.fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME):
+                    await app.fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME)
 
                 progressDialog.close()
 
@@ -85,8 +87,14 @@ class ExportPage(StepPage):
             processor.errorLogged.connect(console.appendError)
             await processor.run()
 
+            dirName = FileSystem.CONSTANT_DIRECTORY_NAME
+            if not (outputPath / FileSystem.POLY_MESH_DIRECTORY_NAME).exists():
+                path = path / FileSystem.CONSTANT_DIRECTORY_NAME
+                dirName = FileSystem.POLY_MESH_DIRECTORY_NAME
+
             path.mkdir(parents=True, exist_ok=True)
-            outputPath.rename(path / FileSystem.CONSTANT_DIRECTORY_NAME)
+            outputPath.rename(path / dirName)
+
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),

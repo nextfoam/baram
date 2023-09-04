@@ -25,8 +25,6 @@ class BoundaryLayerPage(StepPage):
 
         self._ui = ui
 
-        self._layers = {}
-
         self._dialog = None
         self._loaded = False
 
@@ -136,39 +134,37 @@ class BoundaryLayerPage(StepPage):
             if not self.save():
                 return
 
-            progressDialog = ProgressDialogSimple(self._widget, self.tr('Boundary Layers Applying'))
-            progressDialog.setLabelText(self.tr('Updating Configurations'))
-            progressDialog.open()
-
-            SnappyHexMeshDict(addLayers=True).build().write()
-            # TopoSetDict().build().write()
-
-            progressDialog.close()
-
             console = app.consoleView
             console.clear()
-            proc = await runUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
-                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            processor = Processor(proc)
-            processor.outputLogged.connect(console.append)
-            processor.errorLogged.connect(console.appendError)
-            await processor.run()
-            #
-            # proc = await runUtility('toposet', cwd=app.fileSystem.caseRoot(),
-            #                         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            # processor = Processor(proc)
-            # processor.outputLogged.connect(console.append)
-            # processor.errorLogged.connect(console.appendError)
-            # await processor.run()
 
-            progressDialog = ProgressDialogSimple(self._widget, self.tr('Loading Mesh'), False)
-            progressDialog.setLabelText(self.tr('Loading Mesh'))
-            progressDialog.open()
+            if self._ui.boundaryLayerConfigurations.count():
+                progressDialog = ProgressDialogSimple(self._widget, self.tr('Boundary Layers Applying'))
+                progressDialog.setLabelText(self.tr('Updating Configurations'))
+                progressDialog.open()
+
+                SnappyHexMeshDict(addLayers=True).build().write()
+                # TopoSetDict().build().write()
+
+                progressDialog.close()
+
+                proc = await runUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
+                                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                processor = Processor(proc)
+                processor.outputLogged.connect(console.append)
+                processor.errorLogged.connect(console.appendError)
+                await processor.run()
+                #
+                # proc = await runUtility('toposet', cwd=app.fileSystem.caseRoot(),
+                #                         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                # processor = Processor(proc)
+                # processor.outputLogged.connect(console.append)
+                # processor.errorLogged.connect(console.appendError)
+                # await processor.run()
+            else:
+                app.fileSystem.timePath(self.OUTPUT_TIME).mkdir()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
-
             self._updateControlButtons()
-            progressDialog.close()
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),
