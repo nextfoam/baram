@@ -21,7 +21,7 @@ class OperatingConditions(DictionaryFile):
         pressure = db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure')
 
         self._data = {
-            "Op": ('Op [1 -1 -2 0 0 0 0]', pressure)
+            'operatingPressure': ('operatingPressure [1 -1 -2 0 0 0 0]', pressure)
         }
 
         return self
