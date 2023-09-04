@@ -26,16 +26,21 @@ class Column(IntEnum):
 
 
 class GeometryItem(QTreeWidgetItem):
-    def __init__(self, gId):
+    def __init__(self, gId, geometry):
         super().__init__(int(gId))
-        self._nameWidget = None
+        self.setGeometry(geometry)
 
     def gId(self):
         return str(self.type())
 
-    def updateGeometry(self, geometry):
+    def setGeometry(self, geometry):
+        if geometry['cfdType'] == CFDType.INTERFACE.value and geometry['interRegion']:
+            cfdType = QCoreApplication.translate('GeometryPage', 'Interface(R)')
+        else:
+            cfdType = CFDTypes[geometry['cfdType']]
+
         self.setText(Column.NAME_COLUMN, geometry['name'])
-        self.setText(Column.TYPE_COLUMN, CFDTypes[geometry['cfdType']])
+        self.setText(Column.TYPE_COLUMN, cfdType)
 
 
 class GeometryList(QObject):
@@ -62,7 +67,7 @@ class GeometryList(QObject):
             self.add(gId, geometry)
 
     def add(self, gId, geometry):
-        item = GeometryItem(gId)
+        item = GeometryItem(gId, geometry)
 
         if geometry['volume']:
             self._items[geometry['volume']].addChild(item)
@@ -72,13 +77,11 @@ class GeometryList(QObject):
 
         item.setIcon(Column.NAME_COLUMN,
                      self.volumeIcon if geometry['gType'] == GeometryType.VOLUME.value else self.surfaceIcon)
-        item.setText(Column.NAME_COLUMN, geometry['name'])
-        item.setText(Column.TYPE_COLUMN, CFDTypes[geometry['cfdType']])
 
         self._items[gId] = item
 
     def update(self, gId, geometry):
-        self._items[gId].updateGeometry(geometry)
+        self._items[gId].setGeometry(geometry)
 
     def remove(self, gId):
         index = -1
