@@ -16,7 +16,7 @@ class Column(IntEnum):
     NAME_COLUMN = 0
     TYPE_COLUMN = auto()
     COLOR_COLUMN = auto()
-    CUT_ICON_COLUMN = auto()
+    # CUT_ICON_COLUMN = auto()
     VISIBLE_ICON_COLUMN = auto()
 
 
@@ -40,7 +40,7 @@ class ActorItem(QTreeWidgetItem):
         self.setText(Column.NAME_COLUMN, actorInfo.name())
         self.setText(Column.TYPE_COLUMN, self._types[actorInfo.type()])
         self._updateColorColumn()
-        self._updateCutIcon()
+        # self._updateCutIcon()
         self._updateVisibleIcon()
 
     def setupColorWidget(self, parent):
@@ -73,12 +73,12 @@ class ActorItem(QTreeWidgetItem):
     def _updateColorColumn(self):
         color = self._actorInfo.color()
         self._colorWidget.setStyleSheet(f'background-color: rgb({color.red()}, {color.green()}, {color.blue()})')
-
-    def _updateCutIcon(self):
-        if not self._actorInfo.isCutEnabled():
-            self.setIcon(Column.CUT_ICON_COLUMN, self._emptyIcon)
-        else:
-            self.setIcon(Column.CUT_ICON_COLUMN, self._notCutIcon)
+    #
+    # def _updateCutIcon(self):
+    #     if not self._actorInfo.isCutEnabled():
+    #         self.setIcon(Column.CUT_ICON_COLUMN, self._emptyIcon)
+    #     else:
+    #         self.setIcon(Column.CUT_ICON_COLUMN, self._notCutIcon)
 
     def _updateVisibleIcon(self):
         if self._actorInfo.isVisible():
@@ -99,7 +99,7 @@ class DisplayControl(QObject):
         self._dialog = None
 
         self._list.setColumnWidth(Column.COLOR_COLUMN, 20)
-        self._list.setColumnWidth(Column.CUT_ICON_COLUMN, 20)
+        # self._list.setColumnWidth(Column.CUT_ICON_COLUMN, 20)
         self._list.setColumnWidth(Column.VISIBLE_ICON_COLUMN, 20)
 
         self._list.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
