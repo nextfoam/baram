@@ -33,6 +33,8 @@ class BoundaryLayerPage(StepPage):
         ui.boundaryLayerConfigurationsHeader.setContents(ui.boundaryLayerConfigurations)
         ui.boundaryLayerConfigurations.setHeaderWithWidth([0, 0, 16, 16])
 
+        ui.boundaryLayerAdvancedConfigurationHeader.setContents(ui.boundaryLayerAdvancedConfiguration)
+
         self._connectSignalsSlots()
 
     def open(self):
