@@ -12,6 +12,7 @@ from libbaram.run import runUtility
 from libbaram.process import Processor, ProcessError
 from libbaram.utils import rmtree
 from openfoam.file_system import FileSystem
+from openfoam.constant.region_properties import RegionProperties
 from openfoam.system.topo_set_dict import TopoSetDict
 from view.widgets.progress_dialog_simple import ProgressDialogSimple
 from view.step_page import StepPage
@@ -79,22 +80,28 @@ class ExportPage(StepPage):
 
                 progressDialog.close()
 
-            TopoSetDict().build(TopoSetDict.Mode.CREATE_CELL_ZONES).write()
-            proc = await runUtility('toposet', cwd=app.fileSystem.caseRoot(),
-                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            processor = Processor(proc)
-            processor.outputLogged.connect(console.append)
-            processor.errorLogged.connect(console.appendError)
-            await processor.run()
+            toposetDict = TopoSetDict().build(TopoSetDict.Mode.CREATE_CELL_ZONES)
+            if toposetDict.isBuilt():
+                regions = app.db.getElements('region', None, ['name'])
+                if len(regions) == 1:
+                    for region in regions.values():
+                        region['name'] = None
 
-            dirName = FileSystem.CONSTANT_DIRECTORY_NAME
-            if not (outputPath / FileSystem.POLY_MESH_DIRECTORY_NAME).exists():
-                path = path / FileSystem.CONSTANT_DIRECTORY_NAME
-                dirName = FileSystem.POLY_MESH_DIRECTORY_NAME
+                for region in regions.values():
+                    rname = region['name']
+                    toposetDict.writeByRegion(rname)
+                    proc = await runUtility('toposet', '-region', rname, cwd=app.fileSystem.caseRoot(),
+                                            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                    processor = Processor(proc)
+                    processor.outputLogged.connect(console.append)
+                    processor.errorLogged.connect(console.appendError)
+                    await processor.run()
 
             path.mkdir(parents=True, exist_ok=True)
-            outputPath.rename(path / dirName)
-
+            fileSystem = FileSystem(path)
+            fileSystem.createBaramCase()
+            outputPath.rename(fileSystem.constantPath())
+            RegionProperties(fileSystem).build().write()
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),

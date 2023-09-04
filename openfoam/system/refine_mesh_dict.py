@@ -6,7 +6,8 @@ from openfoam.dictionary_file import DictionaryFile
 
 class RefineMeshDict(DictionaryFile):
     def __init__(self):
-        super().__init__(self.systemLocation(), 'refineMeshDict')
+        super().__init__()
+        self._setHeader(self.systemLocation(), 'refineMeshDict')
 
     def build(self, name):
         if self._data is not None:

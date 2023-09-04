@@ -13,7 +13,8 @@ class SurfacePatchData:
 
 class SurfacePatchDict(DictionaryFile):
     def __init__(self):
-        super().__init__(self.systemLocation(), 'surfacePatchDict')
+        super().__init__()
+        self._setHeader(self.systemLocation(), 'surfacePatchDict')
 
     def build(self, data):
         if self._data is not None:

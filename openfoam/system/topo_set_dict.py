@@ -4,7 +4,7 @@
 from enum import Enum
 
 from app import app
-from db.configurations_schema import CFDType, GeometryType, Shape
+from db.configurations_schema import CFDType, Shape
 from db.simple_db import elementToVector
 from openfoam.dictionary_file import DictionaryFile
 
@@ -97,7 +97,8 @@ class TopoSetDict(DictionaryFile):
         CREATE_CELL_ZONES = 1
 
     def __init__(self):
-        super().__init__(self.systemLocation(), 'topoSetDict')
+        super().__init__()
+        self._setHeader(self.systemLocation(), 'topoSetDict')
 
     def build(self, mode):
         if self._data is not None:
@@ -110,20 +111,16 @@ class TopoSetDict(DictionaryFile):
                 actions.append(self._constuctNewRegionToCellAction(region))
                 actions.append(self._constructNewSetToCellZone(region['name'], region['name']))
         elif mode == self.Mode.CREATE_CELL_ZONES:
-            for gId, geometry in app.db.getElements('geometry').items():
-                if geometry['cfdType'] != CFDType.NONE.value and geometry['gType'] == GeometryType.VOLUME.value:
-                    actions.append(self._constructClearCellSetAction(geometry['name']))
-                    actions.append(self._constuctNewGeometryToCellAction(geometry))
-                    actions.append(self._constructNewSetToCellZone(geometry['name'], geometry['name']))
-        # else:                       # Create cell sets for volume refinement
-        #     actions = [
-        #         self._constructClearCellSetAction(self._source.name),
-        #         self._constructNewVolumeToCellAction(self._source)
-        #     ]
+            for gId, geometry in app.db.getElements(
+                    'geometry', lambda i, e: e['cfdType'] == CFDType.CELL_ZONE.value).items():
+                actions.append(self._constructClearCellSetAction(geometry['name']))
+                actions.append(self._constuctNewGeometryToCellAction(geometry))
+                actions.append(self._constructNewSetToCellZone(geometry['name'], geometry['name']))
 
-        self._data = {
-            'actions': actions
-        }
+        if actions:
+            self._data = {
+                'actions': actions
+            }
 
         return self
 

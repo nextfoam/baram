@@ -9,7 +9,8 @@ from openfoam.dictionary_file import DictionaryFile
 
 class SnappyHexMeshDict(DictionaryFile):
     def __init__(self, castellationMesh=False, snap=False, addLayers=False):
-        super().__init__(self.systemLocation(), 'snappyHexMeshDict')
+        super().__init__()
+        self._setHeader(self.systemLocation(), 'snappyHexMeshDict')
 
         self._casterllationMesh = castellationMesh
         self._snap = snap

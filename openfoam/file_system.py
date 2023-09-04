@@ -92,6 +92,14 @@ class FileSystem:
         self._triSurfacePath = makeDir(self._constantPath, self.TRI_SURFACE_DIRECTORY_NAME)
         makeDir(self._casePath, '0')
 
+    def createBaramCase(self):
+        if self._casePath.exists():
+            utils.rmtree(self._casePath)
+
+        self._casePath.mkdir(exist_ok=True)
+        with open(self.foamFilePath(), 'a'):
+            pass
+
     async def copyTriSurfaceFrom(self, srcPath, fileName):
         targetFile = self._triSurfacePath / fileName
         await asyncio.to_thread(shutil.copyfile, srcPath, targetFile)
