@@ -89,7 +89,7 @@ region = {
 surfaceRefinement = {
     'groupName': TextType(),
     'surfaceRefinementLevel': IntType().setDefault(1),
-    'featureEdgeRefinementLevel': IntType().setDefault(0),
+    'featureEdgeRefinementLevel': IntType().setDefault(1),
 }
 
 volumeRefinement = {
