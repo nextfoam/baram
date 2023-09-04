@@ -84,7 +84,7 @@ class StepManager:
         self._open(step)
 
     def saveCurrentPage(self):
-        self._pages[self._navigation.currentStep()].save()
+        return self._pages[self._navigation.currentStep()].save()
 
     def isOpenedStep(self, step):
         return step == self._openedStep

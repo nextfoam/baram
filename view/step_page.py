@@ -34,7 +34,7 @@ class StepPage(QObject):
         return
 
     def save(self):
-        return
+        return True
 
     def clearResult(self):
         path = app.fileSystem.timePath(self.OUTPUT_TIME)
