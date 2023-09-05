@@ -1789,7 +1789,7 @@
                     <x>0</x>
                     <y>0</y>
                     <width>581</width>
-                    <height>661</height>
+                    <height>689</height>
                    </rect>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_20">
@@ -1990,15 +1990,25 @@
                             <string>Starting Anaylysis</string>
                            </property>
                            <layout class="QFormLayout" name="formLayout_9">
-                            <item row="0" column="0">
+                            <item row="1" column="0">
                              <widget class="QLabel" name="label_17">
                               <property name="text">
                                <string>Max. Thickness Ratio</string>
                               </property>
                              </widget>
                             </item>
-                            <item row="0" column="1">
+                            <item row="1" column="1">
                              <widget class="QLineEdit" name="maxFaceThicknessRatio"/>
+                            </item>
+                            <item row="0" column="0">
+                             <widget class="QLabel" name="label_60">
+                              <property name="text">
+                               <string>Feature Angle Threshold</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item row="0" column="1">
+                             <widget class="QLineEdit" name="featureAngleThreshold"/>
                             </item>
                            </layout>
                           </widget>
@@ -2385,7 +2395,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QCheckBox" name="fastInteraition">
+                   <widget class="QCheckBox" name="fastInteraction">
                     <property name="enabled">
                      <bool>false</bool>
                     </property>

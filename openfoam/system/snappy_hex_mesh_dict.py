@@ -258,7 +258,7 @@ class SnappyHexMeshDict(DictionaryFile):
         data = {
             'layers': self._constructLayers(),
             'nGrow': db.getValue('nGrow'),
-            'featureAngle': app.db.getValue('castellation/resolveFeatureAngle'),
+            'featureAngle': db.getValue('featureAngle'),
             'maxFaceThicknessRatio': db.getValue('maxFaceThicknessRatio'),
             'nSmoothSurfaceNormals': db.getValue('nSmoothSurfaceNormals'),
             'nSmoothThickness': db.getValue('nSmoothThickness'),

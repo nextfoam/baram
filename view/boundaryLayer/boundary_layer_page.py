@@ -64,6 +64,7 @@ class BoundaryLayerPage(StepPage):
             addLayer = app.db.checkout('addLayers')
 
             addLayer.setValue('nGrow', self._ui.nGrow.text(), self.tr('Number of Grow'))
+            addLayer.setValue('featureAngle', self._ui.featureAngleThreshold.text(), self.tr('Feature Angle Threshold'))
             addLayer.setValue('maxFaceThicknessRatio', self._ui.maxFaceThicknessRatio.text(),
                               self.tr('Max. Thickness Ratio'))
             addLayer.setValue('nSmoothSurfaceNormals', self._ui.nSmoothSurfaceNormals.text(),
@@ -116,6 +117,7 @@ class BoundaryLayerPage(StepPage):
         addLayer = app.db.checkout('addLayers')
 
         self._ui.nGrow.setText(addLayer.getValue('nGrow'))
+        self._ui.featureAngleThreshold.setText(addLayer.getValue('featureAngle'))
         self._ui.maxFaceThicknessRatio.setText(addLayer.getValue('maxFaceThicknessRatio'))
         self._ui.nSmoothSurfaceNormals.setText(addLayer.getValue('nSmoothSurfaceNormals'))
         self._ui.nSmoothThickness.setText(addLayer.getValue('nSmoothThickness'))
