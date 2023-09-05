@@ -84,18 +84,23 @@ class ExportPage(StepPage):
             if toposetDict.isBuilt():
                 regions = app.db.getElements('region', None, ['name'])
                 if len(regions) == 1:
-                    for region in regions.values():
-                        region['name'] = None
-
-                for region in regions.values():
-                    rname = region['name']
-                    toposetDict.writeByRegion(rname)
-                    proc = await runUtility('toposet', '-region', rname, cwd=app.fileSystem.caseRoot(),
+                    toposetDict.write()
+                    proc = await runUtility('toposet', cwd=app.fileSystem.caseRoot(),
                                             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                     processor = Processor(proc)
                     processor.outputLogged.connect(console.append)
                     processor.errorLogged.connect(console.appendError)
                     await processor.run()
+                else:
+                    for region in regions.values():
+                        rname = region['name']
+                        toposetDict.writeByRegion(rname)
+                        proc = await runUtility('toposet', '-region', rname, cwd=app.fileSystem.caseRoot(),
+                                                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                        processor = Processor(proc)
+                        processor.outputLogged.connect(console.append)
+                        processor.errorLogged.connect(console.appendError)
+                        await processor.run()
 
             path.mkdir(parents=True, exist_ok=True)
             fileSystem = FileSystem(path)
