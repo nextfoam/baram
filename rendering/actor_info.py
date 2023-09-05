@@ -69,6 +69,8 @@ class ActorInfo:
         self._actor.SetObjectName(self._id)
         self._properties = None
 
+        self._actor.GetProperty().SetOpacity(0.9)
+
         prop = self._actor.GetProperty()
         self._properties = self.Properties(self._actor.GetVisibility(),
                                            prop.GetOpacity(),
