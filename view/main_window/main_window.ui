@@ -404,7 +404,7 @@
               </sizepolicy>
              </property>
              <property name="currentIndex">
-              <number>1</number>
+              <number>5</number>
              </property>
              <widget class="QWidget" name="geometryPage">
               <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -2154,7 +2154,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QWidget" name="widget_21" native="true">
+                <widget class="QWidget" name="snapButtons" native="true">
                  <layout class="QHBoxLayout" name="horizontalLayout_11">
                   <item>
                    <spacer name="horizontalSpacer_8">

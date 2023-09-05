@@ -27,6 +27,7 @@ class CastellationPage(StepPage):
     def __init__(self, ui):
         super().__init__(ui, ui.castellationPage)
 
+        self._ui = ui
         self._loaded = False
         self._db = None
         self._dialog = None
@@ -40,6 +41,24 @@ class CastellationPage(StepPage):
         ui.volumeRefinement.setHeaderWithWidth([0, 0, 16, 16])
 
         self._connectSignalsSlots()
+
+    def lock(self):
+        self._ui.castellationConfiguration.setEnabled(False)
+        self._ui.castellationAdvanced.setEnabled(False)
+        self._ui.surfaceRefinementAdd.setEnabled(False)
+        self._ui.surfaceRefinement.setEnabled(False)
+        self._ui.volumeRefinementAdd.setEnabled(False)
+        self._ui.volumeRefinement.setEnabled(False)
+        self._ui.castellationButtons.setEnabled(False)
+
+    def unlock(self):
+        self._ui.castellationConfiguration.setEnabled(True)
+        self._ui.castellationAdvanced.setEnabled(True)
+        self._ui.surfaceRefinementAdd.setEnabled(True)
+        self._ui.surfaceRefinement.setEnabled(True)
+        self._ui.volumeRefinementAdd.setEnabled(True)
+        self._ui.volumeRefinement.setEnabled(True)
+        self._ui.castellationButtons.setEnabled(True)
 
     def open(self):
         self._load()

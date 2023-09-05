@@ -37,6 +37,18 @@ class BoundaryLayerPage(StepPage):
 
         self._connectSignalsSlots()
 
+    def lock(self):
+        self._ui.boundaryLayerConfigurationsAdd.setEnabled(False)
+        self._ui.boundaryLayerConfigurations.setEnabled(False)
+        self._ui.boundaryLayerAdvancedConfiguration.setEnabled(False)
+        self._ui.snapButtons.setEnabled(False)
+
+    def unlock(self):
+        self._ui.boundaryLayerConfigurationsAdd.setEnabled(True)
+        self._ui.boundaryLayerConfigurations.setEnabled(True)
+        self._ui.boundaryLayerAdvancedConfiguration.setEnabled(True)
+        self._ui.snapButtons.setEnabled(True)
+
     def open(self):
         self._load()
 
