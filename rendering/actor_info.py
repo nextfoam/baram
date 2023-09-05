@@ -105,6 +105,9 @@ class ActorInfo:
     def bounds(self):
         return Bounds(*self._actor.GetBounds())
 
+    def setName(self, name):
+        self._name = name
+
     def isVisible(self):
         return self._properties.visibility
 

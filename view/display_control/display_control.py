@@ -64,6 +64,10 @@ class ActorItem(QTreeWidgetItem):
         self._actorInfo.setColor(color)
         self._updateColorColumn()
 
+    def setActorName(self, name):
+        self._actorInfo.setName(name)
+        self.setText(Column.NAME_COLUMN, name)
+
     def actorInfo(self):
         return self._actorInfo
 
@@ -143,6 +147,10 @@ class DisplayControl(QObject):
         item = self._items[actorInfo.id()]
         self._view.removeActor(item.actorInfo().actor())
         item.setHidden(True)
+
+    def updateActorName(self, id_, name):
+        item = self._items[id_]
+        item.setActorName(name)
 
     def refreshView(self):
         self._view.refresh()

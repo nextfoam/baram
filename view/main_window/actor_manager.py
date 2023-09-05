@@ -75,3 +75,6 @@ class ActorManager(QObject):
 
         self._displayController.refreshView()
         self._visibility = True
+
+    def _updateActorName(self, key, name):
+        self._displayController.updateActorName(key, name)
