@@ -47,6 +47,9 @@ class StepPage(QObject):
     def _setNextStepEnabled(self, enabled):
         self._ui.next.setEnabled(enabled)
 
+    def _updateNextStepAvailable(self):
+        self._setNextStepEnabled(self.isNextStepAvailable())
+
     def _showResultMesh(self):
         app.window.meshManager.show(self.OUTPUT_TIME)
 

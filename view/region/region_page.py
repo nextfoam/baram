@@ -4,7 +4,6 @@
 from PySide6.QtWidgets import QVBoxLayout
 
 from app import app
-from rendering.point_widget import PointWidget
 from view.step_page import StepPage
 from .region_form import RegionForm
 from .region_card import RegionCard
@@ -16,32 +15,34 @@ class RegionPage(StepPage):
     def __init__(self, ui):
         super().__init__(ui, ui.regionPage)
         self._ui = ui
-        self._form = RegionForm(ui)
+        self._form = None
 
         self._regions = {}
-        self._pointWidget = None
-
         self._loaded = False
+
+        self._form = RegionForm(self._ui.renderingView)
 
         layout = QVBoxLayout(self._ui.regionList)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.addStretch()
 
+        self._connectSignalsSlots()
+
     def isNextStepAvailable(self):
-        return True
+        return app.db.elementCount('region') > 0
 
     def lock(self):
-        for card in self._regions.values():
-            card.disable()
+        self._ui.regionAdd.setEnabled(False)
 
-        self._form.disable()
+        for card in self._regions.values():
+            card.setEnabled(False)
 
     def unlock(self):
-        for card in self._regions.values():
-            card.enable()
+        self._ui.regionAdd.setEnabled(True)
 
-        self._form.enable()
+        for card in self._regions.values():
+            card.setEnabled(True)
 
     def open(self):
         self._load()
@@ -49,25 +50,18 @@ class RegionPage(StepPage):
 
     def selected(self):
         self._load()
-        self._form.setupForAdding()
-        self._pointWidget.on()
         app.window.meshManager.hide()
 
     def deselected(self):
-        self._pointWidget.off()
+        self._form.hide()
 
     def clearResult(self):
         return
 
     def _connectSignalsSlots(self):
+        self._ui.regionAdd.clicked.connect(self._showFormForAdding)
         self._form.regionAdded.connect(self._add)
         self._form.regionEdited.connect(self._update)
-
-        self._ui.x.editingFinished.connect(self._movePointWidget)
-        self._ui.y.editingFinished.connect(self._movePointWidget)
-        self._ui.z.editingFinished.connect(self._movePointWidget)
-        self._form.pointChanged.connect(self._movePointWidget)
-        self._pointWidget.pointMoved.connect(self._setPoint)
 
     def _load(self):
         if not self._loaded:
@@ -79,22 +73,22 @@ class RegionPage(StepPage):
             self._updateBounds()
 
     def _updateBounds(self):
-        if not self._pointWidget:
-            self._pointWidget = PointWidget(app.window.renderingView)
-            self._connectSignalsSlots()
-
-        point = self._pointWidget.setBounds(app.window.geometryManager.getBounds())
-        self._setPoint(point)
+        self._form.setBounds(app.window.geometryManager.getBounds())
 
     def _add(self, id_):
         card = RegionCard(id_)
         self._regions[id_] = card
-        card.editClicked.connect(self._form.setupForEditing)
+        card.editClicked.connect(self._showFormForEditing)
         card.removeClicked.connect(self._remove)
         self._ui.regionList.layout().insertWidget(0, card)
 
+        self._updateNextStepAvailable()
+        self._ui.regionList.layout().removeWidget(self._form)
+        self._form.hide()
+
     def _update(self, id_):
         self._regions[id_].load()
+        self._regions[id_].removeForm(self._form)
 
     def _remove(self, id_):
         db = app.db.checkout()
@@ -106,12 +100,14 @@ class RegionPage(StepPage):
         card.deleteLater()
         del self._regions[id_]
 
-    def _movePointWidget(self):
-        self._setPoint(
-            self._pointWidget.setPosition(float(self._ui.x.text()), float(self._ui.y.text()), float(self._ui.z.text())))
+        self._updateNextStepAvailable()
 
-    def _setPoint(self, point):
-        x, y, z = point
-        self._ui.x.setText('{:.6g}'.format(x))
-        self._ui.y.setText('{:.6g}'.format(y))
-        self._ui.z.setText('{:.6g}'.format(z))
+    def _showFormForAdding(self):
+        self._form.setupForAdding()
+        self._ui.regionList.layout().insertWidget(0, self._form)
+        self._form.show()
+
+    def _showFormForEditing(self, id_):
+        self._form.setupForEditing(id_)
+        self._regions[id_].showForm(self._form)
+        self._form.show()

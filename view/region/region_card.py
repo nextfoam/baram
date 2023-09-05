@@ -37,12 +37,18 @@ class RegionCard(QWidget):
         self._ui.type.setText(self._types[app.db.getValue(path + 'type')])
         x, y, z = app.db.getVector(path + 'point')
         self._ui.point.setText(f'({x}, {y}, {z})')
+    #
+    # def enable(self):
+    #     self._ui.remove.setEnabled(True)
+    #
+    # def disable(self):
+    #     self._ui.remove.setEnabled(False)
 
-    def enable(self):
-        self._ui.remove.setEnabled(True)
+    def showForm(self, form):
+        self._ui.card.layout().addWidget(form)
 
-    def disable(self):
-        self._ui.remove.setEnabled(False)
+    def removeForm(self, form):
+        self._ui.card.layout().removeWidget(form)
 
     def _connectSignalsSlots(self):
         self._ui.edit.clicked.connect(self._editClicked)
