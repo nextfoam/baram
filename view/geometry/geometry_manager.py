@@ -76,6 +76,8 @@ class GeometryManager(ActorManager):
                 self.update(
                     ActorInfo(self._surfaceToPolyData(self._geometries[gId]),
                               gId, geometry['name'], ActorType.GEOMETRY))
+        else:
+            self._updateActorName(gId, geometry['name'])
 
         self.applyToDisplay()
 
