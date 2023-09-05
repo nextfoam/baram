@@ -2354,6 +2354,9 @@
                   </property>
                   <item>
                    <widget class="QComboBox" name="coloringMode">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <item>
                      <property name="text">
                       <string>Solid Color</string>
@@ -2383,6 +2386,9 @@
                   </item>
                   <item>
                    <widget class="QCheckBox" name="fastInteraition">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="text">
                      <string>Fast Interaction</string>
                     </property>
@@ -2644,28 +2650,6 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="renderingMode">
-                    <property name="sizeAdjustPolicy">
-                     <enum>QComboBox::AdjustToContents</enum>
-                    </property>
-                    <item>
-                     <property name="text">
-                      <string>Surface</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>Surface With Edges</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>Feature Edges</string>
-                     </property>
-                    </item>
-                   </widget>
-                  </item>
-                  <item>
                    <spacer name="horizontalSpacer">
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
@@ -2891,7 +2875,7 @@
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="regionTypeRadios"/>
   <buttongroup name="stepButtons"/>
+  <buttongroup name="regionTypeRadios"/>
  </buttongroups>
 </ui>
