@@ -104,9 +104,6 @@ class GeometryPage(StepPage):
         self._list.remove(gId)
         self._updateNextStepAvailable()
 
-    def _updateNextStepAvailable(self):
-        self._setNextStepEnabled(self.isNextStepAvailable())
-
     def _currentGeometryChanged(self):
         gId = self._list.currentGeometryID()
         if gId:
