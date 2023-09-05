@@ -154,8 +154,9 @@ class DisplayControl(QObject):
         self._list.customContextMenuRequested.connect(self._showContextMenu)
         self._list.itemSelectionChanged.connect(self._selectedItemsChanged)
         self._view.actorPicked.connect(self._actorPicked)
+        self._view.customContextMenuRequested.connect(self._showContextMenuOnRenderingView)
 
-    def _showContextMenu(self, pos):
+    def _executeContextMenu(self, pos):
         def addAction(menu, text, slot, checked=None):
             action = menu.addAction(text)
             action.triggered.connect(slot)
@@ -182,7 +183,16 @@ class DisplayControl(QObject):
         addAction(displayMenu, self.tr('Surface with Edges'), self._displayWireSurfaceWithEdges,
                   properties.displayMode == DisplayMode.SURFACE_EDGE)
 
-        contextMenu.exec(self._list.mapToGlobal(pos))
+        contextMenu.exec(pos)
+
+    def _showContextMenu(self, pos):
+        self._executeContextMenu(self._list.mapToGlobal(pos))
+
+    def _showContextMenuOnRenderingView(self, pos):
+        actor = self._view.pickActor(pos.x(), self._view.height() - pos.y() - 1)
+        if actor:
+            self._actorPicked(actor, False, True)
+            self._executeContextMenu(self._view.mapToGlobal(pos))
 
     def _selectedItemsInfo(self):
         items = self._list.selectedItems()
@@ -250,9 +260,19 @@ class DisplayControl(QObject):
         for item in self._selectedItems:
             item.setActorColor(color)
 
-    def _actorPicked(self, actor):
-        item = self._items[actor.GetObjectName()]
-        item.setSelected(True)
+    def _actorPicked(self, actor, ctrlKeyPressed=False, forContextMenu=False):
+        if not ctrlKeyPressed and not forContextMenu:
+            self._list.clearSelection()
+
+        if actor:
+            item = self._items[actor.GetObjectName()]
+            if not item.isSelected() and forContextMenu:
+                self._list.clearSelection()
+
+            if ctrlKeyPressed:
+                item.setSelected(not item.isSelected())
+            else:
+                item.setSelected(True)
 
     def _selectedItemsChanged(self):
         for item in self._items.values():

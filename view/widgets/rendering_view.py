@@ -45,7 +45,7 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
 
 
 class RenderingView(QWidget):
-    actorPicked = Signal(vtkActor)
+    actorPicked = Signal(vtkActor, bool)
     viewClosed = Signal()
 
     def __init__(self, parent: QWidget = None):
@@ -111,6 +111,13 @@ class RenderingView(QWidget):
         self._widget.close()
 
         return super().close()
+
+    def pickActor(self, x, y):
+        picker = vtkPropPicker()
+        picker.PickProp(x, y, self._renderer)
+        actor = picker.GetActor()
+
+        return actor
 
     def _turnCamera(self, orientation: (float, float, float), up: (float, float, float)):
         camera = self._renderer.GetActiveCamera()
@@ -269,11 +276,7 @@ class RenderingView(QWidget):
         x, y = self._style.GetInteractor().GetEventPosition()
 
         if (x, y) == self._pressPos:
-            picker = vtkPropPicker()
-            picker.PickProp(x, y, self._renderer)
-            actor = picker.GetActor()
-            if actor:
-                self.actorPicked.emit(actor)
+            self.actorPicked.emit(self.pickActor(x, y), self._style.GetInteractor().GetControlKey())
 
         # The style does not run its own handler if observer is registered
         self._style.OnLeftButtonUp()

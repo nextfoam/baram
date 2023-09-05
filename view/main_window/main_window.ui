@@ -378,7 +378,7 @@
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
-         <widget class="QGroupBox" name="groupBox">
+         <widget class="QGroupBox" name="groupBox_9">
           <property name="minimumSize">
            <size>
             <width>320</width>
@@ -404,7 +404,7 @@
               </sizepolicy>
              </property>
              <property name="currentIndex">
-              <number>3</number>
+              <number>1</number>
              </property>
              <widget class="QWidget" name="geometryPage">
               <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -803,8 +803,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>100</width>
-                    <height>30</height>
+                    <width>598</width>
+                    <height>259</height>
                    </rect>
                   </property>
                  </widget>
@@ -1040,7 +1040,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>454</width>
+                    <width>581</width>
                     <height>592</height>
                    </rect>
                   </property>
@@ -1788,7 +1788,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>266</width>
+                    <width>581</width>
                     <height>661</height>
                    </rect>
                   </property>
@@ -2672,6 +2672,9 @@
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="contextMenuPolicy">
+                  <enum>Qt::CustomContextMenu</enum>
                  </property>
                 </widget>
                </item>
