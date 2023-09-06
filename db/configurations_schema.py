@@ -77,7 +77,8 @@ geometry = {
     'point2': VectorComposite().setDefault(1, 1, 1).schema(),
     'radius': FloatType().setDefault(1),
     'castellationGroup': IntType().setOptional().setDefault(None),
-    'layerGroup': IntType().setOptional().setDefault(None)
+    'layerGroup': IntType().setOptional().setDefault(None),
+    'slaveLayerGroup': IntType().setOptional().setDefault(None)
 }
 
 region = {

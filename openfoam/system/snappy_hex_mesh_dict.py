@@ -225,18 +225,18 @@ class SnappyHexMeshDict(DictionaryFile):
         return data
 
     def _constructRefinementRegions(self):
-        volumes = {}
+        groups = app.db.getElements('castellation/refinementVolumes')
+
+        volumes = {key: [] for key in groups}
         for geometry in app.db.getElements(
                 'geometry', lambda i, e: e['gType'] == GeometryType.VOLUME.value and e['castellationGroup'],
                 ['name', 'castellationGroup']).values():
             group = geometry['castellationGroup']
             if group in volumes:
                 volumes[group].append(geometry)
-            else:
-                volumes[group] = [geometry]
 
         data = {}
-        for group, refinement in app.db.getElements('castellation/refinementVolumes').items():
+        for group, refinement in groups.items():
             for volume in volumes[group]:
                 data[volume['name']] = {
                     'mode': 'inside',
@@ -280,31 +280,39 @@ class SnappyHexMeshDict(DictionaryFile):
         return data
 
     def _constructLayers(self):
+        def addLayerDictionary(name, layer, thickness):
+            data[name] = {'nSurfaceLayers': layer['nSurfaceLayers']}
+            data[name].update(thickness)
+
         if not self._addLayers:
             return {}
 
-        boundaries = {}
+        groups = app.db.getElements('addLayers/layers')
+
+        boundaries = {key: [] for key in groups}
+        slaves = {key: [] for key in groups}
         for geometry in app.db.getElements(
-                'geometry', lambda i, e: e['layerGroup'], ['name', 'layerGroup']).values():
-            group = geometry['layerGroup']
-            if group in boundaries:
+                'geometry', lambda i, e: e['layerGroup'] or e['slaveLayerGroup'],
+                ['name', 'layerGroup', 'slaveLayerGroup']).values():
+            if group := geometry['layerGroup']:
                 boundaries[group].append(geometry)
-            else:
-                boundaries[group] = [geometry]
+            if group := geometry['slaveLayerGroup']:
+                slaves[group].append(geometry)
 
         data = {}
-        for group, layer in app.db.getElements('addLayers/layers').items():
+        for group, layer in groups.items():
+            thickness = self._addLayerThickness(layer)
             for boundary in boundaries[group]:
-                data[boundary['name']] = {
-                    'nSurfaceLayers': layer['nSurfaceLayers']
-                }
-                self._addLayerThickness(data[boundary['name']], layer)
+                addLayerDictionary(boundary['name'], layer, thickness)
+            for boundary in slaves[group]:
+                addLayerDictionary(f'{boundary["name"]}_slave', layer, thickness)
 
         return data
 
-    def _addLayerThickness(self, data, thickness):
-        model = thickness['thicknessModel']
+    def _addLayerThickness(self, thickness):
+        data = {}
 
+        model = thickness['thicknessModel']
         data['thicknessModel'] = model
 
         if model != ThicknessModel.FIRST_AND_RELATIVE_FINAL.value:
@@ -331,6 +339,8 @@ class SnappyHexMeshDict(DictionaryFile):
             data['thickness'] = thickness['thickness']
 
         data['minThickness'] = thickness['minThickness']
+
+        return data
 
 
 

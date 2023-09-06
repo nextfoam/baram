@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from app import app
 from db.simple_schema import DBError
-from db.configurations_schema import GeometryType
+from db.configurations_schema import CFDType
 from view.widgets.multi_selector_dialog import SelectorItem, MultiSelectorDialog
 from .thickness_form import ThicknessForm
 from .boundary_setting_dialog_ui import Ui_BoundarySettingDialog
@@ -63,9 +63,14 @@ class BoundarySettingDialog(QDialog):
                     boundaries[gId] = self._groupId
 
             geometryManager = app.window.geometryManager
-            for gId, group in boundaries.items():
-                self._db.setValue(f'geometry/{gId}/layerGroup', group)
-                geometryManager.updateGeometryPropety(gId, 'layerGroup', group)
+            for key, group in boundaries.items():
+                gId, isSlave = self._extractSelectorKey(key)
+                if isSlave:
+                    self._db.setValue(f'geometry/{gId}/slaveLayerGroup', group)
+                    geometryManager.updateGeometryPropety(gId, 'slaveLayerGroup', group)
+                else:
+                    self._db.setValue(f'geometry/{gId}/layerGroup', group)
+                    geometryManager.updateGeometryPropety(gId, 'layerGroup', group)
 
             super().accept()
         except DBError as e:
@@ -76,6 +81,13 @@ class BoundarySettingDialog(QDialog):
         self._ui.select.clicked.connect(self._selectBoundaries)
 
     def _load(self):
+        def addAvailableBoundary(name, key):
+            self._availableBoundaries.append(SelectorItem(name, name, key))
+
+        def addSelectedBoundary(name, key):
+            self._ui.boundaries.addItem(name)
+            self._boundaries.append(key)
+
         if self._groupId:
             self._dbElement = self._db.checkout(f'addLayers/layers/{self._groupId}')
         else:
@@ -88,15 +100,25 @@ class BoundarySettingDialog(QDialog):
         self._boundaries = []
         self._availableBoundaries = []
         for gId, geometry in app.window.geometryManager.geometries().items():
-            if geometry['gType'] == GeometryType.SURFACE.value:
+            cfdType = geometry['cfdType']
+            if cfdType == CFDType.BOUNDARY.value or cfdType == CFDType.INTERFACE.value:
                 name = geometry['name']
                 groupId = geometry['layerGroup']
                 if groupId is None:
-                    self._availableBoundaries.append(SelectorItem(name, name, gId))
+                    addAvailableBoundary(name, gId)
                 elif groupId == self._groupId:
-                    self._availableBoundaries.append(SelectorItem(name, name, gId))
-                    self._ui.boundaries.addItem(name)
-                    self._boundaries.append(gId)
+                    addAvailableBoundary(name, gId)
+                    addSelectedBoundary(name, gId)
+
+                if cfdType == CFDType.INTERFACE.value:
+                    name = f'{name}_slave'
+                    sId = f'{gId}s'
+                    groupId = geometry['slaveLayerGroup']
+                    if groupId is None:
+                        addAvailableBoundary(name, sId)
+                    elif groupId == self._groupId:
+                        addAvailableBoundary(name, sId)
+                        addSelectedBoundary(name, sId)
 
         self._oldBoundaries = self._boundaries
 
@@ -107,8 +129,18 @@ class BoundarySettingDialog(QDialog):
             self._dialog.itemsSelected.connect(self._setBoundaries)
         self._dialog.open()
 
-    def _setBoundaries(self, gIds):
-        self._boundaries = gIds
+    def _setBoundaries(self, keys):
+        self._boundaries = keys
         self._ui.boundaries.clear()
-        for gId in gIds:
-            self._ui.boundaries.addItem(app.window.geometryManager.geometry(gId)['name'])
+        for key in keys:
+            gId, isSlave = self._extractSelectorKey(key)
+            if isSlave:
+                self._ui.boundaries.addItem(f"{app.window.geometryManager.geometry(gId)['name']}_slave")
+            else:
+                self._ui.boundaries.addItem(app.window.geometryManager.geometry(gId)['name'])
+
+    def _extractSelectorKey(self, key):
+        if key[-1:] == 's':
+            return key[:-1], True
+
+        return key, False

@@ -105,8 +105,10 @@ class BoundaryLayerPage(StepPage):
 
         groups = set()
         for gId, geometry in app.window.geometryManager.geometries().items():
-            if group := geometry['layerGroup']:
-                groups.add(group)
+            groups.add(geometry['layerGroup'])
+            groups.add(geometry['slaveLayerGroup'])
+        if None in groups:
+            groups.remove(None)
 
         for groupId, element in self._db.getElements('addLayers/layers').items():
             if groupId in groups:
@@ -210,9 +212,15 @@ class BoundaryLayerPage(StepPage):
 
     def _removeLayerConfiguration(self, groupId):
         self._db.removeElement('addLayers/layers', groupId)
+
         gIds = self._db.updateElements('geometry', 'layerGroup', None, lambda i, e: e['layerGroup'] == groupId)
         for gId in gIds:
             app.window.geometryManager.updateGeometryPropety(gId, 'layerGroup', None)
+
+        gIds = self._db.updateElements('geometry', 'slaveLayerGroup', None,
+                                       lambda i, e: e['slaveLayerGroup'] == groupId)
+        for gId in gIds:
+            app.window.geometryManager.updateGeometryPropety(gId, 'slaveLayerGroup', None)
 
         self._ui.boundaryLayerConfigurations.removeItem(groupId)
 
