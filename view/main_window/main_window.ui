@@ -236,7 +236,7 @@
           </size>
          </property>
          <property name="text">
-          <string>5, Snap</string>
+          <string>5. Snap</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -381,7 +381,7 @@
          <widget class="QGroupBox" name="groupBox_9">
           <property name="minimumSize">
            <size>
-            <width>360</width>
+            <width>300</width>
             <height>0</height>
            </size>
           </property>
@@ -830,6 +830,9 @@
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
+                 <property name="horizontalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAlwaysOff</enum>
+                 </property>
                  <property name="widgetResizable">
                   <bool>true</bool>
                  </property>
@@ -838,7 +841,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>522</width>
+                    <width>507</width>
                     <height>438</height>
                    </rect>
                   </property>
@@ -874,6 +877,9 @@
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
+                 <property name="horizontalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAlwaysOff</enum>
+                 </property>
                  <property name="widgetResizable">
                   <bool>true</bool>
                  </property>
@@ -882,7 +888,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>505</width>
+                    <width>273</width>
                     <height>592</height>
                    </rect>
                   </property>
@@ -1203,7 +1209,7 @@
                             </font>
                            </property>
                            <property name="text">
-                            <string>Refinement Level</string>
+                            <string>Level</string>
                            </property>
                           </widget>
                          </item>
@@ -1215,7 +1221,7 @@
                             </font>
                            </property>
                            <property name="text">
-                            <string>Surface Group</string>
+                            <string>Group</string>
                            </property>
                           </widget>
                          </item>
@@ -1302,7 +1308,7 @@
                             </font>
                            </property>
                            <property name="text">
-                            <string>Volume Group</string>
+                            <string>Group</string>
                            </property>
                           </widget>
                          </item>
@@ -1314,7 +1320,7 @@
                             </font>
                            </property>
                            <property name="text">
-                            <string>Refinement Level</string>
+                            <string>Level</string>
                            </property>
                           </widget>
                          </item>
@@ -1622,6 +1628,9 @@
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
+                 <property name="horizontalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAlwaysOff</enum>
+                 </property>
                  <property name="widgetResizable">
                   <bool>true</bool>
                  </property>
@@ -1630,7 +1639,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>263</width>
+                    <width>266</width>
                     <height>689</height>
                    </rect>
                   </property>
@@ -1739,7 +1748,7 @@
                             </font>
                            </property>
                            <property name="text">
-                            <string>Boundary Group</string>
+                            <string>Group</string>
                            </property>
                           </widget>
                          </item>
@@ -2184,7 +2193,7 @@
              <widget class="QWidget" name="displayControl" native="true">
               <property name="minimumSize">
                <size>
-                <width>340</width>
+                <width>0</width>
                 <height>0</height>
                </size>
               </property>
