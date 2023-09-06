@@ -132,14 +132,12 @@ class MainWindow(QMainWindow):
         self._ui.actionNew.triggered.connect(self._actionNew)
         self._ui.actionOpen.triggered.connect(self._actionOpen)
         self._ui.actionSave.triggered.connect(self._actionSave)
-        self._ui.actionSave_As.triggered.connect(self._actionSaveAs)
-        self._ui.actionExport.triggered.connect(self._actionExport)
-        self._ui.actionClose.triggered.connect(self._actionClose)
         self._ui.actionExit.triggered.connect(self.close)
         self._ui.actionParameters.triggered.connect(self._actionParameters)
         self._ui.actionScale.triggered.connect(self._actionScale)
         self._ui.actionLanguage.triggered.connect(self._actionLanguage)
         self._ui.actionAbout.triggered.connect(self._actionAbout)
+        self._ui.paraview.clicked.connect(lambda: print(app.db.toYaml()))
 
         self._recentFilesMenu.projectSelected.connect(self._openRecent)
 
@@ -171,17 +169,6 @@ class MainWindow(QMainWindow):
     def _actionSave(self):
         if self._stepManager.saveCurrentPage():
             app.project.save()
-
-    def _actionSaveAs(self):
-        return
-
-    def _actionExport(self):
-        print(app.db.toYaml())
-        print(app.db._files)
-
-    def _actionClose(self):
-        self._closeProject()
-        self._projectClosed()
 
     def _actionParameters(self):
         self._dialog = MeshQualityParametersDialog(self)
