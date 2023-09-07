@@ -19,6 +19,7 @@ class RegionPage(StepPage):
 
         self._regions = {}
         self._loaded = False
+        self._bounds = None
 
         self._form = RegionForm(self._ui.renderingView)
 
@@ -27,10 +28,23 @@ class RegionPage(StepPage):
         layout.setSpacing(0)
         layout.addStretch()
 
+        self._hideForm()
+
         self._connectSignalsSlots()
 
     def isNextStepAvailable(self):
-        return app.db.elementCount('region') > 0
+        if not self._regions:
+            return False
+
+        available = True
+        for card in self._regions.values():
+            if not self._bounds.includes(card.point()):
+                card.showWarning()
+                available = False
+            else:
+                card.hideWarning()
+
+        return available
 
     def lock(self):
         self._ui.regionAdd.setEnabled(False)
@@ -45,35 +59,60 @@ class RegionPage(StepPage):
             card.setEnabled(True)
 
     def open(self):
-        self._load()
-        self._updateBounds()
+        if self._loaded:
+            self._updateBounds()
+        else:
+            self._load()
 
     def selected(self):
-        self._load()
+        if not self._loaded:
+            self._load()
+
         app.window.meshManager.hide()
 
     def deselected(self):
-        self._form.hide()
+        self._form.cancel()
 
     def clearResult(self):
         return
+
+    def removeForm(self, form):
+        self._ui.regionList.layout().removeWidget(self._form)
+        self._form.setOwner(None)
 
     def _connectSignalsSlots(self):
         self._ui.regionAdd.clicked.connect(self._showFormForAdding)
         self._form.regionAdded.connect(self._add)
         self._form.regionEdited.connect(self._update)
+        self._form.canceled.connect(self._formCanceled)
 
     def _load(self):
-        if not self._loaded:
-            regions = app.db.getElements('region', columns=[])
-            for id_ in regions:
-                self._add(id_)
+        self._updateBounds()
 
-            self._loaded = True
-            self._updateBounds()
+        regions = app.db.getElements('region', columns=[])
+        for id_ in regions:
+            self._add(id_)
+
+        self._loaded = True
 
     def _updateBounds(self):
-        self._form.setBounds(app.window.geometryManager.getBounds())
+        self._bounds = app.window.geometryManager.getBounds()
+        self._form.setBounds(self._bounds)
+
+    def _showFormForAdding(self):
+
+        self._form.setupForAdding()
+
+        layout = self._ui.regionList.layout()
+        if index := layout.indexOf(self._form):
+            layout.takeAt(index)
+            layout.insertWidget(0, self._form)
+        self._form.show()
+
+    def _showFormForEditing(self, id_):
+        self._form.setupForEditing(id_)
+        self._regions[id_].showForm(self._form)
+        self._form.show()
 
     def _add(self, id_):
         card = RegionCard(id_)
@@ -83,12 +122,12 @@ class RegionPage(StepPage):
         self._ui.regionList.layout().insertWidget(0, card)
 
         self._updateNextStepAvailable()
-        self._ui.regionList.layout().removeWidget(self._form)
         self._form.hide()
 
     def _update(self, id_):
         self._regions[id_].load()
-        self._regions[id_].removeForm(self._form)
+        self._hideForm()
+        self._updateNextStepAvailable()
 
     def _remove(self, id_):
         db = app.db.checkout()
@@ -102,12 +141,14 @@ class RegionPage(StepPage):
 
         self._updateNextStepAvailable()
 
-    def _showFormForAdding(self):
-        self._form.setupForAdding()
-        self._ui.regionList.layout().insertWidget(0, self._form)
-        self._form.show()
+    def _formCanceled(self):
+        self._hideForm()
 
-    def _showFormForEditing(self, id_):
-        self._form.setupForEditing(id_)
-        self._regions[id_].showForm(self._form)
-        self._form.show()
+    def _hideForm(self):
+        if owner := self._form.owner():
+            owner.removeForm(self._form)
+
+        self._ui.regionList.layout().insertWidget(0, self._form)
+        self._form.setOwner(self)
+        self._form.hide()
+

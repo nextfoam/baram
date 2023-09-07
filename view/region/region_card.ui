@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>78</height>
+    <height>92</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -51,7 +51,7 @@
        <number>7</number>
       </property>
       <item>
-       <widget class="QWidget" name="widget" native="true">
+       <widget class="QWidget" name="header" native="true">
         <layout class="QHBoxLayout" name="horizontalLayout">
          <property name="spacing">
           <number>2</number>
@@ -151,7 +151,7 @@
           <number>4</number>
          </property>
          <property name="rightMargin">
-          <number>18</number>
+          <number>9</number>
          </property>
          <property name="bottomMargin">
           <number>4</number>
@@ -180,6 +180,16 @@
           </widget>
          </item>
         </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="warning">
+        <property name="styleSheet">
+         <string notr="true">color: red</string>
+        </property>
+        <property name="text">
+         <string>               Invalid point - outside bounding box.</string>
+        </property>
        </widget>
       </item>
      </layout>

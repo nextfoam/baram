@@ -15,6 +15,7 @@ from .region_form_ui import Ui_RegionForm
 class RegionForm(QWidget):
     regionAdded = Signal(str)
     regionEdited = Signal(str)
+    canceled = Signal()
 
     _types = {
         'fluid': RegionType.FLUID.value,
@@ -30,6 +31,8 @@ class RegionForm(QWidget):
         self._dbElement = None
         self._typeRadios = RadioGroup(self._ui.typeRadios)
         self._pointWidget = PointWidget(renderingView)
+        self._owner = None
+        self._defaultPoint = None
 
         self._pointWidget.off()
         self._typeRadios.setObjectMap(self._types)
@@ -37,8 +40,13 @@ class RegionForm(QWidget):
         self._connectSignalsSlots()
 
     def setBounds(self, bounds):
-        point = self._pointWidget.setBounds(bounds)
-        self._setPoint(point)
+        self._defaultPoint = self._pointWidget.setBounds(bounds)
+
+    def setOwner(self, widget):
+        self._owner = widget
+
+    def owner(self):
+        return self._owner
 
     def setupForAdding(self):
         self._id = None
@@ -46,10 +54,10 @@ class RegionForm(QWidget):
 
         self._ui.regionForm.setTitle(self.tr('Add Region'))
         self._ui.name.clear()
+        self._setPoint(self._defaultPoint)
         self._ui.ok.setText(self.tr('Add'))
 
         self._ui.name.setFocus()
-        self.show()
         self._pointWidget.on()
 
     def setupForEditing(self, id_):
@@ -66,8 +74,11 @@ class RegionForm(QWidget):
         self._movePointWidget()
         self._ui.ok.setText(self.tr('Update'))
 
-        self.show()
         self._pointWidget.on()
+
+    def cancel(self):
+        self._pointWidget.off()
+        self.canceled.emit()
 
     def _connectSignalsSlots(self):
         self._ui.x.editingFinished.connect(self._movePointWidget)
@@ -77,7 +88,7 @@ class RegionForm(QWidget):
 
         self._ui.name.textChanged.connect(self._validate)
         self._ui.ok.clicked.connect(self._accept)
-        self._ui.cancel.clicked.connect(self._cancel)
+        self._ui.cancel.clicked.connect(self.cancel)
 
     def _movePointWidget(self):
         self._setPoint(
@@ -119,7 +130,3 @@ class RegionForm(QWidget):
             self._pointWidget.off()
         except DBError as e:
             QMessageBox.information(self, self.tr("Input Error"), e.toMessage())
-
-    def _cancel(self):
-        self._pointWidget.off()
-        self.hide()

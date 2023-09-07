@@ -19,6 +19,7 @@ class RegionCard(QWidget):
         self._ui.setupUi(self)
 
         self._id = id_
+        self._point = None
 
         self._types = {
             RegionType.FLUID.value: self.tr('(Fluid)'),
@@ -31,24 +32,35 @@ class RegionCard(QWidget):
     def name(self):
         return self._ui.name.text()
 
+    def point(self):
+        return self._point
+
     def load(self,):
         path = f'region/{self._id}/'
         self._ui.name.setText(app.db.getValue(path + 'name'))
         self._ui.type.setText(self._types[app.db.getValue(path + 'type')])
         x, y, z = app.db.getVector(path + 'point')
         self._ui.point.setText(f'({x}, {y}, {z})')
-    #
-    # def enable(self):
-    #     self._ui.remove.setEnabled(True)
-    #
-    # def disable(self):
-    #     self._ui.remove.setEnabled(False)
+        self._point = float(x), float(y), float(z)
 
     def showForm(self, form):
+        if card := form.owner():
+            card.removeForm(form)
+
+        self._ui.header.setEnabled(False)
         self._ui.card.layout().addWidget(form)
+        form.setOwner(self)
 
     def removeForm(self, form):
+        self._ui.header.setEnabled(True)
         self._ui.card.layout().removeWidget(form)
+        form.setOwner(None)
+
+    def showWarning(self):
+        self._ui.warning.show()
+
+    def hideWarning(self):
+        self._ui.warning.hide()
 
     def _connectSignalsSlots(self):
         self._ui.edit.clicked.connect(self._editClicked)

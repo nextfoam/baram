@@ -36,6 +36,11 @@ class Bounds:
     def size(self):
         return self.xMax - self.xMin, self.yMax - self.yMin, self.zMax - self.zMin
 
+    def includes(self, point):
+        x, y, z = point
+
+        return self.xMin < x < self.xMax and self.yMin < y < self.yMax and self.zMin < z < self.zMax
+
 
 class ActorType(Enum):
     GEOMETRY = auto()
