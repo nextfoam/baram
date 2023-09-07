@@ -1,96 +1,75 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import IntEnum, auto
-
-from PySide6.QtCore import QObject, QCoreApplication
-from PySide6.QtWidgets import QTreeWidgetItem, QMenu, QLabel, QWidget, QHBoxLayout, QColorDialog, QHeaderView
+from PySide6.QtCore import QObject, Signal, Qt
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QMenu, QColorDialog, QHeaderView
 
 from app import app
-from rendering.actor_info import DisplayMode, ActorType
+from rendering.actor_info import DisplayMode
 from .opacity_dialog import OpacityDialog
+from .display_item import DisplayItem, Column
 
 
-class Column(IntEnum):
-    NAME_COLUMN = 0
-    TYPE_COLUMN = auto()
-    COLOR_COLUMN = auto()
-    # CUT_ICON_COLUMN = auto()
-    # VISIBLE_ICON_COLUMN = auto()
+class ContextMenu(QMenu):
+    showActionTriggered = Signal()
+    hideActionTriggered = Signal()
+    opacitySelected = Signal(float)
+    colorPicked = Signal(QColor)
 
+    wireframeDisplayModeSelected = Signal()
+    surfaceDisplayModeSelected = Signal()
+    surfaceEdgeDisplayModeSelected = Signal()
 
-class ActorItem(QTreeWidgetItem):
-    # _emptyIcon = QIcon()
-    # _notCutIcon = QIcon(':graphicsIcons/no-cutter.svg')
-    # _bulbOnIcon = QIcon(':graphicsIcons/bulb-on.svg')
-    # _bulbOffIcon = QIcon(':graphicsIcons/bulb-off.svg')
+    def __init__(self, parent):
+        super().__init__(parent)
 
-    _types = {
-        ActorType.GEOMETRY: QCoreApplication.translate('DisplayControl', 'Geometry'),
-        ActorType.BOUNDARY: QCoreApplication.translate('DisplayControl', 'Boundary')
-    }
+        self._opacityDialog = OpacityDialog(app.window)
+        self._colorDialog = QColorDialog(app.window)
+        self._properties = None
 
-    def __init__(self, actorInfo):
-        super().__init__()
-        self._actorInfo = None
-        self._colorWidget = QLabel()
+        self._showAction = self.addAction(self.tr('Show'), lambda: self.showActionTriggered.emit())
+        self._hideAction = self.addAction(self.tr('Hide'), lambda: self.hideActionTriggered.emit())
+        self._opacityAction = self.addAction(self.tr('Opacity'), self._openOpacityDialog)
+        self._colorAction = self.addAction(self.tr('Color'), self._openColorDialog)
 
-        self._actorInfo = actorInfo
-        self.setText(Column.NAME_COLUMN, actorInfo.name())
-        self.setText(Column.TYPE_COLUMN, self._types[actorInfo.type()])
-        self._updateColorColumn()
-        # self._updateCutIcon()
-        # self._updateVisibleIcon()
+        displayMenu = self.addMenu(self.tr('Display Mode'))
+        self._wireFrameDisplayAction = displayMenu.addAction(
+            self.tr('Wireframe'), lambda: self.wireframeDisplayModeSelected.emit())
+        self._surfaceDisplayAction = displayMenu.addAction(
+            self.tr('Surface'), lambda: self.surfaceDisplayModeSelected.emit())
+        self._surfaceEdgeDisplayAction = displayMenu.addAction(
+            self.tr('Surface with Edges'), lambda: self.surfaceEdgeDisplayModeSelected.emit())
 
-    def setupColorWidget(self, parent):
-        widget = QWidget()
-        layout = QHBoxLayout(widget)
-        layout.setContentsMargins(9, 1, 9, 1)
-        layout.addWidget(self._colorWidget)
-        # self._colorWidget.setFrameShape(QFrame.Shape.Box)
-        self._colorWidget.setMinimumSize(16, 16)
-        parent.setItemWidget(self, Column.COLOR_COLUMN, widget)
+        self._wireFrameDisplayAction.setCheckable(True)
+        self._surfaceDisplayAction.setCheckable(True)
+        self._surfaceEdgeDisplayAction.setCheckable(True)
 
-    def setActorInfo(self, actorInfo):
-        actorInfo.setProperties(self._actorInfo.properties())
-        self._actorInfo = actorInfo
+        self._connectSignalsSlots()
 
-    def setActorVisible(self, visible):
-        self._actorInfo.setVisible(visible)
-        self._updateColorColumn()
+    def execute(self, pos, properties):
+        self._properties = properties
 
-    def setActorColor(self, color):
-        self._actorInfo.setColor(color)
-        self._updateColorColumn()
+        self._showAction.setVisible(not properties.visibility)
+        self._hideAction.setVisible(properties.visibility is None or properties.visibility)
+        self._wireFrameDisplayAction.setChecked(properties.displayMode == DisplayMode.WIREFRAME)
+        self._surfaceDisplayAction.setChecked(properties.displayMode == DisplayMode.SURFACE)
+        self._surfaceEdgeDisplayAction.setChecked(properties.displayMode == DisplayMode.SURFACE_EDGE)
 
-    def setActorName(self, name):
-        self._actorInfo.setName(name)
-        self.setText(Column.NAME_COLUMN, name)
+        self.exec(pos)
 
-    def actorInfo(self):
-        return self._actorInfo
+    def _connectSignalsSlots(self):
+        self._opacityDialog.accepted.connect(lambda: self.opacitySelected.emit(self._opacityDialog.opacity()))
+        self._colorDialog.accepted.connect(lambda: self.colorPicked.emit(self._colorDialog.selectedColor()))
 
-    def colorWidget(self):
-        return self._colorWidget
+    def _openOpacityDialog(self):
+        self._opacityDialog.setOpacity(self._properties.opacity)
+        self._opacityDialog.open()
 
-    def _updateColorColumn(self):
-        if self._actorInfo.isVisible():
-            color = self._actorInfo.color()
-            self._colorWidget.setStyleSheet(f'background-color: rgb({color.red()}, {color.green()}, {color.blue()}); border: 1px solid')
-        else:
-            self._colorWidget.setStyleSheet('')
-    #
-    # def _updateCutIcon(self):
-    #     if not self._actorInfo.isCutEnabled():
-    #         self.setIcon(Column.CUT_ICON_COLUMN, self._emptyIcon)
-    #     else:
-    #         self.setIcon(Column.CUT_ICON_COLUMN, self._notCutIcon)
-    #
-    # def _updateVisibleIcon(self):
-    #     if self._actorInfo.isVisible():
-    #         self.setIcon(Column.VISIBLE_ICON_COLUMN, self._bulbOnIcon)
-    #     else:
-    #         self.setIcon(Column.VISIBLE_ICON_COLUMN, self._bulbOffIcon)
+    def _openColorDialog(self):
+        self._colorDialog.setCurrentColor(
+            Qt.GlobalColor.white if self._properties.color is None else self._properties.color)
+        self._colorDialog.open()
 
 
 class DisplayControl(QObject):
@@ -103,6 +82,7 @@ class DisplayControl(QObject):
         self._items = {}
         self._selectedItems = None
         self._dialog = None
+        self._menu = ContextMenu(self._list)
 
         self._list.setColumnWidth(Column.COLOR_COLUMN, 20)
         # self._list.setColumnWidth(Column.CUT_ICON_COLUMN, 20)
@@ -119,7 +99,7 @@ class DisplayControl(QObject):
             item.setActorInfo(actorInfo)
             item.setHidden(False)
         else:
-            item = ActorItem(actorInfo)
+            item = DisplayItem(actorInfo)
             self._items[actorInfo.id()] = item
             self._list.addTopLevelItem(item)
             item.setupColorWidget(self._list)
@@ -163,37 +143,22 @@ class DisplayControl(QObject):
     def _connectSignalsSlots(self):
         self._list.customContextMenuRequested.connect(self._showContextMenu)
         self._list.itemSelectionChanged.connect(self._selectedItemsChanged)
-        self._view.actorPicked.connect(self._actorPicked)
         self._view.customContextMenuRequested.connect(self._showContextMenuOnRenderingView)
+        self._view.actorPicked.connect(self._actorPicked)
+        self._menu.showActionTriggered.connect(self._showActors)
+        self._menu.hideActionTriggered.connect(self._hideActors)
+        self._menu.opacitySelected.connect(self._applyOpacity)
+        self._menu.colorPicked.connect(self._applyColor)
+        self._menu.wireframeDisplayModeSelected.connect(self._displayWireframe)
+        self._menu.surfaceDisplayModeSelected.connect(self._displaySurface)
+        self._menu.surfaceEdgeDisplayModeSelected.connect(self._displayWireSurfaceWithEdges)
 
     def _executeContextMenu(self, pos):
-        def addAction(menu, text, slot, checked=None):
-            action = menu.addAction(text)
-            action.triggered.connect(slot)
-            if checked is not None:
-                action.setCheckable(True)
-                action.setChecked(checked)
-
         properties = self._selectedItemsInfo()
         if properties is None:
             return
 
-        contextMenu = QMenu(self._list)
-        if not properties.visibility:
-            addAction(contextMenu, self.tr('Show'), self._showActors)
-        if properties.visibility is None or properties.visibility:
-            addAction(contextMenu, self.tr('Hide'), self._hideActors)
-        addAction(contextMenu, self.tr('Opacity'), lambda: self._opacity(properties.opacity))
-        addAction(contextMenu, self.tr('Color'), lambda: self._openColorDialog(properties.color))
-        displayMenu = contextMenu.addMenu(self.tr('Display Mode'))
-        addAction(displayMenu, self.tr('Wireframe'), self._displayWireframe,
-                  properties.displayMode == DisplayMode.WIREFRAME)
-        addAction(displayMenu, self.tr('Surface'), self._displaySurface,
-                  properties.displayMode == DisplayMode.SURFACE)
-        addAction(displayMenu, self.tr('Surface with Edges'), self._displayWireSurfaceWithEdges,
-                  properties.displayMode == DisplayMode.SURFACE_EDGE)
-
-        contextMenu.exec(pos)
+        self._menu.execute(pos, properties)
 
     def _showContextMenu(self, pos):
         self._executeContextMenu(self._list.mapToGlobal(pos))
@@ -230,18 +195,6 @@ class DisplayControl(QObject):
 
         self._view.refresh()
 
-    def _opacity(self, opacity):
-        self._dialog = OpacityDialog(app.window, opacity)
-        self._dialog.accepted.connect(self._applyOpacity)
-        self._dialog.open()
-
-    def _openColorDialog(self, color):
-        self._dialog = QColorDialog(app.window)
-        if color is not None:
-            self._dialog.setCurrentColor(color)
-        self._dialog.accepted.connect(self._applyColor)
-        self._dialog.open()
-
     def _displayWireframe(self):
         for item in self._selectedItems:
             item.actorInfo().setDisplayMode(DisplayMode.WIREFRAME)
@@ -260,13 +213,11 @@ class DisplayControl(QObject):
 
         self._view.refresh()
 
-    def _applyOpacity(self):
-        opacity = self._dialog.opacity()
+    def _applyOpacity(self, opacity):
         for item in self._selectedItems:
             item.actorInfo().setOpacity(opacity)
 
-    def _applyColor(self):
-        color = self._dialog.selectedColor()
+    def _applyColor(self, color):
         for item in self._selectedItems:
             item.setActorColor(color)
 
