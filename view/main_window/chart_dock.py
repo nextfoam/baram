@@ -71,8 +71,7 @@ class ChartDock(TabifiedDock):
         self.solverInfoManager.stopCollecting()
 
     def _projectOpened(self):
-        if self._project.isSolverRunning() or self._project.hasSolved():
-            self.startDrawing()
+        self.startDrawing()
 
     def _projectClosed(self):
         self.stopDrawing()
