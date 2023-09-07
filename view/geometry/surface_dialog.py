@@ -46,9 +46,15 @@ class SurfaceDialog(QDialog):
 
             self._dbElement.setValue('name', name)
 
-            self._dbElement.setValue('cfdType', self._typeRadios.value())
+            cfdType = self._typeRadios.value()
+            self._dbElement.setValue('cfdType', cfdType)
             self._dbElement.setValue('nonConformal', self._ui.nonConformal.isChecked())
             self._dbElement.setValue('interRegion', self._ui.interRegion.isChecked())
+
+            if cfdType != CFDType.INTERFACE.value:
+                self._dbElement.setValue('slaveLayerGroup', None)
+                if cfdType != CFDType.BOUNDARY.value:
+                    self._dbElement.setValue('layerGroup', None)
 
             app.db.commit(self._dbElement)
 
