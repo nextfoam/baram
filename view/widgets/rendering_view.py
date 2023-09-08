@@ -229,6 +229,7 @@ class RenderingView(QWidget):
         self._originActor = vtkAxesActor()
 
         self._originActor.SetVisibility(True)
+        self._originActor.UseBoundsOff()
         self._originActor.SetConeRadius(0.2)
         self._originActor.SetShaftTypeToLine()
         self._originActor.SetNormalizedShaftLength(0.9, 0.9, 0.9)
