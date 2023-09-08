@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from PySide6.QtWidgets import QMessageBox, QMenu
+from PySide6.QtWidgets import QMessageBox, QMenu, QAbstractItemView
 from PySide6.QtCore import Signal
 
 from app import app
@@ -46,10 +46,12 @@ class GeometryPage(StepPage):
         return not app.window.geometryManager.isEmpty()
 
     def lock(self):
+        self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self._ui.buttons.setEnabled(False)
         self._locked = True
 
     def unlock(self):
+        self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self._ui.buttons.setEnabled(True)
         self._locked = False
 
@@ -105,6 +107,11 @@ class GeometryPage(StepPage):
             self._surfaceDialog.open()
 
     def _removeGeometry(self):
+        confirm = QMessageBox.question(self._widget, self.tr("Remove Geometries"),
+                                       self.tr('Are you sure you want to remove the selected items?'))
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+
         gIds = self._list.selectedIDs()
 
         volume = None
