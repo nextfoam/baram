@@ -12,8 +12,8 @@ class Step(IntEnum):
     NONE = -1
 
     GEOMETRY = 0
-    BASE_GRID = auto()
     REGION = auto()
+    BASE_GRID = auto()
     CASTELLATION = auto()
     SNAP = auto()
     BOUNDARY_LAYER = auto()

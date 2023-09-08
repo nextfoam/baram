@@ -50,8 +50,8 @@ class StepManager:
         self._pages = {
             Step.NONE: StepPage(ui, None),
             Step.GEOMETRY: GeometryPage(ui),
-            Step.BASE_GRID: BaseGridPage(ui),
             Step.REGION: RegionPage(ui),
+            Step.BASE_GRID: BaseGridPage(ui),
             Step.CASTELLATION: CastellationPage(ui),
             Step.SNAP: SnapPage(ui),
             Step.BOUNDARY_LAYER: BoundaryLayerPage(ui),

@@ -78,7 +78,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="baseGridStep">
+        <widget class="QPushButton" name="regionStep">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -86,7 +86,7 @@
           </size>
          </property>
          <property name="text">
-          <string>2. Base Grid</string>
+          <string>2. Region</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -128,7 +128,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="regionStep">
+        <widget class="QPushButton" name="baseGridStep">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -136,7 +136,7 @@
           </size>
          </property>
          <property name="text">
-          <string>3. Region</string>
+          <string>3. Base Grid</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -404,7 +404,7 @@
               </sizepolicy>
              </property>
              <property name="currentIndex">
-              <number>0</number>
+              <number>1</number>
              </property>
              <widget class="QWidget" name="geometryPage">
               <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -500,6 +500,88 @@
                    </widget>
                   </item>
                  </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="regionPage">
+              <layout class="QVBoxLayout" name="verticalLayout_26">
+               <item>
+                <widget class="QWidget" name="widget_33" native="true">
+                 <layout class="QHBoxLayout" name="horizontalLayout_18">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QLabel" name="label_38">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Region</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="FlatPushButton" name="regionAdd">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../../resource.qrc">
+                      <normaloff>:/icons/add-circle-outline.svg</normaloff>:/icons/add-circle-outline.svg</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="Line" name="line_12">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QScrollArea" name="regionArea">
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="horizontalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAlwaysOff</enum>
+                 </property>
+                 <property name="widgetResizable">
+                  <bool>true</bool>
+                 </property>
+                 <widget class="QWidget" name="regionList">
+                  <property name="geometry">
+                   <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>461</width>
+                    <height>438</height>
+                   </rect>
+                  </property>
+                 </widget>
                 </widget>
                </item>
               </layout>
@@ -764,88 +846,6 @@
                   </size>
                  </property>
                 </spacer>
-               </item>
-              </layout>
-             </widget>
-             <widget class="QWidget" name="regionPage">
-              <layout class="QVBoxLayout" name="verticalLayout_26">
-               <item>
-                <widget class="QWidget" name="widget_33" native="true">
-                 <layout class="QHBoxLayout" name="horizontalLayout_18">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="label_38">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <pointsize>10</pointsize>
-                      <bold>true</bold>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>Region</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="FlatPushButton" name="regionAdd">
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="../../resource.qrc">
-                      <normaloff>:/icons/add-circle-outline.svg</normaloff>:/icons/add-circle-outline.svg</iconset>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="Line" name="line_12">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QScrollArea" name="scrollArea">
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="horizontalScrollBarPolicy">
-                  <enum>Qt::ScrollBarAlwaysOff</enum>
-                 </property>
-                 <property name="widgetResizable">
-                  <bool>true</bool>
-                 </property>
-                 <widget class="QWidget" name="regionList">
-                  <property name="geometry">
-                   <rect>
-                    <x>0</x>
-                    <y>0</y>
-                    <width>461</width>
-                    <height>438</height>
-                   </rect>
-                  </property>
-                 </widget>
-                </widget>
                </item>
               </layout>
              </widget>

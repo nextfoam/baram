@@ -22,6 +22,7 @@ class RegionPage(StepPage):
         self._bounds = None
 
         self._form = RegionForm(self._ui.renderingView)
+        self._focusing = self._form
 
         layout = QVBoxLayout(self._ui.regionList)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -81,6 +82,7 @@ class RegionPage(StepPage):
         self._form.setOwner(None)
 
     def _connectSignalsSlots(self):
+        self._ui.regionArea.verticalScrollBar().rangeChanged.connect(self._focus)
         self._ui.regionAdd.clicked.connect(self._showFormForAdding)
         self._form.regionAdded.connect(self._add)
         self._form.regionEdited.connect(self._update)
@@ -100,19 +102,25 @@ class RegionPage(StepPage):
         self._form.setBounds(self._bounds)
 
     def _showFormForAdding(self):
+        layout = self._ui.regionList.layout()
+        if self._form.owner() == self:
+            if index := layout.indexOf(self._form):
+                layout.takeAt(index)
+                layout.insertWidget(0, self._form)
+        else:
+            self._form.owner().removeForm(self._form)
+            layout.insertWidget(0, self._form)
 
         self._form.setupForAdding()
-
-        layout = self._ui.regionList.layout()
-        if index := layout.indexOf(self._form):
-            layout.takeAt(index)
-            layout.insertWidget(0, self._form)
-        self._form.show()
+        self._form.setOwner(self)
+        self._showForm()
 
     def _showFormForEditing(self, id_):
+        self._form.owner().removeForm(self._form)
+        self._regions[id_].addForm(self._form)
         self._form.setupForEditing(id_)
-        self._regions[id_].showForm(self._form)
-        self._form.show()
+        self._form.setOwner(self._regions[id_])
+        self._showForm()
 
     def _add(self, id_):
         card = RegionCard(id_)
@@ -121,6 +129,7 @@ class RegionPage(StepPage):
         card.removeClicked.connect(self._remove)
         self._ui.regionList.layout().insertWidget(0, card)
 
+        self._moveFocus(card)
         self._updateNextStepAvailable()
         self._form.hide()
 
@@ -152,3 +161,14 @@ class RegionPage(StepPage):
         self._form.setOwner(self)
         self._form.hide()
 
+    def _showForm(self):
+        self._form.show()
+        self._moveFocus(self._form)
+
+    def _moveFocus(self, widget):
+        self._focusing = widget
+        self._focus()
+
+    def _focus(self):
+        if self._focusing.isVisible():
+            self._ui.regionArea.ensureWidgetVisible(self._focusing)

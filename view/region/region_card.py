@@ -43,18 +43,13 @@ class RegionCard(QWidget):
         self._ui.point.setText(f'({x}, {y}, {z})')
         self._point = float(x), float(y), float(z)
 
-    def showForm(self, form):
-        if card := form.owner():
-            card.removeForm(form)
-
+    def addForm(self, form):
         self._ui.header.setEnabled(False)
         self._ui.card.layout().addWidget(form)
-        form.setOwner(self)
 
     def removeForm(self, form):
         self._ui.header.setEnabled(True)
         self._ui.card.layout().removeWidget(form)
-        form.setOwner(None)
 
     def showWarning(self):
         self._ui.warning.show()

@@ -43,6 +43,9 @@ class PointWidget(QObject):
 
         return x, y, z
 
+    def bounds(self):
+        return self._bounds
+
     def on(self):
         self._widget.On()
 

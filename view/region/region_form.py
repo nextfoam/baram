@@ -106,16 +106,25 @@ class RegionForm(QWidget):
     def _accept(self):
         name = self._ui.name.text()
         if app.db.getElements('region', lambda i, e: e['name'] == name and i != self._id, []):
-            QMessageBox.information(self, self.tr('Fail to Add Region'),
+            QMessageBox.information(self, self.tr('Fail to Update Region'),
                                     self.tr('Region {0} already exists.').format(name))
+            return
+
+        x = self._ui.x.text()
+        y = self._ui.y.text()
+        z = self._ui.z.text()
+
+        if not self._pointWidget.bounds().includes((float(x), float(y), float(z))):
+            QMessageBox.information(self, self.tr('Fail to Update Region'),
+                                    self.tr('Invalid Point - outside bounding box').format(name))
             return
 
         try:
             self._dbElement.setValue('name', name)
             self._dbElement.setValue('type', self._typeRadios.value())
-            self._dbElement.setValue('point/x', self._ui.x.text(), self.tr('Point'))
-            self._dbElement.setValue('point/y', self._ui.y.text(), self.tr('Point'))
-            self._dbElement.setValue('point/z', self._ui.z.text(), self.tr('Point'))
+            self._dbElement.setValue('point/x', x, self.tr('Point'))
+            self._dbElement.setValue('point/y', y, self.tr('Point'))
+            self._dbElement.setValue('point/z', z, self.tr('Point'))
 
             if self._id:    # Edit
                 app.db.commit(self._dbElement)
