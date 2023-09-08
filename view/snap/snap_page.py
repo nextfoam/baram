@@ -8,12 +8,12 @@ from PySide6.QtWidgets import QMessageBox
 
 from app import app
 from db.simple_schema import DBError
+from db.configurations_schema import CFDType
 from openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from openfoam.system.topo_set_dict import TopoSetDict
 from libbaram.run import runUtility
 from libbaram.process import Processor, ProcessError
 from view.step_page import StepPage
-from view.widgets.progress_dialog_simple import ProgressDialogSimple
 
 
 class SnapPage(StepPage):
@@ -82,17 +82,11 @@ class SnapPage(StepPage):
             if not self.save():
                 return
 
-            progressDialog = ProgressDialogSimple(self._widget, self.tr('Snapping'))
-            progressDialog.setLabelText(self.tr('Updating Configurations'))
-            progressDialog.open()
-
-            SnappyHexMeshDict(snap=True).build().write()
-            TopoSetDict().build(TopoSetDict.Mode.CREATE_REGIONS).write()
-
-            progressDialog.close()
-
             console = app.consoleView
             console.clear()
+
+            snapDict = SnappyHexMeshDict(snap=True)
+            snapDict.build().write()
             proc = await runUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
                                     stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             processor = Processor(proc)
@@ -100,12 +94,23 @@ class SnapPage(StepPage):
             processor.errorLogged.connect(console.appendError)
             await processor.run()
 
-            proc = await runUtility('toposet', cwd=app.fileSystem.caseRoot(),
-                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            processor = Processor(proc)
-            processor.outputLogged.connect(console.append)
-            processor.errorLogged.connect(console.appendError)
-            await processor.run()
+            if app.db.elementCount('region') > 1:
+                TopoSetDict().build(TopoSetDict.Mode.CREATE_REGIONS).write()
+                proc = await runUtility('toposet', cwd=app.fileSystem.caseRoot(),
+                                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                processor = Processor(proc)
+                processor.outputLogged.connect(console.append)
+                processor.errorLogged.connect(console.appendError)
+                await processor.run()
+
+            if app.db.elementCount('geometry', lambda i, e: e['cfdType'] == CFDType.CELL_ZONE.value):
+                snapDict.updateForCellZoneInterfacesSnap().write()
+                proc = await runUtility('snappyHexMesh', '-overwrite', cwd=app.fileSystem.caseRoot(),
+                                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                processor = Processor(proc)
+                processor.outputLogged.connect(console.append)
+                processor.errorLogged.connect(console.appendError)
+                await processor.run()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()

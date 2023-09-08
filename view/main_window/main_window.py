@@ -204,8 +204,6 @@ class MainWindow(QMainWindow):
         except Timeout:
             QMessageBox.information(self, self.tr('Case Open Error'),
                                     self.tr(f'{path.name} is already open in another program.'))
-        except Exception as ex:
-            QMessageBox.information(self, self.tr('Case Open Error'), self.tr('Fail to open case\n' + str(ex)))
 
     def _startDialogClosed(self):
         if app.project is None:

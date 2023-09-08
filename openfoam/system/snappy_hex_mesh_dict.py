@@ -81,6 +81,17 @@ class SnappyHexMeshDict(DictionaryFile):
 
         return self
 
+    def updateForCellZoneInterfacesSnap(self):
+        if self._data is None:
+            return self
+
+        for interface in app.db.getElements(
+                'geometry',
+                lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and not e['interRegion'], ['name']).values():
+            self._data['castellatedMeshControls']['refinementSurfaces'][interface['name']]['faceType'] = 'baffle'
+
+        return self
+
     def _constructGeometries(self):
         data = {}
 

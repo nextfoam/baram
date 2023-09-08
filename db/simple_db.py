@@ -330,7 +330,10 @@ class SimpleDB(SimpleSchema):
 
         return keys
 
-    def elementCount(self, path=None):
+    def elementCount(self, path=None, filter_=None):
+        if filter_ is not None:
+            return len(self.getKeys(path, filter_))
+
         if not path:
             schema = self._schema
             db = self._db
