@@ -35,7 +35,7 @@ class RegionPage(StepPage):
 
     def isNextStepAvailable(self):
         if not self._regions:
-            return False
+            return app.db.elementCount('region') > 0
 
         available = True
         for card in self._regions.values():
