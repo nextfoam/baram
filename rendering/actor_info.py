@@ -45,6 +45,7 @@ class Bounds:
 class ActorType(Enum):
     GEOMETRY = auto()
     BOUNDARY = auto()
+    MESH = auto()
 
 
 class ActorInfo:

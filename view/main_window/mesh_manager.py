@@ -34,11 +34,12 @@ class MeshManager(ActorManager):
         self._loader.progress.connect(progressDialog.setLabelText)
 
         vtkMesh = await self._loader.loadMesh(time)
-
         if vtkMesh:
             for rname, region in vtkMesh.items():
                 for bname, polyData in region['boundary'].items():
                     self.add(ActorInfo(polyData, bname, bname, ActorType.BOUNDARY))
+
+            self.add(ActorInfo(vtkMesh['']['internalMesh'], 'internalMesh', 'internalMesh', ActorType.MESH))
 
         self._time = time
         self.fitDisplay()

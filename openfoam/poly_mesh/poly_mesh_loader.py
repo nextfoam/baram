@@ -116,7 +116,7 @@ class PolyMeshLoader(QObject):
             name = self._reader.GetPatchArrayName(i)
             statusConfig[name] = 1
 
-        statusConfig['internalMesh'] = 0
+        statusConfig['internalMesh'] = 1
 
         return statusConfig
 

@@ -25,7 +25,8 @@ class DisplayItem(QTreeWidgetItem):
 
     _types = {
         ActorType.GEOMETRY: QCoreApplication.translate('DisplayControl', 'Geometry'),
-        ActorType.BOUNDARY: QCoreApplication.translate('DisplayControl', 'Boundary')
+        ActorType.BOUNDARY: QCoreApplication.translate('DisplayControl', 'Boundary'),
+        ActorType.MESH: QCoreApplication.translate('DisplayControl', 'Mesh')
     }
 
     def __init__(self, actorInfo):
