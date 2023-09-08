@@ -86,25 +86,26 @@ class MainWindow(QMainWindow):
         return self._meshManager
 
     def closeEvent(self, event):
-        if not self._stepManager.saveCurrentPage():
-            event.ignore()
-            return
-
-        if app.db.isModified():
-            msgBox = QMessageBox()
-            msgBox.setWindowTitle(self.tr('Save Changed'))
-            msgBox.setText(self.tr('Do you want save your changes?'))
-            msgBox.setStandardButtons(QMessageBox.StandardButton.Ok
-                                      | QMessageBox.StandardButton.Discard
-                                      | QMessageBox.StandardButton.Cancel)
-            msgBox.setDefaultButton(QMessageBox.StandardButton.Ok)
-
-            result = msgBox.exec()
-            if result == QMessageBox.StandardButton.Ok:
-                app.project.save()
-            elif result == QMessageBox.StandardButton.Cancel:
+        if app.project:
+            if not self._stepManager.saveCurrentPage():
                 event.ignore()
                 return
+
+            if app.db.isModified():
+                msgBox = QMessageBox()
+                msgBox.setWindowTitle(self.tr('Save Changed'))
+                msgBox.setText(self.tr('Do you want save your changes?'))
+                msgBox.setStandardButtons(QMessageBox.StandardButton.Ok
+                                          | QMessageBox.StandardButton.Discard
+                                          | QMessageBox.StandardButton.Cancel)
+                msgBox.setDefaultButton(QMessageBox.StandardButton.Ok)
+
+                result = msgBox.exec()
+                if result == QMessageBox.StandardButton.Ok:
+                    app.project.save()
+                elif result == QMessageBox.StandardButton.Cancel:
+                    event.ignore()
+                    return
 
         event.accept()
 
