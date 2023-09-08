@@ -18,13 +18,12 @@ class SurfaceRefinementDialog(QDialog):
         self._ui.setupUi(self)
 
         self._db = db
+        self._groupId = groupId
         self._dbElement = None
         self._creationMode = groupId is None
-        self._accepted = False
         self._dialog = None
         self._surfaces = None
         self._oldSurfaces = None
-        self._groupId = groupId
         self._availableSurfaces = None
 
         self._connectSignalsSlots()
@@ -42,14 +41,22 @@ class SurfaceRefinementDialog(QDialog):
 
     def accept(self):
         try:
-            self._dbElement.setValue('groupName', self._ui.groupName.text(), self.tr('Group Name'))
+            groupName = self._ui.groupName.text().strip()
+            if self._db.getKeys('castellation/refinementSurfaces',
+                                lambda i, e: e['groupName'] == groupName and i != self._groupId):
+                QMessageBox.information(self, self.tr('Input Error'),
+                                        self.tr('Group name "{0}" already exists.').format(groupName))
+                return
+
+            if not self._surfaces:
+                QMessageBox.information(self, self.tr('Input Error'), self.tr('Select surfaces'))
+                return
+
+            self._dbElement.setValue('groupName', groupName, self.tr('Group Name'))
             self._dbElement.setValue('surfaceRefinementLevel', self._ui.surfaceRefinementLevel.text(),
                                      self.tr('Surface Refinement Level'))
             self._dbElement.setValue('featureEdgeRefinementLevel', self._ui.featureEdgeRefinementLevel.text(),
                                      self.tr('Feature Edge Refinement Level'))
-            if not self._surfaces:
-                QMessageBox.information(self, self.tr('Input Error'), self.tr('Select surfaces'))
-                return
 
             if self._groupId:
                 self._db.commit(self._dbElement)

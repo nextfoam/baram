@@ -106,8 +106,7 @@ class RegionForm(QWidget):
     def _accept(self):
         name = self._ui.name.text()
         if app.db.getElements('region', lambda i, e: e['name'] == name and i != self._id, []):
-            QMessageBox.information(self, self.tr('Fail to Update Region'),
-                                    self.tr('Region {0} already exists.').format(name))
+            QMessageBox.information(self, self.tr('Input Error'), self.tr('Region "{0}" already exists.').format(name))
             return
 
         x = self._ui.x.text()
@@ -115,7 +114,7 @@ class RegionForm(QWidget):
         z = self._ui.z.text()
 
         if not self._pointWidget.bounds().includes((float(x), float(y), float(z))):
-            QMessageBox.information(self, self.tr('Fail to Update Region'),
+            QMessageBox.information(self, self.tr('Input Error'),
                                     self.tr('Invalid Point - outside bounding box').format(name))
             return
 

@@ -48,9 +48,10 @@ class VolumeDialog(QDialog):
         return self._creationMode
 
     def setupForAdding(self, name, shape):
-        self.setWindowTitle(self.tr('Add Geometry'))
+        self.setWindowTitle(self.tr('Add Volume'))
 
         self._creationMode = True
+        self._gId = None
         self._dbElement = app.db.newElement('geometry')
         self._shape = shape
 
@@ -61,7 +62,7 @@ class VolumeDialog(QDialog):
         self.adjustSize()
 
     def setupForEdit(self, gId):
-        self.setWindowTitle(self.tr('Edit Geometry'))
+        self.setWindowTitle(self.tr('Edit Volume'))
 
         self._creationMode = False
         self._gId = gId
@@ -164,9 +165,9 @@ class VolumeDialog(QDialog):
     def _updateElement(self):
         name = self._ui.name.text()
 
-        if app.db.getElements('geometry', lambda i, e: e['name'] == name and i != self._gId, []):
-            QMessageBox.information(self, self.tr('Failed to Add Geometry'),
-                                    self.tr('geometry {0} already exists.').format(name))
+        if app.db.getKeys('geometry', lambda i, e: e['name'] == name and i != self._gId):
+            QMessageBox.information(self, self.tr('Input Error'),
+                                    self.tr('geometry "{0}" already exists.').format(name))
             return False
 
         self._dbElement.setValue('gType', GeometryType.VOLUME.value)

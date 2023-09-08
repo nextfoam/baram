@@ -43,12 +43,19 @@ class BoundarySettingDialog(QDialog):
 
     def accept(self):
         try:
-            self._dbElement.setValue('groupName', self._ui.groupName.text(), self.tr('Group Name'))
-            self._dbElement.setValue('nSurfaceLayers', self._ui.numberOfLayers.text(), self.tr('Number of Layers'))
-            self._thicknessForm.save(self._dbElement)
+            groupName = self._ui.groupName.text().strip()
+            if self._db.getKeys('addLayers/layers', lambda i, e: e['groupName'] == groupName and i != self._groupId):
+                QMessageBox.information(self, self.tr('Input Error'),
+                                        self.tr('Group name "{0}" already exists.').format(groupName))
+                return
+
             if not self._boundaries:
                 QMessageBox.information(self, self.tr('Input Error'), self.tr('Select boundaries'))
                 return
+
+            self._dbElement.setValue('groupName', groupName, self.tr('Group Name'))
+            self._dbElement.setValue('nSurfaceLayers', self._ui.numberOfLayers.text(), self.tr('Number of Layers'))
+            self._thicknessForm.save(self._dbElement)
 
             if self._groupId:
                 self._db.commit(self._dbElement)
