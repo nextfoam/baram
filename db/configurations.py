@@ -62,3 +62,7 @@ class Configurations(SimpleDB):
         db._editable = editable
 
         return db
+
+    def print(self):
+        print(self.toYaml())
+        print(self._files['geometry'])

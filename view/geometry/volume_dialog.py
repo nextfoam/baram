@@ -44,9 +44,13 @@ class VolumeDialog(QDialog):
     def gId(self):
         return self._gId
 
+    def isForCreation(self):
+        return self._creationMode
+
     def setupForAdding(self, name, shape):
         self.setWindowTitle(self.tr('Add Geometry'))
 
+        self._creationMode = True
         self._dbElement = app.db.newElement('geometry')
         self._shape = shape
 

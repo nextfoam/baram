@@ -137,7 +137,7 @@ class MainWindow(QMainWindow):
         self._ui.actionScale.triggered.connect(self._actionScale)
         self._ui.actionLanguage.triggered.connect(self._actionLanguage)
         self._ui.actionAbout.triggered.connect(self._actionAbout)
-        self._ui.paraview.clicked.connect(lambda: print(app.db.toYaml()))
+        self._ui.paraview.clicked.connect(lambda: app.db.print())
 
         self._recentFilesMenu.projectSelected.connect(self._openRecent)
 

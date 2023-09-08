@@ -67,7 +67,7 @@ class GeometryManager(ActorManager):
 
         self.applyToDisplay()
 
-    def updateGeometry(self, gId, geometry, surfaces=None):
+    def updateVolume(self, gId, geometry, surfaces=None):
         geometry['gId'] = gId
         self._geometries[gId] = geometry
 
@@ -76,13 +76,16 @@ class GeometryManager(ActorManager):
                 self.update(
                     ActorInfo(self._surfaceToPolyData(self._geometries[gId]),
                               gId, geometry['name'], ActorType.GEOMETRY))
-        else:
-            self._updateActorName(gId, geometry['name'])
 
         self.applyToDisplay()
 
-    def removeGeometry(self, geometries):
-        for gId, geometry in geometries.items():
+    def updateSurface(self, gId, surface):
+        surface['gId'] = gId
+        self._geometries[gId] = surface
+        self._updateActorName(gId, surface['name'])
+
+    def removeGeometry(self, gIds):
+        for gId in gIds:
             geometry = self._geometries.pop(gId)
             if geometry['gType'] == GeometryType.SURFACE.value:
                 self.remove(gId)

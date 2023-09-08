@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox, QMenu
+from PySide6.QtCore import Signal
 
 from app import app
 from db.configurations_schema import CFDType, Shape, GeometryType
@@ -16,6 +17,17 @@ from .surface_dialog import SurfaceDialog
 from .geometry_list import GeometryList
 
 
+class ContextMenu(QMenu):
+    editActionTriggered = Signal()
+    removeActionTriggered = Signal()
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.addAction(self.tr('Edit'), lambda: self.editActionTriggered.emit())
+        self.addAction(self.tr('Remove'), lambda: self.removeActionTriggered.emit())
+
+
 class GeometryPage(StepPage):
     def __init__(self, ui):
         super().__init__(ui, ui.geometryPage)
@@ -23,18 +35,23 @@ class GeometryPage(StepPage):
         self._geometryManager = None
         self._list = None
         self._loaded = False
+        self._locked = False
 
         self._dialog = None
-        self._geometryDialog = None
+        self._volumeDialog = VolumeDialog(self._widget)
+        self._surfaceDialog = SurfaceDialog(self._widget)
+        self._menu = ContextMenu(self._list)
 
     def isNextStepAvailable(self):
         return not app.window.geometryManager.isEmpty()
 
     def lock(self):
         self._ui.buttons.setEnabled(False)
+        self._locked = True
 
     def unlock(self):
         self._ui.buttons.setEnabled(True)
+        self._locked = False
 
     def selected(self):
         if not self._loaded:
@@ -48,13 +65,19 @@ class GeometryPage(StepPage):
         app.window.meshManager.hide()
 
     def _connectSignalsSlots(self):
-        self._list.itemDoubleClicked.connect(self._openEditDialog)
-        self._ui.geometryList.currentItemChanged.connect(self._currentGeometryChanged)
-
+        # self._list.itemDoubleClicked.connect(self._openEditDialog)
+        # self._ui.geometryList.currentItemChanged.connect(self._currentGeometryChanged)
+        self._ui.geometryList.customContextMenuRequested.connect(self._executeContextMenu)
         self._ui.import_.clicked.connect(self._importClicked)
         self._ui.add.clicked.connect(self._addClicked)
-        self._ui.edit.clicked.connect(self._editClicked)
-        self._ui.remove.clicked.connect(self._removeGeometry)
+        self._menu.editActionTriggered.connect(self._openEditDialog)
+        self._menu.removeActionTriggered.connect(self._removeGeometry)
+        self._volumeDialog.accepted.connect(self._volumeDialogAccepted)
+        self._surfaceDialog.accepted.connect(self._updateSurfaces)
+
+    def _executeContextMenu(self, pos):
+        if not self._locked:
+            self._menu.exec(self._ui.geometryList.mapToGlobal(pos))
 
     @qasync.asyncSlot()
     async def _importClicked(self):
@@ -68,48 +91,50 @@ class GeometryPage(StepPage):
         self._dialog.open()
 
     def _openAddDialog(self):
-        self._geometryDialog = VolumeDialog(self._widget)
-        self._geometryDialog.setupForAdding(*self._dialog.geometryInfo())
-        self._geometryDialog.accepted.connect(self._geometryAddAccepted)
-        self._geometryDialog.open()
+        self._volumeDialog.setupForAdding(*self._dialog.geometryInfo())
+        self._volumeDialog.open()
 
-    def _editClicked(self):
-        self._openEditDialog(self._list.currentGeometryID())
+    def _openEditDialog(self):
+        gIds = self._list.selectedIDs()
 
-    def _openEditDialog(self, gId):
-        geometry = self._geometryManager.geometry(gId)
-        if geometry['gType'] == GeometryType.VOLUME.value:
-            self._geometryDialog = VolumeDialog(self._widget)
-            self._geometryDialog.setupForEdit(gId)
-            self._geometryDialog.accepted.connect(self._updateVolume)
-            self._geometryDialog.open()
+        if len(gIds) == 1 and self._geometryManager.geometry(gIds[0])['gType'] == GeometryType.VOLUME.value:
+            self._volumeDialog.setupForEdit(gIds[0])
+            self._volumeDialog.open()
         else:
-            self._geometryDialog = SurfaceDialog(self._widget, gId)
-            self._geometryDialog.accepted.connect(self._updateSurface)
-            self._geometryDialog.open()
+            self._surfaceDialog.setGIds(gIds)
+            self._surfaceDialog.open()
 
     def _removeGeometry(self):
-        gId = self._list.currentGeometryID()
+        gIds = self._list.selectedIDs()
+
+        volume = None
+        if len(gIds) == 1 and self._geometryManager.geometry(gIds[0])['gType'] == GeometryType.VOLUME.value:
+            volume = gIds[0]
+            surfaces = [
+                g for g in self._geometryManager.geometries() if self._geometryManager.geometry(g)['volume'] == volume]
+        elif not any([self._geometryManager.geometry(gId)['volume'] for gId in gIds]):
+            surfaces = gIds
+        else:
+            QMessageBox.information(self._widget, self.tr('Delete Surfaces'),
+                                    self.tr('Surfaces contained in a volume cannot be deleted.'))
+            return
 
         db = app.db.checkout()
-        geometries = db.getElements('geometry', lambda i, e: i == gId or e['volume'] == str(gId), ['path'])
-        self._geometryManager.removeGeometry(geometries)
 
-        for g in geometries:
-            db.removeGeometryPolyData(geometries[g]['path'])
-            db.removeElement('geometry', g)
+        for gId in surfaces:
+            db.removeGeometryPolyData(self._geometryManager.geometry(gId)['path'])
+            db.removeElement('geometry', gId)
+            self._list.remove(gId)
+        self._geometryManager.removeGeometry(surfaces)
+
+        if volume:
+            db.removeElement('geometry', volume)
+            self._list.remove(volume)
+            self._geometryManager.removeGeometry([volume])
 
         app.db.commit(db)
 
-        self._list.remove(gId)
         self._updateNextStepAvailable()
-
-    def _currentGeometryChanged(self):
-        gId = self._list.currentGeometryID()
-        if gId:
-            geometry = self._geometryManager.geometry(gId)
-            self._ui.edit.setEnabled(True)
-            self._ui.remove.setEnabled(not geometry['volume'])
 
     @qasync.asyncSlot()
     async def _importSTL(self):
@@ -166,20 +191,20 @@ class GeometryPage(StepPage):
             code, message = ex.args
             QMessageBox.information(self._widget, self.tr('STL Loading Error'), f'{message} [{code}]')
 
-    def _geometryAddAccepted(self):
-        self._geometryCreated(self._geometryDialog.gId())
+    def _volumeDialogAccepted(self):
+        if self._volumeDialog.isForCreation():
+            self._geometryCreated(self._volumeDialog.gId())
+        else:
+            gId = self._volumeDialog.gId()
+            volume = app.db.getElement('geometry',  gId)
+            self._geometryManager.updateVolume(gId, volume, self._list.childSurfaces(gId))
+            self._list.update(gId, volume)
 
-    def _updateVolume(self):
-        gId = self._geometryDialog.gId()
-        geometry = app.db.getElement('geometry',  gId)
-        self._geometryManager.updateGeometry(gId, geometry, self._list.childSurfaces(gId))
-        self._list.update(gId, geometry)
-
-    def _updateSurface(self):
-        gId = self._geometryDialog.gId()
-        geometry = app.db.getElement('geometry',  gId)
-        self._geometryManager.updateGeometry(gId, geometry)
-        self._list.update(gId, geometry)
+    def _updateSurfaces(self):
+        gIds = self._surfaceDialog.gIds()
+        for gId, surface in app.db.getElements('geometry', lambda i, e: i in gIds).items():
+            self._geometryManager.updateSurface(gId, surface)
+            self._list.update(gId, surface)
 
     def _geometryCreated(self, gId):
         geometry = app.db.getElement('geometry',  gId)

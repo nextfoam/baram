@@ -404,7 +404,7 @@
               </sizepolicy>
              </property>
              <property name="currentIndex">
-              <number>4</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="geometryPage">
               <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -430,8 +430,14 @@
                </item>
                <item>
                 <widget class="QTreeWidget" name="geometryList">
+                 <property name="contextMenuPolicy">
+                  <enum>Qt::CustomContextMenu</enum>
+                 </property>
                  <property name="editTriggers">
                   <set>QAbstractItemView::NoEditTriggers</set>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::ExtendedSelection</enum>
                  </property>
                  <property name="expandsOnDoubleClick">
                   <bool>false</bool>
@@ -467,6 +473,19 @@
                    <number>0</number>
                   </property>
                   <item>
+                   <spacer name="horizontalSpacer_4">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
                    <widget class="QPushButton" name="import_">
                     <property name="text">
                      <string>Import</string>
@@ -477,26 +496,6 @@
                    <widget class="QPushButton" name="add">
                     <property name="text">
                      <string>Add</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="edit">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                    <property name="text">
-                     <string>Edit</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="remove">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                    <property name="text">
-                     <string>Remove</string>
                     </property>
                    </widget>
                   </item>
@@ -841,7 +840,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>507</width>
+                    <width>461</width>
                     <height>438</height>
                    </rect>
                   </property>
@@ -888,7 +887,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>273</width>
+                    <width>444</width>
                     <height>592</height>
                    </rect>
                   </property>
@@ -1639,7 +1638,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>266</width>
+                    <width>444</width>
                     <height>689</height>
                    </rect>
                   </property>

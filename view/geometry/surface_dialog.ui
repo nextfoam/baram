@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_10">
    <item>
-    <widget class="QWidget" name="widget_3" native="true">
+    <widget class="QWidget" name="nameSetting" native="true">
      <layout class="QFormLayout" name="formLayout_3">
       <property name="leftMargin">
        <number>0</number>
@@ -134,6 +134,19 @@
     </widget>
    </item>
    <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -181,7 +194,6 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="interfaceRadios"/>
   <buttongroup name="typeRadios"/>
  </buttongroups>
 </ui>

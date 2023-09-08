@@ -18,46 +18,57 @@ class SurfaceDialog(QDialog):
         'interface_': CFDType.INTERFACE.value
     }
 
-    def __init__(self, parent, gId):
+    def __init__(self, parent):
         super().__init__(parent)
         self._ui = Ui_SurfaceDialog()
         self._ui.setupUi(self)
 
         self._typeRadios = RadioGroup(self._ui.typeRadios)
 
-        self._gId = gId
+        self._gIds = None
         self._dbElement = None
 
         self._connectSignalsSlots()
-        self._load()
 
-    def gId(self):
-        return self._gId
+    def gIds(self):
+        return self._gIds
+
+    def setGIds(self, gIds):
+        self._gIds = gIds
+        self._load()
 
     def accept(self):
         try:
-            name = self._ui.name.text()
+            db = app.db.checkout()
 
-            if app.db.getElements('geometry', lambda i, e: e['name'] == name and i != self._gId, ['name']):
-                QMessageBox.information(
-                    self, self.tr('Add Geometry Failed'),
-                    self.tr('geometry {0} already exists.').format(name))
-                return False
+            if len(self._gIds) == 1:
+                name = self._ui.name.text()
 
-            self._dbElement.setValue('name', name)
+                if app.db.getElements('geometry', lambda i, e: e['name'] == name and i != self._gIds[0], ['name']):
+                    QMessageBox.information(
+                        self, self.tr('Fail to modify geometry name'),
+                        self.tr('geometry {0} already exists.').format(name))
 
-            cfdType = self._typeRadios.value()
-            self._dbElement.setValue('cfdType', cfdType)
-            self._dbElement.setValue('nonConformal', self._ui.nonConformal.isChecked())
-            self._dbElement.setValue('interRegion', self._ui.interRegion.isChecked())
+                    return False
 
-            if cfdType != CFDType.INTERFACE.value:
-                self._dbElement.setValue('slaveLayerGroup', None)
-                if cfdType != CFDType.BOUNDARY.value:
-                    self._dbElement.setValue('layerGroup', None)
+                db.setValue(f'geometry/{self._gIds[0]}/name', name)
 
-            app.db.commit(self._dbElement)
+            for gId in self._gIds:
+                element = db.checkout(f'geometry/{gId}')
 
+                cfdType = self._typeRadios.value()
+                element.setValue('cfdType', cfdType)
+                element.setValue('nonConformal', self._ui.nonConformal.isChecked())
+                element.setValue('interRegion', self._ui.interRegion.isChecked())
+
+                if cfdType != CFDType.INTERFACE.value:
+                    element.setValue('slaveLayerGroup', None)
+                    if cfdType != CFDType.BOUNDARY.value:
+                        element.setValue('layerGroup', None)
+
+                db.commit(element)
+
+            app.db.commit(db)
             super().accept()
         except DBError as e:
             QMessageBox.information(self, self.tr("Input Error"), e.toMessage())
@@ -66,15 +77,31 @@ class SurfaceDialog(QDialog):
         self._typeRadios.valueChanged.connect(self._typeChanged)
 
     def _load(self):
-        self._dbElement = app.db.checkout(f'geometry/{self._gId}')
+        surfaces = app.db.getElements('geometry',
+                                      lambda i, e: i in self._gIds, ['name', 'cfdType', 'nonConformal', 'interRegion'])
 
-        self._ui.name.setText(self._dbElement.getValue('name'))
+        first = surfaces[self._gIds[0]]
+        if len(surfaces) > 1:
+            self._ui.nameSetting.hide()
+        else:
+            self._ui.name.setText(first['name'])
+            self._ui.nameSetting.show()
 
-        cfdType = self._dbElement.getValue('cfdType')
+        cfdType = first['cfdType']
+        nonConformal = None
+        interRegion = None
         self._typeRadios.setObjectMap(self._cfdTypes, cfdType)
         if cfdType == CFDType.INTERFACE.value:
-            self._ui.nonConformal.setChecked(self._dbElement.getValue('nonConformal'))
-            self._ui.interRegion.setChecked(self._dbElement.getValue('interRegion'))
+            nonConformal = first['nonConformal']
+            interRegion = first['interRegion']
+            self._ui.nonConformal.setChecked(nonConformal)
+            self._ui.interRegion.setChecked(interRegion)
+
+        for gId, s in surfaces.items():
+            if cfdType != s['cfdType'] or cfdType == CFDType.INTERFACE.value:
+                if cfdType != s['cfdType'] or nonConformal != s['nonConformal'] or interRegion != s['interRegion']:
+                    self._typeRadios.setValue(CFDType.BOUNDARY.value)
+                    break
 
         self._typeChanged(self._typeRadios.value())
 
