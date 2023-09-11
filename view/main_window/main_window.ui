@@ -577,7 +577,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>461</width>
+                    <width>458</width>
                     <height>438</height>
                    </rect>
                   </property>
@@ -887,7 +887,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>444</width>
+                    <width>273</width>
                     <height>592</height>
                    </rect>
                   </property>
@@ -1638,7 +1638,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>444</width>
+                    <width>266</width>
                     <height>689</height>
                    </rect>
                   </property>
@@ -2366,32 +2366,6 @@
                   <property name="bottomMargin">
                    <number>0</number>
                   </property>
-                  <item>
-                   <widget class="FlatPushButton" name="paraview">
-                    <property name="maximumSize">
-                     <size>
-                      <width>32</width>
-                      <height>32</height>
-                     </size>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="../../resource.qrc">
-                      <normaloff>:/graphicsIcons/ParaView.png</normaloff>:/graphicsIcons/ParaView.png</iconset>
-                    </property>
-                    <property name="iconSize">
-                     <size>
-                      <width>22</width>
-                      <height>22</height>
-                     </size>
-                    </property>
-                    <property name="checkable">
-                     <bool>false</bool>
-                    </property>
-                    <property name="checked">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
                   <item>
                    <widget class="FlatPushButton" name="axis">
                     <property name="maximumSize">
