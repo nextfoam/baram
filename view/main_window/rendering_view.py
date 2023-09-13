@@ -311,7 +311,7 @@ class RenderingView(QWidget):
 
             d = camera.GetDirectionOfProjection()
             p = camera.GetPosition()
-            distance = -p[0]*d[0]-p[1]*d[1]-p[2]*d[2]
+            distance = abs(-p[0]*d[0]-p[1]*d[1]-p[2]*d[2])
 
             degree = camera.GetViewAngle()
             radian = math.radians(degree/3.0)
