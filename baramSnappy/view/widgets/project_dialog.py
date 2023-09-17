@@ -7,6 +7,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QMessageBox
 
 from baramSnappy.app import app
+from baramSnappy.libbaram.utils import getFit
 from .project_dialog_ui import Ui_ProjectSelector
 from .project_widget import ProjectWidget
 
@@ -31,6 +32,11 @@ class ProjectDialog(QDialog):
 
         self._connectSignalsSlots()
 
+        geometry = app.settings.getLastStartWindowGeometry()
+        display = app.qApplication.primaryScreen().availableVirtualGeometry()
+        fit = getFit(geometry, display)
+        self.setGeometry(fit)
+
     def setRecents(self, paths):
         self._ui.recentCases.clear()
 
@@ -49,6 +55,7 @@ class ProjectDialog(QDialog):
         self._ui.newCase.clicked.connect(self._new)
         self._ui.open.clicked.connect(self._open)
         self._ui.recentCases.itemClicked.connect(self._openRecentProject)
+        self.finished.connect(self._finished)
 
     def _remove(self):
         widget = self.sender()
@@ -81,3 +88,6 @@ class ProjectDialog(QDialog):
 
     def _openRecentProject(self, item):
         self.actionProjectSelected.emit(self._ui.recentCases.itemWidget(item).getProjectPath())
+
+    def _finished(self, result):
+        app.settings.updateLastStartWindowGeometry(self.geometry())

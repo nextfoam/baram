@@ -8,6 +8,8 @@ from PySide6.QtCore import Signal, QEvent
 from filelock import Timeout
 
 from baramSnappy.app import app
+from baramSnappy.libbaram.utils import getFit
+from baramSnappy.view.display_control.display_control import DisplayControl
 from baramSnappy.view.widgets.project_dialog import ProjectDialog
 from baramSnappy.view.widgets.new_project_dialog import NewProjectDialog
 from baramSnappy.view.widgets.settings_scaling_dialog import SettingScalingDialog
@@ -21,7 +23,6 @@ from .rendering_tool import RenderingTool
 from .console_view import ConsoleView
 from .mesh_manager import MeshManager
 from .step_manager import StepManager
-from baramSnappy.view.display_control.display_control import DisplayControl
 from .main_window_ui import Ui_MainWindow
 
 
@@ -60,6 +61,11 @@ class MainWindow(QMainWindow):
         self._contentLayout.setContentsMargins(0, 0, 0, 0)
 
         self._connectSignalsSlots()
+
+        geometry = app.settings.getLastMainWindowGeometry()
+        display = app.qApplication.primaryScreen().availableVirtualGeometry()
+        fit = getFit(geometry, display)
+        self.setGeometry(fit)
 
     @property
     def stepManager(self):
@@ -106,6 +112,8 @@ class MainWindow(QMainWindow):
                 elif result == QMessageBox.StandardButton.Cancel:
                     event.ignore()
                     return
+
+        app.settings.updateLastMainWindowGeometry(self.geometry())
 
         event.accept()
 

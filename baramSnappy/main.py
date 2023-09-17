@@ -52,6 +52,7 @@ def main():
     os.environ["QT_SCALE_FACTOR"] = app.settings.getScale()
 
     application = QApplication(sys.argv)
+    app.qApplication = application
 
     loop = qasync.QEventLoop(application)
     asyncio.set_event_loop(loop)

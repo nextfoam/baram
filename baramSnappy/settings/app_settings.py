@@ -21,8 +21,8 @@ class SettingKey(Enum):
     RECENT_DIRECTORY = 'recent_directory'
     RECENT_CASES = 'recent_cases'
     RECENT_MESH_DIRECTORY = 'recent_mesh_directory'
-    LAST_START_WINDOW_POSITION = 'last_start_window_position'
-    LAST_MAIN_WINDOW_POSITION = 'last_main_window_position'
+    LAST_START_WINDOW_GEOMETRY = 'LAST_START_WINDOW_GEOMETRY'
+    LAST_MAIN_WINDOW_GEOMETRY = 'LAST_MAIN_WINDOW_GEOMETRY'
     PARAVIEW_INSTALLED_PATH = 'paraview_installed_path'
 
 
@@ -72,59 +72,20 @@ class AppSettings:
         settings[SettingKey.RECENT_CASES.value] = recentCases[:RECENT_PROJECTS_NUMBER]
         self._save(settings)
 
-    def getPrimaryMonitor(self):
-        monitorsInfo = screeninfo.get_monitors()
-        for i, d in enumerate(monitorsInfo):
-            if d.is_primary:
-                return i
-        return 0
+    def getLastStartWindowGeometry(self) -> QRect:
+        x, y, width, height = self._get(SettingKey.LAST_START_WINDOW_GEOMETRY, [200, 100, 400, 300])
+        return QRect(x, y, width, height)
 
-    def getMonitorSize(self, monitorNum=-1):
-        monitorsInfo = screeninfo.get_monitors()
-        if monitorNum < 0 or monitorNum >= len(monitorsInfo):
-            monitorNum = self.getPrimaryMonitor()
+    def updateLastStartWindowGeometry(self, geometry: QRect):
+        self._set(SettingKey.LAST_START_WINDOW_GEOMETRY, [geometry.x(), geometry.y(), geometry.width(), geometry.height()])
 
-        x = monitorsInfo[monitorNum].x
-        y = monitorsInfo[monitorNum].y
-        width = monitorsInfo[monitorNum].width
-        height = monitorsInfo[monitorNum].height
-        return [x, y, width, height]
+    def getLastMainWindowGeometry(self) -> QRect:
+        x, y, width, height = self._get(SettingKey.LAST_MAIN_WINDOW_GEOMETRY, [200, 100, 1280, 770])
+        return QRect(x, y, width, height)
 
-    def _getWindowProperPosition(self, position):
-        x, y, width, height = position
-        minX, minY, maxX, maxY = 0, 0, 0, 0
-        scaling = float(self.getScale())
-
-        monitorsInfo = screeninfo.get_monitors()
-        for d in monitorsInfo:
-            minX = (min(minX, d.x) / scaling)
-            minY = (min(minY, d.y) / scaling)
-            maxX = (max(maxX, d.x + d.width) / scaling)
-            maxY = (max(maxY, d.y + d.height) / scaling)
-
-        if minX <= (x / scaling) <= (maxX - (width / scaling)) and minY <= (y / scaling) <= (maxY - (height / scaling)):
-            return [x, y, width, height]
-        return self.getWindowCenterPosition(width, height, scaling)
-
-    def getWindowCenterPosition(self, width=400, height=300, scaling=1.0):
-        monitorSize = self.getMonitorSize()
-        x = ((monitorSize[2] / 2) - (width / 2) + monitorSize[0]) / scaling
-        y = ((monitorSize[3] / 2) - (height / 2)) / scaling
-        return [x, y, width, height]
-
-    def getLastStartWindowPosition(self):
-        position = self._get(SettingKey.LAST_START_WINDOW_POSITION, self.getWindowCenterPosition(400, 300))
-        return self._getWindowProperPosition(position)
-
-    def updateLastStartWindowPosition(self, rect):
-        self._set(SettingKey.LAST_START_WINDOW_POSITION, [rect[0], rect[1], rect[2], rect[3]])
-
-    def getLastMainWindowPosition(self) -> QRect:
-        position = self._get(SettingKey.LAST_MAIN_WINDOW_POSITION, self.getWindowCenterPosition(1280, 770))
-        return QRect(*self._getWindowProperPosition(position))
-
-    def updateLastMainWindowPosition(self, rect: QRect):
-        self._set(SettingKey.LAST_MAIN_WINDOW_POSITION, rect.getRect())
+    def updateLastMainWindowGeometry(self, geometry: QRect):
+        self._set(SettingKey.LAST_MAIN_WINDOW_GEOMETRY, [geometry.x(), geometry.y(), geometry.width(), geometry.height()]
+                  )
 
     def getScale(self):
         return self._get(SettingKey.SCALE, '1.0')

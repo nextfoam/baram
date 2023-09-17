@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from PySide6.QtCore import QObject, QTranslator, QCoreApplication, QLocale
+from PySide6.QtWidgets import QApplication
 
 from baramSnappy.db.project import Project
 from resources import resource
@@ -32,6 +33,8 @@ class App(QObject):
         self._window = None
         self._translator = None
         self._projectManager = ProjectManager()
+
+        self._qApplication: Optional[QApplication] = None
 
     @property
     def properties(self):
@@ -64,6 +67,14 @@ class App(QObject):
     @window.setter
     def window(self, window):
         self._window = window
+
+    @property
+    def qApplication(self):
+        return self._qApplication
+
+    @qApplication.setter
+    def qApplication(self, application):
+        self._qApplication = application
 
     def setupApplication(self, properties):
         self._properties = properties

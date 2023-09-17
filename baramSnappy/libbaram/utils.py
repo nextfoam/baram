@@ -6,6 +6,7 @@ import shutil
 import uuid
 from pathlib import Path
 
+from PySide6.QtCore import QRect
 
 _backgroundTasks = set()
 
@@ -41,3 +42,20 @@ def rmtree(path, ignore_errors=False, onerror=None):
         task.add_done_callback(_backgroundTasks.discard)
     else:  # loop is None
         shutil.rmtree(target, ignore_errors, onerror)
+
+
+def getFit(window: QRect, display: QRect) -> QRect:
+    x, y, width, height = window.getRect()
+
+    # Note that "width" and "height" are scaled by "QT_SCALE_FACTOR"
+    if width > display.width():
+        width = display.width()
+    if height > display.height() - 40:  # "40" for window title bar
+        height = display.height() - 40
+
+    if x + width > display.bottomRight().x():
+        x = display.bottomRight().x() - width
+    if y + height > display.bottomRight().y():
+        y = display.bottomRight().y() - height
+
+    return QRect(x, y, width, height)
