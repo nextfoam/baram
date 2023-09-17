@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 import subprocess
 
-FOLDERS = ['baram/view']
+FOLDERS = ['baram/view', 'baramSnappy/view']
 
 force_update = False
 if len(sys.argv) > 1 and sys.argv[1] == '-f':
