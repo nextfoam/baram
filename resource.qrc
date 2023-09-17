@@ -22,6 +22,9 @@
     <file alias="plusX.png">resources/graphicsIcons/plusX.png</file>
     <file alias="plusY.png">resources/graphicsIcons/plusY.png</file>
     <file alias="plusZ.png">resources/graphicsIcons/plusZ.png</file>
+    <file alias="noun-axis-405079">resources/graphicsIcons/noun-axis-405079.svg</file>
+    <file alias="2d-label-icon.svg">resources/graphicsIcons/2d-label-icon.svg</file>
+    <file alias="alignAxis.svg">resources/graphicsIcons/alignAxis.svg</file>
     <file alias="ruler.ico">resources/graphicsIcons/ruler.ico</file>
   </qresource>
   <qresource prefix="icons">
