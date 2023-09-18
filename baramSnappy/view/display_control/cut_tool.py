@@ -8,8 +8,8 @@ from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QDoubleValidator
 from vtkmodules.vtkCommonDataModel import vtkPlane
 
-from app import app
-from rendering.plane_widget import PlaneWidget
+from baramSnappy.app import app
+from baramSnappy.rendering.plane_widget import PlaneWidget
 
 
 @dataclass

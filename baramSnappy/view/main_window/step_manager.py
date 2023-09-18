@@ -9,11 +9,11 @@ from baramSnappy.libbaram.utils import rmtree
 from baramSnappy.view.step_page import StepPage
 from baramSnappy.view.geometry.geometry_page import GeometryPage
 from baramSnappy.view.base_grid.base_grid_page import BaseGridPage
-from vbaramSnappy.view.castellation.castellation_page import CastellationPage
-from vbaramSnappy.view.snap.snap_page import SnapPage
-from vbaramSnappy.view.boundaryLayer.boundary_layer_page import BoundaryLayerPage
-from vbaramSnappy.view.export.export_page import ExportPage
-from vbaramSnappy.view.region.region_page import RegionPage
+from baramSnappy.view.castellation.castellation_page import CastellationPage
+from baramSnappy.view.snap.snap_page import SnapPage
+from baramSnappy.view.boundaryLayer.boundary_layer_page import BoundaryLayerPage
+from baramSnappy.view.export.export_page import ExportPage
+from baramSnappy.view.region.region_page import RegionPage
 
 
 class StepControlButtons:
