@@ -175,7 +175,7 @@ class RenderingView(QWidget):
             self._hideCubeAxes()
         self._widget.Render()
 
-    def _getBounds(self):
+    def getBounds(self):
         if self._originActor is not None:
             self._originActor.SetVisibility(False)
 
@@ -191,7 +191,7 @@ class RenderingView(QWidget):
             return
 
         self._cubeAxesActor = vtkCubeAxesActor()
-        self._cubeAxesActor.SetBounds(self._getBounds())
+        self._cubeAxesActor.SetBounds(self.getBounds())
         self._cubeAxesActor.SetScreenSize(12)
         self._cubeAxesActor.SetCamera(self._renderer.GetActiveCamera())
 

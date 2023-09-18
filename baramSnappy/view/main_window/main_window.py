@@ -154,6 +154,8 @@ class MainWindow(QMainWindow):
         self._startDialog.actionProjectSelected.connect(self._openProject)
         self._startDialog.finished.connect(self._startDialogClosed)
 
+        self._stepManager.openedStepChanged.connect(self._displayControl.openedStepChanged)
+
     def _openRecent(self, path):
         self._closeProject()
         self._openProject(path)

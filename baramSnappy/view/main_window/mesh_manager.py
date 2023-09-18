@@ -42,6 +42,7 @@ class MeshManager(ActorManager):
             self.add(ActorInfo(vtkMesh['']['internalMesh'], 'internalMesh', 'internalMesh', ActorType.MESH))
 
         self._time = time
+        self.applyToDisplay()
         self.fitDisplay()
 
         progressDialog.close()

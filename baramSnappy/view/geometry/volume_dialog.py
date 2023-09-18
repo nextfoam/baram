@@ -12,12 +12,13 @@ from .volume_dialog_ui import Ui_VolumeDialog
 
 
 def showStackPage(stack, page):
-    i = 0
-    while widget := stack.widget(i):
+    for i in range(stack.count()):
+        widget = stack.widget(i)
         if widget.objectName() == page:
-            i = 1
+            widget.show()
+            stack.setCurrentIndex(i)
         else:
-            stack.removeWidget(widget)
+            widget.hide()
 
     stack.adjustSize()
 

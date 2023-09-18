@@ -59,13 +59,14 @@ def build(mBlock):
         if dsType == VTK_MULTIBLOCK_DATA_SET:
             vtkMesh[name] = build(ds)
         elif dsType == VTK_UNSTRUCTURED_GRID:
-            if ds.GetNumberOfCells() > 0:
-                # vtkMesh[name] = ActorInfo(getActor(ds))
-                gFilter = vtkGeometryFilter()
-                gFilter.SetInputData(ds)
-                gFilter.Update()
-
-                vtkMesh[name] = gFilter.GetOutput()
+            # if ds.GetNumberOfCells() > 0:
+            #     # vtkMesh[name] = ActorInfo(getActor(ds))
+            #     gFilter = vtkGeometryFilter()
+            #     gFilter.SetInputData(ds)
+            #     gFilter.Update()
+            #
+            #     vtkMesh[name] = gFilter.GetOutput()
+            vtkMesh[name] = ds
         elif dsType == VTK_POLY_DATA:
             # vtkMesh[name] = ActorInfo(getActor(ds), getFeatureActor(ds))
             vtkMesh[name] = ds

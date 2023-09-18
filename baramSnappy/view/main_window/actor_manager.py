@@ -21,8 +21,6 @@ class ActorManager(QObject):
         self._visibility = True
         self._displayController = app.window.displayControl
 
-        self._name = None
-
     def isEmpty(self):
         return not self._actorInfos
 
@@ -30,12 +28,10 @@ class ActorManager(QObject):
         if actorInfo.id() in self._actorInfos:
             raise KeyError
 
-        self._actorInfos[actorInfo.id()] = actorInfo
-        self._displayController.add(actorInfo)
+        self._actorInfos[actorInfo.id()] = self._displayController.add(actorInfo)
 
-    def update(self, actorInfo):
-        self._actorInfos[actorInfo.id()] = actorInfo
-        self._displayController.update(actorInfo)
+    def update(self, id_, dataSet):
+        self._actorInfos[id_].setDataSet(dataSet)
 
     def remove(self, key):
         if actorInfo := self._actorInfos.pop(key, None):
@@ -69,6 +65,12 @@ class ActorManager(QObject):
         self._displayController.refreshView()
         self._visibility = False
 
+    def cut(self, cutters):
+        for actorInfo in self._actorInfos.values():
+             actorInfo.cut(cutters)
+
+        self._displayController.refreshView()
+
     def _show(self):
         for actorInfo in self._actorInfos.values():
             self._displayController.add(actorInfo)
@@ -76,5 +78,5 @@ class ActorManager(QObject):
         self._displayController.refreshView()
         self._visibility = True
 
-    def _updateActorName(self, key, name):
-        self._displayController.updateActorName(key, name)
+    def _updateActorName(self, id_, name):
+        self._actorInfos[id_].setName(name)

@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum ,auto
-
-from PySide6.QtGui import QColor
-
+from enum import Enum, auto
 from dataclasses import dataclass
 
-from baramSnappy.rendering.vtk_loader import polyDataToActor
+from PySide6.QtGui import QColor
+from PySide6.QtCore import QObject, Signal
+from vtkmodules.vtkCommonCore import VTK_UNSTRUCTURED_GRID
+from vtkmodules.vtkFiltersExtraction import vtkExtractPolyDataGeometry, vtkExtractGeometry
+from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor
 
 
 class DisplayMode(Enum):
@@ -41,6 +42,15 @@ class Bounds:
 
         return self.xMin < x < self.xMax and self.yMin < y < self.yMax and self.zMin < z < self.zMax
 
+    def toTuple(self):
+        return self.xMin, self.xMax, self.yMin, self.yMax, self.zMin, self.zMax
+
+    def center(self):
+        def center(a, b):
+            return (a + b) / 2
+
+        return center(self.xMin, self.xMax), center(self.yMin, self.yMax), center(self.zMin, self.zMax)
+
 
 class ActorType(Enum):
     GEOMETRY = auto()
@@ -48,7 +58,60 @@ class ActorType(Enum):
     MESH = auto()
 
 
-class ActorInfo:
+class ActorSource:
+    def __init__(self, dataSet, mapper):
+        self._dataSet = dataSet
+        self._mapper = mapper
+
+        self._mapper.SetInputData(self._dataSet)
+
+    def mapper(self):
+        return self._mapper
+
+    def setDataSet(self, dataSet):
+        self._dataSet = dataSet
+        self._mapper.SetInputData(dataSet)
+        self._mapper.Update()
+
+    def dataSet(self):
+        return self._dataSet
+
+    def cut(self, cutters):
+        dataSet = self._dataSet
+        for c in cutters:
+            filter = self._newExtractFilter()
+            filter.SetImplicitFunction(c.plane)
+            filter.SetExtractInside(c.invert)
+            filter.SetExtractBoundaryCells(True)
+            filter.SetInputData(dataSet)
+            filter.Update()
+            dataSet = filter.GetOutput()
+
+        self._mapper.SetInputData(dataSet)
+        self._mapper.Update()
+
+    def clearFilter(self):
+        self._mapper.SetInputData(self._dataSet)
+        self._mapper.Update()
+
+
+class UnstructuredGrid(ActorSource):
+    def __init__(self, unstructuredGrid):
+        super().__init__(unstructuredGrid, vtkDataSetMapper())
+
+    def _newExtractFilter(self):
+        return vtkExtractGeometry()
+
+
+class PolyData(ActorSource):
+    def __init__(self, polyData):
+        super().__init__(polyData, vtkPolyDataMapper())
+
+    def _newExtractFilter(self):
+        return vtkExtractPolyDataGeometry()
+
+
+class ActorInfo(QObject):
     @dataclass
     class Properties:
         visibility: bool
@@ -65,18 +128,34 @@ class ActorInfo:
             self.displayMode = properties.displayMode if properties.displayMode == self.displayMode else None
             self.cutEnabled = properties.cutEnabled if properties.cutEnabled == self.cutEnabled else None
 
-    def __init__(self, polyData, id_, name, type):
+    sourceChanged = Signal(str)
+    nameChanged = Signal(str)
+
+    def __init__(self, dataSet, id_, name, type):
+        super().__init__()
+
         self._id = id_
         self._name = name
         self._type = type
-        self._polyData = polyData
-
-        self._actor = polyDataToActor(polyData)
-        self._actor.SetObjectName(self._id)
+        self._source = None
+        self._mapper = None
+        self._actor = vtkActor()
         self._properties = None
 
+        if dataSet.GetDataObjectType() == VTK_UNSTRUCTURED_GRID:
+            self._source = UnstructuredGrid(dataSet)
+        else:
+            self._source = PolyData(dataSet)
+
+        self._mapper = self._source.mapper()
+        self._mapper.ScalarVisibilityOff()
+
+        self._actor.SetMapper(self._mapper)
+        self._actor.GetProperty().SetAmbient(0.2)
+        self._actor.GetProperty().SetDiffuse(0.3)
         self._actor.GetProperty().SetOpacity(0.9)
         self._actor.GetProperty().SetAmbient(0.3)
+        self._actor.SetObjectName(self._id)
 
         prop = self._actor.GetProperty()
         self._properties = self.Properties(self._actor.GetVisibility(),
@@ -100,8 +179,8 @@ class ActorInfo:
     def type(self):
         return self._type
 
-    def polyData(self):
-        return self._polyData
+    def dataSet(self):
+        return self._source.dataSet()
 
     def actor(self):
         return self._actor
@@ -111,9 +190,6 @@ class ActorInfo:
 
     def bounds(self):
         return Bounds(*self._actor.GetBounds())
-
-    def setName(self, name):
-        self._name = name
 
     def isVisible(self):
         return self._properties.visibility
@@ -126,6 +202,14 @@ class ActorInfo:
 
     def isHighlighted(self):
         return self._properties.highlighted
+
+    def setDataSet(self, dataSet):
+        self._source.setDataSet(dataSet)
+        self.sourceChanged.emit(self._id)
+
+    def setName(self, name):
+        self._name = name
+        self.nameChanged.emit(name)
 
     def setVisible(self, visibility):
         self._properties.visibility = visibility
@@ -143,23 +227,27 @@ class ActorInfo:
         self._properties.displayMode = mode
         self._applyDisplayMode()
 
-    def setCutEnabled(self, cut):
-        self._properties.cut = cut
-        self._applyCut()
+    def setCutEnabled(self, enabled):
+        self._properties.cutEnabled = enabled
 
     def setHighlighted(self, highlighted):
         if self._properties.highlighted != highlighted:
             self._properties.highlighted = highlighted
             self._applyHighlight()
 
-    def setProperties(self, properties):
-        self._properties = properties
+    def copyProperties(self, actorInfo):
+        self._properties = actorInfo.properties()
         self._applyVisibility()
         self._applyOpacity()
         self._applyColor()
         self._applyDisplayMode()
-        self._applyCut()
         self._applyHighlight()
+
+    def cut(self, cutters):
+        if cutters and self.isCutEnabled():
+            self._source.cut(cutters)
+        else:
+            self._source.clearFilter()
 
     def _applyVisibility(self):
         self._actor.SetVisibility(self._properties.visibility)
@@ -173,9 +261,6 @@ class ActorInfo:
 
     def _applyDisplayMode(self):
         self._displayModeApplicator[self._properties.displayMode]()
-
-    def _applyCut(self):
-        return
 
     def _applyWireframeMode(self):
         self._actor.GetProperty().SetRepresentationToWireframe()

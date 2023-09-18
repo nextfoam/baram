@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtCore import QObject, Signal
+from vtkmodules.vtkCommonCore import vtkCommand
 from vtkmodules.vtkInteractionWidgets import vtkPointWidget
 
 from baramSnappy.app import app
@@ -18,14 +19,12 @@ class PointWidget(QObject):
         self._widget.SetInteractor(view.interactor())
         self._bounds = None
 
-        self._widget.AddObserver('InteractionEvent', self._pointMoved)
+        self._widget.AddObserver(vtkCommand.InteractionEvent, self._pointMoved)
 
     def setBounds(self, bounds):
-        def center(a, b):
-            return (a + b) / 2
+        position = bounds.center()
 
         self._bounds = bounds
-        position = center(bounds.xMin, bounds.xMax), center(bounds.yMin, bounds.yMax), center(bounds.zMin, bounds.zMax)
         self._widget.SetPosition(*position)
         self._widget.PlaceWidget(bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax, bounds.zMin, bounds.zMax)
 
