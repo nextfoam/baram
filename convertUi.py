@@ -35,13 +35,16 @@ else:
 
 # Convert QT Designer Files
 print('\n>> Convert QT Designer Files')
+paths = []
 for folder in FOLDERS:
-    paths = list(Path(folder).glob('**/*.ui'))  # Convert to 'list' to get the length of it
-    totalNum = len(paths)
-    for i, source in enumerate(paths):
-        target = source.parent / (source.stem + '_ui.py')
-        if not force_update and target.is_file() and target.stat().st_mtime >= source.stat().st_mtime:
-            print(f'  [{i+1}/{totalNum}] Skipping...   {source.name} -> {source.stem}_ui.py, Already Up-to-date')
-        else:
-            print(f'  [{i+1}/{totalNum}] Converting... {source.name} -> {source.stem}_ui.py')
-            subprocess.run(['pyside6-uic', source, '-o', target])
+    paths += list(Path(folder).glob('**/*.ui'))  # Convert to 'list' to get the length of it
+
+totalNum = len(paths)
+
+for i, source in enumerate(paths):
+    target = source.parent / (source.stem + '_ui.py')
+    if not force_update and target.is_file() and target.stat().st_mtime >= source.stat().st_mtime:
+        print(f'  [{i+1}/{totalNum}] Skipping...   {source.name} -> {source.stem}_ui.py, Already Up-to-date')
+    else:
+        print(f'  [{i+1}/{totalNum}] Converting... {source.name} -> {source.stem}_ui.py')
+        subprocess.run(['pyside6-uic', source, '-o', target])
