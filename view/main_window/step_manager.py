@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from PySide6.QtCore import QObject, Signal
+
 from app import app
 from db.configurations_schema import Step
 from libbaram.utils import rmtree
@@ -39,8 +41,12 @@ class StepControlButtons:
         self._next.setEnabled(enabled)
 
 
-class StepManager:
+class StepManager(QObject):
+    openedStepChanged = Signal(Step, Step)
+
     def __init__(self, navigation, ui):
+        super().__init__()
+
         self._navigation = navigation
         self._openedStep = None
         self._contentStack = ui.content
@@ -63,12 +69,12 @@ class StepManager:
     def load(self):
         savedStep = app.db.getEnumValue('step')
 
-        step = 0
+        step = Step.GEOMETRY
         while step < savedStep and self._pages[step].isNextStepAvailable():
             self._navigation.enableStep(step)
             step += 1
 
-        for s in range(step + 1, Step.LAST_STEP +1):
+        for s in range(step + 1, Step.LAST_STEP + 1):
             self._navigation.disableStep(s)
             self._pages[s].clearResult()
 
@@ -98,6 +104,8 @@ class StepManager:
         self._buttons.unlockButton.clicked.connect(self._unlockCurrentStep)
 
     def _setOpendedStep(self, step):
+        prev = self._openedStep
+
         self._pages[step].unlock()
         self._navigation.enableStep(step)
         self._openedStep = step
@@ -105,6 +113,8 @@ class StepManager:
         db = app.db.checkout()
         db.setValue('step', step)
         app.db.commit(db)
+
+        self.openedStepChanged.emit(step, prev)
 
     def _open(self, step):
         self._pages[step].open()

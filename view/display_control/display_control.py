@@ -6,9 +6,11 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QMenu, QColorDialog, QHeaderView
 
 from app import app
+from db.configurations_schema import Step
 from rendering.actor_info import DisplayMode
 from .opacity_dialog import OpacityDialog
 from .display_item import DisplayItem, Column
+from .cut_tool import CutTool
 
 
 class ContextMenu(QMenu):
@@ -16,6 +18,7 @@ class ContextMenu(QMenu):
     hideActionTriggered = Signal()
     opacitySelected = Signal(float)
     colorPicked = Signal(QColor)
+    noCutActionTriggered = Signal(bool)
 
     wireframeDisplayModeSelected = Signal()
     surfaceDisplayModeSelected = Signal()
@@ -41,9 +44,12 @@ class ContextMenu(QMenu):
         self._surfaceEdgeDisplayAction = displayMenu.addAction(
             self.tr('Surface with Edges'), lambda: self.surfaceEdgeDisplayModeSelected.emit())
 
+        self._noCutAction = self.addAction(self.tr('No Cut'), self._noCutActionTriggered)
+
         self._wireFrameDisplayAction.setCheckable(True)
         self._surfaceDisplayAction.setCheckable(True)
         self._surfaceEdgeDisplayAction.setCheckable(True)
+        self._noCutAction.setCheckable(True)
 
         self._connectSignalsSlots()
 
@@ -55,6 +61,7 @@ class ContextMenu(QMenu):
         self._wireFrameDisplayAction.setChecked(properties.displayMode == DisplayMode.WIREFRAME)
         self._surfaceDisplayAction.setChecked(properties.displayMode == DisplayMode.SURFACE)
         self._surfaceEdgeDisplayAction.setChecked(properties.displayMode == DisplayMode.SURFACE_EDGE)
+        self._noCutAction.setChecked(properties.cutEnabled is False)
 
         self.exec(pos)
 
@@ -71,11 +78,15 @@ class ContextMenu(QMenu):
             Qt.GlobalColor.white if self._properties.color is None else self._properties.color)
         self._colorDialog.open()
 
+    def _noCutActionTriggered(self):
+        self.noCutActionTriggered.emit(not self._properties.cutEnabled)
+
 
 class DisplayControl(QObject):
     def __init__(self, ui):
         super().__init__()
 
+        self._ui = ui
         self._list = ui.actors
         self._view = ui.renderingView
 
@@ -83,6 +94,8 @@ class DisplayControl(QObject):
         self._selectedItems = None
         self._dialog = None
         self._menu = ContextMenu(self._list)
+
+        self._cutTool = CutTool(ui)
 
         self._list.setColumnWidth(Column.COLOR_COLUMN, 20)
         # self._list.setColumnWidth(Column.CUT_ICON_COLUMN, 20)
@@ -96,9 +109,13 @@ class DisplayControl(QObject):
     def add(self, actorInfo):
         if actorInfo.id() in self._items:
             item = self._items[actorInfo.id()]
-            item.setActorInfo(actorInfo)
+            item.actorInfo().setDataSet(actorInfo.dataSet())
             item.setHidden(False)
+
+            actorInfo = item.actorInfo()
         else:
+            actorInfo.sourceChanged.connect(self._actorSourceUpdated)
+
             item = DisplayItem(actorInfo)
             self._items[actorInfo.id()] = item
             self._list.addTopLevelItem(item)
@@ -106,11 +123,7 @@ class DisplayControl(QObject):
 
         self._view.addActor(actorInfo.actor())
 
-    def update(self, actorInfo):
-        item = self._items[actorInfo.id()]
-        self._view.removeActor(item.actorInfo().actor())
-        self._view.addActor(actorInfo.actor())
-        item.setActorInfo(actorInfo)
+        return actorInfo
 
     def remove(self, actorInfo):
         index = -1
@@ -124,21 +137,28 @@ class DisplayControl(QObject):
             self._view.removeActor(item.actorInfo().actor())
             del self._items[str(actorInfo.id())]
             del item
-
     def hide(self, actorInfo):
         item = self._items[actorInfo.id()]
         self._view.removeActor(item.actorInfo().actor())
         item.setHidden(True)
-
-    def updateActorName(self, id_, name):
-        item = self._items[id_]
-        item.setActorName(name)
 
     def refreshView(self):
         self._view.refresh()
 
     def fitView(self):
         self._view.fitCamera()
+
+    def openedStepChanged(self, step, prev):
+        newCutStatus = step == Step.GEOMETRY.value or step == Step.REGION.value
+        prevCutStatus = prev is None or prev == Step.GEOMETRY.value or prev == Step.REGION.value
+
+        if newCutStatus == prevCutStatus:
+            return
+
+        if newCutStatus:
+            self._cutTool.hide()
+        else:
+            self._cutTool.show()
 
     def _connectSignalsSlots(self):
         self._list.customContextMenuRequested.connect(self._showContextMenu)
@@ -152,6 +172,7 @@ class DisplayControl(QObject):
         self._menu.wireframeDisplayModeSelected.connect(self._displayWireframe)
         self._menu.surfaceDisplayModeSelected.connect(self._displaySurface)
         self._menu.surfaceEdgeDisplayModeSelected.connect(self._displayWireSurfaceWithEdges)
+        self._menu.noCutActionTriggered.connect(self._applyCutOption)
 
     def _executeContextMenu(self, pos):
         properties = self._selectedItemsInfo()
@@ -192,6 +213,13 @@ class DisplayControl(QObject):
     def _hideActors(self):
         for item in self._selectedItems:
             item.setActorVisible(False)
+
+        self._view.refresh()
+
+    def _applyCutOption(self, enabled):
+        for item in self._selectedItems:
+            item.setCutEnabled(enabled)
+            item.actorInfo().cut(self._cutTool.cutters())
 
         self._view.refresh()
 
@@ -240,3 +268,7 @@ class DisplayControl(QObject):
             item.actorInfo().setHighlighted(item.isSelected())
 
         self._view.refresh()
+
+    def _actorSourceUpdated(self, id_):
+        self._items[id_].actorInfo().cut(self._cutTool.cutters())
+

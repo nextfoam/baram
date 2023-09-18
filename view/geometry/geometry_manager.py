@@ -46,7 +46,7 @@ class GeometryManager(ActorManager):
         return self._volumes[gId]
 
     def polyData(self, gId):
-        return self._actorInfos[gId].polyData()
+        return self._actorInfos[gId].dataSet()
 
     def load(self):
         self.clear()
@@ -73,9 +73,7 @@ class GeometryManager(ActorManager):
 
         if surfaces and geometry['shape'] != Shape.TRI_SURFACE_MESH.value:
             for gId in surfaces:
-                self.update(
-                    ActorInfo(self._surfaceToPolyData(self._geometries[gId]),
-                              gId, geometry['name'], ActorType.GEOMETRY))
+                self.update(gId, self._surfaceToPolyData(self._geometries[gId]))
 
         self.applyToDisplay()
 

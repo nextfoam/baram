@@ -41,6 +41,8 @@ class DisplayItem(QTreeWidgetItem):
         # self._updateCutIcon()
         # self._updateVisibleIcon()
 
+        self._connectSignalsSlots()
+
     def setupColorWidget(self, parent):
         widget = QWidget()
         layout = QHBoxLayout(widget)
@@ -50,10 +52,6 @@ class DisplayItem(QTreeWidgetItem):
         self._colorWidget.setMinimumSize(16, 16)
         parent.setItemWidget(self, Column.COLOR_COLUMN, widget)
 
-    def setActorInfo(self, actorInfo):
-        actorInfo.setProperties(self._actorInfo.properties())
-        self._actorInfo = actorInfo
-
     def setActorVisible(self, visible):
         self._actorInfo.setVisible(visible)
         self._updateColorColumn()
@@ -62,9 +60,9 @@ class DisplayItem(QTreeWidgetItem):
         self._actorInfo.setColor(color)
         self._updateColorColumn()
 
-    def setActorName(self, name):
-        self._actorInfo.setName(name)
-        self.setText(Column.NAME_COLUMN, name)
+    def setCutEnabled(self, enabled):
+        self._actorInfo.setCutEnabled(enabled)
+        # self._updateCutIcon()
 
     def actorInfo(self):
         return self._actorInfo
@@ -79,12 +77,16 @@ class DisplayItem(QTreeWidgetItem):
                 f'background-color: rgb({color.red()}, {color.green()}, {color.blue()}); border: 1px solid')
         else:
             self._colorWidget.setStyleSheet('')
+
+    def _updateName(self, name):
+        self.setText(Column.NAME_COLUMN, name)
     #
     # def _updateCutIcon(self):
-    #     if not self._actorInfo.isCutEnabled():
-    #         self.setIcon(Column.CUT_ICON_COLUMN, self._emptyIcon)
+    #     if self._actorInfo.isCutEnabled():
+    #         self._colorWidget.clear()
     #     else:
-    #         self.setIcon(Column.CUT_ICON_COLUMN, self._notCutIcon)
+    #         icon = QPixmap(':/icons/lock-closed.svg')
+    #         self._colorWidget.setPixmap(icon.scaled(18, 18))
     #
     # def _updateVisibleIcon(self):
     #     if self._actorInfo.isVisible():
@@ -92,3 +94,5 @@ class DisplayItem(QTreeWidgetItem):
     #     else:
     #         self.setIcon(Column.VISIBLE_ICON_COLUMN, self._bulbOffIcon)
 
+    def _connectSignalsSlots(self):
+        self._actorInfo.nameChanged.connect(self._updateName)
