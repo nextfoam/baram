@@ -2280,7 +2280,16 @@
                <item>
                 <widget class="QWidget" name="cutTool" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_7">
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
                   <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
                    <number>0</number>
                   </property>
                   <property name="bottomMargin">
@@ -2308,17 +2317,14 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QWidget" name="cut" native="true">
+                   <widget class="QGroupBox" name="cut">
                     <layout class="QVBoxLayout" name="verticalLayout_21">
-                     <property name="topMargin">
-                      <number>0</number>
-                     </property>
-                     <property name="bottomMargin">
-                      <number>0</number>
-                     </property>
                      <item>
                       <widget class="QWidget" name="widget_8" native="true">
                        <layout class="QFormLayout" name="formLayout_2">
+                        <property name="verticalSpacing">
+                         <number>0</number>
+                        </property>
                         <property name="leftMargin">
                          <number>0</number>
                         </property>
@@ -2388,7 +2394,7 @@
                                 </property>
                                 <property name="icon">
                                  <iconset resource="../../../resource.qrc">
-                                  <normaloff>:/icons/navigate-outline.svg</normaloff>:/icons/navigate-outline.svg</iconset>
+                                  <normaloff>:/icons/options.svg</normaloff>:/icons/options.svg</iconset>
                                 </property>
                                 <property name="checkable">
                                  <bool>true</bool>
@@ -2471,7 +2477,7 @@
                                 </property>
                                 <property name="icon">
                                  <iconset resource="../../../resource.qrc">
-                                  <normaloff>:/icons/ellipsis-horizontal-outline.svg</normaloff>:/icons/ellipsis-horizontal-outline.svg</iconset>
+                                  <normaloff>:/icons/options.svg</normaloff>:/icons/options.svg</iconset>
                                 </property>
                                 <property name="checkable">
                                  <bool>true</bool>
@@ -2554,7 +2560,7 @@
                                 </property>
                                 <property name="icon">
                                  <iconset resource="../../../resource.qrc">
-                                  <normaloff>:/icons/pin-outline.svg</normaloff>:/icons/pin-outline.svg</iconset>
+                                  <normaloff>:/icons/options.svg</normaloff>:/icons/options.svg</iconset>
                                 </property>
                                 <property name="checkable">
                                  <bool>true</bool>
@@ -2584,6 +2590,9 @@
                       <widget class="QWidget" name="widget_6" native="true">
                        <layout class="QHBoxLayout" name="horizontalLayout_19">
                         <property name="topMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="rightMargin">
                          <number>0</number>
                         </property>
                         <property name="bottomMargin">
