@@ -95,7 +95,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../../../resource.qrc">
+            <iconset resource="../../../../resource.qrc">
              <normaloff>:/icons/create-outline.svg</normaloff>:/icons/create-outline.svg</iconset>
            </property>
           </widget>
@@ -112,7 +112,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../../../resource.qrc">
+            <iconset resource="../../../../resource.qrc">
              <normaloff>:/icons/trash-outline.svg</normaloff>:/icons/trash-outline.svg</iconset>
            </property>
           </widget>
@@ -260,7 +260,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../../resource.qrc"/>
+  <include location="../../../../resource.qrc"/>
  </resources>
  <connections/>
 </ui>

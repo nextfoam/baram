@@ -121,7 +121,7 @@ QTreeView::indicator:checked {image: url(:/icons/eye.svg);}</string>
   </layout>
  </widget>
  <resources>
-  <include location="../../../resource.qrc"/>
+  <include location="../../../../resource.qrc"/>
  </resources>
  <connections/>
 </ui>

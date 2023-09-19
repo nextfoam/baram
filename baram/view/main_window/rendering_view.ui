@@ -83,7 +83,7 @@
             </size>
            </property>
            <property name="icon">
-            <iconset resource="../../resource.qrc">
+            <iconset resource="../../../resource.qrc">
              <normaloff>:/graphicsIcons/ParaView.png</normaloff>:/graphicsIcons/ParaView.png</iconset>
            </property>
            <property name="iconSize">
@@ -109,7 +109,7 @@
             </size>
            </property>
            <property name="icon">
-            <iconset resource="../../resource.qrc">
+            <iconset resource="../../../resource.qrc">
              <normaloff>:/graphicsIcons/noun-axis-405079</normaloff>:/graphicsIcons/noun-axis-405079</iconset>
            </property>
            <property name="iconSize">
@@ -158,7 +158,7 @@
             </size>
            </property>
            <property name="icon">
-            <iconset resource="../../resource.qrc">
+            <iconset resource="../../../resource.qrc">
              <normaloff>:/graphicsIcons/perspective.png</normaloff>:/graphicsIcons/perspective.png</iconset>
            </property>
            <property name="iconSize">
@@ -184,7 +184,7 @@
             </size>
            </property>
            <property name="icon">
-            <iconset resource="../../resource.qrc">
+            <iconset resource="../../../resource.qrc">
              <normaloff>:/icons/expand.svg</normaloff>:/icons/expand.svg</iconset>
            </property>
            <property name="iconSize">
@@ -204,7 +204,7 @@
             </size>
            </property>
            <property name="icon">
-            <iconset resource="../../resource.qrc">
+            <iconset resource="../../../resource.qrc">
              <normaloff>:/graphicsIcons/plusX.png</normaloff>:/graphicsIcons/plusX.png</iconset>
            </property>
            <property name="iconSize">
@@ -324,7 +324,7 @@
             </size>
            </property>
            <property name="icon">
-            <iconset resource="../../resource.qrc">
+            <iconset resource="../../../resource.qrc">
              <normaloff>:/icons/reload.svg</normaloff>:/icons/reload.svg</iconset>
            </property>
            <property name="iconSize">
@@ -423,7 +423,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../resource.qrc"/>
+  <include location="../../../resource.qrc"/>
  </resources>
  <connections/>
 </ui>
