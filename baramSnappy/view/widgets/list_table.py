@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QFrame, QGridLayout, QWidget, QLabel
 from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtGui import QIcon, QPalette
 
-from baramSnappy.view.widgets.flat_push_button import FlatPushButton
+from widgets.flat_push_button import FlatPushButton
 
 
 class ListItem(QObject):

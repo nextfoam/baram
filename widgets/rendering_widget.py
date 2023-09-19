@@ -44,7 +44,7 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
             self._RenderWindow = None
 
 
-class RenderingView(QWidget):
+class RenderingWidget(QWidget):
     actorPicked = Signal(vtkActor, bool)
     viewClosed = Signal()
 

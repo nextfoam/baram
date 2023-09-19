@@ -577,8 +577,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>65</width>
-                    <height>16</height>
+                    <width>100</width>
+                    <height>30</height>
                    </rect>
                   </property>
                  </widget>
@@ -1638,7 +1638,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>399</width>
+                    <width>417</width>
                     <height>689</height>
                    </rect>
                   </property>
@@ -2387,7 +2387,7 @@
                                  <string/>
                                 </property>
                                 <property name="icon">
-                                 <iconset resource="../../resource.qrc">
+                                 <iconset resource="../../../resource.qrc">
                                   <normaloff>:/icons/navigate-outline.svg</normaloff>:/icons/navigate-outline.svg</iconset>
                                 </property>
                                 <property name="checkable">
@@ -2470,7 +2470,7 @@
                                  <string/>
                                 </property>
                                 <property name="icon">
-                                 <iconset resource="../../resource.qrc">
+                                 <iconset resource="../../../resource.qrc">
                                   <normaloff>:/icons/ellipsis-horizontal-outline.svg</normaloff>:/icons/ellipsis-horizontal-outline.svg</iconset>
                                 </property>
                                 <property name="checkable">
@@ -2553,7 +2553,7 @@
                                  <string/>
                                 </property>
                                 <property name="icon">
-                                 <iconset resource="../../resource.qrc">
+                                 <iconset resource="../../../resource.qrc">
                                   <normaloff>:/icons/pin-outline.svg</normaloff>:/icons/pin-outline.svg</iconset>
                                 </property>
                                 <property name="checkable">
@@ -2856,7 +2856,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="RenderingView" name="renderingView" native="true">
+                <widget class="RenderingWidget" name="renderingView" native="true">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                    <horstretch>0</horstretch>
@@ -3038,12 +3038,12 @@
   <customwidget>
    <class>FlatPushButton</class>
    <extends>QPushButton</extends>
-   <header location="global">baramSnappy.view.widgets.flat_push_button</header>
+   <header location="global">widgets.flat_push_button</header>
   </customwidget>
   <customwidget>
-   <class>RenderingView</class>
+   <class>RenderingWidget</class>
    <extends>QWidget</extends>
-   <header>baramSnappy.view.widgets.rendering_view</header>
+   <header>widgets.rendering_widget</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -3060,15 +3060,15 @@
  </customwidgets>
  <resources>
   <include location="../../../resource.qrc"/>
-  <include location="../../resource.qrc"/>
+  <include location="../../../resource.qrc"/>
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="stepButtons"/>
   <buttongroup name="cutHandles">
    <property name="exclusive">
     <bool>false</bool>
    </property>
   </buttongroup>
+  <buttongroup name="stepButtons"/>
  </buttongroups>
 </ui>
