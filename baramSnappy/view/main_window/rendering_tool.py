@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from baramSnappy.view.main_window.main_window_ui import Ui_MainWindow
-from baramSnappy.view.widgets.rendering_view import RenderingView
 
 
 class RenderingTool:
     def __init__(self, ui: Ui_MainWindow):
 
-        self._view: RenderingView = ui.renderingView
+        self._view = ui.renderingView
 
         ui.alignAxis.clicked.connect(self._view.alignCamera)
         ui.axis.toggled.connect(self._view.setAxisVisible)

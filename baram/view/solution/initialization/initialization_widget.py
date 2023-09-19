@@ -15,7 +15,7 @@ from baram.coredb.coredb_writer import CoreDBWriter
 from baram.coredb.models_db import ModelsDB, TurbulenceModel
 from resources import resource
 from baram.mesh.vtk_loader import hexActor, cylinderActor, sphereActor
-from baram.view.widgets.flat_push_button import FlatPushButton
+from widgets.flat_push_button import FlatPushButton
 from baram.view.widgets.volume_fraction_widget import VolumeFractionWidget
 from .initialization_widget_ui import Ui_initializationWidget
 from .section_dialog import SectionDialog
@@ -48,7 +48,7 @@ class SectionRow(QWidget):
         self._eyeOn: bool = False
         self._eye.setIcon(QIcon(str(resource.file('ionicons/eye-off-outline.svg'))))
         self._eye.setFlat(True)
-        self._eye.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self._eye.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self._eye.clicked.connect(self.onClicked)
 
         layout.addWidget(self._eye)
@@ -59,7 +59,7 @@ class SectionRow(QWidget):
         self._button.setCheckable(True)
         self._button.toggled.connect(self.toggled)
         self._button.doubleClicked.connect(self.doubleClicked)
-        self._button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self._button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         layout.addWidget(self._button)
 
@@ -179,24 +179,24 @@ class InitializationWidget(QWidget):
 
     def save(self):
         writer = CoreDBWriter()
-        writer.append(self._initialValuesPath + '/velocity/x', self._ui.xVelocity.text(), self.tr("X-Velocity"))
-        writer.append(self._initialValuesPath + '/velocity/y', self._ui.yVelocity.text(), self.tr("Y-Velocity"))
-        writer.append(self._initialValuesPath + '/velocity/z', self._ui.zVelocity.text(), self.tr("Z-Velocity"))
-        writer.append(self._initialValuesPath + '/pressure', self._ui.pressure.text(), self.tr("Pressure"))
-        writer.append(self._initialValuesPath + '/temperature', self._ui.temperature.text(), self.tr("Temperature"))
+        writer.append(self._initialValuesPath + '/velocity/x', self._ui.xVelocity.text(), self.tr('X-Velocity'))
+        writer.append(self._initialValuesPath + '/velocity/y', self._ui.yVelocity.text(), self.tr('Y-Velocity'))
+        writer.append(self._initialValuesPath + '/velocity/z', self._ui.zVelocity.text(), self.tr('Z-Velocity'))
+        writer.append(self._initialValuesPath + '/pressure', self._ui.pressure.text(), self.tr('Pressure'))
+        writer.append(self._initialValuesPath + '/temperature', self._ui.temperature.text(), self.tr('Temperature'))
         writer.append(self._initialValuesPath + '/scaleOfVelocity',
-                      self._ui.scaleOfVelocity.text(), self.tr("Scale of Velocity"))
+                      self._ui.scaleOfVelocity.text(), self.tr('Scale of Velocity'))
         writer.append(self._initialValuesPath + '/turbulentIntensity',
-                      self._ui.turbulentIntensity.text(), self.tr("Turbulent Intensity"))
+                      self._ui.turbulentIntensity.text(), self.tr('Turbulent Intensity'))
         writer.append(self._initialValuesPath + '/turbulentViscosity',
-                      self._ui.turbulentViscosityRatio.text(), self.tr("Turbulent Viscosity"))
+                      self._ui.turbulentViscosityRatio.text(), self.tr('Turbulent Viscosity'))
 
         if not self._volumeFractionWidget.appendToWriter(writer):
             return
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
             return False
 
         return True
@@ -222,7 +222,7 @@ class InitializationWidget(QWidget):
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
             return
 
         row = self._rows.pop(self._currentRow.name)
