@@ -19,6 +19,7 @@ class RegionCard(QWidget):
         self._ui.setupUi(self)
 
         self._id = id_
+        self._type = None
         self._point = None
 
         self._types = {
@@ -32,16 +33,22 @@ class RegionCard(QWidget):
     def name(self):
         return self._ui.name.text()
 
+    def type(self):
+        return self._type
+
     def point(self):
         return self._point
 
     def load(self,):
         path = f'region/{self._id}/'
-        self._ui.name.setText(app.db.getValue(path + 'name'))
-        self._ui.type.setText(self._types[app.db.getValue(path + 'type')])
+
+        self._type = app.db.getValue(path + 'type')
         x, y, z = app.db.getVector(path + 'point')
-        self._ui.point.setText(f'({x}, {y}, {z})')
         self._point = float(x), float(y), float(z)
+
+        self._ui.name.setText(app.db.getValue(path + 'name'))
+        self._ui.type.setText(self._types[self._type])
+        self._ui.point.setText(f'({x}, {y}, {z})')
 
     def addForm(self, form):
         self._ui.header.setEnabled(False)

@@ -404,7 +404,7 @@
               </sizepolicy>
              </property>
              <property name="currentIndex">
-              <number>5</number>
+              <number>1</number>
              </property>
              <widget class="QWidget" name="geometryPage">
               <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -562,6 +562,22 @@
                 </widget>
                </item>
                <item>
+                <widget class="QLabel" name="regionMessage">
+                 <property name="styleSheet">
+                  <string notr="true">padding: 10px; border: 1px solid LightGrey</string>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;At least one fluid region point should be configured.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Multiple region points can be configured for multi-region case.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QScrollArea" name="regionArea">
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
@@ -577,8 +593,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>100</width>
-                    <height>30</height>
+                    <width>434</width>
+                    <height>366</height>
                    </rect>
                   </property>
                  </widget>
@@ -887,7 +903,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>272</width>
+                    <width>417</width>
                     <height>592</height>
                    </rect>
                   </property>

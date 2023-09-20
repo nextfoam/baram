@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QVBoxLayout
 
 from baramSnappy.app import app
 from baramSnappy.view.step_page import StepPage
+from baramSnappy.db.configurations_schema import RegionType
 from .region_form import RegionForm
 from .region_card import RegionCard
 
@@ -35,17 +36,21 @@ class RegionPage(StepPage):
 
     def isNextStepAvailable(self):
         if not self._regions:
-            return app.db.elementCount('region') > 0
+            return app.db.elementCount('region', lambda i, e: e['type'] == RegionType.FLUID.value) > 0
 
+        hasFluid = False
         available = True
         for card in self._regions.values():
+            hasFluid = hasFluid or card.type() == RegionType.FLUID.value
             if not self._bounds.includes(card.point()):
                 card.showWarning()
                 available = False
             else:
                 card.hideWarning()
 
-        return available
+        self._ui.regionMessage.setVisible(not hasFluid)
+
+        return available and hasFluid
 
     def lock(self):
         self._ui.regionAdd.setEnabled(False)

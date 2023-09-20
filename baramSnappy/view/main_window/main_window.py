@@ -92,26 +92,9 @@ class MainWindow(QMainWindow):
         return self._meshManager
 
     def closeEvent(self, event):
-        if app.project:
-            if not self._stepManager.saveCurrentPage():
-                event.ignore()
-                return
-
-            if app.db.isModified():
-                msgBox = QMessageBox()
-                msgBox.setWindowTitle(self.tr('Save Changed'))
-                msgBox.setText(self.tr('Do you want save your changes?'))
-                msgBox.setStandardButtons(QMessageBox.StandardButton.Ok
-                                          | QMessageBox.StandardButton.Discard
-                                          | QMessageBox.StandardButton.Cancel)
-                msgBox.setDefaultButton(QMessageBox.StandardButton.Ok)
-
-                result = msgBox.exec()
-                if result == QMessageBox.StandardButton.Ok:
-                    app.project.save()
-                elif result == QMessageBox.StandardButton.Cancel:
-                    event.ignore()
-                    return
+        if not self._closeProject():
+            event.ignore()
+            return
 
         app.settings.updateLastMainWindowGeometry(self.geometry())
 
@@ -161,16 +144,12 @@ class MainWindow(QMainWindow):
         self._openProject(path)
 
     def _actionNew(self):
-        self._closeProject()
-
         self._dialog = NewProjectDialog(self)
         self._dialog.setBaseLocation(Path(app.settings.getRecentLocation()).resolve())
         self._dialog.accepted.connect(self._createProject)
         self._dialog.open()
 
     def _actionOpen(self):
-        self._closeProject()
-
         self._dialog = QFileDialog(self, self.tr('Select Project Directory'), app.settings.getRecentLocation())
         self._dialog.setFileMode(QFileDialog.FileMode.Directory)
         self._dialog.fileSelected.connect(self._openProject)
@@ -199,11 +178,17 @@ class MainWindow(QMainWindow):
         self._dialog.open()
 
     def _createProject(self):
+        self._closeProject()
+        self._clear()
+
         if app.createProject(self._dialog.projectLocation()):
             self._recentFilesMenu.addRecentest(app.project.path)
             self._projectOpened()
 
     def _openProject(self, file):
+        self._closeProject()
+        self._clear()
+
         path = Path(file)
         try:
             app.openProject(path.resolve())
@@ -220,7 +205,30 @@ class MainWindow(QMainWindow):
             self.close()
 
     def _closeProject(self):
+        if app.project is None:
+            return True
+
+        if not self._stepManager.saveCurrentPage():
+            return False
+
+        if app.db.isModified():
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle(self.tr('Save Changed'))
+            msgBox.setText(self.tr('Do you want save your changes?'))
+            msgBox.setStandardButtons(QMessageBox.StandardButton.Ok
+                                      | QMessageBox.StandardButton.Discard
+                                      | QMessageBox.StandardButton.Cancel)
+            msgBox.setDefaultButton(QMessageBox.StandardButton.Ok)
+
+            result = msgBox.exec()
+            if result == QMessageBox.StandardButton.Ok:
+                app.project.save()
+            elif result == QMessageBox.StandardButton.Cancel:
+                return False
+
         app.closeProject()
+
+        return True
 
     def _changeScale(self):
         if app.settings.setScale(self._dialog.scale()):
@@ -244,8 +252,9 @@ class MainWindow(QMainWindow):
         self._geometryManager.load()
         self._stepManager.load()
 
-    def _projectClosed(self):
+    def _clear(self):
         self.setWindowTitle(f'{app.properties.fullName}')
-
-        self._startDialog.setRecents(app.settings.getRecentProjects())
-        self._startDialog.open()
+        self._displayControl.clear()
+        self._consoleView.clear()
+        self._geometryManager = None
+        self._meshManager = None
