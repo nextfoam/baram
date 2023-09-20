@@ -4,9 +4,10 @@
 import qasync
 from PySide6.QtWidgets import QMessageBox
 
+from libbaram.run import runUtility
+from libbaram.utils import rmtree
+
 from baramSnappy.app import app
-from baramSnappy.libbaram.run import runUtility
-from baramSnappy.libbaram.utils import rmtree
 from baramSnappy.openfoam.system.block_mesh_dict import BlockMeshDict
 from baramSnappy.db.simple_schema import DBError
 from baramSnappy.view.widgets.progress_dialog_simple import ProgressDialogSimple

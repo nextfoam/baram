@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-from pathlib import Path
 from typing import Optional
 
 from PySide6.QtCore import QObject, QTranslator, QCoreApplication, QLocale
@@ -13,12 +11,6 @@ from resources import resource
 from baramSnappy.settings.app_settings import AppSettings
 from baramSnappy.settings.project_manager import ProjectManager
 from baramSnappy.openfoam.file_system import FileSystem
-
-
-if getattr(sys, 'frozen', False):
-    APP_PATH = Path(sys.executable).parent.resolve()
-else:
-    APP_PATH = Path(__file__).parent.resolve()
 
 
 class App(QObject):
@@ -93,7 +85,7 @@ class App(QObject):
         self._project = self._projectManager.createProject(path)
         self._settings.updateRecents(self._project.path, True)
         self._fileSystem = FileSystem(self._project.path)
-        self._fileSystem.createCase(APP_PATH / 'resources/openfoam/case')
+        self._fileSystem.createCase(resource.file('openfoam/case'))
 
         return self._project
 

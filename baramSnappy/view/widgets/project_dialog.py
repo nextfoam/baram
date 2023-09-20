@@ -6,8 +6,9 @@ from pathlib import Path
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QMessageBox
 
+from libbaram.utils import getFit
+
 from baramSnappy.app import app
-from baramSnappy.libbaram.utils import getFit
 from .project_dialog_ui import Ui_ProjectSelector
 from .project_widget import ProjectWidget
 

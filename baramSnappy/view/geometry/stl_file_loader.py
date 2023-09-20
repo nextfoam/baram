@@ -3,9 +3,10 @@
 from vtkmodules.vtkFiltersModeling import vtkSelectEnclosedPoints
 from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData
 
+from libbaram.run import runUtility, OpenFOAMError
+
 from baramSnappy.app import app
 from baramSnappy.openfoam.system.surface_patch_dict import SurfacePatchDict, SurfacePatchData
-from baramSnappy.openfoam.run import runUtility, OpenFOAMError
 from baramSnappy.rendering.vtk_loader import loadSTLFile
 
 

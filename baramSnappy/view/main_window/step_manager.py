@@ -3,9 +3,10 @@
 
 from PySide6.QtCore import QObject, Signal
 
+from libbaram.utils import rmtree
+
 from baramSnappy.app import app
 from baramSnappy.db.configurations_schema import Step
-from baramSnappy.libbaram.utils import rmtree
 from baramSnappy.view.step_page import StepPage
 from baramSnappy.view.geometry.geometry_page import GeometryPage
 from baramSnappy.view.base_grid.base_grid_page import BaseGridPage
@@ -76,7 +77,7 @@ class StepManager(QObject):
 
         for s in range(step + 1, Step.LAST_STEP + 1):
             self._navigation.disableStep(s)
-            self._pages[s].clearResult()
+            self._pages[Step(s)].clearResult()
 
         for t in app.fileSystem.times():
             if float(t) > self._pages[Step.LAST_STEP].OUTPUT_TIME:
@@ -140,7 +141,7 @@ class StepManager(QObject):
 
         for step in range(currentStep + 1, self._openedStep + 1):
             self._navigation.disableStep(step)
-            self._pages[step].clearResult()
+            self._pages[Step(step)].clearResult()
 
         self._setOpendedStep(currentStep)
 

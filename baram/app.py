@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
 from pathlib import Path
 from typing import Optional
 
@@ -10,12 +9,6 @@ from PySide6.QtWidgets import QApplication
 
 from resources import resource
 from baram.coredb.app_settings import AppSettings
-
-
-if getattr(sys, 'frozen', False):
-    APP_PATH = Path(sys.executable).parent.resolve()
-else:
-    APP_PATH = Path(__file__).parent.parent.resolve()
 
 
 class App(QObject):

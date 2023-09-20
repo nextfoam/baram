@@ -29,7 +29,6 @@ from baram.openfoam.boundary_conditions.nut import Nut
 from baram.openfoam.boundary_conditions.nuTilda import NuTilda
 from baram.openfoam.boundary_conditions.alphat import Alphat
 from baram.openfoam.boundary_conditions.alpha import Alpha
-from baram.openfoam.run import runUtility
 from baram.openfoam.system.fv_solution import FvSolution
 from baram.openfoam.system.control_dict import ControlDict
 from baram.openfoam.system.fv_schemes import FvSchemes
@@ -38,8 +37,8 @@ from baram.openfoam.system.decomposePar_dict import DecomposeParDict
 from baram.openfoam.system.set_fields_dict import SetFieldsDict
 from baram.openfoam.polymesh.boundary import Boundary
 from baram.openfoam.file_system import FileSystem
-from baram.libbaram import utils
-
+from libbaram import utils
+from libbaram.run import runUtility
 
 logger = logging.getLogger(__name__)
 

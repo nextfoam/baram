@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import os
 import platform
 import subprocess
+import sys
+
 import psutil
 from pathlib import Path
 import asyncio
 
 from baram.openfoam import parallel
 from baram.openfoam.parallel import ParallelType
-from baram import app
 
 # Solver Directory Structure
 #
@@ -25,9 +27,14 @@ from baram import app
 #         etc/ : OpenFOAM system 'etc'
 #         tlib/ : Third-Party Library, only for Linux and macOS
 
+if getattr(sys, 'frozen', False):
+    APP_PATH = Path(sys.executable).parent.resolve()
+else:
+    APP_PATH = Path(__file__).parent.parent.resolve()
+
 MPICMD = 'mpirun'
 
-OPENFOAM = app.APP_PATH / 'solvers' / 'openfoam'
+OPENFOAM = APP_PATH / 'solvers' / 'openfoam'
 
 creationflags = 0
 startupinfo = None
@@ -39,7 +46,7 @@ WM_PROJECT_DIR = str(OPENFOAM)
 
 if platform.system() == 'Windows':
     MPICMD = 'mpiexec'
-    MINGW = app.APP_PATH / 'solvers' / 'mingw64'
+    MINGW = APP_PATH / 'solvers' / 'mingw64'
     library = str(OPENFOAM/'lib') + os.pathsep \
               + str(OPENFOAM/'lib'/'msmpi') + os.pathsep \
               + str(MINGW/'bin') + os.pathsep \
@@ -227,3 +234,8 @@ async def runParallelUtility(program: str, *args, np: int = 1, cwd: Path = None,
 
 def hasUtility(program: str):
     return (OPENFOAM / 'bin' / program).is_file()
+
+
+class OpenFOAMError(Exception):
+    def __init__(self, returncode, message):
+        super().__init__(returncode, message)

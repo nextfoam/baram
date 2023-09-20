@@ -4,10 +4,11 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QFileDialog, QMessageBox
 
+from libbaram.utils import getFit
+
 from baram.app import app
 from baram.coredb.app_settings import AppSettings
 from baram.coredb.project_settings import ProjectSettings
-from baram.libbaram.utils import getFit
 from .project_selector_ui import Ui_ProjectSelector
 from .project_widget import ProjectWidget
 

@@ -13,16 +13,17 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QThreadPool, QEvent, QTimer
 
+from libbaram.run import hasUtility
+from libbaram.utils import getFit
+
 from baram.app import app
 from baram.coredb.project import Project, SolverStatus
 from baram.coredb.app_settings import AppSettings
 from baram.coredb import coredb
-from baram.libbaram.utils import getFit
 from baram.mesh.mesh_manager import MeshManager, MeshType
 from baram.openfoam.file_system import FileSystem
 from baram.openfoam.case_generator import CaseGenerator
 from baram.openfoam.polymesh.polymesh_loader import PolyMeshLoader
-from baram.openfoam.run import hasUtility
 from baram.view.setup.general.general_page import GeneralPage
 from baram.view.setup.materials.material_page import MaterialPage
 from baram.view.setup.models.models_page import ModelsPage

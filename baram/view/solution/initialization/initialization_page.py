@@ -5,6 +5,8 @@ import qasync
 
 from PySide6.QtWidgets import QMessageBox
 
+from libbaram.run import runParallelUtility
+
 from baram.app import app
 from baram.coredb import coredb
 from baram.coredb.project import Project, SolverStatus
@@ -12,7 +14,6 @@ from baram.coredb.region_db import DEFAULT_REGION_NAME
 from baram.openfoam import parallel
 from baram.openfoam.case_generator import CaseGenerator
 from baram.openfoam.file_system import FileSystem
-from baram.openfoam.run import runParallelUtility
 from baram.view.widgets.progress_dialog_simple import ProgressDialogSimple
 from baram.view.widgets.content_page import ContentPage
 from .initialization_page_ui import Ui_InitializationPage

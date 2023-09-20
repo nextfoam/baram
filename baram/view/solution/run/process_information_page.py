@@ -7,10 +7,11 @@ import logging
 
 from PySide6.QtWidgets import QMessageBox
 
+from libbaram.run import launchSolver
+
 from baram.coredb import coredb
 from baram.coredb.project import Project, SolverStatus
 from baram.openfoam import parallel
-from baram.openfoam.run import launchSolver
 from baram.openfoam.case_generator import CaseGenerator
 from baram.openfoam.system.fv_solution import FvSolution
 from baram.openfoam.system.control_dict import ControlDict

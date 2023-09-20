@@ -6,7 +6,8 @@ import os
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 
-from baram.libbaram import process
+from libbaram import process
+
 from .project_widget_ui import Ui_ProjectWidget
 
 

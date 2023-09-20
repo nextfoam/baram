@@ -3,8 +3,9 @@
 
 from PySide6.QtCore import QObject
 
+from libbaram.utils import rmtree
+
 from baramSnappy.app import app
-from baramSnappy.libbaram.utils import rmtree
 
 
 class StepPage(QObject):

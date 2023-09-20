@@ -7,11 +7,11 @@ import asyncio
 from PySide6.QtCore import QObject, Signal
 
 from baram.coredb import coredb
-from baram.libbaram import utils
+from libbaram import utils
 from baram.openfoam import parallel
 from baram.openfoam.file_system import FileSystem
 from baram.openfoam.polymesh.polymesh_loader import PolyMeshLoader
-from baram.openfoam.run import runUtility
+from libbaram.run import runUtility
 from baram.openfoam.system.decomposePar_dict import DecomposeParDict
 
 logger = logging.getLogger(__name__)

@@ -7,8 +7,9 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
 from PySide6.QtCore import Signal, QEvent
 from filelock import Timeout
 
+from libbaram.utils import getFit
+
 from baramSnappy.app import app
-from baramSnappy.libbaram.utils import getFit
 from baramSnappy.view.display_control.display_control import DisplayControl
 from baramSnappy.view.widgets.project_dialog import ProjectDialog
 from baramSnappy.view.widgets.new_project_dialog import NewProjectDialog

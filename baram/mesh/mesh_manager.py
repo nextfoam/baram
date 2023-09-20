@@ -7,12 +7,12 @@ import qasync
 from enum import Enum, auto
 from pathlib import Path
 
-from baram.coredb import coredb
+from baram.openfoam import parallel
 from baram.openfoam.redistribution_task import RedistributionTask
-from baram.openfoam.run import runUtility, runParallelUtility
+from libbaram.run import runUtility, runParallelUtility
 from baram.openfoam.file_system import FileSystem
 from baram.openfoam.polymesh.polymesh_loader import PolyMeshLoader
-from baram.libbaram.process import Processor
+from libbaram.process import Processor
 from baram.view.widgets.progress_dialog_simple import ProgressDialogSimple
 
 
@@ -48,7 +48,7 @@ class MeshManager(Processor):
 
     @qasync.asyncSlot()
     async def scale(self, x, y, z):
-        numCores = int(coredb.CoreDB().getValue('.//runCalculation/parallel/numberOfCores'))
+        numCores = parallel.getNP()
         caseRoot = FileSystem.caseRoot()
 
         self._proc = await runParallelUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
@@ -57,7 +57,7 @@ class MeshManager(Processor):
 
     @qasync.asyncSlot()
     async def translate(self, x, y, z):
-        numCores = int(coredb.CoreDB().getValue('.//runCalculation/parallel/numberOfCores'))
+        numCores = parallel.getNP()
         caseRoot = FileSystem.caseRoot()
 
         self._proc = await runParallelUtility('transformPoints', '-allRegions', '-translate', f'({x} {y} {z})',
@@ -66,7 +66,7 @@ class MeshManager(Processor):
 
     @qasync.asyncSlot()
     async def rotate(self, origin, axis, angle):
-        numCores = int(coredb.CoreDB().getValue('.//runCalculation/parallel/numberOfCores'))
+        numCores = parallel.getNP()
         caseRoot = FileSystem.caseRoot()
 
         self._proc = await runParallelUtility('transformPoints', '-allRegions',

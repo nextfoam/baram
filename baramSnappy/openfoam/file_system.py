@@ -7,7 +7,7 @@ from pathlib import Path
 
 import asyncio
 
-from baramSnappy.libbaram import utils
+from libbaram import utils
 
 
 def makeDir(parent, directory):

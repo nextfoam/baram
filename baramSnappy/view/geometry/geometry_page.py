@@ -5,9 +5,10 @@ import qasync
 from PySide6.QtWidgets import QMessageBox, QMenu, QAbstractItemView
 from PySide6.QtCore import Signal
 
+from libbaram.run import OpenFOAMError
+
 from baramSnappy.app import app
 from baramSnappy.db.configurations_schema import CFDType, Shape, GeometryType
-from baramSnappy.openfoam.run import OpenFOAMError
 from baramSnappy.view.step_page import StepPage
 from .geometry_add_dialog import GeometryAddDialog
 from .stl_file_loader import STLFileLoader

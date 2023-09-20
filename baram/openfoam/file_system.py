@@ -9,7 +9,7 @@ import re
 import asyncio
 
 from baram.coredb.project import Project
-from baram.libbaram import utils
+from libbaram import utils
 
 
 class FileLoadingError(Exception):

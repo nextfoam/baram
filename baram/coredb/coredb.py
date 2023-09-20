@@ -297,7 +297,7 @@ class _CoreDB(object):
         elif schema.type.local_name == 'inputNumberListType':
             numbers = value.split()
             # To check if the strings in value are valid numbers
-            # 'ValueError" exception is raised if invalid number found
+            # 'ValueError' exception is raised if invalid number found
             try:
                 [float(n) for n in numbers]
             except ValueError:

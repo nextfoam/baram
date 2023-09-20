@@ -8,12 +8,13 @@ from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFe
 from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
 from PySide6.QtWidgets import QMessageBox
 
+from libbaram.run import runUtility
+from libbaram.process import Processor, ProcessError
+
 from baramSnappy.app import app
 from baramSnappy.db.configurations_schema import GeometryType, Shape, CFDType
 from baramSnappy.db.simple_schema import DBError
 from baramSnappy.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
-from baramSnappy.libbaram.run import runUtility
-from baramSnappy.libbaram.process import Processor, ProcessError
 from baramSnappy.view.step_page import StepPage
 from baramSnappy.view.widgets.progress_dialog_simple import ProgressDialogSimple
 from baramSnappy.view.widgets.list_table import ListItemWithButtons

@@ -9,7 +9,7 @@ import yaml
 from PySide6.QtCore import QObject, Signal, QTimer
 from pathlib import Path
 
-from baram.libbaram import process
+from libbaram import process
 from baram.coredb import coredb
 from .project_settings import ProjectSettings, ProjectSettingKey
 from .app_settings import AppSettings
