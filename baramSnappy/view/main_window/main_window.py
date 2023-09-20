@@ -254,6 +254,7 @@ class MainWindow(QMainWindow):
 
     def _clear(self):
         self.setWindowTitle(f'{app.properties.fullName}')
+        self._renderingTool.clear()
         self._displayControl.clear()
         self._consoleView.clear()
         self._geometryManager = None

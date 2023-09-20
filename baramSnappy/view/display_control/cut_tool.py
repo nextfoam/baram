@@ -109,17 +109,19 @@ class CutTool(QObject):
     def cutters(self):
         return self._cutters
 
+    def isVisible(self):
+        return self._widget.isVisible()
+
     def hide(self):
+        for cut in self._cuts.values():
+            cut.disable()
+        self._apply()
+
         self._handleOff()
         self._widget.hide()
-        app.window.geometryManager.cut(None)
-        app.window.meshManager.cut(None)
 
     def show(self):
         self._header.setChecked(False)
-        for cut in self._cuts.values():
-            cut.disable()
-
         bounds = app.window.geometryManager.getBounds()
         self._planeWidget.setBounds(bounds)
         self._movePlaneWidget(bounds.center())
@@ -188,5 +190,7 @@ class CutTool(QObject):
                 # if cut.sliceOnly():
                 #     self._cutters.append(Cutter(plane, not cut.invert()))
 
-        app.window.geometryManager.cut(self._cutters)
-        app.window.meshManager.cut(self._cutters)
+        if app.window.geometryManager:
+            app.window.geometryManager.cut(self._cutters)
+        if app.window.meshManager:
+            app.window.meshManager.cut(self._cutters)

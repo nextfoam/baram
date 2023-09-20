@@ -42,7 +42,7 @@ class StepControlButtons:
 
 
 class StepManager(QObject):
-    openedStepChanged = Signal(Step, Step)
+    openedStepChanged = Signal(Step)
 
     def __init__(self, navigation, ui):
         super().__init__()
@@ -114,7 +114,7 @@ class StepManager(QObject):
         db.setValue('step', step)
         app.db.commit(db)
 
-        self.openedStepChanged.emit(step, prev)
+        self.openedStepChanged.emit(step)
 
     def _open(self, step):
         self._pages[step].open()

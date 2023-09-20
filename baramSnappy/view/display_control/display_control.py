@@ -93,7 +93,6 @@ class DisplayControl(QObject):
 
         self._items = {}
         self._selectedItems = None
-        self._dialog = None
         self._menu = ContextMenu(self._list)
 
         self._cutTool = CutTool(ui)
@@ -138,6 +137,7 @@ class DisplayControl(QObject):
             self._view.removeActor(item.actorInfo().actor())
             del self._items[str(actorInfo.id())]
             del item
+
     def hide(self, actorInfo):
         item = self._items[actorInfo.id()]
         self._view.removeActor(item.actorInfo().actor())
@@ -149,17 +149,18 @@ class DisplayControl(QObject):
     def fitView(self):
         self._view.fitCamera()
 
-    def openedStepChanged(self, step, prev):
-        newCutStatus = step == Step.GEOMETRY.value or step == Step.REGION.value
-        prevCutStatus = prev is None or prev == Step.GEOMETRY.value or prev == Step.REGION.value
-
-        if newCutStatus == prevCutStatus:
-            return
-
-        if newCutStatus:
+    def openedStepChanged(self, step):
+        if step == Step.GEOMETRY.value or step == Step.REGION.value:
             self._cutTool.hide()
-        else:
+        elif not self._cutTool.isVisible():
             self._cutTool.show()
+
+    def clear(self):
+        self._cutTool.hide()
+        self._list.clear()
+        self._view.clear()
+        self._items = {}
+        self._selectedItems = None
 
     def _connectSignalsSlots(self):
         self._list.customContextMenuRequested.connect(self._showContextMenu)

@@ -4,7 +4,6 @@
 # A simple script to demonstrate the vtkCutter function
 
 import math
-from enum import Enum, auto
 from typing import Optional
 
 # noinspection PyUnresolvedReferences
@@ -27,14 +26,6 @@ from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vt
 Qt.MidButton = Qt.MiddleButton
 
 colors = vtkNamedColors()
-
-
-class DisplayMode(Enum):
-    DISPLAY_MODE_FEATURE        = 0
-    DISPLAY_MODE_POINTS         = auto()
-    DISPLAY_MODE_SURFACE        = auto()
-    DISPLAY_MODE_SURFACE_EDGE   = auto()
-    DISPLAY_MODE_WIREFRAME      = auto()
 
 
 class RenderWindowInteractor(QVTKRenderWindowInteractor):
@@ -119,6 +110,9 @@ class RenderingWidget(QWidget):
 
         return actor
 
+    def clear(self):
+        self._renderer.RemoveAllViewProps()
+
     def _turnCamera(self, orientation: (float, float, float), up: (float, float, float)):
         camera = self._renderer.GetActiveCamera()
         d = camera.GetDistance()
@@ -175,7 +169,7 @@ class RenderingWidget(QWidget):
             self._hideCubeAxes()
         self._widget.Render()
 
-    def getBounds(self):
+    def _getBounds(self):
         if self._originActor is not None:
             self._originActor.SetVisibility(False)
 
@@ -191,7 +185,7 @@ class RenderingWidget(QWidget):
             return
 
         self._cubeAxesActor = vtkCubeAxesActor()
-        self._cubeAxesActor.SetBounds(self.getBounds())
+        self._cubeAxesActor.SetBounds(self._getBounds())
         self._cubeAxesActor.SetScreenSize(12)
         self._cubeAxesActor.SetCamera(self._renderer.GetActiveCamera())
 
