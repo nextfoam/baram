@@ -9,6 +9,7 @@ from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonCore import VTK_UNSTRUCTURED_GRID
 from vtkmodules.vtkFiltersExtraction import vtkExtractPolyDataGeometry, vtkExtractGeometry
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor
+from vtkmodules.vtkCommonColor import vtkNamedColors
 
 
 class DisplayMode(Enum):
@@ -263,11 +264,13 @@ class ActorInfo(QObject):
         self._displayModeApplicator[self._properties.displayMode]()
 
     def _applyWireframeMode(self):
-        self._actor.GetProperty().SetRepresentationToWireframe()
+        if not self._properties.highlighted:
+            self._actor.GetProperty().SetRepresentationToWireframe()
 
     def _applySurfaceMode(self):
-        self._actor.GetProperty().SetRepresentationToSurface()
-        self._actor.GetProperty().EdgeVisibilityOff()
+        if not self._properties.highlighted:
+            self._actor.GetProperty().SetRepresentationToSurface()
+            self._actor.GetProperty().EdgeVisibilityOff()
 
     def _applySurfaceEdgeMode(self):
         self._actor.GetProperty().SetRepresentationToSurface()
@@ -281,6 +284,12 @@ class ActorInfo(QObject):
         # print(self._actor.GetProperty().GetSpecularPower())
         # print(self._actor.GetProperty().GetAmbient())
         if self._properties.highlighted:
+            self._applySurfaceEdgeMode()
             self._actor.GetProperty().SetDiffuse(0.6)
+            self._actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Magenta'))
+            self._actor.GetProperty().SetLineWidth(2)
         else:
+            self._applyDisplayMode()
             self._actor.GetProperty().SetDiffuse(0.3)
+            self._actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Gray'))
+            self._actor.GetProperty().SetLineWidth(1)
