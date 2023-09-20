@@ -183,5 +183,7 @@ class ChartWidget(QWidget):
 
         else:
             margin = (maxY - minY) * SIDE_MARGIN
+            if margin < sys.float_info.epsilon:
+                margin = 1
 
             self._axes.set_ylim([minY-margin, maxY+margin])
