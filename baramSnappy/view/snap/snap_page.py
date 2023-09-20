@@ -97,7 +97,7 @@ class SnapPage(StepPage):
 
             if app.db.elementCount('region') > 1:
                 TopoSetDict().build(TopoSetDict.Mode.CREATE_REGIONS).write()
-                proc = await runUtility('toposet', cwd=app.fileSystem.caseRoot(),
+                proc = await runUtility('topoSet', cwd=app.fileSystem.caseRoot(),
                                         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                 processor = Processor(proc)
                 processor.outputLogged.connect(console.append)
