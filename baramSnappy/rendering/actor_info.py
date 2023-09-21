@@ -94,6 +94,9 @@ class ActorSource:
     def dataSet(self):
         return self._dataSet
 
+    def getBounds(self):
+        return self._dataSet.GetBounds()
+
     def cut(self, cutters):
         dataSet = self._dataSet
         for c in cutters:
@@ -159,7 +162,7 @@ class ActorInfo(QObject):
         self._actor.SetObjectName(self._id)
 
         prop = self._actor.GetProperty()
-        self._properties = Properties(self._actor.GetVisibility(),
+        self._properties = Properties(bool(self._actor.GetVisibility()),
                                            prop.GetOpacity(),
                                            QColor.fromRgbF(*prop.GetColor()),
                                            DisplayMode.SURFACE,
@@ -190,7 +193,7 @@ class ActorInfo(QObject):
         return self._properties
 
     def bounds(self):
-        return Bounds(*self._actor.GetBounds())
+        return Bounds(*self._source.getBounds())
 
     def isVisible(self):
         return self._properties.visibility
