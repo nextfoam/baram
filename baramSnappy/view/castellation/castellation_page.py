@@ -254,6 +254,7 @@ class CastellationPage(StepPage):
             edges.SetInputData(pd)
             edges.SetNonManifoldEdges(app.db.getValue('castellation/vtkNonManifoldEdges'))
             edges.SetBoundaryEdges(app.db.getValue('castellation/vtkBoundaryEdges'))
+            edges.SetFeatureAngle(float(app.db.getValue('castellation/resolveFeatureAngle')))
             edges.Update()
 
             writer = vtkOBJWriter()
