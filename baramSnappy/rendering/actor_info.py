@@ -53,6 +53,23 @@ class Bounds:
         return center(self.xMin, self.xMax), center(self.yMin, self.yMax), center(self.zMin, self.zMax)
 
 
+@dataclass
+class Properties:
+    visibility: bool
+    opacity: float
+    color: QColor
+    displayMode: DisplayMode
+    cutEnabled: bool
+    highlighted: bool
+
+    def merge(self, properties):
+        self.visibility = properties.visibility if properties.visibility == self.visibility else None
+        self.opacity = properties.opacity if properties.opacity == self.opacity else None
+        self.color = properties.color if properties.color == self.color else None
+        self.displayMode = properties.displayMode if properties.displayMode == self.displayMode else None
+        self.cutEnabled = properties.cutEnabled if properties.cutEnabled == self.cutEnabled else None
+
+
 class ActorType(Enum):
     GEOMETRY = auto()
     BOUNDARY = auto()
@@ -113,22 +130,6 @@ class PolyData(ActorSource):
 
 
 class ActorInfo(QObject):
-    @dataclass
-    class Properties:
-        visibility: bool
-        opacity: float
-        color: QColor
-        displayMode: DisplayMode
-        cutEnabled: bool
-        highlighted: bool
-
-        def merge(self, properties):
-            self.visibility = properties.visibility if properties.visibility == self.visibility else None
-            self.opacity = properties.opacity if properties.opacity == self.opacity else None
-            self.color = properties.color if properties.color == self.color else None
-            self.displayMode = properties.displayMode if properties.displayMode == self.displayMode else None
-            self.cutEnabled = properties.cutEnabled if properties.cutEnabled == self.cutEnabled else None
-
     sourceChanged = Signal(str)
     nameChanged = Signal(str)
 
@@ -141,7 +142,6 @@ class ActorInfo(QObject):
         self._source = None
         self._mapper = None
         self._actor = vtkActor()
-        self._properties = None
 
         if dataSet.GetDataObjectType() == VTK_UNSTRUCTURED_GRID:
             self._source = UnstructuredGrid(dataSet)
@@ -159,7 +159,7 @@ class ActorInfo(QObject):
         self._actor.SetObjectName(self._id)
 
         prop = self._actor.GetProperty()
-        self._properties = self.Properties(self._actor.GetVisibility(),
+        self._properties = Properties(self._actor.GetVisibility(),
                                            prop.GetOpacity(),
                                            QColor.fromRgbF(*prop.GetColor()),
                                            DisplayMode.SURFACE,
