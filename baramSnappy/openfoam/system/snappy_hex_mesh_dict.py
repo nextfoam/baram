@@ -16,13 +16,9 @@ class SnappyHexMeshDict(DictionaryFile):
         self._snap = snap
         self._addLayers = addLayers
 
-        self._geometries = None
-
     def build(self):
         if self._data is not None:
             return self
-
-        self._geometries = app.db.getElements('geometry')
 
         self._data = {
             'castellatedMesh': 'true' if self._casterllationMesh else 'false',
@@ -95,9 +91,10 @@ class SnappyHexMeshDict(DictionaryFile):
     def _constructGeometries(self):
         data = {}
 
-        for gId, geometry in self._geometries.items():
+        geometries = app.db.getElements('geometry')
+        for gId, geometry in geometries.items():
             if geometry['cfdType'] != CFDType.NONE.value:
-                volume = self._geometries[geometry['volume']] if geometry['volume'] else geometry
+                volume = geometries[geometry['volume']] if geometry['volume'] else geometry
                 shape = geometry['shape']
 
                 if shape == Shape.TRI_SURFACE_MESH.value:
@@ -170,24 +167,17 @@ class SnappyHexMeshDict(DictionaryFile):
         return data
 
     def _constructFeatures(self):
-        surfaces = {}
-        for geometry in app.db.getElements(
-                'geometry', lambda i, e: e['gType'] == GeometryType.SURFACE.value and e['castellationGroup'],
-                ['name', 'castellationGroup']).values():
-            group = geometry['castellationGroup']
-            if group in surfaces:
-                surfaces[group].append(geometry)
-            else:
-                surfaces[group] = [geometry]
-
         data = []
-        for group, refinement in app.db.getElements('castellation/refinementSurfaces').items():
-            if level := int(refinement['featureEdgeRefinementLevel']):
-                for surface in surfaces[group]:
-                    data.append({
-                        'file': surface['name'] + '.obj',
-                        'levels': [[0.01, level]]
-                    })
+
+        refinements = app.db.getElements('castellation/refinementSurfaces')
+        for surface in app.db.getElements(
+                'geometry', lambda i, e: e['gType'] == GeometryType.SURFACE.value,
+                ['name', 'castellationGroup']).values():
+            group = surface['castellationGroup']
+            data.append({
+                'file': surface['name'] + '.obj',
+                'levels': [[0.01, refinements[group]['featureEdgeRefinementLevel'] if group in refinements else 0]]
+            })
 
         return data
 
@@ -205,7 +195,7 @@ class SnappyHexMeshDict(DictionaryFile):
         for surface in surfaces.values():
             level = 0
             if group := surface['castellationGroup']:
-                level = int(refinements[group]['surfaceRefinementLevel'])
+                level = refinements[group]['surfaceRefinementLevel']
 
             name = surface['name']
             cfdType = surface['cfdType']
