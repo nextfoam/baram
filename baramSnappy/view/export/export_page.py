@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+import shutil
 from pathlib import Path
 
 import qasync
@@ -39,20 +40,19 @@ class ExportPage(StepPage):
 
     def _connectSignalsSlots(self):
         self._ui.export_.clicked.connect(self._openFileDialog)
-        # self._ui.export_.clicked.connect(self._export)
-
-    def _openFileDialog(self):
-        self._dialog = QFileDialog(self._widget, self.tr('Select Location'))
-        self._dialog.setFileMode(QFileDialog.FileMode.Directory)
-        self._dialog.fileSelected.connect(self._pathSelected)
-        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        self._dialog.open()
-
-    def _pathSelected(self, path):
-        self._export(Path(path))
 
     @qasync.asyncSlot()
-    async def _export(self, path: Path):
+    async def _openFileDialog(self):
+        self._dialog = QFileDialog(self._widget, self.tr('Select Folder'))
+        self._dialog.setFileMode(QFileDialog.FileMode.Directory)
+        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        self._dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
+        self._dialog.fileSelected.connect(self._export)
+        self._dialog.open()
+
+    @qasync.asyncSlot()
+    async def _export(self, file):
+        path = Path(file)
         try:
             self.lock()
 
@@ -106,7 +106,7 @@ class ExportPage(StepPage):
             path.mkdir(parents=True, exist_ok=True)
             fileSystem = FileSystem(path)
             fileSystem.createBaramCase()
-            outputPath.rename(fileSystem.constantPath())
+            shutil.move(outputPath, fileSystem.constantPath())
             RegionProperties(fileSystem).build().write()
         except ProcessError as e:
             self.clearResult()
