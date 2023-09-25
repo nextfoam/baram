@@ -23,6 +23,8 @@ class RadioGroup(QObject):
             if currentValue == map[radio.objectName()]:
                 radio.setChecked(True)
 
+        self.valueChanged.emit(currentValue)
+
     def value(self):
         return self._values[self._group.checkedId()]
 

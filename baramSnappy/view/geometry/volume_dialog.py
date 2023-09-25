@@ -4,10 +4,11 @@
 from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import QEvent, QTimer
 
+from widgets.radio_group import RadioGroup
+
 from baramSnappy.app import app
 from baramSnappy.db.simple_schema import DBError
 from baramSnappy.db.configurations_schema import Shape, GeometryType, CFDType
-from baramSnappy.view.widgets.radio_group import RadioGroup
 from .volume_dialog_ui import Ui_VolumeDialog
 
 

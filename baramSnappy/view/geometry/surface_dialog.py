@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from PySide6.QtWidgets import QDialog, QMessageBox
+
+from widgets.radio_group import RadioGroup
 
 from baramSnappy.app import app
 from baramSnappy.db.simple_schema import DBError
 from baramSnappy.db.configurations_schema import CFDType
-from baramSnappy.view.widgets.radio_group import RadioGroup
 from .surface_dialog_ui import Ui_SurfaceDialog
 
 

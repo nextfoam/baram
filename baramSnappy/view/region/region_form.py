@@ -4,11 +4,12 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QMessageBox
 
+from widgets.radio_group import RadioGroup
+
 from baramSnappy.app import app
 from baramSnappy.db.configurations_schema import RegionType
 from baramSnappy.db.simple_schema import DBError
 from baramSnappy.rendering.point_widget import PointWidget
-from baramSnappy.view.widgets.radio_group import RadioGroup
 from .region_form_ui import Ui_RegionForm
 
 

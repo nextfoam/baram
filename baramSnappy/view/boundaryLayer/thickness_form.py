@@ -6,8 +6,9 @@ from enum import Enum
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QFormLayout
 
+from widgets.radio_group import RadioGroup
+
 from baramSnappy.db.configurations_schema import ThicknessModel
-from baramSnappy.view.widgets.radio_group import RadioGroup
 
 
 class ThicknessRow(Enum):
