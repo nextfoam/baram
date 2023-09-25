@@ -74,17 +74,17 @@ class RegionPage(StepPage):
         if not self._loaded:
             self._load()
 
-        app.window.meshManager.hide()
+        app.window.meshManager.unload()
 
     def deselected(self):
         self._form.cancel()
 
-    def clearResult(self):
-        return
-
     def removeForm(self, form):
         self._ui.regionList.layout().removeWidget(self._form)
         self._form.setOwner(None)
+
+    def _outputPath(self):
+        return None
 
     def _connectSignalsSlots(self):
         self._ui.regionArea.verticalScrollBar().rangeChanged.connect(self._focus)

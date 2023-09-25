@@ -5,12 +5,11 @@ import qasync
 from PySide6.QtWidgets import QMessageBox
 
 from libbaram.run import runUtility
-from libbaram.utils import rmtree
+from widgets.progress_dialog import ProgressDialog
 
 from baramSnappy.app import app
 from baramSnappy.openfoam.system.block_mesh_dict import BlockMeshDict
 from baramSnappy.db.simple_schema import DBError
-from baramSnappy.view.widgets.progress_dialog_simple import ProgressDialogSimple
 from baramSnappy.view.step_page import StepPage
 
 
@@ -41,11 +40,6 @@ class BaseGridPage(StepPage):
         self._updateControlButtons()
         self._updateMesh()
 
-    def clearResult(self):
-        path = app.fileSystem.polyMeshPath()
-        if path.exists():
-            rmtree(path)
-
     def save(self):
         try:
             db = app.db.checkout('baseGrid')
@@ -61,6 +55,9 @@ class BaseGridPage(StepPage):
             QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
 
             return False
+
+    def _outputPath(self):
+        return app.fileSystem.polyMeshPath()
 
     def _connectSignalsSlots(self):
         self._ui.numCellsX.editingFinished.connect(self._updateCellX)
@@ -106,7 +103,7 @@ class BaseGridPage(StepPage):
     async def _generate(self):
         self.save()
 
-        progressDialog = ProgressDialogSimple(self._widget, self.tr('Base Grid Generating'))
+        progressDialog = ProgressDialog(self._widget, self.tr('Base Grid Generating'))
         progressDialog.setLabelText(self.tr('Generating Block Mesh'))
         progressDialog.open()
 
@@ -138,4 +135,4 @@ class BaseGridPage(StepPage):
             self._setNextStepEnabled(False)
 
     def _showPreviousMesh(self):
-        app.window.meshManager.hide()
+        app.window.meshManager.unload()

@@ -83,8 +83,8 @@ class PolyMeshLoader(QObject):
         super().__init__()
 
         self._reader = vtkPOpenFOAMReader()
+        self._processorPath = foamFile.parent / 'processor0'
 
-        self._reader.SetCaseType(vtkPOpenFOAMReader.RECONSTRUCTED_CASE)
         self._reader.SetFileName(foamFile)
         self._reader.DecomposePolyhedraOn()
         self._reader.EnableAllCellArrays()
@@ -99,6 +99,11 @@ class PolyMeshLoader(QObject):
         self._reader.AddObserver(vtkCommand.ProgressEvent, self._readerProgressed)
 
     async def loadMesh(self, time):
+        if time > 0 and self._processorPath.is_dir():
+            self._reader.SetCaseType(vtkPOpenFOAMReader.DECOMPOSED_CASE)
+        else:
+            self._reader.SetCaseType(vtkPOpenFOAMReader.RECONSTRUCTED_CASE)
+
         self._reader.UpdateInformation()
         self._reader.SetTimeValue(time)
         self._reader.Modified()

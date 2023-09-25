@@ -8,15 +8,16 @@ from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFe
 from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
 from PySide6.QtWidgets import QMessageBox
 
-from libbaram.run import runUtility
+from libbaram.run import runParallelUtility
 from libbaram.process import Processor, ProcessError
+from widgets.progress_dialog import ProgressDialog
 
 from baramSnappy.app import app
 from baramSnappy.db.configurations_schema import GeometryType, Shape, CFDType
 from baramSnappy.db.simple_schema import DBError
+from baramSnappy.openfoam.redistribution_task import RedistributionTask
 from baramSnappy.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramSnappy.view.step_page import StepPage
-from baramSnappy.view.widgets.progress_dialog_simple import ProgressDialogSimple
 from baramSnappy.view.widgets.list_table import ListItemWithButtons
 from .surface_refinement_dialog import SurfaceRefinementDialog
 from .volume_refinement_dialog import VolumeRefinementDialog
@@ -161,7 +162,7 @@ class CastellationPage(StepPage):
             if not self.save():
                 return
 
-            progressDialog = ProgressDialogSimple(self._widget, self.tr('Castellation Refinement'))
+            progressDialog = ProgressDialog(self._widget, self.tr('Castellation Refinement'))
             progressDialog.setLabelText(self.tr('Updating Configurations'))
             progressDialog.open()
 
@@ -169,12 +170,22 @@ class CastellationPage(StepPage):
             self._writeGeometryFiles(progressDialog)
             SnappyHexMeshDict(castellationMesh=True).build().write()
 
+            numCores = app.project.parallelCores()
+            if numCores > 1:
+                progressDialog.setLabelText('Decomposing Case')
+
+                redistributionTask = RedistributionTask(app.fileSystem)
+                redistributionTask.progress.connect(progressDialog.setLabelText)
+
+                await redistributionTask.decompose(numCores)
+
             progressDialog.close()
 
             console = app.consoleView
             console.clear()
-            proc = await runUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
-                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            proc = await runParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
+                                            parallel=app.project.parallelEnvironment(),
+                                            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             processor = Processor(proc)
             processor.outputLogged.connect(console.append)
             processor.errorLogged.connect(console.appendError)

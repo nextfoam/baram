@@ -65,7 +65,7 @@ class GeometryPage(StepPage):
 
             self._loaded = True
 
-        app.window.meshManager.hide()
+        app.window.meshManager.unload()
 
     def _connectSignalsSlots(self):
         # self._list.itemDoubleClicked.connect(self._openEditDialog)

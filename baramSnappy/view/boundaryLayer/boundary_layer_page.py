@@ -5,14 +5,14 @@ import asyncio
 import qasync
 from PySide6.QtWidgets import QMessageBox
 
-from libbaram.run import runUtility
+from libbaram.run import runParallelUtility
 from libbaram.process import Processor, ProcessError
+from widgets.progress_dialog import ProgressDialog
 
 from baramSnappy.app import app
 from baramSnappy.db.simple_schema import DBError
 from baramSnappy.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramSnappy.view.step_page import StepPage
-from baramSnappy.view.widgets.progress_dialog_simple import ProgressDialogSimple
 from baramSnappy.view.widgets.list_table import ListItemWithButtons
 from .boundary_setting_dialog import BoundarySettingDialog
 from .boundary_layer_advanced_dialog import BoundaryLayerAdvancedDialog
@@ -157,7 +157,7 @@ class BoundaryLayerPage(StepPage):
             console.clear()
 
             if self._ui.boundaryLayerConfigurations.count():
-                progressDialog = ProgressDialogSimple(self._widget, self.tr('Boundary Layers Applying'))
+                progressDialog = ProgressDialog(self._widget, self.tr('Boundary Layers Applying'))
                 progressDialog.setLabelText(self.tr('Updating Configurations'))
                 progressDialog.open()
 
@@ -166,8 +166,9 @@ class BoundaryLayerPage(StepPage):
 
                 progressDialog.close()
 
-                proc = await runUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
-                                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                proc = await runParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
+                                                parallel=app.project.parallelEnvironment(),
+                                                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                 processor = Processor(proc)
                 processor.outputLogged.connect(console.append)
                 processor.errorLogged.connect(console.appendError)
@@ -180,7 +181,7 @@ class BoundaryLayerPage(StepPage):
                 # processor.errorLogged.connect(console.appendError)
                 # await processor.run()
             else:
-                app.fileSystem.timePath(self.OUTPUT_TIME).mkdir()
+                self.createOutputPath()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()

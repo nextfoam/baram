@@ -7,12 +7,17 @@ from pathlib import Path
 import yaml
 from filelock import FileLock
 
+from libbaram.mpi import ParallelEnvironment, ParallelType
+
 FORMAT_VERSION = 1
 
 
 class LocalSettingKey(Enum):
     FORMAT_VERSION = 'format_version'
     PATH = 'case_full_path'
+    PARALLEL_NP = 'parallel_np'
+    PARALLEL_TYPE = 'parallel_type'
+    PARALLEL_HOSTS = 'parallel_hosts'
 
 
 class LocalSettings:
@@ -34,6 +39,18 @@ class LocalSettings:
 
         return None
 
+    def parallelEnvironment(self):
+        return ParallelEnvironment(
+            self.get(LocalSettingKey.PARALLEL_NP, 1),
+            ParallelType[self.get(LocalSettingKey.PARALLEL_TYPE, ParallelType.CLUSTER.name)],
+            self.get(LocalSettingKey.PARALLEL_HOSTS, '')
+        )
+
+    def setParallelEnvironment(self, environment):
+        self.set(LocalSettingKey.PARALLEL_NP, environment.np()),
+        self.set(LocalSettingKey.PARALLEL_TYPE, environment.type().name),
+        self.set(LocalSettingKey.PARALLEL_HOSTS, environment.hosts())
+
     def acquireLock(self, timeout):
         self._lock = FileLock(self.path / 'case.lock')
         self._lock.acquire(timeout=timeout)
@@ -41,11 +58,11 @@ class LocalSettings:
     def releaseLock(self):
         self._lock.release()
 
-    def get(self, key):
+    def get(self, key, default=None):
         if self._settings and key.value in self._settings:
             return self._settings[key.value]
 
-        return None
+        return default
 
     def set(self, key, value):
         if self.get(key) != value:

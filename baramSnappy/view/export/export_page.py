@@ -8,15 +8,17 @@ from pathlib import Path
 import qasync
 from PySide6.QtWidgets import QMessageBox, QFileDialog
 
+from libbaram.openfoam.constants import Directory
 from libbaram.process import Processor, ProcessError
-from libbaram.run import runUtility
-from libbaram.utils import rmtree
+from libbaram.run import runParallelUtility
+from resources import resource
+from widgets.progress_dialog import ProgressDialog
 
 from baramSnappy.app import app
 from baramSnappy.openfoam.file_system import FileSystem
 from baramSnappy.openfoam.constant.region_properties import RegionProperties
+from baramSnappy.openfoam.redistribution_task import RedistributionTask
 from baramSnappy.openfoam.system.topo_set_dict import TopoSetDict
-from baramSnappy.view.widgets.progress_dialog_simple import ProgressDialogSimple
 from baramSnappy.view.step_page import StepPage
 
 
@@ -56,28 +58,34 @@ class ExportPage(StepPage):
         try:
             self.lock()
 
-            outputPath = app.fileSystem.timePath(self.OUTPUT_TIME)
-            if outputPath.exists():
-                rmtree(outputPath)
+            self.clearResult()
 
             console = app.consoleView
             console.clear()
 
+            fileSystem = app.fileSystem
+            parallel = app.project.parallelEnvironment()
+
             if app.db.elementCount('region') > 1:
-                proc = await runUtility('splitMeshRegions', '-cellZonesOnly', cwd=app.fileSystem.caseRoot(),
-                                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                proc = await runParallelUtility('splitMeshRegions', '-cellZonesOnly', cwd=fileSystem.caseRoot(),
+                                                parallel=parallel,
+                                                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                 processor = Processor(proc)
                 processor.outputLogged.connect(console.append)
                 processor.errorLogged.connect(console.appendError)
                 await processor.run()
 
-            if not outputPath.exists():
-                progressDialog = ProgressDialogSimple(self._widget, self.tr('Base Grid Generating'))
-                progressDialog.setLabelText(self.tr('Generating Block Mesh'))
+            if not fileSystem.timePathExists(self.OUTPUT_TIME, parallel.isParallelOn()):
+                progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
+                progressDialog.setLabelText(self.tr('Copying Files'))
                 progressDialog.open()
 
-                if not await app.fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME):
-                    await app.fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME)
+                if parallel.isParallelOn():
+                    for n in range(parallel.np()):
+                        if not await fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME, n):
+                            await fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME, n)
+                elif not await fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME):
+                    await fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME)
 
                 progressDialog.close()
 
@@ -86,8 +94,8 @@ class ExportPage(StepPage):
                 regions = app.db.getElements('region', None, ['name'])
                 if len(regions) == 1:
                     toposetDict.write()
-                    proc = await runUtility('topoSet', cwd=app.fileSystem.caseRoot(),
-                                            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                    proc = await runParallelUtility('topoSet', cwd=fileSystem.caseRoot(), parallel=parallel,
+                                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                     processor = Processor(proc)
                     processor.outputLogged.connect(console.append)
                     processor.errorLogged.connect(console.appendError)
@@ -95,19 +103,39 @@ class ExportPage(StepPage):
                 else:
                     for region in regions.values():
                         rname = region['name']
-                        toposetDict.writeByRegion(rname)
-                        proc = await runUtility('topoSet', '-region', rname, cwd=app.fileSystem.caseRoot(),
-                                                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                        toposetDict.setRegion(rname).write()
+                        proc = await runParallelUtility('topoSet', '-region', rname, cwd=fileSystem.caseRoot(),
+                                                        parallel=parallel,
+                                                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                         processor = Processor(proc)
                         processor.outputLogged.connect(console.append)
                         processor.errorLogged.connect(console.appendError)
                         await processor.run()
 
             path.mkdir(parents=True, exist_ok=True)
-            fileSystem = FileSystem(path)
-            fileSystem.createBaramCase()
-            shutil.move(outputPath, fileSystem.constantPath())
-            RegionProperties(fileSystem).build().write()
+            baramSystem = FileSystem(path)
+            baramSystem.createCase(resource.file('openfoam/case'))
+
+            if parallel.isParallelOn():
+                progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
+                progressDialog.setLabelText(self.tr('Copying Files'))
+                progressDialog.open()
+
+                for n in range(parallel.np()):
+                    p = baramSystem.processorPath(n, False)
+                    p.mkdir()
+                    shutil.move(fileSystem.timePath(self.OUTPUT_TIME, n), p / Directory.CONSTANT_DIRECTORY_NAME)
+
+                redistributionTask = RedistributionTask(baramSystem)
+                redistributionTask.progress.connect(progressDialog.setLabelText)
+
+                await redistributionTask.reconstruct()
+
+                progressDialog.close()
+            else:
+                shutil.move(self._outputPath(), baramSystem.constantPath())
+
+            RegionProperties(baramSystem.caseRoot()).build().write()
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),

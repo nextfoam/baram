@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
 from pathlib import Path
 
+from filelock import Timeout
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
 from PySide6.QtCore import Signal, QEvent
-from filelock import Timeout
 
 from libbaram.utils import getFit
+from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
+from widgets.progress_dialog import ProgressDialog
 
 from baramSnappy.app import app
+from baramSnappy.openfoam.redistribution_task import RedistributionTask
 from baramSnappy.view.display_control.display_control import DisplayControl
 from baramSnappy.view.widgets.project_dialog import ProjectDialog
 from baramSnappy.view.widgets.new_project_dialog import NewProjectDialog
@@ -127,6 +131,7 @@ class MainWindow(QMainWindow):
         self._ui.actionSave.triggered.connect(self._actionSave)
         self._ui.actionExit.triggered.connect(self.close)
         self._ui.actionParameters.triggered.connect(self._actionParameters)
+        self._ui.actionParallelEnvironment.triggered.connect(self._openParallelEnvironmentDialog)
         self._ui.actionScale.triggered.connect(self._actionScale)
         self._ui.actionLanguage.triggered.connect(self._actionLanguage)
         self._ui.actionAbout.triggered.connect(self._actionAbout)
@@ -162,6 +167,11 @@ class MainWindow(QMainWindow):
 
     def _actionParameters(self):
         self._dialog = MeshQualityParametersDialog(self)
+        self._dialog.open()
+
+    def _openParallelEnvironmentDialog(self):
+        self._dialog = ParallelEnvironmentDialog(self, app.project.parallelEnvironment())
+        self._dialog.accepted.connect(self._updateParallelEnvironment)
         self._dialog.open()
 
     def _actionScale(self):
@@ -230,6 +240,29 @@ class MainWindow(QMainWindow):
         app.closeProject()
 
         return True
+
+    @qasync.asyncSlot()
+    async def _updateParallelEnvironment(self):
+        environment = self._dialog.environment()
+
+        numCores = environment.np()
+        oldNumCores = app.project.parallelCores()
+
+        if numCores != oldNumCores:
+            progressDialog = ProgressDialog(self, self.tr('Case Redistribution'))
+
+            progressDialog.setLabelText('Redistributing Case')
+
+            redistributionTask = RedistributionTask(app.fileSystem)
+            redistributionTask.progress.connect(progressDialog.setLabelText)
+
+            progressDialog.open()
+
+            await redistributionTask.redistribute(numCores)
+
+            progressDialog.finish('Redistribution Done')
+
+        app.project.setParallelEnvironment(environment)
 
     def _changeScale(self):
         if app.settings.setScale(self._dialog.scale()):

@@ -6,6 +6,7 @@ from PySide6.QtCore import QObject
 from libbaram.utils import rmtree
 
 from baramSnappy.app import app
+from baramSnappy.openfoam.file_system import makeDir
 
 
 class StepPage(QObject):
@@ -17,7 +18,7 @@ class StepPage(QObject):
         self._widget = page
 
     def isNextStepAvailable(self):
-        return app.fileSystem.timePath(self.OUTPUT_TIME).exists()
+        return app.fileSystem.timePathExists(self.OUTPUT_TIME, app.project.parallelCores() > 1)
 
     def lock(self):
         self._widget.setEnabled(False)
@@ -38,12 +39,33 @@ class StepPage(QObject):
         return True
 
     def clearResult(self):
-        path = app.fileSystem.timePath(self.OUTPUT_TIME)
-        if path.exists():
+        path = self._outputPath()
+        if path and path.exists():
             rmtree(path)
 
-        for path in app.fileSystem.caseRoot().glob(f'processor*/{self.OUTPUT_TIME}'):
+        if self.OUTPUT_TIME < 1:
+            processorPaths = app.fileSystem.caseRoot().glob(f'processor*')
+        else:
+            processorPaths = app.fileSystem.caseRoot().glob(f'processor*/{self.OUTPUT_TIME}')
+
+        for path in processorPaths:
             rmtree(path)
+
+    def createOutputPath(self):
+        output = str(self.OUTPUT_TIME)
+
+        if app.project.parallelCores() > 1:
+            folders = app.fileSystem.processorFolders()
+            if folders:
+                for f in folders:
+                    makeDir(f, output, True)
+
+                return
+
+        makeDir(app.fileSystem.caseRoot(), output, True)
+
+    def _outputPath(self):
+        return app.fileSystem.timePath(self.OUTPUT_TIME)
 
     def _setNextStepEnabled(self, enabled):
         self._ui.next.setEnabled(enabled)

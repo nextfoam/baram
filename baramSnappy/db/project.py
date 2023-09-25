@@ -3,7 +3,7 @@
 
 from PySide6.QtCore import QObject
 
-from baramSnappy.settings.local_settings import LocalSettings
+from baramSnappy.settings.local_settings import LocalSettings, LocalSettingKey
 from baramSnappy.db.configurations import Configurations
 from baramSnappy.db.configurations_schema import schema
 
@@ -32,6 +32,15 @@ class Project(QObject):
 
     def setLocalSetting(self, key, value):
         self._settings.set(key, value)
+
+    def parallelEnvironment(self):
+        return self._settings.parallelEnvironment()
+
+    def setParallelEnvironment(self, environment):
+        self._settings.setParallelEnvironment(environment)
+
+    def parallelCores(self):
+        return self._settings.get(LocalSettingKey.PARALLEL_NP, 1)
 
     def save(self):
         self._db.save()
