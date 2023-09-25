@@ -5,7 +5,8 @@ import unittest
 
 from baram.coredb import coredb
 
-from baram.openfoam.system.decomposePar_dict import DecomposeParDict
+from libbaram.openfoam.dictionary.decomposePar_dict import DecomposeParDict
+
 
 class TestDecomposeParDict(unittest.TestCase):
     def setUp(self):
@@ -18,12 +19,11 @@ class TestDecomposeParDict(unittest.TestCase):
         coredb.destroy()
 
     def testNumberOfSubdomains(self):
-        self._db.setValue('.//runCalculation/parallel/numberOfCores', '4')
-        content = DecomposeParDict(self.region1).build().asDict()
+        content = DecomposeParDict(None, 4).build().asDict()
         self.assertEqual('4', content['numberOfSubdomains'])
 
     def testMethod(self):
-        content = DecomposeParDict(self.region1).build().asDict()
+        content = DecomposeParDict(None, 4).build().asDict()
         self.assertEqual('scotch', content['method'])
 
 

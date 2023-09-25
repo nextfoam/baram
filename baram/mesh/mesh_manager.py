@@ -7,13 +7,14 @@ import qasync
 from enum import Enum, auto
 from pathlib import Path
 
-from baram.openfoam import parallel
 from baram.openfoam.redistribution_task import RedistributionTask
 from libbaram.run import runUtility, runParallelUtility
+from widgets.progress_dialog import ProgressDialog
+
+from baram.openfoam import parallel
 from baram.openfoam.file_system import FileSystem
 from baram.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from libbaram.process import Processor
-from baram.view.widgets.progress_dialog_simple import ProgressDialogSimple
 
 
 logger = logging.getLogger(__name__)
@@ -48,35 +49,29 @@ class MeshManager(Processor):
 
     @qasync.asyncSlot()
     async def scale(self, x, y, z):
-        numCores = parallel.getNP()
         caseRoot = FileSystem.caseRoot()
-
         self._proc = await runParallelUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
-                                              '-case', caseRoot, np=numCores, cwd=caseRoot)
+                                              '-case', caseRoot, parallel=parallel.getEnvironment(), cwd=caseRoot)
         return await self._proc.wait()
 
     @qasync.asyncSlot()
     async def translate(self, x, y, z):
-        numCores = parallel.getNP()
         caseRoot = FileSystem.caseRoot()
-
         self._proc = await runParallelUtility('transformPoints', '-allRegions', '-translate', f'({x} {y} {z})',
-                                              '-case', caseRoot, np=numCores, cwd=caseRoot)
+                                              '-case', caseRoot, parallel=parallel.getEnvironment(), cwd=caseRoot)
         return await self._proc.wait()
 
     @qasync.asyncSlot()
     async def rotate(self, origin, axis, angle):
-        numCores = parallel.getNP()
         caseRoot = FileSystem.caseRoot()
-
         self._proc = await runParallelUtility('transformPoints', '-allRegions',
                                               '-origin', f'({" ".join(origin)})',
                                               '-rotate-angle', f'(({" ".join(axis)}) {angle})',
-                                              '-case', caseRoot, np=numCores, cwd=caseRoot)
+                                              '-case', caseRoot, parallel=parallel.getEnvironment(), cwd=caseRoot)
         return await self._proc.wait()
 
     async def importOpenFoamMesh(self, path: Path):
-        progressDialog = ProgressDialogSimple(self._window, self.tr('Mesh Loading'))
+        progressDialog = ProgressDialog(self._window, self.tr('Mesh Loading'))
         progressDialog.open()
 
         progressDialog.setLabelText(self.tr('Checking the mesh.'))
@@ -96,7 +91,7 @@ class MeshManager(Processor):
             progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
 
     async def importMesh(self, path, meshType):
-        progressDialog = ProgressDialogSimple(self._window, self.tr('Mesh Loading'))
+        progressDialog = ProgressDialog(self._window, self.tr('Mesh Loading'))
         progressDialog.open()
 
         progressDialog.setLabelText(self.tr('Converting the mesh.'))

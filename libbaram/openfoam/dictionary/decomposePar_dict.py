@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum
-from baram.openfoam import parallel
-from baram.openfoam.dictionary_file import DictionaryFile
+
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 
 class MethodType(Enum):
@@ -19,19 +19,25 @@ class MethodType(Enum):
 
 
 class DecomposeParDict(DictionaryFile):
-    def __init__(self, rname: str = ''):
-        super().__init__(self.systemLocation(rname), 'decomposeParDict')
+    def __init__(self, casePath, numCores):
+        super().__init__(casePath, self.systemLocation(), 'decomposeParDict')
 
+        self._numCores = numCores
+        self._rname = ''
+
+    def setRegion(self, rname):
         self._rname = rname
+        self._header['location'] = str(self.systemLocation(rname))
+
+        return self
 
     def build(self):
         if self._data is not None:
             return self
 
-        numCores = parallel.getNP()
-
         self._data = {
-            'numberOfSubdomains': numCores,
+            'numberOfSubdomains': self._numCores,
             'method': MethodType.SCOTCH.value
         }
+
         return self

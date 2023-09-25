@@ -15,6 +15,7 @@ from PySide6.QtCore import Qt, QThreadPool, QEvent, QTimer
 
 from libbaram.run import hasUtility
 from libbaram.utils import getFit
+from widgets.progress_dialog import ProgressDialog
 
 from baram.app import app
 from baram.coredb.project import Project, SolverStatus
@@ -23,7 +24,9 @@ from baram.coredb import coredb
 from baram.mesh.mesh_manager import MeshManager, MeshType
 from baram.openfoam.file_system import FileSystem
 from baram.openfoam.case_generator import CaseGenerator
+from baram.openfoam import parallel
 from baram.openfoam.polymesh.polymesh_loader import PolyMeshLoader
+from baram.openfoam.redistribution_task import RedistributionTask
 from baram.view.setup.general.general_page import GeneralPage
 from baram.view.setup.materials.material_page import MaterialPage
 from baram.view.setup.models.models_page import ModelsPage
@@ -35,7 +38,6 @@ from baram.view.solution.monitors.monitors_page import MonitorsPage
 from baram.view.solution.initialization.initialization_page import InitializationPage
 from baram.view.solution.run_conditions.run_conditions_page import RunConditionsPage
 from baram.view.solution.run.process_information_page import ProcessInformationPage
-from baram.view.widgets.progress_dialog_simple import ProgressDialogSimple
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
 from .menu.settings_scaling import SettingScalingDialog
@@ -49,7 +51,7 @@ from .menu.mesh.mesh_translate_dialog import MeshTranslateDialog
 from .menu.mesh.mesh_rotate_dialog import MeshRotateDialog
 from .menu.settings_language import SettingLanguageDialog
 from .menu.help.about_dialog import AboutDialog
-from .menu.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
+from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 logger = logging.getLogger(__name__)
 
@@ -296,27 +298,28 @@ class MainWindow(QMainWindow):
 
     def _openMeshScaleDialog(self):
         self._dialog = MeshScaleDialog(self, self._meshManager)
-        self._dialog.open()
         self._dialog.accepted.connect(self._scaleMesh)
+        self._dialog.open()
 
     def _openMeshTranslateDialog(self):
         self._dialog = MeshTranslateDialog(self, self._meshManager)
-        self._dialog.open()
         self._dialog.accepted.connect(self._translateMesh)
+        self._dialog.open()
 
     def _openMeshRotateDialog(self):
         self._dialog = MeshRotateDialog(self, self._meshManager)
-        self._dialog.open()
         self._dialog.accepted.connect(self._rotateMesh)
+        self._dialog.open()
 
     @qasync.asyncSlot()
     async def _openParallelEnvironmentDialog(self):
-        self._dialog = ParallelEnvironmentDialog(self)
+        self._dialog = ParallelEnvironmentDialog(self, parallel.getEnvironment())
+        self._dialog.accepted.connect(self._updateParallelEnvironment)
         self._dialog.open()
 
     @qasync.asyncSlot()
     async def _scaleMesh(self):
-        progressDialog = ProgressDialogSimple(self, self.tr('Mesh Scaling'))
+        progressDialog = ProgressDialog(self, self.tr('Mesh Scaling'))
         progressDialog.open()
 
         try:
@@ -336,7 +339,7 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _translateMesh(self):
-        progressDialog = ProgressDialogSimple(self, self.tr('Mesh Translation'))
+        progressDialog = ProgressDialog(self, self.tr('Mesh Translation'))
         progressDialog.open()
 
         try:
@@ -356,7 +359,7 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _rotateMesh(self):
-        progressDialog = ProgressDialogSimple(self, self.tr('Mesh Rotation'))
+        progressDialog = ProgressDialog(self, self.tr('Mesh Rotation'))
         progressDialog.open()
 
         try:
@@ -375,8 +378,29 @@ class MainWindow(QMainWindow):
             progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
 
     @qasync.asyncSlot()
+    async def _updateParallelEnvironment(self):
+        environment = self._dialog.environment()
+        numCores = environment.np()
+        oldNumCores = parallel.getNP()
+
+        parallel.setEnvironment(environment)
+
+        progressDialog = ProgressDialog(self, self.tr('Case Redistribution'))
+        progressDialog.open()
+
+        if numCores != oldNumCores:
+            progressDialog.setLabelText('Redistributing Case')
+
+            redistributionTask = RedistributionTask()
+            redistributionTask.progress.connect(progressDialog.setLabelText)
+
+            await redistributionTask.redistribute()
+
+        progressDialog.finish('Parallel Environment Applied.')
+
+    @qasync.asyncSlot()
     async def _loadVtkMesh(self):
-        progressDialog = ProgressDialogSimple(self, self.tr('Case Loading.'))
+        progressDialog = ProgressDialog(self, self.tr('Case Loading.'))
         progressDialog.open()
 
         loader = PolyMeshLoader()
@@ -476,7 +500,7 @@ class MainWindow(QMainWindow):
                     return
 
             if self._saveCurrentPage():
-                progressDialog = ProgressDialogSimple(self, self.tr('Save As'))
+                progressDialog = ProgressDialog(self, self.tr('Save As'))
                 progressDialog.open()
 
                 progressDialog.setLabelText(self.tr('Saving case'))

@@ -10,8 +10,7 @@ import psutil
 from pathlib import Path
 import asyncio
 
-from baram.openfoam import parallel
-from baram.openfoam.parallel import ParallelType
+from libbaram.mpi import ParallelEnvironment
 
 # Solver Directory Structure
 #
@@ -27,12 +26,13 @@ from baram.openfoam.parallel import ParallelType
 #         etc/ : OpenFOAM system 'etc'
 #         tlib/ : Third-Party Library, only for Linux and macOS
 
+
 if getattr(sys, 'frozen', False):
     APP_PATH = Path(sys.executable).parent.resolve()
 else:
     APP_PATH = Path(__file__).parent.parent.resolve()
 
-MPICMD = 'mpirun'
+# MPICMD = 'mpirun'
 
 OPENFOAM = APP_PATH / 'solvers' / 'openfoam'
 
@@ -45,7 +45,7 @@ STDERR_FILE_NAME = 'stderr.log'
 WM_PROJECT_DIR = str(OPENFOAM)
 
 if platform.system() == 'Windows':
-    MPICMD = 'mpiexec'
+    # MPICMD = 'mpiexec'
     MINGW = APP_PATH / 'solvers' / 'mingw64'
     library = str(OPENFOAM/'lib') + os.pathsep \
               + str(OPENFOAM/'lib'/'msmpi') + os.pathsep \
@@ -68,6 +68,8 @@ if platform.system() == 'Windows':
         'WM_PROJECT_DIR': WM_PROJECT_DIR,
         'PATH': PATH
     })
+
+    MPI_OPTIONS = ['-env', 'WM_PROJECT_DIR', WM_PROJECT_DIR, '-env', 'PATH', PATH]
 else:
     library = str(OPENFOAM/'lib') + os.pathsep \
               + str(OPENFOAM/'lib'/'sys-openmpi') + os.pathsep \
@@ -90,13 +92,12 @@ else:
         LIBRARY_PATH_NAME: LIBRARY_PATH
     })
 
+    MPI_OPTIONS = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME]
 
-def openSolverProcess(cmd, casePath, inParallel):
+
+def openSolverProcess(cmd, casePath):
     stdout = open(casePath / STDOUT_FILE_NAME, 'w')
     stderr = open(casePath / STDERR_FILE_NAME, 'w')
-
-    if inParallel:
-        cmd.append('-parallel')
 
     p = subprocess.Popen(cmd,
                          env=ENV, cwd=casePath,
@@ -110,34 +111,23 @@ def openSolverProcess(cmd, casePath, inParallel):
     return p
 
 
-def launchSolverOnWindow(solver: str, casePath: Path, np: int = 1) -> (int, float):
-    args = [MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
-    if parallel.getParallelType() == ParallelType.CLUSTER:
-        hosts = parallel.getHostfile()
-        path = casePath / 'hostfile'
-        with path.open(mode='w') as f:
-            f.write(hosts)
-        args[3:3] = ['-env', 'WM_PROJECT_DIR', WM_PROJECT_DIR, '-env', 'PATH', PATH, '-machinefile', str(path)]
-
-    process = openSolverProcess(args, casePath, np > 1)
+def launchSolverOnWindow(solver: str, casePath: Path, parallel: ParallelEnvironment) -> (int, float):
+    process = openSolverProcess(
+        parallel.makeCommand(OPENFOAM / 'bin' / solver, cwd=casePath, options=MPI_OPTIONS), casePath)
 
     ps = psutil.Process(pid=process.pid)
     return ps.pid, ps.create_time()
 
 
-def launchSolverOnLinux(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float):
-    args = [OPENFOAM/'bin'/'baramd', '-project', uuid, '-cmdline', MPICMD, '-np', str(np), OPENFOAM/'bin'/solver]
-    if parallel.getParallelType() == ParallelType.CLUSTER:
-        hosts = parallel.getHostfile()
-        path = casePath / 'hostfile'
-        with path.open(mode='w') as f:
-            f.write(hosts)
-        args[7:7] = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME, '-hostfile', str(path)]
+def launchSolverOnLinux(solver: str, casePath: Path, uuid, parallel: ParallelEnvironment) -> (int, float):
+    args = [OPENFOAM/'bin'/'baramd', '-project', uuid, '-cmdline']
+    args.extend(parallel.makeCommand(OPENFOAM / 'bin' / solver, cwd=casePath, options=MPI_OPTIONS))
 
-    process = openSolverProcess(args, casePath, np > 1)
+    process = openSolverProcess(args, casePath)
     process.wait()
 
-    processes = [p for p in psutil.process_iter(['pid', 'cmdline', 'create_time']) if (p.info['cmdline'] is not None) and (uuid in p.info['cmdline'])]
+    processes = [p for p in psutil.process_iter(['pid', 'cmdline', 'create_time'])
+                 if (p.info['cmdline'] is not None) and (uuid in p.info['cmdline'])]
     if processes:
         ps = max(processes, key=lambda p: p.create_time())
         return ps.pid, ps.create_time()
@@ -196,7 +186,8 @@ async def runUtility(program: str, *args, cwd=None, stdout=asyncio.subprocess.DE
     return proc
 
 
-async def runParallelUtility(program: str, *args, np: int = 1, cwd: Path = None, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
+async def runParallelUtility(program: str, *args, parallel: ParallelEnvironment, cwd: Path = None,
+                             stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
     global creationflags
     global startupinfo
 
@@ -207,27 +198,9 @@ async def runParallelUtility(program: str, *args, np: int = 1, cwd: Path = None,
             wShowWindow=subprocess.SW_HIDE
         )
 
-    if np > 1:
-        args = list(args)
-        args.append('-parallel')
-
-    cmdline = [MPICMD, '-np', str(np)]
-    if parallel.getParallelType() == ParallelType.CLUSTER:
-        hosts = parallel.getHostfile()
-        path = cwd / 'hostfile'
-        with path.open(mode='w') as f:
-            f.write(hosts)
-        if platform.system() == 'Windows':
-            cmdline[-1:-1] = ['-env', 'WM_PROJECT_DIR', WM_PROJECT_DIR, '-env', 'PATH', PATH, '-machinefile', str(path)]
-        else:
-            cmdline[-1:-1] = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME, '-hostfile', str(path)]
-
-    proc = await asyncio.create_subprocess_exec(*cmdline, OPENFOAM/'bin'/program, *args,
-                                                env=ENV, cwd=cwd,
-                                                creationflags=creationflags,
-                                                startupinfo=startupinfo,
-                                                stdout=stdout,
-                                                stderr=stderr)
+    proc = await asyncio.create_subprocess_exec(
+        *parallel.makeCommand(OPENFOAM / 'bin' / program, *args, cwd=cwd, options=MPI_OPTIONS),
+        env=ENV, cwd=cwd, creationflags=creationflags, startupinfo=startupinfo, stdout=stdout, stderr=stderr)
 
     return proc
 

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>225</width>
+    <width>227</width>
     <height>298</height>
    </rect>
   </property>
@@ -53,6 +53,9 @@
         <property name="checked">
          <bool>true</bool>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">typeRadios</string>
+        </attribute>
        </widget>
       </item>
       <item>
@@ -60,6 +63,9 @@
         <property name="text">
          <string>Cluster</string>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">typeRadios</string>
+        </attribute>
        </widget>
       </item>
       <item>
@@ -70,6 +76,9 @@
         <property name="text">
          <string>Slurm</string>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">typeRadios</string>
+        </attribute>
        </widget>
       </item>
      </layout>
@@ -213,4 +222,7 @@
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="typeRadios"/>
+ </buttongroups>
 </ui>

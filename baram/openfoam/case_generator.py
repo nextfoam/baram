@@ -33,7 +33,6 @@ from baram.openfoam.system.fv_solution import FvSolution
 from baram.openfoam.system.control_dict import ControlDict
 from baram.openfoam.system.fv_schemes import FvSchemes
 from baram.openfoam.system.fv_options import FvOptions
-from baram.openfoam.system.decomposePar_dict import DecomposeParDict
 from baram.openfoam.system.set_fields_dict import SetFieldsDict
 from baram.openfoam.polymesh.boundary import Boundary
 from baram.openfoam.file_system import FileSystem
@@ -100,7 +99,6 @@ class CaseGenerator(QObject):
             self._files.append(FvSchemes(rname))
             self._files.append(FvSolution(rname))
             self._files.append(FvOptions(rname))
-            self._files.append(DecomposeParDict(rname))
             self._files.append(SetFieldsDict(rname))
 
         # Files that should be created in case root folder in addition to the region folders.
@@ -108,7 +106,6 @@ class CaseGenerator(QObject):
         if len(regions) > 1:
             self._files.append(FvSolution())
             self._files.append(RegionProperties())
-            self._files.append(DecomposeParDict())
 
         # Files that should be in case root folder only
 

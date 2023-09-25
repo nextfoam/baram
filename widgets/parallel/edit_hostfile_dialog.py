@@ -4,16 +4,17 @@
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QDialog, QFileDialog
 
-from baram.coredb.project import Project
 from .edit_hostfile_dialog_ui import Ui_EditHostfileDialog
 
 
 class EditHostfileDialog(QDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, environment):
         super().__init__(parent)
 
         self._ui = Ui_EditHostfileDialog()
         self._ui.setupUi(self)
+
+        self._environment = environment
 
         charFormat = self._ui.textEdit.currentCharFormat()
         fixedFont = QFontDatabase.systemFont(QFontDatabase.FixedFont)
@@ -28,12 +29,12 @@ class EditHostfileDialog(QDialog):
         self._ui.importButton.clicked.connect(self._selectHostfile)
 
     def accept(self):
-        text = self._ui.textEdit.toPlainText()
-        Project.instance().hostfile = text
+        self._environment.setHosts(self._ui.textEdit.toPlainText())
+
         super().accept()
 
     def _load(self):
-        self._ui.textEdit.setPlainText(Project.instance().hostfile)
+        self._ui.textEdit.setPlainText(self._environment.hosts())
 
     def _selectHostfile(self):
         self._dialog = QFileDialog(self, self.tr('Select hostfile'))

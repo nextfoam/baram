@@ -6,13 +6,14 @@ import asyncio
 
 from PySide6.QtCore import QObject, Signal
 
-from baram.coredb import coredb
 from libbaram import utils
-from baram.openfoam import parallel
-from baram.openfoam.file_system import FileSystem
-from baram.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from libbaram.run import runUtility
-from baram.openfoam.system.decomposePar_dict import DecomposeParDict
+from libbaram.openfoam.dictionary.decomposePar_dict import DecomposeParDict
+
+from baram.coredb import coredb
+from baram.openfoam.file_system import FileSystem
+from baram.openfoam import parallel
+from baram.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 
 logger = logging.getLogger(__name__)
 
@@ -60,10 +61,11 @@ class RedistributionTask(QObject):
                 self.progress.emit(self.tr('Decomposing the case.'))
 
                 regions = db.getRegions()
-                for rname in regions:
-                    DecomposeParDict(rname).build().write()
+                decomposeParDict = DecomposeParDict(FileSystem.caseRoot(), numCores).build()
                 if len(regions) > 1:
-                    DecomposeParDict().build().write()
+                    decomposeParDict.write()
+                for rname in regions:
+                    decomposeParDict.setRegion(rname).write()
 
                 proc = await runUtility('decomposePar', '-allRegions', '-time', '0:', '-case', caseRoot, cwd=caseRoot)
 

@@ -8,6 +8,7 @@ import logging
 from PySide6.QtWidgets import QMessageBox
 
 from libbaram.run import launchSolver
+from widgets.progress_dialog import ProgressDialog
 
 from baram.coredb import coredb
 from baram.coredb.project import Project, SolverStatus
@@ -19,7 +20,6 @@ from baram.openfoam.system.fv_schemes import FvSchemes
 import baram.openfoam.solver
 from baram.openfoam.file_system import FileSystem
 from baram.view.widgets.content_page import ContentPage
-from baram.view.widgets.progress_dialog_simple import ProgressDialogSimple
 from .process_information_page_ui import Ui_ProcessInformationPage
 
 
@@ -59,7 +59,7 @@ class ProcessInformationPage(ContentPage):
 
     @qasync.asyncSlot()
     async def _startCalculationClicked(self):
-        progressDialog = ProgressDialogSimple(self, self.tr('Calculation Run.'), True)
+        progressDialog = ProgressDialog(self, self.tr('Calculation Run.'), True)
 
         caseGenerator = CaseGenerator()
         caseGenerator.progress.connect(progressDialog.setLabelText)
@@ -76,11 +76,10 @@ class ProcessInformationPage(ContentPage):
             progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
             return
 
-        numCores = parallel.getNP()
         caseRoot = FileSystem.caseRoot()
         solvers = baram.openfoam.solver.findSolvers()
 
-        process = launchSolver(solvers[0], caseRoot, self._project.uuid, numCores)
+        process = launchSolver(solvers[0], caseRoot, self._project.uuid, parallel.getEnvironment())
         if process:
             self._project.setSolverProcess(process)
         else:
@@ -104,7 +103,7 @@ class ProcessInformationPage(ContentPage):
         self._waitingStop()
 
     def _waitingStop(self):
-        self._stopDialog = ProgressDialogSimple(self, self.tr('Calculation Canceling'))
+        self._stopDialog = ProgressDialog(self, self.tr('Calculation Canceling'))
         self._stopDialog.open()
 
         self._stopDialog.setLabelText(
