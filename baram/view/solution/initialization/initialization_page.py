@@ -6,6 +6,7 @@ import qasync
 from PySide6.QtWidgets import QMessageBox
 
 from libbaram.run import runParallelUtility
+from widgets.progress_dialog import ProgressDialog
 
 from baram.app import app
 from baram.coredb import coredb
@@ -14,7 +15,6 @@ from baram.coredb.region_db import DEFAULT_REGION_NAME
 from baram.openfoam import parallel
 from baram.openfoam.case_generator import CaseGenerator
 from baram.openfoam.file_system import FileSystem
-from baram.view.widgets.progress_dialog_simple import ProgressDialogSimple
 from baram.view.widgets.content_page import ContentPage
 from .initialization_page_ui import Ui_InitializationPage
 from .initialization_widget import InitializationWidget
@@ -93,8 +93,8 @@ class InitializationPage(ContentPage):
     @qasync.asyncSlot()
     async def _initialize(self):
         confirm = QMessageBox.question(self, self.tr("Initialization"), self.tr("All saved data will be deleted. OK?"))
-        if confirm == QMessageBox.Yes:
-            progressDialog = ProgressDialogSimple(self, self.tr('Case Initialization'))
+        if confirm == QMessageBox.StandardButton.Yes:
+            progressDialog = ProgressDialog(self, self.tr('Case Initialization'))
             progressDialog.open()
 
             progressDialog.setLabelText('Clean-up Files')
@@ -129,10 +129,9 @@ class InitializationPage(ContentPage):
             if len(sectionNames) > 0:
                 progressDialog.setLabelText('Setting Section Values')
 
-                numCores = parallel.getNP()
                 caseRoot = FileSystem.caseRoot()
-
-                proc = await runParallelUtility('setFields', '-writeBoundaryFields', '-case', caseRoot, np=numCores, cwd=caseRoot)
+                proc = await runParallelUtility('setFields', '-writeBoundaryFields', '-case', caseRoot,
+                                                parallel=parallel.getEnvironment(), cwd=caseRoot)
                 result = await proc.wait()
 
                 if result != 0:
