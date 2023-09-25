@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baram.coredb import coredb
 from baram.coredb.cell_zone_db import ZoneType, CellZoneDB
 from baram.coredb.boundary_db import BoundaryDB
-from baram.openfoam.dictionary_file import DictionaryFile
+from baram.openfoam.file_system import FileSystem
 
 
 class MRFProperties(DictionaryFile):
     def __init__(self, rname: str):
-        super().__init__(self.constantLocation(rname), 'MRFProperties')
+        super().__init__(FileSystem.caseRoot(), self.constantLocation(rname), 'MRFProperties')
 
         self._rname = rname
 

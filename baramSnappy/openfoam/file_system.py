@@ -1,31 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import re
+
 import shutil
 from typing import Optional
 from pathlib import Path
 
 import asyncio
 
-from libbaram import utils
+from libbaram.utils import rmtree
+from libbaram.openfoam.constants import Directory
 
 
-def makeDir(parent, directory):
+def makeDir(parent, directory, clear=False):
     path = parent / directory
+
+    if clear and path.exists():
+        rmtree(path)
+
     path.mkdir(parents=True, exist_ok=True)
+
     return path
 
 
 class FileSystem:
     CASE_DIRECTORY_NAME = 'case'
-    CONSTANT_DIRECTORY_NAME = 'constant'
-    BOUNDARY_CONDITIONS_DIRECTORY_NAME = '0'
-    SYSTEM_DIRECTORY_NAME = 'system'
-    REGION_PROPERTIES_FILE_NAME = 'regionProperties'
     FOAM_FILE_NAME = 'baram.foam'
-    TRI_SURFACE_DIRECTORY_NAME = 'triSurface'
-    POLY_MESH_DIRECTORY_NAME = 'polyMesh'
-    BOUNDARY_FILE_NAME = 'boundary'
 
     def __init__(self, path):
         self._casePath = None
@@ -44,21 +43,32 @@ class FileSystem:
         return self._triSurfacePath
 
     def polyMeshPath(self, rname=None):
-        return self.constantPath(rname) / self.POLY_MESH_DIRECTORY_NAME
+        return self.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME
 
     def boundaryFilePath(self, rname=None):
-        return self.constantPath(rname) / self.POLY_MESH_DIRECTORY_NAME / 'boundary'
+        return self.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME / 'boundary'
 
     def foamFilePath(self):
         return self._casePath / self.FOAM_FILE_NAME
 
-    def processorPath(self, no):
-        path = (self._casePath / f'processor{no}')
+    def processorPath(self, no, checkExistance=True):
+        path = self._casePath / f'processor{no}'
 
-        return path if path.is_dir() else None
+        return path if not checkExistance or path.is_dir() else None
 
-    def timePath(self, time):
-        return self._casePath / str(time)
+    def timePath(self, time, processorNo=None):
+        # print(time, processorNo, self.processorPath(processorNo))
+        return self._casePath / str(time) if processorNo is None else self.processorPath(processorNo, False) / str(time)
+
+    def timePathExists(self, time, parallel=False):
+        return self.timePath(time, 0 if parallel else None).exists()
+
+    def latestTime(self, parent: Optional[Path] = None) -> str:
+        times = self.times(parent)
+        if len(times) == 0:
+            return '0'
+
+        return max(times, key=lambda x: float(x))
 
     def times(self, parent: Optional[Path] = None):
         if parent is None:
@@ -66,15 +76,7 @@ class FileSystem:
             if parent is None:
                 parent = self._casePath
 
-        times = []
-        for f in parent.iterdir():
-            if not f.is_dir():
-                continue
-
-            if re.fullmatch(r'^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$', f.name):
-                times.append(f.name)
-
-        return times
+        return [t.name for t in parent.glob('[0-9]*')]
 
     def processorFolders(self):
         return list(self._casePath.glob('processor[0-9]*'))
@@ -84,21 +86,23 @@ class FileSystem:
 
     def createCase(self, src):
         if self._casePath.exists():
-            utils.rmtree(self._casePath)
+            rmtree(self._casePath)
 
         shutil.copytree(src, self._casePath)
 
-        self._constantPath = makeDir(self._casePath, self.CONSTANT_DIRECTORY_NAME)
-        self._triSurfacePath = makeDir(self._constantPath, self.TRI_SURFACE_DIRECTORY_NAME)
-        makeDir(self._casePath, '0')
-
-    def createBaramCase(self):
-        if self._casePath.exists():
-            utils.rmtree(self._casePath)
-
-        self._casePath.mkdir(exist_ok=True)
-        with open(self.foamFilePath(), 'a'):
-            pass
+        self._constantPath = makeDir(self._casePath, Directory.CONSTANT_DIRECTORY_NAME)
+        self._triSurfacePath = makeDir(self._constantPath, Directory.TRI_SURFACE_DIRECTORY_NAME)
+        # makeDir(self._casePath, '0')
+    #
+    # def createBaramCase(self):
+    #     if self._casePath.exists():
+    #         rmtree(self._casePath)
+    #
+    #     shutil.copytree(src, self._casePath)
+    #
+    #     self._casePath.mkdir(exist_ok=True)
+    #     with open(self.foamFilePath(), 'a'):
+    #         pass
 
     async def copyTriSurfaceFrom(self, srcPath, fileName):
         targetFile = self._triSurfacePath / fileName
@@ -106,15 +110,15 @@ class FileSystem:
 
         return targetFile
 
-    async def copyTimeDrectory(self, srcTime, destTime):
-        srcPath = self.timePath(srcTime)
+    async def copyTimeDrectory(self, srcTime, destTime, processorNo=None):
+        srcPath = self.timePath(srcTime, processorNo)
         if any(srcPath.iterdir()):
-            await asyncio.to_thread(shutil.copytree, self.timePath(srcTime), self.timePath(destTime))
+            await asyncio.to_thread(shutil.copytree, srcPath, self.timePath(destTime, processorNo))
             return True
 
         return False
 
     def _setCaseRoot(self, path):
         self._casePath = path
-        self._constantPath = self._casePath / self.CONSTANT_DIRECTORY_NAME
-        self._triSurfacePath = self._constantPath / self.TRI_SURFACE_DIRECTORY_NAME
+        self._constantPath = self._casePath / Directory.CONSTANT_DIRECTORY_NAME
+        self._triSurfacePath = self._constantPath / Directory.TRI_SURFACE_DIRECTORY_NAME

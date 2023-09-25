@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baramSnappy.app import app
 from baramSnappy.db.configurations_schema import GeometryType, Shape, CFDType, ThicknessModel
 from baramSnappy.db.simple_db import elementToVector
-from baramSnappy.openfoam.dictionary_file import DictionaryFile
 
 
 class SnappyHexMeshDict(DictionaryFile):
     def __init__(self, castellationMesh=False, snap=False, addLayers=False):
-        super().__init__()
-        self._setHeader(self.systemLocation(), 'snappyHexMeshDict')
+        super().__init__(app.fileSystem.caseRoot(), self.systemLocation(), 'snappyHexMeshDict')
 
         self._casterllationMesh = castellationMesh
         self._snap = snap

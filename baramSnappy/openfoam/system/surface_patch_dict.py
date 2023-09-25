@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass
-from baramSnappy.openfoam.dictionary_file import DictionaryFile
+
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
+from baramSnappy.app import app
 
 
 @dataclass
@@ -13,8 +16,7 @@ class SurfacePatchData:
 
 class SurfacePatchDict(DictionaryFile):
     def __init__(self):
-        super().__init__()
-        self._setHeader(self.systemLocation(), 'surfacePatchDict')
+        super().__init__(app.fileSystem.caseRoot(), self.systemLocation(), 'surfacePatchDict')
 
     def build(self, data):
         if self._data is not None:

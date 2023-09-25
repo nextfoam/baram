@@ -3,10 +3,11 @@
 
 from enum import Enum
 
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baramSnappy.app import app
 from baramSnappy.db.configurations_schema import CFDType, Shape
 from baramSnappy.db.simple_db import elementToVector
-from baramSnappy.openfoam.dictionary_file import DictionaryFile
 
 
 def pointToEntry(point):
@@ -97,8 +98,13 @@ class TopoSetDict(DictionaryFile):
         CREATE_CELL_ZONES = 1
 
     def __init__(self):
-        super().__init__()
-        self._setHeader(self.systemLocation(), 'topoSetDict')
+        super().__init__(app.fileSystem.caseRoot(), self.systemLocation(), 'topoSetDict')
+
+    def setRegion(self, rname):
+        self._rname = rname
+        self._header['location'] = str(self.systemLocation(rname))
+
+        return self
 
     def build(self, mode):
         if self._data is not None:

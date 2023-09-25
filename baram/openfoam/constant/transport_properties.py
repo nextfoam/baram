@@ -3,17 +3,18 @@
 
 from typing import Optional
 
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baram.coredb import coredb
 from baram.coredb.material_db import MaterialDB
 from baram.coredb.region_db import RegionDB
-
-from baram.openfoam.dictionary_file import DictionaryFile
 import baram.openfoam.solver
+from baram.openfoam.file_system import FileSystem
 
 
 class TransportProperties(DictionaryFile):
     def __init__(self, rname: str):
-        super().__init__(self.constantLocation(rname), 'transportProperties')
+        super().__init__(FileSystem.caseRoot(), self.constantLocation(rname), 'transportProperties')
 
         self._rname = rname
         self._db = coredb.CoreDB()

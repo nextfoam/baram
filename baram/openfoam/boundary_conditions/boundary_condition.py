@@ -7,11 +7,12 @@ import logging
 
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataClass
+
 from baram.coredb import coredb
 from baram.coredb.material_db import MaterialDB
 from baram.coredb.models_db import TurbulenceModel
 from baram.coredb.region_db import RegionDB
-from baram.openfoam.dictionary_file import DictionaryFile, DataClass
 from baram.openfoam.constant.boundary_data import BoundaryData
 from baram.openfoam.file_system import FileSystem
 
@@ -26,7 +27,7 @@ class BoundaryCondition(DictionaryFile):
         TEMPORAL_VECTOR_LIST = auto()
 
     def __init__(self, region, time, processorNo, field, class_=DataClass.CLASS_VOL_SCALAR_FIELD):
-        super().__init__(self.boundaryLocation(region.rname, time), field, class_)
+        super().__init__(FileSystem.caseRoot(), self.boundaryLocation(region.rname, time), field, class_)
 
         self._initialValue = None
         self._region = region

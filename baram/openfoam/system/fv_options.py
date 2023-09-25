@@ -3,17 +3,20 @@
 
 import logging
 
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baram.coredb import coredb
 from baram.coredb.cell_zone_db import CellZoneDB
 from baram.coredb.material_db import MaterialDB
 from baram.coredb.models_db import ModelsDB
-from baram.openfoam.dictionary_file import DictionaryFile
+from baram.openfoam.file_system import FileSystem
 
 logger = logging.getLogger(__name__)
 
+
 class FvOptions(DictionaryFile):
     def __init__(self, rname: str):
-        super().__init__(self.systemLocation(rname), 'fvOptions')
+        super().__init__(FileSystem.caseRoot(), self.systemLocation(rname), 'fvOptions')
 
         self._rname = rname
         self._db = coredb.CoreDB()

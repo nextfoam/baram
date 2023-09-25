@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baram.coredb import coredb
 from baram.coredb.material_db import MaterialDB
 from baram.coredb.cell_zone_db import CellZoneDB
 
-from baram.openfoam.dictionary_file import DictionaryFile
+from baram.openfoam.file_system import FileSystem
 
 
 class SetFieldsDict(DictionaryFile):
     def __init__(self, rname: str = ''):
-        super().__init__(self.systemLocation(rname), 'setFieldsDict')
+        super().__init__(FileSystem.caseRoot(), self.systemLocation(rname), 'setFieldsDict')
 
         self._rname = rname
 

@@ -7,8 +7,9 @@ from pathlib import Path
 
 from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
 
+from libbaram.openfoam.constants import Directory
+
 from resources import resource
-from .file_system import FileSystem
 
 
 VERSION = '2.0'
@@ -25,7 +26,7 @@ class DataClass(Enum):
 
 
 class DictionaryFile:
-    def __init__(self, location, objectName, class_=DataClass.CLASS_DICTIONARY, format_=Format.FORMAT_ASCII):
+    def __init__(self, casePath, location, objectName, class_=DataClass.CLASS_DICTIONARY, format_=Format.FORMAT_ASCII):
         self._header = {
             'version': VERSION,
             'format': format_.value,
@@ -34,26 +35,26 @@ class DictionaryFile:
             'object': objectName
         }
         self._data = None
+        self._casePath = casePath
 
-    @classmethod
+    def isBuilt(self):
+        return self._data is not None
+
     def constantLocation(cls, subPath=''):
-        return Path(FileSystem.CONSTANT_DIRECTORY_NAME) / subPath
+        return Path(Directory.CONSTANT_DIRECTORY_NAME) / subPath
 
-    @classmethod
     def boundaryLocation(cls, rname, time):
         return Path(time) / rname
 
-    @classmethod
     def systemLocation(cls, subPath=''):
-        return Path(FileSystem.SYSTEM_DIRECTORY_NAME) / subPath
+        return Path(Directory.SYSTEM_DIRECTORY_NAME) / subPath
 
-    @classmethod
     def polyMeshLocation(cls, rname=''):
-        return Path(FileSystem.CONSTANT_DIRECTORY_NAME) / rname / FileSystem.POLY_MESH_DIRECTORY_NAME
+        return Path(Directory.CONSTANT_DIRECTORY_NAME) / rname / Directory.POLY_MESH_DIRECTORY_NAME
 
     def fullPath(self, processorNo=None):
         processorDir = '' if processorNo is None else f'processor{processorNo}'
-        return FileSystem.caseRoot() / processorDir / self._header['location'] / self._header['object']
+        return self._casePath / processorDir / self._header['location'] / self._header['object']
 
     def asDict(self):
         return self._data

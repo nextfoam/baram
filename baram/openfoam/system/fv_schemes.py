@@ -2,14 +2,16 @@
 # -*- coding: utf-8 -*-
 
 
-import baram.openfoam.solver
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baram.coredb import coredb
-from baram.openfoam.dictionary_file import DictionaryFile
+import baram.openfoam.solver
+from baram.openfoam.file_system import FileSystem
 
 
 class FvSchemes(DictionaryFile):
     def __init__(self, rname: str = ''):
-        super().__init__(self.systemLocation(rname), 'fvSchemes')
+        super().__init__(FileSystem.caseRoot(), self.systemLocation(rname), 'fvSchemes')
 
         self._rname = rname
         self._db = coredb.CoreDB()

@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baram.coredb import coredb
 from baram.coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, KOmegaModel
-from baram.openfoam.dictionary_file import DictionaryFile
+from baram.openfoam.file_system import FileSystem
 
 
 class TurbulenceProperties(DictionaryFile):
     def __init__(self, rname: str):
-        super().__init__(self.constantLocation(rname), 'turbulenceProperties')
+        super().__init__(FileSystem.caseRoot(), self.constantLocation(rname), 'turbulenceProperties')
 
         self._rname = rname
         self._db = coredb.CoreDB()

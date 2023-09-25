@@ -3,23 +3,26 @@
 
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
+from libbaram.openfoam.constants import Directory
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baram.coredb import coredb
-from baram.openfoam.dictionary_file import DictionaryFile
-from baram.openfoam.file_system import FileSystem, FileLoadingError
+from baram.openfoam.file_system import FileLoadingError
 from baram.coredb.region_db import RegionDB
 from baram.coredb.material_db import Phase
+from baram.openfoam.file_system import FileSystem
 
 
 class RegionProperties(DictionaryFile):
     def __init__(self):
-        super().__init__(self.constantLocation(), FileSystem.REGION_PROPERTIES_FILE_NAME)
+        super().__init__(FileSystem.caseRoot(), self.constantLocation(), Directory.REGION_PROPERTIES_FILE_NAME)
 
         self._data = None
 
     @classmethod
     def loadRegions(cls, path):
         regions = []
-        regionPropFile = path / FileSystem.REGION_PROPERTIES_FILE_NAME
+        regionPropFile = path / Directory.REGION_PROPERTIES_FILE_NAME
 
         if regionPropFile.is_file():
             regionsDict = ParsedParameterFile(regionPropFile).content['regions']

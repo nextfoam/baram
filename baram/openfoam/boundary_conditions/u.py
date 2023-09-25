@@ -7,7 +7,7 @@ from baram.coredb.boundary_db import FlowRateInletSpecification, WallVelocityCon
 from baram.coredb.initialization_db import InitializationDB
 from baram.coredb.material_db import MaterialDB
 from baram.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
-from baram.openfoam.dictionary_file import DataClass
+from libbaram.openfoam.dictionary.dictionary_file import DataClass
 
 
 class U(BoundaryCondition):

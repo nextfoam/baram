@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 import baram.openfoam.solver
 from baram.coredb import coredb
 from baram.coredb.general_db import GeneralDB
@@ -12,7 +14,7 @@ from baram.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, V
 from baram.coredb.models_db import ModelsDB, TurbulenceModel
 from baram.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baram.coredb.reference_values_db import ReferenceValuesDB
-from baram.openfoam.dictionary_file import DictionaryFile
+from baram.openfoam.file_system import FileSystem
 
 
 SURFACE_MONITOR_OPERATION = {
@@ -121,7 +123,7 @@ def getRegionNumbers() -> dict:
 
 class ControlDict(DictionaryFile):
     def __init__(self):
-        super().__init__(self.systemLocation(), 'controlDict')
+        super().__init__(FileSystem.caseRoot(), self.systemLocation(), 'controlDict')
         self._data = None
         self._db = None
 

@@ -15,6 +15,8 @@ from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA, vtkCommand
 from PySide6.QtCore import QObject, Signal
 
+from libbaram.openfoam.constants import Directory
+
 from baram.app import app
 from baram.coredb import coredb
 from baram.coredb.project import Project
@@ -114,7 +116,7 @@ class PolyMeshLoader(QObject):
 
             # single region
             if not FileSystem.isPolyMesh(path):
-                path = path / FileSystem.POLY_MESH_DIRECTORY_NAME
+                path = path / Directory.POLY_MESH_DIRECTORY_NAME
                 if not FileSystem.isPolyMesh(path):
                     raise FileLoadingError('Mesh directory not found.')
 
@@ -123,7 +125,7 @@ class PolyMeshLoader(QObject):
         else:
             # multi region
             for rname in regions:
-                boundaryDict = self.loadBoundaryDict(path / rname / FileSystem.POLY_MESH_DIRECTORY_NAME / 'boundary')
+                boundaryDict = self.loadBoundaryDict(path / rname / Directory.POLY_MESH_DIRECTORY_NAME / 'boundary')
                 boundaries[rname] = {bname: boundary['type'] for bname, boundary in boundaryDict.content.items()}
 
         if srcPath:

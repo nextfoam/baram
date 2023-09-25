@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from builtins import str
+
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baram.coredb import coredb
 from baram.coredb.numerical_db import NumericalDB, PressureVelocityCouplingScheme
@@ -10,7 +11,7 @@ from baram.coredb.material_db import Phase
 from baram.coredb.models_db import ModelsDB
 from baram.coredb.reference_values_db import ReferenceValuesDB
 from baram.coredb.material_db import MaterialDB
-from baram.openfoam.dictionary_file import DictionaryFile
+from baram.openfoam.file_system import FileSystem
 
 
 class FvSolution(DictionaryFile):
@@ -20,7 +21,7 @@ class FvSolution(DictionaryFile):
         Args:
             rname: Region name. None for global fvSolution of multi region case, empty string for single region.
         """
-        super().__init__(self.systemLocation('' if rname is None else rname), 'fvSolution')
+        super().__init__(FileSystem.caseRoot(), self.systemLocation('' if rname is None else rname), 'fvSolution')
 
         self._rname = rname
         self._db = coredb.CoreDB()

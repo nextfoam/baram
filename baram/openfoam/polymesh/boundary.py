@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baram.coredb import coredb
-from baram.openfoam.dictionary_file import DictionaryFile
 from baram.coredb.boundary_db import BoundaryType, BoundaryDB, InterfaceMode
+from baram.openfoam.file_system import FileSystem
 from .polymesh_loader import PolyMeshLoader
 
 
@@ -36,7 +38,7 @@ TYPE_MAP = {
 
 class Boundary(DictionaryFile):
     def __init__(self, rname: str, processorNo=None):
-        super().__init__(self.polyMeshLocation(rname), 'boundary')
+        super().__init__(FileSystem.caseRoot(), self.polyMeshLocation(rname), 'boundary')
         self._rname = rname
         self._boundaryDict = None
         self._processorNo = processorNo
