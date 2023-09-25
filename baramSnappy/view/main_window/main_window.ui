@@ -570,7 +570,7 @@
                   <enum>QFrame::NoFrame</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;At least one fluid region point should be configured.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Multiple region points can be configured for multi-region case.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot; color:#ff0000;&quot;&gt;At least one fluid region point should be configured.&lt;/p&gt;&lt;p&gt;Multiple region points can be configured for multi-region case.&lt;/p&gt;&lt;p style=&quot; font-weight: bold;&quot;&gt;You can add region points by clicking the plus(+) icon on the upper right corner.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="wordWrap">
                   <bool>true</bool>
@@ -593,8 +593,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>434</width>
-                    <height>366</height>
+                    <width>435</width>
+                    <height>322</height>
                    </rect>
                   </property>
                  </widget>
@@ -903,7 +903,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>417</width>
+                    <width>273</width>
                     <height>592</height>
                    </rect>
                   </property>
@@ -1654,7 +1654,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>417</width>
+                    <width>266</width>
                     <height>689</height>
                    </rect>
                   </property>

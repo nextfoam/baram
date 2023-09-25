@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
         self._dialog = NewProjectDialog(self)
         self._dialog.setBaseLocation(Path(app.settings.getRecentLocation()).resolve())
         self._dialog.accepted.connect(self._createProject)
-        self._dialog.open()
+        self._dialog.show()
 
     def _actionOpen(self):
         self._dialog = QFileDialog(self, self.tr('Select Project Directory'), app.settings.getRecentLocation())

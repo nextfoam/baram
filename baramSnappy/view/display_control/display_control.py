@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from typing import Optional
 
 from PySide6.QtCore import QObject, Signal, Qt
 from PySide6.QtGui import QColor
@@ -7,7 +8,7 @@ from PySide6.QtWidgets import QMenu, QColorDialog, QHeaderView
 
 from baramSnappy.app import app
 from baramSnappy.db.configurations_schema import Step
-from baramSnappy.rendering.actor_info import DisplayMode
+from baramSnappy.rendering.actor_info import DisplayMode, Properties
 
 from .opacity_dialog import OpacityDialog
 from .display_item import DisplayItem, Column
@@ -54,7 +55,7 @@ class ContextMenu(QMenu):
 
         self._connectSignalsSlots()
 
-    def execute(self, pos, properties):
+    def execute(self, pos, properties: Properties):
         self._properties = properties
 
         self._showAction.setVisible(not properties.visibility)
@@ -192,13 +193,19 @@ class DisplayControl(QObject):
             self._actorPicked(actor, False, True)
             self._executeContextMenu(self._view.mapToGlobal(pos))
 
-    def _selectedItemsInfo(self):
+    def _selectedItemsInfo(self) -> Optional[Properties]:
         items = self._list.selectedItems()
         if not items:
             return None
 
         self._selectedItems = []
-        properties = items[0].actorInfo().properties()
+        baseProp: Properties = items[0].actorInfo().properties()
+        properties = Properties(baseProp.visibility,
+                                baseProp.opacity,
+                                baseProp.color,
+                                baseProp.displayMode,
+                                baseProp.cutEnabled,
+                                baseProp.highlighted)
 
         for item in items:
             self._selectedItems.append(item)
