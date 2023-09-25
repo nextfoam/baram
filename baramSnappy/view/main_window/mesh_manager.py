@@ -4,10 +4,11 @@
 import qasync
 from PySide6.QtCore import Signal
 
+from widgets.progress_dialog import ProgressDialog
+
 from baramSnappy.app import app
 from baramSnappy.openfoam.poly_mesh.poly_mesh_loader import PolyMeshLoader
 from baramSnappy.rendering.actor_info import ActorInfo, ActorType
-from baramSnappy.view.widgets.progress_dialog_simple import ProgressDialogSimple
 from baramSnappy.view.main_window.actor_manager import ActorManager
 
 
@@ -22,18 +23,24 @@ class MeshManager(ActorManager):
 
         self._name = 'Mesh'
 
-    async def load(self, time):
+    async def load(self, time=None):
         self.clear()
         self._visibility = True
 
-        progressDialog = ProgressDialogSimple(app.window, self.tr('Loading Mesh'))
+        if time is not None:
+            self._time = time
+
+        if self._time is None:
+            return
+
+        progressDialog = ProgressDialog(app.window, self.tr('Loading Mesh'))
         progressDialog.setLabelText(self.tr('Loading Mesh'))
         progressDialog.open()
 
         self._loader = PolyMeshLoader(app.fileSystem.foamFilePath())
         self._loader.progress.connect(progressDialog.setLabelText)
 
-        vtkMesh = await self._loader.loadMesh(time)
+        vtkMesh = await self._loader.loadMesh(self._time)
         if vtkMesh:
             for rname, region in vtkMesh.items():
                 for bname, polyData in region['boundary'].items():
@@ -41,11 +48,14 @@ class MeshManager(ActorManager):
 
             self.add(ActorInfo(vtkMesh['']['internalMesh'], 'internalMesh', 'internalMesh', ActorType.MESH))
 
-        self._time = time
         self.applyToDisplay()
         self.fitDisplay()
 
         progressDialog.close()
+
+    def unload(self):
+        self.hide()
+        self._time = None
 
     @qasync.asyncSlot()
     async def show(self, time):

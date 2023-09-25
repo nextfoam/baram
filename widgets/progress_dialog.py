@@ -8,7 +8,7 @@ from PySide6.QtCore import Qt, Signal
 from .progress_dialog_ui import Ui_ProgressDialog
 
 
-class ProgressDialogSimple(QDialog):
+class ProgressDialog(QDialog):
     cancelClicked = Signal()
 
     def __init__(self, parent, title: str, cancelable: bool = False, autoCloseOnCancel: bool = True):
