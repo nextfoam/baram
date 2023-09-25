@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+
 from baramSnappy.app import app
-from baramSnappy.openfoam.dictionary_file import DictionaryFile
 
 
 class BlockMeshDict(DictionaryFile):
     def __init__(self):
-        super().__init__()
-        self._setHeader(self.systemLocation(), 'blockMeshDict')
+        super().__init__(app.fileSystem.caseRoot(), self.systemLocation(), 'blockMeshDict')
 
     def build(self):
         if self._data is not None:
