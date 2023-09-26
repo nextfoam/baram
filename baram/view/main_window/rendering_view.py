@@ -42,6 +42,10 @@ class RenderingView(QWidget):
 
         self._connectSignalsSlots()
 
+    def close(self):
+        self._view.close()
+        return super().close()
+
     def renderingMode(self):
         return self._ui.renderingMode.currentData()
 
