@@ -62,7 +62,9 @@ class RedistributionTask(QObject):
             # This loop will end if the PIPE is closed (i.e. the process terminates)
             async for line in proc.stdout:
                 log = line.decode('utf-8')
-                if log.startswith('Time = '):
+                if log.startswith('Time = constant'):
+                    self.progress.emit(self.tr(f'Reconstructing the case. (constant)'))
+                elif log.startswith('Time = '):
                     self.progress.emit(self.tr(f'Reconstructing the case. ({log.strip()}/{latestTime})'))
 
             result = await proc.wait()
@@ -90,6 +92,7 @@ class RedistributionTask(QObject):
             result = await proc.wait()
             if result != 0:
                 raise RuntimeError(self.tr('Decomposition failed.'))
+
             for i in range(numCores):
                 p = self._fileSystem.processorPath(i)
                 p.rename(tempPath / p.name)

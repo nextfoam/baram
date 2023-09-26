@@ -244,25 +244,22 @@ class MainWindow(QMainWindow):
     @qasync.asyncSlot()
     async def _updateParallelEnvironment(self):
         environment = self._dialog.environment()
-
         numCores = environment.np()
         oldNumCores = app.project.parallelCores()
 
-        if numCores != oldNumCores:
-            progressDialog = ProgressDialog(self, self.tr('Case Redistribution'))
+        progressDialog = ProgressDialog(self, self.tr('Case Redistribution'))
+        progressDialog.open()
 
+        if numCores != oldNumCores:
             progressDialog.setLabelText('Redistributing Case')
 
             redistributionTask = RedistributionTask(app.fileSystem)
             redistributionTask.progress.connect(progressDialog.setLabelText)
 
-            progressDialog.open()
-
             await redistributionTask.redistribute(numCores)
 
-            progressDialog.finish('Redistribution Done')
-
         app.project.setParallelEnvironment(environment)
+        progressDialog.finish('Parallel Environment was Applied.')
 
     def _changeScale(self):
         if app.settings.setScale(self._dialog.scale()):

@@ -169,13 +169,16 @@ class MainWindow(QMainWindow):
                 msgBox = QMessageBox()
                 msgBox.setWindowTitle(self.tr("Save Changed"))
                 msgBox.setText(self.tr("Do you want save your changes?"))
-                msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Discard | QMessageBox.Cancel)
-                msgBox.setDefaultButton(QMessageBox.Ok)
+                msgBox.setStandardButtons(
+                    QMessageBox.StandardButton.Ok
+                    | QMessageBox.StandardButton.Discard
+                    | QMessageBox.StandardButton.Cancel)
+                msgBox.setDefaultButton(QMessageBox.StandardButton.Ok)
 
                 result = msgBox.exec()
-                if result == QMessageBox.Ok:
+                if result == QMessageBox.StandardButton.Ok:
                     self._save()
-                elif result == QMessageBox.Cancel:
+                elif result == QMessageBox.StandardButton.Cancel:
                     event.ignore()
                     return
         else:
@@ -396,7 +399,7 @@ class MainWindow(QMainWindow):
 
             await redistributionTask.redistribute()
 
-        progressDialog.finish('Parallel Environment Applied.')
+        progressDialog.finish('Parallel Environment was Applied.')
 
     @qasync.asyncSlot()
     async def _loadVtkMesh(self):
@@ -517,7 +520,7 @@ class MainWindow(QMainWindow):
                 self.tr('Current mesh and monitor configurations will be cleared.\n'
                         'Would you like to load another mesh?'))
 
-            if confirm != QMessageBox.Yes:
+            if confirm != QMessageBox.StandardButton.Yes:
                 return
 
         self._project.setMeshLoaded(False)
