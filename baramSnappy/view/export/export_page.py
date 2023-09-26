@@ -90,8 +90,8 @@ class ExportPage(StepPage):
                 progressDialog.close()
 
             toposetDict = TopoSetDict().build(TopoSetDict.Mode.CREATE_CELL_ZONES)
+            regions = app.db.getElements('region', None, ['name'])
             if toposetDict.isBuilt():
-                regions = app.db.getElements('region', None, ['name'])
                 if len(regions) == 1:
                     toposetDict.write()
                     proc = await runParallelUtility('topoSet', cwd=fileSystem.caseRoot(), parallel=parallel,
@@ -116,6 +116,9 @@ class ExportPage(StepPage):
             baramSystem = FileSystem(path)
             baramSystem.createCase(resource.file('openfoam/case'))
 
+            if len(regions) > 1:
+                RegionProperties(baramSystem.caseRoot()).build().write()
+
             if parallel.isParallelOn():
                 progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
                 progressDialog.setLabelText(self.tr('Copying Files'))
@@ -134,8 +137,6 @@ class ExportPage(StepPage):
                 progressDialog.close()
             else:
                 shutil.move(self._outputPath(), baramSystem.constantPath())
-
-            RegionProperties(baramSystem.caseRoot()).build().write()
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),

@@ -56,7 +56,7 @@ class RedistributionTask(QObject):
             self.progress.emit(self.tr('Reconstructing the case.'))
 
             latestTime = self._fileSystem.latestTime(self._fileSystem.processorPath(0))
-            proc = await runUtility('reconstructParMesh', '-case', caseRoot,
+            proc = await runUtility('reconstructParMesh', '-allRegions', '-constant', '-case', caseRoot,
                                     cwd=caseRoot, stdout=asyncio.subprocess.PIPE)
 
             # This loop will end if the PIPE is closed (i.e. the process terminates)
