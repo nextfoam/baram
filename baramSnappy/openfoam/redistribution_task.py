@@ -36,10 +36,7 @@ class RedistributionTask(QObject):
 
         try:
             await self.reconstruct()
-
-            if self._fileSystem.timePath(1).is_dir():
-                await self.decompose(numCores)
-
+            await self.decompose(numCores)
             await app.window.meshManager.load()
 
         except Exception as ex:
@@ -75,7 +72,7 @@ class RedistributionTask(QObject):
             utils.rmtree(folder)
 
     async def decompose(self, numCores):
-        if numCores > 1:
+        if numCores > 1 and self._fileSystem.boundaryFilePath().exists():
             caseRoot = self._fileSystem.caseRoot()
 
             self.progress.emit(self.tr('Decomposing the case.'))

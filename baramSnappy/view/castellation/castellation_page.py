@@ -15,7 +15,6 @@ from widgets.progress_dialog import ProgressDialog
 from baramSnappy.app import app
 from baramSnappy.db.configurations_schema import GeometryType, Shape, CFDType
 from baramSnappy.db.simple_schema import DBError
-from baramSnappy.openfoam.redistribution_task import RedistributionTask
 from baramSnappy.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramSnappy.view.step_page import StepPage
 from baramSnappy.view.widgets.list_table import ListItemWithButtons
@@ -169,15 +168,6 @@ class CastellationPage(StepPage):
             progressDialog.setLabelText(self.tr('Writing Geometry Files'))
             self._writeGeometryFiles(progressDialog)
             SnappyHexMeshDict(castellationMesh=True).build().write()
-
-            numCores = app.project.parallelCores()
-            if numCores > 1:
-                progressDialog.setLabelText('Decomposing Case')
-
-                redistributionTask = RedistributionTask(app.fileSystem)
-                redistributionTask.progress.connect(progressDialog.setLabelText)
-
-                await redistributionTask.decompose(numCores)
 
             progressDialog.close()
 

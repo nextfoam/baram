@@ -8,6 +8,7 @@ from libbaram.run import runUtility
 from widgets.progress_dialog import ProgressDialog
 
 from baramSnappy.app import app
+from baramSnappy.openfoam.redistribution_task import RedistributionTask
 from baramSnappy.openfoam.system.block_mesh_dict import BlockMeshDict
 from baramSnappy.db.simple_schema import DBError
 from baramSnappy.view.step_page import StepPage
@@ -113,6 +114,15 @@ class BaseGridPage(StepPage):
             progressDialog.finish(self.tr('Mesh Generation Failed.'))
             self.clearResult()
             return
+
+        numCores = app.project.parallelCores()
+        if numCores > 1:
+            progressDialog.setLabelText('Decomposing Case')
+
+            redistributionTask = RedistributionTask(app.fileSystem)
+            redistributionTask.progress.connect(progressDialog.setLabelText)
+
+            await redistributionTask.decompose(numCores)
 
         progressDialog.close()
 
