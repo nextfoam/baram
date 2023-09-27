@@ -92,6 +92,9 @@ class InitializationPage(ContentPage):
 
     @qasync.asyncSlot()
     async def _initialize(self):
+        if not self.save():
+            return
+
         confirm = QMessageBox.question(self, self.tr("Initialization"), self.tr("All saved data will be deleted. OK?"))
         if confirm == QMessageBox.StandardButton.Yes:
             progressDialog = ProgressDialog(self, self.tr('Case Initialization'))
