@@ -50,6 +50,7 @@ class ExportPage(StepPage):
         self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         self._dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
         self._dialog.fileSelected.connect(self._export)
+        self._dialog.rejected.connect(self._ui.menubar.repaint)
         self._dialog.open()
 
     @qasync.asyncSlot()
@@ -134,12 +135,13 @@ class ExportPage(StepPage):
 
                 await redistributionTask.reconstruct()
 
-                progressDialog.close()
+                progressDialog.finish(self.tr('Export is complete.'))
             else:
-                shutil.move(self._outputPath(), baramSystem.constantPath())
+                shutil.move(self._outputPath() / Directory.POLY_MESH_DIRECTORY_NAME, baramSystem.polyMeshPath())
+                QMessageBox.information(self._widget, self.tr('Mesh Exporting'), self.tr('Export is complete.'))
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Castellation Refinement Failed. [') + str(e.returncode) + ']')
+                                    self.tr('Export failed. [') + str(e.returncode) + ']')
         finally:
             self.unlock()

@@ -183,10 +183,12 @@ class CastellationPage(StepPage):
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()
+
+            QMessageBox.information(self._widget, self.tr('Complete'), self.tr('Castellation refinement is completed.'))
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Castellation Refinement Failed. [') + str(e.returncode) + ']')
+                                    self.tr('Castellation refinement Failed. [') + str(e.returncode) + ']')
         finally:
             self.unlock()
 
@@ -271,12 +273,12 @@ class CastellationPage(StepPage):
                 return
 
             if geometry['gType'] == GeometryType.SURFACE.value:
+                polyData = geometryManager.polyData(gId)
                 if geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup']:
-                    polyData = geometryManager.polyData(gId)
                     if geometry['shape'] == Shape.TRI_SURFACE_MESH.value:
                         writeGeometryFile(geometry['name'], polyData)
 
-                    writeFeatureFile(geometry['name'], polyData)
+                writeFeatureFile(geometry['name'], polyData)
             else:  # geometry['gType'] == GeometryType.VOLUME.value
                 if geometry['shape'] == Shape.TRI_SURFACE_MESH.value and geometry['castellationGroup']:
                     appendFilter = vtkAppendPolyData()

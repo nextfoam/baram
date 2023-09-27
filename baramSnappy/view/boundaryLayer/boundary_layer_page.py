@@ -185,10 +185,12 @@ class BoundaryLayerPage(StepPage):
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()
+
+            QMessageBox.information(self._widget, self.tr('Complete'), self.tr('Boundary layers are applied.'))
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Boundary Layers Applying Failed. [') + str(e.returncode) + ']')
+                                    self.tr('Boundary layers applying failed. [') + str(e.returncode) + ']')
         finally:
             self.unlock()
 

@@ -118,6 +118,8 @@ class SnapPage(StepPage):
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()
+
+            QMessageBox.information(self._widget, self.tr('Complete'), self.tr('Snapping is completed.'))
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),
