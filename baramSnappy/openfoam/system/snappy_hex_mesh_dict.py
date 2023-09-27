@@ -93,7 +93,7 @@ class SnappyHexMeshDict(DictionaryFile):
 
         geometries = app.db.getElements('geometry')
         for gId, geometry in geometries.items():
-            if geometry['cfdType'] != CFDType.NONE.value:
+            if geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup']:
                 volume = geometries[geometry['volume']] if geometry['volume'] else geometry
                 shape = geometry['shape']
 
