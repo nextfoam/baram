@@ -22,7 +22,7 @@ class ContextMenu(QMenu):
     editActionTriggered = Signal()
     removeActionTriggered = Signal()
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
         self.addAction(self.tr('Edit'), lambda: self.editActionTriggered.emit())
@@ -35,13 +35,14 @@ class GeometryPage(StepPage):
 
         self._geometryManager = None
         self._list = None
+        self._menu = None
         self._loaded = False
         self._locked = False
 
         self._dialog = None
         self._volumeDialog = VolumeDialog(self._widget)
         self._surfaceDialog = SurfaceDialog(self._widget)
-        self._menu = ContextMenu(self._list)
+        self._menu = ContextMenu()
 
     def isNextStepAvailable(self):
         return not app.window.geometryManager.isEmpty()
@@ -71,16 +72,21 @@ class GeometryPage(StepPage):
         # self._list.itemDoubleClicked.connect(self._openEditDialog)
         # self._ui.geometryList.currentItemChanged.connect(self._currentGeometryChanged)
         self._ui.geometryList.customContextMenuRequested.connect(self._executeContextMenu)
+        self._list.selectedItemsChanged.connect(self._selectedItemsChanged)
         self._ui.import_.clicked.connect(self._importClicked)
         self._ui.add.clicked.connect(self._addClicked)
         self._menu.editActionTriggered.connect(self._openEditDialog)
         self._menu.removeActionTriggered.connect(self._removeGeometry)
         self._volumeDialog.accepted.connect(self._volumeDialogAccepted)
         self._surfaceDialog.accepted.connect(self._updateSurfaces)
+        self._geometryManager.selectedActorsChanged.connect(self._setSelectedGeometries)
 
     def _executeContextMenu(self, pos):
         if not self._locked:
             self._menu.exec(self._ui.geometryList.mapToGlobal(pos))
+
+    def _selectedItemsChanged(self):
+        self._geometryManager.selectActors(self._list.selectedIDs())
 
     @qasync.asyncSlot()
     async def _importClicked(self):
@@ -227,3 +233,7 @@ class GeometryPage(StepPage):
         self._geometryManager.addGeometry(gId, geometry)
         self._list.add(gId, geometry)
         self._updateNextStepAvailable()
+
+    def _setSelectedGeometries(self, gIds):
+        self._list.setSelectedItems(gIds)
+        self._geometryManager.clearSyncingFromDisplay()

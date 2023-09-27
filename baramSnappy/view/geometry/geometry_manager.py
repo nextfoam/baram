@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from PySide6.QtCore import Signal
+
 from baramSnappy.app import app
 from baramSnappy.db.configurations_schema import GeometryType, Shape
 from baramSnappy.db.simple_db import elementToVector
@@ -28,13 +30,20 @@ def platePolyData(shape, volume):
 
 
 class GeometryManager(ActorManager):
+    selectedActorsChanged = Signal(list)
+
+    SYNCING_FROM_DISPLAY = 1
+    SYNCING_TO_DISPLAY = 2
+
     def __init__(self):
         super().__init__()
 
         self._geometries = {}
         self._volumes = {}
+        self._syncingMode = None
 
-        self._name = 'Geometry'
+        self._displayController.selectedActorsChanged.connect(self._selectedActorsChanged)
+        self._displayController.selectionApplied.connect(self._clearSyningToDisplay)
 
     def geometries(self):
         return self._geometries
@@ -96,6 +105,19 @@ class GeometryManager(ActorManager):
     def show(self):
         self._show()
 
+    def selectActors(self, ids):
+        if self._syncingMode == self.SYNCING_FROM_DISPLAY:
+            return
+
+        self._syncingMode = self.SYNCING_TO_DISPLAY
+        self._displayController.setSelectedActors(ids)
+
+    def clearSyncingFromDisplay(self):
+        if self._syncingMode != self.SYNCING_FROM_DISPLAY:
+            raise RuntimeError
+
+        self._syncingMode = None
+
     def _add(self, gId, geometry):
         if geometry['gType'] == GeometryType.SURFACE.value:
             if geometry['volume']:
@@ -127,3 +149,16 @@ class GeometryManager(ActorManager):
                 polyData = platePolyData(shape, volume)
 
         return polyData
+
+    def _selectedActorsChanged(self, gIds):
+        if self._syncingMode == self.SYNCING_TO_DISPLAY:
+            return
+
+        self._syncingMode = self.SYNCING_FROM_DISPLAY
+        self.selectedActorsChanged.emit(gIds)
+
+    def _clearSyningToDisplay(self):
+        if self._syncingMode != self.SYNCING_TO_DISPLAY:
+            raise RuntimeError
+
+        self._syncingMode = None

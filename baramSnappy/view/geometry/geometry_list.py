@@ -53,9 +53,10 @@ class GeometryItem(QTreeWidgetItem):
 
 
 class GeometryList(QObject):
-    eyeToggled = Signal(str, bool)
-
-    itemDoubleClicked = Signal(str)
+    # eyeToggled = Signal(str, bool)
+    #
+    # itemDoubleClicked = Signal(str)
+    selectedItemsChanged = Signal()
 
     volumeIcon = QIcon(VOLUME_ICON_FILE)
     surfaceIcon = QIcon(SURFACE_ICON_FILE)
@@ -110,21 +111,30 @@ class GeometryList(QObject):
     def selectedIDs(self):
         return [str(item.gId()) for item in self._tree.selectedItems()]
 
+    def setSelectedItems(self, ids):
+        self._tree.clearSelection()
+
+        for i in ids:
+            if i in self._items:
+                self._items[i].setSelected(True)
+
     def childSurfaces(self, gId):
         item = self._items[gId]
         for i in range(item.childCount()):
             yield str(item.child(i).type())
 
     def _connectSignalsSlots(self):
-        self._tree.itemDoubleClicked.connect(self._doubleClicked)
+        # self._tree.itemDoubleClicked.connect(self._doubleClicked)
         self._tree.itemSelectionChanged.connect(self._correctSelection)
-
-    def _doubleClicked(self, item, column):
-        self.itemDoubleClicked.emit(item.gId())
+    #
+    # def _doubleClicked(self, item, column):
+    #     self.itemDoubleClicked.emit(item.gId())
 
     def _correctSelection(self):
         if len(self._tree.selectedItems()) > 1:
             for item in self._tree.selectedItems():
                 if item.isVolume():
                     item.setSelected(False)
+
+        self.selectedItemsChanged.emit()
 

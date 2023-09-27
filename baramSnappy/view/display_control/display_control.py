@@ -85,6 +85,9 @@ class ContextMenu(QMenu):
 
 
 class DisplayControl(QObject):
+    selectedActorsChanged = Signal(list)
+    selectionApplied = Signal()
+
     def __init__(self, ui):
         super().__init__()
 
@@ -92,11 +95,11 @@ class DisplayControl(QObject):
         self._list = ui.actors
         self._view = ui.renderingView
 
-        self._items = {}
-        self._selectedItems = None
+        self._cutTool = CutTool(ui)
         self._menu = ContextMenu(self._list)
 
-        self._cutTool = CutTool(ui)
+        self._items = {}
+        self._selectedItems = None
 
         self._list.setColumnWidth(Column.COLOR_COLUMN, 20)
         # self._list.setColumnWidth(Column.CUT_ICON_COLUMN, 20)
@@ -162,6 +165,14 @@ class DisplayControl(QObject):
         self._view.clear()
         self._items = {}
         self._selectedItems = None
+
+    def setSelectedActors(self, ids):
+        self._list.clearSelection()
+        for i in ids:
+            if i in self._items:
+                self._items[i].setSelected(True)
+
+        self.selectionApplied.emit()
 
     def _connectSignalsSlots(self):
         self._list.customContextMenuRequested.connect(self._showContextMenu)
@@ -273,9 +284,13 @@ class DisplayControl(QObject):
                 item.setSelected(True)
 
     def _selectedItemsChanged(self):
+        ids = []
         for item in self._items.values():
             item.actorInfo().setHighlighted(item.isSelected())
+            if item.isSelected():
+                ids.append(item.actorInfo().id())
 
+        self.selectedActorsChanged.emit(ids)
         self._view.refresh()
 
     def _actorSourceUpdated(self, id_):
