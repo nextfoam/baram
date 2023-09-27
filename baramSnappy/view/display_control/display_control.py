@@ -174,9 +174,29 @@ class DisplayControl(QObject):
 
         self.selectionApplied.emit()
 
+    def selectedItemsChanged(self):
+        ids = []
+        for item in self._items.values():
+            item.actorInfo().setHighlighted(item.isSelected())
+            if item.isSelected():
+                ids.append(item.actorInfo().id())
+
+        self.selectedActorsChanged.emit(ids)
+        self._view.refresh()
+    #
+    # def selectedItemsChanged(self):
+    #     ids = []
+    #     for item in self._items.values():
+    #         item.actorInfo().setHighlighted(item.isSelected())
+    #         if item.isSelected():
+    #             ids.append(item.actorInfo().id())
+    #
+    #     self.selectedActorsChanged.emit(ids)
+    #     self._view.refresh()
+
     def _connectSignalsSlots(self):
         self._list.customContextMenuRequested.connect(self._showContextMenu)
-        self._list.itemSelectionChanged.connect(self._selectedItemsChanged)
+        self._list.itemSelectionChanged.connect(self.selectedItemsChanged)
         self._view.customContextMenuRequested.connect(self._showContextMenuOnRenderingView)
         self._view.actorPicked.connect(self._actorPicked)
         self._menu.showActionTriggered.connect(self._showActors)
@@ -282,16 +302,6 @@ class DisplayControl(QObject):
                 item.setSelected(not item.isSelected())
             else:
                 item.setSelected(True)
-
-    def _selectedItemsChanged(self):
-        ids = []
-        for item in self._items.values():
-            item.actorInfo().setHighlighted(item.isSelected())
-            if item.isSelected():
-                ids.append(item.actorInfo().id())
-
-        self.selectedActorsChanged.emit(ids)
-        self._view.refresh()
 
     def _actorSourceUpdated(self, id_):
         self._items[id_].actorInfo().cut(self._cutTool.cutters())

@@ -118,6 +118,18 @@ class GeometryManager(ActorManager):
 
         self._syncingMode = None
 
+    def startSyncingFromDisplay(self):
+        self._displayController.selectedItemsChanged()
+
+    def enableSyncingToDisplay(self):
+        if self._syncingMode == self.SYNCING_TO_DISPLAY:
+            return
+
+        self._syncingMode = None
+
+    def disableSyncingToDisplay(self):
+        self._syncingMode = self.SYNCING_FROM_DISPLAY
+
     def _add(self, gId, geometry):
         if geometry['gType'] == GeometryType.SURFACE.value:
             if geometry['volume']:

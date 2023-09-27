@@ -56,6 +56,7 @@ class GeometryPage(StepPage):
         self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self._ui.buttons.setEnabled(True)
         self._locked = False
+        self._geometryManager.startSyncingFromDisplay()
 
     def selected(self):
         if not self._loaded:
@@ -67,6 +68,11 @@ class GeometryPage(StepPage):
             self._loaded = True
 
         app.window.meshManager.unload()
+
+    def deselected(self):
+        self._geometryManager.disableSyncingToDisplay()
+        self._list.clearSelection()
+        self._geometryManager.enableSyncingToDisplay()
 
     def _connectSignalsSlots(self):
         # self._list.itemDoubleClicked.connect(self._openEditDialog)
@@ -235,5 +241,7 @@ class GeometryPage(StepPage):
         self._updateNextStepAvailable()
 
     def _setSelectedGeometries(self, gIds):
-        self._list.setSelectedItems(gIds)
+        if not self._locked:
+            self._list.setSelectedItems(gIds)
+
         self._geometryManager.clearSyncingFromDisplay()

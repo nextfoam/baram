@@ -112,7 +112,7 @@ class GeometryList(QObject):
         return [str(item.gId()) for item in self._tree.selectedItems()]
 
     def setSelectedItems(self, ids):
-        self._tree.clearSelection()
+        self.clearSelection()
 
         for i in ids:
             if i in self._items:
@@ -122,6 +122,9 @@ class GeometryList(QObject):
         item = self._items[gId]
         for i in range(item.childCount()):
             yield str(item.child(i).type())
+
+    def clearSelection(self):
+        self._tree.clearSelection()
 
     def _connectSignalsSlots(self):
         # self._tree.itemDoubleClicked.connect(self._doubleClicked)
