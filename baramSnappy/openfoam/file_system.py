@@ -112,7 +112,7 @@ class FileSystem:
 
     async def copyTimeDrectory(self, srcTime, destTime, processorNo=None):
         srcPath = self.timePath(srcTime, processorNo)
-        if any(srcPath.iterdir()):
+        if srcPath.is_dir() and any(srcPath.iterdir()):
             await asyncio.to_thread(shutil.copytree, srcPath, self.timePath(destTime, processorNo))
             return True
 
