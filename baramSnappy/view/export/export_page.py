@@ -67,7 +67,13 @@ class ExportPage(StepPage):
             fileSystem = app.fileSystem
             parallel = app.project.parallelEnvironment()
 
+            progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
+
+            progressDialog.setLabelText(self.tr('Preparing'))
+            progressDialog.open()
+
             if app.db.elementCount('region') > 1:
+                progressDialog.setLabelText(self.tr('Splitting Mesh Regions'))
                 proc = await runParallelUtility('splitMeshRegions', '-cellZonesOnly', cwd=fileSystem.caseRoot(),
                                                 parallel=parallel,
                                                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
@@ -77,9 +83,7 @@ class ExportPage(StepPage):
                 await processor.run()
 
             if not fileSystem.timePathExists(self.OUTPUT_TIME, parallel.isParallelOn()):
-                progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
                 progressDialog.setLabelText(self.tr('Copying Files'))
-                progressDialog.open()
 
                 if parallel.isParallelOn():
                     for n in range(parallel.np()):
@@ -88,11 +92,10 @@ class ExportPage(StepPage):
                 elif not await fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME):
                     await fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME)
 
-                progressDialog.close()
-
             toposetDict = TopoSetDict().build(TopoSetDict.Mode.CREATE_CELL_ZONES)
             regions = app.db.getElements('region', None, ['name'])
             if toposetDict.isBuilt():
+                progressDialog.setLabelText(self.tr('Processing Cell Zones'))
                 if len(regions) == 1:
                     toposetDict.write()
                     proc = await runParallelUtility('topoSet', cwd=fileSystem.caseRoot(), parallel=parallel,
@@ -120,11 +123,9 @@ class ExportPage(StepPage):
             if len(regions) > 1:
                 RegionProperties(baramSystem.caseRoot()).build().write()
 
-            if parallel.isParallelOn():
-                progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
-                progressDialog.setLabelText(self.tr('Copying Files'))
-                progressDialog.open()
+            progressDialog.setLabelText(self.tr('Exporting Files'))
 
+            if parallel.isParallelOn():
                 for n in range(parallel.np()):
                     p = baramSystem.processorPath(n, False)
                     p.mkdir()
@@ -135,10 +136,17 @@ class ExportPage(StepPage):
 
                 await redistributionTask.reconstruct()
 
-                progressDialog.finish(self.tr('Export is complete.'))
             else:
-                shutil.move(self._outputPath() / Directory.POLY_MESH_DIRECTORY_NAME, baramSystem.polyMeshPath())
-                QMessageBox.information(self._widget, self.tr('Mesh Exporting'), self.tr('Export is complete.'))
+                if len(regions) > 1:
+                    for region in regions.values():
+                        shutil.move(self._outputPath() / region['name'], baramSystem.constantPath())
+                else:
+                    shutil.move(self._outputPath() / Directory.POLY_MESH_DIRECTORY_NAME, baramSystem.polyMeshPath())
+
+                self._outputPath().rmdir()
+
+            progressDialog.finish(self.tr('Export completed'))
+
         except ProcessError as e:
             self.clearResult()
             QMessageBox.information(self._widget, self.tr('Error'),
