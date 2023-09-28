@@ -167,7 +167,12 @@ class CastellationPage(StepPage):
 
             progressDialog.setLabelText(self.tr('Writing Geometry Files'))
             self._writeGeometryFiles(progressDialog)
-            SnappyHexMeshDict(castellationMesh=True).build().write()
+
+            snapDict = SnappyHexMeshDict(castellationMesh=True).build()
+            if app.db.elementCount('region') > 1:
+                snapDict.write()
+            else:
+                snapDict.updateForCellZoneInterfacesSnap().write()
 
             progressDialog.close()
 

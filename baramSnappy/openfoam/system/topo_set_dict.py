@@ -123,6 +123,11 @@ class TopoSetDict(DictionaryFile):
                 actions.append(self._constuctNewGeometryToCellAction(geometry))
                 actions.append(self._constructNewSetToCellZone(geometry['name'], geometry['name']))
 
+            regions = app.db.getElements('region', None, ['name'])
+            if len(regions) > 1:
+                for region in regions.values():
+                    actions.append(self._constructRemoveCellZoneSet(region['name']))
+
         if actions:
             self._data = {
                 'actions': actions
@@ -181,6 +186,14 @@ class TopoSetDict(DictionaryFile):
                 'set': setName
             }
         }
+
+    def _constructRemoveCellZoneSet(self, zoneName):
+        return {
+            'name': zoneName,
+            'type': 'cellZoneSet',
+            'action': 'remove',
+        }
+
     def _constuctNewBoxToCellAction(self, name, minPoint, maxPoint):
         data = self._createNewCellActionBase(name)
         data['source'] = 'boxToCell',

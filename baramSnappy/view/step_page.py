@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
+
 from PySide6.QtCore import QObject
 
 from libbaram.utils import rmtree
@@ -64,7 +66,7 @@ class StepPage(QObject):
 
         makeDir(app.fileSystem.caseRoot(), output, True)
 
-    def _outputPath(self):
+    def _outputPath(self) -> Path:
         return app.fileSystem.timePath(self.OUTPUT_TIME)
 
     def _setNextStepEnabled(self, enabled):

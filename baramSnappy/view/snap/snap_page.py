@@ -88,8 +88,12 @@ class SnapPage(StepPage):
 
             parallel = app.project.parallelEnvironment()
 
-            snapDict = SnappyHexMeshDict(snap=True)
-            snapDict.build().write()
+            snapDict = SnappyHexMeshDict(snap=True).build()
+            if app.db.elementCount('region') > 1:
+                snapDict.write()
+            else:
+                snapDict.updateForCellZoneInterfacesSnap().write()
+
             proc = await runParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=parallel,
                                             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             processor = Processor(proc)
@@ -106,15 +110,15 @@ class SnapPage(StepPage):
                 processor.errorLogged.connect(console.appendError)
                 await processor.run()
 
-            if app.db.elementCount('geometry', lambda i, e: e['cfdType'] == CFDType.CELL_ZONE.value):
-                snapDict.updateForCellZoneInterfacesSnap().write()
-                proc = await runParallelUtility('snappyHexMesh', '-overwrite', cwd=app.fileSystem.caseRoot(),
-                                                parallel=parallel,
-                                                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                processor = Processor(proc)
-                processor.outputLogged.connect(console.append)
-                processor.errorLogged.connect(console.appendError)
-                await processor.run()
+                if app.db.elementCount('geometry', lambda i, e: e['cfdType'] == CFDType.CELL_ZONE.value):
+                    snapDict.updateForCellZoneInterfacesSnap().write()
+                    proc = await runParallelUtility('snappyHexMesh', '-overwrite', cwd=app.fileSystem.caseRoot(),
+                                                    parallel=parallel,
+                                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                    processor = Processor(proc)
+                    processor.outputLogged.connect(console.append)
+                    processor.errorLogged.connect(console.appendError)
+                    await processor.run()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()

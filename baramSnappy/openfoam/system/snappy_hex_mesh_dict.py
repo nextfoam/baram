@@ -83,8 +83,8 @@ class SnappyHexMeshDict(DictionaryFile):
 
         for interface in app.db.getElements(
                 'geometry',
-                lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and not e['interRegion'], ['name']).values():
-            self._data['castellatedMeshControls']['refinementSurfaces'][interface['name']]['faceType'] = 'baffle'
+                lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and not e['interRegion'],['name', 'nonConformal']).values():
+            self._data['castellatedMeshControls']['refinementSurfaces'][interface['name']]['faceType'] = 'boundary' if interface['nonConformal'] else 'baffle'
 
         return self
 
