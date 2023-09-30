@@ -96,6 +96,8 @@ class PolyMeshLoader(QObject):
         self._reader.ReadZonesOn()
         self._reader.SkipZeroTimeOff()
 
+        self._progress_range = [0, 100]
+
         self._reader.AddObserver(vtkCommand.ProgressEvent, self._readerProgressed)
 
     async def loadMesh(self, time):
@@ -107,7 +109,13 @@ class PolyMeshLoader(QObject):
         self._reader.UpdateInformation()
         self._reader.SetTimeValue(time)
         self._reader.Modified()
-        self._reader.Update()
+
+        self._progress_range = [0, 50]
+        # Be careful!
+        # This should  be protected by modal dialog to prohibit users from interacting with rendering window
+        # Only one VTK can be allowed to keep integrity
+        await asyncio.to_thread(self._reader.Update)
+        self._progress_range = [50, 100]
         return await asyncio.to_thread(self._getVtkMesh, self._buildPatchArrayStatus())
 
     def _buildPatchArrayStatus(self):
@@ -161,4 +169,5 @@ class PolyMeshLoader(QObject):
         return vtkMesh
 
     def _readerProgressed(self, caller: vtkPOpenFOAMReader, ev):
-        self.progress.emit(self.tr('Loading Mesh : ') + f'{int(float(caller.GetProgress()) * 100)}%')
+        self.progress.emit(self.tr('Loading Mesh : ')
+                           + f'{int(self._progress_range[0] + (float(caller.GetProgress()) * (self._progress_range[1] - self._progress_range[0])))}%')
