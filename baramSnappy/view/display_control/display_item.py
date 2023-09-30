@@ -74,7 +74,7 @@ class DisplayItem(QTreeWidgetItem):
         if self._actorInfo.isVisible():
             color = self._actorInfo.color()
             self._colorWidget.setStyleSheet(
-                f'background-color: rgb({color.red()}, {color.green()}, {color.blue()}); border: 1px solid')
+                f'background-color: rgb({color.red()}, {color.green()}, {color.blue()}); border: 1px solid LightGrey; border-radius: 3px;')
         else:
             self._colorWidget.setStyleSheet('')
 
