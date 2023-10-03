@@ -23,7 +23,7 @@ class NavigationView(QObject):
     def __init__(self, buttons):
         super().__init__()
         self._steps = buttons
-        self._currentStep = None
+        self._currentStep = Step.NONE
 
         for b in self._steps.buttons():
             self._steps.setId(b, steps[b.objectName()])
@@ -50,5 +50,3 @@ class NavigationView(QObject):
         step = self._steps.id(self._steps.checkedButton())
         self.currentStepChanged.emit(step, self._currentStep)
         self._currentStep = step
-
-
