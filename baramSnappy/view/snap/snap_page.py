@@ -23,8 +23,6 @@ class SnapPage(StepPage):
     def __init__(self, ui):
         super().__init__(ui, ui.snapPage)
 
-        self._loaded = False
-
         self._connectSignalsSlots()
 
     def selected(self):

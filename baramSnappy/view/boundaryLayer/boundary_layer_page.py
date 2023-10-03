@@ -25,10 +25,7 @@ class BoundaryLayerPage(StepPage):
         super().__init__(ui, ui.boundaryLayerPage)
 
         self._ui = ui
-
         self._dialog = None
-        self._loaded = False
-
         self._db = None
 
         ui.boundaryLayerConfigurationsHeader.setContents(ui.boundaryLayerConfigurations)

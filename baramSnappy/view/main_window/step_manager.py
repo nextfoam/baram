@@ -68,6 +68,9 @@ class StepManager(QObject):
         self._connectSignalsSlots()
 
     def load(self):
+        for page in self._pages.values():
+            page.clear()
+
         savedStep = app.db.getEnumValue('step')
 
         step = Step.GEOMETRY

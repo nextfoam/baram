@@ -15,11 +15,10 @@ class RegionPage(StepPage):
 
     def __init__(self, ui):
         super().__init__(ui, ui.regionPage)
+
         self._ui = ui
         self._form = None
-
         self._regions = {}
-        self._loaded = False
         self._bounds = None
 
         self._form = RegionForm(self._ui.renderingView)
@@ -78,6 +77,14 @@ class RegionPage(StepPage):
 
     def deselected(self):
         self._form.cancel()
+
+    def clear(self):
+        for card in self._regions.values():
+            self._ui.regionList.layout().removeWidget(card)
+            card.deleteLater()
+
+        self._regions = {}
+        self._loaded = False
 
     def removeForm(self, form):
         self._ui.regionList.layout().removeWidget(self._form)

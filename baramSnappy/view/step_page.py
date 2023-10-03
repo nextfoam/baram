@@ -18,6 +18,7 @@ class StepPage(QObject):
         super().__init__()
         self._ui = ui
         self._widget = page
+        self._loaded = False
 
     def isNextStepAvailable(self):
         return app.fileSystem.timePathExists(self.OUTPUT_TIME, app.project.parallelCores() > 1)
@@ -39,6 +40,9 @@ class StepPage(QObject):
 
     def save(self):
         return True
+
+    def clear(self):
+        self._loaded = False
 
     def clearResult(self):
         path = self._outputPath()

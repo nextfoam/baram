@@ -29,7 +29,6 @@ class CastellationPage(StepPage):
         super().__init__(ui, ui.castellationPage)
 
         self._ui = ui
-        self._loaded = False
         self._db = None
         self._dialog = None
 

@@ -61,17 +61,21 @@ class GeometryList(QObject):
     volumeIcon = QIcon(VOLUME_ICON_FILE)
     surfaceIcon = QIcon(SURFACE_ICON_FILE)
 
-    def __init__(self, tree, geometries):
+    def __init__(self, tree):
         super().__init__()
 
         self._tree = tree
-        self._items = {}
+        self._items = None
 
         self._tree.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
 
         self._connectSignalsSlots()
 
-        for gId, geometry in geometries.geometries().items():
+    def setGeometries(self, geometries):
+        self._tree.clear()
+        self._items = {}
+
+        for gId, geometry in geometries.items():
             self.add(gId, geometry)
 
     def add(self, gId, geometry):

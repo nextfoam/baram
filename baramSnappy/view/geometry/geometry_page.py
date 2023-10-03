@@ -34,9 +34,8 @@ class GeometryPage(StepPage):
         super().__init__(ui, ui.geometryPage)
 
         self._geometryManager = None
-        self._list = None
+        self._list = GeometryList(self._ui.geometryList)
         self._menu = None
-        self._loaded = False
         self._locked = False
 
         self._dialog = None
@@ -61,7 +60,7 @@ class GeometryPage(StepPage):
     def selected(self):
         if not self._loaded:
             self._geometryManager = app.window.geometryManager
-            self._list = GeometryList(self._ui.geometryList, self._geometryManager)
+            self._list.setGeometries(self._geometryManager.geometries())
 
             self._connectSignalsSlots()
 
@@ -73,6 +72,10 @@ class GeometryPage(StepPage):
         self._geometryManager.disableSyncingToDisplay()
         self._list.clearSelection()
         self._geometryManager.enableSyncingToDisplay()
+
+    def clear(self):
+        self._loaded = False
+        self._locked = False
 
     def _connectSignalsSlots(self):
         # self._list.itemDoubleClicked.connect(self._openEditDialog)
