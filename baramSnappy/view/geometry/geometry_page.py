@@ -55,7 +55,8 @@ class GeometryPage(StepPage):
         self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self._ui.buttons.setEnabled(True)
         self._locked = False
-        self._geometryManager.startSyncingFromDisplay()
+        if self._geometryManager is not None:
+            self._geometryManager.startSyncingFromDisplay()
 
     def selected(self):
         if not self._loaded:
