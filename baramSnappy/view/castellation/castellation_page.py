@@ -284,7 +284,8 @@ class CastellationPage(StepPage):
 
                 writeFeatureFile(geometry['name'], polyData)
             else:  # geometry['gType'] == GeometryType.VOLUME.value
-                if geometry['shape'] == Shape.TRI_SURFACE_MESH.value and geometry['castellationGroup']:
+                if geometry['shape'] == Shape.TRI_SURFACE_MESH.value and (
+                        geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup']):
                     appendFilter = vtkAppendPolyData()
                     for surfaceId in geometryManager.subSurfaces(geometry['gId']):
                         appendFilter.AddInputData(geometryManager.polyData(surfaceId))
