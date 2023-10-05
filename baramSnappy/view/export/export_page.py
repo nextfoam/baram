@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 
 import qasync
-from PySide6.QtWidgets import QMessageBox, QFileDialog
+from PySide6.QtWidgets import QFileDialog
 
 from libbaram.openfoam.constants import Directory
 from libbaram.process import Processor, ProcessError
@@ -56,6 +56,11 @@ class ExportPage(StepPage):
     @qasync.asyncSlot()
     async def _export(self, file):
         path = Path(file)
+
+        progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
+        progressDialog.setLabelText(self.tr('Preparing'))
+        progressDialog.open()
+
         try:
             self.lock()
 
@@ -66,11 +71,6 @@ class ExportPage(StepPage):
 
             fileSystem = app.fileSystem
             parallel = app.project.parallelEnvironment()
-
-            progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
-
-            progressDialog.setLabelText(self.tr('Preparing'))
-            progressDialog.open()
 
             if app.db.elementCount('region') > 1:
                 progressDialog.setLabelText(self.tr('Splitting Mesh Regions'))
@@ -92,12 +92,12 @@ class ExportPage(StepPage):
                 elif not await fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME):
                     await fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME)
 
-            toposetDict = TopoSetDict().build(TopoSetDict.Mode.CREATE_CELL_ZONES)
+            topoSetDict = TopoSetDict().build(TopoSetDict.Mode.CREATE_CELL_ZONES)
             regions = app.db.getElements('region', None, ['name'])
-            if toposetDict.isBuilt():
+            if topoSetDict.isBuilt():
                 progressDialog.setLabelText(self.tr('Processing Cell Zones'))
                 if len(regions) == 1:
-                    toposetDict.write()
+                    topoSetDict.write()
                     proc = await runParallelUtility('topoSet', cwd=fileSystem.caseRoot(), parallel=parallel,
                                                     stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                     processor = Processor(proc)
@@ -107,7 +107,7 @@ class ExportPage(StepPage):
                 else:
                     for region in regions.values():
                         rname = region['name']
-                        toposetDict.setRegion(rname).write()
+                        topoSetDict.setRegion(rname).write()
                         proc = await runParallelUtility('topoSet', '-region', rname, cwd=fileSystem.caseRoot(),
                                                         parallel=parallel,
                                                         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
@@ -149,7 +149,6 @@ class ExportPage(StepPage):
 
         except ProcessError as e:
             self.clearResult()
-            QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Export failed. [') + str(e.returncode) + ']')
+            progressDialog.finish(self.tr('Export failed. [') + str(e.returncode) + ']')
         finally:
             self.unlock()
