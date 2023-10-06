@@ -90,7 +90,7 @@ class SnappyHexMeshDict(DictionaryFile):
 
     def _constructGeometries(self):
         data = {}
-
+        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
         geometries = app.db.getElements('geometry')
         for gId, geometry in geometries.items():
             if geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup']:
@@ -102,12 +102,19 @@ class SnappyHexMeshDict(DictionaryFile):
                         'type': 'triSurfaceMesh',
                         'name': geometry['name']
                     }
-                elif shape == Shape.HEX.value or shape == Shape.HEX6.value:
+                elif shape == Shape.HEX.value:
                     data[geometry['name']] = {
                         'type': 'searchableBox',
                         'min': elementToVector(volume['point1']),
                         'max': elementToVector(volume['point2'])
                     }
+                elif shape == Shape.HEX6.value:
+                    if gId != boundingHex6:
+                        data[geometry['name']] = {
+                            'type': 'searchableBox',
+                            'min': elementToVector(volume['point1']),
+                            'max': elementToVector(volume['point2'])
+                        }
                 elif shape == Shape.SPHERE.value:
                     data[geometry['name']] = {
                         'type': 'searchableSphere',
@@ -122,57 +129,63 @@ class SnappyHexMeshDict(DictionaryFile):
                         'radius': volume['radius']
                     }
                 elif shape in Shape.PLATES.value:
-                    x1, y1, z1 = elementToVector(volume['point1'])
-                    x2, y2, z2 = elementToVector(volume['point2'])
-                    xo, yo, zo = (x1 + x2) / 2, (y1 + y2) / 2, (z1 + z2) / 2
-                    xs, ys, zs = x2 - x1, y2 - y1, z2 - z1
+                    if geometry['volume'] != boundingHex6:
+                        x1, y1, z1 = elementToVector(volume['point1'])
+                        x2, y2, z2 = elementToVector(volume['point2'])
+                        xo, yo, zo = (x1 + x2) / 2, (y1 + y2) / 2, (z1 + z2) / 2
+                        xs, ys, zs = x2 - x1, y2 - y1, z2 - z1
 
-                    if shape == Shape.X_MIN.value:
-                        data[geometry['name']] = {
-                            'type': 'searchablePlate',
-                            'origin': [x1, y1, z1],
-                            'span': [0, ys, zs]
-                        }
-                    elif shape == Shape.X_MAX.value:
-                        data[geometry['name']] = {
-                            'type': 'searchablePlate',
-                            'origin': [x2, y1, z1],
-                            'span': [0, ys, zs]
-                        }
-                    elif shape == Shape.Y_MIN.value:
-                        data[geometry['name']] = {
-                            'type': 'searchablePlate',
-                            'origin': [x1, y1, z1],
-                            'span': [xs, 0, zs]
-                        }
-                    elif shape == Shape.Y_MAX.value:
-                        data[geometry['name']] = {
-                            'type': 'searchablePlate',
-                            'origin': [x1, y2, z1],
-                            'span': [xs, 0, zs]
-                        }
-                    elif shape == Shape.Z_MIN.value:
-                        data[geometry['name']] = {
-                            'type': 'searchablePlate',
-                            'origin': [x1, y1, z1],
-                            'span': [xs, ys, 0]
-                        }
-                    elif shape == Shape.Z_MAX.value:
-                        data[geometry['name']] = {
-                            'type': 'searchablePlate',
-                            'origin': [x1, y1, z2],
-                            'span': [xs, ys, 0]
-                        }
+                        if shape == Shape.X_MIN.value:
+                            data[geometry['name']] = {
+                                'type': 'searchablePlate',
+                                'origin': [x1, y1, z1],
+                                'span': [0, ys, zs]
+                            }
+                        elif shape == Shape.X_MAX.value:
+                            data[geometry['name']] = {
+                                'type': 'searchablePlate',
+                                'origin': [x2, y1, z1],
+                                'span': [0, ys, zs]
+                            }
+                        elif shape == Shape.Y_MIN.value:
+                            data[geometry['name']] = {
+                                'type': 'searchablePlate',
+                                'origin': [x1, y1, z1],
+                                'span': [xs, 0, zs]
+                            }
+                        elif shape == Shape.Y_MAX.value:
+                            data[geometry['name']] = {
+                                'type': 'searchablePlate',
+                                'origin': [x1, y2, z1],
+                                'span': [xs, 0, zs]
+                            }
+                        elif shape == Shape.Z_MIN.value:
+                            data[geometry['name']] = {
+                                'type': 'searchablePlate',
+                                'origin': [x1, y1, z1],
+                                'span': [xs, ys, 0]
+                            }
+                        elif shape == Shape.Z_MAX.value:
+                            data[geometry['name']] = {
+                                'type': 'searchablePlate',
+                                'origin': [x1, y1, z2],
+                                'span': [xs, ys, 0]
+                            }
 
         return data
 
     def _constructFeatures(self):
         data = []
 
+        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
         refinements = app.db.getElements('castellation/refinementSurfaces')
         for surface in app.db.getElements(
                 'geometry', lambda i, e: e['gType'] == GeometryType.SURFACE.value,
-                ['name', 'castellationGroup']).values():
+                ['name', 'castellationGroup', 'shape', 'volume']).values():
+
+            if surface['shape'] in Shape.PLATES.value and surface['volume'] == boundingHex6:
+                continue
+
             group = surface['castellationGroup']
             data.append({
                 'file': surface['name'] + '.obj',
@@ -184,15 +197,19 @@ class SnappyHexMeshDict(DictionaryFile):
     def _constructRefinementSurfaces(self):
         data = {}
 
+        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
         refinements = app.db.getElements('castellation/refinementSurfaces')
         # Target is a boundary, interface, or surface included in a castellation group
         surfaces = app.db.getElements(
             'geometry',
             lambda i, e: e['gType'] == GeometryType.SURFACE.value
                          and (e['cfdType'] != CFDType.NONE.value or e['castellationGroup']),
-            ['name', 'cfdType', 'nonConformal', 'interRegion', 'castellationGroup'])
+            ['name', 'cfdType', 'nonConformal', 'interRegion', 'castellationGroup', 'shape', 'volume'])
 
         for surface in surfaces.values():
+            if surface['shape'] in Shape.PLATES.value and surface['volume'] == boundingHex6:
+                continue
+
             level = 0
             if group := surface['castellationGroup']:
                 level = refinements[group]['surfaceRefinementLevel']

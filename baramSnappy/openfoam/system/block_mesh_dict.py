@@ -4,6 +4,8 @@
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramSnappy.app import app
+from baramSnappy.db.configurations_schema import GeometryType, Shape
+from baramSnappy.db.simple_db import elementToVector
 
 
 class BlockMeshDict(DictionaryFile):
@@ -16,16 +18,34 @@ class BlockMeshDict(DictionaryFile):
 
         gradingRatio = [1, 1, 1]
 
-        bounds = app.window.geometryManager.getBounds()
-        cellCounts = app.db.getValues('baseGrid', ['numCellsX', 'numCellsY', 'numCellsZ'])
-        padding = min([s / int(c) for s, c in zip(bounds.size(), cellCounts)]) / 100
+        x1, x2, y1, y2, z1, z2 = app.window.geometryManager.getBounds().toTuple()
+        bNames = {Shape.X_MIN.value: 'xMin',
+                  Shape.X_MAX.value: 'xMax',
+                  Shape.Y_MIN.value: 'yMin',
+                  Shape.Y_MAX.value: 'yMax',
+                  Shape.Z_MIN.value: 'zMin',
+                  Shape.Z_MAX.value: 'zMax'}
 
-        xMin = bounds.xMin - padding
-        xMax = bounds.xMax + padding
-        yMin = bounds.yMin - padding
-        yMax = bounds.yMax + padding
-        zMin = bounds.zMin - padding
-        zMax = bounds.zMax + padding
+        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
+        if boundingHex6 in app.window.geometryManager.geometries():
+            geometry = app.window.geometryManager.geometry(boundingHex6)
+            if geometry['gType'] == GeometryType.VOLUME.value and geometry['shape'] == Shape.HEX6.value:
+                x1, y1, z1 = elementToVector(geometry['point1'])
+                x2, y2, z2 = elementToVector(geometry['point2'])
+
+                for sId in app.window.geometryManager.subSurfaces(boundingHex6):
+                    s =  app.window.geometryManager.geometry(sId)
+                    bNames[s['shape']] = s['name']
+
+        cx, cy, cz = app.db.getValues('baseGrid', ['numCellsX', 'numCellsY', 'numCellsZ'])
+        padding = min((x2-x1)/int(cx), (y2-y1)/int(cy), (z2-z1)/int(cz)) / 100
+
+        xMin = x1 - padding
+        xMax = x2 + padding
+        yMin = y1 - padding
+        yMax = y2 + padding
+        zMin = z1 - padding
+        zMax = z2 + padding
 
         self._data = {
             'scale': 1.0,
@@ -41,41 +61,41 @@ class BlockMeshDict(DictionaryFile):
             ],
             'blocks': [
                 ('hex', [0, 1, 2, 3, 4, 5, 6, 7]),
-                cellCounts,
+                [cx, cy, cz],
                 ('simpleGrading', gradingRatio)
             ],
             'boundary': [
-                ('xMin', {
+                (bNames[Shape.X_MIN.value], {
                     'type': 'patch',
                     'faces': [
                         [0, 3, 7, 4]
                     ]
                 }),
-                ('xMax', {
+                (bNames[Shape.X_MAX.value], {
                     'type': 'patch',
                     'faces': [
                         [1, 2, 6, 5]
                     ]
                 }),
-                ('yMin', {
+                (bNames[Shape.Y_MIN.value], {
                     'type': 'patch',
                     'faces': [
                         [0, 1, 5, 4]
                     ]
                 }),
-                ('yMax', {
+                (bNames[Shape.Y_MAX.value], {
                     'type': 'patch',
                     'faces': [
                         [3, 7, 6, 2]
                     ]
                 }),
-                ('zMin', {
+                (bNames[Shape.Z_MIN.value], {
                     'type': 'patch',
                     'faces': [
                         [0, 1, 2, 3]
                     ]
                 }),
-                ('zMax', {
+                (bNames[Shape.Z_MAX.value], {
                     'type': 'patch',
                     'faces': [
                         [4, 5, 6, 7]

@@ -118,7 +118,8 @@ schema = {
     'baseGrid': {
         'numCellsX': PositiveIntType().setDefault(10),
         'numCellsY': PositiveIntType().setDefault(10),
-        'numCellsZ': PositiveIntType().setDefault(10)
+        'numCellsZ': PositiveIntType().setDefault(10),
+        'boundingHex6': IntType().setOptional().setDefault(None)
     },
     'castellation': {
         'vtkNonManifoldEdges': BoolType(False),

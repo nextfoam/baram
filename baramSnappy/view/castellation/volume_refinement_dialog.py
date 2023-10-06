@@ -92,8 +92,9 @@ class VolumeRefinementDialog(QDialog):
 
         self._volumes = []
         self._availableVolumes = []
+        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
         for gId, geometry in app.window.geometryManager.geometries().items():
-            if geometry['gType'] == GeometryType.VOLUME.value:
+            if geometry['gType'] == GeometryType.VOLUME.value and gId != boundingHex6:
                 name = geometry['name']
                 groupId = geometry['castellationGroup']
                 if groupId is None:

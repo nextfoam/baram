@@ -9,6 +9,7 @@ from libbaram.utils import rmtree
 
 from baramSnappy.app import app
 from baramSnappy.openfoam.file_system import makeDir
+from baramSnappy.view.main_window.main_window_ui import Ui_MainWindow
 
 
 class StepPage(QObject):
@@ -16,7 +17,7 @@ class StepPage(QObject):
 
     def __init__(self, ui, page):
         super().__init__()
-        self._ui = ui
+        self._ui: Ui_MainWindow = ui
         self._widget = page
         self._loaded = False
 

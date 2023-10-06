@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum, auto
+from typing import Optional
 
 from PySide6.QtCore import QObject
 
 from baramSnappy.app import app
+from baramSnappy.rendering.actor_info import Bounds
 
 
 class ActorGroup(Enum):
@@ -37,7 +39,7 @@ class ActorManager(QObject):
         if actorInfo := self._actorInfos.pop(key, None):
             self._displayController.remove(actorInfo)
 
-    def getBounds(self):
+    def getBounds(self) -> Optional[Bounds]:
         if self.isEmpty():
             return None
 

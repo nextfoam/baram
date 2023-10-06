@@ -3,6 +3,7 @@
 
 import qasync
 from pathlib import Path
+from typing import Optional
 
 from filelock import Timeout
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
@@ -53,7 +54,7 @@ class MainWindow(QMainWindow):
         self._renderingTool = RenderingTool(self._ui)
         self._consoleView = ConsoleView(self._ui)
 
-        self._geometryManager = None
+        self._geometryManager: Optional[GeometryManager] = None
         self._meshManager = None
         self._stepManager = StepManager(self._navigationView, self._ui)
 
@@ -89,7 +90,7 @@ class MainWindow(QMainWindow):
         return self._displayControl
 
     @property
-    def geometryManager(self):
+    def geometryManager(self) -> GeometryManager:
         return self._geometryManager
 
     @property

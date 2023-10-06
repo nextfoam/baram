@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from baramSnappy.app import app
 from baramSnappy.db.simple_schema import DBError
-from baramSnappy.db.configurations_schema import CFDType
+from baramSnappy.db.configurations_schema import CFDType, Shape
 from baramSnappy.view.widgets.multi_selector_dialog import SelectorItem, MultiSelectorDialog
 from .thickness_form import ThicknessForm
 from .boundary_setting_dialog_ui import Ui_BoundarySettingDialog
@@ -106,9 +106,13 @@ class BoundarySettingDialog(QDialog):
 
         self._boundaries = []
         self._availableBoundaries = []
+        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
         for gId, geometry in app.window.geometryManager.geometries().items():
             cfdType = geometry['cfdType']
             if cfdType == CFDType.BOUNDARY.value or cfdType == CFDType.INTERFACE.value:
+                if geometry['shape'] in Shape.PLATES.value and geometry['volume'] == boundingHex6:
+                    continue
+
                 name = geometry['name']
                 groupId = geometry['layerGroup']
                 if groupId is None:

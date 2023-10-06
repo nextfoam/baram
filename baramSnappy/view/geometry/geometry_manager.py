@@ -157,7 +157,7 @@ class GeometryManager(ActorManager):
                                             float(volume['radius']))
             elif shape == Shape.SPHERE.value:
                 polyData = spherePolyData(elementToVector(volume['point1']), float(volume['radius']))
-            else:
+            else:  # Shape.HEX6.value
                 polyData = platePolyData(shape, volume)
 
         return polyData
