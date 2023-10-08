@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QMenu, QColorDialog, QHeaderView
 from baramSnappy.app import app
 from baramSnappy.db.configurations_schema import Step
 from baramSnappy.rendering.actor_info import DisplayMode, Properties
+from widgets.rendering_widget import RenderingWidget
 
 from .opacity_dialog import OpacityDialog
 from .display_item import DisplayItem, Column
@@ -93,7 +94,7 @@ class DisplayControl(QObject):
 
         self._ui = ui
         self._list = ui.actors
-        self._view = ui.renderingView
+        self._view: RenderingWidget = ui.renderingView
 
         self._cutTool = CutTool(ui)
         self._menu = ContextMenu(self._list)
@@ -219,7 +220,11 @@ class DisplayControl(QObject):
         self._executeContextMenu(self._list.mapToGlobal(pos))
 
     def _showContextMenuOnRenderingView(self, pos):
-        actor = self._view.pickActor(pos.x(), self._view.height() - pos.y() - 1)
+        #  VTK ignores device pixel ratio and uses real pixel values only
+        ratio = app.qApplication.primaryScreen().devicePixelRatio()
+        x = pos.x() * ratio
+        y = (self._view.height() - pos.y() - 1) * ratio
+        actor = self._view.pickActor(x, y)
         if actor:
             self._actorPicked(actor, False, True)
             self._executeContextMenu(self._view.mapToGlobal(pos))
