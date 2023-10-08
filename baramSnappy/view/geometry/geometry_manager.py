@@ -43,7 +43,7 @@ class GeometryManager(ActorManager):
         self._syncingMode = None
 
         self._displayController.selectedActorsChanged.connect(self._selectedActorsChanged)
-        self._displayController.selectionApplied.connect(self._clearSyningToDisplay)
+        self._displayController.selectionApplied.connect(self._clearSyncingToDisplay)
 
     def geometries(self):
         return self._geometries
@@ -99,7 +99,7 @@ class GeometryManager(ActorManager):
 
         self.applyToDisplay()
 
-    def updateGeometryPropety(self, gId, name, value):
+    def updateGeometryProperty(self, gId, name, value):
         self._geometries[gId][name] = value
 
     def show(self):
@@ -129,6 +129,36 @@ class GeometryManager(ActorManager):
 
     def disableSyncingToDisplay(self):
         self._syncingMode = self.SYNCING_FROM_DISPLAY
+
+    def getBoundingHex6(self):
+        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
+        if boundingHex6 is None:
+            return None, None
+
+        if boundingHex6 not in app.window.geometryManager.geometries():
+            return None, None
+
+        geometry = app.window.geometryManager.geometry(boundingHex6)
+        if geometry['gType'] != GeometryType.VOLUME.value or geometry['shape'] != Shape.HEX6.value:
+            return None, None
+
+        return boundingHex6, geometry
+
+    def isBoundingHex6(self, gId):
+        if gId not in self._geometries:
+            return False
+
+        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
+
+        geometry = self._geometries[gId]
+        if geometry['gType'] == GeometryType.VOLUME.value:
+            if gId == boundingHex6:
+                return True
+        elif geometry['gType'] == GeometryType.SURFACE.value:
+            if geometry['shape'] in Shape.PLATES.value and geometry['volume'] == boundingHex6:
+                return True
+
+        return False
 
     def _add(self, gId, geometry):
         if geometry['gType'] == GeometryType.SURFACE.value:
@@ -169,7 +199,7 @@ class GeometryManager(ActorManager):
         self._syncingMode = self.SYNCING_FROM_DISPLAY
         self.selectedActorsChanged.emit(gIds)
 
-    def _clearSyningToDisplay(self):
+    def _clearSyncingToDisplay(self):
         if self._syncingMode != self.SYNCING_TO_DISPLAY:
             raise RuntimeError
 

@@ -72,11 +72,11 @@ class VolumeRefinementDialog(QDialog):
             geometryManager = app.window.geometryManager
             for gId, group in volumes.items():
                 self._db.setValue(f'geometry/{gId}/castellationGroup', group)
-                geometryManager.updateGeometryPropety(gId, 'castellationGroup', group)
+                geometryManager.updateGeometryProperty(gId, 'castellationGroup', group)
 
             super().accept()
-        except DBError as e:
-            QMessageBox.information(self, self.tr('Input Error'), e.toMessage())
+        except DBError as error:
+            QMessageBox.information(self, self.tr('Input Error'), error.toMessage())
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectVolumes)
@@ -92,17 +92,21 @@ class VolumeRefinementDialog(QDialog):
 
         self._volumes = []
         self._availableVolumes = []
-        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
         for gId, geometry in app.window.geometryManager.geometries().items():
-            if geometry['gType'] == GeometryType.VOLUME.value and gId != boundingHex6:
-                name = geometry['name']
-                groupId = geometry['castellationGroup']
-                if groupId is None:
-                    self._availableVolumes.append(SelectorItem(name, name, gId))
-                elif groupId == self._groupId:
-                    self._availableVolumes.append(SelectorItem(name, name, gId))
-                    self._ui.volumes.addItem(name)
-                    self._volumes.append(gId)
+            if geometry['gType'] != GeometryType.VOLUME.value:
+                continue
+
+            if app.window.geometryManager.isBoundingHex6(gId):
+                continue
+
+            name = geometry['name']
+            groupId = geometry['castellationGroup']
+            if groupId is None:
+                self._availableVolumes.append(SelectorItem(name, name, gId))
+            elif groupId == self._groupId:
+                self._availableVolumes.append(SelectorItem(name, name, gId))
+                self._ui.volumes.addItem(name)
+                self._volumes.append(gId)
 
         self._oldVolumes = self._volumes
 

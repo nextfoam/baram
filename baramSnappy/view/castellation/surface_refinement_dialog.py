@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from baramSnappy.app import app
 from baramSnappy.db.simple_schema import DBError
-from baramSnappy.db.configurations_schema import GeometryType, Shape
+from baramSnappy.db.configurations_schema import GeometryType
 from baramSnappy.view.widgets.multi_selector_dialog import MultiSelectorDialog
 from baramSnappy.view.widgets.multi_selector_dialog import SelectorItem
 from .surface_refinement_dialog_ui import Ui_SurfaceRefinementDialog
@@ -73,11 +73,11 @@ class SurfaceRefinementDialog(QDialog):
             geometryManager = app.window.geometryManager
             for gId, group in surfaces.items():
                 self._db.setValue(f'geometry/{gId}/castellationGroup', group)
-                geometryManager.updateGeometryPropety(gId, 'castellationGroup', group)
+                geometryManager.updateGeometryProperty(gId, 'castellationGroup', group)
 
             super().accept()
-        except DBError as e:
-            QMessageBox.information(self, self.tr('Input Error'), e.toMessage())
+        except DBError as error:
+            QMessageBox.information(self, self.tr('Input Error'), error.toMessage())
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectSurfaces)
@@ -94,10 +94,9 @@ class SurfaceRefinementDialog(QDialog):
 
         self._surfaces = []
         self._availableSurfaces = []
-        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
         for gId, geometry in app.window.geometryManager.geometries().items():
             if geometry['gType'] == GeometryType.SURFACE.value:
-                if geometry['shape'] in Shape.PLATES.value and geometry['volume'] == boundingHex6:
+                if app.window.geometryManager.isBoundingHex6(gId):
                     continue
 
                 name = geometry['name']

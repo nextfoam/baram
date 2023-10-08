@@ -4,7 +4,7 @@
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramSnappy.app import app
-from baramSnappy.db.configurations_schema import GeometryType, Shape
+from baramSnappy.db.configurations_schema import Shape
 from baramSnappy.db.simple_db import elementToVector
 
 
@@ -26,16 +26,14 @@ class BlockMeshDict(DictionaryFile):
                   Shape.Z_MIN.value: 'zMin',
                   Shape.Z_MAX.value: 'zMax'}
 
-        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
-        if boundingHex6 in app.window.geometryManager.geometries():
-            geometry = app.window.geometryManager.geometry(boundingHex6)
-            if geometry['gType'] == GeometryType.VOLUME.value and geometry['shape'] == Shape.HEX6.value:
-                x1, y1, z1 = elementToVector(geometry['point1'])
-                x2, y2, z2 = elementToVector(geometry['point2'])
+        gId, geometry = app.window.geometryManager.getBoundingHex6()
+        if geometry is not None:  # boundingHex6 is configured
+            x1, y1, z1 = elementToVector(geometry['point1'])
+            x2, y2, z2 = elementToVector(geometry['point2'])
 
-                for sId in app.window.geometryManager.subSurfaces(boundingHex6):
-                    s =  app.window.geometryManager.geometry(sId)
-                    bNames[s['shape']] = s['name']
+            for sId in app.window.geometryManager.subSurfaces(gId):
+                s =  app.window.geometryManager.geometry(sId)
+                bNames[s['shape']] = s['name']
 
         cx, cy, cz = app.db.getValues('baseGrid', ['numCellsX', 'numCellsY', 'numCellsZ'])
         padding = min((x2-x1)/int(cx), (y2-y1)/int(cy), (z2-z1)/int(cz)) / 100

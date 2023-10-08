@@ -90,7 +90,6 @@ class SnappyHexMeshDict(DictionaryFile):
 
     def _constructGeometries(self):
         data = {}
-        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
         geometries = app.db.getElements('geometry')
         for gId, geometry in geometries.items():
             if geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup']:
@@ -109,7 +108,7 @@ class SnappyHexMeshDict(DictionaryFile):
                         'max': elementToVector(volume['point2'])
                     }
                 elif shape == Shape.HEX6.value:
-                    if gId != boundingHex6:
+                    if not app.window.geometryManager.isBoundingHex6(gId):
                         data[geometry['name']] = {
                             'type': 'searchableBox',
                             'min': elementToVector(volume['point1']),
@@ -129,10 +128,9 @@ class SnappyHexMeshDict(DictionaryFile):
                         'radius': volume['radius']
                     }
                 elif shape in Shape.PLATES.value:
-                    if geometry['volume'] != boundingHex6:
+                    if not app.window.geometryManager.isBoundingHex6(gId):
                         x1, y1, z1 = elementToVector(volume['point1'])
                         x2, y2, z2 = elementToVector(volume['point2'])
-                        xo, yo, zo = (x1 + x2) / 2, (y1 + y2) / 2, (z1 + z2) / 2
                         xs, ys, zs = x2 - x1, y2 - y1, z2 - z1
 
                         if shape == Shape.X_MIN.value:

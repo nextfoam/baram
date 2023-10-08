@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from baramSnappy.app import app
 from baramSnappy.db.simple_schema import DBError
-from baramSnappy.db.configurations_schema import CFDType, Shape
+from baramSnappy.db.configurations_schema import CFDType
 from baramSnappy.view.widgets.multi_selector_dialog import SelectorItem, MultiSelectorDialog
 from .thickness_form import ThicknessForm
 from .boundary_setting_dialog_ui import Ui_BoundarySettingDialog
@@ -74,14 +74,14 @@ class BoundarySettingDialog(QDialog):
                 gId, isSlave = self._extractSelectorKey(key)
                 if isSlave:
                     self._db.setValue(f'geometry/{gId}/slaveLayerGroup', group)
-                    geometryManager.updateGeometryPropety(gId, 'slaveLayerGroup', group)
+                    geometryManager.updateGeometryProperty(gId, 'slaveLayerGroup', group)
                 else:
                     self._db.setValue(f'geometry/{gId}/layerGroup', group)
-                    geometryManager.updateGeometryPropety(gId, 'layerGroup', group)
+                    geometryManager.updateGeometryProperty(gId, 'layerGroup', group)
 
             super().accept()
-        except DBError as e:
-            QMessageBox.information(self, self.tr("Input Error"), e.toMessage())
+        except DBError as error:
+            QMessageBox.information(self, self.tr("Input Error"), error.toMessage())
 
     def _connectSignalsSlots(self):
         self._thicknessForm.modelChanged.connect(self.adjustSize)
@@ -106,11 +106,10 @@ class BoundarySettingDialog(QDialog):
 
         self._boundaries = []
         self._availableBoundaries = []
-        boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
         for gId, geometry in app.window.geometryManager.geometries().items():
             cfdType = geometry['cfdType']
             if cfdType == CFDType.BOUNDARY.value or cfdType == CFDType.INTERFACE.value:
-                if geometry['shape'] in Shape.PLATES.value and geometry['volume'] == boundingHex6:
+                if app.window.geometryManager.isBoundingHex6(gId):
                     continue
 
                 name = geometry['name']

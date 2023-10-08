@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+from pathlib import Path
 
 import qasync
-from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges
+from vtkmodules.vtkCommonDataModel import vtkPlane
+from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges, vtkPolyDataPlaneCutter
 from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
 from PySide6.QtWidgets import QMessageBox
 
@@ -14,12 +16,61 @@ from widgets.progress_dialog import ProgressDialog
 
 from baramSnappy.app import app
 from baramSnappy.db.configurations_schema import GeometryType, Shape, CFDType
+from baramSnappy.db.simple_db import elementToVector
 from baramSnappy.db.simple_schema import DBError
 from baramSnappy.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramSnappy.view.step_page import StepPage
 from baramSnappy.view.widgets.list_table import ListItemWithButtons
 from .surface_refinement_dialog import SurfaceRefinementDialog
 from .volume_refinement_dialog import VolumeRefinementDialog
+
+
+def Plane(ox, oy, oz, nx, ny, nz):
+    plane = vtkPlane()
+    plane.SetOrigin(ox, oy, oz)
+    plane.SetNormal(nx, ny, nz)
+    return plane
+
+def _writeFeatureFile(path: Path, pd):
+    edges = vtkFeatureEdges()
+    edges.SetInputData(pd)
+    edges.SetNonManifoldEdges(app.db.getValue('castellation/vtkNonManifoldEdges'))
+    edges.SetBoundaryEdges(app.db.getValue('castellation/vtkBoundaryEdges'))
+    edges.SetFeatureAngle(float(app.db.getValue('castellation/resolveFeatureAngle')))
+    edges.Update()
+
+    features = vtkAppendPolyData()
+    features.AddInputData(edges.GetOutput())
+
+    _, geometry = app.window.geometryManager.getBoundingHex6()
+    if geometry is not None:  # boundingHex6 is configured
+        x1, y1, z1 = elementToVector(geometry['point1'])
+        x2, y2, z2 = elementToVector(geometry['point2'])
+
+        planes = [
+            Plane(x1, 0, 0, -1, 0, 0),
+            Plane(x2, 0, 0, 1, 0, 0),
+            Plane(0, y1, 0, 0, -1, 0),
+            Plane(0, y2, 0, 0, 1, 0),
+            Plane(0, 0, z1, 0, 0, -1),
+            Plane(0, 0, z2, 0, 0, 1)
+        ]
+
+        cutter = vtkPolyDataPlaneCutter()
+        cutter.SetInputData(pd)
+
+        for p in planes:
+            cutter.SetPlane(p)
+            cutter.Update()
+
+            features.AddInputData(cutter.GetOutput())
+
+    features.Update()
+
+    writer = vtkOBJWriter()
+    writer.SetFileName(str(path))
+    writer.SetInputData(features.GetOutput())
+    writer.Write()
 
 
 class CastellationPage(StepPage):
@@ -221,7 +272,7 @@ class CastellationPage(StepPage):
         gIds = self._db.updateElements('geometry', 'castellationGroup', None,
                                        lambda i, e: e['castellationGroup'] == groupId)
         for gId in gIds:
-            app.window.geometryManager.updateGeometryPropety(gId, 'castellationGroup', None)
+            app.window.geometryManager.updateGeometryProperty(gId, 'castellationGroup', None)
 
         self._ui.surfaceRefinement.removeItem(groupId)
 
@@ -245,28 +296,15 @@ class CastellationPage(StepPage):
         gIds = self._db.updateElements('geometry', 'castellationGroup', None,
                                        lambda i, e: e['castellationGroup'] == groupId)
         for gId in gIds:
-            app.window.geometryManager.updateGeometryPropety(gId, 'castellationGroup', None)
+            app.window.geometryManager.updateGeometryProperty(gId, 'castellationGroup', None)
 
         self._ui.volumeRefinement.removeItem(groupId)
 
     def _writeGeometryFiles(self, progressDialog):
-        def writeGeometryFile(name, pd):
+        def writeGeometryFile(path: Path, pd):
             writer = vtkSTLWriter()
-            writer.SetFileName(str(filePath / f'{name}.stl'))
+            writer.SetFileName(str(path))
             writer.SetInputData(pd)
-            writer.Write()
-
-        def writeFeatureFile(name, pd):
-            edges = vtkFeatureEdges()
-            edges.SetInputData(pd)
-            edges.SetNonManifoldEdges(app.db.getValue('castellation/vtkNonManifoldEdges'))
-            edges.SetBoundaryEdges(app.db.getValue('castellation/vtkBoundaryEdges'))
-            edges.SetFeatureAngle(float(app.db.getValue('castellation/resolveFeatureAngle')))
-            edges.Update()
-
-            writer = vtkOBJWriter()
-            writer.SetFileName(str(filePath / f"{name}.obj"))
-            writer.SetInputData(edges.GetOutput())
             writer.Write()
 
         filePath = app.fileSystem.triSurfacePath()
@@ -276,13 +314,16 @@ class CastellationPage(StepPage):
             if progressDialog.isCanceled():
                 return
 
+            if geometryManager.isBoundingHex6(gId):
+                continue
+
             if geometry['gType'] == GeometryType.SURFACE.value:
                 polyData = geometryManager.polyData(gId)
                 if geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup']:
                     if geometry['shape'] == Shape.TRI_SURFACE_MESH.value:
-                        writeGeometryFile(geometry['name'], polyData)
+                        writeGeometryFile(filePath / f"{geometry['name']}.stl", polyData)
 
-                writeFeatureFile(geometry['name'], polyData)
+                _writeFeatureFile(filePath / f"{geometry['name']}.obj", polyData)
             else:  # geometry['gType'] == GeometryType.VOLUME.value
                 if geometry['shape'] == Shape.TRI_SURFACE_MESH.value and (
                         geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup']):
@@ -294,7 +335,7 @@ class CastellationPage(StepPage):
                     cleanFilter.SetInputConnection(appendFilter.GetOutputPort())
                     cleanFilter.Update()
 
-                    writeGeometryFile(geometry['name'], cleanFilter.GetOutput())
+                    writeGeometryFile(filePath / f"{geometry['name']}.stl", cleanFilter.GetOutput())
 
     def _updateControlButtons(self):
         if self.isNextStepAvailable():

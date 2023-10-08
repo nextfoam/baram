@@ -87,10 +87,10 @@ class ExportPage(StepPage):
 
                 if parallel.isParallelOn():
                     for n in range(parallel.np()):
-                        if not await fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME, n):
-                            await fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME, n)
-                elif not await fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME):
-                    await fileSystem.copyTimeDrectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME)
+                        if not await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME, n):
+                            await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME, n)
+                elif not await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME):
+                    await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME)
 
             topoSetDict = TopoSetDict().build(TopoSetDict.Mode.CREATE_CELL_ZONES)
             regions = app.db.getElements('region', None, ['name'])

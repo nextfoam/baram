@@ -216,12 +216,12 @@ class BoundaryLayerPage(StepPage):
 
         gIds = self._db.updateElements('geometry', 'layerGroup', None, lambda i, e: e['layerGroup'] == groupId)
         for gId in gIds:
-            app.window.geometryManager.updateGeometryPropety(gId, 'layerGroup', None)
+            app.window.geometryManager.updateGeometryProperty(gId, 'layerGroup', None)
 
         gIds = self._db.updateElements('geometry', 'slaveLayerGroup', None,
                                        lambda i, e: e['slaveLayerGroup'] == groupId)
         for gId in gIds:
-            app.window.geometryManager.updateGeometryPropety(gId, 'slaveLayerGroup', None)
+            app.window.geometryManager.updateGeometryProperty(gId, 'slaveLayerGroup', None)
 
         self._ui.boundaryLayerConfigurations.removeItem(groupId)
 

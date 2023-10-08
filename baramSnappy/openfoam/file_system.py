@@ -11,7 +11,7 @@ from libbaram.utils import rmtree
 from libbaram.openfoam.constants import Directory
 
 
-def makeDir(parent, directory, clear=False):
+def makeDir(parent, directory, clear=False) -> Path:
     path = parent / directory
 
     if clear and path.exists():
@@ -51,10 +51,10 @@ class FileSystem:
     def foamFilePath(self):
         return self._casePath / self.FOAM_FILE_NAME
 
-    def processorPath(self, no, checkExistance=True):
+    def processorPath(self, no, checkExistence=True):
         path = self._casePath / f'processor{no}'
 
-        return path if not checkExistance or path.is_dir() else None
+        return path if not checkExistence or path.is_dir() else None
 
     def timePath(self, time, processorNo=None):
         # print(time, processorNo, self.processorPath(processorNo))
@@ -110,7 +110,7 @@ class FileSystem:
 
         return targetFile
 
-    async def copyTimeDrectory(self, srcTime, destTime, processorNo=None):
+    async def copyTimeDirectory(self, srcTime, destTime, processorNo=None):
         srcPath = self.timePath(srcTime, processorNo)
         if srcPath.is_dir() and any(srcPath.iterdir()):
             await asyncio.to_thread(shutil.copytree, srcPath, self.timePath(destTime, processorNo))
