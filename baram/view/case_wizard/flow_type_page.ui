@@ -39,6 +39,9 @@
       </property>
       <item>
        <widget class="QRadioButton" name="compressible">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Compressible</string>
         </property>
@@ -48,6 +51,9 @@
        <widget class="QRadioButton" name="incompressible">
         <property name="text">
          <string>Incompressible</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

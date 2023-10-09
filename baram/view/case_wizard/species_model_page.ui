@@ -33,6 +33,9 @@
       </property>
       <item>
        <widget class="QRadioButton" name="include">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Include</string>
         </property>
@@ -42,6 +45,9 @@
        <widget class="QRadioButton" name="notInclude">
         <property name="text">
          <string>Not Include</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
