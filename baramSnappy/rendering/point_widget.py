@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtCore import QObject, Signal
+from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import vtkCommand
 from vtkmodules.vtkInteractionWidgets import vtkPointWidget
 
@@ -15,8 +16,13 @@ class PointWidget(QObject):
         super().__init__()
 
         self._view = view
+
         self._widget = vtkPointWidget()
         self._widget.SetInteractor(view.interactor())
+        self._widget.GetSelectedProperty().SetLineWidth(3)
+        self._widget.GetProperty().SetLineWidth(3)
+        self._widget.GetProperty().SetColor(vtkNamedColors().GetColor3d('Lime'))
+
         self._bounds = None
 
         self._widget.AddObserver(vtkCommand.InteractionEvent, self._pointMoved)
