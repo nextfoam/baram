@@ -19,8 +19,8 @@ class PointWidget(QObject):
 
         self._widget = vtkPointWidget()
         self._widget.SetInteractor(view.interactor())
-        self._widget.GetSelectedProperty().SetLineWidth(3)
-        self._widget.GetProperty().SetLineWidth(3)
+        self._widget.GetSelectedProperty().SetLineWidth(2)
+        self._widget.GetProperty().SetLineWidth(2)
         self._widget.GetProperty().SetColor(vtkNamedColors().GetColor3d('Lime'))
 
         self._bounds = None
