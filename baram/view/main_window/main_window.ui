@@ -358,7 +358,7 @@
   </action>
   <action name="actionOpenFoam">
    <property name="text">
-    <string>OpenFoam</string>
+    <string>OpenFOAM</string>
    </property>
   </action>
   <action name="actionFluent2D">
