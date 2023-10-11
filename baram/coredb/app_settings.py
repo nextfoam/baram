@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-
+import platform
+import shutil
 from enum import Enum
 from pathlib import Path
 
@@ -143,6 +144,32 @@ class AppSettings:
         settings = cls._load()
         settings[SettingKey.PARAVIEW_INSTALLED_PATH.value] = str(path)
         cls._save(settings)
+
+    @classmethod
+    def findParaviewInstalledPath(cls):
+        def validate(path, update=True):
+            if path and Path(path).exists():
+                if update:
+                    cls.updateParaviewInstalledPath(path)
+
+                return str(path)
+
+            return None
+
+        if path := validate(cls.getParaviewInstalledPath(), False):
+            return path
+
+        if path := validate(Path(shutil.which('paraview'))):
+            return path
+
+        if platform.system() == 'Windows':
+            # Search the unique paraview executable file.
+            paraviewHomes = list(Path(os.environ.get('PROGRAMFILES')).glob('paraview*'))
+            if len(paraviewHomes) == 1:
+                if path := validate(paraviewHomes[0] / 'bin/paraview.exe'):
+                    return path
+
+        return None
 
     @classmethod
     def _load(cls):

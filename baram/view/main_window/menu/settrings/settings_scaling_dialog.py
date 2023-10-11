@@ -4,7 +4,7 @@
 from PySide6.QtWidgets import QDialog, QMessageBox
 
 from baram.coredb.app_settings import AppSettings
-from .settings_scaling_ui import Ui_SettingScalingDialog
+from .settings_scaling_dialog_ui import Ui_SettingScalingDialog
 
 
 class SettingScalingDialog(QDialog):

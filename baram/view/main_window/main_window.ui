@@ -234,6 +234,7 @@
     </property>
     <addaction name="actionScale"/>
     <addaction name="actionLanguage"/>
+    <addaction name="actionParaViewSetting"/>
    </widget>
    <widget class="QMenu" name="menuMesh">
     <property name="title">
@@ -255,11 +256,18 @@
     </property>
     <addaction name="actionParallelEnvironment"/>
    </widget>
+   <widget class="QMenu" name="menuExternal_Tools">
+    <property name="title">
+     <string>External Tools</string>
+    </property>
+    <addaction name="actionParaView"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMesh"/>
    <addaction name="menuView"/>
    <addaction name="menuParallel"/>
    <addaction name="menuSetting"/>
+   <addaction name="menuExternal_Tools"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -403,9 +411,9 @@
     <string>PLOT3D GRID (ASCII)</string>
    </property>
   </action>
-  <action name="actionParaview">
+  <action name="actionParaView">
    <property name="text">
-    <string>Paraview</string>
+    <string>ParaView</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -416,6 +424,11 @@
   <action name="actionParallelEnvironment">
    <property name="text">
     <string>Environment</string>
+   </property>
+  </action>
+  <action name="actionParaViewSetting">
+   <property name="text">
+    <string>ParaView</string>
    </property>
   </action>
  </widget>

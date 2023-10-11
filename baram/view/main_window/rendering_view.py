@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import platform
 import subprocess
 from enum import Enum, auto
-from pathlib import Path
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QWidget, QFileDialog
+from PySide6.QtWidgets import QWidget
 from vtkmodules.vtkRenderingCore import vtkActor
 
-from baram.coredb.project import Project
 from baram.coredb.app_settings import AppSettings
 from baram.openfoam.file_system import FileSystem
 from .rendering_view_ui import Ui_RenderingView
@@ -62,7 +59,6 @@ class RenderingView(QWidget):
         self._view.fitCamera()
 
     def _connectSignalsSlots(self):
-        self._ui.paraview.clicked.connect(self._runParaview)
         self._ui.axis.toggled.connect(self._view.setAxisVisible)
         self._ui.cubeAxis.toggled.connect(self._view.setCubeAxisVisible)
         self._ui.fit.clicked.connect(self._view.fitCamera)
@@ -73,35 +69,6 @@ class RenderingView(QWidget):
 
         self._view.actorPicked.connect(self.actorPicked)
         self._view.viewClosed.connect(self.viewClosed)
-
-    def _runParaview(self):
-        casePath = ''
-        if Project.instance().meshLoaded:
-            casePath = FileSystem.foamFilePath()
-
-        if platform.system() == 'Windows':
-            # AppSettings has the paraview path.
-            if path := AppSettings.getParaviewInstalledPath():
-                if Path(path).exists():
-                    subprocess.Popen([path, casePath])
-                    return
-
-            # Search the unique paraview executable file.
-            paraviewHomes = list(Path('C:/Program Files').glob('paraview*'))
-            if len(paraviewHomes) == 1:
-                path = paraviewHomes[0] / 'bin/paraview.exe'
-                if path.exists():
-                    AppSettings.updateParaviewInstalledPath(path)
-                    subprocess.Popen([path, casePath])
-                    return
-
-            # The system has no paraview executables or more than one.
-            self._dialog = QFileDialog(self, self.tr('Select Paraview Program'), 'C:/Program Files', 'exe (*.exe)')
-            self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
-            self._dialog.fileSelected.connect(self._paraviewFileSelected)
-            self._dialog.open()
-        else:
-            subprocess.Popen(['paraview', casePath])
 
     def _paraviewFileSelected(self, file):
         casePath = FileSystem.foamFilePath()

@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QDialog
 
 from baram.app import app
 from baram.coredb.app_settings import AppSettings
-from .settings_language_ui import Ui_SettingLanguageDialog
+from .settings_language_dialog_ui import Ui_SettingLanguageDialog
 
 
 languages = [

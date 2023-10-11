@@ -4,8 +4,10 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import os
+import subprocess
 from enum import Enum, auto
 from pathlib import Path
+import platform
 
 import qasync
 import asyncio
@@ -16,6 +18,7 @@ from PySide6.QtCore import Qt, QThreadPool, QEvent, QTimer
 from libbaram.run import hasUtility
 from libbaram.utils import getFit
 from widgets.progress_dialog import ProgressDialog
+from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 from baram.app import app
 from baram.coredb.project import Project, SolverStatus
@@ -27,6 +30,9 @@ from baram.openfoam.case_generator import CaseGenerator
 from baram.openfoam import parallel
 from baram.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from baram.openfoam.redistribution_task import RedistributionTask
+from baram.view.main_window.menu.settrings.settings_language_dialog import SettingLanguageDialog
+from baram.view.main_window.menu.settrings.settings_paraveiw_dialog import SettingsParaViewDialog
+from baram.view.main_window.menu.settrings.settings_scaling_dialog import SettingScalingDialog
 from baram.view.setup.general.general_page import GeneralPage
 from baram.view.setup.materials.material_page import MaterialPage
 from baram.view.setup.models.models_page import ModelsPage
@@ -40,7 +46,6 @@ from baram.view.solution.run_conditions.run_conditions_page import RunConditions
 from baram.view.solution.run.process_information_page import ProcessInformationPage
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
-from .menu.settings_scaling import SettingScalingDialog
 from .navigator_view import NavigatorView, MenuItem
 from .rendering_dock import RenderingDock
 from .console_dock import ConsoleDock
@@ -49,9 +54,7 @@ from .monitor_dock import MonitorDock
 from .menu.mesh.mesh_scale_dialog import MeshScaleDialog
 from .menu.mesh.mesh_translate_dialog import MeshTranslateDialog
 from .menu.mesh.mesh_rotate_dialog import MeshRotateDialog
-from .menu.settings_language import SettingLanguageDialog
 from .menu.help.about_dialog import AboutDialog
-from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 logger = logging.getLogger(__name__)
 
@@ -238,9 +241,13 @@ class MainWindow(QMainWindow):
 
         self._ui.actionScale.triggered.connect(self._changeScale)
         self._ui.actionLanguage.triggered.connect(self._changeLanguage)
-        self._navigatorView.currentMenuChanged.connect(self._changeForm)
+        self._ui.actionParaViewSetting.triggered.connect(self._openParaViewSettingDialog)
+
+        self._ui.actionParaView.triggered.connect(self._paraViewActionTriggered)
 
         self._ui.actionAbout.triggered.connect(self._showAboutDialog)
+
+        self._navigatorView.currentMenuChanged.connect(self._changeForm)
 
         self._project.meshChanged.connect(self._meshChanged)
         self._project.projectOpened.connect(self._projectOpened)
@@ -478,12 +485,27 @@ class MainWindow(QMainWindow):
         self._ui.menuView.addAction(dock.toggleViewAction())
 
     def _changeScale(self):
-        self._dialogSettingScaling = SettingScalingDialog(self)
-        self._dialogSettingScaling.open()
+        self._dialog = SettingScalingDialog(self)
+        self._dialog.open()
 
     def _changeLanguage(self):
-        self._dialogSettingLanguage = SettingLanguageDialog(self)
-        self._dialogSettingLanguage.open()
+        self._dialog = SettingLanguageDialog(self)
+        self._dialog.open()
+
+    def _openParaViewSettingDialog(self):
+        self._dialog = SettingsParaViewDialog(self)
+        self._dialog.open()
+
+    def _paraViewActionTriggered(self):
+        if path := AppSettings.findParaviewInstalledPath():
+            self._runParaView(path, False)
+            return
+
+        path = os.environ.get('PROGRAMFILES') if platform.system() == 'Windows' else None
+        self._dialog = QFileDialog(self, self.tr('Select ParaView Executable'), path, 'exe (*.exe)')
+        self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        self._dialog.fileSelected.connect(self._runParaView)
+        self._dialog.open()
 
     @qasync.asyncSlot()
     async def _projectDirectorySelected(self, result):
@@ -555,3 +577,9 @@ class MainWindow(QMainWindow):
     def _renewCase(self):
         self._project.renew()
         CaseGenerator.createCase()
+
+    def _runParaView(self, executable, updateSetting=True):
+        casePath = FileSystem.foamFilePath() if Project.instance().meshLoaded else ''
+        subprocess.Popen([executable, casePath])
+        if updateSetting:
+            AppSettings.updateParaviewInstalledPath(executable)
