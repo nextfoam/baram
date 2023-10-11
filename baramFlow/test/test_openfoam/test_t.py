@@ -12,6 +12,7 @@ from baramFlow.coredb.material_db import Phase
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.openfoam.boundary_conditions.t import T
 from baramFlow.openfoam.file_system import FileSystem
+from libbaram.openfoam.constants import Directory
 
 dimensions = '[0 0 0 1 0 0 0]'
 rname = "testRegion_1"
@@ -280,11 +281,11 @@ class TestT(unittest.TestCase):
         Project._instance = project                     # MainWindow 생성 전에 Project 객체 생성
         project._fileDB = FileDB(testDir)               # Project.open에서 fileDB 생성
         FileSystem._casePath = FileSystem.makeDir(testDir, FileSystem.CASE_DIRECTORY_NAME)
-        FileSystem._constantPath = FileSystem.makeDir(FileSystem.caseRoot(), FileSystem.CONSTANT_DIRECTORY_NAME)
+        FileSystem._constantPath = FileSystem.makeDir(FileSystem.caseRoot(), Directory.CONSTANT_DIRECTORY_NAME)
                                                         # 사용자가 선택한 mesh directory 복사해 올 때 생성됨
         FileSystem._boundaryConditionsPath = FileSystem.makeDir(
-            FileSystem._casePath, FileSystem.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
-        FileSystem._systemPath = FileSystem.makeDir(FileSystem._casePath, FileSystem.SYSTEM_DIRECTORY_NAME)
+            FileSystem._casePath, Directory.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
+        FileSystem._systemPath = FileSystem.makeDir(FileSystem._casePath, Directory.SYSTEM_DIRECTORY_NAME)
         FileSystem.initRegionDirs(rname)               # CaseGenerator에서 호출
         with open(csvFile, 'w') as f:
             f.write('0,0,0,1\n0,0,1,2\n')
