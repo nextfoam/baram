@@ -6,7 +6,7 @@ from pathlib import Path
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor, vtkFollower
 from vtkmodules.vtkIOLegacy import vtkPolyDataReader
 from vtkmodules.vtkCommonCore import vtkPoints
-from vtkmodules.vtkCommonDataModel import vtkHexahedron, vtkCellArray, vtkUnstructuredGrid
+from vtkmodules.vtkCommonDataModel import vtkHexahedron, vtkUnstructuredGrid
 from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 from vtkmodules.vtkFiltersSources import vtkLineSource, vtkSphereSource
 from vtkmodules.vtkFiltersCore import vtkTubeFilter
@@ -64,9 +64,6 @@ def hexActor(point1, point2):
     for i in range(0, len(pointCoordinates)):
         points.InsertNextPoint(pointCoordinates[i])
         hexahedron.GetPointIds().SetId(i, i)
-
-    hexs = vtkCellArray()
-    hexs.InsertNextCell(hexahedron)
 
     uGrid = vtkUnstructuredGrid()
     uGrid.SetPoints(points)
