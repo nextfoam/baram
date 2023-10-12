@@ -242,7 +242,7 @@ class WallDialog(ResizableDialog):
         self._velocityConditionCombo.addItem(WallVelocityCondition.NO_SLIP, self.tr('No Slip'))
         self._velocityConditionCombo.addItem(WallVelocityCondition.SLIP, self.tr('Slip'))
         self._velocityConditionCombo.addItem(WallVelocityCondition.MOVING_WALL, self.tr('Moving Wall'))
-        if not GeneralDB.isCompressible() and not ModelsDB.isMultiphaseModelOn() and ModelsDB.isSpeciesModelOn():
+        if not GeneralDB.isCompressible() and not ModelsDB.isMultiphaseModelOn():
             self._velocityConditionCombo.addItem(WallVelocityCondition.ATMOSPHERIC_WALL, self.tr('Atmospheric Wall'))
         self._velocityConditionCombo.addItem(WallVelocityCondition.TRANSLATIONAL_MOVING_WALL,
                                              self.tr('Translational Moving Wall'))
