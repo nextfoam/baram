@@ -18,7 +18,7 @@ class SettingsParaViewDialog(QDialog):
         self._ui.setupUi(self)
 
         if path := AppSettings.findParaviewInstalledPath():
-            self._ui.filePath.setText(path)
+            self._ui.filePath.setText(str(path))
         else:
             self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
 
