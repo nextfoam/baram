@@ -242,12 +242,12 @@ class FvSchemes(DictionaryFile):
             pass  # Not implemented yet
 
         if multiphaseModel != 'off':
-            if volumeFraction == 'firstOrder':
+            if volumeFraction == 'firstOrderUpwind':
                 divSchemes.update({
                     'div(phi,alpha)': f'{bounded}Gauss Upwind',
                     'div(phirb,alpha)': f'{bounded}Gauss Upwind'
                 })
-            elif volumeFraction == 'secondOrder':
+            elif volumeFraction == 'secondOrderUpwind':
                 divSchemes.update({
                     'div(phi,alpha)': f'{bounded}Gauss vanLeer',
                     'div(phirb,alpha)': f'{bounded}Gauss linear'
