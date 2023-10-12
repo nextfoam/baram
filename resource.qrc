@@ -25,6 +25,7 @@
     <file alias="2d-label-icon.svg">resources/graphicsIcons/2d-label-icon.svg</file>
     <file alias="alignAxis.svg">resources/graphicsIcons/alignAxis.svg</file>
     <file alias="ruler.ico">resources/graphicsIcons/ruler.ico</file>
+    <file alias="planeHandle.svg">resources/graphicsIcons/planeHandle.svg</file>
   </qresource>
   <qresource prefix="icons">
     <file alias="accessibility.svg">resources/ionicons/accessibility.svg</file>

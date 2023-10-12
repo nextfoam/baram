@@ -593,7 +593,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>437</width>
+                    <width>435</width>
                     <height>322</height>
                    </rect>
                   </property>
@@ -1682,7 +1682,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>263</width>
+                    <width>266</width>
                     <height>689</height>
                    </rect>
                   </property>
@@ -2268,64 +2268,10 @@
                 </widget>
                </item>
                <item>
-                <widget class="QWidget" name="widget_23" native="true">
-                 <layout class="QHBoxLayout" name="horizontalLayout_14">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QComboBox" name="coloringMode">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                    <item>
-                     <property name="text">
-                      <string>Solid Color</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>Aspect Ratio</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>Non-Orthogonality</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>Volume Ratio</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>Skewness</string>
-                     </property>
-                    </item>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QCheckBox" name="fastInteraction">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                    <property name="text">
-                     <string>Fast Interaction</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
                 <widget class="QWidget" name="cutTool" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_7">
                   <property name="spacing">
-                   <number>0</number>
+                   <number>6</number>
                   </property>
                   <property name="leftMargin">
                    <number>0</number>
@@ -2438,7 +2384,7 @@
                                 </property>
                                 <property name="icon">
                                  <iconset resource="../../../resource.qrc">
-                                  <normaloff>:/icons/options.svg</normaloff>:/icons/options.svg</iconset>
+                                  <normaloff>:/graphicsIcons/planeHandle.svg</normaloff>:/graphicsIcons/planeHandle.svg</iconset>
                                 </property>
                                 <property name="checkable">
                                  <bool>true</bool>
@@ -2521,7 +2467,7 @@
                                 </property>
                                 <property name="icon">
                                  <iconset resource="../../../resource.qrc">
-                                  <normaloff>:/icons/options.svg</normaloff>:/icons/options.svg</iconset>
+                                  <normaloff>:/graphicsIcons/planeHandle.svg</normaloff>:/graphicsIcons/planeHandle.svg</iconset>
                                 </property>
                                 <property name="checkable">
                                  <bool>true</bool>
@@ -2604,7 +2550,7 @@
                                 </property>
                                 <property name="icon">
                                  <iconset resource="../../../resource.qrc">
-                                  <normaloff>:/icons/options.svg</normaloff>:/icons/options.svg</iconset>
+                                  <normaloff>:/graphicsIcons/planeHandle.svg</normaloff>:/graphicsIcons/planeHandle.svg</iconset>
                                 </property>
                                 <property name="checkable">
                                  <bool>true</bool>
