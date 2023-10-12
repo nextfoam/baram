@@ -45,3 +45,12 @@ class MonitorsWidget(QWidget):
     def _itemSelected(self, item):
         self._ui.edit.setEnabled(True)
         self._ui.delete_.setEnabled(True)
+
+    def _editClicked(self):
+        raise NotImplementedError
+
+    def _addClicked(self):
+        raise NotImplementedError
+
+    def _deleteClicked(self):
+        raise NotImplementedError
