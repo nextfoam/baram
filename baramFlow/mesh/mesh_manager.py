@@ -34,7 +34,7 @@ OPENFOAM_MESH_CONVERTERS = {
     MeshType.POLY_MESH: None,
     MeshType.FLUENT_2D: ('fluentMeshToFoam', '-writeSets', '-writeZones'),
     MeshType.FLUENT_3D: ('fluent3DMeshToFoam',),
-    MeshType.STAR_CCM: ('ccm26ToFoam',),
+    MeshType.STAR_CCM: ('ccmToFoam',),
     MeshType.GMSH: ('gmshToFoam',),
     MeshType.IDEAS: ('ideasUnvToFoam',),
     MeshType.NAMS_PLOT3D: ('plot3dToFoam',),
