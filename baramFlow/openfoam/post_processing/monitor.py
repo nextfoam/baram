@@ -201,7 +201,7 @@ class PointMonitor(Monitor):
         self._xpath = MonitorDB.getPointMonitorXPath(name)
 
         self._showChart = self._db.getValue(self._xpath + '/showChart') == 'true'
-        # self._rname = self._db.getValue(self._xpath + '/region')
+        self._rname = ''  # Working only for Single Region Cases. ToDo: find a region by using vtkStaticCellLocator
         self._chart = chart
 
         self._chart.setTitle(name)
