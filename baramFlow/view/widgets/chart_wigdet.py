@@ -62,6 +62,9 @@ class ChartWidget(QWidget):
         maxX = float(self._data.last_valid_index())
 
         dataWidth = maxX - minX
+        if dataWidth == 0:
+            return
+
         margin = dataWidth * SIDE_MARGIN / (1 - 2 * SIDE_MARGIN)
 
         self._axes.set_xlim([minX-margin, maxX+margin])
