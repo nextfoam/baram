@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtCore import QObject, Signal
+from vtkmodules.vtkCommonColor import vtkNamedColors
 
 from baramFlow.app import app
 from baramFlow.view.main_window.rendering_view import DisplayMode
@@ -18,41 +19,42 @@ _applyDisplayMode = {
 
 def _applyPointsMode(actor):
     actor.GetProperty().SetPointSize(3)
-    actor.GetProperty().SetColor(0.1, 0.0, 0.3)
+    actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('Gainsboro'))
     actor.GetProperty().SetRepresentationToPoints()
 
 
 def _applyWireframeMode(actor):
-    actor.GetProperty().SetColor(0.1, 0.0, 0.3)
+    actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('Gainsboro'))
     actor.GetProperty().SetLineWidth(1.0)
     actor.GetProperty().SetRepresentationToWireframe()
 
 
 def _applySurfaceMode(actor):
-    actor.GetProperty().SetColor(0.5, 0.2, 1.0)
+    actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('Gainsboro'))
     actor.GetProperty().SetRepresentationToSurface()
     actor.GetProperty().EdgeVisibilityOff()
 
 
 def _applySurfaceEdgeMode(actor):
-    actor.GetProperty().SetColor(0.5, 0.2, 1.0)
+    actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('Gainsboro'))
     actor.GetProperty().SetRepresentationToSurface()
     actor.GetProperty().EdgeVisibilityOn()
-    actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
+    actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Gray'))
     actor.GetProperty().SetLineWidth(1.0)
 
 
 def _applyFeatureMode(actor):
-    actor.GetProperty().SetColor(0.5, 0.2, 1.0)
-    actor.GetProperty().SetEdgeColor(0.1, 0.0, 0.3)
+    actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('Gainsboro'))
+    actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('WhiteSmoke'))
     actor.GetProperty().SetLineWidth(1.0)
 
 
 def _applyHighlight(actor):
-    actor.GetProperty().SetColor(1, 1, 1)
-    actor.GetProperty().SetEdgeColor(1, 1, 1)
+    actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('White'))
+    actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Magenta'))
     actor.GetProperty().EdgeVisibilityOn()
     actor.GetProperty().SetRepresentationToSurface()
+    actor.GetProperty().SetLineWidth(2)
 
 
 class ActorInfo:

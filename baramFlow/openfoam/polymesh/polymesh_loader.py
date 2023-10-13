@@ -36,6 +36,7 @@ def getActor(dataset):
 
     mapper = vtkPolyDataMapper()
     mapper.SetInputData(gFilter.GetOutput())
+    mapper.ScalarVisibilityOff()
 
     actor = vtkQuadricLODActor()    # vtkActor()
     actor.SetMapper(mapper)
