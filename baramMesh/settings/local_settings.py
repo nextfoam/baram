@@ -42,7 +42,7 @@ class LocalSettings:
     def parallelEnvironment(self):
         return ParallelEnvironment(
             self.get(LocalSettingKey.PARALLEL_NP, 1),
-            ParallelType[self.get(LocalSettingKey.PARALLEL_TYPE, ParallelType.CLUSTER.name)],
+            ParallelType[self.get(LocalSettingKey.PARALLEL_TYPE, ParallelType.LOCAL_MACHINE.name)],
             self.get(LocalSettingKey.PARALLEL_HOSTS, '')
         )
 
