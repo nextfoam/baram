@@ -214,7 +214,7 @@ class FvSolution(DictionaryFile):
             self._data['relaxationFactors']['equations'][f'alpha.{material}'] = self._db.getValue(
                 NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors/volumeFraction')
             self._data['relaxationFactors']['equations'][f'alpha.{material}Final'] = self._db.getValue(
-                NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors/volumeFraction')
+                NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors/volumeFractionFinal')
 
         return self
 

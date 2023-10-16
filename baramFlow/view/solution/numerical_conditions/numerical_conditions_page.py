@@ -9,6 +9,7 @@ from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.numerical_db import PressureVelocityCouplingScheme, ImplicitDiscretizationScheme, UpwindDiscretizationScheme
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
+import baramFlow.openfoam.solver
 from baramFlow.view.widgets.content_page import ContentPage
 from .numerical_conditions_page_ui import Ui_NumericalConditionsPage
 from .advanced_dialog import AdvancedDialog
@@ -54,40 +55,46 @@ class NumericalConditionsPage(ContentPage):
         turbulenceOn = ModelsDB.getTurbulenceModel() not in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR)
         multiphaseOn = ModelsDB.isMultiphaseModelOn()
 
-        self._ui.useMomentumPredictor.setVisible(timeIsTransient)
+        solvers = baramFlow.openfoam.solver.findSolvers()
+        if len(solvers) == 0:  # No matching solver found
+            raise RuntimeError
+        solverCapability = baramFlow.openfoam.solver.getSolverCapability(solvers[0])
+        allRoundSolver: bool = solverCapability['timeTransient'] and solverCapability['timeSteady']  # this solver is able to solve both steady and transient
+
+        self._ui.useMomentumPredictor.setVisible(timeIsTransient or allRoundSolver)
 
         self._ui.discretizationSchemeTime.setEnabled(timeIsTransient)
         self._ui.discretizationSchemeEnergy.setEnabled(energyOn)
         self._ui.discretizationSchemeTurbulence.setEnabled(turbulenceOn)
         self._ui.discretizationSchemeVolumeFraction.setEnabled(multiphaseOn)
 
-        self._ui.underRelaxationFactorPressureFinal.setEnabled(timeIsTransient)
-        self._ui.underRelaxationFactorMomentumFinal.setEnabled(timeIsTransient)
+        self._ui.underRelaxationFactorPressureFinal.setEnabled(timeIsTransient or allRoundSolver)
+        self._ui.underRelaxationFactorMomentumFinal.setEnabled(timeIsTransient or allRoundSolver)
         self._ui.underRelaxationFactorEnergy.setEnabled(energyOn)
-        self._ui.underRelaxationFactorEnergyFinal.setEnabled(timeIsTransient and energyOn)
+        self._ui.underRelaxationFactorEnergyFinal.setEnabled((timeIsTransient or allRoundSolver) and energyOn)
         self._ui.underRelaxationFactorTurbulence.setEnabled(turbulenceOn)
-        self._ui.underRelaxationFactorTurbulenceFinal.setEnabled(timeIsTransient and turbulenceOn)
-        self._ui.underRelaxationFactorDensityFinal.setEnabled(timeIsTransient)
+        self._ui.underRelaxationFactorTurbulenceFinal.setEnabled((timeIsTransient or allRoundSolver) and turbulenceOn)
+        self._ui.underRelaxationFactorDensityFinal.setEnabled(timeIsTransient or allRoundSolver)
         self._ui.underRelaxationFactorVolumeFraction.setEnabled(multiphaseOn)
-        self._ui.underRelaxationFactorVolumeFractionFinal.setEnabled(timeIsTransient and multiphaseOn)
+        self._ui.underRelaxationFactorVolumeFractionFinal.setEnabled(multiphaseOn)
 
-        self._ui.maxIterationsPerTimeStep.setEnabled(timeIsTransient)
-        self._ui.numberOfCorrectors.setEnabled(timeIsTransient)
+        self._ui.maxIterationsPerTimeStep.setEnabled(timeIsTransient or allRoundSolver)
+        self._ui.numberOfCorrectors.setEnabled(timeIsTransient or allRoundSolver)
 
         if multiphaseOn:
-            self._ui.multiphaseMaxIterationsPerTimeStep.setEnabled(timeIsTransient)
-            self._ui.multiphaseNumberOfCorrectors.setEnabled(timeIsTransient)
+            self._ui.multiphaseMaxIterationsPerTimeStep.setEnabled(True)
+            self._ui.multiphaseNumberOfCorrectors.setEnabled(True)
         else:
             self._ui.multiphase.setEnabled(False)
 
-        self._ui.relativePressure.setEnabled(timeIsTransient)
-        self._ui.relativeMomentum.setEnabled(timeIsTransient)
+        self._ui.relativePressure.setEnabled(timeIsTransient or allRoundSolver)
+        self._ui.relativeMomentum.setEnabled(timeIsTransient or allRoundSolver)
         self._ui.absoluteEnergy.setEnabled(energyOn)
-        self._ui.relativeEnergy.setEnabled(timeIsTransient and energyOn)
+        self._ui.relativeEnergy.setEnabled((timeIsTransient or allRoundSolver) and energyOn)
         self._ui.absoluteTurbulence.setEnabled(turbulenceOn)
-        self._ui.relativeTurbulence.setEnabled(timeIsTransient and turbulenceOn)
+        self._ui.relativeTurbulence.setEnabled((timeIsTransient or allRoundSolver) and turbulenceOn)
         self._ui.absoluteVolumeFraction.setEnabled(multiphaseOn)
-        self._ui.relativeVolumeFraction.setEnabled(timeIsTransient and multiphaseOn)
+        self._ui.relativeVolumeFraction.setEnabled(multiphaseOn)
 
         self._ui.pressureVelocityCouplingScheme.setCurrentText(
             self._pressureVelocityCouplingSchemes[self._db.getValue(self._xpath + '/pressureVelocityCouplingScheme')])

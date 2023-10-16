@@ -8,7 +8,6 @@ from PySide6.QtWidgets import QMessageBox
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.general_db import GeneralDB, SolverType
-from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.view.widgets.content_page import ContentPage
 from .general_page_ui import Ui_GeneralPage
 
@@ -29,9 +28,6 @@ class GeneralPage(ContentPage):
 
         if GeneralDB.getSolverType() == SolverType.DENSITY_BASED:
             self._ui.transient_.setEnabled(False)
-
-        if ModelsDB.isMultiphaseModelOn():
-            self._ui.steady.setEnabled(False)
 
     def save(self):
         writer = CoreDBWriter()
