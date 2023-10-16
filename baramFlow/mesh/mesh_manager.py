@@ -50,25 +50,45 @@ class MeshManager(Processor):
     @qasync.asyncSlot()
     async def scale(self, x, y, z):
         caseRoot = FileSystem.caseRoot()
-        self._proc = await runParallelUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
+        proc = await runParallelUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
                                               '-case', caseRoot, parallel=parallel.getEnvironment(), cwd=caseRoot)
-        return await self._proc.wait()
+        result = await proc.wait()
+        if result == 0 and parallel.getNP() > 1:  # Process the mesh in constant folder too.
+            proc = await runUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
+                                                  '-case', caseRoot, cwd=caseRoot)
+            result = await proc.wait()
+
+        return result
 
     @qasync.asyncSlot()
     async def translate(self, x, y, z):
         caseRoot = FileSystem.caseRoot()
-        self._proc = await runParallelUtility('transformPoints', '-allRegions', '-translate', f'({x} {y} {z})',
+        proc = await runParallelUtility('transformPoints', '-allRegions', '-translate', f'({x} {y} {z})',
                                               '-case', caseRoot, parallel=parallel.getEnvironment(), cwd=caseRoot)
-        return await self._proc.wait()
+        result = await proc.wait()
+        if result == 0 and parallel.getNP() > 1:  # Process the mesh in constant folder too.
+            proc = await runUtility('transformPoints', '-allRegions', '-translate', f'({x} {y} {z})',
+                                            '-case', caseRoot, cwd=caseRoot)
+            result = await proc.wait()
+
+        return result
 
     @qasync.asyncSlot()
     async def rotate(self, origin, axis, angle):
         caseRoot = FileSystem.caseRoot()
-        self._proc = await runParallelUtility('transformPoints', '-allRegions',
+        proc = await runParallelUtility('transformPoints', '-allRegions',
                                               '-origin', f'({" ".join(origin)})',
                                               '-rotate-angle', f'(({" ".join(axis)}) {angle})',
                                               '-case', caseRoot, parallel=parallel.getEnvironment(), cwd=caseRoot)
-        return await self._proc.wait()
+        result = await proc.wait()
+        if result == 0 and parallel.getNP() > 1:  # Process the mesh in constant folder too.
+            proc = await runUtility('transformPoints', '-allRegions',
+                                            '-origin', f'({" ".join(origin)})',
+                                            '-rotate-angle', f'(({" ".join(axis)}) {angle})',
+                                            '-case', caseRoot, cwd=caseRoot)
+            result = await proc.wait()
+
+        return result
 
     async def importOpenFoamMesh(self, path: Path):
         progressDialog = ProgressDialog(self._window, self.tr('Mesh Loading'))
