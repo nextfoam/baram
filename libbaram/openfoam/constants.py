@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 
 
+CASE_DIRECTORY_NAME = 'case'
+FOAM_FILE_NAME = 'baram.foam'
+
+
 class Directory:
     CONSTANT_DIRECTORY_NAME = 'constant'
     BOUNDARY_CONDITIONS_DIRECTORY_NAME = '0'
@@ -12,3 +16,9 @@ class Directory:
     POST_PROCESSING_DIRECTORY_NAME = 'postProcessing'
     TRI_SURFACE_DIRECTORY_NAME = 'triSurface'
     BOUNDARY_FILE_NAME = 'boundary'
+
+
+def isBaramProject(path):
+    foamFile = path / CASE_DIRECTORY_NAME / FOAM_FILE_NAME
+
+    return foamFile.is_file()

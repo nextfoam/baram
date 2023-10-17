@@ -8,7 +8,7 @@ from pathlib import Path
 import asyncio
 
 from libbaram.utils import rmtree
-from libbaram.openfoam.constants import Directory
+from libbaram.openfoam.constants import Directory, CASE_DIRECTORY_NAME, FOAM_FILE_NAME
 
 
 def makeDir(parent, directory, clear=False) -> Path:
@@ -23,15 +23,12 @@ def makeDir(parent, directory, clear=False) -> Path:
 
 
 class FileSystem:
-    CASE_DIRECTORY_NAME = 'case'
-    FOAM_FILE_NAME = 'baram.foam'
-
     def __init__(self, path):
         self._casePath = None
         self._constantPath = None
         self._triSurfacePath = None
 
-        self._setCaseRoot(path / self.CASE_DIRECTORY_NAME)
+        self._setCaseRoot(path / CASE_DIRECTORY_NAME)
 
     def caseRoot(self):
         return self._casePath
@@ -49,7 +46,7 @@ class FileSystem:
         return self.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME / 'boundary'
 
     def foamFilePath(self):
-        return self._casePath / self.FOAM_FILE_NAME
+        return self._casePath / FOAM_FILE_NAME
 
     def processorPath(self, no, checkExistence=True):
         path = self._casePath / f'processor{no}'

@@ -9,7 +9,7 @@ import re
 import asyncio
 
 from libbaram import utils
-from libbaram.openfoam.constants import Directory
+from libbaram.openfoam.constants import Directory, CASE_DIRECTORY_NAME, FOAM_FILE_NAME
 
 from baramFlow.coredb.project import Project
 
@@ -38,8 +38,6 @@ def copyDirectory(src, dst):
 
 class FileSystem:
     TEMP_DIRECTORY_NAME = 'temp'
-    CASE_DIRECTORY_NAME = 'case'
-    FOAM_FILE_NAME = 'baram.foam'
 
     _casePath: Optional[Path] = None
     _constantPath = None
@@ -66,7 +64,7 @@ class FileSystem:
 
     @classmethod
     def setupForProject(cls):
-        cls._setCaseRoot(Project.instance().path / cls.CASE_DIRECTORY_NAME)
+        cls._setCaseRoot(Project.instance().path / CASE_DIRECTORY_NAME)
 
     @classmethod
     def initRegionDirs(cls, rname):
@@ -133,7 +131,7 @@ class FileSystem:
 
     @classmethod
     def foamFilePath(cls):
-        return cls._casePath / cls.FOAM_FILE_NAME
+        return cls._casePath / FOAM_FILE_NAME
 
     @classmethod
     def processorPath(cls, no):
@@ -208,7 +206,7 @@ class FileSystem:
 
     @classmethod
     def save(cls):
-        targetPath = Project.instance().path / cls.CASE_DIRECTORY_NAME
+        targetPath = Project.instance().path / CASE_DIRECTORY_NAME
         if cls._casePath != targetPath:
             if targetPath.exists():
                 utils.rmtree(targetPath)
@@ -222,7 +220,7 @@ class FileSystem:
             copyDirectory(src / Directory.CONSTANT_DIRECTORY_NAME, dst / Directory.CONSTANT_DIRECTORY_NAME)
             copyDirectory(src / Directory.SYSTEM_DIRECTORY_NAME, dst / Directory.SYSTEM_DIRECTORY_NAME)
 
-        targetPath = projectPath / cls.CASE_DIRECTORY_NAME
+        targetPath = projectPath / CASE_DIRECTORY_NAME
         if cls._casePath.is_dir():
             with open(cls.foamFilePath(), 'a'):
                 pass

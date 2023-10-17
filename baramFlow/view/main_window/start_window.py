@@ -11,6 +11,8 @@ from filelock import Timeout
 from PySide6.QtCore import Qt, QObject
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
 
+from libbaram.openfoam.constants import isBaramProject
+
 from baramFlow.app import app
 from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.coredb.filedb import FileDB
@@ -64,7 +66,7 @@ class Baram(QObject):
         self._openProject(path, openType)
 
     def _openProject(self, path, openType):
-        if not FileDB.exists(path) and openType == ProjectOpenType.EXISTING:
+        if openType == ProjectOpenType.EXISTING and not FileDB.exists(path) and isBaramProject(path):
             app.plug.createProject(self._projectSelector, path)
 
             return
@@ -76,13 +78,13 @@ class Baram(QObject):
 
             return
         except FileNotFoundError:
-            QMessageBox.critical(self._projectSelector, self.tr('Case Open Error'),
-                                 self.tr(f'{path.name} is not a baram case.'))
+            QMessageBox.critical(self._projectSelector, self.tr('Project Open Error'),
+                                 self.tr(f'{path.name} is not a baram project.'))
         except Timeout:
-            QMessageBox.critical(self._projectSelector, self.tr('Case Open Error'),
+            QMessageBox.critical(self._projectSelector, self.tr('Project Open Error'),
                                  self.tr(f'{path.name} is open in another program.'))
         except Exception as ex:
-            QMessageBox.critical(self._projectSelector, self.tr('Case Open Error'),
+            QMessageBox.critical(self._projectSelector, self.tr('Project Open Error'),
                                  self.tr('Fail to open case\n' + str(ex)))
 
         Project.close()
