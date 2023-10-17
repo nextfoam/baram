@@ -23,6 +23,8 @@ class FileFormatError(Exception):
 
 
 class FileDB:
+    FILE_NAME = 'configuration.h5'
+
     _columnCounts = {
         BcFileRole.BC_VELOCITY_COMPONENT: 6,
         BcFileRole.BC_VELOCITY_MAGNITUDE: 4,
@@ -31,7 +33,7 @@ class FileDB:
     }
 
     def __init__(self, projectPath):
-        self._filePath = projectPath / 'configuration.h5'
+        self._filePath = projectPath / self.FILE_NAME
         self._tmpPath = projectPath / 'configuration'
         self._modifiedAfterSaved = False
 
@@ -120,6 +122,12 @@ class FileDB:
                     del store[path]
 
             self._modifiedAfterSaved = True
+
+    @classmethod
+    def exists(cls, path):
+        dbPath = path / cls.FILE_NAME
+
+        return dbPath.is_file()
 
     def _bcKey(self, bcid, role):
         return f'bc{bcid}{role.value}'

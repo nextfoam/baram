@@ -408,7 +408,6 @@ class MainWindow(QMainWindow):
 
         progressDialog.finish('Parallel Environment was Applied.')
 
-    @qasync.asyncSlot()
     async def _loadVtkMesh(self):
         progressDialog = ProgressDialog(self, self.tr('Case Loading.'))
         progressDialog.open()
@@ -473,11 +472,29 @@ class MainWindow(QMainWindow):
 
         self._navigatorView.updateMenu()
 
-    def _projectOpened(self):
+    @qasync.asyncSlot()
+    async def _projectOpened(self):
         self.setWindowTitle(f'{app.properties.fullName} - {self._project.path}')
 
         if self._project.meshLoaded:
-            self._loadVtkMesh()
+            db = coredb.CoreDB()
+            if db.getRegions():
+                # BaramFlow Project is opened
+                await self._loadVtkMesh()
+            else:
+                # BaramMesh Project is opened
+                progressDialog = ProgressDialog(self, self.tr('Mesh Loading'))
+                progressDialog.open()
+
+                try:
+                    progressDialog.setLabelText(self.tr('Loading the boundaries.'))
+                    await PolyMeshLoader().loadMesh()
+
+                    progressDialog.close()
+                except Exception as ex:
+                    progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+
+                self._project.fileDB().saveCoreDB()
 
     def _addTabifiedDock(self, dock):
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)

@@ -6,13 +6,14 @@ from pathlib import Path
 
 import qasync
 
+from filelock import Timeout
+
 from PySide6.QtCore import Qt, QObject
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
 
-from filelock import Timeout
-
 from baramFlow.app import app
 from baramFlow.coredb.app_settings import AppSettings
+from baramFlow.coredb.filedb import FileDB
 from baramFlow.coredb.project import Project, ProjectOpenType
 from baramFlow.view.widgets.project_selector import ProjectSelector
 
@@ -59,10 +60,15 @@ class Baram(QObject):
     def _openExistingProject(self, directory):
         self._openProject(Path(directory), ProjectOpenType.EXISTING)
 
-    def _openNewProject(self, path):
-        self._openProject(path, ProjectOpenType.NEW)
+    def _openNewProject(self, path, openType):
+        self._openProject(path, openType)
 
     def _openProject(self, path, openType):
+        if not FileDB.exists(path) and openType == ProjectOpenType.EXISTING:
+            app.plug.createProject(self._projectSelector, path)
+
+            return
+
         try:
             Project.open(path.resolve(), openType)
             self._projectSelector.accept()  # To close project selector dialog

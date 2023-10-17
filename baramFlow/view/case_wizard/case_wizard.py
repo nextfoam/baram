@@ -24,21 +24,25 @@ SPECIES_MODEL = 6
 
 
 class CaseWizard(QWizard):
-    def __init__(self, *args, **kwargs):
-        super(CaseWizard, self).__init__(*args, **kwargs)
+    def __init__(self, parent, path=None):
+        super(CaseWizard, self).__init__(parent)
 
+        self._meshProject = path is not None
         self._db = coredb.createDB()
 
         self._ui = Ui_CaseWizard()
         self._ui.setupUi(self)
 
-        self.setPage(WORKSPACE, WorkspacePage(self))
+        self.setPage(WORKSPACE, WorkspacePage(self, path))
         self.setPage(FLOW_TYPE, FlowTypePage(self))
         self.setPage(SOLVER_TYPE, SolverTypePage(self))
         self.setPage(MULTIPHASE_MODEL, MultiphaseModelPage(self))
         self.setPage(GRAVITY_MODEL, GravityModelPage(self))
         self.setPage(SPECIES_MODEL, SpeciesModelPage(self))
         self.setStartId(WORKSPACE)
+
+    def isMeshProject(self):
+        return self._meshProject
 
     def nextId(self):
         curId = self.currentId()
@@ -61,7 +65,7 @@ class CaseWizard(QWizard):
         elif curId == SPECIES_MODEL:
             return LAST
         else:
-            raise NotImplementedError('Unknown Case Wizard Page')
+            raise AssertionError('Unknown Case Wizard Page')
 
     def accept(self):
         generalXPath = './/general'

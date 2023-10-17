@@ -36,6 +36,7 @@ class ProjectOpenType(Enum):
     NEW = auto()
     SAVE_AS = auto()
     EXISTING = auto()
+    MESH = auto()
 
 
 class SettingKey(Enum):
@@ -253,7 +254,7 @@ class _Project(QObject):
         AppSettings.updateRecents(self, route != ProjectOpenType.EXISTING)
 
         self._fileDB = FileDB(self.path)
-        if route == ProjectOpenType.NEW:
+        if route == ProjectOpenType.NEW or route == ProjectOpenType.MESH:
             # CoreDB should have been created by the wizard,
             # Save that configurations as new project.
             self._fileDB.saveCoreDB()
@@ -261,7 +262,7 @@ class _Project(QObject):
         else:
             self._coreDB = self._fileDB.loadCoreDB()
 
-        self._meshLoaded = True if self._coreDB.getRegions() else False
+        self._meshLoaded = True if self._coreDB.getRegions() or route == ProjectOpenType.MESH else False
 
         pid, startTime = self._projectSettings.getProcess()
         if pid and startTime:

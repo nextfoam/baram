@@ -9,10 +9,11 @@ from PySide6.QtWidgets import QApplication
 
 from resources import resource
 from baramFlow.coredb.app_settings import AppSettings
+from baramFlow.coredb.project import ProjectOpenType
 
 
 class App(QObject):
-    projectCreated = Signal(Path)
+    projectCreated = Signal(Path, ProjectOpenType)
     meshUpdated = Signal()
     restarted = Signal()
 

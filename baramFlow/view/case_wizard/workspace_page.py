@@ -10,15 +10,25 @@ from .workspace_page_ui import Ui_WorkspacePage
 
 
 class WorkspacePage(QWizardPage):
-    def __init__(self, *args, **kwargs):
-        super(WorkspacePage, self).__init__(*args, **kwargs)
+    def __init__(self, parent, path=None):
+        super(WorkspacePage, self).__init__(parent)
 
         self._ui = Ui_WorkspacePage()
         self._ui.setupUi(self)
 
         self._complete = False
-        self._locationParent = Path(AppSettings.getRecentLocation()).resolve()
-        self._updateProjectLocation()
+        self._locationParent = None
+        self._meshProject = False
+
+        if path is None:
+            self._locationParent = Path(AppSettings.getRecentLocation()).resolve()
+            self._updateProjectLocation()
+        else:
+            self._meshProject = True
+            self._locationParent = path.parent
+            self._ui.projectName.setText(path.name)
+            self._updateProjectLocation()
+            self._ui.workspace.setEnabled(False)
 
         self.registerField('projectName*', self._ui.projectName)
         self.registerField('projectLocation', self._ui.projectLocation)
@@ -28,6 +38,9 @@ class WorkspacePage(QWizardPage):
         self._connectSignalsSlots()
 
     def isComplete(self):
+        if self._meshProject:
+            return True
+
         complete = False
 
         if not self._locationParent.exists():
