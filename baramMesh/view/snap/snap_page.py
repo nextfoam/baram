@@ -45,7 +45,7 @@ class SnapPage(StepPage):
             db.setValue('multiRegionFeatureSnap', self._ui.multiSurfaceFeatureSnap.isChecked())
             db.setValue('tolerance', self._ui.tolerance.text(), self.tr('Tolerance'))
             db.setValue('concaveAngle', self._ui.concaveAngle.text(), self.tr('Concave Angle'))
-            db.setValue('minAreaRation', self._ui.minAreaRatio.text(), self.tr('Min. Area Ratio'))
+            db.setValue('minAreaRatio', self._ui.minAreaRatio.text(), self.tr('Min. Area Ratio'))
 
             app.db.commit(db)
 
@@ -69,7 +69,7 @@ class SnapPage(StepPage):
         self._ui.multiSurfaceFeatureSnap.setChecked(dbElement.getValue('multiRegionFeatureSnap'))
         self._ui.tolerance.setText(dbElement.getValue('tolerance'))
         self._ui.concaveAngle.setText(dbElement.getValue('concaveAngle'))
-        self._ui.minAreaRatio.setText(dbElement.getValue('minAreaRation'))
+        self._ui.minAreaRatio.setText(dbElement.getValue('minAreaRatio'))
 
         self._updateControlButtons()
 

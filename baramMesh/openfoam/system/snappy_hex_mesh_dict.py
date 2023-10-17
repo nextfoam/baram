@@ -48,7 +48,7 @@ class SnappyHexMeshDict(DictionaryFile):
                 'nFeatureSnapIter': app.db.getValue('snap/nFeatureSnapIter'),
                 'multiRegionFeatureSnap': app.db.getValue('snap/multiRegionFeatureSnap'),
                 'concaveAngle': app.db.getValue('snap/concaveAngle'),
-                'minAreaRation': app.db.getValue('snap/concaveAngle')
+                'minAreaRatio': app.db.getValue('snap/minAreaRatio')
             },
             'addLayersControls': self._constructAddLayerControls(),
             'meshQualityControls': {

@@ -143,7 +143,7 @@ schema = {
         'multiRegionFeatureSnap': BoolType(False),
         'tolerance': FloatType().setDefault(3),
         'concaveAngle': FloatType().setDefault(45),
-        'minAreaRation': FloatType().setDefault(0.3)
+        'minAreaRatio': FloatType().setDefault(0.3)
     },
     'addLayers': {
         # 'thicknessModel': EnumType(ThicknessModel).setDefault(ThicknessModel.FINAL_AND_OVERALL),
