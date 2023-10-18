@@ -162,7 +162,7 @@ schema = {
         'minMedialAxisAngle': FloatType().setDefault(90),
         'maxThicknessToMedialRatio': FloatType().setDefault(0.3),
         'nSmoothNormals': IntType().setDefault(3),
-        'slipFeatureAngle': FloatType().setDefault(30),
+        'slipFeatureAngle': FloatType().setDefault(60),
         'nRelaxIter': IntType().setDefault(10),
         'nBufferCellsNoExtrude': IntType().setDefault(0),
         'nLayerIter': IntType().setDefault(50),
