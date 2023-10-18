@@ -181,7 +181,9 @@ class CaseGenerator(QObject):
 
             self.progress.emit(self.tr(f'Generating Files...'))
 
-            self._gatherFiles()
+            if errors := self._gatherFiles():
+                raise RuntimeError(errors)
+
             errors = await asyncio.to_thread(self._generateFiles)
             if self._cancelled:
                 return self._cancelled
