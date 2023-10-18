@@ -41,7 +41,8 @@ class RegionObjectsSelector(QDialog):
             self._ui.region.setCurrentText(BoundaryDB.getBoundaryRegion(selectedItems[0]))
         self._regionChanged(self._ui.region.currentText())
 
-        for bcid in selectedItems:
+        for b in selectedItems:
+            bcid = int(b)
             for row in range(self._ui.list.count()):
                 item = self._ui.list.item(row)
                 if item.data(ListDataRole.USER_DATA.value) == bcid:
@@ -110,6 +111,9 @@ class RegionObjectsSelector(QDialog):
         itemToAdd = QListWidgetItem(item.text())
         itemToAdd.setData(Qt.UserRole, self._ui.list.row(item))
         self._ui.selectedList.addItem(itemToAdd)
+
+    def _loadItems(self, region):
+        raise NotImplementedError
 
 
 class BoundariesSelector(RegionObjectsSelector):
