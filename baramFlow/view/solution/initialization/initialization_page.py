@@ -26,8 +26,6 @@ class InitializationPage(ContentPage):
         self._ui = Ui_InitializationPage()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
-
         self._connectSignalsSlots()
 
         self._sectionActors = {}
@@ -59,7 +57,7 @@ class InitializationPage(ContentPage):
         return super().hideEvent(ev)
 
     def _load(self):
-        regions = self._db.getRegions()
+        regions = coredb.CoreDB().getRegions()
         if len(regions) == 1 and not regions[0]:
             widget = InitializationWidget('')
             widget.displayChecked.connect(self._showSectionActor)
@@ -128,7 +126,8 @@ class InitializationPage(ContentPage):
 
             progressDialog.hideCancelButton()
 
-            sectionNames: [str] = self._db.getList(f'.//regions/region/initialization/advanced/sections/section/name')
+            sectionNames: [str] = coredb.CoreDB().getList(
+                f'.//regions/region/initialization/advanced/sections/section/name')
             if len(sectionNames) > 0:
                 progressDialog.setLabelText('Setting Section Values')
 

@@ -19,7 +19,6 @@ class CellZoneConditionsPage(ContentPage):
         self._ui = Ui_CellZoneConditionsPage()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._singleRegion = False
 
         self._connectSignalsSlots()
@@ -27,7 +26,7 @@ class CellZoneConditionsPage(ContentPage):
         self._load()
 
     def _load(self):
-        regions = self._db.getRegions()
+        regions = coredb.CoreDB().getRegions()
         if len(regions) == 1 and not regions[0]:
             self._singleRegion = True
             item = QTreeWidgetItem(self._ui.cellZones, [DEFAULT_REGION_NAME], 0)
@@ -57,7 +56,7 @@ class CellZoneConditionsPage(ContentPage):
         self._dialog.open()
 
     def _addCellZones(self, parent, rname):
-        cellZones = self._db.getCellZones(rname)
+        cellZones = coredb.CoreDB().getCellZones(rname)
         for czid, czname in cellZones:
             if CellZoneDB.isRegion(czname):
                 parent.setData(0, Qt.UserRole, czid)

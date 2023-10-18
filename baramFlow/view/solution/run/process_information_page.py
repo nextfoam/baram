@@ -34,7 +34,6 @@ class ProcessInformationPage(ContentPage):
         self._ui = Ui_ProcessInformationPage()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._project = Project.instance()
 
         self._stopDialog = None
@@ -124,7 +123,7 @@ class ProcessInformationPage(ContentPage):
                 pass
 
     def _updateConfigurationClicked(self):
-        regions = self._db.getRegions()
+        regions = coredb.CoreDB().getRegions()
         for rname in regions:
             FvSchemes(rname).build().write()
             FvSolution(rname).build().write()

@@ -133,8 +133,6 @@ class InitializationWidget(QWidget):
         self._ui = Ui_initializationWidget()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
-
         self._rname = rname
         self._initialValuesPath = f'.//regions/region[name="{rname}"]/initialization/initialValues'
         self._dialog = None
@@ -154,14 +152,16 @@ class InitializationWidget(QWidget):
         self._ui.edit.clicked.connect(self._editOption)
 
     def load(self):
-        self._ui.xVelocity.setText(self._db.getValue(self._initialValuesPath + '/velocity/x'))
-        self._ui.yVelocity.setText(self._db.getValue(self._initialValuesPath + '/velocity/y'))
-        self._ui.zVelocity.setText(self._db.getValue(self._initialValuesPath + '/velocity/z'))
-        self._ui.pressure.setText(self._db.getValue(self._initialValuesPath + '//pressure'))
-        self._ui.temperature.setText(self._db.getValue(self._initialValuesPath + '/temperature'))
-        self._ui.scaleOfVelocity.setText(self._db.getValue(self._initialValuesPath + '/scaleOfVelocity'))
-        self._ui.turbulentIntensity.setText(self._db.getValue(self._initialValuesPath + '/turbulentIntensity'))
-        self._ui.turbulentViscosityRatio.setText(self._db.getValue(self._initialValuesPath + '/turbulentViscosity'))
+        db = coredb.CoreDB()
+
+        self._ui.xVelocity.setText(db.getValue(self._initialValuesPath + '/velocity/x'))
+        self._ui.yVelocity.setText(db.getValue(self._initialValuesPath + '/velocity/y'))
+        self._ui.zVelocity.setText(db.getValue(self._initialValuesPath + '/velocity/z'))
+        self._ui.pressure.setText(db.getValue(self._initialValuesPath + '//pressure'))
+        self._ui.temperature.setText(db.getValue(self._initialValuesPath + '/temperature'))
+        self._ui.scaleOfVelocity.setText(db.getValue(self._initialValuesPath + '/scaleOfVelocity'))
+        self._ui.turbulentIntensity.setText(db.getValue(self._initialValuesPath + '/turbulentIntensity'))
+        self._ui.turbulentViscosityRatio.setText(db.getValue(self._initialValuesPath + '/turbulentViscosity'))
 
         self._ui.temperature.setEnabled(ModelsDB.isEnergyModelOn())
         self._ui.turbulence.setEnabled(
@@ -170,7 +170,7 @@ class InitializationWidget(QWidget):
         if self._volumeFractionWidget.on():
             self._volumeFractionWidget.load()
 
-        sections: [str] = self._db.getList(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section/name')
+        sections: [str] = db.getList(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section/name')
         for name in sections:
             if name in self._rows:
                 self._rows[name].displayOff()

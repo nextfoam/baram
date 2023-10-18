@@ -23,7 +23,6 @@ class GeneralPage(ContentPage):
         self._ui = Ui_GeneralPage()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._load()
 
         if GeneralDB.getSolverType() == SolverType.DENSITY_BASED:
@@ -48,17 +47,19 @@ class GeneralPage(ContentPage):
         return True
 
     def _load(self):
+        db = coredb.CoreDB()
+
         xpath = GeneralDB.GENERAL_XPATH + '/timeTransient'
-        timeTransient = self._db.getValue(xpath)
+        timeTransient = db.getValue(xpath)
         if timeTransient == 'true':
             self._ui.transient_.setChecked(True)
         else:
             self._ui.steady.setChecked(True)
 
-        self._ui.gravityX.setText(self._db.getValue(GRAVITY_XPATH + '/direction/x'))
-        self._ui.gravityY.setText(self._db.getValue(GRAVITY_XPATH + '/direction/y'))
-        self._ui.gravityZ.setText(self._db.getValue(GRAVITY_XPATH + '/direction/z'))
-        self._ui.operatingPressure.setText(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
+        self._ui.gravityX.setText(db.getValue(GRAVITY_XPATH + '/direction/x'))
+        self._ui.gravityY.setText(db.getValue(GRAVITY_XPATH + '/direction/y'))
+        self._ui.gravityZ.setText(db.getValue(GRAVITY_XPATH + '/direction/z'))
+        self._ui.operatingPressure.setText(db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
 
-        self._ui.gravity.setDisabled(self._db.getAttribute(GRAVITY_XPATH, 'disabled') == 'true')
+        self._ui.gravity.setDisabled(db.getAttribute(GRAVITY_XPATH, 'disabled') == 'true')
 

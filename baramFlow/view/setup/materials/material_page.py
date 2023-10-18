@@ -28,7 +28,6 @@ class MaterialPage(ContentPage):
         self._cardListLayout.addStretch()
         self._cardListLayout.setContentsMargins(0, 0, 0, 0)
 
-        self._db = coredb.CoreDB()
         self._addDialog = None
 
         self._materialChanged = Project.instance().materialChanged
@@ -52,7 +51,7 @@ class MaterialPage(ContentPage):
         confirm = QMessageBox.question(
             self, self.tr("Remove material"), self.tr(f'Remove material "{card.name}"'))
         if confirm == QMessageBox.Yes:
-            error = self._db.removeMaterial(card.name)
+            error = coredb.CoreDB().removeMaterial(card.name)
             if not error:
                 self._cardListLayout.removeWidget(card)
                 card.deleteLater()
@@ -67,7 +66,7 @@ class MaterialPage(ContentPage):
         self._ui.add.clicked.connect(self._add)
 
     def _load(self):
-        materials = self._db.getMaterials()
+        materials = coredb.CoreDB().getMaterials()
 
         for mid, name, formula, phase in materials:
             self._addCard(mid)
@@ -76,7 +75,7 @@ class MaterialPage(ContentPage):
         if self._addDialog is None:
             materials = [
                 SelectorItem(f'{name} ({MaterialDB.getPhaseText(MaterialDB.dbTextToPhase(phase))})', name, name)
-                for name, formula, phase in self._db.getMaterialsFromDB()]
+                for name, formula, phase in coredb.CoreDB().getMaterialsFromDB()]
             self._addDialog = SelectorDialog(self, self.tr("Material"), self.tr("Select material to add"), materials)
             self._addDialog.accepted.connect(self._addDialogAccepted)
 
@@ -89,6 +88,6 @@ class MaterialPage(ContentPage):
         self.pageReload.connect(card.load)
 
     def _addDialogAccepted(self):
-        self._addCard(self._db.addMaterial(self._addDialog.selectedItem()))
+        self._addCard(coredb.CoreDB().addMaterial(self._addDialog.selectedItem()))
         self._materialChanged.emit()
 

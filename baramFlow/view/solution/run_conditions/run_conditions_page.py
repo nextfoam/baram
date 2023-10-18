@@ -65,7 +65,6 @@ class RunConditionsPage(ContentPage):
                                 TimeSteppingMethodFlag.FIXED | TimeSteppingMethodFlag.ADAPTIVE),
         ]
 
-        self._db = coredb.CoreDB()
         self._xpath = RunCalculationDB.RUN_CALCULATION_XPATH
 
         self._connectSignalsSlots()
@@ -77,27 +76,29 @@ class RunConditionsPage(ContentPage):
         self._ui.steadyReportInterval.setVisible(not timeIsTransient)
         self._ui.transientReportInterval.setVisible(timeIsTransient)
 
-        self._ui.numberOfIterations.setText(self._db.getValue(self._xpath + '/runConditions/numberOfIterations'))
+        db = coredb.CoreDB()
+
+        self._ui.numberOfIterations.setText(db.getValue(self._xpath + '/runConditions/numberOfIterations'))
 
         self._ui.timeSteppingMethod.setCurrentText(
-            self._timeSteppingMethods[self._db.getValue(self._xpath + '/runConditions/timeSteppingMethod')])
-        self._ui.maxCourantNumber.setText(self._db.getValue(self._xpath + '/runConditions/maxCourantNumber'))
-        self._ui.maxCourantNumberForVoF.setText(self._db.getValue(self._xpath + '/runConditions/VoFMaxCourantNumber'))
-        self._ui.timeStepSize.setText(self._db.getValue(self._xpath + '/runConditions/timeStepSize'))
-        self._ui.endTime.setText(self._db.getValue(self._xpath + '/runConditions/endTime'))
+            self._timeSteppingMethods[db.getValue(self._xpath + '/runConditions/timeSteppingMethod')])
+        self._ui.maxCourantNumber.setText(db.getValue(self._xpath + '/runConditions/maxCourantNumber'))
+        self._ui.maxCourantNumberForVoF.setText(db.getValue(self._xpath + '/runConditions/VoFMaxCourantNumber'))
+        self._ui.timeStepSize.setText(db.getValue(self._xpath + '/runConditions/timeStepSize'))
+        self._ui.endTime.setText(db.getValue(self._xpath + '/runConditions/endTime'))
         self._timeSteppingMethodChanged()
 
         self._ui.reportIntervalIterationSteps.setText(
-            self._db.getValue(self._xpath + '/runConditions/reportIntervalSteps'))
-        self._ui.reportIntervalSeconds.setText(self._db.getValue(self._xpath + '/runConditions/reportIntervalSeconds'))
+            db.getValue(self._xpath + '/runConditions/reportIntervalSteps'))
+        self._ui.reportIntervalSeconds.setText(db.getValue(self._xpath + '/runConditions/reportIntervalSeconds'))
         self._ui.retainOnlyTheMostRecentFiles.setChecked(
-            self._db.getValue(self._xpath + '/runConditions/retainOnlyTheMostRecentFiles') == 'true')
+            db.getValue(self._xpath + '/runConditions/retainOnlyTheMostRecentFiles') == 'true')
         self._ui.maximumNumberODataFiles.setText(
-            self._db.getValue(self._xpath + '/runConditions/maximumNumberOfDataFiles'))
+            db.getValue(self._xpath + '/runConditions/maximumNumberOfDataFiles'))
         self._ui.dataWriteFormat.setCurrentText(
-            self._dataWriteFormats[self._db.getValue(self._xpath + '/runConditions/dataWriteFormat')])
-        self._ui.dataWritePrecision.setText(self._db.getValue(self._xpath + '/runConditions/dataWritePrecision'))
-        self._ui.timePrecision.setText(self._db.getValue(self._xpath + '/runConditions/timePrecision'))
+            self._dataWriteFormats[db.getValue(self._xpath + '/runConditions/dataWriteFormat')])
+        self._ui.dataWritePrecision.setText(db.getValue(self._xpath + '/runConditions/dataWritePrecision'))
+        self._ui.timePrecision.setText(db.getValue(self._xpath + '/runConditions/timePrecision'))
 
     def save(self):
         writer = CoreDBWriter()

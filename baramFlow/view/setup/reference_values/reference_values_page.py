@@ -16,7 +16,6 @@ class ReferenceValuesPage(ContentPage):
         self._ui = Ui_ReferenceValuesPage()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._load()
 
     def save(self):
@@ -44,13 +43,15 @@ class ReferenceValuesPage(ContentPage):
         return True
 
     def _load(self):
-        xpath = ReferenceValuesDB.REFERENCE_VALUES_XPATH
-        self._ui.area.setText(self._db.getValue(xpath + '/area'))
-        self._ui.density.setText(self._db.getValue(xpath + '/density'))
-        self._ui.length.setText(self._db.getValue(xpath + '/length'))
-        self._ui.velocity.setText(self._db.getValue(xpath + '/velocity'))
-        self._ui.pressure.setText(self._db.getValue(xpath + '/pressure'))
+        db = coredb.CoreDB()
 
-        self._ui.pressureLocationX.setText(self._db.getValue(xpath + '/referencePressureLocation/x'))
-        self._ui.pressureLocationY.setText(self._db.getValue(xpath + '/referencePressureLocation/y'))
-        self._ui.pressureLocationZ.setText(self._db.getValue(xpath + '/referencePressureLocation/z'))
+        xpath = ReferenceValuesDB.REFERENCE_VALUES_XPATH
+        self._ui.area.setText(db.getValue(xpath + '/area'))
+        self._ui.density.setText(db.getValue(xpath + '/density'))
+        self._ui.length.setText(db.getValue(xpath + '/length'))
+        self._ui.velocity.setText(db.getValue(xpath + '/velocity'))
+        self._ui.pressure.setText(db.getValue(xpath + '/pressure'))
+
+        self._ui.pressureLocationX.setText(db.getValue(xpath + '/referencePressureLocation/x'))
+        self._ui.pressureLocationY.setText(db.getValue(xpath + '/referencePressureLocation/y'))
+        self._ui.pressureLocationZ.setText(db.getValue(xpath + '/referencePressureLocation/z'))
