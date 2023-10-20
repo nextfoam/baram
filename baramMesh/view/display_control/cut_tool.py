@@ -5,7 +5,6 @@ from enum import Enum, auto
 from dataclasses import dataclass
 
 from PySide6.QtCore import QObject, Signal
-from PySide6.QtGui import QDoubleValidator
 from vtkmodules.vtkCommonDataModel import vtkPlane
 
 from baramMesh.app import app
@@ -19,7 +18,8 @@ class Cutter:
 
 
 class Cut(QObject):
-    valueChanged = Signal()
+    valueChanged = Signal(str)
+    valueEditingFinished = Signal()
     stateChanged = Signal(int, float)
 
     class Item(Enum):
@@ -45,7 +45,7 @@ class Cut(QObject):
         # self._sliceOnly = layout.itemAt(self.Item.SLICE_ONLY.value).widget()
         self._invert = layout.itemAt(self.Item.INVERT.value).widget()
 
-        self._value.setValidator(QDoubleValidator())
+        self._value.setValidator(None)
 
         self._connectSignalsSlots()
 
@@ -57,10 +57,14 @@ class Cut(QObject):
         return [1 if self._normal == i else 0 for i in range(0, 3)]
 
     def setOrigin(self, origin):
-        self._value.setText('{:.6g}'.format(origin[self._normal]))
+        if not self._value.hasFocus():
+            self._value.setText('{:.6g}'.format(origin[self._normal]))
 
     def value(self):
-        return float(self._value.text())
+        try:
+            return float(self._value.text())
+        except ValueError:
+            pass
 
     def disable(self):
         self._checkBox.setChecked(False)
@@ -76,12 +80,19 @@ class Cut(QObject):
 
     def _connectSignalsSlots(self):
         self._checkBox.stateChanged.connect(self._checkStateChanged)
-        self._value.editingFinished.connect(self.valueChanged.emit)
+        self._value.textChanged.connect(self._valueChanged)
+        self._value.editingFinished.connect(self.valueEditingFinished)
 
     def _checkStateChanged(self, checked):
         self._handle.setChecked(False)
         self._widget.setEnabled(checked)
         self.stateChanged.emit(self._normal, checked)
+
+    def _valueChanged(self, value):
+        try:
+            self.valueChanged.emit(float(value))
+        except ValueError:
+            pass
 
 
 class CutTool(QObject):
@@ -124,7 +135,8 @@ class CutTool(QObject):
         self._header.setChecked(False)
         bounds = app.window.geometryManager.getBounds()
         self._planeWidget.setBounds(bounds)
-        self._movePlaneWidget(bounds.center())
+        # self._movePlaneWidget(bounds.center())
+        self._setOrigin(bounds.center())
         self._widget.show()
 
     def _addPlane(self, checkBox, widget, normal):
@@ -132,11 +144,12 @@ class CutTool(QObject):
         self._handles.setId(cut.handleButton, normal)
         self._cuts[normal] = cut
         cut.valueChanged.connect(self._originChanged)
+        cut.valueEditingFinished.connect(self._updateOrigin)
         cut.stateChanged.connect(self._cutStateChanged)
 
     def _connectSignalsSlots(self, ui):
         self._handles.idClicked.connect(self._handleToggled)
-        self._planeWidget.planeMoved.connect(self._setOrigin)
+        self._planeWidget.planeMoved.connect(self._updateOrigin)
         ui.cutApply.clicked.connect(self._apply)
 
     def _handleToggled(self, normal):
@@ -165,6 +178,9 @@ class CutTool(QObject):
         for cut in self._cuts.values():
             cut.setOrigin(origin)
 
+    def _updateOrigin(self):
+        self._setOrigin(self._planeWidget.origin())
+
     def _origin(self):
         return [plane.value() for plane in self._cuts.values()]
 
@@ -172,7 +188,7 @@ class CutTool(QObject):
         self._movePlaneWidget(self._origin())
 
     def _movePlaneWidget(self, origin):
-        self._setOrigin(self._planeWidget.setOrigin(origin))
+        return self._planeWidget.setOrigin(origin)
 
     def _cutStateChanged(self, normal, checked):
         if not checked and self._currentHandle == normal:
