@@ -20,7 +20,7 @@ class SettingKey(Enum):
     LOCALE = 'default_language'
     RECENT_DIRECTORY = 'recent_directory'
     RECENT_CASES = 'recent_cases'
-    RECENT_MESH_DIRECTORY = 'recent_mesh_directory'
+    RECENT_IMPORT_DIRECTORY = 'recent_import_directory'
     LAST_START_WINDOW_GEOMETRY = 'LAST_START_WINDOW_GEOMETRY'
     LAST_MAIN_WINDOW_GEOMETRY = 'LAST_MAIN_WINDOW_GEOMETRY'
     PARAVIEW_INSTALLED_PATH = 'paraview_installed_path'
@@ -80,6 +80,12 @@ class AppSettings:
         recentCases.insert(0, p)
         settings[SettingKey.RECENT_CASES.value] = recentCases[:RECENT_PROJECTS_NUMBER]
         self._save(settings)
+
+    def getRecentImportDirectory(self):
+        return self._get(SettingKey.RECENT_IMPORT_DIRECTORY, str(Path.home()))
+
+    def updateRecentImportDirectory(self, path):
+        self._set(SettingKey.RECENT_IMPORT_DIRECTORY, str(path))
 
     def getLastStartWindowGeometry(self) -> QRect:
         x, y, width, height = self._get(SettingKey.LAST_START_WINDOW_GEOMETRY, [200, 100, 400, 300])
