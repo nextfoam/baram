@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import math
 import sys
 import typing
 
@@ -187,6 +188,21 @@ class ChartWidget(QWidget):
         else:
             margin = (maxY - minY) * SIDE_MARGIN
             if margin < sys.float_info.epsilon:
-                margin = 1
+                if minY == 0:
+                    self._axes.set_ylim([-1, 1])
+                else:
+                    a = abs(minY)
+                    g = math.floor(math.log10(a))
+                    p = float(pow(10, g))
+                    v = math.floor(a / p)
 
-            self._axes.set_ylim([minY-margin, maxY+margin])
+                    bottom = v * p
+                    top = bottom + p
+                    if minY - bottom < sys.float_info.epsilon:
+                        bottom = bottom - p
+                    if minY < 0:
+                        bottom, top = -top, -bottom
+
+                    self._axes.set_ylim([bottom, top])
+            else:
+                self._axes.set_ylim([minY-margin, maxY+margin])
