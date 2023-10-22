@@ -244,8 +244,8 @@ class FvSchemes(DictionaryFile):
         if multiphaseModel != 'off':
             if volumeFraction == 'firstOrderUpwind':
                 divSchemes.update({
-                    'div(phi,alpha)': f'{bounded}Gauss Upwind',
-                    'div(phirb,alpha)': f'{bounded}Gauss Upwind'
+                    'div(phi,alpha)': f'{bounded}Gauss upwind',
+                    'div(phirb,alpha)': f'{bounded}Gauss upwind'
                 })
             elif volumeFraction == 'secondOrderUpwind':
                 divSchemes.update({
