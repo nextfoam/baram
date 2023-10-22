@@ -30,6 +30,7 @@ class PlaneWidget(QObject):
 
     def setOrigin(self, origin):
         self._widget.GetImplicitPlaneRepresentation().SetOrigin(*origin)
+        self._view.refresh()
 
         return self.origin()
 

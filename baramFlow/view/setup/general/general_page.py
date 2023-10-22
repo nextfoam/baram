@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QMessageBox
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.general_db import GeneralDB, SolverType
+from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.view.widgets.content_page import ContentPage
 from .general_page_ui import Ui_GeneralPage
 
@@ -39,6 +40,13 @@ class GeneralPage(ContentPage):
         writer.append(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure',
                       self._ui.operatingPressure.text(), self.tr("Operating Pressure"))
 
+        writer.append(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation/x',
+                      self._ui.pressureLocationX.text(), self.tr("Reference Pressure Location X"))
+        writer.append(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation/y',
+                      self._ui.pressureLocationY.text(), self.tr("Reference Pressure Location Y"))
+        writer.append(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation/z',
+                      self._ui.pressureLocationZ.text(), self.tr("Reference Pressure Location Z"))
+
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
@@ -62,4 +70,11 @@ class GeneralPage(ContentPage):
         self._ui.operatingPressure.setText(db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
 
         self._ui.gravity.setDisabled(db.getAttribute(GRAVITY_XPATH, 'disabled') == 'true')
+
+        self._ui.pressureLocationX.setText(
+            db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation/x'))
+        self._ui.pressureLocationY.setText(
+            db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation/y'))
+        self._ui.pressureLocationZ.setText(
+            db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation/z'))
 

@@ -593,7 +593,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>435</width>
+                    <width>437</width>
                     <height>322</height>
                    </rect>
                   </property>
@@ -931,7 +931,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>273</width>
+                    <width>272</width>
                     <height>592</height>
                    </rect>
                   </property>
@@ -1682,7 +1682,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>266</width>
+                    <width>263</width>
                     <height>689</height>
                    </rect>
                   </property>
@@ -2375,6 +2375,9 @@
                                   <verstretch>0</verstretch>
                                  </sizepolicy>
                                 </property>
+                                <property name="text">
+                                 <string>0</string>
+                                </property>
                                </widget>
                               </item>
                               <item>
@@ -2458,6 +2461,9 @@
                                   <verstretch>0</verstretch>
                                  </sizepolicy>
                                 </property>
+                                <property name="text">
+                                 <string>0</string>
+                                </property>
                                </widget>
                               </item>
                               <item>
@@ -2540,6 +2546,9 @@
                                   <horstretch>0</horstretch>
                                   <verstretch>0</verstretch>
                                  </sizepolicy>
+                                </property>
+                                <property name="text">
+                                 <string>0</string>
                                 </property>
                                </widget>
                               </item>
@@ -3075,11 +3084,11 @@
  </resources>
  <connections/>
  <buttongroups>
+  <buttongroup name="stepButtons"/>
   <buttongroup name="cutHandles">
    <property name="exclusive">
     <bool>false</bool>
    </property>
   </buttongroup>
-  <buttongroup name="stepButtons"/>
  </buttongroups>
 </ui>

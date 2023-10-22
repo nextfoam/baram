@@ -19,21 +19,14 @@ class ReferenceValuesPage(ContentPage):
         self._load()
 
     def save(self):
-        writer = CoreDBWriter()
         xpath = ReferenceValuesDB.REFERENCE_VALUES_XPATH
 
+        writer = CoreDBWriter()
         writer.append(xpath + '/area', self._ui.area.text(), self.tr("Area"))
         writer.append(xpath + '/density', self._ui.density.text(), self.tr("Density"))
         writer.append(xpath + '/length', self._ui.length.text(), self.tr("Length"))
         writer.append(xpath + '/velocity', self._ui.velocity.text(), self.tr("Velocity"))
         writer.append(xpath + '/pressure', self._ui.pressure.text(), self.tr("Pressure"))
-
-        writer.append(xpath + '/referencePressureLocation/x',
-                      self._ui.pressureLocationX.text(), self.tr("Reference Pressure Location X"))
-        writer.append(xpath + '/referencePressureLocation/y',
-                      self._ui.pressureLocationY.text(), self.tr("Reference Pressure Location Y"))
-        writer.append(xpath + '/referencePressureLocation/z',
-                      self._ui.pressureLocationZ.text(), self.tr("Reference Pressure Location Z"))
 
         errorCount = writer.write()
         if errorCount > 0:
@@ -51,7 +44,3 @@ class ReferenceValuesPage(ContentPage):
         self._ui.length.setText(db.getValue(xpath + '/length'))
         self._ui.velocity.setText(db.getValue(xpath + '/velocity'))
         self._ui.pressure.setText(db.getValue(xpath + '/pressure'))
-
-        self._ui.pressureLocationX.setText(db.getValue(xpath + '/referencePressureLocation/x'))
-        self._ui.pressureLocationY.setText(db.getValue(xpath + '/referencePressureLocation/y'))
-        self._ui.pressureLocationZ.setText(db.getValue(xpath + '/referencePressureLocation/z'))

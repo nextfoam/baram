@@ -124,9 +124,9 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
                           self._ui.rotationDirectionZ.text(), self.tr('Rotation Axis Direction Z'))
         elif mode == InterfaceMode.TRANSLATIONAL_PERIODIC.value:
             if couple:
-                writer.append(xpath + '/translationVector/x', str(-int(self._ui.translationVectorX.text())), None)
-                writer.append(xpath + '/translationVector/y', str(-int(self._ui.translationVectorY.text())), None)
-                writer.append(xpath + '/translationVector/z', str(-int(self._ui.translationVectorZ.text())), None)
+                writer.append(xpath + '/translationVector/x', str(-float(self._ui.translationVectorX.text())), None)
+                writer.append(xpath + '/translationVector/y', str(-float(self._ui.translationVectorY.text())), None)
+                writer.append(xpath + '/translationVector/z', str(-float(self._ui.translationVectorZ.text())), None)
             else:
                 writer.append(xpath + '/translationVector/x',
                               self._ui.translationVectorX.text(), self.tr('Translation Vector X'))

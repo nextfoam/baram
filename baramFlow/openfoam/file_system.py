@@ -222,13 +222,14 @@ class FileSystem:
 
         targetPath = projectPath / CASE_DIRECTORY_NAME
         if cls._casePath.is_dir():
-            with open(cls.foamFilePath(), 'a'):
-                pass
-
             copyConfigurationFiles(cls._casePath, targetPath)
 
             for processor in cls.processorFolders():
                 copyConfigurationFiles(processor, targetPath / processor.name)
+
+            foamFilePath = targetPath / FOAM_FILE_NAME
+            with open(foamFilePath, 'a'):
+                pass
 
         cls._setCaseRoot(targetPath)
 
