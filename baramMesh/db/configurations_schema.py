@@ -174,7 +174,7 @@ schema = {
         'maxInternalSkewness': FloatType().setDefault(4),
         'maxConcave': FloatType().setDefault(80),
         'minVol': FloatType().setDefault('1e-13'),
-        'minTetQuality': FloatType().setDefault('1e-15'),
+        'minTetQuality': FloatType().setDefault('1e-9'),
         'minVolCollapseRatio': FloatType().setDefault(-1),
         'minArea': FloatType().setDefault(-1),
         'minTwist': FloatType().setDefault(0.02),
