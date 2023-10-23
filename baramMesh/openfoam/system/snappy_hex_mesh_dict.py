@@ -281,7 +281,6 @@ class SnappyHexMeshDict(DictionaryFile):
             'minMedialAxisAngle': db.getValue('minMedialAxisAngle'),
             'maxThicknessToMedialRatio': db.getValue('maxThicknessToMedialRatio'),
             'nSmoothNormals': db.getValue('nSmoothNormals'),
-            'slipFeatureAngle': db.getValue('slipFeatureAngle'),
             'nRelaxIter': db.getValue('nRelaxIter'),
             'nBufferCellsNoExtrude': db.getValue('nBufferCellsNoExtrude'),
             'nLayerIter': db.getValue('nLayerIter'),

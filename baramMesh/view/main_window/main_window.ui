@@ -593,7 +593,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>437</width>
+                    <width>435</width>
                     <height>322</height>
                    </rect>
                   </property>
@@ -931,7 +931,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>272</width>
+                    <width>418</width>
                     <height>592</height>
                    </rect>
                   </property>
@@ -1681,9 +1681,9 @@
                   <property name="geometry">
                    <rect>
                     <x>0</x>
-                    <y>0</y>
-                    <width>263</width>
-                    <height>689</height>
+                    <y>-264</y>
+                    <width>418</width>
+                    <height>661</height>
                    </rect>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_20">
@@ -1973,23 +1973,13 @@
                              <widget class="QLineEdit" name="nSmoothNormals"/>
                             </item>
                             <item row="3" column="0">
-                             <widget class="QLabel" name="label_35">
-                              <property name="text">
-                               <string>Slip Feature Angle</string>
-                              </property>
-                             </widget>
-                            </item>
-                            <item row="3" column="1">
-                             <widget class="QLineEdit" name="slipFeatureAngle"/>
-                            </item>
-                            <item row="4" column="0">
                              <widget class="QLabel" name="label_36">
                               <property name="text">
                                <string>Max. Snapping Relaxation Iter.</string>
                               </property>
                              </widget>
                             </item>
-                            <item row="4" column="1">
+                            <item row="3" column="1">
                              <widget class="QLineEdit" name="nRelaxIter"/>
                             </item>
                            </layout>
@@ -3084,11 +3074,11 @@
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="stepButtons"/>
   <buttongroup name="cutHandles">
    <property name="exclusive">
     <bool>false</bool>
    </property>
   </buttongroup>
+  <buttongroup name="stepButtons"/>
  </buttongroups>
 </ui>

@@ -15,7 +15,6 @@ from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramMesh.view.step_page import StepPage
 from baramMesh.view.widgets.list_table import ListItemWithButtons
 from .boundary_setting_dialog import BoundarySettingDialog
-from .boundary_layer_advanced_dialog import BoundaryLayerAdvancedDialog
 
 
 class BoundaryLayerPage(StepPage):
@@ -72,7 +71,6 @@ class BoundaryLayerPage(StepPage):
             addLayer.setValue('maxThicknessToMedialRatio', self._ui.maxThicknessToMedialRatio.text(),
                               self.tr('Max. Thickness Ratio'))
             addLayer.setValue('nSmoothNormals', self._ui.nSmoothNormals.text(), self.tr('Number of Smoothing Iter.'))
-            addLayer.setValue('slipFeatureAngle', self._ui.slipFeatureAngle.text(), self.tr('Slip Feature Angle'))
             addLayer.setValue('nRelaxIter', self._ui.nRelaxIter.text(), self.tr('Max. Snapping Relaxation Iter.'))
             addLayer.setValue('nBufferCellsNoExtrude', self._ui.nBufferCellsNoExtrude.text(),
                               self.tr('Num. of Buffer Cells'))
@@ -124,7 +122,6 @@ class BoundaryLayerPage(StepPage):
         self._ui.minMedialAxisAngle.setText(addLayer.getValue('minMedialAxisAngle'))
         self._ui.maxThicknessToMedialRatio.setText(addLayer.getValue('maxThicknessToMedialRatio'))
         self._ui.nSmoothNormals.setText(addLayer.getValue('nSmoothNormals'))
-        self._ui.slipFeatureAngle.setText(addLayer.getValue('slipFeatureAngle'))
         self._ui.nRelaxIter.setText(addLayer.getValue('nRelaxIter'))
         self._ui.nBufferCellsNoExtrude.setText(addLayer.getValue('nBufferCellsNoExtrude'))
         self._ui.nLayerIter.setText(addLayer.getValue('nLayerIter'))
@@ -137,10 +134,6 @@ class BoundaryLayerPage(StepPage):
         self._dialog = BoundarySettingDialog(self._widget, self._db, groupId)
         self._dialog.accepted.connect(self._updateLayerConfiguration)
         self._dialog.open()
-
-    def _advancedConfigure(self):
-        self._advancedDialog = BoundaryLayerAdvancedDialog(self._widget)
-        self._advancedDialog.open()
 
     @qasync.asyncSlot()
     async def _apply(self):
