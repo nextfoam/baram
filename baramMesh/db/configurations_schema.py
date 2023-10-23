@@ -187,7 +187,7 @@ schema = {
         'errorReduction': FloatType().setDefault(0.75),
         'mergeTolerance': FloatType().setDefault(1e-6),
         'relaxed': {
-            'maxNonOrtho': FloatType().setDefault(65)
+            'maxNonOrtho': FloatType().setDefault(75)
         }
     }
 }
