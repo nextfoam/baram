@@ -12,4 +12,4 @@ cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1
 
 source venv/bin/activate
 
-python -m baram.main
+python -m baramFlow.main
