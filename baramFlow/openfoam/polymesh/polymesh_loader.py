@@ -3,6 +3,7 @@
 
 import logging
 import asyncio
+import re
 from pathlib import Path
 
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
@@ -15,6 +16,7 @@ from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA, vtkCommand
 from PySide6.QtCore import QObject, Signal
 
+from baramFlow.coredb.boundary_db import BoundaryType
 from libbaram.openfoam.constants import Directory
 
 from baramFlow.app import app
@@ -80,6 +82,22 @@ def build(mBlock):
             vtkMesh[name] = f'Type {dsType}'  # ds
 
     return vtkMesh
+
+
+inMatchPattern = re.compile('in([^a-zA-Z]|$)', re.IGNORECASE)
+inletSearchPattern = re.compile('([^a-zA-Z]|^)inlet', re.IGNORECASE)
+outMatchPattern = re.compile('out([^a-zA-Z]|$)', re.IGNORECASE)
+outletSearchPattern = re.compile('([^a-zA-Z]|^)outlet', re.IGNORECASE)
+
+
+def defaultBoundaryType(name, geometricalType):
+    if inMatchPattern.match(name) or inletSearchPattern.search(name):
+        return BoundaryType.VELOCITY_INLET.value
+
+    if outMatchPattern.match(name) or outletSearchPattern.search(name):
+        return BoundaryType.PRESSURE_OUTLET.value
+
+    return BoundaryType.WALL.value
 
 
 class PolyMeshLoader(QObject):
@@ -249,7 +267,8 @@ class PolyMeshLoader(QObject):
             db.addRegion(rname)
 
             for bcname in vtkMesh[rname]['boundary']:
-                db.addBoundaryCondition(rname, bcname, boundaries[rname][bcname])
+                geometricalType = boundaries[rname][bcname]
+                db.addBoundaryCondition(rname, bcname, geometricalType, defaultBoundaryType(bcname, geometricalType))
 
             if 'zones' in vtkMesh[rname] and 'cellZones' in vtkMesh[rname]['zones']:
                 for czname in vtkMesh[rname]['zones']['cellZones']:

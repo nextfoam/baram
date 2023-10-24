@@ -8,6 +8,7 @@ from widgets.radio_group import RadioGroup
 from baramMesh.app import app
 from baramMesh.db.simple_schema import DBError
 from baramMesh.db.configurations_schema import CFDType
+from .geometry import RESERVED_NAMES
 from .surface_dialog_ui import Ui_SurfaceDialog
 
 
@@ -44,12 +45,15 @@ class SurfaceDialog(QDialog):
             if len(self._gIds) == 1:
                 name = self._ui.name.text()
 
+                if name in RESERVED_NAMES:
+                    QMessageBox.information(
+                        self, self.tr('Input Error'), self.tr('"{0}" is an invalid geometry name.').format(name))
+                    return
+
                 if app.db.getElements('geometry', lambda i, e: e['name'] == name and i != self._gIds[0], ['name']):
                     QMessageBox.information(
-                        self, self.tr('Fail to modify geometry name'),
-                        self.tr('geometry {0} already exists.').format(name))
-
-                    return False
+                        self, self.tr('Input Error'), self.tr('geometry {0} already exists.').format(name))
+                    return
 
                 db.setValue(f'geometry/{self._gIds[0]}/name', name)
 

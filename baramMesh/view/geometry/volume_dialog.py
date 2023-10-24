@@ -9,6 +9,7 @@ from widgets.radio_group import RadioGroup
 from baramMesh.app import app
 from baramMesh.db.simple_schema import DBError
 from baramMesh.db.configurations_schema import Shape, GeometryType, CFDType
+from .geometry import RESERVED_NAMES
 from .volume_dialog_ui import Ui_VolumeDialog
 
 
@@ -84,6 +85,11 @@ class VolumeDialog(QDialog):
                 self._gId = db.addElement('geometry', self._dbElement)
 
                 name = self._ui.name.text()
+
+                if name in RESERVED_NAMES:
+                    QMessageBox.information(
+                        self, self.tr('Input Error'), self.tr('"{0}" is an invalid geometry name.').format(name))
+                    return
 
                 if self._shape == Shape.HEX6.value:
                     for plate in Shape.PLATES.value:

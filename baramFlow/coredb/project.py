@@ -57,11 +57,17 @@ class _Project(QObject):
     materialChanged = Signal()
 
     class LocalSettings:
-        def __init__(self, path):
+        def __init__(self, path, baseSettings):
             self._settingsFile = path / 'baram.cfg'
 
-            self._settings = {}
-            self._load()
+            self._settings = None
+
+            if baseSettings:
+                self._settings = baseSettings._settings
+                self._settings.pop(SettingKey.UUID.value)
+                self._settings.pop(SettingKey.PATH.value)
+            else:
+                self._load()
 
         def get(self, key):
             if self._settings and key.value in self._settings:
@@ -78,6 +84,8 @@ class _Project(QObject):
             if self._settingsFile.is_file():
                 with open(self._settingsFile) as file:
                     self._settings = yaml.load(file, Loader=yaml.FullLoader)
+            else:
+                self._settings = {}
 
         def _save(self):
             self._settings[SettingKey.FORMAT_VERSION.value] = FORMAT_VERSION
@@ -222,7 +230,7 @@ class _Project(QObject):
         return self._renewed
 
     def _open(self, path: Path, route=ProjectOpenType.EXISTING):
-        self._settings = self.LocalSettings(path)
+        self._settings = self.LocalSettings(path, self._settings)
         if route != ProjectOpenType.SAVE_AS:
             self._projectSettings = ProjectSettings()
 
@@ -274,7 +282,6 @@ class _Project(QObject):
             self.setSolverStatus(SolverStatus.NONE)
 
     def _close(self):
-        self._settings = None
         coredb.destroy()
         self.projectClosed.emit()
         if self._projectLock:

@@ -89,6 +89,7 @@ class GeometryList(QObject):
 
         item.setIcon(Column.NAME_COLUMN,
                      self.volumeIcon if geometry['gType'] == GeometryType.VOLUME.value else self.surfaceIcon)
+        self._tree.scrollToBottom()
 
         self._items[gId] = item
 
