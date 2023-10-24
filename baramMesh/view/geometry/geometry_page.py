@@ -10,12 +10,13 @@ from libbaram.run import OpenFOAMError
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import CFDType, Shape, GeometryType
 from baramMesh.view.step_page import StepPage
+from .geometry import RESERVED_NAMES
 from .geometry_add_dialog import GeometryAddDialog
-from .stl_file_loader import STLFileLoader
 from .geometry_import_dialog import ImportDialog
-from .volume_dialog import VolumeDialog
-from .surface_dialog import SurfaceDialog
 from .geometry_list import GeometryList
+from .stl_file_loader import STLFileLoader
+from .surface_dialog import SurfaceDialog
+from .volume_dialog import VolumeDialog
 
 
 class ContextMenu(QMenu):
@@ -162,6 +163,12 @@ class GeometryPage(StepPage):
 
     @qasync.asyncSlot()
     async def _importSTL(self):
+        def getUniqueSeq(name, seq):
+            if seq == '' and name in RESERVED_NAMES:
+                seq = 1
+
+            return db.getUniqueSeq('geometry', 'name', name, seq)
+
         try:
             for path in self._dialog.files():
                 loader = STLFileLoader()
@@ -173,7 +180,7 @@ class GeometryPage(StepPage):
                 name = path.stem
                 seq = ''
                 for volume in volumes:
-                    seq = db.getUniqueSeq('geometry', 'name', name, seq)
+                    seq = getUniqueSeq(name, seq)
                     volumeName = f'{name}{seq}'
                     element = db.newElement('geometry')
                     element.setValue('gType', GeometryType.VOLUME)
@@ -197,7 +204,7 @@ class GeometryPage(StepPage):
                         db.addElement('geometry', element)
 
                 for polyData in surfaces:
-                    seq = db.getUniqueSeq('geometry', 'name', name, seq)
+                    seq = getUniqueSeq(name, seq)
                     element = db.newElement('geometry')
                     element.setValue('gType', GeometryType.SURFACE.value)
                     element.setValue('name', f'{name}{seq}')
