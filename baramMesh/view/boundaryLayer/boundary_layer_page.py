@@ -26,6 +26,7 @@ class BoundaryLayerPage(StepPage):
         self._ui = ui
         self._dialog = None
         self._db = None
+        self._processor = None
 
         ui.boundaryLayerConfigurationsHeader.setContents(ui.boundaryLayerConfigurations)
         ui.boundaryLayerConfigurations.setHeaderWithWidth([0, 0, 16, 16])
@@ -35,16 +36,12 @@ class BoundaryLayerPage(StepPage):
         self._connectSignalsSlots()
 
     def lock(self):
-        self._ui.boundaryLayerConfigurationsAdd.setEnabled(False)
-        self._ui.boundaryLayerConfigurations.setEnabled(False)
-        self._ui.boundaryLayerAdvancedConfiguration.setEnabled(False)
-        self._ui.snapButtons.setEnabled(False)
+        self._disableEdit()
+        self._ui.boundaryLayerButtons.setEnabled(False)
 
     def unlock(self):
-        self._ui.boundaryLayerConfigurationsAdd.setEnabled(True)
-        self._ui.boundaryLayerConfigurations.setEnabled(True)
-        self._ui.boundaryLayerAdvancedConfiguration.setEnabled(True)
-        self._ui.snapButtons.setEnabled(True)
+        self._enableEdit()
+        self._ui.boundaryLayerButtons.setEnabled(True)
 
     def open(self):
         self._load()
@@ -137,11 +134,17 @@ class BoundaryLayerPage(StepPage):
 
     @qasync.asyncSlot()
     async def _apply(self):
-        try:
-            self.lock()
+        if self._processor:
+            self._processor.cancel()
+            return
 
+        buttonText = self._ui.boundaryLayerApply.text()
+        try:
             if not self.save():
                 return
+
+            self._disableEdit()
+            self._ui.boundaryLayerApply.setText(self.tr('Cancel'))
 
             console = app.consoleView
             console.clear()
@@ -159,10 +162,10 @@ class BoundaryLayerPage(StepPage):
                 proc = await runParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
                                                 parallel=app.project.parallelEnvironment(),
                                                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                processor = Processor(proc)
-                processor.outputLogged.connect(console.append)
-                processor.errorLogged.connect(console.appendError)
-                await processor.run()
+                self._processor = Processor(proc)
+                self._processor.outputLogged.connect(console.append)
+                self._processor.errorLogged.connect(console.appendError)
+                await self._processor.run()
                 #
                 # proc = await runUtility('toposet', cwd=app.fileSystem.caseRoot(),
                 #                         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
@@ -179,10 +182,17 @@ class BoundaryLayerPage(StepPage):
             QMessageBox.information(self._widget, self.tr('Complete'), self.tr('Boundary layers are applied.'))
         except ProcessError as e:
             self.clearResult()
-            QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Boundary layers applying failed. [') + str(e.returncode) + ']')
+
+            if self._processor.isCanceled():
+                QMessageBox.information(self._widget, self.tr('Canceled'),
+                                        self.tr('Boundary layers application has been canceled.'))
+            else:
+                QMessageBox.information(self._widget, self.tr('Error'),
+                                        self.tr('Failed to apply boundary layers. [') + str(e.returncode) + ']')
         finally:
-            self.unlock()
+            self._enableEdit()
+            self._ui.boundaryLayerApply.setText(buttonText)
+            self._processor = None
 
     def _reset(self):
         self._showPreviousMesh()
@@ -227,3 +237,13 @@ class BoundaryLayerPage(StepPage):
             self._ui.boundaryLayerApply.show()
             self._ui.boundaryLayerReset.hide()
             self._setNextStepEnabled(False)
+
+    def _enableEdit(self):
+        self._ui.boundaryLayerConfigurationsAdd.setEnabled(True)
+        self._ui.boundaryLayerConfigurations.setEnabled(True)
+        self._ui.boundaryLayerAdvancedConfiguration.setEnabled(True)
+
+    def _disableEdit(self):
+        self._ui.boundaryLayerConfigurationsAdd.setEnabled(False)
+        self._ui.boundaryLayerConfigurations.setEnabled(False)
+        self._ui.boundaryLayerAdvancedConfiguration.setEnabled(False)

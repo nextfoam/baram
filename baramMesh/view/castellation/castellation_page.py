@@ -29,7 +29,9 @@ def Plane(ox, oy, oz, nx, ny, nz):
     plane = vtkPlane()
     plane.SetOrigin(ox, oy, oz)
     plane.SetNormal(nx, ny, nz)
+
     return plane
+
 
 def _writeFeatureFile(path: Path, pd):
     edges = vtkFeatureEdges()
@@ -82,6 +84,7 @@ class CastellationPage(StepPage):
         self._ui = ui
         self._db = None
         self._dialog = None
+        self._processor = None
 
         ui.castellationConfigurationHeader.setContents(ui.castellationConfiguration)
         ui.castellationAdvancedHeader.setContents(ui.castellationAdvanced)
@@ -94,21 +97,11 @@ class CastellationPage(StepPage):
         self._connectSignalsSlots()
 
     def lock(self):
-        self._ui.castellationConfiguration.setEnabled(False)
-        self._ui.castellationAdvanced.setEnabled(False)
-        self._ui.surfaceRefinementAdd.setEnabled(False)
-        self._ui.surfaceRefinement.setEnabled(False)
-        self._ui.volumeRefinementAdd.setEnabled(False)
-        self._ui.volumeRefinement.setEnabled(False)
+        self._disableEdit()
         self._ui.castellationButtons.setEnabled(False)
 
     def unlock(self):
-        self._ui.castellationConfiguration.setEnabled(True)
-        self._ui.castellationAdvanced.setEnabled(True)
-        self._ui.surfaceRefinementAdd.setEnabled(True)
-        self._ui.surfaceRefinement.setEnabled(True)
-        self._ui.volumeRefinementAdd.setEnabled(True)
-        self._ui.volumeRefinement.setEnabled(True)
+        self._enableEdit()
         self._ui.castellationButtons.setEnabled(True)
 
     def open(self):
@@ -205,11 +198,17 @@ class CastellationPage(StepPage):
 
     @qasync.asyncSlot()
     async def _refine(self):
-        try:
-            self.lock()
+        if self._processor:
+            self._processor.cancel()
+            return
 
+        buttonText = self._ui.refine.text()
+        try:
             if not self.save():
                 return
+
+            self._disableEdit()
+            self._ui.refine.setText(self.tr('Cancel'))
 
             progressDialog = ProgressDialog(self._widget, self.tr('Castellation Refinement'))
             progressDialog.setLabelText(self.tr('Updating Configurations'))
@@ -231,10 +230,10 @@ class CastellationPage(StepPage):
             proc = await runParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
                                             parallel=app.project.parallelEnvironment(),
                                             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            processor = Processor(proc)
-            processor.outputLogged.connect(console.append)
-            processor.errorLogged.connect(console.appendError)
-            await processor.run()
+            self._processor = Processor(proc)
+            self._processor.outputLogged.connect(console.append)
+            self._processor.errorLogged.connect(console.appendError)
+            await self._processor.run()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()
@@ -242,10 +241,16 @@ class CastellationPage(StepPage):
             QMessageBox.information(self._widget, self.tr('Complete'), self.tr('Castellation refinement is completed.'))
         except ProcessError as e:
             self.clearResult()
-            QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Castellation refinement Failed. [') + str(e.returncode) + ']')
+            if self._processor.isCanceled():
+                QMessageBox.information(self._widget, self.tr('Canceled'),
+                                        self.tr('Castellation refinement has been canceled.'))
+            else:
+                QMessageBox.information(self._widget, self.tr('Error'),
+                                        self.tr('Castellation refinement Failed. [') + str(e.returncode) + ']')
         finally:
-            self.unlock()
+            self._enableEdit()
+            self._ui.refine.setText(buttonText)
+            self._processor = None
 
     def _reset(self):
         self._showPreviousMesh()
@@ -346,3 +351,19 @@ class CastellationPage(StepPage):
             self._ui.refine.show()
             self._ui.castellationReset.hide()
             self._setNextStepEnabled(False)
+
+    def _enableEdit(self):
+        self._ui.castellationConfiguration.setEnabled(True)
+        self._ui.castellationAdvanced.setEnabled(True)
+        self._ui.surfaceRefinementAdd.setEnabled(True)
+        self._ui.surfaceRefinement.setEnabled(True)
+        self._ui.volumeRefinementAdd.setEnabled(True)
+        self._ui.volumeRefinement.setEnabled(True)
+
+    def _disableEdit(self):
+        self._ui.castellationConfiguration.setEnabled(False)
+        self._ui.castellationAdvanced.setEnabled(False)
+        self._ui.surfaceRefinementAdd.setEnabled(False)
+        self._ui.surfaceRefinement.setEnabled(False)
+        self._ui.volumeRefinementAdd.setEnabled(False)
+        self._ui.volumeRefinement.setEnabled(False)

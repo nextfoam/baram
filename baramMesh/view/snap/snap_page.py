@@ -23,6 +23,8 @@ class SnapPage(StepPage):
     def __init__(self, ui):
         super().__init__(ui, ui.snapPage)
 
+        self._processor = None
+
         self._connectSignalsSlots()
 
     def selected(self):
@@ -75,11 +77,17 @@ class SnapPage(StepPage):
 
     @qasync.asyncSlot()
     async def _snap(self):
-        try:
-            self.lock()
+        if self._processor:
+            self._processor.cancel()
+            return
 
+        buttonText = self._ui.snap.text()
+        try:
             if not self.save():
                 return
+
+            self._ui.snapContents.setEnabled(False)
+            self._ui.snap.setText(self.tr('Cancel'))
 
             console = app.consoleView
             console.clear()
@@ -94,29 +102,29 @@ class SnapPage(StepPage):
 
             proc = await runParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=parallel,
                                             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            processor = Processor(proc)
-            processor.outputLogged.connect(console.append)
-            processor.errorLogged.connect(console.appendError)
-            await processor.run()
+            self._processor = Processor(proc)
+            self._processor.outputLogged.connect(console.append)
+            self._processor.errorLogged.connect(console.appendError)
+            await self._processor.run()
 
             if app.db.elementCount('region') > 1:
                 TopoSetDict().build(TopoSetDict.Mode.CREATE_REGIONS).write()
                 proc = await runParallelUtility('topoSet', cwd=app.fileSystem.caseRoot(), parallel=parallel,
                                                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                processor = Processor(proc)
-                processor.outputLogged.connect(console.append)
-                processor.errorLogged.connect(console.appendError)
-                await processor.run()
+                self._processor = Processor(proc)
+                self._processor.outputLogged.connect(console.append)
+                self._processor.errorLogged.connect(console.appendError)
+                await self._processor.run()
 
                 if app.db.elementCount('geometry', lambda i, e: e['cfdType'] == CFDType.CELL_ZONE.value):
                     snapDict.updateForCellZoneInterfacesSnap().write()
                     proc = await runParallelUtility('snappyHexMesh', '-overwrite', cwd=app.fileSystem.caseRoot(),
                                                     parallel=parallel,
                                                     stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                    processor = Processor(proc)
-                    processor.outputLogged.connect(console.append)
-                    processor.errorLogged.connect(console.appendError)
-                    await processor.run()
+                    self._processor = Processor(proc)
+                    self._processor.outputLogged.connect(console.append)
+                    self._processor.errorLogged.connect(console.appendError)
+                    await self._processor.run()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()
@@ -124,10 +132,16 @@ class SnapPage(StepPage):
             QMessageBox.information(self._widget, self.tr('Complete'), self.tr('Snapping is completed.'))
         except ProcessError as e:
             self.clearResult()
-            QMessageBox.information(self._widget, self.tr('Error'),
-                                    self.tr('Snapping Failed. [') + str(e.returncode) + ']')
+
+            if self._processor.isCanceled():
+                QMessageBox.information(self._widget, self.tr('Canceled'), self.tr('Snapping has been canceled.'))
+            else:
+                QMessageBox.information(self._widget, self.tr('Error'),
+                                        self.tr('Snapping Failed. [') + str(e.returncode) + ']')
         finally:
-            self.unlock()
+            self._ui.snapContents.setEnabled(True)
+            self._ui.snap.setText(buttonText)
+            self._processor = None
 
     def _reset(self):
         self._showPreviousMesh()

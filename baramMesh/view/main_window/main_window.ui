@@ -1448,7 +1448,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QWidget" name="widget_17" native="true">
+                <widget class="QWidget" name="snapContents" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_14">
                   <item>
                    <widget class="QLabel" name="label_20">
@@ -2048,7 +2048,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QWidget" name="snapButtons" native="true">
+                <widget class="QWidget" name="boundaryLayerButtons" native="true">
                  <layout class="QHBoxLayout" name="horizontalLayout_11">
                   <item>
                    <spacer name="horizontalSpacer_8">

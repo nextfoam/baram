@@ -79,6 +79,7 @@ class Processor(QObject):
         try:
             if self._proc:
                 self._proc.terminate()
+                self._canceled = True
         except ProcessLookupError:
             return
 
@@ -86,6 +87,8 @@ class Processor(QObject):
         return self._canceled
 
     async def run(self):
+        self._canceled = False
+
         outOn = self._proc.stdout is not None
         errOn = self._proc.stderr is not None
 
