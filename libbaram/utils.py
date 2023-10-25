@@ -50,6 +50,11 @@ def rmtree(path, ignore_errors=False, onerror=None):
 def getFit(window: QRect, display: QRect) -> QRect:
     x, y, width, height = window.getRect()
 
+    if x < display.topLeft().x():
+        x = display.topLeft().x()
+    if y < display.topLeft().y():
+        y = display.topLeft().y()
+
     # Note that "width" and "height" are scaled by "QT_SCALE_FACTOR"
     if width > display.width():
         width = display.width()
