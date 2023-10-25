@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QWidget, QMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.cell_zone_db import SpecificationMethod, TemporalProfileType
+from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.view.widgets.number_input_dialog import PiecewiseLinearDialog, PolynomialDialog
 from .variable_source_widget_ui import Ui_VariableSourceWidget
 
@@ -42,9 +43,17 @@ class VariableSourceWidget(QWidget):
         self._ui.groupBox.setChecked(self._db.getAttribute(self._xpath, 'disabled') == 'false')
         self._ui.specificationMethod.setCurrentText(
             self._specificationMethods[self._db.getValue(self._xpath + '/unit')])
-        self._ui.temporalProfileType.setCurrentText(
-            self._temporalProfileTypes[self._db.getValue(self._xpath + '/specification')]
-        )
+
+        if GeneralDB.isTimeTransient():
+            self._ui.temporalProfileType.setCurrentText(
+                self._temporalProfileTypes[self._db.getValue(self._xpath + '/specification')]
+            )
+        else:
+            self._ui.temporalProfileType.setCurrentText(
+                self._temporalProfileTypes[TemporalProfileType.CONSTANT.value]
+            )
+            self._ui.temporalProfileType.setEnabled(False)
+
         self._ui.constantValue.setText(self._db.getValue(self._xpath + '/constant'))
 
     def appendToWriter(self, writer):
