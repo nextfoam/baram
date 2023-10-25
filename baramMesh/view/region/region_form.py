@@ -23,7 +23,7 @@ class RegionForm(QWidget):
         'solid': RegionType.SOLID.value
     }
 
-    def __init__(self, renderingView):
+    def __init__(self, renderingView, owner):
         super().__init__()
         self._ui = Ui_RegionForm()
         self._ui.setupUi(self)
@@ -32,11 +32,13 @@ class RegionForm(QWidget):
         self._dbElement = None
         self._typeRadios = RadioGroup(self._ui.typeRadios)
         self._pointWidget = PointWidget(renderingView)
-        self._owner = None
+        self._owner = owner
         self._defaultPoint = None
 
         self._pointWidget.off()
         self._typeRadios.setObjectMap(self._types)
+
+        self.hide()
 
         self._connectSignalsSlots()
 

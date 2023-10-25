@@ -21,7 +21,7 @@ class RegionPage(StepPage):
         self._regions = {}
         self._bounds = None
 
-        self._form = RegionForm(self._ui.renderingView)
+        self._form = RegionForm(self._ui.renderingView, self)
         self._focusing = self._form
 
         layout = QVBoxLayout(self._ui.regionList)
@@ -29,7 +29,7 @@ class RegionPage(StepPage):
         layout.setSpacing(0)
         layout.addStretch()
 
-        self._hideForm()
+        self._ui.regionList.layout().insertWidget(0, self._form)
 
         self._connectSignalsSlots()
 
@@ -148,7 +148,6 @@ class RegionPage(StepPage):
     def _update(self, id_):
         self._regions[id_].load()
         self._hideForm()
-        self._updateNextStepAvailable()
 
     def _remove(self, id_):
         db = app.db.checkout()
@@ -172,10 +171,12 @@ class RegionPage(StepPage):
         self._ui.regionList.layout().insertWidget(0, self._form)
         self._form.setOwner(self)
         self._form.hide()
+        self._updateNextStepAvailable()
 
     def _showForm(self):
         self._form.show()
         self._moveFocus(self._form)
+        self._setNextStepEnabled(False)
 
     def _moveFocus(self, widget):
         self._focusing = widget
