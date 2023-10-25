@@ -208,6 +208,7 @@ class CastellationPage(StepPage):
                 return
 
             self._disableEdit()
+            self._disableControlsForRunning()
             self._ui.refine.setText(self.tr('Cancel'))
 
             progressDialog = ProgressDialog(self._widget, self.tr('Castellation Refinement'))
@@ -249,6 +250,7 @@ class CastellationPage(StepPage):
                                         self.tr('Castellation refinement Failed. [') + str(e.returncode) + ']')
         finally:
             self._enableEdit()
+            self._enableControlsForSettings()
             self._ui.refine.setText(buttonText)
             self._processor = None
 

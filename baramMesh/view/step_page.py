@@ -91,3 +91,13 @@ class StepPage(QObject):
             self._showResultMesh()
         else:
             self._showPreviousMesh()
+
+    def _disableControlsForRunning(self):
+        self._ui.menuFile.setEnabled(False)
+        self._ui.menuMesh_Quality.setEnabled(False)
+        self._ui.menuParallel.setEnabled(False)
+
+    def _enableControlsForSettings(self):
+        self._ui.menuFile.setEnabled(True)
+        self._ui.menuMesh_Quality.setEnabled(True)
+        self._ui.menuParallel.setEnabled(True)

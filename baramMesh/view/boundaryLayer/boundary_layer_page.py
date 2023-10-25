@@ -144,6 +144,7 @@ class BoundaryLayerPage(StepPage):
                 return
 
             self._disableEdit()
+            self._disableControlsForRunning()
             self._ui.boundaryLayerApply.setText(self.tr('Cancel'))
 
             console = app.consoleView
@@ -191,6 +192,7 @@ class BoundaryLayerPage(StepPage):
                                         self.tr('Failed to apply boundary layers. [') + str(e.returncode) + ']')
         finally:
             self._enableEdit()
+            self._enableControlsForSettings()
             self._ui.boundaryLayerApply.setText(buttonText)
             self._processor = None
 

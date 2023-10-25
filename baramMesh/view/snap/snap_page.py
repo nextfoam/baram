@@ -87,6 +87,7 @@ class SnapPage(StepPage):
                 return
 
             self._ui.snapContents.setEnabled(False)
+            self._disableControlsForRunning()
             self._ui.snap.setText(self.tr('Cancel'))
 
             console = app.consoleView
@@ -140,6 +141,7 @@ class SnapPage(StepPage):
                                         self.tr('Snapping Failed. [') + str(e.returncode) + ']')
         finally:
             self._ui.snapContents.setEnabled(True)
+            self._enableControlsForSettings()
             self._ui.snap.setText(buttonText)
             self._processor = None
 
