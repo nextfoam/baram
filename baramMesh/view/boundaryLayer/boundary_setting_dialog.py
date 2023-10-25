@@ -11,6 +11,9 @@ from .thickness_form import ThicknessForm
 from .boundary_setting_dialog_ui import Ui_BoundarySettingDialog
 
 
+baseName = 'Group_'
+
+
 class BoundarySettingDialog(QDialog):
     def __init__(self, parent, db, groupId=None):
         super().__init__(parent)
@@ -97,10 +100,12 @@ class BoundarySettingDialog(QDialog):
 
         if self._groupId:
             self._dbElement = self._db.checkout(f'addLayers/layers/{self._groupId}')
+            name = self._dbElement.getValue('groupName')
         else:
             self._dbElement = self._db.newElement('addLayers/layers')
+            name = f"{baseName}{self._db.getUniqueSeq('addLayers/layers', 'groupName', baseName, 1)}"
 
-        self._ui.groupName.setText(self._dbElement.getValue('groupName'))
+        self._ui.groupName.setText(name)
         self._ui.numberOfLayers.setText(self._dbElement.getValue('nSurfaceLayers'))
         self._thicknessForm.setData(self._dbElement)
 

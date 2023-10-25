@@ -31,6 +31,13 @@ class VolumeDialog(QDialog):
         'cellZone': CFDType.CELL_ZONE.value
     }
 
+    _baseNames = {
+        Shape.HEX.value: 'Hex_',
+        Shape.CYLINDER.value: 'Cylinder_',
+        Shape.SPHERE.value: 'Sphere_',
+        Shape.HEX6.value: 'Hex6_'
+    }
+
     def __init__(self, parent):
         super().__init__(parent)
         self._ui = Ui_VolumeDialog()
@@ -50,7 +57,7 @@ class VolumeDialog(QDialog):
     def isForCreation(self):
         return self._creationMode
 
-    def setupForAdding(self, name, shape):
+    def setupForAdding(self, shape):
         self.setWindowTitle(self.tr('Add Volume'))
 
         self._creationMode = True
@@ -58,7 +65,6 @@ class VolumeDialog(QDialog):
         self._dbElement = app.db.newElement('geometry')
         self._shape = shape
 
-        self._dbElement.setValue('name', name)
         self._dbElement.setValue('shape', shape)
 
         self._load()
@@ -118,7 +124,12 @@ class VolumeDialog(QDialog):
             QMessageBox.information(self, self.tr("Input Error"), e.toMessage())
 
     def _load(self):
-        self._ui.name.setText(self._dbElement.getValue('name'))
+        name = self._dbElement.getValue('name')
+        if not name:
+            baseName = self._baseNames[self._shape]
+            name = f"{baseName}{app.db.getUniqueSeq('geometry', 'name', baseName, 1)}"
+
+        self._ui.name.setText(name)
 
         self._typeRadios = RadioGroup(self._ui.typeRadios)
         self._typeRadios.setObjectMap(self._cfdTypes, self._dbElement.getValue('cfdType'))

@@ -11,6 +11,9 @@ from baramMesh.view.widgets.multi_selector_dialog import SelectorItem
 from .surface_refinement_dialog_ui import Ui_SurfaceRefinementDialog
 
 
+baseName = 'Group_'
+
+
 class SurfaceRefinementDialog(QDialog):
     def __init__(self, parent, db, groupId=None):
         super().__init__(parent)
@@ -85,10 +88,12 @@ class SurfaceRefinementDialog(QDialog):
     def _load(self):
         if self._groupId:
             self._dbElement = self._db.checkout(f'castellation/refinementSurfaces/{self._groupId}')
+            name = self._dbElement.getValue('groupName')
         else:
             self._dbElement = self._db.newElement('castellation/refinementSurfaces')
+            name = f"{baseName}{self._db.getUniqueSeq('castellation/refinementSurfaces', 'groupName', baseName, 1)}"
 
-        self._ui.groupName.setText(self._dbElement.getValue('groupName'))
+        self._ui.groupName.setText(name)
         self._ui.surfaceRefinementLevel.setText(self._dbElement.getValue('surfaceRefinementLevel'))
         self._ui.featureEdgeRefinementLevel.setText(self._dbElement.getValue('featureEdgeRefinementLevel'))
 

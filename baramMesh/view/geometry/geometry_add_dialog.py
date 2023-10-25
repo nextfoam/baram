@@ -13,11 +13,6 @@ class GeometryAddDialog(QDialog):
         self._ui.setupUi(self)
 
         self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setText(self.tr('Next'))
-        self._validate()
-        self._ui.name.textChanged.connect(self._validate)
 
-    def geometryInfo(self):
-        return self._ui.name.text(), self._ui.shapeRadios.checkedButton().objectName()
-
-    def _validate(self):
-        self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(self._ui.name.text().strip() != '')
+    def selectedShape(self):
+        return self._ui.shapeRadios.checkedButton().objectName()

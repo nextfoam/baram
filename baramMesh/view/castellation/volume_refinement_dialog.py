@@ -11,7 +11,11 @@ from baramMesh.view.widgets.multi_selector_dialog import SelectorItem
 from .volume_refinement_dialog_ui import Ui_VolumeeRefinementDialog
 
 
+baseName = 'Group_'
+
+
 class VolumeRefinementDialog(QDialog):
+
     def __init__(self, parent, db, groupId=None):
         super().__init__(parent)
         self._ui = Ui_VolumeeRefinementDialog()
@@ -84,10 +88,12 @@ class VolumeRefinementDialog(QDialog):
     def _load(self):
         if self._groupId:
             self._dbElement = self._db.checkout(f'castellation/refinementVolumes/{self._groupId}')
+            name = self._dbElement.getValue('groupName')
         else:
             self._dbElement = self._db.newElement('castellation/refinementVolumes')
+            name = f"{baseName}{self._db.getUniqueSeq('castellation/refinementVolumes', 'groupName', baseName, 1)}"
 
-        self._ui.groupName.setText(self._dbElement.getValue('groupName'))
+        self._ui.groupName.setText(name)
         self._ui.volumeRefinementLevel.setText(self._dbElement.getValue('volumeRefinementLevel'))
 
         self._volumes = []

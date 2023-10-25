@@ -22,6 +22,8 @@ class RegionForm(QWidget):
         'fluid': RegionType.FLUID.value,
         'solid': RegionType.SOLID.value
     }
+    
+    _baseName = 'Region_'
 
     def __init__(self, renderingView, owner):
         super().__init__()
@@ -56,7 +58,7 @@ class RegionForm(QWidget):
         self._dbElement = app.db.newElement('region')
 
         self._ui.regionForm.setTitle(self.tr('Add Region'))
-        self._ui.name.clear()
+        self._ui.name.setText(f"{self._baseName}{app.db.getUniqueSeq('region', 'name', self._baseName, 1)}")
         self._setPoint(self._defaultPoint)
         self._ui.ok.setText(self.tr('Add'))
 

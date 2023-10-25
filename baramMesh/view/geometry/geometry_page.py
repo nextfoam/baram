@@ -111,7 +111,7 @@ class GeometryPage(StepPage):
         self._dialog.open()
 
     def _openAddDialog(self):
-        self._volumeDialog.setupForAdding(*self._dialog.geometryInfo())
+        self._volumeDialog.setupForAdding(self._dialog.selectedShape())
         self._volumeDialog.open()
 
     def _openEditDialog(self):
