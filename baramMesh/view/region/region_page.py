@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QVBoxLayout
 
 from baramMesh.app import app
 from baramMesh.view.step_page import StepPage
-from baramMesh.db.configurations_schema import RegionType
+from baramMesh.db.configurations_schema import RegionType, CFDType
 from .region_form import RegionForm
 from .region_card import RegionCard
 
@@ -47,9 +47,28 @@ class RegionPage(StepPage):
             else:
                 card.hideWarning()
 
-        self._ui.regionMessage.setVisible(not hasFluid)
+        self._ui.regionEmptyMessage.setVisible(not hasFluid)
+        if not hasFluid:
+            self._ui.regionValidationMessage.hide()
+            return False
 
-        return available and hasFluid
+        multiRegion = len(self._regions) > 1
+        hasInterRegionInterface = app.db.elementCount(
+            'geometry', lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and e['interRegion']) > 0
+
+        if multiRegion == hasInterRegionInterface:
+            self._ui.regionValidationMessage.hide()
+            return available
+
+        if multiRegion:
+            self._ui.regionValidationMessage.setText(self.tr(
+                'No Inter-Region Interface is configured while Region points are configured.'))
+        else:
+            self._ui.regionValidationMessage.setText(self.tr(
+                'Only one Region Point is configured while Inter-Region Interface is configured in Geometry Step.'))
+        self._ui.regionValidationMessage.show()
+
+        return False
 
     def lock(self):
         self._ui.regionAdd.setEnabled(False)
@@ -77,6 +96,7 @@ class RegionPage(StepPage):
 
     def deselected(self):
         self._form.cancel()
+        self._ui.regionValidationMessage.hide()
 
     def clear(self):
         for card in self._regions.values():
