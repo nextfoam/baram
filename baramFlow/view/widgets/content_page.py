@@ -10,3 +10,6 @@ class ContentPage(QWidget):
 
     def save(self):
         return True
+
+    def checkToQuit(self):
+        return True

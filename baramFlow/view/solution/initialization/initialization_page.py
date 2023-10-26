@@ -29,6 +29,7 @@ class InitializationPage(ContentPage):
         self._connectSignalsSlots()
 
         self._sectionActors = {}
+        self._dbConfigCount = None
 
         self._load()
 
@@ -40,6 +41,8 @@ class InitializationPage(ContentPage):
             for i in range(self._ui.tabWidget.count()):
                 widget: InitializationWidget = self._ui.tabWidget.widget(i)
                 widget.load()
+
+            self._dbConfigCount = coredb.CoreDB().configCount
 
         return super().showEvent(ev)
 
@@ -84,6 +87,19 @@ class InitializationPage(ContentPage):
         for i in range(self._ui.tabWidget.count()):
             widget: InitializationWidget = self._ui.tabWidget.widget(i)
             if not widget.save():
+                return False
+
+        return True
+
+    def checkToQuit(self):
+        if coredb.CoreDB().configCount != self._dbConfigCount:
+            confirm = QMessageBox.question(
+                self, self.tr("Changed Not Applied"),
+                self.tr(
+                    'Initialization configuration has changed but "Initialization" button was not clicked. Proceed?'),
+                defaultButton=QMessageBox.StandardButton.No)
+
+            if confirm == QMessageBox.StandardButton.No:
                 return False
 
         return True
@@ -141,6 +157,7 @@ class InitializationPage(ContentPage):
                     return
 
             progressDialog.finish(self.tr('Initialization Completed'))
+            self._dbConfigCount = coredb.CoreDB().configCount
 
     def _showSectionActor(self, section):
         view = app.renderingView

@@ -428,7 +428,7 @@ class MainWindow(QMainWindow):
         if previousMenu > -1:
             previousPage = self._menuPages[previousMenu]
             if previousPage and previousPage.widget == self._contentView.currentPage():
-                if not previousPage.widget.save():
+                if not previousPage.widget.save() or not previousPage.widget.checkToQuit():
                     QTimer.singleShot(0, lambda: self._navigatorView.setCurrentMenu(previousMenu))
                     return
 
