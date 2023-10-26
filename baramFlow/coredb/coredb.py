@@ -707,7 +707,7 @@ class _CoreDB(object):
                                          namespaces=nsmap)
         return [e.attrib['czid'] for e in elements]
 
-    def addBoundaryCondition(self, rname: str, bname: str, geometricalType: str) -> int:
+    def addBoundaryCondition(self, rname: str, bname: str, geometricalType: str, physicalType: str) -> int:
         bc = self._xmlTree.find(f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bname}"]',
                                 namespaces=nsmap)
 
@@ -731,7 +731,8 @@ class _CoreDB(object):
 
         if geometricalType is not None:
             bc.find('geometricalType', namespaces=nsmap).text = geometricalType
-            # ToDo: set default physicalType according to the geometricalType
+
+        bc.find('physicalType', namespaces=nsmap).text = physicalType
 
         parent.append(bc)
 
