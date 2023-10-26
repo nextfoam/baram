@@ -52,7 +52,7 @@ class DictionaryFile:
     def polyMeshLocation(cls, rname=''):
         return Path(Directory.CONSTANT_DIRECTORY_NAME) / rname / Directory.POLY_MESH_DIRECTORY_NAME
 
-    def fullPath(self, processorNo=None):
+    def fullPath(self, processorNo=None) -> Path:
         processorDir = '' if processorNo is None else f'processor{processorNo}'
         return self._casePath / processorDir / self._header['location'] / self._header['object']
 
@@ -79,8 +79,10 @@ class DictionaryFile:
         self._header['class'] = dataClass.value
 
     def _write(self, processorNo=None):
+        path = self.fullPath(processorNo)
         if self._data:
-            path = self.fullPath(processorNo)
             path.parent.mkdir(parents=True, exist_ok=True)
             with open(path, 'w') as f:
                 f.write(str(FoamFileGenerator(self._data, header=self._header)))
+        else:
+            path.unlink(missing_ok=True)
