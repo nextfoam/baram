@@ -59,6 +59,9 @@ class FileSystem:
 
         shutil.copytree(resource.file('openfoam/flow_case'), cls._casePath)
 
+        cls._boundaryConditionsPath.mkdir()
+        cls._constantPath.mkdir()
+
     @classmethod
     def setupForProject(cls):
         cls._setCaseRoot(Project.instance().path / CASE_DIRECTORY_NAME)

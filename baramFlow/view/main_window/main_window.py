@@ -615,7 +615,7 @@ class MainWindow(QMainWindow):
 
         try:
             if renew:
-                CaseGenerator.createCase()
+                FileSystem.createCase()
             else:
                 await FileSystem.initialize()
 

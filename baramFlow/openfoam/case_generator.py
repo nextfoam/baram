@@ -55,15 +55,15 @@ class CaseGenerator(QObject):
 
     def getErrors(self):
         return self._errors
-
-    @classmethod
-    def createCase(cls):
-        FileSystem.createCase()
-        cls.createDefaults()
-
-    @classmethod
-    def createDefaults(cls):
-        ControlDict().copyFromResource('openfoam/controlDict')
+    #
+    # @classmethod
+    # def createCase(cls):
+    #     FileSystem.createCase()
+    #     cls.createDefaults()
+    #
+    # @classmethod
+    # def createDefaults(cls):
+    #     ControlDict().copyFromResource('openfoam/controlDict')
 
     def _gatherFiles(self):
         if errors := self._validate():
