@@ -115,7 +115,7 @@ class BoundaryConditionsPage(ContentPage):
             self._ui.boundaries.invisibleRootItem()
             for j in range(0, bnum):
                 childItem = item.child(j)
-                boundaryWidget = self._ui.boundaries.itemWidget(childItem, 0)
+                boundaryWidget = self._ui.boundaries.itemWidget(childItem, 1)
                 childItem.setHidden(filterText not in boundaryWidget.bcname.lower())
 
     def _addBoundaryItems(self, parent, rname):
