@@ -26,7 +26,6 @@ from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.coredb import coredb
 from baramFlow.mesh.mesh_manager import MeshManager, MeshType
 from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.openfoam.case_generator import CaseGenerator
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from baramFlow.openfoam.redistribution_task import RedistributionTask
@@ -557,7 +556,6 @@ class MainWindow(QMainWindow):
                 progressDialog.setLabelText(self.tr('Saving case'))
 
                 await asyncio.to_thread(FileSystem.saveAs, path)
-                CaseGenerator.createDefaults()
                 self._project.saveAs(path)
                 progressDialog.close()
 
