@@ -110,8 +110,6 @@ class _Project(QObject):
 
         self._timer = None
 
-        self._renewed = False
-
     @property
     def uuid(self) -> str:
         return self._settings.get(SettingKey.UUID)
@@ -174,9 +172,6 @@ class _Project(QObject):
         self._settings.set(key, value)
 
     def solverProcess(self):
-        if self._renewed:
-            return self._process
-
         return self._projectSettings.get(ProjectSettingKey.PROCESS_ID),\
                self._projectSettings.get(ProjectSettingKey.PROCESS_START_TIME)
 
@@ -200,14 +195,13 @@ class _Project(QObject):
         self._runType = RunType.PROCESS
         self._process = process
 
-        if not self._renewed:
-            self._projectSettings.setProcess(process)
+        self._projectSettings.setProcess(process)
         self._startProcessMonitor(process)
 
     def setSolverStatus(self, status):
         if self._status != status:
             self._status = status
-            if status == SolverStatus.NONE and not self._renewed:
+            if status == SolverStatus.NONE:
                 self._projectSettings.setProcess(None)
             self.solverStatusChanged.emit(status)
 
@@ -222,12 +216,6 @@ class _Project(QObject):
 
     def opened(self):
         self.projectOpened.emit()
-
-    def renew(self):
-        self._renewed = True
-
-    def isRenewed(self):
-        return self._renewed
 
     def _open(self, path: Path, route=ProjectOpenType.EXISTING):
         self._settings = self.LocalSettings(path, self._settings)

@@ -255,7 +255,7 @@ class MainWindow(QMainWindow):
 
     def _save(self):
         if self._saveCurrentPage():
-            FileSystem.save()
+            # FileSystem.save()
             self._project.save()
 
     def _saveAs(self):
@@ -329,6 +329,9 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _scaleMesh(self):
+        if not await self._confirmToReplaceMesh():
+            return
+
         progressDialog = ProgressDialog(self, self.tr('Mesh Scaling'))
         progressDialog.open()
 
@@ -349,6 +352,9 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _translateMesh(self):
+        if not await self._confirmToReplaceMesh():
+            return
+
         progressDialog = ProgressDialog(self, self.tr('Mesh Translation'))
         progressDialog.open()
 
@@ -369,6 +375,9 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _rotateMesh(self):
+        if not await self._confirmToReplaceMesh():
+            return
+
         progressDialog = ProgressDialog(self, self.tr('Mesh Rotation'))
         progressDialog.open()
 
@@ -553,16 +562,6 @@ class MainWindow(QMainWindow):
                 progressDialog.close()
 
     def _importMesh(self, meshType, fileFilter=None):
-        if coredb.CoreDB().getRegions():
-            confirm = QMessageBox.question(
-                self, self.tr('Load Mesh'),
-                self.tr('Current mesh and monitor configurations will be cleared.\n'
-                        'Would you like to load another mesh?'))
-
-            if confirm != QMessageBox.StandardButton.Yes:
-                return
-
-        self._project.setMeshLoaded(False)
         if fileFilter is None:
             # Select OpenFOAM mesh directory.
             self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'),
@@ -581,22 +580,51 @@ class MainWindow(QMainWindow):
         # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
         self._ui.menubar.repaint()
 
-        if result == QFileDialog.DialogCode.Accepted:
-            self._renewCase()
+        if result != QFileDialog.DialogCode.Accepted:
+            return
 
-            file = Path(self._dialog.selectedFiles()[0])
-            AppSettings.updateRecentMeshDirectory(str(file))
-            if meshType == MeshType.POLY_MESH:
-                await self._meshManager.importOpenFoamMesh(file)
-            else:
-                await self._meshManager.importMesh(file, meshType)
+        if coredb.CoreDB().getRegions() and not await self._confirmToReplaceMesh(True):
+            return
 
-    def _renewCase(self):
-        self._project.renew()
-        CaseGenerator.createCase()
+        file = Path(self._dialog.selectedFiles()[0])
+        AppSettings.updateRecentMeshDirectory(str(file))
+
+        self._project.setMeshLoaded(False)
+
+        if meshType == MeshType.POLY_MESH:
+            await self._meshManager.importOpenFoamMesh(file)
+        else:
+            await self._meshManager.importMesh(file, meshType)
+
+        self._project.save()
 
     def _runParaView(self, executable, updateSetting=True):
         casePath = FileSystem.foamFilePath() if Project.instance().meshLoaded else ''
         subprocess.Popen([executable, str(casePath)])
         if updateSetting:
             AppSettings.updateParaviewInstalledPath(executable)
+
+    async def _confirmToReplaceMesh(self, renew=False):
+        confirm = QMessageBox.question(
+            self, self.tr('Load Mesh'),
+            self.tr('This action will overwrite current mesh, related configurations, and calculation data.\n'
+                    ' It cannot be recovered, and changed configurations will be saved automatically.'))
+
+        if confirm != QMessageBox.StandardButton.Yes:
+            return False
+
+        try:
+            if renew:
+                CaseGenerator.createCase()
+            else:
+                await FileSystem.initialize()
+
+            self._chartDock.clear()
+            self._monitorDock.clear()
+
+            return True
+        except PermissionError:
+            QMessageBox.information(self, self.tr('Permission Denied'),
+                                    self.tr('The project directory is open by another program.'))
+
+            return False

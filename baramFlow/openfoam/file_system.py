@@ -12,6 +12,7 @@ from libbaram import utils
 from libbaram.openfoam.constants import Directory, CASE_DIRECTORY_NAME, FOAM_FILE_NAME
 
 from baramFlow.coredb.project import Project
+from resources import resource
 
 
 class FileLoadingError(Exception):
@@ -37,8 +38,6 @@ def copyDirectory(src, dst):
 
 
 class FileSystem:
-    TEMP_DIRECTORY_NAME = 'temp'
-
     _casePath: Optional[Path] = None
     _constantPath = None
     _boundaryConditionsPath = None
@@ -55,12 +54,10 @@ class FileSystem:
 
     @classmethod
     def createCase(cls):
-        cls._setCaseRoot(Project.instance().path / cls.TEMP_DIRECTORY_NAME)
         if cls._casePath.exists():
             utils.rmtree(cls._casePath)
 
-        cls._casePath.mkdir(exist_ok=True)
-        cls._setupNewCase()
+        shutil.copytree(resource.file('openfoam/flow_case'), cls._casePath)
 
     @classmethod
     def setupForProject(cls):
@@ -162,15 +159,13 @@ class FileSystem:
     @classmethod
     def numberOfProcessorFolders(cls):
         return len(cls.processorFolders())
-
-    @classmethod
-    def _setupNewCase(cls):
-        with open(cls.foamFilePath(), 'a'):
-            pass
-
-        cls._boundaryConditionsPath = cls.makeDir(cls._casePath, Directory.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
-        cls._systemPath = cls.makeDir(cls._casePath, Directory.SYSTEM_DIRECTORY_NAME)
-        cls._constantPath = cls.makeDir(cls._casePath, Directory.CONSTANT_DIRECTORY_NAME)
+    #
+    # @classmethod
+    # def _setupNewCase(cls):
+    #     if cls._casePath.exists():
+    #         utils.rmtree(cls._casePath)
+    #
+    #     shutil.copytree(resource.file('openfoam/flow_case'), cls._casePath)
 
     @classmethod
     def _copyMeshFromInternal(cls, directory, regions):

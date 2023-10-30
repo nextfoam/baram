@@ -7,10 +7,10 @@ from PySide6.QtCore import QObject, QTranslator, QCoreApplication, QLocale
 from PySide6.QtWidgets import QApplication
 
 from baramMesh.db.project import Project
-from resources import resource
 from baramMesh.settings.app_settings import AppSettings
 from baramMesh.settings.project_manager import ProjectManager
 from baramMesh.openfoam.file_system import FileSystem
+from resources import resource
 
 
 class App(QObject):
@@ -85,7 +85,7 @@ class App(QObject):
         self._project = self._projectManager.createProject(path)
         self._settings.updateRecents(self._project.path, True)
         self._fileSystem = FileSystem(self._project.path)
-        self._fileSystem.createCase(resource.file('openfoam/case'))
+        self._fileSystem.createCase(resource.file('openfoam/mesh_case'))
 
         return self._project
 

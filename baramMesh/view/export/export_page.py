@@ -118,7 +118,7 @@ class ExportPage(StepPage):
 
             path.mkdir(parents=True, exist_ok=True)
             baramSystem = FileSystem(path)
-            baramSystem.createCase(resource.file('openfoam/case'))
+            baramSystem.createCase(resource.file('openfoam/mesh_case'))
 
             if len(regions) > 1:
                 RegionProperties(baramSystem.caseRoot()).build().write()
