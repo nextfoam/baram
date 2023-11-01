@@ -578,10 +578,7 @@ class MainWindow(QMainWindow):
         # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
         self._ui.menubar.repaint()
 
-        if result != QFileDialog.DialogCode.Accepted:
-            return
-
-        if coredb.CoreDB().getRegions() and not await self._confirmToReplaceMesh(True):
+        if result != QFileDialog.DialogCode.Accepted or not await self._confirmToReplaceMesh(True):
             return
 
         file = Path(self._dialog.selectedFiles()[0])
@@ -603,13 +600,14 @@ class MainWindow(QMainWindow):
             AppSettings.updateParaviewInstalledPath(executable)
 
     async def _confirmToReplaceMesh(self, renew=False):
-        confirm = QMessageBox.question(
-            self, self.tr('Load Mesh'),
-            self.tr('This action will overwrite current mesh, related configurations, and calculation data.\n'
-                    ' It cannot be recovered, and changed configurations will be saved automatically.'))
+        if coredb.CoreDB().getRegions():
+            confirm = QMessageBox.question(
+                self, self.tr('Load Mesh'),
+                self.tr('This action will overwrite current mesh, related configurations, and calculation data.\n'
+                        ' It cannot be recovered, and changed configurations will be saved automatically.'))
 
-        if confirm != QMessageBox.StandardButton.Yes:
-            return False
+            if confirm != QMessageBox.StandardButton.Yes:
+                return False
 
         try:
             if renew:
