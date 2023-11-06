@@ -65,7 +65,7 @@ class DictionaryFile:
     def writeAtomic(self):
         if self._data:
             with tempfile.NamedTemporaryFile(mode='w', delete=False, dir=self.fullPath().parent) as f:
-                f.write(str(FoamFileGenerator(self._data, header=self._header)))
+                f.write(str(FoamFileGenerator(self._data, header=self._header, longListThreshold=1)))
                 p = Path(f.name)
             p.replace(self.fullPath())
 
@@ -83,6 +83,6 @@ class DictionaryFile:
         if self._data:
             path.parent.mkdir(parents=True, exist_ok=True)
             with open(path, 'w') as f:
-                f.write(str(FoamFileGenerator(self._data, header=self._header)))
+                f.write(str(FoamFileGenerator(self._data, header=self._header, longListThreshold=1)))
         else:
             path.unlink(missing_ok=True)
