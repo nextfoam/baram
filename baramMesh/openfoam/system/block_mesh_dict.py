@@ -58,9 +58,11 @@ class BlockMeshDict(DictionaryFile):
                 [xMin, yMax, zMax]
             ],
             'blocks': [
-                ('hex', [0, 1, 2, 3, 4, 5, 6, 7]),
-                [cx, cy, cz],
-                ('simpleGrading', gradingRatio)
+                (
+                    'hex', [0, 1, 2, 3, 4, 5, 6, 7],
+                    [cx, cy, cz], ' ',
+                    'simpleGrading', gradingRatio
+                )
             ],
             'boundary': [
                 (bNames[Shape.X_MIN.value], {
