@@ -104,8 +104,8 @@ class PolyMeshLoader(QObject):
     progress = Signal(str)
 
     @classmethod
-    def loadBoundaryDict(cls, path, listLengthUnparsed=None):
-        return ParsedBoundaryDict(path, listLengthUnparsed=listLengthUnparsed, treatBinaryAsASCII=True)
+    def loadBoundaryDict(cls, path, listLengthUnparsed=None, longListOutputThreshold=None):
+        return ParsedBoundaryDict(path, listLengthUnparsed=listLengthUnparsed, treatBinaryAsASCII=True, longListOutputThreshold=longListOutputThreshold)
 
     async def loadMesh(self, srcPath=None):
         boundaries = await self._loadBoundaries(srcPath)

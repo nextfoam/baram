@@ -51,7 +51,7 @@ class Boundary(DictionaryFile):
 
         fullPath = self.fullPath(self._processorNo)
 
-        self._boundaryDict = PolyMeshLoader.loadBoundaryDict(fullPath)
+        self._boundaryDict = PolyMeshLoader.loadBoundaryDict(fullPath, longListOutputThreshold=1)
         for bcname in self._boundaryDict.content:
             xpath = BoundaryDB.getXPathByName(self._rname, bcname)
             if self._db.exists(xpath):
