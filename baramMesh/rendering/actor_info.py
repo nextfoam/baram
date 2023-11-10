@@ -80,7 +80,7 @@ class ActorSource:
     def __new__(cls, *args, **kwargs):
         if cls is ActorSource:
             raise TypeError(f"only children of '{cls.__name__}' may be instantiated")
-        return super().__new__(cls, *args, **kwargs)
+        return super().__new__(cls)
 
     def __init__(self, dataSet, mapper):
         self._dataSet = dataSet
