@@ -77,6 +77,11 @@ class ActorType(Enum):
 
 
 class ActorSource:
+    def __new__(cls, *args, **kwargs):
+        if cls is ActorSource:
+            raise TypeError(f"only children of '{cls.__name__}' may be instantiated")
+        return super().__new__(cls, *args, **kwargs)
+
     def __init__(self, dataSet, mapper):
         self._dataSet = dataSet
         self._mapper = mapper
@@ -114,6 +119,9 @@ class ActorSource:
     def clearFilter(self):
         self._mapper.SetInputData(self._dataSet)
         self._mapper.Update()
+
+    def _newExtractFilter(self):
+        raise NotImplementedError
 
 
 class UnstructuredGrid(ActorSource):
