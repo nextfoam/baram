@@ -163,7 +163,6 @@ class ActorInfo(QObject):
         self._mapper.ScalarVisibilityOff()
 
         self._actor.SetMapper(self._mapper)
-        self._actor.GetProperty().SetAmbient(0.2)
         self._actor.GetProperty().SetDiffuse(0.3)
         self._actor.GetProperty().SetOpacity(0.9)
         self._actor.GetProperty().SetAmbient(0.3)
