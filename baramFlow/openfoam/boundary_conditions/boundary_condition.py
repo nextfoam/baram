@@ -49,9 +49,12 @@ class BoundaryCondition(DictionaryFile):
         if path.is_file():
             self._fieldsData = ParsedParameterFile(path, debug=None)
 
-            for name in self._data['boundaryField']:
-                self._fieldsData.content['boundaryField'][name].update(
-                    {k: v for k, v in self._data['boundaryField'][name].items() if v is not None})
+            for name, builded in self._data['boundaryField'].items():
+                loaded = self._fieldsData.content['boundaryField'][name]
+                if loaded['type'] == builded['type'] == 'fixedValue' and not loaded['value'].isUniform():
+                    builded['value'] = None
+
+                loaded.update({k: v for k, v in builded.items() if v is not None})
 
         return self
 
