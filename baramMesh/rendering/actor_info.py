@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from PySide6.QtGui import QColor
 from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonCore import VTK_UNSTRUCTURED_GRID
+from vtkmodules.vtkFiltersCore import vtkClipPolyData
 from vtkmodules.vtkFiltersExtraction import vtkExtractPolyDataGeometry, vtkExtractGeometry
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor
 from vtkmodules.vtkCommonColor import vtkNamedColors
@@ -102,13 +103,10 @@ class ActorSource:
     def getBounds(self):
         return self._dataSet.GetBounds()
 
-    def cut(self, cutters):
+    def cut(self, cutters, clip):
         dataSet = self._dataSet
         for c in cutters:
-            filter = self._newExtractFilter()
-            filter.SetImplicitFunction(c.plane)
-            filter.SetExtractInside(c.invert)
-            filter.SetExtractBoundaryCells(True)
+            filter = self._newClipFilter(c) if clip else self._newExtractFilter(c)
             filter.SetInputData(dataSet)
             filter.Update()
             dataSet = filter.GetOutput()
@@ -120,7 +118,10 @@ class ActorSource:
         self._mapper.SetInputData(self._dataSet)
         self._mapper.Update()
 
-    def _newExtractFilter(self):
+    def _newExtractFilter(self, cutter):
+        raise NotImplementedError
+
+    def _newClipFilter(self, cutter):
         raise NotImplementedError
 
 
@@ -128,16 +129,36 @@ class UnstructuredGrid(ActorSource):
     def __init__(self, unstructuredGrid):
         super().__init__(unstructuredGrid, vtkDataSetMapper())
 
-    def _newExtractFilter(self):
-        return vtkExtractGeometry()
+    def _newExtractFilter(self, cutter):
+        filter = vtkExtractGeometry()
+        filter.SetImplicitFunction(cutter.plane)
+        filter.SetExtractInside(cutter.invert)
+        filter.SetExtractBoundaryCells(True)
+
+        return filter
+
+    def _newClipFilter(self, cutter):
+        return self._newExtractFilter(cutter)
 
 
 class PolyData(ActorSource):
     def __init__(self, polyData):
         super().__init__(polyData, vtkPolyDataMapper())
 
-    def _newExtractFilter(self):
-        return vtkExtractPolyDataGeometry()
+    def _newExtractFilter(self, cutter):
+        filter = vtkExtractPolyDataGeometry()
+        filter.SetImplicitFunction(cutter.plane)
+        filter.SetExtractInside(cutter.invert)
+        filter.SetExtractBoundaryCells(True)
+
+        return filter
+
+    def _newClipFilter(self, cutter):
+        filter = vtkClipPolyData()
+        filter.SetClipFunction(cutter.plane)
+        filter.SetInsideOut(cutter.invert)
+
+        return filter
 
 
 class ActorInfo(QObject):
@@ -256,7 +277,7 @@ class ActorInfo(QObject):
 
     def cut(self, cutters):
         if cutters and self.isCutEnabled():
-            self._source.cut(cutters)
+            self._source.cut(cutters, self._type == ActorType.GEOMETRY)
         else:
             self._source.clearFilter()
 
@@ -288,11 +309,6 @@ class ActorInfo(QObject):
         self._actor.GetProperty().SetLineWidth(1.0)
 
     def _applyHighlight(self):
-        # print(self._actor.GetProperty().GetDiffuse())
-        # print(self._actor.GetProperty().GetSpecular())
-        # print(self._actor.GetProperty().GetSpecularColor())
-        # print(self._actor.GetProperty().GetSpecularPower())
-        # print(self._actor.GetProperty().GetAmbient())
         if self._properties.highlighted:
             self._applySurfaceEdgeMode()
             self._actor.GetProperty().SetDiffuse(0.6)
