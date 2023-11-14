@@ -64,5 +64,8 @@ class MeshManager(ActorManager):
         else:
             await self.load(time)
 
+    def boundaries(self):
+        return self._actorInfos.keys()
+
     def _connectSignalsSlots(self):
         self._loader.progress.connect(self.progress)
