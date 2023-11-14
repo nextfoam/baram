@@ -111,29 +111,32 @@ class BoundarySettingDialog(QDialog):
 
         self._boundaries = []
         self._availableBoundaries = []
+
+        meshBoundaries = app.window.meshManager.boundaries()
         for gId, geometry in app.window.geometryManager.geometries().items():
-            cfdType = geometry['cfdType']
-            if cfdType == CFDType.BOUNDARY.value or cfdType == CFDType.INTERFACE.value:
-                if app.window.geometryManager.isBoundingHex6(gId):
-                    continue
+            if geometry['name'] in meshBoundaries:
+                cfdType = geometry['cfdType']
+                if cfdType == CFDType.BOUNDARY.value or cfdType == CFDType.INTERFACE.value:
+                    if app.window.geometryManager.isBoundingHex6(gId):
+                        continue
 
-                name = geometry['name']
-                groupId = geometry['layerGroup']
-                if groupId is None:
-                    addAvailableBoundary(name, gId)
-                elif groupId == self._groupId:
-                    addAvailableBoundary(name, gId)
-                    addSelectedBoundary(name, gId)
-
-                if cfdType == CFDType.INTERFACE.value:
-                    name = f'{name}_slave'
-                    sId = f'{gId}s'
-                    groupId = geometry['slaveLayerGroup']
+                    name = geometry['name']
+                    groupId = geometry['layerGroup']
                     if groupId is None:
-                        addAvailableBoundary(name, sId)
+                        addAvailableBoundary(name, gId)
                     elif groupId == self._groupId:
-                        addAvailableBoundary(name, sId)
-                        addSelectedBoundary(name, sId)
+                        addAvailableBoundary(name, gId)
+                        addSelectedBoundary(name, gId)
+
+                    if cfdType == CFDType.INTERFACE.value:
+                        name = f'{name}_slave'
+                        sId = f'{gId}s'
+                        groupId = geometry['slaveLayerGroup']
+                        if groupId is None:
+                            addAvailableBoundary(name, sId)
+                        elif groupId == self._groupId:
+                            addAvailableBoundary(name, sId)
+                            addSelectedBoundary(name, sId)
 
         self._oldBoundaries = self._boundaries
 
