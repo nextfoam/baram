@@ -1327,7 +1327,8 @@ class ParsedBoundaryDict(ParsedParameterFile):
                  treatBinaryAsASCII=False,
                  backup=False,
                  debug=False,
-                 listLengthUnparsed=None):
+                 listLengthUnparsed=None,
+                 longListOutputThreshold=None):
         """:param name: The name of the parameter file
         :param backup: create a backup-copy of the file"""
 
@@ -1337,7 +1338,8 @@ class ParsedBoundaryDict(ParsedParameterFile):
                                      treatBinaryAsASCII=treatBinaryAsASCII,
                                      debug=debug,
                                      boundaryDict=True,
-                                     listLengthUnparsed=listLengthUnparsed)
+                                     listLengthUnparsed=listLengthUnparsed,
+                                     longListOutputThreshold=longListOutputThreshold)
 
     def parse(self,content):
         """Constructs a representation of the file"""
@@ -1361,7 +1363,7 @@ class ParsedBoundaryDict(ParsedParameterFile):
             temp2.append(b[0])
             temp2.append(b[1])
 
-        generator=FoamFileGenerator(temp2,header=self.header)
+        generator=FoamFileGenerator(temp2,header=self.header, longListThreshold=self.longListOutputThreshold)
         string+=str(generator)
 
         return string

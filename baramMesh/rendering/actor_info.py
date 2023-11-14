@@ -77,6 +77,11 @@ class ActorType(Enum):
 
 
 class ActorSource:
+    def __new__(cls, *args, **kwargs):
+        if cls is ActorSource:
+            raise TypeError(f"only children of '{cls.__name__}' may be instantiated")
+        return super().__new__(cls)
+
     def __init__(self, dataSet, mapper):
         self._dataSet = dataSet
         self._mapper = mapper
@@ -114,6 +119,9 @@ class ActorSource:
     def clearFilter(self):
         self._mapper.SetInputData(self._dataSet)
         self._mapper.Update()
+
+    def _newExtractFilter(self):
+        raise NotImplementedError
 
 
 class UnstructuredGrid(ActorSource):
@@ -155,7 +163,6 @@ class ActorInfo(QObject):
         self._mapper.ScalarVisibilityOff()
 
         self._actor.SetMapper(self._mapper)
-        self._actor.GetProperty().SetAmbient(0.2)
         self._actor.GetProperty().SetDiffuse(0.3)
         self._actor.GetProperty().SetOpacity(0.9)
         self._actor.GetProperty().SetAmbient(0.3)

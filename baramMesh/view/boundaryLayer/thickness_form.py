@@ -58,7 +58,7 @@ class ThicknessForm(QObject):
         db.setValue('finalLayerThickness', self._ui.finalLayerThickness.text(), self.tr('Final Layer Thickness'))
         db.setValue('thickness', self._ui.totalThickness.text(), self.tr('Total Thickness'))
         db.setValue('expansionRatio', self._ui.expansionRatio.text(), self.tr('Expansion Ratio'))
-        db.setValue('minThickness', self._ui.minTotalTickness.text(), self.tr('Min. Total Thickness'))
+        db.setValue('minThickness', self._ui.minTotalThickness.text(), self.tr('Min. Total Thickness'))
 
     def _connectSignalsSlots(self):
         self._thicknessModelRadios.valueChanged.connect(self._thicknessModelChanged)
@@ -71,18 +71,7 @@ class ThicknessForm(QObject):
         self._ui.finalLayerThickness.setText(data.getValue('finalLayerThickness'))
         self._ui.totalThickness.setText(data.getValue('thickness'))
         self._ui.expansionRatio.setText(data.getValue('expansionRatio'))
-        self._ui.minTotalTickness.setText(data.getValue('minThickness'))
-        self._thicknessModelChanged(model)
-
-    def copyData(self, form):
-        model = form.model()
-        self._thicknessModelRadios.setObjectMap(self._thicknessModels, model)
-        self._ui.sizeSpecificationRelative.setChecked(form.ui.sizeSpecificationRelative.isChecked())
-        self._ui.firstLayerThickness.setText(form.ui.firstLayerThickness.text())
-        self._ui.finalLayerThickness.setText(form.ui.finalLayerThickness.text())
-        self._ui.totalThickness.setText(form.ui.totalThickness.text())
-        self._ui.expansionRatio.setText(form.ui.expansionRatio.text())
-        self._ui.minTotalTickness.setText(form.ui.minTotalTickness.text())
+        self._ui.minTotalThickness.setText(data.getValue('minThickness'))
         self._thicknessModelChanged(model)
 
     def _thicknessModelChanged(self, model):

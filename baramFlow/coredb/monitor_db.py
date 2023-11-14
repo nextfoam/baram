@@ -5,6 +5,7 @@ from enum import Enum
 
 from PySide6.QtCore import QCoreApplication
 
+import baramFlow.openfoam.solver
 from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
 from baramFlow.coredb.general_db import GeneralDB
@@ -215,4 +216,18 @@ class FieldHelper:
         if field == Field.MATERIAL.value:
             return 'alpha.' + MaterialDB.getName(mid)
         else:
-            return cls.FIELDS[Field(field)]
+            fieldName = cls.FIELDS[Field(field)]
+
+            if fieldName == 'p':
+                try:
+                    solvers = baramFlow.openfoam.solver.findSolvers()
+                    if len(solvers) == 0:  # configuration not enough yet
+                        raise RuntimeError
+
+                    cap = baramFlow.openfoam.solver.getSolverCapability(solvers[0])
+                    if cap['usePrgh']:
+                        fieldName = 'p_rgh'
+                except RuntimeError:
+                    pass
+
+            return fieldName

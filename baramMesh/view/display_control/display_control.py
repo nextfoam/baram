@@ -32,6 +32,7 @@ class ContextMenu(QMenu):
 
         self._opacityDialog = OpacityDialog(app.window)
         self._colorDialog = QColorDialog(app.window)
+        self._colorDialog.setWindowModality(Qt.WindowModality.ApplicationModal)
         self._properties = None
 
         self._showAction = self.addAction(self.tr('Show'), lambda: self.showActionTriggered.emit())
@@ -74,12 +75,12 @@ class ContextMenu(QMenu):
 
     def _openOpacityDialog(self):
         self._opacityDialog.setOpacity(self._properties.opacity)
-        self._opacityDialog.open()
+        self._opacityDialog.show()
 
     def _openColorDialog(self):
         self._colorDialog.setCurrentColor(
             Qt.GlobalColor.white if self._properties.color is None else self._properties.color)
-        self._colorDialog.open()
+        self._colorDialog.show()
 
     def _noCutActionTriggered(self):
         self.noCutActionTriggered.emit(not self._properties.cutEnabled)

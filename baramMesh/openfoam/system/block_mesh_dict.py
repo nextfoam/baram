@@ -26,17 +26,18 @@ class BlockMeshDict(DictionaryFile):
                   Shape.Z_MIN.value: 'zMin',
                   Shape.Z_MAX.value: 'zMax'}
 
+        cx, cy, cz = app.db.getValues('baseGrid', ['numCellsX', 'numCellsY', 'numCellsZ'])
+        padding = min((x2-x1)/int(cx), (y2-y1)/int(cy), (z2-z1)/int(cz)) / 100
+
         gId, geometry = app.window.geometryManager.getBoundingHex6()
         if geometry is not None:  # boundingHex6 is configured
             x1, y1, z1 = elementToVector(geometry['point1'])
             x2, y2, z2 = elementToVector(geometry['point2'])
+            padding = 0
 
             for sId in app.window.geometryManager.subSurfaces(gId):
-                s =  app.window.geometryManager.geometry(sId)
+                s = app.window.geometryManager.geometry(sId)
                 bNames[s['shape']] = s['name']
-
-        cx, cy, cz = app.db.getValues('baseGrid', ['numCellsX', 'numCellsY', 'numCellsZ'])
-        padding = min((x2-x1)/int(cx), (y2-y1)/int(cy), (z2-z1)/int(cz)) / 100
 
         xMin = x1 - padding
         xMax = x2 + padding
@@ -58,9 +59,11 @@ class BlockMeshDict(DictionaryFile):
                 [xMin, yMax, zMax]
             ],
             'blocks': [
-                ('hex', [0, 1, 2, 3, 4, 5, 6, 7]),
-                [cx, cy, cz],
-                ('simpleGrading', gradingRatio)
+                (
+                    'hex', [0, 1, 2, 3, 4, 5, 6, 7],
+                    [cx, cy, cz], ' ',
+                    'simpleGrading', gradingRatio
+                )
             ],
             'boundary': [
                 (bNames[Shape.X_MIN.value], {
