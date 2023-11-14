@@ -44,6 +44,8 @@ class GeometryPage(StepPage):
         self._surfaceDialog = SurfaceDialog(self._widget)
         self._menu = ContextMenu()
 
+        self._connectSignalsSlots()
+
     def isNextStepAvailable(self):
         return not app.window.geometryManager.isEmpty()
 
@@ -64,7 +66,7 @@ class GeometryPage(StepPage):
             self._geometryManager = app.window.geometryManager
             self._list.setGeometries(self._geometryManager.geometries())
 
-            self._connectSignalsSlots()
+            self._geometryManager.selectedActorsChanged.connect(self._setSelectedGeometries)
 
             self._loaded = True
 
@@ -90,7 +92,6 @@ class GeometryPage(StepPage):
         self._menu.removeActionTriggered.connect(self._removeGeometry)
         self._volumeDialog.accepted.connect(self._volumeDialogAccepted)
         self._surfaceDialog.accepted.connect(self._updateSurfaces)
-        self._geometryManager.selectedActorsChanged.connect(self._setSelectedGeometries)
 
     def _executeContextMenu(self, pos):
         if not self._locked:
