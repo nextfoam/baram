@@ -472,7 +472,6 @@ class MainWindow(QMainWindow):
     def _solverStatusChanged(self, status):
         isNotSolverRunning = status != SolverStatus.RUNNING
 
-        self._ui.actionSave.setEnabled(isNotSolverRunning)
         self._ui.actionSaveAs.setEnabled(isNotSolverRunning)
         self._ui.menuLoadMesh.setEnabled(isNotSolverRunning)
         self._ui.menuMesh.setEnabled(isNotSolverRunning)
