@@ -184,9 +184,6 @@ class ControlDict(DictionaryFile):
             'functions': self._generateResiduals()
         }
 
-        if ModelsDB.isMultiphaseModelOn():
-            self._data['maxAlphaCo'] = self._db.getValue(xpath + '/VoFMaxCourantNumber')
-
         self._appendMonitoringFunctionObjects()
 
         return self
@@ -263,7 +260,7 @@ class ControlDict(DictionaryFile):
             'libs': ['"libforces.so"'],
 
             'patches': patches,
-            'rho': 'rhoInf',
+            'rho': 'rho',
             'Aref': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/area'),
             'lRef': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/length'),
             'magUInf':  self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/velocity'),
