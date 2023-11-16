@@ -90,6 +90,13 @@ else:
         LIBRARY_PATH_NAME: LIBRARY_PATH
     })
 
+    if platform.system() == 'Darwin':
+        PATH = '/opt/homebrew/bin' + os.pathsep + os.environ['PATH']
+        ENV.update({
+            'PATH': PATH,
+            'DYLD_FALLBACK_LIBRARY_PATH': LIBRARY_PATH  # To find libraries for function objects
+        })
+
     MPI_OPTIONS = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME]
 
 
