@@ -12,6 +12,8 @@ import asyncio
 
 from libbaram.mpi import ParallelEnvironment
 
+from libbaram.app_path import APP_PATH
+
 # Solver Directory Structure
 #
 # solvers/
@@ -27,10 +29,6 @@ from libbaram.mpi import ParallelEnvironment
 #         tlib/ : Third-Party Library, only for Linux and macOS
 
 
-if getattr(sys, 'frozen', False):
-    APP_PATH = Path(sys.executable).parent.resolve()
-else:
-    APP_PATH = Path(__file__).parent.parent.resolve()
 
 # MPICMD = 'mpirun'
 
