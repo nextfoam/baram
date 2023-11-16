@@ -77,7 +77,7 @@ class Alpha(BoundaryCondition):
         return {
             'type': 'variableHeightFlowRate',
             'lowerBound': 0.0,
-            'upperBound': 0.9,
+            'upperBound': 1.0,
             'value': self._initialValueByTime()
         }
 
