@@ -6,7 +6,8 @@ from pathlib import Path
 
 import qasync
 from vtkmodules.vtkCommonDataModel import vtkPlane
-from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges, vtkPolyDataPlaneCutter
+from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges, vtkPolyDataPlaneCutter, \
+    vtkTriangleFilter
 from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
 from PySide6.QtWidgets import QMessageBox
 
@@ -58,10 +59,16 @@ def _writeFeatureFile(path: Path, pd):
             Plane(0, 0, z2, 0, 0, 1)
         ]
 
-        cutter = vtkPolyDataPlaneCutter()
-        cutter.SetInputData(pd)
+        # vtkTriangleFilter is used to convert "Triangle Strips" to Triangles
+        tf = vtkTriangleFilter()
+        tf.SetInputData(pd)
+        tf.Update()
 
+        # "cutter" should be created in the loop
+        # because its pointer is handed over to vtkAppendPolyData
         for p in planes:
+            cutter = vtkPolyDataPlaneCutter()
+            cutter.SetInputData(tf.GetOutput())
             cutter.SetPlane(p)
             cutter.Update()
 
