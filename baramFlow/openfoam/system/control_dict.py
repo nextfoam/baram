@@ -47,7 +47,7 @@ if platform.system() == 'Windows':
 elif platform.system() == 'Darwin':
     _libExt = '.dylib'
 else:
-    _libExt = '.dll'
+    _libExt = '.so'
 
 
 def _libPath(baseName: str) -> str:
