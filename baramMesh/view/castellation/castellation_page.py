@@ -333,11 +333,14 @@ class CastellationPage(StepPage):
 
             if geometry['gType'] == GeometryType.SURFACE.value:
                 polyData = geometryManager.polyData(gId)
-                if geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup']:
-                    if geometry['shape'] == Shape.TRI_SURFACE_MESH.value:
+                _writeFeatureFile(filePath / f"{geometry['name']}.obj", polyData)
+
+                if geometry['shape'] == Shape.TRI_SURFACE_MESH.value:
+                    volume = geometryManager.geometry(geometry['volume']) if geometry['volume'] else None
+                    if geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup'] \
+                            or (volume is not None and volume['cfdType'] != CFDType.NONE.value):
                         writeGeometryFile(filePath / f"{geometry['name']}.stl", polyData)
 
-                _writeFeatureFile(filePath / f"{geometry['name']}.obj", polyData)
             else:  # geometry['gType'] == GeometryType.VOLUME.value
                 if geometry['shape'] == Shape.TRI_SURFACE_MESH.value and (
                         geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup']):
