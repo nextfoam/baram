@@ -525,8 +525,10 @@ class MainWindow(QMainWindow):
             self._runParaView(path, False)
             return
 
-        path = os.environ.get('PROGRAMFILES') if platform.system() == 'Windows' else None
-        self._dialog = QFileDialog(self, self.tr('Select ParaView Executable'), path, 'exe (*.exe)')
+        if platform.system() == 'Windows':
+            self._dialog = QFileDialog(self, self.tr('Select ParaView Executable'), os.environ.get('PROGRAMFILES'), 'exe (*.exe)')
+        else:
+            self._dialog = QFileDialog(self, self.tr('Select ParaView Executable'))
         self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         self._dialog.fileSelected.connect(self._runParaView)
         self._dialog.open()

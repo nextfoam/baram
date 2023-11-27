@@ -33,8 +33,10 @@ class SettingsParaViewDialog(QDialog):
         self._ui.select.clicked.connect(self._openFileDialog)
 
     def _openFileDialog(self):
-        path = os.environ.get('PROGRAMFILES') if platform.system() == 'Windows' else None
-        self._dialog = QFileDialog(self, self.tr('Select ParaView Executable'), path, 'exe (*.exe)')
+        if platform.system() == 'Windows':
+            self._dialog = QFileDialog(self, self.tr('Select ParaView Executable'), os.environ.get('PROGRAMFILES'), 'exe (*.exe)')
+        else:
+            self._dialog = QFileDialog(self, self.tr('Select ParaView Executable'))
         self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         self._dialog.fileSelected.connect(self._fileSelected)
         self._dialog.open()
