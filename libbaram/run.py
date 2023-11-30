@@ -140,7 +140,7 @@ def launchSolverOnLinux(solver: str, casePath: Path, uuid, parallel: ParallelEnv
     return None
 
 
-def launchSolver(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float):
+def launchSolver(solver: str, casePath: Path, uuid, parallel: ParallelEnvironment) -> (int, float):
     """Launch solver
 
     Launch solver in case folder
@@ -155,7 +155,7 @@ def launchSolver(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float)
         solver: solver name
         casePath: case folder absolute path
         uuid: UUID for the process
-        np: number of process
+        parallel: Parallel Environment
 
     Returns:
         pid: process id of mpirun/mpiexec
@@ -165,9 +165,9 @@ def launchSolver(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float)
         raise AssertionError
 
     if platform.system() == 'Windows':
-        return launchSolverOnWindow(solver, casePath, np)
+        return launchSolverOnWindow(solver, casePath, parallel)
     else:
-        return launchSolverOnLinux(solver, casePath, uuid, np)
+        return launchSolverOnLinux(solver, casePath, uuid, parallel)
 
 
 async def runUtility(program: str, *args, cwd=None, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):
