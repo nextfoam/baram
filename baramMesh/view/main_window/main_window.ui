@@ -1881,7 +1881,7 @@
                          <item>
                           <widget class="QGroupBox" name="groupBox_5">
                            <property name="title">
-                            <string>Starting Anaylysis</string>
+                            <string>Static Analysis of Starting Mesh</string>
                            </property>
                            <layout class="QFormLayout" name="formLayout_9">
                             <item row="1" column="0">
