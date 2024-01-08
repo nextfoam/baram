@@ -25,7 +25,7 @@ def elementToList(element, schema, keys):
 class SimpleDB(SimpleSchema):
     def __init__(self, schema):
         super().__init__(schema)
-        self._db = None
+        self._content = None
         self._editable = False
         self._modified = False
         self._base = ''
@@ -34,10 +34,10 @@ class SimpleDB(SimpleSchema):
         return self._modified
 
     def createData(self):
-        self._db = self.generateData()
+        self._content = self.generateData()
 
     def data(self):
-        return self._db
+        return self._content
 
     def checkout(self, path=''):
         """ Creates and returns a SimpleDB replicated with the original's subdata.
@@ -46,7 +46,7 @@ class SimpleDB(SimpleSchema):
         :return: New SimpleDB based on specific path.
         """
         subSchema = self._schema
-        subDB = self._db
+        subDB = self._content
         if path != self._base:
             schema, db, field = self._get(path)
 
@@ -58,7 +58,7 @@ class SimpleDB(SimpleSchema):
             subDB = db[field]
 
         subData = self._newDB(subSchema)
-        subData._db = copy.deepcopy(subDB)
+        subData._content = copy.deepcopy(subDB)
         subData._editable = True
         subData._base = f'{self._base}/{path}' if self._base else path
 
@@ -76,11 +76,11 @@ class SimpleDB(SimpleSchema):
             return
 
         if data._base == self._base:
-            self._db = data._db
+            self._content = data._content
         else:
             path = data._base[len(self._base) + 1:] if self._base else data._base
             schema, db, field = self._get(path)
-            db[field] = data._db
+            db[field] = data._content
 
         data._modified = False
         data._editable = False
@@ -190,7 +190,7 @@ class SimpleDB(SimpleSchema):
 
         element = self._newDB(schema.elementSchema())
         element.createData()
-        db[field][key] = element._db
+        db[field][key] = element._content
 
         self._modified = True
 
@@ -214,7 +214,7 @@ class SimpleDB(SimpleSchema):
     def getElements(self, path: str = None, filter_=None, columns=None):
         if not path:
             schema = self._schema
-            db = self._db
+            db = self._content
         else:
             schema, db, field = self._get(path)
             schema = schema[field]
@@ -234,7 +234,7 @@ class SimpleDB(SimpleSchema):
     def getKeys(self, path: str = None, filter_=None):
         if not path:
             schema = self._schema
-            db = self._db
+            db = self._content
         else:
             schema, db, field = self._get(path)
             schema = schema[field]
@@ -312,7 +312,7 @@ class SimpleDB(SimpleSchema):
     def updateElements(self, path, field, value, filter_=None, name=None):
         if not path:
             schema = self._schema
-            db = self._db
+            db = self._content
         else:
             schema, db, item = self._get(path)
             schema = schema[item]
@@ -336,7 +336,7 @@ class SimpleDB(SimpleSchema):
 
         if not path:
             schema = self._schema
-            db = self._db
+            db = self._content
         else:
             schema, db, field = self._get(path)
             schema = schema[field]
@@ -374,15 +374,15 @@ class SimpleDB(SimpleSchema):
         return key in db[field]
 
     def toYaml(self):
-        return yaml.dump(self._db)
+        return yaml.dump(self._content)
 
     def loadYaml(self, data, fillWithDefault=False):
-        self._db = self.validateData(yaml.full_load(data), fillWithDefault=fillWithDefault)
+        self._content = self.validateData(yaml.full_load(data), fillWithDefault=fillWithDefault)
 
     def _get(self, path):
         fields = path.split('/')
         schema = self._schema
-        data = self._db
+        data = self._content
 
         depth = len(fields) - 1
         for i in range(depth):

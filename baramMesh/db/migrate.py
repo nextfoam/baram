@@ -1,23 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .configurations_schema import CFDType
+from .configurations_schema import CFDType, CURRENT_CONFIGURATIONS_VERSION, CONFIGURATIONS_VERSION_KEY
 
 
 def migrate(data):
-    cfdTypes = [e.value for e in CFDType]
-    for geometry in data['geometry'].values():
-        if geometry['cfdType'] not in cfdTypes:
-            geometry['cfdType'] = CFDType.INTERFACE.value
+    version = int(data.get(CONFIGURATIONS_VERSION_KEY, 0))
 
-    for i in data['castellation']['refinementSurfaces']:
-        if 'groupName' not in data['castellation']['refinementSurfaces'][i]:
-            data['castellation']['refinementSurfaces'] = {}
-        break
+    if version > CURRENT_CONFIGURATIONS_VERSION:
+        assert 'Invalid data version.'
 
-    for i in data['addLayers']['layers']:
-        if 'groupName' not in data['addLayers']['layers'][i]:
-            data['addLayers']['layers'] = {}
-        break
+    if version < 1:
+        print('Loaded data has no version information. It is assumes as version 1.')
+
+    data[CONFIGURATIONS_VERSION_KEY] = CURRENT_CONFIGURATIONS_VERSION
 
     return data

@@ -3,6 +3,7 @@
 
 import yaml
 
+from .configurations_schema import CURRENT_CONFIGURATIONS_VERSION, CONFIGURATIONS_VERSION_KEY
 from .file_db import writeConfigurations, readConfigurations, FileGroup, newFiles
 from .simple_db import SimpleDB
 from .migrate import migrate
@@ -25,7 +26,14 @@ class Configurations(SimpleDB):
         self._path = path / FILE_NAME
         if self._path.exists():
             data, files, maxIds = readConfigurations(self._path)
-            self._db = self.validateData(migrate(yaml.full_load(data)), fillWithDefault=True)
+
+            content = yaml.full_load(data)
+            version = int(content.get(CONFIGURATIONS_VERSION_KEY, 0))
+            if version != CURRENT_CONFIGURATIONS_VERSION:
+                content = migrate(content)
+                self._modified = True
+            self._content = self.validateData(migrate(content))
+
             self._files = files
             Configurations._geometryNextKey = maxIds[FileGroup.GEOMETRY_POLY_DATA.value]
         else:
