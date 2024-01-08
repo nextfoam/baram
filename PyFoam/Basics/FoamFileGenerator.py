@@ -180,7 +180,8 @@ class FoamFileGenerator(object):
 
         theLen=len(lst)
 
-        if len(lst)>2 and len(lst)%2==0:
+        # In case of "polyMesh/boundary" file
+        if len(lst)>=2 and len(lst)%2==0:
             if isinstance(lst[0],string_types) and (type(lst[1]) in [dict,DictProxy]):
                 theLen=len(lst)//2
 

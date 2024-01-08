@@ -149,7 +149,10 @@ class FvSolution(DictionaryFile):
                 # only in single region case
                 'nOuterCorrectors':
                     self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/maxIterationsPerTimeStep'),
+                'nAlphaSpreadIter': 0,
+                'nAlphaSweepIter': 0,
                 'maxCo': self._db.getValue('.//runConditions/maxCourantNumber'),
+                'maxAlphaCo': self._db.getValue('.//runConditions/VoFMaxCourantNumber'),
                 'nonOrthogonalityThreshold': '80',
                 'skewnessThreshold': '0.95',
                 # only for fluid
@@ -157,7 +160,7 @@ class FvSolution(DictionaryFile):
                     ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation'),
                 # only for fluid
                 'pRefValue': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'),
-                'rDeltaTSmoothingCoeff': '0.05',
+                'rDeltaTSmoothingCoeff': '0.5',
                 'rDeltaTDampingCoeff': '0.5',
                 'solveEnergy': 'yes' if energyOn else 'no',  # NEXTfoam custom option
                 'residualControl': {

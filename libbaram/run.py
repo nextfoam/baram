@@ -12,6 +12,8 @@ import asyncio
 
 from libbaram.mpi import ParallelEnvironment
 
+from libbaram.app_path import APP_PATH
+
 # Solver Directory Structure
 #
 # solvers/
@@ -27,10 +29,6 @@ from libbaram.mpi import ParallelEnvironment
 #         tlib/ : Third-Party Library, only for Linux and macOS
 
 
-if getattr(sys, 'frozen', False):
-    APP_PATH = Path(sys.executable).parent.resolve()
-else:
-    APP_PATH = Path(__file__).parent.parent.resolve()
 
 # MPICMD = 'mpirun'
 
@@ -92,6 +90,13 @@ else:
         LIBRARY_PATH_NAME: LIBRARY_PATH
     })
 
+    if platform.system() == 'Darwin':
+        PATH = '/opt/homebrew/bin' + os.pathsep + os.environ['PATH']
+        ENV.update({
+            'PATH': PATH,
+            'DYLD_FALLBACK_LIBRARY_PATH': LIBRARY_PATH  # To find libraries for function objects
+        })
+
     MPI_OPTIONS = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME]
 
 
@@ -135,7 +140,7 @@ def launchSolverOnLinux(solver: str, casePath: Path, uuid, parallel: ParallelEnv
     return None
 
 
-def launchSolver(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float):
+def launchSolver(solver: str, casePath: Path, uuid, parallel: ParallelEnvironment) -> (int, float):
     """Launch solver
 
     Launch solver in case folder
@@ -150,7 +155,7 @@ def launchSolver(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float)
         solver: solver name
         casePath: case folder absolute path
         uuid: UUID for the process
-        np: number of process
+        parallel: Parallel Environment
 
     Returns:
         pid: process id of mpirun/mpiexec
@@ -160,9 +165,9 @@ def launchSolver(solver: str, casePath: Path, uuid, np: int = 1) -> (int, float)
         raise AssertionError
 
     if platform.system() == 'Windows':
-        return launchSolverOnWindow(solver, casePath, np)
+        return launchSolverOnWindow(solver, casePath, parallel)
     else:
-        return launchSolverOnLinux(solver, casePath, uuid, np)
+        return launchSolverOnLinux(solver, casePath, uuid, parallel)
 
 
 async def runUtility(program: str, *args, cwd=None, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL):

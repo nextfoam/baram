@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
+import platform
+import sys
+
+from libbaram.app_path import APP_PATH
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 import baramFlow.openfoam.solver
@@ -35,6 +40,18 @@ VOLUME_MONITOR_OPERATION = {
     VolumeReportType.MAXIMUM.value: 'max',
     VolumeReportType.COEFFICIENT_OF_VARIATION.value: 'CoV',
 }
+
+_basePath = APP_PATH.joinpath('solvers', 'openfoam', 'lib')
+if platform.system() == 'Windows':
+    _libExt = '.dll'
+elif platform.system() == 'Darwin':
+    _libExt = '.dylib'
+else:
+    _libExt = '.so'
+
+
+def _libPath(baseName: str) -> str:
+    return f'"{str(_basePath.joinpath(baseName).with_suffix(_libExt))}"'
 
 
 def _getAvailableFields():
@@ -226,9 +243,10 @@ class ControlDict(DictionaryFile):
             else:
                 fields = _getAvailableFields()
 
+
             data[residualsName] = {
                 'type': 'solverInfo',
-                'libs': ['"libutilityFunctionObjects.so"'],
+                'libs': [_libPath('libutilityFunctionObjects')],
                 'executeControl': 'timeStep',
                 'executeInterval': '1',
                 'writeResidualFields': 'no',
@@ -242,7 +260,7 @@ class ControlDict(DictionaryFile):
     def _generateForces(self, xpath, patches):
         data = {
             'type': 'forces',
-            'libs': ['"libforces.so"'],
+            'libs': [_libPath('libforces')],
 
             'patches': patches,
             'CofR': self._db.getVector(xpath + '/centerOfRotation'),
@@ -260,10 +278,10 @@ class ControlDict(DictionaryFile):
     def _generateForceMonitor(self, xpath, patches):
         data = {
             'type': 'forceCoeffs',
-            'libs': ['"libforces.so"'],
+            'libs': [_libPath('libforces')],
 
             'patches': patches,
-            'rho': 'rhoInf',
+            'rho': 'rho',
             'Aref': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/area'),
             'lRef': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/length'),
             'magUInf':  self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/velocity'),
@@ -294,7 +312,7 @@ class ControlDict(DictionaryFile):
         if self._db.getValue(xpath + '/snapOntoBoundary') == 'true':
             return {
                 'type': 'patchProbes',
-                'libs': ['"libsampling.so"'],
+                'libs': [_libPath('libsampling')],
 
                 'patches': [ BoundaryDB.getBoundaryName(self._db.getValue(xpath + '/boundary')) ],
                 'fields': [field],
@@ -307,7 +325,7 @@ class ControlDict(DictionaryFile):
 
         return {
             'type': 'probes',
-            'libs': ['"libsampling.so"'],
+            'libs': [_libPath('libsampling')],
 
             'fields': [field],
             'probeLocations': [self._db.getVector(xpath + '/coordinate')],
@@ -337,7 +355,7 @@ class ControlDict(DictionaryFile):
 
         data = {
             'type': 'surfaceFieldValue',
-            'libs': ['"libfieldFunctionObjects.so"'],
+            'libs': [_libPath('libfieldFunctionObjects')],
 
             'regionType': 'patch',
             'name': BoundaryDB.getBoundaryName(surface),
@@ -373,7 +391,7 @@ class ControlDict(DictionaryFile):
 
         data = {
             'type': 'volFieldValue',
-            'libs': ['"libfieldFunctionObjects.so"'],
+            'libs': [_libPath('libfieldFunctionObjects')],
 
             'fields': [field],
             'operation': VOLUME_MONITOR_OPERATION[self._db.getValue(xpath + '/reportType')],
@@ -401,7 +419,7 @@ class ControlDict(DictionaryFile):
         if 'mag1' not in self._data['functions']:
             self._data['functions']['mag1'] = {
                 'type':            'mag',
-                'libs':            ['fieldFunctionObjects'],
+                'libs':            [_libPath('libfieldFunctionObjects')],
 
                 'field':           '"U"',
 
@@ -416,7 +434,7 @@ class ControlDict(DictionaryFile):
         if 'components1' not in self._data['functions']:
             self._data['functions']['components1'] = {
                 'type':            'components',
-                'libs':            ['fieldFunctionObjects'],
+                'libs':            [_libPath('libfieldFunctionObjects')],
 
                 'field':           '"U"',
 

@@ -214,7 +214,7 @@ class SnappyHexMeshDict(DictionaryFile):
 
             level = 0
             if group := surface['castellationGroup']:
-                level = refinements[group]['surfaceRefinementLevel']
+                level = int(refinements[group]['surfaceRefinementLevel'])
 
             name = surface['name']
             cfdType = surface['cfdType']
@@ -240,7 +240,7 @@ class SnappyHexMeshDict(DictionaryFile):
                     'patchInfo': {'type': 'patch'}
                 }
 
-            data[name]['level'] = [level, level]
+            data[name]['level'] = [level, level+1]
 
         return data
 

@@ -169,7 +169,7 @@ class TopoSetDict(DictionaryFile):
 
         if shape == Shape.TRI_SURFACE_MESH.value:
             return self._constructNewSurfaceToCellAction(geometry['name'])
-        elif shape == Shape.HEX.value:
+        elif shape == Shape.HEX.value or shape == Shape.HEX6.value:
             return self._constuctNewBoxToCellAction(geometry['name'], point1, point2)
         elif shape == Shape.CYLINDER.value:
             return self._constsructNewCylinderToCellAction(geometry['name'], point1, point2, geometry['radius'])

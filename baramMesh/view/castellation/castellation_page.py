@@ -6,7 +6,8 @@ from pathlib import Path
 
 import qasync
 from vtkmodules.vtkCommonDataModel import vtkPlane
-from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges, vtkPolyDataPlaneCutter
+from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges, vtkPolyDataPlaneCutter, \
+    vtkTriangleFilter
 from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
 from PySide6.QtWidgets import QMessageBox
 
@@ -58,10 +59,16 @@ def _writeFeatureFile(path: Path, pd):
             Plane(0, 0, z2, 0, 0, 1)
         ]
 
-        cutter = vtkPolyDataPlaneCutter()
-        cutter.SetInputData(pd)
+        # vtkTriangleFilter is used to convert "Triangle Strips" to Triangles
+        tf = vtkTriangleFilter()
+        tf.SetInputData(pd)
+        tf.Update()
 
+        # "cutter" should be created in the loop
+        # because its pointer is handed over to vtkAppendPolyData
         for p in planes:
+            cutter = vtkPolyDataPlaneCutter()
+            cutter.SetInputData(tf.GetOutput())
             cutter.SetPlane(p)
             cutter.Update()
 
@@ -326,11 +333,14 @@ class CastellationPage(StepPage):
 
             if geometry['gType'] == GeometryType.SURFACE.value:
                 polyData = geometryManager.polyData(gId)
-                if geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup']:
-                    if geometry['shape'] == Shape.TRI_SURFACE_MESH.value:
+                _writeFeatureFile(filePath / f"{geometry['name']}.obj", polyData)
+
+                if geometry['shape'] == Shape.TRI_SURFACE_MESH.value:
+                    volume = geometryManager.geometry(geometry['volume']) if geometry['volume'] else None
+                    if geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup'] \
+                            or (volume is not None and volume['cfdType'] != CFDType.NONE.value):
                         writeGeometryFile(filePath / f"{geometry['name']}.stl", polyData)
 
-                _writeFeatureFile(filePath / f"{geometry['name']}.obj", polyData)
             else:  # geometry['gType'] == GeometryType.VOLUME.value
                 if geometry['shape'] == Shape.TRI_SURFACE_MESH.value and (
                         geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup']):
