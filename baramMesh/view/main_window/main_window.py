@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 import qasync
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional
 
@@ -147,7 +149,6 @@ class MainWindow(QMainWindow):
         self._stepManager.openedStepChanged.connect(self._displayControl.openedStepChanged)
 
     def _openRecent(self, path):
-        self._closeProject()
         self._openProject(path)
 
     def _actionNew(self):
@@ -240,6 +241,9 @@ class MainWindow(QMainWindow):
 
         app.closeProject()
 
+        logging.getLogger().removeHandler(self._handler)
+        self._handler.close()
+
         return True
 
     @qasync.asyncSlot()
@@ -272,6 +276,11 @@ class MainWindow(QMainWindow):
             app.applyLanguage()
 
     def _projectOpened(self):
+        # 10MB(=10,485,760=1024*1024*10)
+        self._handler = RotatingFileHandler(app.project.path / 'baram.log', maxBytes=10485760, backupCount=5)
+        self._handler.setFormatter(logging.Formatter("[%(asctime)s][%(name)s] ==> %(message)s"))
+        logging.getLogger().addHandler(self._handler)
+
         if self._startDialog.isVisible():
             self._startDialog.close()
             self.show()
