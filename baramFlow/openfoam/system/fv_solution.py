@@ -123,8 +123,9 @@ class FvSolution(DictionaryFile):
                 'consistent': consistent,
                 'nNonOrthogonalCorrectors': '0',
                 # only for fluid
-                'pRefPoint': self._db.getVector(
-                    ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation'),
+                # 'pRefPoint': self._db.getVector(
+                #     ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation'),
+                'pRefCell': 0,
                 # only for fluid
                 'pRefValue': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'),
                 'solveEnergy': 'yes' if energyOn else 'no',  # NEXTfoam custom option
@@ -156,8 +157,9 @@ class FvSolution(DictionaryFile):
                 'nonOrthogonalityThreshold': '80',
                 'skewnessThreshold': '0.95',
                 # only for fluid
-                'pRefPoint': self._db.getVector(
-                    ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation'),
+                # 'pRefPoint': self._db.getVector(
+                #     ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation'),
+                'pRefCell': 0,
                 # only for fluid
                 'pRefValue': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'),
                 'rDeltaTSmoothingCoeff': '0.5',
