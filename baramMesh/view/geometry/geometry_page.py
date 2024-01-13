@@ -40,9 +40,10 @@ class GeometryPage(StepPage):
         self._locked = False
 
         self._dialog = None
-        self._volumeDialog = VolumeDialog(self._widget)
+        self._volumeDialog = VolumeDialog(self._widget, self._ui.renderingView)
         self._surfaceDialog = SurfaceDialog(self._widget)
         self._menu = ContextMenu()
+        self._actorsBackup = None
 
         self._connectSignalsSlots()
 
@@ -90,7 +91,7 @@ class GeometryPage(StepPage):
         self._ui.add.clicked.connect(self._addClicked)
         self._menu.editActionTriggered.connect(self._openEditDialog)
         self._menu.removeActionTriggered.connect(self._removeGeometry)
-        self._volumeDialog.accepted.connect(self._volumeDialogAccepted)
+        self._volumeDialog.finished.connect(self._volumeDialogFinished)
         self._surfaceDialog.accepted.connect(self._updateSurfaces)
 
     def _executeContextMenu(self, pos):
@@ -119,6 +120,13 @@ class GeometryPage(StepPage):
         gIds = self._list.selectedIDs()
 
         if len(gIds) == 1 and self._geometryManager.geometry(gIds[0])['gType'] == GeometryType.VOLUME.value:
+            self._actorsBackup = []
+            for g in self._geometryManager.geometries():
+                if self._geometryManager.geometry(g)['volume'] == gIds[0]:
+                    actorInfo = self._geometryManager.actorInfo(g)
+                    self._actorsBackup.append((actorInfo, actorInfo.properties().opacity))
+                    actorInfo.setOpacity(0.1)
+
             self._volumeDialog.setupForEdit(gIds[0])
             self._volumeDialog.open()
         else:
@@ -135,9 +143,8 @@ class GeometryPage(StepPage):
 
         volume = None
         if len(gIds) == 1 and self._geometryManager.geometry(gIds[0])['gType'] == GeometryType.VOLUME.value:
-            volume = gIds[0]
             surfaces = [
-                g for g in self._geometryManager.geometries() if self._geometryManager.geometry(g)['volume'] == volume]
+                g for g in self._geometryManager.geometries() if self._geometryManager.geometry(g)['volume'] == gIds[0]]
         elif not any([self._geometryManager.geometry(gId)['volume'] for gId in gIds]):
             surfaces = gIds
         else:
@@ -223,14 +230,21 @@ class GeometryPage(StepPage):
             code, message = ex.args
             QMessageBox.information(self._widget, self.tr('STL Loading Error'), f'{message} [{code}]')
 
-    def _volumeDialogAccepted(self):
-        if self._volumeDialog.isForCreation():
-            self._geometryCreated(self._volumeDialog.gId())
-        else:
-            gId = self._volumeDialog.gId()
-            volume = app.db.getElement('geometry',  gId)
-            self._geometryManager.updateVolume(gId, volume, self._list.childSurfaces(gId))
-            self._list.update(gId, volume)
+    def _volumeDialogFinished(self, result):
+        if result == self._volumeDialog.DialogCode.Accepted:
+            if self._volumeDialog.isForCreation():
+                self._geometryCreated(self._volumeDialog.gId())
+            else:
+                if result == self._volumeDialog.DialogCode.Accepted:
+                    gId = self._volumeDialog.gId()
+                    volume = app.db.getElement('geometry',  gId)
+                    self._geometryManager.updateVolume(gId, volume, self._list.childSurfaces(gId))
+                    self._list.update(gId, volume)
+
+        if self._actorsBackup:
+            for actorInfo, opacity in self._actorsBackup:
+                actorInfo.setOpacity(opacity)
+            self._actorsBackup = None
 
     def _updateSurfaces(self):
         gIds = self._surfaceDialog.gIds()

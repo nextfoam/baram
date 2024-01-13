@@ -3,15 +3,16 @@
 
 from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import QEvent, QTimer
+from vtkmodules.vtkCommonColor import vtkNamedColors
 
 from widgets.radio_group import RadioGroup
 
 from baramMesh.app import app
 from baramMesh.db.simple_schema import DBError
 from baramMesh.db.configurations_schema import Shape, GeometryType, CFDType
+from baramMesh.rendering.vtk_loader import hexPolyData, cylinderPolyData, spherePolyData, polyDataToActor
 from .geometry import RESERVED_NAMES
 from .volume_dialog_ui import Ui_VolumeDialog
-
 
 def showStackPage(stack, page):
     for i in range(stack.count()):
@@ -38,11 +39,12 @@ class VolumeDialog(QDialog):
         Shape.HEX6.value: 'Hex6_'
     }
 
-    def __init__(self, parent):
+    def __init__(self, parent, renderingView):
         super().__init__(parent)
         self._ui = Ui_VolumeDialog()
         self._ui.setupUi(self)
 
+        self._renderingView = renderingView
         self._typeRadios = None
 
         self._gId = None
@@ -50,6 +52,11 @@ class VolumeDialog(QDialog):
 
         self._dbElement = None
         self._creationMode = True
+
+        self._actor = None
+        self._existingActors = None
+
+        self._connectSignalsSlots()
 
     def gId(self):
         return self._gId
@@ -123,6 +130,22 @@ class VolumeDialog(QDialog):
         except DBError as e:
             QMessageBox.information(self, self.tr("Input Error"), e.toMessage())
 
+    def event(self, ev):
+        if ev.type() == QEvent.Type.LayoutRequest:
+            QTimer.singleShot(0, self.adjustSize)
+
+        return super().event(ev)
+
+    def done(self, result):
+        if self._actor:
+            self._renderingView.removeActor(self._actor)
+            self._renderingView.refresh()
+
+        super().done(result)
+
+    def _connectSignalsSlots(self):
+        self._ui.preview.clicked.connect(self._preview)
+
     def _load(self):
         name = self._dbElement.getValue('name')
         if not name:
@@ -142,6 +165,8 @@ class VolumeDialog(QDialog):
             self._loadCylinderpage()
         else:
             showStackPage(self._ui.geometryStack, None)     # triSurfaceMesh
+
+        self._preview()
 
     def _loadHexPage(self):
         showStackPage(self._ui.geometryStack, 'hex')
@@ -203,44 +228,16 @@ class VolumeDialog(QDialog):
             return True     # triSurfaceMesh
 
     def _updateHexData(self):
-        def validate(minText, maxText):
-            try:
-                minFloat = float(minText)
-                maxFloat = float(maxText)
-
-                if minFloat < maxFloat:
-                    return True
-            except ValueError:
-                return False
-
+        if not self._validateHex():
+            QMessageBox.information(self, self.tr('Add Geometry Failed'), self.tr('Invalid coordinates'))
             return False
 
-        minX = self._ui.minX.text()
-        minY = self._ui.minY.text()
-        minZ = self._ui.minZ.text()
-        maxX = self._ui.maxX.text()
-        maxY = self._ui.maxY.text()
-        maxZ = self._ui.maxZ.text()
-
-        if not validate(minX, maxX) or not validate(minY, maxY) or not validate(minZ, maxZ):
-            QMessageBox.information(self, self.tr('Add Geometry Failed'),
-                                    self.tr('Each coordinate of point1 must be smaller than the coordinate of point2.'))
-            return False
-
-        self._dbElement.setValue('point1/x', minX, self.tr('Minimum X'))
-        self._dbElement.setValue('point1/y', minY, self.tr('Minimum Y'))
-        self._dbElement.setValue('point1/z', minZ, self.tr('Minimum Z'))
-        self._dbElement.setValue('point2/x', maxX, self.tr('Maximum X'))
-        self._dbElement.setValue('point2/y', maxY, self.tr('Maximum Y'))
-        self._dbElement.setValue('point2/z', maxZ, self.tr('Maximum Z'))
-
-        return True
-
-    def _updateSphereData(self):
-        self._dbElement.setValue('point1/x', self._ui.centerX.text(), self.tr('Center X'))
-        self._dbElement.setValue('point1/y', self._ui.centerY.text(), self.tr('Center Y'))
-        self._dbElement.setValue('point1/z', self._ui.centerZ.text(), self.tr('Center Z'))
-        self._dbElement.setValue('radius', self._ui.sphereRadius.text(), self.tr('radius'))
+        self._dbElement.setValue('point1/x', self._ui.minX.text(), self.tr('Minimum X'))
+        self._dbElement.setValue('point1/y', self._ui.minY.text(), self.tr('Minimum Y'))
+        self._dbElement.setValue('point1/z', self._ui.minZ.text(), self.tr('Minimum Z'))
+        self._dbElement.setValue('point2/x', self._ui.maxX.text(), self.tr('Maximum X'))
+        self._dbElement.setValue('point2/y', self._ui.maxY.text(), self.tr('Maximum Y'))
+        self._dbElement.setValue('point2/z', self._ui.maxZ.text(), self.tr('Maximum Z'))
 
         return True
 
@@ -255,7 +252,63 @@ class VolumeDialog(QDialog):
 
         return True
 
-    def event(self, ev):
-        if ev.type() == QEvent.LayoutRequest:
-            QTimer.singleShot(0, self.adjustSize)
-        return super().event(ev)
+    def _updateSphereData(self):
+        self._dbElement.setValue('point1/x', self._ui.centerX.text(), self.tr('Center X'))
+        self._dbElement.setValue('point1/y', self._ui.centerY.text(), self.tr('Center Y'))
+        self._dbElement.setValue('point1/z', self._ui.centerZ.text(), self.tr('Center Z'))
+        self._dbElement.setValue('radius', self._ui.sphereRadius.text(), self.tr('radius'))
+
+        return True
+
+    def _preview(self):
+        if self._actor:
+            self._renderingView.removeActor(self._actor)
+
+        polyData = None
+        try:
+            if self._shape == Shape.HEX.value or self._shape == Shape.HEX6.value:
+                if points := self._validateHex():
+                    polyData = hexPolyData(*points)
+            elif self._shape == Shape.CYLINDER.value:
+                polyData = cylinderPolyData(
+                    (float(self._ui.axis1X.text()), float(self._ui.axis1Y.text()), float(self._ui.axis1Z.text())),
+                    (float(self._ui.axis2X.text()), float(self._ui.axis2Y.text()), float(self._ui.axis2Z.text())),
+                    float(self._ui.cylinderRadius.text()))
+            elif self._shape == Shape.SPHERE.value:
+                polyData = spherePolyData(
+                    (float(self._ui.centerX.text()), float(self._ui.centerY.text()), float(self._ui.centerZ.text())),
+                    float(self._ui.sphereRadius.text()))
+        except ValueError:
+            pass
+
+        if polyData:
+            self._actor = polyDataToActor(polyData)
+            self._actor.GetProperty().SetRepresentationToSurface()
+            self._actor.GetProperty().EdgeVisibilityOn()
+            self._actor.GetProperty().SetLineWidth(1.0)
+            self._actor.GetProperty().SetDiffuse(0.6)
+            self._actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('burlywood'))
+            self._actor.GetProperty().SetLineWidth(2)
+            self._renderingView.addActor(self._actor)
+            self._renderingView.refresh()
+        else:
+            self._renderingView.refresh()
+            QMessageBox.information(self, self.tr('Add Geometry Failed'), self.tr('Invalid coordinates'))
+            return False
+
+    def _validateHex(self):
+        try:
+            point1 = (float(self._ui.minX.text()), float(self._ui.minY.text()), float(self._ui.minZ.text()))
+            point2 = (float(self._ui.maxX.text()), float(self._ui.maxY.text()), float(self._ui.maxZ.text()))
+        except ValueError:
+            return None
+
+        if point1 is None or point2 is None:
+            return None
+
+        minX, minY, minZ = point1
+        maxX, maxY, maxZ = point2
+        if not (minX < maxX and minY < maxY and minZ < maxZ):
+            return None
+
+        return point1, point2
