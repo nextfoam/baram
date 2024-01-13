@@ -3,11 +3,14 @@
 
 from PySide6.QtWidgets import QDialog, QMessageBox
 
+from libbaram.mesh import Bounds
+from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper
 from baramFlow.view.widgets.selector_dialog import SelectorDialog
+from widgets.rendering.point_widget import PointWidget
 from .point_dialog_ui import Ui_PointDialog
 
 
@@ -24,11 +27,18 @@ class PointDialog(QDialog):
         self._ui = Ui_PointDialog()
         self._ui.setupUi(self)
 
-        self._setupFieldCombo(FieldHelper.getAvailableFields())
+        self._db = coredb.CoreDB()
 
         self._name = name
         self._isNew = False
-        self._db = coredb.CoreDB()
+        self._xpath = None
+        self._snapOntoBoundary = None
+
+        self._renderingView = app.renderingView.view()
+        self._bounds = Bounds(*self._renderingView.getBounds())
+        self._pointWidget = PointWidget(self._renderingView)
+
+        self._setupFieldCombo(FieldHelper.getAvailableFields())
 
         if name is None:
             self._name = self._db.addPointMonitor()
@@ -38,7 +48,9 @@ class PointDialog(QDialog):
             self._ui.groupBox.setTitle(name)
 
         self._xpath = MonitorDB.getPointMonitorXPath(self._name)
-        self._snapOntoBoundary = None
+
+        self._pointWidget.outlineOff()
+        self._pointWidget.setBounds(self._bounds)
 
         self._connectSignalsSlots()
         self._load()
@@ -86,8 +98,16 @@ class PointDialog(QDialog):
         if self._isNew:
             self._db.removePointMonitor(self._name)
 
+    def done(self, result):
+        self._pointWidget.off()
+
+        super().done(result)
+
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectSnapOntoBoundary)
+        self._ui.coordinateX.editingFinished.connect(self._movePointWidget)
+        self._ui.coordinateY.editingFinished.connect(self._movePointWidget)
+        self._ui.coordinateZ.editingFinished.connect(self._movePointWidget)
 
     def _load(self):
         self._ui.name.setText(self._name)
@@ -98,11 +118,17 @@ class PointDialog(QDialog):
         self._ui.coordinateX.setText(self._db.getValue(self._xpath + '/coordinate/x'))
         self._ui.coordinateY.setText(self._db.getValue(self._xpath + '/coordinate/y'))
         self._ui.coordinateZ.setText(self._db.getValue(self._xpath + '/coordinate/z'))
+        self._ui.coordinateX.setText('100')
+        self._ui.coordinateY.setText('100')
+        self._ui.coordinateZ.setText('100')
         snapOntoBoundary = self._db.getValue(self._xpath + '/snapOntoBoundary')
         if snapOntoBoundary == 'true':
             self._setSnapOntoBoundary(self._db.getValue(self._xpath + '/boundary'))
         else:
             self._setSnapOntoBoundary(None)
+
+        self._movePointWidget()
+        self._pointWidget.on()
 
     def _setSnapOntoBoundary(self, bcid):
         self._snapOntoBoundary = bcid
@@ -123,3 +149,20 @@ class PointDialog(QDialog):
     def _setupFieldCombo(self, fields):
         for f in fields:
             self._ui.field.addItem(f.text, f.key)
+
+    def _movePointWidget(self):
+        try:
+            point = (
+                float(self._ui.coordinateX.text()),
+                float(self._ui.coordinateY.text()),
+                float(self._ui.coordinateZ.text())
+            )
+
+            if self._bounds.includes(point):
+                self._pointWidget.setPosition(*point)
+                self._pointWidget.on()
+            else:
+                self._pointWidget.off()
+        except Exception:
+            self._pointWidget.off()
+

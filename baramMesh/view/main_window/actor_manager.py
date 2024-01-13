@@ -6,8 +6,8 @@ from typing import Optional
 
 from PySide6.QtCore import QObject
 
+from libbaram.mesh import Bounds
 from baramMesh.app import app
-from baramMesh.rendering.actor_info import Bounds
 
 
 class ActorGroup(Enum):
@@ -25,6 +25,9 @@ class ActorManager(QObject):
 
     def isEmpty(self):
         return not self._actorInfos
+
+    def actorInfo(self, key):
+        return self._actorInfos.get(key)
 
     def add(self, actorInfo):
         if actorInfo.id() in self._actorInfos:

@@ -39,6 +39,9 @@ class RenderingView(QWidget):
 
         self._connectSignalsSlots()
 
+    def view(self):
+        return self._view
+
     def close(self):
         self._view.close()
         return super().close()

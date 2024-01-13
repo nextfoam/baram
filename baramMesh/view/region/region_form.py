@@ -9,7 +9,7 @@ from widgets.radio_group import RadioGroup
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import RegionType
 from baramMesh.db.simple_schema import DBError
-from baramMesh.rendering.point_widget import PointWidget
+from widgets.rendering.point_widget import PointWidget
 from .region_form_ui import Ui_RegionForm
 
 

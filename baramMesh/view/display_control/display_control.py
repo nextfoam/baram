@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QMenu, QColorDialog, QHeaderView
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import Step
 from baramMesh.rendering.actor_info import DisplayMode, Properties
-from widgets.rendering_widget import RenderingWidget
+from widgets.rendering.rendering_widget import RenderingWidget
 
 from .opacity_dialog import OpacityDialog
 from .display_item import DisplayItem, Column
@@ -148,6 +148,9 @@ class DisplayControl(QObject):
         item = self._items[actorInfo.id()]
         self._view.removeActor(item.actorInfo().actor())
         item.setHidden(True)
+
+    def makeTranslucent(self, actorInfo):
+        print('translucent')
 
     def refreshView(self):
         self._view.refresh()

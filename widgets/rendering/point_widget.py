@@ -6,8 +6,6 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import vtkCommand
 from vtkmodules.vtkInteractionWidgets import vtkPointWidget
 
-from baramMesh.app import app
-
 
 class PointWidget(QObject):
     pointMoved = Signal(tuple)
@@ -16,14 +14,13 @@ class PointWidget(QObject):
         super().__init__()
 
         self._view = view
+        self._bounds = None
 
         self._widget = vtkPointWidget()
         self._widget.SetInteractor(view.interactor())
         self._widget.GetSelectedProperty().SetLineWidth(2)
         self._widget.GetProperty().SetLineWidth(2)
         self._widget.GetProperty().SetColor(vtkNamedColors().GetColor3d('Lime'))
-
-        self._bounds = None
 
         self._widget.AddObserver(vtkCommand.InteractionEvent, self._pointMoved)
 
@@ -44,7 +41,7 @@ class PointWidget(QObject):
         z = max(z, self._bounds.zMin)
         z = min(z, self._bounds.zMax)
         self._widget.SetPosition(x, y, z)
-        app.window.renderingView.refresh()
+        self._view.refresh()
 
         return x, y, z
 
@@ -53,14 +50,22 @@ class PointWidget(QObject):
 
     def on(self):
         self._widget.On()
+        self._view.refresh()
 
     def off(self):
         self._widget.Off()
+        self._view.refresh()
 
     def close(self):
         self._widget.RemoveAllObservers()
         self._widget.Off()
         self._widget = None
+
+    def outlineOff(self):
+        self._widget.OutlineOff()
+        self._widget.XShadowsOff()
+        self._widget.YShadowsOff()
+        self._widget.ZShadowsOff()
 
     def _pointMoved(self, obj, evnent):
         self.pointMoved.emit(obj.GetPosition())

@@ -12,46 +12,13 @@ from vtkmodules.vtkFiltersExtraction import vtkExtractPolyDataGeometry, vtkExtra
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
+from libbaram.mesh import Bounds
+
 
 class DisplayMode(Enum):
     WIREFRAME      = auto()
     SURFACE        = auto()
     SURFACE_EDGE   = auto()
-
-
-@dataclass
-class Bounds:
-    xMin: float
-    xMax: float
-    yMin: float
-    yMax: float
-    zMin: float
-    zMax: float
-
-    def merge(self, bounds):
-        self.xMin = min(self.xMin, bounds.xMin)
-        self.xMax = max(self.xMax, bounds.xMax)
-        self.yMin = min(self.yMin, bounds.yMin)
-        self.yMax = max(self.yMax, bounds.yMax)
-        self.zMin = min(self.zMin, bounds.zMin)
-        self.zMax = max(self.zMax, bounds.zMax)
-
-    def size(self):
-        return self.xMax - self.xMin, self.yMax - self.yMin, self.zMax - self.zMin
-
-    def includes(self, point):
-        x, y, z = point
-
-        return self.xMin < x < self.xMax and self.yMin < y < self.yMax and self.zMin < z < self.zMax
-
-    def toTuple(self):
-        return self.xMin, self.xMax, self.yMin, self.yMax, self.zMin, self.zMax
-
-    def center(self):
-        def center(a, b):
-            return (a + b) / 2
-
-        return center(self.xMin, self.xMax), center(self.yMin, self.yMax), center(self.zMin, self.zMax)
 
 
 @dataclass
