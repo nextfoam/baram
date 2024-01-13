@@ -15,10 +15,17 @@ from PySide6.QtWidgets import QWidget, QFileDialog, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import vtkCommand
+from vtkmodules.vtkFiltersSources import vtkPlaneSource
+from vtkmodules.vtkIOImage import vtkPNGReader
+from vtkmodules.vtkImagingSources import vtkImageCanvasSource2D
+from vtkmodules.vtkInteractionImage import vtkImageViewer2
 # load implementations for rendering and interaction factory classes
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
+from vtkmodules.vtkInteractionWidgets import vtkLogoRepresentation, vtkLogoWidget
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor, vtkCubeAxesActor
-from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vtkLightKit
+from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vtkLightKit, vtkTexture, vtkPolyDataMapper
+
+from resources import resource
 
 # To fix middle button issue in vtkmodules
 # Qt.MidButton that is not available in PySide6 is use in QVTKRenderWindowInteractor
@@ -57,6 +64,8 @@ class RenderingWidget(QWidget):
         self._renderer = vtkRenderer()
         self._widget.GetRenderWindow().AddRenderer(self._renderer)
         # self._style.SetDefaultRenderer(self._renderer)
+
+        # self._showLogo()
 
         self._widget.Initialize()
         self._widget.Start()
@@ -169,7 +178,7 @@ class RenderingWidget(QWidget):
             self._hideCubeAxes()
         self._widget.Render()
 
-    def _getBounds(self):
+    def getBounds(self):
         if self._originActor is not None:
             self._originActor.SetVisibility(False)
 
@@ -295,3 +304,32 @@ class RenderingWidget(QWidget):
     def _interactionEvent(self, obj, event):
         self._resizeOriginAxis()
         self._widget.Render()
+
+    def _showLogo(self):
+        # Load the 2D image
+        reader = vtkPNGReader()
+        reader.SetFileName(resource.file('nextfoam_eng.png'))
+        reader.Update()
+
+        logoRepresentation = vtkLogoRepresentation()
+        logoRepresentation.SetImage(reader.GetOutput())
+        logoRepresentation.ProportionalResizeOn ()
+        logoRepresentation.SetPosition( 0.882, 0.0 )
+        logoRepresentation.SetPosition2( 0.10, 0.05 )
+        logoRepresentation.GetImageProperty().SetOpacity( .8 )
+        # logoRepresentation.GetImageProperty().SetDisplayLocationToBackground()
+        # self._renderer.AddViewProp(logoRepresentation)
+        #
+        # logoRepresentation = vtkLogoRepresentation()
+        # logoRepresentation.SetImage(reader.GetOutput())
+        # logoRepresentation.SetPosition(0, 0)
+        # logoRepresentation.SetPosition2(0.4, 0.4)
+        # logoRepresentation.GetImageProperty().SetOpacity(1)
+        #
+        # logoWidget = vtkLogoWidget()
+        # logoWidget.SetInteractor(self._widget)
+        # logoWidget.SetRepresentation(logoRepresentation)
+        # logoWidget.On()
+
+        # renderer.SetBackground(colors.GetColor3d("MidnightBLue"))
+        self.refresh()
