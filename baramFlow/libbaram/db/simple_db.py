@@ -54,11 +54,11 @@ class SimpleDB:
             return
 
         if data._base == self._base:
-            self._db = data._db
+            self._db = data._content
         else:
             path = data._base[len(self._base) + 1:]
             schema, db, key = self._get(path)
-            db[key] = data._db
+            db[key] = data._content
 
         self._modified = data._modified
 
