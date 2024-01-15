@@ -133,3 +133,9 @@ class RegionDB:
         surfaceTensions = db.getValue(xpath + '/phaseInteractions/surfaceTensions/surfaceTension').split()
 
         return [(mids1[i], mids2[i], surfaceTensions[i]) for i in range(len(surfaceTensions))]
+
+    @classmethod
+    def getNumberOfRegions(cls):
+        return len(coredb.CoreDB().getRegions())
+
+

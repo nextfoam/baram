@@ -10,4 +10,3 @@ speciesPCNFoam,False,False,True,False,True,True,True,False,True,False,False,True
 chtMultiRegionSimpleNFoam,True,True,True,False,True,False,False,True,True,False,True,True,True,False,False,True,False,False,True
 chtMultiRegionPimpleNFoam,True,True,True,False,False,True,False,True,True,False,True,True,True,False,False,True,False,False,True
 TSLAeroFoam,False,False,False,True,True,False,True,False,True,False,False,True,True,False,False,True,False,True,False
-,

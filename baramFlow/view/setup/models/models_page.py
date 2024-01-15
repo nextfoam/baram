@@ -5,8 +5,10 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QListWidgetItem
 from PySide6.QtGui import QBrush, QColor
 
-from baramFlow.coredb.models_db import ModelsDB, MultiphaseModel, TurbulenceModel
+from baramFlow.app import app
+from baramFlow.coredb.models_db import Models, ModelsDB, MultiphaseModel, TurbulenceModel
 from baramFlow.coredb.general_db import GeneralDB, SolverType
+from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.content_page import ContentPage
 from .models_page_ui import Ui_ModelsPage
 from .turbulence_dialog import TurbulenceModelDialog
@@ -19,8 +21,9 @@ grayBrush = QBrush(QColor('#5c5c5c'))
 
 class ModelItem(QListWidgetItem):
 
-    def __init__(self, parent, title, loadFunction, dialogClass=None):
+    def __init__(self, parent, model: Models, title, loadFunction, dialogClass = None):
         super().__init__(parent)
+        self._model: Models = model
         self._title = title + ' / '
         self._load = loadFunction
         self._dialogClass = dialogClass
@@ -43,6 +46,18 @@ class ModelItem(QListWidgetItem):
 
     def load(self):
         self.setText(self._title + self._load())
+
+    @property
+    def model(self) -> Models:
+        return self._model
+
+    @property
+    def dialogClass(self):
+        return self._dialogClass
+
+    @dialogClass.setter
+    def dialogClass(self, dc):
+        self._dialogClass = dc
 
 
 class ModelsPage(ContentPage):
@@ -74,20 +89,27 @@ class ModelsPage(ContentPage):
             SolverType.DENSITY_BASED: self.tr('Density-based'),
         }
 
-        self._addModelItem(
-            self.tr('Turbulence'), lambda: turbulenceModelText[ModelsDB.getTurbulenceModel()], TurbulenceModelDialog)
-        self._addModelItem(
-            self.tr('Energy'),
-            lambda: self.tr('Include') if ModelsDB.isEnergyModelOn() else self.tr('Not Include'), EnergyDialog)
+        self._addModelItem(Models.TURBULENCE,
+                           self.tr('Turbulence'),
+                           lambda: turbulenceModelText[ModelsDB.getTurbulenceModel()], TurbulenceModelDialog)
 
-        self._addModelItem(
-            self.tr('Flow Type'),
-            lambda: self.tr('Compressible') if GeneralDB.isCompressible() else self.tr('Incompressible'))
-        self._addModelItem(self.tr('Multiphase'), lambda: multiphaseModelText[ModelsDB.getMultiphaseModel()])
-        self._addModelItem(self.tr('Solver Type'), lambda: solverTypeText[GeneralDB.getSolverType()])
-        self._addModelItem(
-            self.tr('Species'),
-            lambda: self.tr('Include') if ModelsDB.isSpeciesModelOn() else self.tr('Not Include'))
+        self._addModelItem(Models.ENERGY,
+                           self.tr('Energy'),
+                           lambda: self.tr('Include') if ModelsDB.isEnergyModelOn() else self.tr('Not Include'),
+                           EnergyDialog if RegionDB.getNumberOfRegions() == 1 else None)
+
+        self._addModelItem(Models.FLOW_TYPE,
+                           self.tr('Flow Type'),
+                            lambda: self.tr('Compressible') if GeneralDB.isCompressible() else self.tr('Incompressible'))
+        self._addModelItem(Models.MULTIPHASE,
+                           self.tr('Multiphase'),
+                           lambda: multiphaseModelText[ModelsDB.getMultiphaseModel()])
+        self._addModelItem(Models.SOLVER_TYPE,
+                           self.tr('Solver Type'),
+                           lambda: solverTypeText[GeneralDB.getSolverType()])
+        self._addModelItem(Models.SPECIES,
+                            self.tr('Species'),
+                            lambda: self.tr('Include') if ModelsDB.isSpeciesModelOn() else self.tr('Not Include'))
 
         self._connectSignalsSlots()
 
@@ -95,6 +117,7 @@ class ModelsPage(ContentPage):
             self._ui.list.item(i).load()
 
     def _connectSignalsSlots(self):
+        app.meshUpdated.connect(self._meshUpdated)
         self._ui.list.currentItemChanged.connect(self._modelSelected)
         self._ui.list.itemDoubleClicked.connect(self._edit)
         self._ui.edit.clicked.connect(self._edit)
@@ -105,5 +128,15 @@ class ModelsPage(ContentPage):
     def _edit(self):
         self._dialog = self._ui.list.currentItem().openDialog(self)
 
-    def _addModelItem(self, title, loadFunction, dialogClass=None):
-        self._ui.list.addItem(ModelItem(self._ui.list, title, loadFunction, dialogClass))
+    def _addModelItem(self, model, title, loadFunction, dialogClass=None):
+        self._ui.list.addItem(ModelItem(self._ui.list, model, title, loadFunction, dialogClass))
+
+    def _meshUpdated(self):
+        for i in range(self._ui.list.count()):
+            item: ModelItem = self._ui.list.item(i)
+            if item.model == Models.ENERGY:
+                if RegionDB.getNumberOfRegions() > 1:  # multi-region
+                    item.dialogClass = None
+                else:
+                    item.dialogClass = EnergyDialog
+                break
