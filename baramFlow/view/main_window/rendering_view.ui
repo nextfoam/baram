@@ -271,7 +271,7 @@
   <customwidget>
    <class>RenderingWidget</class>
    <extends>QWidget</extends>
-   <header>widgets.rendering_widget</header>
+   <header>widgets.rendering.rendering_widget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
