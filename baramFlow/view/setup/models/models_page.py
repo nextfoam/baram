@@ -3,7 +3,6 @@
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QListWidgetItem
-from PySide6.QtGui import QBrush, QColor
 
 from baramFlow.app import app
 from baramFlow.coredb.models_db import Models, ModelsDB, MultiphaseModel, TurbulenceModel
@@ -16,9 +15,6 @@ from .energy_dialog import EnergyDialog
 # from .radiation_dialog import RadiationDialog
 
 
-grayBrush = QBrush(QColor('#5c5c5c'))
-
-
 class ModelItem(QListWidgetItem):
 
     def __init__(self, parent, model: Models, title, loadFunction, dialogClass = None):
@@ -27,10 +23,6 @@ class ModelItem(QListWidgetItem):
         self._title = title + ' / '
         self._load = loadFunction
         self._dialogClass = dialogClass
-
-        if not self.isEditable():
-            self.setFlags(~Qt.ItemIsSelectable)
-            self.setForeground(grayBrush)
 
     def isEditable(self):
         return self._dialogClass is not None
@@ -46,6 +38,11 @@ class ModelItem(QListWidgetItem):
 
     def load(self):
         self.setText(self._title + self._load())
+
+        if self.isEditable():
+            self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEnabled)
+        else:
+            self.setFlags(self.flags() & ~Qt.ItemFlag.ItemIsEnabled)
 
     @property
     def model(self) -> Models:
@@ -118,12 +115,17 @@ class ModelsPage(ContentPage):
 
     def _connectSignalsSlots(self):
         app.meshUpdated.connect(self._meshUpdated)
-        self._ui.list.currentItemChanged.connect(self._modelSelected)
+
+        self._ui.list.itemSelectionChanged.connect(self._selectionChanged)
         self._ui.list.itemDoubleClicked.connect(self._edit)
+
         self._ui.edit.clicked.connect(self._edit)
 
-    def _modelSelected(self, item):
-        self._ui.edit.setEnabled(item.isEditable())
+    def _selectionChanged(self):
+        if len(self._ui.list.selectedItems()) > 0:
+            self._ui.edit.setEnabled(True)
+        else:
+            self._ui.edit.setEnabled(False)
 
     def _edit(self):
         self._dialog = self._ui.list.currentItem().openDialog(self)
@@ -139,4 +141,8 @@ class ModelsPage(ContentPage):
                     item.dialogClass = None
                 else:
                     item.dialogClass = EnergyDialog
+
+                item.load()
+                self._selectionChanged()
+
                 break
