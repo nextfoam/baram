@@ -77,14 +77,14 @@ class App(QObject):
         if self._vtkMesh:
             self._vtkMesh.deactivate()
 
+        if RegionDB.getNumberOfRegions() > 1:  # multi-region
+            ModelsDB.EnergyModelOn()
+
         self._vtkMesh = mesh
         self._cellZoneActors = cellZoneActors
         self._window.vtkMeshLoaded()
         self.showMesh()
         self.meshUpdated.emit()
-
-        if RegionDB.getNumberOfRegions() > 1:  # multi-region
-            ModelsDB.EnergyModelOn()
 
     def showMesh(self):
         if self._vtkMesh:
