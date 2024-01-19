@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Thrid-Party Software Used by BARAM 2023.0.0</string>
+   <string>Thrid-Party Software Used by BARAM</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
