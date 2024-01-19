@@ -194,7 +194,7 @@ class RenderingWidget(QWidget):
             return
 
         self._cubeAxesActor = vtkCubeAxesActor()
-        self._cubeAxesActor.SetBounds(self._getBounds())
+        self._cubeAxesActor.SetBounds(self.getBounds())
         self._cubeAxesActor.SetScreenSize(12)
         self._cubeAxesActor.SetCamera(self._renderer.GetActiveCamera())
 
