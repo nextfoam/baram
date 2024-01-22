@@ -143,8 +143,9 @@ class GeometryPage(StepPage):
 
         volume = None
         if len(gIds) == 1 and self._geometryManager.geometry(gIds[0])['gType'] == GeometryType.VOLUME.value:
+            volume = gIds[0]
             surfaces = [
-                g for g in self._geometryManager.geometries() if self._geometryManager.geometry(g)['volume'] == gIds[0]]
+                g for g in self._geometryManager.geometries() if self._geometryManager.geometry(g)['volume'] == volume]
         elif not any([self._geometryManager.geometry(gId)['volume'] for gId in gIds]):
             surfaces = gIds
         else:
