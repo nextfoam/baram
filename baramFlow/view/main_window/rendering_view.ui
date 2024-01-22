@@ -98,6 +98,9 @@
            <property name="checked">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string> Set the axis direction based on the origin</string>
+           </property>
           </widget>
          </item>
          <item>
@@ -120,6 +123,9 @@
            </property>
            <property name="checkable">
             <bool>true</bool>
+           </property>
+           <property name="toolTip">
+            <string> Display x,y and z axis coordinates</string>
            </property>
           </widget>
          </item>
@@ -144,6 +150,9 @@
            <property name="checkable">
             <bool>true</bool>
            </property>
+           <property name="toolTip">
+            <string> Toggle between Persepctive and Orthogonal views</string>
+           </property>
           </widget>
          </item>
          <item>
@@ -163,6 +172,9 @@
              <width>24</width>
              <height>24</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string> Show the entire model in the windows to fit the view</string>
            </property>
           </widget>
          </item>
@@ -184,6 +196,9 @@
              <height>24</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string> View the model from cross-section of the closest-axis, aligning with current state</string>
+           </property>
           </widget>
          </item>
          <item>
@@ -203,6 +218,9 @@
              <width>24</width>
              <height>24</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string> Rotate the model by 90 degrees</string>
            </property>
           </widget>
          </item>
