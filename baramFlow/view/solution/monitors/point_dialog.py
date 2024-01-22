@@ -118,9 +118,6 @@ class PointDialog(QDialog):
         self._ui.coordinateX.setText(self._db.getValue(self._xpath + '/coordinate/x'))
         self._ui.coordinateY.setText(self._db.getValue(self._xpath + '/coordinate/y'))
         self._ui.coordinateZ.setText(self._db.getValue(self._xpath + '/coordinate/z'))
-        self._ui.coordinateX.setText('100')
-        self._ui.coordinateY.setText('100')
-        self._ui.coordinateZ.setText('100')
         snapOntoBoundary = self._db.getValue(self._xpath + '/snapOntoBoundary')
         if snapOntoBoundary == 'true':
             self._setSnapOntoBoundary(self._db.getValue(self._xpath + '/boundary'))
