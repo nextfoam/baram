@@ -15,15 +15,12 @@ from PySide6.QtWidgets import QWidget, QFileDialog, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import vtkCommand
-from vtkmodules.vtkFiltersSources import vtkPlaneSource
-from vtkmodules.vtkIOImage import vtkPNGReader
-from vtkmodules.vtkImagingSources import vtkImageCanvasSource2D
-from vtkmodules.vtkInteractionImage import vtkImageViewer2
 # load implementations for rendering and interaction factory classes
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
 from vtkmodules.vtkInteractionWidgets import vtkLogoRepresentation, vtkLogoWidget
+from vtkmodules.vtkIOImage import vtkPNGReader
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor, vtkCubeAxesActor
-from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vtkLightKit, vtkTexture, vtkPolyDataMapper
+from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vtkLightKit
 
 from resources import resource
 
@@ -65,8 +62,6 @@ class RenderingWidget(QWidget):
         self._widget.GetRenderWindow().AddRenderer(self._renderer)
         # self._style.SetDefaultRenderer(self._renderer)
 
-        # self._showLogo()
-
         self._widget.Initialize()
         self._widget.Start()
 
@@ -76,6 +71,8 @@ class RenderingWidget(QWidget):
 
         self._lightKit = vtkLightKit()
         self._lightKit.AddLightsToRenderer(self._renderer)
+
+        self._showLogo()
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -306,30 +303,24 @@ class RenderingWidget(QWidget):
         self._widget.Render()
 
     def _showLogo(self):
-        # Load the 2D image
         reader = vtkPNGReader()
         reader.SetFileName(resource.file('nextfoam_eng.png'))
         reader.Update()
 
         logoRepresentation = vtkLogoRepresentation()
         logoRepresentation.SetImage(reader.GetOutput())
-        logoRepresentation.ProportionalResizeOn ()
-        logoRepresentation.SetPosition( 0.882, 0.0 )
-        logoRepresentation.SetPosition2( 0.10, 0.05 )
-        logoRepresentation.GetImageProperty().SetOpacity( .8 )
+        # logoRepresentation.ProportionalResizeOn()
+        logoRepresentation.SetPosition(0, 0)
+        logoRepresentation.SetPosition2(0.4, 0.4)
+        logoRepresentation.GetImageProperty().SetOpacity(0.7)
         # logoRepresentation.GetImageProperty().SetDisplayLocationToBackground()
         # self._renderer.AddViewProp(logoRepresentation)
-        #
-        # logoRepresentation = vtkLogoRepresentation()
-        # logoRepresentation.SetImage(reader.GetOutput())
-        # logoRepresentation.SetPosition(0, 0)
-        # logoRepresentation.SetPosition2(0.4, 0.4)
-        # logoRepresentation.GetImageProperty().SetOpacity(1)
-        #
-        # logoWidget = vtkLogoWidget()
-        # logoWidget.SetInteractor(self._widget)
-        # logoWidget.SetRepresentation(logoRepresentation)
-        # logoWidget.On()
 
-        # renderer.SetBackground(colors.GetColor3d("MidnightBLue"))
+        logoWidget = vtkLogoWidget()
+        logoWidget.SetInteractor(self._widget)
+        logoWidget.SetRepresentation(logoRepresentation)
+
+        self.refresh()
+        logoWidget.On()
+
         self.refresh()
