@@ -9,11 +9,14 @@ from widgets.flat_push_button import FlatPushButton
 
 
 class ListItem(QObject):
-    def __init__(self, id_):
+    def __init__(self, id_, texts):
         super().__init__()
 
         self._id = id_
         self._widgets = []
+
+        for l in texts:
+            self._widgets.append(QLabel(l))
 
     def columnCount(self):
         return len(self._widgets)
@@ -33,10 +36,7 @@ class ListItemWithButtons(ListItem):
     removeClicked = Signal()
 
     def __init__(self, id_: int, texts):
-        super().__init__(id_)
-
-        for l in texts:
-            self._widgets.append(QLabel(l))
+        super().__init__(id_, texts)
 
         editButton = FlatPushButton()
         editButton.setIcon(QIcon(':/icons/create-outline.svg'))
@@ -57,7 +57,7 @@ class ListTable(QFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._layout = None
+        layout = None
         self._items = {}
 
         palette = QPalette()
@@ -67,35 +67,37 @@ class ListTable(QFrame):
 
     def setHeaderWithWidth(self, widths):
         if self.layout():
-            self._layout = self.layout()
+            layout = self.layout()
         else:
-            self._layout = QGridLayout(self)
+            layout = QGridLayout(self)
+            self.setLayout(layout)
 
         columnCount = len(widths)
 
         for i in range(columnCount):
-            widget = self._layout.itemAtPosition(0, i)
+            widget = layout.itemAtPosition(0, i)
             if widget is None:
                 widget = QWidget()
                 widget.setMaximumWidth(widths[i])
-                self._layout.addWidget(widget, 0, i)
+                layout.addWidget(widget, 0, i)
 
         line = QFrame(self)
         line.setFrameShape(QFrame.Shape.HLine)
         line.setFrameShadow(QFrame.Shadow.Sunken)
-        self._layout.addWidget(line, 1, 0, 1, columnCount)
+        layout.addWidget(line, 1, 0, 1, columnCount)
 
     def addItem(self, item: ListItem):
-        row = self._layout.rowCount()
+        layout = self.layout()
+        row = layout.rowCount()
         for i in range(item.columnCount()):
-            self._layout.addWidget(item.widget(i), row, i)
+            layout.addWidget(item.widget(i), row, i)
 
         self._items[item.id()] = item
 
     def removeItem(self, id_):
         item = self._items.pop(id_)
         for widget in item.widgets():
-            self._layout.removeWidget(widget)
+            self.layout().removeWidget(widget)
             widget.deleteLater()
 
     def item(self, id_):

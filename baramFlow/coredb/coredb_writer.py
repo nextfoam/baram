@@ -97,7 +97,7 @@ class CoreDBWriter:
     def removeElement(self, xpath):
         self._items.append(ElementRemove(xpath))
 
-    def addElement(self, xpath, element, label):
+    def addElement(self, xpath, element, label=None):
         self._items.append(ElementAdd(xpath, element, label))
 
     def callFunction(self, func, *args):

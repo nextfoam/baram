@@ -1,0 +1,123 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from enum import IntEnum, auto
+
+from PySide6.QtCore import QRegularExpression
+from PySide6.QtGui import QIcon, QRegularExpressionValidator
+from PySide6.QtWidgets import QDialog, QTreeWidgetItem, QLineEdit, QHeaderView, QMessageBox
+
+from baramFlow.coredb import coredb
+from baramFlow.coredb.coredb_writer import CoreDBWriter
+from widgets.flat_push_button import FlatPushButton
+from baramFlow.coredb.run_calculation_db import RunCalculationDB
+from .user_parameters_dialog_ui import Ui_UserParametersDialog
+
+
+class Column(IntEnum):
+    NAME = 0
+    VALUE = auto()
+    REMOVE = auto()
+
+
+class ItemMode(IntEnum):
+    ADD = auto()
+    EDIT = auto()
+
+
+class UserParametersDialog(QDialog):
+    XPATH = RunCalculationDB.RUN_CALCULATION_XPATH + '/batch/parameters'
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self._ui = Ui_UserParametersDialog()
+        self._ui.setupUi(self)
+
+        self._parameters = coredb.CoreDB().getBatchParameters()
+
+        self._ui.parameters.setColumnWidth(Column.REMOVE, 20)
+        self._ui.parameters.header().setSectionResizeMode(Column.NAME, QHeaderView.ResizeMode.Stretch)
+
+        self._connectSignalsSlots()
+
+        for name, data in self._parameters.items():
+            self._addItem(name, data['value'], len(data['usages']) == 0)
+        print(self._parameters)
+
+    def accept(self):
+        parameters = {}
+        for i in range(self._ui.parameters.topLevelItemCount()):
+            item = self._ui.parameters.topLevelItem(i)
+            value = self._ui.parameters.itemWidget(item, Column.VALUE).text().strip()
+
+            if item.type() == ItemMode.ADD:
+                name = self._ui.parameters.itemWidget(item, Column.NAME).text()
+                if parameters.get(name):
+                    QMessageBox.information(self, self.tr('Input Error'), self.tr('Duplicate parameter name - ') + name)
+                    return
+                parameters[name] = value
+            else:
+                name = item.text(Column.NAME)
+                if name not in parameters:
+                    parameters[name] = None if item.isHidden() else value
+
+            try:
+                if value is not None:
+                    float(value)
+            except ValueError:
+                QMessageBox.information(self, self.tr('Input Error'), self.tr('Value must be a float - ') + name)
+                return
+
+        writer = CoreDBWriter()
+        for name, value in parameters.items():
+            if value is None:
+                if name in self._parameters:
+                    writer.removeElement(f'{self.XPATH}/parameter[name="{name}"]')
+            elif name not in self._parameters:
+                writer.addElement(self.XPATH,
+                                  f'''
+                                <parameter xmlns="http://www.baramcfd.org/baram">
+                                    <name>{name}</name>
+                                    <value>{value}</value>
+                                    <usages/>
+                                </parameter>
+                              ''')
+            elif value != self._parameters[name]['value']:
+                writer.append(f'{self.XPATH}/parameter[name="{name}"]/value', value, None)
+                for usage in self._parameters[name]['usages']:
+                    writer.append(usage, '$' + name, usage)
+
+        errorCount = writer.write()
+        if errorCount > 0:
+            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+        else:
+            super().accept()
+
+    def _connectSignalsSlots(self):
+        self._ui.add.clicked.connect(self._addItem)
+
+    def _addItem(self, name=None, value='0', removable=True):
+        mode = ItemMode.ADD if name is None else ItemMode.EDIT
+
+        item = QTreeWidgetItem(self._ui.parameters, mode)
+        if mode == ItemMode.ADD:
+            nameEdit = QLineEdit()
+            nameEdit.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Z_][A-Z0-9_]*')))
+            self._ui.parameters.setItemWidget(item, Column.NAME, nameEdit)
+            nameEdit.setFocus()
+        else:
+            item.setText(Column.NAME, name)
+
+        self._ui.parameters.setItemWidget(item, Column.VALUE, QLineEdit(value))
+
+        if removable:
+            removeButton = FlatPushButton(QIcon(':/icons/trash-outline.svg'), '')
+            removeButton.clicked.connect(lambda: self._removeItem(item))
+            self._ui.parameters.setItemWidget(item, Column.REMOVE, removeButton)
+
+    def _removeItem(self, item):
+        if item.type() == ItemMode.ADD:
+            self._ui.parameters.takeTopLevelItem(self._ui.parameters.indexOfTopLevelItem(item))
+        else:
+            item.setHidden(True)
+

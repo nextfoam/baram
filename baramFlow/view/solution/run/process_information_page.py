@@ -4,10 +4,12 @@ import psutil
 import time
 import qasync
 import logging
+from enum import Enum, auto
 
 from PySide6.QtWidgets import QMessageBox
 
 from libbaram.run import launchSolver
+from widgets.list_table import ListItem
 from widgets.progress_dialog import ProgressDialog
 
 from baramFlow.coredb import coredb
@@ -21,11 +23,17 @@ import baramFlow.openfoam.solver
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.widgets.content_page import ContentPage
 from .process_information_page_ui import Ui_ProcessInformationPage
+from .user_parameters_dialog import UserParametersDialog
 
 
 logger = logging.getLogger(__name__)
 
 SOLVER_CHECK_INTERVAL = 3000
+
+
+class RunningMode(Enum):
+    LIVE_RUNNING_MODE = auto()
+    BATCH_RUNNING_MODE = auto()
 
 
 class ProcessInformationPage(ContentPage):
@@ -37,11 +45,14 @@ class ProcessInformationPage(ContentPage):
         self._project = Project.instance()
 
         self._stopDialog = None
+        self._runningMode = None
+
+        self._dialog = None
 
         self._connectSignalsSlots()
 
-    def _load(self):
-        self._updateStatus()
+        self._setRunningMode(RunningMode.LIVE_RUNNING_MODE)
+        self._updateUserParameters()
 
     def showEvent(self, ev):
         if not ev.spontaneous():
@@ -49,12 +60,31 @@ class ProcessInformationPage(ContentPage):
 
         return super().showEvent(ev)
 
+    def _load(self):
+        self._updateStatus()
+
     def _connectSignalsSlots(self):
         self._ui.startCalculation.clicked.connect(self._startCalculationClicked)
         self._ui.cancelCalculation.clicked.connect(self._cancelCalculationClicked)
         self._ui.saveAndStopCalculation.clicked.connect(self._saveAndStopCalculationClicked)
         self._ui.updateConfiguration.clicked.connect(self._updateConfigurationClicked)
+        self._ui.userParametersGroup.toggled.connect(self._toggleUserParameters)
+        self._ui.editUserParametrer.clicked.connect(self._editUserParameters)
         self._project.solverStatusChanged.connect(self._updateStatus)
+
+    def _setRunningMode(self, mode):
+        if mode == RunningMode.LIVE_RUNNING_MODE:
+            self._ui.updateConfiguration.show()
+            self._ui.batchCases.hide()
+            self._ui.toBatchMode.show()
+            self._ui.toLiveMode.hide()
+        else:
+            self._ui.updateConfiguration.hide()
+            self._ui.batchCases.show()
+            self._ui.toBatchMode.hide()
+            self._ui.toLiveMode.sbow()
+
+        self._runningMode = mode
 
     @qasync.asyncSlot()
     async def _startCalculationClicked(self):
@@ -129,6 +159,14 @@ class ProcessInformationPage(ContentPage):
             FvSolution(rname).build().write()
         ControlDict().build().writeAtomic()
 
+    def _toggleUserParameters(self, checked):
+        self._ui.userParameters.setVisible(checked)
+
+    def _editUserParameters(self):
+        self._dialog = UserParametersDialog(self)
+        self._dialog.accepted.connect(self._updateUserParameters)
+        self._dialog.open()
+
     def _updateStatus(self):
         status = self._project.solverStatus()
 
@@ -162,3 +200,10 @@ class ProcessInformationPage(ContentPage):
             self._ui.cancelCalculation.hide()
             self._ui.saveAndStopCalculation.setDisabled(True)
             self._ui.updateConfiguration.setDisabled(True)
+
+    def _updateUserParameters(self):
+        parameters = coredb.CoreDB().getBatchParameters()
+
+        self._ui.userParameterList.clear()
+        for name, data in parameters.items():
+            self._ui.userParameterList.addItem(ListItem(name, [f'{name}({len(data["usages"])})', data['value']]))
