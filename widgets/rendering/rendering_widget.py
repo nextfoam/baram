@@ -72,6 +72,7 @@ class RenderingWidget(QWidget):
         self._lightKit = vtkLightKit()
         self._lightKit.AddLightsToRenderer(self._renderer)
 
+        self._logoWidget = vtkLogoWidget()
         self._showLogo()
 
         layout = QVBoxLayout(self)
@@ -309,18 +310,15 @@ class RenderingWidget(QWidget):
 
         logoRepresentation = vtkLogoRepresentation()
         logoRepresentation.SetImage(reader.GetOutput())
-        # logoRepresentation.ProportionalResizeOn()
-        logoRepresentation.SetPosition(0, 0)
-        logoRepresentation.SetPosition2(0.4, 0.4)
+        logoRepresentation.SetPosition(0.9, 0)
+        logoRepresentation.SetPosition2(0.1, 0.05)
         logoRepresentation.GetImageProperty().SetOpacity(0.7)
-        # logoRepresentation.GetImageProperty().SetDisplayLocationToBackground()
-        # self._renderer.AddViewProp(logoRepresentation)
 
-        logoWidget = vtkLogoWidget()
-        logoWidget.SetInteractor(self._widget)
-        logoWidget.SetRepresentation(logoRepresentation)
+        self._logoWidget.SetInteractor(self._widget)
+        self._logoWidget.SetRepresentation(logoRepresentation)
+        self._logoWidget.ProcessEventsOff()
 
         self.refresh()
-        logoWidget.On()
+        self._logoWidget.On()
 
         self.refresh()
