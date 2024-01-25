@@ -72,7 +72,8 @@ def _writeFeatureFile(path: Path, pd):
             cutter.SetPlane(p)
             cutter.Update()
 
-            features.AddInputData(cutter.GetOutput())
+            if cutter.GetOutput().GetNumberOfCells() > 0:
+                features.AddInputData(cutter.GetOutput())
 
     features.Update()
 
