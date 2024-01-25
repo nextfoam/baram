@@ -113,6 +113,8 @@ class _CoreDB(object):
 
         self._schema = xmlschema.XMLSchema(resource.file(self.XSD_PATH))
 
+        self._batchParameterUsages = {}
+
         xsdTree = etree.parse(resource.file(self.XSD_PATH))
         self._xmlSchema = etree.XMLSchema(etree=xsdTree)
         self._xmlParser = etree.XMLParser(schema=self._xmlSchema)
@@ -225,6 +227,9 @@ class _CoreDB(object):
         path = self._xmlTree.getelementpath(element)
         schema = self._schema.find(".//" + path, namespaces=nsmap)
 
+        if xpath in self._batchParameterUsages:
+            return '$' + self._batchParameterUsages[xpath]
+
         if schema is None:
             raise LookupError
 
@@ -251,6 +256,21 @@ class _CoreDB(object):
             LookupError: Less or more than one item are matched
             ValueError: Invalid configuration value
         """
+        batchParameter = None
+        batchParameterXPath = None
+
+        value = value.strip()
+        if value and value[0] == '$':
+            batchParameter = value[1:]
+            batchParameterXPath = f'.//runCalculation/batch/parameters/parameter[name="{batchParameter}"]'
+            batchParameterValue = self._xmlTree.findall(f'{batchParameterXPath}/value', namespaces=nsmap)
+
+
+            if len(batchParameterValue) == 1:
+                value = batchParameterValue[0].text
+            else:
+                batchParameter = None
+
         elements = self._xmlTree.findall(xpath, namespaces=nsmap)
         if len(elements) != 1:
             raise LookupError
@@ -363,6 +383,23 @@ class _CoreDB(object):
                     self._configCount += 1
 
             logger.debug(f'setValue( {xpath} -> {element.text} )')
+
+        oldParameter = self._batchParameterUsages.get(xpath, None)
+        if oldParameter != batchParameter:
+            if oldParameter:
+                usages = self._xmlTree.findall(
+                    f'.//runCalculation/batch/parameters/parameter[name="{oldParameter}"]/usages', namespaces=nsmap)[0]
+                for usage in usages.findall('usage', namespaces=nsmap):
+                    if usage.text == xpath:
+                        usages.remove(usage)
+
+                del self._batchParameterUsages[xpath]
+
+            if batchParameter:
+                self.addElementFromString(f'{batchParameterXPath}/usages',
+                                          f'<usage xmlns="http://www.baramcfd.org/baram">{xpath}</usage>')
+
+                self._batchParameterUsages[xpath] = batchParameter
 
         self._xmlSchema.assertValid(self._xmlTree)
         return None
@@ -981,6 +1018,12 @@ class _CoreDB(object):
 
         self._xmlSchema.assertValid(self._xmlTree)
 
+    def getBatchParameters(self):
+        elements = self._xmlTree.findall('.//runCalculation/batch/parameters/parameter', namespaces=nsmap)
+        return {e.find('name', namespaces=nsmap).text: {
+            'value': e.find('value', namespaces=nsmap).text,
+            'usages': [u.text for u in e.findall('usages/usage', namespaces=nsmap)]} for e in elements}
+
     def addElementFromString(self, xpath, text):
         parent = self._xmlTree.find(xpath, namespaces=nsmap)
         if parent is None:
@@ -1077,6 +1120,10 @@ class _CoreDB(object):
             self._xmlTree = tree
 
         self._configCountAtSave = self._configCount
+
+        for parameter, data in self.getBatchParameters().items():
+            for path in data['usages']:
+                self._batchParameterUsages[path] = parameter
 
     def loadDefault(self):
         self._xmlTree = etree.parse(resource.file(self.XML_PATH), self._xmlParser)

@@ -3095,7 +3095,7 @@
   <customwidget>
    <class>ListTable</class>
    <extends>QFrame</extends>
-   <header>baramMesh.view.widgets.list_table</header>
+   <header>widgets.list_table</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

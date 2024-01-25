@@ -76,8 +76,7 @@ def _version_2(root: etree.Element):
 
     # print(etree.tostring(root, xml_declaration=True, encoding='UTF-8'))
 
-    # Keep this commented until official v3 spec. is released
-    # root.set('version', '3')
+    root.set('version', '3')
 
     for p in root.findall(f'.//regions/region', namespaces=_nsmap):
         if p.find('secondaryMaterials', namespaces=_nsmap) is None:
@@ -194,10 +193,23 @@ def _version_2(root: etree.Element):
         p.set('disabled', 'false')
 
 
+def _version_3(root: etree.Element):
+    logger.debug('  Upgrading to v4')
+
+    # Keep this commented until official v4 spec. is released
+    # root.set('version', '4')
+
+    if (p := root.find('runCalculation', namespaces=_nsmap)) is not None:
+        if p.find('batch', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "batch" to {p}')
+            e = etree.fromstring('<batch xmlns="http://www.baramcfd.org/baram"><parameters/><cases/></batch>')
+            p.append(e)
+
 _fTable = [
     None,
     _version_1,
-    _version_2
+    _version_2,
+    _version_3,
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))

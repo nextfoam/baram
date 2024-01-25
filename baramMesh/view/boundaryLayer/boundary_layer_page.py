@@ -13,7 +13,7 @@ from baramMesh.app import app
 from baramMesh.db.simple_schema import DBError
 from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramMesh.view.step_page import StepPage
-from baramMesh.view.widgets.list_table import ListItemWithButtons
+from widgets.list_table import ListItemWithButtons
 from .boundary_setting_dialog import BoundarySettingDialog
 
 
