@@ -27,8 +27,8 @@ class MRFProperties(DictionaryFile):
 
             for czid in mrfCellZoneConditions:
                 xpath = CellZoneDB.getXPath(czid)
-                name = db.getValue(xpath + '/name')
-                boundaries = db.getValue(xpath + '/mrf/staticBoundaries').split()
+                name = db.retrieveValue(xpath + '/name')
+                boundaries = db.retrieveValue(xpath + '/mrf/staticBoundaries').split()
 
                 self._data[f'MRFCellZone_{name}'] = {
                     'cellZone': name,
@@ -36,7 +36,7 @@ class MRFProperties(DictionaryFile):
                     'nonRotatingPatches': [BoundaryDB.getBoundaryName(b) for b in boundaries],
                     'origin': db.getVector(xpath + '/mrf/rotationAxisOrigin'),
                     'axis': db.getVector(xpath + '/mrf/rotationAxisDirection'),
-                    'omega': float(db.getValue(xpath + '/mrf/rotatingSpeed')) * 2 * 3.141592 / 60
+                    'omega': float(db.retrieveValue(xpath + '/mrf/rotatingSpeed')) * 2 * 3.141592 / 60
                 }
 
         return self

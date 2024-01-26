@@ -33,8 +33,8 @@ class FvOptions(DictionaryFile):
                     'type': 'limitTemperature',
                     'active': 'yes',
                     'selectionMode': 'all',
-                    'min': self._db.getValue('.//numericalConditions/advanced/limits/minimumStaticTemperature'),
-                    'max': self._db.getValue('.//numericalConditions/advanced/limits/maximumStaticTemperature')
+                    'min': self._db.retrieveValue('.//numericalConditions/advanced/limits/minimumStaticTemperature'),
+                    'max': self._db.retrieveValue('.//numericalConditions/advanced/limits/maximumStaticTemperature')
                 }
             }
 
@@ -49,7 +49,7 @@ class FvOptions(DictionaryFile):
         return self
 
     def _generateZoneType(self, czname, xpath):
-        zoneType = self._db.getValue(xpath + '/zoneType')
+        zoneType = self._db.retrieveValue(xpath + '/zoneType')
 
         if zoneType == 'porous':
             self._generatePorous(czname, xpath + '/porous')
@@ -76,7 +76,7 @@ class FvOptions(DictionaryFile):
 
     def _generateExplicit(self, xpath):
         data = {}
-        porosityModel = self._db.getValue(xpath + '/model')
+        porosityModel = self._db.retrieveValue(xpath + '/model')
 
         if porosityModel == 'darcyForchheimer':
             d = self._db.getVector(xpath + '/darcyForchheimer/viscousResistanceCoefficient')
@@ -101,8 +101,8 @@ class FvOptions(DictionaryFile):
                 }
             }
         elif porosityModel == 'powerLaw':
-            c0 = self._db.getValue(xpath + '/powerLaw/c0')
-            c1 = self._db.getValue(xpath + '/powerLaw/c1')
+            c0 = self._db.retrieveValue(xpath + '/powerLaw/c0')
+            c1 = self._db.retrieveValue(xpath + '/powerLaw/c1')
 
             data = {
                 'type': 'powerLaw',
@@ -125,10 +125,10 @@ class FvOptions(DictionaryFile):
     def _generateActuatorDisk(self, czname, xpath):
         dictName = f'actuationDiskSource_{czname}'
         diskDirection = self._db.getVector(xpath + '/diskDirection')
-        powerCoefficient = self._db.getValue(xpath + '/powerCoefficient')
-        thrustCoefficient = self._db.getValue(xpath + '/thrustCoefficient')
-        diskArea = self._db.getValue(xpath + '/diskArea')
-        forceComputation = self._db.getValue(xpath + '/forceComputation')
+        powerCoefficient = self._db.retrieveValue(xpath + '/powerCoefficient')
+        thrustCoefficient = self._db.retrieveValue(xpath + '/thrustCoefficient')
+        diskArea = self._db.retrieveValue(xpath + '/diskArea')
+        forceComputation = self._db.retrieveValue(xpath + '/forceComputation')
 
         self._data[dictName] = {
             'type': 'actuationDiskSource',
@@ -160,7 +160,7 @@ class FvOptions(DictionaryFile):
 
         self._generateSourceFields(czname, xpath + '/energy', 'h')
 
-        modelsType = self._db.getValue('.//models/turbulenceModels/model')
+        modelsType = self._db.retrieveValue('.//models/turbulenceModels/model')
         if modelsType == 'spalartAllmaras':
             self._generateSourceFields(czname, xpath + '/modifiedTurbulentViscosity', 'nuTilda')
 
@@ -192,7 +192,7 @@ class FvOptions(DictionaryFile):
                 self._data[dictName]['cellZone'] = czname
 
     def _generateVolumeMode(self, xpath):
-        unitValue = self._db.getValue(xpath + '/unit')
+        unitValue = self._db.retrieveValue(xpath + '/unit')
 
         if unitValue == 'valueForEntireCellZone':
             data = 'absolute'
@@ -210,10 +210,10 @@ class FvOptions(DictionaryFile):
         if fieldType in ['nuTilda', 'k', 'epsilon', 'omega']:
             valueType = 'constant'
         else:   # 'rho', 'h'
-            valueType = self._db.getValue(xpath + '/specification')
+            valueType = self._db.retrieveValue(xpath + '/specification')
 
         if valueType == 'constant':
-            value = self._db.getValue(xpath + '/constant')
+            value = self._db.retrieveValue(xpath + '/constant')
             data = {
                 fieldType: {
                     'Su': value,
@@ -221,8 +221,8 @@ class FvOptions(DictionaryFile):
                 }
             }
         elif valueType == 'piecewiseLinear':
-            t = self._db.getValue(xpath + '/piecewiseLinear/t').split()
-            v = self._db.getValue(xpath + '/piecewiseLinear/v').split()
+            t = self._db.retrieveValue(xpath + '/piecewiseLinear/t').split()
+            v = self._db.retrieveValue(xpath + '/piecewiseLinear/v').split()
             value = [[t[i], v[i]] for i in range(len(t))]
             data = {
                 fieldType: {
@@ -232,7 +232,7 @@ class FvOptions(DictionaryFile):
             }
         elif valueType == 'polynomial':
             value = []
-            v = self._db.getValue(xpath + '/polynomial').split()
+            v = self._db.retrieveValue(xpath + '/polynomial').split()
             for i in range(len(v)):
                 value.append([v[i], i])
             data = {
@@ -247,7 +247,7 @@ class FvOptions(DictionaryFile):
         self._generateFixedVelocity(czname, xpath + '/velocity')
         self._generateFixedTemperature(czname, xpath + '/temperature')
 
-        modelsType = self._db.getValue('.//models/turbulenceModels/model')
+        modelsType = self._db.retrieveValue('.//models/turbulenceModels/model')
         if modelsType == 'spalartAllmaras':
             self._generateFixedFields(czname, xpath + '/modifiedTurbulentViscosity', 'nuTilda')
 
@@ -266,7 +266,7 @@ class FvOptions(DictionaryFile):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
             dictName = f'fixedVelocity_{czname}'
             uBar = self._db.getVector(xpath + '/velocity')
-            relaxation = self._db.getValue(xpath + '/relaxation')
+            relaxation = self._db.retrieveValue(xpath + '/relaxation')
 
             self._data[dictName] = {
                 'type': 'meanVelocityForce',
@@ -284,7 +284,7 @@ class FvOptions(DictionaryFile):
     def _generateFixedTemperature(self, czname, xpath):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
             dictName = f'fixedTemperature_{czname}'
-            temperature = self._db.getValue(xpath)
+            temperature = self._db.retrieveValue(xpath)
 
             self._data[dictName] = {
                 'type': 'fixedTemperatureConstraint',
@@ -301,7 +301,7 @@ class FvOptions(DictionaryFile):
     def _generateFixedFields(self, czname, xpath, fieldType):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
             dictName = f'fixedValue_{czname}_{fieldType}'
-            fieldValues = self._db.getValue(xpath)
+            fieldValues = self._db.retrieveValue(xpath)
 
             self._data[dictName] = {
                 'type': 'scalarFixedValueConstraint',

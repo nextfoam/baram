@@ -55,16 +55,16 @@ class Boundary(DictionaryFile):
         for bcname in self._boundaryDict.content:
             xpath = BoundaryDB.getXPathByName(self._rname, bcname)
             if self._db.exists(xpath):
-                bctype = self._db.getValue(xpath + '/physicalType')
+                bctype = self._db.retrieveValue(xpath + '/physicalType')
 
                 self._boundaryDict.content[bcname]['type'] = TYPE_MAP[bctype]
 
                 if BoundaryDB.needsCoupledBoundary(bctype):
-                    couple = self._db.getValue(xpath + '/coupledBoundary')
+                    couple = self._db.retrieveValue(xpath + '/coupledBoundary')
                     if bctype == BoundaryType.THERMO_COUPLED_WALL.value:
                         self._generateMappedWall(bcname, xpath, couple)
                     elif bctype == BoundaryType.INTERFACE.value:
-                        spec = self._db.getValue(xpath + '/interface/mode')
+                        spec = self._db.retrieveValue(xpath + '/interface/mode')
                         if spec == InterfaceMode.INTERNAL_INTERFACE.value:
                             self._generateCyclicAmiNoOrdering(bcname, xpath, couple)
                         elif spec == InterfaceMode.ROTATIONAL_PERIODIC.value:

@@ -169,11 +169,11 @@ class BoundaryDB:
 
     @classmethod
     def getBoundaryName(cls, bcid):
-        return coredb.CoreDB().getValue(cls.getXPath(bcid) + '/name')
+        return coredb.CoreDB().retrieveValue(cls.getXPath(bcid) + '/name')
 
     @classmethod
     def getBoundaryRegion(cls, bcid):
-        return coredb.CoreDB().getValue(cls.getXPath(bcid) + '/../../name')
+        return coredb.CoreDB().retrieveValue(cls.getXPath(bcid) + '/../../name')
 
     @classmethod
     def getBoundaryText(cls, bcid):
@@ -183,11 +183,11 @@ class BoundaryDB:
 
     @classmethod
     def getBoundaryType(cls, bcid):
-        return coredb.CoreDB().getValue(cls.getXPath(bcid) + '/physicalType')
+        return coredb.CoreDB().retrieveValue(cls.getXPath(bcid) + '/physicalType')
 
     @classmethod
     def getBoundaryTypeByName(cls, rname, bcname):
-        return coredb.CoreDB().getValue(
+        return coredb.CoreDB().retrieveValue(
             f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bcname}"]/physicalType')
 
     @classmethod

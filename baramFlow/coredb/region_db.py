@@ -39,7 +39,7 @@ class RegionDB:
                 mu = MaterialDB.getViscosity(self._mid, t)  # Viscosity
 
                 nu = mu / self._rho  # Kinetic Viscosity
-                pr = float(coredb.CoreDB().getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'))
+                pr = float(coredb.CoreDB().retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'))
 
                 self._nut = b * nu
 
@@ -102,15 +102,15 @@ class RegionDB:
 
     @classmethod
     def getPhase(cls, rname):
-        return MaterialDB.getPhase(coredb.CoreDB().getValue(cls.getXPath(rname) + '/material'))
+        return MaterialDB.getPhase(coredb.CoreDB().retrieveValue(cls.getXPath(rname) + '/material'))
 
     @classmethod
     def getMaterial(cls, rname):
-        return coredb.CoreDB().getValue(cls.getXPath(rname) + '/material')
+        return coredb.CoreDB().retrieveValue(cls.getXPath(rname) + '/material')
 
     @classmethod
     def getSecondaryMaterials(cls, rname):
-        return coredb.CoreDB().getValue(cls.getXPath(rname) + '/secondaryMaterials').split()
+        return coredb.CoreDB().retrieveValue(cls.getXPath(rname) + '/secondaryMaterials').split()
 
     @classmethod
     def getRegionProperties(cls, rname):
@@ -128,9 +128,9 @@ class RegionDB:
         db = coredb.CoreDB()
         xpath = cls.getXPath(rname)
 
-        mids1 = db.getValue(xpath + '/phaseInteractions/surfaceTensions/material1').split()
-        mids2 = db.getValue(xpath + '/phaseInteractions/surfaceTensions/material2').split()
-        surfaceTensions = db.getValue(xpath + '/phaseInteractions/surfaceTensions/surfaceTension').split()
+        mids1 = db.retrieveValue(xpath + '/phaseInteractions/surfaceTensions/material1').split()
+        mids2 = db.retrieveValue(xpath + '/phaseInteractions/surfaceTensions/material2').split()
+        surfaceTensions = db.retrieveValue(xpath + '/phaseInteractions/surfaceTensions/surfaceTension').split()
 
         return [(mids1[i], mids2[i], surfaceTensions[i]) for i in range(len(surfaceTensions))]
 

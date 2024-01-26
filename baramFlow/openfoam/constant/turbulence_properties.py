@@ -27,7 +27,7 @@ class TurbulenceProperties(DictionaryFile):
         elif self._model == TurbulenceModel.SPALART_ALLMARAS:
             self._constructRASproperties('SpalartAllmaras')
         elif self._model == TurbulenceModel.K_EPSILON:
-            subModel = db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
+            subModel = db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
             if subModel == KEpsilonModel.STANDARD.value:
                 self._constructRASproperties('kEpsilon')
             elif subModel == KEpsilonModel.RNG.value:
@@ -35,7 +35,7 @@ class TurbulenceProperties(DictionaryFile):
             elif subModel == KEpsilonModel.REALIZABLE.value:
                 self._constructRASproperties('realizableKE')
         elif self._model == TurbulenceModel.K_OMEGA:
-            subModel = db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-omega/model')
+            subModel = db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-omega/model')
             if subModel == KOmegaModel.SST.value:
                 self._constructRASproperties('kOmegaSST')
         elif self._model == TurbulenceModel.LES:
@@ -55,7 +55,7 @@ class TurbulenceProperties(DictionaryFile):
                 'RASModel': subModel,
                 'turbulence': 'on',
                 'printCoeffs': 'on',
-                'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/energyPrandtlNumber')
+                'Prt': self._db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/energyPrandtlNumber')
             }
         }
 

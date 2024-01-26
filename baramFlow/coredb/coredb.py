@@ -205,6 +205,25 @@ class _CoreDB(object):
         logger.debug(f'setAttribute( {xpath}:{name} -> {value} )')
 
     def getValue(self, xpath: str) -> str:
+        """Returns specified configuration setting.
+
+        Returns configuration value specified by 'xpath'
+
+        Args:
+            xpath: XML xpath for the configuration item
+
+        Returns:
+            user parameter or configuration value
+
+        Raises:
+            LookupError: Less or more than one item are matched
+        """
+        if xpath in self._batchParameterUsages:
+            return '$' + self._batchParameterUsages[xpath]
+
+        return self.retrieveValue(xpath)
+
+    def retrieveValue(self, xpath: str) -> str:
         """Returns specified configuration value.
 
         Returns configuration value specified by 'xpath'
@@ -226,9 +245,6 @@ class _CoreDB(object):
 
         path = self._xmlTree.getelementpath(element)
         schema = self._schema.find(".//" + path, namespaces=nsmap)
-
-        if xpath in self._batchParameterUsages:
-            return '$' + self._batchParameterUsages[xpath]
 
         if schema is None:
             raise LookupError

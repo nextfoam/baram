@@ -44,34 +44,34 @@ class SetFieldsDict(DictionaryFile):
                     defaultFieldValues.append(('volVectorFieldValue', 'U', db.getVector(ivPath + '/velocity')))
 
             if db.getAttribute(sPath+'/pressure', 'disabled') == 'false':
-                fieldValues.append(('volScalarFieldValue', 'p', db.getValue(sPath + '/pressure')))
+                fieldValues.append(('volScalarFieldValue', 'p', db.retrieveValue(sPath + '/pressure')))
                 if 'p' not in defaultFields:
                     defaultFields.append('p')
-                    defaultFieldValues.append(('volScalarFieldValue', 'p', db.getValue(ivPath + '/pressure')))
+                    defaultFieldValues.append(('volScalarFieldValue', 'p', db.retrieveValue(ivPath + '/pressure')))
 
             if db.getAttribute(sPath+'/temperature', 'disabled') == 'false':
-                fieldValues.append(('volScalarFieldValue', 'T', db.getValue(sPath + '/temperature')))
+                fieldValues.append(('volScalarFieldValue', 'T', db.retrieveValue(sPath + '/temperature')))
                 if 'T' not in defaultFields:
                     defaultFields.append('T')
-                    defaultFieldValues.append(('volScalarFieldValue', 'T', db.getValue(ivPath + '/temperature')))
+                    defaultFieldValues.append(('volScalarFieldValue', 'T', db.retrieveValue(ivPath + '/temperature')))
 
             if db.getAttribute(sPath+'/volumeFractions', 'disabled') == 'false':
                 materials: [str] = db.getList(sPath + f'/volumeFractions/volumeFraction/material')
                 for mid in materials:
                     fieldName = 'alpha.' + MaterialDB.getName(mid)
-                    fraction = db.getValue(sPath + f'/volumeFractions/volumeFraction[material="{mid}"]/fraction')
+                    fraction = db.retrieveValue(sPath + f'/volumeFractions/volumeFraction[material="{mid}"]/fraction')
                     fieldValues.append(('volScalarFieldValue', fieldName, fraction))
                     if fieldName not in defaultFields:
                         defaultFields.append(fieldName)
-                        defaultFraction = db.getValue(ivPath + f'/volumeFractions/volumeFraction[material="{mid}"]/fraction')
+                        defaultFraction = db.retrieveValue(ivPath + f'/volumeFractions/volumeFraction[material="{mid}"]/fraction')
                         defaultFieldValues.append(('volScalarFieldValue', fieldName, defaultFraction))
 
-            if db.getValue(sPath + '/overrideBoundaryValue') == 'true':
+            if db.retrieveValue(sPath + '/overrideBoundaryValue') == 'true':
                 overrideBoundaryValue = True
             else:
                 overrideBoundaryValue = False
 
-            stype = db.getValue(sPath + '/type')
+            stype = db.retrieveValue(sPath + '/type')
             if stype == 'hex':
                 data = {
                     'box': (
@@ -87,7 +87,7 @@ class SetFieldsDict(DictionaryFile):
                 data = {
                     'point1': db.getVector(sPath + '/point1'),
                     'point2': db.getVector(sPath + '/point2'),
-                    'radius': db.getValue(sPath + '/radius'),
+                    'radius': db.retrieveValue(sPath + '/radius'),
                     'fieldValues': fieldValues
                 }
                 sections.append(('cylinderToCell', data))
@@ -96,14 +96,14 @@ class SetFieldsDict(DictionaryFile):
             elif stype == 'sphere':
                 data = {
                     'origin': db.getVector(sPath + '/point1'),
-                    'radius': db.getValue(sPath + '/radius'),
+                    'radius': db.retrieveValue(sPath + '/radius'),
                     'fieldValues': fieldValues
                 }
                 sections.append(('sphereToCell', data))
                 if overrideBoundaryValue:
                     sections.append(('sphereToFace', data))
             elif stype == 'cellZone':
-                czid = db.getValue(sPath + '/cellZone')
+                czid = db.retrieveValue(sPath + '/cellZone')
                 data = {
                     'zone': CellZoneDB.getCellZoneName(czid),
                     'fieldValues': fieldValues

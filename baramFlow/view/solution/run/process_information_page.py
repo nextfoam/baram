@@ -195,11 +195,15 @@ class ProcessInformationPage(ContentPage):
             self._ui.cancelCalculation.show()
             self._ui.saveAndStopCalculation.setEnabled(True)
             self._ui.updateConfiguration.setEnabled(True)
+            self._ui.userParametersGroup.setDisabled(True)
+            self._ui.runningMode.setDisabled(True)
         else:
             self._ui.startCalculation.show()
             self._ui.cancelCalculation.hide()
             self._ui.saveAndStopCalculation.setDisabled(True)
             self._ui.updateConfiguration.setDisabled(True)
+            self._ui.userParametersGroup.setEnabled(True)
+            self._ui.runningMode.setEnabled(True)
 
     def _updateUserParameters(self):
         parameters = coredb.CoreDB().getBatchParameters()

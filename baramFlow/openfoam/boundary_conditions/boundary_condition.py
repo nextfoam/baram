@@ -102,23 +102,23 @@ class BoundaryCondition(DictionaryFile):
         return {
             'type': 'farfieldRiemann',
             'flowDir': self._db.getVector(xpath + '/flowDirection'),
-            'MInf': self._db.getValue(xpath + '/machNumber'),
-            'pInf': self._db.getValue(xpath + '/staticPressure'),
-            'TInf': self._db.getValue(xpath + '/staticTemperature'),
+            'MInf': self._db.retrieveValue(xpath + '/machNumber'),
+            'pInf': self._db.retrieveValue(xpath + '/staticPressure'),
+            'TInf': self._db.retrieveValue(xpath + '/staticTemperature'),
         }
 
     def _constructSubsonicInflow(self, xpath):
         return {
             'type': 'subsonicInflow',
             'flowDir': self._db.getVector(xpath + '/flowDirection'),
-            'p0': self._db.getValue(xpath + '/totalPressure'),
-            'T0': self._db.getValue(xpath + '/totalTemperature'),
+            'p0': self._db.retrieveValue(xpath + '/totalPressure'),
+            'T0': self._db.retrieveValue(xpath + '/totalTemperature'),
         }
 
     def _constructSubsonicOutflow(self, xpath):
         return {
             'type': 'subsonicOutflow',
-            'pExit': self._db.getValue(xpath + '/staticPressure'),
+            'pExit': self._db.retrieveValue(xpath + '/staticPressure'),
         }
 
     def _constructSymmetry(self):
@@ -156,15 +156,15 @@ class BoundaryCondition(DictionaryFile):
 
     def _constructUniformFixedValue(self, xpath, type_):
         if type_ == self.TableType.POLYNOMIAL:
-            v = self._db.getValue(xpath).split()
+            v = self._db.retrieveValue(xpath).split()
 
             return {
                 'type': 'uniformFixedValue',
                 'uniformValue': ('polynomial', [[v[i], i] for i in range(len(v))])
             }
         elif type_ == self.TableType.TEMPORAL_SCALAR_LIST:
-            t = self._db.getValue(xpath + '/t').split()
-            v = self._db.getValue(xpath + '/v').split()
+            t = self._db.retrieveValue(xpath + '/t').split()
+            v = self._db.retrieveValue(xpath + '/v').split()
 
             return {
                 'type': 'uniformFixedValue',
@@ -174,10 +174,10 @@ class BoundaryCondition(DictionaryFile):
                 }
             }
         elif type_ == self.TableType.TEMPORAL_VECTOR_LIST:
-            t = self._db.getValue(xpath + '/t').split()
-            x = self._db.getValue(xpath + '/x').split()
-            y = self._db.getValue(xpath + '/y').split()
-            z = self._db.getValue(xpath + '/z').split()
+            t = self._db.retrieveValue(xpath + '/t').split()
+            x = self._db.retrieveValue(xpath + '/x').split()
+            y = self._db.retrieveValue(xpath + '/y').split()
+            z = self._db.retrieveValue(xpath + '/z').split()
 
             return {
                 'type': 'uniformFixedValue',
@@ -191,8 +191,8 @@ class BoundaryCondition(DictionaryFile):
         values = None
 
         if type_ == self.TableType.TEMPORAL_SCALAR_LIST:
-            t = self._db.getValue(xpath + '/t').split()
-            v = self._db.getValue(xpath + '/v').split()
+            t = self._db.retrieveValue(xpath + '/t').split()
+            v = self._db.retrieveValue(xpath + '/v').split()
 
             values = [[t[i], -float(v[i])] for i in range(len(t))]
         elif type_ == self.TableType.TEMPORAL_VECTOR_LIST:
@@ -238,14 +238,14 @@ class BoundaryCondition(DictionaryFile):
         }
 
     def _calculateFreeStreamTurbulentValues(self, xpath, region, model):
-        ux = float(self._db.getValue(xpath + 'freeStream/streamVelocity/x'))
-        uy = float(self._db.getValue(xpath + 'freeStream/streamVelocity/y'))
-        uz = float(self._db.getValue(xpath + 'freeStream/streamVelocity/z'))
+        ux = float(self._db.retrieveValue(xpath + 'freeStream/streamVelocity/x'))
+        uy = float(self._db.retrieveValue(xpath + 'freeStream/streamVelocity/y'))
+        uz = float(self._db.retrieveValue(xpath + 'freeStream/streamVelocity/z'))
 
         v = sqrt(ux**2 + uy**2 + uz**2)
 
-        p = float(self._db.getValue(xpath + '/freeStream/pressure'))
-        t = float(self._db.getValue(xpath + '/temperature/constant'))
+        p = float(self._db.retrieveValue(xpath + '/freeStream/pressure'))
+        t = float(self._db.retrieveValue(xpath + '/temperature/constant'))
 
         if model == TurbulenceModel.K_EPSILON:
             mstr = 'k-epsilon'
@@ -254,8 +254,8 @@ class BoundaryCondition(DictionaryFile):
         else:
             raise AssertionError
 
-        i = float(self._db.getValue(xpath + '/turbulence/' + mstr + '/turbulentIntensity'))/100
-        b = float(self._db.getValue(xpath + '/turbulence/' + mstr + '/turbulentViscosityRatio'))
+        i = float(self._db.retrieveValue(xpath + '/turbulence/' + mstr + '/turbulentIntensity'))/100
+        b = float(self._db.retrieveValue(xpath + '/turbulence/' + mstr + '/turbulentViscosityRatio'))
 
         mid = RegionDB.getMaterial(region)
         rho = MaterialDB.getDensity(mid, t, p)  # Density

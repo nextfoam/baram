@@ -43,11 +43,11 @@ class CellZoneDB:
 
     @classmethod
     def getCellZoneName(cls, czid):
-        return coredb.CoreDB().getValue(cls.getXPath(czid) + '/name')
+        return coredb.CoreDB().retrieveValue(cls.getXPath(czid) + '/name')
 
     @classmethod
     def getCellZoneRegion(cls, czid):
-        return coredb.CoreDB().getValue(cls.getXPath(czid) + '/../../name')
+        return coredb.CoreDB().retrieveValue(cls.getXPath(czid) + '/../../name')
 
     @classmethod
     def getCellZoneText(cls, czid):
@@ -57,7 +57,7 @@ class CellZoneDB:
 
     @classmethod
     def getCellZoneType(cls, czid):
-        return coredb.CoreDB().getValue(cls.getXPath(czid) + '/zoneType')
+        return coredb.CoreDB().retrieveValue(cls.getXPath(czid) + '/zoneType')
 
     @classmethod
     def isRegion(cls, czname):
