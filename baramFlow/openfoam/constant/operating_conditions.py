@@ -20,7 +20,7 @@ class OperatingConditions(DictionaryFile):
 
         db = coredb.CoreDB()
 
-        pressure = db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure')
+        pressure = db.retrieveValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure')
 
         self._data = {
             'operatingPressure': ('operatingPressure [1 -1 -2 0 0 0 0]', pressure)

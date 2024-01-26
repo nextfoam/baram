@@ -129,7 +129,7 @@ class CaseGenerator(QObject):
             boundaries = self._db.getBoundaryConditions(rname)
             for bcid, bcname, bctype in boundaries:
                 xpath = BoundaryDB.getXPath(bcid)
-                if BoundaryDB.needsCoupledBoundary(bctype) and self._db.getValue(xpath + '/coupledBoundary') == '0':
+                if BoundaryDB.needsCoupledBoundary(bctype) and self._db.retrieveValue(xpath + '/coupledBoundary') == '0':
                     errors += QCoreApplication.translate(
                         'CaseGenerator',
                         f'{BoundaryDB.dbBoundaryTypeToText(bctype)} boundary "{bcname}" needs a coupled boundary.\n')
@@ -188,7 +188,7 @@ class CaseGenerator(QObject):
             if self._cancelled:
                 return self._cancelled
             elif errors:
-                raise RuntimeError(self.tr('Case generating fail. - ' + errors))
+                raise RuntimeError(self.tr('Case generating fail. - ') + errors)
 
             if nProcessorFolders > 1:
                 self.progress.emit(self.tr('Decomposing Field Data...'))

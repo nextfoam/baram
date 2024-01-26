@@ -14,13 +14,13 @@ availableSolvers = pd.read_csv(resource.file('openfoam/solvers.csv'), header=0, 
 def findSolvers() -> list[str]:
     db = coredb.CoreDB()
 
-    timeTransient   = db.getValue('.//general/timeTransient')
-    flowType        = db.getValue('.//general/flowType')
-    solverType      = db.getValue('.//general/solverType')
-    energyModel     = db.getValue('.//models/energyModels')
+    timeTransient   = db.retrieveValue('.//general/timeTransient')
+    flowType        = db.retrieveValue('.//general/flowType')
+    solverType      = db.retrieveValue('.//general/solverType')
+    energyModel     = db.retrieveValue('.//models/energyModels')
     gravityDisabled = all([v == 0.0 for v in db.getVector('.//operatingConditions/gravity/direction')])
-    speciesModel    = db.getValue('.//models/speciesModels')
-    multiphaseModel = db.getValue('.//models/multiphaseModels/model')
+    speciesModel    = db.retrieveValue('.//models/speciesModels')
+    multiphaseModel = db.retrieveValue('.//models/multiphaseModels/model')
 
     pcs = []  # problem conditions
 

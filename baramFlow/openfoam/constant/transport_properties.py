@@ -30,17 +30,17 @@ class TransportProperties(DictionaryFile):
 
         self._data = {}
 
-        mid = self._db.getValue(f'.//regions/region[name="{self._rname}"]/material')
+        mid = self._db.retrieveValue(f'.//regions/region[name="{self._rname}"]/material')
 
-        energyModels = self._db.getValue('.//models/energyModels')
-        dSpec = self._db.getValue(f'{MaterialDB.getXPath(mid)}/density/specification')
-        vSpec = self._db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity/specification')
+        energyModels = self._db.retrieveValue('.//models/energyModels')
+        dSpec = self._db.retrieveValue(f'{MaterialDB.getXPath(mid)}/density/specification')
+        vSpec = self._db.retrieveValue(f'{MaterialDB.getXPath(mid)}/viscosity/specification')
 
         if energyModels == "off" and dSpec == 'constant' and vSpec == 'constant':
             self._data['transportModel'] = 'Newtonian'
 
-            density = self._db.getValue(f'{MaterialDB.getXPath(mid)}/density/constant')
-            viscosity = self._db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity/constant')
+            density = self._db.retrieveValue(f'{MaterialDB.getXPath(mid)}/density/constant')
+            viscosity = self._db.retrieveValue(f'{MaterialDB.getXPath(mid)}/viscosity/constant')
 
             nu = float(viscosity) / float(density)
             self._data['nu'] = f'[ 0 2 -1 0 0 0 0 ] {nu}'

@@ -61,10 +61,10 @@ class NuTilda(BoundaryCondition):
         return field
 
     def _constructFixedValueByModel(self, xpath):
-        spec = self._db.getValue(xpath + '/turbulence/spalartAllmaras/specification')
+        spec = self._db.retrieveValue(xpath + '/turbulence/spalartAllmaras/specification')
         if spec == SpalartAllmarasSpecification.MODIFIED_TURBULENT_VISCOSITY.value:
             return self._constructFixedValue(
-                self._db.getValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity'))
+                self._db.retrieveValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity'))
         elif spec == SpalartAllmarasSpecification.TURBULENT_VISCOSITY_RATIO.value:
             # ToDo: Setting according to boundary field spec
             return {
@@ -72,10 +72,10 @@ class NuTilda(BoundaryCondition):
             }
 
     def _constructInletOutletByModel(self, xpath):
-        spec = self._db.getValue(xpath + '/turbulence/spalartAllmaras/specification')
+        spec = self._db.retrieveValue(xpath + '/turbulence/spalartAllmaras/specification')
         if spec == SpalartAllmarasSpecification.MODIFIED_TURBULENT_VISCOSITY.value:
             return self._constructInletOutlet(
-                self._db.getValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity'))
+                self._db.retrieveValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity'))
         elif spec == SpalartAllmarasSpecification.TURBULENT_VISCOSITY_RATIO.value:
             # ToDo: Setting according to boundary field spec
             return {
@@ -83,23 +83,23 @@ class NuTilda(BoundaryCondition):
             }
 
     def _constructPressureOutletNuTilda(self, xpath):
-        if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+        if self._db.retrieveValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
             return self._constructInletOutletByModel(xpath)
         else:
             return self._constructZeroGradient()
 
     def _constructInterfaceNuTilda(self, xpath):
-        spec = self._db.getValue(xpath + '/interface/mode')
+        spec = self._db.retrieveValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
             return self._constructZeroGradient()
         else:
             return self._constructCyclicAMI()
 
     def _constructFreestreamNuTilda(self, xpath):
-        spec = self._db.getValue(xpath + '/turbulence/spalartAllmaras/specification')
+        spec = self._db.retrieveValue(xpath + '/turbulence/spalartAllmaras/specification')
         if spec == SpalartAllmarasSpecification.MODIFIED_TURBULENT_VISCOSITY.value:
             return self._constructFreestream(
-                float(self._db.getValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity')))
+                float(self._db.retrieveValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity')))
         elif spec == SpalartAllmarasSpecification.TURBULENT_VISCOSITY_RATIO.value:
             # ToDo: Setting according to boundary field spec
             return {

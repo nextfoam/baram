@@ -59,17 +59,17 @@ class MaterialDB(object):
 
     @classmethod
     def getDensity(cls, mid, t: float, p: float) -> float:
-        spec = coredb.CoreDB().getValue(cls.getXPath(mid) + '/density/specification')
+        spec = coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/density/specification')
         if spec == 'constant':
-            return float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/density/constant'))
+            return float(coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/density/constant'))
         elif spec == 'perfectGas':
             r'''
             .. math:: \rho = \frac{MW \times P}{R \times T}
             '''
-            mw = float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/molecularWeight'))
+            mw = float(coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/molecularWeight'))
             return p * mw / (UNIVERSAL_GAL_CONSTANT * t)
         elif spec == 'polynomial':
-            coeffs = list(map(float, coredb.CoreDB().getValue(cls.getXPath(mid) + '/density/polynomial').split()))
+            coeffs = list(map(float, coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/density/polynomial').split()))
             rho = 0.0
             for exp, c in enumerate(coeffs):
                 rho += c * t ** exp
@@ -79,11 +79,11 @@ class MaterialDB(object):
 
     @classmethod
     def getSpecificHeat(cls, mid: int, t: float) -> float:
-        spec = coredb.CoreDB().getValue(cls.getXPath(mid) + '/specificHeat/specification')
+        spec = coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/specificHeat/specification')
         if spec == 'constant':
-            return float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/specificHeat/constant'))
+            return float(coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/specificHeat/constant'))
         elif spec == 'polynomial':
-            coeffs = list(map(float, coredb.CoreDB().getValue(cls.getXPath(mid) + '/specificHeat/polynomial').split()))
+            coeffs = list(map(float, coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/specificHeat/polynomial').split()))
             cp = 0.0
             for exp, c in enumerate(coeffs):
                 cp += c * t ** exp
@@ -93,11 +93,11 @@ class MaterialDB(object):
 
     @classmethod
     def getViscosity(cls, mid: int, t: float) -> float:
-        spec = coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/specification')
+        spec = coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/viscosity/specification')
         if spec == 'constant':
-            return float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/constant'))
+            return float(coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/viscosity/constant'))
         elif spec == 'polynomial':
-            coeffs = list(map(float, coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/polynomial').split()))
+            coeffs = list(map(float, coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/viscosity/polynomial').split()))
             mu = 0.0
             for exp, c in enumerate(coeffs):
                 mu += c * t ** exp
@@ -106,15 +106,15 @@ class MaterialDB(object):
             r'''
             .. math:: \mu = \frac{C_1 T^{3/2}}{T+S}
             '''
-            c1 = float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/sutherland/coefficient'))
-            s = float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/viscosity/sutherland/temperature'))
+            c1 = float(coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/viscosity/sutherland/coefficient'))
+            s = float(coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/viscosity/sutherland/temperature'))
             return c1 * t ** 1.5 / (t+s)
         else:
             raise KeyError
 
     @classmethod
     def getMolecularWeight(cls, mid) -> float:
-        return float(coredb.CoreDB().getValue(cls.getXPath(mid) + '/molecularWeight'))
+        return float(coredb.CoreDB().retrieveValue(cls.getXPath(mid) + '/molecularWeight'))
 
     @classmethod
     def dbTextToPhase(cls, DBText) -> Phase:

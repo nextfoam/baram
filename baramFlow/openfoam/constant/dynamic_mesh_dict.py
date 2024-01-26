@@ -31,7 +31,7 @@ class DynamicMeshDict(DictionaryFile):
 
             for czid in zones:
                 xpath = CellZoneDB.getXPath(czid)
-                name = db.getValue(xpath + '/name')
+                name = db.retrieveValue(xpath + '/name')
 
                 self._data['solvers'][f'sliding_{name}'] = {
                     'solver': 'solidBody',
@@ -40,7 +40,7 @@ class DynamicMeshDict(DictionaryFile):
                     'rotatingMotionCoeffs': {
                         'origin': db.getVector(xpath + '/slidingMesh/rotationAxisOrigin'),
                         'axis': db.getVector(xpath + '/slidingMesh/rotationAxisDirection'),
-                        'omega': float(db.getValue(xpath + '/slidingMesh/rotatingSpeed')) * 2 * 3.141592 / 60
+                        'omega': float(db.retrieveValue(xpath + '/slidingMesh/rotatingSpeed')) * 2 * 3.141592 / 60
                     }
                 }
 

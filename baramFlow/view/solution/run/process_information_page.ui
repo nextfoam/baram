@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>390</width>
-    <height>456</height>
+    <height>838</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -417,7 +417,7 @@ QGroupBox::indicator:checked {image: url(:icons/chevron-down.svg);}</string>
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="widget_3" native="true">
+    <widget class="QWidget" name="runningMode" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
        <spacer name="horizontalSpacer_3">

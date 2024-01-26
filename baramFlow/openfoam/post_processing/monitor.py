@@ -167,8 +167,8 @@ class ForceMonitor(Monitor):
 
         xpath = MonitorDB.getForceMonitorXPath(name)
 
-        self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
-        self._rname = self._db.getValue(xpath + '/region')
+        self._showChart = self._db.retrieveValue(xpath + '/showChart') == 'true'
+        self._rname = self._db.retrieveValue(xpath + '/region')
         self._chart1 = chart1
         self._chart2 = chart2
         self._chart3 = chart3
@@ -200,7 +200,7 @@ class PointMonitor(Monitor):
 
         self._xpath = MonitorDB.getPointMonitorXPath(name)
 
-        self._showChart = self._db.getValue(self._xpath + '/showChart') == 'true'
+        self._showChart = self._db.retrieveValue(self._xpath + '/showChart') == 'true'
         self._rname = ''  # Working only for Single Region Cases. ToDo: find a region by using vtkStaticCellLocator
         self._chart = chart
 
@@ -208,8 +208,8 @@ class PointMonitor(Monitor):
 
     @property
     def fileName(self):
-        return FieldHelper.DBFieldKeyToField(self._db.getValue(self._xpath + '/field/field'),
-                                             self._db.getValue(self._xpath + '/field/mid'))
+        return FieldHelper.DBFieldKeyToField(self._db.retrieveValue(self._xpath + '/field/field'),
+                                             self._db.retrieveValue(self._xpath + '/field/mid'))
 
     @property
     def extension(self):
@@ -230,8 +230,8 @@ class SurfaceMonitor(Monitor):
 
         xpath = MonitorDB.getSurfaceMonitorXPath(name)
 
-        self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
-        self._rname = BoundaryDB.getBoundaryRegion(self._db.getValue(xpath + '/surface'))
+        self._showChart = self._db.retrieveValue(xpath + '/showChart') == 'true'
+        self._rname = BoundaryDB.getBoundaryRegion(self._db.retrieveValue(xpath + '/surface'))
         self._chart = chart
 
         self._chart.setTitle(name)
@@ -255,8 +255,8 @@ class VolumeMonitor(Monitor):
 
         xpath = MonitorDB.getVolumeMonitorXPath(name)
 
-        self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
-        self._rname = CellZoneDB.getCellZoneRegion(self._db.getValue(xpath + '/volume'))
+        self._showChart = self._db.retrieveValue(xpath + '/showChart') == 'true'
+        self._rname = CellZoneDB.getCellZoneRegion(self._db.retrieveValue(xpath + '/volume'))
         self._chart = chart
 
         self._chart.setTitle(name)

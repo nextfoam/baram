@@ -33,9 +33,9 @@ class T(BoundaryCondition):
         for bcid, name, type_ in self._region.boundaries:
             xpath = BoundaryDB.getXPath(bcid)
 
-            profile = self._db.getValue(xpath + '/temperature/profile')
+            profile = self._db.retrieveValue(xpath + '/temperature/profile')
             if profile == TemperatureProfile.CONSTANT.value:
-                constant = float(self._db.getValue(xpath + '/temperature/constant'))
+                constant = float(self._db.retrieveValue(xpath + '/temperature/constant'))
 
                 field[name] = {
                     BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(constant)),
@@ -66,9 +66,9 @@ class T(BoundaryCondition):
                 field[name] = self._constructTimeVaryingMappedFixedValue(
                     self._region.rname, name, 'T',
                     Project.instance().fileDB().getFileContents(
-                        self._db.getValue(xpath + '/temperature/spatialDistribution')))
+                        self._db.retrieveValue(xpath + '/temperature/spatialDistribution')))
             elif profile == TemperatureProfile.TEMPORAL_DISTRIBUTION.value:
-                spec = self._db.getValue(xpath + '/temperature/temporalDistribution/specification')
+                spec = self._db.retrieveValue(xpath + '/temperature/temporalDistribution/specification')
                 if spec == TemperatureTemporalDistribution.PIECEWISE_LINEAR.value:
                     field[name] = self._constructUniformFixedValue(
                         xpath + '/temperature/temporalDistribution/piecewiseLinear', self.TableType.TEMPORAL_SCALAR_LIST
@@ -103,39 +103,39 @@ class T(BoundaryCondition):
         }
 
     def _constructFlowRateInletT(self, xpath, constant):
-        spec = self._db.getValue(xpath + '/flowRateInlet/flowRate/specification')
+        spec = self._db.retrieveValue(xpath + '/flowRateInlet/flowRate/specification')
         if spec == FlowRateInletSpecification.VOLUME_FLOW_RATE.value:
             return self._constructFixedValue(constant)
         elif spec == FlowRateInletSpecification.MASS_FLOW_RATE.value:
             return self._constructInletOutletTotalTemperature(constant)
 
     def _constructPressureOutletT(self, xpath):
-        if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
-            constant = self._db.getValue(xpath + '/pressureOutlet/backflowTotalTemperature')
+        if self._db.retrieveValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+            constant = self._db.retrieveValue(xpath + '/pressureOutlet/backflowTotalTemperature')
             return self._constructInletOutletTotalTemperature(constant)
         else:
             return self._constructZeroGradient()
 
     def _constructInterfaceT(self, xpath):
-        spec = self._db.getValue(xpath + '/interface/mode')
+        spec = self._db.retrieveValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
             return self._constructCompressibleturbulentTemperatureRadCoupledMixed()
         else:
             return self._constructCyclicAMI()
 
     def _constructWallT(self, xpath, constant):
-        spec = self._db.getValue(xpath + '/wall/velocity/type')
+        spec = self._db.retrieveValue(xpath + '/wall/velocity/type')
         if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
             return self._constructFixedValue(constant)
         else:
-            spec = self._db.getValue(xpath + '/wall/temperature/type')
+            spec = self._db.retrieveValue(xpath + '/wall/temperature/type')
             if spec == WallTemperature.ADIABATIC.value:
                 return self._constructZeroGradient()
             elif spec == WallTemperature.CONSTANT_TEMPERATURE.value:
-                t = self._db.getValue(xpath + '/wall/temperature/temperature')
+                t = self._db.retrieveValue(xpath + '/wall/temperature/temperature')
                 return self._constructFixedValue(t)
             elif spec == WallTemperature.CONSTANT_HEAT_FLUX.value:
-                q = self._db.getValue(xpath + '/wall/temperature/heatFlux')
+                q = self._db.retrieveValue(xpath + '/wall/temperature/heatFlux')
                 return {
                     'type': 'externalWallHeatFluxTemperature',
                     'mode': 'flux',
@@ -144,8 +144,8 @@ class T(BoundaryCondition):
                     'value': self._initialValueByTime()
                 }
             elif spec == WallTemperature.CONVECTION.value:
-                h = self._db.getValue(xpath + '/wall/temperature/heatTransferCoefficient')
-                ta = self._db.getValue(xpath + '/wall/temperature/freeStreamTemperature')
+                h = self._db.retrieveValue(xpath + '/wall/temperature/heatTransferCoefficient')
+                ta = self._db.retrieveValue(xpath + '/wall/temperature/freeStreamTemperature')
                 return {
                     'type': 'externalWallHeatFluxTemperature',
                     'mode': 'coefficient',

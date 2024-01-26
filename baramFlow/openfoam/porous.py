@@ -15,14 +15,14 @@ class Porous:
         if self._data is not None:
             return self
 
-        model = self._db.getValue(self._xpath + '/porous/model')
+        model = self._db.retrieveValue(self._xpath + '/porous/model')
 
         self._data = {
             'type': 'explicitPorositySource',
             'active': 'true',
             'explicitPorositySourceCoeffs': {
                 'selectionMode': 'cellZone',
-                'cellZone': self._db.getValue(self._xpath + '/name'),
+                'cellZone': self._db.retrieveValue(self._xpath + '/name'),
                 'type': model,
                 'active': 'yes',
             }
@@ -53,6 +53,6 @@ class Porous:
 
     def _constructPowerLawCoeffs(self):
         return {
-            'C0': self._db.getValue(self._xpath + '/porous/powerLaw/c0'),
-            'C1': self._db.getValue(self._xpath + '/porous/powerLaw/c1')
+            'C0': self._db.retrieveValue(self._xpath + '/porous/powerLaw/c0'),
+            'C1': self._db.retrieveValue(self._xpath + '/porous/powerLaw/c1')
         }
