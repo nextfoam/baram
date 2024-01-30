@@ -269,6 +269,9 @@ class ControlDict(DictionaryFile):
             'log': 'false',
         }
 
+        if not GeneralDB.isCompressible():
+            data['p'] = 'p_rgh'  # Use "Pseudo hydrostatic pressure" for calculation
+
         if rname := self._db.retrieveValue(xpath + '/region'):
             data['region'] = rname
 
@@ -293,6 +296,9 @@ class ControlDict(DictionaryFile):
             'writeInterval': self._db.retrieveValue(xpath + '/writeInterval'),
             'log': 'false',
         }
+
+        if not GeneralDB.isCompressible():
+            data['p'] = 'p_rgh'  # Use "Pseudo hydrostatic pressure" for calculation
 
         if rname := self._db.retrieveValue(xpath + '/region'):
             data['region'] = rname

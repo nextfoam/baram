@@ -50,6 +50,7 @@ class ChartWidget(QWidget):
 
     def logScaleOn(self):
         self._logScale = True
+        self._axes.set_yscale('log')
 
     def setData(self, data):
         self._data = data
