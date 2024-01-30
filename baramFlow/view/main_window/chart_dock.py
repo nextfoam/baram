@@ -9,6 +9,7 @@ from PySide6.QtCore import Qt
 
 import numpy as np
 
+from matplotlib import style as mplstyle
 from matplotlib import ticker
 from matplotlib.backends.qt_compat import QtWidgets
 from matplotlib.backends.backend_qtagg import (
@@ -25,6 +26,8 @@ from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMe
 from baramFlow.coredb.project import Project, SolverStatus
 
 SIDE_MARGIN = 0.05  # 5% margin on left and right
+
+mplstyle.use('fast')
 
 
 class ChartDock(TabifiedDock):
