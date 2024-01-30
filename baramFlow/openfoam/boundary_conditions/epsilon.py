@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, KEpsilonSpecification, WallVelocityCondition, InterfaceMode
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, NearWallTreatment
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -81,10 +81,21 @@ class Epsilon(BoundaryCondition):
         }
 
     def _constructNEXTEpsilonWallFunction(self):
-        return {
+        data = {
             'type': 'epsilonWallFunction',
             'value': self._initialValueByTime()
         }
+
+        # Wall type should be "epsilonBlendedWallFunction" for "realizableKEtwoLayer" model
+        turbulenceModel = ModelsDB.getTurbulenceModel()
+        if turbulenceModel == TurbulenceModel.K_EPSILON:
+            subModel = self._db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
+            if subModel == KEpsilonModel.REALIZABLE.value:
+                treatment = self._db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
+                if treatment == NearWallTreatment.ENHANCED_WALL_TREATMENT.value:
+                    data['type'] = 'epsilonBlendedWallFunction'
+
+        return data
 
     def _constructAtmEpsilonWallFunction(self):
         return {
