@@ -23,7 +23,7 @@ else:
 
 class ParallelEnvironment:
     def __init__(self, np, type_, hosts):
-        self._np = np
+        self._np: int = np
         self._type = type_
         self._hosts = hosts
 
@@ -39,7 +39,7 @@ class ParallelEnvironment:
     def isParallelOn(self):
         return self._np > 1
 
-    def setNP(self, np):
+    def setNP(self, np: int):
         self._np = np
 
     def setType(self, type_):

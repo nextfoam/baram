@@ -70,7 +70,7 @@ class Processor(QObject):
     outputLogged = Signal(str)
     errorLogged = Signal(str)
 
-    def __init__(self, proc=None):
+    def __init__(self, proc: asyncio.subprocess.Process = None):
         super().__init__()
         self._proc = proc
         self._canceled = False
@@ -89,21 +89,34 @@ class Processor(QObject):
     async def run(self):
         self._canceled = False
 
-        outOn = self._proc.stdout is not None
-        errOn = self._proc.stderr is not None
+        tasks = []
 
-        while outOn or errOn:
-            if outOn:
-                while line := await self._proc.stdout.readline():
-                    self.outputLogged.emit(line.decode('UTF-8').rstrip())
-                outOn = not self._proc.stdout.at_eof()
+        stdout = self._proc.stdout
+        outTask = asyncio.create_task(stdout.readline())
+        tasks.append(outTask)
 
-            if errOn:
-                while line := await self._proc.stderr.readline():
-                    self.outputLogged.emit(line.decode('UTF-8').rstrip())
-                errOn = not self._proc.stderr.at_eof()
+        stderr = self._proc.stderr
+        errTask = asyncio.create_task(stderr.readline())
+        tasks.append(errTask)
 
-            await asyncio.sleep(1)
+        while len(tasks) > 0:
+            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+
+            tasks = list(pending)
+            if outTask in done:
+                self.outputLogged.emit(outTask.result().decode('UTF-8').rstrip())
+                if not stdout.at_eof():
+                    outTask = asyncio.create_task(stdout.readline())
+                    tasks.append(outTask)
+
+            if errTask in done:
+                self.errorLogged.emit(errTask.result().decode('UTF-8').rstrip())
+                if not stderr.at_eof():
+                    errTask = asyncio.create_task(stderr.readline())
+                    tasks.append(errTask)
+
+            if len(done) < 1:
+                await asyncio.sleep(1)
 
         await self._proc.communicate()
 

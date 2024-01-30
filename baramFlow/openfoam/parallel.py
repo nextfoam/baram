@@ -42,7 +42,7 @@ def getEnvironment():
     return ParallelEnvironment(getNP(), getParallelType(), getHostfile())
 
 
-def setEnvironment(environment):
+def setEnvironment(environment: ParallelEnvironment):
     Project.instance().np = str(environment.np())
     Project.instance().pType = environment.type().value
     Project.instance().hostfile = environment.hosts()
