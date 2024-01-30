@@ -3,7 +3,6 @@
 
 from pathlib import Path
 import platform
-import sys
 
 from libbaram.app_path import APP_PATH
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
@@ -270,6 +269,9 @@ class ControlDict(DictionaryFile):
             'log': 'false',
         }
 
+        if not GeneralDB.isCompressible():
+            data['p'] = 'p_rgh'  # Use "Pseudo hydrostatic pressure" for calculation
+
         if rname := self._db.getValue(xpath + '/region'):
             data['region'] = rname
 
@@ -294,6 +296,9 @@ class ControlDict(DictionaryFile):
             'writeInterval': self._db.getValue(xpath + '/writeInterval'),
             'log': 'false',
         }
+
+        if not GeneralDB.isCompressible():
+            data['p'] = 'p_rgh'  # Use "Pseudo hydrostatic pressure" for calculation
 
         if rname := self._db.getValue(xpath + '/region'):
             data['region'] = rname
