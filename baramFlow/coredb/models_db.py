@@ -8,6 +8,21 @@ from PySide6.QtCore import QCoreApplication
 from baramFlow.coredb import coredb
 
 
+class IndexedEnum(Enum):
+    def __new__(cls, *args, **kwargs):
+        obj = object.__new__(cls)
+        obj.index = len(cls.__members__)
+        return obj
+
+    @classmethod
+    def byIndex(cls, index):
+        for member in cls.__members__.values():
+            if member.index == index:
+                return member
+
+        raise KeyError(index)
+
+
 class Models(Enum):
     TURBULENCE  = auto()
     ENERGY      = auto()
@@ -22,7 +37,7 @@ class MultiphaseModel(Enum):
     VOLUME_OF_FLUID = "volumeOfFluid"
 
 
-class TurbulenceModel(Enum):
+class TurbulenceModel(IndexedEnum):
     INVISCID = "inviscid"
     LAMINAR = "laminar"
     SPALART_ALLMARAS = "spalartAllmaras"
@@ -31,13 +46,20 @@ class TurbulenceModel(Enum):
     LES = "les"
 
 
-class KEpsilonModel(Enum):
+TurbulenceRasModels = {
+    TurbulenceModel.SPALART_ALLMARAS,
+    TurbulenceModel.K_EPSILON,
+    TurbulenceModel.K_OMEGA
+}
+
+
+class KEpsilonModel(IndexedEnum):
     STANDARD = "standard"
     RNG = "rng"
     REALIZABLE = "realizable"
 
 
-class NearWallTreatment(Enum):
+class NearWallTreatment(IndexedEnum):
     STANDARD_WALL_FUNCTIONS = "standardWallFunctions"
     ENHANCED_WALL_TREATMENT = "enhancedWallTreatment"
 

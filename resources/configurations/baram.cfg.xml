@@ -58,6 +58,8 @@
                 <model>standard</model>
                 <realizable>
                     <nearWallTreatment>standardWallFunctions</nearWallTreatment>
+                    <threshold>60</threshold>
+                    <blendingWidth>10</blendingWidth>
                 </realizable>
             </k-epsilon>
             <k-omega>

@@ -4,7 +4,7 @@
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, KOmegaModel
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, KOmegaModel, NearWallTreatment
 from baramFlow.openfoam.file_system import FileSystem
 
 
@@ -33,7 +33,13 @@ class TurbulenceProperties(DictionaryFile):
             elif subModel == KEpsilonModel.RNG.value:
                 self._constructRASproperties('RNGkEpsilon')
             elif subModel == KEpsilonModel.REALIZABLE.value:
-                self._constructRASproperties('realizableKE')
+                treatment = self._db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
+                if treatment == NearWallTreatment.ENHANCED_WALL_TREATMENT.value:
+                    self._constructRASproperties('realizableKEtwoLayer')
+                elif treatment == NearWallTreatment.STANDARD_WALL_FUNCTIONS.value:
+                    self._constructRASproperties('realizableKE')
+                else:
+                    raise RuntimeError
         elif self._model == TurbulenceModel.K_OMEGA:
             subModel = db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-omega/model')
             if subModel == KOmegaModel.SST.value:
@@ -73,6 +79,10 @@ class TurbulenceProperties(DictionaryFile):
                 'C2': 1.92,
                 'sigmaEps': 1.11
             }
+
+        if subModel == 'realizableKEtwoLayer':
+            self._data['RAS']['ReyStar'] = self._db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/threshold')
+            self._data['RAS']['deltaRey'] = self._db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/blendingWidth')
 
     def _constructLESProperties(self):
         self._data = {

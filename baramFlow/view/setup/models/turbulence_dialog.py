@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, NearWallTreatment, KOmegaModel
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceRasModels, KEpsilonModel, NearWallTreatment, KOmegaModel
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .turbulence_dialog_ui import Ui_TurbulenceDialog
 
@@ -16,33 +16,19 @@ class TurbulenceModelDialog(ResizableDialog):
         self._ui = Ui_TurbulenceDialog()
         self._ui.setupUi(self)
 
-        self._modelRadios = {
-            self._ui.modelRadioGroup.id(self._ui.inviscid): TurbulenceModel.INVISCID.value,
-            self._ui.modelRadioGroup.id(self._ui.laminar): TurbulenceModel.LAMINAR.value,
-            self._ui.modelRadioGroup.id(self._ui.spalartAllmaras): TurbulenceModel.SPALART_ALLMARAS.value,
-            self._ui.modelRadioGroup.id(self._ui.kEpsilon): TurbulenceModel.K_EPSILON.value,
-            self._ui.modelRadioGroup.id(self._ui.kOmega): TurbulenceModel.K_OMEGA.value,
-            self._ui.modelRadioGroup.id(self._ui.LES): TurbulenceModel.LES.value,
-        }
+        self._ui.modelRadioGroup.setId(self._ui.inviscid,        TurbulenceModel.INVISCID.index)
+        self._ui.modelRadioGroup.setId(self._ui.laminar,         TurbulenceModel.LAMINAR.index)
+        self._ui.modelRadioGroup.setId(self._ui.spalartAllmaras, TurbulenceModel.SPALART_ALLMARAS.index)
+        self._ui.modelRadioGroup.setId(self._ui.kEpsilon,        TurbulenceModel.K_EPSILON.index)
+        self._ui.modelRadioGroup.setId(self._ui.kOmega,          TurbulenceModel.K_OMEGA.index)
+        self._ui.modelRadioGroup.setId(self._ui.LES,             TurbulenceModel.LES.index)
 
-        self._kEpsilonModelRadios = {
-            self._ui.kEpsilonRadioGroup.id(self._ui.standard): KEpsilonModel.STANDARD.value,
-            self._ui.kEpsilonRadioGroup.id(self._ui.RNG): KEpsilonModel.RNG.value,
-            self._ui.kEpsilonRadioGroup.id(self._ui.realizable): KEpsilonModel.REALIZABLE.value,
-        }
+        self._ui.kEpsilonRadioGroup.setId(self._ui.standard,   KEpsilonModel.STANDARD.index)
+        self._ui.kEpsilonRadioGroup.setId(self._ui.RNG,        KEpsilonModel.RNG.index)
+        self._ui.kEpsilonRadioGroup.setId(self._ui.realizable, KEpsilonModel.REALIZABLE.index)
 
-        self._nearWallTreatmentRadios = {
-            self._ui.nearWallTreatmentRadioGroup.id(self._ui.standardWallFunction):
-                NearWallTreatment.STANDARD_WALL_FUNCTIONS.value,
-            self._ui.nearWallTreatmentRadioGroup.id(self._ui.enhancedWallTreatment):
-                NearWallTreatment.ENHANCED_WALL_TREATMENT.value,
-        }
-
-        self._rasModelRadios = [
-            self._ui.modelRadioGroup.id(self._ui.spalartAllmaras),
-            self._ui.modelRadioGroup.id(self._ui.kEpsilon),
-            self._ui.modelRadioGroup.id(self._ui.kOmega)
-        ]
+        self._ui.nearWallTreatmentRadioGroup.setId(self._ui.standardWallFunction,  NearWallTreatment.STANDARD_WALL_FUNCTIONS.index)
+        self._ui.nearWallTreatmentRadioGroup.setId(self._ui.enhancedWallTreatment, NearWallTreatment.ENHANCED_WALL_TREATMENT.index)
 
         self._db = coredb.CoreDB()
         self._xpath = ModelsDB.TURBULENCE_MODELS_XPATH
@@ -52,23 +38,33 @@ class TurbulenceModelDialog(ResizableDialog):
         self._connectSignalsSlots()
         self._load()
 
+    def _connectSignalsSlots(self):
+        self._ui.modelRadioGroup.idToggled.connect(self._modelChanged)
+        self._ui.kEpsilonRadioGroup.idToggled.connect(self._kEpsilonModelChanged)
+        self._ui.nearWallTreatmentRadioGroup.idToggled.connect(self._nearWallTreatmentChanged)
+
     def accept(self):
         writer = CoreDBWriter()
 
-        model = self._getRadioValue(self._ui.modelRadioGroup, self._modelRadios)
-        writer.append(self._xpath + '/model', model, None)
+        model = TurbulenceModel.byIndex(self._ui.modelRadioGroup.checkedId())
+        writer.append(self._xpath + '/model', model.value, None)
 
-        if self._ui.modelRadioGroup.checkedId() in self._rasModelRadios:
-            if model == TurbulenceModel.K_EPSILON.value:
-                kEpsilonModel = self._getRadioValue(self._ui.kEpsilonRadioGroup, self._kEpsilonModelRadios)
-                writer.append(self._xpath + '/k-epsilon/model', kEpsilonModel, None)
+        if model in TurbulenceRasModels:
+            if model == TurbulenceModel.K_EPSILON:
+                kEpsilonModel = KEpsilonModel.byIndex(self._ui.kEpsilonRadioGroup.checkedId())
+                writer.append(self._xpath + '/k-epsilon/model', kEpsilonModel.value, None)
 
-                if kEpsilonModel == KEpsilonModel.REALIZABLE.value:
+                if kEpsilonModel == KEpsilonModel.REALIZABLE:
+                    nearWallTreatment = NearWallTreatment.byIndex(self._ui.nearWallTreatmentRadioGroup.checkedId())
                     writer.append(self._xpath + '/k-epsilon/realizable/nearWallTreatment',
-                                  self._getRadioValue(self._ui.nearWallTreatmentRadioGroup,
-                                                      self._nearWallTreatmentRadios),
-                                  None)
-            elif model == TurbulenceModel.K_OMEGA.value:
+                                  nearWallTreatment.value, self.tr('Near-wall Treatment'))
+                    if nearWallTreatment == NearWallTreatment.ENHANCED_WALL_TREATMENT:
+                        writer.append(self._xpath + '/k-epsilon/realizable/threshold',
+                                      self._ui.threshold.text(), self.tr('Reynolds Threshold'))
+                        writer.append(self._xpath + '/k-epsilon/realizable/blendingWidth',
+                                      self._ui.blendingWidth.text(), self.tr('Reynolds Blending Width'))
+
+            elif model == TurbulenceModel.K_OMEGA:
                 writer.append(self._xpath + '/k-omega/model', KOmegaModel.SST.value, None)
 
             writer.append(self._xpath + '/energyPrandtlNumber',
@@ -82,39 +78,55 @@ class TurbulenceModelDialog(ResizableDialog):
         else:
             super().accept()
 
-    def _connectSignalsSlots(self):
-        self._ui.modelRadioGroup.idToggled.connect(self._modelChanged)
-        self._ui.kEpsilonRadioGroup.idToggled.connect(self._kEpsilonModelChanged)
-
     def _load(self):
-        self._getRadio(
-            self._ui.modelRadioGroup, self._modelRadios, self._db.getValue(self._xpath + '/model')
-        ).setChecked(True)
+        model = TurbulenceModel(self._db.getValue(self._xpath + '/model'))
+        button = self._ui.modelRadioGroup.button(model.index)
+        button.setChecked(True)
 
-        self._getRadio(
-            self._ui.kEpsilonRadioGroup, self._kEpsilonModelRadios, self._db.getValue(self._xpath + '/k-epsilon/model')
-        ).setChecked(True)
+        model = KEpsilonModel(self._db.getValue(self._xpath + '/k-epsilon/model'))
+        button = self._ui.kEpsilonRadioGroup.button(model.index)
+        button.setChecked(True)
 
-        self._getRadio(
-            self._ui.nearWallTreatmentRadioGroup, self._nearWallTreatmentRadios,
-            self._db.getValue(self._xpath + '/k-epsilon/realizable/nearWallTreatment')
-        ).setChecked(True)
+        model = NearWallTreatment(self._db.getValue(self._xpath + '/k-epsilon/realizable/nearWallTreatment'))
+        button = self._ui.nearWallTreatmentRadioGroup.button(model.index)
+        button.setChecked(True)
 
         self._ui.energyPrandtlNumber.setText(self._db.getValue(self._xpath + '/energyPrandtlNumber'))
         self._ui.wallPrandtlNumber.setText(self._db.getValue(self._xpath + '/wallPrandtlNumber'))
 
+        self._ui.threshold.setText(self._db.getValue(self._xpath + '/k-epsilon/realizable/threshold'))
+        self._ui.blendingWidth.setText(self._db.getValue(self._xpath + '/k-epsilon/realizable/blendingWidth'))
+
     def _modelChanged(self, id_, checked):
         if checked:
+            model = TurbulenceModel.byIndex(id_)
             self._ui.kEpsilonModel.setVisible(self._ui.kEpsilon.isChecked())
             self._ui.kOmegaModel.setVisible(self._ui.kOmega.isChecked())
-            self._ui.constantsWidget.setVisible(id_ in self._rasModelRadios)
+            self._ui.constantsWidget.setVisible(model in TurbulenceRasModels)
+            self._updateReynoldsParametersVisibility()
 
     def _kEpsilonModelChanged(self, id_, checked):
         if checked:
             self._ui.nearWallTreatment.setVisible(self._ui.realizable.isChecked())
+            self._updateReynoldsParametersVisibility()
 
-    def _getRadio(self, group, radios, value):
-        return group.button(list(radios.keys())[list(radios.values()).index(value)])
+    def _nearWallTreatmentChanged(self, id_, checked):
+        self._updateReynoldsParametersVisibility()
 
-    def _getRadioValue(self, group, radios):
-        return radios[group.id(group.checkedButton())]
+    def _updateReynoldsParametersVisibility(self):
+        isActive = self._isEnhancedWallTreatmentActive()
+        self._ui.reynoldsGroup.setVisible(isActive)
+
+    def _isEnhancedWallTreatmentActive(self) -> bool:
+        try:
+            model = TurbulenceModel.byIndex(self._ui.modelRadioGroup.checkedId())
+            if model == TurbulenceModel.K_EPSILON:
+                kEpsilonModel = KEpsilonModel.byIndex(self._ui.kEpsilonRadioGroup.checkedId())
+                if kEpsilonModel == KEpsilonModel.REALIZABLE:
+                    nearWallTreatment = NearWallTreatment.byIndex(self._ui.nearWallTreatmentRadioGroup.checkedId())
+                    if nearWallTreatment == NearWallTreatment.ENHANCED_WALL_TREATMENT:
+                        return True
+        except KeyError:
+            pass  # "checkedId()" can be "-1" during loading
+
+        return False

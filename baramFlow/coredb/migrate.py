@@ -205,6 +205,18 @@ def _version_3(root: etree.Element):
             e = etree.fromstring('<batch xmlns="http://www.baramcfd.org/baram"><parameters/><cases/></batch>')
             p.append(e)
 
+    if (p := root.find('models/turbulenceModels/k-epsilon/realizable', namespaces=_nsmap)) is not None:
+        if p.find('threshold', namespaces=_nsmap) is None:
+            e = etree.Element(f'{{{_ns}}}threshold')
+            e.text = '60'
+            p.append(e)
+
+        if p.find('blendingWidth', namespaces=_nsmap) is None:
+            e = etree.Element(f'{{{_ns}}}blendingWidth')
+            e.text = '10'
+            p.append(e)
+
+
 _fTable = [
     None,
     _version_1,

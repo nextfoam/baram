@@ -266,6 +266,8 @@
                                             </xs:restriction>
                                         </xs:simpleType>
                                     </xs:element>
+                                    <xs:element name="threshold" type="inputNumberType" default="60"/>
+                                    <xs:element name="blendingWidth" type="inputNumberType" default="10"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
