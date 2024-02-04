@@ -74,7 +74,7 @@ def main():
     background_tasks = set()
 
     baram = Baram()
-    task = asyncio.create_task(baram.start())
+    task = loop.create_task(baram.start())
     background_tasks.add(task)
     task.add_done_callback(background_tasks.discard)
 
