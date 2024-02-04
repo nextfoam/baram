@@ -36,7 +36,7 @@ class ConsoleDock(TabifiedDock):
         self._textView.setMaximumBlockCount(100000)
         self._textView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self._textView.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self._textView.setLineWrapMode(QPlainTextEdit.NoWrap)
+        self._textView.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         self._textView.verticalScrollBar().setTracking(True)
         charFormat = self._textView.currentCharFormat()
         fixedFont = QFontDatabase.systemFont(QFontDatabase.FixedFont)
@@ -72,9 +72,9 @@ class ConsoleDock(TabifiedDock):
 
     def _lineWrapStateChanged(self):
         if self._lineWrap.isChecked():
-            self._textView.setLineWrapMode(QPlainTextEdit.WidgetWidth)
+            self._textView.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
         else:
-            self._textView.setLineWrapMode(QPlainTextEdit.NoWrap)
+            self._textView.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
 
     async def readLogForever(self):
         root = FileSystem.caseRoot()
