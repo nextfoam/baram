@@ -99,7 +99,7 @@ class ConsoleDock(TabifiedDock):
                     await asyncio.sleep(0.5)
                     idleCount += 1
                     # Last message from the solver can be flushed late
-                    if idleCount > 4 and self.stopReading:
+                    if idleCount > 2 and self.stopReading:
                         break
 
         except asyncio.CancelledError:
