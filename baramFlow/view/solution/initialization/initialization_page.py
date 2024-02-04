@@ -6,6 +6,7 @@ import qasync
 from PySide6.QtWidgets import QMessageBox
 
 from libbaram.run import runParallelUtility
+from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
 from baramFlow.app import app
@@ -109,7 +110,7 @@ class InitializationPage(ContentPage):
         if not self.save():
             return
 
-        confirm = QMessageBox.question(self, self.tr("Initialization"), self.tr("All saved data will be deleted. OK?"))
+        confirm = await AsyncMessageBox().question(self, self.tr("Initialization"), self.tr("All saved data will be deleted. OK?"))
         if confirm == QMessageBox.StandardButton.Yes:
             progressDialog = ProgressDialog(self, self.tr('Case Initialization'))
             progressDialog.open()
