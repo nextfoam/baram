@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import qasync
 from PySide6.QtWidgets import QMenu, QListWidgetItem, QMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.view.widgets.content_page import ContentPage
+from widgets.async_message_box import AsyncMessageBox
 from .monitors_page_ui import Ui_MonitorsPage
 from .force_dialog import ForceDialog
 from .point_dialog import PointDialog
@@ -14,8 +15,8 @@ from .monitor_widget import ForceMonitorWidget, PointMonitorWidget, SurfaceMonit
 
 
 class MonitorsPage(ContentPage):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self._ui = Ui_MonitorsPage()
         self._ui.setupUi(self)
 
@@ -102,10 +103,12 @@ class MonitorsPage(ContentPage):
     def _edit(self):
         self._currentWidget().edit()
 
-    def _delete(self):
+    @qasync.asyncSlot()
+    async def _delete(self):
         widget = self._currentWidget()
-        confirm = QMessageBox.question(self, self.tr("Remove monitor item"), self.tr(f'Remove "{widget.name}"?'))
-        if confirm == QMessageBox.Yes:
+        confirm = await AsyncMessageBox().question(self, self.tr("Remove monitor item"),
+                                                   self.tr('Remove "{}"?'.format(widget.name)))
+        if confirm == QMessageBox.StandardButton.Yes:
             widget.delete()
             self._ui.list.takeItem(self._ui.list.currentRow())
 

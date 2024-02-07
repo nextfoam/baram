@@ -58,8 +58,8 @@ class ModelItem(QListWidgetItem):
 
 
 class ModelsPage(ContentPage):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self._ui = Ui_ModelsPage()
         self._ui.setupUi(self)
 

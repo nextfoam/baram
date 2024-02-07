@@ -11,8 +11,8 @@ from .reference_values_page_ui import Ui_ReferenceValuesPage
 
 
 class ReferenceValuesPage(ContentPage):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self._ui = Ui_ReferenceValuesPage()
         self._ui.setupUi(self)
 

@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
 from PySide6.QtWidgets import QVBoxLayout, QMessageBox
 from PySide6.QtCore import Signal
+
+from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
@@ -18,8 +21,8 @@ from .material_card import MaterialCard
 class MaterialPage(ContentPage):
     pageReload = Signal()
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self._ui = Ui_MaterialPage()
         self._ui.setupUi(self)
 
@@ -41,22 +44,23 @@ class MaterialPage(ContentPage):
 
         return super().showEvent(ev)
 
-    def _remove(self, card):
+    @qasync.asyncSlot()
+    async def _remove(self, card):
         # The count of the layout returns one more than the number of cards, because of the stretch.
         if self._cardListLayout.count() < 3:
-            QMessageBox.information(self, self.tr("Remove material"),
-                                    self.tr("At least one material is required and cannot be removed."))
+            await AsyncMessageBox().information(self, self.tr("Remove material"),
+                                                self.tr("At least one material is required and cannot be removed."))
             return
 
-        confirm = QMessageBox.question(
+        confirm = await AsyncMessageBox().question(
             self, self.tr("Remove material"), self.tr(f'Remove material "{card.name}"'))
-        if confirm == QMessageBox.Yes:
+        if confirm == QMessageBox.StandardButton.Yes:
             error = coredb.CoreDB().removeMaterial(card.name)
             if not error:
                 self._cardListLayout.removeWidget(card)
                 card.deleteLater()
             elif error == Error.REFERENCED:
-                QMessageBox.critical(
+                await AsyncMessageBox().critical(
                     self, self.tr('Remove Meterial Failed'),
                     self.tr(f'"{card.name}" is referenced by other configurations. It cannot be removed.'))
 

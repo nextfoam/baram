@@ -18,8 +18,8 @@ GRAVITY_XPATH = GeneralDB.OPERATING_CONDITIONS_XPATH + '/gravity'
 
 
 class GeneralPage(ContentPage):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self._ui = Ui_GeneralPage()
         self._ui.setupUi(self)
 

@@ -28,8 +28,8 @@ class TimeSteppingMethodFlag(Flag):
 
 
 class RunConditionsPage(ContentPage):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self._ui = Ui_RunConditionsPage()
         self._ui.setupUi(self)
 

@@ -22,8 +22,8 @@ from .initialization_widget import InitializationWidget
 
 
 class InitializationPage(ContentPage):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self._ui = Ui_InitializationPage()
         self._ui.setupUi(self)
 
