@@ -39,7 +39,7 @@
       <item>
        <widget class="QPushButton" name="newCase">
         <property name="text">
-         <string>New Case</string>
+         <string>New</string>
         </property>
        </widget>
       </item>
