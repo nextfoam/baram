@@ -17,16 +17,19 @@ from PySide6.QtCore import Qt, QThreadPool, QEvent, QTimer
 
 from libbaram.run import hasUtility
 from libbaram.utils import getFit
+from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 from baramFlow.app import app
-from baramFlow.coredb.project import Project, SolverStatus
-from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.coredb import coredb
+from baramFlow.coredb.app_settings import AppSettings
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.mesh.mesh_manager import MeshManager, MeshType
-from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam import parallel
+from baramFlow.openfoam.constant.region_properties import RegionProperties
+from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from baramFlow.openfoam.redistribution_task import RedistributionTask
 from baramFlow.view.main_window.menu.settrings.settings_language_dialog import SettingLanguageDialog
@@ -579,11 +582,22 @@ class MainWindow(QMainWindow):
         # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
         self._ui.menubar.repaint()
 
-        if result != QFileDialog.DialogCode.Accepted or not await self._confirmToReplaceMesh(True):
+        if result != QFileDialog.DialogCode.Accepted:
             return
 
         file = Path(self._dialog.selectedFiles()[0])
         AppSettings.updateRecentMeshDirectory(str(file))
+
+        if (meshType == MeshType.POLY_MESH
+                and ModelsDB.isMultiphaseModelOn()
+                and len(RegionProperties.loadRegions(file)) > 1
+                and await AsyncMessageBox()
+                        .information(self, self.tr('Permission Denied'),
+                                     self.tr('Multi-region cases cannot be computed under multi-phase conditions.'))):
+            return
+
+        if  not await self._confirmToReplaceMesh(True):
+            return
 
         self._project.setMeshLoaded(False)
 
@@ -602,7 +616,7 @@ class MainWindow(QMainWindow):
 
     async def _confirmToReplaceMesh(self, renew=False):
         if coredb.CoreDB().getRegions():
-            confirm = QMessageBox.question(
+            confirm = AsyncMessageBox().question(
                 self, self.tr('Load Mesh'),
                 self.tr('This action will overwrite current mesh, related configurations, and calculation data.\n'
                         ' It cannot be recovered, and changed configurations will be saved automatically.'))
