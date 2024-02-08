@@ -640,6 +640,12 @@ class _CoreDB(object):
         if mid in idList:
             return Error.REFERENCED
 
+        mid = ' ' + mid + ' '
+        idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:secondaryMaterials/text()', namespaces={'x': ns})
+        for ids in idList:
+            if mid in ' ' + ids + ' ':
+                return Error.REFERENCED
+
         elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
         if len(elements) == 1:  # this is the last material in the list
             return Error.EMPTY
@@ -671,10 +677,7 @@ class _CoreDB(object):
         etree.SubElement(region, f'{{{ns}}}material').text = str(materials[0][0])
         etree.SubElement(region, f'{{{ns}}}secondaryMaterials')
         phaseInteraction = etree.SubElement(region, f'{{{ns}}}phaseInteractions')
-        surfaceTensions = etree.SubElement(phaseInteraction, f'{{{ns}}}surfaceTensions')
-        etree.SubElement(surfaceTensions, f'{{{ns}}}material1')
-        etree.SubElement(surfaceTensions, f'{{{ns}}}material2')
-        etree.SubElement(surfaceTensions, f'{{{ns}}}surfaceTension')
+        etree.SubElement(phaseInteraction, f'{{{ns}}}surfaceTensions')
 
         cellZones = etree.SubElement(region, f'{{{ns}}}cellZones')
         etree.SubElement(region, f'{{{ns}}}boundaryConditions')
@@ -1002,6 +1005,7 @@ class _CoreDB(object):
         region = self._xmlTree.find(f'.//region[name="{rname}"]', namespaces=nsmap)
         region.find('material', namespaces=nsmap).text = pmid
         region.find('secondaryMaterials', namespaces=nsmap).text = ' '.join(secondaries)
+        region.find('phaseInteractions/surfaceTensions', namespaces=nsmap).clear()
 
         for bc in region.findall('boundaryConditions/boundaryCondition', namespaces=nsmap):
             wallAdhesions = bc.find('wall/wallAdhesions', namespaces=nsmap)
@@ -1040,6 +1044,18 @@ class _CoreDB(object):
             'value': e.find('value', namespaces=nsmap).text,
             'usages': [u.text for u in e.findall('usages/usage', namespaces=nsmap)]} for e in elements}
 
+    def getSurfaceTensions(self, rname):
+        xpath = f'.//region[name="{rname}"]/phaseInteractions/surfaceTensions/surfaceTension'
+        elements = self._xmlTree.findall(xpath, namespaces=nsmap)
+
+        surfaceTensions = []
+        for e in elements:
+            mid1, mid2 = (m.text for m in e.findall('mid', namespaces=nsmap))
+            value = self.getValue(f'{xpath}[mid="{mid1}"][mid="{mid2}"]/value')
+            surfaceTensions.append((mid1, mid2, value))
+
+        return surfaceTensions
+
     def addElementFromString(self, xpath, text):
         parent = self._xmlTree.find(xpath, namespaces=nsmap)
         if parent is None:
@@ -1071,6 +1087,13 @@ class _CoreDB(object):
 
         self._configCount += 1
 
+    def clearElement(self, xpath):
+        element = self._xmlTree.find(xpath, namespaces=nsmap)
+        if element is None:
+            raise LookupError
+
+        element.clear()
+
     def getList(self, xpath) -> list[str]:
         return [e.text for e in self._xmlTree.findall(xpath, namespaces=nsmap)]
 
@@ -1084,11 +1107,6 @@ class _CoreDB(object):
             True if xpath element exists, False otherwise.
         """
         return self._xmlTree.find(xpath, namespaces=nsmap) is not None
-
-    def getVector(self, xpath: str):
-        return [float(self.getValue(xpath + '/x')),
-                float(self.getValue(xpath + '/y')),
-                float(self.getValue(xpath + '/z'))]
 
     @property
     def isModified(self) -> bool:
@@ -1136,10 +1154,6 @@ class _CoreDB(object):
             self._xmlTree = tree
 
         self._configCountAtSave = self._configCount
-
-        for parameter, data in self.getBatchParameters().items():
-            for path in data['usages']:
-                self._batchParameterUsages[path] = parameter
 
     def loadDefault(self):
         self._xmlTree = etree.parse(resource.file(self.XML_PATH), self._xmlParser)

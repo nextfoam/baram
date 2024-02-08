@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from functools import reduce
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QCheckBox, QLabel, QLineEdit
 from PySide6.QtCore import Signal
 
@@ -110,12 +109,9 @@ class MaterialsWidget(QWidget):
         self._material = self._db.getValue(self._xpath + '/material')
 
         if self._multiphase:
-            mids1 = self._db.getValue(self._xpath + '/phaseInteractions/surfaceTensions/material1').split()
-            mids2 = self._db.getValue(self._xpath + '/phaseInteractions/surfaceTensions/material2').split()
-            surfaceTensions = self._db.getValue(
-                self._xpath + '/phaseInteractions/surfaceTensions/surfaceTension').split()
-            for i in range(len(surfaceTensions)):
-                self._addSurfaceTensionToMap(mids1[i], mids2[i], surfaceTensions[i])
+            surfaceTensions = self._db.getSurfaceTensions(self._rname)
+            for mid1, mid2, value in surfaceTensions:
+                self._addSurfaceTensionToMap(mid1, mid2, value)
 
             self._ui.primaryMaterial.setText(self._addMaterialToMap(self._material))
             if MaterialDB.isFluid(self._material):
@@ -125,17 +121,17 @@ class MaterialsWidget(QWidget):
 
     def appendToWriter(self, writer):
         if self._multiphase:
-            writer.callFunction('updateRegionMaterials', self._rname, str(self._material), self._secondaryMaterials)
+            writer.callFunction('updateRegionMaterials', (self._rname, str(self._material), self._secondaryMaterials))
 
-            lists = ['', '', '']
+            sfXpath = self._xpath + '/phaseInteractions/surfaceTensions'
             if self._surfaceTensionWidget:
                 if surfaceTensions := self._surfaceTensionWidget.values():
-                    lists = reduce(
-                        lambda concat, items: [concat[i] + ' ' + items[i] for i in range(3)],surfaceTensions)
-
-            writer.append(self._xpath + '/phaseInteractions/surfaceTensions/material1', lists[0], None)
-            writer.append(self._xpath + '/phaseInteractions/surfaceTensions/material2', lists[1], None)
-            writer.append(self._xpath + '/phaseInteractions/surfaceTensions/surfaceTension', lists[2], None)
+                    for mid1, mid2, value in surfaceTensions:
+                        writer.addElement(sfXpath, f'<surfaceTension xmlns="http://www.baramcfd.org/baram">'
+                                                   f' <mid>{mid1}</mid><mid>{mid2}</mid><value>0</value>'
+                                                   f'</surfaceTension>')
+                        writer.append(f'{sfXpath}/surfaceTension[mid="{mid1}"][mid="{mid2}"]/value',
+                                      value, self.tr('Surface Tension'))
         else:
             writer.append(self._xpath + '/material', self._ui.material.currentData(), None)
 

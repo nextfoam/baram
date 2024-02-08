@@ -216,6 +216,27 @@ def _version_3(root: etree.Element):
             e.text = '10'
             p.append(e)
 
+    for p in root.findall(f'.//regions/region/phaseInteractions/surfaceTensions', namespaces=_nsmap):
+        e1 = p.find('material1', namespaces=_nsmap)
+        if e1 is not None:
+            logger.debug(f'    Splitting surface tensions in {p}')
+            e2 = p.find('material2', namespaces=_nsmap)
+            e = p.find('surfaceTension', namespaces=_nsmap)
+
+            p.remove(e)
+            p.remove(e1)
+            p.remove(e2)
+
+            if e1.text is not None:
+                mids1 = e1.text.split()
+                mids2 = e2.text.split()
+                values = e.text.split()
+
+                for i in range(len(values)):
+                    e = etree.fromstring(f'<surfaceTension xmlns="http://www.baramcfd.org/baram">'
+                                         f' <mid>{mids1[i]}</mid><mid>{mids2[i]}</mid><value>{values[i]}</value>'
+                                         f'</surfaceTension>')
+                    p.append(e)
 
 _fTable = [
     None,
