@@ -23,6 +23,9 @@ class FileFormatError(Exception):
 
 
 class FileDB:
+    class Key(Enum):
+        BATCH_CASES = 'BatchCases'
+
     FILE_NAME = 'configuration.h5'
 
     _columnCounts = {
@@ -81,15 +84,16 @@ class FileDB:
 
     def putDataFrame(self, key, df):
         with pd.HDFStore(self._tmpPath) as store:
-            store.put(key, df)
+            store.put(key.value, df)
+
+        self._modifiedAfterSaved = True
 
     def getDataFrame(self, key):
-        if key:
-            with pd.HDFStore(self._tmpPath) as store:
-                if f'/{key}' in store.keys():
-                    return store.get(key)
-                else:
-                    return None
+        with pd.HDFStore(self._tmpPath) as store:
+            if f'/{key.value}' in store.keys():
+                return store.get(key.value)
+            else:
+                return None
 
     def loadCoreDB(self):
         if coredb.loaded():

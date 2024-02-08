@@ -7,7 +7,6 @@ from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QIcon, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog, QTreeWidgetItem, QLineEdit, QHeaderView, QMessageBox
 
-from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from widgets.flat_push_button import FlatPushButton
 from baramFlow.coredb.run_calculation_db import RunCalculationDB
@@ -28,12 +27,12 @@ class ItemMode(IntEnum):
 class UserParametersDialog(QDialog):
     XPATH = RunCalculationDB.RUN_CALCULATION_XPATH + '/batch/parameters'
 
-    def __init__(self, parent):
+    def __init__(self, parent, parameters):
         super().__init__(parent)
         self._ui = Ui_UserParametersDialog()
         self._ui.setupUi(self)
 
-        self._parameters = coredb.CoreDB().getBatchParameters()
+        self._parameters = parameters
 
         self._ui.parameters.setColumnWidth(Column.REMOVE, 20)
         self._ui.parameters.header().setSectionResizeMode(Column.NAME, QHeaderView.ResizeMode.Stretch)
@@ -41,8 +40,7 @@ class UserParametersDialog(QDialog):
         self._connectSignalsSlots()
 
         for name, data in self._parameters.items():
-            self._addItem(name, data['value'], len(data['usages']) == 0)
-        print(self._parameters)
+            self._addItem(name, data['value'], data['usages'] == 0)
 
     def accept(self):
         parameters = {}
@@ -79,13 +77,10 @@ class UserParametersDialog(QDialog):
                                 <parameter xmlns="http://www.baramcfd.org/baram">
                                     <name>{name}</name>
                                     <value>{value}</value>
-                                    <usages/>
                                 </parameter>
                               ''')
             elif value != self._parameters[name]['value']:
                 writer.append(f'{self.XPATH}/parameter[name="{name}"]/value', value, None)
-                for usage in self._parameters[name]['usages']:
-                    writer.append(usage, '$' + name, usage)
 
         errorCount = writer.write()
         if errorCount > 0:

@@ -3,6 +3,7 @@ h5py==3.9.0
 lxml==4.9.1
 matplotlib==3.6.3
 numpy==1.25.0
+openpyxl==3.1.2
 pandas==1.4.2
 psutil==5.9.5
 PySide6-Essentials==6.4.3

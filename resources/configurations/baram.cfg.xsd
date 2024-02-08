@@ -1740,40 +1740,6 @@
                                                             <xs:sequence>
                                                                 <xs:element name="name" type="xs:string"/>
                                                                 <xs:element name="value" type="xs:string"/>
-                                                                <xs:element name="usages">
-                                                                    <xs:complexType>
-                                                                        <xs:sequence>
-                                                                            <xs:element name="usage" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
-                                                                        </xs:sequence>
-                                                                    </xs:complexType>
-                                                                </xs:element>
-                                                            </xs:sequence>
-                                                        </xs:complexType>
-                                                    </xs:element>
-                                                </xs:sequence>
-                                            </xs:complexType>
-                                        </xs:element>
-                                        <xs:element name="cases">
-                                            <xs:complexType>
-                                                <xs:sequence>
-                                                    <xs:element name="case" minOccurs="0" maxOccurs="unbounded">
-                                                        <xs:complexType>
-                                                            <xs:sequence>
-                                                                <xs:element name="name" type="xs:string"/>
-                                                                <xs:element name="parameters">
-                                                                    <xs:complexType>
-                                                                        <xs:sequence>
-                                                                            <xs:element name="parameter" minOccurs="0" maxOccurs="unbounded">
-                                                                                <xs:complexType>
-                                                                                    <xs:sequence>
-                                                                                        <xs:element name="name" type="xs:string"/>
-                                                                                        <xs:element name="value" type="xs:string"/>
-                                                                                    </xs:sequence>
-                                                                                </xs:complexType>
-                                                                            </xs:element>
-                                                                        </xs:sequence>
-                                                                    </xs:complexType>
-                                                                </xs:element>
                                                             </xs:sequence>
                                                         </xs:complexType>
                                                     </xs:element>

@@ -1019,10 +1019,15 @@ class _CoreDB(object):
         self._xmlSchema.assertValid(self._xmlTree)
 
     def getBatchParameters(self):
-        elements = self._xmlTree.findall('.//runCalculation/batch/parameters/parameter', namespaces=nsmap)
-        return {e.find('name', namespaces=nsmap).text: {
-            'value': e.find('value', namespaces=nsmap).text,
-            'usages': [u.text for u in e.findall('usages/usage', namespaces=nsmap)]} for e in elements}
+        parameters = {}
+        for e in self._xmlTree.findall('.//runCalculation/batch/parameters/parameter', namespaces=nsmap):
+            name = e.find('name', namespaces=nsmap).text
+            parameters[name] = {'value': e.find('value', namespaces=nsmap).text, 'usages': 0}
+
+        for e in self._xmlTree.findall('.//*[@batchParameter]', namespaces=nsmap):
+            parameters[e.get('batchParameter')]['usages'] += 1
+
+        return parameters
 
     def getSurfaceTensions(self, rname):
         xpath = f'.//region[name="{rname}"]/phaseInteractions/surfaceTensions/surfaceTension'

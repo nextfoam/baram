@@ -202,7 +202,7 @@ def _version_3(root: etree.Element):
     if (p := root.find('runCalculation', namespaces=_nsmap)) is not None:
         if p.find('batch', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "batch" to {p}')
-            e = etree.fromstring('<batch xmlns="http://www.baramcfd.org/baram"><parameters/><cases/></batch>')
+            e = etree.fromstring('<batch xmlns="http://www.baramcfd.org/baram"><parameters/></batch>')
             p.append(e)
 
     if (p := root.find('models/turbulenceModels/k-epsilon/realizable', namespaces=_nsmap)) is not None:

@@ -45,7 +45,7 @@
         </referencePressureLocation>
     </referenceValues>
 
-    <materials></materials>
+    <materials/>
 
     <models>
         <multiphaseModels>
@@ -71,7 +71,7 @@
         <speciesModels>off</speciesModels>
     </models>
 
-    <regions></regions>
+    <regions/>
 
     <numericalConditions>
         <pressureVelocityCouplingScheme>SIMPLE</pressureVelocityCouplingScheme>
@@ -140,10 +140,10 @@
     </numericalConditions>
 
     <monitors>
-        <forces></forces>
-        <points></points>
-        <surfaces></surfaces>
-        <volumes></volumes>
+        <forces/>
+        <points/>
+        <surfaces/>
+        <volumes/>
     </monitors>
 
     <runCalculation>
@@ -165,11 +165,10 @@
         <parallel>
             <numberOfCores>1</numberOfCores>
             <localhost>true</localhost>
-            <hostfile></hostfile>
+            <hostfile/>
         </parallel>
         <batch>
             <parameters/>
-            <cases/>
         </batch>
     </runCalculation>
 </configuration>

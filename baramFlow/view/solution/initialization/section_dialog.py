@@ -210,7 +210,7 @@ class SectionDialog(ResizableDialog):
                                     <volumeFractions disabled="true"></volumeFractions>
                                     <overrideBoundaryValue>false</overrideBoundaryValue>
                                 </section>
-                            ''', '')
+                            ''')
 
         sectionPath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._sectionName}"]'
 

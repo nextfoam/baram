@@ -6,7 +6,7 @@ import qasync
 import logging
 from enum import Enum, auto
 
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox, QFileDialog
 
 from libbaram.run import launchSolver
 from widgets.list_table import ListItem
@@ -22,6 +22,8 @@ from baramFlow.openfoam.system.fv_schemes import FvSchemes
 import baramFlow.openfoam.solver
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.widgets.content_page import ContentPage
+from .batch_case_list import BatchCaseList
+from .batch_cases_import_dialog import BatchCasesImportDialog
 from .process_information_page_ui import Ui_ProcessInformationPage
 from .user_parameters_dialog import UserParametersDialog
 
@@ -42,17 +44,22 @@ class ProcessInformationPage(ContentPage):
         self._ui = Ui_ProcessInformationPage()
         self._ui.setupUi(self)
 
+        self._batchCaseList = BatchCaseList(self._ui.batchCaseList)
+
         self._project = Project.instance()
 
         self._stopDialog = None
-        self._runningMode = None
-
         self._dialog = None
 
+        self._runningMode = None
+        self._userParameters = None
+
+        self._ui.calculation.setMinimumWidth(self.parent().width() - 30)
         self._connectSignalsSlots()
 
-        self._setRunningMode(RunningMode.LIVE_RUNNING_MODE)
-        self._updateUserParameters()
+        self._batchCaseList.load()
+        self._setRunningMode(RunningMode.LIVE_RUNNING_MODE if self._batchCaseList.parameters() is None
+                             else RunningMode.BATCH_RUNNING_MODE)
 
     def showEvent(self, ev):
         if not ev.spontaneous():
@@ -62,6 +69,7 @@ class ProcessInformationPage(ContentPage):
 
     def _load(self):
         self._updateStatus()
+        self._updateUserParameters()
 
     def _connectSignalsSlots(self):
         self._ui.startCalculation.clicked.connect(self._startCalculationClicked)
@@ -70,6 +78,10 @@ class ProcessInformationPage(ContentPage):
         self._ui.updateConfiguration.clicked.connect(self._updateConfigurationClicked)
         self._ui.userParametersGroup.toggled.connect(self._toggleUserParameters)
         self._ui.editUserParametrer.clicked.connect(self._editUserParameters)
+        self._ui.toLiveMode.clicked.connect(self._toLiveMode)
+        self._ui.toBatchMode.clicked.connect(self._toBatchMode)
+        self._ui.exportBatchCase.clicked.connect(self._openExportDialog)
+        self._ui.importBatchCases.clicked.connect(self._openImportDialog)
         self._project.solverStatusChanged.connect(self._updateStatus)
 
     def _setRunningMode(self, mode):
@@ -82,7 +94,7 @@ class ProcessInformationPage(ContentPage):
             self._ui.updateConfiguration.hide()
             self._ui.batchCases.show()
             self._ui.toBatchMode.hide()
-            self._ui.toLiveMode.sbow()
+            self._ui.toLiveMode.show()
 
         self._runningMode = mode
 
@@ -163,8 +175,31 @@ class ProcessInformationPage(ContentPage):
         self._ui.userParameters.setVisible(checked)
 
     def _editUserParameters(self):
-        self._dialog = UserParametersDialog(self)
+        self._dialog = UserParametersDialog(self, self._userParameters)
         self._dialog.accepted.connect(self._updateUserParameters)
+        self._dialog.open()
+
+    def _toLiveMode(self):
+        self._ui.updateConfiguration.show()
+        self._ui.batchCases.hide()
+        self._ui.toLiveMode.hide()
+        self._ui.toBatchMode.show()
+
+    def _toBatchMode(self):
+        self._ui.updateConfiguration.hide()
+        self._ui.batchCases.show()
+        self._ui.toLiveMode.show()
+        self._ui.toBatchMode.hide()
+
+    def _openExportDialog(self):
+        self._dialog = QFileDialog(self, self.tr('Export Batch Parameters'), '', self.tr('Excel (*.xlsx);; CSV (*.csv)'))
+        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        self._dialog.fileSelected.connect(self._exportBatchCase)
+        self._dialog.open()
+
+    def _openImportDialog(self):
+        self._dialog = BatchCasesImportDialog(self, self._batchCaseList.parameters())
+        self._dialog.accepted.connect(self._importBatchCase)
         self._dialog.open()
 
     def _updateStatus(self):
@@ -206,8 +241,22 @@ class ProcessInformationPage(ContentPage):
             self._ui.runningMode.setEnabled(True)
 
     def _updateUserParameters(self):
-        parameters = coredb.CoreDB().getBatchParameters()
+        self._userParameters = coredb.CoreDB().getBatchParameters()
 
         self._ui.userParameterList.clear()
-        for name, data in parameters.items():
-            self._ui.userParameterList.addItem(ListItem(name, [f'{name}({len(data["usages"])})', data['value']]))
+        for name, data in self._userParameters.items():
+            self._ui.userParameterList.addItem(ListItem(name, [f'{name}({data["usages"]})', data['value']]))
+
+    def _exportBatchCase(self, file):
+        df = self._batchCaseList.exportAsDataFrame()
+
+        if file.endswith('xlsx'):
+            df.to_excel(file)
+        else:
+            df.to_csv(file, sep=',')
+
+    def _importBatchCase(self):
+        if self._dialog.isClearChecked():
+            self._batchCaseList.clear()
+
+        self._batchCaseList.importFromDataFrame(self._dialog.cases())
