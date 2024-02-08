@@ -52,9 +52,17 @@ class ElementRemove(WriteItem):
         return db.removeElement(self._xpath)
 
 
+class ElementClear(WriteItem):
+    def __init__(self, xpath, label):
+        super().__init__(xpath)
+
+    def apply(self, db):
+        return db.clearElement(self._xpath)
+
+
 class FunctionCall(WriteItem):
-    def __init__(self, function, *args):
-        super().__init__(None, 'Materials configuration update failed.')
+    def __init__(self, function, args, label=None):
+        super().__init__(None, label)
         self._function = function
         self._args = args
 
@@ -70,15 +78,15 @@ class DBWriterError:
 
     def toMessage(self):
         if self._error == Error.OUT_OF_RANGE:
-            return QCoreApplication.translate('CoreDBWriter', f'{self._name} is out of range.')
+            return QCoreApplication.translate('CoreDBWriter', '{0} is out of range.').format(self._name)
         elif self._error == Error.INTEGER_ONLY:
-            return QCoreApplication.translate('CoreDBWriter', f'{self._name} must be a integer.')
+            return QCoreApplication.translate('CoreDBWriter', '{0} must be a integer.').format(self._name)
         elif self._error == Error.FLOAT_ONLY:
-            return QCoreApplication.translate('CoreDBWriter', f'{self._name} must be a float.')
+            return QCoreApplication.translate('CoreDBWriter', '{0} must be a float.').format(self._name)
         elif self._error == Error.REFERENCED:
-            return QCoreApplication.translate('CoreDBWriter', f'{self._name} is referenced by another.')
+            return QCoreApplication.translate('CoreDBWriter', '{0} is referenced by another.').format(self._name)
         else:
-            return QCoreApplication.translate('CoreDBWriter', f'{self._name} is invalid. {self._error}')
+            return QCoreApplication.translate('CoreDBWriter', '{0} is invalid. {1}').format(self._name, self._error)
 
 
 class CoreDBWriter:
@@ -94,14 +102,17 @@ class CoreDBWriter:
     def setAttribute(self, xpath, name, value):
         self._items.append(AttributeSet(xpath, name, value))
 
-    def removeElement(self, xpath):
-        self._items.append(ElementRemove(xpath))
-
     def addElement(self, xpath, element, label=None):
         self._items.append(ElementAdd(xpath, element, label))
 
-    def callFunction(self, func, *args):
-        self._items.append(FunctionCall(func, *args))
+    def removeElement(self, xpath):
+        self._items.append(ElementRemove(xpath))
+
+    def clearElement(self, xpath, label=None):
+        self._items.append(ElementClear(xpath, label))
+
+    def callFunction(self, func, args, label=None):
+        self._items.append(FunctionCall(func, args, label))
 
     def write(self):
         self._errors = []
