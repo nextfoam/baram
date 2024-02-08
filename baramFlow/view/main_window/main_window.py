@@ -77,8 +77,8 @@ class MenuPage:
     def widget(self):
         return self._widget
 
-    def createPage(self):
-        self._widget = self._pageClass()
+    def createPage(self, parent):
+        self._widget = self._pageClass(parent)
         return self._widget
 
     def removePage(self):
@@ -445,7 +445,7 @@ class MainWindow(QMainWindow):
 
         page = self._menuPages[currentMenu]
         if not page.isCreated():
-            page.createPage()
+            page.createPage(self._ui.formView)
             self._contentView.addPage(page)
 
         self._contentView.changePane(page)
