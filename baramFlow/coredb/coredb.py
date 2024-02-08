@@ -12,6 +12,7 @@ from lxml import etree
 import xmlschema
 import h5py
 import pandas as pd
+from xmlschema.names import XSD_DOUBLE
 
 # To use ".qrc" QT Resource files
 # noinspection PyUnresolvedReferences
@@ -112,8 +113,6 @@ class _CoreDB(object):
         self._lastError = None
 
         self._schema = xmlschema.XMLSchema(resource.file(self.XSD_PATH))
-
-        self._batchParameterUsages = {}
 
         xsdTree = etree.parse(resource.file(self.XSD_PATH))
         self._xmlSchema = etree.XMLSchema(etree=xsdTree)
@@ -218,12 +217,14 @@ class _CoreDB(object):
         Raises:
             LookupError: Less or more than one item are matched
         """
-        if xpath in self._batchParameterUsages:
-            return '$' + self._batchParameterUsages[xpath]
+        element = self._getElement(xpath)
+        if parameter := element.get('batchParameter'):
+            return '$' + parameter
 
-        return self.retrieveValue(xpath)
+        return self.retrieveValue(xpath, element)
 
-    def retrieveValue(self, xpath: str) -> str:
+
+    def retrieveValue(self, xpath: str, element=None) -> str:
         """Returns specified configuration value.
 
         Returns configuration value specified by 'xpath'
@@ -237,11 +238,7 @@ class _CoreDB(object):
         Raises:
             LookupError: Less or more than one item are matched
         """
-        elements = self._xmlTree.findall(xpath, namespaces=nsmap)
-        if len(elements) != 1:
-            raise LookupError
-
-        element = elements[0]
+        element = self._getElement(xpath) if element is None else element
 
         path = self._xmlTree.getelementpath(element)
         schema = self._schema.find(".//" + path, namespaces=nsmap)
@@ -272,26 +269,7 @@ class _CoreDB(object):
             LookupError: Less or more than one item are matched
             ValueError: Invalid configuration value
         """
-        batchParameter = None
-        batchParameterXPath = None
-
-        value = value.strip()
-        if value and value[0] == '$':
-            batchParameter = value[1:]
-            batchParameterXPath = f'.//runCalculation/batch/parameters/parameter[name="{batchParameter}"]'
-            batchParameterValue = self._xmlTree.findall(f'{batchParameterXPath}/value', namespaces=nsmap)
-
-
-            if len(batchParameterValue) == 1:
-                value = batchParameterValue[0].text
-            else:
-                batchParameter = None
-
-        elements = self._xmlTree.findall(xpath, namespaces=nsmap)
-        if len(elements) != 1:
-            raise LookupError
-
-        element = elements[0]
+        element = self._getElement(xpath)
 
         path = self._xmlTree.getelementpath(element)
         schema = self._schema.find(".//" + path, namespaces=nsmap)
@@ -302,24 +280,36 @@ class _CoreDB(object):
         if not schema.type.has_simple_content():
             raise LookupError
 
-        if schema.type.local_name == 'inputNumberType' \
-                or (schema.type.base_type is not None
-                    and schema.type.base_type.local_name == 'inputNumberType'):  # The case when the type has restrictions or attributes
+        batchParameter = None
+        value = value.strip()
+
+        if schema.type.is_complex() and 'batchParameter' in schema.type.attributes:
+            if value and value[0] == '$':
+                batchParameter = value[1:]
+                batchParameterXPath = f'.//runCalculation/batch/parameters/parameter[name="{batchParameter}"]'
+                batchParameterValue = self._xmlTree.findall(f'{batchParameterXPath}/value', namespaces=nsmap)
+
+                if len(batchParameterValue) == 1:
+                    value = batchParameterValue[0].text
+                else:
+                    batchParameter = None
+
+        if schema.type.is_derived(schema.type.maps.types[XSD_DOUBLE]):  # The case when the type has restrictions or attributes
             try:
                 decimal = float(value)
             except ValueError:
                 self._lastError = Error.FLOAT_ONLY
                 return Error.FLOAT_ONLY
 
-            if hasattr(schema.type, 'min_value') \
-                    and schema.type.min_value is not None \
-                    and decimal < schema.type.min_value:
+            if hasattr(schema.type.base_type, 'min_value') \
+                    and schema.type.base_type.min_value is not None \
+                    and decimal < schema.type.base_type.min_value:
                 self._lastError = Error.OUT_OF_RANGE
                 return Error.OUT_OF_RANGE
 
-            if hasattr(schema.type, 'max_value') \
-                    and schema.type.max_value is not None \
-                    and decimal > schema.type.max_value:
+            if hasattr(schema.type.base_type, 'max_value') \
+                    and schema.type.base_type.max_value is not None \
+                    and decimal > schema.type.base_type.max_value:
                 self._lastError = Error.OUT_OF_RANGE
                 return Error.OUT_OF_RANGE
 
@@ -400,22 +390,12 @@ class _CoreDB(object):
 
             logger.debug(f'setValue( {xpath} -> {element.text} )')
 
-        oldParameter = self._batchParameterUsages.get(xpath, None)
+        oldParameter = element.get('batchParameter')
         if oldParameter != batchParameter:
-            if oldParameter:
-                usages = self._xmlTree.findall(
-                    f'.//runCalculation/batch/parameters/parameter[name="{oldParameter}"]/usages', namespaces=nsmap)[0]
-                for usage in usages.findall('usage', namespaces=nsmap):
-                    if usage.text == xpath:
-                        usages.remove(usage)
-
-                del self._batchParameterUsages[xpath]
-
             if batchParameter:
-                self.addElementFromString(f'{batchParameterXPath}/usages',
-                                          f'<usage xmlns="http://www.baramcfd.org/baram">{xpath}</usage>')
-
-                self._batchParameterUsages[xpath] = batchParameter
+                element.set('batchParameter', batchParameter)
+            else:
+                del element.attrib['batchParameter']
 
         self._xmlSchema.assertValid(self._xmlTree)
         return None
@@ -1108,6 +1088,11 @@ class _CoreDB(object):
         """
         return self._xmlTree.find(xpath, namespaces=nsmap) is not None
 
+    def getVector(self, xpath: str):
+        return [float(self.retrieveValue(xpath + '/x')),
+                float(self.retrieveValue(xpath + '/y')),
+                float(self.retrieveValue(xpath + '/z'))]
+
     @property
     def isModified(self) -> bool:
         return self._configCountAtSave != self._configCount
@@ -1161,3 +1146,10 @@ class _CoreDB(object):
         self.addMaterial('air')
 
         self._configCountAtSave = self._configCount
+
+    def _getElement(self, xpath):
+        elements = self._xmlTree.findall(xpath, namespaces=nsmap)
+        if len(elements) != 1:
+            raise LookupError
+
+        return elements[0]

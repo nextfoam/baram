@@ -3,9 +3,58 @@
            xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="4">
 
     <!-- type definitions -->
-    <xs:simpleType name="inputNumberType">
-        <xs:restriction base="xs:double"/>
+    <xs:simpleType name="ratio">
+        <xs:restriction base="xs:double">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="1"/>
+        </xs:restriction>
     </xs:simpleType>
+
+    <xs:simpleType name="percent">
+        <xs:restriction base="xs:double">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="degree180">
+        <xs:restriction base="xs:double">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="180"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="inputNumberType">
+        <xs:simpleContent>
+            <xs:extension base="xs:double">
+                <xs:attribute name="batchParameter" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="inputRatioType">
+        <xs:simpleContent>
+            <xs:extension base="ratio">
+                <xs:attribute name="batchParameter" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="inputPercentType">
+        <xs:simpleContent>
+            <xs:extension base="percent">
+                <xs:attribute name="batchParameter" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="inputDegree180Type">
+        <xs:simpleContent>
+            <xs:extension base="degree180">
+                <xs:attribute name="batchParameter" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
 
     <xs:simpleType name="inputNumberListType">
         <xs:list itemType="xs:double"/>
@@ -365,14 +414,7 @@
     <xs:complexType name="volumeFractionType">
         <xs:sequence>
             <xs:element name="material" type="xs:positiveInteger"/> <!-- material mid -->
-            <xs:element name="fraction" default="0">
-                <xs:simpleType>
-                    <xs:restriction base="inputNumberType">
-                        <xs:minInclusive value="0"/>
-                        <xs:maxInclusive value="1"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:element>
+            <xs:element name="fraction" type="inputRatioType" default="0"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -607,14 +649,7 @@
                                 <xs:complexType>
                                     <xs:sequence>
                                         <xs:element name="velocity" type="vector"/>
-                                        <xs:element name="relaxation" default="1">
-                                            <xs:simpleType>
-                                                <xs:restriction base="inputNumberType">
-                                                    <xs:minInclusive value="0"/>
-                                                    <xs:maxInclusive value="1"/>
-                                                </xs:restriction>
-                                            </xs:simpleType>
-                                        </xs:element>
+                                        <xs:element name="relaxation" type="inputRatioType" default="1"/>
                                     </xs:sequence>
                                     <xs:attribute name="disabled"
                                                   type="xs:boolean"
@@ -1004,22 +1039,8 @@
             <xs:element name="radiation">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="wallEmissivity" default="1">
-                            <xs:simpleType>
-                                <xs:restriction base="inputNumberType">
-                                    <xs:minInclusive value="0"/>
-                                    <xs:maxInclusive value="1"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:element>
-                        <xs:element name="radiativeFluxRelaxation" default="1">
-                            <xs:simpleType>
-                                <xs:restriction base="inputNumberType">
-                                    <xs:minInclusive value="0"/>
-                                    <xs:maxInclusive value="1"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:element>
+                        <xs:element name="wallEmissivity" type="inputRatioType" default="1"/>
+                        <xs:element name="radiativeFluxRelaxation" type="inputRatioType" default="1"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1049,30 +1070,9 @@
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="mid" type="xs:positiveInteger" minOccurs="2" maxOccurs="2"/>
-                                    <xs:element name="contactAngle" default="90">
-                                        <xs:simpleType>
-                                            <xs:restriction base="inputNumberType">
-                                                <xs:minInclusive value="0"/>
-                                                <xs:maxInclusive value="180"/>
-                                            </xs:restriction>
-                                        </xs:simpleType>
-                                    </xs:element>
-                                    <xs:element name="advancingContactAngle" default="90">
-                                        <xs:simpleType>
-                                            <xs:restriction base="inputNumberType">
-                                                <xs:minInclusive value="0"/>
-                                                <xs:maxInclusive value="180"/>
-                                            </xs:restriction>
-                                        </xs:simpleType>
-                                    </xs:element>
-                                    <xs:element name="recedingContactAngle" default="90">
-                                        <xs:simpleType>
-                                            <xs:restriction base="inputNumberType">
-                                                <xs:minInclusive value="0"/>
-                                                <xs:maxInclusive value="180"/>
-                                            </xs:restriction>
-                                        </xs:simpleType>
-                                    </xs:element>
+                                    <xs:element name="contactAngle" type="inputDegree180Type" default="90"/>
+                                    <xs:element name="advancingContactAngle" type="inputDegree180Type" default="90"/>
+                                    <xs:element name="recedingContactAngle" type="inputDegree180Type" default="90"/>
                                     <xs:element name="characteristicVelocityScale" type="inputNumberType" default="0.001"/>
                                 </xs:sequence>
                             </xs:complexType>
@@ -1289,14 +1289,7 @@
             <xs:element name="highOrderTermRelaxation">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="relaxationFactor" default="0.5">
-                            <xs:simpleType>
-                                <xs:restriction base="inputNumberType">
-                                    <xs:minInclusive value="0"/>
-                                    <xs:maxInclusive value="1"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:element>
+                        <xs:element name="relaxationFactor" type="inputRatioType" default="0.5"/>
                     </xs:sequence>
                     <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                 </xs:complexType>
@@ -1562,14 +1555,7 @@
                                                                 <xs:element name="pressure" type="inputNumberType" default="0"/>
                                                                 <xs:element name="temperature" type="inputNumberType" default="300"/>
                                                                 <xs:element name="scaleOfVelocity" type="inputNumberType" default="1"/>
-                                                                <xs:element name="turbulentIntensity" default="1">
-                                                                    <xs:simpleType>
-                                                                        <xs:restriction base="inputNumberType">
-                                                                            <xs:minInclusive value="0"/>
-                                                                            <xs:maxInclusive value="100"/>
-                                                                        </xs:restriction>
-                                                                    </xs:simpleType>
-                                                                </xs:element>
+                                                                <xs:element name="turbulentIntensity" type="inputPercentType" default="1"/>
                                                                 <xs:element name="turbulentViscosity" type="inputNumberType" default="10"/>
                                                                 <xs:element name="volumeFractions" type="volumeFractionListType"/>
                                                             </xs:sequence>
