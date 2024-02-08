@@ -316,7 +316,7 @@
   </widget>
   <action name="actionCloseCase">
    <property name="text">
-    <string>Close Case</string>
+    <string>Close Project</string>
    </property>
   </action>
   <action name="actionSave">

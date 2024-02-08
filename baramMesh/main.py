@@ -62,7 +62,7 @@ def main():
     app.window = MainWindow()
 
     background_tasks = set()
-    task = asyncio.create_task(app.window.start())
+    task = loop.create_task(app.window.start())
     background_tasks.add(task)
     task.add_done_callback(background_tasks.discard)
 
