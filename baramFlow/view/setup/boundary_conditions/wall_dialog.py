@@ -184,19 +184,21 @@ class WallDialog(ResizableDialog):
         else:
             self._ui.temperatureGroup.hide()
 
-        if ModelsDB.isMultiphaseModelOn():
-            rname = BoundaryDB.getBoundaryRegion(self._bcid)
-            if secondaryMaterials := RegionDB.getSecondaryMaterials(rname):
-                self._loadContactAngles(rname, secondaryMaterials)
-                self._setupContactAngleModelCombo()
-                self._contactAngleModelCombo.setCurrentValue(self._db.getValue(xpath + '/wallAdhesions/model'))
-                if len(secondaryMaterials) > 1:
-                    self._ui.contactAngleFormLayout.removeRow(self._ui.contactAngleLimit)
-                else:
-                    self._setupContactAngleLimitCombo()
-                    self._contactAngleLimitCombo.setCurrentValue(self._db.getValue(xpath + '/wallAdhesions/limit'))
-        else:
+        rname = BoundaryDB.getBoundaryRegion(self._bcid)
+        secondaryMaterials = RegionDB.getSecondaryMaterials(rname) if  ModelsDB.isMultiphaseModelOn() else None
+        if secondaryMaterials:
+            self._loadContactAngles(rname, secondaryMaterials)
+            self._setupContactAngleModelCombo()
+            self._contactAngleModelCombo.setCurrentValue(self._db.getValue(xpath + '/wallAdhesions/model'))
+
+        if not secondaryMaterials:
             self._ui.contactAngleGroup.hide()
+        elif len(secondaryMaterials) > 1:
+            self._ui.contactAngleFormLayout.removeRow(self._ui.contactAngleLimit)
+            self._ui.contactAngleLimit = None
+        else:
+            self._setupContactAngleLimitCombo()
+            self._contactAngleLimitCombo.setCurrentValue(self._db.getValue(xpath + '/wallAdhesions/limit'))
 
         if ModelsDB.isRadiationModelOn():
             self._ui.wallEmissivity.setText(self._db.getValue(xpath + '/radiation/wallEmissivity'))
