@@ -75,7 +75,7 @@
             <y>0</y>
             <z>0</z>
         </flowDirection>
-        <machNumber>1</machNumber>
+        <machNumber>0.729</machNumber>
         <staticPressure>101325</staticPressure>
         <staticTemperature>300</staticTemperature>
     </farFieldRiemann>
