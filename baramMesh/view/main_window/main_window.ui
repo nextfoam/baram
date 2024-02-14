@@ -657,7 +657,7 @@
                      <item row="0" column="2">
                       <widget class="QLabel" name="label_4">
                        <property name="text">
-                        <string>MaX.</string>
+                        <string>Max.</string>
                        </property>
                       </widget>
                      </item>
@@ -2795,7 +2795,7 @@
                      <bool>true</bool>
                     </property>
                     <property name="toolTip">
-                     <string> Toggle between Persepctive and Orthogonal views</string>
+                     <string> Toggle between Perspective and Orthogonal views</string>
                     </property>
                    </widget>
                   </item>
