@@ -240,6 +240,7 @@
     <property name="title">
      <string>Mesh</string>
     </property>
+    <addaction name="actionMeshInfo"/>
     <addaction name="actionMeshScale"/>
     <addaction name="actionMeshTranslate"/>
     <addaction name="actionMeshRotate"/>
@@ -429,6 +430,14 @@
   <action name="actionParaViewSetting">
    <property name="text">
     <string>ParaView</string>
+   </property>
+  </action>
+  <action name="actionMeshInfo">
+   <property name="text">
+    <string>Info.</string>
+   </property>
+   <property name="toolTip">
+    <string>Mesh Info.</string>
    </property>
   </action>
  </widget>

@@ -48,6 +48,7 @@ from baramFlow.view.solution.run_conditions.run_conditions_page import RunCondit
 from baramFlow.view.solution.run.process_information_page import ProcessInformationPage
 from .content_view import ContentView
 from .main_window_ui import Ui_MainWindow
+from .menu.mesh.mesh_info_dialog import MeshInfoDialog
 from .navigator_view import NavigatorView, MenuItem
 from .rendering_dock import RenderingDock
 from .console_dock import ConsoleDock
@@ -235,6 +236,7 @@ class MainWindow(QMainWindow):
         self._ui.actionCloseCase.triggered.connect(self._closeProject)
         self._ui.actionExit.triggered.connect(self.close)
 
+        self._ui.actionMeshInfo.triggered.connect(self._openMeshInfoDialog)
         self._ui.actionMeshScale.triggered.connect(self._openMeshScaleDialog)
         self._ui.actionMeshTranslate.triggered.connect(self._openMeshTranslateDialog)
         self._ui.actionMeshRotate.triggered.connect(self._openMeshRotateDialog)
@@ -307,6 +309,11 @@ class MainWindow(QMainWindow):
     def _closeProject(self):
         self._closeType = CloseType.CLOSE_PROJECT
         self.close()
+
+    def _openMeshInfoDialog(self):
+        self._dialog = MeshInfoDialog(self)
+        self._dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+        self._dialog.show()  # Call "show()" for "ApplicationModal"
 
     def _openMeshScaleDialog(self):
         self._dialog = MeshScaleDialog(self, self._meshManager)
@@ -616,7 +623,7 @@ class MainWindow(QMainWindow):
 
     async def _confirmToReplaceMesh(self, renew=False):
         if coredb.CoreDB().getRegions():
-            confirm = AsyncMessageBox().question(
+            confirm = await AsyncMessageBox().question(
                 self, self.tr('Load Mesh'),
                 self.tr('This action will overwrite current mesh, related configurations, and calculation data.\n'
                         ' It cannot be recovered, and changed configurations will be saved automatically.'))

@@ -4,15 +4,19 @@
 import os
 import platform
 import subprocess
-import sys
 
 import psutil
 from pathlib import Path
 import asyncio
 
+from PySide6.QtCore import QObject, Signal
+
+import baramFlow.openfoam.parallel
+
 from libbaram.mpi import ParallelEnvironment
 
 from libbaram.app_path import APP_PATH
+from libbaram.process import ProcessError
 
 # Solver Directory Structure
 #
@@ -217,3 +221,82 @@ def hasUtility(program: str):
 class OpenFOAMError(Exception):
     def __init__(self, returncode, message):
         super().__init__(returncode, message)
+
+
+class RunParallelUtility(QObject):
+    output = Signal(str)
+    errorOutput = Signal(str)
+
+    def __init__(self, program: str, *args, cwd: Path = None):
+        super().__init__()
+        self._program = program
+        self._args = args
+        self._cwd = cwd
+
+        self._proc = None
+        self._canceled = False
+
+    async def start(self):
+        global creationflags
+        global startupinfo
+
+        if platform.system() == 'Windows':
+            creationflags = subprocess.CREATE_NO_WINDOW
+            startupinfo = subprocess.STARTUPINFO(
+                dwFlags=subprocess.STARTF_USESHOWWINDOW,
+                wShowWindow=subprocess.SW_HIDE
+            )
+
+        parallel = baramFlow.openfoam.parallel.getEnvironment()
+        self._proc = await asyncio.create_subprocess_exec(
+            *parallel.makeCommand(OPENFOAM / 'bin' / self._program, *self._args, cwd=self._cwd, options=MPI_OPTIONS),
+            env=ENV, cwd=self._cwd, creationflags=creationflags, startupinfo=startupinfo, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+
+    def cancel(self):
+        try:
+            if self._proc is not None:
+                self._proc.terminate()
+                self._canceled = True
+
+        except ProcessLookupError:
+            return
+
+    def isCanceled(self):
+        return self._canceled
+
+    async def wait(self):
+        self._canceled = False
+
+        tasks = []
+
+        stdout = self._proc.stdout
+        outTask = asyncio.create_task(stdout.readline())
+        tasks.append(outTask)
+
+        stderr = self._proc.stderr
+        errTask = asyncio.create_task(stderr.readline())
+        tasks.append(errTask)
+
+        while len(tasks) > 0:
+            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+
+            tasks = list(pending)
+            if outTask in done:
+                self.output.emit(outTask.result().decode('UTF-8').rstrip())
+                if not stdout.at_eof():
+                    outTask = asyncio.create_task(stdout.readline())
+                    tasks.append(outTask)
+
+            if errTask in done:
+                self.errorOutput.emit(errTask.result().decode('UTF-8').rstrip())
+                if not stderr.at_eof():
+                    errTask = asyncio.create_task(stderr.readline())
+                    tasks.append(errTask)
+
+            if len(done) < 1:
+                await asyncio.sleep(1)
+
+        await self._proc.communicate()
+
+        if returncode := self._proc.returncode:
+            raise ProcessError(returncode)

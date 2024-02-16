@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import asyncio
+import re
+from io import StringIO
 
 from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
 from baramFlow.app import app
+from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.main_window.rendering_view import DisplayMode
-
+from libbaram.run import RunParallelUtility
 
 _applyDisplayMode = {
     DisplayMode.DISPLAY_MODE_POINTS         : lambda actor: _applyPointsMode(actor),
@@ -108,6 +112,10 @@ class MeshModel(RenderingModel):
         self._bounds = None
         self._activation = False
 
+        self._numCells = None
+        self._smallestCellVolume = None
+        self._largestCellVolume = None
+
         self._connectSignalsSlots()
 
     def activate(self):
@@ -177,7 +185,7 @@ class MeshModel(RenderingModel):
         for a in self._actorInfos.values():
             a.actor(self._featureMode).GetProperty().FrontfaceCullingOff()
 
-    def fullBounds(self):
+    async def getBounds(self):
         if not self._bounds:
             self._bounds = [
                 min([a.face.GetBounds()[0] for a in self._actorInfos.values()]),
@@ -189,6 +197,24 @@ class MeshModel(RenderingModel):
             ]
 
         return self._bounds
+
+    async def getNumberOfCells(self):
+        if self._numCells is None:
+            await self._checkMesh()
+
+        return self._numCells
+
+    async def getSmallestCellVolume(self):
+        if self._smallestCellVolume is None:
+            await self._checkMesh()
+
+        return self._smallestCellVolume
+
+    async def getLargestCellVolume(self):
+        if self._largestCellVolume is None:
+            await self._checkMesh()
+
+        return self._largestCellVolume
 
     def _connectSignalsSlots(self):
         self._view.renderingModeChanged.connect(self._changeRenderingMode)
@@ -242,3 +268,53 @@ class MeshModel(RenderingModel):
     def _actorPicked(self, actor):
         self.setCurrentId(self._findActorInfo(actor))
         self.currentActorChanged.emit()
+
+    async def _checkMesh(self):
+        def _stdout(output):
+            ioStream.write(output+'\n')
+
+        ioStream = StringIO()
+        cm = None
+
+        try:
+            caseRoot = FileSystem.caseRoot()
+            cm = RunParallelUtility('checkMesh', '-allRegions', '-time', '0', cwd=caseRoot)
+            cm.output.connect(_stdout)
+            await cm.start()
+            await cm.wait()
+
+            numCells = 0
+            smallestVolume = 1000000000  # 1km^3, sufficiently large value for smallestVolume
+            largestVolume = 0  # sufficiently small value for largestVolume
+
+            numCellPattern = r'cells:\s+(?P<numCells>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)'
+            volumePattern = r'Min volume = (?P<minVol>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\. Max volume = (?P<maxVol>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\.'
+
+            ioStream.seek(0)
+            for line in ioStream.readlines():
+                m = re.search(numCellPattern, line)
+                if m is not None:
+                    numCells += int(m.group('numCells'))
+                    continue
+
+                m = re.search(volumePattern, line)
+                if m is not None:
+                    minVol = float(m.group('minVol'))
+                    maxVol = float(m.group('maxVol'))
+                    if minVol < smallestVolume:
+                        smallestVolume = minVol
+                    if maxVol > largestVolume:
+                        largestVolume = maxVol
+
+            ioStream.close()
+
+            self._numCells = numCells
+            self._largestCellVolume = largestVolume
+            self._smallestCellVolume = smallestVolume
+
+        except asyncio.CancelledError:
+            if cm:
+                cm.cancel()
+            raise asyncio.CancelledError
+
+
