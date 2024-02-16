@@ -71,7 +71,7 @@ class TransportProperties(DictionaryFile):
         secondaryNu = secondaryViscosity / secondaryDensity
 
         surfaceTension = None
-        surfaceTensions = RegionDB.getSurfaceTensionList(self._rname)
+        surfaceTensions = self._db.getSurfaceTensions(self._rname)
         for mid1, mid2, tension in surfaceTensions:
             if mid1 == baseMaterialId or mid2 == baseMaterialId:
                 surfaceTension = tension

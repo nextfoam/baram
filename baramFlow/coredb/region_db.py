@@ -117,24 +117,6 @@ class RegionDB:
         return cls.Region(rname)
 
     @classmethod
-    def getSurfaceTensionList(cls, rname) -> list[(str, str, str)]:
-        """Returns surface tension list
-
-        Returns a list of surface tension between materials in specified region
-
-        Returns:
-            List of surface tension, '(mid1, mis2, surfaceTension)'
-        """
-        db = coredb.CoreDB()
-        xpath = cls.getXPath(rname)
-
-        mids1 = db.retrieveValue(xpath + '/phaseInteractions/surfaceTensions/material1').split()
-        mids2 = db.retrieveValue(xpath + '/phaseInteractions/surfaceTensions/material2').split()
-        surfaceTensions = db.retrieveValue(xpath + '/phaseInteractions/surfaceTensions/surfaceTension').split()
-
-        return [(mids1[i], mids2[i], surfaceTensions[i]) for i in range(len(surfaceTensions))]
-
-    @classmethod
     def getNumberOfRegions(cls):
         return len(coredb.CoreDB().getRegions())
 
