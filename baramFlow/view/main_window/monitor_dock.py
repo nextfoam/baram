@@ -4,6 +4,7 @@
 from PySide6.QtWidgets import QWidget, QScrollArea, QVBoxLayout
 from PySide6.QtCore import Qt
 
+from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.view.widgets.flow_layout import FlowLayout
@@ -50,7 +51,7 @@ class MonitorDock(TabifiedDock):
     def _projectOpened(self):
         self.clear()
 
-        if self._project.isSolverRunning() or self._project.hasSolved():
+        if app.solver.isRunning() or app.solver.isEnded():
             self._startMonitor()
 
     def _projectClosed(self):

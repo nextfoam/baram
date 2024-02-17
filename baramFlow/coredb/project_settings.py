@@ -6,6 +6,7 @@ from filelock import FileLock
 
 import yaml
 
+from baramFlow.solver_status import SolverProcess
 from baramFlow.coredb.app_settings import AppSettings
 
 
@@ -21,6 +22,7 @@ class ProjectSettingKey(Enum):
     JOB_START_TIME = 'job_start_time'
     PROCESS_ID = 'process_id'
     PROCESS_START_TIME = 'process_start_time'
+    BATCH_STATUS = 'batch_status'
 
 
 class ProjectSettings:
@@ -36,15 +38,12 @@ class ProjectSettings:
         return self.get(ProjectSettingKey.PATH)
 
     def get(self, key):
-        if self._settings:
-            return self._settings[key.value] if key.value in self._settings else None
-
-        return None
+        return self._settings[key.value] if key.value in self._settings else None
 
     def setProcess(self, process):
         if process:
-            self._set(ProjectSettingKey.PROCESS_ID, process[0])
-            self._set(ProjectSettingKey.PROCESS_START_TIME, process[1])
+            self._set(ProjectSettingKey.PROCESS_ID, process.pid)
+            self._set(ProjectSettingKey.PROCESS_START_TIME, process.startTime)
         else:
             self._remove(ProjectSettingKey.PROCESS_ID)
             self._remove(ProjectSettingKey.PROCESS_START_TIME)
@@ -52,7 +51,23 @@ class ProjectSettings:
         self.save()
 
     def getProcess(self):
-        return self.get(ProjectSettingKey.PROCESS_ID), self.get(ProjectSettingKey.PROCESS_START_TIME)
+        pid = self.get(ProjectSettingKey.PROCESS_ID)
+        if pid:
+            return SolverProcess(pid, self.get(ProjectSettingKey.PROCESS_START_TIME))
+
+        return None
+
+    def setBatchStatus(self, name, status):
+        batches = self.getBatchStatuses()
+        if batches is None:
+            self._set(ProjectSettingKey.BATCH_STATUS, {name: status})
+        else:
+            batches[name] = status
+
+        self.save()
+
+    def getBatchStatuses(self):
+        return self.get(ProjectSettingKey.BATCH_STATUS)
 
     def acquireLock(self, timeout):
         lock = FileLock(self._settingsPath / 'case.lock')

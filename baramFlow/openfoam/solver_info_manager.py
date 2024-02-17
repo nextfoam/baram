@@ -11,9 +11,9 @@ import logging
 
 import numpy as np
 import pandas as pd
-
-from baramFlow.coredb.project import Project
 from PySide6.QtCore import Qt, QTimer, QObject, QThread, Signal
+
+from baramFlow.app import app
 
 
 # "solverInfo.dat" sample
@@ -141,7 +141,7 @@ class Worker(QObject):
         if self.running:
             return
 
-        self.running = Project.instance().isSolverRunning()
+        self.running = app.solver.isRunning()
 
         self.collectionReady = False
 

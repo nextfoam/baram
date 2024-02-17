@@ -5,17 +5,14 @@ import qasync
 
 from PySide6.QtWidgets import QMessageBox
 
-from libbaram.run import runParallelUtility
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
 from baramFlow.app import app
 from baramFlow.coredb import coredb
-from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
-from baramFlow.openfoam import parallel
-from baramFlow.openfoam.case_generator import CaseGenerator
-from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.solver import SolverNotFound
+from baramFlow.openfoam.case_generator import CanceledException
 from baramFlow.view.widgets.content_page import ContentPage
 from .initialization_page_ui import Ui_InitializationPage
 from .initialization_widget import InitializationWidget
@@ -113,52 +110,19 @@ class InitializationPage(ContentPage):
         confirm = await AsyncMessageBox().question(self, self.tr("Initialization"), self.tr("All saved data will be deleted. OK?"))
         if confirm == QMessageBox.StandardButton.Yes:
             progressDialog = ProgressDialog(self, self.tr('Case Initialization'))
+            app.solver.progress.connect(progressDialog.setLabelText)
             progressDialog.open()
 
-            progressDialog.setLabelText('Clean-up Files')
-
             try:
-                await FileSystem.initialize()
+                await app.solver.initialize()
+                progressDialog.finish(self.tr('Initialization Completed'))
+                self._dbConfigCount = coredb.CoreDB().configCount
             except PermissionError:
                 progressDialog.finish('Permission error')
-                return
-
-            Project.instance().setSolverStatus(SolverStatus.NONE)
-
-            caseGenerator = CaseGenerator()
-            caseGenerator.progress.connect(progressDialog.setLabelText)
-
-            progressDialog.showCancelButton()
-            progressDialog.cancelClicked.connect(caseGenerator.cancel)
-            progressDialog.open()
-
-            try:
-                cancelled = await caseGenerator.setupCase()
-                if cancelled:
-                    progressDialog.finish(self.tr('Initialization cancelled'))
-                    return
-            except RuntimeError as e:
-                progressDialog.finish(self.tr('Case generation failed. - ') + str(e))
-                return
-
-            progressDialog.hideCancelButton()
-
-            sectionNames: [str] = coredb.CoreDB().getList(
-                f'.//regions/region/initialization/advanced/sections/section/name')
-            if len(sectionNames) > 0:
-                progressDialog.setLabelText('Setting Section Values')
-
-                caseRoot = FileSystem.caseRoot()
-                proc = await runParallelUtility('setFields', '-writeBoundaryFields', '-case', caseRoot,
-                                                parallel=parallel.getEnvironment(), cwd=caseRoot)
-                result = await proc.wait()
-
-                if result != 0:
-                    progressDialog.finish(self.tr('Setting Section Values failed.'))
-                    return
-
-            progressDialog.finish(self.tr('Initialization Completed'))
-            self._dbConfigCount = coredb.CoreDB().configCount
+            except SolverNotFound as e:
+                progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
+            except CanceledException:
+                progressDialog.finish(self.tr('Calculation cancelled'))
 
     def _showSectionActor(self, section):
         view = app.renderingView

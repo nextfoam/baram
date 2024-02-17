@@ -49,6 +49,10 @@ class App(QObject):
         return self._window.renderingView()
 
     @property
+    def solver(self):
+        return self._window.solver()
+
+    @property
     def plug(self):
         return self._plug
 
@@ -71,6 +75,7 @@ class App(QObject):
 
     def openMainWindow(self):
         self._window = self._plug.createMainWindow()
+        self._window.load()
         self._window.show()
 
     def updateVtkMesh(self, mesh, cellZoneActors):

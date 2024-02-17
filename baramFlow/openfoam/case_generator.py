@@ -7,10 +7,14 @@ from typing import Optional
 
 from PySide6.QtCore import QCoreApplication, QObject, Signal
 
+from libbaram import utils
+from libbaram.run import runUtility, runParallelUtility
+
 from baramFlow.coredb import coredb
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.openfoam import parallel
 from baramFlow.openfoam.constant.dynamic_mesh_dict import DynamicMeshDict
 from baramFlow.openfoam.constant.thermophysical_properties import ThermophysicalProperties
 from baramFlow.openfoam.constant.operating_conditions import OperatingConditions
@@ -36,10 +40,12 @@ from baramFlow.openfoam.system.fv_options import FvOptions
 from baramFlow.openfoam.system.set_fields_dict import SetFieldsDict
 from baramFlow.openfoam.polymesh.boundary import Boundary
 from baramFlow.openfoam.file_system import FileSystem
-from libbaram import utils
-from libbaram.run import runUtility
 
 logger = logging.getLogger(__name__)
+
+
+class CanceledException(Exception):
+    pass
 
 
 class CaseGenerator(QObject):
@@ -55,15 +61,6 @@ class CaseGenerator(QObject):
 
     def getErrors(self):
         return self._errors
-    #
-    # @classmethod
-    # def createCase(cls):
-    #     FileSystem.createCase()
-    #     cls.createDefaults()
-    #
-    # @classmethod
-    # def createDefaults(cls):
-    #     ControlDict().copyFromResource('openfoam/controlDict')
 
     def _gatherFiles(self):
         if errors := self._validate():
@@ -166,52 +163,63 @@ class CaseGenerator(QObject):
         processorFolders = FileSystem.processorFolders()
         nProcessorFolders = len(processorFolders)
 
-        try:
-            if nProcessorFolders > 0 and len(FileSystem.times()) > 0:
-                self.progress.emit(self.tr(f'Reconstructing Field Data...'))
+        if nProcessorFolders > 0 and len(FileSystem.times()) > 0:
+            self.progress.emit(self.tr(f'Reconstructing Field Data...'))
 
-                if FileSystem.latestTime() == '0':
-                    self._proc = await runUtility('reconstructPar', '-allRegions', '-withZero', '-case', caseRoot, cwd=caseRoot)
-                else:
-                    self._proc = await runUtility('reconstructPar', '-allRegions', '-latestTime', '-case', caseRoot, cwd=caseRoot)
-                result = await self._proc.wait()
-                self._proc = None
-                if result != 0:
-                    raise RuntimeError(self.tr('Reconstructing Field Data failed. 0'))
+            if FileSystem.latestTime() == '0':
+                self._proc = await runUtility('reconstructPar', '-allRegions', '-withZero', '-case', caseRoot, cwd=caseRoot)
+            else:
+                self._proc = await runUtility('reconstructPar', '-allRegions', '-latestTime', '-case', caseRoot, cwd=caseRoot)
+            result = await self._proc.wait()
+            self._proc = None
+            if result != 0:
+                raise RuntimeError(self.tr('Reconstructing Field Data failed. 0'))
 
-            self.progress.emit(self.tr(f'Generating Files...'))
+        self.progress.emit(self.tr(f'Generating Files...'))
 
-            if errors := self._gatherFiles():
-                raise RuntimeError(errors)
+        if errors := self._gatherFiles():
+            raise RuntimeError(errors)
 
-            errors = await asyncio.to_thread(self._generateFiles)
+        errors = await asyncio.to_thread(self._generateFiles)
+        if self._cancelled:
+            raise CanceledException
+        if errors:
+            raise RuntimeError(self.tr('Case generating fail. - ') + errors)
+
+        if nProcessorFolders > 1:
+            self.progress.emit(self.tr('Decomposing Field Data...'))
+
+            self._proc = await runUtility('decomposePar', '-allRegions', '-fields', '-latestTime', '-case', caseRoot, cwd=caseRoot)
+
+            result = await self._proc.wait()
+            self._proc = None
             if self._cancelled:
-                return self._cancelled
-            elif errors:
-                raise RuntimeError(self.tr('Case generating fail. - ') + errors)
+                raise CanceledException
+            if result != 0:
+                raise RuntimeError(self.tr('Decomposing Field Data failed.'))
 
-            if nProcessorFolders > 1:
-                self.progress.emit(self.tr('Decomposing Field Data...'))
+            self.progress.emit(self.tr(f'Field Data Decomposition Done'))
 
-                self._proc = await runUtility('decomposePar', '-allRegions', '-fields', '-latestTime', '-case', caseRoot, cwd=caseRoot)
+            for time in FileSystem.times(parent=caseRoot):
+                utils.rmtree(caseRoot / time)
 
-                result = await self._proc.wait()
-                self._proc = None
-                if self._cancelled:
-                    return self._cancelled
-                elif result != 0:
-                    raise RuntimeError(self.tr('Decomposing Field Data failed.'))
+    async def initialize(self):
+        self._cancelled = False
 
-                self.progress.emit(self.tr(f'Field Data Decomposition Done'))
+        sectionNames: [str] = coredb.CoreDB().getList(
+            f'.//regions/region/initialization/advanced/sections/section/name')
+        if len(sectionNames) > 0:
+            self.progress.emit(self.tr('Setting Section Values'))
 
-                for time in FileSystem.times(parent=caseRoot):
-                    utils.rmtree(caseRoot / time)
+            caseRoot = FileSystem.caseRoot()
+            self._proc = await runParallelUtility('setFields', '-writeBoundaryFields', '-case', caseRoot,
+                                                  parallel=parallel.getEnvironment(), cwd=caseRoot)
+            result = await self._proc.wait()
 
-            return self._cancelled
-
-        except Exception as ex:
-            logger.info(ex, exc_info=True)
-            raise
+            if self._cancelled:
+                raise CanceledException
+            if result != 0:
+                raise RuntimeError
 
     def cancel(self):
         self._cancelled = True

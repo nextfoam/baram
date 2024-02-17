@@ -9,9 +9,10 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget, QPlainTextEdit, QCheckBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFontDatabase
 
-from .tabified_dock import TabifiedDock
+from baramFlow.app import app
 from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.openfoam.file_system import FileSystem
+from .tabified_dock import TabifiedDock
 
 
 class ConsoleDock(TabifiedDock):
@@ -78,6 +79,10 @@ class ConsoleDock(TabifiedDock):
 
     async def readLogForever(self):
         root = FileSystem.caseRoot()
+
+        stdout = None
+        stderr = None
+
         try:
             stdout = open(root/'stdout.log', 'r')
             stderr = open(root/'stderr.log', 'r')
@@ -105,15 +110,17 @@ class ConsoleDock(TabifiedDock):
         except asyncio.CancelledError:
             print('cancel console reading')
         finally:
-            stdout.close()
-            stderr.close()
+            if stdout:
+                stdout.close()
+            if stderr:
+                stderr.close()
             self.readTask = None
 
     @qasync.asyncSlot()
     async def _projectOpened(self):
-        if self._project.isSolverRunning():
+        if app.solver.isRunning():
             self.startCollecting()
-        elif self._project.hasSolved():
+        elif app.solver.isEnded():
             await self._readAllLog()
 
     def _projectClosed(self):

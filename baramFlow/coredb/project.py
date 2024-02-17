@@ -6,30 +6,19 @@ from enum import auto, Enum
 from typing import Optional
 
 import yaml
-from PySide6.QtCore import QObject, Signal, QTimer
+from PySide6.QtCore import QObject, Signal
 from pathlib import Path
 
-from libbaram import process
+from libbaram import utils
+
+from baramFlow.solver_status import SolverStatus
 from baramFlow.coredb import coredb
-from .project_settings import ProjectSettings, ProjectSettingKey
+from .project_settings import ProjectSettings
 from .app_settings import AppSettings
 from .filedb import FileDB
 
 
 FORMAT_VERSION = 1
-SOLVER_CHECK_INTERVAL = 500
-
-
-class SolverStatus(Enum):
-    NONE = 0
-    WAITING = auto()
-    RUNNING = auto()
-    ENDED = auto()
-
-
-class RunType(Enum):
-    PROCESS = auto()
-    JOB = auto()
 
 
 class ProjectOpenType(Enum):
@@ -97,7 +86,6 @@ class _Project(QObject):
         super().__init__()
 
         self._meshLoaded = False
-        self._status = SolverStatus.NONE
         self._process = (None, None)
         self._runType = None
 
@@ -172,38 +160,17 @@ class _Project(QObject):
         self._settings.set(key, value)
 
     def solverProcess(self):
-        return self._projectSettings.get(ProjectSettingKey.PROCESS_ID),\
-               self._projectSettings.get(ProjectSettingKey.PROCESS_START_TIME)
-
-    def solverStatus(self):
-        return self._status
-
-    def isSolverRunning(self):
-        return self._status == SolverStatus.RUNNING
-
-    def isSolverActive(self):
-        return self._status == SolverStatus.WAITING or self._status == SolverStatus.RUNNING
-
-    def hasSolved(self):
-        return self._status == SolverStatus.ENDED
+        return self._projectSettings.getProcess()
 
     def setMeshLoaded(self, loaded, updated=True):
         self._meshLoaded = loaded
         self.meshChanged.emit(updated)
 
-    def setSolverProcess(self, process):
-        self._runType = RunType.PROCESS
-        self._process = process
+    def batchRoot(self):
+        return self.path / 'batch'
 
-        self._projectSettings.setProcess(process)
-        self._startProcessMonitor(process)
-
-    def setSolverStatus(self, status):
-        if self._status != status:
-            self._status = status
-            if status == SolverStatus.NONE:
-                self._projectSettings.setProcess(None)
-            self.solverStatusChanged.emit(status)
+    def batchPath(self, name):
+        return self.batchRoot() / name
 
     def save(self):
         self._fileDB.save()
@@ -216,6 +183,17 @@ class _Project(QObject):
 
     def opened(self):
         self.projectOpened.emit()
+
+    def clearBatch(self):
+        utils.rmtree(self.batchRoot())
+
+    def updateSolverStatus(self, name, status, process):
+        if name:
+            self._projectSettings.setBatchStatus(name, status)
+        elif status == SolverStatus.RUNNING:
+            self._projectSettings.setProcess(process)
+
+        self.solverStatusChanged.emit(status)
 
     def _open(self, path: Path, route=ProjectOpenType.EXISTING):
         self._settings = self.LocalSettings(path, self._settings)
@@ -260,43 +238,11 @@ class _Project(QObject):
 
         self._meshLoaded = True if self._coreDB.getRegions() or route == ProjectOpenType.MESH else False
 
-        pid, startTime = self._projectSettings.getProcess()
-        if pid and startTime:
-            if process.isRunning(pid, startTime):
-                self.setSolverProcess((pid, startTime))
-            else:
-                self.setSolverStatus(SolverStatus.ENDED)
-        else:
-            self.setSolverStatus(SolverStatus.NONE)
-
     def _close(self):
         coredb.destroy()
         self.projectClosed.emit()
         if self._projectLock:
             self._projectLock.release()
-
-    def _startProcessMonitor(self, process):
-        self._timer = QTimer()
-        self._timer.setInterval(SOLVER_CHECK_INTERVAL)
-        self._timer.timeout.connect(self._updateProcessStatus)
-        self._timer.start()
-
-    def _updateProcessStatus(self):
-        if process.isRunning(*self.solverProcess()):
-            self.setSolverStatus(SolverStatus.RUNNING)
-        else:
-            self.setSolverStatus(SolverStatus.ENDED)
-            self._stopMonitor()
-
-        return self._status
-
-    def _updateJobStatus(self):
-        pass
-
-    def _stopMonitor(self):
-        if self._timer:
-            self._timer.stop()
-            self._timer = None
 
 
 class Project:

@@ -7,7 +7,6 @@ from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import QObject, Signal
 
 from baramFlow.app import app
-from baramFlow.coredb.project import Project
 
 
 class MenuItem(Enum):
@@ -85,9 +84,8 @@ class NavigatorView(QObject):
         self._view.setCurrentItem(self._menu[value])
 
     def updateMenu(self):
-        project = Project.instance()
         noMesh = app.vtkMesh() is None
-        solverActivated = project.isSolverActive()
+        solverActivated = app.solver.isActive()
 
         self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(solverActivated)
         self._menu[MenuItem.MENU_SETUP_MODELS.value].setDisabled(solverActivated)

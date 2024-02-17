@@ -1,26 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import psutil
+
 import time
 import qasync
 import logging
 from enum import Enum, auto
 
-from PySide6.QtWidgets import QMessageBox, QFileDialog
+from PySide6.QtWidgets import QFileDialog
 
-from libbaram.run import launchSolver
 from widgets.list_table import ListItem
 from widgets.progress_dialog import ProgressDialog
 
+from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.project import Project, SolverStatus
-from baramFlow.openfoam import parallel
-from baramFlow.openfoam.case_generator import CaseGenerator
+from baramFlow.openfoam.solver import SolverNotFound
+from baramFlow.openfoam.case_generator import CanceledException
 from baramFlow.openfoam.system.fv_solution import FvSolution
 from baramFlow.openfoam.system.control_dict import ControlDict
 from baramFlow.openfoam.system.fv_schemes import FvSchemes
-import baramFlow.openfoam.solver
-from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.widgets.content_page import ContentPage
 from .batch_case_list import BatchCaseList
 from .batch_cases_import_dialog import BatchCasesImportDialog
@@ -102,32 +100,21 @@ class ProcessInformationPage(ContentPage):
     async def _startCalculationClicked(self):
         progressDialog = ProgressDialog(self, self.tr('Calculation Run.'), True)
 
-        caseGenerator = CaseGenerator()
-        caseGenerator.progress.connect(progressDialog.setLabelText)
-
-        progressDialog.cancelClicked.connect(caseGenerator.cancel)
+        app.solver.progress.connect(progressDialog.setLabelText)
+        progressDialog.cancelClicked.connect(app.solver.cancelLiveRun)
         progressDialog.open()
 
         try:
-            cancelled = await caseGenerator.setupCase()
-            if cancelled:
-                progressDialog.finish(self.tr('Calculation cancelled'))
-                return
-        except RuntimeError as e:
+            await app.solver.liveRun(Project.instance().uuid)
+            progressDialog.finish(self.tr('Calculation started'))
+        #     self._project.setSolverProcess(process)
+        except SolverNotFound as e:
             progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
-            return
+        except CanceledException:
+            progressDialog.finish(self.tr('Calculation cancelled'))
+        except RuntimeError:
+            progressDialog.finish(self.tr('Solver execution failed or terminated'))
 
-        caseRoot = FileSystem.caseRoot()
-        solvers = baramFlow.openfoam.solver.findSolvers()
-
-        process = launchSolver(solvers[0], caseRoot, self._project.uuid, parallel.getEnvironment())
-        if process:
-            self._project.setSolverProcess(process)
-        else:
-            QMessageBox.critical(self, self.tr('Calculation Execution Failed'),
-                                 self.tr('Solver execution failed or terminated.'))
-
-        progressDialog.finish(self.tr('Calculation started'))
 
     def _cancelCalculationClicked(self):
         controlDict = ControlDict().build()
@@ -154,15 +141,7 @@ class ProcessInformationPage(ContentPage):
         self._stopDialog.cancelClicked.connect(self._forceStop)
 
     def _forceStop(self):
-        if self._project.solverStatus() == SolverStatus.RUNNING:
-            pid, startTime = self._project.solverProcess()
-            try:
-                ps = psutil.Process(pid)
-                with ps.oneshot():
-                    if ps.is_running() and ps.create_time() == startTime:
-                        ps.terminate()
-            except psutil.NoSuchProcess:
-                pass
+        app.solver.kill()
 
     def _updateConfigurationClicked(self):
         regions = coredb.CoreDB().getRegions()
@@ -203,7 +182,7 @@ class ProcessInformationPage(ContentPage):
         self._dialog.open()
 
     def _updateStatus(self):
-        status = self._project.solverStatus()
+        status = app.solver.status()
 
         if status == SolverStatus.WAITING:
             text = self.tr('Waiting')
@@ -215,17 +194,19 @@ class ProcessInformationPage(ContentPage):
                 self._stopDialog.close()
                 self._stopDialog = None
 
-        pid, startTime = self._project.solverProcess()
-        if startTime:
-            createTime = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime(startTime))
+        process = app.solver.process()
+        if process:
+            pid = str(process.pid)
+            createTime = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime(process.startTime))
         else:
+            pid = '-'
             createTime = '-'
 
-        self._ui.id.setText(str(pid) if pid else '-')
+        self._ui.id.setText(pid)
         self._ui.createTime.setText(createTime)
         self._ui.status.setText(text)
 
-        if self._project.isSolverActive():
+        if app.solver.isActive():
             self._ui.startCalculation.hide()
             self._ui.cancelCalculation.show()
             self._ui.saveAndStopCalculation.setEnabled(True)

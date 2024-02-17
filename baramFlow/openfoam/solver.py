@@ -11,6 +11,10 @@ from resources import resource
 availableSolvers = pd.read_csv(resource.file('openfoam/solvers.csv'), header=0, index_col=0).transpose().to_dict()
 
 
+class SolverNotFound(Exception):
+    pass
+
+
 def findSolvers() -> list[str]:
     db = coredb.CoreDB()
 
@@ -78,3 +82,12 @@ def findSolvers() -> list[str]:
 
 def getSolverCapability(name: str) -> dict:
     return availableSolvers[name]
+
+
+def findSolver():
+    solvers = findSolvers()
+    if len(solvers) == 1:
+        return solvers[0]
+    else:
+        raise SolverNotFound
+

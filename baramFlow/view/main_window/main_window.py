@@ -13,7 +13,7 @@ import qasync
 import asyncio
 
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
-from PySide6.QtCore import Qt, QThreadPool, QEvent, QTimer
+from PySide6.QtCore import Qt, QEvent, QTimer
 
 from libbaram.run import hasUtility
 from libbaram.utils import getFit
@@ -25,13 +25,15 @@ from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.coredb.project import Project, SolverStatus
+from baramFlow.coredb.project import Project
 from baramFlow.mesh.mesh_manager import MeshManager, MeshType
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.constant.region_properties import RegionProperties
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from baramFlow.openfoam.redistribution_task import RedistributionTask
+from baramFlow.solver_manager import SolverManager
+from baramFlow.solver_status import SolverStatus
 from baramFlow.view.main_window.menu.settrings.settings_language_dialog import SettingLanguageDialog
 from baramFlow.view.main_window.menu.settrings.settings_paraveiw_dialog import SettingsParaViewDialog
 from baramFlow.view.main_window.menu.settrings.settings_scaling_dialog import SettingScalingDialog
@@ -98,7 +100,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(app.properties.icon())
 
         self._project = Project.instance()
-        FileSystem.setupForProject()
+        self._solverManager = SolverManager()
 
         # 10MB(=10,485,760=1024*1024*10)
         self._handler = RotatingFileHandler(self._project.path/'baram.log', maxBytes=10485760, backupCount=5)
@@ -138,21 +140,17 @@ class MainWindow(QMainWindow):
 
         self._dialog = None
 
-        self._threadPool = QThreadPool()
-
         self._closeType = CloseType.EXIT_APP
 
         self._meshManager = MeshManager(self)
         self._connectSignalsSlots()
 
-        if self._project.isSolverRunning():
+        if self._solverManager.isRunning():
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN.value)
             self._chartDock.raise_()
         else:
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL.value)
             self._renderingDock.raise_()
-
-        self._project.opened()
 
         # self._updateMenuEnables()
         self._ui.menuMesh.setDisabled(True)
@@ -166,8 +164,14 @@ class MainWindow(QMainWindow):
     def renderingView(self):
         return self._renderingDock.view
 
+    def solver(self):
+        return self._solverManager
+
     def tabifyDock(self, dock):
         self.tabifyDockWidget(self._emptyDock, dock)
+
+    def load(self):
+        self._project.opened()
 
     def closeEvent(self, event):
         if self._saveCurrentPage():
@@ -259,7 +263,6 @@ class MainWindow(QMainWindow):
 
     def _save(self):
         if self._saveCurrentPage():
-            # FileSystem.save()
             self._project.save()
 
     def _saveAs(self):
@@ -603,7 +606,7 @@ class MainWindow(QMainWindow):
                                      self.tr('Multi-region cases cannot be computed under multi-phase conditions.'))):
             return
 
-        if  not await self._confirmToReplaceMesh(True):
+        if not await self._confirmToReplaceMesh(True):
             return
 
         self._project.setMeshLoaded(False)
@@ -626,12 +629,15 @@ class MainWindow(QMainWindow):
             confirm = await AsyncMessageBox().question(
                 self, self.tr('Load Mesh'),
                 self.tr('This action will overwrite current mesh, related configurations, and calculation data.\n'
-                        ' It cannot be recovered, and changed configurations will be saved automatically.'))
+                        'It cannot be recovered, and changed configurations will be saved automatically.'))
 
             if confirm != QMessageBox.StandardButton.Yes:
                 return False
 
         try:
+            FileSystem.switchToLiveCase()
+            self._project.clearBatch()
+
             if renew:
                 FileSystem.createCase()
             else:
@@ -642,7 +648,7 @@ class MainWindow(QMainWindow):
 
             return True
         except PermissionError:
-            QMessageBox.information(self, self.tr('Permission Denied'),
-                                    self.tr('The project directory is open by another program.'))
+            await AsyncMessageBox().information(self, self.tr('Permission Denied'),
+                                                self.tr('The project directory is open by another program.'))
 
             return False

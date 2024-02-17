@@ -6,6 +6,7 @@ import time
 import pandas as pd
 from PySide6.QtCore import QThread, QObject, QTimer, Signal, Qt
 
+from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.monitor_db import MonitorDB
@@ -52,7 +53,7 @@ class Worker(QObject):
 
     def startMonitor(self):
         changedFiles = self._reader.chagedFiles()
-        while not changedFiles and self._project.isSolverRunning():
+        while not changedFiles and app.solver.isRunning():
             time.sleep(0.5)
             changedFiles = self._reader.chagedFiles()
 
@@ -66,7 +67,7 @@ class Worker(QObject):
 
             self.flushed.emit()
 
-            if self._project.isSolverRunning():
+            if app.solver.isRunning():
                 self._timer = QTimer()
                 self._timer.setInterval(500)
                 self._timer.timeout.connect(self._monitor)
