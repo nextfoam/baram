@@ -122,8 +122,9 @@ class CoreDBReader(_CoreDB):
 
     def getValue(self, xpath):
         value = super().getValue(xpath)
-        if value[0] != '$':
+        if value == '' or value[0] != '$':
             return value
+
         parameter = value[1:]
         value = self._arguments.get(parameter)
         try:
