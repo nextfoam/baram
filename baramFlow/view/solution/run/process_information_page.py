@@ -224,7 +224,7 @@ class ProcessInformationPage(ContentPage):
 
         self._ui.userParameterList.clear()
         for name, data in self._userParameters.items():
-            self._ui.userParameterList.addItem(ListItem(name, [f'{name}({data["usages"]})', data['value']]))
+            self._ui.userParameterList.addItem(ListItem(name, [f'{name} ({data["usages"]})', data['value']]))
 
     def _exportBatchCase(self, file):
         df = self._batchCaseList.exportAsDataFrame()
