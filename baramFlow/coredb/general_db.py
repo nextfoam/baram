@@ -17,12 +17,12 @@ class GeneralDB:
 
     @classmethod
     def isTimeTransient(cls):
-        return coredb.CoreDB().retrieveValue(cls.GENERAL_XPATH + '/timeTransient') == 'true'
+        return coredb.CoreDB().getValue(cls.GENERAL_XPATH + '/timeTransient') == 'true'
 
     @classmethod
     def isCompressible(cls):
-        return coredb.CoreDB().retrieveValue(cls.GENERAL_XPATH + '/flowType') == 'compressible'
+        return coredb.CoreDB().getValue(cls.GENERAL_XPATH + '/flowType') == 'compressible'
 
     @classmethod
     def getSolverType(cls):
-        return SolverType(coredb.CoreDB().retrieveValue(cls.GENERAL_XPATH + '/solverType'))
+        return SolverType(coredb.CoreDB().getValue(cls.GENERAL_XPATH + '/solverType'))

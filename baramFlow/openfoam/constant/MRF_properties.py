@@ -3,7 +3,7 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.coredb import coredb
+from baramFlow.app import app
 from baramFlow.coredb.cell_zone_db import ZoneType, CellZoneDB
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.openfoam.file_system import FileSystem
@@ -19,7 +19,7 @@ class MRFProperties(DictionaryFile):
         if self._data is not None:
             return self
 
-        db = coredb.CoreDB()
+        db = app.case.db
 
         mrfCellZoneConditions = db.getCellZonesByType(self._rname, ZoneType.MRF.value)
         if mrfCellZoneConditions:
@@ -27,8 +27,8 @@ class MRFProperties(DictionaryFile):
 
             for czid in mrfCellZoneConditions:
                 xpath = CellZoneDB.getXPath(czid)
-                name = db.retrieveValue(xpath + '/name')
-                boundaries = db.retrieveValue(xpath + '/mrf/staticBoundaries').split()
+                name = db.getValue(xpath + '/name')
+                boundaries = db.getValue(xpath + '/mrf/staticBoundaries').split()
 
                 self._data[f'MRFCellZone_{name}'] = {
                     'cellZone': name,
@@ -36,7 +36,7 @@ class MRFProperties(DictionaryFile):
                     'nonRotatingPatches': [BoundaryDB.getBoundaryName(b) for b in boundaries],
                     'origin': db.getVector(xpath + '/mrf/rotationAxisOrigin'),
                     'axis': db.getVector(xpath + '/mrf/rotationAxisDirection'),
-                    'omega': float(db.retrieveValue(xpath + '/mrf/rotatingSpeed')) * 2 * 3.141592 / 60
+                    'omega': float(db.getValue(xpath + '/mrf/rotatingSpeed')) * 2 * 3.141592 / 60
                 }
 
         return self

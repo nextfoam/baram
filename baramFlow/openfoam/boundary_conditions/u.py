@@ -4,7 +4,6 @@
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
 from baramFlow.coredb.boundary_db import FlowRateInletSpecification, WallVelocityCondition, InterfaceMode
-from baramFlow.coredb.initialization_db import InitializationDB
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from libbaram.openfoam.dictionary.dictionary_file import DataClass
@@ -16,7 +15,7 @@ class U(BoundaryCondition):
     def __init__(self, region, time, processorNo):
         super().__init__(region, time, processorNo, 'U', DataClass.CLASS_VOL_VECTOR_FIELD)
 
-        self._initialValue = InitializationDB.getVelocity(region.rname)
+        self._initialValue = self._region.initialVelocity
 
     def build0(self):
         self._data = None
@@ -41,8 +40,8 @@ class U(BoundaryCondition):
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructPressureInletOutletVelocity()),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureInletOutletVelocity()),
                 BoundaryType.ABL_INLET.value:           (lambda: self._constructAtmBoundaryLayerInletVelocity()),
-                BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructVariableHeightFlowRateInletVelocity(self._db.retrieveValue(xpath + '/openChannelInlet/volumeFlowRate'))),
-                BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructOutletPhaseMeanVelocity(self._db.retrieveValue(xpath + '/openChannelOutlet/meanVelocity'))),
+                BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructVariableHeightFlowRateInletVelocity(self._db.getValue(xpath + '/openChannelInlet/volumeFlowRate'))),
+                BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructOutletPhaseMeanVelocity(self._db.getValue(xpath + '/openChannelOutlet/meanVelocity'))),
                 BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
                 BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestreamVelocity(xpath + '/freeStream')),
                 BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann')),
@@ -64,16 +63,16 @@ class U(BoundaryCondition):
         return field
 
     def _constructFlowRateInletVelocity(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/flowRate/specification')
+        spec = self._db.getValue(xpath + '/flowRate/specification')
         if spec == FlowRateInletSpecification.VOLUME_FLOW_RATE.value:
             return {
                 'type': 'flowRateInletVelocity',
-                'volumetricFlowRate': self._db.retrieveValue(xpath + '/flowRate/volumeFlowRate')
+                'volumetricFlowRate': self._db.getValue(xpath + '/flowRate/volumeFlowRate')
             }
         elif spec == FlowRateInletSpecification.MASS_FLOW_RATE.value:
             return {
                 'type': 'flowRateInletVelocity',
-                'massFlowRate': self._db.retrieveValue(xpath + '/flowRate/massFlowRate'),
+                'massFlowRate': self._db.getValue(xpath + '/flowRate/massFlowRate'),
                 'rhoInlet': self._region.density
             }
 
@@ -88,10 +87,10 @@ class U(BoundaryCondition):
             'type': 'atmBoundaryLayerInletVelocity',
             'flowDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection'),
             'zDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/groundNormalDirection'),
-            'Uref': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
-            'Zref': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceHeight'),
-            'z0': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
-            'd': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
+            'Uref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
+            'Zref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceHeight'),
+            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
+            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
         }
 
     def _constructVariableHeightFlowRateInletVelocity(self, flowRate):
@@ -130,13 +129,13 @@ class U(BoundaryCondition):
             'type': 'rotatingWallVelocity',
             'origin': self._db.getVector(xpath + '/rotationAxisOrigin'),
             'axis': self._db.getVector(xpath + '/rotationAxisDirection'),
-            'omega': float(self._db.retrieveValue(xpath + '/speed')) * 2 * 3.141592 / 60,
+            'omega': float(self._db.getValue(xpath + '/speed')) * 2 * 3.141592 / 60,
         }
 
     def _constructVelocityInletU(self, xpath, name):
-        spec = self._db.retrieveValue(xpath + '/velocityInlet/velocity/specification')
+        spec = self._db.getValue(xpath + '/velocityInlet/velocity/specification')
         if spec == VelocitySpecification.COMPONENT.value:
-            profile = self._db.retrieveValue(xpath + '/velocityInlet/velocity/component/profile')
+            profile = self._db.getValue(xpath + '/velocityInlet/velocity/component/profile')
             if profile == VelocityProfile.CONSTANT.value:
                 return self._constructFixedValue(
                     self._db.getVector(xpath + '/velocityInlet/velocity/component/constant'))
@@ -144,28 +143,28 @@ class U(BoundaryCondition):
                 return self._constructTimeVaryingMappedFixedValue(
                     self._region.rname, name, 'U',
                     Project.instance().fileDB().getFileContents(
-                        self._db.retrieveValue(xpath + '/velocityInlet/velocity/component/spatialDistribution')))
+                        self._db.getValue(xpath + '/velocityInlet/velocity/component/spatialDistribution')))
             elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
                 return self._constructUniformFixedValue(
                     xpath + '/velocityInlet/velocity/component/temporalDistribution/piecewiseLinear',
                     self.TableType.TEMPORAL_VECTOR_LIST)
         elif spec == VelocitySpecification.MAGNITUDE.value:
-            profile = self._db.retrieveValue(xpath + '/velocityInlet/velocity/magnitudeNormal/profile')
+            profile = self._db.getValue(xpath + '/velocityInlet/velocity/magnitudeNormal/profile')
             if profile == VelocityProfile.CONSTANT.value:
                 return self._constructSurfaceNormalFixedValue(
-                    self._db.retrieveValue(xpath + '/velocityInlet/velocity/magnitudeNormal/constant'))
+                    self._db.getValue(xpath + '/velocityInlet/velocity/magnitudeNormal/constant'))
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 return self._constructTimeVaryingMappedFixedValue(
                     self._region.rname, name, 'U',
                     Project.instance().fileDB().getFileContents(
-                        self._db.retrieveValue(xpath + '/velocityInlet/velocity/magnitudeNormal/spatialDistribution')))
+                        self._db.getValue(xpath + '/velocityInlet/velocity/magnitudeNormal/spatialDistribution')))
             elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
                 return self._constructUniformNormalFixedValue(
                     xpath + '/velocityInlet/velocity/magnitudeNormal/temporalDistribution/piecewiseLinear',
                     self.TableType.TEMPORAL_SCALAR_LIST)
 
     def _constructWallU(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/wall/velocity/type')
+        spec = self._db.getValue(xpath + '/wall/velocity/type')
         if spec == WallVelocityCondition.NO_SLIP.value:
             return self._constructNoSlip()
         elif spec == WallVelocityCondition.SLIP.value:
@@ -181,7 +180,7 @@ class U(BoundaryCondition):
             return self._constructRotatingWallVelocity(xpath + '/wall/velocity/rotationalMovingWall')
 
     def _constructInterfaceU(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/interface/mode')
+        spec = self._db.getValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
             return self._constructNoSlip()
         else:

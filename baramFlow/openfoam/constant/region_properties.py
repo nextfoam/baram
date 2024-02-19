@@ -6,7 +6,7 @@ from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 from libbaram.openfoam.constants import Directory
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.coredb import coredb
+from baramFlow.app import app
 from baramFlow.openfoam.file_system import FileLoadingError
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.material_db import Phase
@@ -42,7 +42,7 @@ class RegionProperties(DictionaryFile):
     def build(self):
         fluids = []
         solids = []
-        for rname in coredb.CoreDB().getRegions():
+        for rname in app.case.db.getRegions():
             if RegionDB.getPhase(rname) == Phase.SOLID:
                 solids.append(rname)
             else:

@@ -10,8 +10,8 @@ from PySide6.QtCore import QCoreApplication, QObject, Signal
 from libbaram import utils
 from libbaram.run import runUtility, runParallelUtility
 
+from baramFlow.app import app
 from baramFlow.coredb import coredb
-from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.openfoam import parallel
@@ -53,7 +53,7 @@ class CaseGenerator(QObject):
 
     def __init__(self):
         super().__init__()
-        self._db = coredb.CoreDB()
+        self._db = app.case.db
         self._errors = None
         self._proc: Optional[asyncio.subprocess.Process] = None
         self._cancelled: bool = False
@@ -71,7 +71,7 @@ class CaseGenerator(QObject):
         regions = self._db.getRegions()
         self._files = []
         for rname in regions:
-            region = RegionDB.getRegionProperties(rname)
+            region = self._db.getRegionProperties(rname)
 
             FileSystem.initRegionDirs(rname)
 
@@ -126,7 +126,7 @@ class CaseGenerator(QObject):
             boundaries = self._db.getBoundaryConditions(rname)
             for bcid, bcname, bctype in boundaries:
                 xpath = BoundaryDB.getXPath(bcid)
-                if BoundaryDB.needsCoupledBoundary(bctype) and self._db.retrieveValue(xpath + '/coupledBoundary') == '0':
+                if BoundaryDB.needsCoupledBoundary(bctype) and self._db.getValue(xpath + '/coupledBoundary') == '0':
                     errors += QCoreApplication.translate(
                         'CaseGenerator',
                         f'{BoundaryDB.dbBoundaryTypeToText(bctype)} boundary "{bcname}" needs a coupled boundary.\n')

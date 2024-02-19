@@ -4,7 +4,7 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.coredb import coredb
+from baramFlow.app import app
 import baramFlow.openfoam.solver
 from baramFlow.openfoam.file_system import FileSystem
 
@@ -14,25 +14,18 @@ class FvSchemes(DictionaryFile):
         super().__init__(FileSystem.caseRoot(), self.systemLocation(rname), 'fvSchemes')
 
         self._rname = rname
-        self._db = coredb.CoreDB()
+        self._db = app.case.db
         self._cap = None
-
-        self.relaxationDisabled = self._db.getAttribute('.//numericalConditions/highOrderTermRelaxation', 'disabled')
-        self.relFactor = self._db.retrieveValue('.//numericalConditions/highOrderTermRelaxation/relaxationFactor')
 
     def build(self):
         if self._data is not None:
             return self
 
-        solvers = baramFlow.openfoam.solver.findSolvers()
-        if len(solvers) != 1:  # configuration not enough yet
-            raise RuntimeError
-
-        solver = solvers[0]
+        solver = app.case.solver
         self._cap = baramFlow.openfoam.solver.getSolverCapability(solver)
 
-        mid = self._db.retrieveValue(f'.//region[name="{self._rname}"]/material')
-        phase = self._db.retrieveValue(f'.//materials/material[@mid="{mid}"]/phase')
+        mid = self._db.getValue(f'.//region[name="{self._rname}"]/material')
+        phase = self._db.getValue(f'.//materials/material[@mid="{mid}"]/phase')
 
         if solver == 'TSLAeroFoam':
             self._generateTSLAero()
@@ -70,7 +63,7 @@ class FvSchemes(DictionaryFile):
             }
         }
 
-        turbulentKineticEnergy = self._db.retrieveValue('.//discretizationSchemes/turbulentKineticEnergy')
+        turbulentKineticEnergy = self._db.getValue('.//discretizationSchemes/turbulentKineticEnergy')
         if turbulentKineticEnergy == 'firstOrderUpwind':
             self._data['divSchemes'] = {
                 'default': 'Gauss linear',
@@ -132,8 +125,8 @@ class FvSchemes(DictionaryFile):
         }
 
     def _constructDdtSchemes(self):
-        timeTransient = self._db.retrieveValue('.//general/timeTransient')
-        time = self._db.retrieveValue('.//discretizationSchemes/time')
+        timeTransient = self._db.getValue('.//general/timeTransient')
+        time = self._db.getValue('.//discretizationSchemes/time')
 
         ddtSchemes = {}
         if timeTransient == 'true':
@@ -166,14 +159,14 @@ class FvSchemes(DictionaryFile):
         }
 
     def _constructDivSchemes(self):
-        energyModel = self._db.retrieveValue('.//models/energyModels')
-        multiphaseModel = self._db.retrieveValue('.//models/multiphaseModels/model')
-        speciesModel = self._db.retrieveValue('.//models/speciesModels')
+        energyModel = self._db.getValue('.//models/energyModels')
+        multiphaseModel = self._db.getValue('.//models/multiphaseModels/model')
+        speciesModel = self._db.getValue('.//models/speciesModels')
 
-        momentum = self._db.retrieveValue('.//discretizationSchemes/momentum')
-        energy = self._db.retrieveValue('.//discretizationSchemes/energy')
-        turbulentKineticEnergy = self._db.retrieveValue('.//discretizationSchemes/turbulentKineticEnergy')
-        volumeFraction = self._db.retrieveValue('.//discretizationSchemes/volumeFraction')
+        momentum = self._db.getValue('.//discretizationSchemes/momentum')
+        energy = self._db.getValue('.//discretizationSchemes/energy')
+        turbulentKineticEnergy = self._db.getValue('.//discretizationSchemes/turbulentKineticEnergy')
+        volumeFraction = self._db.getValue('.//discretizationSchemes/volumeFraction')
 
         # prepend 'bounded' prefix for steady state solvers
         if self._cap['timeSteady'] and not self._cap['timeTransient']:
@@ -258,9 +251,11 @@ class FvSchemes(DictionaryFile):
     def _constructLaplacianSchemes(self):
         laplacianSchemes = {}
 
-        if self.relaxationDisabled == 'true':
+        relaxationDisabled = self._db.getAttribute('.//numericalConditions/highOrderTermRelaxation', 'disabled')
+        relFactor = self._db.getValue('.//numericalConditions/highOrderTermRelaxation/relaxationFactor')
+        if relaxationDisabled == 'true':
             laplacianSchemes['default'] = 'Gauss linear corrected'
         else:
-            laplacianSchemes['default'] = f'Gauss linear limited corrected {self.relFactor}'
+            laplacianSchemes['default'] = f'Gauss linear limited corrected {relFactor}'
 
         return laplacianSchemes

@@ -3,7 +3,7 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.coredb import coredb
+from baramFlow.app import app
 from baramFlow.openfoam.file_system import FileSystem
 
 
@@ -20,37 +20,37 @@ def _constructFluid(region: str):
 
     mix = dict()
 
-    db = coredb.CoreDB()
-    mid = db.retrieveValue(f'.//region[name="{region}"]/material')
+    db = app.case.db
+    mid = db.getValue(f'.//region[name="{region}"]/material')
     path = f'.//materials/material[@mid="{mid}"]'
 
-    flowType = db.retrieveValue('.//general/flowType')
+    flowType = db.getValue('.//general/flowType')
     if flowType == 'compressible':
         thermo['type'] = 'hePsiThermo'
 
-    speciesModel = db.retrieveValue('.//models/speciesModels')
+    speciesModel = db.getValue('.//models/speciesModels')
     if speciesModel == 'on':
         thermo['mixture'] = 'multiComponentMixture'
 
-    spec = db.retrieveValue(path + '/density/specification')
+    spec = db.getValue(path + '/density/specification')
     if spec == 'constant':
-        rho = db.retrieveValue(path + '/density/constant')
+        rho = db.getValue(path + '/density/constant')
         thermo['equationOfState'] = 'rhoConst'
         mix['equationOfState'] = {
             'rho': rho
         }
     elif spec == 'polynomial':
         rhoCoeffs: list[float] = [0] * 8  # To make sure that rhoCoeffs has length of 8
-        for i, n in enumerate(db.retrieveValue(path + '/density/polynomial').split()):
+        for i, n in enumerate(db.getValue(path + '/density/polynomial').split()):
             rhoCoeffs[i] = float(n)
         thermo['equationOfState'] = 'icoPolynomial'
         mix['equationOfState'] = {
             'rhoCoeffs<8>': rhoCoeffs
         }
 
-    spec = db.retrieveValue(path + '/specificHeat/specification')
+    spec = db.getValue(path + '/specificHeat/specification')
     if spec == 'constant':
-        cp = db.retrieveValue(path + '/specificHeat/constant')
+        cp = db.getValue(path + '/specificHeat/constant')
         thermo['thermo'] = 'hConst'
         mix['thermodynamics'] = {
             'Cp': cp,
@@ -58,7 +58,7 @@ def _constructFluid(region: str):
         }
     elif spec == 'polynomial':
         cpCoeffs: list[float] = [0] * 8  # To make sure that cpCoeffs has length of 8
-        for i, n in enumerate(db.retrieveValue(path + '/specificHeat/polynomial').split()):
+        for i, n in enumerate(db.getValue(path + '/specificHeat/polynomial').split()):
             cpCoeffs[i] = float(n)
         thermo['thermo'] = 'hPolynomial'
         mix['thermodynamics'] = {
@@ -67,21 +67,21 @@ def _constructFluid(region: str):
             'CpCoeffs<8>': cpCoeffs
         }
 
-    spec = db.retrieveValue(path + '/thermalConductivity/specification')
+    spec = db.getValue(path + '/thermalConductivity/specification')
     if spec == 'constant':
-        kk = db.retrieveValue(path + '/thermalConductivity/constant')
+        kk = db.getValue(path + '/thermalConductivity/constant')
     elif spec == 'polynomial':
         kkCoeffs: list[float] = [0] * 8  # To make sure that kkCoeffs has length of 8
-        for i, n in enumerate(db.retrieveValue(path + '/thermalConductivity/polynomial').split()):
+        for i, n in enumerate(db.getValue(path + '/thermalConductivity/polynomial').split()):
             kkCoeffs[i] = float(n)
 
-    tModel = db.retrieveValue('.//turbulenceModels/model')
-    spec = db.retrieveValue(path + '/viscosity/specification')
+    tModel = db.getValue('.//turbulenceModels/model')
+    spec = db.getValue(path + '/viscosity/specification')
     if tModel == 'inviscid' or spec == 'constant':
         if tModel == 'inviscid':
             mu = 0.0
         else:
-            mu = float(db.retrieveValue(path + '/viscosity/constant'))
+            mu = float(db.getValue(path + '/viscosity/constant'))
 
         if mu == 0.0:
             pr = 0.7
@@ -95,7 +95,7 @@ def _constructFluid(region: str):
         }
     elif spec == 'polynomial':
         muCoeffs: list[float] = [0] * 8  # To make sure that muCoeffs has length of 8
-        for i, n in enumerate(db.retrieveValue(path + '/viscosity/polynomial').split()):
+        for i, n in enumerate(db.getValue(path + '/viscosity/polynomial').split()):
             muCoeffs[i] = float(n)
         thermo['transport'] = 'polynomial'
         mix['transport'] = {
@@ -103,15 +103,15 @@ def _constructFluid(region: str):
             'kappaCoeffs<8>': kkCoeffs  # If viscosity spec is polynomial, thermalConductivity spec should be polynomial too
         }
     elif spec == 'sutherland':
-        as_ = db.retrieveValue(path + '/viscosity/sutherland/coefficient')
-        ts  = db.retrieveValue(path + '/viscosity/sutherland/temperature')
+        as_ = db.getValue(path + '/viscosity/sutherland/coefficient')
+        ts  = db.getValue(path + '/viscosity/sutherland/temperature')
         thermo['transport'] = 'sutherland'
         mix['transport'] = {
             'As': as_,
             'Ts': ts
         }
 
-    mw = db.retrieveValue(path + '/molecularWeight')
+    mw = db.getValue(path + '/molecularWeight')
     mix['specie'] = {
         'nMoles': 1,
         'molWeight': mw
@@ -136,8 +136,8 @@ def _constructSolid(region: str):
 
     mix = {}
 
-    db = coredb.CoreDB()
-    mid = db.retrieveValue(f'.//region[name="{region}"]/material')
+    db = app.case.db
+    mid = db.getValue(f'.//region[name="{region}"]/material')
     path = f'.//materials/material[@mid="{mid}"]'
 
     mix['specie'] = {  # This value is not used for solid. The values are fake.
@@ -145,25 +145,25 @@ def _constructSolid(region: str):
         'molWeight': 100
     }
 
-    spec = db.retrieveValue(path + '/specificHeat/specification')
+    spec = db.getValue(path + '/specificHeat/specification')
     if spec == 'constant':
-        cp = db.retrieveValue(path + '/specificHeat/constant')
+        cp = db.getValue(path + '/specificHeat/constant')
         mix['thermodynamics'] = {
             'Cp': cp,
             'Hf': 0,
             'Sf': 0
         }
 
-    spec = db.retrieveValue(path + '/thermalConductivity/specification')
+    spec = db.getValue(path + '/thermalConductivity/specification')
     if spec == 'constant':
-        kk = db.retrieveValue(path + '/thermalConductivity/constant')
+        kk = db.getValue(path + '/thermalConductivity/constant')
         mix['transport'] = {
             'kappa': kk,
         }
 
-    spec = db.retrieveValue(path + '/density/specification')
+    spec = db.getValue(path + '/density/specification')
     if spec == 'constant':
-        rho = db.retrieveValue(path + '/density/constant')
+        rho = db.getValue(path + '/density/constant')
         mix['equationOfState'] = {
             'rho': rho
         }
@@ -184,10 +184,10 @@ class ThermophysicalProperties(DictionaryFile):
         if self._data is not None:
             return self
 
-        db = coredb.CoreDB()
+        db = app.case.db
 
-        mid = db.retrieveValue(f'.//region[name="{self._rname}"]/material')
-        phase = db.retrieveValue(f'.//materials/material[@mid="{mid}"]/phase')
+        mid = db.getValue(f'.//region[name="{self._rname}"]/material')
+        phase = db.getValue(f'.//materials/material[@mid="{mid}"]/phase')
 
         if phase == 'solid':
             self._data = _constructSolid(self._rname)

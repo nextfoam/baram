@@ -244,38 +244,6 @@ class _CoreDB(object):
         else:
             return element.text
 
-    def retrieveValue(self, xpath: str, element=None) -> str:
-        """Returns specified configuration value.
-
-        Returns configuration value specified by 'xpath'
-
-        Args:
-            xpath: XML xpath for the configuration item
-
-        Returns:
-            configuration value
-
-        Raises:
-            LookupError: Less or more than one item are matched
-        """
-        element = self._getElement(xpath) if element is None else element
-
-        path = self._xmlTree.getelementpath(element)
-        schema = self._schema.find(".//" + path, namespaces=nsmap)
-
-        if schema is None:
-            raise LookupError
-
-        if not schema.type.has_simple_content():
-            raise LookupError
-
-        logger.debug(f'getValue( {xpath} -> {element.text} )')
-
-        if element.text is None:
-            return ''
-        else:
-            return element.text
-
     def validate(self, xpath: str, value: str):
         """Validates configuration value in specified path
 
@@ -391,7 +359,7 @@ class _CoreDB(object):
 
             return element, value, None
 
-    def setValue(self, xpath: str, value: str) -> Optional[Error]:
+    def setValue(self, xpath: str, value: str):
         """Sets configuration value in specified path
 
         Sets configuration value in specified path
@@ -403,6 +371,7 @@ class _CoreDB(object):
         Raises:
             LookupError: Less or more than one item are matched
             ValueError: Invalid configuration value
+            DBValueException: Invalid configuration value by user
         """
         element, value, parameter = self.validate(xpath, value)
 

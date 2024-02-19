@@ -3,7 +3,7 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.coredb import coredb
+from baramFlow.app import app
 from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB, InterfaceMode
 from baramFlow.openfoam.file_system import FileSystem
 from .polymesh_loader import PolyMeshLoader
@@ -43,11 +43,13 @@ class Boundary(DictionaryFile):
         self._boundaryDict = None
         self._processorNo = processorNo
 
-        self._db = coredb.CoreDB()
+        self._db = None
 
     def build(self):
         if self._boundaryDict is not None:
             return self
+
+        self._db = app.case.db
 
         fullPath = self.fullPath(self._processorNo)
 
@@ -55,16 +57,16 @@ class Boundary(DictionaryFile):
         for bcname in self._boundaryDict.content:
             xpath = BoundaryDB.getXPathByName(self._rname, bcname)
             if self._db.exists(xpath):
-                bctype = self._db.retrieveValue(xpath + '/physicalType')
+                bctype = self._db.getValue(xpath + '/physicalType')
 
                 self._boundaryDict.content[bcname]['type'] = TYPE_MAP[bctype]
 
                 if BoundaryDB.needsCoupledBoundary(bctype):
-                    couple = self._db.retrieveValue(xpath + '/coupledBoundary')
+                    couple = self._db.getValue(xpath + '/coupledBoundary')
                     if bctype == BoundaryType.THERMO_COUPLED_WALL.value:
                         self._generateMappedWall(bcname, xpath, couple)
                     elif bctype == BoundaryType.INTERFACE.value:
-                        spec = self._db.retrieveValue(xpath + '/interface/mode')
+                        spec = self._db.getValue(xpath + '/interface/mode')
                         if spec == InterfaceMode.INTERNAL_INTERFACE.value:
                             self._generateCyclicAmiNoOrdering(bcname, xpath, couple)
                         elif spec == InterfaceMode.ROTATIONAL_PERIODIC.value:

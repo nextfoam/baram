@@ -8,6 +8,7 @@ from libbaram.app_path import APP_PATH
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 import baramFlow.openfoam.solver
+from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.boundary_db import BoundaryDB
@@ -56,11 +57,7 @@ def _libPath(baseName: str) -> str:
 def _getAvailableFields():
     fields = ['U']
 
-    solvers = baramFlow.openfoam.solver.findSolvers()
-    if len(solvers) == 0:  # configuration not enough yet
-        raise RuntimeError
-
-    cap = baramFlow.openfoam.solver.getSolverCapability(solvers[0])
+    cap = baramFlow.openfoam.solver.getSolverCapability(app.case.solver)
     if cap['usePrgh']:
         fields.append('p_rgh')
     else:
@@ -147,10 +144,10 @@ class ControlDict(DictionaryFile):
         if self._data is not None:
             return self
 
-        self._db = coredb.CoreDB()
+        self._db = app.case.db
         xpath = RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions'
 
-        solvers = baramFlow.openfoam.solver.findSolvers()
+        solvers = baramFlow.openfoam.solver.findSolvers(self._db)
         if len(solvers) != 1:  # configuration not enough yet
             solvers = ['solver']
             # raise RuntimeError
@@ -161,23 +158,23 @@ class ControlDict(DictionaryFile):
         writeInterval = None
         adjustTimeStep = 'no'
         if GeneralDB.isTimeTransient():
-            endTime = self._db.retrieveValue(xpath + '/endTime')
-            timeSteppingMethod = self._db.retrieveValue(xpath + '/timeSteppingMethod')
-            writeInterval = self._db.retrieveValue(xpath + '/reportIntervalSeconds')
+            endTime = self._db.getValue(xpath + '/endTime')
+            timeSteppingMethod = self._db.getValue(xpath + '/timeSteppingMethod')
+            writeInterval = self._db.getValue(xpath + '/reportIntervalSeconds')
             if timeSteppingMethod == TimeSteppingMethod.FIXED.value:
-                deltaT = self._db.retrieveValue(xpath + '/timeStepSize')
+                deltaT = self._db.getValue(xpath + '/timeStepSize')
             elif timeSteppingMethod == TimeSteppingMethod.ADAPTIVE.value:
                 deltaT = 0.001
                 writeControl = 'adjustableRunTime'
                 adjustTimeStep = 'yes'
         else:
-            endTime = self._db.retrieveValue(xpath + '/numberOfIterations')
+            endTime = self._db.getValue(xpath + '/numberOfIterations')
             deltaT = 1
-            writeInterval = self._db.retrieveValue(xpath + '/reportIntervalSteps')
+            writeInterval = self._db.getValue(xpath + '/reportIntervalSteps')
 
         purgeWrite = 0
-        if self._db.retrieveValue(xpath + '/retainOnlyTheMostRecentFiles') == 'true':
-            purgeWrite = self._db.retrieveValue(xpath + '/maximumNumberOfDataFiles')
+        if self._db.getValue(xpath + '/retainOnlyTheMostRecentFiles') == 'true':
+            purgeWrite = self._db.getValue(xpath + '/maximumNumberOfDataFiles')
 
         self._data = {
             'application': solvers[0],
@@ -189,19 +186,19 @@ class ControlDict(DictionaryFile):
             'writeControl': writeControl,
             'writeInterval': writeInterval,
             'purgeWrite': purgeWrite,
-            'writeFormat': self._db.retrieveValue(xpath + '/dataWriteFormat'),
-            'writePrecision': self._db.retrieveValue(xpath + '/dataWritePrecision'),
+            'writeFormat': self._db.getValue(xpath + '/dataWriteFormat'),
+            'writePrecision': self._db.getValue(xpath + '/dataWritePrecision'),
             'writeCompression': 'off',
             'timeFormat': 'general',
-            'timePrecision': self._db.retrieveValue(xpath + '/timePrecision'),
+            'timePrecision': self._db.getValue(xpath + '/timePrecision'),
             'runTimeModifiable': 'yes',
             'adjustTimeStep': adjustTimeStep,
-            'maxCo': self._db.retrieveValue(xpath + '/maxCourantNumber'),
+            'maxCo': self._db.getValue(xpath + '/maxCourantNumber'),
             'functions': self._generateResiduals()
         }
 
         if ModelsDB.isMultiphaseModelOn():
-            self._data['maxAlphaCo'] = self._db.retrieveValue(xpath + '/VoFMaxCourantNumber')
+            self._data['maxAlphaCo'] = self._db.getValue(xpath + '/VoFMaxCourantNumber')
 
         self._appendMonitoringFunctionObjects()
 
@@ -210,7 +207,7 @@ class ControlDict(DictionaryFile):
     def _appendMonitoringFunctionObjects(self):
         for name in self._db.getForceMonitors():
             xpath = MonitorDB.getForceMonitorXPath(name)
-            patches = [BoundaryDB.getBoundaryName(bcid) for bcid in self._db.retrieveValue(xpath + '/boundaries').split()]
+            patches = [BoundaryDB.getBoundaryName(bcid) for bcid in self._db.getValue(xpath + '/boundaries').split()]
             self._data['functions'][name + '_forces'] = self._generateForces(xpath, patches)
             self._data['functions'][name] = self._generateForceMonitor(xpath, patches)
 
@@ -265,14 +262,14 @@ class ControlDict(DictionaryFile):
             'CofR': self._db.getVector(xpath + '/centerOfRotation'),
 
             'writeControl': 'timeStep',
-            'writeInterval': self._db.retrieveValue(xpath + '/writeInterval'),
+            'writeInterval': self._db.getValue(xpath + '/writeInterval'),
             'log': 'false',
         }
 
         if not GeneralDB.isCompressible():
             data['p'] = 'p_rgh'  # Use "Pseudo hydrostatic pressure" for calculation
 
-        if rname := self._db.retrieveValue(xpath + '/region'):
+        if rname := self._db.getValue(xpath + '/region'):
             data['region'] = rname
 
         return data
@@ -284,47 +281,47 @@ class ControlDict(DictionaryFile):
 
             'patches': patches,
             'rho': 'rho',
-            'Aref': self._db.retrieveValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/area'),
-            'lRef': self._db.retrieveValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/length'),
-            'magUInf':  self._db.retrieveValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/velocity'),
-            'rhoInf': self._db.retrieveValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/density'),
+            'Aref': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/area'),
+            'lRef': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/length'),
+            'magUInf':  self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/velocity'),
+            'rhoInf': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/density'),
             'dragDir': self._db.getVector(xpath + '/dragDirection'),
             'liftDir': self._db.getVector(xpath + '/liftDirection'),
             'CofR': self._db.getVector(xpath + '/centerOfRotation'),
 
             'writeControl': 'timeStep',
-            'writeInterval': self._db.retrieveValue(xpath + '/writeInterval'),
+            'writeInterval': self._db.getValue(xpath + '/writeInterval'),
             'log': 'false',
         }
 
         if not GeneralDB.isCompressible():
             data['p'] = 'p_rgh'  # Use "Pseudo hydrostatic pressure" for calculation
 
-        if rname := self._db.retrieveValue(xpath + '/region'):
+        if rname := self._db.getValue(xpath + '/region'):
             data['region'] = rname
 
         return data
 
     def _generatePointMonitor(self, xpath):
-        field = FieldHelper.DBFieldKeyToField(self._db.retrieveValue(xpath + '/field/field'),
-                                              self._db.retrieveValue(xpath + '/field/mid'))
+        field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
+                                              self._db.getValue(xpath + '/field/mid'))
 
         if field == 'mag(U)':
             self._appendMagFieldFunctionObject()
         elif field in ('Ux', 'Uy', 'Uz'):
             self._appendComponentsFunctionObject()
 
-        if self._db.retrieveValue(xpath + '/snapOntoBoundary') == 'true':
+        if self._db.getValue(xpath + '/snapOntoBoundary') == 'true':
             return {
                 'type': 'patchProbes',
                 'libs': [_libPath('libsampling')],
 
-                'patches': [ BoundaryDB.getBoundaryName(self._db.retrieveValue(xpath + '/boundary')) ],
+                'patches': [ BoundaryDB.getBoundaryName(self._db.getValue(xpath + '/boundary')) ],
                 'fields': [field],
                 'probeLocations': [self._db.getVector(xpath + '/coordinate')],
 
                 'writeControl': 'timeStep',
-                'writeInterval': self._db.retrieveValue(xpath + '/writeInterval'),
+                'writeInterval': self._db.getValue(xpath + '/writeInterval'),
                 'log': 'false',
             }
 
@@ -336,27 +333,27 @@ class ControlDict(DictionaryFile):
             'probeLocations': [self._db.getVector(xpath + '/coordinate')],
 
             'writeControl': 'timeStep',
-            'writeInterval': self._db.retrieveValue(xpath + '/writeInterval'),
+            'writeInterval': self._db.getValue(xpath + '/writeInterval'),
             'log': 'false',
         }
 
     def _generateSurfaceMonitor(self, xpath):
-        reportType = self._db.retrieveValue(xpath + 'reportType')
+        reportType = self._db.getValue(xpath + 'reportType')
         field = None
         if reportType == SurfaceReportType.MASS_FLOW_RATE.value:
             field = 'phi'
         elif reportType == SurfaceReportType.VOLUME_FLOW_RATE.value:
             field = 'U'
         else:
-            field = FieldHelper.DBFieldKeyToField(self._db.retrieveValue(xpath + '/field/field'),
-                                                  self._db.retrieveValue(xpath + '/field/mid'))
+            field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
+                                                  self._db.getValue(xpath + '/field/mid'))
 
         if field == 'mag(U)':
             self._appendMagFieldFunctionObject()
         elif field in ('Ux', 'Uy', 'Uz'):
             self._appendComponentsFunctionObject()
 
-        surface = self._db.retrieveValue(xpath + '/surface')
+        surface = self._db.getValue(xpath + '/surface')
 
         data = {
             'type': 'surfaceFieldValue',
@@ -373,7 +370,7 @@ class ControlDict(DictionaryFile):
             'executeInterval': 1,
 
             'writeControl': 'timeStep',
-            'writeInterval': self._db.retrieveValue(xpath + '/writeInterval'),
+            'writeInterval': self._db.getValue(xpath + '/writeInterval'),
             'log': 'false',
         }
 
@@ -386,8 +383,8 @@ class ControlDict(DictionaryFile):
         return data
 
     def _generateVolumeMonitor(self, xpath):
-        field = FieldHelper.DBFieldKeyToField(self._db.retrieveValue(xpath + '/field/field'),
-                                              self._db.retrieveValue(xpath + '/field/mid'))
+        field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
+                                              self._db.getValue(xpath + '/field/mid'))
 
         if field == 'mag(U)':
             self._appendMagFieldFunctionObject()
@@ -399,7 +396,7 @@ class ControlDict(DictionaryFile):
             'libs': [_libPath('libfieldFunctionObjects')],
 
             'fields': [field],
-            'operation': VOLUME_MONITOR_OPERATION[self._db.retrieveValue(xpath + '/reportType')],
+            'operation': VOLUME_MONITOR_OPERATION[self._db.getValue(xpath + '/reportType')],
             'writeFields': 'false',
 
             'writeControl': 'timeStep',
@@ -407,7 +404,7 @@ class ControlDict(DictionaryFile):
             'log': 'false',
         }
 
-        volume = self._db.retrieveValue(xpath + '/volume')
+        volume = self._db.getValue(xpath + '/volume')
         name = CellZoneDB.getCellZoneName(volume)
         if name == CellZoneDB.NAME_FOR_REGION:
             data['regionType'] = 'all'

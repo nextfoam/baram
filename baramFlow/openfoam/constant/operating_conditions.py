@@ -3,7 +3,7 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.coredb import coredb
+from baramFlow.app import app
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.openfoam.file_system import FileSystem
 
@@ -18,9 +18,9 @@ class OperatingConditions(DictionaryFile):
         if self._data is not None:
             return self
 
-        db = coredb.CoreDB()
+        db = app.case.db
 
-        pressure = db.retrieveValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure')
+        pressure = db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure')
 
         self._data = {
             'operatingPressure': ('operatingPressure [1 -1 -2 0 0 0 0]', pressure)

@@ -83,25 +83,25 @@ class Nut(BoundaryCondition):
     def _constructAtmNutkWallFunction(self):
         return {
             'type': 'atmNutkWallFunction',
-            'z0': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
+            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
             'value': self._initialValueByTime()
         }
 
     def _constructPressureOutletNut(self, xpath):
-        if self._db.retrieveValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+        if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
             return self._constructCalculated()
         else:
             return self._constructZeroGradient()
 
     def _constructWallNut(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/wall/velocity/type')
+        spec = self._db.getValue(xpath + '/wall/velocity/type')
         if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
             return self._constructAtmNutkWallFunction()
         else:
             return self._constructWallFunctionByModel()
 
     def _constructInterfaceNut(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/interface/mode')
+        spec = self._db.getValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
             return self._constructWallFunctionByModel()
         else:

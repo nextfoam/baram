@@ -61,23 +61,23 @@ class Epsilon(BoundaryCondition):
         return field
 
     def _constructInletOutletByModel(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/turbulence/k-epsilon/specification')
+        spec = self._db.getValue(xpath + '/turbulence/k-epsilon/specification')
         if spec == KEpsilonSpecification.K_AND_EPSILON.value:
             return self._constructInletOutlet(
-                self._db.retrieveValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
+                self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
         elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
             return self._constructNEXTViscosityRatioInletOutletTDR(
-                self._db.retrieveValue(xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'))
+                self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'))
 
     def _constructAtmBoundaryLayerInletEpsilon(self):
         return {
             'type': 'atmBoundaryLayerInletEpsilon',
             'flowDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection'),
             'zDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/groundNormalDirection'),
-            'Uref': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
-            'Zref': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceHeight'),
-            'z0': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
-            'd': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
+            'Uref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
+            'Zref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceHeight'),
+            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
+            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
         }
 
     def _constructNEXTEpsilonWallFunction(self):
@@ -89,9 +89,9 @@ class Epsilon(BoundaryCondition):
         # Wall type should be "epsilonBlendedWallFunction" for "realizableKEtwoLayer" model
         turbulenceModel = ModelsDB.getTurbulenceModel()
         if turbulenceModel == TurbulenceModel.K_EPSILON:
-            subModel = self._db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
+            subModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
             if subModel == KEpsilonModel.REALIZABLE.value:
-                treatment = self._db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
+                treatment = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
                 if treatment == NearWallTreatment.ENHANCED_WALL_TREATMENT.value:
                     data['type'] = 'epsilonBlendedWallFunction'
 
@@ -100,35 +100,35 @@ class Epsilon(BoundaryCondition):
     def _constructAtmEpsilonWallFunction(self):
         return {
             'type': 'atmEpsilonWallFunction',
-            'z0': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
-            'd': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate'),
+            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
+            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate'),
             'value': self._initialValueByTime()
         }
 
     def _constructWallEpsilon(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/wall/velocity/type')
+        spec = self._db.getValue(xpath + '/wall/velocity/type')
         if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
             return self._constructAtmEpsilonWallFunction()
         else:
             return self._constructNEXTEpsilonWallFunction()
 
     def _constructPressureOutletEpsilon(self, xpath):
-        if self._db.retrieveValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+        if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
             return self._constructInletOutletByModel(xpath)
         else:
             return self._constructZeroGradient()
 
     def _constructFreeStreamEpsilon(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/turbulence/k-epsilon/specification')
+        spec = self._db.getValue(xpath + '/turbulence/k-epsilon/specification')
         epsilon = None
         if spec == KEpsilonSpecification.K_AND_EPSILON.value:
-            epsilon = float(self._db.retrieveValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
+            epsilon = float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
         elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-            _, epsilon = self._calculateFreeStreamKE(xpath, self._region.rname)
+            _, epsilon = self._calculateFreeStreamKE(xpath, self._region)
         return self._constructFreestream(epsilon)
 
     def _constructInterfaceEpsilon(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/interface/mode')
+        spec = self._db.getValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
             return self._constructNEXTEpsilonWallFunction()
         else:

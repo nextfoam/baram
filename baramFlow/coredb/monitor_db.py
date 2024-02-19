@@ -6,6 +6,7 @@ from enum import Enum
 from PySide6.QtCore import QCoreApplication
 
 import baramFlow.openfoam.solver
+from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
 from baramFlow.coredb.general_db import GeneralDB
@@ -220,11 +221,7 @@ class FieldHelper:
 
             if fieldName == 'p':
                 try:
-                    solvers = baramFlow.openfoam.solver.findSolvers()
-                    if len(solvers) == 0:  # configuration not enough yet
-                        raise RuntimeError
-
-                    cap = baramFlow.openfoam.solver.getSolverCapability(solvers[0])
+                    cap = baramFlow.openfoam.solver.getSolverCapability(app.case.solver)
                     if cap['usePrgh']:
                         fieldName = 'p_rgh'
                 except RuntimeError:

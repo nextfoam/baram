@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, ContactAngleModel, InterfaceMode
-from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -17,7 +17,7 @@ class Alpha(BoundaryCondition):
         self._mid = mid
 
         xpath = RegionDB.getXPath(region.rname)
-        self._initialValue = self._db.retrieveValue(
+        self._initialValue = self._db.getValue(
             f'{xpath}/initialization/initialValues/volumeFractions/volumeFraction[material="{mid}"]/fraction')
 
     def build0(self):
@@ -37,7 +37,7 @@ class Alpha(BoundaryCondition):
 
         for bcid, name, type_ in self._region.boundaries:
             xpath = BoundaryDB.getXPath(bcid)
-            volumeFraction = self._db.retrieveValue(f'{xpath}/volumeFractions/volumeFraction[material="{self._mid}"]/fraction')
+            volumeFraction = self._db.getValue(f'{xpath}/volumeFractions/volumeFraction[material="{self._mid}"]/fraction')
 
             field[name] = {
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(volumeFraction)),
@@ -68,7 +68,7 @@ class Alpha(BoundaryCondition):
         return field
 
     def _constructPressureOutletAlpha(self, xpath, inletValue):
-        if self._db.retrieveValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+        if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
             return self._constructInletOutlet(inletValue)
         else:
             return self._constructZeroGradient()
@@ -82,7 +82,7 @@ class Alpha(BoundaryCondition):
         }
 
     def _constructWallAlpha(self, xpath):
-        contactAngleModel = self._db.retrieveValue(xpath + '/wall/wallAdhesions/model')
+        contactAngleModel = self._db.getValue(xpath + '/wall/wallAdhesions/model')
         if contactAngleModel == ContactAngleModel.DISABLE.value:
             return self._constructZeroGradient()
 
@@ -90,23 +90,23 @@ class Alpha(BoundaryCondition):
         if contactAngleModel == ContactAngleModel.CONSTANT.value:
             return {
                 'type': 'constantAlphaContactAngle',
-                'theta0': self._db.retrieveValue(caXpath + '/contactAngle'),
-                'limit': self._db.retrieveValue(xpath + '/wall/wallAdhesions/limit'),
+                'theta0': self._db.getValue(caXpath + '/contactAngle'),
+                'limit': self._db.getValue(xpath + '/wall/wallAdhesions/limit'),
                 'value': self._initialValueByTime()
             }
         elif contactAngleModel == ContactAngleModel.DYNAMIC.value:
             return {
                 'type': 'dynamicAlphaContactAngle',
-                'theta0': self._db.retrieveValue(caXpath + '/contactAngle'),
-                'uTheta': self._db.retrieveValue(caXpath + '/characteristicVelocityScale'),
-                'thetaA': self._db.retrieveValue(caXpath + '/advancingContactAngle'),
-                'thetaR': self._db.retrieveValue(caXpath + '/recedingContactAngle'),
-                'limit': self._db.retrieveValue(xpath + '/wall/wallAdhesions/limit'),
+                'theta0': self._db.getValue(caXpath + '/contactAngle'),
+                'uTheta': self._db.getValue(caXpath + '/characteristicVelocityScale'),
+                'thetaA': self._db.getValue(caXpath + '/advancingContactAngle'),
+                'thetaR': self._db.getValue(caXpath + '/recedingContactAngle'),
+                'limit': self._db.getValue(xpath + '/wall/wallAdhesions/limit'),
                 'value': self._initialValueByTime()
             }
 
     def _constructInterfaceAlpha(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/interface/mode')
+        spec = self._db.getValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
             return None
         else:

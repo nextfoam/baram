@@ -64,21 +64,21 @@ class K(BoundaryCondition):
 
     def _constructInletOutletByModel(self, xpath):
         if self._model == TurbulenceModel.K_EPSILON:
-            spec = self._db.retrieveValue(xpath + '/turbulence/k-epsilon/specification')
+            spec = self._db.getValue(xpath + '/turbulence/k-epsilon/specification')
             if spec == KEpsilonSpecification.K_AND_EPSILON.value:
                 return self._constructInletOutlet(
-                    self._db.retrieveValue(xpath + '/turbulence/k-epsilon/turbulentKineticEnergy'))
+                    self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentKineticEnergy'))
             elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
                 return self._constructNEXTTurbulentIntensityInletOutletTKE(
-                    float(self._db.retrieveValue(xpath + '/turbulence/k-epsilon/turbulentIntensity'))/100.0)
+                    float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentIntensity'))/100.0)
         elif self._model == TurbulenceModel.K_OMEGA:
-            spec = self._db.retrieveValue(xpath + '/turbulence/k-omega/specification')
+            spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
             if spec == KOmegaSpecification.K_AND_OMEGA.value:
                 return self._constructInletOutlet(
-                    self._db.retrieveValue(xpath + '/turbulence/k-omega/turbulentKineticEnergy'))
+                    self._db.getValue(xpath + '/turbulence/k-omega/turbulentKineticEnergy'))
             elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
                 return self._constructNEXTTurbulentIntensityInletOutletTKE(
-                    float(self._db.retrieveValue(xpath + '/turbulence/k-omega/turbulentIntensity'))/100.0)
+                    float(self._db.getValue(xpath + '/turbulence/k-omega/turbulentIntensity'))/100.0)
 
     def _constructNEXTTurbulentIntensityInletOutletTKE(self, turbulentIntensity):
         return {
@@ -92,10 +92,10 @@ class K(BoundaryCondition):
             'type': 'atmBoundaryLayerInletK',
             'flowDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection'),
             'zDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/groundNormalDirection'),
-            'Uref': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
-            'Zref': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceHeight'),
-            'z0': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
-            'd': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
+            'Uref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
+            'Zref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceHeight'),
+            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
+            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
         }
 
     def _constructKqRWallFunction(self):
@@ -105,7 +105,7 @@ class K(BoundaryCondition):
         }
 
     def _constructPressureOutletK(self, xpath):
-        if self._db.retrieveValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+        if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
             return self._constructInletOutletByModel(xpath)
         else:
             return self._constructZeroGradient()
@@ -113,21 +113,21 @@ class K(BoundaryCondition):
     def _constructFreeStreamK(self, xpath):
         k = None
         if self._model == TurbulenceModel.K_EPSILON:
-            spec = self._db.retrieveValue(xpath + '/turbulence/k-epsilon/specification')
+            spec = self._db.getValue(xpath + '/turbulence/k-epsilon/specification')
             if spec == KEpsilonSpecification.K_AND_EPSILON.value:
-                k = float(self._db.retrieveValue(xpath + '/turbulence/k-epsilon/turbulentKineticEnergy'))
+                k = float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentKineticEnergy'))
             elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-                k, _ = self._calculateFreeStreamKE(xpath, self._region.rname)
+                k, _ = self._calculateFreeStreamKE(xpath, self._region)
         elif self._model == TurbulenceModel.K_OMEGA:
-            spec = self._db.retrieveValue(xpath + '/turbulence/k-omega/specification')
+            spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
             if spec == KOmegaSpecification.K_AND_OMEGA.value:
-                k = float(self._db.retrieveValue(xpath + '/turbulence/k-omega/turbulentKineticEnergy'))
+                k = float(self._db.getValue(xpath + '/turbulence/k-omega/turbulentKineticEnergy'))
             elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-                k, _ = self._calculateFreeStreamKW(xpath, self._region.rname)
+                k, _ = self._calculateFreeStreamKW(xpath, self._region)
         return self._constructFreestream(k)
 
     def _constructInterfaceK(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/interface/mode')
+        spec = self._db.getValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
             return self._constructKqRWallFunction()
         else:

@@ -37,7 +37,7 @@ class Omega(BoundaryCondition):
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletOmega(xpath)),
-                BoundaryType.ABL_INLET.value:           (lambda: self._constructInletOutlet(self._db.retrieveValue(xpath + '/turbulence/k-omega/specificDissipationRate'))),
+                BoundaryType.ABL_INLET.value:           (lambda: self._constructInletOutlet(self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))),
                 BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
@@ -61,13 +61,13 @@ class Omega(BoundaryCondition):
         return field
 
     def _constructInletOutletByModel(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/turbulence/k-omega/specification')
+        spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
         if spec == KOmegaSpecification.K_AND_OMEGA.value:
             return self._constructInletOutlet(
-                self._db.retrieveValue(xpath + '/turbulence/k-omega/specificDissipationRate'))
+                self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))
         elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
             return self._constructNEXTViscosityRatioInletOutletTDR(
-                self._db.retrieveValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'))
+                self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'))
 
     def _constructNEXTOmegaBlendedWallFunction(self):
         return {
@@ -80,35 +80,35 @@ class Omega(BoundaryCondition):
     def _constructAtmOmegaWallFunction(self):
         return {
             'type': 'atmOmegaWallFunction',
-            'z0': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
-            'd': self._db.retrieveValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate'),
+            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
+            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate'),
             'value': self._initialValueByTime()
         }
 
     def _constructPressureOutletOmega(self, xpath):
-        if self._db.retrieveValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+        if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
             return self._constructInletOutletByModel(xpath)
         else:
             return self._constructZeroGradient()
 
     def _constructFreeStreamOmega(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/turbulence/k-omega/specification')
+        spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
         omega = None
         if spec == KOmegaSpecification.K_AND_OMEGA.value:
-            omega = float(self._db.retrieveValue(xpath + '/turbulence/k-omega/specificDissipationRate'))
+            omega = float(self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))
         elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-            _, omega = self._calculateFreeStreamKW(xpath, self._region.rname)
+            _, omega = self._calculateFreeStreamKW(xpath, self._region)
         return self._constructFreestream(omega)
 
     def _constructWallOmega(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/wall/velocity/type')
+        spec = self._db.getValue(xpath + '/wall/velocity/type')
         if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
             return self._constructAtmOmegaWallFunction()
         else:
             return self._constructNEXTOmegaBlendedWallFunction()
 
     def _constructInterfaceOmega(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/interface/mode')
+        spec = self._db.getValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
             return self._constructNEXTOmegaBlendedWallFunction()
         else:

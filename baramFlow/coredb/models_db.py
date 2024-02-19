@@ -84,11 +84,11 @@ class ModelsDB:
 
     @classmethod
     def getMultiphaseModel(cls):
-        return MultiphaseModel(coredb.CoreDB().retrieveValue(ModelsDB.MULTIPHASE_MODELS_XPATH + '/model'))
+        return MultiphaseModel(coredb.CoreDB().getValue(ModelsDB.MULTIPHASE_MODELS_XPATH + '/model'))
 
     @classmethod
     def getTurbulenceModel(cls):
-        return TurbulenceModel(coredb.CoreDB().retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model'))
+        return TurbulenceModel(coredb.CoreDB().getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/model'))
 
     @classmethod
     def isMultiphaseModelOn(cls):
@@ -100,11 +100,11 @@ class ModelsDB:
 
     @classmethod
     def isSpeciesModelOn(cls):
-        return coredb.CoreDB().retrieveValue(ModelsDB.SPECIES_MODELS_XPATH) != 'off'
+        return coredb.CoreDB().getValue(ModelsDB.SPECIES_MODELS_XPATH) != 'off'
 
     @classmethod
     def isEnergyModelOn(cls):
-        return coredb.CoreDB().retrieveValue(ModelsDB.ENERGY_MODELS_XPATH) == 'on'
+        return coredb.CoreDB().getValue(ModelsDB.ENERGY_MODELS_XPATH) == 'on'
 
     @classmethod
     def EnergyModelOn(cls):

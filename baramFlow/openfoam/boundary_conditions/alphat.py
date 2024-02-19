@@ -61,36 +61,36 @@ class Alphat(BoundaryCondition):
     def _constructCompressibleAlphatWallFunction(self):
         return {
             'type': 'compressible::alphatWallFunction',
-            'Prt': self._db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
+            'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
             'value': self._initialValueByTime()
         }
 
     def _constructCompressibleAlphatJayatillekeWallFunction(self):
         return {
             'type': 'compressible::alphatJayatillekeWallFunction',
-            'Prt': self._db.retrieveValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
+            'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
             'value': self._initialValueByTime()
         }
 
     def _constructPressureOutletAlphat(self, xpath):
-        if self._db.retrieveValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+        if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
             return self._constructCalculated()
         else:
             return self._constructZeroGradient()
 
     def _constructWallAlphat(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/wall/velocity/type')
+        spec = self._db.getValue(xpath + '/wall/velocity/type')
         if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
             return self._constructCalculated()
         else:
-            spec = self._db.retrieveValue(xpath + '/wall/temperature/type')
+            spec = self._db.getValue(xpath + '/wall/temperature/type')
             if spec == WallTemperature.ADIABATIC.value:
                 return self._constructCompressibleAlphatWallFunction()
             else:
                 return self._constructCompressibleAlphatJayatillekeWallFunction()
 
     def _constructInterfaceAlphat(self, xpath):
-        spec = self._db.retrieveValue(xpath + '/interface/mode')
+        spec = self._db.getValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
             return self._constructCompressibleAlphatJayatillekeWallFunction()
         else:
