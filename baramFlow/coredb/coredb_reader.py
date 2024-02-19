@@ -7,9 +7,9 @@ from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb import ValueException, Error, _CoreDB
-from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT
+from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT, Phase
 from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.coredb.region_db import RegionDB, Phase
+from baramFlow.coredb.region_db import RegionDB
 
 
 class Region:
