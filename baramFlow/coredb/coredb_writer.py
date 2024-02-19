@@ -3,7 +3,7 @@
 
 from PySide6.QtCore import QCoreApplication
 
-from baramFlow.coredb.coredb import CoreDB, Error
+from baramFlow.coredb.coredb import CoreDB, Error, ValueException
 
 
 class WriteItem:
@@ -85,6 +85,8 @@ class DBWriterError:
             return QCoreApplication.translate('CoreDBWriter', '{0} must be a float.').format(self._name)
         elif self._error == Error.REFERENCED:
             return QCoreApplication.translate('CoreDBWriter', '{0} is referenced by another.').format(self._name)
+        elif self._error == Error.INVALID_SYNTAX:
+            return QCoreApplication.translate('CoreDBWriter', self._message)
         else:
             return QCoreApplication.translate('CoreDBWriter', '{0} is invalid. {1}').format(self._name, self._error)
 
@@ -118,8 +120,11 @@ class CoreDBWriter:
         self._errors = []
         with self._db:
             for i in self._items:
-                if error := i.apply(self._db):
-                    self._errors.append(DBWriterError(i.label, error))
+                try:
+                    i.apply(self._db)
+                except ValueException as ex:
+                    error, message = ex.args
+                    self._errors.append(DBWriterError(i.label, error, message))
 
         return len(self._errors)
 

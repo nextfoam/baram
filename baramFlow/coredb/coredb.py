@@ -34,11 +34,18 @@ class Cancel(Exception):
 
 
 class Error(Enum):
-    OUT_OF_RANGE = auto()
-    INTEGER_ONLY = auto()
-    FLOAT_ONLY   = auto()
-    REFERENCED   = auto()
-    EMPTY        = auto()
+    OUT_OF_RANGE    = auto()
+    INTEGER_ONLY    = auto()
+    FLOAT_ONLY      = auto()
+    REFERENCED      = auto()
+    EMPTY           = auto()
+    INVALID_SYNTAX  = auto()
+
+
+class ValueException(Exception):
+    def __init__(self, error: Error, msg: str = None):
+        print('Value Exception:', error, msg)
+        super().__init__(error, msg)
 
 
 def CoreDB():
@@ -221,8 +228,21 @@ class _CoreDB(object):
         if parameter := element.get('batchParameter'):
             return '$' + parameter
 
-        return self.retrieveValue(xpath, element)
+        path = self._xmlTree.getelementpath(element)
+        schema = self._schema.find(".//" + path, namespaces=nsmap)
 
+        if schema is None:
+            raise LookupError
+
+        if not schema.type.has_simple_content():
+            raise LookupError
+
+        logger.debug(f'getValue( {xpath} -> {element.text} )')
+
+        if element.text is None:
+            return ''
+        else:
+            return element.text
 
     def retrieveValue(self, xpath: str, element=None) -> str:
         """Returns specified configuration value.
@@ -256,10 +276,11 @@ class _CoreDB(object):
         else:
             return element.text
 
-    def setValue(self, xpath: str, value: str) -> Optional[Error]:
-        """Sets configuration value in specified path
+    def validate(self, xpath: str, value: str):
+        """Validates configuration value in specified path
 
-        Sets configuration value in specified path
+        Validates configuration value in specified path
+        Returns tuple: (xml element to be set, value, batch parameter name)
 
         Args:
             xpath: XML xpath for the configuration item
@@ -267,7 +288,8 @@ class _CoreDB(object):
 
         Raises:
             LookupError: Less or more than one item are matched
-            ValueError: Invalid configuration value
+            ValueError: Invalid configuration value by program
+            DBValueException: Invalid configuration value by user
         """
         element = self._getElement(xpath)
 
@@ -299,26 +321,21 @@ class _CoreDB(object):
                 decimal = float(value)
             except ValueError:
                 self._lastError = Error.FLOAT_ONLY
-                return Error.FLOAT_ONLY
+                raise ValueException(Error.FLOAT_ONLY)
 
             if hasattr(schema.type.base_type, 'min_value') \
                     and schema.type.base_type.min_value is not None \
                     and decimal < schema.type.base_type.min_value:
                 self._lastError = Error.OUT_OF_RANGE
-                return Error.OUT_OF_RANGE
+                raise ValueException(Error.OUT_OF_RANGE)
 
             if hasattr(schema.type.base_type, 'max_value') \
                     and schema.type.base_type.max_value is not None \
                     and decimal > schema.type.base_type.max_value:
                 self._lastError = Error.OUT_OF_RANGE
-                return Error.OUT_OF_RANGE
+                raise ValueException(Error.OUT_OF_RANGE)
 
-            oldValue = element.text
-            element.text = value.lower().strip()
-            if element.text != oldValue:
-                self._configCount += 1
-
-            logger.debug(f'setValue( {xpath} -> {element.text} )')
+            return element, value.lower(), batchParameter
 
         elif schema.type.local_name == 'inputNumberListType':
             numbers = value.split()
@@ -328,14 +345,9 @@ class _CoreDB(object):
                 [float(n) for n in numbers]
             except ValueError:
                 self._lastError = Error.FLOAT_ONLY
-                return Error.FLOAT_ONLY
+                raise ValueException(Error.FLOAT_ONLY)
 
-            oldValue = element.text
-            element.text = ' '.join(numbers)
-            if element.text != oldValue:
-                self._configCount += 1
-
-            logger.debug(f'setValue( {xpath} -> {element.text} )')
+            return element, ' '.join(numbers), None
 
         elif schema.type.is_decimal():
             if schema.type.is_simple():
@@ -352,28 +364,23 @@ class _CoreDB(object):
                     decimal = int(value)
                 except ValueError:
                     self._lastError = Error.INTEGER_ONLY
-                    return Error.INTEGER_ONLY
+                    raise ValueException(Error.INTEGER_ONLY)
             else:
                 try:
                     decimal = float(value)
                 except ValueError:
                     self._lastError = Error.FLOAT_ONLY
-                    return Error.FLOAT_ONLY
+                    raise ValueException(Error.FLOAT_ONLY)
 
             if minValue is not None and decimal < minValue:
                 self._lastError = Error.OUT_OF_RANGE
-                return Error.OUT_OF_RANGE
+                raise ValueException(Error.OUT_OF_RANGE)
 
             if maxValue is not None and decimal > maxValue:
                 self._lastError = Error.OUT_OF_RANGE
-                return Error.OUT_OF_RANGE
+                raise ValueException(Error.OUT_OF_RANGE)
 
-            oldValue = element.text
-            element.text = value.lower().strip()
-            if element.text != oldValue:
-                self._configCount += 1
-
-            logger.debug(f'setValue( {xpath} -> {element.text} )')
+            return element, value.lower(), None
 
         # String
         # For now, string value is set only by VIEW code not by user.
@@ -382,23 +389,37 @@ class _CoreDB(object):
             if schema.type.is_restriction() and value not in schema.type.enumeration:
                 raise ValueError
 
-            oldValue = element.text
-            element.text = value.strip()
-            if element.text != oldValue:
-                if element.text or oldValue:  # the case of (element.text=='' and oldValue is None) happens because of XML processing
-                    self._configCount += 1
+            return element, value, None
 
-            logger.debug(f'setValue( {xpath} -> {element.text} )')
+    def setValue(self, xpath: str, value: str) -> Optional[Error]:
+        """Sets configuration value in specified path
 
-        oldParameter = element.get('batchParameter')
-        if oldParameter != batchParameter:
-            if batchParameter:
-                element.set('batchParameter', batchParameter)
-            else:
-                del element.attrib['batchParameter']
+        Sets configuration value in specified path
+
+        Args:
+            xpath: XML xpath for the configuration item
+            value: configuration value
+
+        Raises:
+            LookupError: Less or more than one item are matched
+            ValueError: Invalid configuration value
+        """
+        element, value, parameter = self.validate(xpath, value)
+
+        if element.text != value:
+            element.text = value
+            self._configCount += 1
+
+        logger.debug(f'setValue( {xpath} -> {element.text} )')
 
         self._xmlSchema.assertValid(self._xmlTree)
-        return None
+
+        if element.get('batchParameter') != parameter:
+            if parameter:
+                element.set('batchParameter', parameter)
+            else:
+                del element.attrib['batchParameter']
+            self._configCount += 1
 
     def setBulk(self, xpath: str, value: dict):
         """Set the value at the specified path
@@ -1029,6 +1050,10 @@ class _CoreDB(object):
 
         return parameters
 
+    def getBatchDefaults(self):
+        return {e.find('name', namespaces=nsmap).text: e.find('value', namespaces=nsmap).text
+                for e in self._xmlTree.findall('.//runCalculation/batch/parameters/parameter', namespaces=nsmap)}
+
     def getSurfaceTensions(self, rname):
         xpath = f'.//region[name="{rname}"]/phaseInteractions/surfaceTensions/surfaceTension'
         elements = self._xmlTree.findall(xpath, namespaces=nsmap)
@@ -1054,13 +1079,11 @@ class _CoreDB(object):
             message = str(ex)
             start = message.find(']') + 1
             end = message.rfind(',')
-            self._lastError = message[start:end] if start < end else message
+            self._lastError = Error.INVALID_SYNTAX
 
-            return self._lastError
+            raise ValueException(Error.INVALID_SYNTAX, message[start:end] if start < end else message)
 
         self._configCount += 1
-
-        return None
 
     def removeElement(self, xpath):
         element = self._xmlTree.find(xpath, namespaces=nsmap)
@@ -1094,9 +1117,9 @@ class _CoreDB(object):
         return self._xmlTree.find(xpath, namespaces=nsmap) is not None
 
     def getVector(self, xpath: str):
-        return [float(self.retrieveValue(xpath + '/x')),
-                float(self.retrieveValue(xpath + '/y')),
-                float(self.retrieveValue(xpath + '/z'))]
+        return [float(self.getValue(xpath + '/x')),
+                float(self.getValue(xpath + '/y')),
+                float(self.getValue(xpath + '/z'))]
 
     @property
     def isModified(self) -> bool:
