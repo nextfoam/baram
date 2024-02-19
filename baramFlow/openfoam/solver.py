@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from baramFlow.coredb import coredb
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from resources import resource
 
 availableSolvers = pd.read_csv(resource.file('openfoam/solvers.csv'), header=0, index_col=0).transpose().to_dict()
@@ -15,16 +15,17 @@ class SolverNotFound(Exception):
     pass
 
 
-def findSolvers() -> list[str]:
-    db = coredb.CoreDB()
+def findSolvers(db=None) -> list[str]:
+    if db is None:
+        db = CoreDBReader()
 
-    timeTransient   = db.retrieveValue('.//general/timeTransient')
-    flowType        = db.retrieveValue('.//general/flowType')
-    solverType      = db.retrieveValue('.//general/solverType')
-    energyModel     = db.retrieveValue('.//models/energyModels')
+    timeTransient   = db.getValue('.//general/timeTransient')
+    flowType        = db.getValue('.//general/flowType')
+    solverType      = db.getValue('.//general/solverType')
+    energyModel     = db.getValue('.//models/energyModels')
     gravityDisabled = all([v == 0.0 for v in db.getVector('.//operatingConditions/gravity/direction')])
-    speciesModel    = db.retrieveValue('.//models/speciesModels')
-    multiphaseModel = db.retrieveValue('.//models/multiphaseModels/model')
+    speciesModel    = db.getValue('.//models/speciesModels')
+    multiphaseModel = db.getValue('.//models/multiphaseModels/model')
 
     pcs = []  # problem conditions
 
@@ -84,8 +85,8 @@ def getSolverCapability(name: str) -> dict:
     return availableSolvers[name]
 
 
-def findSolver():
-    solvers = findSolvers()
+def findSolver(db=None):
+    solvers = findSolvers(db)
     if len(solvers) == 1:
         return solvers[0]
     else:

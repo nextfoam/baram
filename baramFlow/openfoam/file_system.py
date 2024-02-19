@@ -53,18 +53,22 @@ class FileSystem:
     _constantFilesToKeep = [Directory.POLY_MESH_DIRECTORY_NAME, Directory.REGION_PROPERTIES_FILE_NAME]
 
     @classmethod
-    def createCase(cls):
-        if cls._casePath.exists():
-            utils.rmtree(cls._casePath)
+    def createCase(cls, path, batch=False):
+        if path.exists():
+            utils.rmtree(path)
 
-        shutil.copytree(resource.file('openfoam/flow_case'), cls._casePath)
+        shutil.copytree(resource.file('openfoam/flow_case'), path)
 
-        cls._boundaryConditionsPath.mkdir()
-        cls._constantPath.mkdir()
+        cls.makeDir(path, Directory.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
+        cls.makeDir(path, Directory.CONSTANT_DIRECTORY_NAME)
 
-    @classmethod
-    def setupForProject(cls):
-        cls._setCaseRoot(Project.instance().path / CASE_DIRECTORY_NAME)
+        if batch:
+            pass
+
+    #
+    # @classmethod
+    # def setupForProject(cls):
+    #     cls.switchToLiveCase()
 
     @classmethod
     def initRegionDirs(cls, rname):
@@ -75,6 +79,14 @@ class FileSystem:
     @classmethod
     def caseRoot(cls):
         return cls._casePath
+
+    @classmethod
+    def setCaseRoot(cls, path):
+        cls._casePath = path
+        cls._constantPath = cls._casePath / Directory.CONSTANT_DIRECTORY_NAME
+        cls._boundaryConditionsPath = cls._casePath / Directory.BOUNDARY_CONDITIONS_DIRECTORY_NAME
+        cls._systemPath = cls._casePath / Directory.SYSTEM_DIRECTORY_NAME
+        cls._postProcessingPath = cls._casePath / Directory.POST_PROCESSING_DIRECTORY_NAME
 
     @classmethod
     def constantPath(cls, rname=''):
@@ -178,8 +190,7 @@ class FileSystem:
 
         srcFile = directory / Directory.REGION_PROPERTIES_FILE_NAME
         if srcFile.is_file():
-            objFile = cls.constantPath(Directory.REGION_PROPERTIES_FILE_NAME)
-            shutil.copyfile(srcFile, objFile)
+            shutil.copyfile(srcFile, cls.constantPath(Directory.REGION_PROPERTIES_FILE_NAME))
 
             for rname in regions:
                 srcPath = directory / rname / Directory.POLY_MESH_DIRECTORY_NAME
@@ -203,36 +214,30 @@ class FileSystem:
         path.unlink()
 
     @classmethod
-    def save(cls):
-        targetPath = Project.instance().path / CASE_DIRECTORY_NAME
-        if cls._casePath != targetPath:
-            if targetPath.exists():
-                utils.rmtree(targetPath)
-            cls._casePath.rename(targetPath)
-            cls._setCaseRoot(targetPath)
-
-    @classmethod
-    def saveAs(cls, projectPath):
-        def copyConfigurationFiles(src, dst):
-            copyDirectory(src / Directory.BOUNDARY_CONDITIONS_DIRECTORY_NAME, dst / Directory.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
-            copyDirectory(src / Directory.CONSTANT_DIRECTORY_NAME, dst / Directory.CONSTANT_DIRECTORY_NAME)
-            copyDirectory(src / Directory.SYSTEM_DIRECTORY_NAME, dst / Directory.SYSTEM_DIRECTORY_NAME)
+    def saveAs(cls, projectPath, regions):
+        liveConstantPath = Project.instance().path / CASE_DIRECTORY_NAME /Directory.CONSTANT_DIRECTORY_NAME
 
         targetPath = projectPath / CASE_DIRECTORY_NAME
-        if cls._casePath.is_dir():
-            copyConfigurationFiles(cls._casePath, targetPath)
+        constantPath = targetPath / Directory.CONSTANT_DIRECTORY_NAME
 
-            for processor in cls.processorFolders():
-                copyConfigurationFiles(processor, targetPath / processor.name)
+        cls.createCase(targetPath)
+        if liveConstantPath.is_dir():
+            if len(regions) > 1:
+                srcFile = liveConstantPath / Directory.REGION_PROPERTIES_FILE_NAME
+                shutil.copyfile(srcFile, constantPath / Directory.REGION_PROPERTIES_FILE_NAME)
 
-            foamFilePath = targetPath / FOAM_FILE_NAME
-            with open(foamFilePath, 'a'):
+                for rname in regions:
+                    shutil.copytree(liveConstantPath / rname, constantPath / rname, copy_function=shutil.copyfile)
+            else:
+                srcPath = liveConstantPath / Directory.POLY_MESH_DIRECTORY_NAME
+                shutil.copytree(srcPath, constantPath / Directory.POLY_MESH_DIRECTORY_NAME,
+                                copy_function=shutil.copyfile)
+
+            with open(targetPath / FOAM_FILE_NAME, 'a'):
                 pass
 
-        cls._setCaseRoot(targetPath)
-
     @classmethod
-    async def initialize(cls, time: str = None):
+    def initialize(cls, time: str = None):
         ###
         ### This corresponds to a feature of "preserving last calculation result".
         ### The feature will be provided in other form in the future,
@@ -264,11 +269,20 @@ class FileSystem:
     @classmethod
     def addConstantFileToKeep(cls, fileName):
         cls._constantFilesToKeep.append(fileName)
-
-    @classmethod
-    def _setCaseRoot(cls, path):
-        cls._casePath = path
-        cls._constantPath = cls._casePath / Directory.CONSTANT_DIRECTORY_NAME
-        cls._boundaryConditionsPath = cls._casePath / Directory.BOUNDARY_CONDITIONS_DIRECTORY_NAME
-        cls._systemPath = cls._casePath / Directory.SYSTEM_DIRECTORY_NAME
-        cls._postProcessingPath = cls._casePath / Directory.POST_PROCESSING_DIRECTORY_NAME
+    #
+    # @classmethod
+    # def switchToLiveCase(cls):
+    #     cls._setCaseRoot(cls._livePath)
+    #
+    # @classmethod
+    # def switchToBatchCase(cls, path):
+    #     if not path.exists():
+    #         cls.createCase(path)
+    #
+    #     cls._setCaseRoot(path)
+    #
+    # @classmethod
+    # def _setLivePath(cls, path):
+    #     cls._livePath = path
+    #     cls._liveConstantPath = path / Directory.CONSTANT_DIRECTORY_NAME
+    #     cls._setCaseRoot(path)

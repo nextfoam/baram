@@ -85,7 +85,7 @@ class NavigatorView(QObject):
 
     def updateMenu(self):
         noMesh = app.vtkMesh() is None
-        solverActivated = app.solver.isActive()
+        solverActivated = app.case.isActive()
 
         self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(solverActivated)
         self._menu[MenuItem.MENU_SETUP_MODELS.value].setDisabled(solverActivated)

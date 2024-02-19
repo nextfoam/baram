@@ -22,6 +22,7 @@ from widgets.progress_dialog import ProgressDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.coredb.models_db import ModelsDB
@@ -32,7 +33,6 @@ from baramFlow.openfoam.constant.region_properties import RegionProperties
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from baramFlow.openfoam.redistribution_task import RedistributionTask
-from baramFlow.solver_manager import SolverManager
 from baramFlow.solver_status import SolverStatus
 from baramFlow.view.main_window.menu.settrings.settings_language_dialog import SettingLanguageDialog
 from baramFlow.view.main_window.menu.settrings.settings_paraveiw_dialog import SettingsParaViewDialog
@@ -100,7 +100,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(app.properties.icon())
 
         self._project = Project.instance()
-        self._solverManager = SolverManager()
+        self._caseManager = CaseManager()
 
         # 10MB(=10,485,760=1024*1024*10)
         self._handler = RotatingFileHandler(self._project.path/'baram.log', maxBytes=10485760, backupCount=5)
@@ -145,7 +145,7 @@ class MainWindow(QMainWindow):
         self._meshManager = MeshManager(self)
         self._connectSignalsSlots()
 
-        if self._solverManager.isRunning():
+        if self._caseManager.isRunning():
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN.value)
             self._chartDock.raise_()
         else:
@@ -164,8 +164,8 @@ class MainWindow(QMainWindow):
     def renderingView(self):
         return self._renderingDock.view
 
-    def solver(self):
-        return self._solverManager
+    def case(self):
+        return self._caseManager
 
     def tabifyDock(self, dock):
         self.tabifyDockWidget(self._emptyDock, dock)
@@ -569,7 +569,7 @@ class MainWindow(QMainWindow):
 
                 progressDialog.setLabelText(self.tr('Saving case'))
 
-                await asyncio.to_thread(FileSystem.saveAs, path)
+                await asyncio.to_thread(FileSystem.saveAs, path, coredb.CoreDB().getRegions())
                 self._project.saveAs(path)
                 progressDialog.close()
 
@@ -635,12 +635,9 @@ class MainWindow(QMainWindow):
                 return False
 
         try:
-            FileSystem.switchToLiveCase()
-            self._project.clearBatch()
+            self._caseManager.clearCases(renew)
 
-            if renew:
-                FileSystem.createCase()
-            else:
+            if not renew:
                 await FileSystem.initialize()
 
             self._chartDock.clear()

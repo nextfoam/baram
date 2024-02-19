@@ -51,7 +51,7 @@ class MonitorDock(TabifiedDock):
     def _projectOpened(self):
         self.clear()
 
-        if app.solver.isRunning() or app.solver.isEnded():
+        if app.case.isRunning() or app.case.isEnded():
             self._startMonitor()
 
     def _projectClosed(self):

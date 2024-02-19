@@ -46,5 +46,3 @@ class SolverProcess:
                     ps.terminate()
         except psutil.NoSuchProcess:
             pass
-
-

@@ -9,8 +9,6 @@ import yaml
 from PySide6.QtCore import QObject, Signal
 from pathlib import Path
 
-from libbaram import utils
-
 from baramFlow.solver_status import SolverStatus
 from baramFlow.coredb import coredb
 from .project_settings import ProjectSettings
@@ -166,12 +164,6 @@ class _Project(QObject):
         self._meshLoaded = loaded
         self.meshChanged.emit(updated)
 
-    def batchRoot(self):
-        return self.path / 'batch'
-
-    def batchPath(self, name):
-        return self.batchRoot() / name
-
     def save(self):
         self._fileDB.save()
 
@@ -183,9 +175,6 @@ class _Project(QObject):
 
     def opened(self):
         self.projectOpened.emit()
-
-    def clearBatch(self):
-        utils.rmtree(self.batchRoot())
 
     def updateSolverStatus(self, name, status, process):
         if name:

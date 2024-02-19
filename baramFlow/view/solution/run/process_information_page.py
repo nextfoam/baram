@@ -56,8 +56,7 @@ class ProcessInformationPage(ContentPage):
         self._connectSignalsSlots()
 
         self._batchCaseList.load()
-        self._setRunningMode(RunningMode.LIVE_RUNNING_MODE if self._batchCaseList.parameters() is None
-                             else RunningMode.BATCH_RUNNING_MODE)
+        self._setRunningMode(RunningMode.LIVE_RUNNING_MODE)
 
     def showEvent(self, ev):
         if not ev.spontaneous():
@@ -100,14 +99,13 @@ class ProcessInformationPage(ContentPage):
     async def _startCalculationClicked(self):
         progressDialog = ProgressDialog(self, self.tr('Calculation Run.'), True)
 
-        app.solver.progress.connect(progressDialog.setLabelText)
-        progressDialog.cancelClicked.connect(app.solver.cancelLiveRun)
+        app.case.progress.connect(progressDialog.setLabelText)
+        progressDialog.cancelClicked.connect(app.case.cancel)
         progressDialog.open()
 
         try:
-            await app.solver.liveRun(Project.instance().uuid)
+            await app.case.liveRun()
             progressDialog.finish(self.tr('Calculation started'))
-        #     self._project.setSolverProcess(process)
         except SolverNotFound as e:
             progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
         except CanceledException:
@@ -141,7 +139,7 @@ class ProcessInformationPage(ContentPage):
         self._stopDialog.cancelClicked.connect(self._forceStop)
 
     def _forceStop(self):
-        app.solver.kill()
+        app.case.kill()
 
     def _updateConfigurationClicked(self):
         regions = coredb.CoreDB().getRegions()
@@ -182,7 +180,7 @@ class ProcessInformationPage(ContentPage):
         self._dialog.open()
 
     def _updateStatus(self):
-        status = app.solver.status()
+        status = app.case.status()
 
         if status == SolverStatus.WAITING:
             text = self.tr('Waiting')
@@ -194,7 +192,7 @@ class ProcessInformationPage(ContentPage):
                 self._stopDialog.close()
                 self._stopDialog = None
 
-        process = app.solver.process()
+        process = app.case.process()
         if process:
             pid = str(process.pid)
             createTime = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime(process.startTime))
@@ -206,7 +204,7 @@ class ProcessInformationPage(ContentPage):
         self._ui.createTime.setText(createTime)
         self._ui.status.setText(text)
 
-        if app.solver.isActive():
+        if app.case.isActive():
             self._ui.startCalculation.hide()
             self._ui.cancelCalculation.show()
             self._ui.saveAndStopCalculation.setEnabled(True)

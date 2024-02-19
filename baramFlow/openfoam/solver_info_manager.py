@@ -141,7 +141,7 @@ class Worker(QObject):
         if self.running:
             return
 
-        self.running = app.solver.isRunning()
+        self.running = app.case.isRunning()
 
         self.collectionReady = False
 

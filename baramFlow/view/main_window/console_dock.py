@@ -118,9 +118,9 @@ class ConsoleDock(TabifiedDock):
 
     @qasync.asyncSlot()
     async def _projectOpened(self):
-        if app.solver.isRunning():
+        if app.case.isRunning():
             self.startCollecting()
-        elif app.solver.isEnded():
+        elif app.case.isEnded():
             await self._readAllLog()
 
     def _projectClosed(self):

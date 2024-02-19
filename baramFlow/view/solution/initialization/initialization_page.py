@@ -110,11 +110,11 @@ class InitializationPage(ContentPage):
         confirm = await AsyncMessageBox().question(self, self.tr("Initialization"), self.tr("All saved data will be deleted. OK?"))
         if confirm == QMessageBox.StandardButton.Yes:
             progressDialog = ProgressDialog(self, self.tr('Case Initialization'))
-            app.solver.progress.connect(progressDialog.setLabelText)
+            app.case.progress.connect(progressDialog.setLabelText)
             progressDialog.open()
 
             try:
-                await app.solver.initialize()
+                await app.case.initialize()
                 progressDialog.finish(self.tr('Initialization Completed'))
                 self._dbConfigCount = coredb.CoreDB().configCount
             except PermissionError:

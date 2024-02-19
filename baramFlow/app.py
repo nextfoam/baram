@@ -49,8 +49,8 @@ class App(QObject):
         return self._window.renderingView()
 
     @property
-    def solver(self):
-        return self._window.solver()
+    def case(self):
+        return self._window.case()
 
     @property
     def plug(self):
