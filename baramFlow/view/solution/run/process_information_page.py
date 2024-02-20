@@ -243,6 +243,7 @@ class ProcessInformationPage(ContentPage):
             self._ui.saveAndStopCalculation.setEnabled(True)
             self._ui.updateConfiguration.setEnabled(True)
             self._ui.userParametersGroup.setDisabled(True)
+            self._ui.batchCases.setDisabled(True)
             self._ui.runningMode.setDisabled(True)
         else:
             self._ui.startCalculation.show()
@@ -250,12 +251,10 @@ class ProcessInformationPage(ContentPage):
             self._ui.saveAndStopCalculation.setDisabled(True)
             self._ui.updateConfiguration.setDisabled(True)
             self._ui.userParametersGroup.setEnabled(True)
+            self._ui.batchCases.setEnabled(True)
             self._ui.runningMode.setEnabled(True)
 
     def _caseLoaded(self, name):
-        if not name:
-            self._setRunningMode(RunningMode.LIVE_RUNNING_MODE)
-
         self._batchCaseList.setCurrentCase(name)
 
     def _updateUserParameters(self):
@@ -277,8 +276,10 @@ class ProcessInformationPage(ContentPage):
         else:
             df.to_csv(file, sep=',')
 
-    def _importBatchCase(self):
+    @qasync.asyncSlot()
+    async def _importBatchCase(self):
         if self._dialog.isClearChecked():
             self._batchCaseList.clear()
 
+        await app.case.loadCase()
         self._batchCaseList.importFromDataFrame(self._dialog.cases())

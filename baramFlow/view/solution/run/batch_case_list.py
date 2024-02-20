@@ -9,13 +9,13 @@ from PySide6.QtCore import QObject, Signal, QSize
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QHeaderView, QMenu, QMessageBox
 
-from baramFlow.solver_status import SolverStatus
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
 from baramFlow.app import app
 from baramFlow.coredb.filedb import FileDB
 from baramFlow.coredb.project import Project
+from baramFlow.solver_status import SolverStatus
 
 
 class Column(IntEnum):
@@ -67,6 +67,7 @@ class CaseItem(QTreeWidgetItem):
 
         self._scheduled = False
         self._status = None
+        self._loaded = False
 
         self.setText(Column.CASE_NAME, name)
 
@@ -79,7 +80,11 @@ class CaseItem(QTreeWidgetItem):
     def status(self):
         return self._status
 
+    def isLoaded(self):
+        return self._loaded
+
     def setLoaded(self, loaded):
+        self._loaded = loaded
         self.setIcon(Column.LOADED_ICON, self.currentIcon if loaded else self.emptyIcon)
 
     def scheduleCalculation(self):
@@ -159,12 +164,15 @@ class BatchCaseList(QObject):
                     status = SolverStatus.ENDED
 
             self._setCase(name, case, status)
+            if not loading:
+                app.case.removeCase(name)
 
-        self._adjustSize()
-        if not loading:
-            self._project.fileDB().putDataFrame(FileDB.Key.BATCH_CASES, self.exportAsDataFrame())
+        self._listChanged(not loading)
+
         self._project.updateBatchStatuses(
             {name: item.status().name for name, item in self._items.items() if item.status()})
+
+        app.case.removeInvalidCases(list(self._cases.keys()))
 
     def exportAsDataFrame(self):
         return pd.DataFrame.from_dict(self._cases, orient='index')
@@ -176,7 +184,7 @@ class BatchCaseList(QObject):
         return [(name, self._cases[name]) for name, item in self._items.items() if item.isScheduled()]
 
     def setCurrentCase(self, name):
-        if self._currentCase:
+        if self._currentCase in self._items:
             self._items[self._currentCase].setLoaded(False)
 
         self._currentCase = name
@@ -257,6 +265,9 @@ class BatchCaseList(QObject):
         if confirm != QMessageBox.StandardButton.Yes:
             return
 
+        if self._currentCase in [i.name() for i in items]:
+            await app.case.loadCase()
+
         for i in items:
             name = i.name()
             self._list.takeTopLevelItem(self._list.indexOfTopLevelItem(i))
@@ -264,5 +275,12 @@ class BatchCaseList(QObject):
             self._project.removeBatchStatus(name)
             del self._items[name]
             del self._cases[name]
+            app.case.removeCase(name)
 
-        self._project.fileDB().putDataFrame(FileDB.Key.BATCH_CASES, self.exportAsDataFrame())
+        self._listChanged()
+
+    def _listChanged(self, save=True):
+        self._adjustSize()
+        if save:
+            self._project.fileDB().putDataFrame(FileDB.Key.BATCH_CASES, self.exportAsDataFrame())
+
