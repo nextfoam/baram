@@ -485,12 +485,12 @@ class MainWindow(QMainWindow):
                 self._changeForm(currentMenu)
 
     def _solverStatusChanged(self, status):
-        isNotSolverRunning = status != SolverStatus.RUNNING
+        isSolverRunning = status == SolverStatus.RUNNING or app.case.isBatchRunning()
 
-        self._ui.actionSaveAs.setEnabled(isNotSolverRunning)
-        self._ui.menuLoadMesh.setEnabled(isNotSolverRunning)
-        self._ui.menuMesh.setEnabled(isNotSolverRunning)
-        self._ui.menuParallel.setEnabled(isNotSolverRunning)
+        self._ui.actionSaveAs.setDisabled(isSolverRunning)
+        self._ui.menuLoadMesh.setDisabled(isSolverRunning)
+        self._ui.menuMesh.setDisabled(isSolverRunning)
+        self._ui.menuParallel.setDisabled(isSolverRunning)
 
         self._navigatorView.updateMenu()
 
