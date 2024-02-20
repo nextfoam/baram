@@ -34,7 +34,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="file"/>
+          <widget class="QLineEdit" name="file">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="select">

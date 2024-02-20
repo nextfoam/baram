@@ -63,6 +63,17 @@ class BatchCasesImportDialog(QDialog):
         else:
             df = pd.read_csv(file, header=0, index_col=0, na_filter=False, dtype=str)
 
+        df.index = df.index.str.strip()
+        if '' in df.index:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Case Name cannot be empty'))
+            return
+
+        duplicates = ', '.join([f'"{df.index[i]}"'for i, duplicated in enumerate(df.index.duplicated()) if duplicated])
+        if duplicates:
+            await AsyncMessageBox().information(self, self.tr('Input Error'),
+                                                self.tr('Duplicated Names - ' + duplicates))
+            return
+
         for column in df.columns:
             if column[:8] == 'Unnamed:':
                 await AsyncMessageBox().information(self, self.tr('Input Error'),
@@ -75,12 +86,6 @@ class BatchCasesImportDialog(QDialog):
                     await AsyncMessageBox().information(self, self.tr('Import Error'),
                                                         self.tr('Value must be a float - ' + f'{name}:{column}'))
                     return
-
-        duplicates = ', '.join([f'"{df.index[i]}"'for i, duplicated in enumerate(df.index.duplicated()) if duplicated])
-        if duplicates:
-            await AsyncMessageBox().information(self, self.tr('Input Error'),
-                                                self.tr('Duplicated Names - ' + duplicates))
-            return
 
         self._cases = df
         self._ui.file.setText(file)

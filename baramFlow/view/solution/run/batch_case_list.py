@@ -257,12 +257,12 @@ class BatchCaseList(QObject):
         if confirm != QMessageBox.StandardButton.Yes:
             return
 
-        for item in items:
-            name = item.name()
-            print(name, self._list.indexOfTopLevelItem(item))
-            item = self._list.takeTopLevelItem(self._list.indexOfTopLevelItem(item))
-            del item
+        for i in items:
+            name = i.name()
+            self._list.takeTopLevelItem(self._list.indexOfTopLevelItem(i))
 
             self._project.removeBatchStatus(name)
             del self._items[name]
             del self._cases[name]
+
+        self._project.fileDB().putDataFrame(FileDB.Key.BATCH_CASES, self.exportAsDataFrame())
