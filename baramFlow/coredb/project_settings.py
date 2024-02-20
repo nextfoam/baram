@@ -60,9 +60,20 @@ class ProjectSettings:
     def setBatchStatus(self, name, status):
         batches = self.getBatchStatuses()
         if batches is None:
-            self._set(ProjectSettingKey.BATCH_STATUS, {name: status})
+            self._set(ProjectSettingKey.BATCH_STATUS, {name: status.name})
         else:
-            batches[name] = status
+            batches[name] = status.name
+
+        self.save()
+
+    def setBatchStatuses(self, batches):
+        self._set(ProjectSettingKey.BATCH_STATUS, batches)
+        self.save()
+
+    def removeBatchStatus(self, name):
+        batches = self.getBatchStatuses()
+        if name in batches:
+            del batches[name]
 
         self.save()
 

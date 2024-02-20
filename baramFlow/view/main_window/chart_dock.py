@@ -8,7 +8,6 @@ from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt
 
 import numpy as np
-
 from matplotlib import style as mplstyle
 from matplotlib import ticker
 from matplotlib.backends.qt_compat import QtWidgets
@@ -17,13 +16,14 @@ from matplotlib.backends.backend_qtagg import (
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
-from baramFlow.openfoam.solver_info_manager import SolverInfoManager
-from baramFlow.openfoam.file_system import FileSystem
-from .tabified_dock import TabifiedDock
+from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baramFlow.coredb.project import Project, SolverStatus
+from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
+from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.solver_info_manager import SolverInfoManager
+from .tabified_dock import TabifiedDock
 
 SIDE_MARGIN = 0.05  # 5% margin on left and right
 
@@ -61,9 +61,10 @@ class ChartDock(TabifiedDock):
         self.solverInfoManager.flushed.connect(self.fitChart)
 
         self._project = Project.instance()
-        self._project.projectOpened.connect(self._projectOpened)
+        self._project.projectOpened.connect(self._caseLoaded)
         self._project.projectClosed.connect(self._projectClosed)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
+        self._project.caseLoaded.connect(self._caseLoaded)
 
         self._translate()
 
@@ -73,9 +74,10 @@ class ChartDock(TabifiedDock):
     def stopDrawing(self):
         self.solverInfoManager.stopCollecting()
 
-    def _projectOpened(self):
+    def _caseLoaded(self):
         self.clear()
-        self.startDrawing()
+        if app.case.isRunning() or app.case.isEnded():
+            self.startDrawing()
 
     def _projectClosed(self):
         self.stopDrawing()

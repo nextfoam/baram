@@ -12,6 +12,7 @@ class SolverStatus(Enum):
     WAITING = auto()
     RUNNING = auto()
     ENDED = auto()
+    ERROR = auto()
 
 
 class RunType(Enum):

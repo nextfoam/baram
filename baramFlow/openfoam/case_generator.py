@@ -56,7 +56,7 @@ class CaseGenerator(QObject):
         self._db = app.case.db
         self._errors = None
         self._proc: Optional[asyncio.subprocess.Process] = None
-        self._cancelled: bool = False
+        self._canceled: bool = False
         self._files = None
 
     def getErrors(self):
@@ -114,7 +114,7 @@ class CaseGenerator(QObject):
 
     def _generateFiles(self):
         for file in self._files:
-            if self._cancelled:
+            if self._canceled:
                 return
             file.build().write()
 
@@ -155,7 +155,7 @@ class CaseGenerator(QObject):
                 self._files.append(Alpha(region, time, processorNo, mid))
 
     async def setupCase(self):
-        self._cancelled = False
+        self._canceled = False
         self.progress.emit(self.tr('Generating case'))
 
         caseRoot = FileSystem.caseRoot()
@@ -181,7 +181,7 @@ class CaseGenerator(QObject):
             raise RuntimeError(errors)
 
         errors = await asyncio.to_thread(self._generateFiles)
-        if self._cancelled:
+        if self._canceled:
             raise CanceledException
         if errors:
             raise RuntimeError(self.tr('Case generating fail. - ') + errors)
@@ -193,7 +193,7 @@ class CaseGenerator(QObject):
 
             result = await self._proc.wait()
             self._proc = None
-            if self._cancelled:
+            if self._canceled:
                 raise CanceledException
             if result != 0:
                 raise RuntimeError(self.tr('Decomposing Field Data failed.'))
@@ -204,7 +204,7 @@ class CaseGenerator(QObject):
                 utils.rmtree(caseRoot / time)
 
     async def initialize(self):
-        self._cancelled = False
+        self._canceled = False
 
         sectionNames: [str] = coredb.CoreDB().getList(
             f'.//regions/region/initialization/advanced/sections/section/name')
@@ -216,12 +216,12 @@ class CaseGenerator(QObject):
                                                   parallel=parallel.getEnvironment(), cwd=caseRoot)
             result = await self._proc.wait()
 
-            if self._cancelled:
+            if self._canceled:
                 raise CanceledException
             if result != 0:
                 raise RuntimeError
 
     def cancel(self):
-        self._cancelled = True
+        self._canceled = True
         if self._proc is not None:
             self._proc.terminate()

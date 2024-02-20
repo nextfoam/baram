@@ -261,6 +261,8 @@ class MainWindow(QMainWindow):
         self._project.projectOpened.connect(self._projectOpened)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
+        self._caseManager.caseLoaded.connect(self._caseLoaded)
+
     def _save(self):
         if self._saveCurrentPage():
             self._project.save()
@@ -494,8 +496,6 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _projectOpened(self):
-        self.setWindowTitle(f'{app.properties.fullName} - {self._project.path}')
-
         if self._project.meshLoaded:
             db = coredb.CoreDB()
             if db.getRegions():
@@ -515,6 +515,14 @@ class MainWindow(QMainWindow):
                     progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
 
                 self._project.fileDB().saveCoreDB()
+
+        self._caseManager.setCase()
+
+    def _caseLoaded(self, name=None):
+        if name:
+            self.setWindowTitle(f'{app.properties.fullName} - {name} ({self._project.path})')
+        else:
+            self.setWindowTitle(f'{app.properties.fullName} - {self._project.path}')
 
     def _addTabifiedDock(self, dock):
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
@@ -638,7 +646,7 @@ class MainWindow(QMainWindow):
             self._caseManager.clearCases(renew)
 
             if not renew:
-                await FileSystem.initialize()
+                FileSystem.initialize()
 
             self._chartDock.clear()
             self._monitorDock.clear()

@@ -57,7 +57,6 @@ class ListTable(QFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        layout = None
         self._items = {}
 
         palette = QPalette()

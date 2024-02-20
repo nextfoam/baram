@@ -6,8 +6,10 @@ import qasync
 import logging
 from enum import Enum, auto
 
+import pandas as pd
 from PySide6.QtWidgets import QFileDialog
 
+from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItem
 from widgets.progress_dialog import ProgressDialog
 
@@ -42,7 +44,7 @@ class ProcessInformationPage(ContentPage):
         self._ui = Ui_ProcessInformationPage()
         self._ui.setupUi(self)
 
-        self._batchCaseList = BatchCaseList(self._ui.batchCaseList)
+        self._batchCaseList = BatchCaseList(self, self._ui.batchCaseList)
 
         self._project = Project.instance()
 
@@ -65,7 +67,7 @@ class ProcessInformationPage(ContentPage):
         return super().showEvent(ev)
 
     def _load(self):
-        self._updateStatus()
+        self._statusChanged(app.case.status())
         self._updateUserParameters()
 
     def _connectSignalsSlots(self):
@@ -79,7 +81,8 @@ class ProcessInformationPage(ContentPage):
         self._ui.toBatchMode.clicked.connect(self._toBatchMode)
         self._ui.exportBatchCase.clicked.connect(self._openExportDialog)
         self._ui.importBatchCases.clicked.connect(self._openImportDialog)
-        self._project.solverStatusChanged.connect(self._updateStatus)
+        self._project.solverStatusChanged.connect(self._statusChanged)
+        app.case.caseLoaded.connect(self._caseLoaded)
 
     def _setRunningMode(self, mode):
         if mode == RunningMode.LIVE_RUNNING_MODE:
@@ -97,21 +100,32 @@ class ProcessInformationPage(ContentPage):
 
     @qasync.asyncSlot()
     async def _startCalculationClicked(self):
-        progressDialog = ProgressDialog(self, self.tr('Calculation Run.'), True)
+        if self._runningMode == RunningMode.LIVE_RUNNING_MODE:
+            progressDialog = ProgressDialog(self, self.tr('Calculation Run.'), True)
 
-        app.case.progress.connect(progressDialog.setLabelText)
-        progressDialog.cancelClicked.connect(app.case.cancel)
-        progressDialog.open()
+            app.case.progress.connect(progressDialog.setLabelText)
+            progressDialog.cancelClicked.connect(app.case.cancel)
+            progressDialog.open()
 
-        try:
-            await app.case.liveRun()
-            progressDialog.finish(self.tr('Calculation started'))
-        except SolverNotFound as e:
-            progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
-        except CanceledException:
-            progressDialog.finish(self.tr('Calculation cancelled'))
-        except RuntimeError:
-            progressDialog.finish(self.tr('Solver execution failed or terminated'))
+            try:
+                await app.case.liveRun()
+                progressDialog.finish(self.tr('Calculation started'))
+            except SolverNotFound as e:
+                progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
+            except CanceledException:
+                progressDialog.finish(self.tr('Calculation cancelled'))
+            except RuntimeError:
+                progressDialog.finish(self.tr('Solver execution failed or terminated'))
+        else:
+            cases = self._batchCaseList.batchSchedule()
+            if not cases:
+                await AsyncMessageBox().information(self, self.tr('Batch Calculation'),
+                                                    self.tr('No case is scheduled.'))
+                return
+
+            self._updateStatus(SolverStatus.RUNNING)
+            await app.case.batchRun(cases)
+            self._updateStatus(SolverStatus.NONE)
 
 
     def _cancelCalculationClicked(self):
@@ -119,12 +133,18 @@ class ProcessInformationPage(ContentPage):
         controlDict.asDict()['stopAt'] = 'noWriteNow'
         controlDict.writeAtomic()
 
+        if self._runningMode == RunningMode.BATCH_RUNNING_MODE:
+            app.case.stopBatchRun()
+
         self._waitingStop()
 
     def _saveAndStopCalculationClicked(self):
         controlDict = ControlDict().build()
         controlDict.asDict()['stopAt'] = 'writeNow'
         controlDict.writeAtomic()
+
+        if self._runningMode == RunningMode.BATCH_RUNNING_MODE:
+            app.case.stopBatchRun()
 
         self._waitingStop()
 
@@ -156,19 +176,28 @@ class ProcessInformationPage(ContentPage):
         self._dialog.accepted.connect(self._updateUserParameters)
         self._dialog.open()
 
-    def _toLiveMode(self):
-        self._ui.updateConfiguration.show()
-        self._ui.batchCases.hide()
-        self._ui.toLiveMode.hide()
-        self._ui.toBatchMode.show()
+    @qasync.asyncSlot()
+    async def _toLiveMode(self):
+        self._setRunningMode(RunningMode.LIVE_RUNNING_MODE)
+
+        progressDialog = ProgressDialog(self, self.tr('Case Loading'))
+        app.case.progress.connect(progressDialog.setLabelText)
+        progressDialog.open()
+
+        await app.case.loadCase()
+
+        progressDialog.close()
 
     def _toBatchMode(self):
-        self._ui.updateConfiguration.hide()
-        self._ui.batchCases.show()
-        self._ui.toLiveMode.show()
-        self._ui.toBatchMode.hide()
+        self._setRunningMode(RunningMode.BATCH_RUNNING_MODE)
 
-    def _openExportDialog(self):
+    @qasync.asyncSlot()
+    async def _openExportDialog(self):
+        if not self._userParameters:
+            await AsyncMessageBox().information(
+                self, self.tr('Export Batch Cases'), self.tr('No batch parameter is defined.'))
+            return
+
         self._dialog = QFileDialog(self, self.tr('Export Batch Parameters'), '', self.tr('Excel (*.xlsx);; CSV (*.csv)'))
         self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         self._dialog.fileSelected.connect(self._exportBatchCase)
@@ -179,9 +208,13 @@ class ProcessInformationPage(ContentPage):
         self._dialog.accepted.connect(self._importBatchCase)
         self._dialog.open()
 
-    def _updateStatus(self):
-        status = app.case.status()
+    def _statusChanged(self, status, name=None):
+        if self._runningMode == RunningMode.BATCH_RUNNING_MODE:
+            self._batchCaseList.updateStatus(status, name)
+        else:
+            self._updateStatus(status)
 
+    def _updateStatus(self, status):
         if status == SolverStatus.WAITING:
             text = self.tr('Waiting')
         elif status == SolverStatus.RUNNING:
@@ -204,7 +237,7 @@ class ProcessInformationPage(ContentPage):
         self._ui.createTime.setText(createTime)
         self._ui.status.setText(text)
 
-        if app.case.isActive():
+        if status == SolverStatus.WAITING or status == SolverStatus.RUNNING:
             self._ui.startCalculation.hide()
             self._ui.cancelCalculation.show()
             self._ui.saveAndStopCalculation.setEnabled(True)
@@ -219,6 +252,12 @@ class ProcessInformationPage(ContentPage):
             self._ui.userParametersGroup.setEnabled(True)
             self._ui.runningMode.setEnabled(True)
 
+    def _caseLoaded(self, name):
+        if not name:
+            self._setRunningMode(RunningMode.LIVE_RUNNING_MODE)
+
+        self._batchCaseList.setCurrentCase(name)
+
     def _updateUserParameters(self):
         self._userParameters = coredb.CoreDB().getBatchParameters()
 
@@ -228,6 +267,10 @@ class ProcessInformationPage(ContentPage):
 
     def _exportBatchCase(self, file):
         df = self._batchCaseList.exportAsDataFrame()
+        if df.empty:
+            columns = ['Case Name'] + list(self._userParameters.keys())
+            df = pd.DataFrame(columns=columns)
+            df.set_index(columns[0], inplace=True)
 
         if file.endswith('xlsx'):
             df.to_excel(file)

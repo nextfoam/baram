@@ -467,6 +467,15 @@ QGroupBox::indicator:checked {image: url(:icons/chevron-down.svg);}</string>
           </item>
           <item>
            <widget class="QTreeWidget" name="batchCaseList">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="contextMenuPolicy">
+             <enum>Qt::CustomContextMenu</enum>
+            </property>
             <property name="verticalScrollBarPolicy">
              <enum>Qt::ScrollBarAlwaysOff</enum>
             </property>
@@ -477,8 +486,19 @@ QGroupBox::indicator:checked {image: url(:icons/chevron-down.svg);}</string>
              <bool>false</bool>
             </property>
             <property name="selectionMode">
-             <enum>QAbstractItemView::MultiSelection</enum>
+             <enum>QAbstractItemView::ExtendedSelection</enum>
             </property>
+            <property name="indentation">
+             <number>0</number>
+            </property>
+            <property name="columnCount">
+             <number>4</number>
+            </property>
+            <column>
+             <property name="text">
+              <string> </string>
+             </property>
+            </column>
             <column>
              <property name="text">
               <string>Case</string>

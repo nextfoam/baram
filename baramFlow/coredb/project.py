@@ -37,9 +37,10 @@ class SettingKey(Enum):
 
 class _Project(QObject):
     meshChanged = Signal(bool)
-    solverStatusChanged = Signal(SolverStatus)
+    solverStatusChanged = Signal(SolverStatus, str)
     projectOpened = Signal()
     projectClosed = Signal()
+    caseLoaded = Signal(str)
 
     materialChanged = Signal()
 
@@ -176,13 +177,25 @@ class _Project(QObject):
     def opened(self):
         self.projectOpened.emit()
 
+    def updateCurrentCase(self, name):
+        self.caseLoaded.emit(name)
+
     def updateSolverStatus(self, name, status, process):
+        self.solverStatusChanged.emit(status, name)
+
         if name:
             self._projectSettings.setBatchStatus(name, status)
         elif status == SolverStatus.RUNNING:
             self._projectSettings.setProcess(process)
 
-        self.solverStatusChanged.emit(status)
+    def getBatchStatuses(self):
+        return self._projectSettings.getBatchStatuses()
+
+    def updateBatchStatuses(self, statuses):
+        self._projectSettings.setBatchStatuses(statuses)
+
+    def removeBatchStatus(self, name):
+        self._projectSettings.removeBatchStatus(name)
 
     def _open(self, path: Path, route=ProjectOpenType.EXISTING):
         self._settings = self.LocalSettings(path, self._settings)

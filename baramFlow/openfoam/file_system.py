@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import shutil
 from typing import Optional
 from pathlib import Path
@@ -53,7 +54,7 @@ class FileSystem:
     _constantFilesToKeep = [Directory.POLY_MESH_DIRECTORY_NAME, Directory.REGION_PROPERTIES_FILE_NAME]
 
     @classmethod
-    def createCase(cls, path, batch=False):
+    def createCase(cls, path):
         if path.exists():
             utils.rmtree(path)
 
@@ -62,13 +63,25 @@ class FileSystem:
         cls.makeDir(path, Directory.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
         cls.makeDir(path, Directory.CONSTANT_DIRECTORY_NAME)
 
-        if batch:
-            pass
+    @classmethod
+    def createBatchCase(cls, path, regions):
+        liveConstantPath = Project.instance().path / CASE_DIRECTORY_NAME /Directory.CONSTANT_DIRECTORY_NAME
+        constantPath = path / Directory.CONSTANT_DIRECTORY_NAME
 
-    #
-    # @classmethod
-    # def setupForProject(cls):
-    #     cls.switchToLiveCase()
+        cls.createCase(path)
+        if liveConstantPath.is_dir():
+            if len(regions) > 1:
+                srcFile = liveConstantPath / Directory.REGION_PROPERTIES_FILE_NAME
+                shutil.copyfile(srcFile, constantPath / Directory.REGION_PROPERTIES_FILE_NAME)
+
+                for rname in regions:
+                    os.symlink(liveConstantPath / rname, constantPath / rname)
+            else:
+                srcPath = liveConstantPath / Directory.POLY_MESH_DIRECTORY_NAME
+                os.symlink(srcPath, constantPath / Directory.POLY_MESH_DIRECTORY_NAME)
+
+            with open(path / FOAM_FILE_NAME, 'a'):
+                pass
 
     @classmethod
     def initRegionDirs(cls, rname):
@@ -269,20 +282,3 @@ class FileSystem:
     @classmethod
     def addConstantFileToKeep(cls, fileName):
         cls._constantFilesToKeep.append(fileName)
-    #
-    # @classmethod
-    # def switchToLiveCase(cls):
-    #     cls._setCaseRoot(cls._livePath)
-    #
-    # @classmethod
-    # def switchToBatchCase(cls, path):
-    #     if not path.exists():
-    #         cls.createCase(path)
-    #
-    #     cls._setCaseRoot(path)
-    #
-    # @classmethod
-    # def _setLivePath(cls, path):
-    #     cls._livePath = path
-    #     cls._liveConstantPath = path / Directory.CONSTANT_DIRECTORY_NAME
-    #     cls._setCaseRoot(path)

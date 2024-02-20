@@ -6,8 +6,9 @@ from PySide6.QtCore import Signal, QTimer, QObject
 
 from libbaram import utils
 from libbaram.openfoam.constants import CASE_DIRECTORY_NAME
-from libbaram.run import launchSolver
+from libbaram.run import launchSolver, runParallelUtility, STDOUT_FILE_NAME, STDERR_FILE_NAME
 
+from baramFlow.coredb import coredb
 from baramFlow.coredb.project import Project
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.case_generator import CaseGenerator
@@ -40,19 +41,15 @@ class CaseManager(QObject):
 
         self._monitor = None
         self._generator = None
+        self._batchProcess = None
+        self._batchStop = False
 
         FileSystem.setCaseRoot(self._livePath())
+        self._loadLiveStatus()
 
-        process = self._project.solverProcess()
-        if process:
-            if process.isRunning():
-                self._setLiveProcess(process)
-            else:
-                self._setStatus(SolverStatus.ENDED)
-        else:
-            self._setStatus(SolverStatus.NONE)
-
-        self._setCase()
+    @property
+    def name(self):
+        return self._case
 
     @property
     def db(self):
@@ -62,21 +59,30 @@ class CaseManager(QObject):
     def solver(self):
         return self._solver
 
-    async def loadCase(self, name=None, parameters=None):
+    async def loadCase(self, name=None, parameters=None, status=SolverStatus.NONE):
         if self._case != name:
             if name is None:
                 FileSystem.setCaseRoot(self._livePath())
+                self._loadLiveStatus()
+                status = None
             else:
-                FileSystem.setCaseRoot(self._batchPath(name))
-
-            caseRoot = FileSystem.caseRoot()
-            if not caseRoot.is_dir():
-                FileSystem.createCase(caseRoot, True)
+                path = self._batchPath(name)
+                if not path.is_dir():
+                    FileSystem.createBatchCase(path, coredb.CoreDB().getRegions())
+                FileSystem.setCaseRoot(path)
 
             await self._loadVtkMesh()
+            self._project.updateCurrentCase(name)
 
-        self._setCase(name, parameters)
+        self.setCase(name, parameters, status)
+
+    def setCase(self, name=None, parameters=None, status=None):
+        self._case = name
+        self._db = CoreDBReader(parameters)
+        self._solver = findSolver(self._db)
         self.caseLoaded.emit(name)
+        if status is not None:
+            self._setStatus(status)
 
     def isRunning(self):
         return self._status == SolverStatus.RUNNING
@@ -94,7 +100,23 @@ class CaseManager(QObject):
         return self._process
 
     def kill(self):
-        self._process.kill()
+        self.stopBatchRun()
+
+        if self._process:
+            self._process.kill()
+
+        if self._batchProcess:
+            self._batchProcess.terminate()
+
+    def _loadLiveStatus(self):
+        process = self._project.solverProcess()
+        if process:
+            if process.isRunning():
+                self._setLiveProcess(process)
+            else:
+                self._setStatus(SolverStatus.ENDED)
+        else:
+            self._setStatus(SolverStatus.NONE)
 
     async def liveRun(self):
         await self.loadCase()
@@ -112,13 +134,39 @@ class CaseManager(QObject):
     async def initialize(self):
         await self.loadCase()
 
-        self._setStatus(SolverStatus.NONE)
-
         await self._initializeCase()
+
+    async def batchRun(self, cases):
+        self._batchStop = False
+        for case, parameters in cases:
+            await self.loadCase(case, parameters)
+
+            await self._initializeCase()
+
+            caseRoot = FileSystem.caseRoot()
+            stdout = open(caseRoot / STDOUT_FILE_NAME, 'w')
+            stderr = open(caseRoot / STDERR_FILE_NAME, 'w')
+
+            self._setStatus(SolverStatus.RUNNING)
+            self._batchProcess = await runParallelUtility(self._solver, parallel=parallel.getEnvironment(), cwd=caseRoot,
+                                                  stdout=stdout, stderr=stderr)
+            result = await self._batchProcess.wait()
+
+            if self._batchStop:
+                self._setStatus(SolverStatus.ENDED)
+                break
+
+            self._setStatus(SolverStatus.ENDED if result == 1 else SolverStatus.ERROR)
+
+        self._batchProcess = None
 
     def cancel(self):
         if self._generator is not None:
             self._generator.cancel()
+            self._generator = None
+
+    def stopBatchRun(self):
+        self._batchStop = True
 
     def clearCases(self, includeMesh=False):
         utils.rmtree(self._batchRoot())
@@ -128,12 +176,7 @@ class CaseManager(QObject):
             FileSystem.createCase(livePath)
 
         FileSystem.setCaseRoot(livePath)
-        self._setCase()
-
-    def _setCase(self, name=None, parameters=None):
-        self._case = name
-        self._db = CoreDBReader(parameters)
-        self._solver = findSolver(self._db)
+        self.setCase()
 
     def _livePath(self):
         return self._project.path / CASE_DIRECTORY_NAME
@@ -154,7 +197,6 @@ class CaseManager(QObject):
     def _setLiveProcess(self, process):
         self._runType = RunType.PROCESS
         self._process = process
-        self._status = None
         self._startMonitor()
 
     def _startMonitor(self):
@@ -168,6 +210,7 @@ class CaseManager(QObject):
         if self._monitor:
             self._monitor.stop()
             self._monitor = None
+            self._process = None
 
     def _updateStatus(self):
         if self._process.isRunning():

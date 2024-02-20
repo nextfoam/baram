@@ -53,9 +53,10 @@ class ConsoleDock(TabifiedDock):
         layout.addWidget(self._lineWrap)
 
         self._project = Project.instance()
-        self._project.projectOpened.connect(self._projectOpened)
+        self._project.projectOpened.connect(self._caseLoaded)
         self._project.projectClosed.connect(self._projectClosed)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
+        self._project.caseLoaded.connect(self._caseLoaded)
 
         self._translate()
 
@@ -117,7 +118,11 @@ class ConsoleDock(TabifiedDock):
             self.readTask = None
 
     @qasync.asyncSlot()
-    async def _projectOpened(self):
+    async def _caseLoaded(self):
+        if self.readTask is not None:
+            self.readTask.cancel()
+        self._textView.clear()
+
         if app.case.isRunning():
             self.startCollecting()
         elif app.case.isEnded():

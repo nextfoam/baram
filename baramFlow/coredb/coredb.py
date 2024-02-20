@@ -130,8 +130,6 @@ class _CoreDB(object):
         df = pd.read_csv(resource.file(self.MATERIALS_PATH), header=0, index_col=0).transpose()
         self.materialDB = df.where(pd.notnull(df), None).to_dict()
 
-        self.loadDefault()
-
     def __enter__(self):
         logger.debug('enter')
         self._backupTree = copy.deepcopy(self._xmlTree)
@@ -376,8 +374,10 @@ class _CoreDB(object):
         element, value, parameter = self.validate(xpath, value)
 
         if element.text != value:
+            if element.text or value:     # the case of (element.text=='' and oldValue is None) happens because of XML processing
+                self._configCount += 1
+
             element.text = value
-            self._configCount += 1
 
         logger.debug(f'setValue( {xpath} -> {element.text} )')
 
