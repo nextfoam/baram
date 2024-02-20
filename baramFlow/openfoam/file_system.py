@@ -75,7 +75,9 @@ class FileSystem:
                 shutil.copyfile(srcFile, constantPath / Directory.REGION_PROPERTIES_FILE_NAME)
 
                 for rname in regions:
-                    os.symlink(liveConstantPath / rname, constantPath / rname)
+                    regopmPath = cls.makeDir(constantPath, rname)
+                    os.symlink(liveConstantPath / rname / Directory.POLY_MESH_DIRECTORY_NAME,
+                               regopmPath / Directory.POLY_MESH_DIRECTORY_NAME)
             else:
                 srcPath = liveConstantPath / Directory.POLY_MESH_DIRECTORY_NAME
                 os.symlink(srcPath, constantPath / Directory.POLY_MESH_DIRECTORY_NAME)
