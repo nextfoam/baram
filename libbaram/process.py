@@ -20,6 +20,10 @@ class ProcessError(Exception):
         return self._returncode
 
 
+class ProcessCanceledException(Exception):
+    pass
+
+
 def isRunning(pid, startTime):
     if pid and startTime:
         try:
@@ -108,8 +112,8 @@ class RunExternalScript(QObject):
     def cancel(self):
         try:
             if self._proc is not None:
-                self._proc.terminate()
                 self._canceled = True
+                self._proc.terminate()
 
         except ProcessLookupError:
             return
@@ -151,7 +155,7 @@ class RunExternalScript(QObject):
 
         returncode = await self._proc.wait()
 
-        if returncode != 0:
-            raise ProcessError(returncode)
+        if self._canceled:
+            raise ProcessCanceledException
 
         return returncode
