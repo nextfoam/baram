@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import numpy as np
 import pandas as pd
 import qasync
 from PySide6.QtWidgets import QDialog, QFileDialog, QDialogButtonBox
@@ -63,29 +64,65 @@ class BatchCasesImportDialog(QDialog):
         else:
             df = pd.read_csv(file, header=0, index_col=0, na_filter=False, dtype=str)
 
-        df.index = df.index.str.strip()
-        if '' in df.index:
-            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Case Name cannot be empty'))
-            return
-
-        duplicates = ', '.join([f'"{df.index[i]}"'for i, duplicated in enumerate(df.index.duplicated()) if duplicated])
+        df.columns = df.columns.str.strip()
+        duplicates = set(df.columns[i] for i, duplicated in enumerate(df.columns.duplicated()) if duplicated)
+        duplicates = duplicates.union(set(column[:column.find('.')] for column in df.columns if column.find('.') > 0))
+        duplicates.discard('')
         if duplicates:
-            await AsyncMessageBox().information(self, self.tr('Input Error'),
-                                                self.tr('Duplicated Names - ' + duplicates))
+            await AsyncMessageBox().information(
+                self, self.tr('Input Error'),
+                self.tr('Duplicated parameters - ' + ', '.join([f'"{d}"' for d in duplicates])))
             return
 
-        for column in df.columns:
-            if column[:8] == 'Unnamed:':
-                await AsyncMessageBox().information(self, self.tr('Input Error'),
-                                                    self.tr('Parameter Name is empty - index:' + column[9:]))
-                return
-            for name, value in df[column].items():
+        emptyColumns = [len(column) == 0 or column[:8] == 'Unnamed:' and column[0] == '.' for column in df.columns]
+        for irow in range(len(df)):
+            row = df.iloc[irow]
+            name = df.index[irow].strip()
+            for icol in range(len(row)):
+                value = df.iat[irow, icol].strip()
+                if value:
+                    if emptyColumns[icol]:
+                        await AsyncMessageBox().information(
+                            self, self.tr('Input Error'), self.tr('Parameter name is empty'))
+                        return
+                    if not name:
+                        await AsyncMessageBox().information(
+                            self, self.tr('Input Error'), self.tr('Case name is empty'))
+                        return
+
                 try:
                     float(value)
                 except ValueError:
-                    await AsyncMessageBox().information(self, self.tr('Import Error'),
-                                                        self.tr('Value must be a float - ' + f'{name}:{column}'))
-                    return
+                    if not value and (emptyColumns[icol] or not name):
+                        df.iat[irow, icol] = ''
+                    else:
+                        print(icol)
+                        await AsyncMessageBox().information(
+                            self, self.tr('Import Error'),
+                            self.tr('Value must be a float - ' + f'{name}:{df.columns[icol]}'))
+                        return
+
+        df.replace('', np.nan, inplace=True)
+        df.dropna(how='all', axis=0, inplace=True)
+        df.dropna(how='all', axis=1, inplace=True)
+
+        duplicates = set(df.index[i] for i, duplicated in enumerate(df.index.duplicated()) if duplicated)
+        if duplicates:
+            await AsyncMessageBox().information(
+                self, self.tr('Input Error'),
+                self.tr('Duplicated case names - ' + ', '.join([f'"{d}"' for d in duplicates])))
+            return
+
+        for column in df.columns:
+            if column[:8] == 'Unnamed:' or not column:
+                await AsyncMessageBox().information(self, self.tr('Input Error'),
+                                                    self.tr('Parameter name is empty'))
+                return
+
+        df.index = df.index.str.strip()
+        if '' in df.index:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Case name is empty'))
+            return
 
         self._cases = df
         self._ui.file.setText(file)
