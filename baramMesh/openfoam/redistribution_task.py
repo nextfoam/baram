@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import asyncio
 import logging
 import shutil
 
 from PySide6.QtCore import QObject, Signal
 
 from libbaram import utils
-from libbaram.run import runUtility
+from libbaram.run import RunUtility
 from libbaram.openfoam.dictionary.decomposePar_dict import DecomposeParDict
 
 from baramMesh.app import app
@@ -23,6 +22,7 @@ class RedistributionTask(QObject):
         super().__init__()
 
         self._fileSystem = fileSystem
+        self._latestTime = fileSystem.latestTime(fileSystem.processorPath(0))
 
     async def redistribute(self, numCores):
         processorFolders = self._fileSystem.processorFolders()
@@ -52,19 +52,10 @@ class RedistributionTask(QObject):
         if nProcessorFolders > 0:
             self.progress.emit(self.tr('Reconstructing the case.'))
 
-            latestTime = self._fileSystem.latestTime(self._fileSystem.processorPath(0))
-            proc = await runUtility('reconstructParMesh', '-allRegions', '-constant', '-case', caseRoot,
-                                    cwd=caseRoot, stdout=asyncio.subprocess.PIPE)
-
-            # This loop will end if the PIPE is closed (i.e. the process terminates)
-            async for line in proc.stdout:
-                log = line.decode('utf-8')
-                if log.startswith('Time = constant'):
-                    self.progress.emit(self.tr(f'Reconstructing the case. (constant)'))
-                elif log.startswith('Time = '):
-                    self.progress.emit(self.tr(f'Reconstructing the case. ({log.strip()}/{latestTime})'))
-
-            result = await proc.wait()
+            cm = RunUtility('reconstructParMesh', '-allRegions', '-constant', '-case', caseRoot, cwd=caseRoot)
+            cm.output.connect(self._reportTimeProgress)
+            await cm.start()
+            result = await cm.wait()
             if result != 0:
                 raise RuntimeError(self.tr('Reconstruction failed.'))
 
@@ -84,9 +75,9 @@ class RedistributionTask(QObject):
             tempPath.mkdir()
 
             DecomposeParDict(self._fileSystem.caseRoot(), numCores).build().write()
-            proc = await runUtility('decomposePar', '-time', 'none', '-case', caseRoot, cwd=caseRoot)
-
-            result = await proc.wait()
+            cm = RunUtility('decomposePar', '-time', 'none', '-case', caseRoot, cwd=caseRoot)
+            await cm.start()
+            result = await cm.wait()
             if result != 0:
                 raise RuntimeError(self.tr('Decomposition failed.'))
 
@@ -97,9 +88,9 @@ class RedistributionTask(QObject):
             t = 1
             while self._fileSystem.timePath(t).is_dir():
                 time = str(t)
-                proc = await runUtility('decomposePar', '-time', time, '-case', caseRoot, cwd=caseRoot)
-
-                result = await proc.wait()
+                cm = RunUtility('decomposePar', '-time', time, '-case', caseRoot, cwd=caseRoot)
+                await cm.start()
+                result = await cm.wait()
                 if result != 0:
                     raise RuntimeError(self.tr('Decomposition failed.'))
 
@@ -127,3 +118,9 @@ class RedistributionTask(QObject):
                 utils.rmtree(caseRoot / time)
 
             self.progress.emit(self.tr(f'Decomposition done.'))
+
+    def _reportTimeProgress(self, msg):
+        if msg.startswith('Time = constant'):
+            self.progress.emit(self.tr(f'Reconstructing the case. (constant)'))
+        elif msg.startswith('Time = '):
+            self.progress.emit(self.tr(f'Reconstructing the case. ({msg.strip()}/{self._latestTime})'))

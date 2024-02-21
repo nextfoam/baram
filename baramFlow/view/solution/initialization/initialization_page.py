@@ -5,6 +5,7 @@ import qasync
 
 from PySide6.QtWidgets import QMessageBox
 
+from libbaram.exception import CanceledException
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
@@ -12,7 +13,6 @@ from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from baramFlow.openfoam.solver import SolverNotFound
-from baramFlow.openfoam.case_generator import CanceledException
 from baramFlow.view.widgets.content_page import ContentPage
 from .initialization_page_ui import Ui_InitializationPage
 from .initialization_widget import InitializationWidget

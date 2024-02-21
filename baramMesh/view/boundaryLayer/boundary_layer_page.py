@@ -163,7 +163,9 @@ class BoundaryLayerPage(StepPage):
                 cm.output.connect(console.append)
                 cm.errorOutput.connect(console.appendError)
                 await cm.start()
-                await cm.wait()
+                rc = await cm.wait()
+                if rc != 0:
+                    raise ProcessError
             else:
                 self.createOutputPath()
 
