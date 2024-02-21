@@ -272,9 +272,9 @@ class ProcessInformationPage(ContentPage):
             df.set_index(columns[0], inplace=True)
 
         if file.endswith('xlsx'):
-            df.to_excel(file)
+            df.to_excel(file, index_label='Case Name')
         else:
-            df.to_csv(file, sep=',')
+            df.to_csv(file, sep=',', index_label='Case Name')
 
     @qasync.asyncSlot()
     async def _importBatchCase(self):
