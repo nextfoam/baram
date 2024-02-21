@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import asyncio
 import shutil
 from pathlib import Path
 
@@ -9,8 +8,8 @@ import qasync
 from PySide6.QtWidgets import QFileDialog
 
 from libbaram.openfoam.constants import Directory
-from libbaram.process import Processor, ProcessError
-from libbaram.run import runParallelUtility
+from libbaram.process import ProcessError
+from libbaram.run import RunParallelUtility
 from resources import resource
 from widgets.progress_dialog import ProgressDialog
 
@@ -74,14 +73,12 @@ class ExportPage(StepPage):
 
             if app.db.elementCount('region') > 1:
                 progressDialog.setLabelText(self.tr('Splitting Mesh Regions'))
-                proc = await runParallelUtility('splitMeshRegions', '-cellZonesOnly', cwd=fileSystem.caseRoot(),
-                                                parallel=parallel,
-                                                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                processor = Processor(proc)
-                processor.outputLogged.connect(console.append)
-                processor.errorLogged.connect(console.appendError)
-                await processor.run()
 
+                cm = RunParallelUtility('splitMeshRegions', '-cellZonesOnly', cwd=fileSystem.caseRoot(), parallel=parallel)
+                cm.output.connect(console.append)
+                cm.errorOutput.connect(console.appendError)
+                await cm.start()
+                await cm.wait()
             if not fileSystem.timePathExists(self.OUTPUT_TIME, parallel.isParallelOn()):
                 progressDialog.setLabelText(self.tr('Copying Files'))
 
@@ -98,24 +95,23 @@ class ExportPage(StepPage):
                 progressDialog.setLabelText(self.tr('Processing Cell Zones'))
                 if len(regions) == 1:
                     topoSetDict.write()
-                    proc = await runParallelUtility('topoSet', cwd=fileSystem.caseRoot(), parallel=parallel,
-                                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                    processor = Processor(proc)
-                    processor.outputLogged.connect(console.append)
-                    processor.errorLogged.connect(console.appendError)
-                    await processor.run()
+
+                    cm = RunParallelUtility('topoSet', cwd=fileSystem.caseRoot(), parallel=parallel)
+                    cm.output.connect(console.append)
+                    cm.errorOutput.connect(console.appendError)
+                    await cm.start()
+                    await cm.wait()
+
                 else:
                     for region in regions.values():
                         rname = region['name']
                         topoSetDict.setRegion(rname).write()
-                        proc = await runParallelUtility('topoSet', '-region', rname, cwd=fileSystem.caseRoot(),
-                                                        parallel=parallel,
-                                                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                        processor = Processor(proc)
-                        processor.outputLogged.connect(console.append)
-                        processor.errorLogged.connect(console.appendError)
-                        await processor.run()
 
+                        cm = RunParallelUtility('topoSet', '-region', rname, cwd=fileSystem.caseRoot(), parallel=parallel)
+                        cm.output.connect(console.append)
+                        cm.errorOutput.connect(console.appendError)
+                        await cm.start()
+                        await cm.wait()
             path.mkdir(parents=True, exist_ok=True)
             baramSystem = FileSystem(path)
             baramSystem.createCase(resource.file('openfoam/mesh_case'))

@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import asyncio
 
 import qasync
 from PySide6.QtWidgets import QMessageBox
 
-from libbaram.run import runParallelUtility
-from libbaram.process import Processor, ProcessError
+from libbaram.run import RunParallelUtility
+from libbaram.process import ProcessError
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
@@ -156,24 +155,14 @@ class BoundaryLayerPage(StepPage):
                 progressDialog.open()
 
                 SnappyHexMeshDict(addLayers=True).build().write()
-                # TopoSetDict().build().write()
 
                 progressDialog.close()
 
-                proc = await runParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
-                                                parallel=app.project.parallelEnvironment(),
-                                                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                self._processor = Processor(proc)
-                self._processor.outputLogged.connect(console.append)
-                self._processor.errorLogged.connect(console.appendError)
-                await self._processor.run()
-                #
-                # proc = await runUtility('toposet', cwd=app.fileSystem.caseRoot(),
-                #                         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                # processor = Processor(proc)
-                # processor.outputLogged.connect(console.append)
-                # processor.errorLogged.connect(console.appendError)
-                # await processor.run()
+                cm = RunParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
+                cm.output.connect(console.append)
+                cm.errorOutput.connect(console.appendError)
+                await cm.start()
+                await cm.wait()
             else:
                 self.createOutputPath()
 

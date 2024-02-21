@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import asyncio
 from pathlib import Path
 
 import qasync
@@ -11,8 +10,8 @@ from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFe
 from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
 from PySide6.QtWidgets import QMessageBox
 
-from libbaram.run import runParallelUtility
-from libbaram.process import Processor, ProcessError
+from libbaram.run import RunParallelUtility
+from libbaram.process import ProcessError
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
@@ -236,13 +235,12 @@ class CastellationPage(StepPage):
 
             console = app.consoleView
             console.clear()
-            proc = await runParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(),
-                                            parallel=app.project.parallelEnvironment(),
-                                            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            self._processor = Processor(proc)
-            self._processor.outputLogged.connect(console.append)
-            self._processor.errorLogged.connect(console.appendError)
-            await self._processor.run()
+
+            cm = RunParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
+            cm.output.connect(console.append)
+            cm.errorOutput.connect(console.appendError)
+            await cm.start()
+            await cm.wait()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()

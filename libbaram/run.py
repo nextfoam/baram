@@ -11,8 +11,6 @@ import asyncio
 
 from PySide6.QtCore import QObject, Signal
 
-import baramFlow.openfoam.parallel
-
 from libbaram.mpi import ParallelEnvironment
 
 from libbaram.app_path import APP_PATH
@@ -227,10 +225,11 @@ class RunParallelUtility(QObject):
     output = Signal(str)
     errorOutput = Signal(str)
 
-    def __init__(self, program: str, *args, cwd: Path = None):
+    def __init__(self, program: str, *args, cwd: Path = None, parallel: ParallelEnvironment = None):
         super().__init__()
         self._program = program
         self._args = args
+        self._parallel = parallel
         self._cwd = cwd
 
         self._proc = None
@@ -247,9 +246,8 @@ class RunParallelUtility(QObject):
                 wShowWindow=subprocess.SW_HIDE
             )
 
-        parallel = baramFlow.openfoam.parallel.getEnvironment()
         self._proc = await asyncio.create_subprocess_exec(
-            *parallel.makeCommand(OPENFOAM / 'bin' / self._program, *self._args, cwd=self._cwd, options=MPI_OPTIONS),
+            *self._parallel.makeCommand(OPENFOAM / 'bin' / self._program, *self._args, cwd=self._cwd, options=MPI_OPTIONS),
             env=ENV, cwd=self._cwd, creationflags=creationflags, startupinfo=startupinfo, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
     def cancel(self):
@@ -296,7 +294,9 @@ class RunParallelUtility(QObject):
             if len(done) < 1:
                 await asyncio.sleep(1)
 
-        await self._proc.communicate()
+        returncode = await self._proc.wait()
 
-        if returncode := self._proc.returncode:
+        if returncode != 0:
             raise ProcessError(returncode)
+
+        return returncode

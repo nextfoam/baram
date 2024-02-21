@@ -8,13 +8,12 @@ from enum import Enum, auto
 from pathlib import Path
 
 from baramFlow.openfoam.redistribution_task import RedistributionTask
-from libbaram.run import runUtility, runParallelUtility
+from libbaram.run import runUtility, RunParallelUtility
 from widgets.progress_dialog import ProgressDialog
 
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
-from libbaram.process import Processor
 
 
 logger = logging.getLogger(__name__)
@@ -41,7 +40,7 @@ OPENFOAM_MESH_CONVERTERS = {
 }
 
 
-class MeshManager(Processor):
+class MeshManager:
     def __init__(self, window):
         super().__init__()
 
@@ -50,9 +49,11 @@ class MeshManager(Processor):
     @qasync.asyncSlot()
     async def scale(self, x, y, z):
         caseRoot = FileSystem.caseRoot()
-        proc = await runParallelUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
-                                              '-case', caseRoot, parallel=parallel.getEnvironment(), cwd=caseRoot)
-        result = await proc.wait()
+        cm = RunParallelUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
+                                '-case', caseRoot, cwd=caseRoot, parallel=parallel.getEnvironment())
+        await cm.start()
+        result = await cm.wait()
+
         if result == 0 and parallel.getNP() > 1:  # Process the mesh in constant folder too.
             proc = await runUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
                                                   '-case', caseRoot, cwd=caseRoot)
@@ -63,9 +64,11 @@ class MeshManager(Processor):
     @qasync.asyncSlot()
     async def translate(self, x, y, z):
         caseRoot = FileSystem.caseRoot()
-        proc = await runParallelUtility('transformPoints', '-allRegions', '-translate', f'({x} {y} {z})',
-                                              '-case', caseRoot, parallel=parallel.getEnvironment(), cwd=caseRoot)
-        result = await proc.wait()
+        cm = RunParallelUtility('transformPoints', '-allRegions', '-translate', f'({x} {y} {z})',
+                                '-case', caseRoot, cwd=caseRoot, parallel=parallel.getEnvironment())
+        await cm.start()
+        result = await cm.wait()
+
         if result == 0 and parallel.getNP() > 1:  # Process the mesh in constant folder too.
             proc = await runUtility('transformPoints', '-allRegions', '-translate', f'({x} {y} {z})',
                                             '-case', caseRoot, cwd=caseRoot)
@@ -76,11 +79,13 @@ class MeshManager(Processor):
     @qasync.asyncSlot()
     async def rotate(self, origin, axis, angle):
         caseRoot = FileSystem.caseRoot()
-        proc = await runParallelUtility('transformPoints', '-allRegions',
-                                              '-origin', f'({" ".join(origin)})',
-                                              '-rotate-angle', f'(({" ".join(axis)}) {angle})',
-                                              '-case', caseRoot, parallel=parallel.getEnvironment(), cwd=caseRoot)
-        result = await proc.wait()
+        cm = RunParallelUtility('transformPoints', '-allRegions',
+                                '-origin', f'({" ".join(origin)})',
+                                '-rotate-angle', f'(({" ".join(axis)}) {angle})',
+                                '-case', caseRoot, cwd=caseRoot, parallel=parallel.getEnvironment())
+        await cm.start()
+        result = await cm.wait()
+
         if result == 0 and parallel.getNP() > 1:  # Process the mesh in constant folder too.
             proc = await runUtility('transformPoints', '-allRegions',
                                             '-origin', f'({" ".join(origin)})',

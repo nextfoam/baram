@@ -7,8 +7,6 @@ import os
 import platform
 import subprocess
 
-from PySide6.QtCore import QObject, Signal
-
 
 class ProcessError(Exception):
     def __init__(self, returncode):
@@ -64,61 +62,3 @@ def stopProcess(pid, startTime=None):
                 ps.terminate()
     except psutil.NoSuchProcess:
         pass
-
-
-class Processor(QObject):
-    outputLogged = Signal(str)
-    errorLogged = Signal(str)
-
-    def __init__(self, proc: asyncio.subprocess.Process = None):
-        super().__init__()
-        self._proc = proc
-        self._canceled = False
-
-    def cancel(self):
-        try:
-            if self._proc:
-                self._proc.terminate()
-                self._canceled = True
-        except ProcessLookupError:
-            return
-
-    def isCanceled(self):
-        return self._canceled
-
-    async def run(self):
-        self._canceled = False
-
-        tasks = []
-
-        stdout = self._proc.stdout
-        outTask = asyncio.create_task(stdout.readline())
-        tasks.append(outTask)
-
-        stderr = self._proc.stderr
-        errTask = asyncio.create_task(stderr.readline())
-        tasks.append(errTask)
-
-        while len(tasks) > 0:
-            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-
-            tasks = list(pending)
-            if outTask in done:
-                self.outputLogged.emit(outTask.result().decode('UTF-8').rstrip())
-                if not stdout.at_eof():
-                    outTask = asyncio.create_task(stdout.readline())
-                    tasks.append(outTask)
-
-            if errTask in done:
-                self.errorLogged.emit(errTask.result().decode('UTF-8').rstrip())
-                if not stderr.at_eof():
-                    errTask = asyncio.create_task(stderr.readline())
-                    tasks.append(errTask)
-
-            if len(done) < 1:
-                await asyncio.sleep(1)
-
-        await self._proc.communicate()
-
-        if returncode := self._proc.returncode:
-            raise ProcessError(returncode)

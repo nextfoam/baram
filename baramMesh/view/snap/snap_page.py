@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import asyncio
-
 import qasync
 from PySide6.QtWidgets import QMessageBox
 
-from libbaram.run import runParallelUtility
-from libbaram.process import Processor, ProcessError
+from libbaram.run import RunParallelUtility
+from libbaram.process import ProcessError
 
 from baramMesh.app import app
 from baramMesh.db.simple_schema import DBError
@@ -101,31 +99,29 @@ class SnapPage(StepPage):
             else:
                 snapDict.updateForCellZoneInterfacesSnap().write()
 
-            proc = await runParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=parallel,
-                                            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            self._processor = Processor(proc)
-            self._processor.outputLogged.connect(console.append)
-            self._processor.errorLogged.connect(console.appendError)
-            await self._processor.run()
+            cm = RunParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=parallel)
+            cm.output.connect(console.append)
+            cm.errorOutput.connect(console.appendError)
+            await cm.start()
+            await cm.wait()
 
             if app.db.elementCount('region') > 1:
                 TopoSetDict().build(TopoSetDict.Mode.CREATE_REGIONS).write()
-                proc = await runParallelUtility('topoSet', cwd=app.fileSystem.caseRoot(), parallel=parallel,
-                                                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                self._processor = Processor(proc)
-                self._processor.outputLogged.connect(console.append)
-                self._processor.errorLogged.connect(console.appendError)
-                await self._processor.run()
+
+                cm = RunParallelUtility('topoSet', cwd=app.fileSystem.caseRoot(), parallel=parallel)
+                cm.output.connect(console.append)
+                cm.errorOutput.connect(console.appendError)
+                await cm.start()
+                await cm.wait()
 
                 if app.db.elementCount('geometry', lambda i, e: e['cfdType'] == CFDType.CELL_ZONE.value):
                     snapDict.updateForCellZoneInterfacesSnap().write()
-                    proc = await runParallelUtility('snappyHexMesh', '-overwrite', cwd=app.fileSystem.caseRoot(),
-                                                    parallel=parallel,
-                                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                    self._processor = Processor(proc)
-                    self._processor.outputLogged.connect(console.append)
-                    self._processor.errorLogged.connect(console.appendError)
-                    await self._processor.run()
+
+                    cm = RunParallelUtility('snappyHexMesh', '-overwrite', cwd=app.fileSystem.caseRoot(), parallel=parallel)
+                    cm.output.connect(console.append)
+                    cm.errorOutput.connect(console.appendError)
+                    await cm.start()
+                    await cm.wait()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()
