@@ -3,7 +3,7 @@
 from vtkmodules.vtkFiltersModeling import vtkSelectEnclosedPoints
 from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData
 
-from libbaram.run import runUtility, OpenFOAMError
+from libbaram.run import OpenFOAMError, RunUtility
 
 from baramMesh.app import app
 from baramMesh.openfoam.system.surface_patch_dict import SurfacePatchDict, SurfacePatchData
@@ -35,11 +35,12 @@ class STLFileLoader:
             patchedFile = self._fileSystem.triSurfacePath() / SURFACE_PATCHED_FILE_NAME
             patchedFile.unlink(missing_ok=True)
 
-            proc = await runUtility('surfacePatch', cwd=self._fileSystem.caseRoot())
-            await proc.wait()
+            cm = RunUtility('surfacePatch', cwd=self._fileSystem.caseRoot())
+            await cm.start()
+            result = await cm.wait()
 
-            if proc.returncode:
-                raise OpenFOAMError(proc.returncode, 'An error occurred while running surfacePatch.')
+            if result != 0:
+                raise OpenFOAMError(result, 'An error occurred while running surfacePatch.')
 
             if patchedFile.exists():
                 solids = loadSTLFile(patchedFile)

@@ -8,7 +8,8 @@ from enum import Enum, auto
 from pathlib import Path
 
 from baramFlow.openfoam.redistribution_task import RedistributionTask
-from libbaram.run import runUtility, RunParallelUtility
+from libbaram.exception import CanceledException
+from libbaram.run import RunParallelUtility, RunUtility
 from widgets.progress_dialog import ProgressDialog
 
 from baramFlow.openfoam import parallel
@@ -55,9 +56,11 @@ class MeshManager:
         result = await cm.wait()
 
         if result == 0 and parallel.getNP() > 1:  # Process the mesh in constant folder too.
-            proc = await runUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
-                                                  '-case', caseRoot, cwd=caseRoot)
-            result = await proc.wait()
+            cm = RunUtility('transformPoints', '-allRegions', '-scale', f'({x} {y} {z})',
+                            '-case', caseRoot, cwd=caseRoot)
+
+            await cm.start()
+            result = await cm.wait()
 
         return result
 
@@ -70,9 +73,11 @@ class MeshManager:
         result = await cm.wait()
 
         if result == 0 and parallel.getNP() > 1:  # Process the mesh in constant folder too.
-            proc = await runUtility('transformPoints', '-allRegions', '-translate', f'({x} {y} {z})',
-                                            '-case', caseRoot, cwd=caseRoot)
-            result = await proc.wait()
+            cm = RunUtility('transformPoints', '-allRegions', '-translate', f'({x} {y} {z})',
+                            '-case', caseRoot, cwd=caseRoot)
+
+            await cm.start()
+            result = await cm.wait()
 
         return result
 
@@ -87,11 +92,13 @@ class MeshManager:
         result = await cm.wait()
 
         if result == 0 and parallel.getNP() > 1:  # Process the mesh in constant folder too.
-            proc = await runUtility('transformPoints', '-allRegions',
-                                            '-origin', f'({" ".join(origin)})',
-                                            '-rotate-angle', f'(({" ".join(axis)}) {angle})',
-                                            '-case', caseRoot, cwd=caseRoot)
-            result = await proc.wait()
+            cm = RunUtility('transformPoints', '-allRegions',
+                            '-origin', f'({" ".join(origin)})',
+                            '-rotate-angle', f'(({" ".join(axis)}) {angle})',
+                            '-case', caseRoot, cwd=caseRoot)
+
+            await cm.start()
+            result = await cm.wait()
 
         return result
 
@@ -124,12 +131,19 @@ class MeshManager:
         try:
             await FileSystem.copyFileToCase(path)
 
-            proc = await runUtility(*OPENFOAM_MESH_CONVERTERS[meshType], path.name, cwd=FileSystem.caseRoot())
+            cm = RunUtility(*OPENFOAM_MESH_CONVERTERS[meshType], path.name, cwd=FileSystem.caseRoot())
 
             progressDialog.showCancelButton()
-            progressDialog.cancelClicked.connect(proc.terminate)
+            progressDialog.cancelClicked.connect(cm.cancel)
 
-            if await proc.wait():
+            rc = 0
+            await cm.start()
+            try:
+                rc = await cm.wait()
+            except CanceledException:
+                pass
+
+            if rc != 0:
                 progressDialog.finish(self.tr('File conversion failed.'))
             elif not progressDialog.isCanceled():
                 progressDialog.setLabelText(self.tr('Loading the boundaries.'))

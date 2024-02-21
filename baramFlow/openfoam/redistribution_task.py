@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import asyncio
 
 from PySide6.QtCore import QObject, Signal
 
 from libbaram import utils
-from libbaram.run import runUtility
+from libbaram.run import RunUtility
 from libbaram.openfoam.dictionary.decomposePar_dict import DecomposeParDict
 
 from baramFlow.coredb import coredb
@@ -20,6 +19,11 @@ logger = logging.getLogger(__name__)
 
 class RedistributionTask(QObject):
     progress = Signal(str)
+
+    def __init__(self):
+        super().__init__()
+
+        self._latestTime = FileSystem.latestTime()
 
     async def redistribute(self):
         caseRoot = FileSystem.caseRoot()
@@ -40,17 +44,10 @@ class RedistributionTask(QObject):
             if nProcessorFolders > 0 and len(FileSystem.times()) > 0:
                 self.progress.emit(self.tr('Reconstructing the case.'))
 
-                latestTime = FileSystem.latestTime()
-                proc = await runUtility('reconstructPar', '-allRegions', '-withZero', '-case', caseRoot,
-                                        cwd=caseRoot, stdout=asyncio.subprocess.PIPE)
-
-                # This loop will end if the PIPE is closed (i.e. the process terminates)
-                async for line in proc.stdout:
-                    log = line.decode('utf-8')
-                    if log.startswith('Time = '):
-                        self.progress.emit(self.tr(f'Reconstructing the case. ({log.strip()}/{latestTime})'))
-
-                result = await proc.wait()
+                cm = RunUtility('reconstructPar', '-allRegions', '-withZero', '-case', caseRoot, cwd=caseRoot)
+                cm.output.connect(self._reportTimeProgress)
+                await cm.start()
+                result = await cm.wait()
                 if result != 0:
                     raise RuntimeError(self.tr('Reconstruction failed.'))
 
@@ -67,9 +64,9 @@ class RedistributionTask(QObject):
                 for rname in regions:
                     decomposeParDict.setRegion(rname).write()
 
-                proc = await runUtility('decomposePar', '-allRegions', '-time', '0:', '-case', caseRoot, cwd=caseRoot)
-
-                result = await proc.wait()
+                cm = RunUtility('decomposePar', '-allRegions', '-time', '0:', '-case', caseRoot, cwd=caseRoot)
+                await cm.start()
+                result = await cm.wait()
                 if result != 0:
                     raise RuntimeError(self.tr('Decomposition failed.'))
 
@@ -90,3 +87,7 @@ class RedistributionTask(QObject):
         except Exception as ex:
             logger.info(ex, exc_info=True)
             raise
+
+    def _reportTimeProgress(self, msg):
+        if msg.startswith('Time = '):
+            self.progress.emit(self.tr(f'Reconstructing the case. ({msg.strip()}/{self._latestTime})'))

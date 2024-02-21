@@ -103,7 +103,9 @@ class SnapPage(StepPage):
             cm.output.connect(console.append)
             cm.errorOutput.connect(console.appendError)
             await cm.start()
-            await cm.wait()
+            rc = await cm.wait()
+            if rc != 0:
+                raise ProcessError
 
             if app.db.elementCount('region') > 1:
                 TopoSetDict().build(TopoSetDict.Mode.CREATE_REGIONS).write()
@@ -112,7 +114,9 @@ class SnapPage(StepPage):
                 cm.output.connect(console.append)
                 cm.errorOutput.connect(console.appendError)
                 await cm.start()
-                await cm.wait()
+                rc = await cm.wait()
+                if rc != 0:
+                    raise ProcessError
 
                 if app.db.elementCount('geometry', lambda i, e: e['cfdType'] == CFDType.CELL_ZONE.value):
                     snapDict.updateForCellZoneInterfacesSnap().write()
@@ -121,7 +125,9 @@ class SnapPage(StepPage):
                     cm.output.connect(console.append)
                     cm.errorOutput.connect(console.appendError)
                     await cm.start()
-                    await cm.wait()
+                    rc = await cm.wait()
+                    if rc != 0:
+                        raise ProcessError
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()

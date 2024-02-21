@@ -240,7 +240,9 @@ class CastellationPage(StepPage):
             cm.output.connect(console.append)
             cm.errorOutput.connect(console.appendError)
             await cm.start()
-            await cm.wait()
+            rc = await cm.wait()
+            if rc != 0:
+                raise ProcessError
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()

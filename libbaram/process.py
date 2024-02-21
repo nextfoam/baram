@@ -10,6 +10,8 @@ import subprocess
 
 from PySide6.QtCore import QObject, Signal
 
+from libbaram.exception import CanceledException
+
 
 class ProcessError(Exception):
     def __init__(self, returncode):
@@ -18,10 +20,6 @@ class ProcessError(Exception):
     @property
     def returncode(self):
         return self._returncode
-
-
-class ProcessCanceledException(Exception):
-    pass
 
 
 def isRunning(pid, startTime):
@@ -156,6 +154,6 @@ class RunExternalScript(QObject):
         returncode = await self._proc.wait()
 
         if self._canceled:
-            raise ProcessCanceledException
+            raise CanceledException
 
         return returncode

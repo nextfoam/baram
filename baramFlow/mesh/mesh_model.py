@@ -10,6 +10,7 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 from baramFlow.app import app
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.main_window.rendering_view import DisplayMode
+from libbaram.exception import CanceledException
 from libbaram.run import RunParallelUtility
 
 _applyDisplayMode = {
@@ -312,9 +313,13 @@ class MeshModel(RenderingModel):
             self._largestCellVolume = largestVolume
             self._smallestCellVolume = smallestVolume
 
+        except CanceledException:
+            pass
+
         except asyncio.CancelledError:
             if cm:
                 cm.cancel()
-            raise asyncio.CancelledError
+            else:
+                raise CanceledException
 
 

@@ -8,7 +8,8 @@ from typing import Optional
 from PySide6.QtCore import QCoreApplication, QObject, Signal
 
 from libbaram import utils
-from libbaram.run import runUtility, runParallelUtility
+from libbaram.exception import CanceledException
+from libbaram.run import RunUtility, RunParallelUtility
 
 from baramFlow.app import app
 from baramFlow.coredb import coredb
@@ -44,10 +45,6 @@ from baramFlow.openfoam.file_system import FileSystem
 logger = logging.getLogger(__name__)
 
 
-class CanceledException(Exception):
-    pass
-
-
 class CaseGenerator(QObject):
     progress = Signal(str)
 
@@ -55,7 +52,7 @@ class CaseGenerator(QObject):
         super().__init__()
         self._db = app.case.db
         self._errors = None
-        self._proc: Optional[asyncio.subprocess.Process] = None
+        self._cm = None
         self._canceled: bool = False
         self._files = None
 
@@ -167,11 +164,12 @@ class CaseGenerator(QObject):
             self.progress.emit(self.tr(f'Reconstructing Field Data...'))
 
             if FileSystem.latestTime() == '0':
-                self._proc = await runUtility('reconstructPar', '-allRegions', '-withZero', '-case', caseRoot, cwd=caseRoot)
+                self._cm = RunUtility('reconstructPar', '-allRegions', '-withZero', '-case', caseRoot, cwd=caseRoot)
             else:
-                self._proc = await runUtility('reconstructPar', '-allRegions', '-latestTime', '-case', caseRoot, cwd=caseRoot)
-            result = await self._proc.wait()
-            self._proc = None
+                self._cm = RunUtility('reconstructPar', '-allRegions', '-latestTime', '-case', caseRoot, cwd=caseRoot)
+            await self._cm.start()
+            result = await self._cm.wait()
+            self._cm = None
             if result != 0:
                 raise RuntimeError(self.tr('Reconstructing Field Data failed. 0'))
 
@@ -189,10 +187,11 @@ class CaseGenerator(QObject):
         if nProcessorFolders > 1:
             self.progress.emit(self.tr('Decomposing Field Data...'))
 
-            self._proc = await runUtility('decomposePar', '-allRegions', '-fields', '-latestTime', '-case', caseRoot, cwd=caseRoot)
+            self._cm = RunUtility('decomposePar', '-allRegions', '-fields', '-latestTime', '-case', caseRoot, cwd=caseRoot)
+            await self._cm.start()
+            result = await self._cm.wait()
 
-            result = await self._proc.wait()
-            self._proc = None
+            self._cm = None
             if self._canceled:
                 raise CanceledException
             if result != 0:
@@ -212,9 +211,10 @@ class CaseGenerator(QObject):
             self.progress.emit(self.tr('Setting Section Values'))
 
             caseRoot = FileSystem.caseRoot()
-            self._proc = await runParallelUtility('setFields', '-writeBoundaryFields', '-case', caseRoot,
-                                                  parallel=parallel.getEnvironment(), cwd=caseRoot)
-            result = await self._proc.wait()
+            self._cm = RunParallelUtility('setFields', '-writeBoundaryFields', '-case', caseRoot,
+                                          cwd=caseRoot, parallel=parallel.getEnvironment())
+            await self._cm.start()
+            result = await self._cm.wait()
 
             if self._canceled:
                 raise CanceledException
@@ -223,5 +223,5 @@ class CaseGenerator(QObject):
 
     def cancel(self):
         self._canceled = True
-        if self._proc is not None:
-            self._proc.terminate()
+        if self._cm is not None:
+            self._cm.cancel()

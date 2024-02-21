@@ -4,7 +4,7 @@
 import qasync
 from PySide6.QtWidgets import QMessageBox
 
-from libbaram.run import runUtility
+from libbaram.run import RunUtility
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
@@ -168,8 +168,11 @@ class BaseGridPage(StepPage):
         progressDialog.open()
 
         BlockMeshDict().build().write()
-        proc = await runUtility('blockMesh', cwd=app.fileSystem.caseRoot())
-        if await proc.wait():
+        cm = RunUtility('blockMesh', cwd=app.fileSystem.caseRoot())
+        await cm.start()
+        result = await cm.wait()
+
+        if result != 0:
             progressDialog.finish(self.tr('Mesh Generation Failed.'))
             self.clearResult()
             return
