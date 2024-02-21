@@ -155,7 +155,7 @@ class CaseManager(QObject):
 
         self._batchProcess = None
         self._batchRunning = False
-        self._project.updateSolverStatus(None, SolverStatus.NONE, None)
+        self._project.updateSolverStatus(None, SolverStatus.ENDED, None)
 
     def cancel(self):
         if self._generator is not None:
