@@ -28,6 +28,7 @@ class BoundaryLayerPage(StepPage):
         self._processor = None
 
         ui.boundaryLayerConfigurationsHeader.setContents(ui.boundaryLayerConfigurations)
+        ui.boundaryLayerConfigurations.setBackgroundColor()
         ui.boundaryLayerConfigurations.setHeaderWithWidth([0, 0, 16, 16])
 
         ui.boundaryLayerAdvancedConfigurationHeader.setContents(ui.boundaryLayerAdvancedConfiguration)

@@ -59,8 +59,9 @@ class ListTable(QFrame):
 
         self._items = {}
 
+    def setBackgroundColor(self, color=Qt.GlobalColor.white):
         palette = QPalette()
-        palette.setColor(QPalette.ColorRole.Window, Qt.GlobalColor.white)
+        palette.setColor(QPalette.ColorRole.Window, color)
         self.setAutoFillBackground(True)
         self.setPalette(palette)
 

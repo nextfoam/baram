@@ -98,6 +98,8 @@ class CastellationPage(StepPage):
         ui.surfaceRefinementHeader.setContents(ui.surfaceRefinement)
         ui.volumeRefinementHeader.setContents(ui.volumeRefinement)
 
+        ui.surfaceRefinement.setBackgroundColor()
+        ui.volumeRefinement.setBackgroundColor()
         ui.surfaceRefinement.setHeaderWithWidth([0, 0, 16, 16])
         ui.volumeRefinement.setHeaderWithWidth([0, 0, 16, 16])
 
