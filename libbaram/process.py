@@ -11,6 +11,7 @@ import subprocess
 from PySide6.QtCore import QObject, Signal
 
 from libbaram.exception import CanceledException
+from libbaram.mpi import ParallelEnvironment
 
 
 class ProcessError(Exception):
@@ -69,43 +70,29 @@ def stopProcess(pid, startTime=None):
         pass
 
 
-class RunExternalScript(QObject):
+class RunSubprocess(QObject):
     output = Signal(str)
     errorOutput = Signal(str)
 
-    def __init__(self, program: str, *args, cwd: Path = None, useVenv=True):
+    def __new__(cls, *args, **kwargs):
+        if cls is RunSubprocess:
+            raise TypeError(f"only children of '{cls.__name__}' may be instantiated")
+        return super().__new__(cls)
+
+    def __init__(self, program: str, *args, cwd: Path = None, useVenv=True, parallel: ParallelEnvironment = None):
         super().__init__()
 
         self._program = program
         self._args = args
         self._cwd = cwd
         self._useVenv = useVenv
+        self._parallel = parallel
 
         self._proc = None
         self._canceled = False
 
     async def start(self):
-        ENV = os.environ.copy()
-        if not self._useVenv:
-            excluding = [os.path.join('venv', 'bin'), os.path.join('venv', 'Lib'), os.path.join('venv', 'Scripts')]
-            ENV['PATH'] = os.pathsep.join([path for path in ENV['PATH'].split(os.pathsep) if not any([pattern in path for pattern in excluding])])
-
-        creationflags = 0
-        startupinfo = None
-
-        if platform.system() == 'Windows':
-            creationflags = subprocess.CREATE_NO_WINDOW
-            startupinfo = subprocess.STARTUPINFO(
-                dwFlags=subprocess.STARTF_USESHOWWINDOW,
-                wShowWindow=subprocess.SW_HIDE
-            )
-
-        self._proc = await asyncio.create_subprocess_exec(self._program, *self._args,
-                                                          env=ENV, cwd=str(self._cwd),
-                                                          creationflags=creationflags,
-                                                          startupinfo=startupinfo,
-                                                          stdout=asyncio.subprocess.PIPE,
-                                                          stderr=asyncio.subprocess.PIPE)
+        raise NotImplementedError
 
     def cancel(self):
         try:
@@ -157,3 +144,28 @@ class RunExternalScript(QObject):
             raise CanceledException
 
         return returncode
+
+
+class RunExternalScript(RunSubprocess):
+    async def start(self):
+        ENV = os.environ.copy()
+        if not self._useVenv:
+            excluding = [os.path.join('venv', 'bin'), os.path.join('venv', 'Lib'), os.path.join('venv', 'Scripts')]
+            ENV['PATH'] = os.pathsep.join([path for path in ENV['PATH'].split(os.pathsep) if not any([pattern in path for pattern in excluding])])
+
+        creationflags = 0
+        startupinfo = None
+
+        if platform.system() == 'Windows':
+            creationflags = subprocess.CREATE_NO_WINDOW
+            startupinfo = subprocess.STARTUPINFO(
+                dwFlags=subprocess.STARTF_USESHOWWINDOW,
+                wShowWindow=subprocess.SW_HIDE
+            )
+
+        self._proc = await asyncio.create_subprocess_exec(self._program, *self._args,
+                                                          env=ENV, cwd=str(self._cwd),
+                                                          creationflags=creationflags,
+                                                          startupinfo=startupinfo,
+                                                          stdout=asyncio.subprocess.PIPE,
+                                                          stderr=asyncio.subprocess.PIPE)
