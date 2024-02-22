@@ -70,7 +70,7 @@ class VolumeDialog(QDialog):
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
+            QMessageBox.information(self, self.tr('Input Error'), writer.firstError().toMessage())
         else:
             if self._isNew:
                 self._name = name

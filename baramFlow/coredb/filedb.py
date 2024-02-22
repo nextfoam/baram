@@ -82,16 +82,16 @@ class FileDB:
         except KeyError:
             return None
 
-    def putDataFrame(self, key, df):
+    def putDataFrame(self, name, df):
         with pd.HDFStore(self._tmpPath) as store:
-            store.put(key.value, df)
+            store.put(name, df)
 
         self._modifiedAfterSaved = True
 
-    def getDataFrame(self, key):
+    def getDataFrame(self, name):
         with pd.HDFStore(self._tmpPath) as store:
-            if f'/{key.value}' in store.keys():
-                return store.get(key.value)
+            if f'/{name}' in store.keys():
+                return store.get(name)
             else:
                 return None
 
