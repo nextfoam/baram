@@ -176,9 +176,12 @@ class CaseManager(QObject):
         self.setCase()
 
     def removeInvalidCases(self, validCases):
-        for dir in self._batchRoot().iterdir():
-            if dir.name not in validCases:
-                rmtree(dir)
+        if not self._batchRoot().exists():
+            return
+
+        for d in self._batchRoot().iterdir():
+            if d.name not in validCases:
+                rmtree(d)
 
     def removeCase(self, name):
         rmtree(self._batchPath(name), ignore_errors=True)
