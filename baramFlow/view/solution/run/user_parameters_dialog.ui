@@ -61,6 +61,16 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Parameter names consist solely of uppercase letters, digits, and the '_' (underscore), and it cannot begin with a digit.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QTreeWidget" name="parameters">
      <property name="indentation">
       <number>0</number>
