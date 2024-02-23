@@ -59,10 +59,7 @@ class ProjectSettings:
 
     def setBatchStatus(self, name, status):
         batches = self.getBatchStatuses()
-        if batches is None:
-            self._set(ProjectSettingKey.BATCH_STATUS, {name: status.name})
-        else:
-            batches[name] = status.name
+        batches[name] = status.name
 
         self.save()
 
@@ -78,7 +75,12 @@ class ProjectSettings:
         self.save()
 
     def getBatchStatuses(self):
-        return self.get(ProjectSettingKey.BATCH_STATUS)
+        status = self.get(ProjectSettingKey.BATCH_STATUS)
+        if status is None:
+            status = {}
+            self._set(ProjectSettingKey.BATCH_STATUS, status)
+
+        return status
 
     def acquireLock(self, timeout):
         lock = FileLock(self._settingsPath / 'case.lock')

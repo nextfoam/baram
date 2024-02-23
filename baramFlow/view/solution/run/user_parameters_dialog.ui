@@ -63,7 +63,8 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Parameter names consist solely of uppercase letters, digits, and the '_' (underscore), and it cannot begin with a digit.</string>
+      <string>Parameter names consist solely of uppercase letters, digits, and the '_' (underscore), and it cannot begin with a digit.
+Parameter name should be prefixed with a dollar sign ($) when it is used.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
