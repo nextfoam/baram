@@ -151,7 +151,7 @@ class CaseManager(QObject):
                 self._setStatus(SolverStatus.ENDED)
                 break
 
-            self._setStatus(SolverStatus.ENDED if result == 1 else SolverStatus.ERROR)
+            self._setStatus(SolverStatus.ENDED if result == 0 else SolverStatus.ERROR)
 
         self._batchProcess = None
         self._batchRunning = False
