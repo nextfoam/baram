@@ -89,7 +89,7 @@ class CaseManager(QObject):
         return self._status == SolverStatus.RUNNING
 
     def isEnded(self):
-        return self._status == SolverStatus.ENDED
+        return self._status == SolverStatus.ENDED or self._status == SolverStatus.ERROR
 
     def isActive(self):
         return self._status == SolverStatus.WAITING or self._status == SolverStatus.RUNNING
