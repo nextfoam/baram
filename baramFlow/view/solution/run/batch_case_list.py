@@ -178,7 +178,7 @@ class BatchCaseList(QObject):
         return pd.DataFrame.from_dict(self._cases, orient='index')
 
     def load(self):
-        self.importFromDataFrame(self._project.fileDB().getDataFrame(FileDB.Key.BATCH_CASES), True)
+        self.importFromDataFrame(self._project.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value), True)
 
     def batchSchedule(self):
         return [(name, self._cases[name]) for name, item in self._items.items() if item.isScheduled()]
@@ -282,5 +282,5 @@ class BatchCaseList(QObject):
     def _listChanged(self, save=True):
         self._adjustSize()
         if save:
-            self._project.fileDB().putDataFrame(FileDB.Key.BATCH_CASES, self.exportAsDataFrame())
+            self._project.fileDB().putDataFrame(FileDB.Key.BATCH_CASES.value, self.exportAsDataFrame())
 
