@@ -75,12 +75,14 @@ class FileSystem:
                 shutil.copyfile(srcFile, constantPath / Directory.REGION_PROPERTIES_FILE_NAME)
 
                 for rname in regions:
-                    regopmPath = cls.makeDir(constantPath, rname)
-                    os.symlink(liveConstantPath / rname / Directory.POLY_MESH_DIRECTORY_NAME,
-                               regopmPath / Directory.POLY_MESH_DIRECTORY_NAME)
+                    regionPath = cls.makeDir(constantPath, rname)
+                    target = liveConstantPath / rname / Directory.POLY_MESH_DIRECTORY_NAME
+                    p = regionPath / Directory.POLY_MESH_DIRECTORY_NAME
+                    p.symlink_to(os.path.relpath(target, p.parent), target_is_directory=True)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
             else:
-                srcPath = liveConstantPath / Directory.POLY_MESH_DIRECTORY_NAME
-                os.symlink(srcPath, constantPath / Directory.POLY_MESH_DIRECTORY_NAME)
+                target = liveConstantPath / Directory.POLY_MESH_DIRECTORY_NAME
+                p = constantPath / Directory.POLY_MESH_DIRECTORY_NAME
+                p.symlink_to(os.path.relpath(target, p.parent), target_is_directory=True)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
 
             with open(path / FOAM_FILE_NAME, 'a'):
                 pass
@@ -167,7 +169,7 @@ class FileSystem:
         return path if path.is_dir() else None
 
     @classmethod
-    def makeDir(cls, parent, directory):
+    def makeDir(cls, parent: Path, directory) -> Path:
         path = parent / directory
         path.mkdir(parents=True, exist_ok=True)
         return path
