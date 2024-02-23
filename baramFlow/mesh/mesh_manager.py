@@ -7,6 +7,8 @@ import qasync
 from enum import Enum, auto
 from pathlib import Path
 
+from PySide6.QtCore import QObject
+
 from baramFlow.openfoam.redistribution_task import RedistributionTask
 from libbaram.exception import CanceledException
 from libbaram.run import RunParallelUtility, RunUtility
@@ -41,7 +43,7 @@ OPENFOAM_MESH_CONVERTERS = {
 }
 
 
-class MeshManager:
+class MeshManager(QObject):
     def __init__(self, window):
         super().__init__()
 
