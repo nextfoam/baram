@@ -75,32 +75,32 @@ class FileSystem:
 
         for processor in processorFolders:
             liveConstant = Project.instance().path / CASE_DIRECTORY_NAME / processor / Directory.CONSTANT_DIRECTORY_NAME
-            liveSystem   = Project.instance().path / CASE_DIRECTORY_NAME / processor / Directory.SYSTEM_DIRECTORY_NAME  # noqa for indent
+            liveSystem   = Project.instance().path / CASE_DIRECTORY_NAME / processor / Directory.SYSTEM_DIRECTORY_NAME  # noqa: E221
 
             if not liveConstant.is_dir():
                 continue
 
             batchConstant = path / processor / Directory.CONSTANT_DIRECTORY_NAME
-            batchSystem   = path / processor / Directory.SYSTEM_DIRECTORY_NAME  # noqa for indent
+            batchSystem   = path / processor / Directory.SYSTEM_DIRECTORY_NAME  # noqa: E221
 
             if len(regions) > 1:
                 if processor == '':  # RegionProperties file is not copied for processor folders
-                    source = liveConstant  / Directory.REGION_PROPERTIES_FILE_NAME  # noqa for indent
+                    source = liveConstant  / Directory.REGION_PROPERTIES_FILE_NAME  # noqa: E221
                     target = batchConstant / Directory.REGION_PROPERTIES_FILE_NAME
                     shutil.copyfile(source, target)
 
                 for rname in regions:
-                    target = liveConstant  / rname / Directory.POLY_MESH_DIRECTORY_NAME  # noqa for indent
+                    target = liveConstant  / rname / Directory.POLY_MESH_DIRECTORY_NAME  # noqa: E221
                     source = batchConstant / rname / Directory.POLY_MESH_DIRECTORY_NAME
                     source.parent.mkdir(parents=True, exist_ok=True)
                     source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
                     if processor == '':  # decomposePar file is not copied for processor folders
-                        target = liveSystem  / rname / 'decomposeParDict'  # noqa for indent
+                        target = liveSystem  / rname / 'decomposeParDict'  # noqa: E221
                         source = batchSystem / rname / 'decomposeParDict'
                         source.parent.mkdir(parents=True, exist_ok=True)
                         source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=False)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
             else:
-                target = liveConstant  / Directory.POLY_MESH_DIRECTORY_NAME  # noqa for indent
+                target = liveConstant  / Directory.POLY_MESH_DIRECTORY_NAME  # noqa: E221
                 source = batchConstant / Directory.POLY_MESH_DIRECTORY_NAME
                 source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
 
