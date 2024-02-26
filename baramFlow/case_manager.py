@@ -75,6 +75,9 @@ class CaseManager(QObject):
             await self._loadVtkMesh()
             self._project.updateCurrentCase(name)
 
+        if name is None:
+            status = None
+
         self.setCase(name, parameters, status)
 
     def setCase(self, name=None, parameters=None, status=None):
