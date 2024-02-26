@@ -5,7 +5,10 @@ import logging
 
 from PySide6.QtCore import QObject, Signal
 
+from baramFlow.case_manager import BATCH_DIRECTORY_NAME
+from baramFlow.coredb.project import Project
 from libbaram import utils
+from libbaram.openfoam.constants import CASE_DIRECTORY_NAME
 from libbaram.run import RunUtility
 from libbaram.openfoam.dictionary.decomposePar_dict import DecomposeParDict
 
@@ -23,16 +26,21 @@ class RedistributionTask(QObject):
     def __init__(self):
         super().__init__()
 
-        self._latestTime = FileSystem.latestTime()
+        self._caseName = ''
+        self._latestTime = '0'
 
     async def redistribute(self):
-        caseRoot = FileSystem.caseRoot()
         db = coredb.CoreDB()
+        regions = db.getRegions()
+
+        liveCaseFolder = Project.instance().path.joinpath(CASE_DIRECTORY_NAME)
+        batchRoot      = Project.instance().path.joinpath(BATCH_DIRECTORY_NAME)  # noqa: E221
+        caseFolders = list(batchRoot.iterdir()) if batchRoot.exists() else []
+        caseFolders.insert(0, liveCaseFolder)
 
         numCores = parallel.getNP()
 
-        processorFolders = FileSystem.processorFolders()
-        nProcessorFolders = len(processorFolders)
+        nProcessorFolders = len(list(liveCaseFolder.glob('processor[0-9]*')))
 
         if numCores == nProcessorFolders:
             return
@@ -41,42 +49,61 @@ class RedistributionTask(QObject):
             return
 
         try:
-            if nProcessorFolders > 0 and len(FileSystem.times()) > 0:
-                self.progress.emit(self.tr('Reconstructing the case.'))
+            for caseRoot in caseFolders:
+                processorFolders = list(caseRoot.glob('processor[0-9]*'))
+                nProcessorFolders = len(processorFolders)
+                if nProcessorFolders > 0 and len(FileSystem.times(processorFolders[0])) > 0:
+                    self.progress.emit(self.tr('Reconstructing the case.'))
 
-                cm = RunUtility('reconstructPar', '-allRegions', '-withZero', '-case', caseRoot, cwd=caseRoot)
-                cm.output.connect(self._reportTimeProgress)
-                await cm.start()
-                result = await cm.wait()
-                if result != 0:
-                    raise RuntimeError(self.tr('Reconstruction failed.'))
+                    if caseRoot == liveCaseFolder:
+                        self._caseName = ''
+                    else:
+                        self._caseName = caseRoot.name
 
-            for folder in processorFolders:
-                utils.rmtree(folder)
+                    self._latestTime = FileSystem.latestTime(processorFolders[0])
+
+                    cm = RunUtility('reconstructPar', '-allRegions', '-withZero', '-case', caseRoot, cwd=caseRoot)
+                    cm.output.connect(self._reportTimeProgress)
+                    await cm.start()
+                    result = await cm.wait()
+                    if result != 0:
+                        raise RuntimeError(self.tr('Reconstruction failed.'))
+
+            for caseRoot in caseFolders:
+                processorFolders = list(caseRoot.glob('processor[0-9]*'))
+                for folder in processorFolders:
+                    utils.rmtree(folder)
 
             if numCores > 1:
                 self.progress.emit(self.tr('Decomposing the case.'))
 
-                regions = db.getRegions()
-                decomposeParDict = DecomposeParDict(FileSystem.caseRoot(), numCores).build()
-                if len(regions) > 1:
-                    decomposeParDict.write()
-                for rname in regions:
-                    decomposeParDict.setRegion(rname).write()
+                for caseRoot in caseFolders:
+                    if caseRoot == liveCaseFolder:
+                        decomposeParDict = DecomposeParDict(caseRoot, numCores).build()
+                        if len(regions) > 1:
+                            decomposeParDict.write()
+                        for rname in regions:
+                            decomposeParDict.setRegion(rname).write()
 
-                cm = RunUtility('decomposePar', '-allRegions', '-time', '0:', '-case', caseRoot, cwd=caseRoot)
-                await cm.start()
-                result = await cm.wait()
-                if result != 0:
-                    raise RuntimeError(self.tr('Decomposition failed.'))
+                        args = ('-allRegions', '-time', '0:', '-case', caseRoot)
+                    else:
+                        FileSystem.linkLivePolyMeshTo(caseRoot, regions, processorOnly=True)
 
-                # Delete time folders in case root
-                #
-                # Do NOT delete the polyMesh in case root
-                # It was decided to be kept
-                #
-                for time in FileSystem.times(parent=caseRoot):
-                    utils.rmtree(caseRoot / time)
+                        args = ('-allRegions', '-fields', '-time', '0:', '-case', caseRoot)
+
+                    cm = RunUtility('decomposePar', *args, cwd=caseRoot)
+                    await cm.start()
+                    result = await cm.wait()
+                    if result != 0:
+                        raise RuntimeError(self.tr('Decomposition failed.'))
+
+                    # Delete time folders in case root
+                    #
+                    # Do NOT delete the polyMesh in case root
+                    # It was decided to be kept
+                    #
+                    for time in FileSystem.times(caseRoot):
+                        utils.rmtree(caseRoot / time)
 
                 self.progress.emit(self.tr(f'Decomposition done.'))
 
@@ -90,4 +117,4 @@ class RedistributionTask(QObject):
 
     def _reportTimeProgress(self, msg):
         if msg.startswith('Time = '):
-            self.progress.emit(self.tr(f'Reconstructing the case. ({msg.strip()}/{self._latestTime})'))
+            self.progress.emit(self.tr(f'Reconstructing the case. {self._caseName} ({msg.strip()}/{self._latestTime})'))

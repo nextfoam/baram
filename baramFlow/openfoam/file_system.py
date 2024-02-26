@@ -64,14 +64,13 @@ class FileSystem:
         cls.makeDir(path, Directory.CONSTANT_DIRECTORY_NAME)
 
     @classmethod
-    def createBatchCase(cls, path, regions):
-        cls.createCase(path)
-
+    def linkLivePolyMeshTo(cls, path, regions, processorOnly = False):
         # To check folders is better than to get "NP" from the configuration
         # to avoid possible mismatch between number of folders and "NP" configuration in the future
         np = len(list(Project.instance().path.joinpath(CASE_DIRECTORY_NAME).glob('processor[0-9]*')))
         processorFolders = [f'processor{i}' for i in range(0, np)]
-        processorFolders.append('')  # Reconstructed folder
+        if not processorOnly:
+            processorFolders.insert(0, '')  # Reconstructed folder
 
         for processor in processorFolders:
             liveConstant = Project.instance().path / CASE_DIRECTORY_NAME / processor / Directory.CONSTANT_DIRECTORY_NAME
@@ -102,7 +101,14 @@ class FileSystem:
             else:
                 target = liveConstant  / Directory.POLY_MESH_DIRECTORY_NAME  # noqa: E221
                 source = batchConstant / Directory.POLY_MESH_DIRECTORY_NAME
+                source.parent.mkdir(parents=True, exist_ok=True)
                 source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
+
+    @classmethod
+    def createBatchCase(cls, path, regions):
+        cls.createCase(path)
+
+        cls.linkLivePolyMeshTo(path, regions)
 
         with open(path / FOAM_FILE_NAME, 'a'):
             pass
@@ -138,8 +144,8 @@ class FileSystem:
         return cls._systemPath / rname
 
     @classmethod
-    def latestTime(cls) -> str:
-        times = cls.times()
+    def latestTime(cls, parent: Optional[Path] = None) -> str:
+        times = cls.times(parent)
         if len(times) == 0:
             return '0'
 
