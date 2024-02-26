@@ -143,6 +143,10 @@ class FileSystem:
         return times
 
     @classmethod
+    def polyMeshPath(cls, rname=''):
+        return cls.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME
+
+    @classmethod
     def boundaryFilePath(cls, rname):
         return cls.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME / 'boundary'
 

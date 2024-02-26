@@ -41,6 +41,7 @@ class _Project(QObject):
     projectOpened = Signal()
     projectClosed = Signal()
     caseLoaded = Signal(str)
+    batchCleared = Signal()
 
     materialChanged = Signal()
 
@@ -196,6 +197,10 @@ class _Project(QObject):
 
     def removeBatchStatus(self, name):
         self._projectSettings.removeBatchStatus(name)
+
+    def clearBatchStatuses(self):
+        self._projectSettings.setBatchStatuses({})
+        self.batchCleared.emit()
 
     def _open(self, path: Path, route=ProjectOpenType.EXISTING):
         self._settings = self.LocalSettings(path, self._settings)

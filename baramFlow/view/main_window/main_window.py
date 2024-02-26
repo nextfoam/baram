@@ -516,13 +516,14 @@ class MainWindow(QMainWindow):
 
                 self._project.fileDB().saveCoreDB()
 
-        self._caseManager.setCase()
-
-    def _caseLoaded(self, name=None):
+    @qasync.asyncSlot()
+    async def _caseLoaded(self, name=None):
         if name:
             self.setWindowTitle(f'{app.properties.fullName} - {name} ({self._project.path})')
         else:
             self.setWindowTitle(f'{app.properties.fullName} - {self._project.path}')
+
+        await self._loadVtkMesh()
 
     def _addTabifiedDock(self, dock):
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)

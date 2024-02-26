@@ -8,6 +8,7 @@ class ErrorType(Enum):
     EmptyError = auto()
     EnumError = auto()
     TypeError = auto()
+    RangeError = auto()
 
 
 def generateData(schema):
@@ -149,6 +150,20 @@ class FloatType(PrimitiveType):
     def __init__(self):
         super().__init__()
         self._default = '0'
+        self._lowLimit = None
+        self._lowLimitInclusive = True
+        self._highLimit = None
+        self._highLimitInclusive = True
+
+    def setLowLimit(self, limit, inclusive=True):
+        self._lowLimit = limit
+        self._lowLimitInclusive = inclusive
+        return self
+
+    def setHighLimit(self, limit, inclusive=True):
+        self._highLimit = limit
+        self._highLimitInclusive = inclusive
+        return self
 
     def validate(self, value, name=None):
         value = super().validate(value, name)
@@ -157,9 +172,16 @@ class FloatType(PrimitiveType):
             return None
 
         try:
-            float(value)
+            v = float(value)
         except Exception as e:
             raise DBError(ErrorType.TypeError, repr(e), name)
+
+        if self._lowLimit is not None:
+            if v < self._lowLimit or (v == self._lowLimit and not self._lowLimitInclusive):
+                raise DBError(ErrorType.RangeError, 'Out of Range', name)
+        if self._highLimit is not None:
+            if v > self._highLimit or (v == self._highLimit and not self._highLimitInclusive):
+                raise DBError(ErrorType.RangeError, 'Out of Range', name)
 
         return value
 

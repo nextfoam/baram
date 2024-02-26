@@ -127,7 +127,6 @@ class ProcessInformationPage(ContentPage):
             await app.case.batchRun(cases)
             self._updateStatus(SolverStatus.NONE)
 
-
     def _cancelCalculationClicked(self):
         controlDict = ControlDict().build()
         controlDict.asDict()['stopAt'] = 'noWriteNow'
@@ -180,13 +179,13 @@ class ProcessInformationPage(ContentPage):
     async def _toLiveMode(self):
         self._setRunningMode(RunningMode.LIVE_RUNNING_MODE)
 
-        progressDialog = ProgressDialog(self, self.tr('Case Loading'))
-        app.case.progress.connect(progressDialog.setLabelText)
-        progressDialog.open()
-
-        await app.case.loadCase()
-
-        progressDialog.close()
+        # progressDialog = ProgressDialog(self, self.tr('Case Loading'))
+        # app.case.progress.connect(progressDialog.setLabelText)
+        # progressDialog.open()
+        #
+        app.case.loadCase()
+        #
+        # progressDialog.close()
 
     def _toBatchMode(self):
         self._setRunningMode(RunningMode.BATCH_RUNNING_MODE)
@@ -281,5 +280,5 @@ class ProcessInformationPage(ContentPage):
         if self._dialog.isClearChecked():
             self._batchCaseList.clear()
 
-        await app.case.loadCase()
+        app.case.loadCase()
         self._batchCaseList.importFromDataFrame(self._dialog.cases())

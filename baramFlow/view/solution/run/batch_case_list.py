@@ -202,6 +202,7 @@ class BatchCaseList(QObject):
         self._menu.scheduleActionTriggered.connect(self._scheduleCalculation)
         self._menu.cancelScheduleActionTriggered.connect(self._cancelSchedule)
         self._menu.deleteActionTriggered.connect(self._delete)
+        self._project.batchCleared.connect(self._clearStatuses)
 
     def _adjustSize(self):
         if self._cases:
@@ -246,7 +247,8 @@ class BatchCaseList(QObject):
         app.case.progress.connect(progressDialog.setLabelText)
         progressDialog.open()
 
-        await app.case.loadCase(items[0].name(), status=items[0].status())
+        status = items[0].status()
+        app.case.loadCase(items[0].name(), status=status if status else SolverStatus.NONE)
 
         progressDialog.close()
 
@@ -266,7 +268,7 @@ class BatchCaseList(QObject):
             return
 
         if self._currentCase in [i.name() for i in items]:
-            await app.case.loadCase()
+            app.case.loadCase()
 
         for i in items:
             name = i.name()
@@ -278,6 +280,10 @@ class BatchCaseList(QObject):
             app.case.removeCase(name)
 
         self._listChanged()
+
+    def _clearStatuses(self):
+        for name, item in self._items.items():
+            item.setStatus(SolverStatus.NONE)
 
     def _listChanged(self, save=True):
         self._adjustSize()

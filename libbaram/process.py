@@ -124,7 +124,8 @@ class RunSubprocess(QObject):
 
             tasks = list(pending)
             if outTask in done:
-                self.output.emit(outTask.result().decode('UTF-8').rstrip())
+                if output := outTask.result().decode('UTF-8').rstrip():
+                    self.output.emit(output)
                 if not stdout.at_eof():
                     outTask = asyncio.create_task(stdout.readline())
                     tasks.append(outTask)

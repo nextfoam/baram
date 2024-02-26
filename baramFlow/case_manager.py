@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import asyncio
 from PySide6.QtCore import Signal, QTimer, QObject
 
 from libbaram.utils import rmtree
@@ -13,8 +12,8 @@ from baramFlow.coredb.project import Project
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.case_generator import CaseGenerator
 from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from baramFlow.openfoam.solver import findSolver
+from .openfoam.system.control_dict import ControlDict
 from .solver_status import SolverStatus, RunType, SolverProcess
 from .coredb.coredb_reader import CoreDBReader
 
@@ -32,7 +31,7 @@ class CaseManager(QObject):
         self._project = Project.instance()
 
         self._case = None
-        self._db = None
+        self._db = CoreDBReader()
         self._solver = None
 
         self._runType = None
@@ -60,22 +59,20 @@ class CaseManager(QObject):
     def solver(self):
         return self._solver
 
-    async def loadCase(self, name=None, parameters=None, status=SolverStatus.NONE):
+    def loadCase(self, name=None, parameters=None, status=SolverStatus.NONE):
         if self._case != name:
             if name is None:
                 FileSystem.setCaseRoot(self._livePath())
+                self.setCase(name, parameters, status)
                 self._loadLiveStatus()
-                status = None
             else:
                 path = self._batchPath(name)
                 if not path.is_dir():
                     FileSystem.createBatchCase(path, coredb.CoreDB().getRegions())
                 FileSystem.setCaseRoot(path)
+                self.setCase(name, parameters, status)
 
-            await self._loadVtkMesh()
             self._project.updateCurrentCase(name)
-
-        self.setCase(name, parameters, status)
 
     def setCase(self, name=None, parameters=None, status=None):
         self._case = name
@@ -113,7 +110,7 @@ class CaseManager(QObject):
             self._batchProcess.terminate()
 
     async def liveRun(self):
-        await self.loadCase()
+        self.loadCase()
 
         await self._generateCase()
 
@@ -126,7 +123,7 @@ class CaseManager(QObject):
             raise RuntimeError
 
     async def initialize(self):
-        await self.loadCase()
+        self.loadCase()
 
         await self._initializeCase()
 
@@ -134,7 +131,7 @@ class CaseManager(QObject):
         self._batchStop = False
         self._batchRunning = True
         for case, parameters in cases:
-            await self.loadCase(case, parameters)
+            self.loadCase(case, parameters)
 
             await self._initializeCase()
 
@@ -142,9 +139,9 @@ class CaseManager(QObject):
             stdout = open(caseRoot / STDOUT_FILE_NAME, 'w')
             stderr = open(caseRoot / STDERR_FILE_NAME, 'w')
 
-            self._setStatus(SolverStatus.RUNNING)
             self._batchProcess = await runParallelUtility(self._solver, parallel=parallel.getEnvironment(), cwd=caseRoot,
-                                                  stdout=stdout, stderr=stderr)
+                                                          stdout=stdout, stderr=stderr)
+            self._setStatus(SolverStatus.RUNNING)
             result = await self._batchProcess.wait()
 
             if self._batchStop:
@@ -156,6 +153,11 @@ class CaseManager(QObject):
         self._batchProcess = None
         self._batchRunning = False
         self._project.updateSolverStatus(None, SolverStatus.ENDED, None)
+
+    def saveAndStop(self):
+        controlDict = ControlDict().build()
+        controlDict.asDict()['stopAt'] = 'writeNow'
+        controlDict.writeAtomic()
 
     def cancel(self):
         if self._generator is not None:
@@ -174,6 +176,8 @@ class CaseManager(QObject):
 
         FileSystem.setCaseRoot(livePath)
         self.setCase()
+
+        self._project.clearBatchStatuses()
 
     def removeInvalidCases(self, validCases):
         if not self._batchRoot().exists():
@@ -250,14 +254,14 @@ class CaseManager(QObject):
         await self._generator.setupCase()
         await self._generator.initialize()
         self._generator = None
-
-    async def _loadVtkMesh(self):
-        loader = PolyMeshLoader()
-        loader.progress.connect(self.progress)
-
-        # Workaround to give some time for QT to set up timer or event loop.
-        # This workaround is not necessary on Windows because BARAM for Windows
-        #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
-        await asyncio.sleep(0.1)
-
-        await loader.loadVtk()
+    #
+    # async def _loadVtkMesh(self):
+    #     loader = PolyMeshLoader()
+    #     loader.progress.connect(self.progress)
+    #
+    #     # Workaround to give some time for QT to set up timer or event loop.
+    #     # This workaround is not necessary on Windows because BARAM for Windows
+    #     #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
+    #     await asyncio.sleep(0.1)
+    #
+    #     await loader.loadVtk()
