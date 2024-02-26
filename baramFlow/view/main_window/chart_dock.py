@@ -97,6 +97,9 @@ class ChartDock(TabifiedDock):
         minX = float(self._data.first_valid_index())
         maxX = float(self._data.last_valid_index())
 
+        if maxX <= minX:
+            maxX = minX + 1
+
         dataWidth = maxX - minX
         margin = dataWidth * SIDE_MARGIN / (1 - 2 * SIDE_MARGIN)
 
