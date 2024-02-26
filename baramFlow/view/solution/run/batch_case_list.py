@@ -145,7 +145,7 @@ class BatchCaseList(QObject):
 
         statuses = self._project.getBatchStatuses() if loading else {}
 
-        if self._parameters is None:
+        if self._parameters is None or self._parameters.empty:
             self._parameters = df.columns
 
             i = Column.PARAMETER_START
