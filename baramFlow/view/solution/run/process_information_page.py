@@ -189,7 +189,6 @@ class ProcessInformationPage(ContentPage):
         #
         # progressDialog.close()
 
-
     @qasync.asyncSlot()
     async def _toBatchMode(self):
         if platform.system() == 'Windows' and not ctypes.windll.shell32.IsUserAnAdmin():
