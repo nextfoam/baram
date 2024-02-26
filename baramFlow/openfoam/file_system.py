@@ -65,27 +65,47 @@ class FileSystem:
 
     @classmethod
     def createBatchCase(cls, path, regions):
-        liveConstantPath = Project.instance().path / CASE_DIRECTORY_NAME /Directory.CONSTANT_DIRECTORY_NAME
-        constantPath = path / Directory.CONSTANT_DIRECTORY_NAME
-
         cls.createCase(path)
-        if liveConstantPath.is_dir():
+
+        # To check folders is better than to get "NP" from the configuration
+        # to avoid possible mismatch between number of folders and "NP" configuration in the future
+        np = len(list(Project.instance().path.joinpath(CASE_DIRECTORY_NAME).glob('processor[0-9]*')))
+        processorFolders = [f'processor{i}' for i in range(0, np)]
+        processorFolders.append('')  # Reconstructed folder
+
+        for processor in processorFolders:
+            liveConstant = Project.instance().path / CASE_DIRECTORY_NAME / processor / Directory.CONSTANT_DIRECTORY_NAME
+            liveSystem   = Project.instance().path / CASE_DIRECTORY_NAME / processor / Directory.SYSTEM_DIRECTORY_NAME  # noqa: E221
+
+            if not liveConstant.is_dir():
+                continue
+
+            batchConstant = path / processor / Directory.CONSTANT_DIRECTORY_NAME
+            batchSystem   = path / processor / Directory.SYSTEM_DIRECTORY_NAME  # noqa: E221
+
             if len(regions) > 1:
-                srcFile = liveConstantPath / Directory.REGION_PROPERTIES_FILE_NAME
-                shutil.copyfile(srcFile, constantPath / Directory.REGION_PROPERTIES_FILE_NAME)
+                if processor == '':  # RegionProperties file is not copied for processor folders
+                    source = liveConstant  / Directory.REGION_PROPERTIES_FILE_NAME  # noqa: E221
+                    target = batchConstant / Directory.REGION_PROPERTIES_FILE_NAME
+                    shutil.copyfile(source, target)
 
                 for rname in regions:
-                    regionPath = cls.makeDir(constantPath, rname)
-                    target = liveConstantPath / rname / Directory.POLY_MESH_DIRECTORY_NAME
-                    p = regionPath / Directory.POLY_MESH_DIRECTORY_NAME
-                    p.symlink_to(os.path.relpath(target, p.parent), target_is_directory=True)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
+                    target = liveConstant  / rname / Directory.POLY_MESH_DIRECTORY_NAME  # noqa: E221
+                    source = batchConstant / rname / Directory.POLY_MESH_DIRECTORY_NAME
+                    source.parent.mkdir(parents=True, exist_ok=True)
+                    source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
+                    if processor == '':  # decomposePar file is not copied for processor folders
+                        target = liveSystem  / rname / 'decomposeParDict'  # noqa: E221
+                        source = batchSystem / rname / 'decomposeParDict'
+                        source.parent.mkdir(parents=True, exist_ok=True)
+                        source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=False)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
             else:
-                target = liveConstantPath / Directory.POLY_MESH_DIRECTORY_NAME
-                p = constantPath / Directory.POLY_MESH_DIRECTORY_NAME
-                p.symlink_to(os.path.relpath(target, p.parent), target_is_directory=True)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
+                target = liveConstant  / Directory.POLY_MESH_DIRECTORY_NAME  # noqa: E221
+                source = batchConstant / Directory.POLY_MESH_DIRECTORY_NAME
+                source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
 
-            with open(path / FOAM_FILE_NAME, 'a'):
-                pass
+        with open(path / FOAM_FILE_NAME, 'a'):
+            pass
 
     @classmethod
     def initRegionDirs(cls, rname):

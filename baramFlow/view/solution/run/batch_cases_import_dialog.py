@@ -38,6 +38,7 @@ class BatchCasesImportDialog(QDialog):
             return
 
         if (self._parameters is not None
+                and not self._parameters.empty
                 and not self._ui.clearOldCases.isChecked()
                 and (set(self._parameters.tolist()) != set(self._cases.columns.tolist()))):
             await AsyncMessageBox().information(
