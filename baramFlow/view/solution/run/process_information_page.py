@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import ctypes
+import platform
 import time
 import qasync
 import logging
@@ -187,7 +189,15 @@ class ProcessInformationPage(ContentPage):
         #
         # progressDialog.close()
 
-    def _toBatchMode(self):
+
+    @qasync.asyncSlot()
+    async def _toBatchMode(self):
+        if platform.system() == 'Windows' and not ctypes.windll.shell32.IsUserAnAdmin():
+            # Symbolic link requires administrator permission on Windows platform
+            await AsyncMessageBox().warning(
+                self, self.tr('Permission Error'), self.tr('Run BARAM as administrator to enter batch mode'))
+            return
+
         self._setRunningMode(RunningMode.BATCH_RUNNING_MODE)
 
     @qasync.asyncSlot()
