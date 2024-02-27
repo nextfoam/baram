@@ -523,8 +523,6 @@ class MainWindow(QMainWindow):
         else:
             self.setWindowTitle(f'{app.properties.fullName} - {self._project.path}')
 
-        await self._loadVtkMesh()
-
     def _addTabifiedDock(self, dock):
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
         self.tabifyDock(dock)
