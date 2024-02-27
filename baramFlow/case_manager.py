@@ -45,6 +45,7 @@ class CaseManager(QObject):
         self._batchRunning = False
 
         FileSystem.setCaseRoot(self._livePath())
+        self.setCase()
         self._loadLiveStatus()
 
     @property
