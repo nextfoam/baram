@@ -8,6 +8,7 @@ import qasync
 from PySide6.QtCore import QObject, Signal, QSize
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QHeaderView, QMenu, QMessageBox
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel
 
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
@@ -54,6 +55,36 @@ class ContextMenu(QMenu):
         self.exec(pos)
 
 
+class StatusWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self._circle = QLabel()
+
+        self._setup()
+
+    def setStatus(self, status):
+        if status == SolverStatus.ENDED:
+            color = 'green'
+        elif status == SolverStatus.ERROR:
+            color = 'red'
+        else:
+            self.setVisible(False)
+            return
+
+        self.setVisible(True)
+        self._circle.setStyleSheet(f'background-color: {color}; border: 1px solid LightGrey; border-radius: 8px;')
+
+    def _setup(self):
+        layout = QHBoxLayout()
+        layout.addStretch()
+        layout.addWidget(self._circle)
+        layout.addStretch()
+        layout.setContentsMargins(9, 1, 9, 1)
+        self.setLayout(layout)
+        self._circle.setMinimumSize(16, 16)
+        self._circle.setMaximumSize(16, 16)
+
 class CaseItem(QTreeWidgetItem):
     emptyIcon = QIcon()
     checkIcon = QIcon(':/icons/checkmark.svg')
@@ -68,8 +99,10 @@ class CaseItem(QTreeWidgetItem):
         self._scheduled = False
         self._status = None
         self._loaded = False
+        self._statusWidget = StatusWidget()
 
         self.setText(Column.CASE_NAME, name)
+        parent.setItemWidget(self, Column.RESULT, self._statusWidget)
 
     def name(self):
         return self.text(Column.CASE_NAME)
@@ -97,15 +130,7 @@ class CaseItem(QTreeWidgetItem):
 
     def setStatus(self, status):
         self._status = status
-
-        if status == SolverStatus.RUNNING:
-            self.setIcon(Column.RESULT, self.runningIcon)
-        elif status == SolverStatus.ENDED:
-            self.setIcon(Column.RESULT, self.doneIcon)
-        elif status == SolverStatus.ERROR:
-            self.setIcon(Column.RESULT, self.errorIcon)
-        else:
-            self.setIcon(Column.RESULT, self.emptyIcon)
+        self._statusWidget.setStatus(status)
 
 
 class BatchCaseList(QObject):
