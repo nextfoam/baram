@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="4">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="5">
 
     <!-- type definitions -->
     <xs:simpleType name="ratio">
