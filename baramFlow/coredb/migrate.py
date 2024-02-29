@@ -196,8 +196,7 @@ def _version_2(root: etree.Element):
 def _version_3(root: etree.Element):
     logger.debug('  Upgrading to v4')
 
-    # Keep this commented until official v4 spec. is released
-    # root.set('version', '4')
+    root.set('version', '4')
 
     if (p := root.find('runCalculation', namespaces=_nsmap)) is not None:
         if p.find('batch', namespaces=_nsmap) is None:
@@ -238,11 +237,20 @@ def _version_3(root: etree.Element):
                                          f'</surfaceTension>')
                     p.append(e)
 
+
+def _version_4(root: etree.Element):
+    logger.debug('  Upgrading to v5')
+
+    # Keep this commented until official v4 spec. is released
+    # root.set('version', '4')
+
+
 _fTable = [
     None,
     _version_1,
     _version_2,
     _version_3,
+    _version_4
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))
