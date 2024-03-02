@@ -61,23 +61,24 @@ class CaseManager(QObject):
         return self._solver
 
     def loadCase(self, name=None, parameters=None, status=SolverStatus.NONE):
+        self._db.setParameters(parameters)
+
         if self._case != name:
             if name is None:
                 FileSystem.setCaseRoot(self._livePath())
-                self.setCase(name, parameters, status)
+                self.setCase(name, status)
                 self._loadLiveStatus()
             else:
                 path = self._batchPath(name)
                 if not path.is_dir():
                     FileSystem.createBatchCase(path, coredb.CoreDB().getRegions())
                 FileSystem.setCaseRoot(path)
-                self.setCase(name, parameters, status)
+                self.setCase(name, status)
 
             self._project.updateCurrentCase(name)
 
-    def setCase(self, name=None, parameters=None, status=None):
+    def setCase(self, name=None, status=None):
         self._case = name
-        self._db = CoreDBReader(parameters)
         self._solver = findSolver(self._db)
         self.caseLoaded.emit(name)
         if status is not None:
