@@ -288,7 +288,7 @@ class MeshModel(RenderingModel):
             smallestVolume = 1000000000  # 1km^3, sufficiently large value for smallestVolume
             largestVolume = 0  # sufficiently small value for largestVolume
 
-            numCellPattern = r'cells:\s+(?P<numCells>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)'
+            numCellPattern = r'^\s+cells:\s+(?P<numCells>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)'
             volumePattern = r'Min volume = (?P<minVol>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\. Max volume = (?P<maxVol>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\.'
 
             ioStream.seek(0)
