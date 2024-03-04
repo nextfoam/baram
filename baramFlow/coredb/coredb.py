@@ -282,7 +282,19 @@ class _CoreDB(object):
                 else:
                     batchParameter = None
 
-        if schema.type.is_derived(schema.type.maps.types[XSD_DOUBLE]):  # The case when the type has restrictions or attributes
+        if schema.type.local_name == 'inputNumberListType':
+            numbers = value.split()
+            # To check if the strings in value are valid numbers
+            # 'ValueError' exception is raised if invalid number found
+            try:
+                [float(n) for n in numbers]
+            except ValueError:
+                self._lastError = Error.FLOAT_ONLY
+                raise ValueException(Error.FLOAT_ONLY)
+
+            return element, ' '.join(numbers), None
+
+        elif schema.type.is_derived(schema.type.maps.types[XSD_DOUBLE]):  # The case when the type has restrictions or attributes
             try:
                 decimal = float(value)
             except ValueError:
@@ -302,18 +314,6 @@ class _CoreDB(object):
                 raise ValueException(Error.OUT_OF_RANGE)
 
             return element, value.lower(), batchParameter
-
-        elif schema.type.local_name == 'inputNumberListType':
-            numbers = value.split()
-            # To check if the strings in value are valid numbers
-            # 'ValueError' exception is raised if invalid number found
-            try:
-                [float(n) for n in numbers]
-            except ValueError:
-                self._lastError = Error.FLOAT_ONLY
-                raise ValueException(Error.FLOAT_ONLY)
-
-            return element, ' '.join(numbers), None
 
         elif schema.type.is_decimal():
             if schema.type.is_simple():
