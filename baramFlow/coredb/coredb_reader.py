@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import copy
-
 from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb import coredb
@@ -114,11 +112,16 @@ class Region:
 
 
 class CoreDBReader(_CoreDB):
-    def __init__(self, arguments=None):
+    def __init__(self):
         super().__init__()
 
-        self._xmlTree = copy.deepcopy(coredb.CoreDB()._xmlTree)
-        self._arguments = self.getBatchDefaults() if arguments is None else arguments
+        self._xmlTree = coredb.CoreDB()._xmlTree
+        self._arguments = self.getBatchDefaults()
+
+    def setParameters(self, arguments=None):
+        self._arguments = self.getBatchDefaults()
+        if arguments:
+            self._arguments.update(arguments)
 
     def getValue(self, xpath):
         value = super().getValue(xpath)

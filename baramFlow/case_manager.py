@@ -32,7 +32,7 @@ class CaseManager(QObject):
 
         self._case = None
         self._db = CoreDBReader()
-        self._solver = None
+        self._solver = findSolver(self._db)
 
         self._runType = None
         self._status = None
@@ -46,7 +46,6 @@ class CaseManager(QObject):
 
         FileSystem.setCaseRoot(self._livePath())
         self.setCase()
-        self._loadLiveStatus()
 
     @property
     def name(self):
@@ -60,24 +59,28 @@ class CaseManager(QObject):
     def solver(self):
         return self._solver
 
+    def load(self):
+        self._loadLiveStatus()
+
     def loadCase(self, name=None, parameters=None, status=SolverStatus.NONE):
+        self._db.setParameters(parameters)
+
         if self._case != name:
             if name is None:
                 FileSystem.setCaseRoot(self._livePath())
-                self.setCase(name, parameters, status)
+                self.setCase(name, status)
                 self._loadLiveStatus()
             else:
                 path = self._batchPath(name)
                 if not path.is_dir():
                     FileSystem.createBatchCase(path, coredb.CoreDB().getRegions())
                 FileSystem.setCaseRoot(path)
-                self.setCase(name, parameters, status)
+                self.setCase(name, status)
 
             self._project.updateCurrentCase(name)
 
-    def setCase(self, name=None, parameters=None, status=None):
+    def setCase(self, name=None, status=None):
         self._case = name
-        self._db = CoreDBReader(parameters)
         self._solver = findSolver(self._db)
         self.caseLoaded.emit(name)
         if status is not None:
@@ -210,6 +213,7 @@ class CaseManager(QObject):
     def _setLiveProcess(self, process):
         self._runType = RunType.PROCESS
         self._process = process
+        self._updateStatus()
         self._startMonitor()
 
     def _startMonitor(self):

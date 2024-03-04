@@ -85,6 +85,7 @@ class StatusWidget(QWidget):
         self._circle.setMinimumSize(16, 16)
         self._circle.setMaximumSize(16, 16)
 
+
 class CaseItem(QTreeWidgetItem):
     emptyIcon = QIcon()
     checkIcon = QIcon(':/icons/checkmark.svg')
@@ -272,8 +273,9 @@ class BatchCaseList(QObject):
         app.case.progress.connect(progressDialog.setLabelText)
         progressDialog.open()
 
+        name = items[0].name()
         status = items[0].status()
-        app.case.loadCase(items[0].name(), status=status if status else SolverStatus.NONE)
+        app.case.loadCase(name, self._cases[name], status if status else SolverStatus.NONE)
 
         progressDialog.close()
 
