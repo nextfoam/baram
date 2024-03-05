@@ -6,7 +6,8 @@ from PySide6.QtWidgets import QMessageBox
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.numerical_db import PressureVelocityCouplingScheme, ImplicitDiscretizationScheme, UpwindDiscretizationScheme
+from baramFlow.coredb.numerical_db import PressureVelocityCouplingScheme
+from baramFlow.coredb.numerical_db import ImplicitDiscretizationScheme, UpwindDiscretizationScheme, InterpolationScheme
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
 import baramFlow.openfoam.solver
@@ -21,27 +22,28 @@ class NumericalConditionsPage(ContentPage):
         self._ui = Ui_NumericalConditionsPage()
         self._ui.setupUi(self)
 
-        self._pressureVelocityCouplingSchemes = {
-            PressureVelocityCouplingScheme.SIMPLE.value: self.tr('SIMPLE'),
-            PressureVelocityCouplingScheme.SIMPLEC.value: self.tr('SIMPLEC'),
+        upwindDiscretizationSchemes = {
+            UpwindDiscretizationScheme.FIRST_ORDER_UPWIND: self.tr('First Order Upwind'),
+            UpwindDiscretizationScheme.SECOND_ORDER_UPWIND: self.tr('Second Order Upwind'),
         }
 
-        self._implicitDiscretizationSchemes = {
-            ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT.value: self.tr('First Order Implicit'),
-            ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT.value: self.tr('Second Order Implicit'),
-        }
-
-        self._upwindDiscretizationSchemes = {
-            UpwindDiscretizationScheme.FIRST_ORDER_UPWIND.value: self.tr('First Order Upwind'),
-            UpwindDiscretizationScheme.SECOND_ORDER_UPWIND.value: self.tr('Second Order Upwind'),
-        }
-
-        self._setupCombo(self._ui.pressureVelocityCouplingScheme, self._pressureVelocityCouplingSchemes)
-        self._setupCombo(self._ui.discretizationSchemeTime, self._implicitDiscretizationSchemes)
-        self._setupCombo(self._ui.discretizationSchemeMomentum, self._upwindDiscretizationSchemes)
-        self._setupCombo(self._ui.discretizationSchemeEnergy, self._upwindDiscretizationSchemes)
-        self._setupCombo(self._ui.discretizationSchemeTurbulence, self._upwindDiscretizationSchemes)
-        self._setupCombo(self._ui.discretizationSchemeVolumeFraction, self._upwindDiscretizationSchemes)
+        self._ui.pressureVelocityCouplingScheme.addItems({
+            PressureVelocityCouplingScheme.SIMPLE: self.tr('SIMPLE'),
+            PressureVelocityCouplingScheme.SIMPLEC: self.tr('SIMPLEC'),
+        })
+        self._ui.discretizationSchemeTime.addItems({
+            ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT: self.tr('First Order Implicit'),
+            ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT: self.tr('Second Order Implicit'),
+        })
+        self._ui.discretizationSchemeMomentum.addItems(upwindDiscretizationSchemes)
+        self._ui.discretizationSchemeEnergy.addItems(upwindDiscretizationSchemes)
+        self._ui.discretizationSchemeTurbulence.addItems(upwindDiscretizationSchemes)
+        self._ui.discretizationSchemeVolumeFraction.addItems(upwindDiscretizationSchemes)
+        self._ui.discretizationSchemePressure.addItems({
+            InterpolationScheme.LINEAR: self.tr('Linear'),
+            InterpolationScheme.MOMENTUM_WEIGHTED_RECONSTRUC: self.tr('Momentum Weighted Reconstruct'),
+            InterpolationScheme.MOMENTUM_WEIGHTED: self.tr('Momentum Weighted'),
+        })
 
         self._xpath = NumericalDB.NUMERICAL_CONDITIONS_XPATH
         self._dialog = None
@@ -97,20 +99,21 @@ class NumericalConditionsPage(ContentPage):
 
         db = coredb.CoreDB()
 
-        self._ui.pressureVelocityCouplingScheme.setCurrentText(
-            self._pressureVelocityCouplingSchemes[db.getValue(self._xpath + '/pressureVelocityCouplingScheme')])
+        self._ui.pressureVelocityCouplingScheme.setCurrentData(
+            PressureVelocityCouplingScheme(db.getValue(self._xpath + '/pressureVelocityCouplingScheme')))
         self._ui.useMomentumPredictor.setChecked(db.getValue(self._xpath + '/useMomentumPredictor') == 'true')
-        self._ui.discretizationSchemeTime.setCurrentText(
-            self._implicitDiscretizationSchemes[db.getValue(self._xpath + '/discretizationSchemes/time')])
-        self._ui.discretizationSchemeMomentum.setCurrentText(
-            self._upwindDiscretizationSchemes[db.getValue(self._xpath + '/discretizationSchemes/momentum')])
-        self._ui.discretizationSchemeEnergy.setCurrentText(
-            self._upwindDiscretizationSchemes[db.getValue(self._xpath + '/discretizationSchemes/energy')])
-        self._ui.discretizationSchemeTurbulence.setCurrentText(
-            self._upwindDiscretizationSchemes[
-                db.getValue(self._xpath + '/discretizationSchemes/turbulentKineticEnergy')])
-        self._ui.discretizationSchemeVolumeFraction.setCurrentText(
-            self._upwindDiscretizationSchemes[db.getValue(self._xpath + '/discretizationSchemes/volumeFraction')])
+        self._ui.discretizationSchemeTime.setCurrentData(
+            ImplicitDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/time')))
+        self._ui.discretizationSchemeMomentum.setCurrentData(
+            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/momentum')))
+        self._ui.discretizationSchemeEnergy.setCurrentData(
+            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/energy')))
+        self._ui.discretizationSchemeTurbulence.setCurrentData(
+            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/turbulentKineticEnergy')))
+        self._ui.discretizationSchemeVolumeFraction.setCurrentData(
+            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/volumeFraction')))
+        self._ui.discretizationSchemePressure.setCurrentData(
+            InterpolationScheme(db.getValue(self._xpath + '/discretizationSchemes/pressure')))
 
         self._ui.underRelaxationFactorPressure.setText(
             db.getValue(self._xpath + '/underRelaxationFactors/pressure'))
@@ -172,20 +175,22 @@ class NumericalConditionsPage(ContentPage):
     def save(self):
         writer = CoreDBWriter()
         writer.append(self._xpath + '/pressureVelocityCouplingScheme',
-                      self._ui.pressureVelocityCouplingScheme.currentData(), None)
+                      self._ui.pressureVelocityCouplingScheme.currentValue(), None)
         writer.append(self._xpath + '/useMomentumPredictor',
                       'true' if self._ui.useMomentumPredictor.isChecked() else 'false', None)
 
         writer.append(self._xpath + '/discretizationSchemes/time',
-                      self._ui.discretizationSchemeTime.currentData(), None)
+                      self._ui.discretizationSchemeTime.currentValue(), None)
         writer.append(self._xpath + '/discretizationSchemes/momentum',
-                      self._ui.discretizationSchemeMomentum.currentData(), None)
+                      self._ui.discretizationSchemeMomentum.currentValue(), None)
         writer.append(self._xpath + '/discretizationSchemes/energy',
-                      self._ui.discretizationSchemeEnergy.currentData(), None)
+                      self._ui.discretizationSchemeEnergy.currentValue(), None)
         writer.append(self._xpath + '/discretizationSchemes/turbulentKineticEnergy',
-                      self._ui.discretizationSchemeTurbulence.currentData(), None)
+                      self._ui.discretizationSchemeTurbulence.currentValue(), None)
         writer.append(self._xpath + '/discretizationSchemes/volumeFraction',
-                      self._ui.discretizationSchemeVolumeFraction.currentData(), None)
+                      self._ui.discretizationSchemeVolumeFraction.currentValue(), None)
+        writer.append(self._xpath + '/discretizationSchemes/pressure',
+                      self._ui.discretizationSchemePressure.currentValue(), None)
 
         writer.append(self._xpath + '/underRelaxationFactors/pressure',
                       self._ui.underRelaxationFactorPressure.text(), self.tr('Under-Relaxation Factor Pressure'))

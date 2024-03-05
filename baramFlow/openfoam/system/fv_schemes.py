@@ -109,8 +109,8 @@ class FvSchemes(DictionaryFile):
             'laplacianSchemes': self._constructLaplacianSchemes(),
             'interpolationSchemes': {
                 'default': 'linear',
-                'interpolate(p)':     'momentumWeightedReconstruct',
-                'interpolate(p_rgh)': 'momentumWeightedReconstruct',
+                'interpolate(p)':     self._db.getValue('.//numericalConditions/discretizationSchemes/pressure'),
+                'interpolate(p_rgh)': self._db.getValue('.//numericalConditions/discretizationSchemes/pressure'),
                 'reconstruct(psi)': 'Minmod',
                 'reconstruct(p)':   'Minmod',
                 'reconstruct(U)':   'MinmodV',

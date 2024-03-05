@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration version="3" xmlns="http://www.baramcfd.org/baram">
+<configuration version="4" xmlns="http://www.baramcfd.org/baram">
     <general>
         <flowType>incompressible</flowType>
         <timeTransient>false</timeTransient>
@@ -82,6 +82,7 @@
             <energy>secondOrderUpwind</energy>
             <turbulentKineticEnergy>firstOrderUpwind</turbulentKineticEnergy>
             <volumeFraction>firstOrderUpwind</volumeFraction>
+            <pressure>linear</pressure>
         </discretizationSchemes>
         <underRelaxationFactors>
             <pressure>0.3</pressure>

@@ -93,7 +93,7 @@ class FileSystem:
                     source = batchConstant / rname / Directory.POLY_MESH_DIRECTORY_NAME
                     source.parent.mkdir(parents=True, exist_ok=True)
                     source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
-                    if processor == '':  # decomposePar file is not copied for processor folders
+                    if processor == '':  # decomposePar file should not be copied for processor folders
                         target = liveSystem  / rname / 'decomposeParDict'  # noqa: E221
                         source = batchSystem / rname / 'decomposeParDict'
                         source.parent.mkdir(parents=True, exist_ok=True)
@@ -103,6 +103,11 @@ class FileSystem:
                 source = batchConstant / Directory.POLY_MESH_DIRECTORY_NAME
                 source.parent.mkdir(parents=True, exist_ok=True)
                 source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
+                if processor == '':  # decomposePar file should not be copied for processor folders
+                    target = liveSystem  / 'decomposeParDict'  # noqa: E221
+                    source = batchSystem / 'decomposeParDict'
+                    source.parent.mkdir(parents=True, exist_ok=True)
+                    source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=False)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
 
     @classmethod
     def createBatchCase(cls, path, regions):

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="4">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="5">
 
     <!-- type definitions -->
     <xs:simpleType name="ratio">
@@ -1262,6 +1262,15 @@
                                 <xs:restriction base='xs:string'>
                                     <xs:enumeration value='firstOrderUpwind'/>
                                     <xs:enumeration value='secondOrderUpwind'/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="pressure" default="linear">
+                            <xs:simpleType>
+                                <xs:restriction base='xs:string'>
+                                    <xs:enumeration value='linear'/>
+                                    <xs:enumeration value='momentumWeightedReconstruct'/>
+                                    <xs:enumeration value='momentumWeighted'/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
