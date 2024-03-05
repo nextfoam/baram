@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QVBoxLayout
 
 from baramMesh.app import app
 from baramMesh.view.step_page import StepPage
-from baramMesh.db.configurations_schema import RegionType, CFDType
+from baramMesh.db.configurations_schema import CFDType
 from .region_form import RegionForm
 from .region_card import RegionCard
 
@@ -35,22 +35,24 @@ class RegionPage(StepPage):
 
     def isNextStepAvailable(self):
         if not self._regions:
-            return app.db.elementCount('region', lambda i, e: e['type'] == RegionType.FLUID.value) > 0
+            if app.db.elementCount('region') > 0:
+                return True
 
-        hasFluid = False
+            self._ui.regionEmptyMessage.setVisible(True)
+            self._ui.regionValidationMessage.hide()
+            return False
+
+        self._ui.regionEmptyMessage.setVisible(False)
+
+        # hasFluid = False
         available = True
         for card in self._regions.values():
-            hasFluid = hasFluid or card.type() == RegionType.FLUID.value
+            # hasFluid = hasFluid or card.type() == RegionType.FLUID.value
             if not self._bounds.includes(card.point()):
                 card.showWarning()
                 available = False
             else:
                 card.hideWarning()
-
-        self._ui.regionEmptyMessage.setVisible(not hasFluid)
-        if not hasFluid:
-            self._ui.regionValidationMessage.hide()
-            return False
 
         multiRegion = len(self._regions) > 1
         hasInterRegionInterface = app.db.elementCount(
