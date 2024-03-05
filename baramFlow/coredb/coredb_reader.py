@@ -108,7 +108,10 @@ class Region:
         return self._secondaryMaterials
 
     def isFluid(self):
-        return self._phase & Phase.FLUID
+        return self._phase != Phase.SOLID
+
+    def isSolid(self):
+        return self._phase == Phase.SOLID
 
 
 class CoreDBReader(_CoreDB):

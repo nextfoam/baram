@@ -4,10 +4,9 @@
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.app import app
+from baramFlow.coredb.coredb_reader import Region
 from baramFlow.coredb.numerical_db import NumericalDB, PressureVelocityCouplingScheme
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.region_db import RegionDB
-from baramFlow.coredb.material_db import Phase
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.coredb.material_db import MaterialDB
@@ -15,22 +14,22 @@ from baramFlow.openfoam.file_system import FileSystem
 
 
 class FvSolution(DictionaryFile):
-    def __init__(self, rname: str = None):
+    def __init__(self, region: Region = None):
         """
 
         Args:
             rname: Region name. None for global fvSolution of multi region case, empty string for single region.
         """
-        super().__init__(FileSystem.caseRoot(), self.systemLocation('' if rname is None else rname), 'fvSolution')
+        super().__init__(FileSystem.caseRoot(), self.systemLocation('' if region is None else region.rname), 'fvSolution')
 
-        self._rname = rname
+        self._region = region
         self._db = app.case.db
 
     def build(self):
         if self._data is not None:
             return self
 
-        if self._rname is None:
+        if self._region is None:
             # Global fvSolution in multi region case
             self._data = {
                 'PIMPLE': {
@@ -45,12 +44,11 @@ class FvSolution(DictionaryFile):
         # If region name is empty string, the only fvSolution in single region case.
         # Otherwise, fvSolution of specified region.
         scheme = self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/pressureVelocityCouplingScheme')
-        phase = RegionDB.getPhase(self._rname)
         consistent = 'no'
         momentumPredictor = 'on'
         energyOn = ModelsDB.isEnergyModelOn()
 
-        if scheme == PressureVelocityCouplingScheme.SIMPLEC.value and phase != Phase.SOLID:
+        if scheme == PressureVelocityCouplingScheme.SIMPLEC.value and self._region.isFluid():
             consistent = 'yes'
         if self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/useMomentumPredictor') == 'false':
             momentumPredictor = 'off'
@@ -98,7 +96,7 @@ class FvSolution(DictionaryFile):
                     'maxIter': '5',
                 }),
                 'p_rghFinal': p_rgh,
-                'h': (h := self._constructSolversH(phase)),
+                'h': (h := self._constructSolversH()),
                 'hFinal': h,
                 'rho': (rho := {
                     'solver': 'PCG',
@@ -205,8 +203,9 @@ class FvSolution(DictionaryFile):
                 'equations': {
                     'U': self._db.getValue('.//underRelaxationFactors/momentum'),
                     'UFinal': self._db.getValue('.//underRelaxationFactors/momentumFinal'),
-                    'h': self._db.getValue('.//underRelaxationFactors/energy'),
-                    'hFinal': self._db.getValue('.//underRelaxationFactors/energyFinal'),
+                    'h': 1 if self._region.isSolid() else self._db.getValue('.//underRelaxationFactors/energy'),
+                    'hFinal':
+                        1 if self._region.isSolid() else self._db.getValue('.//underRelaxationFactors/energyFinal'),
                     '"(k|epsilon|omega|nuTilda)"': self._db.getValue('.//underRelaxationFactors/turbulence'),
                     '"(k|epsilon|omega|nuTilda)Final"': self._db.getValue('.//underRelaxationFactors/turbulenceFinal'),
                 }
@@ -214,7 +213,7 @@ class FvSolution(DictionaryFile):
         }
 
         # For multiphase model
-        for mid in RegionDB.getSecondaryMaterials(self._rname):
+        for mid in self._region.secondaryMaterials:
             material = MaterialDB.getName(mid)
             self._data['relaxationFactors']['equations'][f'alpha.{material}'] = self._db.getValue(
                 NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors/volumeFraction')
@@ -248,8 +247,8 @@ class FvSolution(DictionaryFile):
                 'maxIter': '5',
             }
 
-    def _constructSolversH(self, phase):
-        if phase == Phase.SOLID:
+    def _constructSolversH(self):
+        if self._region.isSolid():
             return {
                 'solver': 'PBiCGStab',
                 'preconditioner': {

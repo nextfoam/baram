@@ -3,7 +3,6 @@
 
 import asyncio
 import logging
-from typing import Optional
 
 from PySide6.QtCore import QCoreApplication, QObject, Signal
 
@@ -91,7 +90,7 @@ class CaseGenerator(QObject):
             self._gatherBoundaryConditionsFiles(region, FileSystem.caseRoot())
 
             self._files.append(FvSchemes(rname))
-            self._files.append(FvSolution(rname))
+            self._files.append(FvSolution(region))
             self._files.append(FvOptions(rname))
             self._files.append(SetFieldsDict(rname))
 
