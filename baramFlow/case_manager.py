@@ -255,6 +255,7 @@ class CaseManager(QObject):
     async def _initializeCase(self):
         self._generator = CaseGenerator()
         self._generator.progress.connect(self.progress)
+        self._setStatus(SolverStatus.NONE)
         FileSystem.initialize()
         await self._generator.setupCase()
         await self._generator.initialize()
