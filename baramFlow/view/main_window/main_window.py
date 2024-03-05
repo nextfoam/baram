@@ -644,8 +644,7 @@ class MainWindow(QMainWindow):
         try:
             self._caseManager.clearCases(renew)
 
-            if not renew:
-                FileSystem.deleteCalculationResults()
+            FileSystem.deleteCalculationResults()
 
             self._chartDock.clear()
             self._monitorDock.clear()
