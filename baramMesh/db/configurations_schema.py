@@ -68,6 +68,11 @@ class ThicknessModel(Enum):
     FIRST_AND_RELATIVE_FINAL = 'firstAndRelativeFinal'
 
 
+class FeatureSnapType(Enum):
+    EXPLICIT = 'explicit'
+    IMPLICIT = 'implicit'
+
+
 geometry = {
     'gType': EnumType(GeometryType),
     'volume': IntType().setOptional(),
@@ -145,6 +150,7 @@ schema = {
         'nSolveIter': IntType().setDefault(30),
         'nRelaxIter': IntType().setDefault(5),
         'nFeatureSnapIter': IntType().setDefault(15),
+        'featureSnapType': EnumType(FeatureSnapType),
         'multiRegionFeatureSnap': BoolType(False),
         'tolerance': FloatType().setDefault(3),
         'concaveAngle': FloatType().setDefault(45),

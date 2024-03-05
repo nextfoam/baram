@@ -9,7 +9,7 @@ from libbaram.process import ProcessError
 
 from baramMesh.app import app
 from baramMesh.db.simple_schema import DBError
-from baramMesh.db.configurations_schema import CFDType
+from baramMesh.db.configurations_schema import CFDType, FeatureSnapType
 from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramMesh.openfoam.system.topo_set_dict import TopoSetDict
 from baramMesh.view.step_page import StepPage
@@ -22,6 +22,11 @@ class SnapPage(StepPage):
         super().__init__(ui, ui.snapPage)
 
         self._processor = None
+
+        self._ui.featureSnapType.addItems({
+            FeatureSnapType.EXPLICIT: self.tr('explicit'),
+            FeatureSnapType.IMPLICIT: self.tr('implicit')
+        })
 
         self._connectSignalsSlots()
 
@@ -40,6 +45,7 @@ class SnapPage(StepPage):
             db.setValue('nSolveIter', self._ui.meshDisplacementRelaxation.text(),
                         self.tr('Mesh Displacement Relaxation'))
             db.setValue('nRelaxIter', self._ui.globalSnappingRelaxation.text(), self.tr('Global Snapping Relaxation'))
+            db.setValue('featureSnapType', self._ui.featureSnapType.currentData(), None)
             db.setValue('nFeatureSnapIter', self._ui.featureSnappingRelaxation.text(),
                         self.tr('Feature Snapping Relaxation'))
             db.setValue('multiRegionFeatureSnap', self._ui.multiSurfaceFeatureSnap.isChecked())
@@ -58,6 +64,7 @@ class SnapPage(StepPage):
     def _connectSignalsSlots(self):
         self._ui.snap.clicked.connect(self._snap)
         self._ui.snapReset.clicked.connect(self._reset)
+        self._ui.featureSnapType.currentDataChanged.connect(self._featureSnapTypeChanged)
 
     def _load(self):
         dbElement = app.db.checkout('snap')
@@ -66,6 +73,7 @@ class SnapPage(StepPage):
         self._ui.meshDisplacementRelaxation.setText(dbElement.getValue('nSolveIter'))
         self._ui.globalSnappingRelaxation.setText(dbElement.getValue('nRelaxIter'))
         self._ui.featureSnappingRelaxation.setText(dbElement.getValue('nFeatureSnapIter'))
+        self._ui.featureSnapType.setCurrentData(FeatureSnapType(dbElement.getValue('featureSnapType')))
         self._ui.multiSurfaceFeatureSnap.setChecked(dbElement.getValue('multiRegionFeatureSnap'))
         self._ui.tolerance.setText(dbElement.getValue('tolerance'))
         self._ui.concaveAngle.setText(dbElement.getValue('concaveAngle'))
@@ -151,6 +159,9 @@ class SnapPage(StepPage):
         self._showPreviousMesh()
         self.clearResult()
         self._updateControlButtons()
+
+    def _featureSnapTypeChanged(self, type_):
+        self._ui.multiSurfaceFeatureSnap.setEnabled(type_ == FeatureSnapType.EXPLICIT)
 
     def _updateControlButtons(self):
         if self.isNextStepAvailable():

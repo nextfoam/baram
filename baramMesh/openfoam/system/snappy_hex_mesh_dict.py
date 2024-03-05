@@ -4,8 +4,12 @@
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramMesh.app import app
-from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType, ThicknessModel
+from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType, ThicknessModel, FeatureSnapType
 from baramMesh.db.simple_db import elementToVector
+
+
+def boolToText(value):
+    return 'true' if value else 'false'
 
 
 class SnappyHexMeshDict(DictionaryFile):
@@ -21,9 +25,9 @@ class SnappyHexMeshDict(DictionaryFile):
             return self
 
         self._data = {
-            'castellatedMesh': 'true' if self._casterllationMesh else 'false',
-            'snap': 'true' if self._snap else 'false',
-            'addLayers': 'true' if self._addLayers else 'false',
+            'castellatedMesh': boolToText(self._casterllationMesh),
+            'snap': boolToText(self._snap),
+            'addLayers': boolToText(self._addLayers),
             'geometry': self._constructGeometries(),
             'castellatedMeshControls': {
                 'maxLocalCells': app.db.getValue('castellation/maxLocalCells'),
@@ -45,6 +49,10 @@ class SnappyHexMeshDict(DictionaryFile):
                 'tolerance': app.db.getValue('snap/tolerance'),
                 'nSolveIter': app.db.getValue('snap/nSolveIter'),
                 'nRelaxIter': app.db.getValue('snap/nRelaxIter'),
+                'implicitFeatureSnap':
+                    boolToText(app.db.getValue('snap/featureSnapType') == FeatureSnapType.IMPLICIT.value),
+                'explicitFeatureSnap':
+                    boolToText(app.db.getValue('snap/featureSnapType') == FeatureSnapType.EXPLICIT.value),
                 'nFeatureSnapIter': app.db.getValue('snap/nFeatureSnapIter'),
                 'multiRegionFeatureSnap': app.db.getValue('snap/multiRegionFeatureSnap'),
                 'concaveAngle': app.db.getValue('snap/concaveAngle'),
