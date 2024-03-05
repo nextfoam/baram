@@ -174,6 +174,10 @@ class CaseManager(QObject):
     def clearCases(self, includeMesh=False):
         rmtree(self._batchRoot())
 
+        FileSystem.deleteCalculationResults()
+
+        self._project.clearCase()
+
         livePath = self._livePath()
         if includeMesh:
             FileSystem.createCase(livePath)

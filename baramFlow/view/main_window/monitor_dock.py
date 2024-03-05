@@ -26,6 +26,7 @@ class MonitorDock(TabifiedDock):
         self._project.projectOpened.connect(self._caseLoaded)
         self._project.projectClosed.connect(self._projectClosed)
         self._project.caseLoaded.connect(self._caseLoaded)
+        self._project.caseCleared.connect(self._caseCleared)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
         self._translate()
@@ -50,25 +51,28 @@ class MonitorDock(TabifiedDock):
         self.setWidget(self._widget)
 
     def _caseLoaded(self):
-        self.clear()
+        self._clear()
 
         if app.case.isRunning() or app.case.isEnded():
             self._startMonitor()
 
+    def _caseCleared(self):
+        self._clear()
+
     def _projectClosed(self):
         self._stopMonitor()
-        self.clear()
+        self._clear()
 
     def _solverStatusChanged(self, status):
         if status == SolverStatus.NONE:
             self._deletedMonitors = self._monitors
-            self.clear()
+            self._clear()
         elif status == SolverStatus.RUNNING:
             self._startMonitor()
         elif status == SolverStatus.ENDED:
             self._stopMonitor()
 
-    def clear(self):
+    def _clear(self):
         self._quitMonitor()
 
         while item := self._chartsLayout.takeAt(0):

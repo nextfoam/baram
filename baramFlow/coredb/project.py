@@ -41,6 +41,7 @@ class _Project(QObject):
     projectOpened = Signal()
     projectClosed = Signal()
     caseLoaded = Signal(str)
+    caseCleared = Signal()
     batchCleared = Signal()
 
     materialChanged = Signal()
@@ -180,6 +181,9 @@ class _Project(QObject):
 
     def updateCurrentCase(self, name):
         self.caseLoaded.emit(name)
+
+    def clearCase(self):
+        self.caseCleared.emit()
 
     def updateSolverStatus(self, name, status, process):
         self.solverStatusChanged.emit(status, name)

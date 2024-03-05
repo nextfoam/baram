@@ -57,6 +57,7 @@ class ConsoleDock(TabifiedDock):
         self._project.projectClosed.connect(self._projectClosed)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
         self._project.caseLoaded.connect(self._caseLoaded)
+        self._project.caseCleared.connect(self._caseCleared)
 
         self._translate()
 
@@ -127,6 +128,12 @@ class ConsoleDock(TabifiedDock):
             self.startCollecting()
         elif app.case.isEnded():
             await self._readAllLog()
+
+    @qasync.asyncSlot()
+    async def _caseCleared(self):
+        if self.readTask is not None:
+            self.readTask.cancel()
+        self._textView.clear()
 
     def _projectClosed(self):
         if self.readTask is not None:

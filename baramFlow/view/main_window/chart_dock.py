@@ -54,7 +54,7 @@ class ChartDock(TabifiedDock):
 
         self._axes = self._canvas.figure.subplots()
 
-        self.clear()
+        self._clear()
 
         self.solverInfoManager = SolverInfoManager()
         self.solverInfoManager.residualsUpdated.connect(self.updated)
@@ -65,6 +65,7 @@ class ChartDock(TabifiedDock):
         self._project.projectClosed.connect(self._projectClosed)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
         self._project.caseLoaded.connect(self._caseLoaded)
+        self._project.caseCleared.connect(self._caseCleared)
 
         self._translate()
 
@@ -75,16 +76,19 @@ class ChartDock(TabifiedDock):
         self.solverInfoManager.stopCollecting()
 
     def _caseLoaded(self):
-        self.clear()
+        self._clear()
         if app.case.isRunning() or app.case.isEnded():
             self.startDrawing()
+
+    def _caseCleared(self):
+        self._clear()
 
     def _projectClosed(self):
         self.stopDrawing()
 
     def _solverStatusChanged(self, status):
         if status == SolverStatus.NONE:
-            self.clear()
+            self._clear()
         elif status == SolverStatus.RUNNING:
             self.startDrawing()
         else:
@@ -182,7 +186,7 @@ class ChartDock(TabifiedDock):
 
         self._axes.set_ylim([minY, maxY])
 
-    def clear(self):
+    def _clear(self):
         self._axes.cla()
 
         self._data = None

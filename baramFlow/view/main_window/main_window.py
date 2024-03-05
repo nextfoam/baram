@@ -644,11 +644,6 @@ class MainWindow(QMainWindow):
         try:
             self._caseManager.clearCases(renew)
 
-            FileSystem.deleteCalculationResults()
-
-            self._chartDock.clear()
-            self._monitorDock.clear()
-
             return True
         except PermissionError:
             await AsyncMessageBox().information(self, self.tr('Permission Denied'),
