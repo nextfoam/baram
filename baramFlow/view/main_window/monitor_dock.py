@@ -110,7 +110,7 @@ class MonitorDock(TabifiedDock):
         monitor.start()
 
     def _removeMonitor(self, name):
-        if self._deletedMonitors:
+        if self._deletedMonitors and name in self._deletedMonitors:
             del self._deletedMonitors[name]
 
     def _createChart(self, maxX):
