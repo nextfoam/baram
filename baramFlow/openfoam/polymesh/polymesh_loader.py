@@ -111,7 +111,6 @@ class PolyMeshLoader(QObject):
         boundaries = await self._loadBoundaries(srcPath)
         vtkMesh = await self._loadVtkMesh(self._buildPatchArrayStatus(boundaries))
         updated = self._updateDB(vtkMesh, boundaries)
-        app.case.setCase()  # Just to update CoreDBReader() in CaseManager() because "updateDB" updates CoreDB()
         self._updateVtkMesh(vtkMesh)
         Project.instance().setMeshLoaded(True, updated)
 
