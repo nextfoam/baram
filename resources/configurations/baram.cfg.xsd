@@ -1265,6 +1265,15 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
+                        <xs:element name="pressure" default="linear">
+                            <xs:simpleType>
+                                <xs:restriction base='xs:string'>
+                                    <xs:enumeration value='linear'/>
+                                    <xs:enumeration value='momentumWeightedReconstruct'/>
+                                    <xs:enumeration value='momentumWeighted'/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>

@@ -19,5 +19,11 @@ class UpwindDiscretizationScheme(Enum):
     SECOND_ORDER_UPWIND = 'secondOrderUpwind'
 
 
+class InterpolationScheme(Enum):
+    LINEAR = 'linear'
+    MOMENTUM_WEIGHTED_RECONSTRUC = 'momentumWeightedReconstruct'
+    MOMENTUM_WEIGHTED = 'momentumWeighted'
+
+
 class NumericalDB:
     NUMERICAL_CONDITIONS_XPATH = './/numericalConditions'

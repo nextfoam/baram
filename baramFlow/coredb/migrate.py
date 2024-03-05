@@ -244,6 +244,13 @@ def _version_4(root: etree.Element):
     # Keep this commented until official v4 spec. is released
     # root.set('version', '4')
 
+    if (p := root.find('numericalConditions/discretizationSchemes', namespaces=_nsmap)) is not None:
+        if p.find('pressure', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "pressure" to {p}')
+            e = etree.fromstring(
+                '<pressure xmlns="http://www.baramcfd.org/baram">momentumWeightedReconstruct</pressure>')
+            p.append(e)
+
 
 _fTable = [
     None,

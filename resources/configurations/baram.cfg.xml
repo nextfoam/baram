@@ -82,6 +82,7 @@
             <energy>secondOrderUpwind</energy>
             <turbulentKineticEnergy>firstOrderUpwind</turbulentKineticEnergy>
             <volumeFraction>firstOrderUpwind</volumeFraction>
+            <pressure>linear</pressure>
         </discretizationSchemes>
         <underRelaxationFactors>
             <pressure>0.3</pressure>

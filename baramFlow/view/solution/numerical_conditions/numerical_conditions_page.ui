@@ -54,7 +54,7 @@
         <x>0</x>
         <y>0</y>
         <width>332</width>
-        <height>1002</height>
+        <height>1030</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -93,7 +93,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="pressureVelocityCouplingScheme"/>
+           <widget class="EnumComboBox" name="pressureVelocityCouplingScheme"/>
           </item>
          </layout>
         </widget>
@@ -119,7 +119,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="discretizationSchemeTime"/>
+           <widget class="EnumComboBox" name="discretizationSchemeTime"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_21">
@@ -129,7 +129,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QComboBox" name="discretizationSchemeMomentum"/>
+           <widget class="EnumComboBox" name="discretizationSchemeMomentum"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_19">
@@ -139,7 +139,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QComboBox" name="discretizationSchemeEnergy"/>
+           <widget class="EnumComboBox" name="discretizationSchemeEnergy"/>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_22">
@@ -149,7 +149,7 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QComboBox" name="discretizationSchemeTurbulence"/>
+           <widget class="EnumComboBox" name="discretizationSchemeTurbulence"/>
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="label_3">
@@ -159,7 +159,17 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QComboBox" name="discretizationSchemeVolumeFraction"/>
+           <widget class="EnumComboBox" name="discretizationSchemeVolumeFraction"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Pressure</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="EnumComboBox" name="discretizationSchemePressure"/>
           </item>
          </layout>
         </widget>
@@ -568,6 +578,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>EnumComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widgets.enum_combo_box</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>pressureVelocityCouplingScheme</tabstop>
   <tabstop>useMomentumPredictor</tabstop>
