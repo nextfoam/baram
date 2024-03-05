@@ -30,7 +30,7 @@ class CaseManager(QObject):
 
         self._project = Project.instance()
 
-        self._case = None
+        self._caseName = None
         self._db = CoreDBReader()
         self._solver = findSolver(self._db)
 
@@ -49,7 +49,7 @@ class CaseManager(QObject):
 
     @property
     def name(self):
-        return self._case
+        return self._caseName
 
     @property
     def db(self):
@@ -65,7 +65,7 @@ class CaseManager(QObject):
     def loadCase(self, name=None, parameters=None, status=SolverStatus.NONE):
         self._db.setParameters(parameters)
 
-        if self._case != name:
+        if self._caseName != name:
             if name is None:
                 FileSystem.setCaseRoot(self._livePath())
                 self.setCase(name, status)
@@ -80,7 +80,7 @@ class CaseManager(QObject):
             self._project.updateCurrentCase(name)
 
     def setCase(self, name=None, status=None):
-        self._case = name
+        self._caseName = name
         self._solver = findSolver(self._db)
         self.caseLoaded.emit(name)
         if status is not None:
@@ -171,20 +171,19 @@ class CaseManager(QObject):
     def stopBatchRun(self):
         self._batchStop = True
 
-    def clearCases(self, includeMesh=False):
-        rmtree(self._batchRoot())
+    def clearCases(self):
+        livePath = self._livePath()
+        FileSystem.createCase(livePath)
+        FileSystem.setCaseRoot(livePath)
 
+        self._project.emitCaseCleared()
+        self._project.clearBatchStatuses()
+
+    def deleteCalculationResults(self):
+        rmtree(self._batchRoot())
         FileSystem.deleteCalculationResults()
 
-        self._project.clearCase()
-
-        livePath = self._livePath()
-        if includeMesh:
-            FileSystem.createCase(livePath)
-
-        FileSystem.setCaseRoot(livePath)
-        self.setCase()
-
+        self._project.emitCaseCleared()
         self._project.clearBatchStatuses()
 
     def removeInvalidCases(self, validCases):
@@ -212,7 +211,7 @@ class CaseManager(QObject):
             return
 
         self._status = status
-        self._project.updateSolverStatus(self._case, status, self._process)
+        self._project.updateSolverStatus(self._caseName, status, self._process)
 
     def _setLiveProcess(self, process):
         self._runType = RunType.PROCESS

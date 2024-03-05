@@ -182,7 +182,7 @@ class _Project(QObject):
     def updateCurrentCase(self, name):
         self.caseLoaded.emit(name)
 
-    def clearCase(self):
+    def emitCaseCleared(self):
         self.caseCleared.emit()
 
     def updateSolverStatus(self, name, status, process):

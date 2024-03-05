@@ -346,6 +346,13 @@ class MainWindow(QMainWindow):
         if not await self._confirmToReplaceMesh():
             return
 
+        try:
+            self._caseManager.deleteCalculationResults()
+        except PermissionError:
+            await AsyncMessageBox().information(self, self.tr('Permission Denied'),
+                                                self.tr('The project directory is open by another program.'))
+            return
+
         progressDialog = ProgressDialog(self, self.tr('Mesh Scaling'))
         progressDialog.open()
 
@@ -369,6 +376,13 @@ class MainWindow(QMainWindow):
         if not await self._confirmToReplaceMesh():
             return
 
+        try:
+            self._caseManager.deleteCalculationResults()
+        except PermissionError:
+            await AsyncMessageBox().information(self, self.tr('Permission Denied'),
+                                                self.tr('The project directory is open by another program.'))
+            return
+
         progressDialog = ProgressDialog(self, self.tr('Mesh Translation'))
         progressDialog.open()
 
@@ -390,6 +404,13 @@ class MainWindow(QMainWindow):
     @qasync.asyncSlot()
     async def _rotateMesh(self):
         if not await self._confirmToReplaceMesh():
+            return
+
+        try:
+            self._caseManager.deleteCalculationResults()
+        except PermissionError:
+            await AsyncMessageBox().information(self, self.tr('Permission Denied'),
+                                                self.tr('The project directory is open by another program.'))
             return
 
         progressDialog = ProgressDialog(self, self.tr('Mesh Rotation'))
@@ -616,6 +637,13 @@ class MainWindow(QMainWindow):
         if not await self._confirmToReplaceMesh(True):
             return
 
+        try:
+            self._caseManager.clearCases()
+        except PermissionError:
+            await AsyncMessageBox().information(self, self.tr('Permission Denied'),
+                                                self.tr('The project directory is open by another program.'))
+            return
+
         self._project.setMeshLoaded(False)
 
         if meshType == MeshType.POLY_MESH:
@@ -641,12 +669,4 @@ class MainWindow(QMainWindow):
             if confirm != QMessageBox.StandardButton.Yes:
                 return False
 
-        try:
-            self._caseManager.clearCases(renew)
-
-            return True
-        except PermissionError:
-            await AsyncMessageBox().information(self, self.tr('Permission Denied'),
-                                                self.tr('The project directory is open by another program.'))
-
-            return False
+        return True
