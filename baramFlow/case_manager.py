@@ -256,7 +256,7 @@ class CaseManager(QObject):
         self._generator = CaseGenerator()
         self._generator.progress.connect(self.progress)
         self._setStatus(SolverStatus.NONE)
-        FileSystem.initialize()
+        FileSystem.deleteCalculationResults()
         await self._generator.setupCase()
         await self._generator.initialize()
         self._generator = None

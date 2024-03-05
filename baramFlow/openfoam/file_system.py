@@ -289,26 +289,7 @@ class FileSystem:
                 pass
 
     @classmethod
-    def initialize(cls, time: str = None):
-        ###
-        ### This corresponds to a feature of "preserving last calculation result".
-        ### The feature will be provided in other form in the future,
-        ### and the code is commented/preserved for now.
-        ###
-        # latestTimeDir = cls._casePath / '-1'
-        # keepFiles = [cls.CONSTANT_DIRECTORY_NAME, cls.SYSTEM_DIRECTORY_NAME, cls.FOAM_FILE_NAME]
-        # for file in cls._casePath.glob('*'):
-        #     if file.is_dir and file.name.isnumeric():
-        #         if float(file.name) > float(latestTimeDir.name):
-        #             shutil.rmtree(latestTimeDir, ignore_errors=True)
-        #             latestTimeDir = file
-        #         else:
-        #             shutil.rmtree(file)
-        #     elif file.name not in keepFiles:
-        #         cls._remove(file)
-        # if latestTimeDir != cls._boundaryConditionsPath:
-        #     latestTimeDir.replace(cls._boundaryConditionsPath)
-
+    def deleteCalculationResults(cls, time: str = None):
         folders = [cls._postProcessingPath]
 
         for parent in [cls._casePath, *cls.processorFolders()]:
