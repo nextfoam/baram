@@ -23,8 +23,9 @@ class MonitorDock(TabifiedDock):
         self._monitors = {}
         self._deletedMonitors = None
 
-        self._project.projectOpened.connect(self._projectOpened)
+        self._project.projectOpened.connect(self._caseLoaded)
         self._project.projectClosed.connect(self._projectClosed)
+        self._project.caseLoaded.connect(self._caseLoaded)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
         self._translate()
@@ -48,7 +49,7 @@ class MonitorDock(TabifiedDock):
         self._layout.addWidget(self._scrollArea)
         self.setWidget(self._widget)
 
-    def _projectOpened(self):
+    def _caseLoaded(self):
         self.clear()
 
         if app.case.isRunning() or app.case.isEnded():
