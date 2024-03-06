@@ -101,6 +101,7 @@ class MainWindow(QMainWindow):
 
         self._project = Project.instance()
         self._caseManager = CaseManager()
+        self._caseManager.load()
 
         # 10MB(=10,485,760=1024*1024*10)
         self._handler = RotatingFileHandler(self._project.path/'baram.log', maxBytes=10485760, backupCount=5)
@@ -445,12 +446,15 @@ class MainWindow(QMainWindow):
         if numCores != oldNumCores:
             progressDialog.setLabelText('Redistributing Case')
 
-            redistributionTask = RedistributionTask()
-            redistributionTask.progress.connect(progressDialog.setLabelText)
+            try:
+                redistributionTask = RedistributionTask()
+                redistributionTask.progress.connect(progressDialog.setLabelText)
 
-            await redistributionTask.redistribute()
+                await redistributionTask.redistribute()
 
-        progressDialog.finish('Parallel Environment was Applied.')
+                progressDialog.finish('Parallel Environment was Applied.')
+            except RuntimeError as e:
+                progressDialog.finish(str(e))
 
     async def _loadVtkMesh(self):
         progressDialog = ProgressDialog(self, self.tr('Case Loading.'))
@@ -630,7 +634,7 @@ class MainWindow(QMainWindow):
                 and ModelsDB.isMultiphaseModelOn()
                 and len(RegionProperties.loadRegions(file)) > 1
                 and await AsyncMessageBox()
-                        .information(self, self.tr('Permission Denied'),
+                        .information(self, self.tr('Invalid mesh'),
                                      self.tr('Multi-region cases cannot be computed under multi-phase conditions.'))):
             return
 

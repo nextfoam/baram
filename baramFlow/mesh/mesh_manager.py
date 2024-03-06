@@ -131,9 +131,10 @@ class MeshManager(QObject):
         progressDialog.setLabelText(self.tr('Converting the mesh.'))
 
         try:
-            await FileSystem.copyFileToCase(path)
+            fileName = 'meshToConvert' + path.suffix
+            await FileSystem.copyFileToCase(path, fileName)
 
-            cm = RunUtility(*OPENFOAM_MESH_CONVERTERS[meshType], path.name, cwd=FileSystem.caseRoot())
+            cm = RunUtility(*OPENFOAM_MESH_CONVERTERS[meshType], fileName, cwd=FileSystem.caseRoot())
 
             progressDialog.showCancelButton()
             progressDialog.cancelClicked.connect(cm.cancel)
@@ -151,7 +152,7 @@ class MeshManager(QObject):
                 progressDialog.setLabelText(self.tr('Loading the boundaries.'))
                 # Need to load mesh to get region information though redistribution loads mesh in next lines
                 await PolyMeshLoader().loadMesh()
-                await FileSystem.removeFile(path.name)
+                await FileSystem.removeFile(fileName)
 
                 redistributeTask = RedistributionTask()
                 redistributeTask.progress.connect(progressDialog.setLabelText)

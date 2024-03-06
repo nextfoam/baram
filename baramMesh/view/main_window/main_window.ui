@@ -404,7 +404,7 @@
               </sizepolicy>
              </property>
              <property name="currentIndex">
-              <number>4</number>
+              <number>1</number>
              </property>
              <widget class="QWidget" name="geometryPage">
               <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -570,7 +570,7 @@
                   <enum>QFrame::NoFrame</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot; color:#ff0000;&quot;&gt;At least one fluid region point should be configured.&lt;/p&gt;&lt;p&gt;Multiple region points can be configured for multi-region case.&lt;/p&gt;&lt;p style=&quot; font-weight: bold;&quot;&gt;You can add region points by clicking the plus(+) icon on the upper right corner.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot; color:#ff0000;&quot;&gt;At least one region point should be configured.&lt;/p&gt;&lt;p&gt;Multiple region points can be configured for multi-region case.&lt;/p&gt;&lt;p style=&quot; font-weight: bold;&quot;&gt;You can add region points by clicking the plus(+) icon on the upper right corner.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="wordWrap">
                   <bool>true</bool>

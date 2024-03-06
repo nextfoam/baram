@@ -257,8 +257,8 @@ class FileSystem:
         await asyncio.to_thread(cls._copyMeshFromInternal, directory, regions)
 
     @classmethod
-    async def copyFileToCase(cls, file):
-        await asyncio.to_thread(shutil.copyfile, file, cls._casePath / file.name)
+    async def copyFileToCase(cls, file, name):
+        await asyncio.to_thread(shutil.copyfile, file, cls._casePath / name)
 
     @classmethod
     async def removeFile(cls, file):
