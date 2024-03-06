@@ -47,7 +47,7 @@ class _Project(QObject):
 
     class LocalSettings:
         def __init__(self, path, baseSettings):
-            self._settingsFile = path / 'baram.cfg'
+            self._settingsFile = path / 'local.cfg'
 
             self._settings = None
 
@@ -73,6 +73,14 @@ class _Project(QObject):
             if self._settingsFile.is_file():
                 with open(self._settingsFile) as file:
                     self._settings = yaml.load(file, Loader=yaml.FullLoader)
+            # ToDo: For compatibility. Remove this code block after 20251231
+            # Migration from previous name of "baram.foam"
+            # Begin
+            elif (oldFile := self._settingsFile.parent / 'baram.cfg').is_file():
+                with open(oldFile) as file:
+                    self._settings = yaml.load(file, Loader=yaml.FullLoader)
+                    self._save()
+            # End
             else:
                 self._settings = {}
 

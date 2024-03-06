@@ -3,7 +3,7 @@
 
 
 CASE_DIRECTORY_NAME = 'case'
-FOAM_FILE_NAME = 'baram.foam'
+FOAM_FILE_NAME = 'case.foam'
 
 
 class Directory:
