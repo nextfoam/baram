@@ -75,7 +75,7 @@ class _Project(QObject):
                 with open(self._settingsFile) as file:
                     self._settings = yaml.load(file, Loader=yaml.FullLoader)
             # ToDo: For compatibility. Remove this code block after 20251231
-            # Migration from previous name of "baram.foam"
+            # Migration from previous name of "baram.cfg"
             # Begin
             elif (oldFile := self._settingsFile.parent / 'baram.cfg').is_file():
                 with open(oldFile) as file:

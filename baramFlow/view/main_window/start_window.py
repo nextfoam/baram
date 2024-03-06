@@ -66,6 +66,7 @@ class Baram(QObject):
         self._openProject(path, openType)
 
     def _openProject(self, path, openType):
+        # Start Case Wizard if a project exported from baramMesh
         if openType == ProjectOpenType.EXISTING and not FileDB.exists(path) and isBaramProject(path):
             app.plug.createProject(self._projectSelector, path)
 
