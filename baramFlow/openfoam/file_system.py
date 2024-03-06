@@ -199,7 +199,7 @@ class FileSystem:
         # Migration from previous name of "baram.foam"
         # Begin
         path = cls._casePath / FOAM_FILE_NAME
-        if cls._casePath.is_dir() and cls._casePath / FOAM_FILE_NAME:
+        if cls._casePath.is_dir() and not path.is_file():
             with open(path, 'a'):
                 pass
         # End
