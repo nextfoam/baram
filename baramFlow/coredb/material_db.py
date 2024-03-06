@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Flag, auto
+from enum import Enum, Flag, auto
 
 from PySide6.QtCore import QCoreApplication
 
@@ -17,7 +17,7 @@ class Phase(Flag):
     FLUID = GAS | LIQUID
 
 
-class Specification(Flag):
+class Specification(Enum):
     CONSTANT = "constant"
     PERFECT_GAS = "perfectGas"
     SUTHERLAND = "sutherland"
