@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from pathlib import Path
 
 CASE_DIRECTORY_NAME = 'case'
 FOAM_FILE_NAME = 'case.foam'
@@ -18,7 +18,15 @@ class Directory:
     BOUNDARY_FILE_NAME = 'boundary'
 
 
-def isBaramProject(path):
+def isBaramProject(path: Path):
+    # ToDo: For compatibility. Remove this code block after 20251231
+    # Migration from previous name of "baram.foam"
+    # Begin
+    oldFile = path / CASE_DIRECTORY_NAME / 'baram.foam'
+    if oldFile.is_file():
+        return True
+    # End
+
     foamFile = path / CASE_DIRECTORY_NAME / FOAM_FILE_NAME
 
     return foamFile.is_file()
