@@ -277,7 +277,7 @@ class MainWindow(QMainWindow):
 
     def _projectOpened(self):
         # 10MB(=10,485,760=1024*1024*10)
-        self._handler = RotatingFileHandler(app.project.path / 'baram.log', maxBytes=10485760, backupCount=5)
+        self._handler = RotatingFileHandler(app.project.path / 'log.txt', maxBytes=10485760, backupCount=5)
         self._handler.setFormatter(logging.Formatter("[%(asctime)s][%(name)s] ==> %(message)s"))
         logging.getLogger().addHandler(self._handler)
 

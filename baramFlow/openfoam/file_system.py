@@ -195,6 +195,15 @@ class FileSystem:
 
     @classmethod
     def foamFilePath(cls):
+        # ToDo: For compatibility. Remove this code block after 20251231
+        # Migration from previous name of "baram.foam"
+        # Begin
+        path = cls._casePath / FOAM_FILE_NAME
+        if cls._casePath.is_dir() and cls._casePath / FOAM_FILE_NAME:
+            with open(path, 'a'):
+                pass
+        # End
+
         return cls._casePath / FOAM_FILE_NAME
 
     @classmethod

@@ -22,14 +22,13 @@ class LocalSettingKey(Enum):
 
 class LocalSettings:
     def __init__(self, path):
-        self._settingsFile = path / 'baram.cfg'
+        self._settingsFile = path / 'local.cfg'
 
         self._settings = {}
         self._lock = None
 
         self._load()
-        if self.path is not None:
-            pass
+
         self.set(LocalSettingKey.PATH, str(path.resolve()))
 
     @property
@@ -73,6 +72,14 @@ class LocalSettings:
         if self._settingsFile.is_file():
             with open(self._settingsFile) as file:
                 self._settings = yaml.load(file, Loader=yaml.FullLoader)
+        # ToDo: For compatibility. Remove this code block after 20251231
+        # Migration from previous name of "baram.foam"
+        # Begin
+        elif (oldFile := self._settingsFile.parent / 'baram.cfg').is_file():
+            with open(oldFile) as file:
+                self._settings = yaml.load(file, Loader=yaml.FullLoader)
+                self._save()
+        # End
 
     def _save(self):
         self._settings[LocalSettingKey.FORMAT_VERSION.value] = FORMAT_VERSION
