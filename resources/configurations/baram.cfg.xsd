@@ -100,7 +100,6 @@
                         <xs:enumeration value="modifiedTurbulentViscosity"/>
                         <xs:enumeration value="temperature"/>
                         <xs:enumeration value="density"/>
-                        <xs:enumeration value="modifiedPressure"/>
                         <xs:enumeration value="material"/>
                     </xs:restriction>
                 </xs:simpleType>

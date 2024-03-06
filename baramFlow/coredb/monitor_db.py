@@ -9,7 +9,6 @@ import baramFlow.openfoam.solver
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
-from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB, Phase
 
 
@@ -25,7 +24,6 @@ class Field(Enum):
     MODIFIED_TURBULENT_VISCOSITY = 'modifiedTurbulentViscosity'
     TEMPERATURE = 'temperature'
     DENSITY = 'density'
-    MODIFIED_PRESSURE = 'modifiedPressure'
     MATERIAL = 'material'
 
 
@@ -113,7 +111,6 @@ class FieldHelper:
         Field.MODIFIED_TURBULENT_VISCOSITY: QCoreApplication.translate('MonitorField', 'Modified Turbulent Viscosity'),
         Field.TEMPERATURE: QCoreApplication.translate('MonitorField', 'Temperature'),
         Field.DENSITY: QCoreApplication.translate('MonitorField', 'Density'),
-        Field.MODIFIED_PRESSURE: QCoreApplication.translate('MonitorField', 'Modified Pressure'),
         Field.MATERIAL: QCoreApplication.translate('MonitorField', 'material'),
     }
 
@@ -129,7 +126,6 @@ class FieldHelper:
         Field.MODIFIED_TURBULENT_VISCOSITY: 'nuTilda',
         Field.TEMPERATURE: 'T',
         Field.DENSITY: 'rho',
-        Field.MODIFIED_PRESSURE: 'p_rgh',
     }
 
     class FieldItem:
@@ -192,10 +188,6 @@ class FieldHelper:
         if energyOn:
             _appendField(Field.TEMPERATURE)
             _appendField(Field.DENSITY)
-
-        # Fields depending on another models
-        if (not GeneralDB.isCompressible() and energyOn) or ModelsDB.isMultiphaseModelOn():
-            _appendField(Field.MODIFIED_PRESSURE)
 
         # Material fields on multiphase model
         if ModelsDB.isMultiphaseModelOn():

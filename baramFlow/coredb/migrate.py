@@ -251,6 +251,10 @@ def _version_4(root: etree.Element):
                 '<pressure xmlns="http://www.baramcfd.org/baram">momentumWeightedReconstruct</pressure>')
             p.append(e)
 
+    for e in root.findall('monitors/*/*/field/field[.="modifiedPressure"]', namespaces=_nsmap):
+        logger.debug(f'    Replacing text of {p} to "pressure"')
+        e.text = 'pressure'
+
 
 _fTable = [
     None,
