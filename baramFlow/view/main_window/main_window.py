@@ -258,7 +258,7 @@ class MainWindow(QMainWindow):
 
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
 
-        self._project.meshChanged.connect(self._meshChanged)
+        app.meshUpdated.connect(self._meshUpdated)
         self._project.projectOpened.connect(self._projectOpened)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
@@ -491,8 +491,8 @@ class MainWindow(QMainWindow):
         self._dialog = AboutDialog(self)
         self._dialog.open()
 
-    def _meshChanged(self, updated):
-        if self._project.meshLoaded and updated:
+    def _meshUpdated(self):
+        if self._project.meshLoaded:
             targets = [
                 MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value,
                 MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value,

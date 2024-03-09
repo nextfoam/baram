@@ -36,7 +36,6 @@ class SettingKey(Enum):
 
 
 class _Project(QObject):
-    meshChanged = Signal(bool)
     solverStatusChanged = Signal(SolverStatus, str)
     projectOpened = Signal()
     projectClosed = Signal()
@@ -171,9 +170,8 @@ class _Project(QObject):
     def solverProcess(self):
         return self._projectSettings.getProcess()
 
-    def setMeshLoaded(self, loaded, updated=True):
+    def setMeshLoaded(self, loaded):
         self._meshLoaded = loaded
-        self.meshChanged.emit(updated)
 
     def save(self):
         self._fileDB.save()

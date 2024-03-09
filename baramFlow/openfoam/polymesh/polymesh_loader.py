@@ -4,6 +4,7 @@
 import logging
 import asyncio
 import re
+import shutil
 from pathlib import Path
 
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
@@ -17,7 +18,8 @@ from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_G
 from PySide6.QtCore import QObject, Signal
 
 from baramFlow.coredb.boundary_db import BoundaryType
-from libbaram.openfoam.constants import Directory
+from libbaram import utils
+from libbaram.openfoam.constants import Directory, CASE_DIRECTORY_NAME
 
 from baramFlow.app import app
 from baramFlow.coredb import coredb
@@ -108,88 +110,76 @@ class PolyMeshLoader(QObject):
         return ParsedBoundaryDict(path, listLengthUnparsed=listLengthUnparsed, treatBinaryAsASCII=True, longListOutputThreshold=longListOutputThreshold)
 
     async def loadMesh(self, srcPath=None):
-        boundaries = await self._loadBoundaries(srcPath)
-        vtkMesh = await self._loadVtkMesh(self._buildPatchArrayStatus(boundaries))
-        updated = self._updateDB(vtkMesh, boundaries)
+        if srcPath is not None:
+            path = self._checkAndCorrectMeshFolderSelection(srcPath)
+            await self.copyMeshFrom(path)
+        else:
+            path = FileSystem.constantPath()
+
+        boundaries = self._loadBoundaries(path)
+
+        vtkMesh = await self._loadVtkMesh()
+        self._updateDB(vtkMesh, boundaries)
         self._updateVtkMesh(vtkMesh)
-        Project.instance().setMeshLoaded(True, updated)
+        Project.instance().setMeshLoaded(True)
 
     async def loadVtk(self):
         self.progress.emit(self.tr("Loading Mesh..."))
-        vtkMesh = await self._loadVtkMesh(self._buildPatchArrayStatusFromDB())
+        vtkMesh = await self._loadVtkMesh()
         self._updateVtkMesh(vtkMesh)
 
-    async def _loadBoundaries(self, srcPath):
+    def _loadBoundaries(self, path: Path):
         boundaries = {}
 
-        path = srcPath
-        if not path:
-            path = FileSystem.constantPath()
-
-        regions = RegionProperties.loadRegions(path)
-        if regions[0] == '':
-            if not FileSystem.isPolyMesh(path.joinpath('polyMesh')):
-                path = path.parent
-                if not FileSystem.isPolyMesh(path.joinpath('polyMesh')):
-                    raise FileLoadingError(f'PolyMesh files not found.')
-
-            # single region
-            if not FileSystem.isPolyMesh(path):
-                path = path / Directory.POLY_MESH_DIRECTORY_NAME
-                if not FileSystem.isPolyMesh(path):
-                    raise FileLoadingError('Mesh directory not found.')
-
-            boundaryDict = self.loadBoundaryDict(path / 'boundary')
-            boundaries[''] = {bname: boundary['type'] for bname, boundary in boundaryDict.content.items()}
-        else:
-            # multi region
+        regionPropFile = path / Directory.REGION_PROPERTIES_FILE_NAME
+        if regionPropFile.is_file():
+            regions = RegionProperties.loadRegions(path)
             for rname in regions:
                 boundaryDict = self.loadBoundaryDict(path / rname / Directory.POLY_MESH_DIRECTORY_NAME / 'boundary')
                 boundaries[rname] = {bname: boundary['type'] for bname, boundary in boundaryDict.content.items()}
-
-        if srcPath:
-            await FileSystem.copyMeshFrom(path, regions)
+        else:
+            boundaryDict = self.loadBoundaryDict(path / 'polyMesh' / 'boundary')
+            boundaries[''] = {bname: boundary['type'] for bname, boundary in boundaryDict.content.items()}
 
         return boundaries
 
-    async def _loadVtkMesh(self, statusConfig):
-        return await asyncio.to_thread(self._getVtkMesh, FileSystem.foamFilePath(), statusConfig)
+    def _checkAndCorrectMeshFolderSelection(self, path: Path) -> Path:
+        """Check if "path" has correct polyMesh
 
-    def _buildPatchArrayStatusFromDB(self):
-        statusConfig = {'internalMesh': 0}
+        Check if "path" has correct polyMesh
+        "path" can point "polyMesh" or "constant" for single region mesh
+        "path" should point "constant" for multi-region mesh
 
-        db = coredb.CoreDB()
-        regions = db.getRegions()
+        Args:
+            path: path for "constant" or "polyMesh"
 
-        if len(regions) == 1:  # single region
-            for _, b, _ in db.getBoundaryConditions(regions[0]):
-                statusConfig[f'patch/{b}'] = 1
+        Returns:
+            path for "constant" folder
 
-            return statusConfig
+        Raises:
+            FileLoadingError: "path" does not have correct polyMesh
+        """
+        if FileSystem.isPolyMesh(path):
+            return path.parent
 
-        else:  # multi-region
-            for r in regions:
-                statusConfig[f'/{r}/internalMesh'] = 0
-                for _, b, _ in db.getBoundaryConditions(r):
-                    statusConfig[f'/{r}/patch/{b}'] = 1
+        if FileSystem.isPolyMesh(path / 'polyMesh'):
+            return path
 
-            return statusConfig
+        regionPropFile = path / Directory.REGION_PROPERTIES_FILE_NAME
+        if not regionPropFile.is_file():
+            raise FileLoadingError(f'PolyMesh not found.')
 
-    def _buildPatchArrayStatus(self, boundaries):
-        statusConfig = {'internalMesh': 0}
+        regions = RegionProperties.loadRegions(path)
+        for rname in regions:
+            if not FileSystem.isPolyMesh(path / rname / 'polyMesh'):
+                raise FileLoadingError(f'Corrupted Multi-Region PolyMesh')
 
-        r = ''
-        for region in boundaries:
-            if region:
-                r = f'/{region}/'
-                statusConfig[f'{r}internalMesh'] = 0
+        return path
 
-            for b in boundaries[region]:
-                statusConfig[f'{r}patch/{b}'] = 1
+    async def _loadVtkMesh(self):
+        return await asyncio.to_thread(self._getVtkMesh, FileSystem.foamFilePath())
 
-        return statusConfig
-
-    def _getVtkMesh(self, foamFilePath: Path, statusConfig: dict):
+    def _getVtkMesh(self, foamFilePath: Path):
         """
         VtkMesh dict
         {
@@ -225,10 +215,15 @@ class PolyMeshLoader(QObject):
         r.CacheMeshOn()
         r.ReadZonesOn()
 
-        r.AddObserver(vtkCommand.ProgressEvent, readerProgressEvent)
+        r.UpdateInformation()
 
-        for patchName, status in statusConfig.items():
-            r.SetPatchArrayStatus(patchName, status)
+        for i in range(r.GetNumberOfPatchArrays()):
+            name = r.GetPatchArrayName(i)
+            m = re.search(r'patch/', name)
+            if m is not None:
+                r.SetPatchArrayStatus(name, 1)
+
+        r.AddObserver(vtkCommand.ProgressEvent, readerProgressEvent)
 
         r.Update()
 
@@ -290,3 +285,27 @@ class PolyMeshLoader(QObject):
                     cellZones[czid] = vtkMesh[rname]['zones']['cellZones'][czname]
 
         app.updateVtkMesh(viewModel, cellZones)
+
+    async def copyMeshFrom(self, source):
+        await asyncio.to_thread(self._copyMeshFromInternal, source)
+
+    def _copyMeshFromInternal(self, source):
+        target = Project.instance().path / CASE_DIRECTORY_NAME / Directory.CONSTANT_DIRECTORY_NAME  # Constant Path for Live Case
+        if target.exists():
+            utils.rmtree(target)
+
+        target.mkdir(exist_ok=True)
+
+        regionPropFile = source / Directory.REGION_PROPERTIES_FILE_NAME
+        if regionPropFile.is_file():
+            shutil.copyfile(regionPropFile, target / Directory.REGION_PROPERTIES_FILE_NAME)
+            regions = RegionProperties.loadRegions(source)
+            for rname in regions:
+                s = source / rname / Directory.POLY_MESH_DIRECTORY_NAME
+                t = target / rname / Directory.POLY_MESH_DIRECTORY_NAME
+                shutil.copytree(s, t, copy_function=shutil.copyfile)
+        else:
+            s = source / Directory.POLY_MESH_DIRECTORY_NAME
+            t = target / Directory.POLY_MESH_DIRECTORY_NAME
+            shutil.copytree(s, t, copy_function=shutil.copyfile)
+

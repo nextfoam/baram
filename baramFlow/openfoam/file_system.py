@@ -244,28 +244,6 @@ class FileSystem:
     #     shutil.copytree(resource.file('openfoam/flow_case'), cls._casePath)
 
     @classmethod
-    def _copyMeshFromInternal(cls, directory, regions):
-        if cls._constantPath.exists():
-            utils.rmtree(cls._constantPath)
-        cls._constantPath.mkdir(exist_ok=True)
-
-        srcFile = directory / Directory.REGION_PROPERTIES_FILE_NAME
-        if srcFile.is_file():
-            shutil.copyfile(srcFile, cls.constantPath(Directory.REGION_PROPERTIES_FILE_NAME))
-
-            for rname in regions:
-                srcPath = directory / rname / Directory.POLY_MESH_DIRECTORY_NAME
-                objPath = cls.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME
-                shutil.copytree(srcPath, objPath, copy_function=shutil.copyfile)
-        else:
-            polyMeshPath = cls.constantPath(Directory.POLY_MESH_DIRECTORY_NAME)
-            shutil.copytree(directory, polyMeshPath, copy_function=shutil.copyfile)
-
-    @classmethod
-    async def copyMeshFrom(cls, directory, regions):
-        await asyncio.to_thread(cls._copyMeshFromInternal, directory, regions)
-
-    @classmethod
     async def copyFileToCase(cls, file, name):
         await asyncio.to_thread(shutil.copyfile, file, cls._casePath / name)
 
