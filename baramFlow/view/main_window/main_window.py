@@ -521,6 +521,8 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _projectOpened(self):
+        self._caseLoaded()
+
         if self._project.meshLoaded:
             db = coredb.CoreDB()
             if db.getRegions():
@@ -541,8 +543,7 @@ class MainWindow(QMainWindow):
 
                 self._project.fileDB().saveCoreDB()
 
-    @qasync.asyncSlot()
-    async def _caseLoaded(self, name=None):
+    def _caseLoaded(self, name=None):
         if name:
             self.setWindowTitle(f'{app.properties.fullName} - {name} ({self._project.path})')
         else:

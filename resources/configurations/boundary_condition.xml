@@ -79,7 +79,7 @@
         <staticPressure>101325</staticPressure>
         <staticTemperature>300</staticTemperature>
     </farFieldRiemann>
-    <subsonicInflow>
+    <subsonicInlet>
         <flowDirection>
             <x>1</x>
             <y>0</y>
@@ -87,11 +87,11 @@
         </flowDirection>
         <totalPressure>101325</totalPressure>
         <totalTemperature>300</totalTemperature>
-    </subsonicInflow>
+    </subsonicInlet>
     <subsonicOutflow>
         <staticPressure>101325</staticPressure>
     </subsonicOutflow>
-    <supersonicInlet>
+    <supersonicInflow>
         <velocity>
             <x>1</x>
             <y>0</y>
@@ -99,7 +99,7 @@
         </velocity>
         <staticPressure>101325</staticPressure>
         <staticTemperature>300</staticTemperature>
-    </supersonicInlet>
+    </supersonicInflow>
     <wall>
         <velocity>
             <type>noSlip</type>

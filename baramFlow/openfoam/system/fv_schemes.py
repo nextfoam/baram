@@ -44,11 +44,11 @@ class FvSchemes(DictionaryFile):
             },
             'gradSchemes': {
                 'default': 'Gauss linear',
-                'grad(k)':       'VKMDLimited Gauss linear 0.5',
-                'grad(epsilon)': 'VKMDLimited Gauss linear 0.5',
-                'grad(omega)':   'VKMDLimited Gauss linear 0.5',
-                'grad(nuTilda)': 'VKMDLimited Gauss linear 0.5',
-                'reconGrad':     'VKMDLimited Gauss linear 0.5'
+                'grad(k)':       'VKLimited Gauss linear 0.5',
+                'grad(epsilon)': 'VKLimited Gauss linear 0.5',
+                'grad(omega)':   'VKLimited Gauss linear 0.5',
+                'grad(nuTilda)': 'VKLimited Gauss linear 0.5',
+                'reconGrad':     'VKLimited Gauss linear 0.5'
             },
             'laplacianSchemes': self._constructLaplacianSchemes(),
             'interpolationSchemes': {
