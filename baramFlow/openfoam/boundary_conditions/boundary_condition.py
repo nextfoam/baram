@@ -112,12 +112,14 @@ class BoundaryCondition(DictionaryFile):
             'flowDir': self._db.getVector(xpath + '/flowDirection'),
             'p0': self._db.getValue(xpath + '/totalPressure'),
             'T0': self._db.getValue(xpath + '/totalTemperature'),
+            'value': self._initialValueByTime()
         }
 
     def _constructSubsonicOutflow(self, xpath):
         return {
             'type': 'subsonicOutflow',
             'pExit': self._db.getValue(xpath + '/staticPressure'),
+            'value': self._initialValueByTime()
         }
 
     def _constructSymmetry(self):
