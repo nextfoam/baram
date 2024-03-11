@@ -130,7 +130,7 @@ class BoundaryDB:
         BoundaryType.OPEN_CHANNEL_INLET.value: QCoreApplication.translate('BoundaryDB', 'Open Channel Inlet'),
         BoundaryType.FREE_STREAM.value: QCoreApplication.translate('BoundaryDB', 'Free Stream'),
         BoundaryType.FAR_FIELD_RIEMANN.value: QCoreApplication.translate('BoundaryDB', 'Far-Field Riemann'),
-        BoundaryType.SUBSONIC_INFLOW.value: QCoreApplication.translate('BoundaryDB', 'Subsonic Inflow'),
+        BoundaryType.SUBSONIC_INFLOW.value: QCoreApplication.translate('BoundaryDB', 'Subsonic Inlet'),
         BoundaryType.SUPERSONIC_INLET.value: QCoreApplication.translate('BoundaryDB', 'Supersonic Inflow'),
         # Outlet
         BoundaryType.PRESSURE_OUTLET.value: QCoreApplication.translate('BoundaryDB', 'Pressure Outlet'),
