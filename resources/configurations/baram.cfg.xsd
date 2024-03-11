@@ -987,7 +987,7 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="subsonicInflowType">
+    <xs:complexType name="subsonicInletType">
         <xs:sequence>
             <xs:element name="flowDirection" type="vector"/>
             <xs:element name="totalPressure" type="inputNumberType" default="101325"/>
@@ -1001,7 +1001,7 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="supersonicInletType">
+    <xs:complexType name="supersonicInflowType">
         <xs:sequence>
             <xs:element name="velocity" type="vector"/>
             <xs:element name="staticPressure" type="inputNumberType" default="101325"/>
@@ -1179,9 +1179,9 @@
                             <xs:enumeration value="outflow"/>
                             <xs:enumeration value="freeStream"/>
                             <xs:enumeration value="farFieldRiemann"/>
-                            <xs:enumeration value="subsonicInflow"/>
+                            <xs:enumeration value="subsonicInlet"/>
                             <xs:enumeration value="subsonicOutflow"/>
-                            <xs:enumeration value="supersonicInlet"/>
+                            <xs:enumeration value="supersonicInflow"/>
                             <xs:enumeration value="supersonicOutflow"/>
                             <xs:enumeration value="wall"/>
                             <xs:enumeration value="thermoCoupledWall"/>
@@ -1212,9 +1212,9 @@
                 <!-- <xs:element name="outflow" type="outflowType" /> -->
                 <xs:element name="freeStream" type="freeStreamType"/>
                 <xs:element name="farFieldRiemann" type="farFieldRiemannType"/>
-                <xs:element name="subsonicInflow" type="subsonicInflowType"/>
+                <xs:element name="subsonicInlet" type="subsonicInletType"/>
                 <xs:element name="subsonicOutflow" type="subsonicOutflowType"/>
-                <xs:element name="supersonicInlet" type="supersonicInletType"/>
+                <xs:element name="supersonicInflow" type="supersonicInflowType"/>
                 <!-- no setting for supersonicOutflow -->
                 <!-- <xs:element name="supersonicOutflow" type="supersonicOutflowType" /> -->
                 <xs:element name="wall" type="wallType"/>

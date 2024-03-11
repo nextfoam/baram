@@ -7,16 +7,16 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
-from .subsonic_inflow_dialog_ui import Ui_SubsonicInflowDialog
+from .subsonic_inlet_dialog_ui import Ui_SubsonicInletDialog
 from .conditional_widget_helper import ConditionalWidgetHelper
 
 
-class SubsonicInflowDialog(ResizableDialog):
-    RELATIVE_XPATH = '/subsonicInflow'
+class SubsonicInletDialog(ResizableDialog):
+    RELATIVE_XPATH = '/subsonicInlet'
 
     def __init__(self, parent, bcid):
         super().__init__(parent)
-        self._ui = Ui_SubsonicInflowDialog()
+        self._ui = Ui_SubsonicInletDialog()
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()

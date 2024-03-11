@@ -257,7 +257,7 @@ def _version_4(root: etree.Element):
             e = etree.fromstring(
                 '<densityBasedSolverParameters xmlns="http://www.baramcfd.org/baram">'
                 '   <formulation>implicit</formulation>'
-                '   <fluxType>roeFlux</fluxType> '
+                '   <fluxType>roeFlux</fluxType>'
                 '   <entropyFixCoefficient>0.5</entropyFixCoefficient>'
                 '   <cutOffMachNumber>0.729</cutOffMachNumber>'
                 '</densityBasedSolverParameters>')
@@ -268,9 +268,8 @@ def _version_4(root: etree.Element):
         e.text = 'pressure'
 
     for p in root.findall('.//boundaryConditions', namespaces=_nsmap):
-        for e in p.findall('boundaryCondition/supersonicInflow', namespaces=_nsmap):
-            e.tag = '{http://www.baramcfd.org/baram}supersonicInlet'
-
+        for e in p.findall('boundaryCondition/subsonicInflow', namespaces=_nsmap):
+            e.tag = '{http://www.baramcfd.org/baram}subsonicInlet'
 
 
 _fTable = [
@@ -298,3 +297,7 @@ def migrate(root: etree.Element):
         for i in range(version, currentVersion):
             if i < len(_fTable):
                 _fTable[i](root)
+
+    for p in root.findall('.//boundaryConditions', namespaces=_nsmap):
+        for e in p.findall('boundaryCondition/supersonicInlet', namespaces=_nsmap):
+            e.tag = '{http://www.baramcfd.org/baram}supersonicInflow'
