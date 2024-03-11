@@ -70,7 +70,7 @@ class RegionWidget(QWidget):
         self._addComboItem(combo, currentType, BoundaryType.FREE_STREAM, self.tr("Free Stream"))
         self._addComboItem(combo, currentType, BoundaryType.FAR_FIELD_RIEMANN, self.tr("Far-Field Riemann"))
         self._addComboItem(combo, currentType, BoundaryType.SUBSONIC_INFLOW, self.tr("Subsonic Inflow"))
-        self._addComboItem(combo, currentType, BoundaryType.SUPERSONIC_INFLOW, self.tr("Supersonic Inflow"))
+        self._addComboItem(combo, currentType, BoundaryType.SUPERSONIC_INLET, self.tr("Supersonic Inflow"))
         # Outlet, BoundaryType
         self._addComboItem(combo, currentType, BoundaryType.PRESSURE_OUTLET, self.tr("Pressure Outlet"))
         self._addComboItem(combo, currentType, BoundaryType.OPEN_CHANNEL_OUTLET, self.tr("OpenChannel Outlet"))

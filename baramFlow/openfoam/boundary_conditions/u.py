@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from math import sqrt
+
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
 from baramFlow.coredb.boundary_db import FlowRateInletSpecification, WallVelocityCondition, InterfaceMode
-from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT
+from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from libbaram.openfoam.dictionary.dictionary_file import DataClass
 
@@ -44,10 +47,10 @@ class U(BoundaryCondition):
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructOutletPhaseMeanVelocity(self._db.getValue(xpath + '/openChannelOutlet/meanVelocity'))),
                 BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
                 BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestreamVelocity(xpath + '/freeStream')),
-                BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann')),
+                BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemannU(xpath)),
                 BoundaryType.SUBSONIC_INFLOW.value:     (lambda: self._constructSubsonicInflow(xpath + '/subsonicInflow')),
                 BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructSubsonicOutflow(xpath + '/subsonicOutflow')),
-                BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(self._db.getVector(xpath + '/supersonicInflow/velocity'))),
+                BoundaryType.SUPERSONIC_INLET.value:    (lambda: self._constructFixedValue(self._db.getVector(xpath + '/supersonicInlet/velocity'))),
                 BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
                 BoundaryType.WALL.value:                (lambda: self._constructWallU(xpath)),
                 BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructNoSlip()),
@@ -162,6 +165,17 @@ class U(BoundaryCondition):
                 return self._constructUniformNormalFixedValue(
                     xpath + '/velocityInlet/velocity/magnitudeNormal/temporalDistribution/piecewiseLinear',
                     self.TableType.TEMPORAL_SCALAR_LIST)
+
+    def _constructFarfieldRiemannU(self, xpath):
+        gamma = 1.4
+        a = sqrt(gamma * UNIVERSAL_GAL_CONSTANT * float(self._db.getValue(xpath + '/farFieldRiemann/staticPressure')))
+        dx, dy, dz = self._db.getVector(xpath + '/farFieldRiemann/flowDirection')
+        dMag = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+        mInf = float(
+            self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/densityBasedSolverParameters/cutOffMachNumber'))
+        am = a * mInf / dMag
+
+        return self._constructFarfieldRiemann(xpath + '/farFieldRiemann', (am * dx, am * dy, am * dz))
 
     def _constructWallU(self, xpath):
         spec = self._db.getValue(xpath + '/wall/velocity/type')

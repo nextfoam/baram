@@ -89,14 +89,70 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QWidget" name="steadyConditions" native="true">
-            <layout class="QFormLayout" name="formLayout_3">
+           <widget class="QWidget" name="iterationConditions" native="true">
+            <layout class="QFormLayout" name="iterationConditionsLayout">
+             <property name="rowWrapPolicy">
+              <enum>QFormLayout::WrapLongRows</enum>
+             </property>
              <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
               <number>0</number>
              </property>
              <property name="rightMargin">
               <number>0</number>
              </property>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Time Stepping Method</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="EnumComboBox" name="timeSteppingMethod"/>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Time Step Size</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="timeStepSize"/>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>Courant Number</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QLineEdit" name="maxCourantNumber"/>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_14">
+               <property name="text">
+                <string>Courant Number For VoF</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>End Time</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QLineEdit" name="endTime"/>
+             </item>
+             <item row="4" column="1">
+              <widget class="QLineEdit" name="maxCourantNumberForVoF"/>
+             </item>
              <item row="0" column="0">
               <widget class="QLabel" name="label">
                <property name="text">
@@ -106,71 +162,6 @@
              </item>
              <item row="0" column="1">
               <widget class="QLineEdit" name="numberOfIterations"/>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QWidget" name="transientConditions" native="true">
-            <layout class="QFormLayout" name="timeConditionLayout">
-             <property name="rowWrapPolicy">
-              <enum>QFormLayout::WrapLongRows</enum>
-             </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Time Stepping Method</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QComboBox" name="timeSteppingMethod"/>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_3">
-               <property name="text">
-                <string>Time Step Size</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="timeStepSize"/>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_13">
-               <property name="text">
-                <string>Max Courant Number</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QLineEdit" name="maxCourantNumber"/>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="label_14">
-               <property name="text">
-                <string>Max Courant Number For VoF</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="label_4">
-               <property name="text">
-                <string>End Time</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="1">
-              <widget class="QLineEdit" name="endTime"/>
-             </item>
-             <item row="3" column="1">
-              <widget class="QLineEdit" name="maxCourantNumberForVoF"/>
              </item>
             </layout>
            </widget>
@@ -267,7 +258,7 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QComboBox" name="dataWriteFormat"/>
+              <widget class="EnumComboBox" name="dataWriteFormat"/>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_9">
@@ -316,8 +307,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>EnumComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widgets.enum_combo_box</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
-  <tabstop>numberOfIterations</tabstop>
   <tabstop>timeSteppingMethod</tabstop>
   <tabstop>timeStepSize</tabstop>
   <tabstop>maxCourantNumber</tabstop>

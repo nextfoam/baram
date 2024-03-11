@@ -91,7 +91,7 @@
     <subsonicOutflow>
         <staticPressure>101325</staticPressure>
     </subsonicOutflow>
-    <supersonicInflow>
+    <supersonicInlet>
         <velocity>
             <x>1</x>
             <y>0</y>
@@ -99,7 +99,7 @@
         </velocity>
         <staticPressure>101325</staticPressure>
         <staticTemperature>300</staticTemperature>
-    </supersonicInflow>
+    </supersonicInlet>
     <wall>
         <velocity>
             <type>noSlip</type>

@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QMessageBox
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.numerical_db import PressureVelocityCouplingScheme
+from baramFlow.coredb.numerical_db import PressureVelocityCouplingScheme, Formulation, FluxType
 from baramFlow.coredb.numerical_db import ImplicitDiscretizationScheme, UpwindDiscretizationScheme, InterpolationScheme
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
@@ -30,6 +30,15 @@ class NumericalConditionsPage(ContentPage):
         self._ui.pressureVelocityCouplingScheme.addItems({
             PressureVelocityCouplingScheme.SIMPLE: self.tr('SIMPLE'),
             PressureVelocityCouplingScheme.SIMPLEC: self.tr('SIMPLEC'),
+        })
+        self._ui.formulation.addItems({
+            Formulation.IMPLICIT: self.tr('Implicit'),
+            # Formulation.EXPLICIT: self.tr('Explicit'),
+        })
+        self._ui.fluxType.addItems({
+            FluxType.ROE_FDS: self.tr('Roe-FDS'),
+            FluxType.AUSM: self.tr('ASUM'),
+            FluxType.AUSM_UP: self.tr('ASUM-up'),
         })
         self._ui.discretizationSchemeTime.addItems({
             ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT: self.tr('First Order Implicit'),
@@ -64,20 +73,33 @@ class NumericalConditionsPage(ContentPage):
 
         self._ui.useMomentumPredictor.setVisible(timeIsTransient or allRoundSolver)
 
-        self._ui.discretizationSchemeTime.setEnabled(timeIsTransient)
-        self._ui.discretizationSchemeEnergy.setEnabled(energyOn)
-        self._ui.discretizationSchemeTurbulence.setEnabled(turbulenceOn)
-        self._ui.discretizationSchemeVolumeFraction.setEnabled(multiphaseOn)
+        if GeneralDB.isCompressibleDensity():
+            compressibleDensity = True
+            self._ui.pressureVelocity.hide()
+            self._ui.discretizationSchemesMomentumLabel.setText(self.tr('Flow'))
+        else:
+            compressibleDensity = False
+            self._ui.densityBasedSolverParameters.hide()
 
-        self._ui.underRelaxationFactorPressureFinal.setEnabled(timeIsTransient or allRoundSolver)
-        self._ui.underRelaxationFactorMomentumFinal.setEnabled(timeIsTransient or allRoundSolver)
-        self._ui.underRelaxationFactorEnergy.setEnabled(energyOn)
-        self._ui.underRelaxationFactorEnergyFinal.setEnabled((timeIsTransient or allRoundSolver) and energyOn)
+        self._ui.discretizationSchemeTime.setEnabled(timeIsTransient)
+        self._ui.discretizationSchemePressure.setEnabled(not compressibleDensity)
+        self._ui.discretizationSchemeEnergy.setEnabled(energyOn and not compressibleDensity)
+        self._ui.discretizationSchemeTurbulence.setEnabled(turbulenceOn)
+        self._ui.discretizationSchemeVolumeFraction.setEnabled(multiphaseOn and not compressibleDensity)
+        self._ui.discretizationSchemeVolumeFraction.setEnabled(not compressibleDensity)
+
+        self._ui.underRelaxationFactorPressure.setEnabled(not compressibleDensity)
+        self._ui.underRelaxationFactorPressureFinal.setEnabled((timeIsTransient or allRoundSolver) and not compressibleDensity)
+        self._ui.underRelaxationFactorMomentum.setEnabled(not compressibleDensity)
+        self._ui.underRelaxationFactorMomentumFinal.setEnabled((timeIsTransient or allRoundSolver) and not compressibleDensity)
+        self._ui.underRelaxationFactorEnergy.setEnabled(energyOn and not compressibleDensity)
+        self._ui.underRelaxationFactorEnergyFinal.setEnabled((timeIsTransient or allRoundSolver) and energyOn and not compressibleDensity)
         self._ui.underRelaxationFactorTurbulence.setEnabled(turbulenceOn)
         self._ui.underRelaxationFactorTurbulenceFinal.setEnabled((timeIsTransient or allRoundSolver) and turbulenceOn)
+        self._ui.underRelaxationFactorDensity.setEnabled((timeIsTransient or allRoundSolver) and not compressibleDensity)
         self._ui.underRelaxationFactorDensityFinal.setEnabled(timeIsTransient or allRoundSolver)
-        self._ui.underRelaxationFactorVolumeFraction.setEnabled(multiphaseOn)
-        self._ui.underRelaxationFactorVolumeFractionFinal.setEnabled(multiphaseOn)
+        self._ui.underRelaxationFactorVolumeFraction.setEnabled(multiphaseOn and not compressibleDensity)
+        self._ui.underRelaxationFactorVolumeFractionFinal.setEnabled(multiphaseOn and not compressibleDensity)
 
         self._ui.maxIterationsPerTimeStep.setEnabled(timeIsTransient or allRoundSolver)
         self._ui.numberOfCorrectors.setEnabled(timeIsTransient or allRoundSolver)
@@ -101,6 +123,14 @@ class NumericalConditionsPage(ContentPage):
 
         self._ui.pressureVelocityCouplingScheme.setCurrentData(
             PressureVelocityCouplingScheme(db.getValue(self._xpath + '/pressureVelocityCouplingScheme')))
+
+        self._ui.formulation.setCurrentData(Formulation(
+            db.getValue(self._xpath + '/densityBasedSolverParameters/formulation')))
+        self._ui.fluxType.setCurrentData(FluxType(db.getValue(self._xpath + '/densityBasedSolverParameters/fluxType')))
+        self._ui.entropyFixCoefficient.setText(db.getValue(
+            self._xpath + '/densityBasedSolverParameters/entropyFixCoefficient'))
+        self._ui.cutOffMachNumber.setText(db.getValue(self._xpath + '/densityBasedSolverParameters/cutOffMachNumber'))
+
         self._ui.useMomentumPredictor.setChecked(db.getValue(self._xpath + '/useMomentumPredictor') == 'true')
         self._ui.discretizationSchemeTime.setCurrentData(
             ImplicitDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/time')))
@@ -176,6 +206,15 @@ class NumericalConditionsPage(ContentPage):
         writer = CoreDBWriter()
         writer.append(self._xpath + '/pressureVelocityCouplingScheme',
                       self._ui.pressureVelocityCouplingScheme.currentValue(), None)
+
+        writer.append(self._xpath + '/densityBasedSolverParameters/formulation',
+                      self._ui.formulation.currentValue(), None)
+        writer.append(self._xpath + '/densityBasedSolverParameters/fluxType', self._ui.fluxType.currentValue(), None)
+        writer.append(self._xpath + '/densityBasedSolverParameters/entropyFixCoefficient',
+                      self._ui.entropyFixCoefficient.text(), self.tr('Entropy Fix Coefficient'))
+        writer.append(self._xpath + '/densityBasedSolverParameters/cutOffMachNumber',
+                      self._ui.cutOffMachNumber.text(), self.tr('Cut-off Mach Number'))
+
         writer.append(self._xpath + '/useMomentumPredictor',
                       'true' if self._ui.useMomentumPredictor.isChecked() else 'false', None)
 
@@ -283,11 +322,14 @@ class NumericalConditionsPage(ContentPage):
 
     def _connectSignalsSlots(self):
         self._ui.advanced.clicked.connect(self._advancedSetup)
+        self._ui.fluxType.currentDataChanged.connect(self._fluxTypeChanged)
 
     def _advancedSetup(self):
         self._dialog = AdvancedDialog()
         self._dialog.open()
 
-    def _setupCombo(self, combo, items):
-        for value, text in items.items():
-            combo.addItem(text, value)
+    def _fluxTypeChanged(self, fluxType):
+        self._ui.densityBasedSolverParametersLayout.setRowVisible(
+            self._ui.entropyFixCoefficient,fluxType == FluxType.ROE_FDS)
+        self._ui.densityBasedSolverParametersLayout.setRowVisible(
+            self._ui.cutOffMachNumber,fluxType == FluxType.AUSM_UP)

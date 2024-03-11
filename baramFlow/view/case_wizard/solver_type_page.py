@@ -15,3 +15,9 @@ class SolverTypePage(QWizardPage):
 
         self._ui.pressureBased.setChecked(True)
         self.registerField('solverTypePressureBased', self._ui.pressureBased)
+
+    def showEvent(self, ev):
+        if not ev.spontaneous():
+            self._ui.densityBased.setChecked(True)
+
+        return super().showEvent(ev)

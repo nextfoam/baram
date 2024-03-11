@@ -4,6 +4,7 @@
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.app import app
+from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.openfoam.file_system import FileSystem
 
 
@@ -114,8 +115,11 @@ def _constructFluid(region: str):
     mw = db.getValue(path + '/molecularWeight')
     mix['specie'] = {
         'nMoles': 1,
-        'molWeight': mw
+        'molWeight': mw,
     }
+
+    if GeneralDB.isCompressibleDensity():
+        mix['Tref'] = 0
 
     return {
         'thermoType': thermo,
@@ -167,6 +171,9 @@ def _constructSolid(region: str):
         mix['equationOfState'] = {
             'rho': rho
         }
+
+    if GeneralDB.isCompressibleDensity():
+        mix['Tref'] = 0
 
     return {
         'thermoType': thermo,

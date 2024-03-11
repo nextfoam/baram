@@ -75,6 +75,12 @@
 
     <numericalConditions>
         <pressureVelocityCouplingScheme>SIMPLE</pressureVelocityCouplingScheme>
+        <densityBasedSolverParameters>
+            <formulation>implicit</formulation>
+            <fluxType>roeFlux</fluxType>
+            <entropyFixCoefficient>0.5</entropyFixCoefficient>
+            <cutOffMachNumber>0.729</cutOffMachNumber>
+        </densityBasedSolverParameters>
         <useMomentumPredictor>true</useMomentumPredictor>
         <discretizationSchemes>
             <time>firstOrderImplicit</time>

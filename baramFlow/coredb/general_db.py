@@ -26,3 +26,11 @@ class GeneralDB:
     @classmethod
     def getSolverType(cls):
         return SolverType(coredb.CoreDB().getValue(cls.GENERAL_XPATH + '/solverType'))
+
+    @classmethod
+    def isDensityBased(cls):
+        return cls.getSolverType() == SolverType.DENSITY_BASED
+
+    @classmethod
+    def isCompressibleDensity(cls):
+        return cls.isCompressible() and cls.isDensityBased()

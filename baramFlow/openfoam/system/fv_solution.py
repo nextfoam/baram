@@ -18,7 +18,7 @@ class FvSolution(DictionaryFile):
         """
 
         Args:
-            rname: Region name. None for global fvSolution of multi region case, empty string for single region.
+            region: None for global fvSolution of multi region case, empty string for single region.
         """
         super().__init__(FileSystem.caseRoot(), self.systemLocation('' if region is None else region.rname), 'fvSolution')
 
@@ -209,6 +209,42 @@ class FvSolution(DictionaryFile):
                     '"(k|epsilon|omega|nuTilda)"': self._db.getValue('.//underRelaxationFactors/turbulence'),
                     '"(k|epsilon|omega|nuTilda)Final"': self._db.getValue('.//underRelaxationFactors/turbulenceFinal'),
                 }
+            },
+            'LU-SGS': {
+                'residualControl': {
+                    'rho': '1e-4',
+                    'rhoU': '1e-6',
+                    'rhoE': '1e-9',
+                    'k': '1e-3',
+                    'omega': '1e-3',
+                }
+            },
+            'Riemann': {
+                'fluxScheme': self._db.getValue(
+                    NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/densityBasedSolverParameters/fluxType'),
+                'secondOrder':
+                    'yes'
+                    if self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/discretizationSchemes/momentum')
+                       == 'secondOrderUpwind'
+                    else 'no',
+                'reconGradScheme': 'VKMDLimited Gauss linear 1',
+                'roeFluxCoeffs': {
+                    'epsilon': self._db.getValue(
+                        NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/densityBasedSolverParameters/entropyFixCoefficient')
+                },
+                'AUSMplusUpFluxCoeffs': {
+                    'MInf': self._db.getValue(
+                        NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/densityBasedSolverParameters/cutOffMachNumber'),
+                }
+            },
+            'fieldBounds': {
+                'p': '1e-06 1e+10',
+                'rho': '1e-06 1e+10',
+                'h': '1e-06 1e+10',
+                'e': '1e-06 1e+10',
+                'rhoE': '1e-06 1e+10',
+                'T': '1e-06 3e+4',
+                'U': '3e+4',
             }
         }
 

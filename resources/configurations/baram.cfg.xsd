@@ -10,6 +10,13 @@
         </xs:restriction>
     </xs:simpleType>
 
+    <xs:simpleType name="exclusiveRatio">
+        <xs:restriction base="xs:double">
+            <xs:minExclusive value="0"/>
+            <xs:maxExclusive value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
     <xs:simpleType name="percent">
         <xs:restriction base="xs:double">
             <xs:minInclusive value="0"/>
@@ -21,6 +28,13 @@
         <xs:restriction base="xs:double">
             <xs:minInclusive value="0"/>
             <xs:maxInclusive value="180"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="exclusvie0-10">
+        <xs:restriction base="xs:double">
+            <xs:minExclusive value="0"/>
+            <xs:maxExclusive value="10"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -40,6 +54,14 @@
         </xs:simpleContent>
     </xs:complexType>
 
+    <xs:complexType name="inputExclusiveRatioType">
+        <xs:simpleContent>
+            <xs:extension base="exclusiveRatio">
+                <xs:attribute name="batchParameter" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
     <xs:complexType name="inputPercentType">
         <xs:simpleContent>
             <xs:extension base="percent">
@@ -51,6 +73,14 @@
     <xs:complexType name="inputDegree180Type">
         <xs:simpleContent>
             <xs:extension base="degree180">
+                <xs:attribute name="batchParameter" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="inputExclusive0-10Type">
+        <xs:simpleContent>
+            <xs:extension base="exclusvie0-10">
                 <xs:attribute name="batchParameter" type="xs:string"/>
             </xs:extension>
         </xs:simpleContent>
@@ -971,7 +1001,7 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="supersonicInflowType">
+    <xs:complexType name="supersonicInletType">
         <xs:sequence>
             <xs:element name="velocity" type="vector"/>
             <xs:element name="staticPressure" type="inputNumberType" default="101325"/>
@@ -1151,7 +1181,7 @@
                             <xs:enumeration value="farFieldRiemann"/>
                             <xs:enumeration value="subsonicInflow"/>
                             <xs:enumeration value="subsonicOutflow"/>
-                            <xs:enumeration value="supersonicInflow"/>
+                            <xs:enumeration value="supersonicInlet"/>
                             <xs:enumeration value="supersonicOutflow"/>
                             <xs:enumeration value="wall"/>
                             <xs:enumeration value="thermoCoupledWall"/>
@@ -1184,7 +1214,7 @@
                 <xs:element name="farFieldRiemann" type="farFieldRiemannType"/>
                 <xs:element name="subsonicInflow" type="subsonicInflowType"/>
                 <xs:element name="subsonicOutflow" type="subsonicOutflowType"/>
-                <xs:element name="supersonicInflow" type="supersonicInflowType"/>
+                <xs:element name="supersonicInlet" type="supersonicInletType"/>
                 <!-- no setting for supersonicOutflow -->
                 <!-- <xs:element name="supersonicOutflow" type="supersonicOutflowType" /> -->
                 <xs:element name="wall" type="wallType"/>
@@ -1219,6 +1249,31 @@
                         <xs:enumeration value='SIMPLEC'/>
                     </xs:restriction>
                 </xs:simpleType>
+            </xs:element>
+            <xs:element name="densityBasedSolverParameters">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="formulation">
+                            <xs:simpleType>
+                                <xs:restriction base='xs:string'>
+                                    <xs:enumeration value='implicit'/>
+                                    <xs:enumeration value='explicit'/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="fluxType">
+                            <xs:simpleType>
+                                <xs:restriction base='xs:string'>
+                                    <xs:enumeration value='roeFlux'/>
+                                    <xs:enumeration value='AUSMplusFlux'/>
+                                    <xs:enumeration value='AUSMplusUpFlux'/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="entropyFixCoefficient" type="inputExclusiveRatioType" default="0.5"/>
+                        <xs:element name="cutOffMachNumber" type="inputExclusive0-10Type" default="0.729"/>
+                    </xs:sequence>
+                </xs:complexType>
             </xs:element>
             <xs:element name="useMomentumPredictor" type="xs:boolean" default="true"/>
             <xs:element name="discretizationSchemes">
