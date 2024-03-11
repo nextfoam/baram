@@ -21,7 +21,7 @@ from .free_stream_dialog import FreeStreamDialog
 from .farfield_riemann_dialog import FarfieldRiemannDialog
 from .subsonic_inflow_dialog import SubsonicInflowDialog
 from .subsonic_outflow_dialog import SubsonicOutflowDialog
-from .supersonic_inflow_dialog import SupersonicInflowDialog
+from .supersonic_inlet_dialog import SupersonicInletDialog
 from .thermo_coupled_wall_dialog import ThermoCoupledWallDialog
 from .wall_dialog import WallDialog
 from .interface_dialog import InterfaceDialog
@@ -41,7 +41,7 @@ DIALOGS = {
     BoundaryType.FREE_STREAM.value: FreeStreamDialog,
     BoundaryType.FAR_FIELD_RIEMANN.value: FarfieldRiemannDialog,
     BoundaryType.SUBSONIC_INFLOW.value: SubsonicInflowDialog,
-    BoundaryType.SUPERSONIC_INFLOW.value: SupersonicInflowDialog,
+    BoundaryType.SUPERSONIC_INLET.value: SupersonicInletDialog,
     BoundaryType.PRESSURE_OUTLET.value: PressureOutletDialog,
     BoundaryType.OPEN_CHANNEL_OUTLET.value: OpenChannelOutletDialog,
     BoundaryType.OUTFLOW.value: None,

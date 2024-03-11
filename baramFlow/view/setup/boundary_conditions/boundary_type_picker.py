@@ -62,7 +62,7 @@ inletTypes = {
     InletType.FREE_STREAM.value: BoundaryType.FREE_STREAM.value,
     InletType.FAR_FIELD_RIEMANN.value: BoundaryType.FAR_FIELD_RIEMANN.value,
     InletType.SUBSONIC_INFLOW.value: BoundaryType.SUBSONIC_INFLOW.value,
-    InletType.SUPERSONIC_INFLOW.value: BoundaryType.SUPERSONIC_INFLOW.value,
+    InletType.SUPERSONIC_INFLOW.value: BoundaryType.SUPERSONIC_INLET.value,
 }
 
 outletTypes = {

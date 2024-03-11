@@ -25,5 +25,16 @@ class InterpolationScheme(Enum):
     MOMENTUM_WEIGHTED = 'momentumWeighted'
 
 
+class Formulation(Enum):
+    IMPLICIT = 'implicit'
+    EXPLICIT = 'explicit'
+
+
+class FluxType(Enum):
+    ROE_FDS = 'roeFlux'
+    AUSM = 'AUSMplusFlux'
+    AUSM_UP = 'AUSMplusUpFlux'
+
+
 class NumericalDB:
     NUMERICAL_CONDITIONS_XPATH = './/numericalConditions'

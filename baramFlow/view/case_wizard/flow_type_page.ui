@@ -40,7 +40,7 @@
       <item>
        <widget class="QRadioButton" name="compressible">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="text">
          <string>Compressible</string>

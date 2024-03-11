@@ -18,7 +18,7 @@ TYPE_MAP = {
     BoundaryType.FREE_STREAM.value: 'patch',
     BoundaryType.FAR_FIELD_RIEMANN.value: 'patch',
     BoundaryType.SUBSONIC_INFLOW.value: 'patch',
-    BoundaryType.SUPERSONIC_INFLOW.value: 'patch',
+    BoundaryType.SUPERSONIC_INLET.value: 'patch',
     BoundaryType.PRESSURE_OUTLET.value: 'patch',
     BoundaryType.OPEN_CHANNEL_OUTLET.value: 'patch',
     BoundaryType.OUTFLOW.value: 'patch',

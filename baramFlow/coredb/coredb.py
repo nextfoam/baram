@@ -12,7 +12,7 @@ from lxml import etree
 import xmlschema
 import h5py
 import pandas as pd
-from xmlschema.names import XSD_DOUBLE
+from xmlschema.names import XSD_DOUBLE, XSD_MIN_INCLUSIVE, XSD_MAX_INCLUSIVE, XSD_MIN_EXCLUSIVE, XSD_MAX_EXCLUSIVE
 
 # To use ".qrc" QT Resource files
 # noinspection PyUnresolvedReferences
@@ -301,17 +301,25 @@ class _CoreDB(object):
                 self._lastError = Error.FLOAT_ONLY
                 raise ValueException(Error.FLOAT_ONLY)
 
-            if hasattr(schema.type.base_type, 'min_value') \
-                    and schema.type.base_type.min_value is not None \
-                    and decimal < schema.type.base_type.min_value:
-                self._lastError = Error.OUT_OF_RANGE
-                raise ValueException(Error.OUT_OF_RANGE)
+            if (min := getattr(schema.type.base_type.get_facet(XSD_MIN_INCLUSIVE), 'value', None)) is not None:
+                if decimal < min:
+                    self._lastError = Error.OUT_OF_RANGE
+                    raise ValueException(Error.OUT_OF_RANGE)
 
-            if hasattr(schema.type.base_type, 'max_value') \
-                    and schema.type.base_type.max_value is not None \
-                    and decimal > schema.type.base_type.max_value:
-                self._lastError = Error.OUT_OF_RANGE
-                raise ValueException(Error.OUT_OF_RANGE)
+            if (max := getattr(schema.type.base_type.get_facet(XSD_MAX_INCLUSIVE), 'value', None)) is not None:
+                if decimal > max:
+                    self._lastError = Error.OUT_OF_RANGE
+                    raise ValueException(Error.OUT_OF_RANGE)
+
+            if (min := getattr(schema.type.base_type.get_facet(XSD_MIN_EXCLUSIVE), 'value', None)) is not None:
+                if decimal <= min:
+                    self._lastError = Error.OUT_OF_RANGE
+                    raise ValueException(Error.OUT_OF_RANGE)
+
+            if (max := getattr(schema.type.base_type.get_facet(XSD_MAX_EXCLUSIVE), 'value', None)) is not None:
+                if decimal >= max:
+                    self._lastError = Error.OUT_OF_RANGE
+                    raise ValueException(Error.OUT_OF_RANGE)
 
             return element, value.lower(), batchParameter
 

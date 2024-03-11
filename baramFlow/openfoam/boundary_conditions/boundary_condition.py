@@ -96,13 +96,14 @@ class BoundaryCondition(DictionaryFile):
             'value': ('uniform', value)
         }
 
-    def _constructFarfieldRiemann(self, xpath):
+    def _constructFarfieldRiemann(self, xpath, value):
         return {
             'type': 'farfieldRiemann',
             'flowDir': self._db.getVector(xpath + '/flowDirection'),
             'MInf': self._db.getValue(xpath + '/machNumber'),
             'pInf': self._db.getValue(xpath + '/staticPressure'),
             'TInf': self._db.getValue(xpath + '/staticTemperature'),
+            'value': value
         }
 
     def _constructSubsonicInflow(self, xpath):

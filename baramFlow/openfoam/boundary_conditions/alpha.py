@@ -52,7 +52,7 @@ class Alpha(BoundaryCondition):
                 BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: None),
                 BoundaryType.SUBSONIC_INFLOW.value:     (lambda: None),
                 BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: None),
-                BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: None),
+                BoundaryType.SUPERSONIC_INLET.value:    (lambda: None),
                 BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: None),
                 BoundaryType.WALL.value:                (lambda: self._constructWallAlpha(xpath)),
                 BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructZeroGradient()),

@@ -244,16 +244,33 @@ def _version_4(root: etree.Element):
     # Keep this commented until official v4 spec. is released
     # root.set('version', '4')
 
-    if (p := root.find('numericalConditions/discretizationSchemes', namespaces=_nsmap)) is not None:
-        if p.find('pressure', namespaces=_nsmap) is None:
-            logger.debug(f'    Adding "pressure" to {p}')
+    if (pp := root.find('numericalConditions', namespaces=_nsmap)) is not None:
+        if (p := pp.find('discretizationSchemes', namespaces=_nsmap)) is not None:
+            if p.find('pressure', namespaces=_nsmap) is None:
+                logger.debug(f'    Adding "pressure" to {p}')
+                e = etree.fromstring(
+                    '<pressure xmlns="http://www.baramcfd.org/baram">momentumWeightedReconstruct</pressure>')
+                p.append(e)
+
+        if pp.find('densityBasedSolverParameters', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "densityBasedSolverParameters" to {p}')
             e = etree.fromstring(
-                '<pressure xmlns="http://www.baramcfd.org/baram">momentumWeightedReconstruct</pressure>')
-            p.append(e)
+                '<densityBasedSolverParameters xmlns="http://www.baramcfd.org/baram">'
+                '   <formulation>implicit</formulation>'
+                '   <fluxType>roeFlux</fluxType> '
+                '   <entropyFixCoefficient>0.5</entropyFixCoefficient>'
+                '   <cutOffMachNumber>0.729</cutOffMachNumber>'
+                '</densityBasedSolverParameters>')
+            pp.insert(1, e)
 
     for e in root.findall('monitors/*/*/field/field[.="modifiedPressure"]', namespaces=_nsmap):
-        logger.debug(f'    Replacing text of {p} to "pressure"')
+        logger.debug(f'    Replacing text of {e} to "pressure"')
         e.text = 'pressure'
+
+    for p in root.findall('.//boundaryConditions', namespaces=_nsmap):
+        for e in p.findall('boundaryCondition/supersonicInflow', namespaces=_nsmap):
+            e.tag = '{http://www.baramcfd.org/baram}supersonicInlet'
+
 
 
 _fTable = [

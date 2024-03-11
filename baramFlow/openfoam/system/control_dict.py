@@ -55,13 +55,17 @@ def _libPath(baseName: str) -> str:
 
 
 def _getAvailableFields():
-    fields = ['U']
-
-    cap = baramFlow.openfoam.solver.getSolverCapability(app.case.solver)
-    if cap['usePrgh']:
-        fields.append('p_rgh')
+    compresibleDensity = GeneralDB.isCompressibleDensity()
+    if compresibleDensity:
+        fields = ['rhoU', 'rho']
     else:
-        fields.append('p')
+        fields = ['U']
+
+        cap = baramFlow.openfoam.solver.getSolverCapability(app.case.solver)
+        if cap['usePrgh']:
+            fields.append('p_rgh')
+        else:
+            fields.append('p')
 
     # Fields depending on the turbulence model
     turbulenceModel = ModelsDB.getTurbulenceModel()
@@ -75,7 +79,10 @@ def _getAvailableFields():
         fields.append('nuTilda')
 
     if ModelsDB.isEnergyModelOn():
-        fields.append('h')
+        if compresibleDensity:
+            fields.append('rhoE')
+        else:
+            fields.append('h')
 
     if ModelsDB.isMultiphaseModelOn():
         for mid, name, _, phase in coredb.CoreDB().getMaterials():
@@ -316,7 +323,7 @@ class ControlDict(DictionaryFile):
                 'type': 'patchProbes',
                 'libs': [_libPath('libsampling')],
 
-                'patches': [ BoundaryDB.getBoundaryName(self._db.getValue(xpath + '/boundary')) ],
+                'patches': [BoundaryDB.getBoundaryName(self._db.getValue(xpath + '/boundary'))],
                 'fields': [field],
                 'probeLocations': [self._db.getVector(xpath + '/coordinate')],
 

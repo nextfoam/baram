@@ -46,7 +46,7 @@ class Nut(BoundaryCondition):
                 BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructCalculated()),
                 BoundaryType.SUBSONIC_INFLOW.value:     (lambda: self._constructCalculated()),
                 BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructCalculated()),
-                BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructCalculated()),
+                BoundaryType.SUPERSONIC_INLET.value:    (lambda: self._constructCalculated()),
                 BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructCalculated()),
                 BoundaryType.WALL.value:                (lambda: self._constructWallNut(xpath)),
                 BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructWallFunctionByModel()),

@@ -47,7 +47,7 @@ class K(BoundaryCondition):
                 BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.SUBSONIC_INFLOW.value:     (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructZeroGradient()),
-                BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.SUPERSONIC_INLET.value:    (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
                 BoundaryType.WALL.value:                (lambda: self._constructKqRWallFunction()),
                 BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructKqRWallFunction()),

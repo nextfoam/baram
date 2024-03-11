@@ -20,7 +20,7 @@ TYPE_MAP = {
     BoundaryType.FREE_STREAM.value: 'calculated',
     BoundaryType.FAR_FIELD_RIEMANN.value: 'calculated',
     BoundaryType.SUBSONIC_INFLOW.value: 'calculated',
-    BoundaryType.SUPERSONIC_INFLOW.value: 'calculated',
+    BoundaryType.SUPERSONIC_INLET.value: 'calculated',
     BoundaryType.PRESSURE_OUTLET.value: 'calculated',
     BoundaryType.OPEN_CHANNEL_OUTLET.value: 'calculated',
     BoundaryType.OUTFLOW.value: 'calculated',
@@ -114,12 +114,12 @@ class P(BoundaryCondition):
                     BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructZeroGradient()),
                     BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
                     BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestreamPressure(self._operatingPressure + float(self._db.getValue(xpath + '/freeStream/pressure')))),
-                    BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann')),
+                    BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann', self._db.getValue(xpath + '/farFieldRiemann/staticPressure'))),
                     BoundaryType.SUBSONIC_INFLOW.value:     (lambda: self._constructSubsonicInflow(xpath + '/subsonicInflow')),
                     BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructSubsonicOutflow(xpath + '/subsonicOutflow')),
-                    BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(self._operatingPressure + float(self._db.getValue(xpath + '/supersonicInflow/staticPressure')))),
+                    BoundaryType.SUPERSONIC_INLET.value:   (lambda: self._constructFixedValue(self._operatingPressure + float(self._db.getValue(xpath + '/supersonicInlet/staticPressure')))),
                     BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
-                    BoundaryType.WALL.value:                (lambda: self._constructFluxPressure()),
+                    BoundaryType.WALL.value:                (lambda: self._constructWall()),
                     BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructFluxPressure()),
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfacePressure(self._db.getValue(xpath + '/interface/mode'))),
@@ -143,6 +143,12 @@ class P(BoundaryCondition):
             'type': 'freestreamPressure',
             'freestreamValue': ('uniform', pressure)
         }
+
+    def _constructWall(self):
+        if GeneralDB.isCompressibleDensity():
+            return self._constructZeroGradient()
+        else:
+            return self._constructFluxPressure()
 
     def _constructFluxPressure(self):
         return {
