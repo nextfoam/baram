@@ -227,7 +227,7 @@ class FvSolution(DictionaryFile):
                     if self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/discretizationSchemes/momentum')
                        == 'secondOrderUpwind'
                     else 'no',
-                'reconGradScheme': 'VKMDLimited Gauss linear 1',
+                'reconGradScheme': 'VKLimited Gauss linear 1',
                 'roeFluxCoeffs': {
                     'epsilon': self._db.getValue(
                         NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/densityBasedSolverParameters/entropyFixCoefficient')
