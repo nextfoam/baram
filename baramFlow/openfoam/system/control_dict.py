@@ -11,7 +11,7 @@ import baramFlow.openfoam.solver
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.material_db import MaterialDB, Phase
@@ -206,6 +206,12 @@ class ControlDict(DictionaryFile):
 
         if ModelsDB.isMultiphaseModelOn():
             self._data['maxAlphaCo'] = self._db.getValue(xpath + '/VoFMaxCourantNumber')
+
+        if (self._db.getBoundaryConditionsByType(BoundaryType.ABL_INLET.value)
+                or any(
+                    [self._db.getValue(BoundaryDB.getXPath(bcid) + '/wall/velocity/type') == WallVelocityCondition.ATMOSPHERIC_WALL.value
+                     for bcid, _ in self._db.getBoundaryConditionsByType(BoundaryType.WALL.value)])):
+            self._data['libs'] = [_libPath('libatmosphericModels')]
 
         self._appendMonitoringFunctionObjects()
 
