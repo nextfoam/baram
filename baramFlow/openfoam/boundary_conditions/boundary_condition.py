@@ -103,7 +103,7 @@ class BoundaryCondition(DictionaryFile):
             'MInf': self._db.getValue(xpath + '/machNumber'),
             'pInf': self._db.getValue(xpath + '/staticPressure'),
             'TInf': self._db.getValue(xpath + '/staticTemperature'),
-            'value': value
+            'value': ('uniform', value)
         }
 
     def _constructSubsonicInlet(self, xpath):
