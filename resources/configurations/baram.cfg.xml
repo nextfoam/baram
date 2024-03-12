@@ -121,6 +121,10 @@
                 <absolute>0.001</absolute>
                 <relative>0.05</relative>
             </pressure>
+            <density>
+                <absolute>0.001</absolute>
+                <relative>0.05</relative>
+            </density>
             <momentum>
                 <absolute>0.001</absolute>
                 <relative>0.05</relative>

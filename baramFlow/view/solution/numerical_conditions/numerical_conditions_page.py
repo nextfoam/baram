@@ -64,6 +64,7 @@ class NumericalConditionsPage(ContentPage):
         energyOn = ModelsDB.isEnergyModelOn()
         turbulenceOn = ModelsDB.getTurbulenceModel() not in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR)
         multiphaseOn = ModelsDB.isMultiphaseModelOn()
+        compressibleDensity = GeneralDB.isCompressibleDensity()
 
         solvers = baramFlow.openfoam.solver.findSolvers()
         if len(solvers) == 0:  # No matching solver found
@@ -73,12 +74,10 @@ class NumericalConditionsPage(ContentPage):
 
         self._ui.useMomentumPredictor.setVisible(timeIsTransient or allRoundSolver)
 
-        if GeneralDB.isCompressibleDensity():
-            compressibleDensity = True
+        if compressibleDensity:
             self._ui.pressureVelocity.hide()
             self._ui.discretizationSchemesMomentumLabel.setText(self.tr('Flow'))
         else:
-            compressibleDensity = False
             self._ui.densityBasedSolverParameters.hide()
 
         self._ui.discretizationSchemeTime.setEnabled(timeIsTransient)
@@ -110,7 +109,10 @@ class NumericalConditionsPage(ContentPage):
         else:
             self._ui.multiphase.setEnabled(False)
 
-        self._ui.relativePressure.setEnabled(timeIsTransient or allRoundSolver)
+        self._ui.absolutePressure.setEnabled(not compressibleDensity)
+        self._ui.relativePressure.setEnabled((timeIsTransient or allRoundSolver) and not compressibleDensity)
+        self._ui.absoluteDensity.setEnabled(compressibleDensity)
+        self._ui.relativeDensity.setEnabled(False)
         self._ui.relativeMomentum.setEnabled(timeIsTransient or allRoundSolver)
         self._ui.absoluteEnergy.setEnabled(energyOn)
         self._ui.relativeEnergy.setEnabled((timeIsTransient or allRoundSolver) and energyOn)
@@ -191,6 +193,8 @@ class NumericalConditionsPage(ContentPage):
 
         self._ui.absolutePressure.setText(db.getValue(self._xpath + '/convergenceCriteria/pressure/absolute'))
         self._ui.relativePressure.setText(db.getValue(self._xpath + '/convergenceCriteria/pressure/relative'))
+        self._ui.absoluteDensity.setText(db.getValue(self._xpath + '/convergenceCriteria/density/absolute'))
+        self._ui.relativeDensity.setText(db.getValue(self._xpath + '/convergenceCriteria/density/relative'))
         self._ui.absoluteMomentum.setText(db.getValue(self._xpath + '/convergenceCriteria/momentum/absolute'))
         self._ui.relativeMomentum.setText(db.getValue(self._xpath + '/convergenceCriteria/momentum/relative'))
         self._ui.absoluteEnergy.setText(db.getValue(self._xpath + '/convergenceCriteria/energy/absolute'))
@@ -290,6 +294,10 @@ class NumericalConditionsPage(ContentPage):
                       self._ui.absolutePressure.text(), self.tr('Convergence Criteria Absolute Pressure'))
         writer.append(self._xpath + '/convergenceCriteria/pressure/relative',
                       self._ui.relativePressure.text(), self.tr('Convergence Criteria Relative Pressure'))
+        writer.append(self._xpath + '/convergenceCriteria/density/absolute',
+                      self._ui.absoluteDensity.text(), self.tr('Convergence Criteria Absolute Density'))
+        writer.append(self._xpath + '/convergenceCriteria/density/relative',
+                      self._ui.relativeDensity.text(), self.tr('Convergence Criteria Relative Density'))
         writer.append(self._xpath + '/convergenceCriteria/momentum/absolute',
                       self._ui.absoluteMomentum.text(), self.tr('Convergence Criteria Absolute Moment'))
         writer.append(self._xpath + '/convergenceCriteria/momentum/relative',

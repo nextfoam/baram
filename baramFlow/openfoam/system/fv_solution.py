@@ -212,11 +212,10 @@ class FvSolution(DictionaryFile):
             },
             'LU-SGS': {
                 'residualControl': {
-                    'rho': '1e-4',
-                    'rhoU': '1e-6',
-                    'rhoE': '1e-9',
-                    'k': '1e-3',
-                    'omega': '1e-3',
+                    'rho': self._db.getValue('.//convergenceCriteria/density/absolute'),
+                    'rhoU': self._db.getValue('.//convergenceCriteria/momentum/absolute'),
+                    'rhoE': self._db.getValue('.//convergenceCriteria/energy/absolute'),
+                    '"(k|epsilon|omega|nuTilda)"': self._db.getValue('.//convergenceCriteria/turbulence/absolute'),
                 }
             },
             'Riemann': {
