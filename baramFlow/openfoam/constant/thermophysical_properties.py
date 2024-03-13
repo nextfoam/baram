@@ -57,6 +57,9 @@ def _constructFluid(region: str):
             'Cp': cp,
             'Hf': 0
         }
+
+        if GeneralDB.isCompressible():
+            mix['thermodynamics']['Tref'] = 0
     elif spec == 'polynomial':
         cpCoeffs: list[float] = [0] * 8  # To make sure that cpCoeffs has length of 8
         for i, n in enumerate(db.getValue(path + '/specificHeat/polynomial').split()):
@@ -118,9 +121,6 @@ def _constructFluid(region: str):
         'molWeight': mw,
     }
 
-    if GeneralDB.isCompressibleDensity():
-        mix['Tref'] = 0
-
     return {
         'thermoType': thermo,
         'mixture': mix
@@ -171,9 +171,6 @@ def _constructSolid(region: str):
         mix['equationOfState'] = {
             'rho': rho
         }
-
-    if GeneralDB.isCompressibleDensity():
-        mix['Tref'] = 0
 
     return {
         'thermoType': thermo,
