@@ -787,10 +787,27 @@ class _CoreDB(object):
         Returns:
             List of boundary conditions in tuple, '(bcid, name, physicalType)'
         """
-        elements = self._xmlTree.findall(f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition', namespaces=nsmap)
+        elements = self._xmlTree.findall(
+            f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition', namespaces=nsmap)
         return [(int(e.attrib['bcid']),
                  e.find('name', namespaces=nsmap).text,
                  e.find('physicalType', namespaces=nsmap).text) for e in elements]
+
+    def getBoundaryConditionsByType(self, physicalType: str) -> list[(int, str, str)]:
+        """Returns list of boundary conditions in the region
+
+        Returns list of boundary conditions for the type
+
+        Args:
+            physicalType: physical type
+
+        Returns:
+            List of boundary conditions in tuple, '(bcid, name)'
+        """
+        elements = self._xmlTree.findall(
+            f'.//boundaryConditions/boundaryCondition[physicalType="{physicalType}"]', namespaces=nsmap)
+
+        return [(int(e.attrib['bcid']), e.find('name', namespaces=nsmap).text) for e in elements]
 
     def addForceMonitor(self) -> str:
         names = self.getForceMonitors()

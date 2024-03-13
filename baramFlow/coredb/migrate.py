@@ -271,6 +271,15 @@ def _version_4(root: etree.Element):
         for e in p.findall('boundaryCondition/subsonicInflow', namespaces=_nsmap):
             e.tag = '{http://www.baramcfd.org/baram}subsonicInlet'
 
+    if (p := root.find('numericalConditions/convergenceCriteria', namespaces=_nsmap)) is not None:
+        if p.find('density', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "density" to {p}')
+            e = etree.fromstring(
+                '<density xmlns="http://www.baramcfd.org/baram">'
+                '   <absolute>0.001</absolute><relative>0.05</relative>'
+                '</density>')
+            p.insert(1, e)
+
 
 _fTable = [
     None,

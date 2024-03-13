@@ -4,6 +4,7 @@
 from PySide6.QtWidgets import QWizard
 
 from baramFlow.coredb import coredb
+from baramFlow.coredb.material_db import MaterialDB, Specification
 from baramFlow.coredb.models_db import MultiphaseModel
 from .case_wizard_ui import Ui_CaseWizard
 from .flow_type_page import FlowTypePage
@@ -75,6 +76,7 @@ class CaseWizard(QWizard):
         if self.field('flowTypeCompressible'):
             self._db.setValue(f'{generalXPath}/flowType', 'compressible')
             self._db.setValue(f'{modelsXPath}/energyModels', 'on')
+            self._db.setValue(f'{MaterialDB.getXPathByName("air")}/density/specification', Specification.PERFECT_GAS.value)
         else:
             self._db.setValue(f'{generalXPath}/flowType', 'incompressible')
             self._db.setValue(f'{modelsXPath}/energyModels', 'off')

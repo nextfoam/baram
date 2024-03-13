@@ -52,9 +52,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-502</y>
         <width>332</width>
-        <height>1148</height>
+        <height>1176</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -506,70 +506,18 @@
           <string>Convergence Criteria</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="3" column="2">
-           <widget class="QLineEdit" name="relativeEnergy"/>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_24">
+            <property name="text">
+             <string>Relative</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
           </item>
-          <item row="5" column="1">
+          <item row="6" column="1">
            <widget class="QLineEdit" name="absoluteVolumeFraction"/>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLineEdit" name="relativePressure"/>
-          </item>
-          <item row="5" column="2">
-           <widget class="QLineEdit" name="relativeVolumeFraction"/>
-          </item>
-          <item row="4" column="2">
-           <widget class="QLineEdit" name="relativeTurbulence"/>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="absoluteMomentum"/>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="absoluteEnergy"/>
-          </item>
-          <item row="2" column="2">
-           <widget class="QLineEdit" name="relativeMomentum"/>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_28">
-            <property name="text">
-             <string>Volume Fraction</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_27">
-            <property name="text">
-             <string>Turbulence</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="absolutePressure"/>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="absoluteTurbulence"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_25">
-            <property name="text">
-             <string>Energy</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_17">
-            <property name="text">
-             <string>Pressure</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_23">
-            <property name="text">
-             <string>Momentum</string>
-            </property>
-           </widget>
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_18">
@@ -581,15 +529,80 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_24">
+          <item row="3" column="2">
+           <widget class="QLineEdit" name="relativeMomentum"/>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLineEdit" name="relativePressure"/>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="absoluteTurbulence"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_17">
             <property name="text">
-             <string>Relative</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
+             <string>Pressure</string>
             </property>
            </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_28">
+            <property name="text">
+             <string>Volume Fraction</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="absolutePressure"/>
+          </item>
+          <item row="4" column="2">
+           <widget class="QLineEdit" name="relativeEnergy"/>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="absoluteMomentum"/>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="absoluteEnergy"/>
+          </item>
+          <item row="5" column="2">
+           <widget class="QLineEdit" name="relativeTurbulence"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_23">
+            <property name="text">
+             <string>Momentum</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QLineEdit" name="relativeVolumeFraction"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_25">
+            <property name="text">
+             <string>Energy</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_27">
+            <property name="text">
+             <string>Turbulence</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_21">
+            <property name="text">
+             <string>Density</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="absoluteDensity"/>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLineEdit" name="relativeDensity"/>
           </item>
          </layout>
         </widget>
@@ -648,8 +661,13 @@
  </customwidgets>
  <tabstops>
   <tabstop>pressureVelocityCouplingScheme</tabstop>
+  <tabstop>formulation</tabstop>
+  <tabstop>fluxType</tabstop>
+  <tabstop>entropyFixCoefficient</tabstop>
+  <tabstop>cutOffMachNumber</tabstop>
   <tabstop>useMomentumPredictor</tabstop>
   <tabstop>discretizationSchemeTime</tabstop>
+  <tabstop>discretizationSchemePressure</tabstop>
   <tabstop>discretizationSchemeMomentum</tabstop>
   <tabstop>discretizationSchemeEnergy</tabstop>
   <tabstop>discretizationSchemeTurbulence</tabstop>
@@ -678,6 +696,8 @@
   <tabstop>numberOfMulesIterations</tabstop>
   <tabstop>absolutePressure</tabstop>
   <tabstop>relativePressure</tabstop>
+  <tabstop>absoluteDensity</tabstop>
+  <tabstop>relativeDensity</tabstop>
   <tabstop>absoluteMomentum</tabstop>
   <tabstop>relativeMomentum</tabstop>
   <tabstop>absoluteEnergy</tabstop>

@@ -175,7 +175,7 @@ class U(BoundaryCondition):
             self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/densityBasedSolverParameters/cutOffMachNumber'))
         am = a * mInf / dMag
 
-        return self._constructFarfieldRiemann(xpath + '/farFieldRiemann', (am * dx, am * dy, am * dz))
+        return self._constructFarfieldRiemann(xpath + '/farFieldRiemann', [am * dx, am * dy, am * dz])
 
     def _constructWallU(self, xpath):
         spec = self._db.getValue(xpath + '/wall/velocity/type')

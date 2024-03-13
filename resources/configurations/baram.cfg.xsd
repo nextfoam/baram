@@ -1381,6 +1381,14 @@
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
+                        <xs:element name="density">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="absolute" type="inputNumberType" default="0.001"/>
+                                    <xs:element name="relative" type="inputNumberType" default="0.05"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
                         <xs:element name="momentum">
                             <xs:complexType>
                                 <xs:sequence>

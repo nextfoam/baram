@@ -45,6 +45,10 @@ class MaterialDB(object):
         return f'{cls.MATERIALS_XPATH}/material[@mid="{mid}"]'
 
     @classmethod
+    def getXPathByName(cls, name) -> str:
+        return f'{cls.MATERIALS_XPATH}/material[name="{name}"]'
+
+    @classmethod
     def getName(cls, mid):
         return coredb.CoreDB().getValue(cls.getXPath(mid) + '/name')
 
