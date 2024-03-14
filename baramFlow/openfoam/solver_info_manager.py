@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from PySide6.QtCore import Qt, QTimer, QObject, QThread, Signal
 
-from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
 
 
 # "solverInfo.dat" sample
@@ -141,7 +141,7 @@ class Worker(QObject):
         if self.running:
             return
 
-        self.running = app.case.isRunning()
+        self.running = CaseManager().isRunning()
 
         self.collectionReady = False
 
@@ -282,7 +282,7 @@ class Worker(QObject):
 
         return True, updateData(target, df)
 
-    def _getDataFrame(self, rname, path) -> pd.DataFrame:
+    def _getDataFrame(self, rname, path) -> Optional[pd.DataFrame]:
         with path.open(mode='r') as f:
             f.readline()  # skip '# Solver information' comment
             names = f.readline().split()  # read header

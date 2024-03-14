@@ -3,8 +3,7 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.app import app
-from baramFlow.coredb.coredb_reader import Region
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.numerical_db import NumericalDB, PressureVelocityCouplingScheme
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.models_db import ModelsDB
@@ -14,16 +13,19 @@ from baramFlow.openfoam.file_system import FileSystem
 
 
 class FvSolution(DictionaryFile):
-    def __init__(self, region: Region = None):
+    def __init__(self, rname: str = None):
         """
 
         Args:
-            region: None for global fvSolution of multi region case, empty string for single region.
+            rname: Region name. None for global fvSolution of multi region case, empty string for single region.
         """
-        super().__init__(FileSystem.caseRoot(), self.systemLocation('' if region is None else region.rname), 'fvSolution')
+        super().__init__(FileSystem.caseRoot(), self.systemLocation('' if rname is None else rname), 'fvSolution')
 
-        self._region = region
-        self._db = app.case.db
+        self._db = CoreDBReader()
+        if rname is None:
+            self._region = None
+        else:
+            self._region = self._db.getRegionProperties(rname)
 
     def build(self):
         if self._data is not None:

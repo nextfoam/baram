@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from threading import Lock
 
 from PySide6.QtCore import QCoreApplication
 
@@ -8,6 +9,8 @@ from baramFlow.coredb.coredb import ValueException, Error, _CoreDB
 from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT, Phase
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
+
+_mutex = Lock()
 
 
 class Region:
@@ -115,11 +118,27 @@ class Region:
 
 
 class CoreDBReader(_CoreDB):
+    def __new__(cls, *args, **kwargs):
+        with _mutex:
+            if not hasattr(cls, '_instance'):
+                cls._instance = super(CoreDBReader, cls).__new__(cls, *args, **kwargs)
+
+        return cls._instance
+
     def __init__(self):
+        with _mutex:
+            if hasattr(self, '_initialized'):
+                return
+            else:
+                self._initialized = True
+
         super().__init__()
 
         self._xmlTree = coredb.CoreDB()._xmlTree
         self._arguments = self.getBatchDefaults()
+
+    def reloadCoreDB(self):
+        self._xmlTree = coredb.CoreDB()._xmlTree
 
     def setParameters(self, arguments=None):
         self._arguments = self.getBatchDefaults()

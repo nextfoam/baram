@@ -3,8 +3,8 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.app import app
 from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB, InterfaceMode
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.openfoam.file_system import FileSystem
 from .polymesh_loader import PolyMeshLoader
 
@@ -49,7 +49,7 @@ class Boundary(DictionaryFile):
         if self._boundaryDict is not None:
             return self
 
-        self._db = app.case.db
+        self._db = CoreDBReader()
 
         fullPath = self.fullPath(self._processorNo)
 

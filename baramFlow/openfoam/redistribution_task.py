@@ -87,7 +87,7 @@ class RedistributionTask(QObject):
 
                         args = ('-allRegions', '-time', '0:', '-case', caseRoot)
                     else:
-                        FileSystem.linkLivePolyMeshTo(caseRoot, regions, processorOnly=True)
+                        FileSystem.linkLivePolyMeshTo(liveCaseFolder, caseRoot, regions, processorOnly=True)
 
                         args = ('-allRegions', '-fields', '-time', '0:', '-case', caseRoot)
 

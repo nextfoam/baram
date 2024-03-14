@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget, QPlainTextEdit, QCheckBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFontDatabase
 
-from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.openfoam.file_system import FileSystem
 from .tabified_dock import TabifiedDock
@@ -53,11 +53,10 @@ class ConsoleDock(TabifiedDock):
         layout.addWidget(self._lineWrap)
 
         self._project = Project.instance()
-        self._project.projectOpened.connect(self._caseLoaded)
         self._project.projectClosed.connect(self._projectClosed)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
-        self._project.caseLoaded.connect(self._caseLoaded)
-        self._project.caseCleared.connect(self._caseCleared)
+        CaseManager().caseLoaded.connect(self._caseLoaded)
+        CaseManager().caseCleared.connect(self._caseCleared)
 
         self._translate()
 
@@ -124,9 +123,9 @@ class ConsoleDock(TabifiedDock):
             self.readTask.cancel()
         self._textView.clear()
 
-        if app.case.isRunning():
+        if CaseManager().isRunning():
             self.startCollecting()
-        elif app.case.isEnded():
+        elif CaseManager().isEnded():
             await self._readAllLog()
 
     @qasync.asyncSlot()
@@ -139,7 +138,8 @@ class ConsoleDock(TabifiedDock):
         if self.readTask is not None:
             self.readTask.cancel()
 
-    def _solverStatusChanged(self, status):
+    @qasync.asyncSlot()
+    async def _solverStatusChanged(self, status):
         if status == SolverStatus.NONE:
             self._textView.clear()
         elif status == SolverStatus.RUNNING:

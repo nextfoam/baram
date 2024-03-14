@@ -11,6 +11,7 @@ from pathlib import Path
 
 from baramFlow.solver_status import SolverStatus
 from baramFlow.coredb import coredb
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from .project_settings import ProjectSettings
 from .app_settings import AppSettings
 from .filedb import FileDB
@@ -39,9 +40,6 @@ class _Project(QObject):
     solverStatusChanged = Signal(SolverStatus, str)
     projectOpened = Signal()
     projectClosed = Signal()
-    caseLoaded = Signal(str)
-    caseCleared = Signal()
-    batchCleared = Signal()
 
     materialChanged = Signal()
 
@@ -185,12 +183,6 @@ class _Project(QObject):
     def opened(self):
         self.projectOpened.emit()
 
-    def updateCurrentCase(self, name):
-        self.caseLoaded.emit(name)
-
-    def emitCaseCleared(self):
-        self.caseCleared.emit()
-
     def updateSolverStatus(self, name, status, process):
         self.solverStatusChanged.emit(status, name)
 
@@ -210,7 +202,6 @@ class _Project(QObject):
 
     def clearBatchStatuses(self):
         self._projectSettings.setBatchStatuses({})
-        self.batchCleared.emit()
 
     def _open(self, path: Path, route=ProjectOpenType.EXISTING):
         self._settings = self.LocalSettings(path, self._settings)
@@ -252,6 +243,8 @@ class _Project(QObject):
             self._coreDB = coredb.CoreDB()
         else:
             self._coreDB = self._fileDB.loadCoreDB()
+
+        CoreDBReader().reloadCoreDB()
 
         self._meshLoaded = True if self._coreDB.getRegions() or route == ProjectOpenType.MESH else False
 

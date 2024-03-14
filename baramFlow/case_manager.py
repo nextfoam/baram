@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
+from threading import Lock
+
 from PySide6.QtCore import Signal, QTimer, QObject
 
 from libbaram.utils import rmtree
@@ -20,19 +23,34 @@ from .coredb.coredb_reader import CoreDBReader
 SOLVER_CHECK_INTERVAL = 500
 BATCH_DIRECTORY_NAME = 'batch'
 
+_mutex = Lock()
+
 
 class CaseManager(QObject):
     progress = Signal(str)
     caseLoaded = Signal(str)
+    caseCleared = Signal()
+    batchCleared = Signal()
+
+    def __new__(cls, *args, **kwargs):
+        with _mutex:
+            if not hasattr(cls, '_instance'):
+                cls._instance = super(CaseManager, cls).__new__(cls, *args, **kwargs)
+
+        return cls._instance
 
     def __init__(self):
+        with _mutex:
+            if hasattr(self, '_initialized'):
+                return
+            else:
+                self._initialized = True
+
         super().__init__()
 
         self._project = Project.instance()
 
         self._caseName = None
-        self._db = CoreDBReader()
-        self._solver = findSolver(self._db)
 
         self._runType = None
         self._status = None
@@ -44,44 +62,34 @@ class CaseManager(QObject):
         self._batchStop = False
         self._batchRunning = False
 
-        FileSystem.setCaseRoot(self._livePath())
-        self.setCase()
-
     @property
     def name(self):
         return self._caseName
 
-    @property
-    def db(self):
-        return self._db
-
-    @property
-    def solver(self):
-        return self._solver
-
     def load(self):
         self._loadLiveStatus()
 
-    def loadCase(self, name=None, parameters=None, status=SolverStatus.NONE):
-        self._db.setParameters(parameters)
+    def loadLiveCase(self):
+        if self._caseName is None:  # it's already Live Case
+            return
 
-        if self._caseName != name:
-            if name is None:
-                FileSystem.setCaseRoot(self._livePath())
-                self.setCase(name, status)
-                self._loadLiveStatus()
-            else:
-                path = self._batchPath(name)
-                if not path.is_dir():
-                    FileSystem.createBatchCase(path, coredb.CoreDB().getRegions())
-                FileSystem.setCaseRoot(path)
-                self.setCase(name, status)
+        self.setCase(None, self._livePath(), None)
+        self._loadLiveStatus()
 
-            self._project.updateCurrentCase(name)
+    def loadBatchCase(self, name, parameters, status=SolverStatus.NONE):
+        if self._caseName == name:  # same case
+            return
 
-    def setCase(self, name=None, status=None):
+        CoreDBReader().setParameters(parameters)
+
+        path = self._batchPath(name)
+        if not path.is_dir():
+            FileSystem.createBatchCase(self._livePath(), path, coredb.CoreDB().getRegions())
+        self.setCase(name, path, status)
+
+    def setCase(self, name, path: Path, status=None):
         self._caseName = name
-        self._solver = findSolver(self._db)
+        FileSystem.setCaseRoot(path)
         self.caseLoaded.emit(name)
         if status is not None:
             self._setStatus(status)
@@ -114,12 +122,13 @@ class CaseManager(QObject):
             self._batchProcess.terminate()
 
     async def liveRun(self):
-        self.loadCase()
+        self.loadLiveCase()
 
         await self._generateCase()
 
         caseRoot = FileSystem.caseRoot()
-        process = launchSolver(self._solver, caseRoot, self._project.uuid, parallel.getEnvironment())
+        solver = findSolver()
+        process = launchSolver(solver, caseRoot, self._project.uuid, parallel.getEnvironment())
         if process:
             self._runType = RunType.PROCESS
             self._setLiveProcess(SolverProcess(process[0], process[1]))
@@ -127,7 +136,7 @@ class CaseManager(QObject):
             raise RuntimeError
 
     async def initialize(self):
-        self.loadCase()
+        self.loadLiveCase()
 
         await self._initializeCase()
 
@@ -135,7 +144,7 @@ class CaseManager(QObject):
         self._batchStop = False
         self._batchRunning = True
         for case, parameters in cases:
-            self.loadCase(case, parameters)
+            self.loadBatchCase(case, parameters)
 
             await self._initializeCase()
 
@@ -143,7 +152,8 @@ class CaseManager(QObject):
             stdout = open(caseRoot / STDOUT_FILE_NAME, 'w')
             stderr = open(caseRoot / STDERR_FILE_NAME, 'w')
 
-            self._batchProcess = await runParallelUtility(self._solver, parallel=parallel.getEnvironment(), cwd=caseRoot,
+            solver = findSolver()
+            self._batchProcess = await runParallelUtility(solver, parallel=parallel.getEnvironment(), cwd=caseRoot,
                                                           stdout=stdout, stderr=stderr)
             self._setStatus(SolverStatus.RUNNING)
             result = await self._batchProcess.wait()
@@ -176,15 +186,17 @@ class CaseManager(QObject):
         FileSystem.createCase(livePath)
         FileSystem.setCaseRoot(livePath)
 
-        self._project.emitCaseCleared()
+        self.caseCleared.emit()
         self._project.clearBatchStatuses()
+        self.batchCleared.emit()
 
     def deleteCalculationResults(self):
         rmtree(self._batchRoot())
         FileSystem.deleteCalculationResults()
 
-        self._project.emitCaseCleared()
+        self.caseCleared.emit()
         self._project.clearBatchStatuses()
+        self.batchCleared.emit()
 
     def removeInvalidCases(self, validCases):
         if not self._batchRoot().exists():

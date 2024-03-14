@@ -5,8 +5,8 @@ import logging
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.app import app
 from baramFlow.coredb.cell_zone_db import CellZoneDB
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.openfoam.file_system import FileSystem
@@ -19,7 +19,7 @@ class FvOptions(DictionaryFile):
         super().__init__(FileSystem.caseRoot(), self.systemLocation(rname), 'fvOptions')
 
         self._rname = rname
-        self._db = app.case.db
+        self._db = CoreDBReader()
 
     def build(self):
         if self._data is not None:

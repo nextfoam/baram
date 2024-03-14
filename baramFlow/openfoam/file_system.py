@@ -12,7 +12,6 @@ import asyncio
 from libbaram import utils
 from libbaram.openfoam.constants import Directory, CASE_DIRECTORY_NAME, FOAM_FILE_NAME
 
-from baramFlow.coredb.project import Project
 from resources import resource
 
 
@@ -64,23 +63,23 @@ class FileSystem:
         cls.makeDir(path, Directory.CONSTANT_DIRECTORY_NAME)
 
     @classmethod
-    def linkLivePolyMeshTo(cls, path, regions, processorOnly = False):
+    def linkLivePolyMeshTo(cls, livePath, targetPath, regions, processorOnly = False):
         # To check folders is better than to get "NP" from the configuration
         # to avoid possible mismatch between number of folders and "NP" configuration in the future
-        np = len(list(Project.instance().path.joinpath(CASE_DIRECTORY_NAME).glob('processor[0-9]*')))
+        np = len(list(livePath.glob('processor[0-9]*')))
         processorFolders = [f'processor{i}' for i in range(0, np)]
         if not processorOnly:
             processorFolders.insert(0, '')  # Reconstructed folder
 
         for processor in processorFolders:
-            liveConstant = Project.instance().path / CASE_DIRECTORY_NAME / processor / Directory.CONSTANT_DIRECTORY_NAME
-            liveSystem   = Project.instance().path / CASE_DIRECTORY_NAME / processor / Directory.SYSTEM_DIRECTORY_NAME  # noqa: E221
+            liveConstant = livePath / processor / Directory.CONSTANT_DIRECTORY_NAME
+            liveSystem   = livePath / processor / Directory.SYSTEM_DIRECTORY_NAME  # noqa: E221
 
             if not liveConstant.is_dir():
                 continue
 
-            batchConstant = path / processor / Directory.CONSTANT_DIRECTORY_NAME
-            batchSystem   = path / processor / Directory.SYSTEM_DIRECTORY_NAME  # noqa: E221
+            batchConstant = targetPath / processor / Directory.CONSTANT_DIRECTORY_NAME
+            batchSystem   = targetPath / processor / Directory.SYSTEM_DIRECTORY_NAME  # noqa: E221
 
             if len(regions) > 1:
                 if processor == '':  # RegionProperties file is not copied for processor folders
@@ -110,10 +109,10 @@ class FileSystem:
                     source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=False)  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
 
     @classmethod
-    def createBatchCase(cls, path, regions):
+    def createBatchCase(cls, livePath, path, regions):
         cls.createCase(path)
 
-        cls.linkLivePolyMeshTo(path, regions)
+        cls.linkLivePolyMeshTo(livePath, path, regions)
 
         with open(path / FOAM_FILE_NAME, 'a'):
             pass
@@ -253,8 +252,8 @@ class FileSystem:
         path.unlink()
 
     @classmethod
-    def saveAs(cls, projectPath, regions):
-        liveConstantPath = Project.instance().path / CASE_DIRECTORY_NAME /Directory.CONSTANT_DIRECTORY_NAME
+    def saveAs(cls, sourcePath, projectPath, regions):
+        liveConstantPath = sourcePath / CASE_DIRECTORY_NAME / Directory.CONSTANT_DIRECTORY_NAME
 
         targetPath = projectPath / CASE_DIRECTORY_NAME
         constantPath = targetPath / Directory.CONSTANT_DIRECTORY_NAME

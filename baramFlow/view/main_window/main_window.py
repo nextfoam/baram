@@ -15,6 +15,7 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer
 
+from libbaram.openfoam.constants import CASE_DIRECTORY_NAME
 from libbaram.run import hasUtility
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
@@ -509,8 +510,9 @@ class MainWindow(QMainWindow):
             if currentMenu in targets:
                 self._changeForm(currentMenu)
 
-    def _solverStatusChanged(self, status):
-        isSolverRunning = status == SolverStatus.RUNNING or app.case.isBatchRunning()
+    @qasync.asyncSlot()
+    async def _solverStatusChanged(self, status):
+        isSolverRunning = status == SolverStatus.RUNNING or CaseManager().isBatchRunning()
 
         self._ui.actionSaveAs.setDisabled(isSolverRunning)
         self._ui.menuLoadMesh.setDisabled(isSolverRunning)
@@ -521,9 +523,8 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _projectOpened(self):
-        self._caseLoaded()
-
         if self._project.meshLoaded:
+            self._caseManager.setCase(None, self._project.path / CASE_DIRECTORY_NAME)
             db = coredb.CoreDB()
             if db.getRegions():
                 # BaramFlow Project is opened
@@ -543,7 +544,8 @@ class MainWindow(QMainWindow):
 
                 self._project.fileDB().saveCoreDB()
 
-    def _caseLoaded(self, name=None):
+    @qasync.asyncSlot()
+    async def _caseLoaded(self, name=None):
         if name:
             self.setWindowTitle(f'{app.properties.fullName} - {name} ({self._project.path})')
         else:
@@ -602,7 +604,7 @@ class MainWindow(QMainWindow):
 
                 progressDialog.setLabelText(self.tr('Saving case'))
 
-                await asyncio.to_thread(FileSystem.saveAs, path, coredb.CoreDB().getRegions())
+                await asyncio.to_thread(FileSystem.saveAs, self._project.path, path, coredb.CoreDB().getRegions())
                 self._project.saveAs(path)
                 progressDialog.close()
 

@@ -15,17 +15,16 @@ class SolverNotFound(Exception):
     pass
 
 
-def findSolvers(db=None) -> list[str]:
-    if db is None:
-        db = CoreDBReader()
+def findSolvers() -> list[str]:
+    db = CoreDBReader()
 
-    timeTransient   = db.getValue('.//general/timeTransient')
-    flowType        = db.getValue('.//general/flowType')
-    solverType      = db.getValue('.//general/solverType')
-    energyModel     = db.getValue('.//models/energyModels')
-    gravityDisabled = all([v == 0.0 for v in db.getVector('.//operatingConditions/gravity/direction')])
-    speciesModel    = db.getValue('.//models/speciesModels')
-    multiphaseModel = db.getValue('.//models/multiphaseModels/model')
+    timeTransient   = db.getValue('.//general/timeTransient')  # noqa E221
+    flowType        = db.getValue('.//general/flowType')       # noqa E221
+    solverType      = db.getValue('.//general/solverType')     # noqa E221
+    energyModel     = db.getValue('.//models/energyModels')    # noqa E221
+    gravityDisabled = all([v == 0.0 for v in db.getVector('.//operatingConditions/gravity/direction')])  # noqa E221
+    speciesModel    = db.getValue('.//models/speciesModels')           # noqa E221
+    multiphaseModel = db.getValue('.//models/multiphaseModels/model')  # noqa E221
 
     pcs = []  # problem conditions
 
@@ -85,8 +84,8 @@ def getSolverCapability(name: str) -> dict:
     return availableSolvers[name]
 
 
-def findSolver(db=None):
-    solvers = findSolvers(db)
+def findSolver():
+    solvers = findSolvers()
     if len(solvers) == 1:
         return solvers[0]
     else:

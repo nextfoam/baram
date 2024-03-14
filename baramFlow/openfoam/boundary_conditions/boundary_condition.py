@@ -9,7 +9,7 @@ from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataClass
 
-from baramFlow.app import app
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.models_db import TurbulenceModel
 from baramFlow.openfoam.constant.boundary_data import BoundaryData
 from baramFlow.openfoam.file_system import FileSystem
@@ -32,7 +32,7 @@ class BoundaryCondition(DictionaryFile):
         self._time = time
         self._processorNo = processorNo
         self._fieldsData = None
-        self._db = app.case.db
+        self._db = CoreDBReader()
 
     def build0(self):
         raise AssertionError  # This method should be overwritten by descendants

@@ -3,8 +3,8 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.app import app
 from baramFlow.coredb.cell_zone_db import ZoneType, CellZoneDB
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.openfoam.file_system import FileSystem
 
@@ -19,7 +19,7 @@ class MRFProperties(DictionaryFile):
         if self._data is not None:
             return self
 
-        db = app.case.db
+        db = CoreDBReader()
 
         mrfCellZoneConditions = db.getCellZonesByType(self._rname, ZoneType.MRF.value)
         if mrfCellZoneConditions:

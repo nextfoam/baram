@@ -10,9 +10,9 @@ from libbaram import utils
 from libbaram.exception import CanceledException
 from libbaram.run import RunUtility, RunParallelUtility
 
-from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.constant.dynamic_mesh_dict import DynamicMeshDict
@@ -49,7 +49,7 @@ class CaseGenerator(QObject):
 
     def __init__(self):
         super().__init__()
-        self._db = app.case.db
+        self._db = CoreDBReader()
         self._errors = None
         self._cm = None
         self._canceled: bool = False
@@ -90,7 +90,7 @@ class CaseGenerator(QObject):
             self._gatherBoundaryConditionsFiles(region, FileSystem.caseRoot())
 
             self._files.append(FvSchemes(rname))
-            self._files.append(FvSolution(region))
+            self._files.append(FvSolution(rname))
             self._files.append(FvOptions(rname))
             self._files.append(SetFieldsDict(rname))
 

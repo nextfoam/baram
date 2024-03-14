@@ -15,7 +15,7 @@ from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItem
 from widgets.progress_dialog import ProgressDialog
 
-from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.openfoam.solver import SolverNotFound
@@ -56,6 +56,8 @@ class ProcessInformationPage(ContentPage):
         self._runningMode = None
         self._userParameters = None
 
+        self._caseManager = CaseManager()
+
         self._ui.calculation.setMinimumWidth(self.parent().width() - 30)
         self._connectSignalsSlots()
 
@@ -69,7 +71,7 @@ class ProcessInformationPage(ContentPage):
         return super().showEvent(ev)
 
     def _load(self):
-        self._statusChanged(app.case.status())
+        self._statusChanged(self._caseManager.status())
         self._updateUserParameters()
 
     def _connectSignalsSlots(self):
@@ -84,7 +86,7 @@ class ProcessInformationPage(ContentPage):
         self._ui.exportBatchCase.clicked.connect(self._openExportDialog)
         self._ui.importBatchCases.clicked.connect(self._openImportDialog)
         self._project.solverStatusChanged.connect(self._statusChanged)
-        app.case.caseLoaded.connect(self._caseLoaded)
+        self._caseManager.caseLoaded.connect(self._caseLoaded)
 
     def _setRunningMode(self, mode):
         if mode == RunningMode.LIVE_RUNNING_MODE:
@@ -105,12 +107,12 @@ class ProcessInformationPage(ContentPage):
         if self._runningMode == RunningMode.LIVE_RUNNING_MODE:
             progressDialog = ProgressDialog(self, self.tr('Calculation Run.'), True)
 
-            app.case.progress.connect(progressDialog.setLabelText)
-            progressDialog.cancelClicked.connect(app.case.cancel)
+            self._caseManager.progress.connect(progressDialog.setLabelText)
+            progressDialog.cancelClicked.connect(self._caseManager.cancel)
             progressDialog.open()
 
             try:
-                await app.case.liveRun()
+                await self._caseManager.liveRun()
                 progressDialog.finish(self.tr('Calculation started'))
             except SolverNotFound as e:
                 progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
@@ -126,7 +128,7 @@ class ProcessInformationPage(ContentPage):
                 return
 
             self._updateStatus(SolverStatus.RUNNING)
-            await app.case.batchRun(cases)
+            await self._caseManager.batchRun(cases)
             self._updateStatus(SolverStatus.NONE)
 
     def _cancelCalculationClicked(self):
@@ -135,7 +137,7 @@ class ProcessInformationPage(ContentPage):
         controlDict.writeAtomic()
 
         if self._runningMode == RunningMode.BATCH_RUNNING_MODE:
-            app.case.stopBatchRun()
+            self._caseManager.stopBatchRun()
 
         self._waitingStop()
 
@@ -145,7 +147,7 @@ class ProcessInformationPage(ContentPage):
         controlDict.writeAtomic()
 
         if self._runningMode == RunningMode.BATCH_RUNNING_MODE:
-            app.case.stopBatchRun()
+            self._caseManager.stopBatchRun()
 
         self._waitingStop()
 
@@ -160,7 +162,7 @@ class ProcessInformationPage(ContentPage):
         self._stopDialog.cancelClicked.connect(self._forceStop)
 
     def _forceStop(self):
-        app.case.kill()
+        self._caseManager.kill()
 
     def _updateConfigurationClicked(self):
         regions = coredb.CoreDB().getRegions()
@@ -185,7 +187,7 @@ class ProcessInformationPage(ContentPage):
         # app.case.progress.connect(progressDialog.setLabelText)
         # progressDialog.open()
         #
-        app.case.loadCase()
+        self._caseManager.loadLiveCase()
         #
         # progressDialog.close()
 
@@ -216,7 +218,8 @@ class ProcessInformationPage(ContentPage):
         self._dialog.accepted.connect(self._importBatchCase)
         self._dialog.open()
 
-    def _statusChanged(self, status, name=None):
+    @qasync.asyncSlot()
+    async def _statusChanged(self, status, name=None):
         if self._runningMode == RunningMode.BATCH_RUNNING_MODE:
             self._batchCaseList.updateStatus(status, name)
         else:
@@ -233,7 +236,7 @@ class ProcessInformationPage(ContentPage):
                 self._stopDialog.close()
                 self._stopDialog = None
 
-        process = app.case.process()
+        process = self._caseManager.process()
         if process:
             pid = str(process.pid)
             createTime = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime(process.startTime))
@@ -262,7 +265,8 @@ class ProcessInformationPage(ContentPage):
             self._ui.batchCases.setEnabled(True)
             self._ui.runningMode.setEnabled(True)
 
-    def _caseLoaded(self, name):
+    @qasync.asyncSlot()
+    async def _caseLoaded(self, name):
         self._batchCaseList.setCurrentCase(name)
 
     def _updateUserParameters(self):
@@ -289,5 +293,5 @@ class ProcessInformationPage(ContentPage):
         if self._dialog.isClearChecked():
             self._batchCaseList.clear()
 
-        app.case.loadCase()
+        self._caseManager.loadLiveCase()
         self._batchCaseList.importFromDataFrame(self._dialog.cases())

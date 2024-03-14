@@ -8,8 +8,8 @@ from libbaram.app_path import APP_PATH
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 import baramFlow.openfoam.solver
-from baramFlow.app import app
 from baramFlow.coredb import coredb
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition
 from baramFlow.coredb.cell_zone_db import CellZoneDB
@@ -20,6 +20,7 @@ from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
 from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.solver import findSolver, getSolverCapability
 
 
 SURFACE_MONITOR_OPERATION = {
@@ -61,11 +62,11 @@ def _getAvailableFields():
     else:
         fields = ['U']
 
-        cap = baramFlow.openfoam.solver.getSolverCapability(app.case.solver)
-        if cap['usePrgh']:
-            fields.append('p_rgh')
-        else:
-            fields.append('p')
+    cap = getSolverCapability(findSolver())
+    if cap['usePrgh']:
+        fields.append('p_rgh')
+    else:
+        fields.append('p')
 
     # Fields depending on the turbulence model
     turbulenceModel = ModelsDB.getTurbulenceModel()
@@ -151,10 +152,10 @@ class ControlDict(DictionaryFile):
         if self._data is not None:
             return self
 
-        self._db = app.case.db
+        self._db = CoreDBReader()
         xpath = RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions'
 
-        solvers = baramFlow.openfoam.solver.findSolvers(self._db)
+        solvers = baramFlow.openfoam.solver.findSolvers()
         if len(solvers) != 1:  # configuration not enough yet
             solvers = ['solver']
             # raise RuntimeError

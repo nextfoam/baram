@@ -3,7 +3,7 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.app import app
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.openfoam.file_system import FileSystem
 
@@ -18,7 +18,7 @@ class G(DictionaryFile):
         if self._data is not None:
             return self
 
-        db = app.case.db
+        db = CoreDBReader()
 
         self._data = {
             'dimensions': self.DIMENSIONS,

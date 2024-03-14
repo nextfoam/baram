@@ -13,7 +13,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
-from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.filedb import FileDB
 from baramFlow.coredb.project import Project
 from baramFlow.solver_status import SolverStatus
@@ -191,14 +191,14 @@ class BatchCaseList(QObject):
 
             self._setCase(name, case, status)
             if not loading:
-                app.case.removeCase(name)
+                CaseManager().removeCase(name)
 
         self._listChanged(not loading)
 
         self._project.updateBatchStatuses(
             {name: item.status().name for name, item in self._items.items() if item.status()})
 
-        app.case.removeInvalidCases(list(self._cases.keys()))
+        CaseManager().removeInvalidCases(list(self._cases.keys()))
 
     def exportAsDataFrame(self):
         return pd.DataFrame.from_dict(self._cases, orient='index')
@@ -228,7 +228,7 @@ class BatchCaseList(QObject):
         self._menu.scheduleActionTriggered.connect(self._scheduleCalculation)
         self._menu.cancelScheduleActionTriggered.connect(self._cancelSchedule)
         self._menu.deleteActionTriggered.connect(self._delete)
-        self._project.batchCleared.connect(self._clearStatuses)
+        CaseManager().batchCleared.connect(self._clearStatuses)
 
     def _adjustSize(self):
         if self._cases:
@@ -270,12 +270,12 @@ class BatchCaseList(QObject):
     @qasync.asyncSlot()
     async def _loadCase(self, items):
         progressDialog = ProgressDialog(self._parent, self.tr('Case Loading'))
-        app.case.progress.connect(progressDialog.setLabelText)
+        CaseManager().progress.connect(progressDialog.setLabelText)
         progressDialog.open()
 
         name = items[0].name()
         status = items[0].status()
-        app.case.loadCase(name, self._cases[name], status if status else SolverStatus.NONE)
+        CaseManager().loadBatchCase(name, self._cases[name], status if status else SolverStatus.NONE)
 
         progressDialog.close()
 
@@ -295,7 +295,7 @@ class BatchCaseList(QObject):
             return
 
         if self._currentCase in [i.name() for i in items]:
-            app.case.loadCase()
+            CaseManager().loadLiveCase()
 
         for i in items:
             name = i.name()
@@ -304,7 +304,7 @@ class BatchCaseList(QObject):
             self._project.removeBatchStatus(name)
             del self._items[name]
             del self._cases[name]
-            app.case.removeCase(name)
+            CaseManager().removeCase(name)
 
         self._listChanged()
 

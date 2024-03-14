@@ -3,7 +3,7 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.app import app
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 
@@ -24,7 +24,7 @@ class SetFieldsDict(DictionaryFile):
         defaultFieldValues = []  # "defaultFieldValues" in "setFieldsDict"
         sections = []  # "regions" in "setFieldsDict"
 
-        db = app.case.db
+        db = CoreDBReader()
 
         sectionNames: [str] = db.getList(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section/name')
         if len(sectionNames) == 0:

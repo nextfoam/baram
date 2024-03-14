@@ -3,8 +3,8 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.app import app
 from baramFlow.coredb.cell_zone_db import ZoneType, CellZoneDB
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.openfoam.file_system import FileSystem
 
 
@@ -18,7 +18,7 @@ class DynamicMeshDict(DictionaryFile):
         if self._data is not None:
             return self
 
-        db = app.case.db
+        db = CoreDBReader()
 
         zones = db.getCellZonesByType(self._rname, ZoneType.SLIDING_MESH.value)
         if zones:

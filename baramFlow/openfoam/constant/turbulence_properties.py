@@ -3,7 +3,7 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.app import app
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, KOmegaModel, NearWallTreatment
 from baramFlow.openfoam.file_system import FileSystem
 
@@ -13,7 +13,7 @@ class TurbulenceProperties(DictionaryFile):
         super().__init__(FileSystem.caseRoot(), self.constantLocation(rname), 'turbulenceProperties')
 
         self._rname = rname
-        self._db = app.case.db
+        self._db = CoreDBReader()
         self._model = ModelsDB.getTurbulenceModel()
 
     def build(self):

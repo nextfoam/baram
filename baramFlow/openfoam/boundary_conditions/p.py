@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.app import app
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from baramFlow.coredb.coredb_reader import Region
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
-import baramFlow.openfoam.solver
 from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.solver import findSolver, getSolverCapability
 
 TYPE_MAP = {
     BoundaryType.VELOCITY_INLET.value: 'calculated',
@@ -57,7 +56,7 @@ class P(BoundaryCondition):
         initialGaugePressure = float(
             self._db.getValue(f'{RegionDB.getXPath(self._region.rname)}/initialization/initialValues/pressure'))
 
-        cap = baramFlow.openfoam.solver.getSolverCapability(app.case.solver)
+        cap = getSolverCapability(findSolver())
         self._usePrgh = cap['usePrgh']
 
         self._operatingPressure = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))

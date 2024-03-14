@@ -5,11 +5,10 @@ from enum import Enum
 
 from PySide6.QtCore import QCoreApplication
 
-import baramFlow.openfoam.solver
-from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
 from baramFlow.coredb.material_db import MaterialDB, Phase
+from baramFlow.openfoam.solver import findSolver, getSolverCapability
 
 
 class Field(Enum):
@@ -213,7 +212,7 @@ class FieldHelper:
 
             if fieldName == 'p':
                 try:
-                    cap = baramFlow.openfoam.solver.getSolverCapability(app.case.solver)
+                    cap = getSolverCapability(findSolver())
                     if cap['usePrgh']:
                         fieldName = 'p_rgh'
                 except RuntimeError:

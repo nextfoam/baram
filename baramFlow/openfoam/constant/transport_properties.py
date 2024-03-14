@@ -5,10 +5,11 @@ from typing import Optional
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.app import app
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.solver import findSolver
 
 
 class TransportProperties(DictionaryFile):
@@ -16,13 +17,13 @@ class TransportProperties(DictionaryFile):
         super().__init__(FileSystem.caseRoot(), self.constantLocation(rname), 'transportProperties')
 
         self._rname = rname
-        self._db = app.case.db
+        self._db = CoreDBReader()
 
     def build(self):
         if self._data is not None:
             return self
 
-        if app.case.solver == 'interFoam':
+        if findSolver() == 'interFoam':
             self._data = self._buildForInterFoam()
             return self
 

@@ -10,6 +10,7 @@ from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
 from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from baramFlow.openfoam.solver import SolverNotFound
@@ -110,11 +111,11 @@ class InitializationPage(ContentPage):
         confirm = await AsyncMessageBox().question(self, self.tr("Initialization"), self.tr("All saved data will be deleted. OK?"))
         if confirm == QMessageBox.StandardButton.Yes:
             progressDialog = ProgressDialog(self, self.tr('Case Initialization'))
-            app.case.progress.connect(progressDialog.setLabelText)
+            CaseManager().progress.connect(progressDialog.setLabelText)
             progressDialog.open()
 
             try:
-                await app.case.initialize()
+                await CaseManager().initialize()
                 progressDialog.finish(self.tr('Initialization Completed'))
                 self._dbConfigCount = coredb.CoreDB().configCount
             except PermissionError:

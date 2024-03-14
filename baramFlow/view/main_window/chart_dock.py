@@ -4,6 +4,7 @@ import typing
 from pathlib import Path
 
 import pandas as pd
+import qasync
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt
 
@@ -16,7 +17,7 @@ from matplotlib.backends.backend_qtagg import (
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
-from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.project import Project, SolverStatus
@@ -61,11 +62,10 @@ class ChartDock(TabifiedDock):
         self.solverInfoManager.flushed.connect(self.fitChart)
 
         self._project = Project.instance()
-        self._project.projectOpened.connect(self._caseLoaded)
         self._project.projectClosed.connect(self._projectClosed)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
-        self._project.caseLoaded.connect(self._caseLoaded)
-        self._project.caseCleared.connect(self._caseCleared)
+        CaseManager().caseLoaded.connect(self._caseLoaded)
+        CaseManager().caseCleared.connect(self._caseCleared)
 
         self._translate()
 
@@ -75,9 +75,10 @@ class ChartDock(TabifiedDock):
     def stopDrawing(self):
         self.solverInfoManager.stopCollecting()
 
-    def _caseLoaded(self):
+    @qasync.asyncSlot()
+    async def _caseLoaded(self):
         self._clear()
-        if app.case.isRunning() or app.case.isEnded():
+        if CaseManager().isRunning() or CaseManager().isEnded():
             self.startDrawing()
 
     def _caseCleared(self):
@@ -86,7 +87,8 @@ class ChartDock(TabifiedDock):
     def _projectClosed(self):
         self.stopDrawing()
 
-    def _solverStatusChanged(self, status):
+    @qasync.asyncSlot()
+    async def _solverStatusChanged(self, status):
         if status == SolverStatus.NONE:
             self._clear()
         elif status == SolverStatus.RUNNING:

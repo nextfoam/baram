@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
 from PySide6.QtWidgets import QWidget, QScrollArea, QVBoxLayout
 from PySide6.QtCore import Qt
 
-from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.view.widgets.flow_layout import FlowLayout
@@ -23,10 +24,9 @@ class MonitorDock(TabifiedDock):
         self._monitors = {}
         self._deletedMonitors = None
 
-        self._project.projectOpened.connect(self._caseLoaded)
         self._project.projectClosed.connect(self._projectClosed)
-        self._project.caseLoaded.connect(self._caseLoaded)
-        self._project.caseCleared.connect(self._caseCleared)
+        CaseManager().caseLoaded.connect(self._caseLoaded)
+        CaseManager().caseCleared.connect(self._caseCleared)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
         self._translate()
@@ -50,10 +50,11 @@ class MonitorDock(TabifiedDock):
         self._layout.addWidget(self._scrollArea)
         self.setWidget(self._widget)
 
-    def _caseLoaded(self):
+    @qasync.asyncSlot()
+    async def _caseLoaded(self):
         self._clear()
 
-        if app.case.isRunning() or app.case.isEnded():
+        if CaseManager().isRunning() or CaseManager().isEnded():
             self._startMonitor()
 
     def _caseCleared(self):
@@ -63,7 +64,8 @@ class MonitorDock(TabifiedDock):
         self._stopMonitor()
         self._clear()
 
-    def _solverStatusChanged(self, status):
+    @qasync.asyncSlot()
+    async def _solverStatusChanged(self, status):
         if status == SolverStatus.NONE:
             self._deletedMonitors = self._monitors
             self._clear()

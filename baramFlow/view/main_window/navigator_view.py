@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import QObject, Signal
 
 from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
 
 
 class MenuItem(Enum):
@@ -85,7 +86,7 @@ class NavigatorView(QObject):
 
     def updateMenu(self):
         noMesh = app.vtkMesh() is None
-        solverActivated = app.case.isActive() or app.case.isBatchRunning()
+        solverActivated = CaseManager().isActive() or CaseManager().isBatchRunning()
 
         self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(solverActivated)
         self._menu[MenuItem.MENU_SETUP_MODELS.value].setDisabled(solverActivated)
@@ -97,9 +98,9 @@ class NavigatorView(QObject):
         self._menu[MenuItem.MENU_SOLUTION_INITIALIZATION.value].setDisabled(solverActivated)
         self._menu[MenuItem.MENU_SOLUTION_RUN.value].setDisabled(noMesh)
 
-        self._menu[MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value].setDisabled(app.case.isBatchRunning())
-        self._menu[MenuItem.MENU_SOLUTION_MONITORS.value].setDisabled(app.case.isBatchRunning())
-        self._menu[MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value].setDisabled(app.case.isBatchRunning())
+        self._menu[MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value].setDisabled(CaseManager().isBatchRunning())
+        self._menu[MenuItem.MENU_SOLUTION_MONITORS.value].setDisabled(CaseManager().isBatchRunning())
+        self._menu[MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value].setDisabled(CaseManager().isBatchRunning())
 
     def translate(self):
         for key, menu in self._menu.items():

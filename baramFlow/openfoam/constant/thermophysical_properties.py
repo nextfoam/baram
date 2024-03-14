@@ -3,7 +3,7 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.app import app
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.openfoam.file_system import FileSystem
 
@@ -21,7 +21,7 @@ def _constructFluid(region: str):
 
     mix = dict()
 
-    db = app.case.db
+    db = CoreDBReader()
     mid = db.getValue(f'.//region[name="{region}"]/material')
     path = f'.//materials/material[@mid="{mid}"]'
 
@@ -140,7 +140,7 @@ def _constructSolid(region: str):
 
     mix = {}
 
-    db = app.case.db
+    db = CoreDBReader()
     mid = db.getValue(f'.//region[name="{region}"]/material')
     path = f'.//materials/material[@mid="{mid}"]'
 
@@ -188,7 +188,7 @@ class ThermophysicalProperties(DictionaryFile):
         if self._data is not None:
             return self
 
-        db = app.case.db
+        db = CoreDBReader()
 
         mid = db.getValue(f'.//region[name="{self._rname}"]/material')
         phase = db.getValue(f'.//materials/material[@mid="{mid}"]/phase')

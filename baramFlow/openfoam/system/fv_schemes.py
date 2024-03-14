@@ -4,9 +4,9 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.app import app
-import baramFlow.openfoam.solver
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.solver import findSolver, getSolverCapability
 
 
 class FvSchemes(DictionaryFile):
@@ -14,15 +14,15 @@ class FvSchemes(DictionaryFile):
         super().__init__(FileSystem.caseRoot(), self.systemLocation(rname), 'fvSchemes')
 
         self._rname = rname
-        self._db = app.case.db
+        self._db = CoreDBReader()
         self._cap = None
 
     def build(self):
         if self._data is not None:
             return self
 
-        solver = app.case.solver
-        self._cap = baramFlow.openfoam.solver.getSolverCapability(solver)
+        solver = findSolver()
+        self._cap = getSolverCapability(solver)
 
         mid = self._db.getValue(f'.//region[name="{self._rname}"]/material')
         phase = self._db.getValue(f'.//materials/material[@mid="{mid}"]/phase')

@@ -10,7 +10,7 @@ from baramFlow.coredb.numerical_db import PressureVelocityCouplingScheme, Formul
 from baramFlow.coredb.numerical_db import ImplicitDiscretizationScheme, UpwindDiscretizationScheme, InterpolationScheme
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
-import baramFlow.openfoam.solver
+from baramFlow.openfoam.solver import findSolver, getSolverCapability
 from baramFlow.view.widgets.content_page import ContentPage
 from .numerical_conditions_page_ui import Ui_NumericalConditionsPage
 from .advanced_dialog import AdvancedDialog
@@ -66,10 +66,7 @@ class NumericalConditionsPage(ContentPage):
         multiphaseOn = ModelsDB.isMultiphaseModelOn()
         compressibleDensity = GeneralDB.isCompressibleDensity()
 
-        solvers = baramFlow.openfoam.solver.findSolvers()
-        if len(solvers) == 0:  # No matching solver found
-            raise RuntimeError
-        solverCapability = baramFlow.openfoam.solver.getSolverCapability(solvers[0])
+        solverCapability = getSolverCapability(findSolver())
         allRoundSolver: bool = solverCapability['timeTransient'] and solverCapability['timeSteady']  # this solver is able to solve both steady and transient
 
         self._ui.useMomentumPredictor.setVisible(timeIsTransient or allRoundSolver)
