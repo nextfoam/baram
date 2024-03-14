@@ -206,7 +206,6 @@ class PolyMeshLoader(QObject):
         r.SetCaseType(
             vtkPOpenFOAMReader.DECOMPOSED_CASE if FileSystem.processorPath(0) else vtkPOpenFOAMReader.RECONSTRUCTED_CASE)
         r.SetFileName(str(foamFilePath))
-        r.DecomposePolyhedraOn()
         r.EnableAllCellArrays()
         r.EnableAllPointArrays()
         r.EnableAllPatchArrays()

@@ -86,7 +86,6 @@ class PolyMeshLoader(QObject):
         self._processorPath = foamFile.parent / 'processor0'
 
         self._reader.SetFileName(foamFile)
-        self._reader.DecomposePolyhedraOn()
         self._reader.EnableAllCellArrays()
         self._reader.EnableAllPointArrays()
         self._reader.EnableAllPatchArrays()
