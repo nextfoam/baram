@@ -168,7 +168,8 @@ class U(BoundaryCondition):
 
     def _constructFarfieldRiemannU(self, xpath):
         gamma = 1.4
-        a = sqrt(gamma * UNIVERSAL_GAL_CONSTANT * float(self._db.getValue(xpath + '/farFieldRiemann/staticTemperature')))
+        mw = self._db.getMolecularWeight(self._region.mid)
+        a = sqrt(gamma * (UNIVERSAL_GAL_CONSTANT / mw) * float(self._db.getValue(xpath + '/farFieldRiemann/staticTemperature')))
         dx, dy, dz = self._db.getVector(xpath + '/farFieldRiemann/flowDirection')
         dMag = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
         mInf = float(
