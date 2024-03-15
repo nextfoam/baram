@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
+
 from PySide6.QtWidgets import QMessageBox
 
 from baramFlow.coredb import coredb
@@ -203,7 +205,8 @@ class NumericalConditionsPage(ContentPage):
         self._ui.relativeVolumeFraction.setText(
             db.getValue(self._xpath + '/convergenceCriteria/volumeFraction/relative'))
 
-    def save(self):
+    @qasync.asyncSlot()
+    async def save(self):
         writer = CoreDBWriter()
         writer.append(self._xpath + '/pressureVelocityCouplingScheme',
                       self._ui.pressureVelocityCouplingScheme.currentValue(), None)

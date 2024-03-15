@@ -234,13 +234,10 @@ class FileSystem:
     @classmethod
     def numberOfProcessorFolders(cls):
         return len(cls.processorFolders())
-    #
-    # @classmethod
-    # def _setupNewCase(cls):
-    #     if cls._casePath.exists():
-    #         utils.rmtree(cls._casePath)
-    #
-    #     shutil.copytree(resource.file('openfoam/flow_case'), cls._casePath)
+
+    @classmethod
+    def hasCalculationResults(cls):
+        return cls._postProcessingPath.exists()
 
     @classmethod
     async def copyFileToCase(cls, file, name):
@@ -284,6 +281,19 @@ class FileSystem:
 
         for path in folders:
             utils.rmtree(path)
+
+    @classmethod
+    def latestTimeToZero(cls):
+        for parent in [cls._casePath, *cls.processorFolders()]:
+            latestTime = cls.latestTime(parent)
+            zeroPath = parent / '0'
+            latestPath = parent / latestTime
+
+            if latestPath.exists():
+                utils.rmtree(zeroPath)
+                latestPath.rename(zeroPath)
+
+        cls.deleteCalculationResults('0')
 
     @classmethod
     def addConstantFileToKeep(cls, fileName):

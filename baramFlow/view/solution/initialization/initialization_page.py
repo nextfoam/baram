@@ -82,7 +82,8 @@ class InitializationPage(ContentPage):
             self._ui.tabWidget.removeTab(0)
             widget.close()
 
-    def save(self):
+    @qasync.asyncSlot()
+    async def save(self):
         for i in range(self._ui.tabWidget.count()):
             widget: InitializationWidget = self._ui.tabWidget.widget(i)
             if not widget.save():
