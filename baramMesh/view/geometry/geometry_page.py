@@ -186,7 +186,7 @@ class GeometryPage(StepPage):
                 added = []
 
                 db = app.db.checkout()
-                name = path.stem
+                name = path.stem.replace(' ', '_')
                 seq = ''
                 for volume in volumes:
                     seq = getUniqueSeq(name, seq)
