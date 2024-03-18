@@ -85,7 +85,7 @@ class App(QObject):
         self._project = self._projectManager.createProject(path)
         self._settings.updateRecents(self._project.path, True)
         self._fileSystem = FileSystem(self._project.path)
-        self._fileSystem.createCase(resource.file('openfoam/mesh_case'))
+        self._fileSystem.createCase(resource.file('openfoam/case'))
 
         return self._project
 

@@ -57,7 +57,7 @@ class FileSystem:
         if path.exists():
             utils.rmtree(path)
 
-        shutil.copytree(resource.file('openfoam/flow_case'), path)
+        shutil.copytree(resource.file('openfoam/case'), path)
 
         cls.makeDir(path, Directory.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
         cls.makeDir(path, Directory.CONSTANT_DIRECTORY_NAME)
@@ -234,13 +234,6 @@ class FileSystem:
     @classmethod
     def numberOfProcessorFolders(cls):
         return len(cls.processorFolders())
-    #
-    # @classmethod
-    # def _setupNewCase(cls):
-    #     if cls._casePath.exists():
-    #         utils.rmtree(cls._casePath)
-    #
-    #     shutil.copytree(resource.file('openfoam/flow_case'), cls._casePath)
 
     @classmethod
     async def copyFileToCase(cls, file, name):
