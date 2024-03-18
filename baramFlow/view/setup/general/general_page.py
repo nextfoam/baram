@@ -3,11 +3,15 @@
 
 import logging
 
+import qasync
 from PySide6.QtWidgets import QMessageBox
+
+from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.general_db import GeneralDB, SolverType
+from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.widgets.content_page import ContentPage
 from .general_page_ui import Ui_GeneralPage
 
@@ -23,16 +27,20 @@ class GeneralPage(ContentPage):
         self._ui = Ui_GeneralPage()
         self._ui.setupUi(self)
 
+        self._timeTransient = None
+
         self._load()
 
         if GeneralDB.getSolverType() == SolverType.DENSITY_BASED:
             self._ui.transient_.setEnabled(False)
 
-    def save(self):
+    @qasync.asyncSlot()
+    async def save(self):
         writer = CoreDBWriter()
 
-        writer.append(GeneralDB.GENERAL_XPATH + '/timeTransient',
-                      'true' if self._ui.transient_.isChecked() else 'false', None)
+        timeTransient = self._ui.transient_.isChecked()
+
+        writer.append(GeneralDB.GENERAL_XPATH + '/timeTransient', 'true' if timeTransient else 'false', None)
         writer.append(GRAVITY_XPATH + '/direction/x', self._ui.gravityX.text(), self.tr('Gravity X'))
         writer.append(GRAVITY_XPATH + '/direction/y', self._ui.gravityY.text(), self.tr('Gravity Y'))
         writer.append(GRAVITY_XPATH + '/direction/z', self._ui.gravityZ.text(), self.tr('Gravity Z'))
@@ -41,17 +49,25 @@ class GeneralPage(ContentPage):
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            await AsyncMessageBox().critical(self, self.tr("Input Error"), writer.firstError().toMessage())
             return False
+
+        if timeTransient and not self._timeTransient and FileSystem.hasCalculationResults():
+            confirm = await AsyncMessageBox().question(
+                self, self.tr("Change to Transient Mode"),
+                self.tr('Use the final result for the initial value of transient calculation?'))
+            if confirm == QMessageBox.StandardButton.Yes:
+                FileSystem.latestTimeToZero()
+
+        self._timeTransient = timeTransient
 
         return True
 
     def _load(self):
         db = coredb.CoreDB()
 
-        xpath = GeneralDB.GENERAL_XPATH + '/timeTransient'
-        timeTransient = db.getValue(xpath)
-        if timeTransient == 'true':
+        self._timeTransient = GeneralDB.isTimeTransient()
+        if self._timeTransient:
             self._ui.transient_.setChecked(True)
         else:
             self._ui.steady.setChecked(True)

@@ -52,9 +52,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-502</y>
+        <y>-286</y>
         <width>332</width>
-        <height>1176</height>
+        <height>1170</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -238,7 +238,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
-          <string>Under-Relaxation Factors</string>
+          <string>Under-Relaxation Factors (0 &lt; R ≤ 1)</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
           <item row="0" column="2">
@@ -503,7 +503,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
-          <string>Convergence Criteria</string>
+          <string>Convergence Criteria (range of values: 0~1)</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
           <item row="0" column="2">

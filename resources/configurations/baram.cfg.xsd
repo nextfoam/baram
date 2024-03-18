@@ -38,6 +38,13 @@
         </xs:restriction>
     </xs:simpleType>
 
+    <xs:simpleType name="underRelaxationFactorNumber">
+        <xs:restriction base="xs:double">
+            <xs:minExclusive value="0"/>
+            <xs:maxInclusive value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
     <xs:complexType name="inputNumberType">
         <xs:simpleContent>
             <xs:extension base="xs:double">
@@ -81,6 +88,14 @@
     <xs:complexType name="inputExclusive0-10Type">
         <xs:simpleContent>
             <xs:extension base="exclusvie0-10">
+                <xs:attribute name="batchParameter" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="underRelaxationFactorNumberType">
+        <xs:simpleContent>
+            <xs:extension base="underRelaxationFactorNumber">
                 <xs:attribute name="batchParameter" type="xs:string"/>
             </xs:extension>
         </xs:simpleContent>
@@ -1334,18 +1349,18 @@
             <xs:element name="underRelaxationFactors">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="pressure" type="inputNumberType" default="0.3"/>
-                        <xs:element name="pressureFinal" type="inputNumberType" default="1"/>
-                        <xs:element name="density" type="inputNumberType" default="0.9"/>
-                        <xs:element name="densityFinal" type="inputNumberType" default="1"/>
-                        <xs:element name="momentum" type="inputNumberType" default="0.7"/>
-                        <xs:element name="momentumFinal" type="inputNumberType" default="1"/>
-                        <xs:element name="energy" type="inputNumberType" default="0.9"/>
-                        <xs:element name="energyFinal" type="inputNumberType" default="1"/>
-                        <xs:element name="turbulence" type="inputNumberType" default="0.7"/>
-                        <xs:element name="turbulenceFinal" type="inputNumberType" default="1"/>
-                        <xs:element name="volumeFraction" type="inputNumberType" default="0.7"/>
-                        <xs:element name="volumeFractionFinal" type="inputNumberType" default="1"/>
+                        <xs:element name="pressure" type="underRelaxationFactorNumberType" default="0.3"/>
+                        <xs:element name="pressureFinal" type="underRelaxationFactorNumberType" default="1"/>
+                        <xs:element name="density" type="underRelaxationFactorNumberType" default="0.9"/>
+                        <xs:element name="densityFinal" type="underRelaxationFactorNumberType" default="1"/>
+                        <xs:element name="momentum" type="underRelaxationFactorNumberType" default="0.7"/>
+                        <xs:element name="momentumFinal" type="underRelaxationFactorNumberType" default="1"/>
+                        <xs:element name="energy" type="underRelaxationFactorNumberType" default="0.9"/>
+                        <xs:element name="energyFinal" type="underRelaxationFactorNumberType" default="1"/>
+                        <xs:element name="turbulence" type="underRelaxationFactorNumberType" default="0.7"/>
+                        <xs:element name="turbulenceFinal" type="underRelaxationFactorNumberType" default="1"/>
+                        <xs:element name="volumeFraction" type="underRelaxationFactorNumberType" default="0.7"/>
+                        <xs:element name="volumeFractionFinal" type="underRelaxationFactorNumberType" default="1"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1376,48 +1391,48 @@
                         <xs:element name="pressure">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="absolute" type="inputNumberType" default="0.001"/>
-                                    <xs:element name="relative" type="inputNumberType" default="0.05"/>
+                                    <xs:element name="absolute" type="inputRatioType" default="0.001"/>
+                                    <xs:element name="relative" type="inputRatioType" default="0.05"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
                         <xs:element name="density">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="absolute" type="inputNumberType" default="0.001"/>
-                                    <xs:element name="relative" type="inputNumberType" default="0.05"/>
+                                    <xs:element name="absolute" type="inputRatioType" default="0.001"/>
+                                    <xs:element name="relative" type="inputRatioType" default="0.05"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
                         <xs:element name="momentum">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="absolute" type="inputNumberType" default="0.001"/>
-                                    <xs:element name="relative" type="inputNumberType" default="0.05"/>
+                                    <xs:element name="absolute" type="inputRatioType" default="0.001"/>
+                                    <xs:element name="relative" type="inputRatioType" default="0.05"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
                         <xs:element name="energy">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="absolute" type="inputNumberType" default="0.001"/>
-                                    <xs:element name="relative" type="inputNumberType" default="0.05"/>
+                                    <xs:element name="absolute" type="inputRatioType" default="0.001"/>
+                                    <xs:element name="relative" type="inputRatioType" default="0.05"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
                         <xs:element name="turbulence">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="absolute" type="inputNumberType" default="0.001"/>
-                                    <xs:element name="relative" type="inputNumberType" default="0.05"/>
+                                    <xs:element name="absolute" type="inputRatioType" default="0.001"/>
+                                    <xs:element name="relative" type="inputRatioType" default="0.05"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
                         <xs:element name="volumeFraction">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="absolute" type="inputNumberType" default="0.001"/>
-                                    <xs:element name="relative" type="inputNumberType" default="0.05"/>
+                                    <xs:element name="absolute" type="inputRatioType" default="0.001"/>
+                                    <xs:element name="relative" type="inputRatioType" default="0.05"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>

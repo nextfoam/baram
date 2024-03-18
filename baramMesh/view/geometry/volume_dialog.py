@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import qasync
 from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import QEvent, QTimer
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
+from widgets.async_message_box import AsyncMessageBox
 from widgets.radio_group import RadioGroup
 
 from baramMesh.app import app
@@ -88,9 +89,10 @@ class VolumeDialog(QDialog):
         self._load()
         self.adjustSize()
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def accept(self):
         try:
-            if not self._updateElement():
+            if not await self._updateElement():
                 return
 
             if self._creationMode:
@@ -98,12 +100,6 @@ class VolumeDialog(QDialog):
                 self._gId = db.addElement('geometry', self._dbElement)
 
                 name = self._ui.name.text()
-
-                if name in RESERVED_NAMES:
-                    QMessageBox.information(
-                        self, self.tr('Input Error'), self.tr('"{0}" is an invalid geometry name.').format(name))
-                    return
-
                 if self._shape == Shape.HEX6.value:
                     for plate in Shape.PLATES.value:
                         element = app.db.newElement('geometry')
@@ -206,11 +202,21 @@ class VolumeDialog(QDialog):
 
         self._ui.annulusRadius.hide()
 
-    def _updateElement(self):
+    async def _updateElement(self):
         name = self._ui.name.text()
 
+        if name in RESERVED_NAMES:
+            await AsyncMessageBox().information(
+                self, self.tr('Input Error'), self.tr('"{0}" is an invalid geometry name.').format(name))
+            return
+
+        if name.find(' ') > -1:
+            await AsyncMessageBox().information(
+                self, self.tr('Input Error'), self.tr('Geometry name cannot contain spaces'))
+            return
+
         if app.db.getKeys('geometry', lambda i, e: e['name'] == name and i != self._gId):
-            QMessageBox.information(self, self.tr('Input Error'),
+            await AsyncMessageBox().information(self, self.tr('Input Error'),
                                     self.tr('geometry "{0}" already exists.').format(name))
             return False
 

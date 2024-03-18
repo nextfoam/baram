@@ -3,6 +3,7 @@
 
 from enum import Enum, auto
 
+import qasync
 from PySide6.QtWidgets import QMessageBox
 
 from baramFlow.coredb import coredb
@@ -83,7 +84,8 @@ class RunConditionsPage(ContentPage):
         self._ui.dataWritePrecision.setText(db.getValue(self._xpath + '/dataWritePrecision'))
         self._ui.timePrecision.setText(db.getValue(self._xpath + '/timePrecision'))
 
-    def save(self):
+    @qasync.asyncSlot()
+    async def save(self):
         writer = CoreDBWriter()
 
         if GeneralDB.isTimeTransient():

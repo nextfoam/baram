@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
 from PySide6.QtWidgets import QMessageBox
 
 from baramFlow.coredb import coredb
@@ -18,7 +19,8 @@ class ReferenceValuesPage(ContentPage):
 
         self._load()
 
-    def save(self):
+    @qasync.asyncSlot()
+    async def save(self):
         xpath = ReferenceValuesDB.REFERENCE_VALUES_XPATH
 
         writer = CoreDBWriter()

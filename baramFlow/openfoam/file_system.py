@@ -236,6 +236,10 @@ class FileSystem:
         return len(cls.processorFolders())
 
     @classmethod
+    def hasCalculationResults(cls):
+        return cls._postProcessingPath.exists()
+
+    @classmethod
     async def copyFileToCase(cls, file, name):
         await asyncio.to_thread(shutil.copyfile, file, cls._casePath / name)
 
@@ -277,6 +281,19 @@ class FileSystem:
 
         for path in folders:
             utils.rmtree(path)
+
+    @classmethod
+    def latestTimeToZero(cls):
+        for parent in [cls._casePath, *cls.processorFolders()]:
+            latestTime = cls.latestTime(parent)
+            zeroPath = parent / '0'
+            latestPath = parent / latestTime
+
+            if latestPath.exists():
+                utils.rmtree(zeroPath)
+                latestPath.rename(zeroPath)
+
+        cls.deleteCalculationResults('0')
 
     @classmethod
     def addConstantFileToKeep(cls, fileName):
