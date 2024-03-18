@@ -11,47 +11,40 @@ from .variable_source_widget_ui import Ui_VariableSourceWidget
 
 
 class VariableSourceWidget(QWidget):
-    def __init__(self, title, xpath):
+    def __init__(self, title, xpath, units=None):
         super().__init__()
         self._ui = Ui_VariableSourceWidget()
         self._ui.setupUi(self)
-
-        self._specificationMethods = {
-            SpecificationMethod.VALUE_PER_UNIT_VOLUME.value: self.tr("Value per Unit Volume"),
-            SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE.value: self.tr("Value for Entire Cell Zone"),
-        }
-
-        self._temporalProfileTypes = {
-            TemporalProfileType.CONSTANT.value: self.tr("Constant"),
-            TemporalProfileType.PIECEWISE_LINEAR.value: self.tr("Piecewise Linear"),
-            TemporalProfileType.POLYNOMIAL.value: self.tr("Polynomial"),
-        }
 
         self._db = coredb.CoreDB()
         self._title = title
         self._xpath = xpath
         self._piecewiseLinear = None
         self._polynomial = None
+        self._units = units
 
         self._ui.groupBox.setTitle(title)
-        self._setupCombo(self._ui.specificationMethod, self._specificationMethods)
-        self._setupCombo(self._ui.temporalProfileType, self._temporalProfileTypes)
+        self._ui.specificationMethod.addItems({
+            SpecificationMethod.VALUE_PER_UNIT_VOLUME: self.tr("Value per Unit Volume"),
+            SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: self.tr("Value for Entire Cell Zone"),
+        })
+        self._ui.temporalProfileType.addItems({
+            TemporalProfileType.CONSTANT: self.tr("Constant"),
+            TemporalProfileType.PIECEWISE_LINEAR: self.tr("Piecewise Linear"),
+            TemporalProfileType.POLYNOMIAL: self.tr("Polynomial"),
+        })
 
         self._connectSignalsSlots()
 
     def load(self):
         self._ui.groupBox.setChecked(self._db.getAttribute(self._xpath, 'disabled') == 'false')
-        self._ui.specificationMethod.setCurrentText(
-            self._specificationMethods[self._db.getValue(self._xpath + '/unit')])
+        self._ui.specificationMethod.setCurrentData(SpecificationMethod(self._db.getValue(self._xpath + '/unit')))
 
         if GeneralDB.isTimeTransient():
-            self._ui.temporalProfileType.setCurrentText(
-                self._temporalProfileTypes[self._db.getValue(self._xpath + '/specification')]
-            )
+            self._ui.temporalProfileType.setCurrentData(
+                TemporalProfileType(self._db.getValue(self._xpath + '/specification')))
         else:
-            self._ui.temporalProfileType.setCurrentText(
-                self._temporalProfileTypes[TemporalProfileType.CONSTANT.value]
-            )
+            self._ui.temporalProfileType.setCurrentData(TemporalProfileType(TemporalProfileType.CONSTANT))
             self._ui.temporalProfileType.setEnabled(False)
 
         self._ui.constantValue.setText(self._db.getValue(self._xpath + '/constant'))
@@ -59,12 +52,12 @@ class VariableSourceWidget(QWidget):
     def appendToWriter(self, writer):
         if self._ui.groupBox.isChecked():
             writer.setAttribute(self._xpath, 'disabled', 'false')
-            writer.append(self._xpath + '/unit', self._ui.specificationMethod.currentData(), None)
+            writer.append(self._xpath + '/unit', self._ui.specificationMethod.currentValue(), None)
             specification = self._ui.temporalProfileType.currentData()
-            writer.append(self._xpath + '/specification', specification, None)
-            if specification == TemporalProfileType.CONSTANT.value:
+            writer.append(self._xpath + '/specification', specification.value, None)
+            if specification == TemporalProfileType.CONSTANT:
                 writer.append(self._xpath + '/constant', self._ui.constantValue.text(), self._title)
-            elif specification == TemporalProfileType.PIECEWISE_LINEAR.value:
+            elif specification == TemporalProfileType.PIECEWISE_LINEAR:
                 if self._piecewiseLinear is not None:
                     writer.append(self._xpath + '/piecewiseLinear/t',
                                   self._piecewiseLinear[0], self.tr(f'{self._title} Piecewise Linear'))
@@ -74,7 +67,7 @@ class VariableSourceWidget(QWidget):
                     QMessageBox.critical(self, self.tr("Input Error"),
                                          self.tr(f'Edit {self._title} Piecewise Linear Values.'))
                     return False
-            elif specification == TemporalProfileType.POLYNOMIAL.value:
+            elif specification == TemporalProfileType.POLYNOMIAL:
                 if self._polynomial is not None:
                     writer.append(self._xpath + '/polynomial',
                                   self._polynomial, self.tr(f'{self._title} Polynomial'))
@@ -88,26 +81,26 @@ class VariableSourceWidget(QWidget):
         return True
 
     def _connectSignalsSlots(self):
-        self._ui.groupBox.toggled.connect(self._toggled)
-        self._ui.temporalProfileType.currentIndexChanged.connect(self._temporalProfileTypeChanged)
+        # self._ui.groupBox.toggled.connect(self._toggled)
+        self._ui.specificationMethod.currentDataChanged.connect(self._specificationMethodChanged)
+        self._ui.temporalProfileType.currentDataChanged.connect(self._temporalProfileTypeChanged)
         self._ui.edit.clicked.connect(self._edit)
+    #
+    # def _toggled(self, on):
+    #     if on:
+    #         self._temporalProfileTypeChanged(self._ui.temporalProfileType.currentData())
 
-    def _setupCombo(self, combo, items):
-        for value, text in items.items():
-            combo.addItem(text, value)
+    def _specificationMethodChanged(self, method):
+        if self._units:
+            self._ui.label.setText(self.tr('Value') + f' ({self._units.get(method, "")})')
 
-    def _toggled(self, on):
-        if on:
-            self._temporalProfileTypeChanged()
-
-    def _temporalProfileTypeChanged(self):
-        temporalProfileType = self._ui.temporalProfileType.currentData()
-        self._ui.edit.setEnabled(temporalProfileType != TemporalProfileType.CONSTANT.value)
-        self._ui.constantValue.setEnabled(temporalProfileType == TemporalProfileType.CONSTANT.value)
+    def _temporalProfileTypeChanged(self, temporalProfileType):
+        self._ui.edit.setEnabled(temporalProfileType != TemporalProfileType.CONSTANT)
+        self._ui.constantValue.setEnabled(temporalProfileType == TemporalProfileType.CONSTANT)
 
     def _edit(self):
         temporalProfileType = self._ui.temporalProfileType.currentData()
-        if temporalProfileType == TemporalProfileType.PIECEWISE_LINEAR.value:
+        if temporalProfileType == TemporalProfileType.PIECEWISE_LINEAR:
             if self._ui.groupBox.title() == "Energy":
                 if self._piecewiseLinear is None:
                     self._piecewiseLinear = [
@@ -130,7 +123,7 @@ class VariableSourceWidget(QWidget):
                                                      [self.tr("t"), self.tr("Flow Rate")], self._piecewiseLinear)
                 self._dialog.accepted.connect(self._piecewiseLinearAccepted)
                 self._dialog.open()
-        elif temporalProfileType == TemporalProfileType.POLYNOMIAL.value:
+        elif temporalProfileType == TemporalProfileType.POLYNOMIAL:
             if self._polynomial is None:
                 self._polynomial = self._db.getValue(self._xpath + '/polynomial')
 

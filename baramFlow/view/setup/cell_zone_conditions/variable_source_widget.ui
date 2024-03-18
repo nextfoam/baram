@@ -39,14 +39,14 @@
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="label_1">
         <property name="text">
          <string>Specification Method</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="specificationMethod">
+       <widget class="EnumComboBox" name="specificationMethod">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -93,7 +93,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QComboBox" name="temporalProfileType">
+             <widget class="EnumComboBox" name="temporalProfileType">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -122,7 +122,7 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label_8">
+       <widget class="QLabel" name="label">
         <property name="text">
          <string>Value</string>
         </property>
@@ -140,6 +140,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>EnumComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widgets.enum_combo_box</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

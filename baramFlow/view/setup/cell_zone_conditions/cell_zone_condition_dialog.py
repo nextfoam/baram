@@ -4,21 +4,21 @@
 from PySide6.QtWidgets import QDialog, QMessageBox, QVBoxLayout
 
 from baramFlow.coredb import coredb
+from baramFlow.coredb.cell_zone_db import CellZoneDB, ZoneType, SpecificationMethod
 from baramFlow.coredb.coredb_writer import CoreDBWriter
-from baramFlow.coredb.models_db import TurbulenceModelHelper, ModelsDB
-from baramFlow.coredb.cell_zone_db import CellZoneDB, ZoneType
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.region_db import DEFAULT_REGION_NAME, RegionDB
 from baramFlow.coredb.material_db import MaterialDB
-from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
-from .MRF_widget import MRFWidget
-from .porous_zone_widget import PorousZoneWidget
-from .sliding_mesh_widget import SlidingMeshWidget
+from baramFlow.coredb.models_db import TurbulenceModelHelper, ModelsDB
+from baramFlow.coredb.region_db import DEFAULT_REGION_NAME, RegionDB
 from .actuator_disk_widget import ActuatorDiskWidget
-from .variable_source_widget import VariableSourceWidget
+from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
 from .constant_source_widget import ConstantSourceWidget
 from .fixed_value_widget import FixedValueWidget
 from .materials_widget import MaterialsWidget
+from .MRF_widget import MRFWidget
+from .porous_zone_widget import PorousZoneWidget
+from .sliding_mesh_widget import SlidingMeshWidget
+from .variable_source_widget import VariableSourceWidget
 
 
 class CellZoneConditionDialog(QDialog):
@@ -102,7 +102,11 @@ class CellZoneConditionDialog(QDialog):
         elif ModelsDB.isSpeciesModelOn():
             pass
         else:
-            self._massSourceTerm = VariableSourceWidget(self.tr("Mass"), self._xpath + '/sourceTerms/mass')
+            self._massSourceTerm = VariableSourceWidget(
+                self.tr("Mass"), self._xpath + '/sourceTerms/mass', {
+                    SpecificationMethod.VALUE_PER_UNIT_VOLUME: 'kg/m<sup>3</sup>s',
+                    SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: 'kg/s'
+                })
             layout.addWidget(self._massSourceTerm)
 
         # Fixed Value Widgets
@@ -110,7 +114,11 @@ class CellZoneConditionDialog(QDialog):
         self._temperature = None
 
         if ModelsDB.isEnergyModelOn():
-            self._energySourceTerm = VariableSourceWidget(self.tr("Energy"), self._xpath + '/sourceTerms/energy')
+            self._energySourceTerm = VariableSourceWidget(
+                self.tr("Energy"), self._xpath + '/sourceTerms/energy', {
+                    SpecificationMethod.VALUE_PER_UNIT_VOLUME: 'W/m<sup>3</sup>',
+                    SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: 'W'
+                })
             self._ui.sourceTerms.layout().addWidget(self._energySourceTerm)
 
             self._temperature = FixedValueWidget(
@@ -226,10 +234,12 @@ class CellZoneConditionDialog(QDialog):
         fixedValuesLayout = self._ui.fixedValues.layout()
         for field in TurbulenceModelHelper.getFields():
             self._turbulenceSourceTerms[field] = ConstantSourceWidget(
-                field.getTitleText(), field.getLabelText(), self._xpath + '/sourceTerms/' + field.xpathName)
+                f'{field.name()}, {field.symbol}', field.symbol, field.sourceUnits,
+                self._xpath + '/sourceTerms/' + field.xpathName)
             sourceTermsLayout.addWidget(self._turbulenceSourceTerms[field])
             self._turbulenceFixedValues[field] = FixedValueWidget(
-                field.getTitleText(), field.getLabelText(), self._xpath + '/fixedValues/' + field.xpathName)
+                f'{field.name()}, {field.symbol}', f'{field.symbol} ({field.unit})',
+                self._xpath + '/fixedValues/' + field.xpathName)
             fixedValuesLayout.addWidget(self._turbulenceFixedValues[field])
 
     def _setupMaterialSourceWidgets(self, materials):
