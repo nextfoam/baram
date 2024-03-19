@@ -259,7 +259,6 @@ class MainWindow(QMainWindow):
 
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
 
-        app.meshUpdated.connect(self._meshUpdated)
         self._project.projectOpened.connect(self._projectOpened)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
@@ -511,7 +510,7 @@ class MainWindow(QMainWindow):
                 self._changeForm(currentMenu)
 
     @qasync.asyncSlot()
-    async def _solverStatusChanged(self, status):
+    async def _solverStatusChanged(self, status, name):
         isSolverRunning = status == SolverStatus.RUNNING or CaseManager().isBatchRunning()
 
         self._ui.actionSaveAs.setDisabled(isSolverRunning)
@@ -520,6 +519,10 @@ class MainWindow(QMainWindow):
         self._ui.menuParallel.setDisabled(isSolverRunning)
 
         self._navigatorView.updateMenu()
+
+        if status == SolverStatus.ENDED and not name:
+            await AsyncMessageBox().information(self, self.tr('Calculation Terminated'),
+                                                self.tr('Calculation is terminated.'))
 
     @qasync.asyncSlot()
     async def _projectOpened(self):
@@ -657,6 +660,9 @@ class MainWindow(QMainWindow):
             await self._meshManager.importOpenFoamMesh(file)
         else:
             await self._meshManager.importMesh(file, meshType)
+
+        self._project.setMeshLoaded(True)
+        self._meshUpdated()
 
         self._project.save()
 
