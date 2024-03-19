@@ -115,14 +115,7 @@ class MainWindow(QMainWindow):
     def changeEvent(self, event):
         if event.type() == QEvent.LanguageChange:
             self._ui.retranslateUi(self)
-            # self._navigatorView.translate()
-            #
-            # for page in self._menuPages.values():
-            #     if page.isCreated():
-            #         self._contentView.removePage(page)
-            #         page.removePage()
-            #
-            # self._changeForm(self._navigatorView.currentMenu())
+            self._stepManager.retranslatePages()
 
         super().changeEvent(event)
 
@@ -183,7 +176,6 @@ class MainWindow(QMainWindow):
 
     def _actionLanguage(self):
         self._dialog = LanugageDialog(self)
-        self._dialog.accepted.connect(self._changeLanguage)
         self._dialog.open()
 
     def _actionAbout(self):
@@ -269,11 +261,6 @@ class MainWindow(QMainWindow):
     def _changeScale(self):
         if app.settings.setScale(self._dialog.scale()):
             QMessageBox.information(self, self.tr("Change Scale"), self.tr('Application restart is required.'))
-
-    def _changeLanguage(self):
-        language = self._dialog.selectedLanguage()
-        if app.settings.setLanguage(language):
-            app.applyLanguage()
 
     def _projectOpened(self):
         # 10MB(=10,485,760=1024*1024*10)
