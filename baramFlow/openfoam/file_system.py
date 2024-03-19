@@ -57,7 +57,7 @@ class FileSystem:
         if path.exists():
             utils.rmtree(path)
 
-        shutil.copytree(resource.file('openfoam/flow_case'), path)
+        shutil.copytree(resource.file('openfoam/case'), path)
 
         cls.makeDir(path, Directory.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
         cls.makeDir(path, Directory.CONSTANT_DIRECTORY_NAME)
