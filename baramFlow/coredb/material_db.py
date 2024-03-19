@@ -18,27 +18,14 @@ class Phase(Flag):
 
 
 class Specification(Enum):
-    CONSTANT = "constant"
-    PERFECT_GAS = "perfectGas"
-    SUTHERLAND = "sutherland"
-    POLYNOMIAL = "polynomial"
+    CONSTANT = 'constant'
+    PERFECT_GAS = 'perfectGas'
+    SUTHERLAND = 'sutherland'
+    POLYNOMIAL = 'polynomial'
 
 
 class MaterialDB(object):
     MATERIALS_XPATH = './/materials'
-
-    specificationText = {
-        Specification.CONSTANT:    QCoreApplication.translate("MaterialDB", "Constant"),
-        Specification.PERFECT_GAS: QCoreApplication.translate("MaterialDB", "Perfect Gas"),
-        Specification.SUTHERLAND:  QCoreApplication.translate("MaterialDB", "Sutherland"),
-        Specification.POLYNOMIAL:  QCoreApplication.translate("MaterialDB", "Polynomial"),
-    }
-
-    _phaseText = {
-        Phase.GAS: "Gas",
-        Phase.LIQUID: "Liquid",
-        Phase.SOLID: "Solid"
-    }
 
     @classmethod
     def getXPath(cls, mid) -> str:
@@ -63,20 +50,33 @@ class MaterialDB(object):
 
     @classmethod
     def dbTextToPhase(cls, DBText) -> Phase:
-        if DBText == "gas":
+        if DBText == 'gas':
             return Phase.GAS
-        elif DBText == "liquid":
+        elif DBText == 'liquid':
             return Phase.LIQUID
-        elif DBText == "solid":
+        elif DBText == 'solid':
             return Phase.SOLID
         
     @classmethod
     def getPhaseText(cls, phase) -> str:
-        return cls._phaseText[phase]
+        return {
+            Phase.GAS:      QCoreApplication.translate('MaterialDB', 'Gas'),
+            Phase.LIQUID:   QCoreApplication.translate('MaterialDB', 'Liquid'),
+            Phase.SOLID:    QCoreApplication.translate('MaterialDB', 'Solid')
+        }.get(phase)
+
+    @classmethod
+    def specificationToText(cls, specification) -> str:
+        return {
+            Specification.CONSTANT:    QCoreApplication.translate('MaterialDB', 'Constant'),
+            Specification.PERFECT_GAS: QCoreApplication.translate('MaterialDB', 'Perfect Gas'),
+            Specification.SUTHERLAND:  QCoreApplication.translate('MaterialDB', 'Sutherland'),
+            Specification.POLYNOMIAL:  QCoreApplication.translate('MaterialDB', 'Polynomial'),
+        }.get(Specification(specification))
 
     @classmethod
     def dbSpecificationToText(cls, DBText) -> str:
-        return cls.specificationText[Specification(DBText)]
+        return cls.specificationToText(Specification(DBText))
 
     @classmethod
     def isMaterialExists(cls, name) -> bool:

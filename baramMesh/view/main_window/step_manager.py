@@ -102,6 +102,10 @@ class StepManager(QObject):
     def openNextStep(self):
         self._open(self._navigation.currentStep() + 1)
 
+    def retranslatePages(self):
+        for page in self._pages.values():
+            page.retranslate()
+
     def _connectSignalsSlots(self):
         self._navigation.currentStepChanged.connect(self._moveToStep)
         self._buttons.nextButton.clicked.connect(self.openNextStep)

@@ -3,36 +3,36 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB, InterfaceMode
+from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB, InterfaceMode, GeometricalType
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.openfoam.file_system import FileSystem
 from .polymesh_loader import PolyMeshLoader
 
 
 TYPE_MAP = {
-    BoundaryType.VELOCITY_INLET.value: 'patch',
-    BoundaryType.FLOW_RATE_INLET.value: 'patch',
-    BoundaryType.PRESSURE_INLET.value: 'patch',
-    BoundaryType.ABL_INLET.value: 'patch',
-    BoundaryType.OPEN_CHANNEL_INLET.value: 'patch',
-    BoundaryType.FREE_STREAM.value: 'patch',
-    BoundaryType.FAR_FIELD_RIEMANN.value: 'patch',
-    BoundaryType.SUBSONIC_INLET.value: 'patch',
-    BoundaryType.SUPERSONIC_INFLOW.value: 'patch',
-    BoundaryType.PRESSURE_OUTLET.value: 'patch',
-    BoundaryType.OPEN_CHANNEL_OUTLET.value: 'patch',
-    BoundaryType.OUTFLOW.value: 'patch',
-    BoundaryType.SUBSONIC_OUTFLOW.value: 'patch',
-    BoundaryType.SUPERSONIC_OUTFLOW.value: 'patch',
-    BoundaryType.WALL.value: 'wall',
-    BoundaryType.THERMO_COUPLED_WALL.value: 'mappedWall',
-    BoundaryType.POROUS_JUMP.value: 'cyclic',
-    BoundaryType.FAN.value: 'cyclic',
-    BoundaryType.SYMMETRY.value: 'symmetry',
-    BoundaryType.INTERFACE.value: 'cyclicAMI',
-    BoundaryType.EMPTY.value: 'empty',
-    BoundaryType.CYCLIC.value: 'cyclic',
-    BoundaryType.WEDGE.value: 'wedge',
+    BoundaryType.VELOCITY_INLET.value       : GeometricalType.PATCH,
+    BoundaryType.FLOW_RATE_INLET.value      : GeometricalType.PATCH,
+    BoundaryType.PRESSURE_INLET.value       : GeometricalType.PATCH,
+    BoundaryType.ABL_INLET.value            : GeometricalType.PATCH,
+    BoundaryType.OPEN_CHANNEL_INLET.value   : GeometricalType.PATCH,
+    BoundaryType.FREE_STREAM.value          : GeometricalType.PATCH,
+    BoundaryType.FAR_FIELD_RIEMANN.value    : GeometricalType.PATCH,
+    BoundaryType.SUBSONIC_INLET.value       : GeometricalType.PATCH,
+    BoundaryType.SUPERSONIC_INFLOW.value    : GeometricalType.PATCH,
+    BoundaryType.PRESSURE_OUTLET.value      : GeometricalType.PATCH,
+    BoundaryType.OPEN_CHANNEL_OUTLET.value  : GeometricalType.PATCH,
+    BoundaryType.OUTFLOW.value              : GeometricalType.PATCH,
+    BoundaryType.SUBSONIC_OUTFLOW.value     : GeometricalType.PATCH,
+    BoundaryType.SUPERSONIC_OUTFLOW.value   : GeometricalType.PATCH,
+    BoundaryType.WALL.value                 : GeometricalType.WALL,
+    BoundaryType.THERMO_COUPLED_WALL.value  : GeometricalType.MAPPED_WALL,
+    BoundaryType.POROUS_JUMP.value          : GeometricalType.CYCLIC,
+    BoundaryType.FAN.value                  : GeometricalType.CYCLIC,
+    BoundaryType.SYMMETRY.value             : GeometricalType.SYMMETRY,
+    BoundaryType.INTERFACE.value            : GeometricalType.CYCLIC_AMI,
+    BoundaryType.EMPTY.value                : GeometricalType.EMPTY,
+    BoundaryType.CYCLIC.value               : GeometricalType.CYCLIC,
+    BoundaryType.WEDGE.value                : GeometricalType.WEDGE,
 }
 
 
@@ -59,7 +59,7 @@ class Boundary(DictionaryFile):
             if self._db.exists(xpath):
                 bctype = self._db.getValue(xpath + '/physicalType')
 
-                self._boundaryDict.content[bcname]['type'] = TYPE_MAP[bctype]
+                self._boundaryDict.content[bcname]['type'] = TYPE_MAP[bctype].value
 
                 if BoundaryDB.needsCoupledBoundary(bctype):
                     couple = self._db.getValue(xpath + '/coupledBoundary')
@@ -99,7 +99,7 @@ class Boundary(DictionaryFile):
         self._removeEntry(bcname, 'rotationCentre')
         self._removeEntry(bcname, 'separationVector')
 
-        self._boundaryDict.content[bcname]['type'] = 'mappedWall'
+        self._boundaryDict.content[bcname]['type'] = GeometricalType.MAPPED_WALL.value
         self._boundaryDict.content[bcname]['sampleMode'] = 'nearestPatchFaceAMI'
         if self._rname:
             self._boundaryDict.content[bcname]['sampleRegion'] = BoundaryDB.getBoundaryRegion(cpid)
@@ -115,7 +115,7 @@ class Boundary(DictionaryFile):
         self._removeEntry(bcname, 'rotationCentre')
         self._removeEntry(bcname, 'separationVector')
 
-        self._boundaryDict.content[bcname]['type'] = 'cyclicAMI'
+        self._boundaryDict.content[bcname]['type'] = GeometricalType.CYCLIC_AMI.value
         self._boundaryDict.content[bcname]['transform'] = 'noOrdering'
         self._boundaryDict.content[bcname]['neighbourPatch'] = BoundaryDB.getBoundaryName(cpid)
 
@@ -125,7 +125,7 @@ class Boundary(DictionaryFile):
         self._removeEntry(bcname, 'samplePatch')
         self._removeEntry(bcname, 'separationVector')
 
-        self._boundaryDict.content[bcname]['type'] = 'cyclicAMI'
+        self._boundaryDict.content[bcname]['type'] = GeometricalType.CYCLIC_AMI.value
         self._boundaryDict.content[bcname]['transform'] = 'rotational'
         self._boundaryDict.content[bcname]['neighbourPatch'] = BoundaryDB.getBoundaryName(cpid)
         self._boundaryDict.content[bcname]['rotationAxis'] = self._db.getVector(xpath + '/interface/rotationAxisDirection')
@@ -138,7 +138,7 @@ class Boundary(DictionaryFile):
         self._removeEntry(bcname, 'rotationAxis')
         self._removeEntry(bcname, 'rotationCentre')
 
-        self._boundaryDict.content[bcname]['type'] = 'cyclicAMI'
+        self._boundaryDict.content[bcname]['type'] = GeometricalType.CYCLIC_AMI.value
         self._boundaryDict.content[bcname]['transform'] = 'translational'
         self._boundaryDict.content[bcname]['neighbourPatch'] = BoundaryDB.getBoundaryName(cpid)
         self._boundaryDict.content[bcname]['separationVector'] = self._db.getVector(xpath + '/interface/translationVector')
@@ -152,7 +152,7 @@ class Boundary(DictionaryFile):
         self._removeEntry(bcname, 'separationVector')
         self._removeEntry(bcname, 'transform')
 
-        self._boundaryDict.content[bcname]['type'] = 'cyclic'
+        self._boundaryDict.content[bcname]['type'] = GeometricalType.CYCLIC.value
         self._boundaryDict.content[bcname]['neighbourPatch'] = BoundaryDB.getBoundaryName(cpid)
 
     def _removeEntry(self, bcname, keyword):

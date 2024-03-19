@@ -12,12 +12,13 @@ from baramMesh.db.configurations_schema import CFDType, GeometryType
 VOLUME_ICON_FILE = ':/icons/prism-outline.svg'
 SURFACE_ICON_FILE = ':/icons/prism.svg'
 
-CFDTypes = {
-    CFDType.NONE.value: QCoreApplication.translate('GeometryPage', 'None'),
-    CFDType.CELL_ZONE.value: QCoreApplication.translate('GeometryPage', 'CellZone'),
-    CFDType.BOUNDARY.value: QCoreApplication.translate('GeometryPage', 'Boundary'),
-    CFDType.INTERFACE.value: QCoreApplication.translate('GeometryPage', 'Interface'),
-}
+def cfdTypeToText(cfdType):
+    return {
+        CFDType.NONE.value: QCoreApplication.translate('GeometryPage', 'None'),
+        CFDType.CELL_ZONE.value: QCoreApplication.translate('GeometryPage', 'CellZone'),
+        CFDType.BOUNDARY.value: QCoreApplication.translate('GeometryPage', 'Boundary'),
+        CFDType.INTERFACE.value: QCoreApplication.translate('GeometryPage', 'Interface'),
+    }.get(cfdType)
 
 
 class Column(IntEnum):
@@ -29,7 +30,7 @@ class GeometryItem(QTreeWidgetItem):
     def __init__(self, gId, geometry):
         super().__init__(int(gId))
 
-        self._gType = geometry['gType']
+        self._geometry = None
 
         self.setGeometry(geometry)
 
@@ -37,19 +38,24 @@ class GeometryItem(QTreeWidgetItem):
         return str(self.type())
 
     def isVolume(self):
-        return self._gType == GeometryType.VOLUME.value
+        return self._geometry['gType'] == GeometryType.VOLUME.value
 
     def isSurface(self):
-        return self._gType == GeometryType.SURFACE.value
+        return self._geometry['gType'] == GeometryType.SURFACE.value
 
     def setGeometry(self, geometry):
         if geometry['cfdType'] == CFDType.INTERFACE.value and geometry['interRegion']:
             cfdType = QCoreApplication.translate('GeometryPage', 'Interface(R)')
         else:
-            cfdType = CFDTypes[geometry['cfdType']]
+            cfdType = cfdTypeToText(geometry['cfdType'])
 
         self.setText(Column.NAME_COLUMN, geometry['name'])
         self.setText(Column.TYPE_COLUMN, cfdType)
+
+        self._geometry = geometry
+
+    def retranslate(self):
+        self.setGeometry(self._geometry)
 
 
 class GeometryList(QObject):
@@ -76,7 +82,7 @@ class GeometryList(QObject):
         self._items = {}
 
         for gId, geometry in geometries.items():
-            self.add(gId, geometry)
+            self._items[gId] = self.add(gId, geometry)
 
     def add(self, gId, geometry):
         item = GeometryItem(gId, geometry)
@@ -91,7 +97,7 @@ class GeometryList(QObject):
                      self.volumeIcon if geometry['gType'] == GeometryType.VOLUME.value else self.surfaceIcon)
         self._tree.scrollToBottom()
 
-        self._items[gId] = item
+        return item
 
     def update(self, gId, geometry):
         self._items[gId].setGeometry(geometry)
@@ -130,6 +136,10 @@ class GeometryList(QObject):
 
     def clearSelection(self):
         self._tree.clearSelection()
+
+    def retranslate(self):
+        for item in self._items.values():
+            item.retranslate()
 
     def _connectSignalsSlots(self):
         # self._tree.itemDoubleClicked.connect(self._doubleClicked)

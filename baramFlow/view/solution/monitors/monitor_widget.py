@@ -5,7 +5,7 @@
 from PySide6.QtWidgets import QWidget
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper
+from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from .force_dialog import ForceDialog
@@ -90,13 +90,13 @@ class SurfaceMonitorWidget(MonitorWidget):
         db = coredb.CoreDB()
         xpath = MonitorDB.getSurfaceMonitorXPath(self._name)
 
-        reportType = MonitorDB.dbSurfaceReportTypeToText(db.getValue(xpath + '/reportType'))
+        reportType = MonitorDB.surfaceReportTypeToText(SurfaceReportType(db.getValue(xpath + '/reportType')))
         field = FieldHelper.DBFieldKeyToText(db.getValue(xpath + '/field/field'), db.getValue(xpath + '/field/mid'))
         bcid = db.getValue(xpath + '/surface')
         surface = BoundaryDB.getBoundaryName(bcid)
         region = BoundaryDB.getBoundaryRegion(bcid)
 
-        region = f' ({region}' if region else ''
+        region = f' ({region})' if region else ''
         self._ui.name.setText(f'{self._name}{region}')
         self._ui.type.setText(f'{reportType} {field} on Surface {surface}')
 
@@ -117,13 +117,13 @@ class VolumeMonitorWidget(MonitorWidget):
         db = coredb.CoreDB()
         xpath = MonitorDB.getVolumeMonitorXPath(self._name)
 
-        reportType = MonitorDB.dbVolumeReportTypeToText(db.getValue(xpath + '/reportType'))
+        reportType = MonitorDB.volumeReportTypeToText(VolumeReportType(db.getValue(xpath + '/reportType')))
         field = FieldHelper.DBFieldKeyToText(db.getValue(xpath + '/field/field'), db.getValue(xpath + '/field/mid'))
         czid = db.getValue(xpath + '/volume')
         volume = CellZoneDB.getCellZoneName(czid)
         region = CellZoneDB.getCellZoneRegion(czid)
 
-        region = f' ({region}' if region else ''
+        region = f' ({region})' if region else ''
         self._ui.name.setText(f'{self._name}{region}')
         self._ui.type.setText(f'{reportType} {field} on Volume {volume}')
 

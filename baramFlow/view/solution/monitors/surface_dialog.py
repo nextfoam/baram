@@ -22,12 +22,18 @@ class SurfaceDialog(QDialog):
         self._ui = Ui_SurfaceDialog()
         self._ui.setupUi(self)
 
-        self._setupReportTypeCombo()
-        self._setupFieldVariableCombo(FieldHelper.getAvailableFields())
-
         self._name = name
         self._isNew = False
         self._db = coredb.CoreDB()
+
+        self._xpath = None
+        self._surface = None
+
+        for t in SurfaceReportType:
+            self._ui.reportType.addEnumItem(t, MonitorDB.surfaceReportTypeToText(t))
+
+        for f in FieldHelper.getAvailableFields():
+            self._ui.fieldVariable.addItem(f.text, f.key)
 
         if name is None:
             self._name = self._db.addSurfaceMonitor()
@@ -37,7 +43,6 @@ class SurfaceDialog(QDialog):
             self._ui.groupBox.setTitle(name)
 
         self._xpath = MonitorDB.getSurfaceMonitorXPath(self._name)
-        self._surface = None
 
         self._connectSignalsSlots()
         self._load()
@@ -59,7 +64,7 @@ class SurfaceDialog(QDialog):
 
         writer = CoreDBWriter()
         writer.append(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
-        writer.append(self._xpath + '/reportType', self._ui.reportType.currentData(), None)
+        writer.append(self._xpath + '/reportType', self._ui.reportType.currentValue(), None)
         field = self._ui.fieldVariable.currentData()
         writer.append(self._xpath + '/field/field', field.field, None)
         writer.append(self._xpath + '/field/mid', field.mid, None)
@@ -84,12 +89,12 @@ class SurfaceDialog(QDialog):
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectSurface)
-        self._ui.reportType.currentTextChanged.connect(self._reportTypeChanged)
+        self._ui.reportType.currentDataChanged.connect(self._reportTypeChanged)
 
     def _load(self):
         self._ui.name.setText(self._name)
         self._ui.writeInterval.setText(self._db.getValue(self._xpath + '/writeInterval'))
-        self._ui.reportType.setCurrentText(MonitorDB.dbSurfaceReportTypeToText(self._db.getValue(self._xpath + '/reportType')))
+        self._ui.reportType.setCurrentData(SurfaceReportType(self._db.getValue(self._xpath + '/reportType')))
         self._ui.fieldVariable.setCurrentText(
             FieldHelper.DBFieldKeyToText(self._db.getValue(self._xpath + '/field/field'),
                                          self._db.getValue(self._xpath + '/field/mid')))
@@ -110,15 +115,6 @@ class SurfaceDialog(QDialog):
     def _surfaceChanged(self):
         self._setSurface(self._dialog.selectedItem())
 
-    def _setupReportTypeCombo(self):
-        for type_ in SurfaceReportType:
-            self._ui.reportType.addItem(MonitorDB.dbSurfaceReportTypeToText(type_.value), type_.value)
-
-    def _setupFieldVariableCombo(self, fields):
-        for f in fields:
-            self._ui.fieldVariable.addItem(f.text, f.key)
-
-    def _reportTypeChanged(self):
+    def _reportTypeChanged(self, reportType):
         self._ui.fieldVariable.setDisabled(
-            self._ui.reportType.currentData() == SurfaceReportType.MASS_FLOW_RATE.value
-            or self._ui.reportType.currentData() == SurfaceReportType.VOLUME_FLOW_RATE.value)
+            reportType == SurfaceReportType.MASS_FLOW_RATE or reportType == SurfaceReportType.VOLUME_FLOW_RATE)

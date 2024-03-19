@@ -45,6 +45,9 @@ class StepPage(QObject):
     def clear(self):
         self._loaded = False
 
+    def retranslate(self):
+        return
+
     def clearResult(self):
         path = self._outputPath()
         if path and path.exists():

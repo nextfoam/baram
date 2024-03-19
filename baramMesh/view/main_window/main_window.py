@@ -108,16 +108,16 @@ class MainWindow(QMainWindow):
 
         event.accept()
 
-    async def start(self):
-        self._startDialog.setRecents(app.settings.getRecentProjects())
-        self._startDialog.open()
-
     def changeEvent(self, event):
         if event.type() == QEvent.LanguageChange:
             self._ui.retranslateUi(self)
             self._stepManager.retranslatePages()
 
         super().changeEvent(event)
+
+    async def start(self):
+        self._startDialog.setRecents(app.settings.getRecentProjects())
+        self._startDialog.open()
 
     def _connectSignalsSlots(self):
         self._ui.menuView.addAction(self._ui.consoleView.toggleViewAction())

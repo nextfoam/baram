@@ -82,6 +82,9 @@ class GeometryPage(StepPage):
         self._loaded = False
         self._locked = False
 
+    def retranslate(self):
+        self._list.retranslate()
+
     def _connectSignalsSlots(self):
         # self._list.itemDoubleClicked.connect(self._openEditDialog)
         # self._ui.geometryList.currentItemChanged.connect(self._currentGeometryChanged)

@@ -17,9 +17,13 @@ class EnumComboBox(QComboBox):
 
         self.currentTextChanged.connect(self._currentDataChanged)
 
-    def addItems(self, items):
+    def addEnumItems(self, items):
         for enum, text in items.items():
-            self._addItem(enum, text)
+            self.addEnumItem(enum, text)
+
+    def addEnumItem(self, enum, text):
+        self.addItem(text, enum)
+        self._items[enum] = text
 
     def setCurrentData(self, enum):
         self.setCurrentText(self._items[enum])
@@ -30,10 +34,6 @@ class EnumComboBox(QComboBox):
 
     def currentValue(self):
         return self.currentData().value
-
-    def _addItem(self, enum, text):
-        self.addItem(text, enum)
-        self._items[enum] = text
 
     def _currentDataChanged(self):
         self.currentDataChanged.emit(self.currentData())

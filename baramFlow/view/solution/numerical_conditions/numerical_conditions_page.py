@@ -29,28 +29,28 @@ class NumericalConditionsPage(ContentPage):
             UpwindDiscretizationScheme.SECOND_ORDER_UPWIND: self.tr('Second Order Upwind'),
         }
 
-        self._ui.pressureVelocityCouplingScheme.addItems({
+        self._ui.pressureVelocityCouplingScheme.addEnumItems({
             PressureVelocityCouplingScheme.SIMPLE: self.tr('SIMPLE'),
             PressureVelocityCouplingScheme.SIMPLEC: self.tr('SIMPLEC'),
         })
-        self._ui.formulation.addItems({
+        self._ui.formulation.addEnumItems({
             Formulation.IMPLICIT: self.tr('Implicit'),
             # Formulation.EXPLICIT: self.tr('Explicit'),
         })
-        self._ui.fluxType.addItems({
+        self._ui.fluxType.addEnumItems({
             FluxType.ROE_FDS: self.tr('Roe-FDS'),
             FluxType.AUSM: self.tr('ASUM'),
             FluxType.AUSM_UP: self.tr('ASUM-up'),
         })
-        self._ui.discretizationSchemeTime.addItems({
+        self._ui.discretizationSchemeTime.addEnumItems({
             ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT: self.tr('First Order Implicit'),
             ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT: self.tr('Second Order Implicit'),
         })
-        self._ui.discretizationSchemeMomentum.addItems(upwindDiscretizationSchemes)
-        self._ui.discretizationSchemeEnergy.addItems(upwindDiscretizationSchemes)
-        self._ui.discretizationSchemeTurbulence.addItems(upwindDiscretizationSchemes)
-        self._ui.discretizationSchemeVolumeFraction.addItems(upwindDiscretizationSchemes)
-        self._ui.discretizationSchemePressure.addItems({
+        self._ui.discretizationSchemeMomentum.addEnumItems(upwindDiscretizationSchemes)
+        self._ui.discretizationSchemeEnergy.addEnumItems(upwindDiscretizationSchemes)
+        self._ui.discretizationSchemeTurbulence.addEnumItems(upwindDiscretizationSchemes)
+        self._ui.discretizationSchemeVolumeFraction.addEnumItems(upwindDiscretizationSchemes)
+        self._ui.discretizationSchemePressure.addEnumItems({
             InterpolationScheme.LINEAR: self.tr('Linear'),
             InterpolationScheme.MOMENTUM_WEIGHTED_RECONSTRUC: self.tr('Momentum Weighted Reconstruct'),
             InterpolationScheme.MOMENTUM_WEIGHTED: self.tr('Momentum Weighted'),

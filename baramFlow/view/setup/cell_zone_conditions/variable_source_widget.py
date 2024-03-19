@@ -24,11 +24,11 @@ class VariableSourceWidget(QWidget):
         self._units = units
 
         self._ui.groupBox.setTitle(title)
-        self._ui.specificationMethod.addItems({
+        self._ui.specificationMethod.addEnumItems({
             SpecificationMethod.VALUE_PER_UNIT_VOLUME: self.tr("Value per Unit Volume"),
             SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: self.tr("Value for Entire Cell Zone"),
         })
-        self._ui.temporalProfileType.addItems({
+        self._ui.temporalProfileType.addEnumItems({
             TemporalProfileType.CONSTANT: self.tr("Constant"),
             TemporalProfileType.PIECEWISE_LINEAR: self.tr("Piecewise Linear"),
             TemporalProfileType.POLYNOMIAL: self.tr("Polynomial"),

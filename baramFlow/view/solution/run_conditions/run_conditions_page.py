@@ -29,12 +29,12 @@ class RunConditionsPage(ContentPage):
         self._ui = Ui_RunConditionsPage()
         self._ui.setupUi(self)
 
-        self._ui.timeSteppingMethod.addItems({
+        self._ui.timeSteppingMethod.addEnumItems({
             TimeSteppingMethod.FIXED: self.tr('Fixed'),
             TimeSteppingMethod.ADAPTIVE: self.tr('Adaptive')
         })
 
-        self._ui.dataWriteFormat.addItems({
+        self._ui.dataWriteFormat.addEnumItems({
             DataWriteFormat.BINARY: self.tr('Binary'),
             DataWriteFormat.ASCII: self.tr('ASCII'),
         })

@@ -30,7 +30,7 @@ class ConstantSourceWidget(QWidget):
         self._ui.groupBox.setTitle(title)
         self._ui.label.setText(label)
 
-        self._ui.specificationMethod.addItems({
+        self._ui.specificationMethod.addEnumItems({
             SpecificationMethod.VALUE_PER_UNIT_VOLUME: self.tr("Value per Unit Volume"),
             SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: self.tr("Value for Entire Cell Zone"),
         })

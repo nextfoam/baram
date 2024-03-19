@@ -22,12 +22,18 @@ class VolumeDialog(QDialog):
         self._ui = Ui_VolumeDialog()
         self._ui.setupUi(self)
 
-        self._setupReportTypeCombo()
-        self._setupFieldVariableCombo(FieldHelper.getAvailableFields())
-
         self._name = name
         self._isNew = False
         self._db = coredb.CoreDB()
+
+        self._xpath = None
+        self._volume = None
+
+        for t in VolumeReportType:
+            self._ui.reportType.addEnumItem(t, MonitorDB.volumeReportTypeToText(t))
+
+        for f in FieldHelper.getAvailableFields():
+            self._ui.fieldVariable.addItem(f.text, f.key)
 
         if name is None:
             self._name = self._db.addVolumeMonitor()
@@ -37,7 +43,6 @@ class VolumeDialog(QDialog):
             self._ui.groupBox.setTitle(name)
 
         self._xpath = MonitorDB.getVolumeMonitorXPath(self._name)
-        self._volume = None
 
         self._connectSignalsSlots()
         self._load()
@@ -59,7 +64,7 @@ class VolumeDialog(QDialog):
 
         writer = CoreDBWriter()
         writer.append(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
-        writer.append(self._xpath + '/reportType', self._ui.reportType.currentData(), None)
+        writer.append(self._xpath + '/reportType', self._ui.reportType.currentValue(), None)
         field = self._ui.fieldVariable.currentData()
         writer.append(self._xpath + '/field/field', field.field, None)
         writer.append(self._xpath + '/field/mid', field.mid, None)
@@ -88,8 +93,7 @@ class VolumeDialog(QDialog):
     def _load(self):
         self._ui.name.setText(self._name)
         self._ui.writeInterval.setText(self._db.getValue(self._xpath + '/writeInterval'))
-        self._ui.reportType.setCurrentText(
-            MonitorDB.dbVolumeReportTypeToText(self._db.getValue(self._xpath + '/reportType')))
+        self._ui.reportType.setCurrentData(VolumeReportType(self._db.getValue(self._xpath + '/reportType')))
         self._ui.fieldVariable.setCurrentText(
             FieldHelper.DBFieldKeyToText(self._db.getValue(self._xpath + '/field/field'),
                                          self._db.getValue(self._xpath + '/field/mid')))
@@ -109,11 +113,3 @@ class VolumeDialog(QDialog):
 
     def _volumeChanged(self):
         self._setVolume(self._dialog.selectedItem())
-
-    def _setupReportTypeCombo(self):
-        for type_ in VolumeReportType:
-            self._ui.reportType.addItem(MonitorDB.dbVolumeReportTypeToText(type_.value), type_.value)
-
-    def _setupFieldVariableCombo(self, fields):
-        for f in fields:
-            self._ui.fieldVariable.addItem(f.text, f.key)

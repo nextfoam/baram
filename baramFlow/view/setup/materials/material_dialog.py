@@ -279,7 +279,7 @@ class MaterialDialog(ResizableDialog):
 
     def _setupSpecificationCombo(self, combo, types):
         for t in types:
-            combo.addItem(MaterialDB.specificationText[t], t)
+            combo.addItem(MaterialDB.specificationToText(t), t)
 
     def _connectSignalsSlots(self):
         self._ui.densityType.currentTextChanged.connect(self._densityTypeChanged)

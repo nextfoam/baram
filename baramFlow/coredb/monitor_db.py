@@ -51,27 +51,6 @@ class MonitorDB:
     SURFACE_MONITORS_XPATH = './/monitors/surfaces'
     VOLUME_MONITORS_XPATH = './/monitors/volumes'
 
-    _surfaceReportTypes = {
-        SurfaceReportType.AREA_WEIGHTED_AVERAGE.value: QCoreApplication.translate('MonitorDB', 'Area-Weighted Average'),
-        SurfaceReportType.MASS_WEIGHTED_AVERAGE.value: QCoreApplication.translate('MonitorDB', 'Mass-Weighted Average'),
-        SurfaceReportType.INTEGRAL.value: QCoreApplication.translate('MonitorDB', 'Integral'),
-        SurfaceReportType.MASS_FLOW_RATE.value: QCoreApplication.translate('MonitorDB', 'Mass Flow Rate'),
-        SurfaceReportType.VOLUME_FLOW_RATE.value: QCoreApplication.translate('MonitorDB', 'Volume Flow Rate'),
-        SurfaceReportType.MINIMUM.value: QCoreApplication.translate('MonitorDB', 'Minimum'),
-        SurfaceReportType.MAXIMUM.value: QCoreApplication.translate('MonitorDB', 'Maximum'),
-        SurfaceReportType.COEFFICIENT_OF_VARIATION.value:
-            QCoreApplication.translate('MonitorDB', 'Coefficient of Variation, CoV'),
-    }
-
-    _volumeReportTypes = {
-        VolumeReportType.VOLUME_AVERAGE.value: QCoreApplication.translate('MonitorDB', 'Volume Average'),
-        VolumeReportType.VOLUME_INTEGRAL.value: QCoreApplication.translate('MonitorDB', 'Volume Integral'),
-        VolumeReportType.MINIMUM.value: QCoreApplication.translate('MonitorDB', 'Minimum'),
-        VolumeReportType.MAXIMUM.value: QCoreApplication.translate('MonitorDB', 'Maximum'),
-        VolumeReportType.COEFFICIENT_OF_VARIATION.value:
-            QCoreApplication.translate('MonitorDB', 'Coefficient of Variation, CoV'),
-    }
-
     @classmethod
     def getForceMonitorXPath(cls, name):
         return f'{cls.FORCE_MONITORS_XPATH}/forceMonitor[name="{name}"]'
@@ -89,12 +68,29 @@ class MonitorDB:
         return f'{cls.VOLUME_MONITORS_XPATH}/volumeMonitor[name="{name}"]'
 
     @classmethod
-    def dbSurfaceReportTypeToText(cls, dbText):
-        return cls._surfaceReportTypes[dbText]
+    def surfaceReportTypeToText(cls, reportType):
+        return {
+            SurfaceReportType.AREA_WEIGHTED_AVERAGE: QCoreApplication.translate('MonitorDB', 'Area-Weighted Average'),
+            SurfaceReportType.MASS_WEIGHTED_AVERAGE: QCoreApplication.translate('MonitorDB', 'Mass-Weighted Average'),
+            SurfaceReportType.INTEGRAL: QCoreApplication.translate('MonitorDB', 'Integral'),
+            SurfaceReportType.MASS_FLOW_RATE: QCoreApplication.translate('MonitorDB', 'Mass Flow Rate'),
+            SurfaceReportType.VOLUME_FLOW_RATE: QCoreApplication.translate('MonitorDB', 'Volume Flow Rate'),
+            SurfaceReportType.MINIMUM: QCoreApplication.translate('MonitorDB', 'Minimum'),
+            SurfaceReportType.MAXIMUM: QCoreApplication.translate('MonitorDB', 'Maximum'),
+            SurfaceReportType.COEFFICIENT_OF_VARIATION:
+                QCoreApplication.translate('MonitorDB', 'Coefficient of Variation, CoV'),
+        }.get(reportType)
 
     @classmethod
-    def dbVolumeReportTypeToText(cls, dbText):
-        return cls._volumeReportTypes[dbText]
+    def volumeReportTypeToText(cls, reportType):
+        return {
+            VolumeReportType.VOLUME_AVERAGE: QCoreApplication.translate('MonitorDB', 'Volume Average'),
+            VolumeReportType.VOLUME_INTEGRAL: QCoreApplication.translate('MonitorDB', 'Volume Integral'),
+            VolumeReportType.MINIMUM: QCoreApplication.translate('MonitorDB', 'Minimum'),
+            VolumeReportType.MAXIMUM: QCoreApplication.translate('MonitorDB', 'Maximum'),
+            VolumeReportType.COEFFICIENT_OF_VARIATION:
+                QCoreApplication.translate('MonitorDB', 'Coefficient of Variation, CoV'),
+        }.get(reportType)
 
 
 class FieldHelper:

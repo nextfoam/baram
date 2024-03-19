@@ -3,6 +3,7 @@
 
 from PySide6.QtWidgets import QDialog
 
+from baramMesh.app import app
 from .language_dialog_ui import Ui_LanguageDialog
 
 
@@ -26,22 +27,14 @@ class LanugageDialog(QDialog):
         self._ui = Ui_LanguageDialog()
         self._ui.setupUi(self)
 
-        self._language = None
-
         for i in range(len(languages[1])):
             self._ui.language.addItem(languages[1][i], languages[0][i])
 
-    def setCurrentLanguage(self, language):
-        self._ui.language.setCurrentIndex(languages[0].index(language))
-
-    def selectedLanguage(self):
-        return self._language
+        self._ui.language.setCurrentIndex(languages[0].index(app.settings.getLanguage()))
 
     def accept(self):
-        self._language = self._ui.language.currentData()
-        #
-        # if language != app.settings.getLanguage():
-        #     app.settings.setLanguage(language)
-        #     app.setLanguage(language)
+        language = self._ui.language.currentData()
+        if app.settings.setLanguage(language):
+            app.applyLanguage()
 
         super().accept()

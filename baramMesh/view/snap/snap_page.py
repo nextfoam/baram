@@ -23,7 +23,7 @@ class SnapPage(StepPage):
 
         self._processor = None
 
-        self._ui.featureSnapType.addItems({
+        self._ui.featureSnapType.addEnumItems({
             FeatureSnapType.EXPLICIT: self.tr('explicit'),
             FeatureSnapType.IMPLICIT: self.tr('implicit')
         })
