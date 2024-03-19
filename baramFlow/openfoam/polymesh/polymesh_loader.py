@@ -17,7 +17,7 @@ from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA, vtkCommand
 from PySide6.QtCore import QObject, Signal
 
-from baramFlow.coredb.boundary_db import BoundaryType
+from baramFlow.coredb.boundary_db import BoundaryType, GeometricalType, BoundaryDB
 from libbaram import utils
 from libbaram.openfoam.constants import Directory, CASE_DIRECTORY_NAME
 
@@ -91,15 +91,35 @@ inletSearchPattern = re.compile('([^a-zA-Z]|^)inlet', re.IGNORECASE)
 outMatchPattern = re.compile('out([^a-zA-Z]|$)', re.IGNORECASE)
 outletSearchPattern = re.compile('([^a-zA-Z]|^)outlet', re.IGNORECASE)
 
+emptyBoundaryName ='frontAndBackPlanes'
+
 
 def defaultBoundaryType(name, geometricalType):
-    if inMatchPattern.match(name) or inletSearchPattern.search(name):
-        return BoundaryType.VELOCITY_INLET.value
+    if name == emptyBoundaryName:
+        return BoundaryType.EMPTY
 
-    if outMatchPattern.match(name) or outletSearchPattern.search(name):
-        return BoundaryType.PRESSURE_OUTLET.value
+    if geometricalType == GeometricalType.PATCH or geometricalType == GeometricalType.WALL:
+        if inMatchPattern.match(name) or inletSearchPattern.search(name):
+            return BoundaryType.VELOCITY_INLET
 
-    return BoundaryType.WALL.value
+        if outMatchPattern.match(name) or outletSearchPattern.search(name):
+            return BoundaryType.PRESSURE_OUTLET
+
+        return BoundaryType.WALL
+
+    if geometricalType in (GeometricalType.MAPPED_WALL, GeometricalType.CYCLIC, GeometricalType.CYCLIC_AMI):
+        return BoundaryType.INTERFACE
+
+    if geometricalType == GeometricalType.SYMMETRY:
+        return BoundaryType.SYMMETRY
+
+    if geometricalType == GeometricalType.EMPTY:
+        return BoundaryType.EMPTY
+
+    if geometricalType == GeometricalType.WEDGE:
+        return BoundaryType.WEDGE
+
+    return BoundaryType.WALL
 
 
 class PolyMeshLoader(QObject):
@@ -136,10 +156,10 @@ class PolyMeshLoader(QObject):
             regions = RegionProperties.loadRegions(path)
             for rname in regions:
                 boundaryDict = self.loadBoundaryDict(path / rname / Directory.POLY_MESH_DIRECTORY_NAME / 'boundary')
-                boundaries[rname] = {bname: boundary['type'] for bname, boundary in boundaryDict.content.items()}
+                boundaries[rname] = boundaryDict.content
         else:
             boundaryDict = self.loadBoundaryDict(path / 'polyMesh' / 'boundary')
-            boundaries[''] = {bname: boundary['type'] for bname, boundary in boundaryDict.content.items()}
+            boundaries[''] = boundaryDict.content
 
         return boundaries
 
@@ -248,6 +268,23 @@ class PolyMeshLoader(QObject):
                 if 'zones' in vtkMesh[region] and 'cellZones' in vtkMesh[region]['zones'] \
                 else set()
 
+        def getSamplePatch(rname, bcname):
+            b = boundaries[rname][bcname]
+            if 'samplePatch' not in b:
+                return None, None
+
+            patch = b['samplePatch']
+            region = b['sampleRegion'] if 'sampleRegion' in b else rname
+
+            return region, patch
+
+        def getNeighbourPatch(rname, bcname):
+            b = boundaries[rname][bcname]
+            if 'neighbourPatch' in b:
+                return b['neighbourPatch']
+
+            return None
+
         db = coredb.CoreDB()
         if set(db.getRegions()) == set(r for r in vtkMesh if 'boundary' in vtkMesh[r]) and \
                 all(oldBoundaries(rname) == newBoundareis(rname) and oldCellZones(rname) == newCellZones(rname)
@@ -261,8 +298,25 @@ class PolyMeshLoader(QObject):
             db.addRegion(rname)
 
             for bcname in vtkMesh[rname]['boundary']:
-                geometricalType = boundaries[rname][bcname]
-                db.addBoundaryCondition(rname, bcname, geometricalType, defaultBoundaryType(bcname, geometricalType))
+                boundary = boundaries[rname][bcname]
+                geometricalType = GeometricalType(boundary['type'])
+                boundaryType = defaultBoundaryType(bcname, geometricalType)
+                boundary['bcid'] = str(db.addBoundaryCondition(rname, bcname, boundary['type'], boundaryType.value))
+
+                if boundaryType == BoundaryType.INTERFACE:
+                    coupledBoundary = None
+                    if geometricalType == GeometricalType.MAPPED_WALL and 'samplePatch' in boundary:
+                        sampleRegion, samplePatch = getSamplePatch(rname, bcname)
+                        if getSamplePatch(sampleRegion, samplePatch) == (rname, bcname):
+                            coupledBoundary = boundaries[sampleRegion][samplePatch]
+                    elif 'neighbourPatch' in boundary:
+                        neighbourPatch = getNeighbourPatch(rname, bcname)
+                        if getNeighbourPatch(rname, neighbourPatch) == (rname, bcname):
+                            coupledBoundary = boundaries[rname][neighbourPatch]
+
+                    if coupledBoundary and 'bcid' in coupledBoundary:
+                        db.setValue(BoundaryDB.getXPath(boundary['bcid']) + '/coupledBoundary', coupledBoundary['bcid'])
+                        db.setValue(BoundaryDB.getXPath(coupledBoundary['bcid']) + '/coupledBoundary', boundary['bcid'])
 
             if 'zones' in vtkMesh[rname] and 'cellZones' in vtkMesh[rname]['zones']:
                 for czname in vtkMesh[rname]['zones']['cellZones']:
@@ -307,4 +361,3 @@ class PolyMeshLoader(QObject):
             s = source / Directory.POLY_MESH_DIRECTORY_NAME
             t = target / Directory.POLY_MESH_DIRECTORY_NAME
             shutil.copytree(s, t, copy_function=shutil.copyfile)
-
