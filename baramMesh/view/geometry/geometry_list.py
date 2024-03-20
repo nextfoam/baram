@@ -82,7 +82,7 @@ class GeometryList(QObject):
         self._items = {}
 
         for gId, geometry in geometries.items():
-            self._items[gId] = self.add(gId, geometry)
+            self.add(gId, geometry)
 
     def add(self, gId, geometry):
         item = GeometryItem(gId, geometry)
@@ -97,7 +97,7 @@ class GeometryList(QObject):
                      self.volumeIcon if geometry['gType'] == GeometryType.VOLUME.value else self.surfaceIcon)
         self._tree.scrollToBottom()
 
-        return item
+        self._items[gId] = item
 
     def update(self, gId, geometry):
         self._items[gId].setGeometry(geometry)
