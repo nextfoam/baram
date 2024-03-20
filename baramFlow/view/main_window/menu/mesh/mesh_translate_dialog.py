@@ -7,12 +7,10 @@ from .mesh_translate_dialog_ui import Ui_MeshTranslateDialog
 
 
 class MeshTranslateDialog(QDialog):
-    def __init__(self, parent, manager):
+    def __init__(self, parent):
         super().__init__(parent)
         self._ui = Ui_MeshTranslateDialog()
         self._ui.setupUi(self)
-
-        self._manager = manager
 
     def data(self):
         return self._ui.offsetX.text(), self._ui.offsetY.text(), self._ui.offsetZ.text()

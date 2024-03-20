@@ -6,7 +6,7 @@ from enum import Enum, auto
 from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import QObject, Signal
 
-from baramFlow.app import app
+from baramFlow.coredb import coredb
 from baramFlow.case_manager import CaseManager
 
 
@@ -74,8 +74,8 @@ class NavigatorView(QObject):
 
         self._connectSignalsSlots()
 
-        self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(True)
-        self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(True)
+        # self._menu[MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value].setDisabled(True)
+        # self._menu[MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value].setDisabled(True)
         # self.updateMenu()
 
     def currentMenu(self):
@@ -84,8 +84,8 @@ class NavigatorView(QObject):
     def setCurrentMenu(self, value):
         self._view.setCurrentItem(self._menu[value])
 
-    def updateMenu(self):
-        noMesh = app.vtkMesh() is None
+    def updateEnabled(self):
+        noMesh = not coredb.CoreDB().isMeshLoaded()
         solverActivated = CaseManager().isActive() or CaseManager().isBatchRunning()
 
         self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(solverActivated)

@@ -1,22 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
 import logging
 import qasync
+import shutil
 
 from enum import Enum, auto
 from pathlib import Path
 
-from PySide6.QtCore import QObject
+from PySide6.QtCore import QObject, Signal
 
-from baramFlow.openfoam.redistribution_task import RedistributionTask
-from libbaram.exception import CanceledException
+from libbaram import utils
+from libbaram.openfoam.constants import CASE_DIRECTORY_NAME, Directory
 from libbaram.run import RunParallelUtility, RunUtility
-from widgets.progress_dialog import ProgressDialog
 
+from baramFlow.coredb.project import Project
 from baramFlow.openfoam import parallel
-from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
+from baramFlow.openfoam.constant.region_properties import RegionProperties
+from baramFlow.openfoam.file_system import FileSystem, FileLoadingError
 
 
 logger = logging.getLogger(__name__)
@@ -44,10 +46,12 @@ OPENFOAM_MESH_CONVERTERS = {
 
 
 class MeshManager(QObject):
-    def __init__(self, window):
+    progress = Signal(str)
+
+    def __init__(self):
         super().__init__()
 
-        self._window = window
+        self._process = None
 
     @qasync.asyncSlot()
     async def scale(self, x, y, z):
@@ -104,65 +108,83 @@ class MeshManager(QObject):
 
         return result
 
-    async def importOpenFoamMesh(self, path: Path):
-        progressDialog = ProgressDialog(self._window, self.tr('Mesh Loading'))
-        progressDialog.open()
+    async def importMeshFiles(self, srcPath):
+        path = self._checkAndCorrectMeshFolderSelection(srcPath)
+        await self._copyMeshFrom(path)
 
-        progressDialog.setLabelText(self.tr('Checking the mesh.'))
+    async def convertMesh(self, path, meshType):
+        fileName = 'meshToConvert' + path.suffix
+        await FileSystem.copyFileToCase(path, fileName)
 
-        try:
-            progressDialog.setLabelText(self.tr('Loading the boundaries.'))
-            # Need to load mesh to get region information though redistribution loads mesh in next lines
-            await PolyMeshLoader().loadMesh(path)
+        self._process = RunUtility(*OPENFOAM_MESH_CONVERTERS[meshType], fileName, cwd=FileSystem.caseRoot())
+        await self._process.start()
 
-            redistributeTask = RedistributionTask()
-            redistributeTask.progress.connect(progressDialog.setLabelText)
-            await redistributeTask.redistribute()
+        if await self._process.wait():
+            await FileSystem.removeFile(fileName)
+            raise RuntimeError(self.tr('File conversion failed.'))
 
-            progressDialog.close()
-        except Exception as ex:
-            logger.info(ex, exc_info=True)
-            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+        await FileSystem.removeFile(fileName)
 
-    async def importMesh(self, path, meshType):
-        progressDialog = ProgressDialog(self._window, self.tr('Mesh Loading'))
-        progressDialog.open()
-
-        progressDialog.setLabelText(self.tr('Converting the mesh.'))
-
-        try:
-            fileName = 'meshToConvert' + path.suffix
-            await FileSystem.copyFileToCase(path, fileName)
-
-            cm = RunUtility(*OPENFOAM_MESH_CONVERTERS[meshType], fileName, cwd=FileSystem.caseRoot())
-
-            progressDialog.showCancelButton()
-            progressDialog.cancelClicked.connect(cm.cancel)
-
-            rc = 0
-            await cm.start()
-            try:
-                rc = await cm.wait()
-            except CanceledException:
-                pass
-
-            if rc != 0:
-                progressDialog.finish(self.tr('File conversion failed.'))
-            elif not progressDialog.isCanceled():
-                progressDialog.setLabelText(self.tr('Loading the boundaries.'))
-                # Need to load mesh to get region information though redistribution loads mesh in next lines
-                await PolyMeshLoader().loadMesh()
-                await FileSystem.removeFile(fileName)
-
-                redistributeTask = RedistributionTask()
-                redistributeTask.progress.connect(progressDialog.setLabelText)
-                await redistributeTask.redistribute()
-
-                progressDialog.close()
-        except Exception as ex:
-            logger.info(ex, exc_info=True)
-            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+    def cancel(self):
+        if self._process:
+            self._process.cancel()
 
     @classmethod
     def convertUtility(cls, meshType):
         return OPENFOAM_MESH_CONVERTERS[meshType][0]
+
+    async def _copyMeshFrom(self, source):
+        await asyncio.to_thread(self._copyMeshFromInternal, source)
+
+    def _copyMeshFromInternal(self, source):
+        target = Project.instance().path / CASE_DIRECTORY_NAME / Directory.CONSTANT_DIRECTORY_NAME  # Constant Path for Live Case
+        if target.exists():
+            utils.rmtree(target)
+
+        target.mkdir(exist_ok=True)
+
+        regionPropFile = source / Directory.REGION_PROPERTIES_FILE_NAME
+        if regionPropFile.is_file():
+            shutil.copyfile(regionPropFile, target / Directory.REGION_PROPERTIES_FILE_NAME)
+            regions = RegionProperties.loadRegions(source)
+            for rname in regions:
+                s = source / rname / Directory.POLY_MESH_DIRECTORY_NAME
+                t = target / rname / Directory.POLY_MESH_DIRECTORY_NAME
+                shutil.copytree(s, t, copy_function=shutil.copyfile)
+        else:
+            s = source / Directory.POLY_MESH_DIRECTORY_NAME
+            t = target / Directory.POLY_MESH_DIRECTORY_NAME
+            shutil.copytree(s, t, copy_function=shutil.copyfile)
+
+    def _checkAndCorrectMeshFolderSelection(self, path: Path) -> Path:
+        """Check if "path" has correct polyMesh
+
+        Check if "path" has correct polyMesh
+        "path" can point "polyMesh" or "constant" for single region mesh
+        "path" should point "constant" for multi-region mesh
+
+        Args:
+            path: path for "constant" or "polyMesh"
+
+        Returns:
+            path for "constant" folder
+
+        Raises:
+            FileLoadingError: "path" does not have correct polyMesh
+        """
+        if FileSystem.isPolyMesh(path):
+            return path.parent
+
+        if FileSystem.isPolyMesh(path / 'polyMesh'):
+            return path
+
+        regionPropFile = path / Directory.REGION_PROPERTIES_FILE_NAME
+        if not regionPropFile.is_file():
+            raise FileLoadingError(f'PolyMesh not found.')
+
+        regions = RegionProperties.loadRegions(path)
+        for rname in regions:
+            if not FileSystem.isPolyMesh(path / rname / 'polyMesh'):
+                raise FileLoadingError(f'Corrupted Multi-Region PolyMesh')
+
+        return path

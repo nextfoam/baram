@@ -228,6 +228,10 @@ class FileSystem:
         return True
 
     @classmethod
+    def hasPolyMesh(cls):
+        return cls.isPolyMesh(cls._casePath) or cls._casePath.joinpath(Directory.REGION_PROPERTIES_FILE_NAME).is_file()
+
+    @classmethod
     def processorFolders(cls):
         return list(cls._casePath.glob('processor[0-9]*'))
 
@@ -281,6 +285,10 @@ class FileSystem:
 
         for path in folders:
             utils.rmtree(path)
+
+    @classmethod
+    def deleteMesh(cls):
+        utils.rmtree(cls.polyMeshPath())
 
     @classmethod
     def latestTimeToZero(cls):

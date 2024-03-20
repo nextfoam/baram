@@ -91,7 +91,6 @@ class _Project(QObject):
     def __init__(self):
         super().__init__()
 
-        self._meshLoaded = False
         self._process = (None, None)
         self._runType = None
 
@@ -149,10 +148,6 @@ class _Project(QObject):
         return self._runType
 
     @property
-    def meshLoaded(self):
-        return self._meshLoaded
-
-    @property
     def isModified(self):
         return self._fileDB.isModified or self._coreDB.isModified
 
@@ -167,9 +162,6 @@ class _Project(QObject):
 
     def solverProcess(self):
         return self._projectSettings.getProcess()
-
-    def setMeshLoaded(self, loaded):
-        self._meshLoaded = loaded
 
     def save(self):
         self._fileDB.save()
@@ -245,8 +237,6 @@ class _Project(QObject):
             self._coreDB = self._fileDB.loadCoreDB()
 
         CoreDBReader().reloadCoreDB()
-
-        self._meshLoaded = True if self._coreDB.getRegions() or route == ProjectOpenType.MESH else False
 
     def _close(self):
         coredb.destroy()

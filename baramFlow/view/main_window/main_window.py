@@ -15,6 +15,7 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer
 
+from libbaram.exception import CanceledException
 from libbaram.openfoam.constants import CASE_DIRECTORY_NAME
 from libbaram.run import hasUtility
 from libbaram.utils import getFit
@@ -144,7 +145,6 @@ class MainWindow(QMainWindow):
 
         self._closeType = CloseType.EXIT_APP
 
-        self._meshManager = MeshManager(self)
         self._connectSignalsSlots()
 
         if self._caseManager.isRunning():
@@ -153,10 +153,6 @@ class MainWindow(QMainWindow):
         else:
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL.value)
             self._renderingDock.raise_()
-
-        # self._updateMenuEnables()
-        self._ui.menuMesh.setDisabled(True)
-        self._ui.menuParallel.setDisabled(True)
 
         geometry = AppSettings.getLastMainWindowGeometry()
         display = app.qApplication.primaryScreen().availableVirtualGeometry()
@@ -224,11 +220,6 @@ class MainWindow(QMainWindow):
 
         super().changeEvent(event)
 
-    def vtkMeshLoaded(self):
-        self._ui.menuMesh.setEnabled(True)
-        self._ui.menuParallel.setEnabled(True)
-        self._navigatorView.updateMenu()
-
     def _connectSignalsSlots(self):
         self._ui.actionSave.triggered.connect(self._save)
         self._ui.actionSaveAs.triggered.connect(self._saveAs)
@@ -263,6 +254,7 @@ class MainWindow(QMainWindow):
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
         self._caseManager.caseLoaded.connect(self._caseLoaded)
+        app.meshUpdated.connect(self._meshUpdated)
 
     def _save(self):
         if self._saveCurrentPage():
@@ -285,17 +277,17 @@ class MainWindow(QMainWindow):
         return True
 
     def _loadMesh(self):
-        self._importMesh(MeshType.POLY_MESH)
+        self._openMeshSelectionDialog(MeshType.POLY_MESH)
 
     def _importFluent2D(self):
-        self._importMesh(MeshType.FLUENT_2D, self.tr('Fluent (*.msh)'))
+        self._openMeshSelectionDialog(MeshType.FLUENT_2D, self.tr('Fluent (*.msh)'))
 
     def _importFluent3D(self):
-        self._importMesh(MeshType.FLUENT_3D, self.tr('Fluent (*.cas)'))
+        self._openMeshSelectionDialog(MeshType.FLUENT_3D, self.tr('Fluent (*.cas)'))
 
     def _importStarCcmPlus(self):
-        if hasUtility(self._meshManager.convertUtility(MeshType.STAR_CCM)):
-            self._importMesh(MeshType.STAR_CCM, self.tr('StarCCM+ (*.ccm)'))
+        if hasUtility(MeshManager.convertUtility(MeshType.STAR_CCM)):
+            self._openMeshSelectionDialog(MeshType.STAR_CCM, self.tr('StarCCM+ (*.ccm)'))
         else:
             QMessageBox.information(
                 self, self.tr('Mesh Convert'),
@@ -304,13 +296,13 @@ class MainWindow(QMainWindow):
                         f'(Linux only)</a>'))
 
     def _importGmsh(self):
-        self._importMesh(MeshType.GMSH, self.tr('Gmsh (*.msh)'))
+        self._openMeshSelectionDialog(MeshType.GMSH, self.tr('Gmsh (*.msh)'))
 
     def _importIdeas(self):
-        self._importMesh(MeshType.IDEAS, self.tr('Ideas (*.unv)'))
+        self._openMeshSelectionDialog(MeshType.IDEAS, self.tr('Ideas (*.unv)'))
 
     def _importNasaPlot3D(self):
-        self._importMesh(MeshType.NAMS_PLOT3D, self.tr('Plot3d (*.unv)'))
+        self._openMeshSelectionDialog(MeshType.NAMS_PLOT3D, self.tr('Plot3d (*.unv)'))
 
     def _closeProject(self):
         self._closeType = CloseType.CLOSE_PROJECT
@@ -322,17 +314,17 @@ class MainWindow(QMainWindow):
         self._dialog.show()  # Call "show()" for "ApplicationModal"
 
     def _openMeshScaleDialog(self):
-        self._dialog = MeshScaleDialog(self, self._meshManager)
+        self._dialog = MeshScaleDialog(self)
         self._dialog.accepted.connect(self._scaleMesh)
         self._dialog.open()
 
     def _openMeshTranslateDialog(self):
-        self._dialog = MeshTranslateDialog(self, self._meshManager)
+        self._dialog = MeshTranslateDialog(self)
         self._dialog.accepted.connect(self._translateMesh)
         self._dialog.open()
 
     def _openMeshRotateDialog(self):
-        self._dialog = MeshRotateDialog(self, self._meshManager)
+        self._dialog = MeshRotateDialog(self)
         self._dialog.accepted.connect(self._rotateMesh)
         self._dialog.open()
 
@@ -359,7 +351,7 @@ class MainWindow(QMainWindow):
 
         try:
             progressDialog.setLabelText(self.tr('Scaling the mesh.'))
-            if await self._meshManager.scale(*self._dialog.data()):
+            if await MeshManager().scale(*self._dialog.data()):
                 progressDialog.finish(self.tr('Mesh scaling failed.'))
                 return
 
@@ -389,7 +381,7 @@ class MainWindow(QMainWindow):
 
         try:
             progressDialog.setLabelText(self.tr('Translating the mesh.'))
-            if await self._meshManager.translate(*self._dialog.data()):
+            if await MeshManager().translate(*self._dialog.data()):
                 progressDialog.finish(self.tr('Mesh translation failed.'))
                 return
 
@@ -419,7 +411,7 @@ class MainWindow(QMainWindow):
 
         try:
             progressDialog.setLabelText(self.tr('Rotating the mesh.'))
-            if await self._meshManager.rotate(*self._dialog.data()):
+            if await MeshManager().rotate(*self._dialog.data()):
                 progressDialog.finish(self.tr('Mesh rotation failed.'))
                 return
 
@@ -492,22 +484,26 @@ class MainWindow(QMainWindow):
         self._dialog.open()
 
     def _meshUpdated(self):
-        if self._project.meshLoaded:
-            targets = [
-                MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value,
-                MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value,
-                MenuItem.MENU_SOLUTION_INITIALIZATION.value,
-                MenuItem.MENU_SOLUTION_MONITORS.value,
-            ]
+        self._project.save()
+        # self._ui.menuMesh.setEnabled(True)
+        # self._ui.menuParallel.setEnabled(True)
+        self._navigatorView.updateEnabled()
 
-            for page in [self._menuPages[menu] for menu in targets]:
-                if page.isCreated():
-                    self._contentView.removePage(page)
-                    page.removePage()
+        targets = [
+            MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value,
+            MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value,
+            MenuItem.MENU_SOLUTION_INITIALIZATION.value,
+            MenuItem.MENU_SOLUTION_MONITORS.value,
+        ]
 
-            currentMenu = self._navigatorView.currentMenu()
-            if currentMenu in targets:
-                self._changeForm(currentMenu)
+        for page in [self._menuPages[menu] for menu in targets]:
+            if page.isCreated():
+                self._contentView.removePage(page)
+                page.removePage()
+
+        currentMenu = self._navigatorView.currentMenu()
+        if currentMenu in targets:
+            self._changeForm(currentMenu)
 
     @qasync.asyncSlot()
     async def _solverStatusChanged(self, status, name):
@@ -518,7 +514,7 @@ class MainWindow(QMainWindow):
         self._ui.menuMesh.setDisabled(isSolverRunning)
         self._ui.menuParallel.setDisabled(isSolverRunning)
 
-        self._navigatorView.updateMenu()
+        self._navigatorView.updateEnabled()
 
         if status == SolverStatus.ENDED and not name:
             await AsyncMessageBox().information(self, self.tr('Calculation Terminated'),
@@ -526,26 +522,27 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _projectOpened(self):
-        if self._project.meshLoaded:
-            self._caseManager.setCase(None, self._project.path / CASE_DIRECTORY_NAME)
-            db = coredb.CoreDB()
-            if db.getRegions():
-                # BaramFlow Project is opened
-                await self._loadVtkMesh()
-            else:
-                # BaramMesh Project is opened
-                progressDialog = ProgressDialog(self, self.tr('Mesh Loading'))
-                progressDialog.open()
+        self._caseManager.setCase(None, self._project.path / CASE_DIRECTORY_NAME)
 
-                try:
-                    progressDialog.setLabelText(self.tr('Loading the boundaries.'))
-                    await PolyMeshLoader().loadMesh()
+        db = coredb.CoreDB()
+        if db.isMeshLoaded():
+            await self._loadVtkMesh()
+        elif FileSystem.hasPolyMesh():
+            # BaramMesh Project is opened
+            progressDialog = ProgressDialog(self, self.tr('Mesh Loading'))
+            progressDialog.open()
 
-                    progressDialog.close()
-                except Exception as ex:
-                    progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+            try:
+                progressDialog.setLabelText(self.tr('Loading the boundaries.'))
+                await PolyMeshLoader().loadMesh()
 
-                self._project.fileDB().saveCoreDB()
+                progressDialog.close()
+            except Exception as ex:
+                progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+
+            self._project.fileDB().saveCoreDB()
+
+        self._navigatorView.updateEnabled()
 
     @qasync.asyncSlot()
     async def _caseLoaded(self, name=None):
@@ -611,7 +608,7 @@ class MainWindow(QMainWindow):
                 self._project.saveAs(path)
                 progressDialog.close()
 
-    def _importMesh(self, meshType, fileFilter=None):
+    def _openMeshSelectionDialog(self, meshType, fileFilter=None):
         if fileFilter is None:
             # Select OpenFOAM mesh directory.
             self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'),
@@ -654,20 +651,49 @@ class MainWindow(QMainWindow):
                                                 self.tr('The project directory is open by another program.'))
             return
 
-        self._project.setMeshLoaded(False)
+        await self._importMesh(file, meshType)
 
-        if meshType == MeshType.POLY_MESH:
-            await self._meshManager.importOpenFoamMesh(file)
-        else:
-            await self._meshManager.importMesh(file, meshType)
+    async def _importMesh(self, file, meshType):
+        meshManager = MeshManager()
+        progressDialog = ProgressDialog(self, self.tr('Mesh Loading'))
+        progressDialog.open()
 
-        self._project.setMeshLoaded(True)
+        try:
+            if meshType == MeshType.POLY_MESH:
+                progressDialog.setLabelText(self.tr('Loading the boundaries.'))
+                await meshManager.importMeshFiles(file)
+
+            else:
+                progressDialog.setLabelText(self.tr('Converting the mesh.'))
+                progressDialog.cancelClicked.connect(meshManager.cancel)
+                progressDialog.showCancelButton()
+                await meshManager.convertMesh(file, meshType)
+
+                progressDialog.hideCancelButton()
+                progressDialog.setLabelText(self.tr('Loading the boundaries.'))
+
+            # Need to load mesh to get region information though redistribution loads mesh in next lines
+            await PolyMeshLoader().loadMesh()
+
+            redistributeTask = RedistributionTask()
+            redistributeTask.progress.connect(progressDialog.setLabelText)
+            await redistributeTask.redistribute()
+
+            progressDialog.close()
+            return
+        except CanceledException:
+            pass
+        except Exception as ex:
+            progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+
+        db = coredb.CoreDB()
+        db.clearRegions()
+        db.clearMonitors()
+        FileSystem.deleteMesh()
         self._meshUpdated()
 
-        self._project.save()
-
     def _runParaView(self, executable, updateSetting=True):
-        casePath = FileSystem.foamFilePath() if Project.instance().meshLoaded else ''
+        casePath = FileSystem.foamFilePath()
         subprocess.Popen([executable, str(casePath)])
         if updateSetting:
             AppSettings.updateParaviewInstalledPath(executable)
