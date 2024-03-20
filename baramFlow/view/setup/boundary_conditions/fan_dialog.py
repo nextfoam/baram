@@ -93,7 +93,7 @@ class FanDialog(CoupledBoundaryConditionDialog):
     def _selectCoupledBoundary(self):
         if not self._boundarySelector:
             self._boundarySelector = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"),
-                                                    BoundaryDB.getCyclicAMIBoundarySelectorItems(self, self._bcid))
+                                                    BoundaryDB.getBoundarySelectorItemsForCoupling(self._bcid))
             self._boundarySelector.accepted.connect(self._coupledBoundaryAccepted)
 
         self._boundarySelector.open()
@@ -104,13 +104,12 @@ class FanDialog(CoupledBoundaryConditionDialog):
     def _fanPQCurveFileSelected(self):
         if files := self._dialog.selectedFiles():
             self._pqCurveFile = Path(files[0])
-            print(self._pqCurveFile)
             self._ui.fanPQCurveFileName.setText(self._pqCurveFile.name)
 
     def _setCoupledBoundary(self, bcid):
         if bcid != '0':
             self._coupledBoundary = str(bcid)
-            self._ui.coupledBoundary.setText(BoundaryDB.getBoundaryText(bcid))
+            self._ui.coupledBoundary.setText(BoundaryDB.getBoundaryName(bcid))
         else:
             self._coupledBoundary = 0
             self._ui.coupledBoundary.setText('')

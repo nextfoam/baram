@@ -61,7 +61,7 @@ class PorousJumpDialog(CoupledBoundaryConditionDialog):
     def _selectCoupledBoundary(self):
         if not self._dialog:
             self._dialog = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"),
-                                          BoundaryDB.getCyclicAMIBoundarySelectorItems(self, self._bcid))
+                                          BoundaryDB.getBoundarySelectorItemsForCoupling(self._bcid))
             self._dialog.accepted.connect(self._coupledBoundaryAccepted)
 
         self._dialog.open()
@@ -72,7 +72,7 @@ class PorousJumpDialog(CoupledBoundaryConditionDialog):
     def _setCoupledBoundary(self, bcid):
         if bcid != '0':
             self._coupledBoundary = str(bcid)
-            self._ui.coupledBoundary.setText(BoundaryDB.getBoundaryText(bcid))
+            self._ui.coupledBoundary.setText(BoundaryDB.getBoundaryName(bcid))
         else:
             self._coupledBoundary = 0
             self._ui.coupledBoundary.setText('')

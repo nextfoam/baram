@@ -54,7 +54,7 @@ class ThermoCoupledWallDialog(CoupledBoundaryConditionDialog):
     def _selectCoupledBoundary(self):
         if not self._dialog:
             self._dialog = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"),
-                                          BoundaryDB.getCyclicAMIBoundarySelectorItems(self, self._bcid))
+                                          BoundaryDB.getBoundarySelectorItemsForCoupling(self._bcid, False))
             self._dialog.accepted.connect(self._coupledBoundaryAccepted)
 
         self._dialog.open()

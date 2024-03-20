@@ -219,17 +219,17 @@ class BoundaryDB:
         return items
 
     @classmethod
-    def getCyclicAMIBoundarySelectorItems(cls, parent, bcidToExcept):
+    def getBoundarySelectorItemsForCoupling(cls, coupleBcid, inRegion=True):
         db = coredb.CoreDB()
 
         items = []
-        for rname in db.getRegions():
-            r = '' if rname == '' else rname + ':'
+        regions = [cls.getBoundaryRegion(coupleBcid)] if inRegion else db.getRegions()
+        for rname in regions:
+            r = '' if rname == '' or inRegion else rname + ':'
             for id_, bcname, ptype in db.getBoundaryConditions(rname):
                 bcid = str(id_)
-                if bcid != bcidToExcept:
-                        #and db.getValue(cls.getBoundaryXPath(bcid) + '/geometricalType') == 'cyclic':
-                        items.append(SelectorItem(f'{r}{bcname}', bcname, bcid))
+                if bcid != coupleBcid:
+                    items.append(SelectorItem(f'{r}{bcname}', bcname, bcid))
 
         return items
 
