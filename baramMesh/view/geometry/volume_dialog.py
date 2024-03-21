@@ -162,7 +162,11 @@ class VolumeDialog(QDialog):
         else:
             showStackPage(self._ui.geometryStack, None)     # triSurfaceMesh
 
-        self._preview()
+        if self._shape == Shape.TRI_SURFACE_MESH.value:
+            self._ui.preview.hide()
+        else:
+            self._ui.preview.show()
+            self._preview()
 
     def _loadHexPage(self):
         showStackPage(self._ui.geometryStack, 'hex')

@@ -229,7 +229,8 @@ class FileSystem:
 
     @classmethod
     def hasPolyMesh(cls):
-        return cls.isPolyMesh(cls._casePath) or cls._casePath.joinpath(Directory.REGION_PROPERTIES_FILE_NAME).is_file()
+        return (cls.isPolyMesh(cls.polyMeshPath())
+                or cls._casePath.joinpath(Directory.REGION_PROPERTIES_FILE_NAME).is_file())
 
     @classmethod
     def processorFolders(cls):
