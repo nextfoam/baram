@@ -48,7 +48,7 @@ class CaseManager(QObject):
 
         super().__init__()
 
-        self._project = Project.instance()
+        self._project = None
 
         self._caseName = None
 
@@ -67,6 +67,7 @@ class CaseManager(QObject):
         return self._caseName
 
     def load(self):
+        self._project = Project.instance()
         self._loadLiveStatus()
 
     def loadLiveCase(self):

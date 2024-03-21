@@ -9,9 +9,7 @@ from PySide6.QtWidgets import QApplication
 
 from resources import resource
 from baramFlow.coredb.app_settings import AppSettings
-from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.project import ProjectOpenType
-from baramFlow.coredb.region_db import RegionDB
 
 
 class App(QObject):
@@ -83,10 +81,7 @@ class App(QObject):
         self.showMesh()
 
     def updateMesh(self):
-        if RegionDB.getNumberOfRegions() > 1:  # multi-region
-            ModelsDB.EnergyModelOn()
-
-        self.meshUpdated.emit()
+        self._window.meshUpdated()
 
     def showMesh(self):
         if self._vtkMesh:
