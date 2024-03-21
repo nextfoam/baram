@@ -94,7 +94,7 @@ class BoundaryConditionsPage(ContentPage):
             self._meshUpdated()
 
     def _connectSignalsSlots(self):
-        app.meshUpdated.connect(self._meshUpdated)
+        # app.meshUpdated.connect(self._meshUpdated)
         self._ui.filter.textChanged.connect(self._filterChanged)
         self._ui.boundaries.currentItemChanged.connect(self._updateEditEnabled)
         self._ui.boundaries.itemDoubleClicked.connect(self._doubleClicked)

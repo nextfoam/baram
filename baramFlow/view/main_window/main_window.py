@@ -28,6 +28,7 @@ from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.project import Project
 from baramFlow.mesh.mesh_manager import MeshManager, MeshType
 from baramFlow.openfoam import parallel
@@ -254,7 +255,7 @@ class MainWindow(QMainWindow):
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
         self._caseManager.caseLoaded.connect(self._caseLoaded)
-        app.meshUpdated.connect(self._meshUpdated)
+        # app.meshUpdated.connect(self._meshUpdated)
 
     def _save(self):
         if self._saveCurrentPage():
@@ -483,7 +484,10 @@ class MainWindow(QMainWindow):
         self._dialog = AboutDialog(self)
         self._dialog.open()
 
-    def _meshUpdated(self):
+    def meshUpdated(self):
+        if RegionDB.getNumberOfRegions() > 1:  # multi-region
+            ModelsDB.EnergyModelOn()
+
         self._project.save()
         # self._ui.menuMesh.setEnabled(True)
         # self._ui.menuParallel.setEnabled(True)
@@ -494,6 +498,7 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value,
             MenuItem.MENU_SOLUTION_INITIALIZATION.value,
             MenuItem.MENU_SOLUTION_MONITORS.value,
+            MenuItem.MENU_SETUP_MODELS.value
         ]
 
         for page in [self._menuPages[menu] for menu in targets]:
@@ -690,7 +695,7 @@ class MainWindow(QMainWindow):
         db.clearRegions()
         db.clearMonitors()
         FileSystem.deleteMesh()
-        self._meshUpdated()
+        self.meshUpdated()
 
     def _runParaView(self, executable, updateSetting=True):
         casePath = FileSystem.foamFilePath()
