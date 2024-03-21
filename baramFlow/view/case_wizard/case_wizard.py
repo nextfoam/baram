@@ -8,6 +8,7 @@ from baramFlow.coredb.material_db import MaterialDB, Specification
 from baramFlow.coredb.models_db import MultiphaseModel
 from .case_wizard_ui import Ui_CaseWizard
 from .flow_type_page import FlowTypePage
+from .last_page import LastPage
 from .solver_type_page import SolverTypePage
 from .multiphase_model_page import MultiphaseModelPage
 from .gravity_model_page import GravityModelPage
@@ -22,6 +23,7 @@ ENERGY_MODEL = 3
 MULTIPHASE_MODEL = 4
 GRAVITY_MODEL = 5
 SPECIES_MODEL = 6
+LAST_PAGE = 7
 
 
 class CaseWizard(QWizard):
@@ -40,6 +42,7 @@ class CaseWizard(QWizard):
         self.setPage(MULTIPHASE_MODEL, MultiphaseModelPage(self))
         self.setPage(GRAVITY_MODEL, GravityModelPage(self))
         self.setPage(SPECIES_MODEL, SpeciesModelPage(self))
+        self.setPage(LAST_PAGE, LastPage(self))
         self.setStartId(WORKSPACE)
 
     def isMeshProject(self):
@@ -48,14 +51,12 @@ class CaseWizard(QWizard):
     def nextId(self):
         curId = self.currentId()
         if curId == WORKSPACE:
-            return FLOW_TYPE
-        elif curId == FLOW_TYPE:
-            if self.field('flowTypeCompressible'):
-                return SOLVER_TYPE
-            else:
-                return MULTIPHASE_MODEL
+            return SOLVER_TYPE
         elif curId == SOLVER_TYPE:
-            return SPECIES_MODEL
+            if self.field('solverTypePressureBased'):
+                return MULTIPHASE_MODEL
+            else:
+                return LAST_PAGE
         elif curId == MULTIPHASE_MODEL:
             if self.field('multiphaseModel') == MultiphaseModel.OFF.value:
                 return SPECIES_MODEL
@@ -64,6 +65,8 @@ class CaseWizard(QWizard):
         elif curId == GRAVITY_MODEL:
             return SPECIES_MODEL
         elif curId == SPECIES_MODEL:
+            return LAST_PAGE
+        elif curId == LAST_PAGE:
             return LAST
         else:
             raise AssertionError('Unknown Case Wizard Page')
@@ -73,18 +76,15 @@ class CaseWizard(QWizard):
         gravityXPath = './/general/operatingConditions/gravity'
         modelsXPath = './/models'
 
-        if self.field('flowTypeCompressible'):
+        if self.field('solverTypePressureBased'):
+            self._db.setValue(f'{generalXPath}/solverType', 'pressureBased')
+            self._db.setValue(f'{generalXPath}/flowType', 'incompressible')
+            self._db.setValue(f'{modelsXPath}/energyModels', 'off')
+        else:
+            self._db.setValue(f'{generalXPath}/solverType', 'densityBased')
             self._db.setValue(f'{generalXPath}/flowType', 'compressible')
             self._db.setValue(f'{modelsXPath}/energyModels', 'on')
             self._db.setValue(f'{MaterialDB.getXPathByName("air")}/density/specification', Specification.PERFECT_GAS.value)
-        else:
-            self._db.setValue(f'{generalXPath}/flowType', 'incompressible')
-            self._db.setValue(f'{modelsXPath}/energyModels', 'off')
-
-        if self.field('solverTypePressureBased'):
-            self._db.setValue(f'{generalXPath}/solverType', 'pressureBased')
-        else:
-            self._db.setValue(f'{generalXPath}/solverType', 'densityBased')
 
         self._db.setValue(f'{modelsXPath}/multiphaseModels/model', self.field('multiphaseModel'))
 
