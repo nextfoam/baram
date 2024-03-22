@@ -209,8 +209,7 @@
       <string>Load Mesh</string>
      </property>
      <addaction name="actionOpenFoam"/>
-     <addaction name="actionFluent2D"/>
-     <addaction name="actionFluent3D"/>
+     <addaction name="actionFluent"/>
      <addaction name="actionStarCCM"/>
      <addaction name="actionGmsh"/>
      <addaction name="actionIdeas"/>
@@ -370,17 +369,12 @@
     <string>OpenFOAM</string>
    </property>
   </action>
-  <action name="actionFluent2D">
+  <action name="actionFluent">
    <property name="enabled">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Fluent Mesh  (ASCII)</string>
-   </property>
-  </action>
-  <action name="actionFluent3D">
-   <property name="text">
-    <string>Fluent Case (ASCII)</string>
+    <string>Fluent (ASCII)</string>
    </property>
   </action>
   <action name="actionStarCCM">

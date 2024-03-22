@@ -225,8 +225,7 @@ class MainWindow(QMainWindow):
         self._ui.actionSave.triggered.connect(self._save)
         self._ui.actionSaveAs.triggered.connect(self._saveAs)
         self._ui.actionOpenFoam.triggered.connect(self._loadMesh)
-        self._ui.actionFluent2D.triggered.connect(self._importFluent2D)
-        self._ui.actionFluent3D.triggered.connect(self._importFluent3D)
+        self._ui.actionFluent.triggered.connect(self._importFluent)
         self._ui.actionStarCCM.triggered.connect(self._importStarCcmPlus)
         self._ui.actionGmsh.triggered.connect(self._importGmsh)
         self._ui.actionIdeas.triggered.connect(self._importIdeas)
@@ -280,11 +279,8 @@ class MainWindow(QMainWindow):
     def _loadMesh(self):
         self._openMeshSelectionDialog(MeshType.POLY_MESH)
 
-    def _importFluent2D(self):
-        self._openMeshSelectionDialog(MeshType.FLUENT_2D, self.tr('Fluent (*.msh)'))
-
-    def _importFluent3D(self):
-        self._openMeshSelectionDialog(MeshType.FLUENT_3D, self.tr('Fluent (*.cas)'))
+    def _importFluent(self):
+        self._openMeshSelectionDialog(MeshType.FLUENT, self.tr('Fluent (*.cas *.msh)'))
 
     def _importStarCcmPlus(self):
         if hasUtility(MeshManager.convertUtility(MeshType.STAR_CCM)):
