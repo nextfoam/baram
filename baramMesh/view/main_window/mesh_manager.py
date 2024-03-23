@@ -8,7 +8,7 @@ from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
 from baramMesh.openfoam.poly_mesh.poly_mesh_loader import PolyMeshLoader
-from baramMesh.rendering.actor_info import ActorInfo, ActorType
+from baramMesh.rendering.actor_info import ActorType, UnstructuredGridActor, PolyDataActor
 from baramMesh.view.main_window.actor_manager import ActorManager
 
 
@@ -44,9 +44,9 @@ class MeshManager(ActorManager):
         if vtkMesh:
             for rname, region in vtkMesh.items():
                 for bname, polyData in region['boundary'].items():
-                    self.add(ActorInfo(polyData, bname, bname, ActorType.BOUNDARY))
+                    self.add(PolyDataActor(polyData, bname, bname, ActorType.BOUNDARY))
 
-            self.add(ActorInfo(vtkMesh['']['internalMesh'], 'internalMesh', 'internalMesh', ActorType.MESH))
+            self.add(UnstructuredGridActor(vtkMesh['']['internalMesh'], 'internalMesh', 'internalMesh', ActorType.MESH))
 
         self.applyToDisplay()
         self.fitDisplay()
