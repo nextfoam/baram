@@ -4,8 +4,8 @@
 from PySide6.QtWidgets import QMessageBox
 
 from baramFlow.coredb import coredb
+from baramFlow.coredb.boundary_db import BoundaryDB, DirectionSpecificationMethod
 from baramFlow.coredb.coredb_writer import CoreDBWriter
-from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .farfield_riemann_dialog_ui import Ui_FarfieldRiemannDialog
 from .conditional_widget_helper import ConditionalWidgetHelper
@@ -22,39 +22,90 @@ class FarfieldRiemannDialog(ResizableDialog):
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
+        self._ui.specificationMethod.addEnumItems({
+            DirectionSpecificationMethod.DIRECT:    self.tr('Direct'),
+            DirectionSpecificationMethod.AOA_AOS:   self.tr('Angles of Attack, Sideslip')
+        })
+
         layout = self._ui.dialogContents.layout()
         self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
 
+        self._connectSignalsSlots()
         self._load()
 
     def accept(self):
         path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
-        writer.append(path + '/flowDirection/x', self._ui.xComponent.text(), self.tr("X-Velocity"))
-        writer.append(path + '/flowDirection/y', self._ui.yComponent.text(), self.tr("Y-Velocity"))
-        writer.append(path + '/flowDirection/z', self._ui.zComponent.text(), self.tr("Z-Velocity"))
-        writer.append(path + '/machNumber', self._ui.machNumber.text(), self.tr("Mach Number"))
-        writer.append(path + '/staticPressure', self._ui.staticPressure.text(), self.tr("Static Pressure"))
-        writer.append(path + '/staticTemperature', self._ui.staticTemperature.text(), self.tr("Static Temperature"))
+
+        specificationMethod = self._ui.specificationMethod.currentData()
+        writer.append(path + '/flowDirection/specificationMethod', specificationMethod.value, None)
+        if specificationMethod == DirectionSpecificationMethod.DIRECT:
+            writer.append(path + '/flowDirection/dragDirection/x', self._ui.flowDirectionX.text(),
+                          self.tr('Flow Direction'))
+            writer.append(path + '/flowDirection/dragDirection/y', self._ui.flowDirectionY.text(),
+                          self.tr('Flow Direction'))
+            writer.append(path + '/flowDirection/dragDirection/z', self._ui.flowDirectionZ.text(),
+                          self.tr('Flow Direction'))
+        else:
+            writer.append(path + '/flowDirection/dragDirection/x', self._ui.dragDirectionX.text(),
+                          self.tr('Drag Direction'))
+            writer.append(path + '/flowDirection/dragDirection/y', self._ui.dragDirectionY.text(),
+                          self.tr('Drag Direction'))
+            writer.append(path + '/flowDirection/dragDirection/z', self._ui.dragDirectionZ.text(),
+                          self.tr('Drag Direction'))
+            writer.append(path + '/flowDirection/liftDirection/x', self._ui.liftDirectionX.text(),
+                          self.tr('Lift Direction'))
+            writer.append(path + '/flowDirection/liftDirection/y', self._ui.liftDirectionY.text(),
+                          self.tr('Lift Direction'))
+            writer.append(path + '/flowDirection/liftDirection/z', self._ui.liftDirectionZ.text(),
+                          self.tr('Lift Direction'))
+            writer.append(path + '/flowDirection/angleOfAttack', self._ui.AoA.text(), self.tr('Angle of Attack'))
+            writer.append(path + '/flowDirection/angleOfSideslip', self._ui.AoS.text(), self.tr('Angle of Sideslip'))
+        writer.append(path + '/machNumber', self._ui.machNumber.text(), self.tr('Mach Number'))
+        writer.append(path + '/staticPressure', self._ui.staticPressure.text(), self.tr('Static Pressure'))
+        writer.append(path + '/staticTemperature', self._ui.staticTemperature.text(), self.tr('Static Temperature'))
 
         if not self._turbulenceWidget.appendToWriter(writer):
             return
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
         else:
             super().accept()
+
+    def _connectSignalsSlots(self):
+        self._ui.specificationMethod.currentDataChanged.connect(self._specificationMethodChanged)
 
     def _load(self):
         path = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.xComponent.setText(self._db.getValue(path + '/flowDirection/x'))
-        self._ui.yComponent.setText(self._db.getValue(path + '/flowDirection/y'))
-        self._ui.zComponent.setText(self._db.getValue(path + '/flowDirection/z'))
+        self._ui.specificationMethod.setCurrentData(
+            DirectionSpecificationMethod(self._db.getValue(path + '/flowDirection/specificationMethod')))
+
+        self._ui.flowDirectionX.setText(self._db.getValue(path + '/flowDirection/dragDirection/x'))
+        self._ui.flowDirectionY.setText(self._db.getValue(path + '/flowDirection/dragDirection/y'))
+        self._ui.flowDirectionZ.setText(self._db.getValue(path + '/flowDirection/dragDirection/z'))
+        self._ui.dragDirectionX.setText(self._db.getValue(path + '/flowDirection/dragDirection/x'))
+        self._ui.dragDirectionY.setText(self._db.getValue(path + '/flowDirection/dragDirection/y'))
+        self._ui.dragDirectionZ.setText(self._db.getValue(path + '/flowDirection/dragDirection/z'))
+        self._ui.liftDirectionX.setText(self._db.getValue(path + '/flowDirection/liftDirection/x'))
+        self._ui.liftDirectionY.setText(self._db.getValue(path + '/flowDirection/liftDirection/y'))
+        self._ui.liftDirectionZ.setText(self._db.getValue(path + '/flowDirection/liftDirection/z'))
+        self._ui.AoA.setText(self._db.getValue(path + '/flowDirection/angleOfAttack'))
+        self._ui.AoS.setText(self._db.getValue(path + '/flowDirection/angleOfSideslip'))
+
         self._ui.machNumber.setText(self._db.getValue(path + '/machNumber'))
         self._ui.staticPressure.setText(self._db.getValue(path + '/staticPressure'))
         self._ui.staticTemperature.setText(self._db.getValue(path + '/staticTemperature'))
 
         self._turbulenceWidget.load()
+
+    def _specificationMethodChanged(self, method):
+        if method == DirectionSpecificationMethod.DIRECT:
+            self._ui.directFlowDirection.show()
+            self._ui.anglesFlowDirection.hide()
+        else:
+            self._ui.directFlowDirection.hide()
+            self._ui.anglesFlowDirection.show()

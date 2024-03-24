@@ -45,6 +45,11 @@ class VolumeReportType(Enum):
     COEFFICIENT_OF_VARIATION = 'cov'
 
 
+class DirectionSpecificationMethod(Enum):
+    DIRECT = 'direct'
+    AOA_AOS = 'AoA_AoS'
+
+
 class MonitorDB:
     FORCE_MONITORS_XPATH = './/monitors/forces'
     POINT_MONITORS_XPATH = './/monitors/points'

@@ -7,8 +7,10 @@ import logging
 
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
+from libbaram.math import calucateDirectionsByRotation
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataClass
 
+from baramFlow.coredb.boundary_db import DirectionSpecificationMethod
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.models_db import TurbulenceModel
 from baramFlow.openfoam.constant.boundary_data import BoundaryData
@@ -45,7 +47,7 @@ class BoundaryCondition(DictionaryFile):
 
         path = self.fullPath(self._processorNo)
         if path.is_file():
-            self._fieldsData = ParsedParameterFile(path, debug=None)
+            self._fieldsData = ParsedParameterFile(str(path), debug=None)
 
             for name, builded in self._data['boundaryField'].items():
                 loaded = self._fieldsData.content['boundaryField'][name]
@@ -99,7 +101,7 @@ class BoundaryCondition(DictionaryFile):
     def _constructFarfieldRiemann(self, xpath, value):
         return {
             'type': 'farfieldRiemann',
-            'flowDir': self._db.getVector(xpath + '/flowDirection'),
+            'flowDir': self._calculateFarfiledRiemanFlowDirection(xpath + '/flowDirection'),
             'MInf': self._db.getValue(xpath + '/machNumber'),
             'pInf': self._db.getValue(xpath + '/staticPressure'),
             'TInf': self._db.getValue(xpath + '/staticTemperature'),
@@ -278,3 +280,13 @@ class BoundaryCondition(DictionaryFile):
     def _calculateFreeStreamKW(self, xpath, region):
         k, e, w = self._calculateFreeStreamTurbulentValues(xpath, region, TurbulenceModel.K_OMEGA)
         return k, w
+
+    def _calculateFarfiledRiemanFlowDirection(self, xpath):
+        drag = self._db.getVector(xpath + '/dragDirection')
+        lift = self._db.getVector(xpath + '/liftDirection')
+        if self._db.getValue(xpath + '/specificationMethod') == DirectionSpecificationMethod.AOA_AOS.value:
+            drag, lift = calucateDirectionsByRotation(drag, lift,
+                                                      float(self._db.getValue(xpath + '/angleOfAttack')),
+                                                      float(self._db.getValue(xpath + '/angleOfSideslip')))
+
+        return drag

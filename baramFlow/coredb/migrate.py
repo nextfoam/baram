@@ -281,12 +281,71 @@ def _version_4(root: etree.Element):
             p.insert(1, e)
 
 
+def _version_5(root: etree.Element):
+    logger.debug('  Upgrading to v6')
+
+    # Keep this commented until official v5 spec. is released
+    # root.set('version', '5')
+
+    for p in root.findall('.//boundaryCondition/farFieldRiemann', namespaces=_nsmap):
+        if p.find('flowDirection/specificationMethod', namespaces=_nsmap) is None:
+            logger.debug(f'    Updating "flowDirection" to {p}')
+            e = p.find('flowDirection', namespaces=_nsmap)
+            logger.debug(e)
+            x = e.find('x', namespaces=_nsmap).text
+            y = e.find('y', namespaces=_nsmap).text
+            z = e.find('z', namespaces=_nsmap).text
+            p.remove(e)
+
+            logger.debug(
+                '<flowDirection xmlns="http://www.baramcfd.org/baram">'
+                '   <specificationMethod>direct</specificationMethod>'
+                f'      <dragDirection><x>{x}</x><y>{y}</y><z>{z}</z></dragDirection>'
+                '       <liftDirection><x>0</x><y>1</y><z>0</z></liftDirection>'
+                '       <angleOfAttack>0</angleOfAttack><angleOfSideslip>0</angleOfSideSlip>'
+                '</flowDirection>')
+            e = etree.fromstring(
+                '<flowDirection xmlns="http://www.baramcfd.org/baram">'
+                '   <specificationMethod>direct</specificationMethod>'
+                f'      <dragDirection><x>{x}</x><y>{y}</y><z>{z}</z></dragDirection>'
+                '       <liftDirection><x>0</x><y>1</y><z>0</z></liftDirection>'
+                '       <angleOfAttack>0</angleOfAttack><angleOfSideslip>0</angleOfSideslip>'
+                '</flowDirection>')
+            p.insert(0, e)
+
+    for p in root.findall('monitors/forces/forceMonitor', namespaces=_nsmap):
+        if p.find('forceDirection', namespaces=_nsmap) is None:
+            logger.debug(f'    Changing directions to "forceDirection" in {p}')
+            e = p.find('liftDirection', namespaces=_nsmap)
+            liftX = e.find('x', namespaces=_nsmap).text
+            liftY = e.find('y', namespaces=_nsmap).text
+            liftZ = e.find('z', namespaces=_nsmap).text
+            p.remove(e)
+
+            e = p.find('dragDirection', namespaces=_nsmap)
+            dragX = e.find('x', namespaces=_nsmap).text
+            dragY = e.find('y', namespaces=_nsmap).text
+            dragZ = e.find('z', namespaces=_nsmap).text
+            p.remove(e)
+
+            e = etree.fromstring(
+                '<forceDirection xmlns="http://www.baramcfd.org/baram">'
+                '   <specificationMethod>direct</specificationMethod>'
+                f'      <dragDirection><x>{dragX}</x><y>{dragY}</y><z>{dragZ}</z></dragDirection>'
+                f'      <liftDirection><x>{liftX}</x><y>{liftY}</y><z>{liftZ}</z></liftDirection>'
+                '       <angleOfAttack>0</angleOfAttack><angleOfSideslip>0</angleOfSideslip>'
+                '</forceDirection>')
+            p.insert(3, e)
+
+
+
 _fTable = [
     None,
     _version_1,
     _version_2,
     _version_3,
-    _version_4
+    _version_4,
+    _version_5,
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))
@@ -306,7 +365,3 @@ def migrate(root: etree.Element):
         for i in range(version, currentVersion):
             if i < len(_fTable):
                 _fTable[i](root)
-
-    for p in root.findall('.//boundaryConditions', namespaces=_nsmap):
-        for e in p.findall('boundaryCondition/supersonicInlet', namespaces=_nsmap):
-            e.tag = '{http://www.baramcfd.org/baram}supersonicInflow'

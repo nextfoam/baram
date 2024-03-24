@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="5">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="6">
 
     <!-- type definitions -->
     <xs:simpleType name="ratio">
@@ -995,7 +995,24 @@
 
     <xs:complexType name="farFieldRiemannType">
         <xs:sequence>
-            <xs:element name="flowDirection" type="vector"/>
+            <xs:element name="flowDirection">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="specificationMethod" default="direct">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="direct"/>
+                                    <xs:enumeration value="AoA_AoS"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="dragDirection" type="vector"/>
+                        <xs:element name="liftDirection" type="vector"/>
+                        <xs:element name="angleOfAttack" type="inputNumberType" default="0"/>
+                        <xs:element name="angleOfSideslip" type="inputNumberType" default="0"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="machNumber" type="inputNumberType" default="1"/>
             <xs:element name="staticPressure" type="inputNumberType" default="101325"/>
             <xs:element name="staticTemperature" type="inputNumberType" default="300"/>
@@ -1462,8 +1479,24 @@
                 <xs:element name="name" type="xs:string"/>
                 <xs:element name="showChart" type="xs:boolean" default="true"/>
                 <xs:element name="writeInterval" type="inputNumberType"/>
-                <xs:element name="dragDirection" type="vector"/>
-                <xs:element name="liftDirection" type="vector"/>
+                <xs:element name="forceDirection">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="specificationMethod" default="direct">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="direct"/>
+                                        <xs:enumeration value="AoA_AoS"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="dragDirection" type="vector"/>
+                            <xs:element name="liftDirection" type="vector"/>
+                            <xs:element name="angleOfAttack" type="inputNumberType" default="0"/>
+                            <xs:element name="angleOfSideslip" type="inputNumberType" default="0"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
                 <xs:element name="pitchAxisDirection" type="vector"/>
                 <xs:element name="centerOfRotation" type="vector"/>
                 <xs:element name="region" type="xs:string"/>

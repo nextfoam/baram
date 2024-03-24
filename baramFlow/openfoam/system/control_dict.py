@@ -5,13 +5,14 @@ from pathlib import Path
 import platform
 
 from libbaram.app_path import APP_PATH
+from libbaram.math import calucateDirectionsByRotation
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 import baramFlow.openfoam.solver
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, DirectionSpecificationMethod
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.material_db import MaterialDB, Phase
@@ -289,6 +290,14 @@ class ControlDict(DictionaryFile):
         return data
 
     def _generateForceMonitor(self, xpath, patches):
+        drag = self._db.getVector(xpath + '/forceDirection/dragDirection')
+        lift = self._db.getVector(xpath + '/forceDirection/liftDirection')
+        if self._db.getValue(xpath + '/forceDirection/specificationMethod') == DirectionSpecificationMethod.AOA_AOS.value:
+            drag, lift = calucateDirectionsByRotation(
+                drag, lift,
+                float(self._db.getValue(xpath + '/forceDirection/angleOfAttack')),
+                float(self._db.getValue(xpath + '/forceDirection/angleOfSideslip')))
+
         data = {
             'type': 'forceCoeffs',
             'libs': [_libPath('libforces')],
@@ -299,8 +308,8 @@ class ControlDict(DictionaryFile):
             'lRef': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/length'),
             'magUInf':  self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/velocity'),
             'rhoInf': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/density'),
-            'dragDir': self._db.getVector(xpath + '/dragDirection'),
-            'liftDir': self._db.getVector(xpath + '/liftDirection'),
+            'dragDir': drag,
+            'liftDir': lift,
             'CofR': self._db.getVector(xpath + '/centerOfRotation'),
 
             'writeControl': 'timeStep',

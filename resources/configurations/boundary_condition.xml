@@ -71,9 +71,19 @@
     </freeStream>
     <farFieldRiemann>
         <flowDirection>
-            <x>1</x>
-            <y>0</y>
-            <z>0</z>
+            <specificationMethod>direct</specificationMethod>
+            <dragDirection>
+                <x>1</x>
+                <y>0</y>
+                <z>0</z>
+            </dragDirection>
+            <liftDirection>
+                <x>0</x>
+                <y>1</y>
+                <z>0</z>
+            </liftDirection>
+            <angleOfAttack>0</angleOfAttack>
+            <angleOfSideslip>0</angleOfSideslip>
         </flowDirection>
         <machNumber>0.729</machNumber>
         <staticPressure>101325</staticPressure>

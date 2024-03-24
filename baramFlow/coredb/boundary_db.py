@@ -127,6 +127,11 @@ class ContactAngleLimit(Enum):
     ALPHA = 'alpha'
 
 
+class DirectionSpecificationMethod(Enum):
+    DIRECT = 'direct'
+    AOA_AOS = 'AoA_AoS'
+
+
 class BoundaryDB:
     BOUNDARY_CONDITIONS_XPATH = './/boundaryConditions'
     ABL_INLET_CONDITIONS_XPATH = './/atmosphericBoundaryLayer'

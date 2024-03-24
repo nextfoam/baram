@@ -3,16 +3,21 @@
     <name>default</name>
     <showChart>true</showChart>
     <writeInterval>1</writeInterval>
-    <dragDirection>
-        <x>1</x>
-        <y>0</y>
-        <z>0</z>
-    </dragDirection>
-    <liftDirection>
-        <x>0</x>
-        <y>0</y>
-        <z>1</z>
-    </liftDirection>
+    <forceDirection>
+        <specificationMethod>direct</specificationMethod>
+        <dragDirection>
+            <x>1</x>
+            <y>0</y>
+            <z>0</z>
+        </dragDirection>
+        <liftDirection>
+            <x>0</x>
+            <y>1</y>
+            <z>0</z>
+        </liftDirection>
+        <angleOfAttack>0</angleOfAttack>
+        <angleOfSideslip>0</angleOfSideslip>
+    </forceDirection>
     <pitchAxisDirection>
         <x>0</x>
         <y>1</y>
