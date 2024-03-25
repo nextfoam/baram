@@ -209,6 +209,7 @@
       <string>Load Mesh</string>
      </property>
      <addaction name="actionOpenFoam"/>
+     <addaction name="actionMultiplePolyMesh"/>
      <addaction name="actionFluent"/>
      <addaction name="actionStarCCM"/>
      <addaction name="actionGmsh"/>
@@ -432,6 +433,11 @@
    </property>
    <property name="toolTip">
     <string>Mesh Info.</string>
+   </property>
+  </action>
+  <action name="actionMultiplePolyMesh">
+   <property name="text">
+    <string>Multiple polyMesh</string>
    </property>
   </action>
  </widget>

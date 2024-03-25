@@ -15,7 +15,6 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer
 
-from libbaram.exception import CanceledException
 from libbaram.openfoam.constants import CASE_DIRECTORY_NAME
 from libbaram.run import hasUtility
 from libbaram.utils import getFit
@@ -27,6 +26,7 @@ from baramFlow.app import app
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.app_settings import AppSettings
+from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.project import Project
@@ -37,6 +37,7 @@ from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from baramFlow.openfoam.redistribution_task import RedistributionTask
 from baramFlow.solver_status import SolverStatus
+from baramFlow.view.main_window.menu.mesh.poly_meshes_dialog import PolyMeshesDialog
 from baramFlow.view.main_window.menu.settrings.settings_language_dialog import SettingLanguageDialog
 from baramFlow.view.main_window.menu.settrings.settings_paraveiw_dialog import SettingsParaViewDialog
 from baramFlow.view.main_window.menu.settrings.settings_scaling_dialog import SettingScalingDialog
@@ -224,8 +225,9 @@ class MainWindow(QMainWindow):
     def _connectSignalsSlots(self):
         self._ui.actionSave.triggered.connect(self._save)
         self._ui.actionSaveAs.triggered.connect(self._saveAs)
-        self._ui.actionOpenFoam.triggered.connect(self._loadMesh)
-        self._ui.actionFluent.triggered.connect(self._importFluent)
+        self._ui.actionOpenFoam.triggered.connect(self._importOpenFOAMMesh)
+        self._ui.actionMultiplePolyMesh.triggered.connect(self._importMultiplePolyMesh)
+        self._ui.actionFluent.triggered.connect(self._importFluentMesh)
         self._ui.actionStarCCM.triggered.connect(self._importStarCcmPlus)
         self._ui.actionGmsh.triggered.connect(self._importGmsh)
         self._ui.actionIdeas.triggered.connect(self._importIdeas)
@@ -276,10 +278,26 @@ class MainWindow(QMainWindow):
 
         return True
 
-    def _loadMesh(self):
-        self._openMeshSelectionDialog(MeshType.POLY_MESH)
+    def _importOpenFOAMMesh(self):
+        self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'), AppSettings.getRecentMeshDirectory())
+        self._dialog.setFileMode(QFileDialog.FileMode.Directory)
+        self._dialog.fileSelected.connect(self._openFOAMMeshSelected)
+        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
+        self._dialog.finished.connect(self._ui.menubar.repaint)
+        self._dialog.open()
 
-    def _importFluent(self):
+    @qasync.asyncSlot()
+    async def _importMultiplePolyMesh(self):
+        if not await self._checkMultiRegionAvailability():
+            return
+
+        self._dialog = PolyMeshesDialog(self)
+        self._dialog.accepted.connect(self._polyMeshesSelected)
+        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
+        self._dialog.finished.connect(self._ui.menubar.repaint)
+        self._dialog.open()
+
+    def _importFluentMesh(self):
         self._openMeshSelectionDialog(MeshType.FLUENT, self.tr('Fluent (*.cas *.msh)'))
 
     def _importStarCcmPlus(self):
@@ -526,7 +544,7 @@ class MainWindow(QMainWindow):
         self._caseManager.setCase(None, self._project.path / CASE_DIRECTORY_NAME)
 
         db = coredb.CoreDB()
-        if db.isMeshLoaded():
+        if db.hasMesh():
             await self._loadVtkMesh()
         elif FileSystem.hasPolyMesh():
             # BaramMesh Project is opened
@@ -610,70 +628,90 @@ class MainWindow(QMainWindow):
                 progressDialog.close()
 
     def _openMeshSelectionDialog(self, meshType, fileFilter=None):
-        if fileFilter is None:
-            # Select OpenFOAM mesh directory.
-            self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'),
-                                       AppSettings.getRecentMeshDirectory())
-            self._dialog.setFileMode(QFileDialog.FileMode.Directory)
-        else:
-            # Select a mesh file to convert.
-            self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'),
-                                       AppSettings.getRecentMeshDirectory(), fileFilter)
-
-        self._dialog.finished.connect(lambda result: self._meshFileSelected(result, meshType))
+        self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'),
+                                   AppSettings.getRecentMeshDirectory(), fileFilter)
+        self._dialog.fileSelected.connect(lambda file: self._meshFileSelected(file, meshType))
+        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
+        self._dialog.finished.connect(self._ui.menubar.repaint)
         self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _meshFileSelected(self, result, meshType):
-        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
-        self._ui.menubar.repaint()
+    async def _openFOAMMeshSelected(self, directory):
+        AppSettings.updateRecentMeshDirectory(str(directory))
 
-        if result != QFileDialog.DialogCode.Accepted:
+        path = Path(directory)
+        if len(RegionProperties.loadRegions(path)) > 1 and not await self._checkMultiRegionAvailability():
             return
 
-        file = Path(self._dialog.selectedFiles()[0])
-        AppSettings.updateRecentMeshDirectory(str(file))
-
-        if (meshType == MeshType.POLY_MESH
-                and ModelsDB.isMultiphaseModelOn()
-                and len(RegionProperties.loadRegions(file)) > 1
-                and await AsyncMessageBox()
-                        .information(self, self.tr('Invalid mesh'),
-                                     self.tr('Multi-region cases cannot be computed under multi-phase conditions.'))):
+        if not await self._confirmAndClearMeshFiles():
             return
 
-        if not await self._confirmToReplaceMesh(True):
-            return
+        meshManager = MeshManager()
+        progressDialog = ProgressDialog(self, self.tr('Mesh Importing'))
 
         try:
-            self._caseManager.clearCases()
-        except PermissionError:
-            await AsyncMessageBox().information(self, self.tr('Permission Denied'),
-                                                self.tr('The project directory is open by another program.'))
+            progressDialog.open()
+
+            progressDialog.setLabelText(self.tr('Copying files.'))
+            await meshManager.importMeshFiles(path)
+
+            progressDialog.close()
+
+            await self._loadMesh()
+        except Exception as ex:
+            self._deleteMeshFilesAndData()
+            progressDialog.finish(self.tr('Mesh import failed:\n' + str(ex)))
+
+    @qasync.asyncSlot()
+    async def _polyMeshesSelected(self):
+        if not await self._confirmAndClearMeshFiles():
             return
 
-        await self._importMesh(file, meshType)
+        progressDialog = ProgressDialog(self, self.tr('Mesh Importing'))
 
-    async def _importMesh(self, file, meshType):
+        try:
+            progressDialog.open()
+
+            progressDialog.setLabelText(self.tr('Copying files.'))
+            await MeshManager().importPolyMeshes(self._dialog.data())
+
+            progressDialog.close()
+
+            await self._loadMesh()
+        except Exception as ex:
+            self._deleteMeshFilesAndData()
+            progressDialog.finish(self.tr('Mesh import failed:\n' + str(ex)))
+
+    @qasync.asyncSlot()
+    async def _meshFileSelected(self, file, meshType):
+        AppSettings.updateRecentMeshDirectory(str(file))
+
+        if not await self._confirmAndClearMeshFiles():
+            return
+
         meshManager = MeshManager()
+        progressDialog = ProgressDialog(self, self.tr('Mesh Importing'))
+
+        try:
+            progressDialog.open()
+
+            progressDialog.setLabelText(self.tr('Converting the mesh.'))
+            progressDialog.cancelClicked.connect(meshManager.cancel)
+            progressDialog.showCancelButton()
+            await meshManager.convertMesh(Path(file), meshType)
+
+            progressDialog.close()
+
+            await self._loadMesh()
+        except Exception as ex:
+            self._deleteMeshFilesAndData()
+            progressDialog.finish(self.tr('Mesh import failed:\n' + str(ex)))
+
+    async def _loadMesh(self):
         progressDialog = ProgressDialog(self, self.tr('Mesh Loading'))
         progressDialog.open()
 
         try:
-            if meshType == MeshType.POLY_MESH:
-                progressDialog.setLabelText(self.tr('Loading the boundaries.'))
-                await meshManager.importMeshFiles(file)
-
-            else:
-                progressDialog.setLabelText(self.tr('Converting the mesh.'))
-                progressDialog.cancelClicked.connect(meshManager.cancel)
-                progressDialog.showCancelButton()
-                await meshManager.convertMesh(file, meshType)
-
-                progressDialog.hideCancelButton()
-                progressDialog.setLabelText(self.tr('Loading the boundaries.'))
-
-            # Need to load mesh to get region information though redistribution loads mesh in next lines
             await PolyMeshLoader().loadMesh()
 
             redistributeTask = RedistributionTask()
@@ -682,16 +720,8 @@ class MainWindow(QMainWindow):
 
             progressDialog.close()
             return
-        except CanceledException:
-            pass
         except Exception as ex:
             progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
-
-        db = coredb.CoreDB()
-        db.clearRegions()
-        db.clearMonitors()
-        FileSystem.deleteMesh()
-        self.meshUpdated()
 
     def _runParaView(self, executable, updateSetting=True):
         casePath = FileSystem.foamFilePath()
@@ -699,7 +729,7 @@ class MainWindow(QMainWindow):
         if updateSetting:
             AppSettings.updateParaviewInstalledPath(executable)
 
-    async def _confirmToReplaceMesh(self, renew=False):
+    async def _confirmToReplaceMesh(self):
         if coredb.CoreDB().getRegions():
             confirm = await AsyncMessageBox().question(
                 self, self.tr('Load Mesh'),
@@ -710,3 +740,37 @@ class MainWindow(QMainWindow):
                 return False
 
         return True
+
+    async def _confirmAndClearMeshFiles(self):
+        try:
+            if await self._confirmToReplaceMesh():
+                self._caseManager.clearCases()
+
+                return True
+        except PermissionError:
+            await AsyncMessageBox().information(self, self.tr('Permission Denied'),
+                                                self.tr('The project directory is open by another program.'))
+
+        return False
+
+    async def _checkMultiRegionAvailability(self):
+        if ModelsDB.isMultiphaseModelOn():
+            await AsyncMessageBox().information(
+                self, self.tr('Invalid mesh'),
+                self.tr('Multi-region cases cannot be computed under multi-phase conditions.'))
+            return False
+
+        if GeneralDB.isDensityBased():
+            await AsyncMessageBox().information(
+                self, self.tr('Invalid mesh'),
+                self.tr('Multi-region cases cannot be computed under density-based conditions.'))
+            return False
+
+        return True
+
+    def _deleteMeshFilesAndData(self):
+        db = coredb.CoreDB()
+        db.clearRegions()
+        db.clearMonitors()
+        FileSystem.deleteMesh()
+        self.meshUpdated()

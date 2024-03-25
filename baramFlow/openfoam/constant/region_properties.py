@@ -38,15 +38,7 @@ class RegionProperties(DictionaryFile):
 
         return regions if regions else ['']
 
-    def build(self):
-        fluids = []
-        solids = []
-        for rname in CoreDBReader().getRegions():
-            if RegionDB.getPhase(rname) == Phase.SOLID:
-                solids.append(rname)
-            else:
-                fluids.append(rname)
-
+    def setRegions(self, fluids, solids):
         self._data = {
             'regions': [
                 'fluid',
@@ -57,3 +49,14 @@ class RegionProperties(DictionaryFile):
         }
 
         return self
+
+    def build(self):
+        fluids = []
+        solids = []
+        for rname in CoreDBReader().getRegions():
+            if RegionDB.getPhase(rname) == Phase.SOLID:
+                solids.append(rname)
+            else:
+                fluids.append(rname)
+
+        return self.setRegions(fluids, solids)

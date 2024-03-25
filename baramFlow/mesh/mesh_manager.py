@@ -15,6 +15,7 @@ from libbaram import utils
 from libbaram.openfoam.constants import CASE_DIRECTORY_NAME, Directory
 from libbaram.run import RunParallelUtility, RunUtility
 
+from baramFlow.coredb.material_db import Phase
 from baramFlow.coredb.project import Project
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.constant.region_properties import RegionProperties
@@ -109,6 +110,21 @@ class MeshManager(QObject):
     async def importMeshFiles(self, srcPath):
         path = self._checkAndCorrectMeshFolderSelection(srcPath)
         await self._copyMeshFrom(path)
+
+    async def importPolyMeshes(self, polyMeshInfos):
+        fluids = []
+        solids = []
+
+        for rname, phase, path in polyMeshInfos:
+            await asyncio.to_thread(
+                shutil.copytree,
+                path, FileSystem.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME, copy_function=shutil.copyfile)
+            if phase == Phase.SOLID:
+                solids.append(rname)
+            else:
+                fluids.append(rname)
+
+        RegionProperties().setRegions(fluids, solids).write()
 
     async def convertMesh(self, path, meshType):
         fileName = 'meshToConvert' + path.suffix

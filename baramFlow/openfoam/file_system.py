@@ -178,11 +178,11 @@ class FileSystem:
 
     @classmethod
     def boundaryFilePath(cls, rname):
-        return cls.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME / 'boundary'
+        return cls.polyMeshPath(rname) / 'boundary'
 
     @classmethod
     def cellZonesFilePath(cls, rname):
-        return cls.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME / 'cellZones'
+        return cls.polyMeshPath(rname) / 'cellZones'
 
     @classmethod
     def boundaryDataPath(cls, rname):

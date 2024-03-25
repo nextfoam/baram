@@ -85,7 +85,7 @@ class NavigatorView(QObject):
         self._view.setCurrentItem(self._menu[value])
 
     def updateEnabled(self):
-        noMesh = not coredb.CoreDB().isMeshLoaded()
+        noMesh = not coredb.CoreDB().hasMesh()
         solverActivated = CaseManager().isActive() or CaseManager().isBatchRunning()
 
         self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(solverActivated)

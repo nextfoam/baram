@@ -809,7 +809,7 @@ class _CoreDB(object):
 
         return [(int(e.attrib['bcid']), e.find('name', namespaces=nsmap).text) for e in elements]
 
-    def isMeshLoaded(self):
+    def hasMesh(self):
         return True if self._xmlTree.findall(f'.//regions/region', namespaces=nsmap) else False
 
     def addForceMonitor(self) -> str:
