@@ -8,6 +8,7 @@ from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
 from baramFlow.app import app
+from baramFlow.openfoam import parallel
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.main_window.rendering_view import DisplayMode
 from libbaram.exception import CanceledException
@@ -279,7 +280,8 @@ class MeshModel(RenderingModel):
 
         try:
             caseRoot = FileSystem.caseRoot()
-            cm = RunParallelUtility('checkMesh', '-allRegions', '-time', '0', cwd=caseRoot)
+            cm = RunParallelUtility('checkMesh', '-allRegions', '-time', '0', '-case', caseRoot,
+                                    cwd=caseRoot, parallel=parallel.getEnvironment())
             cm.output.connect(_stdout)
             await cm.start()
             await cm.wait()

@@ -84,7 +84,6 @@ class NumericalConditionsPage(ContentPage):
         self._ui.discretizationSchemeEnergy.setEnabled(energyOn and not compressibleDensity)
         self._ui.discretizationSchemeTurbulence.setEnabled(turbulenceOn)
         self._ui.discretizationSchemeVolumeFraction.setEnabled(multiphaseOn and not compressibleDensity)
-        self._ui.discretizationSchemeVolumeFraction.setEnabled(not compressibleDensity)
 
         self._ui.underRelaxationFactorPressure.setEnabled(not compressibleDensity)
         self._ui.underRelaxationFactorPressureFinal.setEnabled((timeIsTransient or allRoundSolver) and not compressibleDensity)

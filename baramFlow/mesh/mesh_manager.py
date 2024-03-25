@@ -26,8 +26,7 @@ logger = logging.getLogger(__name__)
 
 class MeshType(Enum):
     POLY_MESH = auto()
-    FLUENT_2D = auto()
-    FLUENT_3D = auto()
+    FLUENT = auto()
     STAR_CCM = auto()
     GMSH = auto()
     IDEAS = auto()
@@ -36,8 +35,7 @@ class MeshType(Enum):
 
 OPENFOAM_MESH_CONVERTERS = {
     MeshType.POLY_MESH: None,
-    MeshType.FLUENT_2D: ('fluentMeshToFoam', '-writeSets', '-writeZones'),
-    MeshType.FLUENT_3D: ('fluent3DMeshToFoam',),
+    MeshType.FLUENT: ('fluentMeshToFoam', '-writeSets', '-writeZones'),
     MeshType.STAR_CCM: ('ccmToFoam',),
     MeshType.GMSH: ('gmshToFoam',),
     MeshType.IDEAS: ('ideasUnvToFoam',),
