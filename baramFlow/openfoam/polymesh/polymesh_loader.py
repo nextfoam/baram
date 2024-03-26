@@ -126,7 +126,7 @@ class PolyMeshLoader(QObject):
     def loadBoundaryDict(cls, path, listLengthUnparsed=None, longListOutputThreshold=None):
         return ParsedBoundaryDict(path, listLengthUnparsed=listLengthUnparsed, treatBinaryAsASCII=True, longListOutputThreshold=longListOutputThreshold)
 
-    async def loadMesh(self, srcPath=None):
+    async def loadMesh(self):
         boundaries = self._loadBoundaries()
 
         vtkMesh = await self._loadVtkMesh()
@@ -229,12 +229,14 @@ class PolyMeshLoader(QObject):
                 else set()
 
         def getSamplePatch(rname, bcname):
-            b = boundaries[rname][bcname]
-            if 'samplePatch' not in b:
-                return None, None
+            region = None
+            patch = None
 
-            patch = b['samplePatch']
-            region = b['sampleRegion'] if 'sampleRegion' in b else rname
+            if rname in boundaries and bcname in boundaries[rname]:
+                b = boundaries[rname][bcname]
+                if 'samplePatch' in b:
+                    patch = b['samplePatch']
+                    region = b['sampleRegion'] if 'sampleRegion' in b else rname
 
             return region, patch
 
@@ -267,11 +269,11 @@ class PolyMeshLoader(QObject):
                     coupledBoundary = None
                     if geometricalType == GeometricalType.MAPPED_WALL and 'samplePatch' in boundary:
                         sampleRegion, samplePatch = getSamplePatch(rname, bcname)
-                        if getSamplePatch(sampleRegion, samplePatch) == (rname, bcname):
+                        if samplePatch and getSamplePatch(sampleRegion, samplePatch) == (rname, bcname):
                             coupledBoundary = boundaries[sampleRegion][samplePatch]
                     elif 'neighbourPatch' in boundary:
                         neighbourPatch = getNeighbourPatch(rname, bcname)
-                        if getNeighbourPatch(rname, neighbourPatch) == (rname, bcname):
+                        if neighbourPatch and getNeighbourPatch(rname, neighbourPatch) == (rname, bcname):
                             coupledBoundary = boundaries[rname][neighbourPatch]
 
                     if coupledBoundary and 'bcid' in coupledBoundary:
