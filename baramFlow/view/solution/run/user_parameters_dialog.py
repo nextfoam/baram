@@ -3,12 +3,15 @@
 
 from enum import IntEnum, auto
 
+import qasync
 from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QIcon, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog, QTreeWidgetItem, QLineEdit, QHeaderView, QMessageBox
 
-from baramFlow.coredb.coredb_writer import CoreDBWriter
+from widgets.async_message_box import AsyncMessageBox
 from widgets.flat_push_button import FlatPushButton
+
+from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.run_calculation_db import RunCalculationDB
 from .user_parameters_dialog_ui import Ui_UserParametersDialog
 
@@ -42,17 +45,25 @@ class UserParametersDialog(QDialog):
         for name, data in self._parameters.items():
             self._addItem(name, data['value'], data['usages'] == 0)
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def _accept(self):
         parameters = {}
         for i in range(self._ui.parameters.topLevelItemCount()):
             item = self._ui.parameters.topLevelItem(i)
             value = self._ui.parameters.itemWidget(item, Column.VALUE).text().strip()
 
             if item.type() == ItemMode.ADD:
-                name = self._ui.parameters.itemWidget(item, Column.NAME).text()
-                if parameters.get(name):
-                    QMessageBox.information(self, self.tr('Input Error'), self.tr('Duplicate parameter name - ') + name)
+                name = self._ui.parameters.itemWidget(item, Column.NAME).text().strip()
+                if not name:
+                    AsyncMessageBox().information(self, self.tr('Input Error'),
+                                                  self.tr('Parameter name cannot be empty at line {}').format(i + 1))
                     return
+
+                if parameters.get(name):
+                    AsyncMessageBox().information(self, self.tr('Input Error'),
+                                                  self.tr('Duplicate parameter name - ') + name)
+                    return
+
                 parameters[name] = value
             else:
                 name = item.text(Column.NAME)
@@ -86,10 +97,12 @@ class UserParametersDialog(QDialog):
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
-            super().accept()
+            self.accept()
 
     def _connectSignalsSlots(self):
         self._ui.add.clicked.connect(self._addItem)
+        self._ui.ok.clicked.connect(self._accept)
+        self._ui.cancel.clicked.connect(self.close)
 
     def _addItem(self, name=None, value='0', removable=True):
         mode = ItemMode.ADD if name is None else ItemMode.EDIT
