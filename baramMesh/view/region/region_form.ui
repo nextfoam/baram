@@ -93,7 +93,7 @@
          <item row="2" column="0">
           <widget class="QLabel" name="label_13">
            <property name="text">
-            <string>Point (Specify a point in ther region)</string>
+            <string>Point (Specify a point in the region)</string>
            </property>
           </widget>
          </item>

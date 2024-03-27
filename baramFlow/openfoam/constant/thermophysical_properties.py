@@ -25,8 +25,7 @@ def _constructFluid(region: str):
     mid = db.getValue(f'.//region[name="{region}"]/material')
     path = f'.//materials/material[@mid="{mid}"]'
 
-    flowType = db.getValue('.//general/flowType')
-    if flowType == 'compressible':
+    if GeneralDB.isCompressible():
         thermo['type'] = 'hePsiThermo'
 
     speciesModel = db.getValue('.//models/speciesModels')
@@ -58,7 +57,7 @@ def _constructFluid(region: str):
             'Hf': 0
         }
 
-        if GeneralDB.isCompressible():
+        if GeneralDB.isDensityBased():
             mix['thermodynamics']['Tref'] = 0
     elif spec == 'polynomial':
         cpCoeffs: list[float] = [0] * 8  # To make sure that cpCoeffs has length of 8
