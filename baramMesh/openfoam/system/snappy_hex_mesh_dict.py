@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+from libbaram.simple_db.simple_db import elementToVector
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType, ThicknessModel, FeatureSnapType
-from baramMesh.db.simple_db import elementToVector
 
 
 def boolToText(value):

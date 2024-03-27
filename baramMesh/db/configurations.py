@@ -3,9 +3,10 @@
 
 import yaml
 
+from libbaram.simple_db.simple_db import SimpleDB
+
 from .configurations_schema import CURRENT_CONFIGURATIONS_VERSION, CONFIGURATIONS_VERSION_KEY
 from .file_db import writeConfigurations, readConfigurations, FileGroup, newFiles
-from .simple_db import SimpleDB
 from .migrate import migrate
 
 

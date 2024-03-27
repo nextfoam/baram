@@ -5,11 +5,11 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import QEvent, QTimer
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
+from libbaram.simple_db.simple_schema import DBError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.radio_group import RadioGroup
 
 from baramMesh.app import app
-from baramMesh.db.simple_schema import DBError
 from baramMesh.db.configurations_schema import Shape, GeometryType, CFDType
 from baramMesh.rendering.vtk_loader import hexPolyData, cylinderPolyData, spherePolyData, polyDataToActor
 from .geometry import RESERVED_NAMES

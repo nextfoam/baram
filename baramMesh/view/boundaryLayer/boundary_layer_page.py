@@ -6,10 +6,10 @@ from PySide6.QtWidgets import QMessageBox
 
 from libbaram.run import RunParallelUtility
 from libbaram.process import ProcessError
+from libbaram.simple_db.simple_schema import DBError
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
-from baramMesh.db.simple_schema import DBError
 from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramMesh.view.step_page import StepPage
 from widgets.list_table import ListItemWithButtons

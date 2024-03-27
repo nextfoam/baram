@@ -3,8 +3,9 @@
 
 from PySide6.QtWidgets import QDialog, QMessageBox
 
+from libbaram.simple_db.simple_schema import DBError
+
 from baramMesh.app import app
-from baramMesh.db.simple_schema import DBError
 from baramMesh.db.configurations_schema import GeometryType
 from baramMesh.view.widgets.multi_selector_dialog import MultiSelectorDialog
 from baramMesh.view.widgets.multi_selector_dialog import SelectorItem

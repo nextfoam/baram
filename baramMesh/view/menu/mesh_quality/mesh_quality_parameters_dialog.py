@@ -3,8 +3,9 @@
 
 from PySide6.QtWidgets import QDialog, QMessageBox
 
+from libbaram.simple_db.simple_schema import DBError
+
 from baramMesh.app import app
-from baramMesh.db.simple_schema import DBError
 from .mesh_quality_parameters_dialog_ui import Ui_MeshQualityParametersDialog
 
 

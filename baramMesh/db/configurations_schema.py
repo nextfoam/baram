@@ -4,8 +4,8 @@
 
 from enum import Enum, auto, IntEnum
 
-from .simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, PositiveIntType
-from .simple_schema import VectorComposite
+from libbaram.simple_db.simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, PositiveIntType
+from libbaram.simple_db.simple_schema import VectorComposite
 
 
 CURRENT_CONFIGURATIONS_VERSION = 1
