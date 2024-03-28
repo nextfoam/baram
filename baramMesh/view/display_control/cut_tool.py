@@ -2,19 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum, auto
-from dataclasses import dataclass
 
 from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonDataModel import vtkPlane
 
 from baramMesh.app import app
 from baramMesh.rendering.plane_widget import PlaneWidget
-
-
-@dataclass
-class Cutter:
-    plane: vtkPlane
-    invert: bool
 
 
 class Cut(QObject):
@@ -54,7 +47,13 @@ class Cut(QObject):
         return self._handle
 
     def normalVector(self):
-        return [1 if self._normal == i else 0 for i in range(0, 3)]
+        n = [0, 0, 0]
+        if self.invert():
+            n[self._normal] = -1
+        else:
+            n[self._normal] = 1
+
+        return n
 
     def setOrigin(self, origin):
         if not self._value.hasFocus():
@@ -202,7 +201,7 @@ class CutTool(QObject):
                 plane.SetOrigin(self._origin())
                 plane.SetNormal(cut.normalVector())
 
-                self._cutters.append(Cutter(plane, cut.invert()))
+                self._cutters.append(plane)
                 # if cut.sliceOnly():
                 #     self._cutters.append(Cutter(plane, not cut.invert()))
 

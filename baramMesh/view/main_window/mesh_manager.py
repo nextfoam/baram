@@ -8,7 +8,7 @@ from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
 from baramMesh.openfoam.poly_mesh.poly_mesh_loader import PolyMeshLoader
-from baramMesh.rendering.actor_info import ActorType, UnstructuredGridActor, PolyDataActor
+from baramMesh.rendering.actor_info import ActorInfo, BoundaryActor, MeshActor, MeshQualityIndex
 from baramMesh.view.main_window.actor_manager import ActorManager
 
 
@@ -44,9 +44,9 @@ class MeshManager(ActorManager):
         if vtkMesh:
             for rname, region in vtkMesh.items():
                 for bname, polyData in region['boundary'].items():
-                    self.add(PolyDataActor(polyData, bname, bname, ActorType.BOUNDARY))
+                    self.add(BoundaryActor(polyData, bname, bname))
 
-            self.add(UnstructuredGridActor(vtkMesh['']['internalMesh'], 'internalMesh', 'internalMesh', ActorType.MESH))
+            self.add(MeshActor(vtkMesh['']['internalMesh'], 'internalMesh', 'internalMesh'))
 
         self.applyToDisplay()
         self.fitDisplay()
@@ -69,3 +69,32 @@ class MeshManager(ActorManager):
 
     def _connectSignalsSlots(self):
         self._loader.progress.connect(self.progress)
+
+    def getScalarRange(self, index: MeshQualityIndex) -> (float, float):
+        actorInfo: ActorInfo
+        for actorInfo in self._actorInfos.values():
+            if isinstance(actorInfo, MeshActor):
+                return actorInfo.getScalarRange(index)
+
+    def getNumberOfDisplayedCells(self) -> int:
+        actorInfo: ActorInfo
+        for actorInfo in self._actorInfos.values():
+            if isinstance(actorInfo, MeshActor):
+                return actorInfo.getNumberOfDisplayedCells()
+
+    def setScalar(self, index: MeshQualityIndex):
+        for actorInfo in self._actorInfos.values():
+            actorInfo.setScalar(index)
+
+    def setScalarBand(self, low, high):
+        for actorInfo in self._actorInfos.values():
+            actorInfo.setScalarBand(low, high)
+
+    def clearCellFilter(self):
+        for actorInfo in self._actorInfos.values():
+            actorInfo.clearCellFilter()
+
+    def applyCellFilter(self):
+        for actorInfo in self._actorInfos.values():
+            actorInfo.applyCellFilter()
+

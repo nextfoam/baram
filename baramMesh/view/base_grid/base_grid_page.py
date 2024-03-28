@@ -4,7 +4,7 @@
 import qasync
 from PySide6.QtWidgets import QMessageBox
 
-from libbaram.run import RunUtility
+from libbaram.run import RunUtility, RunParallelUtility
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
@@ -167,8 +167,13 @@ class BaseGridPage(StepPage):
         progressDialog.setLabelText(self.tr('Generating Block Mesh'))
         progressDialog.open()
 
+        console = app.consoleView
+        console.clear()
+
         BlockMeshDict().build().write()
         cm = RunUtility('blockMesh', cwd=app.fileSystem.caseRoot())
+        cm.output.connect(console.append)
+        cm.errorOutput.connect(console.appendError)
         await cm.start()
         result = await cm.wait()
 
@@ -185,6 +190,14 @@ class BaseGridPage(StepPage):
             redistributionTask.progress.connect(progressDialog.setLabelText)
 
             await redistributionTask.decompose(numCores)
+
+        progressDialog.setLabelText('Collecting Mesh Info.')
+        cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
+                                cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
+        cm.output.connect(console.append)
+        cm.errorOutput.connect(console.appendError)
+        await cm.start()
+        await cm.wait()
 
         progressDialog.close()
 

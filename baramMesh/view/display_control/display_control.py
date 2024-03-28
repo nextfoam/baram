@@ -10,6 +10,7 @@ from baramMesh.app import app
 from baramMesh.db.configurations_schema import Step
 from baramMesh.rendering.actor_info import DisplayMode, Properties
 from widgets.rendering.rendering_widget import RenderingWidget
+from .mesh_quality_info import MeshQualityInfo
 
 from .opacity_dialog import OpacityDialog
 from .display_item import DisplayItem, Column
@@ -98,6 +99,7 @@ class DisplayControl(QObject):
         self._view: RenderingWidget = ui.renderingView
 
         self._cutTool = CutTool(ui)
+        self._meshQualityInfo = MeshQualityInfo(ui)
         self._menu = ContextMenu(self._list)
 
         self._items = {}
@@ -159,13 +161,23 @@ class DisplayControl(QObject):
         self._view.fitCamera()
 
     def openedStepChanged(self, step):
-        if step == Step.GEOMETRY.value or step == Step.REGION.value:
+        if step >= Step.BASE_GRID.value:
+            if not self._cutTool.isVisible():
+                self._cutTool.show()
+        else:
             self._cutTool.hide()
-        elif not self._cutTool.isVisible():
-            self._cutTool.show()
+
+    def currentStepChanged(self, step):
+        print(f'currentstepChanged {step}')
+        if step >= Step.CASTELLATION.value:
+            if not self._meshQualityInfo.isVisible():
+                self._meshQualityInfo.show()
+        else:
+            self._meshQualityInfo.hide()
 
     def clear(self):
         self._cutTool.hide()
+        self._meshQualityInfo.hide()
         self._list.clear()
         self._view.clear()
         self._items = {}

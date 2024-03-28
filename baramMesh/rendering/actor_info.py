@@ -6,18 +6,31 @@ from dataclasses import dataclass
 
 from PySide6.QtGui import QColor
 from PySide6.QtCore import QObject, Signal
-from vtkmodules.vtkFiltersCore import vtkClipPolyData
+from vtkmodules.vtkCommonDataModel import vtkDataObject, vtkPlane
+from vtkmodules.vtkFiltersCore import vtkClipPolyData, vtkThreshold, vtkPassThrough
 from vtkmodules.vtkFiltersExtraction import vtkExtractPolyDataGeometry, vtkExtractGeometry
-from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor
+from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor, vtkMapper
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
 from libbaram.mesh import Bounds
+from libbaram.colormap import sequentialRedLut
 
 
 class DisplayMode(Enum):
     WIREFRAME      = auto()  # noqa: E221
     SURFACE        = auto()  # noqa: E221
     SURFACE_EDGE   = auto()  # noqa: E221
+
+
+class MeshQualityIndex(Enum):
+    ASPECT_RATIO = 'cellAspectRatio'
+    NON_ORTHO_ANGLE = 'nonOrthoAngle'
+    SKEWNESS = 'skewness'
+    VOLUME = 'cellVolume'
+
+    @classmethod
+    def values(cls):
+        return [c.value for c in cls]
 
 
 @dataclass
@@ -55,9 +68,24 @@ class ActorInfo(QObject):
         self._name = name
         self._type = type_
 
-        self._mapper = self._initMapper()
-        self._mapper.SetInputData(self._dataSet)
+        self._cellFilter = vtkPassThrough()
+        self._cellFilter.SetInputData(dataSet)
+        self._cutFilters = [vtkPassThrough()]
+        self._cutFilters[0].SetInputConnection(self._cellFilter.GetOutputPort())
+
+        self._mqEnabled = False
+        self._mqIndex = MeshQualityIndex.VOLUME
+        self._mqMax = 0
+        self._mqMin = 0
+        self._mqHigh = 0
+        self._mqLow = 0
+
+        self._mapper: vtkMapper = self._initMapper()
+        self._mapper.SetInputConnection(self._cutFilters[0].GetOutputPort())
         self._mapper.ScalarVisibilityOff()
+        self._mapper.SetScalarModeToUseCellFieldData()
+        self._mapper.SetColorModeToMapScalars()
+        self._mapper.SetLookupTable(sequentialRedLut)
 
         self._actor = vtkActor()
         self._actor.SetMapper(self._mapper)
@@ -109,7 +137,8 @@ class ActorInfo(QObject):
     def setDataSet(self, dataSet):
         self._dataSet = dataSet
 
-        self._mapper.SetInputData(dataSet)
+        self._cellFilter.SetInputData(dataSet)
+
         self._mapper.Update()
 
         self.sourceChanged.emit(self._id)
@@ -146,24 +175,35 @@ class ActorInfo(QObject):
                 self._highlightOff()
 
     def cut(self, cutters):
+        for i in reversed(range(1, len(self._cutFilters))):
+            self._cutFilters[i].RemoveAllInputConnections(0)
+            self._cutFilters.pop()
+
+        inputFilter = self._cutFilters[0]
         if cutters and self._properties.cutEnabled:
-            if self._type == ActorType.GEOMETRY:
-                clip = True
-            else:
-                clip = False
-
-            dataSet = self._dataSet
             for c in cutters:
-                f = self._clipFilter(c) if clip else self._extractFilter(c)
-                f.SetInputData(dataSet)
-                f.Update()
-                dataSet = f.GetOutput()
+                f = self._clipFilter(c)
+                f.SetInputConnection(inputFilter.GetOutputPort())
+                self._cutFilters.append(f)
+                inputFilter = f
 
-            self._mapper.SetInputData(dataSet)
-            self._mapper.Update()
-        else:
-            self._mapper.SetInputData(self._dataSet)
-            self._mapper.Update()
+        self._mapper.SetInputConnection(inputFilter.GetOutputPort())
+        self._mapper.Update()
+
+    def getScalarRange(self, index: MeshQualityIndex) -> (float, float):
+        return 0, 1
+
+    def setScalar(self, index: MeshQualityIndex):
+        pass
+
+    def setScalarBand(self, low, high):
+        pass
+
+    def clearCellFilter(self):
+        pass
+
+    def applyCellFilter(self):
+        pass
 
     def _applyWireframeMode(self):
         if not self._properties.highlighted:
@@ -194,44 +234,102 @@ class ActorInfo(QObject):
     def _initMapper(self):
         raise NotImplementedError
 
-    def _extractFilter(self, cutter):
-        raise NotImplementedError
-
-    def _clipFilter(self, cutter):
+    def _clipFilter(self, cutter: vtkPlane):
         raise NotImplementedError
 
 
-class UnstructuredGridActor(ActorInfo):
+class MeshActor(ActorInfo):
+    def __init__(self, dataSet, id_, name):
+        super().__init__(dataSet, id_, name, ActorType.MESH)
+
     def _initMapper(self) -> vtkDataSetMapper:
-        mapper = vtkDataSetMapper()
-        mapper.SetScalarModeToUseCellData()
-        mapper.SetColorModeToMapScalars()
-        return mapper
+        return vtkDataSetMapper()
 
-    def _extractFilter(self, cutter):
+    def _clipFilter(self, cutter: vtkPlane):
         f = vtkExtractGeometry()
-        f.SetImplicitFunction(cutter.plane)
-        f.SetExtractInside(cutter.invert)
+        f.SetImplicitFunction(cutter)
+        f.ExtractInsideOff()
         f.SetExtractBoundaryCells(True)
         return f
 
-    def _clipFilter(self, cutter):
-        return self._extractFilter(cutter)
+    def getNumberOfDisplayedCells(self) -> int:
+        return self._cutFilters[-1].GetOutput().GetNumberOfCells()
+
+    def getScalarRange(self, index: MeshQualityIndex) -> (float, float):
+        print(f'Name: {self.name()} Field: {index.value}')
+        scalars = self._dataSet.GetCellData().GetScalars(index.value)
+        if scalars is None:
+            return 0, 1
+
+        left, right = scalars.GetRange()
+        return left, right
+
+    def setScalar(self, index: MeshQualityIndex):
+        self._mqIndex = index
+
+    def setScalarBand(self, low, high):
+        self._mqLow = low
+        self._mqHigh = high
+
+    def clearCellFilter(self):
+        self._cellFilter = vtkPassThrough()
+
+        self._cellFilter.SetInputData(self._dataSet)
+
+        self._cutFilters[0].RemoveAllInputConnections(0)
+        self._cutFilters[0].SetInputConnection(self._cellFilter.GetOutputPort())
+
+        self._mapper.ScalarVisibilityOff()
+
+        self._mapper.Update()
+
+    def applyCellFilter(self):
+        print(f'enable cell filter')
+
+        self._cellFilter = vtkThreshold()
+        self._cellFilter.AllScalarsOff()
+        self._cellFilter.SetThresholdFunction(vtkThreshold.THRESHOLD_BETWEEN)
+
+        self._cellFilter.SetLowerThreshold(self._mqLow)
+        self._cellFilter.SetUpperThreshold(self._mqHigh)
+        self._cellFilter.SetInputArrayToProcess(0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, self._mqIndex.value)
+
+        self._cellFilter.SetInputData(self._dataSet)
+
+        self._cutFilters[0].RemoveAllInputConnections(0)
+        self._cutFilters[0].SetInputConnection(self._cellFilter.GetOutputPort())
+
+        self._mapper.ScalarVisibilityOn()
+        self._mapper.SetScalarRange(self._mqLow, self._mqHigh)
+        self._mapper.SelectColorArray(self._mqIndex.value)
+
+        self._mapper.Update()
 
 
-class PolyDataActor(ActorInfo):
+class BoundaryActor(ActorInfo):
+    def __init__(self, dataSet, id_, name):
+        super().__init__(dataSet, id_, name, ActorType.BOUNDARY)
+
     def _initMapper(self) -> vtkPolyDataMapper:
         return vtkPolyDataMapper()
 
-    def _extractFilter(self, cutter):
+    def _clipFilter(self, cutter: vtkPlane):
         f = vtkExtractPolyDataGeometry()
-        f.SetImplicitFunction(cutter.plane)
-        f.SetExtractInside(cutter.invert)
+        f.SetImplicitFunction(cutter)
+        f.ExtractInsideOff()
         f.SetExtractBoundaryCells(True)
         return f
 
-    def _clipFilter(self, cutter):
+
+class GeometryActor(ActorInfo):
+    def __init__(self, dataSet, id_, name):
+        super().__init__(dataSet, id_, name, ActorType.GEOMETRY)
+
+    def _initMapper(self) -> vtkPolyDataMapper:
+        return vtkPolyDataMapper()
+
+    def _clipFilter(self, cutter: vtkPlane):
         f = vtkClipPolyData()
-        f.SetClipFunction(cutter.plane)
-        f.SetInsideOut(cutter.invert)
+        f.SetClipFunction(cutter)
+        f.InsideOutOff()
         return f

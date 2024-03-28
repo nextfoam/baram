@@ -6,7 +6,7 @@ from PySide6.QtCore import Signal
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape
 from baramMesh.db.simple_db import elementToVector
-from baramMesh.rendering.actor_info import ActorType, PolyDataActor
+from baramMesh.rendering.actor_info import GeometryActor
 from baramMesh.rendering.vtk_loader import hexPolyData, cylinderPolyData, spherePolyData, polygonPolyData
 from baramMesh.view.main_window.actor_manager import ActorManager
 
@@ -165,7 +165,7 @@ class GeometryManager(ActorManager):
             if geometry['volume']:
                 self._volumes[geometry['volume']].append(gId)
 
-            self.add(PolyDataActor(self._surfaceToPolyData(geometry), gId, geometry['name'], ActorType.GEOMETRY))
+            self.add(GeometryActor(self._surfaceToPolyData(geometry), gId, geometry['name']))
         else:
             self._volumes[gId] = []
 

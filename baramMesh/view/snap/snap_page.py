@@ -137,6 +137,13 @@ class SnapPage(StepPage):
                     if rc != 0:
                         raise ProcessError
 
+            cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
+                                    cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
+            cm.output.connect(console.append)
+            cm.errorOutput.connect(console.appendError)
+            await cm.start()
+            await cm.wait()
+
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()
 
