@@ -3,9 +3,10 @@
 
 from PySide6.QtCore import Signal
 
+from libbaram.simple_db.simple_db import elementToVector
+
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape
-from baramMesh.db.simple_db import elementToVector
 from baramMesh.rendering.actor_info import GeometryActor
 from baramMesh.rendering.vtk_loader import hexPolyData, cylinderPolyData, spherePolyData, polygonPolyData
 from baramMesh.view.main_window.actor_manager import ActorManager

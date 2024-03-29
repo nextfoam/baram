@@ -4,13 +4,14 @@
 from PySide6.QtWidgets import QDialog, QMessageBox
 
 from libbaram.mesh import Bounds
+from widgets.rendering.point_widget import PointWidget
+from widgets.selector_dialog import SelectorDialog
+
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper
-from baramFlow.view.widgets.selector_dialog import SelectorDialog
-from widgets.rendering.point_widget import PointWidget
 from .point_dialog_ui import Ui_PointDialog
 
 

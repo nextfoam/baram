@@ -203,6 +203,7 @@ class SimpleDB(SimpleSchema):
         if not isinstance(schema, SchemaList):
             raise TypeError
 
+        key = str(key)
         if key not in db[field]:
             raise LookupError
 
@@ -329,6 +330,15 @@ class SimpleDB(SimpleSchema):
                 self._modified = True
 
         return keys
+
+    def hasElement(self, path, key):
+        schema, db, field = self._get(path)
+
+        schema = schema[field]
+        if not isinstance(schema, SchemaList):
+            raise TypeError
+
+        return str(key) in db[field]
 
     def elementCount(self, path=None, filter_=None):
         if filter_ is not None:

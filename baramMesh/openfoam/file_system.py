@@ -43,7 +43,7 @@ class FileSystem:
         return self.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME
 
     def boundaryFilePath(self, rname=None):
-        return self.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME / 'boundary'
+        return self.polyMeshPath(rname) / 'boundary'
 
     def foamFilePath(self):
         return self._casePath / FOAM_FILE_NAME

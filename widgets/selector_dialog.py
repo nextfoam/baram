@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from dataclasses import dataclass
 from enum import Enum, auto
 
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QListWidgetItem
@@ -12,6 +13,13 @@ from .selector_dialog_ui import Ui_SelectorDialog
 class ListDataRole(Enum):
     USER_DATA = Qt.UserRole
     FILTERING_TEXT = auto()
+
+
+@dataclass
+class SelectorItem:
+    label: str
+    text: str
+    data: str
 
 
 class SelectorDialog(QDialog):
