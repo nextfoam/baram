@@ -14,6 +14,7 @@ from baramMesh.view.main_window.actor_manager import ActorManager
 
 class MeshManager(ActorManager):
     progress = Signal(str)
+    cellCountChanged = Signal(int)
 
     def __init__(self):
         super().__init__()
@@ -64,6 +65,8 @@ class MeshManager(ActorManager):
         else:
             await self.load(time)
 
+        self._notifyCellCountChange()
+
     def boundaries(self):
         return self._actorInfos.keys()
 
@@ -94,7 +97,19 @@ class MeshManager(ActorManager):
         for actorInfo in self._actorInfos.values():
             actorInfo.clearCellFilter()
 
+        self._notifyCellCountChange()
+
     def applyCellFilter(self):
         for actorInfo in self._actorInfos.values():
             actorInfo.applyCellFilter()
+
+        self._notifyCellCountChange()
+
+    def cut(self, cutters):
+        super().cut(cutters)
+        self._notifyCellCountChange()
+
+    def _notifyCellCountChange(self):
+        count = self.getNumberOfDisplayedCells()
+        self.cellCountChanged.emit(count)
 
