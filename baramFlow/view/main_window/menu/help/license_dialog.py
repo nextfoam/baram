@@ -11,7 +11,8 @@ softwares = [
     ('Paraview', '', 'https://www.paraview.org/', 'permissive BSD', 'https://www.paraview.org/license/'),
     ('Matplotlib', '3.5.2', 'https://matplotlib.org/stable/index.html', 'BSD compatible', 'https://matplotlib.org/stable/users/project/license.html'),
     ('ionicons', '', 'https://ionic.io/ionicons', 'Completely open source, MIT licensed', 'https://ionic.io/ionicons'),
-    ('PyFoam', '', 'https://pypi.org/project/PyFoam', 'GPLv2+', 'https://pypi.org/project/PyFoam/')
+    ('PyFoam', '', 'https://pypi.org/project/PyFoam', 'GPLv2+', 'https://pypi.org/project/PyFoam/'),
+    ('superqt', '0,6.3', 'https://pyapp-kit.github.io/superqt/', 'BSD-3-Clause license', 'https://github.com/pyapp-kit/superqt/blob/main/LICENSE'),
 ]
 
 class LicenseDialog(QDialog):
