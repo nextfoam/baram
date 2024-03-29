@@ -3,12 +3,13 @@
 
 from PySide6.QtWidgets import QMessageBox
 
+from widgets.selector_dialog import SelectorDialog
+
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.view.widgets.selector_dialog import SelectorDialog
 from .interface_dialog_ui import Ui_InterfaceDialog
 from .coupled_boundary_condition_dialog import CoupledBoundaryConditionDialog
 

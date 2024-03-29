@@ -3,11 +3,12 @@
 
 from PySide6.QtWidgets import QDialog, QMessageBox
 
+from widgets.selector_dialog import SelectorDialog
+
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.monitor_db import MonitorDB, VolumeReportType, FieldHelper
-from baramFlow.view.widgets.selector_dialog import SelectorDialog
 from .volume_dialog_ui import Ui_VolumeDialog
 
 

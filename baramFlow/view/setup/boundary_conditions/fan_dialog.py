@@ -5,12 +5,13 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 
+from widgets.selector_dialog import SelectorDialog
+
 from baramFlow.coredb import coredb
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.filedb import BcFileRole
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
-from baramFlow.view.widgets.selector_dialog import SelectorDialog
 from .fan_dialog_ui import Ui_FanDialog
 from .coupled_boundary_condition_dialog import CoupledBoundaryConditionDialog
 
