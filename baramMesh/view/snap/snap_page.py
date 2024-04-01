@@ -4,11 +4,11 @@
 import qasync
 from PySide6.QtWidgets import QMessageBox
 
-from libbaram.run import RunParallelUtility
 from libbaram.process import ProcessError
+from libbaram.run import RunParallelUtility
+from libbaram.simple_db.simple_schema import DBError
 
 from baramMesh.app import app
-from baramMesh.db.simple_schema import DBError
 from baramMesh.db.configurations_schema import CFDType, FeatureSnapType
 from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramMesh.openfoam.system.topo_set_dict import TopoSetDict
@@ -136,6 +136,13 @@ class SnapPage(StepPage):
                     rc = await cm.wait()
                     if rc != 0:
                         raise ProcessError
+
+            cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
+                                    cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
+            cm.output.connect(console.append)
+            cm.errorOutput.connect(console.appendError)
+            await cm.start()
+            await cm.wait()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()

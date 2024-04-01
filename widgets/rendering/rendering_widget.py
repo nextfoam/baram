@@ -20,7 +20,7 @@ from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
 from vtkmodules.vtkInteractionWidgets import vtkLogoRepresentation, vtkLogoWidget
 from vtkmodules.vtkIOImage import vtkPNGReader
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor, vtkCubeAxesActor
-from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vtkLightKit
+from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vtkLightKit, vtkProp
 
 from resources import resource
 
@@ -91,10 +91,10 @@ class RenderingWidget(QWidget):
     def interactor(self):
         return self._widget
 
-    def addActor(self, actor: vtkActor):
+    def addActor(self, actor: vtkProp):
         self._renderer.AddActor(actor)
 
-    def removeActor(self, actor):
+    def removeActor(self, actor: vtkProp):
         self._renderer.RemoveActor(actor)
 
     def refresh(self):

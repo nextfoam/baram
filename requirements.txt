@@ -10,6 +10,7 @@ PySide6-Essentials==6.4.3
 python-dateutil==2.8.2
 PyYAML==6.0
 qasync==0.24.0
+superqt==0.6.1
 tables==3.7.0
 vtk==9.2.6
 xmlschema==1.10.0

@@ -72,7 +72,7 @@ class ActorManager(QObject):
 
     def cut(self, cutters):
         for actorInfo in self._actorInfos.values():
-             actorInfo.cut(cutters)
+            actorInfo.cut(cutters)
 
         self._displayController.refreshView()
 

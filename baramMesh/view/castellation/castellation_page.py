@@ -10,17 +10,17 @@ from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFe
 from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
 from PySide6.QtWidgets import QMessageBox
 
-from libbaram.run import RunParallelUtility
 from libbaram.process import ProcessError
+from libbaram.run import RunParallelUtility
+from libbaram.simple_db.simple_db import elementToVector
+from libbaram.simple_db.simple_schema import DBError
+from widgets.list_table import ListItemWithButtons
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType
-from baramMesh.db.simple_db import elementToVector
-from baramMesh.db.simple_schema import DBError
 from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramMesh.view.step_page import StepPage
-from widgets.list_table import ListItemWithButtons
 from .surface_refinement_dialog import SurfaceRefinementDialog
 from .volume_refinement_dialog import VolumeRefinementDialog
 
@@ -245,6 +245,13 @@ class CastellationPage(StepPage):
             rc = await cm.wait()
             if rc != 0:
                 raise ProcessError
+
+            cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
+                                    cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
+            cm.output.connect(console.append)
+            cm.errorOutput.connect(console.appendError)
+            await cm.start()
+            await cm.wait()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()

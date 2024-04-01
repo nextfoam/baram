@@ -4,13 +4,13 @@
 import qasync
 from PySide6.QtWidgets import QMessageBox
 
-from libbaram.run import RunUtility
+from libbaram.run import RunUtility, RunParallelUtility
+from libbaram.simple_db.simple_db import elementToVector
+from libbaram.simple_db.simple_schema import DBError
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType
-from baramMesh.db.simple_db import elementToVector
-from baramMesh.db.simple_schema import DBError
 from baramMesh.openfoam.redistribution_task import RedistributionTask
 from baramMesh.openfoam.system.block_mesh_dict import BlockMeshDict
 from baramMesh.view.step_page import StepPage
@@ -167,8 +167,13 @@ class BaseGridPage(StepPage):
         progressDialog.setLabelText(self.tr('Generating Block Mesh'))
         progressDialog.open()
 
+        console = app.consoleView
+        console.clear()
+
         BlockMeshDict().build().write()
         cm = RunUtility('blockMesh', cwd=app.fileSystem.caseRoot())
+        cm.output.connect(console.append)
+        cm.errorOutput.connect(console.appendError)
         await cm.start()
         result = await cm.wait()
 
@@ -185,6 +190,14 @@ class BaseGridPage(StepPage):
             redistributionTask.progress.connect(progressDialog.setLabelText)
 
             await redistributionTask.decompose(numCores)
+
+        progressDialog.setLabelText('Collecting Mesh Info.')
+        cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
+                                cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
+        cm.output.connect(console.append)
+        cm.errorOutput.connect(console.appendError)
+        await cm.start()
+        await cm.wait()
 
         progressDialog.close()
 

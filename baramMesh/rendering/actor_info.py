@@ -6,19 +6,31 @@ from dataclasses import dataclass
 
 from PySide6.QtGui import QColor
 from PySide6.QtCore import QObject, Signal
-from vtkmodules.vtkCommonCore import VTK_UNSTRUCTURED_GRID
-from vtkmodules.vtkFiltersCore import vtkClipPolyData
+from vtkmodules.vtkCommonDataModel import vtkDataObject, vtkPlane
+from vtkmodules.vtkFiltersCore import vtkClipPolyData, vtkThreshold, vtkPassThrough
 from vtkmodules.vtkFiltersExtraction import vtkExtractPolyDataGeometry, vtkExtractGeometry
-from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor
+from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor, vtkMapper
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
 from libbaram.mesh import Bounds
+from libbaram.colormap import sequentialRedLut
 
 
 class DisplayMode(Enum):
-    WIREFRAME      = auto()
-    SURFACE        = auto()
-    SURFACE_EDGE   = auto()
+    WIREFRAME      = auto()  # noqa: E221
+    SURFACE        = auto()  # noqa: E221
+    SURFACE_EDGE   = auto()  # noqa: E221
+
+
+class MeshQualityIndex(Enum):
+    ASPECT_RATIO = 'cellAspectRatio'
+    NON_ORTHO_ANGLE = 'nonOrthoAngle'
+    SKEWNESS = 'skewness'
+    VOLUME = 'cellVolume'
+
+    @classmethod
+    def values(cls):
+        return [c.value for c in cls]
 
 
 @dataclass
@@ -44,112 +56,38 @@ class ActorType(Enum):
     MESH = auto()
 
 
-class ActorSource:
-    def __new__(cls, *args, **kwargs):
-        if cls is ActorSource:
-            raise TypeError(f"only children of '{cls.__name__}' may be instantiated")
-        return super().__new__(cls)
-
-    def __init__(self, dataSet, mapper):
-        self._dataSet = dataSet
-        self._mapper = mapper
-
-        self._mapper.SetInputData(self._dataSet)
-
-    def mapper(self):
-        return self._mapper
-
-    def setDataSet(self, dataSet):
-        self._dataSet = dataSet
-        self._mapper.SetInputData(dataSet)
-        self._mapper.Update()
-
-    def dataSet(self):
-        return self._dataSet
-
-    def getBounds(self):
-        return self._dataSet.GetBounds()
-
-    def cut(self, cutters, clip):
-        dataSet = self._dataSet
-        for c in cutters:
-            filter = self._newClipFilter(c) if clip else self._newExtractFilter(c)
-            filter.SetInputData(dataSet)
-            filter.Update()
-            dataSet = filter.GetOutput()
-
-        self._mapper.SetInputData(dataSet)
-        self._mapper.Update()
-
-    def clearFilter(self):
-        self._mapper.SetInputData(self._dataSet)
-        self._mapper.Update()
-
-    def _newExtractFilter(self, cutter):
-        raise NotImplementedError
-
-    def _newClipFilter(self, cutter):
-        raise NotImplementedError
-
-
-class UnstructuredGrid(ActorSource):
-    def __init__(self, unstructuredGrid):
-        super().__init__(unstructuredGrid, vtkDataSetMapper())
-
-    def _newExtractFilter(self, cutter):
-        filter = vtkExtractGeometry()
-        filter.SetImplicitFunction(cutter.plane)
-        filter.SetExtractInside(cutter.invert)
-        filter.SetExtractBoundaryCells(True)
-
-        return filter
-
-    def _newClipFilter(self, cutter):
-        return self._newExtractFilter(cutter)
-
-
-class PolyData(ActorSource):
-    def __init__(self, polyData):
-        super().__init__(polyData, vtkPolyDataMapper())
-
-    def _newExtractFilter(self, cutter):
-        filter = vtkExtractPolyDataGeometry()
-        filter.SetImplicitFunction(cutter.plane)
-        filter.SetExtractInside(cutter.invert)
-        filter.SetExtractBoundaryCells(True)
-
-        return filter
-
-    def _newClipFilter(self, cutter):
-        filter = vtkClipPolyData()
-        filter.SetClipFunction(cutter.plane)
-        filter.SetInsideOut(cutter.invert)
-
-        return filter
-
-
 class ActorInfo(QObject):
     sourceChanged = Signal(str)
     nameChanged = Signal(str)
 
-    def __init__(self, dataSet, id_, name, type):
+    def __init__(self, dataSet, id_, name, type_):
         super().__init__()
 
+        self._dataSet = dataSet
         self._id = id_
         self._name = name
-        self._type = type
-        self._source = None
-        self._mapper = None
-        self._actor = vtkActor()
+        self._type = type_
 
-        if dataSet.GetDataObjectType() == VTK_UNSTRUCTURED_GRID:
-            self._source = UnstructuredGrid(dataSet)
-        else:
-            self._source = PolyData(dataSet)
+        self._cellFilter = vtkPassThrough()
+        self._cellFilter.SetInputData(dataSet)
+        self._cutFilters = [vtkPassThrough()]
+        self._cutFilters[0].SetInputConnection(self._cellFilter.GetOutputPort())
 
-        self._mapper = self._source.mapper()
+        self._mqEnabled = False
+        self._mqIndex = MeshQualityIndex.VOLUME
+        self._mqMax = 0
+        self._mqMin = 0
+        self._mqHigh = 0
+        self._mqLow = 0
+
+        self._mapper: vtkMapper = self._initMapper()
+        self._mapper.SetInputConnection(self._cutFilters[0].GetOutputPort())
         self._mapper.ScalarVisibilityOff()
+        self._mapper.SetScalarModeToUseCellFieldData()
+        self._mapper.SetColorModeToMapScalars()
+        self._mapper.SetLookupTable(sequentialRedLut)
 
+        self._actor = vtkActor()
         self._actor.SetMapper(self._mapper)
         self._actor.GetProperty().SetDiffuse(0.3)
         self._actor.GetProperty().SetOpacity(0.9)
@@ -158,10 +96,10 @@ class ActorInfo(QObject):
 
         prop = self._actor.GetProperty()
         self._properties = Properties(bool(self._actor.GetVisibility()),
-                                           prop.GetOpacity(),
-                                           QColor.fromRgbF(*prop.GetColor()),
-                                           DisplayMode.SURFACE,
-                                           True, False)
+                                      prop.GetOpacity(),
+                                      QColor.fromRgbF(*prop.GetColor()),
+                                      DisplayMode.SURFACE,
+                                      True, False)
 
         self._displayModeApplicator = {
             DisplayMode.WIREFRAME: self._applyWireframeMode,
@@ -179,7 +117,7 @@ class ActorInfo(QObject):
         return self._type
 
     def dataSet(self):
-        return self._source.dataSet()
+        return self._dataSet
 
     def actor(self):
         return self._actor
@@ -188,7 +126,7 @@ class ActorInfo(QObject):
         return self._properties
 
     def bounds(self):
-        return Bounds(*self._source.getBounds())
+        return Bounds(*self._dataSet.GetBounds())
 
     def isVisible(self):
         return self._properties.visibility
@@ -196,14 +134,13 @@ class ActorInfo(QObject):
     def color(self):
         return self._properties.color
 
-    def isCutEnabled(self):
-        return self._properties.cutEnabled
-
-    def isHighlighted(self):
-        return self._properties.highlighted
-
     def setDataSet(self, dataSet):
-        self._source.setDataSet(dataSet)
+        self._dataSet = dataSet
+
+        self._cellFilter.SetInputData(dataSet)
+
+        self._mapper.Update()
+
         self.sourceChanged.emit(self._id)
 
     def setName(self, name):
@@ -212,19 +149,19 @@ class ActorInfo(QObject):
 
     def setVisible(self, visibility):
         self._properties.visibility = visibility
-        self._applyVisibility()
+        self._actor.SetVisibility(visibility)
 
     def setOpacity(self, opacity):
         self._properties.opacity = opacity
-        self._applyOpacity()
+        self._actor.GetProperty().SetOpacity(opacity)
 
     def setColor(self, color: QColor):
         self._properties.color = color
-        self._applyColor()
+        self._actor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
 
     def setDisplayMode(self, mode):
         self._properties.displayMode = mode
-        self._applyDisplayMode()
+        self._displayModeApplicator[mode]()
 
     def setCutEnabled(self, enabled):
         self._properties.cutEnabled = enabled
@@ -232,34 +169,41 @@ class ActorInfo(QObject):
     def setHighlighted(self, highlighted):
         if self._properties.highlighted != highlighted:
             self._properties.highlighted = highlighted
-            self._applyHighlight()
-
-    def copyProperties(self, actorInfo):
-        self._properties = actorInfo.properties()
-        self._applyVisibility()
-        self._applyOpacity()
-        self._applyColor()
-        self._applyDisplayMode()
-        self._applyHighlight()
+            if highlighted:
+                self._highlightOn()
+            else:
+                self._highlightOff()
 
     def cut(self, cutters):
-        if cutters and self.isCutEnabled():
-            self._source.cut(cutters, self._type == ActorType.GEOMETRY)
-        else:
-            self._source.clearFilter()
+        for i in reversed(range(1, len(self._cutFilters))):
+            self._cutFilters[i].RemoveAllInputConnections(0)
+            self._cutFilters.pop()
 
-    def _applyVisibility(self):
-        self._actor.SetVisibility(self._properties.visibility)
+        inputFilter = self._cutFilters[0]
+        if cutters and self._properties.cutEnabled:
+            for c in cutters:
+                f = self._clipFilter(c)
+                f.SetInputConnection(inputFilter.GetOutputPort())
+                self._cutFilters.append(f)
+                inputFilter = f
 
-    def _applyOpacity(self):
-        self._actor.GetProperty().SetOpacity(self._properties.opacity)
+        self._mapper.SetInputConnection(inputFilter.GetOutputPort())
+        self._mapper.Update()
 
-    def _applyColor(self):
-        color = self._properties.color
-        self._actor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
+    def getScalarRange(self, index: MeshQualityIndex) -> (float, float):
+        return 0, 1
 
-    def _applyDisplayMode(self):
-        self._displayModeApplicator[self._properties.displayMode]()
+    def setScalar(self, index: MeshQualityIndex):
+        pass
+
+    def setScalarBand(self, low, high):
+        pass
+
+    def clearCellFilter(self):
+        pass
+
+    def applyCellFilter(self):
+        pass
 
     def _applyWireframeMode(self):
         if not self._properties.highlighted:
@@ -275,14 +219,117 @@ class ActorInfo(QObject):
         self._actor.GetProperty().EdgeVisibilityOn()
         self._actor.GetProperty().SetLineWidth(1.0)
 
-    def _applyHighlight(self):
-        if self._properties.highlighted:
-            self._applySurfaceEdgeMode()
-            self._actor.GetProperty().SetDiffuse(0.6)
-            self._actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Magenta'))
-            self._actor.GetProperty().SetLineWidth(2)
-        else:
-            self._applyDisplayMode()
-            self._actor.GetProperty().SetDiffuse(0.3)
-            self._actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Gray'))
-            self._actor.GetProperty().SetLineWidth(1)
+    def _highlightOn(self):
+        self._applySurfaceEdgeMode()
+        self._actor.GetProperty().SetDiffuse(0.6)
+        self._actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Magenta'))
+        self._actor.GetProperty().SetLineWidth(2)
+
+    def _highlightOff(self):
+        self._displayModeApplicator[self._properties.displayMode]()
+        self._actor.GetProperty().SetDiffuse(0.3)
+        self._actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Gray'))
+        self._actor.GetProperty().SetLineWidth(1)
+
+    def _initMapper(self):
+        raise NotImplementedError
+
+    def _clipFilter(self, cutter: vtkPlane):
+        raise NotImplementedError
+
+
+class MeshActor(ActorInfo):
+    def __init__(self, dataSet, id_, name):
+        super().__init__(dataSet, id_, name, ActorType.MESH)
+
+    def _initMapper(self) -> vtkDataSetMapper:
+        return vtkDataSetMapper()
+
+    def _clipFilter(self, cutter: vtkPlane):
+        f = vtkExtractGeometry()
+        f.SetImplicitFunction(cutter)
+        f.ExtractInsideOff()
+        f.SetExtractBoundaryCells(True)
+        return f
+
+    def getNumberOfDisplayedCells(self) -> int:
+        return self._cutFilters[-1].GetOutput().GetNumberOfCells()
+
+    def getScalarRange(self, index: MeshQualityIndex) -> (float, float):
+        print(f'Name: {self.name()} Field: {index.value}')
+        scalars = self._dataSet.GetCellData().GetScalars(index.value)
+        if scalars is None:
+            return 0, 1
+
+        left, right = scalars.GetRange()
+        return left, right
+
+    def setScalar(self, index: MeshQualityIndex):
+        self._mqIndex = index
+
+    def setScalarBand(self, low, high):
+        self._mqLow = low
+        self._mqHigh = high
+
+    def clearCellFilter(self):
+        self._cellFilter = vtkPassThrough()
+
+        self._cellFilter.SetInputData(self._dataSet)
+
+        self._cutFilters[0].RemoveAllInputConnections(0)
+        self._cutFilters[0].SetInputConnection(self._cellFilter.GetOutputPort())
+
+        self._mapper.ScalarVisibilityOff()
+
+        self._mapper.Update()
+
+    def applyCellFilter(self):
+        print(f'enable cell filter')
+
+        self._cellFilter = vtkThreshold()
+        self._cellFilter.AllScalarsOff()
+        self._cellFilter.SetThresholdFunction(vtkThreshold.THRESHOLD_BETWEEN)
+
+        self._cellFilter.SetLowerThreshold(self._mqLow)
+        self._cellFilter.SetUpperThreshold(self._mqHigh)
+        self._cellFilter.SetInputArrayToProcess(0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, self._mqIndex.value)
+
+        self._cellFilter.SetInputData(self._dataSet)
+
+        self._cutFilters[0].RemoveAllInputConnections(0)
+        self._cutFilters[0].SetInputConnection(self._cellFilter.GetOutputPort())
+
+        self._mapper.ScalarVisibilityOn()
+        self._mapper.SetScalarRange(self._mqLow, self._mqHigh)
+        self._mapper.SelectColorArray(self._mqIndex.value)
+
+        self._mapper.Update()
+
+
+class BoundaryActor(ActorInfo):
+    def __init__(self, dataSet, id_, name):
+        super().__init__(dataSet, id_, name, ActorType.BOUNDARY)
+
+    def _initMapper(self) -> vtkPolyDataMapper:
+        return vtkPolyDataMapper()
+
+    def _clipFilter(self, cutter: vtkPlane):
+        f = vtkExtractPolyDataGeometry()
+        f.SetImplicitFunction(cutter)
+        f.ExtractInsideOff()
+        f.SetExtractBoundaryCells(True)
+        return f
+
+
+class GeometryActor(ActorInfo):
+    def __init__(self, dataSet, id_, name):
+        super().__init__(dataSet, id_, name, ActorType.GEOMETRY)
+
+    def _initMapper(self) -> vtkPolyDataMapper:
+        return vtkPolyDataMapper()
+
+    def _clipFilter(self, cutter: vtkPlane):
+        f = vtkClipPolyData()
+        f.SetClipFunction(cutter)
+        f.InsideOutOff()
+        return f

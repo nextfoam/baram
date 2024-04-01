@@ -6,12 +6,12 @@ from PySide6.QtWidgets import QVBoxLayout, QMessageBox
 from PySide6.QtCore import Signal
 
 from widgets.async_message_box import AsyncMessageBox
+from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.coredb import Error
-from baramFlow.view.widgets.selector_dialog import SelectorDialog
 from baramFlow.view.widgets.multi_selector_dialog import SelectorItem
 from baramFlow.view.widgets.content_page import ContentPage
 from .material_page_ui import Ui_MaterialPage

@@ -3,10 +3,10 @@
 
 from PySide6.QtWidgets import QDialog, QMessageBox
 
+from libbaram.simple_db.simple_schema import DBError
 from widgets.radio_group import RadioGroup
 
 from baramMesh.app import app
-from baramMesh.db.simple_schema import DBError
 from baramMesh.db.configurations_schema import CFDType
 from .geometry import RESERVED_NAMES
 from .surface_dialog_ui import Ui_SurfaceDialog

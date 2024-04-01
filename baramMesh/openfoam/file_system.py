@@ -43,7 +43,7 @@ class FileSystem:
         return self.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME
 
     def boundaryFilePath(self, rname=None):
-        return self.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME / 'boundary'
+        return self.polyMeshPath(rname) / 'boundary'
 
     def foamFilePath(self):
         return self._casePath / FOAM_FILE_NAME
@@ -89,7 +89,9 @@ class FileSystem:
 
         self._constantPath = makeDir(self._casePath, Directory.CONSTANT_DIRECTORY_NAME)
         self._triSurfacePath = makeDir(self._constantPath, Directory.TRI_SURFACE_DIRECTORY_NAME)
-        # makeDir(self._casePath, '0')
+
+        makeDir(self._casePath, Directory.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
+
     #
     # def createBaramCase(self):
     #     if self._casePath.exists():

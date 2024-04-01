@@ -14,6 +14,7 @@ softwares = [
     ('h5py', '3.9.0', 'https://docs.h5py.org/en/stable/', 'h5py', 'https://docs.h5py.org/en/stable/licenses.html'),
     ('qasync', '0.24.0', 'https://pypi.org/project/qasync/', 'BSD', 'https://pypi.org/project/qasync/'),
     ('psutil', '5.9.5', 'https://pypi.org/project/psutil/', 'BSD', 'https://pypi.org/project/psutil/'),
+    ('superqt', '0,6.3', 'https://pyapp-kit.github.io/superqt/', 'BSD-3-Clause license', 'https://github.com/pyapp-kit/superqt/blob/main/LICENSE'),
 ]
 
 class LicenseDialog(QDialog):

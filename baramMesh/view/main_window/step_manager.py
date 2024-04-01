@@ -43,6 +43,7 @@ class StepControlButtons:
 
 
 class StepManager(QObject):
+    currentStepChanged = Signal(Step)
     openedStepChanged = Signal(Step)
 
     def __init__(self, navigation, ui):
@@ -142,6 +143,8 @@ class StepManager(QObject):
         else:
             page.lock()
             self._buttons.setToLockedMode()
+
+        self.currentStepChanged.emit(step)
 
     def _unlockCurrentStep(self):
         currentStep = self._navigation.currentStep()

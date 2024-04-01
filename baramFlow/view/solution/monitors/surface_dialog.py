@@ -3,11 +3,12 @@
 
 from PySide6.QtWidgets import QDialog, QMessageBox
 
+from widgets.selector_dialog import SelectorDialog
+
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.monitor_db import MonitorDB, SurfaceReportType, FieldHelper
-from baramFlow.view.widgets.selector_dialog import SelectorDialog
 from .surface_dialog_ui import Ui_SurfaceDialog
 
 
