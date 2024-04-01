@@ -57,7 +57,7 @@ class CellZoneDB:
 
     @classmethod
     def getCellZoneType(cls, czid):
-        return coredb.CoreDB().getValue(cls.getXPath(czid) + '/zoneType')
+        return ZoneType(coredb.CoreDB().getValue(cls.getXPath(czid) + '/zoneType'))
 
     @classmethod
     def isRegion(cls, czname):

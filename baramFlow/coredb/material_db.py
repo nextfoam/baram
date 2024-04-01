@@ -84,4 +84,4 @@ class MaterialDB(object):
 
     @classmethod
     def isFluid(cls, mid):
-        return coredb.CoreDB().getValue(cls.getXPath(mid) + '/phase') != Phase.SOLID.value
+        return cls.getPhase(mid) != Phase.SOLID
