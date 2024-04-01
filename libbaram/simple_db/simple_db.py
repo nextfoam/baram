@@ -5,7 +5,7 @@ import copy
 
 import yaml
 
-from .simple_schema import SimpleSchema, SchemaList, PrimitiveType, EnumType
+from .simple_schema import SimpleSchema, SchemaList, PrimitiveType, EnumType, DBError, ErrorType
 
 
 def elementToVector(element):
@@ -137,6 +137,13 @@ class SimpleDB(SimpleSchema):
             return True
 
         return False
+
+    def setText(self, path, text, name=None):
+        if text.strip():
+            self.setValue(path, text, name)
+            return True
+
+        raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', name)
 
     def newElement(self, path):
         schema, _, field = self._get(path)
