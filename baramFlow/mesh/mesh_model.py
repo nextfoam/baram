@@ -8,8 +8,11 @@ from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
 from baramFlow.app import app
+from baramFlow.coredb import coredb
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.system.fv_schemes import FvSchemes
+from baramFlow.openfoam.system.fv_solution import FvSolution
 from baramFlow.view.main_window.rendering_view import DisplayMode
 from libbaram.exception import CanceledException
 from libbaram.run import RunParallelUtility
@@ -277,6 +280,13 @@ class MeshModel(RenderingModel):
 
         ioStream = StringIO()
         cm = None
+
+        # "checkMesh" requires fvSchemes and fvSolution
+        # They are not available right after importing Multi-Region mesh files
+        regions = coredb.CoreDB().getRegions()
+        for rname in regions:
+            FvSchemes(rname).build().write()
+            FvSolution(rname).build().write()
 
         try:
             caseRoot = FileSystem.caseRoot()
