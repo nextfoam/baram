@@ -19,11 +19,11 @@ class CellZoneWidget(QWidget):
         self._ui.setupUi(self)
 
         self._types = {
-            ZoneType.NONE.value: self.tr('None'),
-            ZoneType.MRF.value: self.tr('Multiple Refernce Frame'),
-            ZoneType.POROUS.value: self.tr('Porous Zone'),
-            ZoneType.SLIDING_MESH.value: self.tr('Sliding Mesh'),
-            ZoneType.ACTUATOR_DISK.value: self.tr('Actuator Disk'),
+            ZoneType.NONE: self.tr('None'),
+            ZoneType.MRF: self.tr('Multiple Refernce Frame'),
+            ZoneType.POROUS: self.tr('Porous Zone'),
+            ZoneType.SLIDING_MESH: self.tr('Sliding Mesh'),
+            ZoneType.ACTUATOR_DISK: self.tr('Actuator Disk'),
         }
 
         self._db = coredb.CoreDB()

@@ -4,18 +4,20 @@
 from typing import Optional
 from enum import Enum, auto
 
+import qasync
 from PySide6.QtWidgets import QWidget, QMessageBox, QPushButton, QHBoxLayout
 from PySide6.QtWidgets import QSizePolicy
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import Signal
 
+from resources import resource
+from widgets.flat_push_button import FlatPushButton
+
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
-from resources import resource
 from baramFlow.mesh.vtk_loader import hexActor, cylinderActor, sphereActor
-from widgets.flat_push_button import FlatPushButton
 from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
 from .initialization_widget_ui import Ui_initializationWidget
 from .section_dialog import SectionDialog
@@ -177,26 +179,26 @@ class InitializationWidget(QWidget):
             else:
                 self._addSectionRow(name)
 
-    def save(self):
-        writer = CoreDBWriter()
-        writer.append(self._initialValuesPath + '/velocity/x', self._ui.xVelocity.text(), self.tr('X-Velocity'))
-        writer.append(self._initialValuesPath + '/velocity/y', self._ui.yVelocity.text(), self.tr('Y-Velocity'))
-        writer.append(self._initialValuesPath + '/velocity/z', self._ui.zVelocity.text(), self.tr('Z-Velocity'))
-        writer.append(self._initialValuesPath + '/pressure', self._ui.pressure.text(), self.tr('Pressure'))
-        writer.append(self._initialValuesPath + '/temperature', self._ui.temperature.text(), self.tr('Temperature'))
-        writer.append(self._initialValuesPath + '/scaleOfVelocity',
-                      self._ui.scaleOfVelocity.text(), self.tr('Scale of Velocity'))
-        writer.append(self._initialValuesPath + '/turbulentIntensity',
-                      self._ui.turbulentIntensity.text(), self.tr('Turbulent Intensity'))
-        writer.append(self._initialValuesPath + '/turbulentViscosity',
-                      self._ui.turbulentViscosityRatio.text(), self.tr('Turbulent Viscosity'))
+    @qasync.asyncSlot()
+    async def appendToWriter(self, writer):
+        writer.append(self._initialValuesPath + '/velocity/x', self._ui.xVelocity.text(),
+                      self.tr('X-Velocity of region [{}]').format(self._rname))
+        writer.append(self._initialValuesPath + '/velocity/y', self._ui.yVelocity.text(),
+                      self.tr('Y-Velocity of region [{}]').format(self._rname))
+        writer.append(self._initialValuesPath + '/velocity/z', self._ui.zVelocity.text(),
+                      self.tr('Z-Velocity of region [{}]').format(self._rname))
+        writer.append(self._initialValuesPath + '/pressure', self._ui.pressure.text(),
+                      self.tr('Pressure of region [{}]').format(self._rname))
+        writer.append(self._initialValuesPath + '/temperature', self._ui.temperature.text(),
+                      self.tr('Temperature of region [{}]').format(self._rname))
+        writer.append(self._initialValuesPath + '/scaleOfVelocity', self._ui.scaleOfVelocity.text(),
+                      self.tr('Scale of Velocity of region [{}]').format(self._rname))
+        writer.append(self._initialValuesPath + '/turbulentIntensity', self._ui.turbulentIntensity.text(),
+                      self.tr('Turbulent Intensity of region [{}]').format(self._rname))
+        writer.append(self._initialValuesPath + '/turbulentViscosity', self._ui.turbulentViscosityRatio.text(),
+                      self.tr('Turbulent Viscosity of region [{}]').format(self._rname))
 
         if not self._volumeFractionWidget.appendToWriter(writer):
-            return
-
-        errorCount = writer.write()
-        if errorCount > 0:
-            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
             return False
 
         return True
