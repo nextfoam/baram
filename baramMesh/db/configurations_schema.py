@@ -8,7 +8,7 @@ from libbaram.simple_db.simple_schema import FloatType, IntKeyList, EnumType, In
 from libbaram.simple_db.simple_schema import VectorComposite
 
 
-CURRENT_CONFIGURATIONS_VERSION = 1
+CURRENT_CONFIGURATIONS_VERSION = 2
 CONFIGURATIONS_VERSION_KEY = 'version'
 
 
@@ -98,7 +98,10 @@ region = {
 
 surfaceRefinement = {
     'groupName': TextType(),
-    'surfaceRefinementLevel': IntType().setDefault(1),
+    'surfaceRefinement': {
+        'minimumLevel': IntType().setDefault(1),
+        'maximumLevel': IntType().setDefault(1)
+    },
     'featureEdgeRefinementLevel': IntType().setDefault(1),
 }
 

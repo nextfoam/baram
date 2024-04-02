@@ -10,15 +10,28 @@ def _version_1(data):
         data['snap']['featureSnapType'] = FeatureSnapType.EXPLICIT
 
 
+def _version_2(data):
+    for surfaceRefinement in data['castellation']['refinementSurfaces'].values():
+        if 'surfaceRefinement' not in surfaceRefinement:
+            orgSurfaceRefinementLevel = surfaceRefinement.pop('surfaceRefinementLevel')
+            surfaceRefinement['surfaceRefinement'] = {
+                'minimumLevel': orgSurfaceRefinementLevel,
+                'maximumLevel': str(int(orgSurfaceRefinementLevel) + 1)
+            }
+
+
+_migrates = {
+    0: _version_1,
+    1: _version_2,
+}
+
+
 def migrate(data):
     version = int(data.get(CONFIGURATIONS_VERSION_KEY, 0))
     assert version <= CURRENT_CONFIGURATIONS_VERSION
 
-    if version < 1:
-        print('Loaded data has no version information. It is assumes as version 1.')
-
-    if version < 2:
-        _version_1(data)
+    for v in range(version, len(_migrates)):
+        _migrates[v](data)
 
     data[CONFIGURATIONS_VERSION_KEY] = CURRENT_CONFIGURATIONS_VERSION
 

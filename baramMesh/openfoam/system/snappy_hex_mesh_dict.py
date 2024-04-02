@@ -220,9 +220,11 @@ class SnappyHexMeshDict(DictionaryFile):
             if surface['shape'] in Shape.PLATES.value and surface['volume'] == boundingHex6:
                 continue
 
-            level = 0
+            minLevel = 0
+            maxLevel = 0
             if group := surface['castellationGroup']:
-                level = int(refinements[group]['surfaceRefinementLevel'])
+                minLevel = int(refinements[group]['surfaceRefinement']['minimumLevel'])
+                maxLevel = int(refinements[group]['surfaceRefinement']['maximumLevel'])
 
             name = surface['name']
             cfdType = surface['cfdType']
@@ -248,7 +250,7 @@ class SnappyHexMeshDict(DictionaryFile):
                     'patchInfo': {'type': 'patch'}
                 }
 
-            data[name]['level'] = [level, level+1]
+            data[name]['level'] = [minLevel, maxLevel]
 
         return data
 

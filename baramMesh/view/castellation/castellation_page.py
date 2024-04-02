@@ -100,7 +100,7 @@ class CastellationPage(StepPage):
 
         ui.surfaceRefinement.setBackgroundColor()
         ui.volumeRefinement.setBackgroundColor()
-        ui.surfaceRefinement.setHeaderWithWidth([0, 0, 16, 16])
+        ui.surfaceRefinement.setHeaderWithWidth([0, 0, 0, 16, 16])
         ui.volumeRefinement.setHeaderWithWidth([0, 0, 16, 16])
 
         self._connectSignalsSlots()
@@ -182,7 +182,9 @@ class CastellationPage(StepPage):
 
         for groupId, element in castellation.getElements('refinementSurfaces').items():
             if groupId in groups[GeometryType.SURFACE.value]:
-                self._addSurfaceRefinementItem(groupId, element['groupName'], element['surfaceRefinementLevel'])
+                self._addSurfaceRefinementItem(
+                    groupId, element['groupName'],
+                    element['surfaceRefinement']['minimumLevel'], element['surfaceRefinement']['maximumLevel'])
             else:
                 self._db.removeElement('castellation/refinementSurfaces', groupId)
 
@@ -280,13 +282,15 @@ class CastellationPage(StepPage):
         element = self._dialog.dbElement()
         if self._dialog.isCreationMode():
             self._addSurfaceRefinementItem(self._dialog.groupId(), element.getValue('groupName'),
-                                           element.getValue('surfaceRefinementLevel'))
+                                           element.getValue('surfaceRefinement/minimumLevel'),
+                                           element.getValue('surfaceRefinement/maximumLevel'))
         else:
-            self._ui.surfaceRefinement.item(self._dialog.groupId()).update(
-                [element.getValue('groupName'), element.getValue('surfaceRefinementLevel')])
+            self._ui.surfaceRefinement.item(self._dialog.groupId()).update([
+                element.getValue('groupName'),
+                element.getValue('surfaceRefinement/minimumLevel'), element.getValue('surfaceRefinement/maximumLevel')])
 
-    def _addSurfaceRefinementItem(self, groupId, name, level):
-        item = ListItemWithButtons(groupId, [name, level])
+    def _addSurfaceRefinementItem(self, groupId, name, minLevel, maxLevel):
+        item = ListItemWithButtons(groupId, [name, minLevel, maxLevel])
         item.editClicked.connect(lambda: self._openSurfaceRefinementDialog(groupId))
         item.removeClicked.connect(lambda: self._removeSurfaceRefinement(groupId))
         self._ui.surfaceRefinement.addItem(item)

@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QDialog, QMessageBox
+import qasync
+from PySide6.QtWidgets import QDialog
 
 from libbaram.simple_db.simple_schema import DBError
+from widgets.async_message_box import AsyncMessageBox
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType
@@ -43,22 +45,31 @@ class SurfaceRefinementDialog(QDialog):
     def isCreationMode(self):
         return self._creationMode
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def _accept(self):
         try:
             groupName = self._ui.groupName.text().strip()
             if self._db.getKeys('castellation/refinementSurfaces',
                                 lambda i, e: e['groupName'] == groupName and i != self._groupId):
-                QMessageBox.information(self, self.tr('Input Error'),
-                                        self.tr('Group name "{0}" already exists.').format(groupName))
+                await AsyncMessageBox().information(self, self.tr('Input Error'),
+                                                    self.tr('Group name "{0}" already exists.').format(groupName))
                 return
 
             if not self._surfaces:
-                QMessageBox.information(self, self.tr('Input Error'), self.tr('Select surfaces'))
+                await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select surfaces'))
+                return
+
+            if int(self._ui.minimumLevel.text()) > int(self._ui.maximumLevel.text()):
+                await AsyncMessageBox().information(
+                    self, self.tr('Input Error'),
+                    self.tr('Invalid Surface Refinement. Minimum Level cannot be greater than maximum level'))
                 return
 
             self._dbElement.setValue('groupName', groupName, self.tr('Group Name'))
-            self._dbElement.setValue('surfaceRefinementLevel', self._ui.surfaceRefinementLevel.text(),
-                                     self.tr('Surface Refinement Level'))
+            self._dbElement.setValue('surfaceRefinement/minimumLevel', self._ui.minimumLevel.text(),
+                                     self.tr('Surface Refinement Minimum Level'))
+            self._dbElement.setValue('surfaceRefinement/maximumLevel', self._ui.maximumLevel.text(),
+                                     self.tr('Surface Refinement Maximum Level'))
             self._dbElement.setValue('featureEdgeRefinementLevel', self._ui.featureEdgeRefinementLevel.text(),
                                      self.tr('Feature Edge Refinement Level'))
 
@@ -81,10 +92,12 @@ class SurfaceRefinementDialog(QDialog):
 
             super().accept()
         except DBError as error:
-            QMessageBox.information(self, self.tr('Input Error'), error.toMessage())
+            await AsyncMessageBox().information(self, self.tr('Input Error'), error.toMessage())
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectSurfaces)
+        self._ui.ok.clicked.connect(self._accept)
+        self._ui.cancel.clicked.connect(self.close)
 
     def _load(self):
         if self._groupId:
@@ -95,7 +108,8 @@ class SurfaceRefinementDialog(QDialog):
             name = f"{baseName}{self._db.getUniqueSeq('castellation/refinementSurfaces', 'groupName', baseName, 1)}"
 
         self._ui.groupName.setText(name)
-        self._ui.surfaceRefinementLevel.setText(self._dbElement.getValue('surfaceRefinementLevel'))
+        self._ui.minimumLevel.setText(self._dbElement.getValue('surfaceRefinement/minimumLevel'))
+        self._ui.maximumLevel.setText(self._dbElement.getValue('surfaceRefinement/maximumLevel'))
         self._ui.featureEdgeRefinementLevel.setText(self._dbElement.getValue('featureEdgeRefinementLevel'))
 
         self._surfaces = []
