@@ -277,6 +277,7 @@ class MainWindow(QMainWindow):
 
         self._geometryManager = GeometryManager()
         self._meshManager = MeshManager()
+        self._meshManager.cellCountChanged.connect(self._cellCountChanged)
 
         self._geometryManager.load()
         self._stepManager.load()
@@ -288,3 +289,8 @@ class MainWindow(QMainWindow):
         self._consoleView.clear()
         self._geometryManager = None
         self._meshManager = None
+
+        self._cellCountChanged(0)
+
+    def _cellCountChanged(self, count: int):
+        self._ui.cellCount.setText(f'{count:,}')

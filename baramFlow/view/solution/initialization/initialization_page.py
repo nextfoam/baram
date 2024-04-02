@@ -12,6 +12,7 @@ from widgets.progress_dialog import ProgressDialog
 from baramFlow.app import app
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
+from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from baramFlow.openfoam.solver import SolverNotFound
 from baramFlow.view.widgets.content_page import ContentPage
@@ -84,10 +85,17 @@ class InitializationPage(ContentPage):
 
     @qasync.asyncSlot()
     async def save(self):
+        writer = CoreDBWriter()
+
         for i in range(self._ui.tabWidget.count()):
             widget: InitializationWidget = self._ui.tabWidget.widget(i)
-            if not widget.save():
+            if not await widget.appendToWriter(writer):
                 return False
+
+        errorCount = writer.write()
+        if errorCount > 0:
+            await AsyncMessageBox().critical(self, self.tr('Input Error'), writer.firstError().toMessage())
+            return False
 
         return True
 

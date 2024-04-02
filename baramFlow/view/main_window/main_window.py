@@ -145,7 +145,7 @@ class MainWindow(QMainWindow):
 
         self._dialog = None
 
-        self._closeType = CloseType.EXIT_APP
+        self._closeType = None
 
         self._connectSignalsSlots()
 
@@ -174,32 +174,10 @@ class MainWindow(QMainWindow):
         self._project.opened()
 
     def closeEvent(self, event):
-        if self._saveCurrentPage():
-            if self._project.isModified:
-                msgBox = QMessageBox()
-                msgBox.setWindowTitle(self.tr("Save Changed"))
-                msgBox.setText(self.tr("Do you want save your changes?"))
-                msgBox.setStandardButtons(
-                    QMessageBox.StandardButton.Ok
-                    | QMessageBox.StandardButton.Discard
-                    | QMessageBox.StandardButton.Cancel)
-                msgBox.setDefaultButton(QMessageBox.StandardButton.Ok)
-
-                result = msgBox.exec()
-                if result == QMessageBox.StandardButton.Ok:
-                    self._save()
-                elif result == QMessageBox.StandardButton.Cancel:
-                    event.ignore()
-                    return
-        else:
+        if self._closeType is None:
+            self._closeProject(CloseType.EXIT_APP)
             event.ignore()
             return
-
-        self._renderingDock.close()
-        logging.getLogger().removeHandler(self._handler)
-        self._handler.close()
-
-        AppSettings.updateLastMainWindowGeometry(self.geometry())
 
         if self._closeType == CloseType.CLOSE_PROJECT:
             app.restart()
@@ -218,7 +196,7 @@ class MainWindow(QMainWindow):
                     self._contentView.removePage(page)
                     page.removePage()
 
-            self._changeForm(self._navigatorView.currentMenu())
+            self._loadForm(self._navigatorView.currentMenu())
 
         super().changeEvent(event)
 
@@ -232,8 +210,8 @@ class MainWindow(QMainWindow):
         self._ui.actionGmsh.triggered.connect(self._importGmsh)
         self._ui.actionIdeas.triggered.connect(self._importIdeas)
         self._ui.actionNasaPlot3d.triggered.connect(self._importNasaPlot3D)
-        self._ui.actionCloseCase.triggered.connect(self._closeProject)
-        self._ui.actionExit.triggered.connect(self.close)
+        self._ui.actionCloseCase.triggered.connect(lambda: self._closeProject(CloseType.CLOSE_PROJECT))
+        self._ui.actionExit.triggered.connect(lambda: self._closeProject(CloseType.EXIT_APP))
 
         self._ui.actionMeshInfo.triggered.connect(self._openMeshInfoDialog)
         self._ui.actionMeshScale.triggered.connect(self._openMeshScaleDialog)
@@ -258,8 +236,9 @@ class MainWindow(QMainWindow):
         self._caseManager.caseLoaded.connect(self._caseLoaded)
         # app.meshUpdated.connect(self._meshUpdated)
 
-    def _save(self):
-        if self._saveCurrentPage():
+    @qasync.asyncSlot()
+    async def _save(self):
+        if await self._saveCurrentPage():
             self._project.save()
 
     def _saveAs(self):
@@ -271,10 +250,10 @@ class MainWindow(QMainWindow):
         self._dialog.finished.connect(self._projectDirectorySelected)
         self._dialog.open()
 
-    def _saveCurrentPage(self):
+    async def _saveCurrentPage(self):
         currentPage = self._contentView.currentPage()
         if currentPage:
-            return currentPage.save()
+            return await currentPage.save()
 
         return True
 
@@ -319,8 +298,29 @@ class MainWindow(QMainWindow):
     def _importNasaPlot3D(self):
         self._openMeshSelectionDialog(MeshType.NAMS_PLOT3D, self.tr('Plot3d (*.unv)'))
 
-    def _closeProject(self):
-        self._closeType = CloseType.CLOSE_PROJECT
+    @qasync.asyncSlot()
+    async def _closeProject(self, closeType):
+        if not await self._saveCurrentPage():
+            return
+
+        if self._project.isModified:
+            confirm = await AsyncMessageBox().question(self, self.tr('Save Changed'),
+                                                       self.tr('Do you want to save your changes?'),
+                                                       QMessageBox.StandardButton.Ok
+                                                       | QMessageBox.StandardButton.Cancel
+                                                       | QMessageBox.StandardButton.Discard)
+            if confirm == QMessageBox.StandardButton.Ok:
+                await self._save()
+            elif confirm == QMessageBox.StandardButton.Cancel:
+                return
+
+        self._renderingDock.close()
+        logging.getLogger().removeHandler(self._handler)
+        self._handler.close()
+
+        AppSettings.updateLastMainWindowGeometry(self.geometry())
+
+        self._closeType = closeType
         self.close()
 
     def _openMeshInfoDialog(self):
@@ -479,14 +479,18 @@ class MainWindow(QMainWindow):
 
         progressDialog.close()
 
-    def _changeForm(self, currentMenu, previousMenu=-1):
+    @qasync.asyncSlot()
+    async def _changeForm(self, currentMenu, previousMenu=-1):
         if previousMenu > -1:
             previousPage = self._menuPages[previousMenu]
             if previousPage and previousPage.widget == self._contentView.currentPage():
-                if not previousPage.widget.save() or not previousPage.widget.checkToQuit():
+                if not await previousPage.widget.save() or not previousPage.widget.checkToQuit():
                     QTimer.singleShot(0, lambda: self._navigatorView.setCurrentMenu(previousMenu))
                     return
 
+        self._loadForm(currentMenu)
+
+    def _loadForm(self, currentMenu):
         page = self._menuPages[currentMenu]
         if not page.isCreated():
             page.createPage(self._ui.formView)
@@ -522,7 +526,7 @@ class MainWindow(QMainWindow):
 
         currentMenu = self._navigatorView.currentMenu()
         if currentMenu in targets:
-            self._changeForm(currentMenu)
+            self._loadForm(currentMenu)
 
     @qasync.asyncSlot()
     async def _solverStatusChanged(self, status, name):
@@ -579,7 +583,9 @@ class MainWindow(QMainWindow):
         self._dialog = SettingScalingDialog(self)
         self._dialog.open()
 
-    def _changeLanguage(self):
+    @qasync.asyncSlot()
+    async def _changeLanguage(self):
+        await self._saveCurrentPage()
         self._dialog = SettingLanguageDialog(self)
         self._dialog.open()
 
@@ -617,7 +623,7 @@ class MainWindow(QMainWindow):
                     QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirs[0]} is not empty.'))
                     return
 
-            if self._saveCurrentPage():
+            if await self._saveCurrentPage():
                 progressDialog = ProgressDialog(self, self.tr('Save As'))
                 progressDialog.open()
 
