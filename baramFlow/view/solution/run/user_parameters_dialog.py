@@ -6,7 +6,7 @@ from enum import IntEnum, auto
 import qasync
 from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QIcon, QRegularExpressionValidator
-from PySide6.QtWidgets import QDialog, QTreeWidgetItem, QLineEdit, QHeaderView, QMessageBox
+from PySide6.QtWidgets import QDialog, QTreeWidgetItem, QLineEdit, QHeaderView
 
 from widgets.async_message_box import AsyncMessageBox
 from widgets.flat_push_button import FlatPushButton
@@ -55,13 +55,14 @@ class UserParametersDialog(QDialog):
             if item.type() == ItemMode.ADD:
                 name = self._ui.parameters.itemWidget(item, Column.NAME).text().strip()
                 if not name:
-                    AsyncMessageBox().information(self, self.tr('Input Error'),
-                                                  self.tr('Parameter name cannot be empty at line {}').format(i + 1))
+                    await AsyncMessageBox().information(
+                        self, self.tr('Input Error'),
+                        self.tr('Parameter name cannot be empty at line {}').format(i + 1))
                     return
 
                 if parameters.get(name):
-                    AsyncMessageBox().information(self, self.tr('Input Error'),
-                                                  self.tr('Duplicate parameter name - ') + name)
+                    await AsyncMessageBox().information(
+                        self, self.tr('Input Error'), self.tr('Duplicate parameter name - ') + name)
                     return
 
                 parameters[name] = value
@@ -74,7 +75,8 @@ class UserParametersDialog(QDialog):
                 if value is not None:
                     float(value)
             except ValueError:
-                QMessageBox.information(self, self.tr('Input Error'), self.tr('Value must be a float - ') + name)
+                await AsyncMessageBox().information(
+                    self, self.tr('Input Error'), self.tr('Value must be a float - ') + name)
                 return
 
         writer = CoreDBWriter()
@@ -95,7 +97,7 @@ class UserParametersDialog(QDialog):
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
             self.accept()
 
