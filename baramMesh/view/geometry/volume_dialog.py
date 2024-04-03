@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import qasync
 from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import QEvent, QTimer
@@ -57,6 +58,8 @@ class VolumeDialog(QDialog):
         self._actor = None
         self._existingActors = None
 
+        self._editable = True
+
         self._connectSignalsSlots()
 
     def gId(self):
@@ -89,42 +92,17 @@ class VolumeDialog(QDialog):
         self._load()
         self.adjustSize()
 
-    @qasync.asyncSlot()
-    async def accept(self):
-        try:
-            if not await self._updateElement():
-                return
+    def enableEdit(self):
+        self._ui.form.setEnabled(True)
+        self._ui.ok.show()
+        self._ui.cancel.setText(self.tr('Cancel'))
+        self._editable = True
 
-            if self._creationMode:
-                db = app.db.checkout()
-                self._gId = db.addElement('geometry', self._dbElement)
-
-                name = self._ui.name.text()
-                if self._shape == Shape.HEX6.value:
-                    for plate in Shape.PLATES.value:
-                        element = app.db.newElement('geometry')
-                        element.setValue('gType', GeometryType.SURFACE.value)
-                        element.setValue('volume', self._gId)
-                        element.setValue('name', db.getUniqueValue('geometry', 'name', f'{name}_{plate}'))
-                        element.setValue('shape', plate)
-                        element.setValue('cfdType', CFDType.BOUNDARY.value)
-                        db.addElement('geometry', element)
-                else:
-                    element = app.db.newElement('geometry')
-                    element.setValue('gType', GeometryType.SURFACE.value)
-                    element.setValue('volume', self._gId)
-                    element.setValue('name', db.getUniqueValue('geometry', 'name', f'{name}_surface'))
-                    element.setValue('shape', self._shape)
-                    element.setValue('cfdType', CFDType.BOUNDARY.value)
-                    db.addElement('geometry', element)
-
-                app.db.commit(db)
-            else:
-                app.db.commit(self._dbElement)
-
-            super().accept()
-        except DBError as e:
-            QMessageBox.information(self, self.tr("Input Error"), e.toMessage())
+    def disableEdit(self):
+        self._ui.form.setEnabled(False)
+        self._ui.ok.hide()
+        self._ui.cancel.setText(self.tr('Close'))
+        self._editable = False
 
     def event(self, ev):
         if ev.type() == QEvent.Type.LayoutRequest:
@@ -141,6 +119,8 @@ class VolumeDialog(QDialog):
 
     def _connectSignalsSlots(self):
         self._ui.preview.clicked.connect(self._preview)
+        self._ui.ok.clicked.connect(self._accept)
+        self._ui.cancel.clicked.connect(self.close)
 
     def _load(self):
         name = self._dbElement.getValue('name')
@@ -165,7 +145,7 @@ class VolumeDialog(QDialog):
         if self._shape == Shape.TRI_SURFACE_MESH.value:
             self._ui.preview.hide()
         else:
-            self._ui.preview.show()
+            self._ui.preview.setVisible(self._editable)
             self._preview()
 
     def _loadHexPage(self):
@@ -305,6 +285,43 @@ class VolumeDialog(QDialog):
             self._renderingView.refresh()
             QMessageBox.information(self, self.tr('Add Geometry Failed'), self.tr('Invalid coordinates'))
             return False
+
+    @qasync.asyncSlot()
+    async def _accept(self):
+        try:
+            if not await self._updateElement():
+                return
+
+            if self._creationMode:
+                db = app.db.checkout()
+                self._gId = db.addElement('geometry', self._dbElement)
+
+                name = self._ui.name.text()
+                if self._shape == Shape.HEX6.value:
+                    for plate in Shape.PLATES.value:
+                        element = app.db.newElement('geometry')
+                        element.setValue('gType', GeometryType.SURFACE.value)
+                        element.setValue('volume', self._gId)
+                        element.setValue('name', db.getUniqueValue('geometry', 'name', f'{name}_{plate}'))
+                        element.setValue('shape', plate)
+                        element.setValue('cfdType', CFDType.BOUNDARY.value)
+                        db.addElement('geometry', element)
+                else:
+                    element = app.db.newElement('geometry')
+                    element.setValue('gType', GeometryType.SURFACE.value)
+                    element.setValue('volume', self._gId)
+                    element.setValue('name', db.getUniqueValue('geometry', 'name', f'{name}_surface'))
+                    element.setValue('shape', self._shape)
+                    element.setValue('cfdType', CFDType.BOUNDARY.value)
+                    db.addElement('geometry', element)
+
+                app.db.commit(db)
+            else:
+                app.db.commit(self._dbElement)
+
+            super().accept()
+        except DBError as e:
+            await AsyncMessageBox().information(self, self.tr("Input Error"), e.toMessage())
 
     def _validateHex(self):
         try:

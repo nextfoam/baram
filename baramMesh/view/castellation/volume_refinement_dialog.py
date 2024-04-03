@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QDialog, QMessageBox
+import qasync
+from PySide6.QtWidgets import QDialog
 
 from libbaram.simple_db.simple_schema import DBError
+from widgets.async_message_box import AsyncMessageBox
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType
@@ -16,7 +18,6 @@ baseName = 'Group_'
 
 
 class VolumeRefinementDialog(QDialog):
-
     def __init__(self, parent, db, groupId=None):
         super().__init__(parent)
         self._ui = Ui_VolumeeRefinementDialog()
@@ -45,17 +46,24 @@ class VolumeRefinementDialog(QDialog):
     def isCreationMode(self):
         return self._creationMode
 
-    def accept(self):
+    def disableEdit(self):
+        self._ui.parameters.setEnabled(False)
+        self._ui.select.setEnabled(False)
+        self._ui.ok.hide()
+        self._ui.cancel.setText(self.tr('Close'))
+
+    @qasync.asyncSlot()
+    async def _accept(self):
         try:
             groupName = self._ui.groupName.text().strip()
             if self._db.getKeys('castellation/refinementVolumes',
                                 lambda i, e: e['groupName'] == groupName and i != self._groupId):
-                QMessageBox.information(self, self.tr('Input Error'),
-                                        self.tr('Group name "{0}" already exists.').format(groupName))
+                await AsyncMessageBox().information(self, self.tr('Input Error'),
+                                                    self.tr('Group name "{0}" already exists.').format(groupName))
                 return
 
             if not self._volumes:
-                QMessageBox.information(self, self.tr('Input Error'), self.tr('Select volumes'))
+                await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select volumes'))
                 return
 
             self._dbElement.setValue('groupName', groupName, self.tr('Group Name'))
@@ -81,10 +89,12 @@ class VolumeRefinementDialog(QDialog):
 
             super().accept()
         except DBError as error:
-            QMessageBox.information(self, self.tr('Input Error'), error.toMessage())
+            await AsyncMessageBox().information(self, self.tr('Input Error'), error.toMessage())
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectVolumes)
+        self._ui.ok.clicked.connect(self._accept)
+        self._ui.cancel.clicked.connect(self.close)
 
     def _load(self):
         if self._groupId:
