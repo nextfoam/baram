@@ -5,12 +5,10 @@ from .configurations_schema import CURRENT_CONFIGURATIONS_VERSION, CONFIGURATION
 from .configurations_schema import FeatureSnapType
 
 
-def _version_1(data):
+def _to_v1(data):
     if 'featureSnapType' not in data['snap']:
         data['snap']['featureSnapType'] = FeatureSnapType.EXPLICIT
 
-
-def _version_2(data):
     for surfaceRefinement in data['castellation']['refinementSurfaces'].values():
         if 'surfaceRefinement' not in surfaceRefinement:
             orgSurfaceRefinementLevel = surfaceRefinement.pop('surfaceRefinementLevel')
@@ -21,8 +19,8 @@ def _version_2(data):
 
 
 _migrates = {
-    0: _version_1,
-    1: _version_2,
+    0: _to_v1,
+    1: _to_v1       # Todo: Remove this line when releasing version 1.
 }
 
 
