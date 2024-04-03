@@ -282,9 +282,6 @@ class ControlDict(DictionaryFile):
             'log': 'false',
         }
 
-        if not GeneralDB.isDensityBased():
-            data['p'] = 'p_rgh'  # Use "Pseudo hydrostatic pressure" for calculation
-
         if rname := self._db.getValue(xpath + '/region'):
             data['region'] = rname
 
@@ -318,9 +315,6 @@ class ControlDict(DictionaryFile):
             'updateHeader': 'false',
             'log': 'false',
         }
-
-        if not GeneralDB.isDensityBased():
-            data['p'] = 'p_rgh'  # Use "Pseudo hydrostatic pressure" for calculation
 
         if rname := self._db.getValue(xpath + '/region'):
             data['region'] = rname
