@@ -6,6 +6,11 @@ from .configurations_schema import FeatureSnapType
 
 
 def _to_v1(data):
+    # Loaded data has no version information. It is assumed as version 1.
+    return
+
+
+def _to_v2(data):
     if 'featureSnapType' not in data['snap']:
         data['snap']['featureSnapType'] = FeatureSnapType.EXPLICIT
 
@@ -20,6 +25,7 @@ def _to_v1(data):
 
 _migrates = {
     0: _to_v1,
+    1: _to_v2,
 }
 
 
