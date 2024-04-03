@@ -20,7 +20,6 @@ def _to_v1(data):
 
 _migrates = {
     0: _to_v1,
-    1: _to_v1       # Todo: Remove this line when releasing version 1.
 }
 
 

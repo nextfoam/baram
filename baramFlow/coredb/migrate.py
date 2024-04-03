@@ -241,8 +241,7 @@ def _version_3(root: etree.Element):
 def _version_4(root: etree.Element):
     logger.debug('  Upgrading to v5')
 
-    # Keep this commented until official v4 spec. is released
-    # root.set('version', '4')
+    root.set('version', '5')
 
     if (pp := root.find('numericalConditions', namespaces=_nsmap)) is not None:
         if (p := pp.find('discretizationSchemes', namespaces=_nsmap)) is not None:
@@ -279,13 +278,6 @@ def _version_4(root: etree.Element):
                 '   <absolute>0.001</absolute><relative>0.05</relative>'
                 '</density>')
             p.insert(1, e)
-
-
-def _version_5(root: etree.Element):
-    logger.debug('  Upgrading to v6')
-
-    # Keep this commented until official v5 spec. is released
-    # root.set('version', '5')
 
     for p in root.findall('.//boundaryCondition/farFieldRiemann', namespaces=_nsmap):
         if p.find('flowDirection/specificationMethod', namespaces=_nsmap) is None:
@@ -338,14 +330,12 @@ def _version_5(root: etree.Element):
             p.insert(3, e)
 
 
-
 _fTable = [
     None,
     _version_1,
     _version_2,
     _version_3,
-    _version_4,
-    _version_5,
+    _version_4
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))
