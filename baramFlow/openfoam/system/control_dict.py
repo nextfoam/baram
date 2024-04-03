@@ -278,6 +278,7 @@ class ControlDict(DictionaryFile):
 
             'writeControl': 'timeStep',
             'writeInterval': self._db.getValue(xpath + '/writeInterval'),
+            'updateHeader': 'false',
             'log': 'false',
         }
 
@@ -314,6 +315,7 @@ class ControlDict(DictionaryFile):
 
             'writeControl': 'timeStep',
             'writeInterval': self._db.getValue(xpath + '/writeInterval'),
+            'updateHeader': 'false',
             'log': 'false',
         }
 
@@ -345,6 +347,7 @@ class ControlDict(DictionaryFile):
 
                 'writeControl': 'timeStep',
                 'writeInterval': self._db.getValue(xpath + '/writeInterval'),
+                'updateHeader': 'false',
                 'log': 'false',
             }
 
@@ -357,6 +360,7 @@ class ControlDict(DictionaryFile):
 
             'writeControl': 'timeStep',
             'writeInterval': self._db.getValue(xpath + '/writeInterval'),
+            'updateHeader': 'false',
             'log': 'false',
         }
 
@@ -394,6 +398,7 @@ class ControlDict(DictionaryFile):
 
             'writeControl': 'timeStep',
             'writeInterval': self._db.getValue(xpath + '/writeInterval'),
+            'updateHeader': 'false',
             'log': 'false',
         }
 
@@ -424,6 +429,7 @@ class ControlDict(DictionaryFile):
 
             'writeControl': 'timeStep',
             'writeInterval': '1',
+            'updateHeader': 'false',
             'log': 'false',
         }
 
@@ -449,6 +455,7 @@ class ControlDict(DictionaryFile):
                 'field':           '"U"',
 
                 'enabled':         'true',
+                'updateHeader':    'false',
                 'log':             'false',
                 'executeControl':  'timeStep',
                 'executeInterval': 1,
@@ -464,6 +471,7 @@ class ControlDict(DictionaryFile):
                 'field':           '"U"',
 
                 'enabled':         'true',
+                'updateHeader':    'false',
                 'log':             'false',
                 'executeControl':  'timeStep',
                 'executeInterval': 1,
