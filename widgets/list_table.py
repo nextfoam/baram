@@ -30,6 +30,12 @@ class ListItem(QObject):
     def widget(self, column):
         return self._widgets[column]
 
+    def enableEdit(self):
+        return
+
+    def disableEdit(self):
+        return
+
 
 class ListItemWithButtons(ListItem):
     editClicked = Signal()
@@ -38,19 +44,25 @@ class ListItemWithButtons(ListItem):
     def __init__(self, id_: int, texts):
         super().__init__(id_, texts)
 
-        editButton = FlatPushButton()
-        editButton.setIcon(QIcon(':/icons/create-outline.svg'))
-        self._widgets.append(editButton)
+        self._removeButton = FlatPushButton(QIcon(':/icons/trash-outline.svg'), '')
 
-        removeButton = FlatPushButton(QIcon(':/icons/trash-outline.svg'), '')
-        self._widgets.append(removeButton)
+        editButton = FlatPushButton(QIcon(':/icons/create-outline.svg'), '')
+
+        self._widgets.append(editButton)
+        self._widgets.append(self._removeButton)
 
         editButton.clicked.connect(self.editClicked)
-        removeButton.clicked.connect(self.removeClicked)
+        self._removeButton.clicked.connect(self.removeClicked)
 
     def update(self, texts):
         for i in range(len(texts)):
             self._widgets[i].setText(texts[i])
+
+    def enableEdit(self):
+        self._removeButton.setEnabled(True)
+
+    def disableEdit(self):
+        self._removeButton.setEnabled(False)
 
 
 class ListTable(QFrame):
@@ -111,3 +123,11 @@ class ListTable(QFrame):
             self.removeItem(i)
 
         self._items = {}
+
+    def enableEdit(self):
+        for item in self._items.values():
+            item.enableEdit()
+
+    def disableEdit(self):
+        for item in self._items.values():
+            item.disableEdit()

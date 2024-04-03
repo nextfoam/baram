@@ -105,14 +105,6 @@ class CastellationPage(StepPage):
 
         self._connectSignalsSlots()
 
-    def lock(self):
-        self._disableEdit()
-        self._ui.castellationButtons.setEnabled(False)
-
-    def unlock(self):
-        self._enableEdit()
-        self._ui.castellationButtons.setEnabled(True)
-
     def open(self):
         self._load()
 
@@ -199,12 +191,18 @@ class CastellationPage(StepPage):
 
     def _openSurfaceRefinementDialog(self, groupId=None):
         self._dialog = SurfaceRefinementDialog(self._widget, self._db, groupId)
-        self._dialog.accepted.connect(self._surfaceRefinementDialogAccepted)
+        if self._locked:
+            self._dialog.disableEdit()
+        else:
+            self._dialog.accepted.connect(self._surfaceRefinementDialogAccepted)
         self._dialog.open()
 
     def _openVolumeRefinementDialog(self, groupId=None):
         self._dialog = VolumeRefinementDialog(self._widget, self._db, groupId)
-        self._dialog.accepted.connect(self._volumeRefinementDialogAccepted)
+        if self._locked:
+            self._dialog.disableEdit()
+        else:
+            self._dialog.accepted.connect(self._volumeRefinementDialogAccepted)
         self._dialog.open()
 
     @qasync.asyncSlot()
@@ -382,14 +380,16 @@ class CastellationPage(StepPage):
         self._ui.castellationConfiguration.setEnabled(True)
         self._ui.castellationAdvanced.setEnabled(True)
         self._ui.surfaceRefinementAdd.setEnabled(True)
-        self._ui.surfaceRefinement.setEnabled(True)
+        self._ui.surfaceRefinement.enableEdit()
         self._ui.volumeRefinementAdd.setEnabled(True)
-        self._ui.volumeRefinement.setEnabled(True)
+        self._ui.volumeRefinement.enableEdit()
+        self._ui.castellationButtons.setEnabled(True)
 
     def _disableEdit(self):
         self._ui.castellationConfiguration.setEnabled(False)
         self._ui.castellationAdvanced.setEnabled(False)
         self._ui.surfaceRefinementAdd.setEnabled(False)
-        self._ui.surfaceRefinement.setEnabled(False)
+        self._ui.surfaceRefinement.disableEdit()
         self._ui.volumeRefinementAdd.setEnabled(False)
-        self._ui.volumeRefinement.setEnabled(False)
+        self._ui.volumeRefinement.disableEdit()
+        self._ui.castellationButtons.setEnabled(False)

@@ -20,15 +20,18 @@ class StepPage(QObject):
         self._ui: Ui_MainWindow = ui
         self._widget = page
         self._loaded = False
+        self._locked = False
 
     def isNextStepAvailable(self):
         return app.fileSystem.timePathExists(self.OUTPUT_TIME, app.project.parallelCores() > 1)
 
     def lock(self):
-        self._widget.setEnabled(False)
+        self._disableEdit()
+        self._locked = True
 
     def unlock(self):
-        self._widget.setEnabled(True)
+        self._enableEdit()
+        self._locked = False
 
     def open(self):
         return
@@ -42,8 +45,10 @@ class StepPage(QObject):
     def save(self):
         return True
 
-    def clear(self):
+    def unload(self):
         self._loaded = False
+        self._locked = False
+        self._clear()
 
     def retranslate(self):
         return
@@ -104,3 +109,12 @@ class StepPage(QObject):
         self._ui.menuFile.setEnabled(True)
         self._ui.menuMesh_Quality.setEnabled(True)
         self._ui.menuParallel.setEnabled(True)
+
+    def _enableEdit(self):
+        self._widget.setEnabled(True)
+
+    def _disableEdit(self):
+        self._widget.setEnabled(False)
+
+    def _clear(self):
+        return

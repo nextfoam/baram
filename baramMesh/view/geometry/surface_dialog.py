@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QDialog, QMessageBox
+import qasync
+from PySide6.QtWidgets import QDialog
 
 from libbaram.simple_db.simple_schema import DBError
+from widgets.async_message_box import AsyncMessageBox
 from widgets.radio_group import RadioGroup
 
 from baramMesh.app import app
@@ -38,7 +40,18 @@ class SurfaceDialog(QDialog):
         self._gIds = gIds
         self._load()
 
-    def accept(self):
+    def enableEdit(self):
+        self._ui.form.setEnabled(True)
+        self._ui.ok.show()
+        self._ui.cancel.setText(self.tr('Cancel'))
+
+    def disableEdit(self):
+        self._ui.form.setEnabled(False)
+        self._ui.ok.hide()
+        self._ui.cancel.setText(self.tr('Close'))
+
+    @qasync.asyncSlot()
+    async def _accept(self):
         try:
             db = app.db.checkout()
 
@@ -46,12 +59,12 @@ class SurfaceDialog(QDialog):
                 name = self._ui.name.text()
 
                 if name in RESERVED_NAMES:
-                    QMessageBox.information(
+                    await AsyncMessageBox().information(
                         self, self.tr('Input Error'), self.tr('"{0}" is an invalid geometry name.').format(name))
                     return
 
                 if app.db.getElements('geometry', lambda i, e: e['name'] == name and i != self._gIds[0], ['name']):
-                    QMessageBox.information(
+                    await AsyncMessageBox().information(
                         self, self.tr('Input Error'), self.tr('geometry {0} already exists.').format(name))
                     return
 
@@ -75,10 +88,12 @@ class SurfaceDialog(QDialog):
             app.db.commit(db)
             super().accept()
         except DBError as e:
-            QMessageBox.information(self, self.tr("Input Error"), e.toMessage())
+            await AsyncMessageBox().information(self, self.tr("Input Error"), e.toMessage())
 
     def _connectSignalsSlots(self):
         self._typeRadios.valueChanged.connect(self._typeChanged)
+        self._ui.ok.clicked.connect(self._accept)
+        self._ui.cancel.clicked.connect(self.close)
 
     def _load(self):
         surfaces = app.db.getElements('geometry',

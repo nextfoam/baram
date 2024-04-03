@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from PySide6.QtWidgets import QMessageBox, QMenu, QAbstractItemView
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QMessageBox, QMenu
 from PySide6.QtCore import Signal
 
 from libbaram.run import OpenFOAMError
@@ -26,8 +27,21 @@ class ContextMenu(QMenu):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.addAction(self.tr('Edit'), lambda: self.editActionTriggered.emit())
-        self.addAction(self.tr('Remove'), lambda: self.removeActionTriggered.emit())
+        self._removeAction = QAction(self.tr('Remove'), self)
+
+        editAction = QAction(self.tr('Edit/View'), self)
+
+        self.addAction(editAction)
+        self.addAction(self._removeAction)
+
+        editAction.triggered.connect(self.editActionTriggered)
+        self._removeAction.triggered.connect(self.removeActionTriggered)
+
+    def enableEditActions(self):
+        self._removeAction.setVisible(True)
+
+    def disableEditActions(self):
+        self._removeAction.setVisible(False)
 
 
 class GeometryPage(StepPage):
@@ -37,7 +51,6 @@ class GeometryPage(StepPage):
         self._geometryManager = None
         self._list = GeometryList(self._ui.geometryList)
         self._menu = None
-        self._locked = False
 
         self._dialog = None
         self._volumeDialog = VolumeDialog(self._widget, self._ui.renderingView)
@@ -49,18 +62,6 @@ class GeometryPage(StepPage):
 
     def isNextStepAvailable(self):
         return not app.window.geometryManager.isEmpty()
-
-    def lock(self):
-        self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        self._ui.buttons.setEnabled(False)
-        self._locked = True
-
-    def unlock(self):
-        self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self._ui.buttons.setEnabled(True)
-        self._locked = False
-        if self._geometryManager is not None:
-            self._geometryManager.startSyncingFromDisplay()
 
     def selected(self):
         if not self._loaded:
@@ -78,10 +79,6 @@ class GeometryPage(StepPage):
         self._list.clearSelection()
         self._geometryManager.enableSyncingToDisplay()
 
-    def clear(self):
-        self._loaded = False
-        self._locked = False
-
     def retranslate(self):
         self._list.retranslate()
 
@@ -98,8 +95,12 @@ class GeometryPage(StepPage):
         self._surfaceDialog.accepted.connect(self._updateSurfaces)
 
     def _executeContextMenu(self, pos):
-        if not self._locked:
-            self._menu.exec(self._ui.geometryList.mapToGlobal(pos))
+        if self._locked:
+            self._menu.disableEditActions()
+        else:
+            self._menu.enableEditActions()
+
+        self._menu.exec(self._ui.geometryList.mapToGlobal(pos))
 
     def _selectedItemsChanged(self):
         self._geometryManager.selectActors(self._list.selectedIDs())
@@ -275,3 +276,18 @@ class GeometryPage(StepPage):
             self._list.setSelectedItems(gIds)
 
         self._geometryManager.clearSyncingFromDisplay()
+
+    def _enableEdit(self):
+        if self._geometryManager is not None:
+            self._geometryManager.startSyncingFromDisplay()
+
+        # self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self._ui.buttons.setEnabled(True)
+        self._volumeDialog.enableEdit()
+        self._surfaceDialog.enableEdit()
+
+    def _disableEdit(self):
+        # self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self._ui.buttons.setEnabled(False)
+        self._volumeDialog.disableEdit()
+        self._surfaceDialog.disableEdit()

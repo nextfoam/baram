@@ -45,6 +45,12 @@ class SurfaceRefinementDialog(QDialog):
     def isCreationMode(self):
         return self._creationMode
 
+    def disableEdit(self):
+        self._ui.parameters.setEnabled(False)
+        self._ui.select.setEnabled(False)
+        self._ui.ok.hide()
+        self._ui.cancel.setText(self.tr('Close'))
+
     @qasync.asyncSlot()
     async def _accept(self):
         try:

@@ -35,14 +35,6 @@ class BoundaryLayerPage(StepPage):
 
         self._connectSignalsSlots()
 
-    def lock(self):
-        self._disableEdit()
-        self._ui.boundaryLayerButtons.setEnabled(False)
-
-    def unlock(self):
-        self._enableEdit()
-        self._ui.boundaryLayerButtons.setEnabled(True)
-
     def open(self):
         self._load()
 
@@ -129,7 +121,10 @@ class BoundaryLayerPage(StepPage):
 
     def _openLayerEditDialog(self, groupId=None):
         self._dialog = BoundarySettingDialog(self._widget, self._db, groupId)
-        self._dialog.accepted.connect(self._updateLayerConfiguration)
+        if self._locked:
+            self._dialog.disableEdit()
+        else:
+            self._dialog.accepted.connect(self._updateLayerConfiguration)
         self._dialog.open()
 
     @qasync.asyncSlot()
@@ -241,10 +236,12 @@ class BoundaryLayerPage(StepPage):
 
     def _enableEdit(self):
         self._ui.boundaryLayerConfigurationsAdd.setEnabled(True)
-        self._ui.boundaryLayerConfigurations.setEnabled(True)
+        self._ui.boundaryLayerConfigurations.enableEdit()
         self._ui.boundaryLayerAdvancedConfiguration.setEnabled(True)
+        self._ui.boundaryLayerButtons.setEnabled(True)
 
     def _disableEdit(self):
         self._ui.boundaryLayerConfigurationsAdd.setEnabled(False)
-        self._ui.boundaryLayerConfigurations.setEnabled(False)
+        self._ui.boundaryLayerConfigurations.disableEdit()
         self._ui.boundaryLayerAdvancedConfiguration.setEnabled(False)
+        self._ui.boundaryLayerButtons.setEnabled(False)

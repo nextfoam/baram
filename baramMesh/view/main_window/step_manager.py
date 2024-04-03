@@ -70,7 +70,7 @@ class StepManager(QObject):
 
     def load(self):
         for page in self._pages.values():
-            page.clear()
+            page.unload()
 
         savedStep = app.db.getEnumValue('step')
 

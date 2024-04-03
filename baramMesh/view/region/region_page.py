@@ -72,18 +72,6 @@ class RegionPage(StepPage):
 
         return False
 
-    def lock(self):
-        self._ui.regionAdd.setEnabled(False)
-
-        for card in self._regions.values():
-            card.setEnabled(False)
-
-    def unlock(self):
-        self._ui.regionAdd.setEnabled(True)
-
-        for card in self._regions.values():
-            card.setEnabled(True)
-
     def open(self):
         if self._loaded:
             self._updateBounds()
@@ -100,20 +88,31 @@ class RegionPage(StepPage):
         self._form.cancel()
         self._ui.regionValidationMessage.hide()
 
-    def clear(self):
-        for card in self._regions.values():
-            self._ui.regionList.layout().removeWidget(card)
-            card.deleteLater()
-
-        self._regions = {}
-        self._loaded = False
-
     def removeForm(self, form):
         self._ui.regionList.layout().removeWidget(self._form)
         self._form.setOwner(None)
 
     def _outputPath(self):
         return None
+
+    def _enableEdit(self):
+        self._ui.regionAdd.setEnabled(True)
+
+        for card in self._regions.values():
+            card.setEnabled(True)
+
+    def _disableEdit(self):
+        self._ui.regionAdd.setEnabled(False)
+
+        for card in self._regions.values():
+            card.setEnabled(False)
+
+    def _clear(self):
+        for card in self._regions.values():
+            self._ui.regionList.layout().removeWidget(card)
+            card.deleteLater()
+
+        self._regions = {}
 
     def _connectSignalsSlots(self):
         self._ui.regionArea.verticalScrollBar().rangeChanged.connect(self._focus)
