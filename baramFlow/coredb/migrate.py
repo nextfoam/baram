@@ -330,12 +330,20 @@ def _version_4(root: etree.Element):
             p.insert(3, e)
 
 
+def _version_5(root: etree.Element):
+    logger.debug('  Upgrading to v6')
+
+    # Keep this commented until official v6 spec. is released
+    # root.set('version', '6')
+
+
 _fTable = [
     None,
     _version_1,
     _version_2,
     _version_3,
-    _version_4
+    _version_4,
+    _version_5
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))
