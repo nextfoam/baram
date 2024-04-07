@@ -8,7 +8,7 @@ import pandas as pd
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from resources import resource
 
-availableSolvers = pd.read_csv(resource.file('openfoam/solvers.csv'), header=0, index_col=0).transpose().to_dict()
+availableSolvers = pd.read_csv(resource.file('openfoam/solvers.dat'), header=0, index_col=0).transpose().to_dict()
 
 
 class SolverNotFound(Exception):
