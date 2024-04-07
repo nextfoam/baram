@@ -72,9 +72,16 @@ class GeneralPage(ContentPage):
         else:
             self._ui.steady.setChecked(True)
 
-        self._ui.gravityX.setText(db.getValue(GRAVITY_XPATH + '/direction/x'))
-        self._ui.gravityY.setText(db.getValue(GRAVITY_XPATH + '/direction/y'))
-        self._ui.gravityZ.setText(db.getValue(GRAVITY_XPATH + '/direction/z'))
-        self._ui.operatingPressure.setText(db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
+        if GeneralDB.isDensityBased():
+            self._ui.gravity.setEnabled(False)
+            self._ui.gravityX.setText('0')
+            self._ui.gravityY.setText('0')
+            self._ui.gravityZ.setText('0')
+            self._ui.operatingPressure.setEnabled(False)
+            self._ui.operatingPressure.setText('0')
+        else:
+            self._ui.gravityX.setText(db.getValue(GRAVITY_XPATH + '/direction/x'))
+            self._ui.gravityY.setText(db.getValue(GRAVITY_XPATH + '/direction/y'))
+            self._ui.gravityZ.setText(db.getValue(GRAVITY_XPATH + '/direction/z'))
+            self._ui.operatingPressure.setText(db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
 
-        self._ui.gravity.setDisabled(db.getAttribute(GRAVITY_XPATH, 'disabled') == 'true')
