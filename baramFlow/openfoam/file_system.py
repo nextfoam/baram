@@ -32,11 +32,6 @@ def remove(file):
         file.unlink()
 
 
-def copyDirectory(src, dst):
-    if src.is_dir():
-        shutil.copytree(src, dst, dirs_exist_ok=True)
-
-
 class FileSystem:
     _casePath: Optional[Path] = None
     _constantPath = None
@@ -255,25 +250,48 @@ class FileSystem:
 
     @classmethod
     def saveAs(cls, sourcePath, projectPath, regions):
-        liveConstantPath = sourcePath / CASE_DIRECTORY_NAME / Directory.CONSTANT_DIRECTORY_NAME
+        def copyDirectory(srcPath, destPath, directory):
+            shutil.copytree(srcPath / directory, destPath / directory, copy_function=shutil.copyfile)
 
-        targetPath = projectPath / CASE_DIRECTORY_NAME
-        constantPath = targetPath / Directory.CONSTANT_DIRECTORY_NAME
+        def copyFile(srcPath, destPath, file):
+            shutil.copyfile(srcPath / file, destPath / file)
 
-        cls.createCase(targetPath)
-        if liveConstantPath.is_dir():
+        sourceCaseRoot = sourcePath / CASE_DIRECTORY_NAME
+        sourceConstantPath = sourceCaseRoot / Directory.CONSTANT_DIRECTORY_NAME
+        sourceSystemPath = sourceCaseRoot / Directory.SYSTEM_DIRECTORY_NAME
+
+        targetCaseRoot = projectPath / CASE_DIRECTORY_NAME
+        targetConstantPath = targetCaseRoot / Directory.CONSTANT_DIRECTORY_NAME
+        targetSystemPath = targetCaseRoot / Directory.SYSTEM_DIRECTORY_NAME
+
+        cls.createCase(targetCaseRoot)
+        if sourceConstantPath.is_dir():
+            processorFolders = cls.processorFolders()
+
             if len(regions) > 1:
-                srcFile = liveConstantPath / Directory.REGION_PROPERTIES_FILE_NAME
-                shutil.copyfile(srcFile, constantPath / Directory.REGION_PROPERTIES_FILE_NAME)
+                copyFile(sourceConstantPath, targetConstantPath, Directory.REGION_PROPERTIES_FILE_NAME)
 
                 for rname in regions:
-                    shutil.copytree(liveConstantPath / rname, constantPath / rname, copy_function=shutil.copyfile)
-            else:
-                srcPath = liveConstantPath / Directory.POLY_MESH_DIRECTORY_NAME
-                shutil.copytree(srcPath, constantPath / Directory.POLY_MESH_DIRECTORY_NAME,
-                                copy_function=shutil.copyfile)
+                    copyDirectory(sourceConstantPath, targetConstantPath, rname)
+                    copyFile(sourceSystemPath / rname, cls.makeDir(targetSystemPath, rname), 'decomposeParDict')
 
-            with open(targetPath / FOAM_FILE_NAME, 'a'):
+                    for processorPath in processorFolders:
+                        destProcessorPath = cls.makeDir(targetCaseRoot, processorPath.name)
+                        copyDirectory(processorPath / Directory.CONSTANT_DIRECTORY_NAME,
+                                      cls.makeDir(destProcessorPath, Directory.CONSTANT_DIRECTORY_NAME),
+                                      rname)
+            else:
+                copyDirectory(sourceConstantPath, targetConstantPath, Directory.POLY_MESH_DIRECTORY_NAME)
+                for processorPath in processorFolders:
+                    destProcessorPath = cls.makeDir(targetCaseRoot, processorPath.name)
+                    copyDirectory(processorPath / Directory.CONSTANT_DIRECTORY_NAME,
+                                  cls.makeDir(destProcessorPath, Directory.CONSTANT_DIRECTORY_NAME),
+                                  Directory.POLY_MESH_DIRECTORY_NAME)
+
+            if len(processorFolders):
+                copyFile(sourceSystemPath, targetCaseRoot / Directory.SYSTEM_DIRECTORY_NAME, 'decomposeParDict')
+
+            with open(targetCaseRoot / FOAM_FILE_NAME, 'a'):
                 pass
 
     @classmethod
