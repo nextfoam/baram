@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-from enum import Enum, auto
-
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, Signal
 
@@ -14,79 +12,7 @@ from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.models_db import ModelsDB
 from .boundary_type_picker_ui import Ui_BoundaryTypePicker
 
-
 BOTTOM_MARGIN = 10
-
-
-class InletType(Enum):
-    VELOCITY_INLET = 0
-    FLOW_RATE_INLET = auto()
-    PRESSURE_INLET = auto()
-    ABL_INLET = auto()
-    OPEN_CHANNEL_INLET = auto()
-    FREE_STREAM = auto()
-    FAR_FIELD_RIEMANN = auto()
-    SUBSONIC_INFLOW = auto()
-    SUPERSONIC_INFLOW = auto()
-
-
-class OutletType(Enum):
-    PRESSURE_OUTLET = 0
-    OPEN_CHANNEL_OUTLET = auto()
-    OUTFLOW = auto()
-    SUBSONIC_OUTFLOW = auto()
-    SUPERSONIC_OUTFLOW = auto()
-
-
-class WallType(Enum):
-    WALL = 0
-    THERMO_COUPLED_WALL = auto()
-
-
-class MiscType(Enum):
-    SYMMETRY = 0
-    INTERFACE = auto()
-    EMPTY = auto()
-    CYCLIC = auto()
-    WEDGE = auto()
-    POROUS_JUMP = auto()
-    FAN = auto()
-
-
-inletTypes = {
-    InletType.VELOCITY_INLET.value: BoundaryType.VELOCITY_INLET.value,
-    InletType.FLOW_RATE_INLET.value: BoundaryType.FLOW_RATE_INLET.value,
-    InletType.PRESSURE_INLET.value: BoundaryType.PRESSURE_INLET.value,
-    InletType.ABL_INLET.value: BoundaryType.ABL_INLET.value,
-    InletType.OPEN_CHANNEL_INLET.value: BoundaryType.OPEN_CHANNEL_INLET.value,
-    InletType.FREE_STREAM.value: BoundaryType.FREE_STREAM.value,
-    InletType.FAR_FIELD_RIEMANN.value: BoundaryType.FAR_FIELD_RIEMANN.value,
-    InletType.SUBSONIC_INFLOW.value: BoundaryType.SUBSONIC_INLET.value,
-    InletType.SUPERSONIC_INFLOW.value: BoundaryType.SUPERSONIC_INFLOW.value,
-}
-
-outletTypes = {
-    OutletType.PRESSURE_OUTLET.value: BoundaryType.PRESSURE_OUTLET.value,
-    OutletType.OPEN_CHANNEL_OUTLET.value: BoundaryType.OPEN_CHANNEL_OUTLET.value,
-    OutletType.OUTFLOW.value: BoundaryType.OUTFLOW.value,
-    OutletType.SUBSONIC_OUTFLOW.value: BoundaryType.SUBSONIC_OUTFLOW.value,
-    OutletType.SUPERSONIC_OUTFLOW.value: BoundaryType.SUPERSONIC_OUTFLOW.value,
-}
-
-wallTypes = {
-    WallType.WALL.value: BoundaryType.WALL.value,
-    WallType.THERMO_COUPLED_WALL.value: BoundaryType.THERMO_COUPLED_WALL.value,
-}
-
-miscTypes = {
-    MiscType.SYMMETRY.value: BoundaryType.SYMMETRY.value,
-    MiscType.INTERFACE.value: BoundaryType.INTERFACE.value,
-    MiscType.EMPTY.value: BoundaryType.EMPTY.value,
-    MiscType.CYCLIC.value: BoundaryType.CYCLIC.value,
-    MiscType.WEDGE.value: BoundaryType.WEDGE.value,
-    MiscType.POROUS_JUMP.value: BoundaryType.POROUS_JUMP.value,
-    MiscType.FAN.value: BoundaryType.FAN.value,
-}
 
 
 def setListHeight(widget):
@@ -105,6 +31,32 @@ class BoundaryTypePicker(QWidget):
         self._db = coredb.CoreDB()
         self._bcid = None
 
+        self._types = {
+            self._ui.velocityInlet:     BoundaryType.VELOCITY_INLET	 ,
+            self._ui.flowRateInlet:     BoundaryType.FLOW_RATE_INLET	 ,
+            self._ui.pressureInlet:     BoundaryType.PRESSURE_INLET	 ,
+            self._ui.ABLInlet:          BoundaryType.ABL_INLET	     ,
+            self._ui.openChannelInlet:  BoundaryType.OPEN_CHANNEL_INLET,
+            self._ui.freeStream:        BoundaryType.FREE_STREAM	     ,
+            self._ui.farFieldRiemann:   BoundaryType.FAR_FIELD_RIEMANN,
+            self._ui.subsonicInlet:     BoundaryType.SUBSONIC_INLET	 ,
+            self._ui.supersonicInflow:  BoundaryType.SUPERSONIC_INFLOW,
+            self._ui.pressureOutlet:    BoundaryType.PRESSURE_OUTLET	 ,
+            self._ui.openChannelOutlet: BoundaryType.OPEN_CHANNEL_OUTLET,
+            self._ui.outflow:           BoundaryType.OUTFLOW	         ,
+            self._ui.subsonicOutflow:   BoundaryType.SUBSONIC_OUTFLOW,
+            self._ui.supersonicOutflow: BoundaryType.SUPERSONIC_OUTFLOW,
+            self._ui.wall:              BoundaryType.WALL	         ,
+            self._ui.thermoCoupledWall: BoundaryType.THERMO_COUPLED_WALL,
+            self._ui.symmetry:          BoundaryType.SYMMETRY,
+            self._ui.interface_:        BoundaryType.INTERFACE,
+            self._ui.empty:             BoundaryType.EMPTY	     ,
+            self._ui.cyclic:            BoundaryType.CYCLIC,
+            self._ui.wedge:             BoundaryType.WEDGE	         ,
+            self._ui.porousJump:        BoundaryType.POROUS_JUMP,
+            self._ui.FAN:               BoundaryType.FAN,
+        }
+
         self.setWindowFlags(Qt.Popup)
 
         isCompressible = GeneralDB.isCompressible()
@@ -114,25 +66,22 @@ class BoundaryTypePicker(QWidget):
         isMultiRegion = len(self._db.getRegions()) > 1
 
         if isCompressible or isMultiphase or isSpeciesOn:
-            self._ui.inletTypes.item(InletType.ABL_INLET.value).setHidden(True)
+            self._ui.ABLInlet.hide()
 
         if isCompressible or isEnergyOn or not isMultiphase or isSpeciesOn or isMultiRegion:
-            self._ui.inletTypes.item(InletType.OPEN_CHANNEL_INLET.value).setHidden(True)
-            self._ui.outletTypes.item(OutletType.OPEN_CHANNEL_OUTLET.value).setHidden(True)
+            self._ui.openChannelInlet.hide()
+            self._ui.openChannelOutlet.hide()
 
         if isCompressible or isMultiphase:
-            self._ui.inletTypes.item(InletType.FREE_STREAM.value).setHidden(True)
+            self._ui.freeStream.hide()
 
         if not isCompressible or not isEnergyOn or isMultiphase or isSpeciesOn or isMultiRegion:
-            self._ui.inletTypes.item(InletType.FAR_FIELD_RIEMANN.value).setHidden(True)
-            self._ui.inletTypes.item(InletType.SUBSONIC_INFLOW.value).setHidden(True)
-            self._ui.inletTypes.item(InletType.SUPERSONIC_INFLOW.value).setHidden(True)
-            self._ui.outletTypes.item(OutletType.SUBSONIC_OUTFLOW.value).setHidden(True)
-            self._ui.outletTypes.item(OutletType.SUPERSONIC_OUTFLOW.value).setHidden(True)
+            self._ui.farFieldRiemann.hide()
+            self._ui.subsonicInlet.hide()
+            self._ui.supersonicInflow.hide()
+            self._ui.subsonicOutflow.hide()
+            self._ui.supersonicOutflow.hide()
 
-        setListHeight(self._ui.inletTypes)
-        setListHeight(self._ui.outletTypes)
-        setListHeight(self._ui.wallTypes)
         self.adjustSize()
 
         self._connectSignalsSlots()
@@ -147,23 +96,8 @@ class BoundaryTypePicker(QWidget):
         self.show()
 
     def _connectSignalsSlots(self):
-        self._ui.inletTypes.currentRowChanged.connect(self._inletPick)
-        self._ui.outletTypes.currentRowChanged.connect(self._outletPick)
-        self._ui.wallTypes.currentRowChanged.connect(self._wallPick)
-        self._ui.miscTypes.currentRowChanged.connect(self._miscPick)
+        self._ui.buttonGroup.buttonClicked.connect(self._typePicked)
 
-    def _inletPick(self, row):
-        self.picked.emit(self._bcid, inletTypes[row])
-        self.hide()
-
-    def _outletPick(self, row):
-        self.picked.emit(self._bcid, outletTypes[row])
-        self.hide()
-
-    def _wallPick(self, row):
-        self.picked.emit(self._bcid, wallTypes[row])
-        self.hide()
-
-    def _miscPick(self, row):
-        self.picked.emit(self._bcid, miscTypes[row])
+    def _typePicked(self, button):
+        self.picked.emit(self._bcid, self._types[button].value)
         self.hide()
