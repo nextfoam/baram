@@ -3,7 +3,9 @@
 
 from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import Qt
+from vtkmodules.vtkCommonColor import vtkNamedColors
 
+from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from baramFlow.coredb.cell_zone_db import CellZoneDB
@@ -23,7 +25,21 @@ class CellZoneConditionsPage(ContentPage):
 
         self._connectSignalsSlots()
 
+        self._actor = None
+
         self._load()
+
+    def hideEvent(self, ev):
+        if not ev.spontaneous():
+            if self._actor:
+                view = app.renderingView
+                view.removeActor(self._actor)
+                view.refresh()
+
+                self._ui.cellZones.clearSelection()
+                self._actor = None
+
+        return super().hideEvent(ev)
 
     def _load(self):
         regions = coredb.CoreDB().getRegions()
@@ -41,6 +57,7 @@ class CellZoneConditionsPage(ContentPage):
 
     def _connectSignalsSlots(self):
         self._ui.cellZones.doubleClicked.connect(self._edit)
+        self._ui.cellZones.clicked.connect(self._cellZoneSelected)
         self._ui.edit.clicked.connect(self._edit)
 
     def _edit(self):
@@ -54,6 +71,22 @@ class CellZoneConditionsPage(ContentPage):
                 self, item.data(0, Qt.UserRole), '' if self._singleRegion else item.text(0))
 
         self._dialog.open()
+
+    def _cellZoneSelected(self):
+        czid = self._ui.cellZones.currentItem().type()
+        if czid:
+            view = app.renderingView
+            if self._actor:
+                view.removeActor(self._actor)
+
+            self._actor = app.cellZoneActor(czid)
+            self._actor.GetProperty().SetColor(vtkNamedColors().GetColor3d('White'))
+            self._actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Red'))
+            self._actor.GetProperty().EdgeVisibilityOn()
+            self._actor.GetProperty().SetRepresentationToSurface()
+            self._actor.GetProperty().SetLineWidth(2)
+            view.addActor(self._actor)
+            view.refresh()
 
     def _addCellZones(self, parent, rname):
         cellZones = coredb.CoreDB().getCellZones(rname)
