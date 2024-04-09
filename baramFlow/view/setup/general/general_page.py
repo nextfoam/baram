@@ -11,6 +11,7 @@ from widgets.async_message_box import AsyncMessageBox
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.general_db import GeneralDB, SolverType
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.widgets.content_page import ContentPage
 from .general_page_ui import Ui_GeneralPage
@@ -52,12 +53,20 @@ class GeneralPage(ContentPage):
             await AsyncMessageBox().critical(self, self.tr("Input Error"), writer.firstError().toMessage())
             return False
 
-        if timeTransient and not self._timeTransient and FileSystem.hasCalculationResults():
-            confirm = await AsyncMessageBox().question(
-                self, self.tr("Change to Transient Mode"),
-                self.tr('Use the final result for the initial value of transient calculation?'))
-            if confirm == QMessageBox.StandardButton.Yes:
-                FileSystem.latestTimeToZero()
+        if timeTransient != self._timeTransient:
+            if timeTransient:
+                if FileSystem.hasCalculationResults():
+                    confirm = await AsyncMessageBox().question(
+                        self, self.tr("Change to Transient Mode"),
+                        self.tr('Use the final result for the initial value of transient calculation?'))
+                    if confirm == QMessageBox.StandardButton.Yes:
+                        FileSystem.latestTimeToZero()
+            else:
+                if ModelsDB.getTurbulenceModel() == TurbulenceModel.LES:
+                    await AsyncMessageBox().information(self, self.tr('Configurations Not Available'),
+                                                        self.tr('Steady mode is not available on LES models.'))
+
+                    return False
 
         self._timeTransient = timeTransient
 

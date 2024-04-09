@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.models_db import TurbulenceModel, ModelsDB
+from baramFlow.coredb.models_db import TurbulenceModel, ModelsDB, TurbulenceModelsDB, SubgridScaleModel
 from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
 from .turbulence_k_epsilon_widget import TurbulenceKEpsilonWidget
 from .turbulence_k_omega_widget import TurbulenceKOmegaWidget
+from .turbulence_LES_widget import TurbulenceLESWidget
 from .turbulence_spalart_allmaras_widget import TurbulenceSpalartAllmarasWidget
 from .temperature_widget import TemperatureWidget
 
@@ -24,20 +25,22 @@ class EmptyWidget:
 
 
 class ConditionalWidgetHelper:
-    _TURBULENCE_WIDGETS = {
-        TurbulenceModel.INVISCID: None,
-        TurbulenceModel.LAMINAR: None,
-        TurbulenceModel.K_EPSILON: TurbulenceKEpsilonWidget,
-        TurbulenceModel.K_OMEGA: TurbulenceKOmegaWidget,
-        TurbulenceModel.SPALART_ALLMARAS: TurbulenceSpalartAllmarasWidget,
-        TurbulenceModel.LES: None,
-    }
-
     @classmethod
     def turbulenceWidget(cls, xpath, layout):
-        widgetClass = cls._TURBULENCE_WIDGETS[ModelsDB.getTurbulenceModel()]
-        if widgetClass is not None:
-            widget = widgetClass(xpath)
+        turbulenceModel = ModelsDB.getTurbulenceModel()
+
+        widget = None
+        if turbulenceModel == TurbulenceModel.K_EPSILON:
+            widget = TurbulenceKEpsilonWidget(xpath)
+        elif turbulenceModel == TurbulenceModel.K_OMEGA:
+            widget = TurbulenceKOmegaWidget(xpath)
+        elif turbulenceModel == TurbulenceModel.SPALART_ALLMARAS:
+            widget = TurbulenceSpalartAllmarasWidget(xpath)
+        elif turbulenceModel == TurbulenceModel.LES:
+            if TurbulenceModelsDB.getLESSubgridScaleModel() in (SubgridScaleModel.DYNAMIC_KEQN, SubgridScaleModel.KEQN):
+                widget = TurbulenceLESWidget(xpath)
+
+        if widget:
             layout.addWidget(widget)
         else:
             widget = EmptyWidget()

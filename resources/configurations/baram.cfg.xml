@@ -65,6 +65,15 @@
             <k-omega>
                 <model>SST</model>
             </k-omega>
+            <les>
+                <subgridScaleModel>smagorinsky</subgridScaleModel>
+                <lengthScaleModel>cubeRootVolume</lengthScaleModel>
+                <modelConstants>
+                    <k>0.094</k>
+                    <e>1.048</e>
+                    <w>0.325</w>
+                </modelConstants>
+            </les>
             <energyPrandtlNumber>0.85</energyPrandtlNumber>
             <wallPrandtlNumber>0.85</wallPrandtlNumber>
         </turbulenceModels>

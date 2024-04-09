@@ -16,7 +16,7 @@ from widgets.flat_push_button import FlatPushButton
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceModelsDB, SubgridScaleModel
 from baramFlow.mesh.vtk_loader import hexActor, cylinderActor, sphereActor
 from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
 from .initialization_widget_ui import Ui_initializationWidget
@@ -165,9 +165,13 @@ class InitializationWidget(QWidget):
         self._ui.turbulentIntensity.setText(db.getValue(self._initialValuesPath + '/turbulentIntensity'))
         self._ui.turbulentViscosityRatio.setText(db.getValue(self._initialValuesPath + '/turbulentViscosity'))
 
+        turbulenceModel = ModelsDB.getTurbulenceModel()
         self._ui.temperature.setEnabled(ModelsDB.isEnergyModelOn())
-        self._ui.turbulence.setEnabled(
-            ModelsDB.getTurbulenceModel() not in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR))
+        self._ui.turbulence.setDisabled(turbulenceModel in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR))
+        self._ui.turbulentIntensity.setDisabled(
+            turbulenceModel == TurbulenceModel.SPALART_ALLMARAS
+            or TurbulenceModelsDB.getLESSubgridScaleModel() in (SubgridScaleModel.SMAGORINSKY, SubgridScaleModel.WALE)
+        )
 
         if self._volumeFractionWidget.on():
             self._volumeFractionWidget.load()

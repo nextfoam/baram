@@ -34,17 +34,17 @@ class Models(Enum):
 
 
 class MultiphaseModel(Enum):
-    OFF = "off"
-    VOLUME_OF_FLUID = "volumeOfFluid"
+    OFF = 'off'
+    VOLUME_OF_FLUID = 'volumeOfFluid'
 
 
 class TurbulenceModel(IndexedEnum):
-    INVISCID = "inviscid"
-    LAMINAR = "laminar"
-    SPALART_ALLMARAS = "spalartAllmaras"
-    K_EPSILON = "k-epsilon"
-    K_OMEGA = "k-omega"
-    LES = "les"
+    INVISCID = 'inviscid'
+    LAMINAR = 'laminar'
+    SPALART_ALLMARAS = 'spalartAllmaras'
+    K_EPSILON = 'k-epsilon'
+    K_OMEGA = 'k-omega'
+    LES = 'les'
 
 
 TurbulenceRasModels = {
@@ -55,18 +55,36 @@ TurbulenceRasModels = {
 
 
 class KEpsilonModel(IndexedEnum):
-    STANDARD = "standard"
-    RNG = "rng"
-    REALIZABLE = "realizable"
+    STANDARD = 'standard'
+    RNG = 'rng'
+    REALIZABLE = 'realizable'
 
 
 class NearWallTreatment(IndexedEnum):
-    STANDARD_WALL_FUNCTIONS = "standardWallFunctions"
-    ENHANCED_WALL_TREATMENT = "enhancedWallTreatment"
+    STANDARD_WALL_FUNCTIONS = 'standardWallFunctions'
+    ENHANCED_WALL_TREATMENT = 'enhancedWallTreatment'
 
 
 class KOmegaModel(Enum):
-    SST = "SST"
+    SST = 'SST'
+
+
+class SubgridScaleModel(Enum):
+    SMAGORINSKY = 'smagorinsky'
+    WALE = 'wale'
+    DYNAMIC_KEQN = 'dynamicKEqn'
+    KEQN = 'kEqn'
+
+
+class LengthScaleModel(Enum):
+    CUBE_ROOT_VOLUME = 'cubeRootVolume'
+    VAN_DRIEST = 'vanDriest'
+    SMOOTH = 'smooth'
+
+
+class SubgridKineticEnergySpecificationMethod(Enum):
+    SUBGRID_SCALE_K = 'subgridScaleK'
+    SUBGRID_SCALE_INTENSITY = 'subgridScaleIntensity'
 
 
 class TurbulenceFields(Enum):
@@ -116,6 +134,21 @@ class ModelsDB:
         coredb.CoreDB().setValue(ModelsDB.ENERGY_MODELS_XPATH, 'off')
 
 
+class TurbulenceModelsDB:
+    @classmethod
+    def getTurbulenceModel(cls):
+        return ModelsDB.getTurbulenceModel()
+
+    @classmethod
+    def getLESSubgridScaleModel(cls):
+        return (SubgridScaleModel(coredb.CoreDB().getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/subgridScaleModel'))
+                if ModelsDB.getTurbulenceModel() == TurbulenceModel.LES else None)
+
+    @classmethod
+    def isRASModel(cls):
+        return ModelsDB.getTurbulenceModel() in TurbulenceRasModels
+
+
 class TurbulenceField:
     def __init__(self, field, symbol, unit, sourceUnits, xpathName):
         self._field = field
@@ -142,10 +175,10 @@ class TurbulenceField:
 
     def name(self):
         return {
-            TurbulenceFields.K:         QCoreApplication.translate("TurbulenceModel", "Turbulent Kinetic Energy"),
-            TurbulenceFields.EPSILON:   QCoreApplication.translate("TurbulenceModel", "Turbulent Dissipation Rate"),
-            TurbulenceFields.OMEGA:     QCoreApplication.translate("TurbulenceModel", "Specific Dissipation Rate"),
-            TurbulenceFields.NU_TILDA:  QCoreApplication.translate("TurbulenceModel", "Modified Turbulent Viscosity"),
+            TurbulenceFields.K:         QCoreApplication.translate('TurbulenceModel', 'Turbulent Kinetic Energy'),
+            TurbulenceFields.EPSILON:   QCoreApplication.translate('TurbulenceModel', 'Turbulent Dissipation Rate'),
+            TurbulenceFields.OMEGA:     QCoreApplication.translate('TurbulenceModel', 'Specific Dissipation Rate'),
+            TurbulenceFields.NU_TILDA:  QCoreApplication.translate('TurbulenceModel', 'Modified Turbulent Viscosity'),
         }.get(self._field)
 
     def getLabelText(self):
@@ -165,39 +198,39 @@ class TurbulenceModelHelper:
     _fields = {
         TurbulenceFields.K:
             TurbulenceField(TurbulenceFields.K,
-                            "k",
-                            'm<sup>2</sup>/s<sup>2</sup>", "turbulentKineticEnergy',
+                            'k',
+                            'm<sup>2</sup>/s<sup>2</sup>',
                             {
                                 SpecificationMethod.VALUE_PER_UNIT_VOLUME: '1/ms<sup>3</sup>',
                                 SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: 'm<sup>2</sup>/s<sup>3</sup>'
                             },
-                            "turbulentKineticEnergy"),
+                            'turbulentKineticEnergy'),
         TurbulenceFields.EPSILON:
             TurbulenceField(TurbulenceFields.EPSILON,
-                            "ε",
-                            'm<sup>2</sup>/s<sup>3</sup>", "turbulentDissipationRate',
+                            'ε',
+                            'm<sup>2</sup>/s<sup>3</sup>',
                             {
                                 SpecificationMethod.VALUE_PER_UNIT_VOLUME: '1/m<sup>2</sup>s<sup>4</sup>',
                                 SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: 'm<sup>2</sup>/s<sup>4</sup>'
-                            }, "turbulentDissipationRate"),
+                            }, 'turbulentDissipationRate'),
         TurbulenceFields.OMEGA:
             TurbulenceField(TurbulenceFields.OMEGA,
-                            "ω",
+                            'ω',
                             '1/s',
                             {
                                 SpecificationMethod.VALUE_PER_UNIT_VOLUME: '1/m<sup>3</sup>s<sup>2</sup>',
                                 SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: '1/s<sup>2</sup>'
                             },
-                            "specificDissipationRate"),
+                            'specificDissipationRate'),
         TurbulenceFields.NU_TILDA:
             TurbulenceField(TurbulenceFields.NU_TILDA,
-                            "ν",
+                            'ν',
                             'm<sup>2</sup>/s',
                             {
                                 SpecificationMethod.VALUE_PER_UNIT_VOLUME: '1/ms<sup>2</sup>',
                                 SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: 'm<sup>2</sup>/s<sup>2</sup>'
                             },
-                            "modifiedTurbulentViscosity"),
+                            'modifiedTurbulentViscosity'),
     }
 
     @classmethod

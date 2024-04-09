@@ -289,19 +289,12 @@ def _version_4(root: etree.Element):
             z = e.find('z', namespaces=_nsmap).text
             p.remove(e)
 
-            logger.debug(
-                '<flowDirection xmlns="http://www.baramcfd.org/baram">'
-                '   <specificationMethod>direct</specificationMethod>'
-                f'      <dragDirection><x>{x}</x><y>{y}</y><z>{z}</z></dragDirection>'
-                '       <liftDirection><x>0</x><y>1</y><z>0</z></liftDirection>'
-                '       <angleOfAttack>0</angleOfAttack><angleOfSideslip>0</angleOfSideSlip>'
-                '</flowDirection>')
             e = etree.fromstring(
                 '<flowDirection xmlns="http://www.baramcfd.org/baram">'
                 '   <specificationMethod>direct</specificationMethod>'
-                f'      <dragDirection><x>{x}</x><y>{y}</y><z>{z}</z></dragDirection>'
-                '       <liftDirection><x>0</x><y>1</y><z>0</z></liftDirection>'
-                '       <angleOfAttack>0</angleOfAttack><angleOfSideslip>0</angleOfSideslip>'
+                f'  <dragDirection><x>{x}</x><y>{y}</y><z>{z}</z></dragDirection>'
+                '   <liftDirection><x>0</x><y>1</y><z>0</z></liftDirection>'
+                '   <angleOfAttack>0</angleOfAttack><angleOfSideslip>0</angleOfSideslip>'
                 '</flowDirection>')
             p.insert(0, e)
 
@@ -323,9 +316,9 @@ def _version_4(root: etree.Element):
             e = etree.fromstring(
                 '<forceDirection xmlns="http://www.baramcfd.org/baram">'
                 '   <specificationMethod>direct</specificationMethod>'
-                f'      <dragDirection><x>{dragX}</x><y>{dragY}</y><z>{dragZ}</z></dragDirection>'
-                f'      <liftDirection><x>{liftX}</x><y>{liftY}</y><z>{liftZ}</z></liftDirection>'
-                '       <angleOfAttack>0</angleOfAttack><angleOfSideslip>0</angleOfSideslip>'
+                f'  <dragDirection><x>{dragX}</x><y>{dragY}</y><z>{dragZ}</z></dragDirection>'
+                f'  <liftDirection><x>{liftX}</x><y>{liftY}</y><z>{liftZ}</z></liftDirection>'
+                '   <angleOfAttack>0</angleOfAttack><angleOfSideslip>0</angleOfSideslip>'
                 '</forceDirection>')
             p.insert(3, e)
 
@@ -335,6 +328,29 @@ def _version_5(root: etree.Element):
 
     # Keep this commented until official v6 spec. is released
     # root.set('version', '6')
+    for p in root.findall('models/turbulenceModels', namespaces=_nsmap):
+        if p.find('les', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "les" to {p}')
+            e = etree.fromstring(
+                '<les xmlns="http://www.baramcfd.org/baram">'
+                '   <subgridScaleModel>smagorinsky</subgridScaleModel>'
+                '   <lengthScaleModel>cubeRootVolume</lengthScaleModel>'
+                '   <modelConstants><k>0.094</k><e>1.048</e><w>0.325</w></modelConstants>'
+                '</les>')
+            p.insert(3, e)
+
+    for p in root.findall('.//boundaryCondition/turbulence', namespaces=_nsmap):
+        if p.find('les', namespaces=_nsmap) is None:
+            logger.debug(f'    Updating "les" to {p}')
+
+            e = etree.fromstring(
+                '<les xmlns="http://www.baramcfd.org/baram">'
+                '   <specification>subgridScaleK</specification>'
+                '   <subgridKineticEnergy>1</subgridKineticEnergy>'
+                '   <subgridTurbulentIntensity>1</subgridTurbulentIntensity>'
+                '   <turbulentViscosityRatio>10</turbulentViscosityRatio>'
+                '</les>')
+            p.append(e)
 
 
 _fTable = [

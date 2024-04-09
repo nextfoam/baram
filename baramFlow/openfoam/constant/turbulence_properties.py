@@ -5,6 +5,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, KOmegaModel, NearWallTreatment
+from baramFlow.coredb.models_db import SubgridScaleModel, LengthScaleModel
 from baramFlow.openfoam.file_system import FileSystem
 
 
@@ -31,7 +32,8 @@ class TurbulenceProperties(DictionaryFile):
             elif subModel == KEpsilonModel.RNG.value:
                 self._constructRASproperties('RNGkEpsilon')
             elif subModel == KEpsilonModel.REALIZABLE.value:
-                treatment = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
+                treatment = self._db.getValue(
+                    ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
                 if treatment == NearWallTreatment.ENHANCED_WALL_TREATMENT.value:
                     self._constructRASproperties('realizableKEtwoLayer')
                 elif treatment == NearWallTreatment.STANDARD_WALL_FUNCTIONS.value:
@@ -79,10 +81,66 @@ class TurbulenceProperties(DictionaryFile):
             }
 
         if subModel == 'realizableKEtwoLayer':
-            self._data['RAS']['ReyStar'] = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/threshold')
-            self._data['RAS']['deltaRey'] = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/blendingWidth')
+            self._data['RAS']['ReyStar'] = self._db.getValue(
+                ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/threshold')
+            self._data['RAS']['deltaRey'] = self._db.getValue(
+                ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/blendingWidth')
 
     def _constructLESProperties(self):
+        subgridScaleModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/subgridScaleModel')
+        lengthScaleModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/lengthScaleModel')
+
         self._data = {
-            'simulationType': 'LES'
+            'simulationType': 'LES',
+            'LES': {
+                'LESModel': subgridScaleModel,
+                'turbulence': 'on',
+                'printCoeffs': 'off',
+                'delta': lengthScaleModel
+            }
         }
+
+        if subgridScaleModel == SubgridScaleModel.SMAGORINSKY.value:
+            self._data['LES']['SmagorinskyCoeffs'] = {
+                'Ck': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/k'),
+                'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e')
+            }
+        elif subgridScaleModel == SubgridScaleModel.WALE.value:
+            self._data['LES']['WALECoeffs'] = {
+                'Ck': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/k'),
+                'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e'),
+                'Cw': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/w')
+            }
+        elif subgridScaleModel == SubgridScaleModel.KEQN.value:
+            self._data['LES']['kEqnCoeffs'] = {
+                'Ck': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/k'),
+                'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e')
+            }
+        elif subgridScaleModel == SubgridScaleModel.DYNAMIC_KEQN.value:
+            self._data['LES']['dynamicKEqnCoeffs'] = {
+                'filter': 'simple'
+            }
+
+        if lengthScaleModel == LengthScaleModel.VAN_DRIEST.value:
+            self._data['LES']['vanDriestCoeffs'] = {
+                'delta': 'cubeRootVol',
+                'cubeRootVolCoeffs': {
+                    'deltaCoeff': 2.0,
+                },
+                'kappa': 0.41,
+                'Aplus': 26,
+                'Cdelta': 0.158,
+                'calcInterval': 1
+            }
+        elif lengthScaleModel == LengthScaleModel.CUBE_ROOT_VOLUME.value:
+            self._data['LES']['cubeRootVolCoeffs'] = {
+                'deltaCoeff': 1
+            }
+        elif lengthScaleModel == LengthScaleModel.SMOOTH.value:
+            self._data['LES']['smoothCoeffs'] = {
+                'delta': 'cubeRootVol',
+                'cubeRootVolCoeffs': {
+                    'deltaCoeff': 1,
+                },
+                'maxDeltaRatio': 1.1
+            }

@@ -3,29 +3,33 @@
 
 from enum import Enum
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QButtonGroup
 
 
-class EnumButtonGroup(QObject):
-    valueChecked = Signal(Enum)
+class EnumButtonGroup(QButtonGroup):
+    dataChecked = Signal(Enum)
 
     def __init__(self):
         super().__init__()
 
-        self._group = QButtonGroup()
         self._buttons = []
 
-        self._group.idClicked.connect(self._idClicked)
+        self._connectSignalsSlots()
 
-    def addButton(self, button, enum):
-        self._group.addButton(button, len(self._buttons))
+    def _connectSignalsSlots(self):
+        self.idToggled.connect(self._idToggled)
+
+    def addEnumButton(self, button, enum):
+        self.addButton(button, len(self._buttons))
         self._buttons.append(enum)
 
-    def setCheckedButton(self, enum):
-        id_ = self._buttons.index(enum)
-        self._group.button(id_).setChecked(True)
-        self._idClicked(id_)
+    def setCheckedValue(self, enum):
+        self.button(self._buttons.index(enum)).setChecked(True)
 
-    def _idClicked(self, id_):
-        self.valueChecked.emit(self._buttons[id_].value)
+    def checkedData(self):
+        return self._buttons[self.checkedId()]
+
+    def _idToggled(self, id_, checked):
+        if checked:
+            self.dataChecked.emit(self._buttons[id_])

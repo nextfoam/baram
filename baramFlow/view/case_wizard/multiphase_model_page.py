@@ -18,10 +18,10 @@ class MultiphaseModelPage(QWizardPage):
         self._model = QLineEdit()
 
         self._modelRadios = EnumButtonGroup()
-        self._modelRadios.addButton(self._ui.off, MultiphaseModel.OFF)
-        self._modelRadios.addButton(self._ui.volumeOfFluid, MultiphaseModel.VOLUME_OF_FLUID)
-        self._modelRadios.valueChecked.connect(self._modelChanged)
-        self._modelRadios.setCheckedButton(MultiphaseModel.OFF)
+        self._modelRadios.addEnumButton(self._ui.off, MultiphaseModel.OFF)
+        self._modelRadios.addEnumButton(self._ui.volumeOfFluid, MultiphaseModel.VOLUME_OF_FLUID)
+        self._modelRadios.dataChecked.connect(self._modelChanged)
+        self._modelRadios.setCheckedValue(MultiphaseModel.OFF)
 
         self._ui.off.setChecked(True)
 
@@ -29,4 +29,4 @@ class MultiphaseModelPage(QWizardPage):
         self.registerField('multiphaseModel', self._model)
 
     def _modelChanged(self, model):
-        self._model.setText(model)
+        self._model.setText(model.value)

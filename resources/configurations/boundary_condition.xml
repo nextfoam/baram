@@ -197,6 +197,12 @@
             <modifiedTurbulentViscosity>0</modifiedTurbulentViscosity>
             <turbulentViscosityRatio>10</turbulentViscosityRatio>
         </spalartAllmaras>
+        <les>
+            <specification>subgridScaleK</specification>
+            <subgridKineticEnergy>1</subgridKineticEnergy>
+            <subgridTurbulentIntensity>1</subgridTurbulentIntensity>
+            <turbulentViscosityRatio>10</turbulentViscosityRatio>
+        </les>
     </turbulence>
     <temperature>
         <profile>constant</profile>

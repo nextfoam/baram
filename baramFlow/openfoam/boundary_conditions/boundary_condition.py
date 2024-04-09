@@ -251,14 +251,16 @@ class BoundaryCondition(DictionaryFile):
         t = float(self._db.getValue(xpath + '/temperature/constant'))
 
         if model == TurbulenceModel.K_EPSILON:
-            mstr = 'k-epsilon'
+            i = float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentIntensity')) / 100
+            b = float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'))
         elif model == TurbulenceModel.K_OMEGA:
-            mstr = 'k-omega'
+            i = float(self._db.getValue(xpath + '/turbulence/k-omega/turbulentIntensity')) / 100
+            b = float(self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'))
+        elif model == TurbulenceModel.LES:
+            i = float(self._db.getValue(xpath + '/turbulence/les/turbulentIntensity')) / 100
+            b = float(self._db.getValue(xpath + '/turbulence/les/turbulentViscosityRatio'))
         else:
             raise AssertionError
-
-        i = float(self._db.getValue(xpath + '/turbulence/' + mstr + '/turbulentIntensity'))/100
-        b = float(self._db.getValue(xpath + '/turbulence/' + mstr + '/turbulentViscosityRatio'))
 
         rho = self._db.getDensity(region.mid, t, p)  # Density
         mu = self._db.getViscosity(region.mid, t)  # Viscosity
@@ -279,6 +281,10 @@ class BoundaryCondition(DictionaryFile):
 
     def _calculateFreeStreamKW(self, xpath, region):
         k, e, w = self._calculateFreeStreamTurbulentValues(xpath, region, TurbulenceModel.K_OMEGA)
+        return k, w
+
+    def _calculateFreeStreamLES(self, xpath, region):
+        k, e, w = self._calculateFreeStreamTurbulentValues(xpath, region, TurbulenceModel.LES)
         return k, w
 
     def _calculateFarfiledRiemanFlowDirection(self, xpath):

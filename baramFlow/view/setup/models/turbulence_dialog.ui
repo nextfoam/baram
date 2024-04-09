@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>547</width>
-    <height>512</height>
+    <width>552</width>
+    <height>797</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -23,6 +23,9 @@
    <item>
     <widget class="QWidget" name="widget_2" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -53,9 +56,6 @@
          <property name="rightMargin">
           <number>0</number>
          </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
          <item>
           <widget class="QGroupBox" name="groupBox">
            <property name="title">
@@ -67,9 +67,6 @@
               <property name="text">
                <string>Inviscid</string>
               </property>
-              <attribute name="buttonGroup">
-               <string notr="true">modelRadioGroup</string>
-              </attribute>
              </widget>
             </item>
             <item>
@@ -77,9 +74,6 @@
               <property name="text">
                <string>Laminar</string>
               </property>
-              <attribute name="buttonGroup">
-               <string notr="true">modelRadioGroup</string>
-              </attribute>
              </widget>
             </item>
             <item>
@@ -87,9 +81,6 @@
               <property name="text">
                <string>Spalart-Allmaras</string>
               </property>
-              <attribute name="buttonGroup">
-               <string notr="true">modelRadioGroup</string>
-              </attribute>
              </widget>
             </item>
             <item>
@@ -97,9 +88,6 @@
               <property name="text">
                <string>k-epsilon</string>
               </property>
-              <attribute name="buttonGroup">
-               <string notr="true">modelRadioGroup</string>
-              </attribute>
              </widget>
             </item>
             <item>
@@ -107,9 +95,6 @@
               <property name="text">
                <string>k-omega</string>
               </property>
-              <attribute name="buttonGroup">
-               <string notr="true">modelRadioGroup</string>
-              </attribute>
              </widget>
             </item>
             <item>
@@ -117,9 +102,6 @@
               <property name="text">
                <string>LES, Large Eddy Simulation</string>
               </property>
-              <attribute name="buttonGroup">
-               <string notr="true">modelRadioGroup</string>
-              </attribute>
              </widget>
             </item>
            </layout>
@@ -137,9 +119,6 @@
             <property name="rightMargin">
              <number>0</number>
             </property>
-            <property name="bottomMargin">
-             <number>0</number>
-            </property>
             <item>
              <widget class="QGroupBox" name="groupBox_2">
               <property name="title">
@@ -151,9 +130,6 @@
                  <property name="text">
                   <string>Standard</string>
                  </property>
-                 <attribute name="buttonGroup">
-                  <string notr="true">kEpsilonRadioGroup</string>
-                 </attribute>
                 </widget>
                </item>
                <item>
@@ -161,9 +137,6 @@
                  <property name="text">
                   <string>RNG</string>
                  </property>
-                 <attribute name="buttonGroup">
-                  <string notr="true">kEpsilonRadioGroup</string>
-                 </attribute>
                 </widget>
                </item>
                <item>
@@ -171,9 +144,6 @@
                  <property name="text">
                   <string>Realizable</string>
                  </property>
-                 <attribute name="buttonGroup">
-                  <string notr="true">kEpsilonRadioGroup</string>
-                 </attribute>
                 </widget>
                </item>
               </layout>
@@ -190,9 +160,6 @@
                  <property name="text">
                   <string>Standard Wall Functions</string>
                  </property>
-                 <attribute name="buttonGroup">
-                  <string notr="true">nearWallTreatmentRadioGroup</string>
-                 </attribute>
                 </widget>
                </item>
                <item>
@@ -200,9 +167,6 @@
                  <property name="text">
                   <string>Enhanced Wall Treatment (two layer)</string>
                  </property>
-                 <attribute name="buttonGroup">
-                  <string notr="true">nearWallTreatmentRadioGroup</string>
-                 </attribute>
                 </widget>
                </item>
                <item>
@@ -254,78 +218,265 @@
            </layout>
           </widget>
          </item>
+         <item>
+          <widget class="QWidget" name="LESModel" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_10">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QGroupBox" name="groupBox_4">
+              <property name="title">
+               <string>Subgrid-Scale Model</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_11">
+               <item>
+                <widget class="QRadioButton" name="smagorinskyLilly">
+                 <property name="text">
+                  <string>Smagorinsky-Lilly</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="WALE">
+                 <property name="text">
+                  <string>WALE</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="kineticEnergyTransport">
+                 <property name="text">
+                  <string>Kinetic-Energy Transport</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="oneEquationEddyViscosity">
+                 <property name="text">
+                  <string>One Equation Eddy Viscosity</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_5">
+              <property name="title">
+               <string>Length-Scale Model</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_12">
+               <item>
+                <widget class="QRadioButton" name="cubeRootVolume">
+                 <property name="text">
+                  <string>Cube-root Volume</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="vanDriest">
+                 <property name="text">
+                  <string>Van Driest</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="smooth">
+                 <property name="text">
+                  <string>smooth</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QWidget" name="modelWidget_2" native="true">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_13">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="constantsWidget" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_9">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
+       <widget class="QWidget" name="widget_4" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_16">
          <property name="topMargin">
           <number>0</number>
          </property>
          <property name="rightMargin">
           <number>0</number>
          </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
          <item>
-          <widget class="QGroupBox" name="groupBox_3">
-           <property name="title">
-            <string>Turbulent Prandtl Number</string>
-           </property>
-           <layout class="QFormLayout" name="formLayout">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>for Internal Field</string>
+          <widget class="QWidget" name="RASModelConstants" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QGroupBox" name="groupBox_3">
+              <property name="title">
+               <string>Turbulent Prandtl Number</string>
               </property>
+              <layout class="QFormLayout" name="formLayout">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label">
+                 <property name="text">
+                  <string>for Internal Field</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="energyPrandtlNumber"/>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_2">
+                 <property name="text">
+                  <string>for Wall Function</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="wallPrandtlNumber"/>
+               </item>
+              </layout>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="energyPrandtlNumber"/>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>for Wall Function</string>
+            <item>
+             <widget class="QGroupBox" name="reynoldsGroup">
+              <property name="title">
+               <string>Reynolds Parameters for Two-Layer Model</string>
               </property>
+              <layout class="QFormLayout" name="formLayout_2">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>Threshold, Re&lt;sub&gt;y&lt;/sub&gt;&lt;sup&gt;*&lt;sup&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="threshold"/>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_4">
+                 <property name="text">
+                  <string>Blending Width, ΔRe&lt;sub&gt;y&lt;/sub&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="blendingWidth"/>
+               </item>
+              </layout>
              </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="wallPrandtlNumber"/>
             </item>
            </layout>
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="reynoldsGroup">
+          <widget class="QGroupBox" name="LESModelConstants">
            <property name="title">
-            <string>Reynolds Parameters for Two-Layer Model</string>
+            <string>LES Model Constants</string>
            </property>
-           <layout class="QFormLayout" name="formLayout_2">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_3">
-              <property name="text">
-               <string>Threshold, Re&lt;sub&gt;y&lt;/sub&gt;&lt;sup&gt;*&lt;sup&gt;</string>
-              </property>
+           <layout class="QVBoxLayout" name="verticalLayout_14">
+            <item>
+             <widget class="QWidget" name="widget_3" native="true">
+              <layout class="QFormLayout" name="LESConstantsLayout">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_5">
+                 <property name="text">
+                  <string>C&lt;sub&gt;k&lt;/sub&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="ck"/>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_6">
+                 <property name="text">
+                  <string>C&lt;sub&gt;e&lt;/sub&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="ce"/>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_7">
+                 <property name="text">
+                  <string>C&lt;sub&gt;w&lt;/sub&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="cw"/>
+               </item>
+              </layout>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="threshold"/>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_4">
-              <property name="text">
-               <string>Blending Width, ΔRe&lt;sub&gt;y&lt;/sub&gt;</string>
+            <item>
+             <widget class="QWidget" name="modelWidget_3" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
               </property>
+              <layout class="QVBoxLayout" name="verticalLayout_15">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+              </layout>
              </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="blendingWidth"/>
             </item>
            </layout>
           </widget>
@@ -431,9 +582,4 @@
    </hints>
   </connection>
  </connections>
- <buttongroups>
-  <buttongroup name="modelRadioGroup"/>
-  <buttongroup name="kEpsilonRadioGroup"/>
-  <buttongroup name="nearWallTreatmentRadioGroup"/>
- </buttongroups>
 </ui>

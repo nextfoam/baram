@@ -380,6 +380,40 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="les">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="subgridScaleModel">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="smagorinsky"/>
+                                    <xs:enumeration value="wale"/>
+                                    <xs:enumeration value="dynamicKEqn"/>
+                                    <xs:enumeration value="kEqn"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="lengthScaleModel">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="cubeRootVolume"/>
+                                    <xs:enumeration value="vanDriest"/>
+                                    <xs:enumeration value="smooth"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="modelConstants">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="k" type="inputNumberType" default="0.094"/>
+                                    <xs:element name="e" type="inputNumberType" default="1.048"/>
+                                    <xs:element name="w" type="inputNumberType" default="0.325"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="energyPrandtlNumber" type="inputNumberType" default="0.85"/>
             <xs:element name="wallPrandtlNumber" type="inputNumberType" default="0.85"/>
         </xs:sequence>
@@ -813,6 +847,23 @@
                             </xs:simpleType>
                         </xs:element>
                         <xs:element name="modifiedTurbulentViscosity" type="inputNumberType" default="0"/>
+                        <xs:element name="turbulentViscosityRatio" type="inputNumberType" default="10"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="les">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="specification" default="subgridScaleK">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="subgridScaleK"/>
+                                    <xs:enumeration value="subgridScaleIntensity"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="subgridKineticEnergy" type="inputNumberType" default="1"/>
+                        <xs:element name="subgridTurbulentIntensity" type="inputNumberType" default="1"/>
                         <xs:element name="turbulentViscosityRatio" type="inputNumberType" default="10"/>
                     </xs:sequence>
                 </xs:complexType>

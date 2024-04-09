@@ -50,7 +50,7 @@ class TurbulenceKEpsilonWidget(QWidget):
         writer.append(xpath + '/specification', specification, None)
         if specification == KEpsilonSpecification.K_AND_EPSILON.value:
             writer.append(xpath + '/turbulentKineticEnergy', self._ui.turbulentKineticEnergy.text(),
-                          self.tr("Turbulent Kinetic Energy"))
+                          self.tr('Turbulent Kinetic Energy'))
             writer.append(xpath + '/turbulentDissipationRate', self._ui.turbuelnetDissipationRate.text(),
                           self.tr("Turbulent Dissipation Rate"))
         elif specification == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
