@@ -4,11 +4,14 @@
 from pathlib import Path
 import platform
 
+from vtkmodules.vtkCommonDataModel import vtkStaticCellLocator
+
 from libbaram.app_path import APP_PATH
 from libbaram.math import calucateDirectionsByRotation
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 import baramFlow.openfoam.solver
+from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
@@ -325,19 +328,21 @@ class ControlDict(DictionaryFile):
         field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
                                               self._db.getValue(xpath + '/field/mid'))
 
+        coordinate = self._db.getVector(xpath + '/coordinate')
+
         if field == 'mag(U)':
             self._appendMagFieldFunctionObject()
         elif field in ('Ux', 'Uy', 'Uz'):
             self._appendComponentsFunctionObject()
 
         if self._db.getValue(xpath + '/snapOntoBoundary') == 'true':
-            return {
+            data = {
                 'type': 'patchProbes',
                 'libs': [_libPath('libsampling')],
 
                 'patches': [BoundaryDB.getBoundaryName(self._db.getValue(xpath + '/boundary'))],
                 'fields': [field],
-                'probeLocations': [self._db.getVector(xpath + '/coordinate')],
+                'probeLocations': [coordinate],
 
                 'writeControl': 'timeStep',
                 'writeInterval': self._db.getValue(xpath + '/writeInterval'),
@@ -345,7 +350,7 @@ class ControlDict(DictionaryFile):
                 'log': 'false',
             }
 
-        return {
+        data = {
             'type': 'probes',
             'libs': [_libPath('libsampling')],
 
@@ -357,6 +362,18 @@ class ControlDict(DictionaryFile):
             'updateHeader': 'false',
             'log': 'false',
         }
+
+        regions = self._db.getRegions()
+        if len(regions) > 1:
+            for rname in regions:
+                locator = vtkStaticCellLocator()
+                locator.SetDataSet(app.internalMeshActor(rname).dataSet)
+                locator.BuildLocator()
+
+                if locator.FindCell(coordinate) > -1:
+                    data['region'] = rname
+
+        return data
 
     def _generateSurfaceMonitor(self, xpath):
         reportType = self._db.getValue(xpath + 'reportType')
