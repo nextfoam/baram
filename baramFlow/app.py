@@ -23,6 +23,7 @@ class App(QObject):
         self._window = None
         self._vtkMesh = None
         self._cellZoneActors = None
+        self._internalMeshActors = None
         self._translator = None
 
         self._properties = None
@@ -67,17 +68,21 @@ class App(QObject):
     def cellZoneActor(self, czid):
         return self._cellZoneActors[czid].face
 
+    def internalMeshActor(self, rname):
+        return self._internalMeshActors[rname]
+
     def openMainWindow(self):
         self._window = self._plug.createMainWindow()
         self._window.load()
         self._window.show()
 
-    def updateVtk(self, mesh, cellZoneActors):
+    def updateVtk(self, mesh, cellZoneActors, internalMeshActors):
         if self._vtkMesh:
             self._vtkMesh.deactivate()
 
         self._vtkMesh = mesh
         self._cellZoneActors = cellZoneActors
+        self._internalMeshActors = internalMeshActors
         self.showMesh()
 
     def updateMesh(self):

@@ -5,7 +5,9 @@ import time
 
 import pandas as pd
 from PySide6.QtCore import QThread, QObject, QTimer, Signal, Qt
+from vtkmodules.vtkCommonDataModel import vtkStaticCellLocator
 
+from baramFlow.app import app
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.project import Project
@@ -202,8 +204,19 @@ class PointMonitor(Monitor):
         self._xpath = MonitorDB.getPointMonitorXPath(name)
 
         self._showChart = self._db.getValue(self._xpath + '/showChart') == 'true'
-        self._rname = ''  # Working only for Single Region Cases. ToDo: find a region by using vtkStaticCellLocator
+        self._rname = ''
         self._chart = chart
+
+        coordinate = self._db.getVector(self._xpath + '/coordinate')
+        regions = self._db.getRegions()
+        if len(regions) > 1:
+            for rname in regions:
+                locator = vtkStaticCellLocator()
+                locator.SetDataSet(app.internalMeshActor(rname).dataSet)
+                locator.BuildLocator()
+
+                if locator.FindCell(coordinate) > -1:
+                    self._rname = rname
 
         self._chart.setTitle(name)
 

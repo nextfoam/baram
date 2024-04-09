@@ -9,11 +9,7 @@ from pathlib import Path
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
 from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkIOParallel import vtkPOpenFOAMReader
-from vtkmodules.vtkFiltersCore import vtkFeatureEdges
-from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
 from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
-from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
-from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA, vtkCommand
 
 from libbaram.openfoam.constants import Directory
@@ -30,36 +26,6 @@ from baramFlow.mesh.mesh_model import ActorInfo, MeshModel
 logger = logging.getLogger(__name__)
 
 
-def getActor(dataset):
-    gFilter = vtkGeometryFilter()
-    gFilter.SetInputData(dataset)
-    gFilter.Update()
-
-    mapper = vtkPolyDataMapper()
-    mapper.SetInputData(gFilter.GetOutput())
-    mapper.ScalarVisibilityOff()
-
-    actor = vtkQuadricLODActor()    # vtkActor()
-    actor.SetMapper(mapper)
-
-    return actor
-
-
-def getFeatureActor(dataset):
-    edges = vtkFeatureEdges()
-    edges.SetInputData(dataset)
-    edges.Update()
-
-    mapper = vtkPolyDataMapper()
-    mapper.SetInputData(edges.GetOutput())
-    mapper.ScalarVisibilityOff()
-
-    actor = vtkActor()
-    actor.SetMapper(mapper)
-
-    return actor
-
-
 def build(mBlock):
     vtkMesh = {}
     n = mBlock.GetNumberOfBlocks()
@@ -74,9 +40,9 @@ def build(mBlock):
             vtkMesh[name] = build(ds)
         elif dsType == VTK_UNSTRUCTURED_GRID:
             if ds.GetNumberOfCells() > 0:
-                vtkMesh[name] = ActorInfo(getActor(ds))
+                vtkMesh[name] = ActorInfo(ds)
         elif dsType == VTK_POLY_DATA:
-            vtkMesh[name] = ActorInfo(getActor(ds), getFeatureActor(ds))
+            vtkMesh[name] = ActorInfo(ds)
         else:
             vtkMesh[name] = f'Type {dsType}'  # ds
 
@@ -291,6 +257,7 @@ class PolyMeshLoader(QObject):
 
         viewModel = MeshModel()
         cellZones = {}
+        internalMeshes = {}
         for rname in db.getRegions():
             for bcid, bcname, _ in db.getBoundaryConditions(rname):
                 viewModel.setActorInfo(bcid, vtkMesh[rname]['boundary'][bcname])
@@ -299,4 +266,6 @@ class PolyMeshLoader(QObject):
                 if not CellZoneDB.isRegion(czname):
                     cellZones[czid] = vtkMesh[rname]['zones']['cellZones'][czname]
 
-        app.updateVtk(viewModel, cellZones)
+            internalMeshes[rname] = vtkMesh[rname]['internalMesh']
+
+        app.updateVtk(viewModel, cellZones, internalMeshes)

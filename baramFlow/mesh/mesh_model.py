@@ -6,6 +6,11 @@ from io import StringIO
 
 from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonColor import vtkNamedColors
+from vtkmodules.vtkCommonCore import VTK_POLY_DATA
+from vtkmodules.vtkFiltersCore import vtkFeatureEdges
+from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
+from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
+from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 
 from baramFlow.app import app
 from baramFlow.coredb import coredb
@@ -16,6 +21,37 @@ from baramFlow.openfoam.system.fv_solution import FvSolution
 from baramFlow.view.main_window.rendering_view import DisplayMode
 from libbaram.exception import CanceledException
 from libbaram.run import RunParallelUtility
+
+
+def getActor(dataset):
+    gFilter = vtkGeometryFilter()
+    gFilter.SetInputData(dataset)
+    gFilter.Update()
+
+    mapper = vtkPolyDataMapper()
+    mapper.SetInputData(gFilter.GetOutput())
+    mapper.ScalarVisibilityOff()
+
+    actor = vtkQuadricLODActor()    # vtkActor()
+    actor.SetMapper(mapper)
+
+    return actor
+
+
+def getFeatureActor(dataset):
+    edges = vtkFeatureEdges()
+    edges.SetInputData(dataset)
+    edges.Update()
+
+    mapper = vtkPolyDataMapper()
+    mapper.SetInputData(edges.GetOutput())
+    mapper.ScalarVisibilityOff()
+
+    actor = vtkActor()
+    actor.SetMapper(mapper)
+
+    return actor
+
 
 _applyDisplayMode = {
     DisplayMode.DISPLAY_MODE_POINTS         : lambda actor: _applyPointsMode(actor),
@@ -67,11 +103,16 @@ def _applyHighlight(actor):
 
 
 class ActorInfo:
-    def __init__(self, face, feature=None):
+    def __init__(self, dataSet):
         self._visibility = True
         self._selected = False
-        self._face = face
-        self._feature = feature
+        self._dataSet = dataSet
+        self._face = None
+        self._feature = None
+
+        self._face = getActor(dataSet)
+        if dataSet.GetDataObjectType() == VTK_POLY_DATA:
+            self._feature = getFeatureActor(dataSet)
 
     @property
     def face(self):
@@ -80,6 +121,10 @@ class ActorInfo:
     @property
     def feature(self):
         return self._feature
+
+    @property
+    def dataSet(self):
+        return self._dataSet
 
     def actor(self, featureMode):
         return self._feature if featureMode else self._face
