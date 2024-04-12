@@ -557,8 +557,9 @@ class MainWindow(QMainWindow):
             progressDialog.open()
 
             try:
-                progressDialog.setLabelText(self.tr('Loading the boundaries.'))
-                await PolyMeshLoader().loadMesh()
+                loader = PolyMeshLoader()
+                loader.progress.connect(progressDialog.setLabelText)
+                await loader.loadMesh()
 
                 progressDialog.close()
             except Exception as ex:
@@ -719,7 +720,9 @@ class MainWindow(QMainWindow):
         progressDialog.open()
 
         try:
-            await PolyMeshLoader().loadMesh()
+            loader = PolyMeshLoader()
+            loader.progress.connect(progressDialog.setLabelText)
+            await loader.loadMesh()
 
             redistributeTask = RedistributionTask()
             redistributeTask.progress.connect(progressDialog.setLabelText)
