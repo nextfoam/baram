@@ -121,3 +121,13 @@ class FileSystem:
         self._casePath = path
         self._constantPath = self._casePath / Directory.CONSTANT_DIRECTORY_NAME
         self._triSurfacePath = self._constantPath / Directory.TRI_SURFACE_DIRECTORY_NAME
+        
+    def isPolyMesh(self, path: Path):
+        checkFiles = ['boundary', 'faces', 'neighbour', 'owner', 'points']
+        for f in checkFiles:
+            if path.joinpath(f).is_file() or path.joinpath(f'{f}.gz').is_file():
+                continue
+            else:
+                return False
+        return True
+
