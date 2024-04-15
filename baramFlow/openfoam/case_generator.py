@@ -204,23 +204,33 @@ class CaseGenerator(QObject):
     async def initialize(self):
         self._canceled = False
 
-        sectionNames: [str] = coredb.CoreDB().getList(
-            f'.//regions/region/initialization/advanced/sections/section/name')
-        if len(sectionNames) > 0:
-            self.progress.emit(self.tr('Setting Section Values'))
-
-            caseRoot = FileSystem.caseRoot()
-            self._cm = RunParallelUtility('setFields', '-writeBoundaryFields', '-case', caseRoot,
-                                          cwd=caseRoot, parallel=parallel.getEnvironment())
-            await self._cm.start()
-            result = await self._cm.wait()
-
+        for rname in self._db.getRegions():
+            if await self._initializeRegion(rname) != 0:
+                raise RuntimeError
             if self._canceled:
                 raise CanceledException
-            if result != 0:
-                raise RuntimeError
 
     def cancel(self):
         self._canceled = True
         if self._cm is not None:
             self._cm.cancel()
+
+    async def _initializeRegion(self, rname):
+        sectionNames: [str] = coredb.CoreDB().getList(
+            f'.//regions/region[name="{rname}"]/initialization/advanced/sections/section/name')
+        if len(sectionNames) > 0:
+            self.progress.emit(self.tr('Setting Section Values'))
+
+            caseRoot = FileSystem.caseRoot()
+            if rname:
+                self._cm = RunParallelUtility('setFields', '-writeBoundaryFields', '-case', caseRoot, '-region', rname,
+                                              cwd=caseRoot, parallel=parallel.getEnvironment())
+            else:
+                self._cm = RunParallelUtility('setFields', '-writeBoundaryFields', '-case', caseRoot,
+                                              cwd=caseRoot, parallel=parallel.getEnvironment())
+
+            await self._cm.start()
+
+            return await self._cm.wait()
+
+        return 0
