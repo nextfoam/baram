@@ -93,6 +93,7 @@ class PolyMeshLoader(QObject):
         return ParsedBoundaryDict(path, listLengthUnparsed=listLengthUnparsed, treatBinaryAsASCII=True, longListOutputThreshold=longListOutputThreshold)
 
     async def loadMesh(self):
+        self.progress.emit(self.tr("Loading Mesh..."))
         boundaries = self._loadBoundaries()
 
         vtkMesh = await self._loadVtkMesh()

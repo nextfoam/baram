@@ -370,6 +370,11 @@ class MainWindow(QMainWindow):
                 progressDialog.finish(self.tr('Mesh scaling failed.'))
                 return
 
+            # Workaround to give some time for QT to set up timer or event loop.
+            # This workaround is not necessary on Windows because BARAM for Windows
+            #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
+            await asyncio.sleep(0.1)
+
             loader = PolyMeshLoader()
             loader.progress.connect(progressDialog.setLabelText)
             await loader.loadVtk()
@@ -400,6 +405,11 @@ class MainWindow(QMainWindow):
                 progressDialog.finish(self.tr('Mesh translation failed.'))
                 return
 
+            # Workaround to give some time for QT to set up timer or event loop.
+            # This workaround is not necessary on Windows because BARAM for Windows
+            #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
+            await asyncio.sleep(0.1)
+
             loader = PolyMeshLoader()
             loader.progress.connect(progressDialog.setLabelText)
             await loader.loadVtk()
@@ -429,6 +439,11 @@ class MainWindow(QMainWindow):
             if await MeshManager().rotate(*self._dialog.data()):
                 progressDialog.finish(self.tr('Mesh rotation failed.'))
                 return
+
+            # Workaround to give some time for QT to set up timer or event loop.
+            # This workaround is not necessary on Windows because BARAM for Windows
+            #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
+            await asyncio.sleep(0.1)
 
             loader = PolyMeshLoader()
             loader.progress.connect(progressDialog.setLabelText)
@@ -467,14 +482,13 @@ class MainWindow(QMainWindow):
         progressDialog = ProgressDialog(self, self.tr('Case Loading.'))
         progressDialog.open()
 
-        loader = PolyMeshLoader()
-        loader.progress.connect(progressDialog.setLabelText)
-
         # Workaround to give some time for QT to set up timer or event loop.
         # This workaround is not necessary on Windows because BARAM for Windows
         #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
         await asyncio.sleep(0.1)
 
+        loader = PolyMeshLoader()
+        loader.progress.connect(progressDialog.setLabelText)
         await loader.loadVtk()
 
         progressDialog.close()
@@ -556,9 +570,15 @@ class MainWindow(QMainWindow):
             progressDialog = ProgressDialog(self, self.tr('Mesh Loading'))
             progressDialog.open()
 
+            # Workaround to give some time for QT to set up timer or event loop.
+            # This workaround is not necessary on Windows because BARAM for Windows
+            #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
+            await asyncio.sleep(0.1)
+
             try:
-                progressDialog.setLabelText(self.tr('Loading the boundaries.'))
-                await PolyMeshLoader().loadMesh()
+                loader = PolyMeshLoader()
+                loader.progress.connect(progressDialog.setLabelText)
+                await loader.loadMesh()
 
                 progressDialog.close()
             except Exception as ex:
@@ -718,8 +738,15 @@ class MainWindow(QMainWindow):
         progressDialog = ProgressDialog(self, self.tr('Mesh Loading'))
         progressDialog.open()
 
+        # Workaround to give some time for QT to set up timer or event loop.
+        # This workaround is not necessary on Windows because BARAM for Windows
+        #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
+        await asyncio.sleep(0.1)
+
         try:
-            await PolyMeshLoader().loadMesh()
+            loader = PolyMeshLoader()
+            loader.progress.connect(progressDialog.setLabelText)
+            await loader.loadMesh()
 
             redistributeTask = RedistributionTask()
             redistributeTask.progress.connect(progressDialog.setLabelText)

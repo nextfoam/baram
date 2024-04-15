@@ -178,12 +178,12 @@ class FvOptions(DictionaryFile):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
             dictName = f'scalarSource_{czname}_{fieldType}'
             volumeMode = self._generateVolumeMode(xpath)
-            injectionRateSuSp = self._generateInjectionRateSuSp(xpath, fieldType)
+            injectionRate = self._generateInjectionRate(xpath, fieldType)
 
             self._data[dictName] = {
                 'type': 'scalarSemiImplicitSource',
                 'volumeMode': volumeMode,
-                'injectionRateSuSp': injectionRateSuSp
+                'sources': injectionRate
             }
             if czname == 'All':
                 self._data[dictName]['selectionMode'] = 'all'
@@ -204,7 +204,7 @@ class FvOptions(DictionaryFile):
 
         return data
 
-    def _generateInjectionRateSuSp(self, xpath, fieldType) -> dict:
+    def _generateInjectionRate(self, xpath, fieldType) -> dict:
         data = {}
 
         if fieldType in ['nuTilda', 'k', 'epsilon', 'omega']:
@@ -215,10 +215,7 @@ class FvOptions(DictionaryFile):
         if valueType == 'constant':
             value = self._db.getValue(xpath + '/constant')
             data = {
-                fieldType: {
-                    'Su': value,
-                    'Sp': '0.0'
-                }
+                fieldType: [value, '0.0']
             }
         elif valueType == 'piecewiseLinear':
             t = self._db.getValue(xpath + '/piecewiseLinear/t').split()
@@ -226,8 +223,8 @@ class FvOptions(DictionaryFile):
             value = [[t[i], v[i]] for i in range(len(t))]
             data = {
                 fieldType: {
-                    'Su': ('table', value),
-                    'Sp': '0.0'
+                    'explicit': ('table', value),
+                    'implicit': 'none'
                 }
             }
         elif valueType == 'polynomial':
@@ -237,8 +234,8 @@ class FvOptions(DictionaryFile):
                 value.append([v[i], i])
             data = {
                 fieldType: {
-                    'Su': ('polynomial', value),
-                    'Sp': '0.0'
+                    'explicit': ('polynomial', value),
+                    'implicit': 'none'
                 }
             }
         return data
