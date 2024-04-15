@@ -386,8 +386,8 @@
                         <xs:element name="subgridScaleModel">
                             <xs:simpleType>
                                 <xs:restriction base="xs:string">
-                                    <xs:enumeration value="smagorinsky"/>
-                                    <xs:enumeration value="wale"/>
+                                    <xs:enumeration value="Smagorinsky"/>
+                                    <xs:enumeration value="WALE"/>
                                     <xs:enumeration value="dynamicKEqn"/>
                                     <xs:enumeration value="kEqn"/>
                                 </xs:restriction>
@@ -396,7 +396,7 @@
                         <xs:element name="lengthScaleModel">
                             <xs:simpleType>
                                 <xs:restriction base="xs:string">
-                                    <xs:enumeration value="cubeRootVolume"/>
+                                    <xs:enumeration value="cubeRootVol"/>
                                     <xs:enumeration value="vanDriest"/>
                                     <xs:enumeration value="smooth"/>
                                 </xs:restriction>

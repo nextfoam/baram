@@ -333,8 +333,8 @@ def _version_5(root: etree.Element):
             logger.debug(f'    Adding "les" to {p}')
             e = etree.fromstring(
                 '<les xmlns="http://www.baramcfd.org/baram">'
-                '   <subgridScaleModel>smagorinsky</subgridScaleModel>'
-                '   <lengthScaleModel>cubeRootVolume</lengthScaleModel>'
+                '   <subgridScaleModel>Smagorinsky</subgridScaleModel>'
+                '   <lengthScaleModel>cubeRootVol</lengthScaleModel>'
                 '   <modelConstants><k>0.094</k><e>1.048</e><w>0.325</w></modelConstants>'
                 '</les>')
             p.insert(3, e)
