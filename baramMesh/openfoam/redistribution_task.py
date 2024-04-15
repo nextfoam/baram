@@ -23,6 +23,7 @@ class RedistributionTask(QObject):
 
         self._fileSystem = fileSystem
         self._latestTime = fileSystem.latestTime(fileSystem.processorPath(0))
+        self._reconstructMessage = ''
 
     async def redistribute(self, numCores):
         processorFolders = self._fileSystem.processorFolders()
@@ -50,10 +51,20 @@ class RedistributionTask(QObject):
         nProcessorFolders = len(processorFolders)
 
         if nProcessorFolders > 0:
-            self.progress.emit(self.tr('Reconstructing the case.'))
-
+            self.progress.emit(self.tr('Reconstructing Case'))
             cm = RunUtility('reconstructParMesh', '-allRegions', '-constant', '-case', caseRoot, cwd=caseRoot)
             cm.output.connect(self._reportTimeProgress)
+            self._reconstructMessage = 'Reconstructing Mesh'
+            await cm.start()
+            result = await cm.wait()
+            if result != 0:
+                raise RuntimeError(self.tr('Mesh Reconstruction failed.'))
+
+            # Reconstruct mesh quality information
+
+            cm = RunUtility('reconstructPar', '-allRegions', '-withZero', '-case', caseRoot, cwd=caseRoot)
+            cm.output.connect(self._reportTimeProgress)
+            self._reconstructMessage = 'Reconstructing Mesh Quality Info.'
             await cm.start()
             result = await cm.wait()
             if result != 0:
@@ -66,7 +77,7 @@ class RedistributionTask(QObject):
         if numCores > 1 and self._fileSystem.boundaryFilePath().exists():
             caseRoot = self._fileSystem.caseRoot()
 
-            self.progress.emit(self.tr('Decomposing the case.'))
+            self.progress.emit(self.tr('Decomposing Case'))
 
             tempPath = self._fileSystem.caseRoot() / 'decomposing'
             if tempPath.exists():
@@ -121,6 +132,6 @@ class RedistributionTask(QObject):
 
     def _reportTimeProgress(self, msg):
         if msg.startswith('Time = constant'):
-            self.progress.emit(self.tr(f'Reconstructing the case. (constant)'))
+            self.progress.emit(self.tr(f'{self._reconstructMessage} (constant)'))
         elif msg.startswith('Time = '):
-            self.progress.emit(self.tr(f'Reconstructing the case. ({msg.strip()}/{self._latestTime})'))
+            self.progress.emit(self.tr(f'{self._reconstructMessage} ({msg.strip()}/{self._latestTime})'))
