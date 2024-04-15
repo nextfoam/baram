@@ -27,32 +27,34 @@ def generateData(schema):
 def validateData(data, schema, path='', fillWithDefault=False):
     configuration = {}
     for key in schema:
-        path = f'{path}/{key}'
+        subPath = f'{path}/{key}'
         if isinstance(schema[key], dict):
             if key in data:
-                configuration[key] = validateData(data[key], schema[key], path, fillWithDefault=fillWithDefault)
+                configuration[key] = validateData(data[key], schema[key], subPath, fillWithDefault=fillWithDefault)
             elif fillWithDefault:
                 configuration[key] = {}
             else:
-                raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', key, path)
+                raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', key, subPath)
         elif isinstance(schema[key], SchemaList):
             if key in data:
-                configuration[key] = schema[key].validate(data[key], path, fillWithDefault=fillWithDefault)
+                configuration[key] = schema[key].validate(data[key], subPath, fillWithDefault=fillWithDefault)
             else:
                 configuration[key] = {}
         else:
             try:
                 if key in data:
                     configuration[key] = schema[key].validate(data[key])
+                elif not schema[key].isRequired():
+                    pass
                 elif fillWithDefault:
                     configuration[key] = schema[key].default()
                 else:
-                    raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', key, path)
+                    raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', key, subPath)
             except DBError as ce:
-                ce.setPath(path)
+                ce.setPath(subPath)
                 raise ce
             except KeyError as ke:
-                raise DBError(ErrorType.EmptyError, repr(ke), None, path)
+                raise DBError(ErrorType.EmptyError, repr(ke), None, subPath)
 
     return configuration
 

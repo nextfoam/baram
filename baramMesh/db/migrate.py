@@ -22,6 +22,10 @@ def _to_v2(data):
                 'maximumLevel': str(int(orgSurfaceRefinementLevel) + 1)
             }
 
+    value = data['snap'].pop('minAreaRation', None)
+    if value is not None:
+        data['snap']['minAreaRatio'] = value
+
 
 _migrates = {
     0: _to_v1,
