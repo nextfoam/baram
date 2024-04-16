@@ -475,9 +475,10 @@ class MainWindow(QMainWindow):
 
                 await redistributionTask.redistribute()
 
-                progressDialog.finish('Parallel Environment was Applied.')
             except RuntimeError as e:
                 progressDialog.finish(str(e))
+
+        progressDialog.finish('Parallel Environment was Applied.')
 
     async def _loadVtkMesh(self):
         progressDialog = ProgressDialog(self, self.tr('Case Loading.'))
