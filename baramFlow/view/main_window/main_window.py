@@ -15,7 +15,6 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer
 
-from libbaram.openfoam.constants import CASE_DIRECTORY_NAME
 from libbaram.run import hasUtility
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
@@ -105,7 +104,7 @@ class MainWindow(QMainWindow):
 
         self._project = Project.instance()
         self._caseManager = CaseManager()
-        self._caseManager.load()
+        # self._caseManager.load()
 
         # 10MB(=10,485,760=1024*1024*10)
         self._handler = RotatingFileHandler(self._project.path/'log.txt', maxBytes=10485760, backupCount=5)
@@ -178,6 +177,8 @@ class MainWindow(QMainWindow):
             self._closeProject(CloseType.EXIT_APP)
             event.ignore()
             return
+
+        Project.close()
 
         if self._closeType == CloseType.CLOSE_PROJECT:
             app.restart()
@@ -529,7 +530,7 @@ class MainWindow(QMainWindow):
             self._loadForm(currentMenu)
 
     @qasync.asyncSlot()
-    async def _solverStatusChanged(self, status, name):
+    async def _solverStatusChanged(self, status, liveStatusChanged=False):
         isSolverRunning = status == SolverStatus.RUNNING or CaseManager().isBatchRunning()
 
         self._ui.actionSaveAs.setDisabled(isSolverRunning)
@@ -539,13 +540,13 @@ class MainWindow(QMainWindow):
 
         self._navigatorView.updateEnabled()
 
-        if status == SolverStatus.ENDED and not name:
+        if status == SolverStatus.ENDED and liveStatusChanged:
             await AsyncMessageBox().information(self, self.tr('Calculation Terminated'),
                                                 self.tr('Calculation is terminated.'))
 
     @qasync.asyncSlot()
     async def _projectOpened(self):
-        self._caseManager.setCase(None, self._project.path / CASE_DIRECTORY_NAME)
+        self._caseManager.load()
 
         db = coredb.CoreDB()
         if db.hasMesh():

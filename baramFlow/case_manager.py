@@ -68,10 +68,10 @@ class CaseManager(QObject):
 
     def load(self):
         self._project = Project.instance()
-        self._loadLiveStatus()
+        self.loadLiveCase(True)
 
-    def loadLiveCase(self):
-        if self._caseName is None:  # it's already Live Case
+    def loadLiveCase(self, projectLoaded=False):
+        if self._caseName is None and not projectLoaded:  # it's already Live Case
             return
 
         self.setCase(None, self._livePath(), None)
@@ -252,6 +252,8 @@ class CaseManager(QObject):
                 self._setLiveProcess(process)
             else:
                 self._setStatus(SolverStatus.ENDED)
+        elif FileSystem.hasCalculationResults():
+            self._setStatus(SolverStatus.ENDED)
         else:
             self._setStatus(SolverStatus.NONE)
 
