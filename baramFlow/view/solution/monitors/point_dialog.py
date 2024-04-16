@@ -12,6 +12,7 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper
+from baramFlow.mesh.vtk_loader import isPointInDataSet
 from .point_dialog_ui import Ui_PointDialog
 
 
@@ -67,6 +68,18 @@ class PointDialog(QDialog):
                 QMessageBox.critical(self, self.tr("Input Error"), self.tr("Enter Monitor Name."))
                 return
 
+        regions = self._db.getRegions()
+        region = ''
+        if len(regions) > 1:
+            coordinate = (float(self._ui.coordinateX.text()),
+                     float(self._ui.coordinateY.text()),
+                     float(self._ui.coordinateZ.text()))
+
+            for rname in regions:
+                if isPointInDataSet(coordinate, app.internalMeshActor(rname).dataSet):
+                    region = rname
+                    break
+
         writer = CoreDBWriter()
         field = self._ui.field.currentData()
         writer.append(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
@@ -75,6 +88,7 @@ class PointDialog(QDialog):
         writer.append(self._xpath + '/coordinate/x', self._ui.coordinateX.text(), self.tr("Coordinate X"))
         writer.append(self._xpath + '/coordinate/y', self._ui.coordinateY.text(), self.tr("Coordinate Y"))
         writer.append(self._xpath + '/coordinate/z', self._ui.coordinateZ.text(), self.tr("Coordinate Z"))
+        writer.append(self._xpath + '/region', region, None)
         if self._snapOntoBoundary:
             writer.append(self._xpath + '/snapOntoBoundary', 'true', None)
             writer.append(self._xpath + '/boundary', self._snapOntoBoundary, None)

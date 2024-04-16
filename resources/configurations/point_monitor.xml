@@ -15,4 +15,5 @@
     </coordinate>
     <snapOntoBoundary>false</snapOntoBoundary>
     <boundary>0</boundary>
+    <region/>
 </pointMonitor>

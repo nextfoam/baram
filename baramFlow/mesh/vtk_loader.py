@@ -6,7 +6,7 @@ from pathlib import Path
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor, vtkFollower
 from vtkmodules.vtkIOLegacy import vtkPolyDataReader
 from vtkmodules.vtkCommonCore import vtkPoints
-from vtkmodules.vtkCommonDataModel import vtkHexahedron, vtkUnstructuredGrid
+from vtkmodules.vtkCommonDataModel import vtkHexahedron, vtkUnstructuredGrid, vtkStaticCellLocator
 from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 from vtkmodules.vtkFiltersSources import vtkLineSource, vtkSphereSource
 from vtkmodules.vtkFiltersCore import vtkTubeFilter
@@ -141,3 +141,11 @@ def labelActor(text):
     actor.SetMapper(mapper)
 
     return actor
+
+
+def isPointInDataSet(point, dataSet):
+    locator = vtkStaticCellLocator()
+    locator.SetDataSet(dataSet)
+    locator.BuildLocator()
+
+    return locator.FindCell(point) > -1

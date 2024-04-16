@@ -341,7 +341,7 @@ def _version_5(root: etree.Element):
 
     for p in root.findall('.//boundaryCondition/turbulence', namespaces=_nsmap):
         if p.find('les', namespaces=_nsmap) is None:
-            logger.debug(f'    Updating "les" to {p}')
+            logger.debug(f'    Adding "les" to {p}')
 
             e = etree.fromstring(
                 '<les xmlns="http://www.baramcfd.org/baram">'
@@ -351,6 +351,12 @@ def _version_5(root: etree.Element):
                 '   <turbulentViscosityRatio>10</turbulentViscosityRatio>'
                 '</les>')
             p.append(e)
+
+    for p in root.findall(f'.//monitors/points/pointMonitor', namespaces=_nsmap):
+        if p.find('region', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "region" to {p}')
+            etree.SubElement(p, f'{{{_ns}}}region').text = ''
+
 
 
 _fTable = [

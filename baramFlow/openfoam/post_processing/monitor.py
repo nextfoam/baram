@@ -5,9 +5,7 @@ import time
 
 import pandas as pd
 from PySide6.QtCore import QThread, QObject, QTimer, Signal, Qt
-from vtkmodules.vtkCommonDataModel import vtkStaticCellLocator
 
-from baramFlow.app import app
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.project import Project
@@ -104,7 +102,6 @@ class Monitor(QObject):
         self._thread = None
         self._worker = None
         self._showChart = True
-        self._running = False
 
     @property
     def name(self):
@@ -142,10 +139,7 @@ class Monitor(QObject):
         else:
             self.startThread()
 
-        self._running = True
-
     def stop(self):
-        self._running = False
         self.stopWorker.emit()
 
     def quit(self):
@@ -185,16 +179,14 @@ class ForceMonitor(Monitor):
         return 'coefficient'
 
     def _updateChart(self, data):
-        if self._running:
-            self._chart1.appendData(pd.DataFrame(data, columns=['Cd']))
-            self._chart2.appendData(pd.DataFrame(data, columns=['Cl']))
-            self._chart3.appendData(pd.DataFrame(data, columns=['CmPitch']).rename(columns={'CmPitch': 'Cm'}))
+        self._chart1.appendData(pd.DataFrame(data, columns=['Cd']))
+        self._chart2.appendData(pd.DataFrame(data, columns=['Cl']))
+        self._chart3.appendData(pd.DataFrame(data, columns=['CmPitch']).rename(columns={'CmPitch': 'Cm'}))
 
     def _fitChart(self):
-        if self._running:
-            self._chart1.fitChart()
-            self._chart2.fitChart()
-            self._chart3.fitChart()
+        self._chart1.fitChart()
+        self._chart2.fitChart()
+        self._chart3.fitChart()
 
 
 class PointMonitor(Monitor):
@@ -204,19 +196,8 @@ class PointMonitor(Monitor):
         self._xpath = MonitorDB.getPointMonitorXPath(name)
 
         self._showChart = self._db.getValue(self._xpath + '/showChart') == 'true'
-        self._rname = ''
+        self._rname = self._db.getValue(self._xpath + '/region')
         self._chart = chart
-
-        coordinate = self._db.getVector(self._xpath + '/coordinate')
-        regions = self._db.getRegions()
-        if len(regions) > 1:
-            for rname in regions:
-                locator = vtkStaticCellLocator()
-                locator.SetDataSet(app.internalMeshActor(rname).dataSet)
-                locator.BuildLocator()
-
-                if locator.FindCell(coordinate) > -1:
-                    self._rname = rname
 
         self._chart.setTitle(name)
 
@@ -230,12 +211,10 @@ class PointMonitor(Monitor):
         return ''
 
     def _updateChart(self, data):
-        if self._running:
-            self._chart.appendData(data)
+        self._chart.appendData(data)
 
     def _fitChart(self):
-        if self._running:
-            self._chart.fitChart()
+        self._chart.fitChart()
 
 
 class SurfaceMonitor(Monitor):
@@ -255,12 +234,10 @@ class SurfaceMonitor(Monitor):
         return 'surfaceFieldValue'
 
     def _updateChart(self, data):
-        if self._running:
-            self._chart.appendData(data)
+        self._chart.appendData(data)
 
     def _fitChart(self):
-        if self._running:
-            self._chart.fitChart()
+        self._chart.fitChart()
 
 
 class VolumeMonitor(Monitor):
@@ -280,10 +257,8 @@ class VolumeMonitor(Monitor):
         return 'volFieldValue'
 
     def _updateChart(self, data):
-        if self._running:
-            self._chart.appendData(data)
+        self._chart.appendData(data)
 
     def _fitChart(self):
-        if self._running:
-            self._chart.fitChart()
+        self._chart.fitChart()
 

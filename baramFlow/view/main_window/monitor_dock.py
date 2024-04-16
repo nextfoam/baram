@@ -31,12 +31,6 @@ class MonitorDock(TabifiedDock):
 
         self._translate()
 
-    def startMonitor(self):
-        self._clear()
-
-        if CaseManager().isRunning() or CaseManager().isEnded():
-            self._startMonitor()
-
     def _translate(self):
         self.setWindowTitle(self.tr("Monitor"))
 
@@ -57,9 +51,9 @@ class MonitorDock(TabifiedDock):
         self.setWidget(self._widget)
 
     @qasync.asyncSlot()
-    async def _caseLoaded(self, name):
-        if name:
-            self.startMonitor()
+    async def _caseLoaded(self):
+        self._clear()
+        self._startMonitor()
 
     def _caseCleared(self):
         self._clear()

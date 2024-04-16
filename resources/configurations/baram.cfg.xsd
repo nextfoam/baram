@@ -1572,6 +1572,7 @@
                 <xs:element name="snapOntoBoundary" type="xs:boolean" default="false"/>
                 <!-- Boundary ID if snapOntoBoundary is true -->
                 <xs:element name="boundary" type="xs:nonNegativeInteger" default="0"/>  <!-- boundary condition bcid -->
+                <xs:element name="region" type="xs:string"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

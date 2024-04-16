@@ -565,7 +565,6 @@ class MainWindow(QMainWindow):
         db = coredb.CoreDB()
         if db.hasMesh():
             await self._loadVtkMesh()
-            self._monitorDock.startMonitor()
         elif FileSystem.hasPolyMesh():
             # BaramMesh Project is opened
             progressDialog = ProgressDialog(self, self.tr('Mesh Loading'))

@@ -4,8 +4,6 @@
 from pathlib import Path
 import platform
 
-from vtkmodules.vtkCommonDataModel import vtkStaticCellLocator
-
 from libbaram.app_path import APP_PATH
 from libbaram.math import calucateDirectionsByRotation
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
@@ -23,6 +21,7 @@ from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportTyp
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
 from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
+from baramFlow.mesh.vtk_loader import isPointInDataSet
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import findSolver, getSolverCapability
 
@@ -363,15 +362,16 @@ class ControlDict(DictionaryFile):
             'log': 'false',
         }
 
-        regions = self._db.getRegions()
-        if len(regions) > 1:
-            for rname in regions:
-                locator = vtkStaticCellLocator()
-                locator.SetDataSet(app.internalMeshActor(rname).dataSet)
-                locator.BuildLocator()
-
-                if locator.FindCell(coordinate) > -1:
-                    data['region'] = rname
+        if region := self._db.getValue(xpath + '/region'):
+            data['region'] = region
+        else:
+            regions = self._db.getRegions()
+            if len(regions) > 1:
+                for rname in regions:
+                    if isPointInDataSet(coordinate, app.internalMeshActor(rname).dataSet):
+                        self._db.setValue(xpath + '/region', rname)
+                        data['region'] = rname
+                        break
 
         return data
 
