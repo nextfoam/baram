@@ -70,14 +70,14 @@ class KOmegaModel(Enum):
 
 
 class SubgridScaleModel(Enum):
-    SMAGORINSKY = 'smagorinsky'
-    WALE = 'wale'
+    SMAGORINSKY = 'Smagorinsky'
+    WALE = 'WALE'
     DYNAMIC_KEQN = 'dynamicKEqn'
     KEQN = 'kEqn'
 
 
 class LengthScaleModel(Enum):
-    CUBE_ROOT_VOLUME = 'cubeRootVolume'
+    CUBE_ROOT_VOLUME = 'cubeRootVol'
     VAN_DRIEST = 'vanDriest'
     SMOOTH = 'smooth'
 

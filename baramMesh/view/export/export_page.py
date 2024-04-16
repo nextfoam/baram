@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QFileDialog
 from libbaram.openfoam.constants import Directory
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
+from libbaram.utils import rmtree
 from resources import resource
 from widgets.progress_dialog import ProgressDialog
 
@@ -145,7 +146,7 @@ class ExportPage(StepPage):
                 else:
                     shutil.move(self._outputPath() / Directory.POLY_MESH_DIRECTORY_NAME, baramSystem.polyMeshPath())
 
-                self._outputPath().rmdir()
+                rmtree(self._outputPath())
 
             progressDialog.finish(self.tr('Export completed'))
 

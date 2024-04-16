@@ -66,8 +66,8 @@
                 <model>SST</model>
             </k-omega>
             <les>
-                <subgridScaleModel>smagorinsky</subgridScaleModel>
-                <lengthScaleModel>cubeRootVolume</lengthScaleModel>
+                <subgridScaleModel>Smagorinsky</subgridScaleModel>
+                <lengthScaleModel>cubeRootVol</lengthScaleModel>
                 <modelConstants>
                     <k>0.094</k>
                     <e>1.048</e>
