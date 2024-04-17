@@ -61,15 +61,16 @@ class RedistributionTask(QObject):
             if result != 0:
                 raise RuntimeError(self.tr('Mesh Reconstruction failed.'))
 
-            # Reconstruct mesh quality information
+            # Rebuild mesh quality information
             if self._fileSystem.times():  # Exported cases do not have time folders and "reconstructPar" fails
-                cm = RunUtility('reconstructPar', '-allRegions', '-withZero', '-case', caseRoot, cwd=caseRoot)
+                cm = RunUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)',
+                                '-case', caseRoot, cwd=caseRoot)
                 cm.output.connect(self._reportTimeProgress)
-                self._reconstructMessage = 'Reconstructing Mesh Quality Info.'
+                self._reconstructMessage = 'Rebuilding Mesh Quality Info.'
                 await cm.start()
                 result = await cm.wait()
                 if result != 0:
-                    raise RuntimeError(self.tr('Reconstruction failed.'))
+                    raise RuntimeError(self.tr('Rebuilding Mesh Quality Info. failed.'))
 
         for folder in processorFolders:
             utils.rmtree(folder)
