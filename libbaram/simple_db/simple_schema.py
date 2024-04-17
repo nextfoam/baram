@@ -45,7 +45,7 @@ def validateData(data, schema, path='', fillWithDefault=False):
                 if key in data:
                     configuration[key] = schema[key].validate(data[key])
                 elif not schema[key].isRequired():
-                    pass
+                    configuration[key] = None
                 elif fillWithDefault:
                     configuration[key] = schema[key].default()
                 else:

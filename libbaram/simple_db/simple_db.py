@@ -101,7 +101,9 @@ class SimpleDB(SimpleSchema):
         return elementToList(db[field], schema[field], fields)
 
     def getFloat(self, path):
-        return float(self.getValue(path))
+        value = self.getValue(path)
+
+        return None if value is None else float(value)
 
     def getVector(self, path):
         schema, db, field = self._get(path)
