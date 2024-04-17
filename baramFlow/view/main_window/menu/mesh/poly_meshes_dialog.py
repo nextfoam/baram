@@ -20,7 +20,6 @@ removeIcon = QIcon(':/icons/trash-outline.svg')
 
 class Column(IntEnum):
     NAME    = 0
-    TYPE    = auto()
     PATH    = auto()
     REMOVE  = auto()
 
@@ -50,7 +49,7 @@ class PolyMeshesDialog(QDialog):
         self._data = []
         for i in range(self._ui.polyMeshes.topLevelItemCount()):
             item = self._ui.polyMeshes.topLevelItem(i)
-            self._data.append((item.text(Column.NAME), item.text(Column.TYPE), Path(item.text(Column.PATH))))
+            self._data.append((item.text(Column.NAME), Path(item.text(Column.PATH))))
 
         super().accept()
 
@@ -63,8 +62,8 @@ class PolyMeshesDialog(QDialog):
         self._dialog.open()
 
     def _addPolyMesh(self):
-        rname, rtype, path = self._dialog.data()
-        item = QTreeWidgetItem(self._ui.polyMeshes, [rname, rtype, path])
+        rname, path = self._dialog.data()
+        item = QTreeWidgetItem(self._ui.polyMeshes, [rname, path])
         button = FlatPushButton(removeIcon, '')
         button.clicked.connect(lambda: self._removePolyMesh(item))
         self._ui.polyMeshes.setItemWidget(item, Column.REMOVE, button)

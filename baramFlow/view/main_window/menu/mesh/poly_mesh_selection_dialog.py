@@ -21,15 +21,12 @@ class PolyMesheSelectionDialog(QDialog):
 
         self._dialog = None
 
-        self._ui.regionType.addItem(self.tr('Fluid'), 'fluid')
-        self._ui.regionType.addItem(self.tr('Solid'), 'solid')
-
         self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
 
         self._connectSignalsSlots()
 
     def data(self):
-        return self._ui.regionName.text(), self._ui.regionType.currentData(), self._ui.polyMesh.text()
+        return self._ui.regionName.text(), self._ui.polyMesh.text()
 
     def _connectSignalsSlots(self):
         self._ui.regionName.textChanged.connect(self._updateAcceptablility)

@@ -32,7 +32,7 @@
          <number>0</number>
         </property>
         <property name="columnCount">
-         <number>4</number>
+         <number>3</number>
         </property>
         <attribute name="headerVisible">
          <bool>true</bool>
@@ -44,17 +44,12 @@
         </column>
         <column>
          <property name="text">
-          <string>Region Type</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
           <string>PolyMesh Path</string>
          </property>
         </column>
         <column>
          <property name="text">
-          <string> </string>
+          <string/>
          </property>
         </column>
        </widget>
