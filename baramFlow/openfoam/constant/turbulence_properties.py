@@ -5,7 +5,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, KOmegaModel, NearWallTreatment
-from baramFlow.coredb.models_db import SubgridScaleModel, LengthScaleModel
+from baramFlow.coredb.models_db import SubgridScaleModel, LengthScaleModel, RANSModel, ShieldingFunctions
 from baramFlow.openfoam.file_system import FileSystem
 
 
@@ -44,6 +44,8 @@ class TurbulenceProperties(DictionaryFile):
             subModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-omega/model')
             if subModel == KOmegaModel.SST.value:
                 self._constructRASproperties('kOmegaSST')
+        elif self._model == TurbulenceModel.DES:
+            self._constructDESProperties()
         elif self._model == TurbulenceModel.LES:
             self._constructLESProperties()
 
@@ -85,6 +87,51 @@ class TurbulenceProperties(DictionaryFile):
                 ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/threshold')
             self._data['RAS']['deltaRey'] = self._db.getValue(
                 ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/blendingWidth')
+
+    def _constructDESProperties(self):
+        ransModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/RANSModel')
+        delta = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/lengthScaleModel')
+
+        if self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/DESOptions/delayedDES') == 'true':
+            shieldingFunctions = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/shieldingFunctions')
+            if shieldingFunctions == ShieldingFunctions.IDDES.value:
+                delta = 'IDDESDelta'
+        else:
+            shieldingFunctions = 'DES'
+
+        self._data = {
+            'simulationType': 'LES',
+            'LES': {
+                'turbulence': 'on',
+            },
+            'delta': delta
+        }
+
+        LESModel = None
+        if ransModel == RANSModel.SPALART_ALLMARAS.value:
+            LESModel = 'SpalartAllmaras' + shieldingFunctions
+            self._data['LES'][LESModel + 'Coeffs'] = {
+                'CDES': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/modelConstants/DES'),
+                'lowReCorrection':
+                    ('yes'
+                     if self._db.getValue(
+                        ModelsDB.TURBULENCE_MODELS_XPATH + '/des/spalartAllmarasOptions/lowReDamping') == 'true'
+                     else 'no'),
+            }
+        elif ransModel == RANSModel.K_OMEGA_SST.value:
+            LESModel = 'kOmegaSST' + shieldingFunctions
+            self._data['LES'][LESModel] = {
+                'CDESkom': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/modelConstants/DESKOmega'),
+                'CDESkeps': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/modelConstants/DESKEpsilon')
+            }
+
+        self._data['LES']['LESModel'] = LESModel
+
+        if delta == 'IDDESDelta':
+            self._data['LES']['IDDESDeltaCoeffs'] = {
+                'hmax': 'maxDeltaxyzCubeRoot',
+                'maxDeltaxyzCubeRootCoeffs': {}
+            }
 
     def _constructLESProperties(self):
         subgridScaleModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/subgridScaleModel')

@@ -65,6 +65,22 @@
             <k-omega>
                 <model>SST</model>
             </k-omega>
+            <des>
+                <RANSModel>spalartAllmaras</RANSModel>
+                <spalartAllmarasOptions>
+                    <lowReDamping>true</lowReDamping>
+                </spalartAllmarasOptions>
+                <DESOptions>
+                    <delayedDES>false</delayedDES>
+                </DESOptions>
+                <modelConstants>
+                    <DES>0.65</DES>
+                    <DESKOmega>0.82</DESKOmega>
+                    <DESKEpsilon>0.6</DESKEpsilon>
+                </modelConstants>
+                <shieldingFunctions>DDES</shieldingFunctions>
+                <lengthScaleModel>cubeRootVol</lengthScaleModel>
+            </des>
             <les>
                 <subgridScaleModel>Smagorinsky</subgridScaleModel>
                 <lengthScaleModel>cubeRootVol</lengthScaleModel>

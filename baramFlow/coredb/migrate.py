@@ -329,6 +329,28 @@ def _version_5(root: etree.Element):
     # Keep this commented until official v6 spec. is released
     # root.set('version', '6')
     for p in root.findall('models/turbulenceModels', namespaces=_nsmap):
+        if p.find('des', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "des" to {p}')
+            e = etree.fromstring(
+                '<des xmlns="http://www.baramcfd.org/baram">'
+                '   <RANSModel>spalartAllmaras</RANSModel>'
+                '   <spalartAllmarasOptions>'
+                '       <lowReDamping>true</lowReDamping>'
+                '   </spalartAllmarasOptions>'
+                '   <DESOptions>'
+                '       <delayedDES>false</delayedDES>'
+                '   </DESOptions>'
+                '   <modelConstants>'
+                '       <DES>0.65</DES>'
+                '       <DESKOmega>0.82</DESKOmega>'
+                '       <DESKEpsilon>0.6</DESKEpsilon>'
+                '   </modelConstants>'
+                '   <shieldingFunctions>DDES</shieldingFunctions>'
+                '   <lengthScaleModel>cubeRootVol</lengthScaleModel>'
+                '</des>')
+            p.insert(3, e)
+
+    for p in root.findall('models/turbulenceModels', namespaces=_nsmap):
         if p.find('les', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "les" to {p}')
             e = etree.fromstring(
@@ -337,7 +359,7 @@ def _version_5(root: etree.Element):
                 '   <lengthScaleModel>cubeRootVol</lengthScaleModel>'
                 '   <modelConstants><k>0.094</k><e>1.048</e><w>0.325</w></modelConstants>'
                 '</les>')
-            p.insert(3, e)
+            p.insert(4, e)
 
     for p in root.findall('.//boundaryCondition/turbulence', namespaces=_nsmap):
         if p.find('les', namespaces=_nsmap) is None:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.models_db import TurbulenceModel, ModelsDB, TurbulenceModelsDB, SubgridScaleModel
+from baramFlow.coredb.models_db import TurbulenceModel, ModelsDB, TurbulenceModelsDB, RANSModel
 from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
 from .turbulence_k_epsilon_widget import TurbulenceKEpsilonWidget
 from .turbulence_k_omega_widget import TurbulenceKOmegaWidget
@@ -36,8 +36,13 @@ class ConditionalWidgetHelper:
             widget = TurbulenceKOmegaWidget(xpath)
         elif turbulenceModel == TurbulenceModel.SPALART_ALLMARAS:
             widget = TurbulenceSpalartAllmarasWidget(xpath)
-        elif turbulenceModel == TurbulenceModel.LES:
-            if TurbulenceModelsDB.getLESSubgridScaleModel() in (SubgridScaleModel.DYNAMIC_KEQN, SubgridScaleModel.KEQN):
+        elif turbulenceModel == TurbulenceModel.DES:
+            ransModel = TurbulenceModelsDB.getDESRansModel()
+            if ransModel == RANSModel.SPALART_ALLMARAS:
+                widget = TurbulenceSpalartAllmarasWidget(xpath)
+            elif ransModel == RANSModel.K_OMEGA_SST:
+                widget = TurbulenceKOmegaWidget(xpath)
+        elif TurbulenceModelsDB.isLESKEqnModel():
                 widget = TurbulenceLESWidget(xpath)
 
         if widget:

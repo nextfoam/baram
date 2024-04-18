@@ -44,6 +44,7 @@ class TurbulenceModel(IndexedEnum):
     SPALART_ALLMARAS = 'spalartAllmaras'
     K_EPSILON = 'k-epsilon'
     K_OMEGA = 'k-omega'
+    DES = 'des'
     LES = 'les'
 
 
@@ -67,6 +68,16 @@ class NearWallTreatment(IndexedEnum):
 
 class KOmegaModel(Enum):
     SST = 'SST'
+
+
+class RANSModel(Enum):
+    SPALART_ALLMARAS = 'spalartAllmaras'
+    K_OMEGA_SST = 'kOmegaSST'
+
+
+class ShieldingFunctions(Enum):
+    DDES = 'DDES'
+    IDDES = 'IDDES'
 
 
 class SubgridScaleModel(Enum):
@@ -135,9 +146,19 @@ class ModelsDB:
 
 
 class TurbulenceModelsDB:
+    _RANSToRASModelMap = {
+        RANSModel.SPALART_ALLMARAS: TurbulenceModel.SPALART_ALLMARAS,
+        RANSModel.K_OMEGA_SST:      TurbulenceModel.K_OMEGA
+    }
+
     @classmethod
     def getTurbulenceModel(cls):
         return ModelsDB.getTurbulenceModel()
+
+    @classmethod
+    def getDESRansModel(cls):
+        return (RANSModel(coredb.CoreDB().getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/RANSModel'))
+                if ModelsDB.getTurbulenceModel() == TurbulenceModel.DES else None)
 
     @classmethod
     def getLESSubgridScaleModel(cls):
@@ -145,8 +166,21 @@ class TurbulenceModelsDB:
                 if ModelsDB.getTurbulenceModel() == TurbulenceModel.LES else None)
 
     @classmethod
-    def isRASModel(cls):
-        return ModelsDB.getTurbulenceModel() in TurbulenceRasModels
+    def isLESKEqnModel(cls):
+        return TurbulenceModelsDB.getLESSubgridScaleModel() in (SubgridScaleModel.DYNAMIC_KEQN, SubgridScaleModel.KEQN)
+
+    @classmethod
+    def isLESSpalartAllmarasModel(cls):
+        return TurbulenceModelsDB.getLESSubgridScaleModel() in (SubgridScaleModel.SMAGORINSKY, SubgridScaleModel.WALE)
+
+    @classmethod
+    def getRASModel(cls):
+        turbulenceModel = ModelsDB.getTurbulenceModel()
+        if turbulenceModel in TurbulenceRasModels:
+            return turbulenceModel
+
+        ransModel = TurbulenceModelsDB.getDESRansModel()
+        return cls._RANSToRASModelMap[ransModel] if ransModel in cls._RANSToRASModelMap else None
 
 
 class TurbulenceField:

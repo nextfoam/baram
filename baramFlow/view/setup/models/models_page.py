@@ -76,6 +76,7 @@ class ModelsPage(ContentPage):
             TurbulenceModel.SPALART_ALLMARAS: self.tr('Spalart-Allmaras'),
             TurbulenceModel.K_EPSILON: self.tr('k-epsilon'),
             TurbulenceModel.K_OMEGA: self.tr('k-omega'),
+            TurbulenceModel.DES: self.tr('DES'),
             TurbulenceModel.LES: self.tr('LES'),
         }
 

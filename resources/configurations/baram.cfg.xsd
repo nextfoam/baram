@@ -332,6 +332,7 @@
                         <xs:enumeration value="spalartAllmaras"/>
                         <xs:enumeration value="k-epsilon"/>
                         <xs:enumeration value="k-omega"/>
+                        <xs:enumeration value="des"/>
                         <xs:enumeration value="les"/>
                     </xs:restriction>
                 </xs:simpleType>
@@ -374,6 +375,60 @@
                             <xs:simpleType>
                                 <xs:restriction base="xs:string">
                                     <xs:enumeration value="SST"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="des">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="RANSModel">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="spalartAllmaras"/>
+                                    <xs:enumeration value="kOmegaSST"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="spalartAllmarasOptions">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="lowReDamping" type="xs:boolean" default="false"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="DESOptions">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="delayedDES" type="xs:boolean" default="false"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="modelConstants">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="DES" type="inputNumberType" default="0.65"/>
+                                    <xs:element name="DESKOmega" type="inputNumberType" default="0.82"/>
+                                    <xs:element name="DESKEpsilon" type="inputNumberType" default="0.6"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="shieldingFunctions">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="DDES"/>
+                                    <xs:enumeration value="IDDES"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="lengthScaleModel">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="cubeRootVol"/>
+                                    <xs:enumeration value="vanDriest"/>
+                                    <xs:enumeration value="smooth"/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>

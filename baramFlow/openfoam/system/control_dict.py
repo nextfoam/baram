@@ -18,7 +18,7 @@ from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.material_db import MaterialDB, Phase
 from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceModelsDB
 from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.mesh.vtk_loader import isPointInDataSet
@@ -72,14 +72,14 @@ def _getAvailableFields():
         fields.append('p')
 
     # Fields depending on the turbulence model
-    turbulenceModel = ModelsDB.getTurbulenceModel()
-    if turbulenceModel == TurbulenceModel.K_EPSILON:
+    rasModel = TurbulenceModelsDB.getRASModel()
+    if rasModel == TurbulenceModel.K_EPSILON or TurbulenceModelsDB.isLESKEqnModel():
         fields.append('k')
         fields.append('epsilon')
-    elif turbulenceModel == TurbulenceModel.K_OMEGA:
+    elif rasModel == TurbulenceModel.K_OMEGA:
         fields.append('k')
         fields.append('omega')
-    elif turbulenceModel == TurbulenceModel.SPALART_ALLMARAS:
+    elif rasModel == TurbulenceModel.SPALART_ALLMARAS:
         fields.append('nuTilda')
 
     if ModelsDB.isEnergyModelOn():

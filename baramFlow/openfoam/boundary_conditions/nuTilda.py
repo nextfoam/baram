@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, SpalartAllmarasSpecification, InterfaceMode
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
+from baramFlow.coredb.models_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -17,7 +17,7 @@ class NuTilda(BoundaryCondition):
     def build0(self):
         self._data = None
 
-        if ModelsDB.getTurbulenceModel() == TurbulenceModel.SPALART_ALLMARAS and self._region.isFluid():
+        if TurbulenceModelsDB.getRASModel() == TurbulenceModel.SPALART_ALLMARAS and self._region.isFluid():
             self._data = {
                 'dimensions': self.DIMENSIONS,
                 'internalField': ('uniform', self._initialValue),
