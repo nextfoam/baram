@@ -349,29 +349,32 @@ class ControlDict(DictionaryFile):
                 'log': 'false',
             }
 
-        data = {
-            'type': 'probes',
-            'libs': [_libPath('libsampling')],
-
-            'fields': [field],
-            'probeLocations': [self._db.getVector(xpath + '/coordinate')],
-
-            'writeControl': 'timeStep',
-            'writeInterval': self._db.getValue(xpath + '/writeInterval'),
-            'updateHeader': 'false',
-            'log': 'false',
-        }
-
-        if region := self._db.getValue(xpath + '/region'):
-            data['region'] = region
+            if rname := self._db.getValue(xpath + '/region'):
+                data['region'] = rname
         else:
-            regions = self._db.getRegions()
-            if len(regions) > 1:
-                for rname in regions:
-                    if isPointInDataSet(coordinate, app.internalMeshActor(rname).dataSet):
-                        self._db.setValue(xpath + '/region', rname)
-                        data['region'] = rname
-                        break
+            data = {
+                'type': 'probes',
+                'libs': [_libPath('libsampling')],
+
+                'fields': [field],
+                'probeLocations': [self._db.getVector(xpath + '/coordinate')],
+
+                'writeControl': 'timeStep',
+                'writeInterval': self._db.getValue(xpath + '/writeInterval'),
+                'updateHeader': 'false',
+                'log': 'false',
+            }
+
+            if region := self._db.getValue(xpath + '/region'):
+                data['region'] = region
+            else:
+                regions = self._db.getRegions()
+                if len(regions) > 1:
+                    for rname in regions:
+                        if isPointInDataSet(coordinate, app.internalMeshActor(rname).dataSet):
+                            self._db.setValue(xpath + '/region', rname)
+                            data['region'] = rname
+                            break
 
         return data
 
