@@ -70,7 +70,6 @@ class TurbulenceModelDialog(ResizableDialog):
         self._LESLengthScaleModelRadios.addEnumButton(self._ui.LESSmooth, LengthScaleModel.SMOOTH)
 
         self._ui.LES.setEnabled(GeneralDB.isTimeTransient())
-        # self._ui.LES.setEnabled(False)
 
         self._connectSignalsSlots()
         self._load()
