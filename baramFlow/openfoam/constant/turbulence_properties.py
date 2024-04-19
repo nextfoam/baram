@@ -90,12 +90,12 @@ class TurbulenceProperties(DictionaryFile):
 
     def _constructDESProperties(self):
         ransModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/RANSModel')
-        delta = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/lengthScaleModel')
+        lengthScaleModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/lengthScaleModel')
 
         if self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/DESOptions/delayedDES') == 'true':
             shieldingFunctions = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/shieldingFunctions')
             if shieldingFunctions == ShieldingFunctions.IDDES.value:
-                delta = 'IDDESDelta'
+                lengthScaleModel = 'IDDESDelta'
         else:
             shieldingFunctions = 'DES'
 
@@ -103,8 +103,8 @@ class TurbulenceProperties(DictionaryFile):
             'simulationType': 'LES',
             'LES': {
                 'turbulence': 'on',
+                'delta': lengthScaleModel,
             },
-            'delta': delta
         }
 
         LESModel = None
@@ -127,10 +127,33 @@ class TurbulenceProperties(DictionaryFile):
 
         self._data['LES']['LESModel'] = LESModel
 
-        if delta == 'IDDESDelta':
+        if lengthScaleModel == 'IDDESDelta':
             self._data['LES']['IDDESDeltaCoeffs'] = {
                 'hmax': 'maxDeltaxyzCubeRoot',
                 'maxDeltaxyzCubeRootCoeffs': {}
+            }
+        elif lengthScaleModel == LengthScaleModel.VAN_DRIEST.value:
+            self._data['LES']['vanDriestCoeffs'] = {
+                'delta': 'cubeRootVol',
+                'cubeRootVolCoeffs': {
+                    'deltaCoeff': 2.0,
+                },
+                'kappa': 0.41,
+                'Aplus': 26,
+                'Cdelta': 0.158,
+                'calcInterval': 1
+            }
+        elif lengthScaleModel == LengthScaleModel.CUBE_ROOT_VOLUME.value:
+            self._data['LES']['cubeRootVolCoeffs'] = {
+                'deltaCoeff': 1
+            }
+        elif lengthScaleModel == LengthScaleModel.SMOOTH.value:
+            self._data['LES']['smoothCoeffs'] = {
+                'delta': 'cubeRootVol',
+                'cubeRootVolCoeffs': {
+                    'deltaCoeff': 1,
+                },
+                'maxDeltaRatio': 1.1
             }
 
     def _constructLESProperties(self):
