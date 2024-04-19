@@ -8,7 +8,7 @@ from libbaram.simple_db.simple_schema import DBError
 from widgets.async_message_box import AsyncMessageBox
 
 from baramMesh.app import app
-from baramMesh.db.configurations_schema import GeometryType
+from baramMesh.db.configurations_schema import GeometryType, GapRefinementMode
 from baramMesh.view.widgets.multi_selector_dialog import MultiSelectorDialog
 from baramMesh.view.widgets.multi_selector_dialog import SelectorItem
 from .volume_refinement_dialog_ui import Ui_VolumeeRefinementDialog
@@ -32,6 +32,12 @@ class VolumeRefinementDialog(QDialog):
         self._oldVolumes = None
         self._groupId = groupId
         self._availableVolumes = None
+
+        self._ui.direction.addEnumItems({
+            GapRefinementMode.INSIDE:   self.tr('Inside'),
+            GapRefinementMode.OUTSIDE:  self.tr('Outside'),
+            GapRefinementMode.MIXED:    self.tr('Mixed')
+        })
 
         self._connectSignalsSlots()
 
@@ -70,6 +76,31 @@ class VolumeRefinementDialog(QDialog):
             self._dbElement.setValue('volumeRefinementLevel', self._ui.volumeRefinementLevel.text(),
                                      self.tr('Volume Refinement Level'))
 
+            if self._ui.gapRefinement.isChecked():
+                try:
+                    minCells = int(self._ui.minCellLayers.text())
+                    maxLevel = int(self._ui.maxRefinementLevel.text())
+
+                    if minCells > maxLevel:
+                        await AsyncMessageBox().information(
+                            self, self.tr('Input Error'),
+                            self.tr('Maximum Refinement Level must be greater than Minimum Cell Layers in a gap.'))
+
+                        return
+                except ValueError:
+                    pass
+
+                self._dbElement.setValue('gapRefinement/minCellLayers', self._ui.minCellLayers.text(),
+                                         self.tr('Min. Cell Layers in a gap'))
+                self._dbElement.setValue('gapRefinement/detectionStartLevel', self._ui.detectionStartLevel.text(),
+                                         self.tr('Gap Ditection Start Level'))
+                self._dbElement.setValue('gapRefinement/maxRefinementLevel', self._ui.maxRefinementLevel.text(),
+                                         self.tr('Max. Refinement Level'))
+                self._dbElement.setValue('gapRefinement/direction', self._ui.direction.currentValue())
+                self._dbElement.setValue('gapRefinement/gapSelf', self._ui.gapSelf.isChecked())
+            else:
+                self._dbElement.setValue('gapRefinement/direction', GapRefinementMode.NONE)
+
             if self._groupId:
                 self._db.commit(self._dbElement)
             else:
@@ -106,6 +137,15 @@ class VolumeRefinementDialog(QDialog):
 
         self._ui.groupName.setText(name)
         self._ui.volumeRefinementLevel.setText(self._dbElement.getValue('volumeRefinementLevel'))
+
+        direction = self._dbElement.getEnum('gapRefinement/direction')
+        self._ui.gapRefinement.setChecked(direction != GapRefinementMode.NONE)
+        self._ui.minCellLayers.setText(self._dbElement.getValue('gapRefinement/minCellLayers'))
+        self._ui.detectionStartLevel.setText(self._dbElement.getValue('gapRefinement/detectionStartLevel'))
+        self._ui.maxRefinementLevel.setText(self._dbElement.getValue('gapRefinement/maxRefinementLevel'))
+        if direction != GapRefinementMode.NONE:
+            self._ui.direction.setCurrentData(direction)
+        self._ui.gapSelf.setChecked(self._dbElement.getValue('gapRefinement/gapSelf'))
 
         self._volumes = []
         self._availableVolumes = []

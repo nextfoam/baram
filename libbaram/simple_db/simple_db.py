@@ -117,14 +117,7 @@ class SimpleDB(SimpleSchema):
         if not isinstance(schema[field], EnumType):
             raise LookupError
 
-        return schema[field].valueToEnum(db[field])
-
-    def getEnumValue(self, path):
-        schema, db, field = self._get(path)
-        if not isinstance(schema[field], EnumType):
-            raise LookupError
-
-        return schema[field].enumValue(db[field])
+        return schema[field].toEnum(db[field])
 
     def setValue(self, path, value, name=None):
         if not self._editable:

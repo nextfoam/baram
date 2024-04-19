@@ -8,7 +8,7 @@ from libbaram.simple_db.simple_schema import FloatType, IntKeyList, EnumType, In
 from libbaram.simple_db.simple_schema import VectorComposite
 
 
-CURRENT_CONFIGURATIONS_VERSION = 2
+CURRENT_CONFIGURATIONS_VERSION = 3
 CONFIGURATIONS_VERSION_KEY = 'version'
 
 
@@ -73,6 +73,13 @@ class FeatureSnapType(Enum):
     IMPLICIT = 'implicit'
 
 
+class GapRefinementMode(Enum):
+    NONE = 'none'
+    INSIDE = 'inside'
+    OUTSIDE = 'outside'
+    MIXED = 'mixed'
+
+
 geometry = {
     'gType': EnumType(GeometryType),
     'volume': IntType().setOptional(),
@@ -107,7 +114,14 @@ surfaceRefinement = {
 
 volumeRefinement = {
     'groupName': TextType(),
-    'volumeRefinementLevel': PositiveIntType().setDefault(1)
+    'volumeRefinementLevel': PositiveIntType().setDefault(1),
+    'gapRefinement': {
+        'minCellLayers': IntType().setDefault(4).setLowLimit(3, False),
+        'detectionStartLevel': PositiveIntType().setDefault(1),
+        'maxRefinementLevel': PositiveIntType().setDefault(2),
+        'direction': EnumType(GapRefinementMode),
+        'gapSelf': BoolType(True)
+    }
 }
 
 layer = {

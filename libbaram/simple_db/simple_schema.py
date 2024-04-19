@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 from enum import Enum, auto
 
 
@@ -123,7 +122,7 @@ class EnumType(PrimitiveType):
     def __init__(self, enumClass):
         super().__init__()
         self._cls = enumClass
-        self._values = [e.value for e in enumClass]
+        self._values = {e.value: e for e in enumClass if isinstance(e.value, str) or isinstance(e.value, int)}
         self.setDefault(list(enumClass)[0])
 
     def validate(self, value, name=None):
@@ -141,11 +140,8 @@ class EnumType(PrimitiveType):
 
         raise DBError(ErrorType.EnumError, f'Only {self._cls} are allowed.', name)
 
-    def valueToEnum(self, value):
-        return self._cls(value) if isinstance(value, self._cls) else self._cls[value]
-
-    def enumValue(self, value):
-        return value if isinstance(value, self._cls) else self._cls[value].value
+    def toEnum(self, value):
+        return self._values.get(value) or self._cls[value]
 
 
 class FloatType(PrimitiveType):
@@ -170,7 +166,7 @@ class FloatType(PrimitiveType):
     def validate(self, value, name=None):
         value = super().validate(value, name)
 
-        if value is None or value == '':
+        if value is None:
             return None
 
         try:
@@ -188,7 +184,7 @@ class FloatType(PrimitiveType):
         return value
 
 
-class IntType(PrimitiveType):
+class IntType(FloatType):
     def __init__(self):
         super().__init__()
         self._default = '0'
@@ -196,7 +192,7 @@ class IntType(PrimitiveType):
     def validate(self, value, name=None):
         value = super().validate(value, name)
 
-        if value is None or value == '':
+        if value is None:
             return None
 
         try:

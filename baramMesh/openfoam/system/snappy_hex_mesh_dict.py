@@ -6,6 +6,7 @@ from libbaram.simple_db.simple_db import elementToVector
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType, ThicknessModel, FeatureSnapType
+from baramMesh.db.configurations_schema import GapRefinementMode
 
 
 def boolToText(value):
@@ -270,8 +271,17 @@ class SnappyHexMeshDict(DictionaryFile):
             for volume in volumes[group]:
                 data[volume['name']] = {
                     'mode': 'inside',
-                    'levels': [[1E15, refinement['volumeRefinementLevel']]]
+                    'levels': [[1E15, refinement['volumeRefinementLevel']]],
                 }
+
+                gapMode = refinement['gapRefinement']['direction']
+                if gapMode != GapRefinementMode.NONE.value:
+                    data[volume['name']]['gapLevel'] = [
+                        refinement['gapRefinement']['minCellLayers'],
+                        refinement['gapRefinement']['detectionStartLevel'],
+                        refinement['gapRefinement']['maxRefinementLevel']]
+                    data[volume['name']]['gapMode'] = gapMode
+                    data[volume['name']]['gapSelf'] = 'true' if refinement['gapRefinement']['gapSelf'] else 'false'
 
         return data
 

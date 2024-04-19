@@ -72,7 +72,7 @@ class StepManager(QObject):
         for page in self._pages.values():
             page.unload()
 
-        savedStep = app.db.getEnumValue('step')
+        savedStep = app.db.getEnum('step')
 
         step = Step.GEOMETRY
         while step < savedStep and self._pages[step].isNextStepAvailable():
