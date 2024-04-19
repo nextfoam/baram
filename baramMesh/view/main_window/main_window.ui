@@ -2168,7 +2168,7 @@
                   <item>
                    <widget class="QPushButton" name="export_">
                     <property name="text">
-                     <string>Export</string>
+                     <string>Export as BaramFlow project</string>
                     </property>
                    </widget>
                   </item>

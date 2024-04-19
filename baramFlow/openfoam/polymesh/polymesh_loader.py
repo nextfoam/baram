@@ -12,6 +12,7 @@ from vtkmodules.vtkIOParallel import vtkPOpenFOAMReader
 from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA, vtkCommand
 
+from baramFlow.coredb.general_db import GeneralDB
 from libbaram.openfoam.constants import Directory
 
 from baramFlow.app import app
@@ -225,6 +226,12 @@ class PolyMeshLoader(QObject):
 
         for rname in boundaries:
             db.addRegion(rname)
+
+            # Initial value of "0" for pressure in density-based solvers causes trouble by making density zero
+            # because operating pressure is fixed to "0" for density-based solvers
+            if GeneralDB.isDensityBased():
+                pressurePath = f'.//regions/region[name="{rname}"]/initialization/initialValues/pressure'
+                db.setValue(pressurePath, '101325')
 
             for bcname in vtkMesh[rname]['boundary']:
                 boundary = boundaries[rname][bcname]
