@@ -62,9 +62,10 @@ class GeneralPage(ContentPage):
                     if confirm == QMessageBox.StandardButton.Yes:
                         FileSystem.latestTimeToZero()
             else:
-                if ModelsDB.getTurbulenceModel() == TurbulenceModel.LES:
+                if ModelsDB.getTurbulenceModel() == TurbulenceModel.LES \
+                        or ModelsDB.getTurbulenceModel() == TurbulenceModel.DES:
                     await AsyncMessageBox().information(self, self.tr('Configurations Not Available'),
-                                                        self.tr('Steady mode is not available on LES models.'))
+                                                        self.tr('Steady mode is not available on LES/DES models.'))
 
                     return False
 
