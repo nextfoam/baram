@@ -190,11 +190,14 @@ class GeometryPage(StepPage):
                 added = []
 
                 db = app.db.checkout()
-                name = path.stem.replace(' ', '_')
+                fileName = path.stem.replace(' ', '_')
                 seq = ''
-                for volume in volumes:
-                    seq = getUniqueSeq(name, seq)
-                    volumeName = f'{name}{seq}'
+                for volume, vSolidName in volumes:
+                    if vSolidName:
+                        volumeName = vSolidName + getUniqueSeq(vSolidName, '')
+                    else:
+                        seq = getUniqueSeq(fileName, seq)
+                        volumeName = fileName + seq
                     element = db.newElement('geometry')
                     element.setValue('gType', GeometryType.VOLUME)
                     element.setValue('name', volumeName)
@@ -203,24 +206,32 @@ class GeometryPage(StepPage):
                     volumeId = db.addElement('geometry', element)
                     added.append(volumeId)
 
-                    surfaceName = f'{volumeName}_surface_'
+                    sName = f'{volumeName}_surface_'
                     sseq = '0'
-                    for polyData in volume:
-                        sseq = db.getUniqueSeq('geometry', 'name', surfaceName, sseq)
+                    for polyData, sSolidName in volume:
+                        if sSolidName:
+                            surfaceName = sSolidName + getUniqueSeq(sSolidName, '')
+                        else:
+                            sseq = db.getUniqueSeq('geometry', 'name', sName, sseq)
+                            surfaceName = sName + getUniqueSeq(sName, sseq)
                         element = db.newElement('geometry')
                         element.setValue('gType', GeometryType.SURFACE.value)
                         element.setValue('volume', volumeId)
-                        element.setValue('name', f'{surfaceName}{sseq}')
+                        element.setValue('name', surfaceName)
                         element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
                         element.setValue('cfdType', CFDType.BOUNDARY.value)
                         element.setValue('path', db.addGeometryPolyData(polyData))
                         db.addElement('geometry', element)
 
-                for polyData in surfaces:
-                    seq = getUniqueSeq(name, seq)
+                for polyData, sSolidName in surfaces:
+                    if sSolidName:
+                        surfaceName = sSolidName + getUniqueSeq(sSolidName, '')
+                    else:
+                        seq = getUniqueSeq(fileName, seq)
+                        surfaceName = fileName + seq
                     element = db.newElement('geometry')
                     element.setValue('gType', GeometryType.SURFACE.value)
-                    element.setValue('name', f'{name}{seq}')
+                    element.setValue('name', surfaceName)
                     element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
                     element.setValue('cfdType', CFDType.BOUNDARY.value)
                     element.setValue('path', db.addGeometryPolyData(polyData))

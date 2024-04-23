@@ -53,12 +53,13 @@ class STLFileLoader:
 
         appendFilter = vtkAppendPolyData()
 
-        for solid in solids:
+        for data in solids:
+            solid, name = data
             if vtkSelectEnclosedPoints.IsSurfaceClosed(solid):
                 if solid.GetNumberOfPoints() > 0:
-                    volumes.append([solid])
+                    volumes.append(([data], None))
             else:
-                surfaces.append(solid)
+                surfaces.append(data)
                 appendFilter.AddInputData(solid)
 
         if surfaces:
@@ -66,7 +67,7 @@ class STLFileLoader:
             cleanFilter.SetInputConnection(appendFilter.GetOutputPort())
             cleanFilter.Update()
             if vtkSelectEnclosedPoints.IsSurfaceClosed(cleanFilter.GetOutput()):
-                volumes.append(surfaces)
+                volumes.append((surfaces, None))
                 surfaces = []
 
         return volumes, surfaces

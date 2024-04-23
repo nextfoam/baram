@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor, vtkFollower
+from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkActor, vtkFollower
 from vtkmodules.vtkCommonCore import vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkHexahedron, vtkCellArray, vtkUnstructuredGrid, vtkPolygon, vtkPolyData
 from vtkmodules.vtkCommonDataModel import vtkDataObject
-from vtkmodules.vtkRenderingLOD import vtkQuadricLODActor
 from vtkmodules.vtkFiltersSources import vtkLineSource, vtkSphereSource
 from vtkmodules.vtkFiltersCore import vtkTubeFilter, vtkThreshold, vtkFeatureEdges
 from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
@@ -25,10 +24,11 @@ def loadSTLFile(path):
         return [ds]
 
     # ASCII STL
+    names = reader.GetHeader().split()
 
     minSolid, maxSolid = ds.GetCellData().GetScalars('STLSolidLabeling').GetRange()
     if minSolid == maxSolid:
-        return [ds]
+        return [(ds, names[0] if names else None)]
 
     solids = []
     for solid in range(int(minSolid), int(maxSolid) + 1):
@@ -43,7 +43,7 @@ def loadSTLFile(path):
         geometryFilter = vtkGeometryFilter()
         geometryFilter.SetInputData(threshold.GetOutput())
         geometryFilter.Update()
-        solids.append(geometryFilter.GetOutput())
+        solids.append((geometryFilter.GetOutput(), names[solid] if solid < len(names) else None))
 
     return solids
 
