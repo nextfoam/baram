@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .configurations_schema import CURRENT_CONFIGURATIONS_VERSION, CONFIGURATIONS_VERSION_KEY
-from .configurations_schema import FeatureSnapType
+from .configurations_schema import FeatureSnapType, GapRefinementMode
 
 
 def _to_v1(data):
@@ -27,9 +27,23 @@ def _to_v2(data):
         data['snap']['minAreaRatio'] = value
 
 
+def _to_v3(data):
+    for refinementVolumes in data['castellation']['refinementVolumes'].values():
+        if 'gapRefinement' not in refinementVolumes:
+            refinementVolumes['gapRefinement'] = {
+                'minCellLayers': '4',
+                'detectionStartLevel': '1',
+                'maxRefinementLevel': '2',
+                'direction': GapRefinementMode.NONE,
+                'gapSelf': True
+            }
+
+
 _migrates = {
     0: _to_v1,
     1: _to_v2,
+    2: _to_v3,
+    3: _to_v3,
 }
 
 
