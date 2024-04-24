@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from PySide6.QtWidgets import QMessageBox
 
+from libbaram.exception import CanceledException
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
 from libbaram.simple_db.simple_schema import DBError
+from widgets.async_message_box import AsyncMessageBox
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import CFDType, FeatureSnapType
@@ -21,7 +22,7 @@ class SnapPage(StepPage):
     def __init__(self, ui):
         super().__init__(ui, ui.snapPage)
 
-        self._processor = None
+        self._cm = None
 
         self._ui.featureSnapType.addEnumItems({
             FeatureSnapType.EXPLICIT: self.tr('explicit'),
@@ -30,13 +31,13 @@ class SnapPage(StepPage):
 
         self._connectSignalsSlots()
 
-    def selected(self):
+    async def selected(self):
         if not self._loaded:
             self._load()
 
         self._updateMesh()
 
-    def save(self):
+    async def save(self):
         try:
             db = app.db.checkout('snap')
 
@@ -57,7 +58,7 @@ class SnapPage(StepPage):
 
             return True
         except DBError as e:
-            QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
+            await AsyncMessageBox().information(self._widget, self.tr("Input Error"), e.toMessage())
 
             return False
 
@@ -83,13 +84,14 @@ class SnapPage(StepPage):
 
     @qasync.asyncSlot()
     async def _snap(self):
-        if self._processor:
-            self._processor.cancel()
+        if self._cm:
+            self._cm.cancel()
             return
 
         buttonText = self._ui.snap.text()
+
         try:
-            if not self.save():
+            if not await self.save():
                 return
 
             self._ui.snapContents.setEnabled(False)
@@ -107,60 +109,60 @@ class SnapPage(StepPage):
             else:
                 snapDict.updateForCellZoneInterfacesSnap().write()
 
-            cm = RunParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=parallel)
-            cm.output.connect(console.append)
-            cm.errorOutput.connect(console.appendError)
-            await cm.start()
-            rc = await cm.wait()
+            self._cm = RunParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=parallel)
+            self._cm.output.connect(console.append)
+            self._cm.errorOutput.connect(console.appendError)
+            await self._cm.start()
+            rc = await self._cm.wait()
             if rc != 0:
                 raise ProcessError
 
             if app.db.elementCount('region') > 1:
                 TopoSetDict().build(TopoSetDict.Mode.CREATE_REGIONS).write()
 
-                cm = RunParallelUtility('topoSet', cwd=app.fileSystem.caseRoot(), parallel=parallel)
-                cm.output.connect(console.append)
-                cm.errorOutput.connect(console.appendError)
-                await cm.start()
-                rc = await cm.wait()
+                self._cm = RunParallelUtility('topoSet', cwd=app.fileSystem.caseRoot(), parallel=parallel)
+                self._cm.output.connect(console.append)
+                self._cm.errorOutput.connect(console.appendError)
+                await self._cm.start()
+                rc = await self._cm.wait()
                 if rc != 0:
                     raise ProcessError
 
                 if app.db.elementCount('geometry', lambda i, e: e['cfdType'] == CFDType.CELL_ZONE.value):
                     snapDict.updateForCellZoneInterfacesSnap().write()
 
-                    cm = RunParallelUtility('snappyHexMesh', '-overwrite', cwd=app.fileSystem.caseRoot(), parallel=parallel)
-                    cm.output.connect(console.append)
-                    cm.errorOutput.connect(console.appendError)
-                    await cm.start()
-                    rc = await cm.wait()
+                    self._cm = RunParallelUtility('snappyHexMesh', '-overwrite', cwd=app.fileSystem.caseRoot(), parallel=parallel)
+                    self._cm.output.connect(console.append)
+                    self._cm.errorOutput.connect(console.appendError)
+                    await self._cm.start()
+                    rc = await self._cm.wait()
                     if rc != 0:
                         raise ProcessError
 
-            cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
+            self._cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
                                     cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
-            cm.output.connect(console.append)
-            cm.errorOutput.connect(console.appendError)
-            await cm.start()
-            await cm.wait()
+            self._cm.output.connect(console.append)
+            self._cm.errorOutput.connect(console.appendError)
+            await self._cm.start()
+            await self._cm.wait()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()
 
-            QMessageBox.information(self._widget, self.tr('Complete'), self.tr('Snapping is completed.'))
+            await AsyncMessageBox().information(self._widget, self.tr('Complete'), self.tr('Snapping is completed.'))
         except ProcessError as e:
             self.clearResult()
-
-            if self._processor.isCanceled():
-                QMessageBox.information(self._widget, self.tr('Canceled'), self.tr('Snapping has been canceled.'))
-            else:
-                QMessageBox.information(self._widget, self.tr('Error'),
-                                        self.tr('Snapping Failed. [') + str(e.returncode) + ']')
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Snapping Failed. [') + str(e.returncode) + ']')
+        except CanceledException:
+            self.clearResult()
+            await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
+                                                self.tr('Snapping has been canceled.'))
         finally:
             self._ui.snapContents.setEnabled(True)
             self._enableControlsForSettings()
             self._ui.snap.setText(buttonText)
-            self._processor = None
+            self._cm = None
 
     def _reset(self):
         self._showPreviousMesh()

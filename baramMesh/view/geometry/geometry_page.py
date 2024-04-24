@@ -63,7 +63,7 @@ class GeometryPage(StepPage):
     def isNextStepAvailable(self):
         return not app.window.geometryManager.isEmpty()
 
-    def selected(self):
+    async def selected(self):
         if not self._loaded:
             self._geometryManager = app.window.geometryManager
             self._list.setGeometries(self._geometryManager.geometries())
@@ -288,7 +288,7 @@ class GeometryPage(StepPage):
 
         self._geometryManager.clearSyncingFromDisplay()
 
-    def _enableEdit(self):
+    def _enableStep(self):
         if self._geometryManager is not None:
             self._geometryManager.startSyncingFromDisplay()
 
@@ -297,7 +297,7 @@ class GeometryPage(StepPage):
         self._volumeDialog.enableEdit()
         self._surfaceDialog.enableEdit()
 
-    def _disableEdit(self):
+    def _disableStep(self):
         # self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self._ui.buttons.setEnabled(False)
         self._volumeDialog.disableEdit()

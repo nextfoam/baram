@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from PySide6.QtWidgets import QMessageBox
 
+from libbaram.exception import CanceledException
 from libbaram.run import RunParallelUtility
 from libbaram.process import ProcessError
 from libbaram.simple_db.simple_schema import DBError
+from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
@@ -25,7 +26,7 @@ class BoundaryLayerPage(StepPage):
         self._ui = ui
         self._dialog = None
         self._db = None
-        self._processor = None
+        self._cm = None
 
         ui.boundaryLayerConfigurationsHeader.setContents(ui.boundaryLayerConfigurations)
         ui.boundaryLayerConfigurations.setBackgroundColor()
@@ -38,14 +39,14 @@ class BoundaryLayerPage(StepPage):
     def open(self):
         self._load()
 
-    def selected(self):
+    async def selected(self):
         if not self._loaded:
             self._load()
 
         self._updateControlButtons()
         self._updateMesh()
 
-    def save(self):
+    async def save(self):
         try:
             addLayer = app.db.checkout('addLayers')
 
@@ -73,7 +74,7 @@ class BoundaryLayerPage(StepPage):
 
             return True
         except DBError as e:
-            QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
+            await AsyncMessageBox().information(self._widget, self.tr("Input Error"), e.toMessage())
 
             return False
 
@@ -129,13 +130,13 @@ class BoundaryLayerPage(StepPage):
 
     @qasync.asyncSlot()
     async def _apply(self):
-        if self._processor:
-            self._processor.cancel()
+        if self._cm:
+            self._cm.cancel()
             return
 
         buttonText = self._ui.boundaryLayerApply.text()
         try:
-            if not self.save():
+            if not await self.save():
                 return
 
             self._disableEdit()
@@ -154,41 +155,41 @@ class BoundaryLayerPage(StepPage):
 
                 progressDialog.close()
 
-                cm = RunParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
-                cm.output.connect(console.append)
-                cm.errorOutput.connect(console.appendError)
-                await cm.start()
-                rc = await cm.wait()
+                self._cm = RunParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
+                self._cm.output.connect(console.append)
+                self._cm.errorOutput.connect(console.appendError)
+                await self._cm.start()
+                rc = await self._cm.wait()
                 if rc != 0:
                     raise ProcessError
 
-                cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
+                self._cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
                                         cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
-                cm.output.connect(console.append)
-                cm.errorOutput.connect(console.appendError)
-                await cm.start()
-                await cm.wait()
+                self._cm.output.connect(console.append)
+                self._cm.errorOutput.connect(console.appendError)
+                await self._cm.start()
+                await self._cm.wait()
             else:
                 self.createOutputPath()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()
 
-            QMessageBox.information(self._widget, self.tr('Complete'), self.tr('Boundary layers are applied.'))
+            await AsyncMessageBox().information(self._widget, self.tr('Complete'),
+                                                self.tr('Boundary layers are applied.'))
         except ProcessError as e:
             self.clearResult()
-
-            if self._processor.isCanceled():
-                QMessageBox.information(self._widget, self.tr('Canceled'),
-                                        self.tr('Boundary layers application has been canceled.'))
-            else:
-                QMessageBox.information(self._widget, self.tr('Error'),
-                                        self.tr('Failed to apply boundary layers. [') + str(e.returncode) + ']')
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Failed to apply boundary layers. [') + str(e.returncode) + ']')
+        except CanceledException:
+            self.clearResult()
+            await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
+                                                self.tr('Boundary layers application has been canceled.'))
         finally:
             self._enableEdit()
             self._enableControlsForSettings()
             self._ui.boundaryLayerApply.setText(buttonText)
-            self._processor = None
+            self._cm = None
 
     def _reset(self):
         self._showPreviousMesh()
@@ -234,14 +235,20 @@ class BoundaryLayerPage(StepPage):
             self._ui.boundaryLayerReset.hide()
             self._setNextStepEnabled(False)
 
+    def _enableStep(self):
+        self._enableEdit()
+        self._ui.boundaryLayerButtons.setEnabled(True)
+
+    def _disableStep(self):
+        self._disableEdit()
+        self._ui.boundaryLayerButtons.setEnabled(False)
+
     def _enableEdit(self):
         self._ui.boundaryLayerConfigurationsAdd.setEnabled(True)
         self._ui.boundaryLayerConfigurations.enableEdit()
         self._ui.boundaryLayerAdvancedConfiguration.setEnabled(True)
-        self._ui.boundaryLayerButtons.setEnabled(True)
 
     def _disableEdit(self):
         self._ui.boundaryLayerConfigurationsAdd.setEnabled(False)
         self._ui.boundaryLayerConfigurations.disableEdit()
         self._ui.boundaryLayerAdvancedConfiguration.setEnabled(False)
-        self._ui.boundaryLayerButtons.setEnabled(False)

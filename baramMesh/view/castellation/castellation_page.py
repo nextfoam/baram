@@ -8,12 +8,13 @@ from vtkmodules.vtkCommonDataModel import vtkPlane
 from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges, vtkPolyDataPlaneCutter, \
     vtkTriangleFilter
 from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
-from PySide6.QtWidgets import QMessageBox
 
+from libbaram.exception import CanceledException
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
 from libbaram.simple_db.simple_db import elementToVector
 from libbaram.simple_db.simple_schema import DBError
+from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItemWithButtons
 from widgets.progress_dialog import ProgressDialog
 
@@ -91,7 +92,7 @@ class CastellationPage(StepPage):
         self._ui = ui
         self._db = None
         self._dialog = None
-        self._processor = None
+        self._cm = None
 
         ui.castellationConfigurationHeader.setContents(ui.castellationConfiguration)
         ui.castellationAdvancedHeader.setContents(ui.castellationAdvanced)
@@ -108,14 +109,14 @@ class CastellationPage(StepPage):
     def open(self):
         self._load()
 
-    def selected(self):
+    async def selected(self):
         if not self._loaded:
             self._load()
 
         self._updateControlButtons()
         self._updateMesh()
 
-    def save(self):
+    async def save(self):
         try:
             castellation = self._db.checkout('castellation')
 
@@ -140,7 +141,7 @@ class CastellationPage(StepPage):
 
             return True
         except DBError as e:
-            QMessageBox.information(self._widget, self.tr('Input Error'), e.toMessage())
+            await AsyncMessageBox().information(self._widget, self.tr('Input Error'), e.toMessage())
             return False
 
     def _connectSignalsSlots(self):
@@ -207,13 +208,13 @@ class CastellationPage(StepPage):
 
     @qasync.asyncSlot()
     async def _refine(self):
-        if self._processor:
-            self._processor.cancel()
+        if self._cm:
+            self._cm.cancel()
             return
 
         buttonText = self._ui.refine.text()
         try:
-            if not self.save():
+            if not await self.save():
                 return
 
             self._disableEdit()
@@ -238,38 +239,38 @@ class CastellationPage(StepPage):
             console = app.consoleView
             console.clear()
 
-            cm = RunParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
-            cm.output.connect(console.append)
-            cm.errorOutput.connect(console.appendError)
-            await cm.start()
-            rc = await cm.wait()
+            self._cm = RunParallelUtility('snappyHexMesh', cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
+            self._cm.output.connect(console.append)
+            self._cm.errorOutput.connect(console.appendError)
+            await self._cm.start()
+            rc = await self._cm.wait()
             if rc != 0:
                 raise ProcessError
 
-            cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
+            self._cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
                                     cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
-            cm.output.connect(console.append)
-            cm.errorOutput.connect(console.appendError)
-            await cm.start()
-            await cm.wait()
+            self._cm.output.connect(console.append)
+            self._cm.errorOutput.connect(console.appendError)
+            await self._cm.start()
+            await self._cm.wait()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()
 
-            QMessageBox.information(self._widget, self.tr('Complete'), self.tr('Castellation refinement is completed.'))
+            await AsyncMessageBox().information(self._widget, self.tr('Complete'), self.tr('Castellation refinement is completed.'))
         except ProcessError as e:
             self.clearResult()
-            if self._processor.isCanceled():
-                QMessageBox.information(self._widget, self.tr('Canceled'),
-                                        self.tr('Castellation refinement has been canceled.'))
-            else:
-                QMessageBox.information(self._widget, self.tr('Error'),
-                                        self.tr('Castellation refinement Failed. [') + str(e.returncode) + ']')
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Castellation refinement Failed. [') + str(e.returncode) + ']')
+        except CanceledException:
+            self.clearResult()
+            await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
+                                                self.tr('Castellation refinement has been canceled.'))
         finally:
             self._enableEdit()
             self._enableControlsForSettings()
             self._ui.refine.setText(buttonText)
-            self._processor = None
+            self._cm = None
 
     def _reset(self):
         self._showPreviousMesh()
@@ -376,6 +377,14 @@ class CastellationPage(StepPage):
             self._ui.castellationReset.hide()
             self._setNextStepEnabled(False)
 
+    def _enableStep(self):
+        self._enableEdit()
+        self._ui.castellationButtons.setEnabled(True)
+
+    def _disableStep(self):
+        self._disableEdit()
+        self._ui.castellationButtons.setEnabled(False)
+
     def _enableEdit(self):
         self._ui.castellationConfiguration.setEnabled(True)
         self._ui.castellationAdvanced.setEnabled(True)
@@ -383,7 +392,6 @@ class CastellationPage(StepPage):
         self._ui.surfaceRefinement.enableEdit()
         self._ui.volumeRefinementAdd.setEnabled(True)
         self._ui.volumeRefinement.enableEdit()
-        self._ui.castellationButtons.setEnabled(True)
 
     def _disableEdit(self):
         self._ui.castellationConfiguration.setEnabled(False)
@@ -392,4 +400,3 @@ class CastellationPage(StepPage):
         self._ui.surfaceRefinement.disableEdit()
         self._ui.volumeRefinementAdd.setEnabled(False)
         self._ui.volumeRefinement.disableEdit()
-        self._ui.castellationButtons.setEnabled(False)

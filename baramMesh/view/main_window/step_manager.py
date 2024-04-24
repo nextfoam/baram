@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
 from PySide6.QtCore import QObject, Signal
 
 from libbaram.utils import rmtree
@@ -130,11 +131,12 @@ class StepManager(QObject):
         self._setOpendedStep(step)
         self._navigation.setCurrentStep(self._openedStep)
 
-    def _moveToStep(self, step, prev):
+    @qasync.asyncSlot()
+    async def _moveToStep(self, step, prev):
         self._pages[prev].deselected()
 
         page = self._pages[step]
-        page.selected()
+        await page.selected()
         self._contentStack.setCurrentIndex(step)
 
         if self.isOpenedStep(step):

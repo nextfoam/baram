@@ -37,14 +37,14 @@ class BaseGridPage(StepPage):
         self._load()
         self._updatePage()
 
-    def selected(self):
+    async def selected(self):
         if not self._loaded:
             self._load()
 
         self._updatePage()
         self._updateMesh()
 
-    def save(self):
+    async def save(self):
         try:
             db = app.db.checkout('baseGrid')
 
@@ -161,7 +161,7 @@ class BaseGridPage(StepPage):
 
     @qasync.asyncSlot()
     async def _generate(self):
-        self.save()
+        await self.save()
 
         progressDialog = ProgressDialog(self._widget, self.tr('Base Grid Generating'))
         progressDialog.setLabelText(self.tr('Generating Block Mesh'))
