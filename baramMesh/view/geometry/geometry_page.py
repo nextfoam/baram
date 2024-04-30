@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
+
 import qasync
+
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMessageBox, QMenu
 from PySide6.QtCore import Signal
@@ -15,7 +18,8 @@ from .geometry import RESERVED_NAMES
 from .geometry_add_dialog import GeometryAddDialog
 from .geometry_import_dialog import ImportDialog
 from .geometry_list import GeometryList
-from .stl_file_loader import STLFileLoader
+from .split_dialog import SplitDialog
+from .stl_utility import StlImporter
 from .surface_dialog import SurfaceDialog
 from .volume_dialog import VolumeDialog
 
@@ -182,66 +186,66 @@ class GeometryPage(StepPage):
 
             return db.getUniqueSeq('geometry', 'name', name, seq)
 
+        if self._dialog.featureAngle():
+            splitDialog = SplitDialog(self._widget, self._dialog.files(), float(self._dialog.featureAngle()))
+            try:
+                volumes, surfaces = await splitDialog.show()
+            except asyncio.exceptions.CancelledError:
+                return
+        else:
+            stlImporter = StlImporter()
+            stlImporter.load(self._dialog.files())
+            volumes, surfaces = stlImporter.identifyVolumes()
+
         try:
-            for path in self._dialog.files():
-                loader = STLFileLoader()
-                volumes, surfaces = await loader.load(path, self._dialog.featureAngle())
+            added = []
 
-                added = []
+            db = app.db.checkout()
+            seq = ''
+            for volume in volumes:
+                name = volume[0].sName if volume[0].sName else volume[0].fName
+                seq = getUniqueSeq(name, seq)
+                volumeName = name + seq
+                element = db.newElement('geometry')
+                element.setValue('gType', GeometryType.VOLUME)
+                element.setValue('name', volumeName)
+                element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
+                element.setValue('cfdType', CFDType.NONE.value)
+                volumeId = db.addElement('geometry', element)
+                added.append(volumeId)
 
-                db = app.db.checkout()
-                fileName = path.stem.replace(' ', '_')
-                seq = ''
-                for volume, vSolidName in volumes:
-                    if vSolidName:
-                        volumeName = vSolidName + getUniqueSeq(vSolidName, '')
-                    else:
-                        seq = getUniqueSeq(fileName, seq)
-                        volumeName = fileName + seq
-                    element = db.newElement('geometry')
-                    element.setValue('gType', GeometryType.VOLUME)
-                    element.setValue('name', volumeName)
-                    element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
-                    element.setValue('cfdType', CFDType.NONE.value)
-                    volumeId = db.addElement('geometry', element)
-                    added.append(volumeId)
-
-                    sName = f'{volumeName}_surface_'
-                    sseq = '0'
-                    for polyData, sSolidName in volume:
-                        if sSolidName:
-                            surfaceName = sSolidName + getUniqueSeq(sSolidName, '')
-                        else:
-                            sseq = db.getUniqueSeq('geometry', 'name', sName, sseq)
-                            surfaceName = sName + getUniqueSeq(sName, sseq)
-                        element = db.newElement('geometry')
-                        element.setValue('gType', GeometryType.SURFACE.value)
-                        element.setValue('volume', volumeId)
-                        element.setValue('name', surfaceName)
-                        element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
-                        element.setValue('cfdType', CFDType.BOUNDARY.value)
-                        element.setValue('path', db.addGeometryPolyData(polyData))
-                        db.addElement('geometry', element)
-
-                for polyData, sSolidName in surfaces:
-                    if sSolidName:
-                        surfaceName = sSolidName + getUniqueSeq(sSolidName, '')
-                    else:
-                        seq = getUniqueSeq(fileName, seq)
-                        surfaceName = fileName + seq
+                sName = f'{volumeName}_surface'
+                sseq = ''
+                for surface in volume:
+                    name = surface.sName if surface.sName and surface.sName != volumeName else sName
+                    sseq = db.getUniqueSeq('geometry', 'name', name, sseq)
+                    surfaceName = name + getUniqueSeq(name, sseq)
                     element = db.newElement('geometry')
                     element.setValue('gType', GeometryType.SURFACE.value)
+                    element.setValue('volume', volumeId)
                     element.setValue('name', surfaceName)
                     element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
                     element.setValue('cfdType', CFDType.BOUNDARY.value)
-                    element.setValue('path', db.addGeometryPolyData(polyData))
-                    gId = db.addElement('geometry', element)
-                    added.append(gId)
+                    element.setValue('path', db.addGeometryPolyData(surface.polyData))
+                    db.addElement('geometry', element)
 
-                app.db.commit(db)
+            for surface in surfaces:
+                name = surface.sName if surface.sName else surface.fName
+                seq = getUniqueSeq(name, seq)
+                surfaceName = name + seq
+                element = db.newElement('geometry')
+                element.setValue('gType', GeometryType.SURFACE.value)
+                element.setValue('name', surfaceName)
+                element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
+                element.setValue('cfdType', CFDType.BOUNDARY.value)
+                element.setValue('path', db.addGeometryPolyData(surface.polyData))
+                gId = db.addElement('geometry', element)
+                added.append(gId)
 
-                for gId in added:
-                    self._geometryCreated(gId)
+            app.db.commit(db)
+
+            for gId in added:
+                self._geometryCreated(gId)
         except OpenFOAMError as ex:
             code, message = ex.args
             QMessageBox.information(self._widget, self.tr('STL Loading Error'), f'{message} [{code}]')

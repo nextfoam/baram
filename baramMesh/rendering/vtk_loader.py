@@ -4,48 +4,10 @@
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkActor, vtkFollower
 from vtkmodules.vtkCommonCore import vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkHexahedron, vtkCellArray, vtkUnstructuredGrid, vtkPolygon, vtkPolyData
-from vtkmodules.vtkCommonDataModel import vtkDataObject
 from vtkmodules.vtkFiltersSources import vtkLineSource, vtkSphereSource
-from vtkmodules.vtkFiltersCore import vtkTubeFilter, vtkThreshold, vtkFeatureEdges
+from vtkmodules.vtkFiltersCore import vtkTubeFilter, vtkFeatureEdges
 from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
-from vtkmodules.vtkIOGeometry import vtkSTLReader
 from vtkmodules.vtkRenderingFreeType import vtkVectorText
-
-
-def loadSTLFile(path):
-    reader: vtkSTLReader = vtkSTLReader()
-    reader.SetFileName(str(path))
-    reader.ScalarTagsOn()
-    reader.Update()
-
-    ds: vtkPolyData = reader.GetOutput()
-
-    if reader.GetBinaryHeader() is not None:  # BINARY STL
-        return [ds]
-
-    # ASCII STL
-    names = reader.GetHeader().split()
-
-    minSolid, maxSolid = ds.GetCellData().GetScalars('STLSolidLabeling').GetRange()
-    if minSolid == maxSolid:
-        return [(ds, names[0] if names else None)]
-
-    solids = []
-    for solid in range(int(minSolid), int(maxSolid) + 1):
-        threshold = vtkThreshold()
-        threshold.SetInputData(ds)
-        threshold.SetLowerThreshold(solid - 0.5)
-        threshold.SetUpperThreshold(solid + 0.5)
-        threshold.SetThresholdFunction(vtkThreshold.THRESHOLD_BETWEEN)
-        threshold.SetInputArrayToProcess(0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, 'STLSolidLabeling')
-        threshold.Update()
-
-        geometryFilter = vtkGeometryFilter()
-        geometryFilter.SetInputData(threshold.GetOutput())
-        geometryFilter.Update()
-        solids.append((geometryFilter.GetOutput(), names[solid] if solid < len(names) else None))
-
-    return solids
 
 
 def polyDataToActor(polyData):
