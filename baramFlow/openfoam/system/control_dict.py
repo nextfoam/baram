@@ -200,6 +200,7 @@ class ControlDict(DictionaryFile):
             'writeFormat': self._db.getValue(xpath + '/dataWriteFormat'),
             'writePrecision': self._db.getValue(xpath + '/dataWritePrecision'),
             'writeCompression': 'off',
+            'writeAtEnd': 'true',
             'timeFormat': 'general',
             'timePrecision': self._db.getValue(xpath + '/timePrecision'),
             'runTimeModifiable': 'yes',
