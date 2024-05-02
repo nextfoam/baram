@@ -37,7 +37,7 @@ class ChartWidget(QWidget):
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        self._canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        self._canvas = FigureCanvas(Figure(figsize=(5, 3), layout='tight'))
         self._canvas.mpl_connect('scroll_event', self._onScroll)
 
         layout.addWidget(self._canvas)
