@@ -63,7 +63,6 @@ class TurbulenceProperties(DictionaryFile):
                 'RASModel': subModel,
                 'turbulence': 'on',
                 'printCoeffs': 'on',
-                'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/energyPrandtlNumber')
             }
         }
 
@@ -76,6 +75,7 @@ class TurbulenceProperties(DictionaryFile):
 
         if hasABLInlet and self._model == TurbulenceModel.K_EPSILON:
             self._data['RAS']['kEpsilonCoeffs'] = {
+                'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/energyPrandtlNumber'),
                 'Cmu': 0.09,
                 'C1': 1.44,
                 'C2': 1.92,
