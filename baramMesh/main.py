@@ -6,12 +6,14 @@ import os
 import logging
 import asyncio
 
+import psutil
 import qasync
 from PySide6.QtWidgets import QApplication
 
 # To render SVG files.
 # noinspection PyUnresolvedReferences
 import PySide6.QtSvg
+from vtkmodules.vtkCommonCore import vtkSMPTools
 
 # To use ".qrc" QT Resource files
 # noinspection PyUnresolvedReferences
@@ -50,6 +52,13 @@ def main():
     }))
 
     os.environ["QT_SCALE_FACTOR"] = app.settings.getScale()
+
+    # Guess available cores, and leave 1 core for users
+    numCores = min(len(psutil.Process().cpu_affinity()), psutil.cpu_count(logical=False)) - 1
+
+    smp = vtkSMPTools()
+    smp.Initialize(numCores)
+    smp.SetBackend('STDThread')
 
     application = QApplication(sys.argv)
     app.qApplication = application
