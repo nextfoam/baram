@@ -43,6 +43,8 @@ class SplitDialog(QDialog):
 
         self._edgeActor = vtkActor()
         self._edgeActor.SetMapper(self._edgeMapper)
+        self._edgeActor.GetProperty().SetColor(vtkNamedColors().GetColor3d('White'))
+        self._edgeActor.GetProperty().SetLineWidth(2.0)
 
         self._view.addActor(self._edgeActor)
 
@@ -57,9 +59,7 @@ class SplitDialog(QDialog):
         self._regionActor.SetMapper(self._regionMapper)
         self._regionActor.GetProperty().SetOpacity(1)
         self._regionActor.GetProperty().SetRepresentationToSurface()
-        self._regionActor.GetProperty().EdgeVisibilityOn()
-        self._regionActor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Gray'))
-        self._regionActor.GetProperty().SetLineWidth(1.0)
+        self._regionActor.GetProperty().EdgeVisibilityOff()
 
         self._view.addActor(self._regionActor)
 
