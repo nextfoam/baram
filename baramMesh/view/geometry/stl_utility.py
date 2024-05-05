@@ -169,6 +169,8 @@ class StlImporter:
         regionedData.GetPointData().RemoveArray("pointId")
 
         self._surfaceList.clear()
+        segments = []
+        totalArea = conn.GetTotalArea()
         numRegions = conn.GetNumberOfExtractedRegions()
         for rid in range(0, numRegions):
             t = vtkThreshold()
@@ -195,13 +197,14 @@ class StlImporter:
             sIndex = polyData.GetCellData().GetAbstractArray("sIndex").GetValue(0)
             sName = self._stringIndices.getString(sIndex)
 
+            area = polyData.GetCellData().GetAbstractArray("CellRegionArea").GetValue(0)
+
             surface = StlSurface(polyData, fName, sName, sIndex)
             self._surfaceList.append(surface)
 
-        return len(self._surfaceList), regionedData, edges
+            segments.append((rid, (area / totalArea) * 100))
 
-    def getSurfaces(self):
-        return self._surfaceList
+        return segments, regionedData, edges
 
     def _loadSTLFile(self, path: Path):
         reader: vtkSTLReader = vtkSTLReader()

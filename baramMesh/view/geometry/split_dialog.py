@@ -6,16 +6,35 @@ from pathlib import Path
 from typing import Optional
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog
-from PySide6.QtGui import QDoubleValidator, QIntValidator
+from PySide6.QtWidgets import QDialog, QTreeWidgetItem, QLabel, QTreeWidget, QWidget, QHBoxLayout, QHeaderView
+from PySide6.QtGui import QColor, QDoubleValidator, QIntValidator
 
 from vtkmodules.vtkCommonColor import vtkNamedColors
+from vtkmodules.vtkCommonCore import vtkLookupTable
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkActor
 
 from baramMesh.view.geometry.split_dialog_ui import Ui_SplitDialog
 from baramMesh.view.geometry.stl_utility import StlImporter
 
-from widgets.turbo_colormap import turboLookupTable
+from libbaram.colormap import getLookupTable
+
+
+class SegmentItem(QTreeWidgetItem):
+    def __init__(self, parent: QTreeWidget, sid: int, color: QColor, area: float):
+        super().__init__(parent, [str(sid), None, f'{area:.3g}'])
+
+        self._colorWidget = QLabel()
+
+        self._colorWidget.setStyleSheet(
+            f'background-color: rgb({color.red()}, {color.green()}, {color.blue()}); border: 1px solid LightGrey; border-radius: 3px;')
+
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+        layout.setContentsMargins(9, 1, 9, 1)
+        layout.addWidget(self._colorWidget)
+
+        self._colorWidget.setMinimumSize(16, 16)
+        parent.setItemWidget(self, 1, widget)
 
 
 class SplitDialog(QDialog):
@@ -38,6 +57,10 @@ class SplitDialog(QDialog):
         self._ui.minAreaSlider.setRange(0, 100)
         self._ui.minAreaText.setValidator(QDoubleValidator(0, 100, -1))
 
+        self._ui.segments.header().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self._ui.segments.header().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self._ui.segments.header().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+
         self._edgeMapper = vtkPolyDataMapper()
         self._edgeMapper.ScalarVisibilityOff()
 
@@ -53,7 +76,8 @@ class SplitDialog(QDialog):
         self._regionMapper.SelectColorArray('RegionId')
         self._regionMapper.SetScalarModeToUseCellData()
         self._regionMapper.SetColorModeToMapScalars()
-        self._regionMapper.SetLookupTable(turboLookupTable)
+        lut = getLookupTable('rainbow')
+        self._regionMapper.SetLookupTable(lut)
 
         self._regionActor = vtkActor()
         self._regionActor.SetMapper(self._regionMapper)
@@ -114,9 +138,7 @@ class SplitDialog(QDialog):
         angle = float(self._ui.featureAngleText.text())
         minArea = float(self._ui.minAreaText.text()) / 100
 
-        numRegions, regionedData, edges = self._stlImporter.split(angle, minArea)
-
-        self._ui.numSegments.setText(f'{numRegions :,}')
+        segments, regionedData, edges = self._stlImporter.split(angle, minArea)
 
         self._edgeMapper.RemoveAllInputs()
         self._edgeMapper.SetInputData(edges)
@@ -124,10 +146,33 @@ class SplitDialog(QDialog):
 
         self._regionMapper.RemoveAllInputs()
         self._regionMapper.SetInputData(regionedData)
-        self._regionMapper.SetScalarRange(0, numRegions)
+        self._regionMapper.SetScalarRange(0, len(segments)-1)
         self._regionMapper.Update()
 
+        self._ui.numSegments.setText(f'{len(segments) :,}')
+
+        self._ui.segments.clear()
         self._view.refresh()
+
+        for i in range(0, len(segments)):
+            SegmentItem(self._ui.segments, i, self._getColor(i), segments[i][1])
+
+        self._view.refresh()
+
+    def _getColor(self, value):
+        minValue, maxValue = self._regionMapper.GetScalarRange()
+        lut: vtkLookupTable = self._regionMapper.GetLookupTable()
+        lut.SetRange(minValue, maxValue)
+
+        rgb = [0, 0, 0]
+        if value < minValue:
+            value = minValue
+        elif value > maxValue:
+            value = maxValue
+
+        lut.GetColor(value, rgb)
+
+        return QColor.fromRgbF(rgb[0], rgb[1], rgb[2])
 
     def show(self) -> asyncio.Future:
         loop = asyncio.get_running_loop()
