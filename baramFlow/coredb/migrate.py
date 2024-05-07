@@ -379,6 +379,102 @@ def _version_5(root: etree.Element):
             logger.debug(f'    Adding "region" to {p}')
             etree.SubElement(p, f'{{{_ns}}}region').text = ''
 
+    if (p := root.find('models', namespaces=_nsmap)) is not None:
+        if p.find('userDefinedScalars', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "userDefinedScalars" to {p}')
+
+            e = etree.fromstring(
+                '<userDefinedScalars xmlns="http://www.baramcfd.org/baram">'
+                '   <scalar scalarID="0">'
+                '       <fieldName/>'
+                '       <region/>'
+                '       <material>0</material>'
+                '       <diffusivity>'
+                '           <specificationMethod>constant</specificationMethod>'
+                '           <constant>0</constant>'
+                '           <laminarAndTurbulentViscosity>'
+                '               <laminarViscosityCoefficient>1</laminarViscosityCoefficient>'
+                '               <turbulentViscosityCoefficient>1</turbulentViscosityCoefficient>'
+                '           </laminarAndTurbulentViscosity>'
+                '       </diffusivity>'
+                '   </scalar>'
+                '</userDefinedScalars>')
+            p.append(e)
+
+    if (p := root.find('general/atmosphericBoundaryLayer', namespaces=_nsmap)) is not None:
+        if p.find('userDefinedScalars', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "userDefinedScalars" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}userDefinedScalars')
+            p.append(e)
+
+    for p in root.findall('regions/region/cellZones/cellZone/sourceTerms', namespaces=_nsmap):
+        if p.find('userDefinedScalars', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "userDefinedScalars" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}userDefinedScalars')
+            p.append(e)
+
+    for p in root.findall('regions/region/cellZones/cellZone/fixedValues', namespaces=_nsmap):
+        if p.find('userDefinedScalars', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "userDefinedScalars" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}userDefinedScalars')
+            p.append(e)
+
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition', namespaces=_nsmap):
+        if p.find('userDefinedScalars', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "userDefinedScalars" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}userDefinedScalars')
+            p.append(e)
+
+    for p in root.findall('regions/region/initialization/initialValues', namespaces=_nsmap):
+        if p.find('userDefinedScalars', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "userDefinedScalars" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}userDefinedScalars')
+            p.append(e)
+
+    for p in root.findall('regions/region/initialization/advanced/sections/section', namespaces=_nsmap):
+        if p.find('userDefinedScalars', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "userDefinedScalars" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}userDefinedScalars')
+            p.insert(10, e)
+
+    if (p := root.find('numericalConditions/discretizationSchemes', namespaces=_nsmap)) is not None:
+        if p.find('scalar', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "scalar" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}scalar')
+            e.text = 'secondOrderUpwind'
+            p.append(e)
+
+    if (p := root.find('numericalConditions/underRelaxationFactors', namespaces=_nsmap)) is not None:
+        if p.find('scalar', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "scalar, scalarFinal" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}scalar')
+            e.text = '0.7'
+            p.append(e)
+
+            e = etree.Element(f'{{{_ns}}}scalarFinal')
+            e.text = '1'
+            p.append(e)
+
+    if (p := root.find('numericalConditions/convergenceCriteria', namespaces=_nsmap)) is not None:
+        if p.find('scalar', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "scalar" to {p}')
+
+            e = etree.fromstring(
+                '<scalar xmlns="http://www.baramcfd.org/baram">'
+                '   <absolute>0.001</absolute><relative>0.05</relative>'
+                '</scalar>')
+            p.append(e)
+
+    for e in root.findall('monitors/*/*/field/mid', namespaces=_nsmap):
+        e.tag = f'{{{_ns}}}fieldID'
 
 
 _fTable = [
@@ -407,3 +503,4 @@ def migrate(root: etree.Element):
         for i in range(version, currentVersion):
             if i < len(_fTable):
                 _fTable[i](root)
+

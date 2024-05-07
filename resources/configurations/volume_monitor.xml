@@ -6,7 +6,7 @@
     <reportType>volumeAverage</reportType>
     <field>
         <field>pressure</field>
-        <mid>1</mid>
+        <fieldID>1</fieldID>
     </field>
     <volume>0</volume>
 </volumeMonitor>

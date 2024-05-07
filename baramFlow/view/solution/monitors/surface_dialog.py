@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QDialog, QMessageBox
+import qasync
+from PySide6.QtWidgets import QDialog
 
+from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
-from baramFlow.coredb.monitor_db import MonitorDB, SurfaceReportType, FieldHelper
+from baramFlow.coredb.models_db import UserDefinedScalarsDB
+from baramFlow.coredb.monitor_db import MonitorDB, SurfaceReportType, FieldHelper, Field
 from .surface_dialog_ui import Ui_SurfaceDialog
 
 
@@ -51,24 +54,54 @@ class SurfaceDialog(QDialog):
     def getName(self):
         return self._name
 
-    def accept(self):
+    def reject(self):
+        if self._isNew:
+            self._db.removeSurfaceMonitor(self._name)
+
+        super().reject()
+
+    def _connectSignalsSlots(self):
+        self._ui.select.clicked.connect(self._selectSurface)
+        self._ui.reportType.currentDataChanged.connect(self._reportTypeChanged)
+        self._ui.ok.clicked.connect(self._accept)
+
+    def _load(self):
+        self._ui.name.setText(self._name)
+        self._ui.writeInterval.setText(self._db.getValue(self._xpath + '/writeInterval'))
+        self._ui.reportType.setCurrentData(SurfaceReportType(self._db.getValue(self._xpath + '/reportType')))
+        self._ui.fieldVariable.setCurrentText(
+            FieldHelper.DBFieldKeyToText(Field(self._db.getValue(self._xpath + '/field/field')),
+                                         self._db.getValue(self._xpath + '/field/fieldID')))
+        surface = self._db.getValue(self._xpath + '/surface')
+        if surface != '0':
+            self._setSurface(surface)
+
+    @qasync.asyncSlot()
+    async def _accept(self):
         name = self._name
         if self._isNew:
             name = self._ui.name.text().strip()
             if not name:
-                QMessageBox.critical(self, self.tr("Input Error"), self.tr("Enter Monitor Name."))
+                await AsyncMessageBox().information(self, self.tr("Input Error"), self.tr("Enter Monitor Name."))
                 return
 
         if not self._surface:
-            QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Surface."))
+            await AsyncMessageBox().information(self, self.tr("Input Error"), self.tr("Select Surface."))
+            return
+
+        field = self._ui.fieldVariable.currentData()
+        if (field.field == Field.SCALAR
+                and BoundaryDB.getBoundaryRegion(self._surface) != UserDefinedScalarsDB.getRegion(field.id)):
+            await AsyncMessageBox().information(
+                self, self.tr('Input Error'),
+                self.tr('The region where the scalar field is configured does not contain selected Surface.'))
             return
 
         writer = CoreDBWriter()
         writer.append(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
         writer.append(self._xpath + '/reportType', self._ui.reportType.currentValue(), None)
-        field = self._ui.fieldVariable.currentData()
-        writer.append(self._xpath + '/field/field', field.field, None)
-        writer.append(self._xpath + '/field/mid', field.mid, None)
+        writer.append(self._xpath + '/field/field', field.field.value, None)
+        writer.append(self._xpath + '/field/fieldID', field.id, None)
         writer.append(self._xpath + '/surface', self._surface, self.tr("Surface"))
 
         if self._isNew:
@@ -76,32 +109,12 @@ class SurfaceDialog(QDialog):
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
             if self._isNew:
                 self._name = name
 
-            super().accept()
-
-    def reject(self):
-        super().reject()
-        if self._isNew:
-            self._db.removeSurfaceMonitor(self._name)
-
-    def _connectSignalsSlots(self):
-        self._ui.select.clicked.connect(self._selectSurface)
-        self._ui.reportType.currentDataChanged.connect(self._reportTypeChanged)
-
-    def _load(self):
-        self._ui.name.setText(self._name)
-        self._ui.writeInterval.setText(self._db.getValue(self._xpath + '/writeInterval'))
-        self._ui.reportType.setCurrentData(SurfaceReportType(self._db.getValue(self._xpath + '/reportType')))
-        self._ui.fieldVariable.setCurrentText(
-            FieldHelper.DBFieldKeyToText(self._db.getValue(self._xpath + '/field/field'),
-                                         self._db.getValue(self._xpath + '/field/mid')))
-        surface = self._db.getValue(self._xpath + '/surface')
-        if surface != '0':
-            self._setSurface(surface)
+            self.accept()
 
     def _setSurface(self, surface):
         self._surface = surface

@@ -17,8 +17,9 @@ from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityC
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.material_db import MaterialDB, Phase
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceModelsDB
+from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType, Field
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceModelsDB, ScalarSpecificationMethod
+from baramFlow.coredb.models_db import UserDefinedScalarsDB
 from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.mesh.vtk_loader import isPointInDataSet
@@ -220,6 +221,42 @@ class ControlDict(DictionaryFile):
 
         self._appendMonitoringFunctionObjects()
 
+        for scalarID, fieldName in self._db.getUserDefinedScalars():
+            self._data[fieldName] = {
+                'type': 'scalarTransport',
+                'libs': [_libPath('libsolverFunctionObjects')],
+                'field': fieldName,
+                'schemesField': 'scalar',
+                'nCorr': 2,
+                # 'fvOptions': {
+                #     'All_source-0': {
+                #         'type': 'scalarNEXTSource',
+                #         'volumeMode': 'specific',
+                #         'selectionMode': 'all',
+                #         'field': fieldName,
+                #         'source': 'uniform 100',
+                #     }
+                # }
+            }
+
+            xpath = UserDefinedScalarsDB.getXPath(scalarID)
+            specificationMethod = self._db.getValue(xpath + '/diffusivity/specificationMethod')
+            if specificationMethod == ScalarSpecificationMethod.CONSTANT.value:
+                self._data[fieldName]['D'] = self._db.getValue(xpath + '/diffusivity/constant')
+            elif specificationMethod == ScalarSpecificationMethod.TURBULENT_VISCOSITY.value:
+                self._data[fieldName]['nut'] = 'nut'
+            elif specificationMethod == ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY.value:
+                self._data[fieldName]['alphaD'] = self._db.getValue(
+                    xpath + '/diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient')
+                self._data[fieldName]['alphaDt'] = self._db.getValue(
+                    xpath + '/diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient')
+
+            if region := self._db.getValue(xpath + '/region'):
+                self._data[fieldName]['region'] = region
+
+            if mid := int(self._db.getValue(xpath + 'material')):
+                self._data[fieldName]['phase'] = MaterialDB.getName(mid)
+
         return self
 
     def _appendMonitoringFunctionObjects(self):
@@ -325,8 +362,8 @@ class ControlDict(DictionaryFile):
         return data
 
     def _generatePointMonitor(self, xpath):
-        field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
-                                              self._db.getValue(xpath + '/field/mid'))
+        field = FieldHelper.DBFieldKeyToField(Field(self._db.getValue(xpath + '/field/field')),
+                                              self._db.getValue(xpath + '/field/fieldID'))
 
         coordinate = self._db.getVector(xpath + '/coordinate')
 
@@ -387,8 +424,8 @@ class ControlDict(DictionaryFile):
         elif reportType == SurfaceReportType.VOLUME_FLOW_RATE.value:
             field = 'U'
         else:
-            field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
-                                                  self._db.getValue(xpath + '/field/mid'))
+            field = FieldHelper.DBFieldKeyToField(Field(self._db.getValue(xpath + '/field/field')),
+                                                  self._db.getValue(xpath + '/field/fieldID'))
 
         if field == 'mag(U)':
             self._appendMagFieldFunctionObject()
@@ -426,8 +463,8 @@ class ControlDict(DictionaryFile):
         return data
 
     def _generateVolumeMonitor(self, xpath):
-        field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
-                                              self._db.getValue(xpath + '/field/mid'))
+        field = FieldHelper.DBFieldKeyToField(Field(self._db.getValue(xpath + '/field/field')),
+                                              self._db.getValue(xpath + '/field/fieldID'))
 
         if field == 'mag(U)':
             self._appendMagFieldFunctionObject()

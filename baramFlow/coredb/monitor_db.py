@@ -6,7 +6,7 @@ from enum import Enum
 from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, UserDefinedScalarsDB
 from baramFlow.coredb.material_db import MaterialDB, Phase
 from baramFlow.openfoam.solver import findSolver, getSolverCapability
 
@@ -24,6 +24,7 @@ class Field(Enum):
     TEMPERATURE = 'temperature'
     DENSITY = 'density'
     MATERIAL = 'material'
+    SCALAR = 'scalar'
 
 
 class SurfaceReportType(Enum):
@@ -130,22 +131,22 @@ class FieldHelper:
 
     class FieldItem:
         class DBFieldKey:
-            def __init__(self, field, mid='1'):
+            def __init__(self, field, id_='1'):
                 # Values for coreDB's field element
-                self._field = field.value
-                self._mid = mid
+                self._field = field
+                self._id = id_
 
             @property
             def field(self):
                 return self._field
 
             @property
-            def mid(self):
-                return self._mid
+            def id(self):
+                return self._id
 
-        def __init__(self, text, field, mid='1'):
+        def __init__(self, text, field, id_='1'):
             self._text = text
-            self._key = self.DBFieldKey(field, mid)
+            self._key = self.DBFieldKey(field, id_)
 
         @property
         def text(self):
@@ -195,19 +196,26 @@ class FieldHelper:
                 if MaterialDB.dbTextToPhase(phase) != Phase.SOLID:
                     _appendMaterial(mid, name)
 
+        for scalarID, fieldName in coredb.CoreDB().getUserDefinedScalars():
+            fields.append(cls.FieldItem(fieldName, Field.SCALAR, str(scalarID)))
+
         return fields
 
     @classmethod
-    def DBFieldKeyToText(cls, field, mid):
-        if field == Field.MATERIAL.value:
-            return MaterialDB.getName(mid)
+    def DBFieldKeyToText(cls, field, fieldID):
+        if field == Field.MATERIAL:
+            return MaterialDB.getName(fieldID)
+        elif field == Field.SCALAR:
+            return UserDefinedScalarsDB.getFieldName(fieldID)
         else:
             return cls.FIELD_TEXTS[Field(field)]
 
     @classmethod
-    def DBFieldKeyToField(cls, field, mid):
-        if field == Field.MATERIAL.value:
-            return 'alpha.' + MaterialDB.getName(mid)
+    def DBFieldKeyToField(cls, field, fieldID):
+        if field == Field.MATERIAL:
+            return 'alpha.' + MaterialDB.getName(fieldID)
+        elif field == Field.SCALAR:
+            return UserDefinedScalarsDB.getFieldName(fieldID)
         else:
             fieldName = cls.FIELDS[Field(field)]
 

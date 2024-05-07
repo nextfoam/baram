@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QDialog, QMessageBox
+import qasync
+from PySide6.QtWidgets import QDialog
+
+from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from .ABL_inlet_dialog_ui import Ui_ABLInletDialog
+from .conditional_widget_helper import ConditionalWidgetHelper
 
 
 class ABLInletDialog(QDialog):
@@ -18,9 +22,14 @@ class ABLInletDialog(QDialog):
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.ABL_INLET_CONDITIONS_XPATH
 
+        self._scalarsWidget = ConditionalWidgetHelper.userDefinedScalarsWidget(BoundaryDB.getBoundaryRegion(bcid),
+                                                                               self._ui.dialogContents.layout())
+
+        self._connectSignalsSlots()
         self._load()
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def _accept(self):
         writer = CoreDBWriter()
         writer.append(self._xpath + '/flowDirection/x',
                       self._ui.flowDirectionXComponent.text(), self.tr("Flow Direction X-Component"))
@@ -43,11 +52,14 @@ class ABLInletDialog(QDialog):
         writer.append(self._xpath + '/minimumZCoordinate',
                       self._ui.minimumZCoordinate.text(), self.tr("Minimum z-coordinate"))
 
+        if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
+            return
+
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
-            super().accept()
+            self.accept()
 
     def _load(self):
         self._ui.flowDirectionXComponent.setText(self._db.getValue(self._xpath + '/flowDirection/x'))
@@ -60,3 +72,7 @@ class ABLInletDialog(QDialog):
         self._ui.referenceHeight.setText(self._db.getValue(self._xpath + '/referenceHeight'))
         self._ui.surfaceRoughnessLength.setText(self._db.getValue(self._xpath + '/surfaceRoughnessLength'))
         self._ui.minimumZCoordinate.setText(self._db.getValue(self._xpath + '/minimumZCoordinate'))
+        self._scalarsWidget.load(self._xpath + '/userDefinedScalars')
+
+    def _connectSignalsSlots(self):
+        self._ui.ok.clicked.connect(self._accept)

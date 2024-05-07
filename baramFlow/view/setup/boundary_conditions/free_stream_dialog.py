@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import qasync
 from PySide6.QtWidgets import QMessageBox
 
 from baramFlow.coredb import coredb
@@ -25,10 +25,14 @@ class FreeStreamDialog(ResizableDialog):
         layout = self._ui.dialogContents.layout()
         self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
         self._temperatureWidget = ConditionalWidgetHelper.temperatureWidget(self._xpath, bcid, layout)
+        self._scalarsWidget = ConditionalWidgetHelper.userDefinedScalarsWidget(BoundaryDB.getBoundaryRegion(bcid),
+                                                                               self._ui.dialogContents.layout())
 
+        self._connectSignalsSlots()
         self._load()
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def _accept(self):
         path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
@@ -43,13 +47,16 @@ class FreeStreamDialog(ResizableDialog):
         if not self._temperatureWidget.appendToWriter(writer):
             return
 
+        if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
+            return
+
         errorCount = writer.write()
         if errorCount > 0:
             self._temperatureWidget.rollbackWriting()
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
             self._temperatureWidget.completeWriting()
-            super().accept()
+            self.accept()
 
     def _load(self):
         path = self._xpath + self.RELATIVE_XPATH
@@ -62,3 +69,7 @@ class FreeStreamDialog(ResizableDialog):
         self._turbulenceWidget.load()
         self._temperatureWidget.load()
         self._temperatureWidget.freezeProfileToConstant()
+        self._scalarsWidget.load(self._xpath + '/userDefinedScalars')
+
+    def _connectSignalsSlots(self):
+        self._ui.ok.clicked.connect(self._accept)

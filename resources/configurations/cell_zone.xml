@@ -112,6 +112,7 @@
             <unit>valueForEntireCellZone</unit>
             <constant>0</constant>
         </modifiedTurbulentViscosity>
+        <userDefinedScalars/>
     </sourceTerms>
     <fixedValues>
         <velocity disabled="true">
@@ -127,5 +128,6 @@
         <turbulentDissipationRate disabled="true">0</turbulentDissipationRate>
         <specificDissipationRate disabled="true">0</specificDissipationRate>
         <modifiedTurbulentViscosity disabled="true">0</modifiedTurbulentViscosity>
+        <userDefinedScalars/>
     </fixedValues>
 </cellZone>

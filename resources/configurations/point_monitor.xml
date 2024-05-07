@@ -5,7 +5,7 @@
     <writeInterval>1</writeInterval>
     <field>
         <field>pressure</field>
-        <mid>1</mid>
+        <fieldID>1</fieldID>
     </field>
     <interval>1</interval>
     <coordinate>

@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QMessageBox
+import qasync
+
+from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
@@ -23,14 +25,17 @@ class PressureInletDialog(ResizableDialog):
         self._xpath = BoundaryDB.getXPath(bcid)
 
         layout = self._ui.dialogContents.layout()
+        rname = BoundaryDB.getBoundaryRegion(bcid)
         self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
         self._temperatureWidget = ConditionalWidgetHelper.temperatureWidget(self._xpath, bcid, layout)
-        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(BoundaryDB.getBoundaryRegion(bcid),
-                                                                                  self._xpath, layout)
+        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(rname, layout)
+        self._scalarsWidget = ConditionalWidgetHelper.userDefinedScalarsWidget(rname, layout)
 
+        self._connectSignalsSlots()
         self._load()
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def _accept(self):
         path = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()
@@ -42,16 +47,20 @@ class PressureInletDialog(ResizableDialog):
         if not self._temperatureWidget.appendToWriter(writer):
             return
 
-        if not self._volumeFractionWidget.appendToWriter(writer):
+
+        if not await self._volumeFractionWidget.appendToWriter(writer, self._xpath + '/volumeFractions'):
+            return
+
+        if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
             return
 
         errorCount = writer.write()
         if errorCount > 0:
             self._temperatureWidget.rollbackWriting()
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
             self._temperatureWidget.completeWriting()
-            super().accept()
+            self.accept()
 
     def _load(self):
         path = self._xpath + self.RELATIVE_XPATH
@@ -61,4 +70,8 @@ class PressureInletDialog(ResizableDialog):
         self._turbulenceWidget.load()
         self._temperatureWidget.load()
         self._temperatureWidget.freezeProfileToConstant()
-        self._volumeFractionWidget.load()
+        self._volumeFractionWidget.load(self._xpath + '/volumeFractions')
+        self._scalarsWidget.load(self._xpath + '/userDefinedScalars')
+
+    def _connectSignalsSlots(self):
+        self._ui.ok.clicked.connect(self._accept)

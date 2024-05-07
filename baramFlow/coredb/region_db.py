@@ -29,4 +29,20 @@ class RegionDB:
     def getNumberOfRegions(cls):
         return len(coredb.CoreDB().getRegions())
 
-
+    @classmethod
+    def buildVolumeFractionElement(cls, mid, fraction):
+        return f'''
+                    <volumeFraction xmlns="http://www.baramcfd.org/baram">
+                        <material>{mid}</material>
+                        <fraction>{fraction}</fraction>
+                    </volumeFraction>
+                '''
+    #
+    # @classmethod
+    # def buildUserDefinedScalarElement(cls, scalarID, value):
+    #     return f'''
+    #                 <scalar xmlns="http://www.baramcfd.org/baram">
+    #                     <scalarID>{scalarID}</scalarID>
+    #                     <value>{value}</value>
+    #                 </scalar>
+    #             '''

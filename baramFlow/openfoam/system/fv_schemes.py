@@ -5,6 +5,7 @@
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import findSolver, getSolverCapability
 
@@ -100,6 +101,14 @@ class FvSchemes(DictionaryFile):
                 'default': 'corrected'
             }
         }
+
+        scheme = (
+            'Gauss upwind'
+            if self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/discretizationSchemes/scalar') == 'firstOrderUpwind'
+            else 'Gauss linearUpwind momentumReconGrad')
+
+        if self._cap['timeSteady'] and not self._cap['timeTransient']:
+            self._data['divSchemes'][f'div(phi,scalar)'] = 'bounded ' + scheme
 
     def _generateFluid(self):
         self._data = {
@@ -245,6 +254,11 @@ class FvSchemes(DictionaryFile):
                     'div(phi,alpha)': f'{bounded}Gauss vanLeer',
                     'div(phirb,alpha)': f'{bounded}Gauss linear'
                 })
+
+        if self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/discretizationSchemes/scalar') == 'firstOrderUpwind':
+            divSchemes[f'div(phi,scalar)'] = f'{bounded}Gauss upwind'
+        else:
+            divSchemes[f'div(phi,scalar)'] = f'{bounded}Gauss linearUpwind momentumReconGrad'
 
         return divSchemes
 

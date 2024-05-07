@@ -150,7 +150,7 @@ class K(BoundaryCondition):
             elif spec == SubgridKineticEnergySpecificationMethod.SUBGRID_SCALE_INTENSITY.value:
                 k, _ = self._calculateFreeStreamLES(xpath, self._region)
 
-        return self._constructFreestream(k)
+        return self._constructFreeStream(k)
 
     def _constructInterfaceK(self, xpath):
         spec = self._db.getValue(xpath + '/interface/mode')

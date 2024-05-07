@@ -44,7 +44,6 @@ class Error(Enum):
 
 class ValueException(Exception):
     def __init__(self, error: Error, msg: str = None):
-        print('Value Exception:', error, msg)
         super().__init__(error, msg)
 
 
@@ -109,6 +108,7 @@ class _CoreDB(object):
     MATERIAL_MAX_INDEX = 1000
     CELL_ZONE_MAX_INDEX = 1000
     BOUNDARY_CONDITION_MAX_INDEX = 10000
+    USER_DEFINED_SCALAR_MAX_INDEX = 10000
 
     def __init__(self):
         self._initialized = True
@@ -301,23 +301,23 @@ class _CoreDB(object):
                 self._lastError = Error.FLOAT_ONLY
                 raise ValueException(Error.FLOAT_ONLY)
 
-            if (min := getattr(schema.type.base_type.get_facet(XSD_MIN_INCLUSIVE), 'value', None)) is not None:
-                if decimal < min:
+            if (minValue := getattr(schema.type.base_type.get_facet(XSD_MIN_INCLUSIVE), 'value', None)) is not None:
+                if decimal < minValue:
                     self._lastError = Error.OUT_OF_RANGE
                     raise ValueException(Error.OUT_OF_RANGE)
 
-            if (max := getattr(schema.type.base_type.get_facet(XSD_MAX_INCLUSIVE), 'value', None)) is not None:
-                if decimal > max:
+            if (maxValue := getattr(schema.type.base_type.get_facet(XSD_MAX_INCLUSIVE), 'value', None)) is not None:
+                if decimal > maxValue:
                     self._lastError = Error.OUT_OF_RANGE
                     raise ValueException(Error.OUT_OF_RANGE)
 
-            if (min := getattr(schema.type.base_type.get_facet(XSD_MIN_EXCLUSIVE), 'value', None)) is not None:
-                if decimal <= min:
+            if (minValue := getattr(schema.type.base_type.get_facet(XSD_MIN_EXCLUSIVE), 'value', None)) is not None:
+                if decimal <= minValue:
                     self._lastError = Error.OUT_OF_RANGE
                     raise ValueException(Error.OUT_OF_RANGE)
 
-            if (max := getattr(schema.type.base_type.get_facet(XSD_MAX_EXCLUSIVE), 'value', None)) is not None:
-                if decimal >= max:
+            if (maxValue := getattr(schema.type.base_type.get_facet(XSD_MAX_EXCLUSIVE), 'value', None)) is not None:
+                if decimal >= maxValue:
                     self._lastError = Error.OUT_OF_RANGE
                     raise ValueException(Error.OUT_OF_RANGE)
 
@@ -612,8 +612,10 @@ class _CoreDB(object):
             raise LookupError
 
         # check if the material is referenced by other elements
-
         mid = material.attrib['mid']
+        if self.exists(f'models/userDefinedScalars/scalar[material="{mid}"]'):
+            return Error.REFERENCED
+
         idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:material/text()', namespaces={'x': ns})
         if mid in idList:
             return Error.REFERENCED
@@ -673,7 +675,8 @@ class _CoreDB(object):
                         <scaleOfVelocity>1</scaleOfVelocity>
                         <turbulentIntensity>1</turbulentIntensity>
                         <turbulentViscosity>10</turbulentViscosity>
-                        <volumeFractions></volumeFractions>
+                        <volumeFractions/>
+                        <userDefinedScalars/>
                     </initialValues>
                     <advanced>
                         <sections></sections>
@@ -701,6 +704,9 @@ class _CoreDB(object):
     def clearRegions(self):
         parent = self._xmlTree.find('.//regions', namespaces=nsmap)
         parent.clear()
+
+    def hasMultipleRegions(self):
+        return len(self._xmlTree.findall(f'.//regions/region', namespaces=nsmap)) > 1
 
     def addCellZone(self, rname: str, zname: str) -> int:
         zone = self._xmlTree.find(f'.//region[name="{rname}"]/cellZones/cellZone[name="{zname}"]', namespaces=nsmap)
@@ -1062,6 +1068,150 @@ class _CoreDB(object):
             surfaceTensions.append((mid1, mid2, value))
 
         return surfaceTensions
+
+    def getUserDefinedScalars(self):
+        elements = self._xmlTree.findall(f'.//models/userDefinedScalars/scalar', namespaces=nsmap)
+        return [(int(e.attrib['scalarID']), e.find('fieldName', namespaces=nsmap).text)
+                for e in elements if e.attrib['scalarID'] != '0']
+
+    def getUserDefinedScalarsInRegion(self, rname):
+        elements = self._xmlTree.findall(f'.//models/userDefinedScalars/scalar[region="{rname}"]', namespaces=nsmap)
+        return [(int(e.attrib['scalarID']), e.find('fieldName', namespaces=nsmap).text)
+                for e in elements if e.attrib['scalarID'] != '0']
+
+    def addUserDefinedScalar(self, scalar):
+        idList = self._xmlTree.xpath(f'.//x:userDefinedScalars/x:scalar/@scalarID', namespaces={'x': ns})
+
+        for index in range(1, self.USER_DEFINED_SCALAR_MAX_INDEX):
+            if str(index) not in idList:
+                scalarID = index
+                break
+        else:
+            raise OverflowError
+
+        parent = self._getElement('models/userDefinedScalars')
+        scalar = etree.fromstring(
+            f'<scalar scalarID="{scalarID}" xmlns="http://www.baramcfd.org/baram">'
+            f'  <fieldName>{scalar.fieldName}</fieldName>'
+            f'  <region>{scalar.region}</region>'
+            f'  <material>{scalar.material}</material>'
+            f'  <diffusivity>'
+            f'      <specificationMethod>{scalar.specificationMethod.value}</specificationMethod>'
+            f'      <constant>{scalar.constantDiffusivity}</constant>'
+            f'      <laminarAndTurbulentViscosity>'
+            f'          <laminarViscosityCoefficient>{scalar.laminarViscosityCoefficient}</laminarViscosityCoefficient>'
+            f'          <turbulentViscosityCoefficient>{scalar.turbulentViscosityCoefficient}</turbulentViscosityCoefficient>'
+            '       </laminarAndTurbulentViscosity>'
+            '  </diffusivity>'
+            '</scalar>')
+        parent.append(scalar)
+
+        parent = self._xmlTree.find('general/atmosphericBoundaryLayer/userDefinedScalars', namespaces=nsmap)
+        scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
+                                  f' <scalarID>{scalarID}</scalarID>'
+                                  '  <value>0</value>'
+                                  '</scalar>')
+        parent.append(scalar)
+
+        for parent in self._xmlTree.findall('regions/region/cellZones/cellZone/sourceTerms/userDefinedScalars',
+                                            namespaces=nsmap):
+            source = etree.fromstring('<scalarSource disabled="true" xmlns="http://www.baramcfd.org/baram">'
+                                      f' <scalarID>{scalarID}</scalarID>'
+                                      '  <unit>valueForEntireCellZone</unit>'
+                                      '  <specification>constant</specification>'
+                                      '  <constant>0</constant>'
+                                      '  <piecewiseLinear><t>0</t><v>0</v></piecewiseLinear>'
+                                      '  <polynomial>0</polynomial>'
+                                      '</scalarSource>')
+            parent.append(source)
+
+        for parent in self._xmlTree.findall('regions/region/cellZones/cellZone/fixedValues/userDefinedScalars',
+                                            namespaces=nsmap):
+            scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
+                                      f' <scalarID>{scalarID}</scalarID>'
+                                      '  <value disabled="true">0</value>'
+                                      '</scalar>')
+            parent.append(scalar)
+
+        for parent in self._xmlTree.findall('regions/region/boundaryConditions/boundaryCondition/userDefinedScalars',
+                                            namespaces=nsmap):
+            scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
+                                      f' <scalarID>{scalarID}</scalarID>'
+                                      '  <value>0</value>'
+                                      '</scalar>')
+            parent.append(scalar)
+
+        for parent in self._xmlTree.findall('regions/region/initialization/initialValues/userDefinedScalars',
+                                            namespaces=nsmap):
+            scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
+                                      f' <scalarID>{scalarID}</scalarID>'
+                                      '  <value disabled="true">0</value>'
+                                      '</scalar>')
+            parent.append(scalar)
+
+        for parent in self._xmlTree.findall('regions/region/initialization/advanced/sections/section/userDefinedScalars',
+                                            namespaces=nsmap):
+            scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
+                                      f' <scalarID>{scalarID}</scalarID>'
+                                      '  <value disabled="true">0</value>'
+                                      '</scalar>')
+            parent.append(scalar)
+        #
+        # parent = self._getElement('numericalConditions/underRelaxationFactors/userDefinedScalars')
+        # scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
+        #                           f' <scalarID>{scalarID}</scalarID>'
+        #                           '  <value>0.7</value>'
+        #                           '  <finalValue>1</finalValue>'
+        #                           '</scalar>')
+        # parent.append(scalar)
+        #
+        # parent = self._getElement('numericalConditions/convergenceCriteria/userDefinedScalars')
+        # scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
+        #                           f' <scalarID>{scalarID}</scalarID>'
+        #                           '  <absolute>0.001</absolute>'
+        #                           '  <relative>0.05</relative>'
+        #                           '</scalar>')
+        # parent.append(scalar)
+
+    def removeUserDefinedScalar(self, scalarID):
+        parent = self._getElement('models/userDefinedScalars')
+        parent.remove(parent.find(f'scalar[@scalarID="{scalarID}"]', namespaces=nsmap))
+
+        parent = self._xmlTree.find('general/atmosphericBoundaryLayer/userDefinedScalars', namespaces=nsmap)
+        parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
+
+        for parent in self._xmlTree.findall('regions/region/cellZones/cellZone/sourceTerms/userDefinedScalars',
+                                            namespaces=nsmap):
+            parent.remove(parent.find(f'scalarSource[scalarID="{scalarID}"]', namespaces=nsmap))
+
+        for parent in self._xmlTree.findall('regions/region/cellZones/cellZone/fixedValues/userDefinedScalars',
+                                            namespaces=nsmap):
+            parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
+
+        for parent in self._xmlTree.findall('regions/region/boundaryConditions/boundaryCondition/userDefinedScalars',
+                                            namespaces=nsmap):
+            parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
+
+        for parent in self._xmlTree.findall('regions/region/initialization/initialValues/userDefinedScalars',
+                                            namespaces=nsmap):
+            parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
+
+        for parent in self._xmlTree.findall('regions/region/initialization/advanced/sections/section/userDefinedScalars',
+                                            namespaces=nsmap):
+            parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
+        #
+        # parent = self._getElement('numericalConditions/underRelaxationFactors/userDefinedScalars')
+        # parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
+        #
+        # parent = self._getElement('numericalConditions/convergenceCriteria/userDefinedScalars')
+        # parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
+
+    def clearUserDefinedScalars(self, scalarID):
+        parent = self._getElement('models/userDefinedScalars')
+        parent.clear()
+
+        parent = self._xmlTree.find('general/atmosphericBoundaryLayer/userDefinedScalars', namespaces=nsmap)
+        parent.clear()
 
     def addElementFromString(self, xpath, text):
         parent = self._xmlTree.find(xpath, namespaces=nsmap)

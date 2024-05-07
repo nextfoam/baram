@@ -27,12 +27,13 @@ from baramFlow.openfoam.boundary_conditions.p import P
 from baramFlow.openfoam.boundary_conditions.u import U
 from baramFlow.openfoam.boundary_conditions.t import T
 from baramFlow.openfoam.boundary_conditions.k import K
+from baramFlow.openfoam.boundary_conditions.alpha import Alpha
+from baramFlow.openfoam.boundary_conditions.alphat import Alphat
 from baramFlow.openfoam.boundary_conditions.epsilon import Epsilon
-from baramFlow.openfoam.boundary_conditions.omega import Omega
 from baramFlow.openfoam.boundary_conditions.nut import Nut
 from baramFlow.openfoam.boundary_conditions.nuTilda import NuTilda
-from baramFlow.openfoam.boundary_conditions.alphat import Alphat
-from baramFlow.openfoam.boundary_conditions.alpha import Alpha
+from baramFlow.openfoam.boundary_conditions.omega import Omega
+from baramFlow.openfoam.boundary_conditions.scalar import Scalar
 from baramFlow.openfoam.system.fv_solution import FvSolution
 from baramFlow.openfoam.system.control_dict import ControlDict
 from baramFlow.openfoam.system.fv_schemes import FvSchemes
@@ -149,6 +150,9 @@ class CaseGenerator(QObject):
         if ModelsDB.isMultiphaseModelOn():
             for mid in region.secondaryMaterials:
                 self._files.append(Alpha(region, time, processorNo, mid))
+
+        for scalarID, fieldName in self._db.getUserDefinedScalarsInRegion(region.rname):
+            self._files.append(Scalar(region, time, processorNo, scalarID, fieldName))
 
     async def setupCase(self):
         self._canceled = False
