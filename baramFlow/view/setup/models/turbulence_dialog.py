@@ -81,7 +81,7 @@ class TurbulenceModelDialog(ResizableDialog):
         self._nearWallTreatmentRadios.dataChecked.connect(self._nearWallTreatmentChanged)
         self._RANSModelRadios.dataChecked.connect(self._RANSModelChanged)
         self._ui.delayedDES.stateChanged.connect(self._delayedDESChanged)
-        self._shieldingFunctionsRadios.dataChecked.connect(self._shieldingFunctionsChanged)
+        self._shieldingFunctionsRadios.dataChecked.connect(self._updateDESLengthScaleModelVisibility)
         self._subgridScaleModelRadios.dataChecked.connect(self._updateLESConstantsVisibility)
 
     def accept(self):
@@ -219,9 +219,7 @@ class TurbulenceModelDialog(ResizableDialog):
 
     def _delayedDESChanged(self):
         self._ui.shieldingFunctions.setVisible(self._ui.delayedDES.isChecked())
-
-    def _shieldingFunctionsChanged(self, functions):
-        self._ui.DESLengthScaleModel.setVisible(functions != ShieldingFunctions.IDDES)
+        self._updateDESLengthScaleModelVisibility()
 
     def _updateReynoldsParametersVisibility(self):
         isActive = self._isEnhancedWallTreatmentActive()
@@ -231,6 +229,10 @@ class TurbulenceModelDialog(ResizableDialog):
         return (self._ui.kEpsilon.isChecked()
                 and self._ui.realizable.isChecked()
                 and self._ui.enhancedWallTreatment.isChecked())
+
+    def _updateDESLengthScaleModelVisibility(self):
+        self._ui.DESLengthScaleModel.setVisible(
+            not self._ui.delayedDES.isChecked() or not self._ui.IDDES.isChecked())
 
     def _updateLESConstantsVisibility(self):
         if self._modelRadios.checkedData() != TurbulenceModel.LES:
