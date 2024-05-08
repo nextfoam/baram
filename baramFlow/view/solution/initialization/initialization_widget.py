@@ -163,7 +163,7 @@ class InitializationWidget(QWidget):
         self._ui.xVelocity.setText(db.getValue(self._initialValuesPath + '/velocity/x'))
         self._ui.yVelocity.setText(db.getValue(self._initialValuesPath + '/velocity/y'))
         self._ui.zVelocity.setText(db.getValue(self._initialValuesPath + '/velocity/z'))
-        self._ui.pressure.setText(db.getValue(self._initialValuesPath + '//pressure'))
+        self._ui.pressure.setText(db.getValue(self._initialValuesPath + '/pressure'))
         self._ui.temperature.setText(db.getValue(self._initialValuesPath + '/temperature'))
         self._ui.scaleOfVelocity.setText(db.getValue(self._initialValuesPath + '/scaleOfVelocity'))
         self._ui.turbulentIntensity.setText(db.getValue(self._initialValuesPath + '/turbulentIntensity'))
