@@ -6,6 +6,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, KOmegaModel, NearWallTreatment
 from baramFlow.coredb.models_db import SubgridScaleModel, LengthScaleModel, RANSModel, ShieldingFunctions
+from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.openfoam.file_system import FileSystem
 
 
@@ -63,6 +64,7 @@ class TurbulenceProperties(DictionaryFile):
                 'RASModel': subModel,
                 'turbulence': 'on',
                 'printCoeffs': 'on',
+                'viscosityRatioMax': self._getMaxViscosityRatio()
             }
         }
 
@@ -104,6 +106,7 @@ class TurbulenceProperties(DictionaryFile):
             'LES': {
                 'turbulence': 'on',
                 'delta': lengthScaleModel,
+                'viscosityRatioMax': self._getMaxViscosityRatio()
             },
         }
 
@@ -166,7 +169,8 @@ class TurbulenceProperties(DictionaryFile):
                 'LESModel': subgridScaleModel,
                 'turbulence': 'on',
                 'printCoeffs': 'off',
-                'delta': lengthScaleModel
+                'delta': lengthScaleModel,
+                'viscosityRatioMax': self._getMaxViscosityRatio()
             }
         }
 
@@ -214,3 +218,6 @@ class TurbulenceProperties(DictionaryFile):
                 },
                 'maxDeltaRatio': 1.1
             }
+
+    def _getMaxViscosityRatio(self):
+        return self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/limits/maximumViscosityRatio')

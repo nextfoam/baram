@@ -1704,6 +1704,7 @@
                                 <xs:sequence>
                                     <xs:element name="minimumStaticTemperature" type="inputNumberType" default="1"/>
                                     <xs:element name="maximumStaticTemperature" type="inputNumberType" default="5000"/>
+                                    <xs:element name="maximumViscosityRatio" type="inputNumberType" default="1e8"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>

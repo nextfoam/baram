@@ -476,6 +476,14 @@ def _version_5(root: etree.Element):
     for e in root.findall('monitors/*/*/field/mid', namespaces=_nsmap):
         e.tag = f'{{{_ns}}}fieldID'
 
+    if (p := root.find('numericalConditions/advanced/limits', namespaces=_nsmap)) is not None:
+        if p.find('maximumViscosityRatio', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "scalar" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}maximumViscosityRatio')
+            e.text = '1e8'
+            p.append(e)
+
 
 _fTable = [
     None,
