@@ -36,6 +36,7 @@ from .main_window_ui import Ui_MainWindow
 
 class MainWindow(QMainWindow):
     _vtkReaderProgress = Signal(str)
+    _closeTriggered = Signal(bool)
 
     def __init__(self):
         super().__init__()
@@ -62,6 +63,8 @@ class MainWindow(QMainWindow):
 
         self._startDialog = ProjectDialog()
         self._dialog = None
+
+        self._readyToQuit = False
 
         self.setWindowIcon(app.properties.icon())
 
@@ -100,12 +103,12 @@ class MainWindow(QMainWindow):
         return self._meshManager
 
     def closeEvent(self, event):
-        if not self._closeProject():
+        if not self._readyToQuit:
+            self._closeTriggered.emit(True)
             event.ignore()
             return
 
         app.settings.updateLastMainWindowGeometry(self.geometry())
-
         event.accept()
 
     def changeEvent(self, event):
@@ -142,6 +145,8 @@ class MainWindow(QMainWindow):
         self._stepManager.openedStepChanged.connect(self._displayControl.openedStepChanged)
         self._stepManager.currentStepChanged.connect(self._displayControl.currentStepChanged)
 
+        self._closeTriggered.connect(self._closeProject)
+
     def _openRecent(self, path):
         self._openProject(path)
 
@@ -157,8 +162,9 @@ class MainWindow(QMainWindow):
         self._dialog.fileSelected.connect(self._openProject)
         self._dialog.open()
 
-    def _actionSave(self):
-        if self._stepManager.saveCurrentPage():
+    @qasync.asyncSlot()
+    async def _actionSave(self):
+        if await self._stepManager.saveCurrentPage():
             app.project.save()
 
     def _actionParameters(self):
@@ -183,16 +189,18 @@ class MainWindow(QMainWindow):
         self._dialog = AboutDialog(self)
         self._dialog.open()
 
-    def _createProject(self):
-        self._closeProject()
+    @qasync.asyncSlot()
+    async def _createProject(self):
+        await self._closeProject()
         self._clear()
 
         if app.createProject(self._dialog.projectLocation()):
             self._recentFilesMenu.addRecentest(app.project.path)
             self._projectOpened()
 
-    def _openProject(self, file):
-        self._closeProject()
+    @qasync.asyncSlot()
+    async def _openProject(self, file):
+        await self._closeProject()
         self._clear()
 
         path = Path(file)
@@ -210,11 +218,12 @@ class MainWindow(QMainWindow):
         if app.project is None:
             self.close()
 
-    def _closeProject(self):
+    @qasync.asyncSlot()
+    async def _closeProject(self, toQuit=False):
         if app.project is None:
             return True
 
-        if not self._stepManager.saveCurrentPage():
+        if not await self._stepManager.saveCurrentPage():
             return False
 
         if app.db.isModified():
@@ -236,6 +245,10 @@ class MainWindow(QMainWindow):
 
         logging.getLogger().removeHandler(self._handler)
         self._handler.close()
+
+        if toQuit:
+            self._readyToQuit = True
+            self.close()
 
         return True
 
