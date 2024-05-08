@@ -34,9 +34,9 @@ class VolumeRefinementDialog(QDialog):
         self._availableVolumes = None
 
         self._ui.direction.addEnumItems({
+            GapRefinementMode.MIXED:    self.tr('Mixed'),  # "Mixed" is here to make it the default item
             GapRefinementMode.INSIDE:   self.tr('Inside'),
             GapRefinementMode.OUTSIDE:  self.tr('Outside'),
-            GapRefinementMode.MIXED:    self.tr('Mixed')
         })
 
         self._connectSignalsSlots()
