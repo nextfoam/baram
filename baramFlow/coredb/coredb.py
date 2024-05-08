@@ -1206,7 +1206,7 @@ class _CoreDB(object):
         # parent = self._getElement('numericalConditions/convergenceCriteria/userDefinedScalars')
         # parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
 
-    def clearUserDefinedScalars(self, scalarID):
+    def clearUserDefinedScalars(self):
         parent = self._getElement('models/userDefinedScalars')
         parent.clear()
 

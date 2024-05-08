@@ -221,9 +221,7 @@ class PolyMeshLoader(QObject):
                     for rname in boundaries):
             return False
 
-        if db.hasMultipleRegions():
-            db.clearUserDefinedScalars()
-
+        db.clearUserDefinedScalars()
         db.clearRegions()
         db.clearMonitors()
 
