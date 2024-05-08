@@ -4,7 +4,6 @@
 from typing import Optional
 from enum import Enum, auto
 
-import qasync
 from PySide6.QtWidgets import QWidget, QMessageBox, QPushButton, QHBoxLayout
 from PySide6.QtWidgets import QSizePolicy
 from PySide6.QtGui import QIcon
@@ -19,6 +18,7 @@ from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceModelsDB, RANSModel
 from baramFlow.mesh.vtk_loader import hexActor, cylinderActor, sphereActor
 from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
+from baramFlow.view.widgets.user_defined_scalars_widget import UserDefinedScalarsWidget
 from .initialization_widget_ui import Ui_initializationWidget
 from .section_dialog import SectionDialog
 
@@ -136,15 +136,19 @@ class InitializationWidget(QWidget):
         self._ui.setupUi(self)
 
         self._rname = rname
-        self._initialValuesPath = f'.//regions/region[name="{rname}"]/initialization/initialValues'
+        self._initialValuesPath = f'regions/region[name="{rname}"]/initialization/initialValues'
         self._dialog = None
         self._sectionDialog: Optional[SectionDialog] = None
         self._rows = {}
         self._currentRow: Optional[SectionRow] = None
 
-        self._volumeFractionWidget = VolumeFractionWidget(rname, self._initialValuesPath)
+        self._volumeFractionWidget = VolumeFractionWidget(rname)
         if self._volumeFractionWidget.on():
             self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
+
+        self._scalarsWidget = UserDefinedScalarsWidget(rname)
+        if self._scalarsWidget.on():
+            self._ui.initialValuesLayout.addWidget(self._scalarsWidget)
 
         self._connectSignalsSlots()
 
@@ -175,7 +179,10 @@ class InitializationWidget(QWidget):
         )
 
         if self._volumeFractionWidget.on():
-            self._volumeFractionWidget.load()
+            self._volumeFractionWidget.load(self._initialValuesPath + '/volumeFractions')
+
+        if self._scalarsWidget.on():
+            self._scalarsWidget.load(self._initialValuesPath + '/userDefinedScalars')
 
         sections: [str] = db.getList(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section/name')
         for name in sections:
@@ -184,7 +191,6 @@ class InitializationWidget(QWidget):
             else:
                 self._addSectionRow(name)
 
-    @qasync.asyncSlot()
     async def appendToWriter(self, writer):
         writer.append(self._initialValuesPath + '/velocity/x', self._ui.xVelocity.text(),
                       self.tr('X-Velocity of region [{}]').format(self._rname))
@@ -203,7 +209,10 @@ class InitializationWidget(QWidget):
         writer.append(self._initialValuesPath + '/turbulentViscosity', self._ui.turbulentViscosityRatio.text(),
                       self.tr('Turbulent Viscosity of region [{}]').format(self._rname))
 
-        if not self._volumeFractionWidget.appendToWriter(writer):
+        if not await self._volumeFractionWidget.appendToWriter(writer, self._initialValuesPath + '/volumeFractions'):
+            return False
+
+        if not self._scalarsWidget.appendToWriter(writer, self._initialValuesPath + '/userDefinedScalars'):
             return False
 
         return True

@@ -218,5 +218,6 @@
         </temporalDistribution>
     </temperature>
     <coupledBoundary>0</coupledBoundary>
-    <volumeFractions></volumeFractions>
+    <volumeFractions/>
+    <userDefinedScalars/>
 </boundaryCondition>

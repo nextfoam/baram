@@ -12,7 +12,7 @@ from baramFlow.coredb.project import Project
 from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.run_calculation_db import RunCalculationDB
-from baramFlow.coredb.monitor_db import FieldHelper
+from baramFlow.coredb.monitor_db import FieldHelper, Field
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.openfoam.post_processing.post_file_reader import PostFileReader
@@ -203,8 +203,8 @@ class PointMonitor(Monitor):
 
     @property
     def fileName(self):
-        return FieldHelper.DBFieldKeyToField(self._db.getValue(self._xpath + '/field/field'),
-                                             self._db.getValue(self._xpath + '/field/mid'))
+        return FieldHelper.DBFieldKeyToField(Field(self._db.getValue(self._xpath + '/field/field')),
+                                             self._db.getValue(self._xpath + '/field/fieldID'))
 
     @property
     def extension(self):

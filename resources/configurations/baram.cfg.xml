@@ -29,6 +29,7 @@
             <referenceHeight>10</referenceHeight>
             <surfaceRoughnessLength>0.01</surfaceRoughnessLength>
             <minimumZCoordinate>0.0</minimumZCoordinate>
+            <userDefinedScalars/>
         </atmosphericBoundaryLayer>
     </general>
 
@@ -94,6 +95,21 @@
             <wallPrandtlNumber>0.85</wallPrandtlNumber>
         </turbulenceModels>
         <speciesModels>off</speciesModels>
+        <userDefinedScalars>
+            <scalar scalarID="0">
+                <fieldName/>
+                <region/>
+                <material>0</material>
+                <diffusivity>
+                    <specificationMethod>constant</specificationMethod>
+                    <constant>0</constant>
+                    <laminarAndTurbulentViscosity>
+                        <laminarViscosityCoefficient>1</laminarViscosityCoefficient>
+                        <turbulentViscosityCoefficient>1</turbulentViscosityCoefficient>
+                    </laminarAndTurbulentViscosity>
+                </diffusivity>
+            </scalar>
+        </userDefinedScalars>
     </models>
 
     <regions/>
@@ -114,6 +130,7 @@
             <turbulentKineticEnergy>firstOrderUpwind</turbulentKineticEnergy>
             <volumeFraction>firstOrderUpwind</volumeFraction>
             <pressure>linear</pressure>
+            <scalar>secondOrderUpwind</scalar>
         </discretizationSchemes>
         <underRelaxationFactors>
             <pressure>0.3</pressure>
@@ -128,6 +145,8 @@
             <turbulenceFinal>1</turbulenceFinal>
             <volumeFraction>0.7</volumeFraction>
             <volumeFractionFinal>1</volumeFractionFinal>
+            <scalar>0.7</scalar>
+            <scalarFinal>1</scalarFinal>
         </underRelaxationFactors>
         <highOrderTermRelaxation disabled="true">
             <relaxationFactor>0.5</relaxationFactor>
@@ -166,6 +185,10 @@
                 <absolute>0.001</absolute>
                 <relative>0.05</relative>
             </volumeFraction>
+            <scalar>
+                <absolute>0.001</absolute>
+                <relative>0.05</relative>
+            </scalar>
         </convergenceCriteria>
         <advanced>
             <limits>

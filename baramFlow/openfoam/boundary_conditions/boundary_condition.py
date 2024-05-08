@@ -220,7 +220,7 @@ class BoundaryCondition(DictionaryFile):
             'type': 'slip'
         }
 
-    def _constructFreestream(self, value):
+    def _constructFreeStream(self, value):
         return {
             'type': 'freestream',
             'freestreamValue': ('uniform', value)

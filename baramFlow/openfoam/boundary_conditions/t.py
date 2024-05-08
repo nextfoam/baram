@@ -45,7 +45,7 @@ class T(BoundaryCondition):
                     BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructFixedValue(constant)),
                     BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructFixedValue(constant)),
                     BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
-                    BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreestream(constant)),
+                    BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreeStream(constant)),
                     BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann', self._db.getValue(xpath + '/farFieldRiemann/staticTemperature'))),
                     BoundaryType.SUBSONIC_INLET.value:      (lambda: self._constructSubsonicInlet(xpath + '/subsonicInlet')),
                     BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructSubsonicOutflow(xpath + '/subsonicOutflow')),

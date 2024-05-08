@@ -125,7 +125,7 @@ class Epsilon(BoundaryCondition):
             epsilon = float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
         elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
             _, epsilon = self._calculateFreeStreamKE(xpath, self._region)
-        return self._constructFreestream(epsilon)
+        return self._constructFreeStream(epsilon)
 
     def _constructInterfaceEpsilon(self, xpath):
         spec = self._db.getValue(xpath + '/interface/mode')

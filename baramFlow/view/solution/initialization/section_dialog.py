@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum
+import re
+from enum import Enum, IntEnum, auto
 from typing import Optional
 
-import re
-
 import qasync
+from PySide6.QtWidgets import QSizePolicy, QRadioButton, QGridLayout, QLabel, QCheckBox, QLineEdit, QGroupBox
 
-from PySide6.QtWidgets import QSizePolicy, QRadioButton, QMessageBox
+from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
-
+from baramFlow.coredb.initialization_db import InitializationDB
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
-
 from .section_dialog_ui import Ui_sectionDialog
 
 
@@ -33,6 +32,46 @@ class PageType(Enum):
     EDIT = 1
 
 
+class UserDefinedScalarList(QGroupBox):
+    class Column(IntEnum):
+        CHECK_BOX = 0
+        LABEL = auto()
+        VALUE = auto()
+
+    def __init__(self, scalars):
+        super().__init__(self.tr('User-defined Scalars'))
+
+        self._layout = QGridLayout(self)
+        self._scalars = {}
+
+        for scalarID, fieldName in scalars:
+            checkBox = QCheckBox()
+            edit = QLineEdit()
+            edit.setEnabled(False)
+            checkBox.toggled.connect(edit.setEnabled)
+
+            row = self._layout.rowCount()
+            self._layout.addWidget(checkBox, row, self.Column.CHECK_BOX)
+            self._layout.addWidget(QLabel(fieldName), row, self.Column.LABEL)
+            self._layout.addWidget(edit, row, self.Column.VALUE)
+            self._scalars[scalarID] = row
+
+    def ids(self):
+        return self._scalars.keys()
+
+    def value(self, scalarID):
+        return (self._layout.itemAtPosition(self._scalars[scalarID], self.Column.VALUE).widget().text()
+                if self._layout.itemAtPosition(self._scalars[scalarID], self.Column.CHECK_BOX).widget().isChecked()
+                else None)
+
+    def fieldName(self, scalarID):
+        self._layout.itemAtPosition(self._scalars[scalarID], self.Column.LABEL).widget().text()
+
+    def setData(self, scalarID, enabled, value):
+        self._layout.itemAtPosition(self._scalars[scalarID], self.Column.CHECK_BOX).widget().setChecked(enabled)
+        self._layout.itemAtPosition(self._scalars[scalarID], self.Column.VALUE).widget().setText(value)
+
+
 class SectionDialog(ResizableDialog):
     def __init__(self, parent=None, rname='', name=None):
         super().__init__(parent)
@@ -43,83 +82,30 @@ class SectionDialog(ResizableDialog):
         self._sectionName = name
         self._sectionType: Optional[SectionType] = None
         self._cellZoneRadio = {}
+        self._scalars = {}
 
         self._db = coredb.CoreDB()
 
+        self._pageType = None
+        self._volumeFractionWidget = None
+        self._scalarsWidget = None
+
         self._connectSignalsToSlots()
+
+        sectionPath = InitializationDB.getSectionXPath(rname, name)
+        self._volumeFractionWidget = VolumeFractionWidget(self._rname)
+        if self._volumeFractionWidget.on():
+            self._volumeFractionWidget.setCheckable(True)
+            self._volumeFractionWidget.setChecked(False)
+            self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
+
+        if scalars := self._db.getUserDefinedScalarsInRegion(self._rname):
+            self._scalarsWidget = UserDefinedScalarList(scalars)
+            self._ui.initialValuesLayout.addWidget(self._scalarsWidget)
 
         if name is not None:  # Open Edit page with the parameters from coreDB
             self._pageType = PageType.EDIT
-            sectionPath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{name}"]'
-
-            self._ui.sectionName.setText(name)
-
-            typeString = self._db.getValue(sectionPath+'/type')
-            if typeString == 'hex':
-                self._sectionType = SectionType.HEX
-                self._ui.minPointX.setText(self._db.getValue(sectionPath+'/point1/x'))
-                self._ui.minPointY.setText(self._db.getValue(sectionPath+'/point1/y'))
-                self._ui.minPointZ.setText(self._db.getValue(sectionPath+'/point1/z'))
-                self._ui.maxPointX.setText(self._db.getValue(sectionPath+'/point2/x'))
-                self._ui.maxPointY.setText(self._db.getValue(sectionPath+'/point2/y'))
-                self._ui.maxPointZ.setText(self._db.getValue(sectionPath+'/point2/z'))
-            elif typeString == 'cylinder':
-                self._sectionType = SectionType.CYLINDER
-                self._ui.p1x.setText(self._db.getValue(sectionPath+'/point1/x'))
-                self._ui.p1y.setText(self._db.getValue(sectionPath+'/point1/y'))
-                self._ui.p1z.setText(self._db.getValue(sectionPath+'/point1/z'))
-                self._ui.p2x.setText(self._db.getValue(sectionPath+'/point2/x'))
-                self._ui.p2y.setText(self._db.getValue(sectionPath+'/point2/y'))
-                self._ui.p2z.setText(self._db.getValue(sectionPath+'/point2/z'))
-                self._ui.cylinderRadius.setText(self._db.getValue(sectionPath+'/radius'))
-            elif typeString == 'sphere':
-                self._sectionType = SectionType.SPHERE
-                self._ui.cx.setText(self._db.getValue(sectionPath+'/point1/x'))
-                self._ui.cy.setText(self._db.getValue(sectionPath+'/point1/y'))
-                self._ui.cz.setText(self._db.getValue(sectionPath+'/point1/z'))
-                self._ui.sphereRadius.setText(self._db.getValue(sectionPath+'/radius'))
-            elif typeString == 'cellZone':
-                self._sectionType = SectionType.CELL_ZONE
-                savedId = self._db.getValue(sectionPath+'/cellZone')
-                cellZones = self._db.getCellZones(self._rname)
-                for czid, czname in cellZones:
-                    if czname == 'All':
-                        continue
-                    radio = QRadioButton(czname)
-                    if str(czid) == savedId:
-                        radio.setChecked(True)
-                    self._ui.cellZoneGroupLayout.addWidget(radio)
-                    self._cellZoneRadio[str(czid)] = radio
-            else:
-                raise AssertionError
-
-            self._ui.ux.setText(self._db.getValue(sectionPath+'/velocity/x'))
-            self._ui.uy.setText(self._db.getValue(sectionPath+'/velocity/y'))
-            self._ui.uz.setText(self._db.getValue(sectionPath+'/velocity/z'))
-            if self._db.getAttribute(sectionPath+'/velocity', 'disabled') == 'false':
-                self._ui.velocityGroup.setChecked(True)
-
-            self._ui.pressure.setText(self._db.getValue(sectionPath+'/pressure'))
-            if self._db.getAttribute(sectionPath+'/pressure', 'disabled') == 'false':
-                self._ui.pressureCheckBox.setChecked(True)
-
-            self._ui.temperature.setText(self._db.getValue(sectionPath+'/temperature'))
-            if self._db.getAttribute(sectionPath+'/temperature', 'disabled') == 'false':
-                self._ui.temperatureCheckBox.setChecked(True)
-
-            self._volumeFractionWidget = VolumeFractionWidget(self._rname, sectionPath)
-            if self._volumeFractionWidget.on():
-                self._volumeFractionWidget.load()
-                self._volumeFractionWidget.setCheckable(True)
-                if self._db.getAttribute(sectionPath+'/volumeFractions', 'disabled') == 'false':
-                    self._volumeFractionWidget.setChecked(True)
-                self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
-
-            if self._db.getValue(sectionPath+'/overrideBoundaryValue') == 'true':
-                self._ui.overrideBoundaryValue.setChecked(True)
-            else:
-                self._ui.overrideBoundaryValue.setChecked(False)
-
+            self._load(sectionPath)
             self._showEditPage()
         else:
             self._pageType = PageType.CREATE
@@ -128,6 +114,7 @@ class SectionDialog(ResizableDialog):
     def _connectSignalsToSlots(self):
         self._ui.nextButton.clicked.connect(self.nextButtonClicked)
         self._ui.cancelButton.clicked.connect(self.cancelButtonClicked)
+        self._ui.ok.clicked.connect(self._accept)
 
     @property
     def sectionName(self):
@@ -136,19 +123,20 @@ class SectionDialog(ResizableDialog):
     @qasync.asyncSlot()
     async def nextButtonClicked(self):
         if not re.match(r'^\w+$', self._ui.sectionNameInput.text()):
-            QMessageBox.warning(self, self.tr('Warning'), self.tr('Section name can only contain letters, numbers, and underscores'))
+            await AsyncMessageBox().warning(self, self.tr('Warning'),
+                                            self.tr('Section name can only contain letters, numbers, and underscores'))
             return
 
         self._sectionName = self._ui.sectionNameInput.text()
 
         # Check if the name already exists
-        sectionPath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._sectionName}"]'
+        sectionPath = InitializationDB.getSectionXPath(self._rname, self._sectionName)
         try:
             _ = self._db.getValue(sectionPath + '/type')
         except LookupError:  # Ok, No Duplication
             pass
         else:
-            QMessageBox.warning(self, self.tr('Warning'), self.tr('Section with same name already exists'))
+            await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Section with same name already exists'))
             return
 
         self._ui.sectionName.setText(self._sectionName)
@@ -163,7 +151,7 @@ class SectionDialog(ResizableDialog):
             self._sectionType = SectionType.CELL_ZONE
             cellZones = self._db.getCellZones(self._rname)
             if len(cellZones) == 1:  # 'All' only
-                QMessageBox.warning(self, self.tr('Warning'), self.tr('No Cell Zone found in the region'))
+                await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('No Cell Zone found in the region'))
                 return
 
             for czid, czname in cellZones:
@@ -178,19 +166,14 @@ class SectionDialog(ResizableDialog):
         else:
             raise AssertionError
 
-        self._volumeFractionWidget = VolumeFractionWidget(self._rname, sectionPath)
-        if self._volumeFractionWidget.on():
-            self._volumeFractionWidget.setCheckable(True)
-            self._volumeFractionWidget.setChecked(False)
-            self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
-
         self._showEditPage()
 
     @qasync.asyncSlot()
     async def cancelButtonClicked(self):
         self.close()
 
-    def accept(self) -> None:
+    @qasync.asyncSlot()
+    async def _accept(self) -> None:
         writer = CoreDBWriter()
 
         if self._pageType == PageType.CREATE:
@@ -207,12 +190,13 @@ class SectionDialog(ResizableDialog):
                                     <velocity disabled="true"><x>0</x><y>0</y><z>0</z></velocity>
                                     <pressure disabled="true">0</pressure>
                                     <temperature disabled="true">300</temperature>
-                                    <volumeFractions disabled="true"></volumeFractions>
+                                    <volumeFractions disabled="true"/>
+                                    <userDefinedScalars/>
                                     <overrideBoundaryValue>false</overrideBoundaryValue>
                                 </section>
                             ''')
 
-        sectionPath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._sectionName}"]'
+        sectionPath = InitializationDB.getSectionXPath(self._rname, self._sectionName)
 
         if self._sectionType == SectionType.HEX:
             try:  # ensure input text as decimal number
@@ -223,11 +207,11 @@ class SectionDialog(ResizableDialog):
                 maxY = float(self._ui.maxPointY.text())
                 maxZ = float(self._ui.maxPointZ.text())
             except ValueError:
-                QMessageBox.warning(self, self.tr('Warning'), self.tr('Invalid Geometry parameter'))
+                await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Invalid Geometry parameter'))
                 return
 
             if maxX <= minX or maxY <= minY or maxZ <= minZ:
-                QMessageBox.warning(self, self.tr('Warning'), self.tr('Invalid Geometry parameter'))
+                await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Invalid Geometry parameter'))
                 return
 
             writer.append(sectionPath + '/type', 'hex', self.tr("Section Type"))
@@ -248,11 +232,11 @@ class SectionDialog(ResizableDialog):
                 p2z = float(self._ui.p2z.text())
                 r   = float(self._ui.cylinderRadius.text())
             except ValueError:
-                QMessageBox.warning(self, self.tr('Warning'), self.tr('Invalid Geometry parameter'))
+                await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Invalid Geometry parameter'))
                 return
 
             if r == 0 or (p1x == p2x and p1y == p2y and p1z == p2z):
-                QMessageBox.warning(self, self.tr('Warning'), self.tr('Invalid Geometry parameter'))
+                await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Invalid Geometry parameter'))
                 return
 
             writer.append(sectionPath + '/type', 'cylinder', self.tr("Section Type"))
@@ -271,11 +255,11 @@ class SectionDialog(ResizableDialog):
                 cz = float(self._ui.cz.text())
                 r = float(self._ui.sphereRadius.text())
             except ValueError:
-                QMessageBox.warning(self, self.tr('Warning'), self.tr('Invalid Geometry parameter'))
+                await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Invalid Geometry parameter'))
                 return
 
             if r == 0:
-                QMessageBox.warning(self, self.tr('Warning'), self.tr('Invalid Geometry parameter'))
+                await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Invalid Geometry parameter'))
                 return
 
             writer.append(sectionPath + '/type', 'sphere', self.tr("Section Type"))
@@ -306,7 +290,7 @@ class SectionDialog(ResizableDialog):
                 uy = float(self._ui.uy.text())
                 uz = float(self._ui.uz.text())
             except ValueError:
-                QMessageBox.warning(self, self.tr('Warning'), self.tr('Invalid velocity parameter'))
+                await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Invalid velocity parameter'))
                 return
 
             writer.setAttribute(sectionPath + '/velocity', 'disabled', 'false')
@@ -321,7 +305,7 @@ class SectionDialog(ResizableDialog):
             try:  # ensure input text as decimal number
                 p = float(self._ui.pressure.text())
             except ValueError:
-                QMessageBox.warning(self, self.tr('Warning'), self.tr('Invalid pressure parameter'))
+                await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Invalid pressure parameter'))
                 return
 
             writer.setAttribute(sectionPath + '/pressure', 'disabled', 'false')
@@ -334,7 +318,7 @@ class SectionDialog(ResizableDialog):
             try:  # ensure input text as decimal number
                 t = float(self._ui.temperature.text())
             except ValueError:
-                QMessageBox.warning(self, self.tr('Warning'), self.tr('Invalid temperature parameter'))
+                await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Invalid temperature parameter'))
                 return
 
             writer.setAttribute(sectionPath + '/temperature', 'disabled', 'false')
@@ -346,21 +330,40 @@ class SectionDialog(ResizableDialog):
         if self._volumeFractionWidget.on():
             if self._volumeFractionWidget.isChecked():
                 writer.setAttribute(sectionPath + '/volumeFractions', 'disabled', 'false')
-                if not self._volumeFractionWidget.appendToWriter(writer):
+                if not await self._volumeFractionWidget.appendToWriter(writer, sectionPath + '/volumeFractions'):
                     return
                 parameterConfigured = True
             else:
                 writer.setAttribute(sectionPath + '/volumeFractions', 'disabled', 'true')
 
+        if self._scalarsWidget:
+            if self._pageType == PageType.CREATE:
+                for scalarID in self._scalarsWidget.ids():
+                    value = self._scalarsWidget.value(scalarID)
+                    writer.addElement(f'{sectionPath}/userDefinedScalars',
+                                      InitializationDB.buildSectionUserDefinedScalar(scalarID, value),
+                                      self._scalarsWidget.fieldName(scalarID))
+                    parameterConfigured = parameterConfigured or value is not None
+            else:
+                for scalarID in self._scalarsWidget.ids():
+                    xpath = f'{sectionPath}/userDefinedScalars/scalar[scalarID="{scalarID}"]/value'
+                    if value := self._scalarsWidget.value(scalarID):
+                        writer.setAttribute(xpath, 'disabled', 'false')
+                        writer.append(xpath, value, self._scalarsWidget.fieldName(scalarID))
+                        parameterConfigured = True
+                    else:
+                        writer.setAttribute(xpath, 'disabled', 'true')
+
         if not parameterConfigured:
-            QMessageBox.warning(self, self.tr('Warning'), self.tr('At least one parameter should be configured'))
+            await AsyncMessageBox().warning(self, self.tr('Warning'),
+                                            self.tr('At least one parameter should be configured'))
             return
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            await AsyncMessageBox().critical(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
-            super().accept()
+            self.accept()
 
     def _showCreatePage(self):
         self._ui.editPage.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Ignored)
@@ -394,3 +397,79 @@ class SectionDialog(ResizableDialog):
         self._ui.stackedWidget.adjustSize()
 
         self._ui.stackedWidget.setCurrentIndex(PageType.EDIT.value)  # set the index to Edit page
+
+    def _load(self, sectionPath):
+        self._pageType = PageType.EDIT
+
+        self._ui.sectionName.setText(self._sectionName)
+
+        typeString = self._db.getValue(sectionPath+'/type')
+        if typeString == 'hex':
+            self._sectionType = SectionType.HEX
+            self._ui.minPointX.setText(self._db.getValue(sectionPath+'/point1/x'))
+            self._ui.minPointY.setText(self._db.getValue(sectionPath+'/point1/y'))
+            self._ui.minPointZ.setText(self._db.getValue(sectionPath+'/point1/z'))
+            self._ui.maxPointX.setText(self._db.getValue(sectionPath+'/point2/x'))
+            self._ui.maxPointY.setText(self._db.getValue(sectionPath+'/point2/y'))
+            self._ui.maxPointZ.setText(self._db.getValue(sectionPath+'/point2/z'))
+        elif typeString == 'cylinder':
+            self._sectionType = SectionType.CYLINDER
+            self._ui.p1x.setText(self._db.getValue(sectionPath+'/point1/x'))
+            self._ui.p1y.setText(self._db.getValue(sectionPath+'/point1/y'))
+            self._ui.p1z.setText(self._db.getValue(sectionPath+'/point1/z'))
+            self._ui.p2x.setText(self._db.getValue(sectionPath+'/point2/x'))
+            self._ui.p2y.setText(self._db.getValue(sectionPath+'/point2/y'))
+            self._ui.p2z.setText(self._db.getValue(sectionPath+'/point2/z'))
+            self._ui.cylinderRadius.setText(self._db.getValue(sectionPath+'/radius'))
+        elif typeString == 'sphere':
+            self._sectionType = SectionType.SPHERE
+            self._ui.cx.setText(self._db.getValue(sectionPath+'/point1/x'))
+            self._ui.cy.setText(self._db.getValue(sectionPath+'/point1/y'))
+            self._ui.cz.setText(self._db.getValue(sectionPath+'/point1/z'))
+            self._ui.sphereRadius.setText(self._db.getValue(sectionPath+'/radius'))
+        elif typeString == 'cellZone':
+            self._sectionType = SectionType.CELL_ZONE
+            savedId = self._db.getValue(sectionPath+'/cellZone')
+            cellZones = self._db.getCellZones(self._rname)
+            for czid, czname in cellZones:
+                if czname == 'All':
+                    continue
+                radio = QRadioButton(czname)
+                if str(czid) == savedId:
+                    radio.setChecked(True)
+                self._ui.cellZoneGroupLayout.addWidget(radio)
+                self._cellZoneRadio[str(czid)] = radio
+        else:
+            raise AssertionError
+
+        self._ui.ux.setText(self._db.getValue(sectionPath+'/velocity/x'))
+        self._ui.uy.setText(self._db.getValue(sectionPath+'/velocity/y'))
+        self._ui.uz.setText(self._db.getValue(sectionPath+'/velocity/z'))
+        if self._db.getAttribute(sectionPath+'/velocity', 'disabled') == 'false':
+            self._ui.velocityGroup.setChecked(True)
+
+        self._ui.pressure.setText(self._db.getValue(sectionPath+'/pressure'))
+        if self._db.getAttribute(sectionPath+'/pressure', 'disabled') == 'false':
+            self._ui.pressureCheckBox.setChecked(True)
+
+        self._ui.temperature.setText(self._db.getValue(sectionPath+'/temperature'))
+        if self._db.getAttribute(sectionPath+'/temperature', 'disabled') == 'false':
+            self._ui.temperatureCheckBox.setChecked(True)
+
+        if self._volumeFractionWidget.on():
+            self._volumeFractionWidget.load(sectionPath + '/volumeFractions')
+            if self._db.getAttribute(sectionPath + '/volumeFractions', 'disabled') == 'false':
+                self._volumeFractionWidget.setChecked(True)
+
+        if self._scalarsWidget:
+            for scalarID in self._scalarsWidget.ids():
+                xpath = f'{sectionPath}/userDefinedScalars/scalar[scalarID="{scalarID}"]/value'
+                self._scalarsWidget.setData(
+                    scalarID,
+                    self._db.getAttribute(xpath, 'disabled') == 'false',
+                    self._db.getValue(xpath))
+
+        if self._db.getValue(sectionPath+'/overrideBoundaryValue') == 'true':
+            self._ui.overrideBoundaryValue.setChecked(True)
+        else:
+            self._ui.overrideBoundaryValue.setChecked(False)

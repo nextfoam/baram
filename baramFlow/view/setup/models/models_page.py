@@ -4,13 +4,14 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QListWidgetItem
 
-from baramFlow.coredb.models_db import Models, ModelsDB, MultiphaseModel, TurbulenceModel
+from baramFlow.coredb.models_db import Models, ModelsDB, MultiphaseModel, TurbulenceModel, UserDefinedScalarsDB
 from baramFlow.coredb.general_db import GeneralDB, SolverType
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.content_page import ContentPage
 from .models_page_ui import Ui_ModelsPage
 from .turbulence_dialog import TurbulenceModelDialog
 from .energy_dialog import EnergyDialog
+from .user_defined_scalars_dialog import UserDefinedScalarsDialog
 
 
 class ModelItem(QListWidgetItem):
@@ -107,6 +108,11 @@ class ModelsPage(ContentPage):
                             self.tr('Species'),
                             lambda: self.tr('Include') if ModelsDB.isSpeciesModelOn() else self.tr('Not Include'))
 
+        self._addModelItem(Models.SCALARS,
+                           self.tr('User-defined Scalars'),
+                           lambda: self.tr('Defined') if UserDefinedScalarsDB.hasDefined() else self.tr('Not Defined'),
+                           UserDefinedScalarsDialog if GeneralDB.isPressureBased() else None)
+
         self._connectSignalsSlots()
 
         for i in range(self._ui.list.count()):
@@ -131,17 +137,3 @@ class ModelsPage(ContentPage):
 
     def _addModelItem(self, model, title, loadFunction, dialogClass=None):
         self._ui.list.addItem(ModelItem(self._ui.list, model, title, loadFunction, dialogClass))
-    #
-    # def _meshUpdated(self):
-    #     for i in range(self._ui.list.count()):
-    #         item: ModelItem = self._ui.list.item(i)
-    #         if item.model == Models.ENERGY:
-    #             if RegionDB.getNumberOfRegions() > 1:  # multi-region
-    #                 item.dialogClass = None
-    #             else:
-    #                 item.dialogClass = EnergyDialog
-    #
-    #             item.load()
-    #             self._selectionChanged()
-    #
-    #             break

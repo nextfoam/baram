@@ -257,6 +257,33 @@ class FvSolution(DictionaryFile):
             self._data['relaxationFactors']['equations'][f'alpha.{material}Final'] = self._db.getValue(
                 NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors/volumeFractionFinal')
 
+        absolute = self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/convergenceCriteria/scalar/absolute')
+        relative = self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/convergenceCriteria/scalar/relative')
+        self._data['SIMPLE']['residualControl']['scalar'] = absolute
+        self._data['PIMPLE']['residualControl']['scalar'] = {
+            'tolerance': absolute,
+            'relTol': relative
+        }
+
+        self._data['relaxationFactors']['equations']['scalar'] = self._db.getValue(
+            f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/underRelaxationFactors/scalar')
+        self._data['relaxationFactors']['equations']['scalarFinal'] = self._db.getValue(
+            f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/underRelaxationFactors/scalarFinal')
+        #
+        # for scalarID, fieldName in self._db.getUserDefinedScalars():
+        #     xpath = f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/convergenceCriteria/userDefinedScalars/scalar[scalarID="{scalarID}"]'
+        #     absolute = self._db.getValue(xpath + '/absolute')
+        #     relative = self._db.getValue(xpath + '/relative')
+        #     self._data['SIMPLE']['residualControl'][fieldName] = absolute
+        #     self._data['PIMPLE']['residualControl'][fieldName] = {
+        #         'tolerance': absolute,
+        #         'relTol': relative
+        #     }
+        #
+        #     xpath = f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/underRelaxationFactors/userDefinedScalars/scalar[scalarID="{scalarID}"]'
+        #     self._data['relaxationFactors']['equations'][fieldName] = self._db.getValue(xpath + '/value')
+        #     self._data['relaxationFactors']['equations'][f'{fieldName}Final'] = self._db.getValue(xpath + '/finalValue')
+
         return self
 
     def _constructSolversP(self):

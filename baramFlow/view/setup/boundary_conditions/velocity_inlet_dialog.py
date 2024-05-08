@@ -3,7 +3,10 @@
 
 from pathlib import Path
 
-from PySide6.QtWidgets import QFileDialog, QMessageBox
+import qasync
+from PySide6.QtWidgets import QFileDialog
+
+from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.filedb import BcFileRole, FileFormatError
@@ -44,10 +47,11 @@ class VelocityInletDialog(ResizableDialog):
         self._xpath = BoundaryDB.getXPath(bcid)
 
         layout = self._ui.dialogContents.layout()
+        rname = BoundaryDB.getBoundaryRegion(bcid)
         self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
         self._temperatureWidget = ConditionalWidgetHelper.temperatureWidget(self._xpath, bcid, layout)
-        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(BoundaryDB.getBoundaryRegion(bcid),
-                                                                                  self._xpath, layout)
+        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(rname, layout)
+        self._scalarsWidget = ConditionalWidgetHelper.userDefinedScalarsWidget(rname, layout)
 
         self._componentSpatialDistributionFile = None
         self._componentSpatialDistributionFileName = None
@@ -60,7 +64,8 @@ class VelocityInletDialog(ResizableDialog):
         self._connectSignalsSlots()
         self._load()
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def _accept(self):
         xpath = self._xpath + self.RELATIVE_XPATH
         fileDB = Project.instance().fileDB()
 
@@ -88,10 +93,12 @@ class VelocityInletDialog(ResizableDialog):
                                                                self._componentSpatialDistributionFile)
                         writer.append(xpath + '/velocity/component/spatialDistribution', distributionFileKey, None)
                     except FileFormatError:
-                        QMessageBox.critical(self, self.tr("Input Error"), self.tr("Velocity CSV File is wrong"))
+                        await AsyncMessageBox().information(self, self.tr("Input Error"),
+                                                            self.tr("Velocity CSV File is wrong"))
                         return
                 elif not self._componentSpatialDistributionFileName:
-                    QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Velocity CSV File."))
+                    await AsyncMessageBox().information(self, self.tr("Input Error"),
+                                                        self.tr("Select Velocity CSV File."))
                     return
             elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
                 if self._componentTemporalDistribution:
@@ -108,7 +115,8 @@ class VelocityInletDialog(ResizableDialog):
                                   self._componentTemporalDistribution[3],
                                   self.tr("Piecewise Linear Velocity"))
                 elif self._db.getValue(xpath + '/velocity/component/temporalDistribution/piecewiseLinear/t') == '':
-                    QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Piecewise Linear Velocity."))
+                    await AsyncMessageBox().information(self, self.tr("Input Error"),
+                                                        self.tr("Edit Piecewise Linear Velocity."))
                     return
         elif specification == VelocitySpecification.MAGNITUDE.value:
             writer.append(xpath + '/velocity/magnitudeNormal/profile', profile, None)
@@ -125,10 +133,12 @@ class VelocityInletDialog(ResizableDialog):
                         writer.append(xpath + '/velocity/magnitudeNormal/spatialDistribution',
                                       distributionFileKey, None)
                     except FileFormatError:
-                        QMessageBox.critical(self, self.tr("Input Error"), self.tr("Velocity CSV File is wrong"))
+                        await AsyncMessageBox().information(self, self.tr("Input Error"),
+                                                            self.tr("Velocity CSV File is wrong"))
                         return
                 elif not self._magnitudeSpatialDistributionFileName:
-                    QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Velocity CSV File."))
+                    await AsyncMessageBox().information(self, self.tr("Input Error"),
+                                                        self.tr("Select Velocity CSV File."))
                     return
             elif profile == VelocityProfile.TEMPORAL_DISTRIBUTION.value:
                 if self._magnitudeTemporalDistribution:
@@ -139,7 +149,8 @@ class VelocityInletDialog(ResizableDialog):
                                   self._magnitudeTemporalDistribution[1],
                                   self.tr("Piecewise Linear Velocity"))
                 elif self._db.getValue(xpath + '/velocity/magnitudeNormal/temporalDistribution/piecewiseLinear/t') == '':
-                    QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Piecewise Linear Velocity."))
+                    await AsyncMessageBox().information(self, self.tr("Input Error"),
+                                                        self.tr("Edit Piecewise Linear Velocity."))
                     return
 
         if not self._turbulenceWidget.appendToWriter(writer):
@@ -148,7 +159,10 @@ class VelocityInletDialog(ResizableDialog):
         if not self._temperatureWidget.appendToWriter(writer):
             return
 
-        if not self._volumeFractionWidget.appendToWriter(writer):
+        if not await self._volumeFractionWidget.appendToWriter(writer, self._xpath + '/volumeFractions'):
+            return
+
+        if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
             return
 
         errorCount = writer.write()
@@ -157,19 +171,20 @@ class VelocityInletDialog(ResizableDialog):
                 fileDB.delete(distributionFileKey)
 
             self._temperatureWidget.rollbackWriting()
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
             if distributionFileKey and oldDistributionFileKey:
                 fileDB.delete(oldDistributionFileKey)
 
             self._temperatureWidget.completeWriting()
-            super().accept()
+            self.accept()
 
     def _connectSignalsSlots(self):
         self._ui.velocitySpecificationMethod.currentIndexChanged.connect(self._comboChanged)
         self._ui.profileType.currentIndexChanged.connect(self._comboChanged)
         self._ui.spatialDistributionFileSelect.clicked.connect(self._selectSpatialDistributionFile)
         self._ui.temporalDistributionEdit.clicked.connect(self._editTemporalDistribution)
+        self._ui.ok.clicked.connect(self._accept)
 
     def _load(self):
         xpath = self._xpath + self.RELATIVE_XPATH
@@ -196,7 +211,8 @@ class VelocityInletDialog(ResizableDialog):
 
         self._turbulenceWidget.load()
         self._temperatureWidget.load()
-        self._volumeFractionWidget.load()
+        self._volumeFractionWidget.load(self._xpath + '/volumeFractions')
+        self._scalarsWidget.load(self._xpath + '/userDefinedScalars')
 
     def _setupCombo(self, combo, items):
         for value, text in items.items():

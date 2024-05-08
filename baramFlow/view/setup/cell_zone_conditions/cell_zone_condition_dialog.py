@@ -91,6 +91,7 @@ class CellZoneConditionDialog(QDialog):
         self._materialSourceTerms = {}
         self._energySourceTerm = None
         self._turbulenceSourceTerms = {}
+        self._scalarSourceTerms = {}
 
         self._materialSourceTermsLayout = None
 
@@ -112,6 +113,7 @@ class CellZoneConditionDialog(QDialog):
         # Fixed Value Widgets
         self._turbulenceFixedValues = {}
         self._temperature = None
+        self._scalarFixedValues = {}
 
         if ModelsDB.isEnergyModelOn():
             self._energySourceTerm = VariableSourceWidget(
@@ -126,6 +128,7 @@ class CellZoneConditionDialog(QDialog):
             self._ui.fixedValues.layout().addWidget(self._temperature)
 
         self._setupTurbulenceWidgets()
+        self._setupScalarWidgets()
 
         self._ui.sourceTerms.layout().addStretch()
         self._ui.fixedValues.layout().addStretch()
@@ -168,6 +171,10 @@ class CellZoneConditionDialog(QDialog):
             if not widget.appendToWriter(writer):
                 return
 
+        for field, widget in self._scalarSourceTerms.items():
+            if not widget.appendToWriter(writer):
+                return
+
         if self._ui.velocityGroup.isChecked():
             writer.setAttribute(self._xpath + 'fixedValues/velocity', 'disabled', 'false')
             writer.append(self._xpath + '/fixedValues/velocity/velocity/x',
@@ -185,6 +192,10 @@ class CellZoneConditionDialog(QDialog):
             return
 
         for field, widget in self._turbulenceFixedValues.items():
+            if not widget.appendToWriter(writer):
+                return
+
+        for field, widget in self._scalarFixedValues.items():
             if not widget.appendToWriter(writer):
                 return
 
@@ -215,6 +226,9 @@ class CellZoneConditionDialog(QDialog):
         for field, widget in self._turbulenceSourceTerms.items():
             widget.load()
 
+        for field, widget in self._scalarSourceTerms.items():
+            widget.load()
+
         self._ui.velocityGroup.setChecked(
             self._db.getAttribute(self._xpath + '/fixedValues/velocity', 'disabled') == 'false')
         self._ui.xVelocity.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/velocity/x'))
@@ -229,18 +243,42 @@ class CellZoneConditionDialog(QDialog):
         for field, widget in self._turbulenceFixedValues.items():
             widget.load()
 
+        for field, widget in self._scalarFixedValues.items():
+            widget.load()
+
     def _setupTurbulenceWidgets(self):
         sourceTermsLayout = self._ui.sourceTerms.layout()
         fixedValuesLayout = self._ui.fixedValues.layout()
+
         for field in TurbulenceModelHelper.getFields():
             self._turbulenceSourceTerms[field] = ConstantSourceWidget(
                 f'{field.name()}, {field.symbol}', field.symbol, field.sourceUnits,
                 self._xpath + '/sourceTerms/' + field.xpathName)
             sourceTermsLayout.addWidget(self._turbulenceSourceTerms[field])
+
             self._turbulenceFixedValues[field] = FixedValueWidget(
                 f'{field.name()}, {field.symbol}', f'{field.symbol} ({field.unit})',
                 self._xpath + '/fixedValues/' + field.xpathName)
             fixedValuesLayout.addWidget(self._turbulenceFixedValues[field])
+
+    def _setupScalarWidgets(self):
+        sourceTermsLayout = self._ui.sourceTerms.layout()
+        fixedValuesLayout = self._ui.fixedValues.layout()
+
+        for scalarID, fieldName in self._db.getUserDefinedScalarsInRegion(self._rname):
+            xpath = self._xpath + f'/sourceTerms/userDefinedScalars/scalarSource[scalarID="{scalarID}"]'
+            # if not self._db.exists(xpath):
+            #     CellZoneDB.addScalarSourceTerm(self._czid, scalarID)
+
+            self._scalarSourceTerms[scalarID] = VariableSourceWidget(fieldName, xpath)
+            sourceTermsLayout.addWidget(self._scalarSourceTerms[scalarID])
+
+            xpath = self._xpath + f'/fixedValues/userDefinedScalars/scalar[scalarID="{scalarID}"]/value'
+            # if not self._db.exists(xpath):
+            #     CellZoneDB.addScalarFixedValue(self._czid, scalarID)
+
+            self._scalarFixedValues[scalarID] = FixedValueWidget(fieldName, fieldName, xpath)
+            fixedValuesLayout.addWidget(self._scalarFixedValues[scalarID])
 
     def _setupMaterialSourceWidgets(self, materials):
         for mid in self._secondaryMaterials:

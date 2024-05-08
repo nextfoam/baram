@@ -174,6 +174,10 @@ class FvOptions(DictionaryFile):
         else:
             logger.debug('Error Model Type')
 
+        for scalarID, fieldName in self._db.getUserDefinedScalars():
+            self._generateSourceFields(
+                czname, xpath + f'/userDefinedScalars/scalarSource[scalarID="{scalarID}"]', fieldName)
+
     def _generateSourceFields(self, czname, xpath, fieldType):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
             dictName = f'scalarSource_{czname}_{fieldType}'
@@ -255,9 +259,12 @@ class FvOptions(DictionaryFile):
         elif modelsType == 'k-omega':
             self._generateFixedFields(czname, xpath + '/turbulentKineticEnergy', 'k')
             self._generateFixedFields(czname, xpath + '/specificDissipationRate', 'omega')
-
         else:
             logger.debug('Error Model Type')
+
+        for scalarID, fieldName in self._db.getUserDefinedScalars():
+            self._generateFixedFields(
+                czname, xpath + f'/userDefinedScalars/scalar[scalarID="{scalarID}"]/value', fieldName)
 
     def _generateFixedVelocity(self, czname, xpath):
         if self._db.getAttribute(xpath, 'disabled') == 'false':

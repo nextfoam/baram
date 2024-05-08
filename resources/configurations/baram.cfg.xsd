@@ -146,13 +146,49 @@
                         <xs:enumeration value="temperature"/>
                         <xs:enumeration value="density"/>
                         <xs:enumeration value="material"/>
+                        <xs:enumeration value="scalar"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>
-            <xs:element name="mid" type="xs:positiveInteger" default="1"/>  <!-- set if "field" is "material" -->
+            <xs:element name="fieldID" type="xs:positiveInteger" default="1"/>  <!-- set if "field" is "material" or "scalar" -->
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="userDefinedScalarListType">
+        <xs:sequence>
+            <xs:element name="scalar" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="scalarID" type="xs:positiveInteger"/>
+                        <xs:element name="value" type="inputNumberType"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="optionalUserDefinedScalarListType">
+        <xs:sequence>
+            <xs:element name="scalar" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="scalarID" type="xs:positiveInteger"/>
+                        <xs:element name="value">
+                            <xs:complexType>
+                                <xs:simpleContent>
+                                    <xs:extension base="inputNumberType">
+                                        <xs:attribute name="disabled"
+                                                      type="xs:boolean"
+                                                      default="true"/>
+                                    </xs:extension>
+                                </xs:simpleContent>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
 
     <xs:complexType name="generalType">
         <xs:sequence>
@@ -197,6 +233,7 @@
                         <xs:element name="referenceHeight" type="inputNumberType" default="10"/>
                         <xs:element name="surfaceRoughnessLength" type="inputNumberType" default="0.01"/>
                         <xs:element name="minimumZCoordinate" type="inputNumberType" default="0.0"/>
+                        <xs:element name="userDefinedScalars" type="userDefinedScalarListType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -772,6 +809,40 @@
                                                   use="required"/>
                                 </xs:complexType>
                             </xs:element>
+                            <xs:element name="userDefinedScalars">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="scalarSource" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="scalarID" type="xs:positiveInteger"/>
+                                                    <xs:element name="unit" default="valueForEntireCellZone">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="valuePerUnitVolume"/>
+                                                                <xs:enumeration value="valueForEntireCellZone"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="specification" default="constant">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="constant"/>
+                                                                <xs:enumeration value="piecewiseLinear"/>
+                                                                <xs:enumeration value="polynomial"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="constant" type="inputNumberType" default="0"/>
+                                                    <xs:element name="piecewiseLinear" type="temporalScalarListType"/>
+                                                    <xs:element name="polynomial" type="inputNumberListType"/>
+                                                </xs:sequence>
+                                                <xs:attribute name="disabled" type="xs:boolean" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
@@ -843,6 +914,30 @@
                                         </xs:extension>
                                     </xs:simpleContent>
                                 </xs:complexType>
+                            </xs:element>
+                            <xs:element name="userDefinedScalars" type="optionalUserDefinedScalarListType">
+<!--                                <xs:complexType>-->
+<!--                                    <xs:sequence>-->
+<!--                                        <xs:element name="scalar" minOccurs="0" maxOccurs="unbounded">-->
+<!--                                            <xs:complexType>-->
+<!--                                                <xs:sequence>-->
+<!--                                                    <xs:element name="scalarID" type="xs:positiveInteger"/>-->
+<!--                                                    <xs:element name="value">-->
+<!--                                                        <xs:complexType>-->
+<!--                                                            <xs:simpleContent>-->
+<!--                                                                <xs:extension base="inputNumberType">-->
+<!--                                                                    <xs:attribute name="disabled"-->
+<!--                                                                                  type="xs:boolean"-->
+<!--                                                                                  default="true"/>-->
+<!--                                                                </xs:extension>-->
+<!--                                                            </xs:simpleContent>-->
+<!--                                                        </xs:complexType>-->
+<!--                                                    </xs:element>-->
+<!--                                                </xs:sequence>-->
+<!--                                            </xs:complexType>-->
+<!--                                        </xs:element>-->
+<!--                                    </xs:sequence>-->
+<!--                                </xs:complexType>-->
                             </xs:element>
                         </xs:sequence>
                     </xs:complexType>
@@ -960,7 +1055,14 @@
 
     <xs:complexType name="volumeFractionListType">
         <xs:sequence>
-            <xs:element name="volumeFraction" type="volumeFractionType" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element name="volumeFraction" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="material" type="xs:positiveInteger"/> <!-- material mid -->
+                        <xs:element name="fraction" type="inputRatioType" default="0"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -1373,6 +1475,20 @@
                 <xs:element name="temperature" type="temperatureBoundaryConditionType"/>
                 <xs:element name="coupledBoundary" type="xs:nonNegativeInteger" default="0"/>
                 <xs:element name="volumeFractions" type="volumeFractionListType"/>
+                <xs:element name="userDefinedScalars">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="scalar" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="scalarID" type="xs:positiveInteger"/>
+                                        <xs:element name="value" type="inputNumberType"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
             </xs:sequence>
             <xs:attribute name="bcid" type="xs:positiveInteger" use="required"/>
         </xs:complexType>
@@ -1466,6 +1582,14 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
+                        <xs:element name="scalar" default="firstOrderUpwind">
+                            <xs:simpleType>
+                                <xs:restriction base='xs:string'>
+                                    <xs:enumeration value='firstOrderUpwind'/>
+                                    <xs:enumeration value='secondOrderUpwind'/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1484,6 +1608,8 @@
                         <xs:element name="turbulenceFinal" type="underRelaxationFactorNumberType" default="1"/>
                         <xs:element name="volumeFraction" type="underRelaxationFactorNumberType" default="0.7"/>
                         <xs:element name="volumeFractionFinal" type="underRelaxationFactorNumberType" default="1"/>
+                        <xs:element name="scalar" type="underRelaxationFactorNumberType" default="0.7"/>
+                        <xs:element name="scalarFinal" type="underRelaxationFactorNumberType" default="1"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1552,6 +1678,14 @@
                             </xs:complexType>
                         </xs:element>
                         <xs:element name="volumeFraction">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="absolute" type="inputRatioType" default="0.001"/>
+                                    <xs:element name="relative" type="inputRatioType" default="0.05"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="scalar">
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="absolute" type="inputRatioType" default="0.001"/>
@@ -1720,6 +1854,46 @@
                                     </xs:restriction>
                                 </xs:simpleType>
                             </xs:element>
+                            <xs:element name="userDefinedScalars">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="scalar" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="fieldName" type="xs:string"/>
+                                                    <xs:element name="region" type="xs:string"/>
+                                                    <xs:element name="material" type="xs:integer"/> <!-- 0 for 'All', or material mid-->
+                                                    <xs:element name="diffusivity">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="specificationMethod" default="constant">
+                                                                    <xs:simpleType>
+                                                                        <xs:restriction base="xs:string">
+                                                                            <xs:enumeration value="constant"/>
+                                                                            <xs:enumeration value="turbulentViscosity"/>
+                                                                            <xs:enumeration value="laminarAndTurbulentViscosity"/>
+                                                                        </xs:restriction>
+                                                                    </xs:simpleType>
+                                                                </xs:element>
+                                                                <xs:element name="constant" type="inputNumberType"/>
+                                                                <xs:element name="laminarAndTurbulentViscosity">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="laminarViscosityCoefficient" type="inputNumberType" default="0"/>
+                                                                            <xs:element name="turbulentViscosityCoefficient" type="inputNumberType" default="0"/>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                                <xs:attribute name="scalarID" type="xs:integer" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
@@ -1784,6 +1958,22 @@
                                                                 <xs:element name="turbulentIntensity" type="inputPercentType" default="1"/>
                                                                 <xs:element name="turbulentViscosity" type="inputNumberType" default="10"/>
                                                                 <xs:element name="volumeFractions" type="volumeFractionListType"/>
+                                                                <xs:element name="userDefinedScalars" type="optionalUserDefinedScalarListType">
+<!--                                                                    <xs:complexType>-->
+<!--                                                                        <xs:sequence>-->
+<!--                                                                            <xs:sequence>-->
+<!--                                                                                <xs:element name="scalar" minOccurs="0" maxOccurs="unbounded">-->
+<!--                                                                                    <xs:complexType>-->
+<!--                                                                                        <xs:sequence>-->
+<!--                                                                                            <xs:element name="scalarID" type="xs:positiveInteger"/> &lt;!&ndash; scalar ID &ndash;&gt;-->
+<!--                                                                                            <xs:element name="value" type="inputNumberType"/>-->
+<!--                                                                                        </xs:sequence>-->
+<!--                                                                                    </xs:complexType>-->
+<!--                                                                                </xs:element>-->
+<!--                                                                            </xs:sequence>-->
+<!--                                                                        </xs:sequence>-->
+<!--                                                                    </xs:complexType>-->
+                                                                </xs:element>
                                                             </xs:sequence>
                                                         </xs:complexType>
                                                     </xs:element>
@@ -1846,6 +2036,15 @@
                                                                                                     </xs:extension>
                                                                                                 </xs:complexContent>
                                                                                             </xs:complexType>
+                                                                                        </xs:element>
+                                                                                        <xs:element name="userDefinedScalars" type="optionalUserDefinedScalarListType">
+<!--                                                                                            <xs:complexType>-->
+<!--                                                                                                <xs:complexContent>-->
+<!--                                                                                                    <xs:extension base="userDefinedScalarListType">-->
+<!--                                                                                                        <xs:attribute name="disabled" type="xs:boolean" use="required"/>-->
+<!--                                                                                                    </xs:extension>-->
+<!--                                                                                                </xs:complexContent>-->
+<!--                                                                                            </xs:complexType>-->
                                                                                         </xs:element>
                                                                                         <xs:element name="overrideBoundaryValue" type="xs:boolean" default="false"/>
                                                                                     </xs:sequence>

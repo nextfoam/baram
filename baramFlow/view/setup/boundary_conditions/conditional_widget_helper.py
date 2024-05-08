@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from baramFlow.coredb.models_db import TurbulenceModel, ModelsDB, TurbulenceModelsDB, RANSModel
+from baramFlow.view.widgets.user_defined_scalars_widget import UserDefinedScalarsWidget
 from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
 from .turbulence_k_epsilon_widget import TurbulenceKEpsilonWidget
 from .turbulence_k_omega_widget import TurbulenceKOmegaWidget
@@ -61,8 +62,16 @@ class ConditionalWidgetHelper:
         return widget
 
     @classmethod
-    def volumeFractionWidget(cls, rname, xpath, layout):
-        widget = VolumeFractionWidget(rname, xpath)
+    def volumeFractionWidget(cls, rname, layout):
+        widget = VolumeFractionWidget(rname)
+        if widget.on():
+            layout.addWidget(widget)
+
+        return widget
+
+    @classmethod
+    def userDefinedScalarsWidget(cls, rname, layout):
+        widget = UserDefinedScalarsWidget(rname)
         if widget.on():
             layout.addWidget(widget)
 

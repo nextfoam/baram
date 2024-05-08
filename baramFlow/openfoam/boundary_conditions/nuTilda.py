@@ -98,7 +98,7 @@ class NuTilda(BoundaryCondition):
     def _constructFreestreamNuTilda(self, xpath):
         spec = self._db.getValue(xpath + '/turbulence/spalartAllmaras/specification')
         if spec == SpalartAllmarasSpecification.MODIFIED_TURBULENT_VISCOSITY.value:
-            return self._constructFreestream(
+            return self._constructFreeStream(
                 float(self._db.getValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity')))
         elif spec == SpalartAllmarasSpecification.TURBULENT_VISCOSITY_RATIO.value:
             # ToDo: Setting according to boundary field spec

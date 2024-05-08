@@ -62,7 +62,7 @@ class MaterialPage(ContentPage):
             elif error == Error.REFERENCED:
                 await AsyncMessageBox().critical(
                     self, self.tr('Remove Meterial Failed'),
-                    self.tr(f'"{card.name}" is referenced by other configurations. It cannot be removed.'))
+                    self.tr('"{}" is referenced by other configurations. It cannot be removed.').format(card.name))
 
         self._materialChanged.emit()
 

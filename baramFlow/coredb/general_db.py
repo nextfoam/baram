@@ -32,5 +32,9 @@ class GeneralDB:
         return cls.getSolverType() == SolverType.DENSITY_BASED
 
     @classmethod
+    def isPressureBased(cls):
+        return cls.getSolverType() == SolverType.PRESSURE_BASED
+
+    @classmethod
     def isCompressibleDensity(cls):
         return cls.isCompressible() and cls.isDensityBased()

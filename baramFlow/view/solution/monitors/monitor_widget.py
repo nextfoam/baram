@@ -5,7 +5,7 @@
 from PySide6.QtWidgets import QWidget
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType
+from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType, Field
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from .force_dialog import ForceDialog
@@ -64,7 +64,8 @@ class PointMonitorWidget(MonitorWidget):
         db = coredb.CoreDB()
         xpath = MonitorDB.getPointMonitorXPath(self._name)
 
-        field = FieldHelper.DBFieldKeyToText(db.getValue(xpath + '/field/field'), db.getValue(xpath + '/field/mid'))
+        field = FieldHelper.DBFieldKeyToText(Field(db.getValue(xpath + '/field/field')),
+                                             db.getValue(xpath + '/field/fieldID'))
         coordinateX = db.getValue(xpath + '/coordinate/x')
         coordinateY = db.getValue(xpath + '/coordinate/y')
         coordinateZ = db.getValue(xpath + '/coordinate/z')
@@ -91,7 +92,8 @@ class SurfaceMonitorWidget(MonitorWidget):
         xpath = MonitorDB.getSurfaceMonitorXPath(self._name)
 
         reportType = MonitorDB.surfaceReportTypeToText(SurfaceReportType(db.getValue(xpath + '/reportType')))
-        field = FieldHelper.DBFieldKeyToText(db.getValue(xpath + '/field/field'), db.getValue(xpath + '/field/mid'))
+        field = FieldHelper.DBFieldKeyToText(Field(db.getValue(xpath + '/field/field')),
+                                             db.getValue(xpath + '/field/fieldID'))
         bcid = db.getValue(xpath + '/surface')
         surface = BoundaryDB.getBoundaryName(bcid)
         region = BoundaryDB.getBoundaryRegion(bcid)
@@ -118,7 +120,8 @@ class VolumeMonitorWidget(MonitorWidget):
         xpath = MonitorDB.getVolumeMonitorXPath(self._name)
 
         reportType = MonitorDB.volumeReportTypeToText(VolumeReportType(db.getValue(xpath + '/reportType')))
-        field = FieldHelper.DBFieldKeyToText(db.getValue(xpath + '/field/field'), db.getValue(xpath + '/field/mid'))
+        field = FieldHelper.DBFieldKeyToText(Field(db.getValue(xpath + '/field/field')),
+                                             db.getValue(xpath + '/field/fieldID'))
         czid = db.getValue(xpath + '/volume')
         volume = CellZoneDB.getCellZoneName(czid)
         region = CellZoneDB.getCellZoneRegion(czid)
