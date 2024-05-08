@@ -1208,7 +1208,9 @@ class _CoreDB(object):
 
     def clearUserDefinedScalars(self):
         parent = self._getElement('models/userDefinedScalars')
-        parent.clear()
+        for element in parent.findall('scalar', namespaces=nsmap):
+            if element.get('scalarID') != '0':
+                parent.remove(element)
 
         parent = self._xmlTree.find('general/atmosphericBoundaryLayer/userDefinedScalars', namespaces=nsmap)
         parent.clear()
