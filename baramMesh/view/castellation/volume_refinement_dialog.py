@@ -78,13 +78,13 @@ class VolumeRefinementDialog(QDialog):
 
             if self._ui.gapRefinement.isChecked():
                 try:
-                    minCells = int(self._ui.minCellLayers.text())
+                    startLevel = int(self._ui.detectionStartLevel.text())
                     maxLevel = int(self._ui.maxRefinementLevel.text())
 
-                    if minCells > maxLevel:
+                    if startLevel >= maxLevel:
                         await AsyncMessageBox().information(
                             self, self.tr('Input Error'),
-                            self.tr('Maximum Refinement Level must be greater than Minimum Cell Layers in a gap.'))
+                            self.tr('Maximum Refinement Level must be greater than Gap Detection Start Level.'))
 
                         return
                 except ValueError:
