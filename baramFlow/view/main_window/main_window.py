@@ -531,11 +531,12 @@ class MainWindow(QMainWindow):
         self._navigatorView.updateEnabled()
 
         targets = [
-            MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value,
+            MenuItem.MENU_SETUP_MODELS.value,
             MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value,
-            MenuItem.MENU_SOLUTION_INITIALIZATION.value,
+            MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value,
+            MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value,
             MenuItem.MENU_SOLUTION_MONITORS.value,
-            MenuItem.MENU_SETUP_MODELS.value
+            MenuItem.MENU_SOLUTION_INITIALIZATION.value,
         ]
 
         for page in [self._menuPages[menu] for menu in targets]:
