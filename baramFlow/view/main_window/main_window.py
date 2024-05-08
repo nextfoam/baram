@@ -13,7 +13,7 @@ import qasync
 import asyncio
 
 from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
-from PySide6.QtCore import Qt, QEvent, QTimer
+from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
 from libbaram.run import hasUtility
 from libbaram.utils import getFit
@@ -95,6 +95,8 @@ class MenuPage:
 
 
 class MainWindow(QMainWindow):
+    _closeTriggered = Signal(CloseType)
+
     def __init__(self):
         super().__init__()
         self._ui = Ui_MainWindow()
@@ -174,7 +176,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         if self._closeType is None:
-            self._closeProject(CloseType.EXIT_APP)
+            self._closeTriggered.emit(CloseType.EXIT_APP)
             event.ignore()
             return
 
@@ -235,7 +237,8 @@ class MainWindow(QMainWindow):
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
         self._caseManager.caseLoaded.connect(self._caseLoaded)
-        # app.meshUpdated.connect(self._meshUpdated)
+
+        self._closeTriggered.connect(self._closeProject)
 
     @qasync.asyncSlot()
     async def _save(self):
