@@ -6,7 +6,7 @@ from math import sqrt
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
 from baramFlow.coredb.boundary_db import FlowRateInletSpecification, WallVelocityCondition, InterfaceMode
-from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT
+from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from libbaram.openfoam.dictionary.dictionary_file import DataClass
@@ -178,7 +178,7 @@ class U(BoundaryCondition):
     def _constructFarfieldRiemannU(self, xpath):
         gamma = 1.4
         mw = self._db.getMolecularWeight(self._region.mid)
-        a = sqrt(gamma * (UNIVERSAL_GAL_CONSTANT / mw)
+        a = sqrt(gamma * (UNIVERSAL_GAS_CONSTANT / mw)
                  * float(self._db.getValue(xpath + '/farFieldRiemann/staticTemperature')))
         dx, dy, dz = self._calculateFarfiledRiemanFlowDirection(xpath + '/farFieldRiemann/flowDirection')
         dMag = sqrt(dx ** 2 + dy ** 2 + dz ** 2)

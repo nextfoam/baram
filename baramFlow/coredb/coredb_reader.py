@@ -6,7 +6,7 @@ from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb import ValueException, Error, _CoreDB
-from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT, Phase
+from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT, Phase
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 
@@ -177,7 +177,7 @@ class CoreDBReader(_CoreDB):
             .. math:: \rho = \frac{MW \times P}{R \times T}
             '''
             mw = float(self.getValue(xpath + '/molecularWeight'))
-            return p * mw / (UNIVERSAL_GAL_CONSTANT * t)
+            return p * mw / (UNIVERSAL_GAS_CONSTANT * t)
         elif spec == 'polynomial':
             coeffs = list(map(float, self.getValue(xpath + '/density/polynomial').split()))
             rho = 0.0

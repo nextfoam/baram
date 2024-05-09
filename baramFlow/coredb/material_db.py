@@ -7,7 +7,7 @@ from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb import coredb
 
-UNIVERSAL_GAL_CONSTANT = 8314.46261815324
+UNIVERSAL_GAS_CONSTANT = 8314.46261815324
 
 
 class Phase(Flag):
