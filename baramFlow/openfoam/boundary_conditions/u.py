@@ -41,7 +41,7 @@ class U(BoundaryCondition):
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructVelocityInletU(xpath, name)),
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFlowRateInletVelocity(xpath + '/flowRateInlet')),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructPressureInletOutletVelocity()),
-                BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureInletOutletVelocity()),
+                BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletU(xpath)),
                 BoundaryType.ABL_INLET.value:           (lambda: self._constructAtmBoundaryLayerInletVelocity()),
                 BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructVariableHeightFlowRateInletVelocity(self._db.getValue(xpath + '/openChannelInlet/volumeFlowRate'))),
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructOutletPhaseMeanVelocity(self._db.getValue(xpath + '/openChannelOutlet/meanVelocity'))),
@@ -84,6 +84,15 @@ class U(BoundaryCondition):
             'type': 'pressureInletOutletVelocity',
             'value': self._initialValueByTime()
         }
+
+    def _constructPressureOutletU(self, xpath):
+        if self._db.getValue(xpath + '/pressureOutlet/nonReflective') == 'true':
+            t = 300
+            if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+                t = float(self._db.getValue(xpath + '/pressureOutlet/backflowTotalTemperature'))
+            return self._constructWaveTransmissive(t)
+        else:
+            return self._constructPressureInletOutletVelocity()
 
     def _constructAtmBoundaryLayerInletVelocity(self):
         return {

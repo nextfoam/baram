@@ -52,6 +52,7 @@
     </pressureInlet>
     <pressureOutlet>
         <totalPressure>0</totalPressure>
+        <nonReflective>false</nonReflective>
         <calculatedBackflow>false</calculatedBackflow>
         <backflowTotalTemperature>300</backflowTotalTemperature>
     </pressureOutlet>

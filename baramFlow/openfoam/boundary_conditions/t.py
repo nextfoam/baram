@@ -3,7 +3,6 @@
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallVelocityCondition, WallTemperature
 from baramFlow.coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution, InterfaceMode
-from baramFlow.coredb.material_db import UNIVERSAL_GAL_CONSTANT
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.project import Project
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
@@ -80,9 +79,7 @@ class T(BoundaryCondition):
 
     def _constructInletOutletTotalTemperature(self, constant):
         if ModelsDB.isEnergyModelOn():
-            cp = self._db.getSpecificHeat(self._region.mid, constant)
-            mw = self._db.getMolecularWeight(self._region.mid)
-            gamma = cp / (cp - UNIVERSAL_GAL_CONSTANT/mw)
+            gamma = self._calculateGamma(self._region.mid, constant)
         else:
             gamma = 1.0
 

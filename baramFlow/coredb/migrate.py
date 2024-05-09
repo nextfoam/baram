@@ -484,6 +484,14 @@ def _version_5(root: etree.Element):
             e.text = '1e8'
             p.append(e)
 
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition/pressureOutlet', namespaces=_nsmap):
+        if p.find('nonReflective', namespaces=_nsmap) is None:
+            logger.debug(f'    nonReflective "scalar" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}nonReflective')
+            e.text = 'false'
+            p.insert(1, e)
+
 
 _fTable = [
     None,

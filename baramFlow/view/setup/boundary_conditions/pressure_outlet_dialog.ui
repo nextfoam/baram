@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>420</width>
-    <height>206</height>
+    <height>250</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -50,6 +50,19 @@
          </item>
          <item row="0" column="1">
           <widget class="QLineEdit" name="totalPressure"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="NRB" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QCheckBox" name="nonReflectingBoundary">
+           <property name="text">
+            <string>Non-Reflecting Boundary</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
