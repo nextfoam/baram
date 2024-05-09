@@ -12,6 +12,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataCla
 
 from baramFlow.coredb.boundary_db import DirectionSpecificationMethod
 from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.coredb.material_db import UNIVERSAL_GAL_CONSTANT
 from baramFlow.coredb.models_db import TurbulenceModel
 from baramFlow.openfoam.constant.boundary_data import BoundaryData
 from baramFlow.openfoam.file_system import FileSystem
@@ -240,6 +241,12 @@ class BoundaryCondition(DictionaryFile):
             'value': self._initialValueByTime()
         }
 
+    def _constructWaveTransmissive(self, temperature: float):
+        return {
+            'type': 'waveTransmissive',
+            'gamma': self._calculateGamma(self._region.mid, temperature)
+        }
+
     def _calculateFreeStreamTurbulentValues(self, xpath, region, model):
         ux = float(self._db.getValue(xpath + 'freeStream/streamVelocity/x'))
         uy = float(self._db.getValue(xpath + 'freeStream/streamVelocity/y'))
@@ -296,3 +303,9 @@ class BoundaryCondition(DictionaryFile):
                                                       float(self._db.getValue(xpath + '/angleOfSideslip')))
 
         return drag
+
+    def _calculateGamma(self, mid, t: float):
+        cp = self._db.getSpecificHeat(mid, t)
+        mw = self._db.getMolecularWeight(mid)
+
+        return cp / (cp - UNIVERSAL_GAL_CONSTANT/mw)
