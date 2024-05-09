@@ -94,6 +94,9 @@ def _getAvailableFields():
             if MaterialDB.dbTextToPhase(phase) != Phase.SOLID:
                 fields.append(f'alpha.{name}')
 
+    for _, fieldName in CoreDBReader().getUserDefinedScalars():
+        fields.append(fieldName)
+
     return fields
 
 
@@ -207,7 +210,7 @@ class ControlDict(DictionaryFile):
             'runTimeModifiable': 'yes',
             'adjustTimeStep': adjustTimeStep,
             'maxCo': self._db.getValue(xpath + '/maxCourantNumber'),
-            'functions': self._generateResiduals()
+            'functions': {}
         }
 
         if ModelsDB.isMultiphaseModelOn():
@@ -219,10 +222,20 @@ class ControlDict(DictionaryFile):
                      for bcid, _ in self._db.getBoundaryConditionsByType(BoundaryType.WALL.value)])):
             self._data['libs'] = [_libPath('libatmosphericModels')]
 
+        # calling order is important for these three function objects
+        # scalar transport FO should be called first so that monitoring and residual can refer the scalar fields
+
+        self._appendScalarTransportFunctionObjects()
+
         self._appendMonitoringFunctionObjects()
 
+        self._appendResidualFunctionObjects()
+
+        return self
+
+    def _appendScalarTransportFunctionObjects(self):
         for scalarID, fieldName in self._db.getUserDefinedScalars():
-            self._data[fieldName] = {
+            self._data['functions'][fieldName] = {
                 'type': 'scalarTransport',
                 'libs': [_libPath('libsolverFunctionObjects')],
                 'field': fieldName,
@@ -242,22 +255,20 @@ class ControlDict(DictionaryFile):
             xpath = UserDefinedScalarsDB.getXPath(scalarID)
             specificationMethod = self._db.getValue(xpath + '/diffusivity/specificationMethod')
             if specificationMethod == ScalarSpecificationMethod.CONSTANT.value:
-                self._data[fieldName]['D'] = self._db.getValue(xpath + '/diffusivity/constant')
+                self._data['functions'][fieldName]['D'] = self._db.getValue(xpath + '/diffusivity/constant')
             elif specificationMethod == ScalarSpecificationMethod.TURBULENT_VISCOSITY.value:
-                self._data[fieldName]['nut'] = 'nut'
+                self._data['functions'][fieldName]['nut'] = 'nut'
             elif specificationMethod == ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY.value:
-                self._data[fieldName]['alphaD'] = self._db.getValue(
+                self._data['functions'][fieldName]['alphaD'] = self._db.getValue(
                     xpath + '/diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient')
-                self._data[fieldName]['alphaDt'] = self._db.getValue(
+                self._data['functions'][fieldName]['alphaDt'] = self._db.getValue(
                     xpath + '/diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient')
 
             if region := self._db.getValue(xpath + '/region'):
-                self._data[fieldName]['region'] = region
+                self._data['functions'][fieldName]['region'] = region
 
             if mid := int(self._db.getValue(xpath + 'material')):
-                self._data[fieldName]['phase'] = MaterialDB.getName(mid)
-
-        return self
+                self._data['functions'][fieldName]['phase'] = MaterialDB.getName(mid)
 
     def _appendMonitoringFunctionObjects(self):
         for name in self._db.getForceMonitors():
@@ -275,9 +286,8 @@ class ControlDict(DictionaryFile):
         for name in self._db.getVolumeMonitors():
             self._data['functions'][name] = self._generateVolumeMonitor(MonitorDB.getVolumeMonitorXPath(name))
 
-    def _generateResiduals(self) -> dict:
+    def _appendResidualFunctionObjects(self):
         regions = self._db.getRegions()
-        data = {}
         regionNum = getRegionNumbers()
 
         for rname in regions:   # [''] is single region.
@@ -295,7 +305,7 @@ class ControlDict(DictionaryFile):
                 fields = _getAvailableFields()
 
 
-            data[residualsName] = {
+            self._data['functions'][residualsName] = {
                 'type': 'solverInfo',
                 'libs': [_libPath('libutilityFunctionObjects')],
                 'executeControl': 'timeStep',
@@ -305,8 +315,7 @@ class ControlDict(DictionaryFile):
                 'fields': fields
             }
             if rname != '':
-                data[residualsName].update({'region': rname})
-        return data
+                self._data['functions'][residualsName].update({'region': rname})
 
     def _generateForces(self, xpath, patches):
         data = {

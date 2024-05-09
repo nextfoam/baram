@@ -109,7 +109,7 @@ class FvSolution(DictionaryFile):
                     'maxIter': '5',
                 }),
                 'rhoFinal': rho,
-                '"(U|k|epsilon|omega|nuTilda)"': (others := {
+                '"(U|k|epsilon|omega|nuTilda|scalar)"': (others := {
                     'solver': 'PBiCGStab',
                     'preconditioner': 'DILU',
                     'tolerance': '1e-16',
@@ -117,7 +117,7 @@ class FvSolution(DictionaryFile):
                     'minIter': '1',
                     'maxIter': '5',
                 }),
-                '"(U|k|epsilon|omega|nuTilda)Final"': others
+                '"(U|k|epsilon|omega|nuTilda|scalar)Final"': others,
             },
             'SIMPLE': {
                 'consistent': consistent,
