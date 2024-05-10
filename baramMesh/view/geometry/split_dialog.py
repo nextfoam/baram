@@ -5,7 +5,7 @@ import asyncio
 from pathlib import Path
 from typing import Optional
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSignalBlocker
 from PySide6.QtWidgets import QDialog, QTreeWidgetItem, QLabel, QTreeWidget, QWidget, QHBoxLayout, QHeaderView
 from PySide6.QtGui import QColor, QDoubleValidator, QIntValidator
 
@@ -129,10 +129,8 @@ class SplitDialog(QDialog):
     def _minAreaTextEditingFinished(self):
         minArea = float(self._ui.minAreaText.text())
 
-        # To disconnect/connect o prevent infinite call loop
-        self._ui.minAreaSlider.valueChanged.disconnect(self._minAreaSliderChanged)
-        self._ui.minAreaSlider.setValue(minArea)
-        self._ui.minAreaSlider.valueChanged.connect(self._minAreaSliderChanged)
+        with QSignalBlocker(self._ui.minAreaSlider):
+            self._ui.minAreaSlider.setValue(minArea)
 
     def _apply(self):
         angle = float(self._ui.featureAngleText.text())
