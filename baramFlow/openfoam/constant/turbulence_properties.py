@@ -75,14 +75,18 @@ class TurbulenceProperties(DictionaryFile):
                 hasABLInlet = True
                 break
 
-        if hasABLInlet and self._model == TurbulenceModel.K_EPSILON:
-            self._data['RAS']['kEpsilonCoeffs'] = {
+        if self._model == TurbulenceModel.K_EPSILON:
+            data = {
                 'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/energyPrandtlNumber'),
-                'Cmu': 0.09,
-                'C1': 1.44,
-                'C2': 1.92,
-                'sigmaEps': 1.11
             }
+            if hasABLInlet:
+                data.update({
+                    'Cmu': 0.09,
+                    'C1': 1.44,
+                    'C2': 1.92,
+                    'sigmaEps': 1.11
+                })
+            self._data['RAS']['kEpsilonCoeffs'] = data
 
         if subModel == 'realizableKEtwoLayer':
             self._data['RAS']['ReyStar'] = self._db.getValue(
