@@ -95,9 +95,6 @@ class ModelsPage(ContentPage):
                            lambda: self.tr('Include') if ModelsDB.isEnergyModelOn() else self.tr('Not Include'),
                            EnergyDialog if RegionDB.getNumberOfRegions() == 1 else None)
 
-        self._addModelItem(Models.FLOW_TYPE,
-                           self.tr('Flow Type'),
-                            lambda: self.tr('Compressible') if GeneralDB.isCompressible() else self.tr('Incompressible'))
         self._addModelItem(Models.MULTIPHASE,
                            self.tr('Multiphase'),
                            lambda: multiphaseModelText[ModelsDB.getMultiphaseModel()])
