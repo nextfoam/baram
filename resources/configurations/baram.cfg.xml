@@ -194,7 +194,7 @@
             <limits>
                 <minimumStaticTemperature>1</minimumStaticTemperature>
                 <maximumStaticTemperature>5000</maximumStaticTemperature>
-                <maximumViscosityRatio>1e8</maximumViscosityRatio>
+                <maximumViscosityRatio>1e5</maximumViscosityRatio>
             </limits>
         </advanced>
     </numericalConditions>
