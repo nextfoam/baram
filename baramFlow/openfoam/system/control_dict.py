@@ -154,6 +154,8 @@ class ControlDict(DictionaryFile):
         super().__init__(FileSystem.caseRoot(), self.systemLocation(), 'controlDict')
         self._data = None
         self._db = None
+        self._writeControl = 'runTime'
+        self._writeInterval = None
 
     def build(self):
         if self._data is not None:
@@ -169,23 +171,21 @@ class ControlDict(DictionaryFile):
 
         endTime = None
         deltaT = None
-        writeControl = 'runTime'
-        writeInterval = None
         adjustTimeStep = 'no'
         if GeneralDB.isTimeTransient():
             endTime = self._db.getValue(xpath + '/endTime')
             timeSteppingMethod = self._db.getValue(xpath + '/timeSteppingMethod')
-            writeInterval = self._db.getValue(xpath + '/reportIntervalSeconds')
+            self._writeInterval = self._db.getValue(xpath + '/reportIntervalSeconds')
             if timeSteppingMethod == TimeSteppingMethod.FIXED.value:
                 deltaT = self._db.getValue(xpath + '/timeStepSize')
             elif timeSteppingMethod == TimeSteppingMethod.ADAPTIVE.value:
                 deltaT = 0.001
-                writeControl = 'adjustableRunTime'
+                self._writeControl = 'adjustableRunTime'
                 adjustTimeStep = 'yes'
         else:
             endTime = self._db.getValue(xpath + '/numberOfIterations')
             deltaT = 1
-            writeInterval = self._db.getValue(xpath + '/reportIntervalSteps')
+            self._writeInterval = self._db.getValue(xpath + '/reportIntervalSteps')
 
         purgeWrite = 0
         if self._db.getValue(xpath + '/retainOnlyTheMostRecentFiles') == 'true':
@@ -198,8 +198,8 @@ class ControlDict(DictionaryFile):
             'stopAt': 'endTime',
             'endTime': endTime,
             'deltaT': deltaT,
-            'writeControl': writeControl,
-            'writeInterval': writeInterval,
+            'writeControl': self._writeControl,
+            'writeInterval': self._writeInterval,
             'purgeWrite': purgeWrite,
             'writeFormat': self._db.getValue(xpath + '/dataWriteFormat'),
             'writePrecision': self._db.getValue(xpath + '/dataWritePrecision'),
@@ -250,6 +250,8 @@ class ControlDict(DictionaryFile):
                 #         'source': 'uniform 100',
                 #     }
                 # }
+                'writeControl': self._writeControl,
+                'writeInterval': self._writeInterval,
             }
 
             xpath = UserDefinedScalarsDB.getXPath(scalarID)
@@ -303,7 +305,6 @@ class ControlDict(DictionaryFile):
                     continue  # 'h' is the only property solid has
             else:
                 fields = _getAvailableFields()
-
 
             self._data['functions'][residualsName] = {
                 'type': 'solverInfo',
