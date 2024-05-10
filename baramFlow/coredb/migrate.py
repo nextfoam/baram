@@ -478,15 +478,15 @@ def _version_5(root: etree.Element):
 
     if (p := root.find('numericalConditions/advanced/limits', namespaces=_nsmap)) is not None:
         if p.find('maximumViscosityRatio', namespaces=_nsmap) is None:
-            logger.debug(f'    Adding "scalar" to {p}')
+            logger.debug(f'    Adding "maximumViscosityRatio" to {p}')
 
             e = etree.Element(f'{{{_ns}}}maximumViscosityRatio')
-            e.text = '1e8'
+            e.text = '1e5'
             p.append(e)
 
     for p in root.findall('regions/region/boundaryConditions/boundaryCondition/pressureOutlet', namespaces=_nsmap):
         if p.find('nonReflective', namespaces=_nsmap) is None:
-            logger.debug(f'    nonReflective "scalar" to {p}')
+            logger.debug(f'    nonReflective option to {p}')
 
             e = etree.Element(f'{{{_ns}}}nonReflective')
             e.text = 'false'
