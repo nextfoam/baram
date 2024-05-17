@@ -12,7 +12,7 @@ import platform
 import qasync
 import asyncio
 
-from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
 from libbaram.run import hasUtility
@@ -52,13 +52,10 @@ from baramFlow.view.solution.initialization.initialization_page import Initializ
 from baramFlow.view.solution.run_conditions.run_conditions_page import RunConditionsPage
 from baramFlow.view.solution.run.process_information_page import ProcessInformationPage
 from .content_view import ContentView
+from .dock_view import DockView
 from .main_window_ui import Ui_MainWindow
 from .menu.mesh.mesh_info_dialog import MeshInfoDialog
 from .navigator_view import NavigatorView, MenuItem
-from .rendering_dock import RenderingDock
-from .console_dock import ConsoleDock
-from .chart_dock import ChartDock
-from .monitor_dock import MonitorDock
 from .menu.mesh.mesh_scale_dialog import MeshScaleDialog
 from .menu.mesh.mesh_translate_dialog import MeshTranslateDialog
 from .menu.mesh.mesh_rotate_dialog import MeshRotateDialog
@@ -115,18 +112,7 @@ class MainWindow(QMainWindow):
 
         self._navigatorView = NavigatorView(self._ui.navigatorView)
         self._contentView = ContentView(self._ui.formView, self._ui)
-
-        self._emptyDock = self._ui.emptyDock
-        self._emptyDock.setTitleBarWidget(QWidget())
-        self._renderingDock = RenderingDock(self)
-        self._consoleDock = ConsoleDock(self)
-        self._chartDock = ChartDock(self)
-        self._monitorDock = MonitorDock(self)
-
-        self._addTabifiedDock(self._consoleDock)
-        self._addTabifiedDock(self._renderingDock)
-        self._addTabifiedDock(self._chartDock)
-        self._addTabifiedDock(self._monitorDock)
+        self._dockView = DockView(self._ui.menuView)
 
         self._menuPages = {
             MenuItem.MENU_SETUP.value: MenuPage(),
@@ -150,26 +136,19 @@ class MainWindow(QMainWindow):
 
         self._connectSignalsSlots()
 
-        if self._caseManager.isRunning():
-            self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN.value)
-            self._chartDock.raise_()
-        else:
-            self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL.value)
-            self._renderingDock.raise_()
-
         geometry = AppSettings.getLastMainWindowGeometry()
         display = app.qApplication.primaryScreen().availableVirtualGeometry()
         fit = getFit(geometry, display)
         self.setGeometry(fit)
 
+        self._ui.splitter.addWidget(self._dockView)
+        self._ui.splitter.setStretchFactor(2, 1)
+
     def renderingView(self):
-        return self._renderingDock.view
+        return self._dockView.renderingView()
 
     def case(self):
         return self._caseManager
-
-    def tabifyDock(self, dock):
-        self.tabifyDockWidget(self._emptyDock, dock)
 
     def load(self):
         self._project.opened()
@@ -187,10 +166,10 @@ class MainWindow(QMainWindow):
         else:
             app.quit()
 
-        event.accept()
+        super().closeEvent(event)
 
     def changeEvent(self, event):
-        if event.type() == QEvent.LanguageChange:
+        if event.type() == QEvent.Type.LanguageChange:
             self._ui.retranslateUi(self)
             self._navigatorView.translate()
 
@@ -318,7 +297,7 @@ class MainWindow(QMainWindow):
             elif confirm == QMessageBox.StandardButton.Cancel:
                 return
 
-        self._renderingDock.close()
+        self._dockView.close()
         logging.getLogger().removeHandler(self._handler)
         self._handler.close()
 
@@ -502,7 +481,7 @@ class MainWindow(QMainWindow):
     async def _changeForm(self, currentMenu, previousMenu=-1):
         if previousMenu > -1:
             previousPage = self._menuPages[previousMenu]
-            if previousPage and previousPage.widget == self._contentView.currentPage():
+            if previousPage.widget and previousPage.widget == self._contentView.currentPage():
                 if not await previousPage.widget.save() or not previousPage.widget.checkToQuit():
                     QTimer.singleShot(0, lambda: self._navigatorView.setCurrentMenu(previousMenu))
                     return
@@ -567,6 +546,13 @@ class MainWindow(QMainWindow):
     async def _projectOpened(self):
         self._caseManager.load()
 
+        if self._caseManager.isRunning():
+            self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN.value)
+            self._dockView.showChartDock()
+        else:
+            self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL.value)
+            self._dockView.showRenderingDock()
+
         db = coredb.CoreDB()
         if db.hasMesh():
             await self._loadVtkMesh()
@@ -599,11 +585,6 @@ class MainWindow(QMainWindow):
             self.setWindowTitle(f'{app.properties.fullName} - {name} ({self._project.path})')
         else:
             self.setWindowTitle(f'{app.properties.fullName} - {self._project.path}')
-
-    def _addTabifiedDock(self, dock):
-        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
-        self.tabifyDock(dock)
-        self._ui.menuView.addAction(dock.toggleViewAction())
 
     def _changeScale(self):
         self._dialog = SettingScalingDialog(self)

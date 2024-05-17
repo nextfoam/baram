@@ -9,7 +9,8 @@ from typing import Optional
 
 from filelock import Timeout
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
-from PySide6.QtCore import Signal, QEvent
+from PySide6.QtCore import Signal, QEvent, QMargins
+from PySide6QtAds import CDockManager, DockWidgetArea
 
 from libbaram.utils import getFit
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
@@ -52,10 +53,12 @@ class MainWindow(QMainWindow):
         self._recentFilesMenu = RecentFilesMenu(self._ui.menuOpen_Recent)
         self._recentFilesMenu.setRecents(app.settings.getRecentProjects())
 
+        self._dockManager = CDockManager(self._ui.dockContainer)
+
         self._navigationView = NavigationView(self._ui.stepButtons)
         self._displayControl = DisplayControl(self._ui)
         self._renderingTool = RenderingTool(self._ui)
-        self._consoleView = ConsoleView(self._ui)
+        self._consoleView = ConsoleView()
 
         self._geometryManager: Optional[GeometryManager] = None
         self._meshManager = None
@@ -73,6 +76,12 @@ class MainWindow(QMainWindow):
 
         self._connectSignalsSlots()
 
+        layout = QVBoxLayout(self._ui.dockContainer)
+        layout.setContentsMargins(QMargins(0, 0, 0, 0))
+        layout.addWidget(self._dockManager)
+
+        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._consoleView)
+
         geometry = app.settings.getLastMainWindowGeometry()
         display = app.qApplication.primaryScreen().availableVirtualGeometry()
         fit = getFit(geometry, display)
@@ -88,7 +97,7 @@ class MainWindow(QMainWindow):
 
     @property
     def consoleView(self):
-        return self._consoleView
+        return self._consoleView.widget()
 
     @property
     def displayControl(self):
@@ -109,10 +118,13 @@ class MainWindow(QMainWindow):
             return
 
         app.settings.updateLastMainWindowGeometry(self.geometry())
-        event.accept()
+
+        self._dockManager.deleteLater()
+
+        super().closeEvent(event)
 
     def changeEvent(self, event):
-        if event.type() == QEvent.LanguageChange:
+        if event.type() == QEvent.Type.LanguageChange:
             self._ui.retranslateUi(self)
             self._stepManager.retranslatePages()
 
@@ -123,7 +135,7 @@ class MainWindow(QMainWindow):
         self._startDialog.open()
 
     def _connectSignalsSlots(self):
-        self._ui.menuView.addAction(self._ui.consoleView.toggleViewAction())
+        self._ui.menuView.addAction(self._consoleView.toggleViewAction())
 
         self._ui.actionNew.triggered.connect(self._actionNew)
         self._ui.actionOpen.triggered.connect(self._actionOpen)

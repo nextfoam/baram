@@ -4,13 +4,14 @@
 import subprocess
 from enum import Enum, auto
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QCoreApplication, QEvent
 from PySide6.QtWidgets import QWidget
+from PySide6QtAds import CDockWidget
 from vtkmodules.vtkRenderingCore import vtkActor
 
 from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.openfoam.file_system import FileSystem
-from .rendering_view_ui import Ui_RenderingView
+from baramFlow.view.dock_widgets.rendering_view_ui import Ui_RenderingView
 
 
 class DisplayMode(Enum):
@@ -83,3 +84,20 @@ class RenderingView(QWidget):
 
         # self._widget.Render()
         self.renderingModeChanged.emit(DisplayMode(index))
+
+
+class RenderingDock(CDockWidget):
+    def __init__(self):
+        super().__init__(self._title())
+
+        self._widget = RenderingView()
+        self.setWidget(self._widget)
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.LanguageChange:
+            self.setWindowTitle(self._title())
+
+        super().changeEvent(event)
+
+    def _title(self):
+        return QCoreApplication.translate('RenderingDock', 'Mesh')

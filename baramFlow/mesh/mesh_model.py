@@ -18,7 +18,7 @@ from baramFlow.openfoam import parallel
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.system.fv_schemes import FvSchemes
 from baramFlow.openfoam.system.fv_solution import FvSolution
-from baramFlow.view.main_window.rendering_view import DisplayMode
+from baramFlow.view.dock_widgets.rendering_dock import DisplayMode
 from libbaram.exception import CanceledException
 from libbaram.run import RunParallelUtility
 
