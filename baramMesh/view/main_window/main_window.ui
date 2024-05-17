@@ -3149,7 +3149,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
     <widget class="QMenu" name="menuOpen_Recent">
      <property name="title">
@@ -3167,31 +3167,31 @@
    </widget>
    <widget class="QMenu" name="menuMesh_Quality">
     <property name="title">
-     <string>Mesh Quality</string>
+     <string>&amp;Mesh Quality</string>
     </property>
     <addaction name="actionParameters"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
-     <string>Settings</string>
+     <string>&amp;Settings</string>
     </property>
     <addaction name="actionScale"/>
     <addaction name="actionLanguage"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>&amp;View</string>
     </property>
    </widget>
    <widget class="QMenu" name="menuParallel">
     <property name="title">
-     <string>Parallel</string>
+     <string>&amp;Parallel</string>
     </property>
     <addaction name="actionParallelEnvironment"/>
    </widget>
