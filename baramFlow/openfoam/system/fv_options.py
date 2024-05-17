@@ -14,6 +14,97 @@ from baramFlow.openfoam.file_system import FileSystem
 logger = logging.getLogger(__name__)
 
 
+
+def generateSourceTermField(czname, xpath, fieldType):
+    volumeMode = _generateVolumeMode(xpath)
+    injectionRate = _generateInjectionRate(xpath, fieldType)
+
+    data = {
+        'type': 'scalarSemiImplicitSource',
+        'volumeMode': volumeMode,
+        'sources': injectionRate
+    }
+    if czname == 'All':
+        data['selectionMode'] = 'all'
+    else:
+        data['selectionMode'] = 'cellZone'
+        data['cellZone'] = czname
+
+    return data
+
+
+def generateFixedValueField(czname, xpath, fieldType):
+    db = CoreDBReader()
+
+    data = {
+        'type': 'scalarFixedValueConstraint',
+        'active': 'yes',
+        'fieldValues': {
+            fieldType: db.getValue(xpath)
+        }
+    }
+    if czname == 'All':
+        data['selectionMode'] = 'all'
+    else:
+        data['selectionMode'] = 'cellZone'
+        data['cellZone'] = czname
+
+    return data
+
+
+def _generateVolumeMode(xpath):
+    db = CoreDBReader()
+
+    unitValue = db.getValue(xpath + '/unit')
+
+    if unitValue == 'valueForEntireCellZone':
+        data = 'absolute'
+    elif unitValue == 'valuePerUnitVolume':
+        data = 'specific'
+    else:
+        data = 'none'
+        raise Exception(f'unitValue is {unitValue}')
+
+    return data
+
+
+def _generateInjectionRate(xpath, fieldType) -> dict:
+    db = CoreDBReader()
+
+    data = {}
+    if fieldType in ['nuTilda', 'k', 'epsilon', 'omega']:
+        valueType = 'constant'
+    else:   # 'rho', 'h'
+        valueType = db.getValue(xpath + '/specification')
+
+    if valueType == 'constant':
+        value = db.getValue(xpath + '/constant')
+        data = {
+            fieldType: [value, '0.0']
+        }
+    elif valueType == 'piecewiseLinear':
+        t = db.getValue(xpath + '/piecewiseLinear/t').split()
+        v = db.getValue(xpath + '/piecewiseLinear/v').split()
+        value = [[t[i], v[i]] for i in range(len(t))]
+        data = {
+            fieldType: {
+                'explicit': ('table', value),
+                'implicit': 'none'
+            }
+        }
+    elif valueType == 'polynomial':
+        value = []
+        v = db.getValue(xpath + '/polynomial').split()
+        for i in range(len(v)):
+            value.append([v[i], i])
+        data = {
+            fieldType: {
+                'explicit': ('polynomial', value),
+                'implicit': 'none'
+            }
+        }
+    return data
+
 class FvOptions(DictionaryFile):
     def __init__(self, rname: str):
         super().__init__(FileSystem.caseRoot(), self.systemLocation(rname), 'fvOptions')
@@ -174,75 +265,9 @@ class FvOptions(DictionaryFile):
         else:
             logger.debug('Error Model Type')
 
-        for scalarID, fieldName in self._db.getUserDefinedScalars():
-            self._generateSourceFields(
-                czname, xpath + f'/userDefinedScalars/scalarSource[scalarID="{scalarID}"]', fieldName)
-
     def _generateSourceFields(self, czname, xpath, fieldType):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
-            dictName = f'scalarSource_{czname}_{fieldType}'
-            volumeMode = self._generateVolumeMode(xpath)
-            injectionRate = self._generateInjectionRate(xpath, fieldType)
-
-            self._data[dictName] = {
-                'type': 'scalarSemiImplicitSource',
-                'volumeMode': volumeMode,
-                'sources': injectionRate
-            }
-            if czname == 'All':
-                self._data[dictName]['selectionMode'] = 'all'
-            else:
-                self._data[dictName]['selectionMode'] = 'cellZone'
-                self._data[dictName]['cellZone'] = czname
-
-    def _generateVolumeMode(self, xpath):
-        unitValue = self._db.getValue(xpath + '/unit')
-
-        if unitValue == 'valueForEntireCellZone':
-            data = 'absolute'
-        elif unitValue == 'valuePerUnitVolume':
-            data = 'specific'
-        else:
-            data = 'none'
-            raise Exception(f'unitValue is {unitValue}')
-
-        return data
-
-    def _generateInjectionRate(self, xpath, fieldType) -> dict:
-        data = {}
-
-        if fieldType in ['nuTilda', 'k', 'epsilon', 'omega']:
-            valueType = 'constant'
-        else:   # 'rho', 'h'
-            valueType = self._db.getValue(xpath + '/specification')
-
-        if valueType == 'constant':
-            value = self._db.getValue(xpath + '/constant')
-            data = {
-                fieldType: [value, '0.0']
-            }
-        elif valueType == 'piecewiseLinear':
-            t = self._db.getValue(xpath + '/piecewiseLinear/t').split()
-            v = self._db.getValue(xpath + '/piecewiseLinear/v').split()
-            value = [[t[i], v[i]] for i in range(len(t))]
-            data = {
-                fieldType: {
-                    'explicit': ('table', value),
-                    'implicit': 'none'
-                }
-            }
-        elif valueType == 'polynomial':
-            value = []
-            v = self._db.getValue(xpath + '/polynomial').split()
-            for i in range(len(v)):
-                value.append([v[i], i])
-            data = {
-                fieldType: {
-                    'explicit': ('polynomial', value),
-                    'implicit': 'none'
-                }
-            }
-        return data
+            self._data[f'scalarSource_{czname}_{fieldType}'] = generateSourceTermField(czname, xpath, fieldType)
 
     def _generateFixedValues(self, czname, xpath):
         self._generateFixedVelocity(czname, xpath + '/velocity')
@@ -261,10 +286,6 @@ class FvOptions(DictionaryFile):
             self._generateFixedFields(czname, xpath + '/specificDissipationRate', 'omega')
         else:
             logger.debug('Error Model Type')
-
-        for scalarID, fieldName in self._db.getUserDefinedScalars():
-            self._generateFixedFields(
-                czname, xpath + f'/userDefinedScalars/scalar[scalarID="{scalarID}"]/value', fieldName)
 
     def _generateFixedVelocity(self, czname, xpath):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
@@ -304,18 +325,4 @@ class FvOptions(DictionaryFile):
 
     def _generateFixedFields(self, czname, xpath, fieldType):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
-            dictName = f'fixedValue_{czname}_{fieldType}'
-            fieldValues = self._db.getValue(xpath)
-
-            self._data[dictName] = {
-                'type': 'scalarFixedValueConstraint',
-                'active': 'yes',
-                'fieldValues': {
-                    fieldType: fieldValues
-                }
-            }
-            if czname == 'All':
-                self._data[dictName]['selectionMode'] = 'all'
-            else:
-                self._data[dictName]['selectionMode'] = 'cellZone'
-                self._data[dictName]['cellZone'] = czname
+            self._data[f'fixedValue_{czname}_{fieldType}'] = generateFixedValueField(czname, xpath, fieldType)
