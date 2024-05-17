@@ -25,6 +25,7 @@ from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.mesh.vtk_loader import isPointInDataSet
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import findSolver, getSolverCapability
+from .fv_options import generateSourceTermField, generateFixedValueField
 
 
 SURFACE_MONITOR_OPERATION = {
@@ -235,24 +236,33 @@ class ControlDict(DictionaryFile):
 
     def _appendScalarTransportFunctionObjects(self):
         for scalarID, fieldName in self._db.getUserDefinedScalars():
+            fvOptions = {}
+            for rname in self._db.getRegions():
+                for czid, czname in self._db.getCellZones(rname):
+                    fullName = f'{rname}_{czname}' if rname else czname
+
+                    sourceTermXPath = f'{CellZoneDB.getXPath(czid)}/sourceTerms/userDefinedScalars/scalarSource[scalarID="{scalarID}"]'
+                    if self._db.getAttribute(sourceTermXPath, 'disabled') == 'false':
+                        fvOptions[f'scalarSource_{fullName}_{fieldName}'] = generateSourceTermField(
+                            czname, sourceTermXPath, fieldName)
+
+                    fixedValueXPath = f'{CellZoneDB.getXPath(czid)}/fixedValues/userDefinedScalars/scalar[scalarID="{scalarID}"]/value'
+                    if self._db.getAttribute(fixedValueXPath, 'disabled') == 'false':
+                        fvOptions[f'fixedValue_{fullName}_{fieldName}'] = generateFixedValueField(
+                            czname, fixedValueXPath, fieldName)
+
             self._data['functions'][fieldName] = {
                 'type': 'scalarTransport',
                 'libs': [_libPath('libsolverFunctionObjects')],
                 'field': fieldName,
                 'schemesField': 'scalar',
                 'nCorr': 2,
-                # 'fvOptions': {
-                #     'All_source-0': {
-                #         'type': 'scalarNEXTSource',
-                #         'volumeMode': 'specific',
-                #         'selectionMode': 'all',
-                #         'field': fieldName,
-                #         'source': 'uniform 100',
-                #     }
-                # }
                 'writeControl': self._writeControl,
                 'writeInterval': self._writeInterval,
             }
+
+            if fvOptions:
+                self._data['functions'][fieldName]['fvOptions'] = fvOptions
 
             xpath = UserDefinedScalarsDB.getXPath(scalarID)
             specificationMethod = self._db.getValue(xpath + '/diffusivity/specificationMethod')
