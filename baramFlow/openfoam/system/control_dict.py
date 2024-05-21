@@ -376,6 +376,9 @@ class ControlDict(DictionaryFile):
             'log': 'false',
         }
 
+        if not GeneralDB.isDensityBased():
+            data['pRef'] = self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure')
+
         if rname := self._db.getValue(xpath + '/region'):
             data['region'] = rname
 
