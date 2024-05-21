@@ -222,9 +222,5 @@ class ChartDock(CDockWidget):
 
         super().changeEvent(event)
 
-    def showEvent(self, event):
-        print('show chart')
-        event.ignore()
-
     def _title(self):
         return QCoreApplication.translate('ChartDock', 'Residuals')

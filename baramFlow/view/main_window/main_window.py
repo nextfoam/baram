@@ -159,6 +159,7 @@ class MainWindow(QMainWindow):
             event.ignore()
             return
 
+        self._caseManager.clear()
         Project.close()
 
         if self._closeType == CloseType.CLOSE_PROJECT:
@@ -192,7 +193,7 @@ class MainWindow(QMainWindow):
         self._ui.actionGmsh.triggered.connect(self._importGmsh)
         self._ui.actionIdeas.triggered.connect(self._importIdeas)
         self._ui.actionNasaPlot3d.triggered.connect(self._importNasaPlot3D)
-        self._ui.actionCloseCase.triggered.connect(lambda: self._closeProject(CloseType.CLOSE_PROJECT))
+        self._ui.actionCloseProject.triggered.connect(lambda: self._closeProject(CloseType.CLOSE_PROJECT))
         self._ui.actionExit.triggered.connect(lambda: self._closeProject(CloseType.EXIT_APP))
 
         self._ui.actionMeshInfo.triggered.connect(self._openMeshInfoDialog)
@@ -529,12 +530,14 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _solverStatusChanged(self, status, liveStatusChanged=False):
-        isSolverRunning = status == SolverStatus.RUNNING or CaseManager().isBatchRunning()
+        batchRunning = CaseManager().isBatchRunning()
+        solverRunning = status == SolverStatus.RUNNING or batchRunning
 
-        self._ui.actionSaveAs.setDisabled(isSolverRunning)
-        self._ui.menuLoadMesh.setDisabled(isSolverRunning)
-        self._ui.menuMesh.setDisabled(isSolverRunning)
-        self._ui.menuParallel.setDisabled(isSolverRunning)
+        self._ui.actionSaveAs.setDisabled(solverRunning)
+        self._ui.menuLoadMesh.setDisabled(solverRunning)
+        self._ui.menuMesh.setDisabled(solverRunning)
+        self._ui.menuParallel.setDisabled(solverRunning)
+        self._ui.actionCloseProject.setDisabled(batchRunning)
 
         self._navigatorView.updateEnabled()
 
