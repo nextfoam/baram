@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtCore import QMargins
-from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 from PySide6QtAds import CDockManager, CDockWidget, DockWidgetArea
 
 from baramFlow.view.dock_widgets.chart_dock import ChartDock
@@ -18,17 +18,20 @@ class DockView(QWidget):
         self._dockManager = CDockManager(self)
         self._dockArea = None
         self._menu = menu
-        self._setupUi()
 
         self._consoleDock = ConsoleDock()
         self._renderingDock = RenderingDock()
         self._chartDock = ChartDock()
         self._monitorDock = MonitorDock()
 
-        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._consoleDock, self._dockArea)
-        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._renderingDock, self._dockArea)
-        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._chartDock, self._dockArea)
-        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._monitorDock, self._dockArea)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(QMargins(0, 0, 0, 0))
+        layout.addWidget(self._dockManager)
+
+        dockArea = self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._consoleDock)
+        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._renderingDock, dockArea)
+        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._chartDock, dockArea)
+        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._monitorDock, dockArea)
 
     def renderingView(self):
         return self._renderingDock.widget()
@@ -43,16 +46,6 @@ class DockView(QWidget):
         self._dockManager.deleteLater()
         self._renderingDock.widget().close()
         super().close()
-
-    def _setupUi(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(QMargins(0, 0, 0, 0))
-        layout.addWidget(self._dockManager)
-
-        emptyDock = CDockWidget("emptyDock")
-        emptyDock.setWidget(QLabel())
-        emptyDock.setFeature(CDockWidget.NoTab, True)
-        self._dockArea = self._dockManager.setCentralWidget(emptyDock)
 
     def _addDock(self, name, widget):
         dock = CDockWidget(name)
