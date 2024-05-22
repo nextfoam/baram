@@ -202,7 +202,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
     <widget class="QMenu" name="menuLoadMesh">
      <property name="title">
@@ -225,12 +225,12 @@
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>&amp;View</string>
     </property>
    </widget>
    <widget class="QMenu" name="menuSetting">
     <property name="title">
-     <string>Settings</string>
+     <string>&amp;Settings</string>
     </property>
     <addaction name="actionScale"/>
     <addaction name="actionLanguage"/>
@@ -238,7 +238,7 @@
    </widget>
    <widget class="QMenu" name="menuMesh">
     <property name="title">
-     <string>Mesh</string>
+     <string>&amp;Mesh</string>
     </property>
     <addaction name="actionMeshInfo"/>
     <addaction name="actionMeshScale"/>
@@ -247,19 +247,19 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuParallel">
     <property name="title">
-     <string>Parallel</string>
+     <string>&amp;Parallel</string>
     </property>
     <addaction name="actionParallelEnvironment"/>
    </widget>
    <widget class="QMenu" name="menuExternal_Tools">
     <property name="title">
-     <string>External Tools</string>
+     <string>&amp;External Tools</string>
     </property>
     <addaction name="actionParaView"/>
    </widget>
