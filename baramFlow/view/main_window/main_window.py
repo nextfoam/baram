@@ -134,6 +134,8 @@ class MainWindow(QMainWindow):
 
         self._closeType = None
 
+        self._setupShortcuts()
+
         self._connectSignalsSlots()
 
         geometry = AppSettings.getLastMainWindowGeometry()
@@ -182,6 +184,18 @@ class MainWindow(QMainWindow):
             self._loadForm(self._navigatorView.currentMenu())
 
         super().changeEvent(event)
+
+    def _setupShortcuts(self):
+        self._ui.actionSave.setShortcut('Ctrl+S')
+        self._ui.actionSaveAs.setShortcut('Ctrl+A')
+        self._ui.actionCloseCase.setShortcut('Ctrl+E')
+        self._ui.actionExit.setShortcut('Ctrl+Q')
+
+        self._ui.actionParallelEnvironment.setShortcut('Ctrl+P')
+
+        self._ui.actionLanguage.setShortcut('Ctrl+L')
+
+        self._ui.actionParaView.setShortcut('Ctrl+V')
 
     def _connectSignalsSlots(self):
         self._ui.actionSave.triggered.connect(self._save)

@@ -74,6 +74,8 @@ class MainWindow(QMainWindow):
         self._contentLayout = QVBoxLayout(self._ui.content)
         self._contentLayout.setContentsMargins(0, 0, 0, 0)
 
+        self._setupShortcuts()
+
         self._connectSignalsSlots()
 
         layout = QVBoxLayout(self._ui.dockContainer)
@@ -133,6 +135,14 @@ class MainWindow(QMainWindow):
     async def start(self):
         self._startDialog.setRecents(app.settings.getRecentProjects())
         self._startDialog.open()
+
+    def _setupShortcuts(self):
+        self._ui.actionNew.setShortcut('Ctrl+N')
+        self._ui.actionOpen.setShortcut('Ctrl+O')
+        self._ui.actionSave.setShortcut('Ctrl+S')
+        self._ui.actionExit.setShortcut('Ctrl+Q')
+        self._ui.actionParallelEnvironment.setShortcut('Ctrl+P')
+        self._ui.actionLanguage.setShortcut('Ctrl+L')
 
     def _connectSignalsSlots(self):
         self._ui.menuView.addAction(self._consoleView.toggleViewAction())
