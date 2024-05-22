@@ -42,8 +42,7 @@ def _to_v3(data):
 _migrates = {
     0: _to_v1,
     1: _to_v2,
-    2: _to_v3,
-    3: _to_v3,
+    2: _to_v3
 }
 
 
