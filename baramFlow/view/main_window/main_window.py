@@ -188,7 +188,7 @@ class MainWindow(QMainWindow):
     def _setupShortcuts(self):
         self._ui.actionSave.setShortcut('Ctrl+S')
         self._ui.actionSaveAs.setShortcut('Ctrl+A')
-        self._ui.actionCloseCase.setShortcut('Ctrl+E')
+        self._ui.actionCloseProject.setShortcut('Ctrl+E')
         self._ui.actionExit.setShortcut('Ctrl+Q')
 
         self._ui.actionParallelEnvironment.setShortcut('Ctrl+P')
