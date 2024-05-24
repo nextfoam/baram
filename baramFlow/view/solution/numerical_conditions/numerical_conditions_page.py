@@ -149,9 +149,9 @@ class NumericalConditionsPage(ContentPage):
         if len(self._db.getUserDefinedScalars()):
             self._ui.discretizationSchemeScalar.setEnabled(True)
             self._ui.underRelaxationFactorScalar.setEnabled(True)
-            self._ui.underRelaxationFactorScalarFinal.setEnabled(True)
+            self._ui.underRelaxationFactorScalarFinal.setEnabled(timeIsTransient or allRoundSolver)
             self._ui.absoluteScalar.setEnabled(True)
-            self._ui.relativeScalar.setEnabled(True)
+            self._ui.relativeScalar.setEnabled(timeIsTransient or allRoundSolver)
         else:
             self._ui.discretizationSchemeScalar.setEnabled(False)
             self._ui.underRelaxationFactorScalar.setEnabled(False)
