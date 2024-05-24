@@ -13,6 +13,7 @@ from PySide6.QtCore import Signal, QEvent, QMargins
 from PySide6QtAds import CDockManager, DockWidgetArea
 
 from libbaram.utils import getFit
+from widgets.new_project_dialog import NewProjectDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 from widgets.progress_dialog import ProgressDialog
 
@@ -20,7 +21,6 @@ from baramMesh.app import app
 from baramMesh.openfoam.redistribution_task import RedistributionTask
 from baramMesh.view.display_control.display_control import DisplayControl
 from baramMesh.view.widgets.project_dialog import ProjectDialog
-from baramMesh.view.widgets.new_project_dialog import NewProjectDialog
 from baramMesh.view.widgets.settings_scaling_dialog import SettingScalingDialog
 from baramMesh.view.widgets.language_dialog import LanugageDialog
 from baramMesh.view.menu.mesh_quality.mesh_quality_parameters_dialog import MeshQualityParametersDialog
@@ -173,8 +173,7 @@ class MainWindow(QMainWindow):
         self._openProject(path)
 
     def _actionNew(self):
-        self._dialog = NewProjectDialog(self)
-        self._dialog.setBaseLocation(Path(app.settings.getRecentLocation()).resolve())
+        self._dialog = NewProjectDialog(self, self.tr('New Project'), Path(app.settings.getRecentLocation()).resolve())
         self._dialog.accepted.connect(self._createProject)
         self._dialog.show()
 

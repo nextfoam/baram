@@ -5,13 +5,13 @@ import shutil
 from pathlib import Path
 
 import qasync
-from PySide6.QtWidgets import QFileDialog
 
 from libbaram.openfoam.constants import Directory
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
 from libbaram.utils import rmtree
 from resources import resource
+from widgets.new_project_dialog import NewProjectDialog
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
@@ -45,17 +45,22 @@ class ExportPage(StepPage):
 
     @qasync.asyncSlot()
     async def _openFileDialog(self):
-        self._dialog = QFileDialog(self._widget, self.tr('Select Folder'))
-        self._dialog.setFileMode(QFileDialog.FileMode.Directory)
-        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        self._dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
-        self._dialog.fileSelected.connect(self._export)
+        self._dialog = NewProjectDialog(self._widget, self.tr('Export Baram Project'))
+        self._dialog.accepted.connect(self._export)
         self._dialog.rejected.connect(self._ui.menubar.repaint)
         self._dialog.open()
+        #
+        # self._dialog = QFileDialog(self._widget, self.tr('Select Folder'))
+        # self._dialog.setFileMode(QFileDialog.FileMode.Directory)
+        # self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        # self._dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
+        # self._dialog.fileSelected.connect(self._export)
+        # self._dialog.rejected.connect(self._ui.menubar.repaint)
+        # self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _export(self, file):
-        path = Path(file)
+    async def _export(self):
+        path = Path(self._dialog.projectLocation())
 
         progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
         progressDialog.setLabelText(self.tr('Preparing'))
