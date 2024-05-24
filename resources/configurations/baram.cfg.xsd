@@ -3,6 +3,12 @@
            xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="6">
 
     <!-- type definitions -->
+    <xs:simpleType name="positive">
+        <xs:restriction base="xs:double">
+            <xs:minExclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
+
     <xs:simpleType name="ratio">
         <xs:restriction base="xs:double">
             <xs:minInclusive value="0"/>
@@ -48,6 +54,14 @@
     <xs:complexType name="inputNumberType">
         <xs:simpleContent>
             <xs:extension base="xs:double">
+                <xs:attribute name="batchParameter" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="inputPositiveNumberType">
+        <xs:simpleContent>
+            <xs:extension base="positive">
                 <xs:attribute name="batchParameter" type="xs:string"/>
             </xs:extension>
         </xs:simpleContent>
@@ -310,7 +324,7 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-                        <xs:element name="constant" type="inputNumberType"/>
+                        <xs:element name="constant" type="inputPositiveNumberType"/>
                         <xs:element name="polynomial" type="inputNumberListType"/>
                         <xs:element name="sutherland" minOccurs="0">
                             <xs:complexType>
