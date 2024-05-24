@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>435</height>
+    <height>457</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,6 +39,13 @@
       </item>
       <item row="1" column="1">
        <widget class="QLineEdit" name="volumeRefinementLevel"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="cellSize">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -178,6 +185,9 @@
         <property name="text">
          <string>OK</string>
         </property>
+        <property name="default">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -200,5 +210,22 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>cancel</sender>
+   <signal>clicked()</signal>
+   <receiver>VolumeeRefinementDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>344</x>
+     <y>404</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>217</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import qasync
+from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QDialog
 
+from libbaram.simple_db.simple_db import elementToVector
 from libbaram.simple_db.simple_schema import DBError
 from widgets.async_message_box import AsyncMessageBox
 
 from baramMesh.app import app
-from baramMesh.db.configurations_schema import GeometryType, GapRefinementMode
+from baramMesh.db.configurations_schema import GeometryType, GapRefinementMode, Shape, CFDType
 from baramMesh.view.widgets.multi_selector_dialog import MultiSelectorDialog
 from baramMesh.view.widgets.multi_selector_dialog import SelectorItem
 from .volume_refinement_dialog_ui import Ui_VolumeeRefinementDialog
@@ -38,6 +40,12 @@ class VolumeRefinementDialog(QDialog):
             GapRefinementMode.INSIDE:   self.tr('Inside'),
             GapRefinementMode.OUTSIDE:  self.tr('Outside'),
         })
+
+        self._xCellSize = None
+        self._yCellSize = None
+        self._zCellSize = None
+
+        self._ui.volumeRefinementLevel.setValidator(QIntValidator(0, 100))
 
         self._connectSignalsSlots()
 
@@ -123,6 +131,7 @@ class VolumeRefinementDialog(QDialog):
             await AsyncMessageBox().information(self, self.tr('Input Error'), error.toMessage())
 
     def _connectSignalsSlots(self):
+        self._ui.volumeRefinementLevel.editingFinished.connect(self._updateCellSize)
         self._ui.select.clicked.connect(self._selectVolumes)
         self._ui.ok.clicked.connect(self._accept)
         self._ui.cancel.clicked.connect(self.close)
@@ -166,6 +175,38 @@ class VolumeRefinementDialog(QDialog):
                 self._volumes.append(gId)
 
         self._oldVolumes = self._volumes
+
+        self._loadCellSize()
+
+    def _loadCellSize(self):
+        boundingHex6 = None
+        gId = app.db.getValue('baseGrid/boundingHex6')
+        if gId in app.window.geometryManager.geometries():
+            boundingHex6 = app.window.geometryManager.geometry(gId)
+            if boundingHex6['gType'] == GeometryType.VOLUME.value and boundingHex6['shape'] == Shape.HEX6.value:
+                for sId in app.window.geometryManager.subSurfaces(gId):
+                    s =  app.window.geometryManager.geometry(sId)
+                    if s['cfdType'] != CFDType.BOUNDARY.value:
+                        boundingHex6 = None
+
+        if boundingHex6 is None:
+            x1, x2, y1, y2, z1, z2 = app.window.geometryManager.getBounds().toTuple()
+        else:
+            x1, y1, z1 = elementToVector(boundingHex6['point1'])
+            x2, y2, z2 = elementToVector(boundingHex6['point2'])
+
+        self._xCellSize = (x2 - x1) / float(app.db.getValue('baseGrid/numCellsX'))
+        self._yCellSize = (y2 - y1) / float(app.db.getValue('baseGrid/numCellsY'))
+        self._zCellSize = (z2 - z1) / float(app.db.getValue('baseGrid/numCellsZ'))
+
+        self._updateCellSize()
+
+    def _updateCellSize(self):
+        d = 2 ** int(self._ui.volumeRefinementLevel.text())
+        print(d)
+        self._ui.cellSize.setText(
+            'cell size <b>({:g} x {:g} x {:g})</b>'.format(
+                self._xCellSize / d, self._yCellSize / d, self._zCellSize / d))
 
     def _selectVolumes(self):
         self._dialog = MultiSelectorDialog(self, self.tr('Select Volumes'), self._availableVolumes, self._volumes)
