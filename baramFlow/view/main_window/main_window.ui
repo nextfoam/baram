@@ -206,7 +206,7 @@
     </property>
     <widget class="QMenu" name="menuLoadMesh">
      <property name="title">
-      <string>Load Mesh</string>
+      <string>&amp;Load Mesh</string>
      </property>
      <addaction name="actionOpenFoam"/>
      <addaction name="actionMultiplePolyMesh"/>
@@ -259,7 +259,7 @@
    </widget>
    <widget class="QMenu" name="menuExternal_Tools">
     <property name="title">
-     <string>&amp;External Tools</string>
+     <string>External &amp;Tools</string>
     </property>
     <addaction name="actionParaView"/>
    </widget>
@@ -317,17 +317,17 @@
   </widget>
   <action name="actionCloseCase">
    <property name="text">
-    <string>Close Project</string>
+    <string>&amp;Close Project</string>
    </property>
   </action>
   <action name="actionSave">
    <property name="text">
-    <string>Save</string>
+    <string>&amp;Save</string>
    </property>
   </action>
   <action name="actionSaveAs">
    <property name="text">
-    <string>Save As</string>
+    <string>Save &amp;As</string>
    </property>
   </action>
   <action name="actionPreference">
@@ -337,32 +337,32 @@
   </action>
   <action name="actionExit">
    <property name="text">
-    <string>Exit</string>
+    <string>&amp;Exit</string>
    </property>
   </action>
   <action name="actionScale">
    <property name="text">
-    <string>Scale</string>
+    <string>&amp;Scale</string>
    </property>
   </action>
   <action name="actionLanguage">
    <property name="text">
-    <string>Language</string>
+    <string>&amp;Language</string>
    </property>
   </action>
   <action name="actionMeshScale">
    <property name="text">
-    <string>Scale</string>
+    <string>&amp;Scale</string>
    </property>
   </action>
   <action name="actionMeshTranslate">
    <property name="text">
-    <string>Translate</string>
+    <string>&amp;Translate</string>
    </property>
   </action>
   <action name="actionMeshRotate">
    <property name="text">
-    <string>Rotate</string>
+    <string>&amp;Rotate</string>
    </property>
   </action>
   <action name="actionOpenFoam">
@@ -409,7 +409,7 @@
   </action>
   <action name="actionParaView">
    <property name="text">
-    <string>ParaView</string>
+    <string>&amp;ParaView</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -419,17 +419,17 @@
   </action>
   <action name="actionParallelEnvironment">
    <property name="text">
-    <string>Environment</string>
+    <string>&amp;Environment</string>
    </property>
   </action>
   <action name="actionParaViewSetting">
    <property name="text">
-    <string>ParaView</string>
+    <string>&amp;ParaView</string>
    </property>
   </action>
   <action name="actionMeshInfo">
    <property name="text">
-    <string>Info.</string>
+    <string>&amp;Info.</string>
    </property>
    <property name="toolTip">
     <string>Mesh Info.</string>

@@ -180,7 +180,7 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>Add</string>
+            <string>&amp;Add</string>
            </property>
           </widget>
          </item>
