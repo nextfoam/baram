@@ -3,14 +3,18 @@
 
 from enum import Enum, auto
 
+import qasync
+
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFormLayout, QMessageBox
+from PySide6.QtWidgets import QFormLayout
+
+from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.material_db import MaterialDB, Specification, Phase
-from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
 from baramFlow.coredb.project import Project
 from baramFlow.view.widgets.number_input_dialog import PolynomialDialog
 from .material_dialog_ui import Ui_MaterialDialog
@@ -53,14 +57,13 @@ class MaterialDialog(ResizableDialog):
             layout.removeRow(self._ui.sutherlandTemperature)
 
         self._setupSpecifications()
-        self._ui.viscosityGroup.setVisible(self._phase != Phase.SOLID)
+        self._ui.viscosityGroup.setVisible(
+            self._phase != Phase.SOLID and ModelsDB.getTurbulenceModel() != TurbulenceModel.INVISCID)
 
         self._connectSignalsSlots()
+        self._load()
 
-    def showEvent(self, ev):
-        if ev.spontaneous():
-            return super().showEvent(ev)
-
+    def _load(self):
         self._name = self._db.getValue(self._xpath + '/name')
         self._ui.name.setText(self._name)
 
@@ -121,12 +124,12 @@ class MaterialDialog(ResizableDialog):
         self._polynomialThermalConductivity = None
         self._polynomialDialog = None
 
-        return super().showEvent(ev)
-
-    def accept(self):
+    @qasync.asyncSlot()
+    async def _accept(self):
         name = self._ui.name.text().strip()
         if name != self._name and MaterialDB.isMaterialExists(name):
-            QMessageBox.critical(self, self.tr("Input Error"), self.tr(f'Material name "{name}" is already exists.'))
+            await AsyncMessageBox().information(self, self.tr("Input Error"),
+                                                self.tr(f'Material name "{name}" is already exists.'))
             return
 
         writer = CoreDBWriter()
@@ -142,7 +145,7 @@ class MaterialDialog(ResizableDialog):
                 writer.append(self._xpath + '/density/polynomial',
                               self._polynomialDensity, self.tr("Density Polynomial"))
             elif self._db.getValue(self._xpath + '/density/polynomial') == '':
-                QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Density Polynomial."))
+                await AsyncMessageBox().information(self, self.tr("Input Error"), self.tr("Edit Density Polynomial."))
                 return
 
         if self._phase != Phase.SOLID:
@@ -161,7 +164,8 @@ class MaterialDialog(ResizableDialog):
                     writer.append(self._xpath + '/viscosity/polynomial',
                                   self._polynomialViscosity, self.tr("Viscosity Polynomial"))
                 elif self._db.getValue(self._xpath + '/viscosity/polynomial') == '':
-                    QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Viscosity Polynomial."))
+                    await AsyncMessageBox().information(self, self.tr("Input Error"),
+                                                        self.tr("Edit Viscosity Polynomial."))
                     return
 
         if ModelsDB.isEnergyModelOn():
@@ -175,7 +179,8 @@ class MaterialDialog(ResizableDialog):
                     writer.append(self._xpath + '/specificHeat/polynomial',
                                   self._polynomialSpecificHeat, self.tr("Specific Heat Polynomial"))
                 elif self._db.getValue(self._xpath + '/specificHeat/polynomial') == '':
-                    QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Specific Heat Polynomial."))
+                    await AsyncMessageBox().information(self, self.tr("Input Error"),
+                                                        self.tr("Edit Specific Heat Polynomial."))
                     return
 
             specification = self._ui.thermalConductivityType.currentData()
@@ -188,7 +193,8 @@ class MaterialDialog(ResizableDialog):
                     writer.append(self._xpath + '/thermalConductivity/polynomial',
                                   self._polynomialThermalConductivity, self.tr("Thermal Conductivity Polynomial"))
                 elif self._db.getValue(self._xpath + '/thermalConductivity/polynomial') == '':
-                    QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Thermal Conductivity Polynomial."))
+                    await AsyncMessageBox().information(self, self.tr("Input Error"),
+                                                        self.tr("Edit Thermal Conductivity Polynomial."))
                     return
 
             if self._phase == Phase.SOLID:
@@ -205,7 +211,7 @@ class MaterialDialog(ResizableDialog):
 
         errorCount = writer.write()
         if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
+            await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
             if name != self._name:
                 Project.instance().materialChanged.emit()
@@ -290,6 +296,7 @@ class MaterialDialog(ResizableDialog):
         self._ui.specificHeatEdit.clicked.connect(self._editSpecificHeat)
         self._ui.viscosityEdit.clicked.connect(self._editViscosity)
         self._ui.thermalConductivityEdit.clicked.connect(self._editThermalConductivity)
+        self._ui.ok.clicked.connect(self._accept)
 
     def _densityTypeChanged(self):
         specification = self._ui.densityType.currentData(Qt.UserRole)

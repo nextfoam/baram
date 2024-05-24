@@ -6,7 +6,7 @@ from PySide6.QtCore import Signal
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB, Specification, Phase
-from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
 from .material_card_ui import Ui_MaterialCard
 from .material_dialog import MaterialDialog
 
@@ -48,7 +48,7 @@ class MaterialCard(QWidget):
             self._ui.density.setText(MaterialDB.dbSpecificationToText(specification))
 
         viscositySpec = None
-        if phase == Phase.SOLID:
+        if phase == Phase.SOLID or ModelsDB.getTurbulenceModel() == TurbulenceModel.INVISCID:
             self._ui.viscosistyWidget.hide()
         else:
             viscositySpec = db.getValue(self._xpath + '/viscosity/specification')
