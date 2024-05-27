@@ -105,8 +105,12 @@ class MeshManager(ActorManager):
 
         self._notifyCellCountChange()
 
-    def cut(self, cutters):
-        super().cut(cutters)
+    def clip(self, planes):
+        super().clip(planes)
+        self._notifyCellCountChange()
+
+    def slice(self, plane):
+        super().slice(plane)
         self._notifyCellCountChange()
 
     def _notifyCellCountChange(self):

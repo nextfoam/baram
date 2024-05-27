@@ -9,27 +9,28 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from baramFlow.view.widgets.content_page import ContentPage
-from .boundary_conditions_page_ui import Ui_BoundaryConditionsPage
-from .velocity_inlet_dialog import VelocityInletDialog
-from .flow_rate_inlet_dialog import FlowRateInletDialog
-from .pressure_inlet_dialog import PressureInletDialog
-from .pressure_outlet_dialog import PressureOutletDialog
 from .ABL_inlet_dialog import ABLInletDialog
+from .boundary_conditions_page_ui import Ui_BoundaryConditionsPage
+from .boundary_type_picker import BoundaryTypePicker
+from .boundary_widget import BoundaryWidget
+from .copy_dialog import CopyDialog
+from .cyclic_dialog import CyclicDialog
+from .fan_dialog import FanDialog
+from .farfield_riemann_dialog import FarfieldRiemannDialog
+from .flow_rate_inlet_dialog import FlowRateInletDialog
+from .free_stream_dialog import FreeStreamDialog
+from .interface_dialog import InterfaceDialog
 from .open_channel_inlet_dialog import OpenChannelInletDialog
 from .open_channel_outlet_dialog import OpenChannelOutletDialog
-from .free_stream_dialog import FreeStreamDialog
-from .farfield_riemann_dialog import FarfieldRiemannDialog
+from .porous_jump_dialog import PorousJumpDialog
+from .pressure_inlet_dialog import PressureInletDialog
+from .pressure_outlet_dialog import PressureOutletDialog
 from .subsonic_inlet_dialog import SubsonicInletDialog
 from .subsonic_outflow_dialog import SubsonicOutflowDialog
 from .supersonic_inflow_dialog import SupersonicInflowDialog
 from .thermo_coupled_wall_dialog import ThermoCoupledWallDialog
+from .velocity_inlet_dialog import VelocityInletDialog
 from .wall_dialog import WallDialog
-from .interface_dialog import InterfaceDialog
-from .porous_jump_dialog import PorousJumpDialog
-from .fan_dialog import FanDialog
-from .cyclic_dialog import CyclicDialog
-from .boundary_widget import BoundaryWidget
-from .boundary_type_picker import BoundaryTypePicker
 
 
 DIALOGS = {
@@ -100,6 +101,7 @@ class BoundaryConditionsPage(ContentPage):
         self._ui.boundaries.itemDoubleClicked.connect(self._doubleClicked)
         self._ui.boundaries.itemChanged.connect(self._itemChanged)
         self._ui.boundaries.currentItemChanged.connect(self._currentBoundaryChanged)
+        self._ui.copy.clicked.connect(self._copy)
         self._ui.edit.clicked.connect(self._edit)
 
     def _meshUpdated(self):
@@ -173,6 +175,11 @@ class BoundaryConditionsPage(ContentPage):
     def _boundaryTypeChanged(self, bcid):
         self._boundaries[bcid].reloadType()
 
+    def _copy(self):
+        self._dialog = CopyDialog(self)
+        self._dialog.boundariesCopied.connect(self._refresh)
+        self._dialog.open()
+
     def _edit(self):
         item = self._ui.boundaries.currentItem()
         if item:
@@ -199,3 +206,7 @@ class BoundaryConditionsPage(ContentPage):
             self._ui.boundaries.setCurrentItem(self._boundaries[app.vtkMesh().currentId()].parent)
         else:
             self._ui.boundaries.clearSelection()
+
+    def _refresh(self, boundaries):
+        for bcid in boundaries:
+            self._boundaries[bcid].reloadType()
