@@ -173,9 +173,10 @@ class VelocityInletDialog(ResizableDialog):
             self._temperatureWidget.rollbackWriting()
             await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
-            if distributionFileKey and oldDistributionFileKey:
-                fileDB.delete(oldDistributionFileKey)
-
+            ## For the copy boundary conditions feature, old key should not be deleted.
+            # if distributionFileKey and oldDistributionFileKey:
+            #     fileDB.delete(oldDistributionFileKey)
+            #
             self._temperatureWidget.completeWriting()
             self.accept()
 

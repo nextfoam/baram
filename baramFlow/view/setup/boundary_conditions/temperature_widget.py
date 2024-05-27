@@ -133,9 +133,11 @@ class TemperatureWidget(QWidget):
         """
         Delete the old key of the spatial distribution file if it has been updated.
         This function should be called after all the data of the dialog containing this widget has been written to coredb.
+        Notice: Since the copy boundary conditions feature has been added, so old key should not be deleted.
         """
-        if self._spatialDistributionFileKey and self._spatialDistributionFileOldKey:
-            Project.instance().fileDB().delete(self._spatialDistributionFileOldKey)
+        # if self._spatialDistributionFileKey and self._spatialDistributionFileOldKey:
+        #     Project.instance().fileDB().delete(self._spatialDistributionFileOldKey)
+        return
 
     def rollbackWriting(self):
         """

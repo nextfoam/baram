@@ -815,6 +815,14 @@ class _CoreDB(object):
 
         return [(int(e.attrib['bcid']), e.find('name', namespaces=nsmap).text) for e in elements]
 
+    def copyBoundaryConditions(self, sourceID, targetID):
+        old = self._getElement(f'regions/region/boundaryConditions/boundaryCondition[@bcid="{targetID}"]')
+        new = copy.deepcopy(self._getElement(f'regions/region/boundaryConditions/boundaryCondition[@bcid="{sourceID}"]'))
+        new.set('bcid', str(targetID))
+        new.find('name', namespaces=nsmap).text = old.find('name', namespaces=nsmap).text
+        new.find('geometricalType', namespaces=nsmap).text = old.find('geometricalType', namespaces=nsmap).text
+        old.getparent().replace(old, new)
+
     def hasMesh(self):
         return True if self._xmlTree.findall(f'.//regions/region', namespaces=nsmap) else False
 
