@@ -111,7 +111,7 @@ QTreeView::indicator:checked {image: url(:/icons/eye.svg);}</string>
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>Edit</string>
+         <string>&amp;Edit</string>
         </property>
        </widget>
       </item>
