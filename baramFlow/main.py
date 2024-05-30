@@ -6,7 +6,6 @@ import os
 import logging
 import asyncio
 
-import psutil
 import qasync
 
 from PySide6.QtCore import QFile, QTextStream, QIODevice
@@ -26,7 +25,7 @@ from baramFlow.app_properties import AppProperties
 from baramFlow.app_plug_in import AppPlugIn
 from baramFlow.view.main_window.start_window import Baram
 from baramFlow.coredb.app_settings import AppSettings
-
+from libbaram.process import getAvailablePhysicalCores
 
 logger = logging.getLogger()
 formatter = logging.Formatter("[%(asctime)s][%(name)s] ==> %(message)s")
@@ -58,8 +57,8 @@ def main():
 
     os.environ["QT_SCALE_FACTOR"] = AppSettings.getUiScaling()
 
-    # Guess available cores, and leave 1 core for users
-    numCores = min(len(psutil.Process().cpu_affinity()), psutil.cpu_count(logical=False)) - 1
+    # Leave 1 core for users
+    numCores = getAvailablePhysicalCores() - 1
 
     smp = vtkSMPTools()
     smp.Initialize(numCores)
