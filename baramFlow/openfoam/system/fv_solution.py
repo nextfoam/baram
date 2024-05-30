@@ -128,7 +128,14 @@ class FvSolution(DictionaryFile):
                 'pRefCell': 0,
                 # only for fluid
                 'pRefValue': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'),
-                'solveEnergy': 'yes' if energyOn else 'no',  # NEXTfoam custom option
+                'solveFlow': ('yes'
+                              if self._db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/flow')
+                              else 'no'),
+                'solveEnergy': (
+                    'yes'
+                    if energyOn
+                       and self._db.getAttribute(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/energy', 'disabled') == 'false'
+                    else 'no'),  # NEXTfoam custom option
                 'residualControl': {
                     'p': self._db.getValue('.//convergenceCriteria/pressure/absolute'),
                     'p_rgh': self._db.getValue('.//convergenceCriteria/pressure/absolute'),
@@ -164,7 +171,14 @@ class FvSolution(DictionaryFile):
                 'pRefValue': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'),
                 'rDeltaTSmoothingCoeff': '0.5',
                 'rDeltaTDampingCoeff': '0.5',
-                'solveEnergy': 'yes' if energyOn else 'no',  # NEXTfoam custom option
+                'solveFlow': ('yes'
+                              if self._db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/flow')
+                              else 'no'),
+                'solveEnergy': (
+                    'yes'
+                    if energyOn
+                       and self._db.getAttribute(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/energy', 'disabled') == 'false'
+                    else 'no'),  # NEXTfoam custom option
                 'residualControl': {
                     'p': {
                         'tolerance': self._db.getValue('.//convergenceCriteria/pressure/absolute'),

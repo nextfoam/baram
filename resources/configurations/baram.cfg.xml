@@ -196,6 +196,15 @@
                 <maximumStaticTemperature>5000</maximumStaticTemperature>
                 <maximumViscosityRatio>1e5</maximumViscosityRatio>
             </limits>
+            <equations>
+                <flow>true</flow>
+                <energy disabled="false">
+                    <includeViscousDissipationTerms>false</includeViscousDissipationTerms>
+                    <includeKineticEnergyTerms>false</includeKineticEnergyTerms>
+                    <includePressureWorkTerms>false</includePressureWorkTerms>
+                </energy>
+                <UDS>true</UDS>
+            </equations>
         </advanced>
     </numericalConditions>
 

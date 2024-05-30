@@ -11,17 +11,18 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 import baramFlow.openfoam.solver
 from baramFlow.app import app
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_reader import CoreDBReader
-from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, DirectionSpecificationMethod
 from baramFlow.coredb.cell_zone_db import CellZoneDB
-from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB, Phase
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType, Field
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceModelsDB, ScalarSpecificationMethod
 from baramFlow.coredb.models_db import UserDefinedScalarsDB
-from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
+from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType, Field
+from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
+from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baramFlow.mesh.vtk_loader import isPointInDataSet
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import findSolver, getSolverCapability
@@ -226,7 +227,8 @@ class ControlDict(DictionaryFile):
         # calling order is important for these three function objects
         # scalar transport FO should be called first so that monitoring and residual can refer the scalar fields
 
-        self._appendScalarTransportFunctionObjects()
+        if self._db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/UDS'):
+            self._appendScalarTransportFunctionObjects()
 
         self._appendMonitoringFunctionObjects()
 

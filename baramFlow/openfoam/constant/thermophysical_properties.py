@@ -5,6 +5,8 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.openfoam.file_system import FileSystem
 
 
@@ -125,7 +127,6 @@ def _constructFluid(region: str):
         'mixture': mix
     }
 
-
 def _constructSolid(region: str):
     thermo = {
         'type': 'heSolidThermo',
@@ -196,5 +197,24 @@ class ThermophysicalProperties(DictionaryFile):
             self._data = _constructSolid(self._rname)
         else:
             self._data = _constructFluid(self._rname)
+
+        energyModelOn = ModelsDB.isEnergyModelOn()
+        self._data.update({
+            'includeViscousDissipation': (
+                'true'
+                if db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/energy/includeViscousDissipationTerms')
+                   and energyModelOn
+                else 'false'),
+            'includeKineticEnergy': (
+                'true'
+                if db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced//equations/energy/includeKineticEnergyTerms')
+                   and energyModelOn
+                else 'false'),
+            'includePressureWork': (
+                'true'
+                if db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced//equations/energy/includePressureWorkTerms')
+                   and energyModelOn
+                else 'false')
+        })
 
         return self

@@ -326,8 +326,8 @@ def _version_4(root: etree.Element):
 def _version_5(root: etree.Element):
     logger.debug('  Upgrading to v6')
 
-    # Keep this commented until official v6 spec. is released
-    # root.set('version', '6')
+    root.set('version', '6')
+
     for p in root.findall('models/turbulenceModels', namespaces=_nsmap):
         if p.find('des', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "des" to {p}')
@@ -493,13 +493,40 @@ def _version_5(root: etree.Element):
             p.insert(1, e)
 
 
+def _version_6(root: etree.Element):
+    logger.debug('  Upgrading to v7')
+
+    # Keep this commented until official v6 spec. is released
+    # root.set('version', '7')
+    if (p := root.find('numericalConditions/advanced', namespaces=_nsmap)) is not None:
+        if p.find('equations', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "equations" to {p}')
+
+            includeEnergyTerms = ('true'
+                                  if root.find('general/solverType', namespaces=_nsmap).text == 'densityBased'
+                                  else 'false')
+
+            e = etree.fromstring(
+                '<equations xmlns="http://www.baramcfd.org/baram">'
+                '   <flow>true</flow>'
+                '   <energy disabled="false">'
+                f'      <includeViscousDissipationTerms>{includeEnergyTerms}</includeViscousDissipationTerms>'
+                f'      <includeKineticEnergyTerms>{includeEnergyTerms}</includeKineticEnergyTerms>'
+                f'      <includePressureWorkTerms>{includeEnergyTerms}</includePressureWorkTerms>'
+                '   </energy>'
+                '   <UDS>true</UDS>'
+                '</equations>')
+            p.append(e)
+
+
 _fTable = [
     None,
     _version_1,
     _version_2,
     _version_3,
     _version_4,
-    _version_5
+    _version_5,
+    _version_6
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))
