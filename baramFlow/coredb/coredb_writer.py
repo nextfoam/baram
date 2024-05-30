@@ -6,6 +6,10 @@ from PySide6.QtCore import QCoreApplication
 from baramFlow.coredb.coredb import CoreDB, Error, ValueException
 
 
+def boolToDBText(value):
+    return 'true' if value else 'false'
+
+
 class WriteItem:
     def __init__(self, xpath, label=None):
         self._xpath = xpath

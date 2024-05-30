@@ -418,7 +418,7 @@ class NumericalConditionsPage(ContentPage):
         self._ui.fluxType.currentDataChanged.connect(self._fluxTypeChanged)
 
     def _advancedSetup(self):
-        self._dialog = AdvancedDialog()
+        self._dialog = AdvancedDialog(self)
         self._dialog.open()
 
     def _fluxTypeChanged(self, fluxType):

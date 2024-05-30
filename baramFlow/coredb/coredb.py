@@ -1278,6 +1278,9 @@ class _CoreDB(object):
                 float(self.getValue(xpath + '/y')),
                 float(self.getValue(xpath + '/z'))]
 
+    def getBool(self, xpath:str):
+        return self.getValue(xpath) == 'true'
+
     @property
     def isModified(self) -> bool:
         return self._configCountAtSave != self._configCount
