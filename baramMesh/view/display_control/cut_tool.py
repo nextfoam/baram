@@ -231,6 +231,7 @@ class CutTool(QObject):
     def _typeChanged(self, type_):
         self._clipOption.setVisible(type_ == CutType.CLIP)
         self._sliceOption.setVisible(type_ == CutType.SLICE)
+        self._handleOff()
 
     def _clipHandleToggled(self, normal):
         button = self._clipHandles.button(normal)
