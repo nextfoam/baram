@@ -6,7 +6,6 @@ import os
 import logging
 import asyncio
 
-import psutil
 import qasync
 from PySide6.QtWidgets import QApplication
 
@@ -22,7 +21,7 @@ import resource_rc
 from baramMesh.app import app
 from baramMesh.settings.app_properties import AppProperties
 from baramMesh.view.main_window.main_window import MainWindow
-
+from libbaram.process import getAvailablePhysicalCores
 
 logger = logging.getLogger()
 formatter = logging.Formatter("[%(asctime)s][%(name)s] ==> %(message)s")
@@ -53,8 +52,8 @@ def main():
 
     os.environ["QT_SCALE_FACTOR"] = app.settings.getScale()
 
-    # Guess available cores, and leave 1 core for users
-    numCores = min(len(psutil.Process().cpu_affinity()), psutil.cpu_count(logical=False)) - 1
+    # Leave 1 core for users
+    numCores = getAvailablePhysicalCores() - 1
 
     smp = vtkSMPTools()
     smp.Initialize(numCores)
