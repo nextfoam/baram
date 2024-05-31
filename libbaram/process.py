@@ -23,6 +23,18 @@ class ProcessError(Exception):
         return self._returncode
 
 
+def getAvailablePhysicalCores():
+    if platform.system() == 'Windows' or platform.system() == 'Linux' or platform.system() == 'FreeBSD':
+        # cpu_affinity() is available only on Linux, Windows, FreeBSD
+        numCores = min(len(psutil.Process().cpu_affinity()), psutil.cpu_count(logical=False))
+    elif platform.system() == 'Darwin':  # cpu_affinity() is not available on macOS
+        numCores = psutil.cpu_count(logical=False)
+    else:  # psutil.cpu_count(logical=False) always return None on OpenBSD and NetBSD
+        numCores = psutil.cpu_count()
+
+    return numCores
+
+
 def isRunning(pid, startTime):
     if pid and startTime:
         try:
