@@ -357,6 +357,40 @@
             <xs:element name="absorptionCoefficient" type="inputNumberType" minOccurs="0"/>
             <xs:element name="saturationPressure" type="inputNumberType" minOccurs="0"/>
             <xs:element name="emissivity" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="type">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="material"/>
+                        <xs:enumeration value="mixture"/>
+                        <xs:enumeration value="specie"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="mixture">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="massDiffusivity" type="inputPositiveNumberType"/>
+                        <xs:element name="primarySpecie" type="xs:positiveInteger"/>
+                        <xs:element name="pengRobinsonParameters">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="criticalTemperature" type="inputNumberType"/>
+                                    <xs:element name="criticalPressure" type="inputNumberType"/>
+                                    <xs:element name="criticalSpecificVolume" type="inputNumberType"/>
+                                    <xs:element name="acentricFactor" type="inputNumberType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="specie">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="mixture" type="xs:positiveInteger"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
         </xs:all>
         <xs:attribute name="mid" type="xs:positiveInteger" use="required"/>
     </xs:complexType>
