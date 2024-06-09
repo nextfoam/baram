@@ -214,7 +214,6 @@ class PiecewiseLinearDialog(QDialog):
                     row.setValues(line)
 
 
-
 class PolynomialDialog(PiecewiseLinearDialog):
     def __init__(self, parent, title, data, prefix=""):
         """Constructs a dialog for polynomial coefficients.

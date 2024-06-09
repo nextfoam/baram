@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, Flag, auto
+from enum import Enum, Flag
 
 from PySide6.QtCore import QCoreApplication
 
@@ -11,10 +11,9 @@ UNIVERSAL_GAS_CONSTANT = 8314.46261815324
 
 
 class Phase(Flag):
-    GAS = auto()
-    LIQUID = auto()
-    SOLID = auto()
-    FLUID = GAS | LIQUID
+    GAS = 'gas'
+    LIQUID = 'liquid'
+    SOLID = 'solid'
 
 
 class Specification(Enum):
@@ -22,10 +21,18 @@ class Specification(Enum):
     PERFECT_GAS = 'perfectGas'
     SUTHERLAND = 'sutherland'
     POLYNOMIAL = 'polynomial'
+    INCOMPRESSIBLE_PERFECT_GAS = 'incompressiblePerfectGas'
+    REAL_GAS_PENG_ROBINSON = 'PengRobinsonGas'
+
+
+class MaterialType(Enum):
+    MATERIAL = 'material'
+    MIXTURE = 'mixture'
+    SPECIE = 'specie'
 
 
 class MaterialDB(object):
-    MATERIALS_XPATH = './/materials'
+    MATERIALS_XPATH = 'materials'
 
     @classmethod
     def getXPath(cls, mid) -> str:
@@ -41,7 +48,11 @@ class MaterialDB(object):
 
     @classmethod
     def getPhase(cls, mid) -> Phase:
-        return cls.dbTextToPhase(coredb.CoreDB().getValue(cls.getXPath(mid) + '/phase'))
+        return Phase(coredb.CoreDB().getValue(cls.getXPath(mid) + '/phase'))
+
+    @classmethod
+    def getType(cls, mid):
+        return MaterialType(coredb.CoreDB().getValue(cls.getXPath(mid) + '/type'))
 
     @classmethod
     def getCoolPropName(cls, mid) -> str:
@@ -68,10 +79,14 @@ class MaterialDB(object):
     @classmethod
     def specificationToText(cls, specification) -> str:
         return {
-            Specification.CONSTANT:    QCoreApplication.translate('MaterialDB', 'Constant'),
-            Specification.PERFECT_GAS: QCoreApplication.translate('MaterialDB', 'Perfect Gas'),
-            Specification.SUTHERLAND:  QCoreApplication.translate('MaterialDB', 'Sutherland'),
-            Specification.POLYNOMIAL:  QCoreApplication.translate('MaterialDB', 'Polynomial'),
+            Specification.CONSTANT:                     QCoreApplication.translate('MaterialDB', 'Constant'),
+            Specification.PERFECT_GAS:                  QCoreApplication.translate('MaterialDB', 'Perfect Gas'),
+            Specification.SUTHERLAND:                   QCoreApplication.translate('MaterialDB', 'Sutherland'),
+            Specification.POLYNOMIAL:                   QCoreApplication.translate('MaterialDB', 'Polynomial'),
+            Specification.INCOMPRESSIBLE_PERFECT_GAS:   QCoreApplication.translate('MaterialDB',
+                                                                                   'Incompressible-perfect-gas'),
+            Specification.REAL_GAS_PENG_ROBINSON:       QCoreApplication.translate('MaterialDB',
+                                                                                   'Real-gas-peng-robinson'),
         }.get(Specification(specification))
 
     @classmethod

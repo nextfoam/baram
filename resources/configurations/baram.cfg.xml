@@ -93,6 +93,7 @@
             </les>
             <energyPrandtlNumber>0.85</energyPrandtlNumber>
             <wallPrandtlNumber>0.85</wallPrandtlNumber>
+            <turbulentSchmidtNumber>0.7</turbulentSchmidtNumber>
         </turbulenceModels>
         <speciesModels>off</speciesModels>
         <userDefinedScalars>

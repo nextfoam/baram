@@ -8,9 +8,10 @@ from baramFlow.coredb.models_db import Models, ModelsDB, MultiphaseModel, Turbul
 from baramFlow.coredb.general_db import GeneralDB, SolverType
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.content_page import ContentPage
-from .models_page_ui import Ui_ModelsPage
-from .turbulence_dialog import TurbulenceModelDialog
 from .energy_dialog import EnergyDialog
+from .models_page_ui import Ui_ModelsPage
+from .species_dialog import SpeciesDialog
+from .turbulence_dialog import TurbulenceModelDialog
 from .user_defined_scalars_dialog import UserDefinedScalarsDialog
 
 
@@ -102,8 +103,9 @@ class ModelsPage(ContentPage):
                            self.tr('Solver Type'),
                            lambda: solverTypeText[GeneralDB.getSolverType()])
         self._addModelItem(Models.SPECIES,
-                            self.tr('Species'),
-                            lambda: self.tr('Include') if ModelsDB.isSpeciesModelOn() else self.tr('Not Include'))
+                           self.tr('Species'),
+                           lambda: self.tr('Include') if ModelsDB.isSpeciesModelOn() else self.tr('Not Include'),
+                           None if ModelsDB.isMultiphaseModelOn() or GeneralDB.isDensityBased() else SpeciesDialog)
 
         self._addModelItem(Models.SCALARS,
                            self.tr('User-defined Scalars'),

@@ -60,12 +60,10 @@ class CaseWizard(QWizard):
                 return LAST_PAGE
         elif curId == MULTIPHASE_MODEL:
             if self.field('multiphaseModel') == MultiphaseModel.OFF.value:
-                return SPECIES_MODEL
+                return LAST_PAGE
             else:
                 return GRAVITY_MODEL
         elif curId == GRAVITY_MODEL:
-            return SPECIES_MODEL
-        elif curId == SPECIES_MODEL:
             return LAST_PAGE
         elif curId == LAST_PAGE:
             return LAST

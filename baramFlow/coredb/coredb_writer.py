@@ -88,7 +88,7 @@ class DBWriterError:
         elif self._error == Error.FLOAT_ONLY:
             return QCoreApplication.translate('CoreDBWriter', '{0} must be a float.').format(self._name)
         elif self._error == Error.REFERENCED:
-            return QCoreApplication.translate('CoreDBWriter', '{0} is referenced by another.').format(self._name)
+            return QCoreApplication.translate('CoreDBWriter', '{0} is referenced by other configurations.').format(self._name)
         elif self._error == Error.INVALID_SYNTAX:
             return QCoreApplication.translate('CoreDBWriter', self._message)
         else:

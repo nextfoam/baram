@@ -269,6 +269,15 @@
     <xs:complexType name="materialType">
         <xs:all>
             <xs:element name="name" type="xs:string"/>
+            <xs:element name="type">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="material"/>
+                        <xs:enumeration value="mixture"/>
+                        <xs:enumeration value="specie"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
             <xs:element name="chemicalFormula" type="xs:string" minOccurs="0"/>
             <xs:element name="phase">
                 <xs:simpleType>
@@ -288,11 +297,23 @@
                                     <xs:enumeration value="constant"/>
                                     <xs:enumeration value="perfectGas"/>
                                     <xs:enumeration value="polynomial"/>
+                                    <xs:enumeration value="incompressiblePerfectGas"/>
+                                    <xs:enumeration value="PengRobinsonGas"/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
                         <xs:element name="constant" type="inputNumberType"/>
                         <xs:element name="polynomial" type="inputNumberListType"/>
+                        <xs:element name="pengRobinsonParameters">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="criticalTemperature" type="inputNumberType"/>
+                                    <xs:element name="criticalPressure" type="inputNumberType"/>
+                                    <xs:element name="criticalSpecificVolume" type="inputNumberType"/>
+                                    <xs:element name="acentricFactor" type="inputNumberType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -357,37 +378,18 @@
             <xs:element name="absorptionCoefficient" type="inputNumberType" minOccurs="0"/>
             <xs:element name="saturationPressure" type="inputNumberType" minOccurs="0"/>
             <xs:element name="emissivity" type="inputNumberType" minOccurs="0"/>
-            <xs:element name="type">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:enumeration value="material"/>
-                        <xs:enumeration value="mixture"/>
-                        <xs:enumeration value="specie"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:element>
-            <xs:element name="mixture">
+            <xs:element name="mixture" minOccurs="0">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="massDiffusivity" type="inputPositiveNumberType"/>
-                        <xs:element name="primarySpecie" type="xs:positiveInteger"/>
-                        <xs:element name="pengRobinsonParameters">
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="criticalTemperature" type="inputNumberType"/>
-                                    <xs:element name="criticalPressure" type="inputNumberType"/>
-                                    <xs:element name="criticalSpecificVolume" type="inputNumberType"/>
-                                    <xs:element name="acentricFactor" type="inputNumberType"/>
-                                </xs:sequence>
-                            </xs:complexType>
-                        </xs:element>
+                        <xs:element name="primarySpecie" type="xs:integer"/> <!-- 0 for not mixture type, or material mid-->
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="specie">
+            <xs:element name="specie" minOccurs="0">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="mixture" type="xs:positiveInteger"/>
+                        <xs:element name="mixture" type="xs:integer"/> <!-- 0 for not specie type, or material mid-->
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -556,6 +558,7 @@
             </xs:element>
             <xs:element name="energyPrandtlNumber" type="inputNumberType" default="0.85"/>
             <xs:element name="wallPrandtlNumber" type="inputNumberType" default="0.85"/>
+            <xs:element name="turbulentSchmidtNumber" type="inputPositiveNumberType" default="0.7"/>
         </xs:sequence>
     </xs:complexType>
 

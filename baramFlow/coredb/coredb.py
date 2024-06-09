@@ -110,6 +110,27 @@ class _CoreDB(object):
     BOUNDARY_CONDITION_MAX_INDEX = 10000
     USER_DEFINED_SCALAR_MAX_INDEX = 10000
 
+    _MATERIALS_MIXTURE = {
+        'CoolPropName': 'Mixture',
+        'chemicalFormula': None,
+        'phase': 'gas',
+        'molecularWeight': None,
+        'density': 0,
+        'viscosity': 1,
+        'thermalConductivity': 0,
+        'specificHeat': 0,
+        'emissivity': None,
+        'absorptionCoefficient': None,
+        'sutherlandTemperature': 0,
+        'sutherlandCoefficient': 0,
+        'surfaceTension': None,
+        'saturationPressure': None,
+        'criticalTemperature': None,
+        'criticalPressure': None,
+        'criticalDensity': None,
+        'acentricFactor': None
+    }
+
     def __init__(self):
         self._initialized = True
 
@@ -507,7 +528,7 @@ class _CoreDB(object):
 
         return _getBulkInternal(elements[0])
 
-    def getMaterialsFromDB(self) -> list[(str, str, str)]:
+    def getMaterialsFromDB(self, phase=None) -> list[(str, str, str)]:
         """Returns available materials from material database
 
         Returns available materials with name, chemicalFormula and phase from material database
@@ -515,6 +536,9 @@ class _CoreDB(object):
         Returns:
             List of materials in tuple, '(name, chemicalFormula, phase)'
         """
+        if phase:
+            return [(k, v['chemicalFormula'], v['phase']) for k, v in self.materialDB.items() if v['phase'] == phase]
+
         return [(k, v['chemicalFormula'], v['phase']) for k, v in self.materialDB.items()]
 
     def getMaterials(self) -> list[(int, str, str, str)]:
@@ -529,23 +553,85 @@ class _CoreDB(object):
 
         return [(int(e.attrib['mid']), e.findtext('name', namespaces=nsmap), e.findtext('chemicalFormula', namespaces=nsmap), e.findtext('phase', namespaces=nsmap)) for e in elements]
 
-    def addMaterial(self, name: str) -> int:
+    def getSpecies(self, mid):
+        return [(int(e.getparent().attrib['mid']), e.getparent().findtext('name', namespaces=nsmap))
+                for e in self._xmlTree.findall(f'materials/material/specie[mixture="{mid}"]', namespaces=nsmap)]
+
+    def addMaterial(self, template: str, name: str = None) -> int:
         """Add material to configuration from material database
 
         Add material to configuration from material database
+
+        :param template: Name defined in the material database
+        :param name: Name of material to be added
+
+        Raises:
+            LookupError: material not found in material database
+        """
+
+        return self._addMaterial(self.materialDB[template], template if name is None else name)
+
+    def addMixture(self, name: str, species: list):
+        """Add mixture of specieds to configuration
+
+        Add mixture of specieds to configuration
+
+        :param name: Name of mixture to be added
+        :param species: material names in material database
+        :return: mid of added mixture
+
+        Raises:
+            LookupError: material not found in material database
+        """
+
+        template = self._MATERIALS_MIXTURE
+        template['phase'] = self.materialDB[species[0]]['phase']
+        mid = self._addMaterial(template, name, 'mixture')
+
+        primary = 0
+        for material in species:
+            specie = self.addSpecie(material, mid)
+            primary = primary or specie
+
+        self.setValue(f'materials/material[@mid="{mid}"]/mixture/primarySpecie', str(primary))
+
+        return mid
+
+    def addSpecie(self, name: str, mixture: int):
+        """Add specie of mixture to configuration
+
+        Add specie of mixture to configuration
+
+        :param name: specie name in material database
+        :param mixture: mid of mixture containing added specie
+        :return: mid of added specie
+
+        Raises:
+            LookupError: material not found in material database
+        """
+
+        return self._addMaterial(self.materialDB[name], name, 'specie', mixture)
+
+    def _addMaterial(self, mdb: dict, name: str = None, type_: str = 'material', mixture: int = 0) -> int:
+        """Add material to configuration from material database
+
+        Add material to configuration from material database
+
+        :param mdb: Material template in the material database
+        :param name: Name of material to be added
+        :param type_: Type of material to be added. ("material", "mixture" or "specie")
+        :param mixture: mid of mixture containing material to be added (for specie, otherwise 0)
+        :return: mid of added material
 
         Raises:
             FileExistsError: Specified material is already in the configuration
             LookupError: material not found in material database
         """
-        try:
-            mdb = self.materialDB[name]
-        except KeyError:
-            raise LookupError
-
-        material = self._xmlTree.find(f'.//materials/material[name="{name}"]', namespaces=nsmap)
-        if material is not None:
-            raise FileExistsError
+        newName = name
+        seq = 0
+        while self._xmlTree.find(f'materials/material[name="{newName}"]', namespaces=nsmap) is not None:
+            seq += 1
+            newName = f'{name}{seq}'
 
         idList = self._xmlTree.xpath(f'.//x:materials/x:material/@mid', namespaces={'x': ns})
 
@@ -554,6 +640,8 @@ class _CoreDB(object):
                 break
         else:
             raise OverflowError
+
+        polynomial = '0' if type_ == 'specie' else ''
 
         materialsElement = self._xmlTree.find('.//materials', namespaces=nsmap)
 
@@ -565,7 +653,8 @@ class _CoreDB(object):
         material = etree.SubElement(materialsElement, f'{{{ns}}}material')
         material.attrib['mid'] = str(index)
 
-        etree.SubElement(material, f'{{{ns}}}name').text = name
+        etree.SubElement(material, f'{{{ns}}}name').text = newName
+        etree.SubElement(material, f'{{{ns}}}type').text = type_
 
         _materialPropertySubElement(material, 'chemicalFormula', 'chemicalFormula')
         _materialPropertySubElement(material, 'phase', 'phase')
@@ -577,18 +666,32 @@ class _CoreDB(object):
         density = etree.SubElement(material, f'{{{ns}}}density')
         etree.SubElement(density, f'{{{ns}}}specification').text = 'constant'
         _materialPropertySubElement(density, 'constant', 'density')
-        etree.SubElement(density, f'{{{ns}}}polynomial').text = ''
+        etree.SubElement(density, f'{{{ns}}}polynomial').text = polynomial
+
+        if mdb['phase'] == 'gas' and type_ != 'mixture':
+            pengRobinsonParameters = etree.SubElement(density, f'{{{ns}}}pengRobinsonParameters')
+            _materialPropertySubElement(pengRobinsonParameters, 'criticalTemperature', 'criticalTemperature')
+            _materialPropertySubElement(pengRobinsonParameters, 'criticalPressure', 'criticalPressure')
+            etree.SubElement(pengRobinsonParameters, f'{{{ns}}}criticalSpecificVolume').text = str(
+                round(1 / float(mdb['criticalDensity']), 4))
+            _materialPropertySubElement(pengRobinsonParameters, 'acentricFactor', 'acentricFactor')
+        else:
+            pengRobinsonParameters = etree.SubElement(density, f'{{{ns}}}pengRobinsonParameters')
+            etree.SubElement(pengRobinsonParameters, f'{{{ns}}}criticalTemperature').text = '1'
+            etree.SubElement(pengRobinsonParameters, f'{{{ns}}}criticalPressure').text = '1'
+            etree.SubElement(pengRobinsonParameters, f'{{{ns}}}criticalSpecificVolume').text = '1'
+            etree.SubElement(pengRobinsonParameters, f'{{{ns}}}acentricFactor').text = '1'
 
         specificHeat = etree.SubElement(material, f'{{{ns}}}specificHeat')
         etree.SubElement(specificHeat, f'{{{ns}}}specification').text = 'constant'
         _materialPropertySubElement(specificHeat, 'constant', 'specificHeat')
-        etree.SubElement(specificHeat, f'{{{ns}}}polynomial').text = ''
+        etree.SubElement(specificHeat, f'{{{ns}}}polynomial').text = polynomial
 
         if mdb['viscosity'] is not None:
             viscosity = etree.SubElement(material, f'{{{ns}}}viscosity')
             etree.SubElement(viscosity, f'{{{ns}}}specification').text = 'constant'
             _materialPropertySubElement(viscosity, 'constant', 'viscosity')
-            etree.SubElement(viscosity, f'{{{ns}}}polynomial').text = ''
+            etree.SubElement(viscosity, f'{{{ns}}}polynomial').text = polynomial
             if mdb['phase'] == 'gas':
                 sutherland = etree.SubElement(viscosity, f'{{{ns}}}sutherland')
                 _materialPropertySubElement(sutherland, 'coefficient', 'sutherlandCoefficient')
@@ -597,7 +700,14 @@ class _CoreDB(object):
         thermalConductivity = etree.SubElement(material, f'{{{ns}}}thermalConductivity')
         etree.SubElement(thermalConductivity, f'{{{ns}}}specification').text = 'constant'
         _materialPropertySubElement(thermalConductivity, 'constant', 'thermalConductivity')
-        etree.SubElement(thermalConductivity, f'{{{ns}}}polynomial').text = ''
+        etree.SubElement(thermalConductivity, f'{{{ns}}}polynomial').text = polynomial
+
+        mixtureElement = etree.SubElement(material, f'{{{ns}}}mixture')
+        etree.SubElement(mixtureElement, f'{{{ns}}}massDiffusivity').text = '0.1'
+        etree.SubElement(mixtureElement, f'{{{ns}}}primarySpecie').text = '0'
+
+        specie = etree.SubElement(material, f'{{{ns}}}specie')
+        etree.SubElement(specie, f'{{{ns}}}mixture').text = str(mixture)
 
         self._configCount += 1
 
@@ -608,6 +718,60 @@ class _CoreDB(object):
     def removeMaterial(self, name: str) -> Optional[Error]:
         parent = self._xmlTree.find(f'.//materials', namespaces=nsmap)
         material = parent.find(f'material[name="{name}"]', namespaces=nsmap)
+        if material is None or material.findtext('type', namespaces=nsmap) == 'mixture':
+            raise LookupError
+
+        # check if the material is referenced by other elements
+        mid = material.attrib['mid']
+        if self._isMaterialRefereced(mid):
+            return Error.REFERENCED
+
+        elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
+        if len(elements) == 1:  # this is the last material in the list
+            return Error.EMPTY
+
+        parent.remove(material)
+
+        self._configCount += 1
+
+        return None
+
+    def removeMixture(self, mid) -> Optional[Error]:
+        mid = str(mid)
+
+        parent = self._xmlTree.find(f'.//materials', namespaces=nsmap)
+        material = parent.find(f'material[@mid="{mid}"]', namespaces=nsmap)
+        if material is None or material.findtext('type', namespaces=nsmap) != 'mixture':
+            raise LookupError
+
+        # check if the material is referenced by other elements
+        if self._isMaterialRefereced(mid):
+            return Error.REFERENCED
+
+        elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
+        if len(elements) == 1:  # this is the last material in the list
+            return Error.EMPTY
+
+        toRemove = [material]
+        for s, _ in self.getSpecies(mid):
+            specie = parent.find(f'material[@mid="{s}"]', namespaces=nsmap)
+
+            # check if the specie is referenced by other elements
+            if False:
+                return Error.REFERENCED
+
+            toRemove.append(specie)
+
+        for m in toRemove:
+            parent.remove(m)
+
+        self._configCount += 1
+
+        return None
+
+    def removeSpecie(self, mid) -> Optional[Error]:
+        parent = self._xmlTree.find(f'.//materials', namespaces=nsmap)
+        material = parent.find(f'material[@mid="{mid}"]', namespaces=nsmap)
         if material is None:
             raise LookupError
 
@@ -1296,8 +1460,6 @@ class _CoreDB(object):
             ds = f.create_dataset('configuration', (1,), dtype=dt)
             ds[0] = etree.tostring(self._xmlTree, xml_declaration=True, encoding='UTF-8')
 
-            # ToDo: write the rest of data like uploaded polynomials
-
         finally:
             f.close()
 
@@ -1331,13 +1493,30 @@ class _CoreDB(object):
     def loadDefault(self):
         self._xmlTree = etree.parse(resource.file(self.XML_PATH), self._xmlParser)
         # Add 'air' as default material
-        self.addMaterial('air')
+        self.addMaterial('air', 'air')
 
         self._configCountAtSave = self._configCount
 
     def _getElement(self, xpath):
         elements = self._xmlTree.findall(xpath, namespaces=nsmap)
         if len(elements) != 1:
+            print('xpath not found', xpath)
             raise LookupError
 
         return elements[0]
+
+    def _isMaterialRefereced(self, mid):
+        if self.exists(f'models/userDefinedScalars/scalar[material="{mid}"]'):
+            return True
+
+        idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:material/text()', namespaces={'x': ns})
+        if mid in idList:
+            return True
+
+        mid = ' ' + mid + ' '
+        idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:secondaryMaterials/text()', namespaces={'x': ns})
+        for ids in idList:
+            if mid in ' ' + ids + ' ':
+                return True
+
+        return False

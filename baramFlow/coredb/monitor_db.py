@@ -193,7 +193,7 @@ class FieldHelper:
         # Material fields on multiphase model
         if ModelsDB.isMultiphaseModelOn():
             for mid, name, formula, phase in coredb.CoreDB().getMaterials():
-                if MaterialDB.dbTextToPhase(phase) != Phase.SOLID:
+                if phase != Phase.SOLID.value:
                     _appendMaterial(mid, name)
 
         for scalarID, fieldName in coredb.CoreDB().getUserDefinedScalars():

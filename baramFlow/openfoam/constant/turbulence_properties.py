@@ -78,7 +78,9 @@ class TurbulenceProperties(DictionaryFile):
         if self._model == TurbulenceModel.K_EPSILON:
             data = {
                 'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/energyPrandtlNumber'),
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
             }
+
             if hasABLInlet:
                 data.update({
                     'Cmu': 0.09,
@@ -86,6 +88,7 @@ class TurbulenceProperties(DictionaryFile):
                     'C2': 1.92,
                     'sigmaEps': 1.11
                 })
+
             self._data['RAS']['kEpsilonCoeffs'] = data
 
         if subModel == 'realizableKEtwoLayer':
@@ -124,12 +127,14 @@ class TurbulenceProperties(DictionaryFile):
                      if self._db.getValue(
                         ModelsDB.TURBULENCE_MODELS_XPATH + '/des/spalartAllmarasOptions/lowReDamping') == 'true'
                      else 'no'),
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
             }
         elif ransModel == RANSModel.K_OMEGA_SST.value:
             LESModel = 'kOmegaSST' + shieldingFunctions
             self._data['LES'][LESModel] = {
                 'CDESkom': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/modelConstants/DESKOmega'),
-                'CDESkeps': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/modelConstants/DESKEpsilon')
+                'CDESkeps': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/modelConstants/DESKEpsilon'),
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
             }
 
         self._data['LES']['LESModel'] = LESModel
@@ -181,22 +186,26 @@ class TurbulenceProperties(DictionaryFile):
         if subgridScaleModel == SubgridScaleModel.SMAGORINSKY.value:
             self._data['LES']['SmagorinskyCoeffs'] = {
                 'Ck': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/k'),
-                'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e')
+                'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e'),
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
             }
         elif subgridScaleModel == SubgridScaleModel.WALE.value:
             self._data['LES']['WALECoeffs'] = {
                 'Ck': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/k'),
                 'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e'),
-                'Cw': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/w')
+                'Cw': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/w'),
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
             }
         elif subgridScaleModel == SubgridScaleModel.KEQN.value:
             self._data['LES']['kEqnCoeffs'] = {
                 'Ck': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/k'),
-                'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e')
+                'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e'),
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
             }
         elif subgridScaleModel == SubgridScaleModel.DYNAMIC_KEQN.value:
             self._data['LES']['dynamicKEqnCoeffs'] = {
-                'filter': 'simple'
+                'filter': 'simple',
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
             }
 
         if lengthScaleModel == LengthScaleModel.VAN_DRIEST.value:

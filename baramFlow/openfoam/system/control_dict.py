@@ -93,7 +93,7 @@ def _getAvailableFields():
 
     if ModelsDB.isMultiphaseModelOn():
         for mid, name, _, phase in coredb.CoreDB().getMaterials():
-            if MaterialDB.dbTextToPhase(phase) != Phase.SOLID:
+            if phase != Phase.SOLID.value:
                 fields.append(f'alpha.{name}')
 
     for _, fieldName in CoreDBReader().getUserDefinedScalars():

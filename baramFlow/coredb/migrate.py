@@ -6,6 +6,7 @@ from __future__ import annotations
 import logging
 
 from lxml import etree
+import pandas as pd
 
 from resources import resource
 
@@ -13,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 _ns = 'http://www.baramcfd.org/baram'
 _nsmap = {'': _ns}
+
+MATERIALS_PATH = 'materials.csv'
 
 
 def _addShowChartAndWriteIntervalV1(parent):
@@ -518,6 +521,58 @@ def _version_6(root: etree.Element):
                 '</equations>')
             p.append(e)
 
+    df = pd.read_csv(resource.file(MATERIALS_PATH), header=0, index_col=0).transpose()
+    materialDB = df.where(pd.notnull(df), None).fillna(1).to_dict()
+
+    air = materialDB['aluminum']
+    for p in root.findall('materials/material', namespaces=_nsmap):
+        name = p.find('name', namespaces=_nsmap).text
+        properties = materialDB.get(name, air)
+
+        if p.find('type', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "type" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}type')
+            e.text = 'material'
+            p.insert(1, e)
+        #
+        # if p.find('mixture', namespaces=_nsmap) is None:
+        #     logger.debug(f'    Adding "mixture" to {p}')
+        #
+        #     e = etree.fromstring('<mixture xmlns="http://www.baramcfd.org/baram">'
+        #                          '  <massDiffusivity>1</massDiffusivity>'
+        #                          '  <primarySpecie>0</primarySpecie>'
+        #                          '</mixture>')
+        #     p.append(e)
+        #
+        # if p.find('specie', namespaces=_nsmap) is None:
+        #     logger.debug(f'    Adding "specie" to {p}')
+        #
+        #     e = etree.fromstring('<specie xmlns="http://www.baramcfd.org/baram"><mixture>0</mixture></specie>')
+        #     p.append(e)
+
+        if (density := p.find('density', namespaces=_nsmap)) is not None:
+            if density.find('pengRobinsonParameters', namespaces=_nsmap) is None:
+                logger.debug(f'    Adding "pengRobinsonParameters" to {p}')
+
+                e = etree.fromstring('<pengRobinsonParameters xmlns="http://www.baramcfd.org/baram">'
+                                     f' <criticalTemperature>{properties["criticalTemperature"]}</criticalTemperature>'
+                                     f' <criticalPressure>{properties["criticalPressure"]}</criticalPressure>'
+                                     f' <criticalSpecificVolume>'
+                                     f'     {round(1 / float(properties["criticalDensity"]), 4)}'
+                                     f' </criticalSpecificVolume>'
+                                     f' <acentricFactor>{properties["acentricFactor"]}</acentricFactor>'
+                                     '</pengRobinsonParameters>')
+                density.append(e)
+
+    if (p := root.find('models/turbulenceModels', namespaces=_nsmap)) is not None:
+        if p.find('turbulentSchmidtNumber', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "turbulentSchmidtNumber" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}turbulentSchmidtNumber')
+            e.text = '0.7'
+            p.append(e)
+
 
 _fTable = [
     None,
@@ -546,4 +601,3 @@ def migrate(root: etree.Element):
         for i in range(version, currentVersion):
             if i < len(_fTable):
                 _fTable[i](root)
-

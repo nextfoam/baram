@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
 from PySide6.QtWidgets import QMessageBox
 
 from baramFlow.coredb import coredb
@@ -72,6 +73,9 @@ class TurbulenceModelDialog(ResizableDialog):
         self._ui.LES.setEnabled(GeneralDB.isTimeTransient())
         self._ui.DES.setEnabled(GeneralDB.isTimeTransient())
 
+        if not ModelsDB.isSpeciesModelOn():
+            self._ui.schmidtNumber.hide()
+
         self._connectSignalsSlots()
         self._load()
 
@@ -83,8 +87,10 @@ class TurbulenceModelDialog(ResizableDialog):
         self._ui.delayedDES.stateChanged.connect(self._delayedDESChanged)
         self._shieldingFunctionsRadios.dataChecked.connect(self._updateDESLengthScaleModelVisibility)
         self._subgridScaleModelRadios.dataChecked.connect(self._updateLESConstantsVisibility)
+        self._ui.ok.clicked.connect(self._accept)
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def _accept(self):
         writer = CoreDBWriter()
 
         model = self._modelRadios.checkedData()
@@ -150,6 +156,10 @@ class TurbulenceModelDialog(ResizableDialog):
                 writer.append(self._xpath + '/les/modelConstants/w', self._ui.cw.text(),
                               self.tr('LES Model Constants w'))
 
+        if ModelsDB.isSpeciesModelOn():
+            writer.append(self._xpath + '/turbulentSchmidtNumber', self._ui.turbulentSchmidtNumber.text(),
+                          self.tr('Turbulent Schmidt Number'))
+
         errorCount = writer.write()
         if errorCount > 0:
             QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
@@ -189,6 +199,9 @@ class TurbulenceModelDialog(ResizableDialog):
         self._ui.ck.setText(self._db.getValue(self._xpath + '/les/modelConstants/k'))
         self._ui.ce.setText(self._db.getValue(self._xpath + '/les/modelConstants/e'))
         self._ui.cw.setText(self._db.getValue(self._xpath + '/les/modelConstants/w'))
+
+        if ModelsDB.isSpeciesModelOn():
+            self._ui.turbulentSchmidtNumber.setText(self._db.getValue(self._xpath + '/turbulentSchmidtNumber'))
 
         self._delayedDESChanged()
 
