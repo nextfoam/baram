@@ -183,7 +183,7 @@ schema = {
         # 'minThickness': FloatType().setDefault(0.3),
         'layers': IntKeyList(layer),
         'nGrow': IntType().setDefault(0),
-        'featureAngle': FloatType().setDefault(120),
+        'featureAngle': FloatType().setDefault(60),
         'maxFaceThicknessRatio': FloatType().setDefault(0.5),
         'nSmoothSurfaceNormals': IntType().setDefault(1),
         'nSmoothThickness': FloatType().setDefault(10),
