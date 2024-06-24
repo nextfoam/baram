@@ -16,31 +16,32 @@ from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.constant.dynamic_mesh_dict import DynamicMeshDict
-from baramFlow.openfoam.constant.thermophysical_properties import ThermophysicalProperties
-from baramFlow.openfoam.constant.operating_conditions import OperatingConditions
-from baramFlow.openfoam.constant.MRF_properties import MRFProperties
-from baramFlow.openfoam.constant.turbulence_properties import TurbulenceProperties
-from baramFlow.openfoam.constant.transport_properties import TransportProperties
 from baramFlow.openfoam.constant.g import G
+from baramFlow.openfoam.constant.MRF_properties import MRFProperties
+from baramFlow.openfoam.constant.operating_conditions import OperatingConditions
 from baramFlow.openfoam.constant.region_properties import RegionProperties
-from baramFlow.openfoam.boundary_conditions.p import P
-from baramFlow.openfoam.boundary_conditions.u import U
-from baramFlow.openfoam.boundary_conditions.t import T
-from baramFlow.openfoam.boundary_conditions.k import K
+from baramFlow.openfoam.constant.thermophysical_properties import ThermophysicalProperties
+from baramFlow.openfoam.constant.transport_properties import TransportProperties
+from baramFlow.openfoam.constant.turbulence_properties import TurbulenceProperties
 from baramFlow.openfoam.boundary_conditions.alpha import Alpha
 from baramFlow.openfoam.boundary_conditions.alphat import Alphat
 from baramFlow.openfoam.boundary_conditions.epsilon import Epsilon
+from baramFlow.openfoam.boundary_conditions.k import K
 from baramFlow.openfoam.boundary_conditions.nut import Nut
 from baramFlow.openfoam.boundary_conditions.nuTilda import NuTilda
 from baramFlow.openfoam.boundary_conditions.omega import Omega
+from baramFlow.openfoam.boundary_conditions.p import P
 from baramFlow.openfoam.boundary_conditions.scalar import Scalar
-from baramFlow.openfoam.system.fv_solution import FvSolution
-from baramFlow.openfoam.system.control_dict import ControlDict
-from baramFlow.openfoam.system.fv_schemes import FvSchemes
-from baramFlow.openfoam.system.fv_options import FvOptions
-from baramFlow.openfoam.system.set_fields_dict import SetFieldsDict
-from baramFlow.openfoam.polymesh.boundary import Boundary
+from baramFlow.openfoam.boundary_conditions.specie import Specie
+from baramFlow.openfoam.boundary_conditions.t import T
+from baramFlow.openfoam.boundary_conditions.u import U
 from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.polymesh.boundary import Boundary
+from baramFlow.openfoam.system.control_dict import ControlDict
+from baramFlow.openfoam.system.fv_options import FvOptions
+from baramFlow.openfoam.system.fv_schemes import FvSchemes
+from baramFlow.openfoam.system.fv_solution import FvSolution
+from baramFlow.openfoam.system.set_fields_dict import SetFieldsDict
 
 logger = logging.getLogger(__name__)
 
@@ -150,6 +151,9 @@ class CaseGenerator(QObject):
         if ModelsDB.isMultiphaseModelOn():
             for mid in region.secondaryMaterials:
                 self._files.append(Alpha(region, time, processorNo, mid))
+        elif ModelsDB.isSpeciesModelOn():
+            for mid, name in self._db.getSpecies(region.mid):
+                self._files.append(Specie(region, time, processorNo, mid, name))
 
         for scalarID, fieldName in self._db.getUserDefinedScalarsInRegion(region.rname):
             self._files.append(Scalar(region, time, processorNo, scalarID, fieldName))

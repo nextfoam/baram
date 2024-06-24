@@ -35,7 +35,7 @@ class VolumeFractionWidget(QGroupBox):
     def __init__(self, rname):
         super().__init__(self.tr('Volume Fraction'))
 
-        self._on = ModelsDB.isMultiphaseModelOn() or ModelsDB.isSpeciesModelOn()
+        self._on = ModelsDB.isMultiphaseModelOn()
         self._fractions = {}
 
         self._db = coredb.CoreDB()

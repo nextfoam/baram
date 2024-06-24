@@ -35,7 +35,7 @@ class MaterialAddDialog(QDialog):
         self._ui = Ui_MaterialAddDialog()
         self._ui.setupUi(self)
 
-        self._type = MaterialType.MATERIAL if mixture is None else MaterialType.SPECIE
+        self._type = MaterialType.NONMIXTURE if mixture is None else MaterialType.SPECIE
         self._mixture = mixture
         self._added = None
 
@@ -95,7 +95,7 @@ class MaterialAddDialog(QDialog):
     def _addMaterials(self):
         self._added = []
 
-        if self._type == MaterialType.MATERIAL:
+        if self._type == MaterialType.NONMIXTURE:
             for item in self._ui.list.selectedItems():
                 self._added.append(coredb.CoreDB().addMaterial(item.name()))
         elif self._type == MaterialType.SPECIE:

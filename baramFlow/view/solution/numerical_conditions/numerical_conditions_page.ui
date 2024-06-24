@@ -164,7 +164,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_4">
+        <widget class="QGroupBox" name="discretizationSchemes">
          <property name="layoutDirection">
           <enum>Qt::LeftToRight</enum>
          </property>
@@ -246,7 +246,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="underRelaxationFactors">
          <property name="title">
           <string>Under-Relaxation Factors (0 &lt; R ≤ 1)</string>
          </property>
@@ -524,7 +524,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="convergenceCriteria">
          <property name="title">
           <string>Convergence Criteria (range of values: 0~1)</string>
          </property>

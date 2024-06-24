@@ -7,7 +7,7 @@ from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, UserDefinedScalarsDB
-from baramFlow.coredb.material_db import MaterialDB, Phase
+from baramFlow.coredb.material_db import MaterialDB, Phase, MaterialType
 from baramFlow.openfoam.solver import findSolver, getSolverCapability
 
 
@@ -190,11 +190,16 @@ class FieldHelper:
             _appendField(Field.TEMPERATURE)
             _appendField(Field.DENSITY)
 
+        db = coredb.CoreDB()
         # Material fields on multiphase model
         if ModelsDB.isMultiphaseModelOn():
-            for mid, name, formula, phase in coredb.CoreDB().getMaterials():
+            for mid, name, formula, phase in db.getMaterials():
                 if phase != Phase.SOLID.value:
                     _appendMaterial(mid, name)
+        elif ModelsDB.isSpeciesModelOn():
+            for mid, _ in db.getMixturesInRegions():
+                for specie, name in db.getSpecies(mid):
+                    _appendMaterial(specie, name)
 
         for scalarID, fieldName in coredb.CoreDB().getUserDefinedScalars():
             fields.append(cls.FieldItem(fieldName, Field.SCALAR, str(scalarID)))
@@ -213,7 +218,10 @@ class FieldHelper:
     @classmethod
     def DBFieldKeyToField(cls, field, fieldID):
         if field == Field.MATERIAL:
-            return 'alpha.' + MaterialDB.getName(fieldID)
+            if MaterialDB.getType(fieldID) == MaterialType.SPECIE:
+                return MaterialDB.getName(fieldID)
+            else:
+                return 'alpha.' + MaterialDB.getName(fieldID)
         elif field == Field.SCALAR:
             return UserDefinedScalarsDB.getFieldName(fieldID)
         else:

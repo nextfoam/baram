@@ -3,7 +3,9 @@
 
 import qasync
 
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox, QLineEdit, QLabel
+
+from widgets.enum_combo_box import EnumComboBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
@@ -24,14 +26,19 @@ class NumericalConditionsPage(ContentPage):
         self._ui = Ui_NumericalConditionsPage()
         self._ui.setupUi(self)
 
-        self._scalarUnderRelazationFactors = {}
-        self._scalarConvergenceCriterias = {}
+        self._discretizationSchemesCount = self._ui.discretizationSchemes.layout().rowCount()
+        self._underRelaxationFactorsCount = self._ui.underRelaxationFactors.layout().count()
+        self._convergenceCriteriaCount = self._ui.convergenceCriteria.layout().count()
+
+        # self._scalarUnderRelazationFactors = {}
+        # self._scalarConvergenceCriterias = {}
+        self._speciesConfigurations = None
 
         self._xpath = NumericalDB.NUMERICAL_CONDITIONS_XPATH
         self._db = coredb.CoreDB()
         self._dialog = None
 
-        upwindDiscretizationSchemes = {
+        self._upwindDiscretizationSchemes = {
             UpwindDiscretizationScheme.FIRST_ORDER_UPWIND: self.tr('First Order Upwind'),
             UpwindDiscretizationScheme.SECOND_ORDER_UPWIND: self.tr('Second Order Upwind'),
         }
@@ -53,17 +60,17 @@ class NumericalConditionsPage(ContentPage):
             ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT: self.tr('First Order Implicit'),
             ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT: self.tr('Second Order Implicit'),
         })
-        self._ui.discretizationSchemeMomentum.addEnumItems(upwindDiscretizationSchemes)
-        self._ui.discretizationSchemeEnergy.addEnumItems(upwindDiscretizationSchemes)
-        self._ui.discretizationSchemeTurbulence.addEnumItems(upwindDiscretizationSchemes)
-        self._ui.discretizationSchemeVolumeFraction.addEnumItems(upwindDiscretizationSchemes)
+        self._ui.discretizationSchemeMomentum.addEnumItems(self._upwindDiscretizationSchemes)
+        self._ui.discretizationSchemeEnergy.addEnumItems(self._upwindDiscretizationSchemes)
+        self._ui.discretizationSchemeTurbulence.addEnumItems(self._upwindDiscretizationSchemes)
+        self._ui.discretizationSchemeVolumeFraction.addEnumItems(self._upwindDiscretizationSchemes)
         self._ui.discretizationSchemePressure.addEnumItems({
             InterpolationScheme.LINEAR: self.tr('Linear'),
             InterpolationScheme.MOMENTUM_WEIGHTED_RECONSTRUC: self.tr('Momentum Weighted Reconstruct'),
             InterpolationScheme.MOMENTUM_WEIGHTED: self.tr('Momentum Weighted'),
         })
 
-        self._ui.discretizationSchemeScalar.addEnumItems(upwindDiscretizationSchemes)
+        self._ui.discretizationSchemeScalar.addEnumItems(self._upwindDiscretizationSchemes)
         #
         # for scalarID, fieldName in self._db.getUserDefinedScalars():
         #     xpath = f'{self._xpath}/underRelaxationFactors/userDefinedScalars/scalar[scalarID="{scalarID}"]'
@@ -261,6 +268,64 @@ class NumericalConditionsPage(ContentPage):
         #     self._ui.convergenceCriteriaLyaout.itemAtPosition(self._scalarConvergenceCriterias[scalarID], 1).widget().setText(self._db.getValue(xpath + '/absolute'))
         #     self._ui.convergenceCriteriaLyaout.itemAtPosition(self._scalarConvergenceCriterias[scalarID], 2).widget().setText(self._db.getValue(xpath + '/relative'))
 
+        self._speciesConfigurations = []
+
+        discretizationSchemeLayout = self._ui.discretizationSchemes.layout()
+        underRelaxationFactorLayout = self._ui.underRelaxationFactors.layout()
+        convergenceCriteriaLayout = self._ui.convergenceCriteria.layout()
+
+        while discretizationSchemeLayout.rowCount() > self._discretizationSchemesCount:
+            discretizationSchemeLayout.removeRow(self._discretizationSchemesCount)
+
+        while underRelaxationFactorLayout.count() > self._underRelaxationFactorsCount:
+            widget = underRelaxationFactorLayout.itemAt(self._underRelaxationFactorsCount).widget()
+            underRelaxationFactorLayout.removeWidget(widget)
+            widget.deleteLater()
+
+        while convergenceCriteriaLayout.count() > self._convergenceCriteriaCount:
+            widget = convergenceCriteriaLayout.itemAt(self._convergenceCriteriaCount).widget()
+            convergenceCriteriaLayout.removeWidget(widget)
+            widget.deleteLater()
+
+        for material, mixture in self._db.getMixturesInRegions():
+            if material not in self._speciesConfigurations:
+                mixturePath = f'{self._xpath}/species/mixture[mid="{material}"]'
+                for mid, name in self._db.getSpecies(material):
+                    label = f'{mixture}.{name}'
+                    xpath = f'{mixturePath}/specie[mid="{mid}"]'
+
+                    discretizationScheme = EnumComboBox()
+                    discretizationScheme.addEnumItems(self._upwindDiscretizationSchemes)
+                    discretizationScheme.setCurrentData(
+                        UpwindDiscretizationScheme(self._db.getValue(f'{xpath}/discretizationScheme')))
+
+                    underRelaxationFactor = QLineEdit(self._db.getValue(f'{xpath}/underRelaxationFactor'))
+                    underRelaxationFactorFinal = QLineEdit(
+                        self._db.getValue(f'{xpath}/underRelaxationFactorFinal'))
+
+                    absoluteConvergenceCriteria = QLineEdit(
+                        self._db.getValue(f'{xpath}/absoluteConvergenceCriteria'))
+                    relativeConvergenceCriteria = QLineEdit(
+                        self._db.getValue(f'{xpath}/relativeConvergenceCriteria'))
+
+                    discretizationSchemeLayout.addRow(label, discretizationScheme)
+
+                    row = underRelaxationFactorLayout.count()
+                    underRelaxationFactorLayout.addWidget(QLabel(label), row, 0)
+                    underRelaxationFactorLayout.addWidget(underRelaxationFactor, row, 1)
+                    underRelaxationFactorLayout.addWidget(underRelaxationFactorFinal, row, 2)
+
+                    row = convergenceCriteriaLayout.count()
+                    convergenceCriteriaLayout.addWidget(QLabel(label), row, 0)
+                    convergenceCriteriaLayout.addWidget(absoluteConvergenceCriteria, row, 1)
+                    convergenceCriteriaLayout.addWidget(relativeConvergenceCriteria, row, 2)
+
+                    self._speciesConfigurations.append((
+                        label, xpath,
+                        discretizationScheme,
+                        underRelaxationFactor, underRelaxationFactorFinal,
+                        absoluteConvergenceCriteria, relativeConvergenceCriteria))
+
     @qasync.asyncSlot()
     async def save(self):
         writer = CoreDBWriter()
@@ -399,6 +464,16 @@ class NumericalConditionsPage(ContentPage):
         #         f'{self._xpath}/convergenceCriteria/userDefinedScalars/scalar[scalarID="{scalarID}"]/relative',
         #         self._ui.convergenceCriteriaLyaout.itemAtPosition(self._scalarConvergenceCriterias[scalarID], 2).widget().text(),
         #         self.tr('Convergence Criteria Relative ') + fieldName)
+
+        for (label, xpath,
+             discretizationScheme,
+             underRelaxationFactor, underRelaxationFactorFinal,
+             absoluteConvergenceCriteria, relativeConvergenceCriteria) in self._speciesConfigurations:
+            writer.append(xpath + '/discretizationScheme', discretizationScheme.currentValue(), None)
+            writer.append(xpath + '/underRelaxationFactor', underRelaxationFactor.text(), self.tr('Under-Relaxation Factor {}').format(label))
+            writer.append(xpath + '/underRelaxationFactorFinal', underRelaxationFactorFinal.text(), self.tr('Under-Relaxation Factor {} Final').format(label))
+            writer.append(xpath + '/absoluteConvergenceCriteria', absoluteConvergenceCriteria.text(), self.tr('Convergence Criteria Absolute {}').format(label))
+            writer.append(xpath + '/relativeConvergenceCriteria', relativeConvergenceCriteria.text(), self.tr('Convergence Criteria Relative {}').format(label))
 
         errorCount = writer.write()
         if errorCount > 0:

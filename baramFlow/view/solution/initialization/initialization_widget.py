@@ -16,9 +16,11 @@ from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceModelsDB, RANSModel
+from baramFlow.coredb.region_db import RegionDB
 from baramFlow.mesh.vtk_loader import hexActor, cylinderActor, sphereActor
-from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
+from baramFlow.view.widgets.species_widget import SpeciesWidget
 from baramFlow.view.widgets.user_defined_scalars_widget import UserDefinedScalarsWidget
+from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
 from .initialization_widget_ui import Ui_initializationWidget
 from .section_dialog import SectionDialog
 
@@ -143,12 +145,17 @@ class InitializationWidget(QWidget):
         self._currentRow: Optional[SectionRow] = None
 
         self._volumeFractionWidget = VolumeFractionWidget(rname)
+        self._scalarsWidget = UserDefinedScalarsWidget(rname)
+        self._speciesWidget = SpeciesWidget(RegionDB.getMaterial(self._rname))
+
         if self._volumeFractionWidget.on():
             self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
 
-        self._scalarsWidget = UserDefinedScalarsWidget(rname)
         if self._scalarsWidget.on():
             self._ui.initialValuesLayout.addWidget(self._scalarsWidget)
+
+        if self._speciesWidget.on():
+            self._ui.initialValuesLayout.addWidget(self._speciesWidget)
 
         self._connectSignalsSlots()
 
@@ -178,11 +185,9 @@ class InitializationWidget(QWidget):
             or TurbulenceModelsDB.isLESSpalartAllmarasModel()
         )
 
-        if self._volumeFractionWidget.on():
-            self._volumeFractionWidget.load(self._initialValuesPath + '/volumeFractions')
-
-        if self._scalarsWidget.on():
-            self._scalarsWidget.load(self._initialValuesPath + '/userDefinedScalars')
+        self._volumeFractionWidget.load(self._initialValuesPath + '/volumeFractions')
+        self._scalarsWidget.load(self._initialValuesPath + '/userDefinedScalars')
+        self._speciesWidget.load(f'{self._initialValuesPath}/species')
 
         sections: [str] = db.getList(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section/name')
         for name in sections:
@@ -213,6 +218,9 @@ class InitializationWidget(QWidget):
             return False
 
         if not self._scalarsWidget.appendToWriter(writer, self._initialValuesPath + '/userDefinedScalars'):
+            return False
+
+        if not self._speciesWidget.appendToWriter(writer, f'{self._initialValuesPath}/species'):
             return False
 
         return True

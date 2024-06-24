@@ -57,6 +57,9 @@ class AdvancedDialog(QDialog):
         if UserDefinedScalarsDB.hasDefined():
             writer.append(self._xpath + '/equations/UDS', boolToDBText(self._ui.equationUDS.isChecked()), None)
 
+        if ModelsDB.isSpeciesModelOn():
+            writer.append(self._xpath + '/equations/species', boolToDBText(self._ui.equationSpecies.isChecked()), None)
+
         errorCount = writer.write()
         if errorCount > 0:
             await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
@@ -72,6 +75,7 @@ class AdvancedDialog(QDialog):
         self._ui.equationFlow.setChecked(self._db.getBool(self._xpath + '/equations/flow'))
         self._ui.equationEnergy.setChecked(equationEnergyOn)
         self._ui.equationUDS.setChecked(self._db.getBool(self._xpath + '/equations/UDS'))
+        self._ui.equationSpecies.setChecked(self._db.getBool(self._xpath + '/equations/species'))
 
         includeVisousDissipationTerms = self._db.getBool(
             self._xpath + '/equations/energy/includeViscousDissipationTerms')
@@ -92,6 +96,7 @@ class AdvancedDialog(QDialog):
             self._ui.energyTerms.setEnabled(False)
 
         self._ui.equationUDS.setEnabled(UserDefinedScalarsDB.hasDefined())
+        self._ui.equationUDS.setEnabled(ModelsDB.isSpeciesModelOn())
 
     def _equationEnergyToggled(self, checked):
         self._ui.energyTerms.setEnabled(checked)

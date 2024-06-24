@@ -91,10 +91,15 @@ def _getAvailableFields():
         else:
             fields.append('h')
 
+    db = coredb.CoreDB()
     if ModelsDB.isMultiphaseModelOn():
-        for mid, name, _, phase in coredb.CoreDB().getMaterials():
+        for mid, name, _, phase in db.getMaterials():
             if phase != Phase.SOLID.value:
                 fields.append(f'alpha.{name}')
+    elif ModelsDB.isSpeciesModelOn():
+        for mixture, name in db.getMixturesInRegions():
+           for mid, name in db.getSpecies(mixture):
+               fields.append(name)
 
     for _, fieldName in CoreDBReader().getUserDefinedScalars():
         fields.append(fieldName)

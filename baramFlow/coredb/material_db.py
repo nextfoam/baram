@@ -26,7 +26,7 @@ class Specification(Enum):
 
 
 class MaterialType(Enum):
-    MATERIAL = 'material'
+    NONMIXTURE = 'nonmixture'
     MIXTURE = 'mixture'
     SPECIE = 'specie'
 

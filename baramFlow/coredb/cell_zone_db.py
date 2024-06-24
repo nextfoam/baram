@@ -64,10 +64,8 @@ class CellZoneDB:
         return czname == cls.NAME_FOR_REGION
 
     @classmethod
-    def addMaterialSourceTerm(cls, czid, mid):
-        coredb.CoreDB().addElementFromString(
-            cls.getXPath(czid) + '/sourceTerms/materials',
-            f'''
+    def buildMaterialSourceTermElement(cls, mid):
+        return f'''
                 <materialSource xmlns="http://www.baramcfd.org/baram" disabled="true">
                     <material>{mid}</material>
                     <unit>valueForEntireCellZone</unit>
@@ -79,7 +77,7 @@ class CellZoneDB:
                     </piecewiseLinear>
                     <polynomial>0</polynomial>
                 </materialSource>
-            ''')
+            '''
 
     @classmethod
     def getCellZoneSelectorItems(cls):

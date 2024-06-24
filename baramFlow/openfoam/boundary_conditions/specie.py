@@ -5,14 +5,15 @@ from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
-class Scalar(BoundaryCondition):
+class Specie(BoundaryCondition):
     DIMENSIONS = '[0 0 0 0 0 0 0]'
 
-    def __init__(self, region, time, processorNo, scalarID, fieldName):
-        super().__init__(region, time, processorNo, fieldName)
+    def __init__(self, region, time, processorNo, mid, name):
+        super().__init__(region, time, processorNo, name)
 
-        self._scalarID = scalarID
-        self._initialValue = region.initialScalar(scalarID)
+        self._region = region
+        self._mid = mid
+        self._initialValue = region.initialSpecie(mid)
 
     def build0(self):
         self._data = None
@@ -31,12 +32,15 @@ class Scalar(BoundaryCondition):
         for bcid, name, type_ in self._region.boundaries:
             xpath = BoundaryDB.getXPath(bcid)
 
-            value = self._db.getValue(f'{xpath}/userDefinedScalars/scalar[scalarID="{self._scalarID}"]/value')
+            value = self._db.getValue(
+                f'{xpath}/species/mixture[mid="{self._region.mid}"]/specie[mid="{self._mid}"]/value')
+            print(value)
+
             field[name] = {
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(value)),
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFixedValue(value)),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructFixedValue(value)),
-                BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletScalar(xpath, value)),
+                BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletSpecie(xpath, value)),
                 BoundaryType.ABL_INLET.value:           (lambda: self._constructFixedValue(value)),
                 BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructFixedValue(value)),
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructZeroGradient()),
@@ -50,7 +54,7 @@ class Scalar(BoundaryCondition):
                 BoundaryType.WALL.value:                (lambda: self._constructZeroGradient()),
                 BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructZeroGradient()),
                 BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
-                BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceScalar(xpath)),
+                BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceSpecie(xpath)),
                 BoundaryType.POROUS_JUMP.value:         (lambda: self._constructCyclic()),
                 BoundaryType.FAN.value:                 (lambda: self._constructCyclic()),
                 BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
@@ -60,13 +64,13 @@ class Scalar(BoundaryCondition):
 
         return field
 
-    def _constructPressureOutletScalar(self, xpath, value):
+    def _constructPressureOutletSpecie(self, xpath, value):
         if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
             return self._constructInletOutlet(value)
         else:
             return self._constructZeroGradient()
 
-    def _constructInterfaceScalar(self, xpath):
+    def _constructInterfaceSpecie(self, xpath):
         spec = self._db.getValue(xpath + '/interface/mode')
         if spec == InterfaceMode.REGION_INTERFACE.value:
             return self._constructZeroGradient()

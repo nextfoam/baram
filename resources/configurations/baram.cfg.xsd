@@ -204,6 +204,47 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="speciesListType">
+        <xs:sequence>
+            <xs:element name="mixture" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="mid" type="xs:positiveInteger"/>
+                        <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="mid" type="xs:positiveInteger"/>
+                                    <xs:element name="value" type="inputNumberType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="optionalSpeciesListType">
+        <xs:sequence>
+            <xs:element name="mixture" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="mid" type="xs:positiveInteger"/>
+                        <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="mid" type="xs:positiveInteger"/>
+                                    <xs:element name="value" type="inputNumberType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="disabled" type="xs:boolean" default="true"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="generalType">
         <xs:sequence>
             <xs:element name="flowType">
@@ -254,7 +295,6 @@
         </xs:sequence>
     </xs:complexType>
 
-
     <xs:complexType name="referenceValuesType">
         <xs:sequence>
             <xs:element name="area" type="inputNumberType" default="1"/>
@@ -272,7 +312,7 @@
             <xs:element name="type">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
-                        <xs:enumeration value="material"/>
+                        <xs:enumeration value="nonmixture"/>
                         <xs:enumeration value="mixture"/>
                         <xs:enumeration value="specie"/>
                     </xs:restriction>
@@ -906,18 +946,14 @@
                                         <xs:element name="velocity" type="vector"/>
                                         <xs:element name="relaxation" type="inputRatioType" default="1"/>
                                     </xs:sequence>
-                                    <xs:attribute name="disabled"
-                                                  type="xs:boolean"
-                                                  use="required"/>
+                                    <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="temperature" default="300">
                                 <xs:complexType>
                                     <xs:simpleContent>
                                         <xs:extension base="inputNumberType">
-                                            <xs:attribute name="disabled"
-                                                          type="xs:boolean"
-                                                          use="required"/>
+                                            <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                                         </xs:extension>
                                     </xs:simpleContent>
                                 </xs:complexType>
@@ -926,9 +962,7 @@
                                 <xs:complexType>
                                     <xs:simpleContent>
                                         <xs:extension base="inputNumberType">
-                                            <xs:attribute name="disabled"
-                                                          type="xs:boolean"
-                                                          default="true"/>
+                                            <xs:attribute name="disabled" type="xs:boolean" default="true"/>
                                         </xs:extension>
                                     </xs:simpleContent>
                                 </xs:complexType>
@@ -937,9 +971,7 @@
                                 <xs:complexType>
                                     <xs:simpleContent>
                                         <xs:extension base="inputNumberType">
-                                            <xs:attribute name="disabled"
-                                                          type="xs:boolean"
-                                                          default="true"/>
+                                            <xs:attribute name="disabled" type="xs:boolean" default="true"/>
                                         </xs:extension>
                                     </xs:simpleContent>
                                 </xs:complexType>
@@ -948,9 +980,7 @@
                                 <xs:complexType>
                                     <xs:simpleContent>
                                         <xs:extension base="inputNumberType">
-                                            <xs:attribute name="disabled"
-                                                          type="xs:boolean"
-                                                          default="true"/>
+                                            <xs:attribute name="disabled" type="xs:boolean" default="true"/>
                                         </xs:extension>
                                     </xs:simpleContent>
                                 </xs:complexType>
@@ -959,37 +989,13 @@
                                 <xs:complexType>
                                     <xs:simpleContent>
                                         <xs:extension base="inputNumberType">
-                                            <xs:attribute name="disabled"
-                                                          type="xs:boolean"
-                                                          default="true"/>
+                                            <xs:attribute name="disabled" type="xs:boolean" default="true"/>
                                         </xs:extension>
                                     </xs:simpleContent>
                                 </xs:complexType>
                             </xs:element>
-                            <xs:element name="userDefinedScalars" type="optionalUserDefinedScalarListType">
-<!--                                <xs:complexType>-->
-<!--                                    <xs:sequence>-->
-<!--                                        <xs:element name="scalar" minOccurs="0" maxOccurs="unbounded">-->
-<!--                                            <xs:complexType>-->
-<!--                                                <xs:sequence>-->
-<!--                                                    <xs:element name="scalarID" type="xs:positiveInteger"/>-->
-<!--                                                    <xs:element name="value">-->
-<!--                                                        <xs:complexType>-->
-<!--                                                            <xs:simpleContent>-->
-<!--                                                                <xs:extension base="inputNumberType">-->
-<!--                                                                    <xs:attribute name="disabled"-->
-<!--                                                                                  type="xs:boolean"-->
-<!--                                                                                  default="true"/>-->
-<!--                                                                </xs:extension>-->
-<!--                                                            </xs:simpleContent>-->
-<!--                                                        </xs:complexType>-->
-<!--                                                    </xs:element>-->
-<!--                                                </xs:sequence>-->
-<!--                                            </xs:complexType>-->
-<!--                                        </xs:element>-->
-<!--                                    </xs:sequence>-->
-<!--                                </xs:complexType>-->
-                            </xs:element>
+                            <xs:element name="userDefinedScalars" type="optionalUserDefinedScalarListType"/>
+                            <xs:element name="species" type="optionalSpeciesListType"/>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
@@ -1541,6 +1547,7 @@
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="species" type="speciesListType"/>
             </xs:sequence>
             <xs:attribute name="bcid" type="xs:positiveInteger" use="required"/>
         </xs:complexType>
@@ -1642,6 +1649,34 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
+<!--                        <xs:element name="species">-->
+<!--                            <xs:complexType>-->
+<!--                                <xs:sequence>-->
+<!--                                    <xs:element name="mixture" minOccurs="0" maxOccurs="unbounded">-->
+<!--                                        <xs:complexType>-->
+<!--                                            <xs:sequence>-->
+<!--                                                <xs:element name="mid" type="xs:positiveInteger"/>-->
+<!--                                                <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">-->
+<!--                                                    <xs:complexType>-->
+<!--                                                        <xs:sequence>-->
+<!--                                                            <xs:element name="mid" type="xs:positiveInteger"/>-->
+<!--                                                            <xs:element name="value" default="firstOrderUpwind">-->
+<!--                                                                <xs:simpleType>-->
+<!--                                                                    <xs:restriction base='xs:string'>-->
+<!--                                                                        <xs:enumeration value='firstOrderUpwind'/>-->
+<!--                                                                        <xs:enumeration value='secondOrderUpwind'/>-->
+<!--                                                                    </xs:restriction>-->
+<!--                                                                </xs:simpleType>-->
+<!--                                                            </xs:element>-->
+<!--                                                        </xs:sequence>-->
+<!--                                                    </xs:complexType>-->
+<!--                                                </xs:element>-->
+<!--                                            </xs:sequence>-->
+<!--                                        </xs:complexType>-->
+<!--                                    </xs:element>-->
+<!--                                </xs:sequence>-->
+<!--                            </xs:complexType>-->
+<!--                        </xs:element>-->
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1662,6 +1697,28 @@
                         <xs:element name="volumeFractionFinal" type="underRelaxationFactorNumberType" default="1"/>
                         <xs:element name="scalar" type="underRelaxationFactorNumberType" default="0.7"/>
                         <xs:element name="scalarFinal" type="underRelaxationFactorNumberType" default="1"/>
+<!--                        <xs:element name="species">-->
+<!--                            <xs:complexType>-->
+<!--                                <xs:sequence>-->
+<!--                                    <xs:element name="mixture" minOccurs="0" maxOccurs="unbounded">-->
+<!--                                        <xs:complexType>-->
+<!--                                            <xs:sequence>-->
+<!--                                                <xs:element name="mid" type="xs:positiveInteger"/>-->
+<!--                                                <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">-->
+<!--                                                    <xs:complexType>-->
+<!--                                                        <xs:sequence>-->
+<!--                                                            <xs:element name="mid" type="xs:positiveInteger"/>-->
+<!--                                                            <xs:element name="value" type="underRelaxationFactorNumberType" default="0.7"/>-->
+<!--                                                            <xs:element name="valueFinal" type="underRelaxationFactorNumberType" default="1"/>-->
+<!--                                                        </xs:sequence>-->
+<!--                                                    </xs:complexType>-->
+<!--                                                </xs:element>-->
+<!--                                            </xs:sequence>-->
+<!--                                        </xs:complexType>-->
+<!--                                    </xs:element>-->
+<!--                                </xs:sequence>-->
+<!--                            </xs:complexType>-->
+<!--                        </xs:element>-->
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1742,6 +1799,64 @@
                                 <xs:sequence>
                                     <xs:element name="absolute" type="inputRatioType" default="0.001"/>
                                     <xs:element name="relative" type="inputRatioType" default="0.05"/>
+<!--                                </xs:sequence>-->
+<!--                            </xs:complexType>-->
+<!--                        </xs:element>-->
+<!--                        <xs:element name="species">-->
+<!--                            <xs:complexType>-->
+<!--                                <xs:sequence>-->
+<!--                                    <xs:element name="mixture" minOccurs="0" maxOccurs="unbounded">-->
+<!--                                        <xs:complexType>-->
+<!--                                            <xs:sequence>-->
+<!--                                                <xs:element name="mid" type="xs:positiveInteger"/>-->
+<!--                                                <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">-->
+<!--                                                    <xs:complexType>-->
+<!--                                                        <xs:sequence>-->
+<!--                                                            <xs:element name="mid" type="xs:positiveInteger"/>-->
+<!--                                                            <xs:element name="absolute" type="inputRatioType" default="0.001"/>-->
+<!--                                                            <xs:element name="relative" type="inputRatioType" default="0.05"/>-->
+<!--                                                        </xs:sequence>-->
+<!--                                                    </xs:complexType>-->
+<!--                                                </xs:element>-->
+<!--                                            </xs:sequence>-->
+<!--                                        </xs:complexType>-->
+<!--                                    </xs:element>-->
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="species">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="mixture" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="mid" type="xs:positiveInteger"/>
+                                    <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="mid" type="xs:positiveInteger"/>
+                                                <xs:element name="discretizationScheme" default="firstOrderUpwind">
+                                                    <xs:simpleType>
+                                                        <xs:restriction base='xs:string'>
+                                                            <xs:enumeration value='firstOrderUpwind'/>
+                                                            <xs:enumeration value='secondOrderUpwind'/>
+                                                        </xs:restriction>
+                                                    </xs:simpleType>
+                                                </xs:element>
+                                                <xs:element name="underRelaxationFactor"
+                                                            type="underRelaxationFactorNumberType" default="0.3"/>
+                                                <xs:element name="underRelaxationFactorFinal"
+                                                            type="underRelaxationFactorNumberType" default="1"/>
+                                                <xs:element name="absoluteConvergenceCriteria" type="inputRatioType"
+                                                            default="0.001"/>
+                                                <xs:element name="relativeConvergenceCriteria" type="inputRatioType"
+                                                            default="0.05"/>
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
@@ -1775,6 +1890,7 @@
                                         </xs:complexType>
                                     </xs:element>
                                     <xs:element name="UDS" type="xs:boolean" default="true"/>
+                                    <xs:element name="species" type="xs:boolean" default="true"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
@@ -2029,22 +2145,8 @@
                                                                 <xs:element name="turbulentIntensity" type="inputPercentType" default="1"/>
                                                                 <xs:element name="turbulentViscosity" type="inputNumberType" default="10"/>
                                                                 <xs:element name="volumeFractions" type="volumeFractionListType"/>
-                                                                <xs:element name="userDefinedScalars" type="optionalUserDefinedScalarListType">
-<!--                                                                    <xs:complexType>-->
-<!--                                                                        <xs:sequence>-->
-<!--                                                                            <xs:sequence>-->
-<!--                                                                                <xs:element name="scalar" minOccurs="0" maxOccurs="unbounded">-->
-<!--                                                                                    <xs:complexType>-->
-<!--                                                                                        <xs:sequence>-->
-<!--                                                                                            <xs:element name="scalarID" type="xs:positiveInteger"/> &lt;!&ndash; scalar ID &ndash;&gt;-->
-<!--                                                                                            <xs:element name="value" type="inputNumberType"/>-->
-<!--                                                                                        </xs:sequence>-->
-<!--                                                                                    </xs:complexType>-->
-<!--                                                                                </xs:element>-->
-<!--                                                                            </xs:sequence>-->
-<!--                                                                        </xs:sequence>-->
-<!--                                                                    </xs:complexType>-->
-                                                                </xs:element>
+                                                                <xs:element name="userDefinedScalars" type="optionalUserDefinedScalarListType"/>
+                                                                <xs:element name="species" type="speciesListType"/>
                                                             </xs:sequence>
                                                         </xs:complexType>
                                                     </xs:element>
@@ -2108,15 +2210,8 @@
                                                                                                 </xs:complexContent>
                                                                                             </xs:complexType>
                                                                                         </xs:element>
-                                                                                        <xs:element name="userDefinedScalars" type="optionalUserDefinedScalarListType">
-<!--                                                                                            <xs:complexType>-->
-<!--                                                                                                <xs:complexContent>-->
-<!--                                                                                                    <xs:extension base="userDefinedScalarListType">-->
-<!--                                                                                                        <xs:attribute name="disabled" type="xs:boolean" use="required"/>-->
-<!--                                                                                                    </xs:extension>-->
-<!--                                                                                                </xs:complexContent>-->
-<!--                                                                                            </xs:complexType>-->
-                                                                                        </xs:element>
+                                                                                        <xs:element name="userDefinedScalars" type="optionalUserDefinedScalarListType"/>
+                                                                                        <xs:element name="species" type="optionalSpeciesListType"/>
                                                                                         <xs:element name="overrideBoundaryValue" type="xs:boolean" default="false"/>
                                                                                     </xs:sequence>
                                                                                 </xs:complexType>

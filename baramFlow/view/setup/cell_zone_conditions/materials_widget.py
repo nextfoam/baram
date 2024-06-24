@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QCheckBox, QLab
 from PySide6.QtCore import Signal
 
 from baramFlow.coredb import coredb
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.material_db import MaterialDB
 from .materials_widget_ui import Ui_MaterialsWidget
@@ -71,7 +72,7 @@ class SurfaceTensionWidget(QWidget):
 
 
 class MaterialsWidget(QWidget):
-    materialsChanged = Signal(list)
+    materialsChanged = Signal(int, list)
 
     def __init__(self, rname, multiphase):
         super().__init__()
@@ -132,12 +133,15 @@ class MaterialsWidget(QWidget):
                                                    f'</surfaceTension>')
                         writer.append(f'{sfXpath}/surfaceTension[mid="{mid1}"][mid="{mid2}"]/value',
                                       value, self.tr('Surface Tension'))
-        else:
-            writer.append(self._xpath + '/material', self._ui.material.currentData(), None)
+        elif (newMaterial := self._ui.material.currentData()) != self._material:
+            writer.append(self._xpath + '/material', newMaterial, None)
+            if ModelsDB.isSpeciesModelOn():
+                writer.callFunction('updateRegionMixture', (self._rname, newMaterial))
 
         return True
 
     def _connectSignalsSlots(self):
+        self._ui.material.currentTextChanged.connect(self._materialChanged)
         self._ui.materialsSelect.clicked.connect(self._selectMaterials)
 
     def _addMaterialToMap(self, mid):
@@ -175,6 +179,9 @@ class MaterialsWidget(QWidget):
         for i in range(len(self._secondaryMaterials)):
             self._addSurfaceTensionRows(self._secondaryMaterials[i], i + 1, default)
 
+    def _materialChanged(self):
+        self.materialsChanged.emit(int(self._ui.material.currentData()), [])
+
     def _selectMaterials(self):
         if self._surfaceTensionWidget:
             for mid1, mid2, row in self._surfaceTensionWidget.rows():
@@ -188,7 +195,7 @@ class MaterialsWidget(QWidget):
         secondaryMaterials = self._dialog.getSecondaries()
         self._setMaterial(self._dialog.getMaterial())
         self._setSecondaryMaterials(secondaryMaterials, '0')
-        self.materialsChanged.emit(secondaryMaterials)
+        self.materialsChanged.emit(self._material, secondaryMaterials)
 
     def _addSurfaceTensionRows(self, mid, offset, default):
         for i in range(offset, len(self._secondaryMaterials)):

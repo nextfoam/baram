@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from threading import Lock
 
 from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb import ValueException, Error, _CoreDB
-from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT, Phase
+from baramFlow.coredb.initialization_db import InitializationDB
+from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT, Phase, MaterialType
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 
@@ -16,6 +18,8 @@ _mutex = Lock()
 class Region:
     def __init__(self, db, rname):
         self._rname = rname
+
+        self._db = db
 
         self._mid = RegionDB.getMaterial(rname)
         self._secondaryMaterials = RegionDB.getSecondaryMaterials(rname)
@@ -32,17 +36,17 @@ class Region:
         self._e = None
         self._w = None
 
-        xpath = RegionDB.getXPath(rname)
+        self._initialValuesXpath = InitializationDB.getXPath(rname) + '/initialValues'
 
-        self._U = db.getVector(f'{xpath}/initialization/initialValues/velocity')
-        self._t = float(db.getValue(f'{xpath}/initialization/initialValues/temperature'))
+        self._U = db.getVector(f'{self._initialValuesXpath}/velocity')
+        self._t = float(db.getValue(f'{self._initialValuesXpath}/temperature'))
 
-        if self.isFluid():
-            p = (float(db.getValue(f'{xpath}/initialization/initialValues/pressure'))
+        if self.isFluid() and MaterialDB.getType(self._mid) == MaterialType.NONMIXTURE:
+            p = (float(db.getValue(f'{self._initialValuesXpath}/pressure'))
                  + float(db.getValue('.//operatingConditions/pressure')))
-            v = float(db.getValue(f'{xpath}/initialization/initialValues/scaleOfVelocity'))
-            i = (float(db.getValue(f'{xpath}/initialization/initialValues/turbulentIntensity')) / 100.0)
-            b = float(db.getValue(f'{xpath}/initialization/initialValues/turbulentViscosity'))
+            v = float(db.getValue(f'{self._initialValuesXpath}/scaleOfVelocity'))
+            i = (float(db.getValue(f'{self._initialValuesXpath}/turbulentIntensity')) / 100.0)
+            b = float(db.getValue(f'{self._initialValuesXpath}/turbulentViscosity'))
 
             self._rho = db.getDensity(self._mid, self._t, p)  # Density
             mu = db.getViscosity(self._mid, self._t)  # Viscosity
@@ -105,6 +109,13 @@ class Region:
     @property
     def initialVelocity(self):
         return self._U
+
+    def initialScalar(self, scalarID):
+        return self._db.getValue(f'{self._initialValuesXpath}/userDefinedScalars/scalar[scalarID="{scalarID}"]/value')
+
+    def initialSpecie(self, mid):
+        return self._db.getValue(
+            f'{self._initialValuesXpath}/species/mixture[mid="{self._mid}"]/specie[mid="{mid}"]/value')
 
     @property
     def secondaryMaterials(self):

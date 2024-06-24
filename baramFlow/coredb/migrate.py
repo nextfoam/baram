@@ -533,23 +533,8 @@ def _version_6(root: etree.Element):
             logger.debug(f'    Adding "type" to {p}')
 
             e = etree.Element(f'{{{_ns}}}type')
-            e.text = 'material'
+            e.text = 'nonmixture'
             p.insert(1, e)
-        #
-        # if p.find('mixture', namespaces=_nsmap) is None:
-        #     logger.debug(f'    Adding "mixture" to {p}')
-        #
-        #     e = etree.fromstring('<mixture xmlns="http://www.baramcfd.org/baram">'
-        #                          '  <massDiffusivity>1</massDiffusivity>'
-        #                          '  <primarySpecie>0</primarySpecie>'
-        #                          '</mixture>')
-        #     p.append(e)
-        #
-        # if p.find('specie', namespaces=_nsmap) is None:
-        #     logger.debug(f'    Adding "specie" to {p}')
-        #
-        #     e = etree.fromstring('<specie xmlns="http://www.baramcfd.org/baram"><mixture>0</mixture></specie>')
-        #     p.append(e)
 
         if (density := p.find('density', namespaces=_nsmap)) is not None:
             if density.find('pengRobinsonParameters', namespaces=_nsmap) is None:
@@ -571,6 +556,49 @@ def _version_6(root: etree.Element):
 
             e = etree.Element(f'{{{_ns}}}turbulentSchmidtNumber')
             e.text = '0.7'
+            p.append(e)
+
+    for p in root.findall('regions/region/cellZones/cellZone/fixedValues', namespaces=_nsmap):
+        if p.find('species', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "species" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}species')
+            p.append(e)
+
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition', namespaces=_nsmap):
+        if p.find('species', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "species" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}species')
+            p.append(e)
+
+    for p in root.findall('regions/region/initialization/initialValues', namespaces=_nsmap):
+        if p.find('species', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "species" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}species')
+            p.append(e)
+
+    for p in root.findall('regions/region/initialization/advanced/sections/section', namespaces=_nsmap):
+        if p.find('species', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "species" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}species')
+            p.insert(11, e)
+
+    if (p := root.find('numericalConditions', namespaces=_nsmap)) is not None:
+        if p.find('species', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "species" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}species')
+            p.insert(10, e)
+
+    if (p := root.find('numericalConditions/advanced/equations', namespaces=_nsmap)) is not None:
+        if p.find('species', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "species" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}species')
+            e.text = 'true'
             p.append(e)
 
 

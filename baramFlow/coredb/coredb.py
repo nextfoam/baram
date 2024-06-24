@@ -541,17 +541,31 @@ class _CoreDB(object):
 
         return [(k, v['chemicalFormula'], v['phase']) for k, v in self.materialDB.items()]
 
-    def getMaterials(self) -> list[(int, str, str, str)]:
+    def getMaterials(self, type_=None) -> list[(int, str, str, str)]:
         """Returns configured materials
 
-        Returns configured materials with name, chemicalFormula and phase from material database
+        Returns configured materials with name, chemicalFormula and phase
+
+        Args:
+            type_: Material type (nonmixture, mixture or specie)
 
         Returns:
             List of materials in tuple, '(id, name, chemicalFormula, phase)'
         """
         elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
 
-        return [(int(e.attrib['mid']), e.findtext('name', namespaces=nsmap), e.findtext('chemicalFormula', namespaces=nsmap), e.findtext('phase', namespaces=nsmap)) for e in elements]
+        if type_ is None:
+            return [(int(e.attrib['mid']),
+                     e.findtext('name', namespaces=nsmap),
+                     e.findtext('type', namespaces=nsmap),
+                     e.findtext('phase', namespaces=nsmap))
+                    for e in elements if e.findtext('type', namespaces=nsmap) != 'specie']
+        else:
+            return [(int(e.attrib['mid']),
+                     e.findtext('name', namespaces=nsmap),
+                     e.findtext('type', namespaces=nsmap),
+                     e.findtext('phase', namespaces=nsmap))
+                    for e in elements if e.findtext('type', namespaces=nsmap) == type_]
 
     def getSpecies(self, mid):
         return [(int(e.getparent().attrib['mid']), e.getparent().findtext('name', namespaces=nsmap))
@@ -612,7 +626,7 @@ class _CoreDB(object):
 
         return self._addMaterial(self.materialDB[name], name, 'specie', mixture)
 
-    def _addMaterial(self, mdb: dict, name: str = None, type_: str = 'material', mixture: int = 0) -> int:
+    def _addMaterial(self, mdb: dict, name: str = None, type_: str = 'nonmixture', mixture: int = 0) -> int:
         """Add material to configuration from material database
 
         Add material to configuration from material database
@@ -723,7 +737,7 @@ class _CoreDB(object):
 
         # check if the material is referenced by other elements
         mid = material.attrib['mid']
-        if self._isMaterialRefereced(mid):
+        if self.isMaterialRefereced(mid):
             return Error.REFERENCED
 
         elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
@@ -745,7 +759,7 @@ class _CoreDB(object):
             raise LookupError
 
         # check if the material is referenced by other elements
-        if self._isMaterialRefereced(mid):
+        if self.isMaterialRefereced(mid):
             return Error.REFERENCED
 
         elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
@@ -800,6 +814,35 @@ class _CoreDB(object):
 
         return None
 
+    def isMaterialRefereced(self, mid):
+        mid = str(mid)
+        if self.exists(f'models/userDefinedScalars/scalar[material="{mid}"]'):
+            return True
+
+        idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:material/text()', namespaces={'x': ns})
+        if mid in idList:
+            return True
+
+        mid = ' ' + mid + ' '
+        idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:secondaryMaterials/text()', namespaces={'x': ns})
+        for ids in idList:
+            if mid in ' ' + ids + ' ':
+                return True
+
+        return False
+
+    def getMixturesInRegions(self):
+        idList = set(self._xmlTree.xpath(f'.//x:regions/x:region/x:material/text()', namespaces={'x': ns}))
+        materials = self._xmlTree.find('materials', namespaces=nsmap)
+
+        mixtures = []
+        for mid in idList:
+            material = materials.find(f'material[@mid="{mid}"]', namespaces=nsmap)
+            if material.findtext('type', namespaces=nsmap) == 'mixture':
+                mixtures.append((mid, material.findtext('name', namespaces=nsmap)))
+
+        return mixtures
+
     def addRegion(self, rname: str):
         region = self._xmlTree.find(f'.//regions/region[name="{rname}"]', namespaces=nsmap)
 
@@ -841,6 +884,7 @@ class _CoreDB(object):
                         <turbulentViscosity>10</turbulentViscosity>
                         <volumeFractions/>
                         <userDefinedScalars/>
+                        <species/>
                     </initialValues>
                     <advanced>
                         <sections></sections>
@@ -868,6 +912,9 @@ class _CoreDB(object):
     def clearRegions(self):
         parent = self._xmlTree.find('.//regions', namespaces=nsmap)
         parent.clear()
+
+        numericalCondtionsSpecies = self._xmlTree.find('numericalConditions/species', namespaces=nsmap)
+        numericalCondtionsSpecies.clear()
 
     def hasMultipleRegions(self):
         return len(self._xmlTree.findall(f'.//regions/region', namespaces=nsmap)) > 1
@@ -1214,6 +1261,94 @@ class _CoreDB(object):
 
         self._xmlSchema.assertValid(self._xmlTree)
 
+    def updateRegionMixture(self, rname, mid):
+        isMixture = (self._getElement(f'materials/material[@mid="{mid}"]').find('type', namespaces=nsmap).text
+                     == 'mixture')
+        mixturesInRegions = [e.text for e in self._xmlTree.findall(f'regions/region/material', namespaces=nsmap)]
+
+        region = self._xmlTree.find(f'regions/region[name="{rname}"]', namespaces=nsmap)
+        fixedValuesSpecies = region.findall('cellZones/cellZone/fixedValues/species', namespaces=nsmap)
+        materialSourceTerms = region.findall('cellZones/cellZone/sourceTerms/materials', namespaces=nsmap)
+        boundarySpecies = region.findall('boundaryConditions/boundaryCondition/species', namespaces=nsmap)
+        initialValuesSpecies = region.find('initialization/initialValues/species', namespaces=nsmap)
+        initialSectionsSpecies = region.findall('initialization/advanced/sections/section/species', namespaces=nsmap)
+
+        numericalCondtionsSpecies = self._xmlTree.find('numericalConditions/species', namespaces=nsmap)
+
+        for species in fixedValuesSpecies:
+            species.clear()
+
+        for materials in materialSourceTerms:
+            materials.clear()
+
+        for species in boundarySpecies:
+            species.clear()
+
+        initialValuesSpecies.clear()
+        for species in initialSectionsSpecies:
+            species.clear()
+
+        for mixture in numericalCondtionsSpecies.findall('mixture', namespaces=nsmap):
+            if mixture.findtext('mid', namespaces=nsmap) not in mixturesInRegions:
+                numericalCondtionsSpecies.remove(mixture)
+
+        if isMixture:
+            fixedValuesString = ''
+            numericalConditionsString = ''
+            boundaryString = ''
+            initialValuesString = ''
+            initialSectionsString = ''
+
+            for specie, _ in self.getSpecies(mid):
+                for materials in materialSourceTerms:
+                    materials.append(
+                        etree.fromstring(f'<materialSource xmlns="http://www.baramcfd.org/baram" disabled="true">'
+                                         f' <material>{specie}</material>'
+                                         '  <unit>valueForEntireCellZone</unit>'
+                                         '  <specification>constant</specification>'
+                                         '  <constant>0</constant>'
+                                         '  <piecewiseLinear><t>0</t><v>0</v></piecewiseLinear>'
+                                         '  <polynomial>0</polynomial>'
+                                         '</materialSource>'))
+
+                fixedValuesString += f'<specie><mid>{specie}</mid><value>0</value></specie>'
+                numericalConditionsString += f'''
+                    <specie>
+                        <mid>{specie}</mid>
+                        <discretizationScheme>firstOrderUpwind</discretizationScheme>
+                        <underRelaxationFactor>0.3</underRelaxationFactor>
+                        <underRelaxationFactorFinal>1</underRelaxationFactorFinal>
+                        <absoluteConvergenceCriteria>0.001</absoluteConvergenceCriteria>
+                        <relativeConvergenceCriteria>0.05</relativeConvergenceCriteria>
+                    </specie>'''
+                boundaryString += f'<specie><mid>{specie}</mid><value>0</value></specie>'
+                initialValuesString += f'<specie><mid>{specie}</mid><value>0</value></specie>'
+                initialSectionsString += f'<specie><mid>{specie}</mid><value>0</value></specie>'
+
+            for species in fixedValuesSpecies:
+                species.append(etree.fromstring(
+                    f'<mixture disabled="true" xmlns="http://www.baramcfd.org/baram">'
+                    f'  <mid>{mid}</mid>{fixedValuesString}'
+                    '</mixture>'))
+
+            for species in boundarySpecies:
+                species.append(etree.fromstring(
+                    f'<mixture xmlns="http://www.baramcfd.org/baram"><mid>{mid}</mid>{boundaryString}</mixture>'))
+
+            if numericalCondtionsSpecies.find(f'mixture[mid="{mid}"]', namespaces=nsmap) is None:
+                numericalCondtionsSpecies.append(etree.fromstring(
+                    f'<mixture xmlns="http://www.baramcfd.org/baram">'
+                    f'  <mid>{mid}</mid>{numericalConditionsString}'
+                    '</mixture>'))
+
+            initialValuesSpecies.append(etree.fromstring(
+                f'<mixture xmlns="http://www.baramcfd.org/baram"><mid>{mid}</mid>{initialValuesString}</mixture>'))
+            for species in initialSectionsSpecies:
+                species.append(etree.fromstring(
+                    f'<mixture disabled="true" xmlns="http://www.baramcfd.org/baram">'
+                    f'  <mid>{mid}</mid>{fixedValuesString}'
+                    '</mixture>'))
+
     def getBatchParameters(self):
         parameters = {}
         for e in self._xmlTree.findall('.//runCalculation/batch/parameters/parameter', namespaces=nsmap):
@@ -1394,15 +1529,7 @@ class _CoreDB(object):
 
         parent.append(etree.fromstring(text))
 
-        try:
-            self._xmlSchema.assertValid(self._xmlTree)
-        except etree.DocumentInvalid as ex:
-            message = str(ex)
-            start = message.find(']') + 1
-            end = message.rfind(',')
-            self._lastError = Error.INVALID_SYNTAX
-
-            raise ValueException(Error.INVALID_SYNTAX, message[start:end] if start < end else message)
+        self._xmlSchema.assertValid(self._xmlTree)
 
         self._configCount += 1
 
@@ -1504,19 +1631,3 @@ class _CoreDB(object):
             raise LookupError
 
         return elements[0]
-
-    def _isMaterialRefereced(self, mid):
-        if self.exists(f'models/userDefinedScalars/scalar[material="{mid}"]'):
-            return True
-
-        idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:material/text()', namespaces={'x': ns})
-        if mid in idList:
-            return True
-
-        mid = ' ' + mid + ' '
-        idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:secondaryMaterials/text()', namespaces={'x': ns})
-        for ids in idList:
-            if mid in ' ' + ids + ' ':
-                return True
-
-        return False

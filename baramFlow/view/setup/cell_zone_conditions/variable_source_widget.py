@@ -36,6 +36,9 @@ class VariableSourceWidget(QWidget):
 
         self._connectSignalsSlots()
 
+    def setChecked(self, checked):
+        self._ui.groupBox.setChecked(checked)
+
     def load(self):
         self._ui.groupBox.setChecked(self._db.getAttribute(self._xpath, 'disabled') == 'false')
         self._ui.specificationMethod.setCurrentData(SpecificationMethod(self._db.getValue(self._xpath + '/unit')))

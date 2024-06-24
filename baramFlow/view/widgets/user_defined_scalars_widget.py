@@ -6,26 +6,6 @@ from PySide6.QtWidgets import QGroupBox, QFormLayout, QLineEdit
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 
-DEFAULT_VALUE = '0'
-
-
-class ScalarEdit(QLineEdit):
-    def __init__(self):
-        super().__init__()
-
-        self._loaded = False
-
-    def setValue(self, value):
-        if value is None:
-            self._loaded = False
-            self.setText(DEFAULT_VALUE)
-        else:
-            self._loaded = True
-            self.setText(value)
-
-    def isLoaded(self):
-        return self._loaded
-
 
 class UserDefinedScalarsWidget(QGroupBox):
     def __init__(self, rname):

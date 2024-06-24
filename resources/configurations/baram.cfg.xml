@@ -191,6 +191,7 @@
                 <relative>0.05</relative>
             </scalar>
         </convergenceCriteria>
+        <species/>
         <advanced>
             <limits>
                 <minimumStaticTemperature>1</minimumStaticTemperature>
@@ -205,6 +206,7 @@
                     <includePressureWorkTerms>false</includePressureWorkTerms>
                 </energy>
                 <UDS>true</UDS>
+                <species>true</species>
             </equations>
         </advanced>
     </numericalConditions>

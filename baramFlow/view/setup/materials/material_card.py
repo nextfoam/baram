@@ -28,7 +28,7 @@ class MaterialCard(QWidget):
 
     @property
     def type(self):
-        return MaterialType.MATERIAL
+        return MaterialType.NONMIXTURE
 
     @property
     def mid(self):
@@ -78,7 +78,7 @@ class MaterialCard(QWidget):
             if viscositySpec != Specification.SUTHERLAND.value:
                 self._ui.thermalConductivityWidget.show()
                 specification = (db.getValue(self._xpath + '/thermalConductivity/specification')
-                                 if type_ == MaterialType.MATERIAL else viscositySpec)
+                                 if type_ == MaterialType.NONMIXTURE else viscositySpec)
                 if specification == Specification.CONSTANT.value:
                     self._ui.thermalConductivity.setText(
                         db.getValue(self._xpath + '/thermalConductivity/constant') + ' W/m·K')

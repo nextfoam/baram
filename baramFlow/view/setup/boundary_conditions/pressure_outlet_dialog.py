@@ -27,6 +27,11 @@ class PressureOutletDialog(ResizableDialog):
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
+        self._turbulenceWidget = None
+        self._volumeFractionWidget = None
+        self._scalarsWidget = None
+        self._speciesWidget = None
+
         layout = self._ui.calculateBackflow.layout()
         rname = BoundaryDB.getBoundaryRegion(bcid)
         self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
@@ -34,6 +39,8 @@ class PressureOutletDialog(ResizableDialog):
         self._scalarsWidget = ConditionalWidgetHelper.userDefinedScalarsWidget(rname, layout)
 
         mid = RegionDB.getMaterial(rname)
+        self._speciesWidget = ConditionalWidgetHelper.speciesWidget(mid, layout)
+
         xpath = MaterialDB.getXPath(mid)
         if (not ModelsDB.isEnergyModelOn()
                 or MaterialDB.getPhase(mid) == Phase.SOLID
@@ -72,11 +79,13 @@ class PressureOutletDialog(ResizableDialog):
                 writer.append(xpath + '/backflowTotalTemperature',
                               self._ui.backflowTotalTemperature.text(), self.tr("Backflow Total Temperature"))
 
-
             if not await self._volumeFractionWidget.appendToWriter(writer, self._xpath + '/volumeFractions'):
                 return
 
             if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
+                return
+
+            if not self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
                 return
         else:
             writer.append(xpath + '/calculatedBackflow', "false", None)
@@ -98,6 +107,7 @@ class PressureOutletDialog(ResizableDialog):
         self._ui.backflowTotalTemperature.setText(self._db.getValue(xpath + '/backflowTotalTemperature'))
         self._volumeFractionWidget.load(self._xpath + '/volumeFractions')
         self._scalarsWidget.load(self._xpath + '/userDefinedScalars')
+        self._speciesWidget.load(self._xpath + '/species')
 
     def _connectSignalsSlots(self):
         self._ui.ok.clicked.connect(self._accept)

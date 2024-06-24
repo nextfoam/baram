@@ -13,7 +13,9 @@ from widgets.async_message_box import AsyncMessageBox
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.initialization_db import InitializationDB
+from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
+from baramFlow.view.widgets.species_widget import SpeciesWidget
 from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
 from .section_dialog_ui import Ui_sectionDialog
 
@@ -92,7 +94,6 @@ class SectionDialog(ResizableDialog):
 
         self._connectSignalsToSlots()
 
-        sectionPath = InitializationDB.getSectionXPath(rname, name)
         self._volumeFractionWidget = VolumeFractionWidget(self._rname)
         if self._volumeFractionWidget.on():
             self._volumeFractionWidget.setCheckable(True)
@@ -102,6 +103,12 @@ class SectionDialog(ResizableDialog):
         if scalars := self._db.getUserDefinedScalarsInRegion(self._rname):
             self._scalarsWidget = UserDefinedScalarList(scalars)
             self._ui.initialValuesLayout.addWidget(self._scalarsWidget)
+
+        sectionPath = InitializationDB.getSectionXPath(rname, name)
+        mid = RegionDB.getMaterial(self._rname)
+        self._speciesWidget = SpeciesWidget(mid, None, True)
+        if self._speciesWidget.on():
+            self._ui.initialValuesLayout.addWidget(self._speciesWidget)
 
         if name is not None:  # Open Edit page with the parameters from coreDB
             self._pageType = PageType.EDIT
@@ -177,7 +184,18 @@ class SectionDialog(ResizableDialog):
         writer = CoreDBWriter()
 
         if self._pageType == PageType.CREATE:
-            # Create an element with given name and default values
+            speciesXML = ''
+            if self._speciesWidget.on():
+                xml = ''
+                for specie in self._speciesWidget.species():
+                    xml += f'<specie><mid>{specie}</mid><value>0</value></specie>'
+
+                speciesXML = f'''
+                    <mixture disabled="true" xmlns="http://www.baramcfd.org/baram">
+                        <mid>{self._speciesWidget.mid()}</mid>{xml}
+                    </mixture>'''
+
+                # Create an element with given name and default values
             writer.addElement(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections',
                               f'''
                                 <section xmlns="http://www.baramcfd.org/baram">
@@ -192,6 +210,7 @@ class SectionDialog(ResizableDialog):
                                     <temperature disabled="true">300</temperature>
                                     <volumeFractions disabled="true"/>
                                     <userDefinedScalars/>
+                                    <species>{speciesXML}</species>
                                     <overrideBoundaryValue>false</overrideBoundaryValue>
                                 </section>
                             ''')
@@ -354,6 +373,11 @@ class SectionDialog(ResizableDialog):
                     else:
                         writer.setAttribute(xpath, 'disabled', 'true')
 
+        if self._speciesWidget and self._speciesWidget.on():
+            if not self._speciesWidget.appendToWriter(writer, f'{sectionPath}/species'):
+                return
+            parameterConfigured = parameterConfigured or self._speciesWidget.isChecked()
+
         if not parameterConfigured:
             await AsyncMessageBox().warning(self, self.tr('Warning'),
                                             self.tr('At least one parameter should be configured'))
@@ -468,6 +492,9 @@ class SectionDialog(ResizableDialog):
                     scalarID,
                     self._db.getAttribute(xpath, 'disabled') == 'false',
                     self._db.getValue(xpath))
+
+        if self._speciesWidget and self._speciesWidget.on():
+            self._speciesWidget.load(f'{sectionPath}/species')
 
         if self._db.getValue(sectionPath+'/overrideBoundaryValue') == 'true':
             self._ui.overrideBoundaryValue.setChecked(True)

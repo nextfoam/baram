@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>321</width>
-    <height>372</height>
+    <height>398</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -110,6 +110,13 @@
        <widget class="QCheckBox" name="equationUDS">
         <property name="text">
          <string>User-defined Scalar</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="equationSpecies">
+        <property name="text">
+         <string>Species</string>
         </property>
        </widget>
       </item>

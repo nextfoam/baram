@@ -221,4 +221,5 @@
     <coupledBoundary>0</coupledBoundary>
     <volumeFractions/>
     <userDefinedScalars/>
+    <species/>
 </boundaryCondition>

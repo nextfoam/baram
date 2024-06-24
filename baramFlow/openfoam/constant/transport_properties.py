@@ -7,6 +7,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import findSolver
@@ -26,16 +27,15 @@ class TransportProperties(DictionaryFile):
         if findSolver() == 'interFoam':
             self._data = self._buildForInterFoam()
             return self
+        elif ModelsDB.isEnergyModelOn():
+            return self
 
         self._data = {}
 
-        mid = self._db.getValue(f'.//regions/region[name="{self._rname}"]/material')
-
-        energyModels = self._db.getValue('.//models/energyModels')
+        mid = RegionDB.getMaterial(self._rname)
         dSpec = self._db.getValue(f'{MaterialDB.getXPath(mid)}/density/specification')
         vSpec = self._db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity/specification')
-
-        if energyModels == "off" and dSpec == 'constant' and vSpec == 'constant':
+        if dSpec == 'constant' and vSpec == 'constant':
             self._data['transportModel'] = 'Newtonian'
 
             density = self._db.getValue(f'{MaterialDB.getXPath(mid)}/density/constant')

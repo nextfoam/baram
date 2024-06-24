@@ -129,5 +129,6 @@
         <specificDissipationRate disabled="true">0</specificDissipationRate>
         <modifiedTurbulentViscosity disabled="true">0</modifiedTurbulentViscosity>
         <userDefinedScalars/>
+        <species/>
     </fixedValues>
 </cellZone>

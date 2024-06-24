@@ -52,7 +52,7 @@ class MaterialPage(ContentPage):
             return
 
         error = None
-        if card.type == MaterialType.MATERIAL:
+        if card.type == MaterialType.NONMIXTURE:
             error = coredb.CoreDB().removeMaterial(card.name)
         elif card.type == MaterialType.MIXTURE:
             error = coredb.CoreDB().removeMixture(card.mid)
@@ -83,7 +83,7 @@ class MaterialPage(ContentPage):
         if type_ is None:
             type_ = MaterialDB.getType(mid)
 
-        if type_ == MaterialType.MATERIAL:
+        if type_ == MaterialType.NONMIXTURE:
             card = MaterialCard(mid)
         elif type_ == MaterialType.MIXTURE:
             card = MixtureCard(mid)

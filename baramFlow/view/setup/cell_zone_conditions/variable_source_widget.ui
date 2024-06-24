@@ -133,6 +133,9 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="text">
+         <string>0</string>
+        </property>
        </widget>
       </item>
      </layout>

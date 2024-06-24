@@ -71,7 +71,7 @@ class MaterialDialog(ResizableDialog):
                 viscositySpecification = Specification(self._db.getValue(specXPath + '/viscosity/specification'))
 
             specification = (Specification(self._db.getValue(self._xpath + '/thermalConductivity/specification'))
-                             if self._type == MaterialType.MATERIAL else viscositySpecification)
+                             if self._type == MaterialType.NONMIXTURE else viscositySpecification)
             self._setupThermalConductivitySpecification(specification)
             self._ui.constantThermalConductivity.setText(self._db.getValue(self._xpath + '/thermalConductivity/constant'))
             self._thermalConductivityTypeChanged()

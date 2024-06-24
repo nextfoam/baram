@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.region_db import RegionDB
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
@@ -17,6 +18,7 @@ class FvSchemes(DictionaryFile):
         self._rname = rname
         self._db = CoreDBReader()
         self._cap = None
+        self._mid = RegionDB.getMaterial(self._rname)
 
     def build(self):
         if self._data is not None:
@@ -25,8 +27,7 @@ class FvSchemes(DictionaryFile):
         solver = findSolver()
         self._cap = getSolverCapability(solver)
 
-        mid = self._db.getValue(f'.//region[name="{self._rname}"]/material')
-        phase = self._db.getValue(f'.//materials/material[@mid="{mid}"]/phase')
+        phase = MaterialDB.getPhase(self._mid)
 
         if solver == 'TSLAeroFoam':
             self._generateTSLAero()
@@ -256,9 +257,17 @@ class FvSchemes(DictionaryFile):
                 })
 
         if self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/discretizationSchemes/scalar') == 'firstOrderUpwind':
-            divSchemes[f'div(phi,scalar)'] = f'Gauss upwind'
+            divSchemes['div(phi,scalar)'] = f'Gauss upwind'
         else:
-            divSchemes[f'div(phi,scalar)'] = f'Gauss linearUpwind momentumReconGrad'
+            divSchemes['div(phi,scalar)'] = f'Gauss linearUpwind momentumReconGrad'
+
+        if ModelsDB.isSpeciesModelOn():
+            speciesXPath = f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/species/mixture[mid="{self._mid}"]'
+            for mid, specie in self._db.getSpecies(self._mid):
+                if self._db.getValue(f'{speciesXPath}/specie[mid="{mid}"]/discretizationScheme') == 'firstOrderUpwind':
+                    divSchemes[f'div(phi,{specie})'] = f'Gauss upwind'
+                else:
+                    divSchemes[f'div(phi,{specie})'] = f'Gauss linearUpwind momentumReconGrad'
 
         return divSchemes
 

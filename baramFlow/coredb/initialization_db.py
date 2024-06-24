@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb import coredb
-
 
 class InitializationDB:
     @classmethod
@@ -12,14 +10,6 @@ class InitializationDB:
     @classmethod
     def getSectionXPath(cls, rname, sectionName):
         return f'{cls.getXPath(rname)}/advanced/sections/section[name="{sectionName}"]'
-
-    @classmethod
-    def getInitialScalarValue(cls, rname, scalarID):
-        try:
-            return coredb.CoreDB().getValue(
-                f'{cls.getXPath(rname)}/initialValues/userDefinedScalars/scalar[scalarID="{scalarID}"]/value')
-        except LookupError:
-            return 0
 
     @classmethod
     def buildSectionUserDefinedScalar(cls, scalarId, value):

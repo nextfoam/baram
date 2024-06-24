@@ -12,6 +12,7 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.filedb import BcFileRole, FileFormatError
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB, VelocitySpecification, VelocityProfile
+from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.project import Project
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from baramFlow.view.widgets.number_input_dialog import PiecewiseLinearDialog
@@ -46,12 +47,11 @@ class VelocityInletDialog(ResizableDialog):
         self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
-        layout = self._ui.dialogContents.layout()
-        rname = BoundaryDB.getBoundaryRegion(bcid)
-        self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
-        self._temperatureWidget = ConditionalWidgetHelper.temperatureWidget(self._xpath, bcid, layout)
-        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(rname, layout)
-        self._scalarsWidget = ConditionalWidgetHelper.userDefinedScalarsWidget(rname, layout)
+        self._turbulenceWidget = None
+        self._temperatureWidget = None
+        self._volumeFractionWidget = None
+        self._scalarsWidget = None
+        self._speciesWidget = None
 
         self._componentSpatialDistributionFile = None
         self._componentSpatialDistributionFileName = None
@@ -60,6 +60,14 @@ class VelocityInletDialog(ResizableDialog):
         self._magnitudeSpatialDistributionFileName = None
         self._magnitudeTemporalDistribution = None
         self._dialog = None
+
+        layout = self._ui.dialogContents.layout()
+        rname = BoundaryDB.getBoundaryRegion(bcid)
+        self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
+        self._temperatureWidget = ConditionalWidgetHelper.temperatureWidget(self._xpath, bcid, layout)
+        self._volumeFractionWidget = ConditionalWidgetHelper.volumeFractionWidget(rname, layout)
+        self._scalarsWidget = ConditionalWidgetHelper.userDefinedScalarsWidget(rname, layout)
+        self._speciesWidget = ConditionalWidgetHelper.speciesWidget(RegionDB.getMaterial(rname), layout)
 
         self._connectSignalsSlots()
         self._load()
@@ -165,6 +173,9 @@ class VelocityInletDialog(ResizableDialog):
         if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
             return
 
+        if not self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
+            return
+
         errorCount = writer.write()
         if errorCount > 0:
             if distributionFileKey:
@@ -214,6 +225,7 @@ class VelocityInletDialog(ResizableDialog):
         self._temperatureWidget.load()
         self._volumeFractionWidget.load(self._xpath + '/volumeFractions')
         self._scalarsWidget.load(self._xpath + '/userDefinedScalars')
+        self._speciesWidget.load(self._xpath + '/species')
 
     def _setupCombo(self, combo, items):
         for value, text in items.items():
