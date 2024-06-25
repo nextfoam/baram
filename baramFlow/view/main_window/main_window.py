@@ -146,6 +146,10 @@ class MainWindow(QMainWindow):
         self._ui.splitter.addWidget(self._dockView)
         self._ui.splitter.setStretchFactor(2, 1)
 
+    @property
+    def dockView(self):
+        return self._dockView
+
     def renderingView(self):
         return self._dockView.renderingView()
 

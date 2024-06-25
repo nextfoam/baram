@@ -33,14 +33,20 @@ class DockView(QWidget):
         self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._chartDock, dockArea)
         self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._monitorDock, dockArea)
 
+    def consoleView(self):
+        return self._consoleDock.widget()
+
     def renderingView(self):
         return self._renderingDock.widget()
 
-    def showChartDock(self):
-        self._chartDock.raise_()
+    def showConsoleDock(self):
+        self._consoleDock.raise_()
 
     def showRenderingDock(self):
         self._renderingDock.raise_()
+
+    def showChartDock(self):
+        self._chartDock.raise_()
 
     def close(self):
         self._dockManager.deleteLater()

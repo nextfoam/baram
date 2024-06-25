@@ -10,6 +10,7 @@ from libbaram import utils
 from libbaram.exception import CanceledException
 from libbaram.run import RunUtility, RunParallelUtility
 
+from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb_reader import CoreDBReader
@@ -190,7 +191,11 @@ class CaseGenerator(QObject):
         if nProcessorFolders > 1:
             self.progress.emit(self.tr('Decomposing Field Data...'))
 
+            console = app.window.dockView.consoleView()
             self._cm = RunUtility('decomposePar', '-allRegions', '-fields', '-latestTime', '-case', caseRoot, cwd=caseRoot)
+            self._cm.output.connect(console.append)
+            self._cm.errorOutput.connect(console.append)
+
             await self._cm.start()
             result = await self._cm.wait()
 
