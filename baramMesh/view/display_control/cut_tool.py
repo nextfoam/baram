@@ -319,7 +319,6 @@ class CutTool(QObject):
                 plane = vtkPlane()
                 plane.SetOrigin(self._origin())
                 plane.SetNormal(self._slicePlane.normalVector())
-                print(self._origin(), self._slicePlane.normalVector())
 
             self._option = (cutType, plane)
             if app.window.geometryManager:
