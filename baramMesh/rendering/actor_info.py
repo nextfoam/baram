@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from PySide6.QtGui import QColor
 from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonDataModel import vtkDataObject, vtkPlane
-from vtkmodules.vtkFiltersCore import vtkClipPolyData, vtkThreshold, vtkPassThrough, vtkPlaneCutter
+from vtkmodules.vtkFiltersCore import vtkClipPolyData, vtkThreshold, vtkPassThrough, vtkCutter
 from vtkmodules.vtkFiltersExtraction import vtkExtractPolyDataGeometry, vtkExtractGeometry
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor, vtkMapper
 from vtkmodules.vtkCommonColor import vtkNamedColors
@@ -197,8 +197,9 @@ class ActorInfo(QObject):
 
         inputFilter = self._cutFilters[0]
         if plane is not None:
-            f = vtkPlaneCutter()
-            f.SetPlane(plane)
+            f = vtkCutter()
+            f.SetCutFunction(plane)
+            f.GenerateTrianglesOff()
             f.SetInputConnection(inputFilter.GetOutputPort())
             self._cutFilters.append(f)
             inputFilter = f

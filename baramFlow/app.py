@@ -14,7 +14,6 @@ from baramFlow.coredb.project import ProjectOpenType
 
 class App(QObject):
     projectCreated = Signal(Path, ProjectOpenType)
-    meshUpdated = Signal()
     restarted = Signal()
 
     def __init__(self):

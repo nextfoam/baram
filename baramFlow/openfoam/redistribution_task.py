@@ -5,6 +5,7 @@ import logging
 
 from PySide6.QtCore import QObject, Signal
 
+from baramFlow.app import app
 from baramFlow.case_manager import BATCH_DIRECTORY_NAME
 from baramFlow.coredb.project import Project
 from libbaram import utils
@@ -91,7 +92,12 @@ class RedistributionTask(QObject):
 
                         args = ('-allRegions', '-fields', '-time', '0:', '-case', caseRoot)
 
+                    console = app.window.dockView.consoleView()
                     cm = RunUtility('decomposePar', *args, cwd=caseRoot)
+                    cm.output.connect(console.append)
+                    cm.errorOutput.connect(console.append)
+
+                    app.window.dockView.showConsoleDock()
                     await cm.start()
                     result = await cm.wait()
                     if result != 0:

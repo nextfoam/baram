@@ -231,6 +231,7 @@ class CutTool(QObject):
     def _typeChanged(self, type_):
         self._clipOption.setVisible(type_ == CutType.CLIP)
         self._sliceOption.setVisible(type_ == CutType.SLICE)
+        self._handleOff()
 
     def _clipHandleToggled(self, normal):
         button = self._clipHandles.button(normal)
@@ -318,7 +319,6 @@ class CutTool(QObject):
                 plane = vtkPlane()
                 plane.SetOrigin(self._origin())
                 plane.SetNormal(self._slicePlane.normalVector())
-                print(self._origin(), self._slicePlane.normalVector())
 
             self._option = (cutType, plane)
             if app.window.geometryManager:

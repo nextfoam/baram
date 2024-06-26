@@ -110,6 +110,9 @@ class ConsoleView(QWidget):
                 stderr.close()
             self.readTask = None
 
+    def append(self, text):
+        self._textView.appendPlainText(text)
+
     @qasync.asyncSlot()
     async def _caseLoaded(self):
         if self.readTask is not None:
