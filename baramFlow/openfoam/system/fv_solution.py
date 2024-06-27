@@ -66,12 +66,13 @@ class FvSolution(DictionaryFile):
             energyOn
             and self._db.getAttribute(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/energy', 'disabled') == 'false')
 
+        solveSpecies = self._boolToYN(
+            ModelsDB.isSpeciesModelOn()
+            and self._db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/species'))
+
         if self._species:
-            solveSpecies = self._boolToYN(
-                self._db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/species'))
             species = '|' + '|'.join([name for _, name in self._species])
         else:
-            solveSpecies = 'no'
             species = ''
 
         self._data = {

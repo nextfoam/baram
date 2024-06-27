@@ -3,11 +3,12 @@
 
 import logging
 
+from baramFlow.coredb.region_db import RegionDB
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.coredb_reader import CoreDBReader
-from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_db import MaterialDB, MaterialType
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.openfoam.file_system import FileSystem
 
@@ -286,6 +287,13 @@ class FvOptions(DictionaryFile):
             self._generateFixedFields(czname, xpath + '/specificDissipationRate', 'omega')
         else:
             logger.debug('Error Model Type')
+
+        if ModelsDB.isSpeciesModelOn():
+            material = RegionDB.getMaterial(self._rname)
+            if MaterialDB.getType(material) == MaterialType.MIXTURE:
+                for mid, specie in self._db.getSpecies(material):
+                    self._generateFixedFields(
+                        czname, f'{xpath}/species/mixture[mid="{material}"]/specie[mid="{mid}"]/value', specie)
 
     def _generateFixedVelocity(self, czname, xpath):
         if self._db.getAttribute(xpath, 'disabled') == 'false':

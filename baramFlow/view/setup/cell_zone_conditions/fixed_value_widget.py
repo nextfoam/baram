@@ -27,9 +27,16 @@ class FixedValueWidget(QWidget):
         self._ui.groupBox.setTitle(title)
         self._ui.label.setText(label)
 
+    def setChecked(self, checked):
+        self._ui.groupBox.setChecked(checked)
+
     def load(self):
-        self._ui.groupBox.setChecked(self._db.getAttribute(self._xpath, 'disabled') == 'false')
-        self._ui.value.setText(self._db.getValue(self._xpath))
+        if self._db.exists(self._xpath):
+            self._ui.groupBox.setChecked(self._db.getAttribute(self._xpath, 'disabled') == 'false')
+            self._ui.value.setText(self._db.getValue(self._xpath))
+        else:
+            self._ui.groupBox.setChecked(False)
+            self._ui.value.setText('0')
 
     def appendToWriter(self, writer):
         if self._ui.groupBox.isChecked():

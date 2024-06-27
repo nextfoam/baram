@@ -1311,7 +1311,7 @@ class _CoreDB(object):
                                          '  <polynomial>0</polynomial>'
                                          '</materialSource>'))
 
-                fixedValuesString += f'<specie><mid>{specie}</mid><value>0</value></specie>'
+                fixedValuesString += f'<specie><mid>{specie}</mid><value disabled="true">0</value></specie>'
                 numericalConditionsString += f'''
                     <specie>
                         <mid>{specie}</mid>
@@ -1327,7 +1327,7 @@ class _CoreDB(object):
 
             for species in fixedValuesSpecies:
                 species.append(etree.fromstring(
-                    f'<mixture disabled="true" xmlns="http://www.baramcfd.org/baram">'
+                    f'<mixture xmlns="http://www.baramcfd.org/baram">'
                     f'  <mid>{mid}</mid>{fixedValuesString}'
                     '</mixture>'))
 
@@ -1348,6 +1348,10 @@ class _CoreDB(object):
                     f'<mixture disabled="true" xmlns="http://www.baramcfd.org/baram">'
                     f'  <mid>{mid}</mid>{fixedValuesString}'
                     '</mixture>'))
+
+        self._configCount += 1
+
+        self._xmlSchema.assertValid(self._xmlTree)
 
     def getBatchParameters(self):
         parameters = {}

@@ -12,7 +12,6 @@ from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB, MaterialType
 from baramFlow.coredb.models_db import TurbulenceModelHelper, ModelsDB
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME, RegionDB
-from baramFlow.view.widgets.species_widget import SpeciesWidget
 from .actuator_disk_widget import ActuatorDiskWidget
 from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
 from .constant_source_widget import ConstantSourceWidget
@@ -62,10 +61,10 @@ class CellZoneConditionDialog(QDialog):
         self._energySourceTerm = None
         self._turbulenceSourceTerms = {}
         self._scalarSourceTerms = {}
-        self._speciesFixedValueWidgets = {}
+        self._specieFixedValueWidgets = {}
 
         self._materialSourceTermsLayout = None
-        self._speciesFixedValueLayout = None
+        self._specieFixedValuesLayout = None
 
         self._addedMaterialSourceTerms = []
 
@@ -126,10 +125,10 @@ class CellZoneConditionDialog(QDialog):
             self._materialSourceTermsLayout = QVBoxLayout()
             layout.addLayout(self._materialSourceTermsLayout)
 
-            self._speciesFixedValueLayout = QVBoxLayout()
-            self._speciesFixedValueLayout.setContentsMargins(0, 0, 0, 0)
+            self._specieFixedValuesLayout = QVBoxLayout()
+            self._specieFixedValuesLayout.setContentsMargins(0, 0, 0, 0)
             widget = QWidget()
-            widget.setLayout(self._speciesFixedValueLayout)
+            widget.setLayout(self._specieFixedValuesLayout)
             self._ui.fixedValues.layout().addWidget(widget)
 
             self._setupSpeciesWidgets(int(RegionDB.getMaterial(self._rname)))
@@ -250,11 +249,10 @@ class CellZoneConditionDialog(QDialog):
             if not widget.appendToWriter(writer):
                 return
 
-        if (ModelsDB.isSpeciesModelOn()
-                and self._material in self._speciesFixedValueWidgets
-                and not self._speciesFixedValueWidgets[self._material].appendToWriter(
-                    writer, f'{self._xpath}/fixedValues/species')):
-            return
+        if ModelsDB.isSpeciesModelOn() and MaterialDB.getType(self._material):
+            for mid, _ in self._db.getSpecies(self._material):
+                if not self._specieFixedValueWidgets[mid].appendToWriter(writer):
+                    return
 
         errorCount = writer.write()
         if errorCount > 0:
@@ -370,7 +368,7 @@ class CellZoneConditionDialog(QDialog):
             widget.hide()
             widget.setChecked(False)
 
-        for mid, widget in self._speciesFixedValueWidgets.items():
+        for mid, widget in self._specieFixedValueWidgets.items():
             widget.hide()
             widget.setChecked(False)
 
@@ -380,6 +378,7 @@ class CellZoneConditionDialog(QDialog):
             self._species = None
             return
 
+        mixture = MaterialDB.getName(self._material)
         species = self._db.getSpecies(self._material)
         self._species = []
 
@@ -395,19 +394,21 @@ class CellZoneConditionDialog(QDialog):
                                                   CellZoneDB.buildMaterialSourceTermElement(mid))
                     self._addedMaterialSourceTerms.append(mid)
 
-                widget = VariableSourceWidget(MaterialDB.getName(mid), xpath)
+                widget = VariableSourceWidget(name, xpath)
                 self._materialSourceTerms[mid] = widget
                 self._materialSourceTermsLayout.addWidget(widget)
                 widget.load()
 
-        if self._material in self._speciesFixedValueWidgets:
-            self._speciesFixedValueWidgets[self._material].show()
-        else:
-            # widget = SpeciesFixedValueWidget(self._czid, self._material, species, CellZoneDB.isRegion(self._name))
-            widget = SpeciesWidget(self._material, species, True)
-            self._speciesFixedValueWidgets[self._material] = widget
-            self._speciesFixedValueLayout.addWidget(widget)
-            widget.load(f'{self._xpath}/fixedValues/species')
+            if mid in self._specieFixedValueWidgets:
+                self._specieFixedValueWidgets[mid].show()
+            else:
+                # widget = SpeciesFixedValueWidget(self._czid, self._material, species, CellZoneDB.isRegion(self._name))
+                widget = FixedValueWidget(
+                    f'{mixture}.{name}', name,
+                    f'{self._xpath}/fixedValues/species/mixture[mid="{self._material}"]/specie[mid="{mid}"]/value')
+                self._specieFixedValueWidgets[mid] = widget
+                self._specieFixedValuesLayout.addWidget(widget)
+                widget.load()
 
     def _zoneTypeChanged(self, id_, checked):
         if checked:
