@@ -70,7 +70,7 @@
       <item>
        <widget class="QGroupBox" name="calculateBackflow">
         <property name="title">
-         <string>Calculate Backflow</string>
+         <string>Specify Backflow Properties</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
