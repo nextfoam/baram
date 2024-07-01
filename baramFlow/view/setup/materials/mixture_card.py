@@ -121,7 +121,7 @@ class MixtureCard(QWidget):
             return
 
         writer = CoreDBWriter()
-        writer.callFunction('removeMaterial', [card.name])
+        writer.callFunction('removeSpecie', [card.mid], card.name)
 
         primarySpecie = self._primarySpecie
         if self._primarySpecie == str(card.mid):

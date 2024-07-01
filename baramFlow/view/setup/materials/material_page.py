@@ -51,19 +51,24 @@ class MaterialPage(ContentPage):
                 self, self.tr("Remove material"), self.tr('Remove material "{}"'.format(card.name))):
             return
 
-        error = None
-        if card.type == MaterialType.NONMIXTURE:
-            error = coredb.CoreDB().removeMaterial(card.name)
-        elif card.type == MaterialType.MIXTURE:
-            error = coredb.CoreDB().removeMixture(card.mid)
+        try:
+            if card.type == MaterialType.NONMIXTURE:
+                coredb.CoreDB().removeMaterial(card.name)
+            elif card.type == MaterialType.MIXTURE:
+                coredb.CoreDB().removeMixture(card.mid)
 
-        if not error:
             self._cardListLayout.removeWidget(card)
             card.deleteLater()
-        elif error == coredb.Error.REFERENCED:
-            await AsyncMessageBox().critical(
-                self, self.tr('Remove Material Failed'),
-                self.tr('"{}" is referenced by other configurations.').format(card.name))
+        except coredb.ValueException as ex:
+            error, _ = ex.args
+            if error == coredb.Error.REFERENCED:
+                await AsyncMessageBox().critical(
+                    self, self.tr('Material Removal Failed'),
+                    self.tr('"{}" or its species are referenced by other configurations.').format(card.name))
+            else:
+                await AsyncMessageBox().critical(
+                    self, self.tr('Material Removal Failed'),
+                    self.tr('Failed to remove {}').format(card.name))
 
     def _connectSignalsSlots(self):
         self._ui.add.clicked.connect(self._add)

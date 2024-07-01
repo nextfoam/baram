@@ -623,8 +623,62 @@ class _CoreDB(object):
         Raises:
             LookupError: material not found in material database
         """
+        mid = self._addMaterial(self.materialDB[name], name, 'specie', mixture)
 
-        return self._addMaterial(self.materialDB[name], name, 'specie', mixture)
+        for element in self._xmlTree.findall(
+                f'regions/region[material="{mixture}"]/cellZones/cellZone/sourceTerms/materials', namespaces=nsmap):
+            element.append(
+                etree.fromstring('<materialSource xmlns="http://www.baramcfd.org/baram" disabled="true">'
+                                 f' <material>{mid}</material>'
+                                 '  <unit>valueForEntireCellZone</unit>'
+                                 '  <specification>constant</specification>'
+                                 '  <constant>0</constant>'
+                                 '  <piecewiseLinear><t>0</t><v>0</v></piecewiseLinear>'
+                                 '  <polynomial>0</polynomial>'
+                                 '</materialSource>'))
+
+        for element in self._xmlTree.findall(
+                f'regions/region/cellZones/cellZone/fixedValues/species/mixture[mid="{mixture}"]', namespaces=nsmap):
+            element.append(etree.fromstring('<specie xmlns="http://www.baramcfd.org/baram">'
+                                            f' <mid>{mid}</mid><value disabled="true">0</value>'
+                                            '</specie>'))
+
+        for element in self._xmlTree.findall(
+                f'regions/region/boundaryConditions/boundaryCondition/species/mixture[mid="{mixture}"]',
+                namespaces=nsmap):
+            element.append(etree.fromstring('<specie xmlns="http://www.baramcfd.org/baram">'
+                                            f' <mid>{mid}</mid><value>0</value>'
+                                            '</specie>'))
+
+        if (element := self._xmlTree.find(
+                f'numericalConditions/species/mixture[mid="{mixture}"]', namespaces=nsmap)) is not None:
+            element.append(etree.fromstring('<specie xmlns="http://www.baramcfd.org/baram">'
+                                            f'  <mid>{mid}</mid>'
+                                            '   <discretizationScheme>firstOrderUpwind</discretizationScheme>'
+                                            '   <underRelaxationFactor>0.3</underRelaxationFactor>'
+                                            '   <underRelaxationFactorFinal>1</underRelaxationFactorFinal>'
+                                            '   <absoluteConvergenceCriteria>0.001</absoluteConvergenceCriteria>'
+                                            '   <relativeConvergenceCriteria>0.05</relativeConvergenceCriteria> '
+                                            '</specie>'))
+
+        for element in self._xmlTree.findall(
+                f'regions/region/initialization/initialValues/species/mixture[mid="{mixture}"]', namespaces=nsmap):
+            element.append(etree.fromstring('<specie xmlns="http://www.baramcfd.org/baram">'
+                                            f' <mid>{mid}</mid><value>0</value>'
+                                            '</specie>'))
+
+        for element in self._xmlTree.findall(
+                f'regions/region/initialization/advanced/sections/section/species/mixture[mid="{mixture}"]',
+                namespaces=nsmap):
+            element.append(etree.fromstring('<specie xmlns="http://www.baramcfd.org/baram">'
+                                            f' <mid>{mid}</mid><value>0</value>'
+                                            '</specie>'))
+
+        self._configCount += 1
+
+        self._xmlSchema.assertValid(self._xmlTree)
+
+        return mid
 
     def _addMaterial(self, mdb: dict, name: str = None, type_: str = 'nonmixture', mixture: int = 0) -> int:
         """Add material to configuration from material database
@@ -738,11 +792,11 @@ class _CoreDB(object):
         # check if the material is referenced by other elements
         mid = material.attrib['mid']
         if self.isMaterialRefereced(mid):
-            return Error.REFERENCED
+            raise ValueException(Error.REFERENCED)
 
         elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
         if len(elements) == 1:  # this is the last material in the list
-            return Error.EMPTY
+            raise ValueException(Error.EMPTY)
 
         parent.remove(material)
 
@@ -760,19 +814,19 @@ class _CoreDB(object):
 
         # check if the material is referenced by other elements
         if self.isMaterialRefereced(mid):
-            return Error.REFERENCED
+            raise ValueException(Error.REFERENCED)
 
         elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
         if len(elements) == 1:  # this is the last material in the list
-            return Error.EMPTY
+            raise ValueException(Error.EMPTY)
 
         toRemove = [material]
         for s, _ in self.getSpecies(mid):
             specie = parent.find(f'material[@mid="{s}"]', namespaces=nsmap)
 
             # check if the specie is referenced by other elements
-            if False:
-                return Error.REFERENCED
+            if self.isSpecieReferenced(s):
+                raise ValueException(Error.REFERENCED)
 
             toRemove.append(specie)
 
@@ -789,26 +843,38 @@ class _CoreDB(object):
         if material is None:
             raise LookupError
 
-        # check if the material is referenced by other elements
-        mid = material.attrib['mid']
-        if self.exists(f'models/userDefinedScalars/scalar[material="{mid}"]'):
-            return Error.REFERENCED
-
-        idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:material/text()', namespaces={'x': ns})
-        if mid in idList:
-            return Error.REFERENCED
-
-        mid = ' ' + mid + ' '
-        idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:secondaryMaterials/text()', namespaces={'x': ns})
-        for ids in idList:
-            if mid in ' ' + ids + ' ':
-                return Error.REFERENCED
-
-        elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
-        if len(elements) == 1:  # this is the last material in the list
-            return Error.EMPTY
+        # check if the specie is referenced by other elements
+        if self.isSpecieReferenced(mid):
+            raise ValueException(Error.REFERENCED)
 
         parent.remove(material)
+
+        for element in self._xmlTree.findall(
+                f'regions/region/cellZones/cellZone/sourceTerms/materials/materialSource[material="{mid}"]',
+                namespaces=nsmap):
+            element.getparent().remove(element)
+
+        for element in self._xmlTree.findall(
+                f'regions/region/cellZones/cellZone/fixedValues/species/mixture/specie/[mid="{mid}"]', namespaces=nsmap):
+            element.getparent().remove(element)
+
+        for element in self._xmlTree.findall(
+                f'regions/region/boundaryConditions/boundaryCondition/species/mixture/specie[mid="{mid}"]',
+                namespaces=nsmap):
+            element.getparent().remove(element)
+
+        if (element := self._xmlTree.find(
+                f'numericalConditions/species/mixture/specie[mid="{mid}"]', namespaces=nsmap)) is not None:
+            element.getparent().remove(element)
+
+        for element in self._xmlTree.findall(
+                f'regions/region/initialization/initialValues/species/mixture/specie[mid="{mid}"]', namespaces=nsmap):
+            element.getparent().remove(element)
+
+        for element in self._xmlTree.findall(
+                f'regions/region/initialization/advanced/sections/section/species/mixture/specie[mid="{mid}"]',
+                namespaces=nsmap):
+            element.getparent().remove(element)
 
         self._configCount += 1
 
@@ -830,6 +896,9 @@ class _CoreDB(object):
                 return True
 
         return False
+
+    def isSpecieReferenced(self, mid):
+        return len(self._xmlTree.findall(f'monitors/*/*/field[field="material"][fieldID="{mid}"]', namespaces=nsmap)) > 0
 
     def getMixturesInRegions(self):
         idList = set(self._xmlTree.xpath(f'.//x:regions/x:region/x:material/text()', namespaces={'x': ns}))
@@ -1267,19 +1336,19 @@ class _CoreDB(object):
         mixturesInRegions = [e.text for e in self._xmlTree.findall(f'regions/region/material', namespaces=nsmap)]
 
         region = self._xmlTree.find(f'regions/region[name="{rname}"]', namespaces=nsmap)
-        fixedValuesSpecies = region.findall('cellZones/cellZone/fixedValues/species', namespaces=nsmap)
         materialSourceTerms = region.findall('cellZones/cellZone/sourceTerms/materials', namespaces=nsmap)
+        fixedValuesSpecies = region.findall('cellZones/cellZone/fixedValues/species', namespaces=nsmap)
         boundarySpecies = region.findall('boundaryConditions/boundaryCondition/species', namespaces=nsmap)
         initialValuesSpecies = region.find('initialization/initialValues/species', namespaces=nsmap)
         initialSectionsSpecies = region.findall('initialization/advanced/sections/section/species', namespaces=nsmap)
 
         numericalCondtionsSpecies = self._xmlTree.find('numericalConditions/species', namespaces=nsmap)
 
-        for species in fixedValuesSpecies:
-            species.clear()
-
         for materials in materialSourceTerms:
             materials.clear()
+
+        for species in fixedValuesSpecies:
+            species.clear()
 
         for species in boundarySpecies:
             species.clear()
@@ -1293,8 +1362,8 @@ class _CoreDB(object):
                 numericalCondtionsSpecies.remove(mixture)
 
         if isMixture:
-            fixedValuesString = ''
             numericalConditionsString = ''
+            fixedValuesString = ''
             boundaryString = ''
             initialValuesString = ''
             initialSectionsString = ''
@@ -1346,7 +1415,7 @@ class _CoreDB(object):
             for species in initialSectionsSpecies:
                 species.append(etree.fromstring(
                     f'<mixture disabled="true" xmlns="http://www.baramcfd.org/baram">'
-                    f'  <mid>{mid}</mid>{fixedValuesString}'
+                    f'  <mid>{mid}</mid>{initialSectionsString}'
                     '</mixture>'))
 
         self._configCount += 1
@@ -1631,7 +1700,6 @@ class _CoreDB(object):
     def _getElement(self, xpath):
         elements = self._xmlTree.findall(xpath, namespaces=nsmap)
         if len(elements) != 1:
-            print('xpath not found', xpath)
             raise LookupError
 
         return elements[0]
