@@ -5,12 +5,11 @@ import qasync
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QDialog
 
-from libbaram.simple_db.simple_db import elementToVector
 from libbaram.simple_db.simple_schema import DBError
 from widgets.async_message_box import AsyncMessageBox
 
 from baramMesh.app import app
-from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType
+from baramMesh.db.configurations_schema import GeometryType
 from baramMesh.view.widgets.multi_selector_dialog import MultiSelectorDialog
 from baramMesh.view.widgets.multi_selector_dialog import SelectorItem
 from .surface_refinement_dialog_ui import Ui_SurfaceRefinementDialog
@@ -101,10 +100,8 @@ class SurfaceRefinementDialog(QDialog):
                 else:
                     surfaces[gId] = self._groupId
 
-            geometryManager = app.window.geometryManager
             for gId, group in surfaces.items():
                 self._db.setValue(f'geometry/{gId}/castellationGroup', group)
-                geometryManager.updateGeometryProperty(gId, 'castellationGroup', group)
 
             super().accept()
         except DBError as error:
@@ -132,13 +129,13 @@ class SurfaceRefinementDialog(QDialog):
 
         self._surfaces = []
         self._availableSurfaces = []
-        for gId, geometry in app.window.geometryManager.geometries().items():
-            if geometry['gType'] == GeometryType.SURFACE.value:
+        for gId, geometry in self._db.getElements('geometry').items():
+            if geometry.value('gType') == GeometryType.SURFACE.value:
                 if app.window.geometryManager.isBoundingHex6(gId):
                     continue
 
-                name = geometry['name']
-                groupId = geometry['castellationGroup']
+                name = geometry.value('name')
+                groupId = geometry.value('castellationGroup')
                 if groupId is None:
                     self._availableSurfaces.append(SelectorItem(name, name, gId))
                 elif groupId == self._groupId:
@@ -151,25 +148,16 @@ class SurfaceRefinementDialog(QDialog):
         self._loadCellSize()
 
     def _loadCellSize(self):
-        boundingHex6 = None
-        gId = app.db.getValue('baseGrid/boundingHex6')
-        if gId in app.window.geometryManager.geometries():
-            boundingHex6 = app.window.geometryManager.geometry(gId)
-            if boundingHex6['gType'] == GeometryType.VOLUME.value and boundingHex6['shape'] == Shape.HEX6.value:
-                for sId in app.window.geometryManager.subSurfaces(gId):
-                    s =  app.window.geometryManager.geometry(sId)
-                    if s['cfdType'] != CFDType.BOUNDARY.value:
-                        boundingHex6 = None
-
-        if boundingHex6 is None:
+        gId, geometry = app.window.geometryManager.getBoundingHex6()
+        if geometry is None:
             x1, x2, y1, y2, z1, z2 = app.window.geometryManager.getBounds().toTuple()
         else:
-            x1, y1, z1 = elementToVector(boundingHex6['point1'])
-            x2, y2, z2 = elementToVector(boundingHex6['point2'])
+            x1, y1, z1 = geometry.vector('point1')
+            x2, y2, z2 = geometry.vector('point2')
 
-        self._xCellSize = (x2 - x1) / float(app.db.getValue('baseGrid/numCellsX'))
-        self._yCellSize = (y2 - y1) / float(app.db.getValue('baseGrid/numCellsY'))
-        self._zCellSize = (z2 - z1) / float(app.db.getValue('baseGrid/numCellsZ'))
+        self._xCellSize = (x2 - x1) / self._db.getFloat('baseGrid/numCellsX')
+        self._yCellSize = (y2 - y1) / self._db.getFloat('baseGrid/numCellsY')
+        self._zCellSize = (z2 - z1) / self._db.getFloat('baseGrid/numCellsZ')
 
         self._updateMinimumLevelCellSize()
         self._updateMaximumLevelCellSize()
@@ -189,11 +177,12 @@ class SurfaceRefinementDialog(QDialog):
         self._dialog.itemsSelected.connect(self._setSurfaces)
         self._dialog.open()
 
-    def _setSurfaces(self, gIds):
-        self._surfaces = gIds
+    def _setSurfaces(self, items):
+        self._surfaces = []
         self._ui.surfaces.clear()
-        for gId in gIds:
-            self._ui.surfaces.addItem(app.window.geometryManager.geometry(gId)['name'])
+        for gId, name in items:
+            self._surfaces.append(gId)
+            self._ui.surfaces.addItem(name)
 
     def _updateCellSize(self, level, cellSize):
         d = 2 ** int(level.text())

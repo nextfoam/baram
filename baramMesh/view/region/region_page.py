@@ -124,7 +124,7 @@ class RegionPage(StepPage):
     def _load(self):
         self._updateBounds()
 
-        regions = app.db.getElements('region', columns=[])
+        regions = app.db.getElements('region')
         for id_ in regions:
             self._add(id_)
 

@@ -110,7 +110,7 @@ class RegionForm(QWidget):
 
     def _accept(self):
         name = self._ui.name.text()
-        if app.db.getElements('region', lambda i, e: e['name'] == name and i != self._id, []):
+        if app.db.getElements('region', lambda i, e: e['name'] == name and i != self._id):
             QMessageBox.information(self, self.tr('Input Error'), self.tr('Region "{0}" already exists.').format(name))
             return
 

@@ -22,6 +22,45 @@ def elementToList(element, schema, keys):
     return [element[field] for field in keys]
 
 
+def _getField(pathData):
+    schema, content, field = pathData
+    return (schema, content) if field is None else (schema[field], content[field])
+
+
+class Element:
+    def __init__(self, element, scheme):
+        self._data = element
+        self._scheme = scheme
+
+    def value(self, field):
+        if isinstance(self._data[field], dict):
+            raise LookupError
+
+        return self._data[field]
+
+    def vector(self, field):
+        if not isinstance(self._data[field], dict):
+            raise LookupError
+
+        return elementToVector(self._data[field])
+
+    def float(self, field):
+        return float(self.value(field))
+
+    def elements(self, field):
+        if not isinstance(self._scheme[field], SchemaList):
+            raise TypeError
+
+        return {key: Element(self._data[field][key], self._scheme[field].elementSchema())
+                for key in self._data[field]}
+
+    def element(self, field):
+        if not isinstance(self._data[field], dict):
+            raise LookupError
+
+        return Element(self._data[field], self._scheme[field])
+
+
 class SimpleDB(SimpleSchema):
     def __init__(self, schema):
         super().__init__(schema)
@@ -48,14 +87,14 @@ class SimpleDB(SimpleSchema):
         subSchema = self._schema
         subDB = self._content
         if path != self._base:
-            schema, db, field = self._get(path)
+            schema, content, field = self._get(path)
 
             if isinstance(schema, SchemaList):
                 subSchema = schema.elementSchema()
             else:
                 subSchema = schema[field]
 
-            subDB = db[field]
+            subDB = content[field]
 
         subData = self._newDB(subSchema)
         subData._content = copy.deepcopy(subDB)
@@ -79,26 +118,26 @@ class SimpleDB(SimpleSchema):
             self._content = data._content
         else:
             path = data._base[len(self._base) + 1:] if self._base else data._base
-            schema, db, field = self._get(path)
-            db[field] = data._content
+            schema, content, field = self._get(path)
+            content[field] = data._content
 
         data._modified = False
         data._editable = False
         self._modified = True
 
     def getValue(self, path):
-        schema, db, field = self._get(path)
-        if isinstance(db[field], dict):
+        schema, content, field = self._get(path)
+        if isinstance(content[field], dict):
             raise LookupError
 
-        return db[field]
+        return content[field]
 
     def getValues(self, path, fields):
-        schema, db, field = self._get(path)
-        if not isinstance(db[field], dict):
+        schema, content, field = self._get(path)
+        if not isinstance(content[field], dict):
             raise LookupError
 
-        return elementToList(db[field], schema[field], fields)
+        return elementToList(content[field], schema[field], fields)
 
     def getFloat(self, path):
         value = self.getValue(path)
@@ -106,27 +145,27 @@ class SimpleDB(SimpleSchema):
         return None if value is None else float(value)
 
     def getVector(self, path):
-        schema, db, field = self._get(path)
-        if not isinstance(db[field], dict):
+        schema, content, field = self._get(path)
+        if not isinstance(content[field], dict):
             raise LookupError
 
-        return elementToList(db[field], schema[field], ['x', 'y', 'z'])
+        return elementToList(content[field], schema[field], ['x', 'y', 'z'])
 
     def getEnum(self, path):
-        schema, db, field = self._get(path)
+        schema, content, field = self._get(path)
         if not isinstance(schema[field], EnumType):
             raise LookupError
 
-        return schema[field].toEnum(db[field])
+        return schema[field].toEnum(content[field])
 
     def setValue(self, path, value, name=None):
         if not self._editable:
             raise LookupError
 
-        schema, db, field = self._get(path)
+        schema, content, field = self._get(path)
         value = schema[field].validate(value, name)
-        if db[field] != value:
-            db[field] = value
+        if content[field] != value:
+            content[field] = value
             self._modified = True
 
             return True
@@ -141,9 +180,7 @@ class SimpleDB(SimpleSchema):
         raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', name)
 
     def newElement(self, path):
-        schema, _, field = self._get(path)
-
-        schema = schema[field]
+        schema, _, = _getField(self._get(path))
         if not isinstance(schema, SchemaList):
             raise TypeError
 
@@ -156,18 +193,17 @@ class SimpleDB(SimpleSchema):
         if not self._editable:
             raise LookupError
 
-        schema, db, field = self._get(path)
+        schema, content = _getField(self._get(path))
 
-        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        key = schema.key(key, db[field])
-        if key in db[field]:
+        key = schema.key(key, content)
+        if key in content:
             raise KeyError
 
         if schema.elementSchema() == newdb._schema:
-            db[field][key] = schema.validateElement(newdb)
+            content[key] = schema.validateElement(newdb)
         else:
             raise TypeError
 
@@ -180,88 +216,72 @@ class SimpleDB(SimpleSchema):
         if not self._editable:
             raise LookupError
 
-        schema, db, field = self._get(path)
+        schema, content = _getField(self._get(path))
 
-        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        key = schema.key(key, db[field])
-        if key in db[field]:
+        key = schema.key(key, content)
+        if key in content:
             raise KeyError
 
         element = self._newDB(schema.elementSchema())
         element.createData()
-        db[field][key] = element._content
+        content[key] = element._content
 
         self._modified = True
 
         return key, element
 
-    def getElement(self, path, key, columns=None):
-        schema, db, field = self._get(path)
+    def getElement(self, path, key=None):
+        schema, content, field = self._get(path)
+        if key:
+            schema, content = _getField((schema, content, field))
+            field = key
 
-        schema = schema[field]
-        if not isinstance(schema, SchemaList):
-            raise TypeError
+            if not field in content:
+                return None
 
-        key = str(key)
-        if key not in db[field]:
-            raise LookupError
-
-        if columns is None:
-            return copy.deepcopy(db[field][key])
-
-        return {k: copy.deepcopy(db[field][key][k]) for k in columns}
-
-    def getElements(self, path: str = None, filter_=None, columns=None):
-        if not path:
-            schema = self._schema
-            db = self._content
+        if isinstance(schema, SchemaList):
+            return Element(content[field], schema.elementSchema())
         else:
-            schema, db, field = self._get(path)
-            schema = schema[field]
-            db = db[field]
+            return Element(content[field], schema[field])
 
+    def getElements(self, path: str = None, filter_=None):
+        schema, content = _getField(self._get(path))
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        if columns is None:
-            return copy.deepcopy(
-                {key: db[key] for key in db if filter_ is None or filter_(key, db[key])})
+        return {key: Element(content[key], schema.elementSchema())
+                for key in content if filter_ is None or filter_(key, content[key])}
 
-        return {
-            key: {k: copy.deepcopy(db[key][k]) for k in columns}
-            for key in db if filter_ is None or filter_(key, db[key])}
+    def findElement(self, path=None, filter_=None):
+        elements = self.getElements(path, filter_)
+        if len(elements) == 1:
+            return list(elements.items())[0]
+
+        return None, None
 
     def getKeys(self, path: str = None, filter_=None):
-        if not path:
-            schema = self._schema
-            db = self._content
-        else:
-            schema, db, field = self._get(path)
-            schema = schema[field]
-            db = db[field]
-
+        schema, content = _getField(self._get(path))
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        return [key for key in db if filter_ is None or filter_(key, db[key])]
+        return [key for key in content if filter_ is None or filter_(key, content[key])]
 
     def removeElement(self, path, key):
         if not self._editable:
             raise LookupError
 
-        schema, db, field = self._get(path)
+        schema, content = _getField(self._get(path))
 
-        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        if key not in db[field]:
+        if key not in content:
             raise KeyError
 
-        del db[field][key]
+        del content[key]
 
         self._modified = True
 
@@ -269,17 +289,16 @@ class SimpleDB(SimpleSchema):
         if not self._editable:
             raise LookupError
 
-        schema, db, field = self._get(path)
+        schema, content = _getField(self._get(path))
 
-        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        if any(key not in db[field] for key in keys):
+        if any(key not in content for key in keys):
             raise KeyError
 
         for key in keys:
-            del db[field][key]
+            del content[key]
 
         self._modified = True
 
@@ -287,14 +306,13 @@ class SimpleDB(SimpleSchema):
         if not self._editable:
             raise LookupError
 
-        schema, db, field = self._get(path)
+        schema, content = _getField(self._get(path))
 
-        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        for key in [e[0] for e in db[field].items() if function(e[0], e[1])]:
-            del db[field][key]
+        for key in [e[0] for e in content.items() if function(e[0], e[1])]:
+            del content[key]
 
         self._modified = True
 
@@ -302,62 +320,47 @@ class SimpleDB(SimpleSchema):
         if not self._editable:
             raise LookupError
 
-        schema, db, field = self._get(path)
+        schema, content, field = self._get(path)
 
         schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        db[field] = {}
+        content[field] = {}
 
         self._modified = True
 
     def updateElements(self, path, field, value, filter_=None, name=None):
-        if not path:
-            schema = self._schema
-            db = self._content
-        else:
-            schema, db, item = self._get(path)
-            schema = schema[item]
-            db = db[item]
-
+        schema, content = _getField(self._get(path))
         if not isinstance(schema, SchemaList):
             raise TypeError
 
         value = schema.elementSchema()[field].validate(value, name)
-        keys = [key for key in db if filter_ is None or filter_(key, db[key])]
+        keys = [key for key in content if filter_ is None or filter_(key, content[key])]
         for key in keys:
-            if db[key][field] != value:
-                db[key][field] = value
+            if content[key][field] != value:
+                content[key][field] = value
                 self._modified = True
 
         return keys
 
     def hasElement(self, path, key):
-        schema, db, field = self._get(path)
+        schema, content = _getField(self._get(path))
 
-        schema = schema[field]
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        return str(key) in db[field]
+        return str(key) in content
 
     def elementCount(self, path=None, filter_=None):
         if filter_ is not None:
             return len(self.getKeys(path, filter_))
 
-        if not path:
-            schema = self._schema
-            db = self._content
-        else:
-            schema, db, field = self._get(path)
-            schema = schema[field]
-            db = db[field]
-
+        schema, content = _getField(self._get(path))
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        return len(db)
+        return len(content)
 
     def getUniqueValue(self, path, field, value):
         return f'{value}{self.getUniqueSeq(path, field, value)}'
@@ -370,20 +373,18 @@ class SimpleDB(SimpleSchema):
             seq = 0
             result = value
 
-        while self.getElements(path, lambda i, e: e[field] == result, []):
+        while self.getElements(path, lambda i, e: e[field] == result):
             seq += 1
             result = f'{value}{seq}'
 
         return str(seq) if seq or start else ''
 
     def keyExists(self, path, key):
-        schema, db, field = self._get(path)
-
-        schema = schema[field]
+        schema, content = _getField(self._get(path))
         if not isinstance(schema, SchemaList):
             raise TypeError
 
-        return key in db[field]
+        return key in content
 
     def toYaml(self):
         return yaml.dump(self._content)
@@ -392,20 +393,23 @@ class SimpleDB(SimpleSchema):
         self._content = self.validateData(yaml.full_load(data), fillWithDefault=fillWithDefault)
 
     def _get(self, path):
+        if path is None:
+            return self._schema, self._content, None
+
         fields = path.split('/')
         schema = self._schema
-        data = self._content
+        content = self._content
 
         depth = len(fields) - 1
         for i in range(depth):
             if isinstance(schema, SchemaList):
                 schema = schema.elementSchema()
-                data = data[fields[i]]
+                content = content[fields[i]]
             else:
                 schema = schema[fields[i]]
-                data = data[fields[i]]
+                content = content[fields[i]]
 
-        return schema, data, fields[depth]
+        return schema, content, fields[depth]
 
     def _newDB(self, schema, editable=False):
         db = SimpleDB(schema)

@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QTreeWidgetItem, QHeaderView
 from PySide6.QtCore import Signal, QObject, QCoreApplication
 from PySide6.QtGui import QIcon
 
+from baramMesh.app import app
 from baramMesh.db.configurations_schema import CFDType, GeometryType
 
 VOLUME_ICON_FILE = ':/icons/prism-outline.svg'
@@ -37,19 +38,22 @@ class GeometryItem(QTreeWidgetItem):
     def gId(self):
         return str(self.type())
 
+    def geometry(self):
+        return self._geometry
+
     def isVolume(self):
-        return self._geometry['gType'] == GeometryType.VOLUME.value
+        return self._geometry.value('gType') == GeometryType.VOLUME.value
 
     def isSurface(self):
-        return self._geometry['gType'] == GeometryType.SURFACE.value
+        return self._geometry.value('gType') == GeometryType.SURFACE.value
 
     def setGeometry(self, geometry):
-        if geometry['cfdType'] == CFDType.INTERFACE.value and geometry['interRegion']:
+        if geometry.value('cfdType') == CFDType.INTERFACE.value and geometry.value('interRegion'):
             cfdType = QCoreApplication.translate('GeometryPage', 'Interface(R)')
         else:
-            cfdType = cfdTypeToText(geometry['cfdType'])
+            cfdType = cfdTypeToText(geometry.value('cfdType'))
 
-        self.setText(Column.NAME_COLUMN, geometry['name'])
+        self.setText(Column.NAME_COLUMN, geometry.value('name'))
         self.setText(Column.TYPE_COLUMN, cfdType)
 
         self._geometry = geometry
@@ -77,24 +81,29 @@ class GeometryList(QObject):
 
         self._connectSignalsSlots()
 
-    def setGeometries(self, geometries):
+    def load(self):
         self._tree.clear()
         self._items = {}
 
+        geometries = app.db.getElements('geometry')
         for gId, geometry in geometries.items():
-            self.add(gId, geometry)
+            if gId not in self._items:
+                volume = geometry.value('volume')
+                if volume and volume not in self._items:
+                    self.add(volume, geometries[volume])
+                self.add(gId, geometry)
 
     def add(self, gId, geometry):
         item = GeometryItem(gId, geometry)
 
-        if geometry['volume']:
-            self._items[geometry['volume']].addChild(item)
+        if geometry.value('volume'):
+            self._items[geometry.value('volume')].addChild(item)
         else:
             self._tree.addTopLevelItem(item)
             item.setExpanded(True)
 
         item.setIcon(Column.NAME_COLUMN,
-                     self.volumeIcon if geometry['gType'] == GeometryType.VOLUME.value else self.surfaceIcon)
+                     self.volumeIcon if geometry.value('gType') == GeometryType.VOLUME.value else self.surfaceIcon)
         self._tree.scrollToBottom()
 
         self._items[gId] = item
@@ -122,6 +131,9 @@ class GeometryList(QObject):
     def selectedIDs(self):
         return [str(item.gId()) for item in self._tree.selectedItems()]
 
+    def selectedItems(self):
+        return self._tree.selectedItems()
+
     def setSelectedItems(self, ids):
         self.clearSelection()
 
@@ -131,8 +143,7 @@ class GeometryList(QObject):
 
     def childSurfaces(self, gId):
         item = self._items[gId]
-        for i in range(item.childCount()):
-            yield str(item.child(i).type())
+        return {str(item.child(i).type()): item.child(i).geometry() for i in range(item.childCount())}
 
     def clearSelection(self):
         self._tree.clearSelection()

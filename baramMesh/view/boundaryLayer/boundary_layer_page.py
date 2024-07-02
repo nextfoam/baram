@@ -90,32 +90,32 @@ class BoundaryLayerPage(StepPage):
         self._ui.boundaryLayerConfigurations.clear()
 
         groups = set()
-        for gId, geometry in app.window.geometryManager.geometries().items():
-            groups.add(geometry['layerGroup'])
-            groups.add(geometry['slaveLayerGroup'])
+        for gId, geometry in app.db.getElements('geometry').items():
+            groups.add(geometry.value('layerGroup'))
+            groups.add(geometry.value('slaveLayerGroup'))
         if None in groups:
             groups.remove(None)
 
         for groupId, element in self._db.getElements('addLayers/layers').items():
             if groupId in groups:
-                self._addConfigurationItem(groupId, element['groupName'], element['nSurfaceLayers'])
+                self._addConfigurationItem(groupId, element.value('groupName'), element.value('nSurfaceLayers'))
             else:
                 self._db.removeElement('addLayers/layers', groupId)
 
-        addLayer = app.db.checkout('addLayers')
+        addLayer = app.db.getElement('addLayers')
 
-        self._ui.nGrow.setText(addLayer.getValue('nGrow'))
-        self._ui.featureAngleThreshold.setText(addLayer.getValue('featureAngle'))
-        self._ui.maxFaceThicknessRatio.setText(addLayer.getValue('maxFaceThicknessRatio'))
-        self._ui.nSmoothSurfaceNormals.setText(addLayer.getValue('nSmoothSurfaceNormals'))
-        self._ui.nSmoothThickness.setText(addLayer.getValue('nSmoothThickness'))
-        self._ui.minMedialAxisAngle.setText(addLayer.getValue('minMedialAxisAngle'))
-        self._ui.maxThicknessToMedialRatio.setText(addLayer.getValue('maxThicknessToMedialRatio'))
-        self._ui.nSmoothNormals.setText(addLayer.getValue('nSmoothNormals'))
-        self._ui.nRelaxIter.setText(addLayer.getValue('nRelaxIter'))
-        self._ui.nBufferCellsNoExtrude.setText(addLayer.getValue('nBufferCellsNoExtrude'))
-        self._ui.nLayerIter.setText(addLayer.getValue('nLayerIter'))
-        self._ui.nRelaxedIter.setText(addLayer.getValue('nRelaxedIter'))
+        self._ui.nGrow.setText(addLayer.value('nGrow'))
+        self._ui.featureAngleThreshold.setText(addLayer.value('featureAngle'))
+        self._ui.maxFaceThicknessRatio.setText(addLayer.value('maxFaceThicknessRatio'))
+        self._ui.nSmoothSurfaceNormals.setText(addLayer.value('nSmoothSurfaceNormals'))
+        self._ui.nSmoothThickness.setText(addLayer.value('nSmoothThickness'))
+        self._ui.minMedialAxisAngle.setText(addLayer.value('minMedialAxisAngle'))
+        self._ui.maxThicknessToMedialRatio.setText(addLayer.value('maxThicknessToMedialRatio'))
+        self._ui.nSmoothNormals.setText(addLayer.value('nSmoothNormals'))
+        self._ui.nRelaxIter.setText(addLayer.value('nRelaxIter'))
+        self._ui.nBufferCellsNoExtrude.setText(addLayer.value('nBufferCellsNoExtrude'))
+        self._ui.nLayerIter.setText(addLayer.value('nLayerIter'))
+        self._ui.nRelaxedIter.setText(addLayer.value('nRelaxedIter'))
 
         self._loaded = True
         self._updateControlButtons()
@@ -214,14 +214,8 @@ class BoundaryLayerPage(StepPage):
     def _removeLayerConfiguration(self, groupId):
         self._db.removeElement('addLayers/layers', groupId)
 
-        gIds = self._db.updateElements('geometry', 'layerGroup', None, lambda i, e: e['layerGroup'] == groupId)
-        for gId in gIds:
-            app.window.geometryManager.updateGeometryProperty(gId, 'layerGroup', None)
-
-        gIds = self._db.updateElements('geometry', 'slaveLayerGroup', None,
-                                       lambda i, e: e['slaveLayerGroup'] == groupId)
-        for gId in gIds:
-            app.window.geometryManager.updateGeometryProperty(gId, 'slaveLayerGroup', None)
+        self._db.updateElements('geometry', 'layerGroup', None, lambda i, e: e['layerGroup'] == groupId)
+        self._db.updateElements('geometry', 'slaveLayerGroup', None, lambda i, e: e['slaveLayerGroup'] == groupId)
 
         self._ui.boundaryLayerConfigurations.removeItem(groupId)
 

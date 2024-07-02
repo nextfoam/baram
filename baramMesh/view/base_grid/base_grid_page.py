@@ -5,7 +5,6 @@ import qasync
 from PySide6.QtWidgets import QMessageBox
 
 from libbaram.run import RunUtility, RunParallelUtility
-from libbaram.simple_db.simple_db import elementToVector
 from libbaram.simple_db.simple_schema import DBError
 from widgets.progress_dialog import ProgressDialog
 
@@ -117,8 +116,8 @@ class BaseGridPage(StepPage):
                 QMessageBox.information(self._widget, self.tr('Error'), self.tr('Cannot find Hex6 of the name ') + name )
                 return
             self._boundingHex6 = gId
-            x1, y1, z1 = elementToVector(geometry['point1'])
-            x2, y2, z2 = elementToVector(geometry['point2'])
+            x1, y1, z1 = geometry.vector('point1')
+            x2, y2, z2 = geometry.vector('point2')
         else:
             self._boundingHex6 = None
             x1, x2, y1, y2, z1, z2 = app.window.geometryManager.getBounds().toTuple()
@@ -136,8 +135,8 @@ class BaseGridPage(StepPage):
 
         self._boundingHex6 = gId
 
-        x1, y1, z1 = elementToVector(geometry['point1'])
-        x2, y2, z2 = elementToVector(geometry['point2'])
+        x1, y1, z1 = geometry.vector('point1')
+        x2, y2, z2 = geometry.vector('point2')
 
         self._updateBoundingBox(x1, x2, y1, y2, z1, z2)
 
@@ -223,9 +222,9 @@ class BaseGridPage(StepPage):
 
         if geometry := self._getHex6ById(self._boundingHex6):
             self._ui.useHex6.setChecked(True)
-            self._ui.boundingHex6.setCurrentText(geometry['name'])
-            x1, y1, z1 = elementToVector(geometry['point1'])
-            x2, y2, z2 = elementToVector(geometry['point2'])
+            self._ui.boundingHex6.setCurrentText(geometry.value('name'))
+            x1, y1, z1 = geometry.vector('point1')
+            x2, y2, z2 = geometry.vector('point2')
         else:
             self._boundingHex6 = None
             self._ui.useHex6.setChecked(False)
@@ -249,39 +248,40 @@ class BaseGridPage(StepPage):
         app.window.meshManager.unload()
 
     def _getHex6ByName(self, name):
-        for gId, geometry in app.window.geometryManager.geometries().items():
-            if geometry['name'] == name and geometry['gType'] == GeometryType.VOLUME.value and geometry['shape'] == Shape.HEX6.value:
-                for sId in app.window.geometryManager.subSurfaces(gId):
-                    s =  app.window.geometryManager.geometry(sId)
-                    if s['cfdType'] != CFDType.BOUNDARY.value:
-                        break
-                else:
-                    return gId, geometry
-        else:
-            return None, None
+        gId, geometry = app.db.findElement('geometry', lambda i, e: e['name'] == name)
+        if self._isHex6(gId, geometry):
+            return gId, geometry
+
+        return None
 
     def _getHex6ById(self, gId):
-        if gId in app.window.geometryManager.geometries():
-            geometry = app.window.geometryManager.geometry(gId)
-            if geometry['gType'] == GeometryType.VOLUME.value and geometry['shape'] == Shape.HEX6.value:
-                for sId in app.window.geometryManager.subSurfaces(gId):
-                    s =  app.window.geometryManager.geometry(sId)
-                    if s['cfdType'] != CFDType.BOUNDARY.value:
-                        break
-                else:
-                    return geometry
+        if gId is None:
+            return None
+
+        geometry = app.db.getElement('geometry', gId)
+        if self._isHex6(gId, geometry):
+            return geometry
 
         return None
 
     def _getHex6List(self):
         names = []
-        for gId, geometry in app.window.geometryManager.geometries().items():
-            if geometry['gType'] == GeometryType.VOLUME.value and geometry['shape'] == Shape.HEX6.value:
-                for sId in app.window.geometryManager.subSurfaces(gId):
-                    s =  app.window.geometryManager.geometry(sId)
-                    if s['cfdType'] != CFDType.BOUNDARY.value:
-                        break
-                else:
-                    names.append(geometry['name'])
+        for gId, geometry in app.db.getElements(
+                'geometry',
+                lambda i, e: e['gType'] == GeometryType.VOLUME.value and e['shape'] == Shape.HEX6.value).items():
+            if self._isHex6(gId, geometry):
+                names.append(geometry.value('name'))
 
         return sorted(names)
+
+    def _isHex6(self, gId, geometry):
+        if geometry is None:
+            return False
+
+        if geometry.value('gType') != GeometryType.VOLUME.value and geometry.value('shape') != Shape.HEX6.value:
+            return False
+
+        if app.db.getKeys('geometry', lambda i, e: e['volume'] == gId and e['cfdType'] != CFDType.BOUNDARY.value):
+            return False
+
+        return True
