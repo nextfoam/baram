@@ -196,7 +196,7 @@ class ActorInfo(QObject):
             self._cutFilters.pop()
 
         inputFilter = self._cutFilters[0]
-        if plane is not None:
+        if plane is not None and self._properties.cutEnabled:
             f = vtkCutter()
             f.SetCutFunction(plane)
             f.GenerateTrianglesOff()
