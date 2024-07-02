@@ -34,7 +34,6 @@ class Specie(BoundaryCondition):
 
             value = self._db.getValue(
                 f'{xpath}/species/mixture[mid="{self._region.mid}"]/specie[mid="{self._mid}"]/value')
-            print(value)
 
             field[name] = {
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(value)),
@@ -46,11 +45,11 @@ class Specie(BoundaryCondition):
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructZeroGradient()),
                 BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
                 BoundaryType.FREE_STREAM.value:         (lambda: self._constructFreeStream(value)),
-                BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: None),
-                BoundaryType.SUBSONIC_INLET.value:      (lambda: None),
-                BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: None),
-                BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: None),
-                BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: None),
+                BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructInletOutlet(value)),
+                BoundaryType.SUBSONIC_INLET.value:      (lambda: self._constructFixedValue(value)),
+                BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructZeroGradient()),
+                BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(value)),
+                BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
                 BoundaryType.WALL.value:                (lambda: self._constructZeroGradient()),
                 BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructZeroGradient()),
                 BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
