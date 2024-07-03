@@ -37,17 +37,10 @@ class GeometryManager(ActorManager):
     def __init__(self):
         super().__init__()
 
-        # self._geometries = {}
         self._syncingMode = None
 
         self._displayController.selectedActorsChanged.connect(self._selectedActorsChanged)
         self._displayController.selectionApplied.connect(self._clearSyncingToDisplay)
-    #
-    # def geometries(self):
-    #     return self._geometries
-    #
-    # def geometry(self, gId):
-    #     return self._geometries[gId]
 
     def subSurfaces(self, gId):
         return app.db.getElements('geometry', lambda i, e: e['volume'] == gId)
@@ -71,9 +64,6 @@ class GeometryManager(ActorManager):
         self.applyToDisplay()
 
     def updateVolume(self, geometry, surfaces=None):
-        # geometry['gId'] = gId
-        # self._geometries[gId] = geometry
-
         if surfaces and geometry.value('shape') != Shape.TRI_SURFACE_MESH.value:
             for gId, surface in surfaces.items():
                 self.update(gId, self._surfaceToPolyData(surface, geometry))
@@ -81,20 +71,13 @@ class GeometryManager(ActorManager):
         self.applyToDisplay()
 
     def updateSurface(self, gId, surface):
-        # surface['gId'] = gId
-        # self._geometries[gId] = surface
-        self._updateActorName(gId, surface['name'])
+        self._updateActorName(gId, surface.value('name'))
 
     def removeGeometry(self, gIds):
         for gId in gIds:
-            # geometry = self._geometries.pop(gId)
-            # if geometry['gType'] == GeometryType.SURFACE.value:
             self.remove(gId)
 
         self.applyToDisplay()
-    #
-    # def updateGeometryProperty(self, gId, name, value):
-    #     self._geometries[gId][name] = value
 
     def show(self):
         self._show()
@@ -128,11 +111,7 @@ class GeometryManager(ActorManager):
         boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
         if boundingHex6 is None:
             return None, None
-        #
-        # if boundingHex6 not in app.window.geometryManager.geometries():
-        #     return None, None
 
-        # geometry = app.window.geometryManager.geometry(boundingHex6)
         geometry = app.db.getElement('geometry', boundingHex6)
         if (geometry is None
                 or geometry.value('gType') != GeometryType.VOLUME.value
@@ -147,7 +126,6 @@ class GeometryManager(ActorManager):
 
         boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
 
-        # geometry = self._geometries[gId]
         geometry = app.db.getElement('geometry', gId)
         if geometry.value('gType') == GeometryType.VOLUME.value:
             if gId == boundingHex6:
@@ -161,9 +139,6 @@ class GeometryManager(ActorManager):
     def _add(self, gId, geometry, volume):
         if geometry.value('gType') == GeometryType.SURFACE.value:
             self.add(GeometryActor(self._surfaceToPolyData(geometry, volume), gId, geometry.value('name')))
-        #
-        # geometry['gId'] = gId
-        # self._geometries[gId] = geometry
 
     def _surfaceToPolyData(self, surface, volume):
         shape = surface.value('shape')

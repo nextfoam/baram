@@ -265,6 +265,7 @@ class GeometryPage(StepPage):
     def _updateSurfaces(self):
         gIds = self._surfaceDialog.gIds()
         for gId, surface in app.db.getElements('geometry', lambda i, e: i in gIds).items():
+            self._geometryManager.updateSurface(gId, surface)
             self._list.update(gId, surface)
 
     def _geometryCreated(self, gId):
