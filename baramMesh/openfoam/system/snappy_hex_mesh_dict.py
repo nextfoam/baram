@@ -92,7 +92,7 @@ class SnappyHexMeshDict(DictionaryFile):
 
         for interface in app.db.getElements(
                 'geometry', lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and not e['interRegion']).values():
-            self._data['castellatedMeshControls']['refinementSurfaces'][interface['name']]['faceType'] = (
+            self._data['castellatedMeshControls']['refinementSurfaces'][interface.value('name')]['faceType'] = (
                 'boundary' if interface.value('nonConformal') else 'baffle')
 
         return self
@@ -275,12 +275,12 @@ class SnappyHexMeshDict(DictionaryFile):
                 gapRefinement = refinement.element('gapRefinement')
                 gapMode = gapRefinement.value('direction')
                 if gapMode != GapRefinementMode.NONE.value:
-                    data[volume['name']]['gapLevel'] = [
+                    data[volume.value('name')]['gapLevel'] = [
                         gapRefinement.value('minCellLayers'),
                         gapRefinement.value('detectionStartLevel'),
                         gapRefinement.value('maxRefinementLevel')]
-                    data[volume['name']]['gapMode'] = gapMode
-                    data[volume['name']]['gapSelf'] = 'true' if gapRefinement.value('gapSelf') else 'false'
+                    data[volume.value('name')]['gapMode'] = gapMode
+                    data[volume.value('name')]['gapSelf'] = 'true' if gapRefinement.value('gapSelf') else 'false'
 
         return data
 
