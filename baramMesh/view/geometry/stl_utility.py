@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 from pathlib import Path
 
 from vtkmodules.vtkCommonCore import vtkIdTypeArray, vtkIdList, vtkIntArray
@@ -9,6 +10,7 @@ from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkIdFilter, vtkFeature
     vtkPolyDataEdgeConnectivityFilter, vtkThreshold, vtkCleanPolyData
 from vtkmodules.vtkFiltersGeometry import vtkGeometryFilter
 from vtkmodules.vtkFiltersModeling import vtkSelectEnclosedPoints
+from vtkmodules.vtkFiltersVerdict import vtkCellSizeFilter
 from vtkmodules.vtkIOGeometry import vtkSTLReader
 
 
@@ -212,7 +214,31 @@ class StlImporter:
         reader.ScalarTagsOn()
         reader.Update()
 
-        stl: vtkPolyData = reader.GetOutput()
+        cleanFilter = vtkCleanPolyData()
+        cleanFilter.SetInputData(reader.GetOutput())
+        cleanFilter.Update()
+
+        cellSizeFilter = vtkCellSizeFilter()
+        cellSizeFilter.SetInputData(cleanFilter.GetOutput())
+        cellSizeFilter.Update()
+
+        threshold = vtkThreshold()
+        threshold.AllScalarsOff()
+        threshold.SetThresholdFunction(vtkThreshold.THRESHOLD_UPPER)
+
+        threshold.SetUpperThreshold(sys.float_info.min)  # To get only the cells bigger than zero
+        threshold.SetInputArrayToProcess(0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, 'Area')
+
+        threshold.SetInputData(cellSizeFilter.GetOutput())
+        threshold.Update()
+
+        # Output of vtkThreshold filter is Unstructured Grid
+        # Convert it to vtkPolyData by vtkGeometryFilter
+        geometry = vtkGeometryFilter()
+        geometry.SetInputData(threshold.GetOutput())
+        geometry.Update()
+
+        stl: vtkPolyData = geometry.GetOutput()
 
         numCells = stl.GetNumberOfCells()
 
