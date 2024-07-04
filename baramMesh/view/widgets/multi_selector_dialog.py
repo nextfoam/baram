@@ -52,7 +52,8 @@ class MultiSelectorDialog(QDialog):
         self._connectSignalsSlots()
 
     def selectedItems(self):
-        return [self._ui.list.item(self._ui.selectedList.item(i).data(Qt.UserRole)).data(ListDataRole.USER_DATA.value)
+        return [(self._ui.list.item(self._ui.selectedList.item(i).data(Qt.UserRole)).data(ListDataRole.USER_DATA.value),
+                 self._ui.selectedList.item(i).text())
                 for i in range(self._ui.selectedList.count())]
 
     def accept(self):

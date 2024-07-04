@@ -82,15 +82,12 @@ class BoundarySettingDialog(QDialog):
                 else:
                     boundaries[gId] = self._groupId
 
-            geometryManager = app.window.geometryManager
             for key, group in boundaries.items():
                 gId, isSlave = self._extractSelectorKey(key)
                 if isSlave:
                     self._db.setValue(f'geometry/{gId}/slaveLayerGroup', group)
-                    geometryManager.updateGeometryProperty(gId, 'slaveLayerGroup', group)
                 else:
                     self._db.setValue(f'geometry/{gId}/layerGroup', group)
-                    geometryManager.updateGeometryProperty(gId, 'layerGroup', group)
 
             super().accept()
         except DBError as error:
@@ -125,15 +122,15 @@ class BoundarySettingDialog(QDialog):
         self._availableBoundaries = []
 
         meshBoundaries = app.window.meshManager.boundaries()
-        for gId, geometry in app.window.geometryManager.geometries().items():
-            if geometry['name'] in meshBoundaries:
-                cfdType = geometry['cfdType']
+        for gId, geometry in self._db.getElements('geometry').items():
+            if geometry.value('name') in meshBoundaries:
+                cfdType = geometry.value('cfdType')
                 if cfdType == CFDType.BOUNDARY.value or cfdType == CFDType.INTERFACE.value:
                     if app.window.geometryManager.isBoundingHex6(gId):
                         continue
 
-                    name = geometry['name']
-                    groupId = geometry['layerGroup']
+                    name = geometry.value('name')
+                    groupId = geometry.value('layerGroup')
                     if groupId is None:
                         addAvailableBoundary(name, gId)
                     elif groupId == self._groupId:
@@ -143,7 +140,7 @@ class BoundarySettingDialog(QDialog):
                     if cfdType == CFDType.INTERFACE.value:
                         name = f'{name}_slave'
                         sId = f'{gId}s'
-                        groupId = geometry['slaveLayerGroup']
+                        groupId = geometry.value('slaveLayerGroup')
                         if groupId is None:
                             addAvailableBoundary(name, sId)
                         elif groupId == self._groupId:
@@ -159,15 +156,16 @@ class BoundarySettingDialog(QDialog):
             self._dialog.itemsSelected.connect(self._setBoundaries)
         self._dialog.open()
 
-    def _setBoundaries(self, keys):
-        self._boundaries = keys
+    def _setBoundaries(self, items):
+        self._boundaries = []
         self._ui.boundaries.clear()
-        for key in keys:
+        for key, _ in items:
+            self._boundaries.append(key)
             gId, isSlave = self._extractSelectorKey(key)
             if isSlave:
-                self._ui.boundaries.addItem(f"{app.window.geometryManager.geometry(gId)['name']}_slave")
+                self._ui.boundaries.addItem(f"{self._db.getElement('geometry', gId).value('name')}_slave")
             else:
-                self._ui.boundaries.addItem(app.window.geometryManager.geometry(gId)['name'])
+                self._ui.boundaries.addItem(self._db.getElement('geometry', gId).value('name'))
 
     def _extractSelectorKey(self, key):
         if key[-1:] == 's':

@@ -98,7 +98,7 @@ class ExportPage(StepPage):
                     await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME)
 
             topoSetDict = TopoSetDict().build(TopoSetDict.Mode.CREATE_CELL_ZONES)
-            regions = app.db.getElements('region', None, ['name'])
+            regions = app.db.getElements('region')
             if topoSetDict.isBuilt():
                 progressDialog.setLabelText(self.tr('Processing Cell Zones'))
                 if len(regions) == 1:
@@ -114,7 +114,7 @@ class ExportPage(StepPage):
 
                 else:
                     for region in regions.values():
-                        rname = region['name']
+                        rname = region.value('name')
                         topoSetDict.setRegion(rname).write()
 
                         cm = RunParallelUtility('topoSet', '-region', rname, cwd=fileSystem.caseRoot(), parallel=parallel)
@@ -147,7 +147,7 @@ class ExportPage(StepPage):
             else:
                 if len(regions) > 1:
                     for region in regions.values():
-                        shutil.move(self._outputPath() / region['name'], baramSystem.constantPath())
+                        shutil.move(self._outputPath() / region.value('name'), baramSystem.constantPath())
                 else:
                     shutil.move(self._outputPath() / Directory.POLY_MESH_DIRECTORY_NAME, baramSystem.polyMeshPath())
 

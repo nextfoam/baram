@@ -63,7 +63,7 @@ class SurfaceDialog(QDialog):
                         self, self.tr('Input Error'), self.tr('"{0}" is an invalid geometry name.').format(name))
                     return
 
-                if app.db.getElements('geometry', lambda i, e: e['name'] == name and i != self._gIds[0], ['name']):
+                if app.db.getElements('geometry', lambda i, e: e['name'] == name and i != self._gIds[0]):
                     await AsyncMessageBox().information(
                         self, self.tr('Input Error'), self.tr('geometry {0} already exists.').format(name))
                     return
@@ -96,29 +96,30 @@ class SurfaceDialog(QDialog):
         self._ui.cancel.clicked.connect(self.close)
 
     def _load(self):
-        surfaces = app.db.getElements('geometry',
-                                      lambda i, e: i in self._gIds, ['name', 'cfdType', 'nonConformal', 'interRegion'])
+        surfaces = app.db.getElements('geometry', lambda i, e: i in self._gIds)
 
         first = surfaces[self._gIds[0]]
         if len(surfaces) > 1:
             self._ui.nameSetting.hide()
         else:
-            self._ui.name.setText(first['name'])
+            self._ui.name.setText(first.value('name'))
             self._ui.nameSetting.show()
 
-        cfdType = first['cfdType']
+        cfdType = first.value('cfdType')
         nonConformal = None
         interRegion = None
         self._typeRadios.setObjectMap(self._cfdTypes, cfdType)
         if cfdType == CFDType.INTERFACE.value:
-            nonConformal = first['nonConformal']
-            interRegion = first['interRegion']
+            nonConformal = first.value('nonConformal')
+            interRegion = first.value('interRegion')
             self._ui.nonConformal.setChecked(nonConformal)
             self._ui.interRegion.setChecked(interRegion)
 
         for gId, s in surfaces.items():
-            if cfdType != s['cfdType'] or cfdType == CFDType.INTERFACE.value:
-                if cfdType != s['cfdType'] or nonConformal != s['nonConformal'] or interRegion != s['interRegion']:
+            if cfdType != s.value('cfdType') or cfdType == CFDType.INTERFACE.value:
+                if (cfdType != s.value('cfdType')
+                        or nonConformal != s.value('nonConformal')
+                        or interRegion != s.value('interRegion')):
                     self._typeRadios.setValue(CFDType.BOUNDARY.value)
                     break
 

@@ -41,7 +41,7 @@ class SnappyHexMeshDict(DictionaryFile):
                 'resolveFeatureAngle': app.db.getValue('castellation/resolveFeatureAngle'),
                 'refinementRegions': self._constructRefinementRegions(),
                 'allowFreeStandingZoneFaces': app.db.getValue('castellation/allowFreeStandingZoneFaces'),
-                'locationInMesh': elementToVector(list(app.db.getElements('region').values())[0]['point']),
+                'locationInMesh': list(app.db.getElements('region').values())[0].vector('point'),
                 # 'faceZoneControls': self._constructFaceZoneControls()
             },
             'snapControls': {
@@ -91,9 +91,9 @@ class SnappyHexMeshDict(DictionaryFile):
             return self
 
         for interface in app.db.getElements(
-                'geometry',
-                lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and not e['interRegion'],['name', 'nonConformal']).values():
-            self._data['castellatedMeshControls']['refinementSurfaces'][interface['name']]['faceType'] = 'boundary' if interface['nonConformal'] else 'baffle'
+                'geometry', lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and not e['interRegion']).values():
+            self._data['castellatedMeshControls']['refinementSurfaces'][interface.value('name')]['faceType'] = (
+                'boundary' if interface.value('nonConformal') else 'baffle')
 
         return self
 
@@ -101,79 +101,81 @@ class SnappyHexMeshDict(DictionaryFile):
         data = {}
         geometries = app.db.getElements('geometry')
         for gId, geometry in geometries.items():
-            volume = geometries[geometry['volume']] if geometry['volume'] else geometry
-            if geometry['cfdType'] != CFDType.NONE.value or geometry['castellationGroup'] or volume['cfdType'] != CFDType.NONE.value:
-                shape = geometry['shape']
+            volume = geometries[geometry.value('volume')] if geometry.value('volume') else geometry
+            if (geometry.value('cfdType') != CFDType.NONE.value
+                    or geometry.value('castellationGroup')
+                    or volume.value('cfdType') != CFDType.NONE.value):
+                shape = geometry.value('shape')
 
                 if shape == Shape.TRI_SURFACE_MESH.value:
-                    data[geometry['name'] + '.stl'] = {
+                    data[geometry.value('name') + '.stl'] = {
                         'type': 'triSurfaceMesh',
-                        'name': geometry['name']
+                        'name': geometry.value('name')
                     }
                 elif shape == Shape.HEX.value:
-                    data[geometry['name']] = {
+                    data[geometry.value('name')] = {
                         'type': 'searchableBox',
-                        'min': elementToVector(volume['point1']),
-                        'max': elementToVector(volume['point2'])
+                        'min': volume.vector('point1'),
+                        'max': volume.vector('point2')
                     }
                 elif shape == Shape.HEX6.value:
                     if not app.window.geometryManager.isBoundingHex6(gId):
-                        data[geometry['name']] = {
+                        data[geometry.value('name')] = {
                             'type': 'searchableBox',
-                            'min': elementToVector(volume['point1']),
-                            'max': elementToVector(volume['point2'])
+                            'min': volume.vector('point1'),
+                            'max': volume.vector('point2')
                         }
                 elif shape == Shape.SPHERE.value:
-                    data[geometry['name']] = {
+                    data[geometry.value('name')] = {
                         'type': 'searchableSphere',
-                        'centre': elementToVector(volume['point1']),
-                        'radius': volume['radius']
+                        'centre': volume.vector('point1'),
+                        'radius': volume.value('radius')
                     }
                 elif shape == Shape.CYLINDER.value:
-                    data[geometry['name']] = {
+                    data[geometry.value('name')] = {
                         'type': 'searchableCylinder',
-                        'point1': elementToVector(volume['point1']),
-                        'point2': elementToVector(volume['point2']),
-                        'radius': volume['radius']
+                        'point1': volume.vector('point1'),
+                        'point2': volume.vector('point2'),
+                        'radius': volume.value('radius')
                     }
                 elif shape in Shape.PLATES.value:
                     if not app.window.geometryManager.isBoundingHex6(gId):
-                        x1, y1, z1 = elementToVector(volume['point1'])
-                        x2, y2, z2 = elementToVector(volume['point2'])
+                        x1, y1, z1 = volume.vector('point1')
+                        x2, y2, z2 = volume.vector('point2')
                         xs, ys, zs = x2 - x1, y2 - y1, z2 - z1
 
                         if shape == Shape.X_MIN.value:
-                            data[geometry['name']] = {
+                            data[geometry.value('name')] = {
                                 'type': 'searchablePlate',
                                 'origin': [x1, y1, z1],
                                 'span': [0, ys, zs]
                             }
                         elif shape == Shape.X_MAX.value:
-                            data[geometry['name']] = {
+                            data[geometry.value('name')] = {
                                 'type': 'searchablePlate',
                                 'origin': [x2, y1, z1],
                                 'span': [0, ys, zs]
                             }
                         elif shape == Shape.Y_MIN.value:
-                            data[geometry['name']] = {
+                            data[geometry.value('name')] = {
                                 'type': 'searchablePlate',
                                 'origin': [x1, y1, z1],
                                 'span': [xs, 0, zs]
                             }
                         elif shape == Shape.Y_MAX.value:
-                            data[geometry['name']] = {
+                            data[geometry.value('name')] = {
                                 'type': 'searchablePlate',
                                 'origin': [x1, y2, z1],
                                 'span': [xs, 0, zs]
                             }
                         elif shape == Shape.Z_MIN.value:
-                            data[geometry['name']] = {
+                            data[geometry.value('name')] = {
                                 'type': 'searchablePlate',
                                 'origin': [x1, y1, z1],
                                 'span': [xs, ys, 0]
                             }
                         elif shape == Shape.Z_MAX.value:
-                            data[geometry['name']] = {
+                            data[geometry.value('name')] = {
                                 'type': 'searchablePlate',
                                 'origin': [x1, y1, z2],
                                 'span': [xs, ys, 0]
@@ -186,17 +188,15 @@ class SnappyHexMeshDict(DictionaryFile):
 
         boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
         refinements = app.db.getElements('castellation/refinementSurfaces')
-        for surface in app.db.getElements(
-                'geometry', lambda i, e: e['gType'] == GeometryType.SURFACE.value,
-                ['name', 'castellationGroup', 'shape', 'volume']).values():
-
-            if surface['shape'] in Shape.PLATES.value and surface['volume'] == boundingHex6:
+        for surface in app.db.getElements('geometry', lambda i, e: e['gType'] == GeometryType.SURFACE.value).values():
+            if surface.value('shape') in Shape.PLATES.value and surface.value('volume') == boundingHex6:
                 continue
 
-            group = surface['castellationGroup']
+            group = surface.value('castellationGroup')
             data.append({
-                'file': surface['name'] + '.obj',
-                'levels': [[0.01, refinements[group]['featureEdgeRefinementLevel'] if group in refinements else 0]]
+                'file': surface.value('name') + '.obj',
+                'levels': [
+                    [0.01, refinements[group].value('featureEdgeRefinementLevel') if group in refinements else 0]]
             })
 
         return data
@@ -208,27 +208,26 @@ class SnappyHexMeshDict(DictionaryFile):
         refinements = app.db.getElements('castellation/refinementSurfaces')
 
         cellZones = app.db.getElements(
-            'geometry', lambda i, e: e['gType'] == GeometryType.VOLUME.value and e['cfdType'] != CFDType.NONE.value, [])
+            'geometry', lambda i, e: e['gType'] == GeometryType.VOLUME.value and e['cfdType'] != CFDType.NONE.value)
 
         # Target is a boundary, interface, or surface included in a castellation group
         surfaces = app.db.getElements(
             'geometry',
             lambda i, e: e['gType'] == GeometryType.SURFACE.value
-                         and (e['cfdType'] != CFDType.NONE.value or e['castellationGroup'] or e['volume'] in cellZones),
-            ['name', 'cfdType', 'nonConformal', 'interRegion', 'castellationGroup', 'shape', 'volume'])
+                         and (e['cfdType'] != CFDType.NONE.value or e['castellationGroup'] or e['volume'] in cellZones))
 
         for surface in surfaces.values():
-            if surface['shape'] in Shape.PLATES.value and surface['volume'] == boundingHex6:
+            if surface.value('shape') in Shape.PLATES.value and surface.value('volume') == boundingHex6:
                 continue
 
             minLevel = 0
             maxLevel = 0
-            if group := surface['castellationGroup']:
-                minLevel = int(refinements[group]['surfaceRefinement']['minimumLevel'])
-                maxLevel = int(refinements[group]['surfaceRefinement']['maximumLevel'])
+            if group := surface.value('castellationGroup'):
+                minLevel = int(refinements[group].element('surfaceRefinement').value('minimumLevel'))
+                maxLevel = int(refinements[group].element('surfaceRefinement').value('maximumLevel'))
 
-            name = surface['name']
-            cfdType = surface['cfdType']
+            name = surface.value('name')
+            cfdType = surface.value('cfdType')
 
             if cfdType == CFDType.NONE.value:
                 data[name] = {
@@ -240,8 +239,8 @@ class SnappyHexMeshDict(DictionaryFile):
                     'patchInfo': {'type': 'patch'}
                 }
             else:
-                if self._addLayers or surface['interRegion']:
-                    faceType = 'boundary' if surface['nonConformal'] else 'baffle'
+                if self._addLayers or surface.value('interRegion'):
+                    faceType = 'boundary' if surface.value('nonConformal') else 'baffle'
                 else:
                     faceType = 'internal'
 
@@ -260,28 +259,28 @@ class SnappyHexMeshDict(DictionaryFile):
 
         volumes = {key: [] for key in groups}
         for geometry in app.db.getElements(
-                'geometry', lambda i, e: e['gType'] == GeometryType.VOLUME.value and e['castellationGroup'],
-                ['name', 'castellationGroup']).values():
-            group = geometry['castellationGroup']
+                'geometry', lambda i, e: e['gType'] == GeometryType.VOLUME.value and e['castellationGroup']).values():
+            group = geometry.value('castellationGroup')
             if group in volumes:
                 volumes[group].append(geometry)
 
         data = {}
         for group, refinement in groups.items():
             for volume in volumes[group]:
-                data[volume['name']] = {
+                data[volume.value('name')] = {
                     'mode': 'inside',
-                    'levels': [[1E15, refinement['volumeRefinementLevel']]],
+                    'levels': [[1E15, refinement.value('volumeRefinementLevel')]],
                 }
 
-                gapMode = refinement['gapRefinement']['direction']
+                gapRefinement = refinement.element('gapRefinement')
+                gapMode = gapRefinement.value('direction')
                 if gapMode != GapRefinementMode.NONE.value:
-                    data[volume['name']]['gapLevel'] = [
-                        refinement['gapRefinement']['minCellLayers'],
-                        refinement['gapRefinement']['detectionStartLevel'],
-                        refinement['gapRefinement']['maxRefinementLevel']]
-                    data[volume['name']]['gapMode'] = gapMode
-                    data[volume['name']]['gapSelf'] = 'true' if refinement['gapRefinement']['gapSelf'] else 'false'
+                    data[volume.value('name')]['gapLevel'] = [
+                        gapRefinement.value('minCellLayers'),
+                        gapRefinement.value('detectionStartLevel'),
+                        gapRefinement.value('maxRefinementLevel')]
+                    data[volume.value('name')]['gapMode'] = gapMode
+                    data[volume.value('name')]['gapSelf'] = 'true' if gapRefinement.value('gapSelf') else 'false'
 
         return data
 
@@ -320,7 +319,7 @@ class SnappyHexMeshDict(DictionaryFile):
 
     def _constructLayers(self):
         def addLayerDictionary(name, layer, thickness):
-            data[name] = {'nSurfaceLayers': layer['nSurfaceLayers']}
+            data[name] = {'nSurfaceLayers': layer.value('nSurfaceLayers')}
             data[name].update(thickness)
 
         if not self._addLayers:
@@ -330,54 +329,52 @@ class SnappyHexMeshDict(DictionaryFile):
 
         boundaries = {key: [] for key in groups}
         slaves = {key: [] for key in groups}
-        for geometry in app.db.getElements(
-                'geometry', lambda i, e: e['layerGroup'] or e['slaveLayerGroup'],
-                ['name', 'layerGroup', 'slaveLayerGroup']).values():
-            if group := geometry['layerGroup']:
+        for geometry in app.db.getElements('geometry', lambda i, e: e['layerGroup'] or e['slaveLayerGroup']).values():
+            if group := geometry.value('layerGroup'):
                 boundaries[group].append(geometry)
-            if group := geometry['slaveLayerGroup']:
+            if group := geometry.value('slaveLayerGroup'):
                 slaves[group].append(geometry)
 
         data = {}
         for group, layer in groups.items():
             thickness = self._addLayerThickness(layer)
             for boundary in boundaries[group]:
-                addLayerDictionary(boundary['name'], layer, thickness)
+                addLayerDictionary(boundary.value('name'), layer, thickness)
             for boundary in slaves[group]:
-                addLayerDictionary(f'{boundary["name"]}_slave', layer, thickness)
+                addLayerDictionary(f'{boundary.value("name")}_slave', layer, thickness)
 
         return data
 
     def _addLayerThickness(self, thickness):
         data = {}
 
-        model = thickness['thicknessModel']
+        model = thickness.value('thicknessModel')
         data['thicknessModel'] = model
 
         if model != ThicknessModel.FIRST_AND_RELATIVE_FINAL.value:
-            data['relativeSizes'] = 'on' if thickness['relativeSizes'] else 'off'
+            data['relativeSizes'] = 'on' if thickness.value('relativeSizes') else 'off'
 
         if model in (ThicknessModel.FIRST_AND_EXPANSION.value,
                      ThicknessModel.FINAL_AND_EXPANSION.value,
                      ThicknessModel.OVERALL_AND_EXPANSION.value):
-            data['expansionRatio'] = thickness['expansionRatio']
+            data['expansionRatio'] = thickness.value('expansionRatio')
 
         if model in (ThicknessModel.FINAL_AND_OVERALL.value,
                      ThicknessModel.FINAL_AND_EXPANSION.value,
                      ThicknessModel.FIRST_AND_RELATIVE_FINAL.value):
-            data['finalLayerThickness'] = thickness['finalLayerThickness']
+            data['finalLayerThickness'] = thickness.value('finalLayerThickness')
 
         if model in (ThicknessModel.FIRST_AND_OVERALL.value,
                      ThicknessModel.FIRST_AND_EXPANSION.value,
                      ThicknessModel.FIRST_AND_RELATIVE_FINAL.value):
-            data['firstLayerThickness'] = thickness['firstLayerThickness']
+            data['firstLayerThickness'] = thickness.value('firstLayerThickness')
 
         if model in (ThicknessModel.FIRST_AND_OVERALL.value,
                      ThicknessModel.FINAL_AND_OVERALL.value,
                      ThicknessModel.OVERALL_AND_EXPANSION.value):
-            data['thickness'] = thickness['thickness']
+            data['thickness'] = thickness.value('thickness')
 
-        data['minThickness'] = thickness['minThickness']
+        data['minThickness'] = thickness.value('minThickness')
 
         return data
 

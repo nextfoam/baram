@@ -174,8 +174,8 @@ class ChartWidget(QWidget):
 
         if self._logScale:
             # value cannot be "0" or close to "0" in log scale chart
-            minY = max(minY, sys.float_info.epsilon)
-            maxY = max(maxY, sys.float_info.epsilon)
+            minY = max(minY, sys.float_info.min)
+            maxY = max(maxY, sys.float_info.min)
 
             minY = minY / 10  # margin in log scale
 

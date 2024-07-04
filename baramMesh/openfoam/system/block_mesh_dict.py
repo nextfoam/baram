@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
-from libbaram.simple_db.simple_db import elementToVector
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import Shape
@@ -31,13 +30,12 @@ class BlockMeshDict(DictionaryFile):
 
         gId, geometry = app.window.geometryManager.getBoundingHex6()
         if geometry is not None:  # boundingHex6 is configured
-            x1, y1, z1 = elementToVector(geometry['point1'])
-            x2, y2, z2 = elementToVector(geometry['point2'])
+            x1, y1, z1 = geometry.vector('point1')
+            x2, y2, z2 = geometry.vector('point2')
             padding = 0
 
-            for sId in app.window.geometryManager.subSurfaces(gId):
-                s = app.window.geometryManager.geometry(sId)
-                bNames[s['shape']] = s['name']
+            for sId, surface in app.window.geometryManager.subSurfaces(gId).items():
+                bNames[surface.value('shape')] = surface.value('name')
 
         xMin = x1 - padding
         xMax = x2 + padding
