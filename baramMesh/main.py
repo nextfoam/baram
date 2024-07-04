@@ -50,6 +50,7 @@ def main():
         'logoResource': 'baramMesh.ico',
     }))
 
+    os.environ['LC_NUMERIC'] = 'C'
     os.environ["QT_SCALE_FACTOR"] = app.settings.getScale()
 
     # Leave 1 core for users

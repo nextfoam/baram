@@ -194,9 +194,8 @@ class SnappyHexMeshDict(DictionaryFile):
 
             group = surface.value('castellationGroup')
             data.append({
-                'file': surface.value('name') + '.obj',
-                'levels': [
-                    [0.01, refinements[group].value('featureEdgeRefinementLevel') if group in refinements else 0]]
+                'file': '"' + surface.value('name') + '.obj' + '"',
+                'level': refinements[group].value('featureEdgeRefinementLevel') if group in refinements else 0
             })
 
         return data
