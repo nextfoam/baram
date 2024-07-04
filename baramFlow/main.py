@@ -55,6 +55,7 @@ def main():
     }))
     app.setPlug(AppPlugIn())
 
+    os.environ['LC_NUMERIC'] = 'C'
     os.environ["QT_SCALE_FACTOR"] = AppSettings.getUiScaling()
 
     # Leave 1 core for users
