@@ -5,6 +5,7 @@ from enum import Enum, Flag
 
 from PySide6.QtCore import QCoreApplication
 
+import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
 
 UNIVERSAL_GAS_CONSTANT = 8314.46261815324
@@ -100,3 +101,11 @@ class MaterialDB(object):
     @classmethod
     def isFluid(cls, mid):
         return cls.getPhase(mid) != Phase.SOLID
+
+    @classmethod
+    def getMaterialComposition(cls, xpath, mid):
+        if MaterialDB.getType(mid) == MaterialType.MIXTURE:
+            return [(xml.getText('mid', e), float(xml.getText('value', e)))
+                    for e in coredb.CoreDB().getElements(f'{xpath}/mixture[mid="{mid}"]/specie')]
+
+        return [(mid, 1)]

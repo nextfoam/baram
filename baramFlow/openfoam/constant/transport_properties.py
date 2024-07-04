@@ -60,11 +60,13 @@ class TransportProperties(DictionaryFile):
         # temperature and pressure are used because interFoam works only when energy off
         #     i.e. constant density and viscosity
 
-        baseDensity = self._db.getDensity(baseMaterialId, 0, 0)
-        secondaryDensity = self._db.getDensity(secondaryMaterialId, 0, 0)
+        baseMaterial = [(baseMaterialId, 1)]
+        secondaryMatrerial = [(secondaryMaterialId, 1)]
+        baseDensity = self._db.getDensity(baseMaterial, 0, 0)
+        secondaryDensity = self._db.getDensity(secondaryMatrerial, 0, 0)
 
-        baseViscosity = self._db.getViscosity(baseMaterialId, 0)
-        secondaryViscosity = self._db.getViscosity(secondaryMaterialId, 0)
+        baseViscosity = self._db.getViscosity(baseMaterial, 0)
+        secondaryViscosity = self._db.getViscosity(secondaryMatrerial, 0)
 
         baseNu = baseViscosity / baseDensity
         secondaryNu = secondaryViscosity / secondaryDensity

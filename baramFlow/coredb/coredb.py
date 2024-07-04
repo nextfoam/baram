@@ -20,9 +20,7 @@ import resource_rc
 
 from resources import resource
 from baramFlow.coredb import migrate
-
-ns = 'http://www.baramcfd.org/baram'
-nsmap = {'': ns}
+from .libdb import nsmap, ns
 
 __instance: Optional[_CoreDB] = None
 
@@ -243,7 +241,7 @@ class _CoreDB(object):
         Raises:
             LookupError: Less or more than one item are matched
         """
-        element = self._getElement(xpath)
+        element = self.getElement(xpath)
         if parameter := element.get('batchParameter'):
             return '$' + parameter
 
@@ -278,7 +276,7 @@ class _CoreDB(object):
             ValueError: Invalid configuration value by program
             DBValueException: Invalid configuration value by user
         """
-        element = self._getElement(xpath)
+        element = self.getElement(xpath)
 
         path = self._xmlTree.getelementpath(element)
         schema = self._schema.find(".//" + path, namespaces=nsmap)
@@ -1096,8 +1094,8 @@ class _CoreDB(object):
         return [(int(e.attrib['bcid']), e.find('name', namespaces=nsmap).text) for e in elements]
 
     def copyBoundaryConditions(self, sourceID, targetID):
-        old = self._getElement(f'regions/region/boundaryConditions/boundaryCondition[@bcid="{targetID}"]')
-        new = copy.deepcopy(self._getElement(f'regions/region/boundaryConditions/boundaryCondition[@bcid="{sourceID}"]'))
+        old = self.getElement(f'regions/region/boundaryConditions/boundaryCondition[@bcid="{targetID}"]')
+        new = copy.deepcopy(self.getElement(f'regions/region/boundaryConditions/boundaryCondition[@bcid="{sourceID}"]'))
         new.set('bcid', str(targetID))
         new.find('name', namespaces=nsmap).text = old.find('name', namespaces=nsmap).text
         new.find('geometricalType', namespaces=nsmap).text = old.find('geometricalType', namespaces=nsmap).text
@@ -1331,8 +1329,8 @@ class _CoreDB(object):
         self._xmlSchema.assertValid(self._xmlTree)
 
     def updateRegionMixture(self, rname, mid):
-        isMixture = (self._getElement(f'materials/material[@mid="{mid}"]').find('type', namespaces=nsmap).text
-                     == 'mixture')
+        material = self.getElement(f'materials/material[@mid="{mid}"]')
+        isMixture = (material.find('type', namespaces=nsmap).text == 'mixture')
         mixturesInRegions = [e.text for e in self._xmlTree.findall(f'regions/region/material', namespaces=nsmap)]
 
         region = self._xmlTree.find(f'regions/region[name="{rname}"]', namespaces=nsmap)
@@ -1362,6 +1360,8 @@ class _CoreDB(object):
                 numericalCondtionsSpecies.remove(mixture)
 
         if isMixture:
+            primarySpecie = int(material.find('mixture/primarySpecie', namespaces=nsmap).text)
+
             numericalConditionsString = ''
             fixedValuesString = ''
             boundaryString = ''
@@ -1369,6 +1369,8 @@ class _CoreDB(object):
             initialSectionsString = ''
 
             for specie, _ in self.getSpecies(mid):
+                defaultRatio = 1 if specie == primarySpecie else 0
+                print(specie, defaultRatio, primarySpecie)
                 for materials in materialSourceTerms:
                     materials.append(
                         etree.fromstring(f'<materialSource xmlns="http://www.baramcfd.org/baram" disabled="true">'
@@ -1390,9 +1392,11 @@ class _CoreDB(object):
                         <absoluteConvergenceCriteria>0.001</absoluteConvergenceCriteria>
                         <relativeConvergenceCriteria>0.05</relativeConvergenceCriteria>
                     </specie>'''
-                boundaryString += f'<specie><mid>{specie}</mid><value>0</value></specie>'
-                initialValuesString += f'<specie><mid>{specie}</mid><value>0</value></specie>'
-                initialSectionsString += f'<specie><mid>{specie}</mid><value>0</value></specie>'
+
+                specieRatio = f'<specie><mid>{specie}</mid><value>{defaultRatio}</value></specie>'
+                boundaryString += specieRatio
+                initialValuesString += specieRatio
+                initialSectionsString += specieRatio
 
             for species in fixedValuesSpecies:
                 species.append(etree.fromstring(
@@ -1469,7 +1473,7 @@ class _CoreDB(object):
         else:
             raise OverflowError
 
-        parent = self._getElement('models/userDefinedScalars')
+        parent = self.getElement('models/userDefinedScalars')
         scalar = etree.fromstring(
             f'<scalar scalarID="{scalarID}" xmlns="http://www.baramcfd.org/baram">'
             f'  <fieldName>{scalar.fieldName}</fieldName>'
@@ -1554,7 +1558,7 @@ class _CoreDB(object):
         # parent.append(scalar)
 
     def removeUserDefinedScalar(self, scalarID):
-        parent = self._getElement('models/userDefinedScalars')
+        parent = self.getElement('models/userDefinedScalars')
         parent.remove(parent.find(f'scalar[@scalarID="{scalarID}"]', namespaces=nsmap))
 
         parent = self._xmlTree.find('general/atmosphericBoundaryLayer/userDefinedScalars', namespaces=nsmap)
@@ -1587,7 +1591,7 @@ class _CoreDB(object):
         # parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
 
     def clearUserDefinedScalars(self):
-        parent = self._getElement('models/userDefinedScalars')
+        parent = self.getElement('models/userDefinedScalars')
         for element in parent.findall('scalar', namespaces=nsmap):
             if element.get('scalarID') != '0':
                 parent.remove(element)
@@ -1697,9 +1701,12 @@ class _CoreDB(object):
 
         self._configCountAtSave = self._configCount
 
-    def _getElement(self, xpath):
-        elements = self._xmlTree.findall(xpath, namespaces=nsmap)
-        if len(elements) != 1:
+    def getElement(self, xpath):
+        element = self._xmlTree.find(xpath, namespaces=nsmap)
+        if element is None:
             raise LookupError
 
-        return elements[0]
+        return element
+
+    def getElements(self, xpath):
+        return self._xmlTree.findall(xpath, namespaces=nsmap)

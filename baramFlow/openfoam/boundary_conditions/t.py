@@ -3,6 +3,7 @@
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallVelocityCondition, WallTemperature
 from baramFlow.coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution, InterfaceMode
+from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.project import Project
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
@@ -38,7 +39,7 @@ class T(BoundaryCondition):
                 field[name] = {
                     BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(constant)),
                     BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFlowRateInletT(xpath, constant)),
-                    BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletTotalTemperature(constant)),
+                    BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletTotalTemperature(xpath, constant)),
                     BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletT(xpath)),
                     BoundaryType.ABL_INLET.value:           (lambda: self._constructFixedValue(constant)),
                     BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructFixedValue(constant)),
@@ -77,9 +78,9 @@ class T(BoundaryCondition):
 
         return field
 
-    def _constructInletOutletTotalTemperature(self, constant):
+    def _constructInletOutletTotalTemperature(self, xpath, constant):
         if ModelsDB.isEnergyModelOn():
-            gamma = self._calculateGamma(self._region.mid, constant)
+            gamma = self._calculateGamma(MaterialDB.getMaterialComposition(xpath + '/species', self._region.mid), constant)
         else:
             gamma = 1.0
 
@@ -103,12 +104,12 @@ class T(BoundaryCondition):
         if spec == FlowRateInletSpecification.VOLUME_FLOW_RATE.value:
             return self._constructFixedValue(constant)
         elif spec == FlowRateInletSpecification.MASS_FLOW_RATE.value:
-            return self._constructInletOutletTotalTemperature(constant)
+            return self._constructInletOutletTotalTemperature(xpath, constant)
 
     def _constructPressureOutletT(self, xpath):
         if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
             constant = self._db.getValue(xpath + '/pressureOutlet/backflowTotalTemperature')
-            return self._constructInletOutletTotalTemperature(constant)
+            return self._constructInletOutletTotalTemperature(xpath, constant)
         else:
             return self._constructZeroGradient()
 

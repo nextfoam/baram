@@ -90,7 +90,7 @@ class U(BoundaryCondition):
             t = 300
             if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
                 t = float(self._db.getValue(xpath + '/pressureOutlet/backflowTotalTemperature'))
-            return self._constructWaveTransmissive(t)
+            return self._constructWaveTransmissive(xpath, t)
         else:
             return self._constructPressureInletOutletVelocity()
 
@@ -177,7 +177,7 @@ class U(BoundaryCondition):
 
     def _constructFarfieldRiemannU(self, xpath):
         gamma = 1.4
-        mw = self._db.getMolecularWeight(self._region.mid)
+        mw = self._db.getMolecularWeight(MaterialDB.getMaterialComposition(xpath + '/species', self._region.mid))
         a = sqrt(gamma * (UNIVERSAL_GAS_CONSTANT / mw)
                  * float(self._db.getValue(xpath + '/farFieldRiemann/staticTemperature')))
         dx, dy, dz = self._calculateFarfiledRiemanFlowDirection(xpath + '/farFieldRiemann/flowDirection')

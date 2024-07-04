@@ -142,7 +142,7 @@ class P(BoundaryCondition):
             t = 300
             if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
                 t = float(self._db.getValue(xpath + '/pressureOutlet/backflowTotalTemperature'))
-            return self._constructWaveTransmissive(t)
+            return self._constructWaveTransmissive(xpath, t)
         else:
             return self._constructTotalPressure(
                 self._operatingPressure + float(self._db.getValue(xpath + '/pressureOutlet/totalPressure')))

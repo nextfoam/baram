@@ -374,7 +374,7 @@ class SectionDialog(ResizableDialog):
                         writer.setAttribute(xpath, 'disabled', 'true')
 
         if self._speciesWidget and self._speciesWidget.on():
-            if not self._speciesWidget.appendToWriter(writer, f'{sectionPath}/species'):
+            if not await self._speciesWidget.appendToWriter(writer, f'{sectionPath}/species'):
                 return
             parameterConfigured = parameterConfigured or self._speciesWidget.isChecked()
 

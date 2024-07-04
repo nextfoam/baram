@@ -9,6 +9,12 @@
         </xs:restriction>
     </xs:simpleType>
 
+    <xs:simpleType name="nonNegative">
+        <xs:restriction base="xs:double">
+            <xs:minInclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
+
     <xs:simpleType name="ratio">
         <xs:restriction base="xs:double">
             <xs:minInclusive value="0"/>
@@ -62,6 +68,14 @@
     <xs:complexType name="inputPositiveNumberType">
         <xs:simpleContent>
             <xs:extension base="positive">
+                <xs:attribute name="batchParameter" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="inputNonNegativeNumberType">
+        <xs:simpleContent>
+            <xs:extension base="nonNegative">
                 <xs:attribute name="batchParameter" type="xs:string"/>
             </xs:extension>
         </xs:simpleContent>
@@ -212,7 +226,7 @@
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="mid" type="xs:positiveInteger"/>
-                                    <xs:element name="value" type="inputNumberType"/>
+                                    <xs:element name="value" type="inputNonNegativeNumberType"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
@@ -2229,7 +2243,7 @@
                                                                                                                     <xs:complexType>
                                                                                                                         <xs:sequence>
                                                                                                                             <xs:element name="mid" type="xs:positiveInteger"/>
-                                                                                                                            <xs:element name="value" type="inputNumberType"/>
+                                                                                                                            <xs:element name="value" type="inputNonNegativeNumberType"/>
                                                                                                                         </xs:sequence>
                                                                                                                     </xs:complexType>
                                                                                                                 </xs:element>

@@ -61,7 +61,7 @@ class PressureInletDialog(ResizableDialog):
         if not self._scalarsWidget.appendToWriter(writer, self._xpath + '/userDefinedScalars'):
             return
 
-        if not self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
+        if not await self._speciesWidget.appendToWriter(writer, self._xpath + '/species'):
             return
 
         errorCount = writer.write()

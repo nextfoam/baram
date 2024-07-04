@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QGroupBox, QFormLayout, QLineEdit
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import boolToDBText
 from baramFlow.coredb.material_db import MaterialDB, MaterialType
+from widgets.async_message_box import AsyncMessageBox
 
 
 class SpeciesWidget(QGroupBox):
@@ -57,7 +58,7 @@ class SpeciesWidget(QGroupBox):
                     _, editor = self._species[mid]
                     editor.setText('0')
 
-    def appendToWriter(self, writer, speciesXPath):
+    async def appendToWriter(self, writer, speciesXPath):
         if self._on:
             xpath = f'{speciesXPath}/mixture[mid="{self._mid}"]'
             if self._optional:
@@ -65,9 +66,23 @@ class SpeciesWidget(QGroupBox):
                 if not self.isChecked():
                     return True
 
+            totalRatio = 0
             for mid, row in self._species.items():
-                fieldName, editor = row
-                writer.append(f'{xpath}/specie[mid="{mid}"]/value',
-                              editor.text(), fieldName)
+                try:
+                    fieldName, editor = row
+                    writer.append(f'{xpath}/specie[mid="{mid}"]/value',
+                                  editor.text(), fieldName)
+                    totalRatio += float(editor.text())
+                except ValueError:
+                    await AsyncMessageBox().information(
+                        self, self.tr('Input Error'), self.tr('{} must be a float').format(row[0]))
+                    return False
+
+            if totalRatio == 0:
+                await AsyncMessageBox().information(
+                    self, self.tr('Input Error'),
+                    self.tr('The sum of the composition ratios of the mixture "{}" is 0.').format(
+                        MaterialDB.getName(self._mid)))
+                return False
 
         return True

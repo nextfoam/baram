@@ -220,7 +220,7 @@ class InitializationWidget(QWidget):
         if not self._scalarsWidget.appendToWriter(writer, self._initialValuesPath + '/userDefinedScalars'):
             return False
 
-        if not self._speciesWidget.appendToWriter(writer, f'{self._initialValuesPath}/species'):
+        if not await self._speciesWidget.appendToWriter(writer, f'{self._initialValuesPath}/species'):
             return False
 
         return True
