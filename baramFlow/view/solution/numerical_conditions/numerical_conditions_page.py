@@ -3,9 +3,7 @@
 
 import qasync
 
-from PySide6.QtWidgets import QMessageBox, QLineEdit, QLabel
-
-from widgets.enum_combo_box import EnumComboBox
+from PySide6.QtWidgets import QMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
@@ -29,10 +27,6 @@ class NumericalConditionsPage(ContentPage):
         self._discretizationSchemesCount = self._ui.discretizationSchemes.layout().rowCount()
         self._underRelaxationFactorsCount = self._ui.underRelaxationFactors.layout().count()
         self._convergenceCriteriaCount = self._ui.convergenceCriteria.layout().count()
-
-        # self._scalarUnderRelazationFactors = {}
-        # self._scalarConvergenceCriterias = {}
-        self._speciesConfigurations = None
 
         self._xpath = NumericalDB.NUMERICAL_CONDITIONS_XPATH
         self._db = coredb.CoreDB()
@@ -71,27 +65,7 @@ class NumericalConditionsPage(ContentPage):
         })
 
         self._ui.discretizationSchemeScalar.addEnumItems(self._upwindDiscretizationSchemes)
-        #
-        # for scalarID, fieldName in self._db.getUserDefinedScalars():
-        #     xpath = f'{self._xpath}/underRelaxationFactors/userDefinedScalars/scalar[scalarID="{scalarID}"]'
-        #     if not self._db.exists(xpath):
-        #         NumericalDB.addScalarUnderRelaxationFactors(scalarID)
-        #
-        #     row = self._ui.underRelaxationFactorsLayout.rowCount()
-        #     self._ui.underRelaxationFactorsLayout.addWidget(QLabel(fieldName), row, 0)
-        #     self._ui.underRelaxationFactorsLayout.addWidget(QLineEdit(), row, 1)
-        #     self._ui.underRelaxationFactorsLayout.addWidget(QLineEdit(), row, 2)
-        #     self._scalarUnderRelazationFactors[scalarID] = row
-        #
-        #     xpath = f'{self._xpath}/convergenceCriteria/userDefinedScalars/scalar[scalarID="{scalarID}"]'
-        #     if not self._db.exists(xpath):
-        #         NumericalDB.addConvergenceCriteria(scalarID)
-        #
-        #     row = self._ui.convergenceCriteriaLyaout.rowCount()
-        #     self._ui.convergenceCriteriaLyaout.addWidget(QLabel(fieldName), row, 0)
-        #     self._ui.convergenceCriteriaLyaout.addWidget(QLineEdit(), row, 1)
-        #     self._ui.convergenceCriteriaLyaout.addWidget(QLineEdit(), row, 2)
-        #     self._scalarConvergenceCriterias[scalarID] = row
+        self._ui.discretizationSchemeSpecies.addEnumItems(self._upwindDiscretizationSchemes)
 
         self._connectSignalsSlots()
 
@@ -166,6 +140,19 @@ class NumericalConditionsPage(ContentPage):
             self._ui.absoluteScalar.setEnabled(False)
             self._ui.relativeScalar.setEnabled(False)
 
+        if ModelsDB.isSpeciesModelOn():
+            self._ui.discretizationSchemeSpecies.setEnabled(True)
+            self._ui.underRelaxationFactorSpecies.setEnabled(True)
+            self._ui.underRelaxationFactorSpeciesFinal.setEnabled(True)
+            self._ui.absoluteSpecies.setEnabled(True)
+            self._ui.relativeSpecies.setEnabled(True)
+        else:
+            self._ui.discretizationSchemeSpecies.setEnabled(False)
+            self._ui.underRelaxationFactorSpecies.setEnabled(False)
+            self._ui.underRelaxationFactorSpeciesFinal.setEnabled(False)
+            self._ui.absoluteSpecies.setEnabled(False)
+            self._ui.relativeSpecies.setEnabled(False)
+
         self._ui.pressureVelocityCouplingScheme.setCurrentData(
             PressureVelocityCouplingScheme(self._db.getValue(self._xpath + '/pressureVelocityCouplingScheme')))
 
@@ -194,6 +181,8 @@ class NumericalConditionsPage(ContentPage):
             UpwindDiscretizationScheme(self._db.getValue(self._xpath + '/discretizationSchemes/volumeFraction')))
         self._ui.discretizationSchemeScalar.setCurrentData(
             UpwindDiscretizationScheme(self._db.getValue(self._xpath + '/discretizationSchemes/scalar')))
+        self._ui.discretizationSchemeSpecies.setCurrentData(
+            UpwindDiscretizationScheme(self._db.getValue(self._xpath + '/discretizationSchemes/species')))
 
         self._ui.underRelaxationFactorPressure.setText(
             self._db.getValue(self._xpath + '/underRelaxationFactors/pressure'))
@@ -221,6 +210,9 @@ class NumericalConditionsPage(ContentPage):
         self._ui.underRelaxationFactorScalar.setText(self._db.getValue(self._xpath + '/underRelaxationFactors/scalar'))
         self._ui.underRelaxationFactorScalarFinal.setText(
             self._db.getValue(self._xpath + '/underRelaxationFactors/scalarFinal'))
+        self._ui.underRelaxationFactorSpecies.setText(self._db.getValue(self._xpath + '/underRelaxationFactors/species'))
+        self._ui.underRelaxationFactorSpeciesFinal.setText(
+            self._db.getValue(self._xpath + '/underRelaxationFactors/speciesFinal'))
 
         self._ui.limitingFactor.setText(self._db.getValue(self._xpath + '/highOrderTermRelaxation/relaxationFactor'))
         self._ui.improveStablitiy.setChecked(
@@ -258,17 +250,8 @@ class NumericalConditionsPage(ContentPage):
             self._db.getValue(self._xpath + '/convergenceCriteria/volumeFraction/relative'))
         self._ui.absoluteScalar.setText(self._db.getValue(self._xpath + '/convergenceCriteria/scalar/absolute'))
         self._ui.relativeScalar.setText(self._db.getValue(self._xpath + '/convergenceCriteria/scalar/relative'))
-        #
-        # for scalarID, fieldName in self._db.getUserDefinedScalars():
-        #     xpath = f'{self._xpath}/underRelaxationFactors/userDefinedScalars/scalar[scalarID="{scalarID}"]'
-        #     self._ui.underRelaxationFactorsLayout.itemAtPosition(self._scalarUnderRelazationFactors[scalarID], 1).widget().setText(self._db.getValue(xpath + '/value'))
-        #     self._ui.underRelaxationFactorsLayout.itemAtPosition(self._scalarUnderRelazationFactors[scalarID], 2).widget().setText(self._db.getValue(xpath + '/finalValue'))
-        #
-        #     xpath = f'{self._xpath}/convergenceCriteria/userDefinedScalars/scalar[scalarID="{scalarID}"]'
-        #     self._ui.convergenceCriteriaLyaout.itemAtPosition(self._scalarConvergenceCriterias[scalarID], 1).widget().setText(self._db.getValue(xpath + '/absolute'))
-        #     self._ui.convergenceCriteriaLyaout.itemAtPosition(self._scalarConvergenceCriterias[scalarID], 2).widget().setText(self._db.getValue(xpath + '/relative'))
-
-        self._speciesConfigurations = []
+        self._ui.absoluteSpecies.setText(self._db.getValue(self._xpath + '/convergenceCriteria/species/absolute'))
+        self._ui.relativeSpecies.setText(self._db.getValue(self._xpath + '/convergenceCriteria/species/relative'))
 
         discretizationSchemeLayout = self._ui.discretizationSchemes.layout()
         underRelaxationFactorLayout = self._ui.underRelaxationFactors.layout()
@@ -286,45 +269,6 @@ class NumericalConditionsPage(ContentPage):
             widget = convergenceCriteriaLayout.itemAt(self._convergenceCriteriaCount).widget()
             convergenceCriteriaLayout.removeWidget(widget)
             widget.deleteLater()
-
-        for material, mixture in self._db.getMixturesInRegions():
-            if material not in self._speciesConfigurations:
-                mixturePath = f'{self._xpath}/species/mixture[mid="{material}"]'
-                for mid, name in self._db.getSpecies(material):
-                    label = f'{mixture}.{name}'
-                    xpath = f'{mixturePath}/specie[mid="{mid}"]'
-
-                    discretizationScheme = EnumComboBox()
-                    discretizationScheme.addEnumItems(self._upwindDiscretizationSchemes)
-                    discretizationScheme.setCurrentData(
-                        UpwindDiscretizationScheme(self._db.getValue(f'{xpath}/discretizationScheme')))
-
-                    underRelaxationFactor = QLineEdit(self._db.getValue(f'{xpath}/underRelaxationFactor'))
-                    underRelaxationFactorFinal = QLineEdit(
-                        self._db.getValue(f'{xpath}/underRelaxationFactorFinal'))
-
-                    absoluteConvergenceCriteria = QLineEdit(
-                        self._db.getValue(f'{xpath}/absoluteConvergenceCriteria'))
-                    relativeConvergenceCriteria = QLineEdit(
-                        self._db.getValue(f'{xpath}/relativeConvergenceCriteria'))
-
-                    discretizationSchemeLayout.addRow(label, discretizationScheme)
-
-                    row = underRelaxationFactorLayout.count()
-                    underRelaxationFactorLayout.addWidget(QLabel(label), row, 0)
-                    underRelaxationFactorLayout.addWidget(underRelaxationFactor, row, 1)
-                    underRelaxationFactorLayout.addWidget(underRelaxationFactorFinal, row, 2)
-
-                    row = convergenceCriteriaLayout.count()
-                    convergenceCriteriaLayout.addWidget(QLabel(label), row, 0)
-                    convergenceCriteriaLayout.addWidget(absoluteConvergenceCriteria, row, 1)
-                    convergenceCriteriaLayout.addWidget(relativeConvergenceCriteria, row, 2)
-
-                    self._speciesConfigurations.append((
-                        label, xpath,
-                        discretizationScheme,
-                        underRelaxationFactor, underRelaxationFactorFinal,
-                        absoluteConvergenceCriteria, relativeConvergenceCriteria))
 
     @qasync.asyncSlot()
     async def save(self):
@@ -357,6 +301,8 @@ class NumericalConditionsPage(ContentPage):
                       self._ui.discretizationSchemeVolumeFraction.currentValue(), None)
         writer.append(self._xpath + '/discretizationSchemes/scalar',
                       self._ui.discretizationSchemeScalar.currentValue(), None)
+        writer.append(self._xpath + '/discretizationSchemes/species',
+                      self._ui.discretizationSchemeSpecies.currentValue(), None)
 
         writer.append(self._xpath + '/underRelaxationFactors/pressure',
                       self._ui.underRelaxationFactorPressure.text(), self.tr('Under-Relaxation Factor Pressure'))
@@ -392,6 +338,10 @@ class NumericalConditionsPage(ContentPage):
                       self.tr('Under-Relaxation Scalar'))
         writer.append(self._xpath + '/underRelaxationFactors/scalarFinal',
                       self._ui.underRelaxationFactorScalarFinal.text(), self.tr('Under-Relaxation Scalar Final'))
+        writer.append(self._xpath + '/underRelaxationFactors/species', self._ui.underRelaxationFactorSpecies.text(),
+                      self.tr('Under-Relaxation Species'))
+        writer.append(self._xpath + '/underRelaxationFactors/speciesFinal',
+                      self._ui.underRelaxationFactorSpeciesFinal.text(), self.tr('Under-Relaxation Species Final'))
 
         if self._ui.improveStablitiy.isChecked():
             writer.append(self._xpath + '/highOrderTermRelaxation/relaxationFactor',
@@ -445,35 +395,10 @@ class NumericalConditionsPage(ContentPage):
                       self._ui.absoluteScalar.text(), self.tr('Convergence Criteria Absolute Scalar'))
         writer.append(self._xpath + '/convergenceCriteria/scalar/relative',
                       self._ui.relativeScalar.text(), self.tr('Convergence Criteria Relative Scalar'))
-        #
-        # for scalarID, fieldName in self._db.getUserDefinedScalars():
-        #     writer.append(
-        #         f'{self._xpath}/underRelaxationFactors/userDefinedScalars/scalar[scalarID="{scalarID}"]/value',
-        #         self._ui.underRelaxationFactorsLayout.itemAtPosition(self._scalarUnderRelazationFactors[scalarID], 1).widget().text(),
-        #         self.tr('Under-Relaxation Factor ') + fieldName)
-        #     writer.append(
-        #         f'{self._xpath}/underRelaxationFactors/userDefinedScalars/scalar[scalarID="{scalarID}"]/finalValue',
-        #         self._ui.underRelaxationFactorsLayout.itemAtPosition(self._scalarUnderRelazationFactors[scalarID], 2).widget().text(),
-        #         self.tr('Under-Relaxation Factor {} Final').format(fieldName))
-        #
-        #     writer.append(
-        #         f'{self._xpath}/convergenceCriteria/userDefinedScalars/scalar[scalarID="{scalarID}"]/absolute',
-        #         self._ui.convergenceCriteriaLyaout.itemAtPosition(self._scalarConvergenceCriterias[scalarID], 1).widget().text(),
-        #         self.tr('Convergence Criteria Absolute ') + fieldName)
-        #     writer.append(
-        #         f'{self._xpath}/convergenceCriteria/userDefinedScalars/scalar[scalarID="{scalarID}"]/relative',
-        #         self._ui.convergenceCriteriaLyaout.itemAtPosition(self._scalarConvergenceCriterias[scalarID], 2).widget().text(),
-        #         self.tr('Convergence Criteria Relative ') + fieldName)
-
-        for (label, xpath,
-             discretizationScheme,
-             underRelaxationFactor, underRelaxationFactorFinal,
-             absoluteConvergenceCriteria, relativeConvergenceCriteria) in self._speciesConfigurations:
-            writer.append(xpath + '/discretizationScheme', discretizationScheme.currentValue(), None)
-            writer.append(xpath + '/underRelaxationFactor', underRelaxationFactor.text(), self.tr('Under-Relaxation Factor {}').format(label))
-            writer.append(xpath + '/underRelaxationFactorFinal', underRelaxationFactorFinal.text(), self.tr('Under-Relaxation Factor {} Final').format(label))
-            writer.append(xpath + '/absoluteConvergenceCriteria', absoluteConvergenceCriteria.text(), self.tr('Convergence Criteria Absolute {}').format(label))
-            writer.append(xpath + '/relativeConvergenceCriteria', relativeConvergenceCriteria.text(), self.tr('Convergence Criteria Relative {}').format(label))
+        writer.append(self._xpath + '/convergenceCriteria/species/absolute',
+                      self._ui.absoluteSpecies.text(), self.tr('Convergence Criteria Absolute Species'))
+        writer.append(self._xpath + '/convergenceCriteria/species/relative',
+                      self._ui.relativeSpecies.text(), self.tr('Convergence Criteria Relative Species'))
 
         errorCount = writer.write()
         if errorCount > 0:

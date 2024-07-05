@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
@@ -240,10 +239,6 @@ class FvSchemes(DictionaryFile):
                     'div(phid_pos,p)': f'{bounded}Gauss Minmod'
                 })
 
-        # unlike other values, do not add 'bounded' for species schemes even for steady state solvers
-        if speciesModel != 'off':
-            pass  # Not implemented yet
-
         if multiphaseModel != 'off':
             if volumeFraction == 'firstOrderUpwind':
                 divSchemes.update({
@@ -261,13 +256,10 @@ class FvSchemes(DictionaryFile):
         else:
             divSchemes['div(phi,scalar)'] = f'Gauss linearUpwind momentumReconGrad'
 
-        if ModelsDB.isSpeciesModelOn():
-            speciesXPath = f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/species/mixture[mid="{self._mid}"]'
-            for mid, specie in self._db.getSpecies(self._mid):
-                if self._db.getValue(f'{speciesXPath}/specie[mid="{mid}"]/discretizationScheme') == 'firstOrderUpwind':
-                    divSchemes[f'div(phi,{specie})'] = f'Gauss upwind'
-                else:
-                    divSchemes[f'div(phi,{specie})'] = f'Gauss linearUpwind momentumReconGrad'
+        if self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/discretizationSchemes/species') == 'firstOrderUpwind':
+            divSchemes['div(phi,Yi_h)'] = f'Gauss upwind'
+        else:
+            divSchemes['div(phi,Yi_h)'] = f'Gauss linearUpwind momentumReconGrad'
 
         return divSchemes
 

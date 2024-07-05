@@ -585,13 +585,43 @@ def _version_6(root: etree.Element):
 
             e = etree.Element(f'{{{_ns}}}species')
             p.insert(11, e)
+    #
+    # if (p := root.find('numericalConditions', namespaces=_nsmap)) is not None:
+    #     if p.find('species', namespaces=_nsmap) is None:
+    #         logger.debug(f'    Adding "species" to {p}')
+    #
+    #         e = etree.Element(f'{{{_ns}}}species')
+    #         p.insert(10, e)
 
-    if (p := root.find('numericalConditions', namespaces=_nsmap)) is not None:
+    if (p := root.find('numericalConditions/discretizationSchemes', namespaces=_nsmap)) is not None:
         if p.find('species', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "species" to {p}')
 
             e = etree.Element(f'{{{_ns}}}species')
-            p.insert(10, e)
+            e.text = 'firstOrderUpwind'
+            p.append(e)
+
+    if (p := root.find('numericalConditions/underRelaxationFactors', namespaces=_nsmap)) is not None:
+        if p.find('species', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "species, speciesFinal" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}species')
+            e.text = '0.3'
+            p.append(e)
+
+            e = etree.Element(f'{{{_ns}}}speciesFinal')
+            e.text = '1'
+            p.append(e)
+
+    if (p := root.find('numericalConditions/convergenceCriteria', namespaces=_nsmap)) is not None:
+        if p.find('species', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "species" to {p}')
+
+            e = etree.fromstring(
+                '<species xmlns="http://www.baramcfd.org/baram">'
+                '   <absolute>0.001</absolute><relative>0.05</relative>'
+                '</species>')
+            p.append(e)
 
     if (p := root.find('numericalConditions/advanced/equations', namespaces=_nsmap)) is not None:
         if p.find('species', namespaces=_nsmap) is None:

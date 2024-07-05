@@ -1354,10 +1354,10 @@ class _CoreDB(object):
         initialValuesSpecies.clear()
         for species in initialSectionsSpecies:
             species.clear()
-
-        for mixture in numericalCondtionsSpecies.findall('mixture', namespaces=nsmap):
-            if mixture.findtext('mid', namespaces=nsmap) not in mixturesInRegions:
-                numericalCondtionsSpecies.remove(mixture)
+        #
+        # for mixture in numericalCondtionsSpecies.findall('mixture', namespaces=nsmap):
+        #     if mixture.findtext('mid', namespaces=nsmap) not in mixturesInRegions:
+        #         numericalCondtionsSpecies.remove(mixture)
 
         if isMixture:
             primarySpecie = int(material.find('mixture/primarySpecie', namespaces=nsmap).text)
@@ -1370,7 +1370,6 @@ class _CoreDB(object):
 
             for specie, _ in self.getSpecies(mid):
                 defaultRatio = 1 if specie == primarySpecie else 0
-                print(specie, defaultRatio, primarySpecie)
                 for materials in materialSourceTerms:
                     materials.append(
                         etree.fromstring(f'<materialSource xmlns="http://www.baramcfd.org/baram" disabled="true">'
@@ -1407,12 +1406,12 @@ class _CoreDB(object):
             for species in boundarySpecies:
                 species.append(etree.fromstring(
                     f'<mixture xmlns="http://www.baramcfd.org/baram"><mid>{mid}</mid>{boundaryString}</mixture>'))
-
-            if numericalCondtionsSpecies.find(f'mixture[mid="{mid}"]', namespaces=nsmap) is None:
-                numericalCondtionsSpecies.append(etree.fromstring(
-                    f'<mixture xmlns="http://www.baramcfd.org/baram">'
-                    f'  <mid>{mid}</mid>{numericalConditionsString}'
-                    '</mixture>'))
+            #
+            # if numericalCondtionsSpecies.find(f'mixture[mid="{mid}"]', namespaces=nsmap) is None:
+            #     numericalCondtionsSpecies.append(etree.fromstring(
+            #         f'<mixture xmlns="http://www.baramcfd.org/baram">'
+            #         f'  <mid>{mid}</mid>{numericalConditionsString}'
+            #         '</mixture>'))
 
             initialValuesSpecies.append(etree.fromstring(
                 f'<mixture xmlns="http://www.baramcfd.org/baram"><mid>{mid}</mid>{initialValuesString}</mixture>'))

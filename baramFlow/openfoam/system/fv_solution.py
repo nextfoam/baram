@@ -47,7 +47,7 @@ class FvSolution(DictionaryFile):
             return self
 
         convergenceCriteriaXPath = NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/convergenceCriteria'
-        speciesXPath = f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/species/mixture[mid="{self._region.mid}"]'
+        underRelaxaitionFactorsXPath = NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors'
 
         # If region name is empty string, the only fvSolution in single region case.
         # Otherwise, fvSolution of specified region.
@@ -129,7 +129,7 @@ class FvSolution(DictionaryFile):
                     'maxIter': '5',
                 }),
                 'rhoFinal': rho,
-                f'"(U|k|epsilon|omega|nuTilda|scalar{species})"': (others := {
+                f'"(U|k|epsilon|omega|nuTilda|scalar|Yi"': (others := {
                     'solver': 'PBiCGStab',
                     'preconditioner': 'DILU',
                     'tolerance': '1e-16',
@@ -137,7 +137,7 @@ class FvSolution(DictionaryFile):
                     'minIter': '1',
                     'maxIter': '5',
                 }),
-                f'"(U|k|epsilon|omega|nuTilda|scalar{species})Final"': others,
+                f'"(U|k|epsilon|omega|nuTilda|scalar|Yi)Final"': others,
             },
             'SIMPLE': {
                 'consistent': consistent,
@@ -160,7 +160,7 @@ class FvSolution(DictionaryFile):
                     # For multiphase model
                     '"alpha.*"': self._db.getValue(convergenceCriteriaXPath + '/volumeFraction/absolute'),
                     **{
-                        specie: self._db.getValue(f'{speciesXPath}/specie[mid="{mid}"]/absoluteConvergenceCriteria')
+                        specie: self._db.getValue(convergenceCriteriaXPath + '/species/absolute')
                         for mid, specie in self._species
                     }
                 }
@@ -221,8 +221,8 @@ class FvSolution(DictionaryFile):
                     },
                     **{
                         specie: {
-                            'tolerance': self._db.getValue(f'{speciesXPath}/specie[mid="{mid}"]/absoluteConvergenceCriteria'),
-                            'relTol': self._db.getValue(f'{speciesXPath}/specie[mid="{mid}"]/relativeConvergenceCriteria')
+                            'tolerance': self._db.getValue(convergenceCriteriaXPath + '/species/absolute'),
+                            'relTol': self._db.getValue(convergenceCriteriaXPath + '/species/absolute')
                         }
                         for mid, specie in self._species
                     }
@@ -230,28 +230,28 @@ class FvSolution(DictionaryFile):
             },
             'relaxationFactors': {
                 'fields': {
-                    'p': self._db.getValue('.//underRelaxationFactors/pressure'),
-                    'pFinal': self._db.getValue('.//underRelaxationFactors/pressureFinal'),
-                    'p_rgh': self._db.getValue('.//underRelaxationFactors/pressure'),
-                    'p_rghFinal': self._db.getValue('.//underRelaxationFactors/pressureFinal'),
-                    'rho': self._db.getValue('.//underRelaxationFactors/density'),
-                    'rhoFinal': self._db.getValue('.//underRelaxationFactors/densityFinal'),
+                    'p': self._db.getValue(underRelaxaitionFactorsXPath + '/pressure'),
+                    'pFinal': self._db.getValue(underRelaxaitionFactorsXPath + '/pressureFinal'),
+                    'p_rgh': self._db.getValue(underRelaxaitionFactorsXPath + '/pressure'),
+                    'p_rghFinal': self._db.getValue(underRelaxaitionFactorsXPath + '/pressureFinal'),
+                    'rho': self._db.getValue(underRelaxaitionFactorsXPath + '/density'),
+                    'rhoFinal': self._db.getValue(underRelaxaitionFactorsXPath + '/densityFinal'),
                 },
                 'equations': {
-                    'U': self._db.getValue('.//underRelaxationFactors/momentum'),
-                    'UFinal': self._db.getValue('.//underRelaxationFactors/momentumFinal'),
-                    'h': 1 if self._region.isSolid() else self._db.getValue('.//underRelaxationFactors/energy'),
+                    'U': self._db.getValue(underRelaxaitionFactorsXPath + '/momentum'),
+                    'UFinal': self._db.getValue(underRelaxaitionFactorsXPath + '/momentumFinal'),
+                    'h': 1 if self._region.isSolid() else self._db.getValue(underRelaxaitionFactorsXPath + '/energy'),
                     'hFinal':
-                        1 if self._region.isSolid() else self._db.getValue('.//underRelaxationFactors/energyFinal'),
-                    '"(k|epsilon|omega|nuTilda)"': self._db.getValue('.//underRelaxationFactors/turbulence'),
-                    '"(k|epsilon|omega|nuTilda)Final"': self._db.getValue('.//underRelaxationFactors/turbulenceFinal'),
+                        1 if self._region.isSolid() else self._db.getValue(underRelaxaitionFactorsXPath + '/energyFinal'),
+                    '"(k|epsilon|omega|nuTilda)"': self._db.getValue(underRelaxaitionFactorsXPath + '/turbulence'),
+                    '"(k|epsilon|omega|nuTilda)Final"':
+                        self._db.getValue(underRelaxaitionFactorsXPath + '/turbulenceFinal'),
                     **{
-                        specie: self._db.getValue(f'{speciesXPath}/specie[mid="{mid}"]/underRelaxationFactor')
+                        specie: self._db.getValue(underRelaxaitionFactorsXPath + '/species')
                         for mid, specie in self._species
                     },
                     **{
-                        f'{specie}Final':
-                            self._db.getValue(f'{speciesXPath}/specie[mid="{mid}"]/underRelaxationFactorFinal')
+                        f'{specie}Final': self._db.getValue(underRelaxaitionFactorsXPath + '/speciesFinal')
                         for mid, specie in self._species
                     }
                 }
@@ -297,9 +297,9 @@ class FvSolution(DictionaryFile):
         for mid in self._region.secondaryMaterials:
             material = MaterialDB.getName(mid)
             self._data['relaxationFactors']['equations'][f'alpha.{material}'] = self._db.getValue(
-                NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors/volumeFraction')
+                underRelaxaitionFactorsXPath + '/volumeFraction')
             self._data['relaxationFactors']['equations'][f'alpha.{material}Final'] = self._db.getValue(
-                NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors/volumeFractionFinal')
+                underRelaxaitionFactorsXPath + '/volumeFractionFinal')
 
         absolute = self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/convergenceCriteria/scalar/absolute')
         relative = self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/convergenceCriteria/scalar/relative')
@@ -310,23 +310,9 @@ class FvSolution(DictionaryFile):
         }
 
         self._data['relaxationFactors']['equations']['scalar'] = self._db.getValue(
-            f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/underRelaxationFactors/scalar')
+            underRelaxaitionFactorsXPath + '/scalar')
         self._data['relaxationFactors']['equations']['scalarFinal'] = self._db.getValue(
-            f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/underRelaxationFactors/scalarFinal')
-        #
-        # for scalarID, fieldName in self._db.getUserDefinedScalars():
-        #     xpath = f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/convergenceCriteria/userDefinedScalars/scalar[scalarID="{scalarID}"]'
-        #     absolute = self._db.getValue(xpath + '/absolute')
-        #     relative = self._db.getValue(xpath + '/relative')
-        #     self._data['SIMPLE']['residualControl'][fieldName] = absolute
-        #     self._data['PIMPLE']['residualControl'][fieldName] = {
-        #         'tolerance': absolute,
-        #         'relTol': relative
-        #     }
-        #
-        #     xpath = f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/underRelaxationFactors/userDefinedScalars/scalar[scalarID="{scalarID}"]'
-        #     self._data['relaxationFactors']['equations'][fieldName] = self._db.getValue(xpath + '/value')
-        #     self._data['relaxationFactors']['equations'][f'{fieldName}Final'] = self._db.getValue(xpath + '/finalValue')
+            underRelaxaitionFactorsXPath + '/scalarFinal')
 
         return self
 
