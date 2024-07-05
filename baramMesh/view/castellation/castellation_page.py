@@ -150,7 +150,9 @@ class CastellationPage(StepPage):
         self._ui.castellationReset.clicked.connect(self._reset)
 
     def _load(self):
-        castellation = app.db.getElement('castellation')
+        self._db = app.db.checkout()
+
+        castellation = self._db.getElement('castellation')
         self._ui.nCellsBetweenLevels.setText(castellation.value('nCellsBetweenLevels'))
         self._ui.resolveFeatureAngle.setText(castellation.value('resolveFeatureAngle'))
         self._ui.keepNonManifoldEdges.setChecked(castellation.value('vtkNonManifoldEdges'))
@@ -166,7 +168,7 @@ class CastellationPage(StepPage):
         self._ui.volumeRefinement.clear()
 
         groups = {GeometryType.SURFACE.value: set(), GeometryType.VOLUME.value: set()}
-        for gId, geometry in app.db.getElements('geometry').items():
+        for gId, geometry in self._db.getElements('geometry').items():
             if group := geometry.value('castellationGroup'):
                 groups[geometry.value('gType')].add(group)
 
@@ -177,16 +179,14 @@ class CastellationPage(StepPage):
                     groupId, element.value('groupName'),
                     surfaceRefinement.value('minimumLevel'), surfaceRefinement.value('maximumLevel'))
             else:
-                app.db.removeElement('castellation/refinementSurfaces', groupId)
+                self._db.removeElement('castellation/refinementSurfaces', groupId)
 
         for groupId, element in castellation.elements('refinementVolumes').items():
             if groupId in groups[GeometryType.VOLUME.value]:
                 self._addVolumeRefinementItem(groupId,
                                               element.value('groupName'), element.value('volumeRefinementLevel'))
             else:
-                app.db.removeElement('castellation/refinementVolumes', groupId)
-
-        self._db = app.db.checkout()
+                self._db.removeElement('castellation/refinementVolumes', groupId)
 
         self._loaded = True
         self._updateControlButtons()

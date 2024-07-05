@@ -90,7 +90,7 @@ class BoundaryLayerPage(StepPage):
         self._ui.boundaryLayerConfigurations.clear()
 
         groups = set()
-        for gId, geometry in app.db.getElements('geometry').items():
+        for gId, geometry in self._db.getElements('geometry').items():
             groups.add(geometry.value('layerGroup'))
             groups.add(geometry.value('slaveLayerGroup'))
         if None in groups:
@@ -102,7 +102,7 @@ class BoundaryLayerPage(StepPage):
             else:
                 self._db.removeElement('addLayers/layers', groupId)
 
-        addLayer = app.db.getElement('addLayers')
+        addLayer = self._db.getElement('addLayers')
 
         self._ui.nGrow.setText(addLayer.value('nGrow'))
         self._ui.featureAngleThreshold.setText(addLayer.value('featureAngle'))
