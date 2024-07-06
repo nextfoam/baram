@@ -980,9 +980,6 @@ class _CoreDB(object):
         parent = self._xmlTree.find('.//regions', namespaces=nsmap)
         parent.clear()
 
-        numericalCondtionsSpecies = self._xmlTree.find('numericalConditions/species', namespaces=nsmap)
-        numericalCondtionsSpecies.clear()
-
     def hasMultipleRegions(self):
         return len(self._xmlTree.findall(f'.//regions/region', namespaces=nsmap)) > 1
 

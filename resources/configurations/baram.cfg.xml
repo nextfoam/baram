@@ -132,6 +132,7 @@
             <volumeFraction>firstOrderUpwind</volumeFraction>
             <pressure>linear</pressure>
             <scalar>secondOrderUpwind</scalar>
+            <species>firstOrderUpwind</species>
         </discretizationSchemes>
         <underRelaxationFactors>
             <pressure>0.3</pressure>
@@ -148,6 +149,8 @@
             <volumeFractionFinal>1</volumeFractionFinal>
             <scalar>0.7</scalar>
             <scalarFinal>1</scalarFinal>
+            <species>0.3</species>
+            <speciesFinal>1</speciesFinal>
         </underRelaxationFactors>
         <highOrderTermRelaxation disabled="true">
             <relaxationFactor>0.5</relaxationFactor>
@@ -190,8 +193,11 @@
                 <absolute>0.001</absolute>
                 <relative>0.05</relative>
             </scalar>
+            <species>
+                <absolute>0.001</absolute>
+                <relative>0.05</relative>
+            </species>
         </convergenceCriteria>
-        <species/>
         <advanced>
             <limits>
                 <minimumStaticTemperature>1</minimumStaticTemperature>
