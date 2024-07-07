@@ -70,7 +70,7 @@ def _constructFluid(region: str):
 
     mix = {
         'equationOfState': _mixtureEquationOfState(densitySpec, db, path),
-        'thermodynamics': (specificHeatSpec, db, path),
+        'thermodynamics': _mixtureThermodynamics(specificHeatSpec, db, path),
         'transport': _mixtureTransport(tModel, transport, db, path),
         'specie': _mixtureSpecie(db, path)
     }
