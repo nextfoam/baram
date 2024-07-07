@@ -8,13 +8,17 @@ from libbaram.run import RunParallelUtility
 from libbaram.process import ProcessError
 from libbaram.simple_db.simple_schema import DBError
 from widgets.async_message_box import AsyncMessageBox
+from widgets.list_table import ListItemWithButtons
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
+from baramMesh.db.configurations_schema import CFDType
+from baramMesh.openfoam.system.create_patch_dict import CreatePatchDict
 from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramMesh.view.step_page import StepPage
-from widgets.list_table import ListItemWithButtons
+
 from .boundary_setting_dialog import BoundarySettingDialog
+from .restore_cyclic_patch_names import RestoreCyclicPatchNames
 
 
 class BoundaryLayerPage(StepPage):
@@ -146,6 +150,12 @@ class BoundaryLayerPage(StepPage):
             console = app.consoleView
             console.clear()
 
+            #
+            #  Add Boundary Layers
+            #
+
+            boundaryLayersAdded = False
+
             if self._ui.boundaryLayerConfigurations.count():
                 progressDialog = ProgressDialog(self._widget, self.tr('Boundary Layers Applying'))
                 progressDialog.setLabelText(self.tr('Updating Configurations'))
@@ -163,24 +173,49 @@ class BoundaryLayerPage(StepPage):
                 if rc != 0:
                     raise ProcessError
 
-                self._cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
-                                        cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
+                boundaryLayersAdded = True
+
+            else:
+                self.createOutputPath()
+
+            #
+            #  Reorder faces in conformal interfaces
+            #  (Faces in cyclic boundary pair should match in order)
+            #
+
+            NumberOfConformalInterfaces = app.db.elementCount(
+                'geometry', lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and not e['interRegion'] and not e['nonConformal'])
+
+            if NumberOfConformalInterfaces > 0:
+                prefix = 'NFBRM_'
+                CreatePatchDict(prefix).build().write()
+                self._cm = RunParallelUtility('createPatch', '-allRegions', '-overwrite', '-case', app.fileSystem.caseRoot(),
+                                              cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
                 self._cm.output.connect(console.append)
                 self._cm.errorOutput.connect(console.appendError)
                 await self._cm.start()
                 await self._cm.wait()
-            else:
-                self.createOutputPath()
+
+                rpn = RestoreCyclicPatchNames(prefix, str(self.OUTPUT_TIME))
+                rpn.restore()
+
+            if boundaryLayersAdded:
+                self._cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
+                                              cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())
+                self._cm.output.connect(console.append)
+                self._cm.errorOutput.connect(console.appendError)
+                await self._cm.start()
+                await self._cm.wait()
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()
 
             await AsyncMessageBox().information(self._widget, self.tr('Complete'),
                                                 self.tr('Boundary layers are applied.'))
-        except ProcessError as e:
+        except ProcessError as exc:
             self.clearResult()
             await AsyncMessageBox().information(self._widget, self.tr('Error'),
-                                                self.tr('Failed to apply boundary layers. [') + str(e.returncode) + ']')
+                                                self.tr('Failed to apply boundary layers. [') + str(exc.returncode) + ']')
         except CanceledException:
             self.clearResult()
             await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
