@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
@@ -256,10 +258,14 @@ class FvSchemes(DictionaryFile):
         else:
             divSchemes['div(phi,scalar)'] = f'Gauss linearUpwind momentumReconGrad'
 
-        if self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/discretizationSchemes/species') == 'firstOrderUpwind':
-            divSchemes['div(phi,Yi_h)'] = f'Gauss upwind'
-        else:
-            divSchemes['div(phi,Yi_h)'] = f'Gauss linearUpwind momentumReconGrad'
+        if ModelsDB.isSpeciesModelOn():
+            if self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/discretizationSchemes/species') == 'firstOrderUpwind':
+                speciesDivSchemes = f'Gauss upwind'
+            else:
+                speciesDivSchemes = f'Gauss linearUpwind momentumReconGrad'
+
+            for mid, specie in self._db.getSpecies(self._mid):
+                divSchemes[f'div(phi,{specie})'] = speciesDivSchemes
 
         return divSchemes
 
