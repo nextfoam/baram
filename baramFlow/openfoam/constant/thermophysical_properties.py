@@ -54,6 +54,7 @@ def _constructFluid(region: str):
         data = {
             'thermoType': thermo,
             'species': [],
+            'inertSpecie': MaterialDB.getName(db.getValue(path + '/mixture/primarySpecie'))
         }
 
         for specie, name in db.getSpecies(mid):
