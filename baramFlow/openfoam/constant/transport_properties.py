@@ -27,8 +27,10 @@ class TransportProperties(DictionaryFile):
         if findSolver() == 'interFoam':
             self._data = self._buildForInterFoam()
             return self
-        elif ModelsDB.isEnergyModelOn():
-            return self
+
+        # TransportProperties file is not used for now.
+        # It may be used for Non-Newtonian fluid in the future
+        return self
 
         self._data = {}
 
