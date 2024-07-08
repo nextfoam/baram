@@ -62,10 +62,12 @@ def _constructFluid(region: str):
 
             data['species'].append(name)
             data[name] = {
+                'equationOfState': _mixtureEquationOfState(densitySpec, db, spath),
                 'thermodynamics': _mixtureThermodynamics(specificHeatSpec, db, spath),
-                'transport': {'Dm': db.getValue(path + '/mixture/massDiffusivity')},
+                'transport': _mixtureTransport(tModel, transport, db, spath),
                 'specie': _mixtureSpecie(db, spath)
             }
+            data[name]['transport']['Dm'] = db.getValue(path + '/mixture/massDiffusivity')
 
         return data
 
