@@ -165,8 +165,8 @@ class FvSchemes(DictionaryFile):
         return {
             'default': 'Gauss linear',
             'momentumReconGrad':   'VKLimited Gauss linear 1.0',
-            'energyReconGrad':     'BJLimited Gauss linear 1.0',
-            'turbulenceReconGrad': 'BJLimited Gauss linear 1.0'
+            'energyReconGrad':     'VKLimited Gauss linear 1.0',
+            'turbulenceReconGrad': 'VKLimited Gauss linear 1.0'
         }
 
     def _constructDivSchemes(self):
