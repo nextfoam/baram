@@ -77,26 +77,23 @@ class AdvancedDialog(QDialog):
         self._ui.equationUDS.setChecked(self._db.getBool(self._xpath + '/equations/UDS'))
         self._ui.equationSpecies.setChecked(self._db.getBool(self._xpath + '/equations/species'))
 
-        includeVisousDissipationTerms = self._db.getBool(
+        includeViscousDissipationTerms = self._db.getBool(
             self._xpath + '/equations/energy/includeViscousDissipationTerms')
-        self._ui.includeViscousDissipationTerms.setChecked(includeVisousDissipationTerms)
+        self._ui.includeViscousDissipationTerms.setChecked(includeViscousDissipationTerms)
         self._ui.includeKineticEnergyTerms.setChecked(
             self._db.getBool(self._xpath + '/equations/energy/includeKineticEnergyTerms'))
         self._ui.includePressureWorkTerms.setChecked(
             self._db.getBool(self._xpath + '/equations/energy/includePressureWorkTerms'))
 
-        if ModelsDB.isEnergyModelOn() and not GeneralDB.isDensityBased():
+        if not GeneralDB.isDensityBased():
             self._ui.energyTerms.setEnabled(equationEnergyOn)
 
-            if includeVisousDissipationTerms:
+            if includeViscousDissipationTerms:
                 self._ui.includeKineticEnergyTerms.setEnabled(False)
                 self._ui.includePressureWorkTerms.setEnabled(False)
         else:
             self._ui.equationEnergy.setEnabled(False)
             self._ui.energyTerms.setEnabled(False)
-
-        self._ui.equationUDS.setEnabled(UserDefinedScalarsDB.hasDefined())
-        self._ui.equationUDS.setEnabled(ModelsDB.isSpeciesModelOn())
 
     def _equationEnergyToggled(self, checked):
         self._ui.energyTerms.setEnabled(checked)
