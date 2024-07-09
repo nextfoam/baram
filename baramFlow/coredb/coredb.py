@@ -769,7 +769,7 @@ class _CoreDB(object):
         etree.SubElement(thermalConductivity, f'{{{ns}}}polynomial').text = polynomial
 
         mixtureElement = etree.SubElement(material, f'{{{ns}}}mixture')
-        etree.SubElement(mixtureElement, f'{{{ns}}}massDiffusivity').text = '0.1'
+        etree.SubElement(mixtureElement, f'{{{ns}}}massDiffusivity').text = '1e-10'
         etree.SubElement(mixtureElement, f'{{{ns}}}primarySpecie').text = '0'
 
         specie = etree.SubElement(material, f'{{{ns}}}specie')
