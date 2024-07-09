@@ -209,7 +209,7 @@
                 <energy disabled="false">
                     <includeViscousDissipationTerms>false</includeViscousDissipationTerms>
                     <includeKineticEnergyTerms>false</includeKineticEnergyTerms>
-                    <includePressureWorkTerms>false</includePressureWorkTerms>
+                    <includePressureWorkTerms>true</includePressureWorkTerms>
                 </energy>
                 <UDS>true</UDS>
                 <species>true</species>
