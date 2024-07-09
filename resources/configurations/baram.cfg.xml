@@ -141,7 +141,7 @@
             <densityFinal>1</densityFinal>
             <momentum>0.7</momentum>
             <momentumFinal>1</momentumFinal>
-            <energy>0.9</energy>
+            <energy>1.0</energy>
             <energyFinal>1</energyFinal>
             <turbulence>0.7</turbulence>
             <turbulenceFinal>1</turbulenceFinal>
@@ -149,7 +149,7 @@
             <volumeFractionFinal>1</volumeFractionFinal>
             <scalar>0.7</scalar>
             <scalarFinal>1</scalarFinal>
-            <species>0.3</species>
+            <species>1.0</species>
             <speciesFinal>1</speciesFinal>
         </underRelaxationFactors>
         <highOrderTermRelaxation disabled="true">
