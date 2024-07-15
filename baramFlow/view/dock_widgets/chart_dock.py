@@ -166,11 +166,7 @@ class ChartView(QWidget):
         maxY = d.max().max()
 
         minY = minY / 10  # margin in log scale
-
-        if maxY < 0.1:
-            maxY = maxY * 10  # margin in log scale
-        else:
-            maxY = 1
+        maxY = maxY * 10  # margin in log scale
 
         self._axes.set_ylim([minY, maxY])
 
