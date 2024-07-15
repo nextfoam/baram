@@ -6,7 +6,7 @@ from threading import Lock
 from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb import ValueException, Error, _CoreDB
+from baramFlow.coredb.coredb import ValueException, DBError, _CoreDB
 from baramFlow.coredb.initialization_db import InitializationDB
 from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT, Phase
 from baramFlow.coredb.models_db import ModelsDB
@@ -170,9 +170,9 @@ class CoreDBReader(_CoreDB):
                 return value
         except ValueException as ex:
             error, message = ex.args
-            if error == Error.OUT_OF_RANGE:
+            if error == DBError.OUT_OF_RANGE:
                 message = 'out of range'
-            elif error == Error.FLOAT_ONLY:
+            elif error == DBError.FLOAT_ONLY:
                 message = 'a float is required'
 
             raise ValueException(

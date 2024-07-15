@@ -3,7 +3,7 @@
 
 from PySide6.QtCore import QCoreApplication
 
-from baramFlow.coredb.coredb import CoreDB, Error, ValueException
+from baramFlow.coredb.coredb import CoreDB, DBError, ValueException
 
 
 def boolToDBText(value):
@@ -81,16 +81,14 @@ class DBWriterError:
         self._message = message
 
     def toMessage(self):
-        if self._error == Error.OUT_OF_RANGE:
+        if self._error == DBError.OUT_OF_RANGE:
             return QCoreApplication.translate('CoreDBWriter', '{0} is out of range.').format(self._name)
-        elif self._error == Error.INTEGER_ONLY:
+        elif self._error == DBError.INTEGER_ONLY:
             return QCoreApplication.translate('CoreDBWriter', '{0} must be a integer.').format(self._name)
-        elif self._error == Error.FLOAT_ONLY:
+        elif self._error == DBError.FLOAT_ONLY:
             return QCoreApplication.translate('CoreDBWriter', '{0} must be a float.').format(self._name)
-        elif self._error == Error.REFERENCED:
+        elif self._error == DBError.REFERENCED:
             return QCoreApplication.translate('CoreDBWriter', '{0} is referenced by other configurations.').format(self._name)
-        elif self._error == Error.INVALID_SYNTAX:
-            return QCoreApplication.translate('CoreDBWriter', self._message)
         else:
             return QCoreApplication.translate('CoreDBWriter', '{0} is invalid. {1}').format(self._name, self._error)
 

@@ -335,7 +335,7 @@
                         </xs:element>
                         <xs:element name="constant" type="inputNumberType"/>
                         <xs:element name="polynomial" type="inputNumberListType"/>
-                        <xs:element name="pengRobinsonParameters">
+                        <xs:element name="pengRobinsonParameters" minOccurs="0">
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="criticalTemperature" type="inputNumberType"/>

@@ -536,19 +536,20 @@ def _version_6(root: etree.Element):
             e.text = 'nonmixture'
             p.insert(1, e)
 
-        if (density := p.find('density', namespaces=_nsmap)) is not None:
-            if density.find('pengRobinsonParameters', namespaces=_nsmap) is None:
-                logger.debug(f'    Adding "pengRobinsonParameters" to {p}')
+        if p.find('phase', namespaces=_nsmap).text == 'gas':
+            if (density := p.find('density', namespaces=_nsmap)) is not None:
+                if density.find('pengRobinsonParameters', namespaces=_nsmap) is None:
+                    logger.debug(f'    Adding "pengRobinsonParameters" to {p}')
 
-                e = etree.fromstring('<pengRobinsonParameters xmlns="http://www.baramcfd.org/baram">'
-                                     f' <criticalTemperature>{properties["criticalTemperature"]}</criticalTemperature>'
-                                     f' <criticalPressure>{properties["criticalPressure"]}</criticalPressure>'
-                                     f' <criticalSpecificVolume>'
-                                     f'     {round(1 / float(properties["criticalDensity"]), 4)}'
-                                     f' </criticalSpecificVolume>'
-                                     f' <acentricFactor>{properties["acentricFactor"]}</acentricFactor>'
-                                     '</pengRobinsonParameters>')
-                density.append(e)
+                    e = etree.fromstring('<pengRobinsonParameters xmlns="http://www.baramcfd.org/baram">'
+                                         f' <criticalTemperature>{properties["criticalTemperature"]}</criticalTemperature>'
+                                         f' <criticalPressure>{properties["criticalPressure"]}</criticalPressure>'
+                                         f' <criticalSpecificVolume>'
+                                         f'     {round(1 / float(properties["criticalDensity"]), 4)}'
+                                         f' </criticalSpecificVolume>'
+                                         f' <acentricFactor>{properties["acentricFactor"]}</acentricFactor>'
+                                         '</pengRobinsonParameters>')
+                    density.append(e)
 
     if (p := root.find('models/turbulenceModels', namespaces=_nsmap)) is not None:
         if p.find('turbulentSchmidtNumber', namespaces=_nsmap) is None:

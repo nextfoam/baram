@@ -39,7 +39,7 @@ class MaterialAddDialog(QDialog):
         self._mixture = mixture
         self._added = None
 
-        for name, formula, phase in coredb.CoreDB().getMaterialsFromDB(
+        for name, formula, phase in MaterialDB.getMaterialsFromDB(
                 None if mixture is None else MaterialDB.getPhase(mixture).value):
             MaterialItem(self._ui.list, name, Phase(phase))
 
@@ -87,7 +87,9 @@ class MaterialAddDialog(QDialog):
 
             species.append(item.name())
 
-        self._added = [coredb.CoreDB().addMixture('mixture', species)]
+        with coredb.CoreDB() as db:
+            self._added = [MaterialDB.addMixture(db, 'mixture', species)]
+
         self._type = MaterialType.MIXTURE
 
         self.accept()
@@ -95,11 +97,12 @@ class MaterialAddDialog(QDialog):
     def _addMaterials(self):
         self._added = []
 
-        if self._type == MaterialType.NONMIXTURE:
-            for item in self._ui.list.selectedItems():
-                self._added.append(coredb.CoreDB().addMaterial(item.name()))
-        elif self._type == MaterialType.SPECIE:
-            for item in self._ui.list.selectedItems():
-                self._added.append(coredb.CoreDB().addSpecie(item.name(), self._mixture))
+        with coredb.CoreDB() as db:
+            if self._type == MaterialType.NONMIXTURE:
+                for item in self._ui.list.selectedItems():
+                    self._added.append(MaterialDB.addMaterial(db, item.name()))
+            elif self._type == MaterialType.SPECIE:
+                for item in self._ui.list.selectedItems():
+                    self._added.append(MaterialDB.addSpecie(db, item.name(), self._mixture))
 
         self.accept()

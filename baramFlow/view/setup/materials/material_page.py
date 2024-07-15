@@ -5,6 +5,7 @@ import qasync
 from PySide6.QtWidgets import QVBoxLayout
 from PySide6.QtCore import Signal
 
+from baramFlow.coredb.configuraitions import ConfigurationException
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
@@ -52,23 +53,12 @@ class MaterialPage(ContentPage):
             return
 
         try:
-            if card.type == MaterialType.NONMIXTURE:
-                coredb.CoreDB().removeMaterial(card.name)
-            elif card.type == MaterialType.MIXTURE:
-                coredb.CoreDB().removeMixture(card.mid)
-
+            with coredb.CoreDB() as db:
+                MaterialDB.removeMaterial(db, card.mid)
             self._cardListLayout.removeWidget(card)
             card.deleteLater()
-        except coredb.ValueException as ex:
-            error, _ = ex.args
-            if error == coredb.Error.REFERENCED:
-                await AsyncMessageBox().critical(
-                    self, self.tr('Material Removal Failed'),
-                    self.tr('"{}" or its species are referenced by other configurations.').format(card.name))
-            else:
-                await AsyncMessageBox().critical(
-                    self, self.tr('Material Removal Failed'),
-                    self.tr('Failed to remove {}').format(card.name))
+        except ConfigurationException as ex:
+            await AsyncMessageBox().information(self, self.tr('Material Removal Failed'), str(ex))
 
     def _connectSignalsSlots(self):
         self._ui.add.clicked.connect(self._add)

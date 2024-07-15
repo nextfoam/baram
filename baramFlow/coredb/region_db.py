@@ -1,17 +1,40 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from PySide6.QtCore import QObject
+
+import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
-from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.configuraitions import ConfigurationException
+from baramFlow.coredb.material_db import MaterialDB, MaterialType, MaterialObserver
 
 
+REGION_XPATH = '/regions/region'
 DEFAULT_REGION_NAME = 'region0'
 
 
+class RegionMaterialObserver(QObject):
+    def materialsUpdating(self, db, rname, primary, secondaries, species):
+        pass
+
+    def _specieRatiosXML(self, species):
+        text = ''
+        for mid, isPrimary in species.items():
+            text += f'<specie><mid>{mid}</mid><value>{1 if isPrimary else 0}</value></specie>'
+
+        return text
+
+
 class RegionDB:
+    _materialObservers = []
+
+    @classmethod
+    def registerMaterialObserver(cls, observer):
+        cls._materialObservers.append(observer)
+
     @classmethod
     def getXPath(cls, rname):
-        return f'.//region[name="{rname}"]'
+        return f'{REGION_XPATH}[name="{rname}"]'
 
     @classmethod
     def getPhase(cls, rname):
@@ -30,19 +53,58 @@ class RegionDB:
         return len(coredb.CoreDB().getRegions())
 
     @classmethod
-    def buildVolumeFractionElement(cls, mid, fraction):
-        return f'''
-                    <volumeFraction xmlns="http://www.baramcfd.org/baram">
-                        <material>{mid}</material>
-                        <fraction>{fraction}</fraction>
-                    </volumeFraction>
-                '''
-    #
-    # @classmethod
-    # def buildUserDefinedScalarElement(cls, scalarID, value):
-    #     return f'''
-    #                 <scalar xmlns="http://www.baramcfd.org/baram">
-    #                     <scalarID>{scalarID}</scalarID>
-    #                     <value>{value}</value>
-    #                 </scalar>
-    #             '''
+    def updateMaterials(cls, rname, primary, secondaries):
+        def addSurfaceTension(parent, mid1, mid2):
+            if xml.getElement(parent, f'surfaceTension[mid="{mid1}"][mid="{mid2}"]') is None:
+                parent.append(xml.createElement(f'<surfaceTension xmlns="http://www.baramcfd.org/baram">'
+                                                f'  <mid>{mid1}</mid><mid>{mid2}</mid><value>0</value>'
+                                                f'</surfaceTension>'))
+
+        db = coredb.CoreDB()
+
+        currentPrimary = int(RegionDB.getMaterial(rname))
+        currentSecondaries = RegionDB.getSecondaryMaterials(rname)
+
+        if primary == currentPrimary and set(secondaries) == set(currentSecondaries):
+            return
+
+        if currentPrimary != primary and MaterialDB.getType(primary) == MaterialType.MIXTURE:
+            primarySpecie = MaterialDB.getPrimarySpecie(primary)
+            species = {mid: mid == primarySpecie for mid, _ in MaterialDB.getSpecies(primary).items()}
+        else:
+            species = {}
+
+        for observer in cls._materialObservers:
+            observer.materialsUpdating(db, rname, primary, secondaries, species)
+
+        xpath = cls.getXPath(rname)
+        db.setValue(xpath + '/material', str(primary))
+        db.setValue(xpath + '/secondaryMaterials', ' '.join(secondaries))
+
+        region = getRegionElement(rname)
+        surfaceTensions = xml.getElement(region, 'phaseInteractions/surfaceTensions')
+        surfaceTensions.clear()
+        #
+        # for i in range(len(secondaries)):
+        #     addSurfaceTension(surfaceTensions, primary, secondaries[i])
+        #     for j in range(len(secondaries)):
+        #         addSurfaceTension(surfaceTensions, secondaries[i], secondaries[j])
+
+
+def getRegionElement(rname):
+    return coredb.CoreDB().getElement(RegionDB.getXPath(rname))
+
+
+class _MaterialObserver(MaterialObserver):
+    def materialRemoving(self, db, mid: int):
+        for region in db.getElements(REGION_XPATH):
+            if int(xml.getText(region, 'material')) == mid or f' {mid} ' in f" {xml.getText(region, 'secondaryMaterials')} ":
+                raise ConfigurationException(self.tr('{} is set as material of region {}').format(
+                    MaterialDB.getName(mid), xml.getText(region, 'name')))
+        #
+        # surfaceTensions = db.getElement(f'{REGION_XPATH}/phaseInteractions/surfaceTensions')
+        # for element in xml.getElement(surfaceTensions, f'surfaceTension[mid="{mid}"]'):
+        #     surfaceTensions.remove(element)
+
+
+MaterialDB.registerObserver(_MaterialObserver())

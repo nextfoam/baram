@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import qasync
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import Signal
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_writer import CoreDBWriter
+from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.material_db import MaterialDB, MaterialType
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
 from widgets.async_message_box import AsyncMessageBox
@@ -120,23 +121,14 @@ class MixtureCard(QWidget):
                 self, self.tr("Remove specie"), self.tr('Remove specie "{}"'.format(card.name))):
             return
 
-        writer = CoreDBWriter()
-        writer.callFunction('removeSpecie', [card.mid], card.name)
-
-        primarySpecie = self._primarySpecie
-        if self._primarySpecie == str(card.mid):
-            card1 = self._cardListLayout.itemAt(0).widget()
-            card2 = self._cardListLayout.itemAt(1).widget()
-            primaryCard = card2 if card1.name == card.name else card1
-            primarySpecie = primaryCard.name
-            writer.append(self._xpath + '/mixture/primarySpecie', str(primaryCard.mid), None)
-
-        errorCount = writer.write()
-        if errorCount > 0:
-            await AsyncMessageBox().information(self, self.tr("Remove Specie Failed"), writer.firstError().toMessage())
+        try:
+            with coredb.CoreDB() as db:
+                MaterialDB.removeSpecie(db, card.mid)
+        except ConfigurationException as ex:
+            await AsyncMessageBox().information(self, self.tr("Remove Specie Failed"), str(ex))
             return
 
-        self._ui.primarySpecie.setText(primarySpecie)
+        self._ui.primarySpecie.setText(MaterialDB.getName(MaterialDB.getPrimarySpecie(self._mid)))
         self._cardListLayout.removeWidget(card)
         card.deleteLater()
 

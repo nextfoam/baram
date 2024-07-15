@@ -34,23 +34,22 @@ class MRFWidget(QWidget):
         boundaries = self._db.getValue(self._xpath + '/staticBoundaries')
         self._setStaticBoundaries(boundaries.split() if boundaries else [])
 
-    def appendToWriter(self, writer):
-        writer.append(self._xpath + '/rotatingSpeed',
-                      self._ui.rotatingSpeed.text(), self.tr("Rotating Speed"))
-        writer.append(self._xpath + '/rotationAxisOrigin/x',
-                      self._ui.rotationAxisOriginX.text(), self.tr("Rotating-Axis Origin X"))
-        writer.append(self._xpath + '/rotationAxisOrigin/y',
-                      self._ui.rotationAxisOriginY.text(), self.tr("Rotating-Axis Origin Y"))
-        writer.append(self._xpath + '/rotationAxisOrigin/z',
-                      self._ui.rotationAxisOriginZ.text(), self.tr("Rotating-Axis Origin Z"))
-        writer.append(self._xpath + '/rotationAxisDirection/x',
-                      self._ui.rotationAxisDirectionX.text(), self.tr("Rotating-Axis Direction X"))
-        writer.append(self._xpath + '/rotationAxisDirection/y',
-                      self._ui.rotationAxisDirectionY.text(), self.tr("Rotating-Axis Direction Y"))
-        writer.append(self._xpath + '/rotationAxisDirection/z',
-                      self._ui.rotationAxisDirectionZ.text(), self.tr("Rotating-Axis Direction Z"))
-        writer.append(self._xpath + '/staticBoundaries',
-                      ' '.join(b for b in self._staticBoundaries), self.tr("Static Boundary"))
+    def updateDB(self, db):
+        db.setValue(self._xpath + '/rotatingSpeed', self._ui.rotatingSpeed.text(), self.tr("Rotating Speed"))
+        db.setValue(self._xpath + '/rotationAxisOrigin/x', self._ui.rotationAxisOriginX.text(),
+                    self.tr("Rotating-Axis Origin X"))
+        db.setValue(self._xpath + '/rotationAxisOrigin/y', self._ui.rotationAxisOriginY.text(),
+                    self.tr("Rotating-Axis Origin Y"))
+        db.setValue(self._xpath + '/rotationAxisOrigin/z', self._ui.rotationAxisOriginZ.text(),
+                    self.tr("Rotating-Axis Origin Z"))
+        db.setValue(self._xpath + '/rotationAxisDirection/x', self._ui.rotationAxisDirectionX.text(),
+                    self.tr("Rotating-Axis Direction X"))
+        db.setValue(self._xpath + '/rotationAxisDirection/y', self._ui.rotationAxisDirectionY.text(),
+                    self.tr("Rotating-Axis Direction Y"))
+        db.setValue(self._xpath + '/rotationAxisDirection/z', self._ui.rotationAxisDirectionZ.text(),
+                    self.tr("Rotating-Axis Direction Z"))
+        db.setValue(self._xpath + '/staticBoundaries', ' '.join(b for b in self._staticBoundaries),
+                    self.tr("Static Boundary"))
 
         return True
 

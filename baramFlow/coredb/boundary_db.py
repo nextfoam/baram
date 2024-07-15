@@ -5,8 +5,14 @@ from enum import Enum
 
 from PySide6.QtCore import QCoreApplication
 
+import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
+from baramFlow.coredb.material_db import MaterialObserver, MaterialDB
+from baramFlow.coredb.region_db import RegionMaterialObserver, RegionDB, REGION_XPATH
 from baramFlow.view.widgets.multi_selector_dialog import SelectorItem
+
+
+BOUNDARY_CONDITION_XPATH = REGION_XPATH + '/boundaryConditions/boundaryCondition'
 
 
 class BoundaryType(Enum):
@@ -48,6 +54,7 @@ class GeometricalType(Enum):
     SYMMETRY    = 'symmetry'
     EMPTY       = 'empty'
     WEDGE       = 'wedge'
+
 
 class VelocitySpecification(Enum):
     COMPONENT = 'component'
@@ -146,11 +153,11 @@ class BoundaryDB:
 
     @classmethod
     def getXPath(cls, bcid):
-        return f'{cls.BOUNDARY_CONDITIONS_XPATH}/boundaryCondition[@bcid="{bcid}"]'
+        return f'{BOUNDARY_CONDITION_XPATH}[@bcid="{bcid}"]'
 
     @classmethod
     def getXPathByName(cls, rname, bcname):
-        return f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bcname}"]'
+        return f'{REGION_XPATH}[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bcname}"]'
 
     @classmethod
     def getBoundaryName(cls, bcid):
@@ -237,3 +244,73 @@ class BoundaryDB:
                     items.append(SelectorItem(f'{r}{bcname}', bcname, bcid))
 
         return items
+
+
+def getBoundaryElements(rname):
+    return coredb.CoreDB().getElements(f'{RegionDB.getXPath(rname)}/boundaryConditions/boundaryCondition')
+
+
+class _MaterialObserver(MaterialObserver):
+    def specieAdded(self, db, mid, mixtureID):
+        for mixture in db.getElements(f'{BOUNDARY_CONDITION_XPATH}/species/mixture[mid="{mixtureID}"]'):
+            mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
+                                             f' <mid>{mid}</mid><value>0</value>'
+                                             '</specie>'))
+
+    def materialRemoving(self, db, mid: int):
+        for wallAdhesion in db.getElements(
+                f'{BOUNDARY_CONDITION_XPATH}/wall/wallAdhesions/wallAdhesion[mid="{mid}"]'):
+            wallAdhesion.getparent().remove(wallAdhesion)
+
+        for volumeFraction in db.getElements(
+                f'{BOUNDARY_CONDITION_XPATH}/volumeFractions/volumeFraction[material="{mid}"]'):
+            volumeFraction.getparent().remove(volumeFraction)
+
+    def specieRemoving(self, db, mid, primarySpecie):
+        for boundaryCondition in db.getElements(BOUNDARY_CONDITION_XPATH):
+            for specie in xml.getElements(boundaryCondition, f'species/mixture/specie[mid="{mid}"]'):
+                self._removeSpecieInComposition(primarySpecie, specie)
+
+
+class _RegionMaterialObserver(RegionMaterialObserver):
+    def materialsUpdating(self, db, rname, primary, secondaries, species):
+        def addWallAdhesion(parent, mid1, mid2):
+            if xml.getElement(parent, f'wallAdhesion[mid="{mid1}"][mid="{mid2}"]') is None:
+                parent.append(xml.createElement('<wallAdhesion xmlns="http://www.baramcfd.org/baram"> '
+                                                f'  <mid>{mid1}</mid>'
+                                                f'  <mid>{mid2}</mid>'
+                                                '   <contactAngle>90</contactAngle>'
+                                                '   <advancingContactAngle>90</advancingContactAngle>'
+                                                '   <recedingContactAngle>90</recedingContactAngle>'
+                                                '   <characteristicVelocityScale>0.001</characteristicVelocityScale>'
+                                                '</wallAdhesion>'))
+
+        speicesXML = f'''<mixture xmlns="http://www.baramcfd.org/baram">
+                            <mid>{primary}</mid>{self._specieRatiosXML(species)}
+                         </mixture>'''
+
+        for boundaryCondtion in getBoundaryElements(rname):
+            wallAdhesions = xml.getElement(boundaryCondtion, 'wall/wallAdhesions')
+            volumeFractions = xml.getElement(boundaryCondtion, 'volumeFractions')
+            # wallAdhesions.clear()
+            # volumeFractions.clear()
+
+            for i in range(len(secondaries)):
+                addWallAdhesion(wallAdhesions, primary, secondaries[i])
+                for j in range(i + 1, len(secondaries)):
+                    addWallAdhesion(wallAdhesions, secondaries[i], secondaries[j])
+
+                if xml.getElement(volumeFractions, f'volumeFraction[material="{secondaries[i]}"]') is None:
+                    volumeFractions.append(xml.createElement('<volumeFraction xmlns="http://www.baramcfd.org/baram">'
+                                                             f' <material>{secondaries[i]}</material>'
+                                                             f' <fraction>0</fraction>'
+                                                             '</volumeFraction>'))
+
+            speciesElement = xml.getElement(boundaryCondtion, 'species')
+            speciesElement.clear()
+            if species:
+                speciesElement.append(xml.createElement(speicesXML))
+
+
+MaterialDB.registerObserver(_MaterialObserver())
+RegionDB.registerMaterialObserver(_RegionMaterialObserver())

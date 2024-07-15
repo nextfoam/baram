@@ -3,8 +3,6 @@
 
 from PySide6.QtWidgets import QGroupBox, QFormLayout, QLineEdit
 
-from widgets.async_message_box import AsyncMessageBox
-
 from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
@@ -67,23 +65,8 @@ class VolumeFractionWidget(QGroupBox):
     async def appendToWriter(self, writer: CoreDBWriter, xpath):
         if self._on:
             for mid in self._fractions:
-                try:
-                    decimal = float(self._fractions[mid].value)
-                except ValueError:
-                    await AsyncMessageBox().information(self, self.tr("Input Error"),
-                                                        self.tr(f'{self._fractions[mid].label} must be a float.'))
-                    return False
-
-            for mid in self._fractions:
                 inputValue = self._fractions[mid].value
                 fractionPath = xpath + f'/volumeFraction/[material="{mid}"]/fraction'
-                try:
-                    savedValue = self._db.getValue(fractionPath)
-                except LookupError:  # the material should be added if it is not there
-                    writer.addElement(xpath,
-                                      RegionDB.buildVolumeFractionElement(mid, inputValue), self._fractions[mid].label)
-                else:
-                    if inputValue != savedValue:
-                        writer.append(fractionPath, inputValue, self._fractions[mid].label)
+                writer.append(fractionPath, inputValue, self._fractions[mid].label)
 
         return True

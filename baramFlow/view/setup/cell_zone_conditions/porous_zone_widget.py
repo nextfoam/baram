@@ -49,38 +49,38 @@ class PorousZoneWidget(QWidget):
         self._ui.c0.setText(self._db.getValue(self._xpath + '/powerLaw/c0'))
         self._ui.c1.setText(self._db.getValue(self._xpath + '/powerLaw/c1'))
 
-    def appendToWriter(self, writer):
+    def updateDB(self, db):
         model = self._ui.model.currentData()
-        writer.append(self._xpath + '/model', model.value, None)
+        db.setValue(self._xpath + '/model', model.value, None)
 
         if model == PorousZoneModel.DARCY_FORCHHEIMER:
-            writer.append(self._xpath + '/darcyForchheimer/direction1Vector/x',
-                          self._ui.direction1VectorX.text(), self.tr('Direction-1 Vector X'))
-            writer.append(self._xpath + '/darcyForchheimer/direction1Vector/y',
-                          self._ui.direction1VectorY.text(), self.tr('Direction-1 Vector Y'))
-            writer.append(self._xpath + '/darcyForchheimer/direction1Vector/z',
+            db.setValue(self._xpath + '/darcyForchheimer/direction1Vector/x', self._ui.direction1VectorX.text(),
+                        self.tr('Direction-1 Vector X'))
+            db.setValue(self._xpath + '/darcyForchheimer/direction1Vector/y', self._ui.direction1VectorY.text(),
+                        self.tr('Direction-1 Vector Y'))
+            db.setValue(self._xpath + '/darcyForchheimer/direction1Vector/z',
                           self._ui.direction1VectorZ.text(), self.tr('Direction-1 Vector Z'))
-            writer.append(self._xpath + '/darcyForchheimer/direction2Vector/x',
+            db.setValue(self._xpath + '/darcyForchheimer/direction2Vector/x',
                           self._ui.direction2VectorX.text(), self.tr('Direction-2 Vector X'))
-            writer.append(self._xpath + '/darcyForchheimer/direction2Vector/y',
+            db.setValue(self._xpath + '/darcyForchheimer/direction2Vector/y',
                           self._ui.direction2VectorY.text(), self.tr('Direction-2 Vector Y'))
-            writer.append(self._xpath + '/darcyForchheimer/direction2Vector/z',
+            db.setValue(self._xpath + '/darcyForchheimer/direction2Vector/z',
                           self._ui.direction2VectorZ.text(), self.tr('Direction-2 Vector Z'))
-            writer.append(self._xpath + '/darcyForchheimer/viscousResistanceCoefficient/x',
+            db.setValue(self._xpath + '/darcyForchheimer/viscousResistanceCoefficient/x',
                           self._ui.viscousResistanceCoefficientX.text(), self.tr('Inertial Resistance Coefficient X'))
-            writer.append(self._xpath + '/darcyForchheimer/viscousResistanceCoefficient/y',
+            db.setValue(self._xpath + '/darcyForchheimer/viscousResistanceCoefficient/y',
                           self._ui.viscousResistanceCoefficientY.text(), self.tr('Inertial Resistance Coefficient Y'))
-            writer.append(self._xpath + '/darcyForchheimer/viscousResistanceCoefficient/z',
+            db.setValue(self._xpath + '/darcyForchheimer/viscousResistanceCoefficient/z',
                           self._ui.viscousResistanceCoefficientZ.text(), self.tr('Inertial Resistance Coefficient Z'))
-            writer.append(self._xpath + '/darcyForchheimer/inertialResistanceCoefficient/x',
+            db.setValue(self._xpath + '/darcyForchheimer/inertialResistanceCoefficient/x',
                           self._ui.inertialResistanceCoefficientX.text(), self.tr('Viscous Resistance Coefficient X'))
-            writer.append(self._xpath + '/darcyForchheimer/inertialResistanceCoefficient/y',
+            db.setValue(self._xpath + '/darcyForchheimer/inertialResistanceCoefficient/y',
                           self._ui.inertialResistanceCoefficientY.text(), self.tr('Viscous Resistance Coefficient Y'))
-            writer.append(self._xpath + '/darcyForchheimer/inertialResistanceCoefficient/z',
+            db.setValue(self._xpath + '/darcyForchheimer/inertialResistanceCoefficient/z',
                           self._ui.inertialResistanceCoefficientZ.text(), self.tr('Viscous Resistance Coefficient Z'))
         elif model == PorousZoneModel.POWER_LAW:
-            writer.append(self._xpath + '/powerLaw/c0', self._ui.c0.text(), self.tr('C0'))
-            writer.append(self._xpath + '/powerLaw/c1', self._ui.c1.text(), self.tr('C1'))
+            db.setValue(self._xpath + '/powerLaw/c0', self._ui.c0.text(), self.tr('C0'))
+            db.setValue(self._xpath + '/powerLaw/c1', self._ui.c1.text(), self.tr('C1'))
 
         return True
 

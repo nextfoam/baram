@@ -42,13 +42,13 @@ class ConstantSourceWidget(QWidget):
         self._ui.specificationMethod.setCurrentData(SpecificationMethod(self._db.getValue(self._xpath + '/unit')))
         self._ui.value.setText(self._db.getValue(self._xpath + '/constant'))
 
-    def appendToWriter(self, writer):
+    def updateDB(self, db):
         if self._ui.groupBox.isChecked():
-            writer.setAttribute(self._xpath, 'disabled', 'false')
-            writer.append(self._xpath + '/unit', self._ui.specificationMethod.currentValue(), None)
-            writer.append(self._xpath + '/constant', self._ui.value.text(), self._title)
+            db.setAttribute(self._xpath, 'disabled', 'false')
+            db.setValue(self._xpath + '/unit', self._ui.specificationMethod.currentValue(), None)
+            db.setValue(self._xpath + '/constant', self._ui.value.text(), self._title)
         else:
-            writer.setAttribute(self._xpath, 'disabled', 'true')
+            db.setAttribute(self._xpath, 'disabled', 'true')
 
         return True
 

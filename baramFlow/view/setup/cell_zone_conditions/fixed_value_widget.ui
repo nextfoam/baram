@@ -46,7 +46,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="value"/>
+       <widget class="QLineEdit" name="value">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

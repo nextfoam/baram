@@ -50,19 +50,19 @@ class MaterialSectorDialog(QDialog):
                 self._ui.list.addItem(item)
                 self._ui.primary.setItemData(index, self._ui.list.row(item), ItemDataRole.LIST_INDEX.value)
 
-                if mid in secondaries:
+                if secondaries and mid in secondaries:
                     self._addSelectedItem(item)
 
                 self._ui.secondariesSelector.setEnabled(True)
 
-            if mid == primary:
+            if id_ == primary:
                 self._ui.primary.setCurrentText(name)
                 if item:
                     self._hideItemFromList(item)
 
         self._connectSignalsSlots()
 
-    def getMaterial(self):
+    def getPrimaryMaterial(self):
         return self._ui.primary.currentData(ItemDataRole.USER_DATA.value)
 
     def getSecondaries(self):

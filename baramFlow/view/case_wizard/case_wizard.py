@@ -37,6 +37,7 @@ class CaseWizard(QWizard):
         self._ui = Ui_CaseWizard()
         self._ui.setupUi(self)
 
+        MaterialDB.addMaterial(self._db, 'air')
         self.setPage(WORKSPACE, WorkspacePage(self, path))
         self.setPage(FLOW_TYPE, FlowTypePage(self))
         self.setPage(SOLVER_TYPE, SolverTypePage(self))
