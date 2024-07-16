@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+import os
 import platform
 import shutil
 import uuid
@@ -74,4 +75,4 @@ def copyOrLink(source: Path, target: Path):
     if platform.system() == 'Windows':
         shutil.copy(source, target)
     else:
-        target.symlink_to(source.relative_to(target))
+        target.symlink_to(os.path.relpath(source, target.parent))  # "walk_up" option for pathlib.Path.relative_to() is not available in python 3.9
