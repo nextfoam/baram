@@ -104,14 +104,6 @@ class FvSchemes(DictionaryFile):
             }
         }
 
-        scheme = (
-            'Gauss upwind'
-            if self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/discretizationSchemes/scalar') == 'firstOrderUpwind'
-            else 'Gauss linearUpwind momentumReconGrad')
-
-        if self._cap['timeSteady'] and not self._cap['timeTransient']:
-            self._data['divSchemes'][f'div(phi,scalar)'] = scheme
-
     def _generateFluid(self):
         self._data = {
             'ddtSchemes': self._constructDdtSchemes(),
