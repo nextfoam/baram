@@ -209,12 +209,22 @@ class BoundaryLayerPage(StepPage):
                 await self._cm.start()
                 await self._cm.wait()
             else:  # Mesh Quality information should be in this time folder
-                source = app.fileSystem.caseRoot() / str(self.OUTPUT_TIME-1)
-                target = app.fileSystem.caseRoot() / str(self.OUTPUT_TIME)
-                copyOrLink(source / 'cellAspectRatio', target / 'cellAspectRatio')
-                copyOrLink(source / 'cellVolume', target / 'cellVolume')
-                copyOrLink(source / 'nonOrthoAngle', target / 'nonOrthoAngle')
-                copyOrLink(source / 'skewness', target / 'skewness')
+                nProcFolders = app.fileSystem.numberOfProcessorFolders()
+                if nProcFolders == 0:
+                    source = app.fileSystem.timePath(self.OUTPUT_TIME-1)
+                    target = app.fileSystem.timePath(self.OUTPUT_TIME)
+                    copyOrLink(source / 'cellAspectRatio', target / 'cellAspectRatio')
+                    copyOrLink(source / 'cellVolume', target / 'cellVolume')
+                    copyOrLink(source / 'nonOrthoAngle', target / 'nonOrthoAngle')
+                    copyOrLink(source / 'skewness', target / 'skewness')
+                else:
+                    for processorNo in range(nProcFolders):
+                        source = app.fileSystem.timePath(self.OUTPUT_TIME-1, processorNo)
+                        target = app.fileSystem.timePath(self.OUTPUT_TIME, processorNo)
+                        copyOrLink(source / 'cellAspectRatio', target / 'cellAspectRatio')
+                        copyOrLink(source / 'cellVolume', target / 'cellVolume')
+                        copyOrLink(source / 'nonOrthoAngle', target / 'nonOrthoAngle')
+                        copyOrLink(source / 'skewness', target / 'skewness')
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()
