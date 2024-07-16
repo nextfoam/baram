@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+import platform
 import shutil
 import uuid
 from pathlib import Path
@@ -67,3 +68,10 @@ def getFit(window: QRect, display: QRect) -> QRect:
         y = display.bottomRight().y() - height
 
     return QRect(x, y, width, height)
+
+
+def copyOrLink(source: Path, target: Path):
+    if platform.system() == 'Windows':
+        shutil.copy(source, target)
+    else:
+        target.symlink_to(source.relative_to(target))
