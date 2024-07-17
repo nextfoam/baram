@@ -6,6 +6,7 @@ from enum import Enum, auto
 
 from PySide6.QtCore import QCoreApplication
 
+import baramFlow.coredb.scalar_db
 from baramFlow.coredb import coredb
 from baramFlow.coredb.cell_zone_db import SpecificationMethod
 
