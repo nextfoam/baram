@@ -7,6 +7,8 @@ from libbaram.exception import CanceledException
 from libbaram.run import RunParallelUtility
 from libbaram.process import ProcessError
 from libbaram.simple_db.simple_schema import DBError
+from libbaram.utils import copyOrLink
+
 from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItemWithButtons
 from widgets.progress_dialog import ProgressDialog
@@ -206,6 +208,23 @@ class BoundaryLayerPage(StepPage):
                 self._cm.errorOutput.connect(console.appendError)
                 await self._cm.start()
                 await self._cm.wait()
+            else:  # Mesh Quality information should be in this time folder
+                nProcFolders = app.fileSystem.numberOfProcessorFolders()
+                if nProcFolders == 0:
+                    source = app.fileSystem.timePath(self.OUTPUT_TIME-1)
+                    target = app.fileSystem.timePath(self.OUTPUT_TIME)
+                    copyOrLink(source / 'cellAspectRatio', target / 'cellAspectRatio')
+                    copyOrLink(source / 'cellVolume', target / 'cellVolume')
+                    copyOrLink(source / 'nonOrthoAngle', target / 'nonOrthoAngle')
+                    copyOrLink(source / 'skewness', target / 'skewness')
+                else:
+                    for processorNo in range(nProcFolders):
+                        source = app.fileSystem.timePath(self.OUTPUT_TIME-1, processorNo)
+                        target = app.fileSystem.timePath(self.OUTPUT_TIME, processorNo)
+                        copyOrLink(source / 'cellAspectRatio', target / 'cellAspectRatio')
+                        copyOrLink(source / 'cellVolume', target / 'cellVolume')
+                        copyOrLink(source / 'nonOrthoAngle', target / 'nonOrthoAngle')
+                        copyOrLink(source / 'skewness', target / 'skewness')
 
             await app.window.meshManager.load(self.OUTPUT_TIME)
             self._updateControlButtons()

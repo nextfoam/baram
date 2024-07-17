@@ -75,6 +75,9 @@ else:
               + str(OPENFOAM/'tlib')
 
     if platform.system() == 'Darwin':
+        library += os.pathsep + '/opt/homebrew/lib'
+
+    if platform.system() == 'Darwin':
         LIBRARY_PATH_NAME = 'DYLD_LIBRARY_PATH'
     else:
         LIBRARY_PATH_NAME = 'LD_LIBRARY_PATH'

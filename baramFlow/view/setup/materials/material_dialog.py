@@ -96,14 +96,15 @@ class MaterialDialog(ResizableDialog):
 
         self._setupDensitySpecification(densitySpecification)
         self._ui.constantDensity.setText(self._db.getValue(self._xpath + '/density/constant'))
-        self._ui.criticalTemperature.setText(
-            self._db.getValue(self._xpath + '/density/pengRobinsonParameters/criticalTemperature'))
-        self._ui.criticalPressure.setText(
-            self._db.getValue(self._xpath + '/density/pengRobinsonParameters/criticalPressure'))
-        self._ui.criticalSpecificVolume.setText(
-            self._db.getValue(self._xpath + '/density/pengRobinsonParameters/criticalSpecificVolume'))
-        self._ui.acentricFactor.setText(
-            self._db.getValue(self._xpath + '/density/pengRobinsonParameters/acentricFactor'))
+        if self._phase == Phase.GAS:
+            self._ui.criticalTemperature.setText(
+                self._db.getValue(self._xpath + '/density/pengRobinsonParameters/criticalTemperature'))
+            self._ui.criticalPressure.setText(
+                self._db.getValue(self._xpath + '/density/pengRobinsonParameters/criticalPressure'))
+            self._ui.criticalSpecificVolume.setText(
+                self._db.getValue(self._xpath + '/density/pengRobinsonParameters/criticalSpecificVolume'))
+            self._ui.acentricFactor.setText(
+                self._db.getValue(self._xpath + '/density/pengRobinsonParameters/acentricFactor'))
         self._densityTypeChanged()
 
         if self._phase != Phase.SOLID:
@@ -312,6 +313,7 @@ class MaterialDialog(ResizableDialog):
         self._ui.densityEdit.setEnabled(specification == Specification.POLYNOMIAL)
         self._ui.constantDensity.setEnabled(specification == Specification.CONSTANT)
         self._ui.pengRobinsonParameters.setVisible(specification == Specification.REAL_GAS_PENG_ROBINSON)
+
     def _specificHeatTypeChanged(self):
         specification = self._ui.specificHeatType.currentData(Qt.UserRole)
         self._ui.specificHeatEdit.setEnabled(specification == Specification.POLYNOMIAL)
