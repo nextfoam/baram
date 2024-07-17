@@ -54,7 +54,7 @@ class BoundaryLayerPage(StepPage):
 
     async def save(self):
         try:
-            addLayer = app.db.checkout('addLayers')
+            addLayer = self._db.checkout('addLayers')
 
             addLayer.setValue('nGrow', self._ui.nGrow.text(), self.tr('Number of Grow'))
             addLayer.setValue('featureAngle', self._ui.featureAngleThreshold.text(), self.tr('Feature Angle Threshold'))
@@ -74,8 +74,8 @@ class BoundaryLayerPage(StepPage):
             addLayer.setValue('nRelaxedIter', self._ui.nRelaxedIter.text(), self.tr('Max. Iter. Before Relax'))
 
             self._db.commit(addLayer)
-            app.db.commit(self._db)
 
+            app.db.commit(self._db)
             self._db = app.db.checkout()
 
             return True
