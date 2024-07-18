@@ -6,7 +6,8 @@ from enum import Enum
 from PySide6.QtCore import QCoreApplication, QObject, Signal
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, UserDefinedScalarsDB
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
+from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.material_db import MaterialDB, Phase, MaterialType, MaterialObserver
 from baramFlow.openfoam.solver import findSolver, getSolverCapability
 
@@ -204,7 +205,7 @@ class FieldHelper:
                     _appendMaterial(mid, name)
         elif ModelsDB.isSpeciesModelOn():
             for mid, _, _, _ in db.getMaterials(MaterialType.MIXTURE.value):
-                for specie, name in db.getSpecies(mid):
+                for specie, name in MaterialDB.getSpecies(mid).items():
                     _appendMaterial(specie, name)
 
         for scalarID, fieldName in coredb.CoreDB().getUserDefinedScalars():

@@ -28,7 +28,7 @@ class FvSolution(DictionaryFile):
 
         if rname is not None:
             self._region = self._db.getRegionProperties(rname)
-            self._species = self._db.getSpecies(RegionDB.getMaterial(rname))
+            self._species = MaterialDB.getSpecies(RegionDB.getMaterial(rname))
 
     def build(self):
         if self._data is not None:
@@ -69,11 +69,6 @@ class FvSolution(DictionaryFile):
         solveSpecies = self._boolToYN(
             ModelsDB.isSpeciesModelOn()
             and self._db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/species'))
-
-        if self._species:
-            species = '|' + '|'.join([name for _, name in self._species])
-        else:
-            species = ''
 
         self._data = {
             # For multiphase model
@@ -161,7 +156,7 @@ class FvSolution(DictionaryFile):
                     '"alpha.*"': self._db.getValue(convergenceCriteriaXPath + '/volumeFraction/absolute'),
                     **{
                         specie: self._db.getValue(convergenceCriteriaXPath + '/species/absolute')
-                        for mid, specie in self._species
+                        for specie in self._species.values()
                     }
                 }
             },
@@ -224,7 +219,7 @@ class FvSolution(DictionaryFile):
                             'tolerance': self._db.getValue(convergenceCriteriaXPath + '/species/absolute'),
                             'relTol': self._db.getValue(convergenceCriteriaXPath + '/species/absolute')
                         }
-                        for mid, specie in self._species
+                        for specie in self._species.values()
                     }
                 }
             },
@@ -248,11 +243,11 @@ class FvSolution(DictionaryFile):
                         self._db.getValue(underRelaxaitionFactorsXPath + '/turbulenceFinal'),
                     **{
                         specie: self._db.getValue(underRelaxaitionFactorsXPath + '/species')
-                        for mid, specie in self._species
+                        for specie in self._species.values()
                     },
                     **{
                         f'{specie}Final': self._db.getValue(underRelaxaitionFactorsXPath + '/speciesFinal')
-                        for mid, specie in self._species
+                        for specie in self._species.values()
                     }
                 }
             },

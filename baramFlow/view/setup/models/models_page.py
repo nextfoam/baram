@@ -4,7 +4,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QListWidgetItem
 
-from baramFlow.coredb.models_db import Models, ModelsDB, MultiphaseModel, TurbulenceModel, UserDefinedScalarsDB
+from baramFlow.coredb.models_db import Models, ModelsDB, MultiphaseModel, TurbulenceModel
+from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.general_db import GeneralDB, SolverType
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.content_page import ContentPage

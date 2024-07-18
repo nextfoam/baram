@@ -81,7 +81,7 @@ class SetFieldsDict(DictionaryFile):
                 if MaterialDB.getType(mid) == MaterialType.MIXTURE:
                     mixtureXPath = f'{sPath}/species/mixture[mid="{mid}"]'
                     if db.getAttribute(mixtureXPath, 'disabled') == 'false':
-                        for specie, fieldName in db.getSpecies(mid):
+                        for specie, fieldName in MaterialDB.getSpecies(mid).items():
                             value = db.getValue(f'{mixtureXPath}/specie[mid="{specie}"]/value')
                             fieldValues.append(('volScalarFieldValue', fieldName, value))
                             if fieldName not in defaultFields:

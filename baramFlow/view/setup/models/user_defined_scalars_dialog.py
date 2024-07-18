@@ -13,7 +13,8 @@ from widgets.flat_push_button import FlatPushButton
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.models_db import ModelsDB, ScalarSpecificationMethod, UserDefinedScalarsDB
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.scalar_model_db import ScalarSpecificationMethod, UserDefinedScalarsDB
 from .user_defined_scalar_dialog import UserDefiendScalarDialog, ALL_MATERIALS_TEXT, SCALAR_SPECIFICATION_METHODS
 from .user_defined_scalars_dialog_ui import Ui_UserDefinedScalarsDialog
 

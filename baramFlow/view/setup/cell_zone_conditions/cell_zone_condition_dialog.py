@@ -245,7 +245,7 @@ class CellZoneConditionDialog(QDialog):
                         return
 
                 if ModelsDB.isSpeciesModelOn() and MaterialDB.getType(self._material) == MaterialType.MIXTURE:
-                    for mid, _ in self._db.getSpecies(self._material):
+                    for mid in MaterialDB.getSpecies(self._material):
                         if not self._specieFixedValueWidgets[mid].updateDB(db):
                             return
 
@@ -362,10 +362,10 @@ class CellZoneConditionDialog(QDialog):
             return
 
         mixture = MaterialDB.getName(self._material)
-        species = self._db.getSpecies(self._material)
+        species = MaterialDB.getSpecies(self._material)
         self._species = []
 
-        for mid, name in species:
+        for mid, name in species.items():
             self._species.append(mid)
 
             if mid in self._materialSourceTerms:

@@ -9,7 +9,8 @@ from widgets.async_message_box import AsyncMessageBox
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter, boolToDBText
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.models_db import ModelsDB, UserDefinedScalarsDB
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.numerical_db import NumericalDB
 from .advanced_dialog_ui import Ui_AdvancedDialog
 

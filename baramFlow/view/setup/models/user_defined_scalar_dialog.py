@@ -9,7 +9,8 @@ from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.models_db import ScalarSpecificationMethod, ModelsDB
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.scalar_model_db import ScalarSpecificationMethod
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .user_defined_scalar_dialog_ui import Ui_UserDefinedScalarDialog
 

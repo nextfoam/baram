@@ -16,8 +16,8 @@ from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB, Phase, MaterialType
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceModelsDB, ScalarSpecificationMethod
-from baramFlow.coredb.models_db import UserDefinedScalarsDB
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceModelsDB
+from baramFlow.coredb.scalar_model_db import ScalarSpecificationMethod, UserDefinedScalarsDB
 from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType, Field
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
@@ -98,7 +98,7 @@ def _getAvailableFields():
                 fields.append(f'alpha.{name}')
     elif ModelsDB.isSpeciesModelOn():
         for mixture, name in db.getMixturesInRegions():
-            for mid, name in db.getSpecies(mixture):
+            for name in MaterialDB.getSpecies(mixture).values():
                 fields.append(name)
 
     for _, fieldName in CoreDBReader().getUserDefinedScalars():

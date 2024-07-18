@@ -256,7 +256,7 @@ class FvSchemes(DictionaryFile):
             else:
                 speciesDivSchemes = f'Gauss linearUpwind momentumReconGrad'
 
-            for mid, specie in self._db.getSpecies(self._mid):
+            for specie in MaterialDB.getSpecies(self._mid).values():
                 divSchemes[f'div(phi,{specie})'] = speciesDivSchemes
 
         return divSchemes

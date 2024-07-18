@@ -6,6 +6,7 @@ import logging
 
 from PySide6.QtCore import QCoreApplication, QObject, Signal
 
+from baramFlow.coredb.material_db import MaterialDB
 from libbaram import utils
 from libbaram.exception import CanceledException
 from libbaram.run import RunUtility, RunParallelUtility
@@ -153,7 +154,7 @@ class CaseGenerator(QObject):
             for mid in region.secondaryMaterials:
                 self._files.append(Alpha(region, time, processorNo, mid))
         elif ModelsDB.isSpeciesModelOn():
-            for mid, name in self._db.getSpecies(region.mid):
+            for mid, name in MaterialDB.getSpecies(region.mid).items():
                 self._files.append(Specie(region, time, processorNo, mid, name))
 
         for scalarID, fieldName in self._db.getUserDefinedScalarsInRegion(region.rname):

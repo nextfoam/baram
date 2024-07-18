@@ -291,7 +291,7 @@ class FvOptions(DictionaryFile):
         if ModelsDB.isSpeciesModelOn():
             material = RegionDB.getMaterial(self._rname)
             if MaterialDB.getType(material) == MaterialType.MIXTURE:
-                for mid, specie in self._db.getSpecies(material):
+                for mid, specie in MaterialDB.getSpecies(material).items():
                     self._generateFixedFields(
                         czname, f'{xpath}/species/mixture[mid="{material}"]/specie[mid="{mid}"]/value', specie)
 

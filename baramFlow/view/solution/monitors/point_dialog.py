@@ -13,7 +13,7 @@ from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
-from baramFlow.coredb.models_db import UserDefinedScalarsDB
+from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
 from baramFlow.mesh.vtk_loader import isPointInDataSet
 from .point_dialog_ui import Ui_PointDialog

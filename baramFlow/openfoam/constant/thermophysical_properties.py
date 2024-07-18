@@ -57,7 +57,7 @@ def _constructFluid(region: str):
             'inertSpecie': MaterialDB.getName(db.getValue(path + '/mixture/primarySpecie'))
         }
 
-        for specie, name in db.getSpecies(mid):
+        for specie, name in MaterialDB.getSpecies(mid).items():
             spath = MaterialDB.getXPath(specie)
 
             data['species'].append(name)

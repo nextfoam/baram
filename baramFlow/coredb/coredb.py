@@ -529,10 +529,6 @@ class _CoreDB(object):
                      e.findtext('phase', namespaces=nsmap))
                     for e in elements if e.findtext('type', namespaces=nsmap) == type_]
 
-    def getSpecies(self, mid):
-        return [(int(e.getparent().attrib['mid']), e.getparent().findtext('name', namespaces=nsmap))
-                for e in self._xmlTree.findall(f'materials/material/specie[mixture="{mid}"]', namespaces=nsmap)]
-
     def isMaterialRefereced(self, mid):
         mid = str(mid)
         if self.exists(f'models/userDefinedScalars/scalar[material="{mid}"]'):

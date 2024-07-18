@@ -41,7 +41,7 @@ class MixtureCard(QWidget):
 
         self._connectSignalsSlots()
 
-        for mid, name in coredb.CoreDB().getSpecies(self._mid):
+        for mid in MaterialDB.getSpecies(self._mid):
             self._addCard(mid)
 
     @property

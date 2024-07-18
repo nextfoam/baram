@@ -10,7 +10,7 @@ from widgets.selector_dialog import SelectorDialog
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
-from baramFlow.coredb.models_db import UserDefinedScalarsDB
+from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.monitor_db import MonitorDB, SurfaceReportType, FieldHelper, Field
 from .surface_dialog_ui import Ui_SurfaceDialog
 

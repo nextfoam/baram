@@ -28,7 +28,7 @@ class SpeciesWidget(QGroupBox):
         if MaterialDB.getType(self._mid) == MaterialType.MIXTURE:
             self._on = True
             self._layout = QFormLayout(self)
-            for mid, name in species or self._db.getSpecies(mid):
+            for mid, name in species or MaterialDB.getSpecies(mid).items():
                 editor = QLineEdit()
                 self._layout.addRow(name, editor)
                 self._species[mid] = (name, editor)

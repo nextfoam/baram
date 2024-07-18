@@ -58,7 +58,7 @@ class MixtureDialog(QDialog):
         self._ui.massDiffusivity.setText(self._db.getValue(self._xpath + '/mixture/massDiffusivity'))
 
         primarySpecie = int(self._db.getValue(self._xpath + '/mixture/primarySpecie'))
-        for mid, name in self._db.getSpecies(self._mid):
+        for mid, name in MaterialDB.getSpecies(self._mid).items():
             self._ui.primarySpecie.addItem(name, str(mid))
             if mid == primarySpecie:
                 self._ui.primarySpecie.setCurrentText(name)
