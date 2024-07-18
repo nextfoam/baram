@@ -97,7 +97,7 @@ def _getAvailableFields():
             if phase != Phase.SOLID.value:
                 fields.append(f'alpha.{name}')
     elif ModelsDB.isSpeciesModelOn():
-        for mixture, name in db.getMixturesInRegions():
+        for mixture, name in RegionDB.getMixturesInRegions():
             for name in MaterialDB.getSpecies(mixture).values():
                 fields.append(name)
 

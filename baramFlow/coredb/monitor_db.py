@@ -8,7 +8,7 @@ from PySide6.QtCore import QCoreApplication, QObject, Signal
 from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
-from baramFlow.coredb.material_db import MaterialDB, Phase, MaterialType, MaterialObserver
+from baramFlow.coredb.material_db import MaterialDB, Phase, MaterialType, IMaterialObserver
 from baramFlow.openfoam.solver import findSolver, getSolverCapability
 
 
@@ -245,7 +245,7 @@ class FieldHelper:
             return fieldName
 
 
-class _MaterialObserver(MaterialObserver):
+class MaterialObserver(IMaterialObserver):
     def materialRemoving(self, db, mid: int):
         removed = self._removeMonitors(db, mid)
         if MaterialDB.getType(mid) == MaterialType.MIXTURE:
@@ -269,6 +269,3 @@ class _MaterialObserver(MaterialObserver):
             monitor.getparent().remove(monitor)
 
         return True
-
-
-MaterialDB.registerObserver(_MaterialObserver())

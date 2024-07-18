@@ -39,7 +39,7 @@ class MaterialType(Enum):
     SPECIE = 'specie'
 
 
-class MaterialObserver(QObject):
+class IMaterialObserver(QObject):
     def specieAdded(self, db, mid: int, mixtureID):
         pass
 

@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QApplication
 from resources import resource
 from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.coredb.project import ProjectOpenType
+from baramFlow.coredb import relation
 
 
 class App(QObject):
@@ -33,6 +34,7 @@ class App(QObject):
     def setupApplication(self, properties):
         self._properties = properties
         AppSettings.setup(properties.name)
+        relation.registerObservers()
 
     @property
     def properties(self):

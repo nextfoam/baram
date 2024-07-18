@@ -7,8 +7,9 @@ from PySide6.QtWidgets import QDialog
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_writer import CoreDBWriter
+from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.specie_model_db import SpecieModelDB
 from .species_dialog_ui import Ui_SpeciesDialog
 
 
@@ -30,26 +31,16 @@ class SpeciesDialog(QDialog):
             self.close()
             return
 
-        if not include:
-            db = coredb.CoreDB()
-            for mid, name, _, _ in db.getMaterials('mixture'):
-                if db.isMaterialRefereced(mid):
-                    await AsyncMessageBox().information(
-                        self, self.tr('Input Error'),
-                        self.tr(
-                            'Mixture material "{}" is referenced by other configurations.'
-                            'It should be cleared to turn off Species model.').format(name))
-                    return
+        try:
+            with coredb.CoreDB() as db:
+                if include:
+                    SpecieModelDB.turnOn(db)
+                else:
+                    SpecieModelDB.turnOff(db)
 
-        writer = CoreDBWriter()
-        writer.append(ModelsDB.SPECIES_MODELS_XPATH, 'on' if self._ui.include.isChecked() else 'off', None)
-
-        errorCount = writer.write()
-        if errorCount > 0:
-            await AsyncMessageBox().critical(self, self.tr("Input Error"), writer.firstError().toMessage())
-            return
-
-        self.accept()
+            self.accept()
+        except ConfigurationException as ex:
+            await AsyncMessageBox().information(self, self.tr('Model Change Failed'), str(ex))
 
     def _connectSignalsSlots(self):
         self._ui.ok.clicked.connect(self._accept)

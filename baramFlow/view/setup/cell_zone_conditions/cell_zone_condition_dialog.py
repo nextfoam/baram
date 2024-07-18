@@ -12,7 +12,7 @@ from baramFlow.coredb.cell_zone_db import CellZoneDB, ZoneType, SpecificationMet
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from baramFlow.coredb.material_db import MaterialDB, MaterialType
-from baramFlow.coredb.models_db import TurbulenceModelHelper, ModelsDB
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME, RegionDB
 from .actuator_disk_widget import ActuatorDiskWidget
 from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
@@ -22,6 +22,7 @@ from .materials_widget import MaterialsWidget
 from .MRF_widget import MRFWidget
 from .porous_zone_widget import PorousZoneWidget
 from .sliding_mesh_widget import SlidingMeshWidget
+from .turbulence_fields import getTurbulenceFields
 from .variable_source_widget import VariableSourceWidget
 
 
@@ -300,7 +301,7 @@ class CellZoneConditionDialog(QDialog):
         sourceTermsLayout = self._ui.sourceTerms.layout()
         fixedValuesLayout = self._ui.fixedValues.layout()
 
-        for field in TurbulenceModelHelper.getFields():
+        for field in getTurbulenceFields():
             self._turbulenceSourceTerms[field] = ConstantSourceWidget(
                 f'{field.name()}, {field.symbol}', field.symbol, field.sourceUnits,
                 self._xpath + '/sourceTerms/' + field.xpathName)

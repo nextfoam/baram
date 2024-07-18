@@ -529,35 +529,6 @@ class _CoreDB(object):
                      e.findtext('phase', namespaces=nsmap))
                     for e in elements if e.findtext('type', namespaces=nsmap) == type_]
 
-    def isMaterialRefereced(self, mid):
-        mid = str(mid)
-        if self.exists(f'models/userDefinedScalars/scalar[material="{mid}"]'):
-            return True
-
-        idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:material/text()', namespaces={'x': ns})
-        if mid in idList:
-            return True
-
-        mid = ' ' + mid + ' '
-        idList = self._xmlTree.xpath(f'.//x:regions/x:region/x:secondaryMaterials/text()', namespaces={'x': ns})
-        for ids in idList:
-            if mid in ' ' + ids + ' ':
-                return True
-
-        return False
-
-    def getMixturesInRegions(self):
-        idList = set(self._xmlTree.xpath(f'.//x:regions/x:region/x:material/text()', namespaces={'x': ns}))
-        materials = self._xmlTree.find('materials', namespaces=nsmap)
-
-        mixtures = []
-        for mid in idList:
-            material = materials.find(f'material[@mid="{mid}"]', namespaces=nsmap)
-            if material.findtext('type', namespaces=nsmap) == 'mixture':
-                mixtures.append((mid, material.findtext('name', namespaces=nsmap)))
-
-        return mixtures
-
     def addRegion(self, rname: str):
         region = self._xmlTree.find(f'.//regions/region[name="{rname}"]', namespaces=nsmap)
 

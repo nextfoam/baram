@@ -6,7 +6,6 @@ from enum import Enum, auto
 from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.cell_zone_db import SpecificationMethod
 
 
 class IndexedEnum(Enum):
@@ -218,56 +217,3 @@ class TurbulenceField:
 
     def getLabelText(self):
         return f'{self._symbol} ({self._unit})'
-
-
-class TurbulenceModelHelper:
-    _modelFields = {
-        TurbulenceModel.INVISCID: [],
-        TurbulenceModel.LAMINAR: [],
-        TurbulenceModel.SPALART_ALLMARAS: [TurbulenceFields.NU_TILDA],
-        TurbulenceModel.K_EPSILON: [TurbulenceFields.K, TurbulenceFields.EPSILON],
-        TurbulenceModel.K_OMEGA: [TurbulenceFields.K, TurbulenceFields.OMEGA],
-        TurbulenceModel.LES: [],
-    }
-
-    _fields = {
-        TurbulenceFields.K:
-            TurbulenceField(TurbulenceFields.K,
-                            'k',
-                            'm<sup>2</sup>/s<sup>2</sup>',
-                            {
-                                SpecificationMethod.VALUE_PER_UNIT_VOLUME: '1/ms<sup>3</sup>',
-                                SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: 'm<sup>2</sup>/s<sup>3</sup>'
-                            },
-                            'turbulentKineticEnergy'),
-        TurbulenceFields.EPSILON:
-            TurbulenceField(TurbulenceFields.EPSILON,
-                            'ε',
-                            'm<sup>2</sup>/s<sup>3</sup>',
-                            {
-                                SpecificationMethod.VALUE_PER_UNIT_VOLUME: '1/m<sup>2</sup>s<sup>4</sup>',
-                                SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: 'm<sup>2</sup>/s<sup>4</sup>'
-                            }, 'turbulentDissipationRate'),
-        TurbulenceFields.OMEGA:
-            TurbulenceField(TurbulenceFields.OMEGA,
-                            'ω',
-                            '1/s',
-                            {
-                                SpecificationMethod.VALUE_PER_UNIT_VOLUME: '1/m<sup>3</sup>s<sup>2</sup>',
-                                SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: '1/s<sup>2</sup>'
-                            },
-                            'specificDissipationRate'),
-        TurbulenceFields.NU_TILDA:
-            TurbulenceField(TurbulenceFields.NU_TILDA,
-                            'ν',
-                            'm<sup>2</sup>/s',
-                            {
-                                SpecificationMethod.VALUE_PER_UNIT_VOLUME: '1/ms<sup>2</sup>',
-                                SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: 'm<sup>2</sup>/s<sup>2</sup>'
-                            },
-                            'modifiedTurbulentViscosity'),
-    }
-
-    @classmethod
-    def getFields(cls):
-        return [cls._fields[f] for f in cls._modelFields[ModelsDB.getTurbulenceModel()]]

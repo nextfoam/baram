@@ -5,8 +5,8 @@ from enum import Enum
 
 import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
-from baramFlow.coredb.material_db import MaterialObserver, MaterialDB
-from baramFlow.coredb.region_db import RegionMaterialObserver, RegionDB, REGION_XPATH
+from baramFlow.coredb.material_db import IMaterialObserver
+from baramFlow.coredb.region_db import IRegionMaterialObserver, RegionDB, REGION_XPATH
 from baramFlow.view.widgets.multi_selector_dialog import SelectorItem
 
 
@@ -106,7 +106,7 @@ def _addMaterialSourceTerm(parent, mid):
         )
 
 
-class _MaterialObserver(MaterialObserver):
+class MaterialObserver(IMaterialObserver):
     def specieAdded(self, db, mid, mixtureID):
         for cellZone in db.getElements(f'{REGION_XPATH}[material="{mixtureID}"]/cellZones/cellZone'):
             for sourceTerms in xml.getElements(cellZone, f'sourceTerms/materials'):
@@ -126,7 +126,7 @@ class _MaterialObserver(MaterialObserver):
                 specie.getparent().remove(specie)
 
 
-class _RegionMaterialObserver(RegionMaterialObserver):
+class RegionMaterialObserver(IRegionMaterialObserver):
     def materialsUpdating(self, db, rname, primary, secondaries, species):
         fixedValuesSpeciesXML = ''
         for mid in species:
@@ -154,7 +154,3 @@ class _RegionMaterialObserver(RegionMaterialObserver):
 
             if species:
                 fixedValuesSpecies.append(xml.createElement(fixedValuesSpeciesXML))
-
-
-MaterialDB.registerObserver(_MaterialObserver())
-RegionDB.registerMaterialObserver(_RegionMaterialObserver())

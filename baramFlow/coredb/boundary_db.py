@@ -7,8 +7,8 @@ from PySide6.QtCore import QCoreApplication
 
 import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
-from baramFlow.coredb.material_db import MaterialObserver, MaterialDB
-from baramFlow.coredb.region_db import RegionMaterialObserver, RegionDB, REGION_XPATH
+from baramFlow.coredb.material_db import IMaterialObserver
+from baramFlow.coredb.region_db import IRegionMaterialObserver, RegionDB, REGION_XPATH
 from baramFlow.view.widgets.multi_selector_dialog import SelectorItem
 
 
@@ -250,7 +250,7 @@ def getBoundaryElements(rname):
     return coredb.CoreDB().getElements(f'{RegionDB.getXPath(rname)}/boundaryConditions/boundaryCondition')
 
 
-class _MaterialObserver(MaterialObserver):
+class MaterialObserver(IMaterialObserver):
     def specieAdded(self, db, mid, mixtureID):
         for mixture in db.getElements(f'{BOUNDARY_CONDITION_XPATH}/species/mixture[mid="{mixtureID}"]'):
             mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
@@ -272,7 +272,7 @@ class _MaterialObserver(MaterialObserver):
                 self._removeSpecieInComposition(primarySpecie, specie)
 
 
-class _RegionMaterialObserver(RegionMaterialObserver):
+class RegionMaterialObserver(IRegionMaterialObserver):
     def materialsUpdating(self, db, rname, primary, secondaries, species):
         def addWallAdhesion(parent, mid1, mid2):
             if xml.getElement(parent, f'wallAdhesion[mid="{mid1}"][mid="{mid2}"]') is None:
@@ -310,7 +310,3 @@ class _RegionMaterialObserver(RegionMaterialObserver):
             speciesElement.clear()
             if species:
                 speciesElement.append(xml.createElement(speicesXML))
-
-
-MaterialDB.registerObserver(_MaterialObserver())
-RegionDB.registerMaterialObserver(_RegionMaterialObserver())

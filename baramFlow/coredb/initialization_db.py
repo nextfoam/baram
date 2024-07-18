@@ -4,8 +4,8 @@
 import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
-from baramFlow.coredb.material_db import MaterialObserver, MaterialDB
-from baramFlow.coredb.region_db import RegionMaterialObserver, RegionDB, REGION_XPATH
+from baramFlow.coredb.material_db import IMaterialObserver, MaterialDB
+from baramFlow.coredb.region_db import IRegionMaterialObserver, RegionDB, REGION_XPATH
 
 
 INITIALIZATION_XPATH = REGION_XPATH + '/initialization'
@@ -32,7 +32,7 @@ def getInitializationElement(rname):
     return coredb.CoreDB().getElement(InitializationDB.getXPath(rname))
 
 
-class _MaterialObserver(MaterialObserver):
+class MaterialObserver(IMaterialObserver):
     def specieAdded(self, db, mid, mixtureID):
         for mixture in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/species/mixture[mid="{mixtureID}"]'):
             mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
@@ -63,7 +63,7 @@ class _MaterialObserver(MaterialObserver):
             self._removeSpecieInComposition(primarySpecie, specie)
 
 
-class _RegionMaterialObserver(RegionMaterialObserver):
+class RegionMaterialObserver(IRegionMaterialObserver):
     def materialsUpdating(self, db, rname, primary, secondaries, species):
         ratiosXML = self._specieRatiosXML(species)
         initialValuesSpeciesXML = f'''<mixture xmlns="http://www.baramcfd.org/baram">
@@ -113,7 +113,3 @@ class _RegionMaterialObserver(RegionMaterialObserver):
                 parent.append(xml.createElement('<volumeFraction xmlns="http://www.baramcfd.org/baram">'
                                                 f'  <material>{mid}</material><fraction>0</fraction>'
                                                 '</volumeFraction>'))
-
-
-MaterialDB.registerObserver(_MaterialObserver())
-RegionDB.registerMaterialObserver(_RegionMaterialObserver())

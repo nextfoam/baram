@@ -7,7 +7,7 @@ from enum import Enum
 import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
-from baramFlow.coredb.material_db import MaterialObserver, MaterialDB
+from baramFlow.coredb.material_db import IMaterialObserver, MaterialDB
 
 
 USER_DEFINED_SCALAR_XPATH = 'models/userDefinedScalars/scalar'
@@ -73,13 +73,10 @@ class UserDefinedScalarsDB:
         return int(scalarID) and coredb.CoreDB().exists(f'monitors/*/*/field[field="scalar"][fieldID="{scalarID}"]')
 
 
-class _MaterialObserver(MaterialObserver):
+class MaterialObserver(IMaterialObserver):
     def materialRemoving(self, db, mid: int):
         scalars = [xml.getText(e, 'fieldName') for e in db.getElements(f'{USER_DEFINED_SCALAR_XPATH}[material="{mid}"]')]
         if scalars:
             raise ConfigurationException(
                 self.tr('{} is referenced by user-defined scalars {}').format(
                     MaterialDB.getName(mid), ' '.join(scalars)))
-
-
-MaterialDB.registerObserver(_MaterialObserver())
