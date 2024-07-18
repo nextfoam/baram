@@ -72,6 +72,8 @@ class MaterialAddDialog(QDialog):
     @qasync.asyncSlot()
     async def _createMixture(self):
         materials = self._ui.list.selectedItems()
+        if len(materials) == 0:
+            return
 
         species = []
         for item in materials:
@@ -95,14 +97,18 @@ class MaterialAddDialog(QDialog):
         self.accept()
 
     def _addMaterials(self):
+        materials = self._ui.list.selectedItems()
+        if len(materials) == 0:
+            return
+
         self._added = []
 
         with coredb.CoreDB() as db:
             if self._type == MaterialType.NONMIXTURE:
-                for item in self._ui.list.selectedItems():
+                for item in materials:
                     self._added.append(MaterialDB.addMaterial(db, item.name()))
             elif self._type == MaterialType.SPECIE:
-                for item in self._ui.list.selectedItems():
+                for item in materials:
                     self._added.append(MaterialDB.addSpecie(db, item.name(), self._mixture))
 
         self.accept()
