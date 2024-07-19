@@ -181,8 +181,8 @@ class CoreDBReader(_CoreDB):
                 .format(value, parameter, message, xpath))
 
     def getDensity(self, materials, t: float, p: float) -> float:
-        def density(mid):
-            xpath = MaterialDB.getXPath(mid)
+        def density(mid_):
+            xpath = MaterialDB.getXPath(mid_)
             spec = self.getValue(xpath + '/density/specification')
             if spec == 'constant':
                 return float(self.getValue(xpath + '/density/constant'))
@@ -208,8 +208,8 @@ class CoreDBReader(_CoreDB):
         return calculator.average()
 
     def getViscosity(self, materials: list, t: float) -> float:
-        def viscosity(mid):
-            xpath = MaterialDB.getXPath(mid)
+        def viscosity(mid_):
+            xpath = MaterialDB.getXPath(mid_)
             spec = self.getValue(xpath + '/viscosity/specification')
             if spec == 'constant':
                 return float(self.getValue(xpath + '/viscosity/constant'))
@@ -236,8 +236,8 @@ class CoreDBReader(_CoreDB):
         return calculator.average()
 
     def getSpecificHeat(self, materials, t: float) -> float:
-        def specificHeat(mid):
-            xpath = MaterialDB.getXPath(mid)
+        def specificHeat(mid_):
+            xpath = MaterialDB.getXPath(mid_)
             spec = self.getValue(xpath + '/specificHeat/specification')
             if spec == 'constant':
                 return float(self.getValue(xpath + '/specificHeat/constant'))

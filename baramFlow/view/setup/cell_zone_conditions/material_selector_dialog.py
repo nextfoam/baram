@@ -27,7 +27,7 @@ class SelectorItem:
 
 
 class MaterialSectorDialog(QDialog):
-    def __init__(self, parent, primary, secondaries):
+    def __init__(self, parent, primary: str, secondaries: list[str]):
         super().__init__(parent)
         self._ui = Ui_MaterialsSelectorDialog()
         self._ui.setupUi(self)
@@ -35,8 +35,7 @@ class MaterialSectorDialog(QDialog):
         self._primaryIndex = None
 
         materials = coredb.CoreDB().getMaterials()
-        for id_, name, type_, phase in materials:
-            mid = str(id_)
+        for mid, name, type_, phase in materials:
             index = self._ui.primary.count()
             self._ui.primary.addItem(name, mid)
 
@@ -55,7 +54,7 @@ class MaterialSectorDialog(QDialog):
 
                 self._ui.secondariesSelector.setEnabled(True)
 
-            if id_ == primary:
+            if mid == primary:
                 self._ui.primary.setCurrentText(name)
                 if item:
                     self._hideItemFromList(item)

@@ -185,7 +185,7 @@ class WallDialog(ResizableDialog):
             self._ui.temperatureGroup.hide()
 
         rname = BoundaryDB.getBoundaryRegion(self._bcid)
-        secondaryMaterials = RegionDB.getSecondaryMaterials(rname) if  ModelsDB.isMultiphaseModelOn() else None
+        secondaryMaterials = RegionDB.getSecondaryMaterials(rname) if ModelsDB.isMultiphaseModelOn() else None
         if secondaryMaterials:
             self._loadContactAngles(rname, secondaryMaterials)
             self._setupContactAngleModelCombo()

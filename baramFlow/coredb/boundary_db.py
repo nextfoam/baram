@@ -251,13 +251,13 @@ def getBoundaryElements(rname):
 
 
 class MaterialObserver(IMaterialObserver):
-    def specieAdded(self, db, mid, mixtureID):
+    def specieAdded(self, db, mid: str, mixtureID: str):
         for mixture in db.getElements(f'{BOUNDARY_CONDITION_XPATH}/species/mixture[mid="{mixtureID}"]'):
             mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
                                              f' <mid>{mid}</mid><value>0</value>'
                                              '</specie>'))
 
-    def materialRemoving(self, db, mid: int):
+    def materialRemoving(self, db, mid: str):
         for wallAdhesion in db.getElements(
                 f'{BOUNDARY_CONDITION_XPATH}/wall/wallAdhesions/wallAdhesion[mid="{mid}"]'):
             wallAdhesion.getparent().remove(wallAdhesion)
@@ -266,14 +266,14 @@ class MaterialObserver(IMaterialObserver):
                 f'{BOUNDARY_CONDITION_XPATH}/volumeFractions/volumeFraction[material="{mid}"]'):
             volumeFraction.getparent().remove(volumeFraction)
 
-    def specieRemoving(self, db, mid, primarySpecie):
+    def specieRemoving(self, db, mid: str, primarySpecie):
         for boundaryCondition in db.getElements(BOUNDARY_CONDITION_XPATH):
             for specie in xml.getElements(boundaryCondition, f'species/mixture/specie[mid="{mid}"]'):
                 self._removeSpecieInComposition(primarySpecie, specie)
 
 
 class RegionMaterialObserver(IRegionMaterialObserver):
-    def materialsUpdating(self, db, rname, primary, secondaries, species):
+    def materialsUpdating(self, db, rname: str, primary: str, secondaries: list[str], species):
         def addWallAdhesion(parent, mid1, mid2):
             if xml.getElement(parent, f'wallAdhesion[mid="{mid1}"][mid="{mid2}"]') is None:
                 parent.append(xml.createElement('<wallAdhesion xmlns="http://www.baramcfd.org/baram"> '

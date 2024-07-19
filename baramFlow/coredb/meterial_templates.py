@@ -48,10 +48,10 @@ def _pengRobinsonXML(values):
 
 
 def _viscosityXML(phase, values):
-    def sutherland(values):
+    def sutherland(values_):
         return ("<sutherland>"
-                f"  <coefficient>{values['sutherlandCoefficient']}</coefficient>"
-                f"  <temperature>{values['sutherlandTemperature']}</temperature>"
+                f"  <coefficient>{values_['sutherlandCoefficient']}</coefficient>"
+                f"  <temperature>{values_['sutherlandTemperature']}</temperature>"
                 "</sutherland>")
 
     return ("<viscosity>"
@@ -101,7 +101,7 @@ class MaterialTemplates:
         return [(k, v['chemicalFormula'], v['phase'])
                 for k, v in self._materials.items() if k != self.MIXTURE_TEMPLATE_NAME]
 
-    def materialXML(self, mid, name, templateName, specifications, typeXML=None):
+    def materialXML(self, mid: str, name: str, templateName, specifications, typeXML=None):
         values = self._materials[templateName]
         type_ = specifications.type
         phase = specifications.phase if type_ == 'mixture' else values['phase']

@@ -24,7 +24,7 @@ class UserDefinedScalar:
     scalarID: int
     fieldName: str
     region: int
-    material: int
+    material: str
     specificationMethod: ScalarSpecificationMethod
     constantDiffusivity: str
     laminarViscosityCoefficient: str
@@ -51,7 +51,7 @@ class UserDefinedScalarsDB:
         return coredb.CoreDB().getValue(f'{cls.SCALAR_XPATH}/scalar[@scalarID="{scalarID}"]/region')
 
     @classmethod
-    def getUserDefinedScalar(cls, scalarID):
+    def getUserDefinedScalar(cls, scalarID) -> UserDefinedScalar:
         db = coredb.CoreDB()
         xpath = cls.getXPath(scalarID)
 
@@ -74,7 +74,7 @@ class UserDefinedScalarsDB:
 
 
 class MaterialObserver(IMaterialObserver):
-    def materialRemoving(self, db, mid: int):
+    def materialRemoving(self, db, mid: str):
         scalars = [xml.getText(e, 'fieldName') for e in db.getElements(f'{USER_DEFINED_SCALAR_XPATH}[material="{mid}"]')]
         if scalars:
             raise ConfigurationException(

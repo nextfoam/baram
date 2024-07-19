@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from itertools import combinations
 from typing import Optional
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import findSolver
@@ -26,6 +26,10 @@ class TransportProperties(DictionaryFile):
 
         if findSolver() == 'interFoam':
             self._data = self._buildForInterFoam()
+            return self
+
+        elif findSolver() == 'multiphaseInterFoam':
+            self._data = self._buildForMultiphaseInterFoam()
             return self
 
         # TransportProperties file is not used for now.
@@ -49,53 +53,85 @@ class TransportProperties(DictionaryFile):
         return self
 
     def _buildForInterFoam(self) -> Optional[dict]:
-        secondaryMaterials = RegionDB.getSecondaryMaterials(self._rname)
-        if len(secondaryMaterials) == 0:
+        materials = RegionDB.getSecondaryMaterials(self._rname)
+        if len(materials) == 0:  # It is not MULTI-phase
             return None
 
-        baseMaterialId = RegionDB.getMaterial(self._rname)
-        secondaryMaterialId = secondaryMaterials[0]  # "interFoam" can handle only two phases
+        # * "interFoam" supports only one secondary material
+        # * primary material should go last
+        materials = [materials[0], RegionDB.getMaterial(self._rname)]
 
-        baseMaterialName = MaterialDB.getName(baseMaterialId)
-        secondaryMaterialName = MaterialDB.getName(secondaryMaterialId)
+        phases = []
+        data = {
+            'phases': phases,
+        }
 
-        # temperature and pressure are used because interFoam works only when energy off
-        #     i.e. constant density and viscosity
+        for mid in materials:
+            name = MaterialDB.getName(mid)
+            density = self._db.getDensity([(mid, 1)], 0, 0)
+            viscosity = self._db.getViscosity([(mid, 1)], 0)
+            nu = viscosity / density
 
-        baseMaterial = [(baseMaterialId, 1)]
-        secondaryMatrerial = [(secondaryMaterialId, 1)]
-        baseDensity = self._db.getDensity(baseMaterial, 0, 0)
-        secondaryDensity = self._db.getDensity(secondaryMatrerial, 0, 0)
+            phases.append(name)
+            data[name] = {
+                'transportModel': 'Newtonian',
+                'nu': nu,
+                'rho': density
+            }
 
-        baseViscosity = self._db.getViscosity(baseMaterial, 0)
-        secondaryViscosity = self._db.getViscosity(secondaryMatrerial, 0)
+        tensions = dict([((mid1, mid2), tension) for mid1, mid2, tension in self._db.getSurfaceTensions(self._rname)])
+        if (materials[0], materials[1]) in tensions:
+            t = tensions[(materials[0], materials[1])]
+        elif (materials[1], materials[0]) in tensions:
+            t = tensions[(materials[1], materials[0])]
+        else:
+            t = 0
 
-        baseNu = baseViscosity / baseDensity
-        secondaryNu = secondaryViscosity / secondaryDensity
+        data['sigma'] = t
 
-        surfaceTension = None
-        surfaceTensions = self._db.getSurfaceTensions(self._rname)
-        for mid1, mid2, tension in surfaceTensions:
-            if mid1 == baseMaterialId or mid2 == baseMaterialId:
-                surfaceTension = tension
-                break  # "interFoam" handles only two phases
+        return data
 
-        if surfaceTension is None:
+    def _buildForMultiphaseInterFoam(self) -> Optional[dict]:
+        materials = RegionDB.getSecondaryMaterials(self._rname)
+        if len(materials) == 0:  # It is not MULTI-phase
             return None
+
+        # primary material may locate at first.
+        # "nAlphaSubCycles" seems to treat the first material as reference
+        mid = RegionDB.getMaterial(self._rname)
+        materials.insert(0, mid)
+
+        phases = []
+
+        for mid in materials:
+            name = MaterialDB.getName(mid)
+            density = self._db.getDensity([(mid, 1)], 0, 0)
+            viscosity = self._db.getViscosity([(mid, 1)], 0)
+            nu = viscosity / density
+
+            phases.append((name, {
+                'transportModel': 'Newtonian',
+                'nu': nu,
+                'rho': density
+            }))
+
+        sigmas = []
+
+        tensions = dict([((mid1, mid2), tension) for mid1, mid2, tension in self._db.getSurfaceTensions(self._rname)])
+
+        for mid1, mid2 in combinations(materials, 2):
+            if (mid1, mid2) in tensions:
+                t = tensions[(mid1, mid2)]
+            elif (mid2, mid1) in tensions:
+                t = tensions[(mid2, mid1)]
+            else:
+                t = 0
+
+            sigmas.append(([MaterialDB.getName(mid1), MaterialDB.getName(mid2)], t))
 
         data = {
-            'phases': [secondaryMaterialName, baseMaterialName],
-            secondaryMaterialName: {
-                'transportModel': 'Newtonian',
-                'nu': secondaryNu,
-                'rho': secondaryDensity
-            },
-            baseMaterialName: {
-                'transportModel': 'Newtonian',
-                'nu': baseNu,
-                'rho': baseDensity
-            },
-            'sigma': surfaceTension
+            'phases': phases,
+            'sigmas': sigmas
         }
 
         return data

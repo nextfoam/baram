@@ -492,7 +492,7 @@ class _CoreDB(object):
         while str(index) in idList:
             index += 1
 
-        return index
+        return str(index)
 
     def toUniqueText(self, xpath, name, desiredText):
         seq = 0
@@ -503,7 +503,7 @@ class _CoreDB(object):
 
         return text
 
-    def getMaterials(self, type_=None) -> list[(int, str, str, str)]:
+    def getMaterials(self, type_=None) -> list[(str, str, str, str)]:
         """Returns configured materials
 
         Returns configured materials with name, chemicalFormula and phase
@@ -517,13 +517,13 @@ class _CoreDB(object):
         elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
 
         if type_ is None:
-            return [(int(e.attrib['mid']),
+            return [(e.attrib['mid'],
                      e.findtext('name', namespaces=nsmap),
                      e.findtext('type', namespaces=nsmap),
                      e.findtext('phase', namespaces=nsmap))
                     for e in elements if e.findtext('type', namespaces=nsmap) != 'specie']
         else:
-            return [(int(e.attrib['mid']),
+            return [(e.attrib['mid'],
                      e.findtext('name', namespaces=nsmap),
                      e.findtext('type', namespaces=nsmap),
                      e.findtext('phase', namespaces=nsmap))
@@ -547,7 +547,7 @@ class _CoreDB(object):
             raise AssertionError  # One material should exist
 
         # use the first material for default material for the region
-        etree.SubElement(region, f'{{{ns}}}material').text = str(materials[0][0])
+        etree.SubElement(region, f'{{{ns}}}material').text = materials[0][0]
         etree.SubElement(region, f'{{{ns}}}secondaryMaterials')
         phaseInteraction = etree.SubElement(region, f'{{{ns}}}phaseInteractions')
         etree.SubElement(phaseInteraction, f'{{{ns}}}surfaceTensions')
@@ -636,7 +636,7 @@ class _CoreDB(object):
         elements = self._xmlTree.findall(f'.//region[name="{rname}"]/cellZones/cellZone', namespaces=nsmap)
         return [(int(e.attrib['czid']), e.find('name', namespaces=nsmap).text) for e in elements]
 
-    def getCellZonesByType(self, rname: str, zoneType: str) -> list[(int)]:
+    def getCellZonesByType(self, rname: str, zoneType: str) -> list[int]:
         elements = self._xmlTree.findall(f'.//region[name="{rname}"]/cellZones/cellZone[zoneType="{zoneType}"]',
                                          namespaces=nsmap)
         return [e.attrib['czid'] for e in elements]
@@ -1095,7 +1095,7 @@ class _CoreDB(object):
         return [e.text for e in self._xmlTree.findall(xpath, namespaces=nsmap)]
 
     def exists(self, xpath: str):
-        """Returns if specified configuration path is exists.
+        """Returns if specified configuration path exists.
 
         Args:
             xpath: XML xpath for the configuration item.

@@ -122,7 +122,7 @@ class CellZoneConditionDialog(QDialog):
         if isMultiPhaseOn:
             self._materialSourceTermsLayout = QVBoxLayout()
             layout.addLayout(self._materialSourceTermsLayout)
-            self._setupMaterialSourceWidgets(int(RegionDB.getMaterial(self._rname)),
+            self._setupMaterialSourceWidgets(RegionDB.getMaterial(self._rname),
                                              RegionDB.getSecondaryMaterials(self._rname))
         elif isSpeciesOn:
             self._materialSourceTermsLayout = QVBoxLayout()
@@ -203,7 +203,7 @@ class CellZoneConditionDialog(QDialog):
 
                 if ModelsDB.isMultiphaseModelOn():
                     for mid, widget in self._materialSourceTerms.items():
-                        if mid in self._secondaryMaterials and  not await self._materialSourceTerms[mid].updateDB(db):
+                        if mid in self._secondaryMaterials and not await self._materialSourceTerms[mid].updateDB(db):
                             return
                 elif ModelsDB.isSpeciesModelOn() and self._species:
                     for mid, widget in self._materialSourceTerms.items():

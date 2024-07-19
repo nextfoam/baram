@@ -33,7 +33,7 @@ def getInitializationElement(rname):
 
 
 class MaterialObserver(IMaterialObserver):
-    def specieAdded(self, db, mid, mixtureID):
+    def specieAdded(self, db, mid: str, mixtureID):
         for mixture in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/species/mixture[mid="{mixtureID}"]'):
             mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
                                              f' <mid>{mid}</mid><value>0</value>'
@@ -45,7 +45,7 @@ class MaterialObserver(IMaterialObserver):
                                              f' <mid>{mid}</mid><value>0</value>'
                                              '</specie>'))
 
-    def materialRemoving(self, db, mid: int):
+    def materialRemoving(self, db, mid: str):
         for volumeFraction in db.getElements(
                 f'{INITIALIZATION_XPATH}/initialValues/volumeFractions/volumeFraction[material="{mid}"]'):
             volumeFraction.getparent().remove(volumeFraction)
@@ -54,7 +54,7 @@ class MaterialObserver(IMaterialObserver):
                 f'{INITIALIZATION_XPATH}/advanced/sections/section/volumeFractions/volumeFraction[material="{mid}"]'):
             volumeFraction.getparent().remove(volumeFraction)
 
-    def specieRemoving(self, db, mid, primarySpecie):
+    def specieRemoving(self, db, mid: str, primarySpecie: str):
         for specie in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/species/mixture/specie[mid="{mid}"]'):
             self._removeSpecieInComposition(primarySpecie, specie)
 
@@ -107,7 +107,7 @@ class RegionMaterialObserver(IRegionMaterialObserver):
             if species:
                 speciesElement.append(xml.createElement(sectionSpeicesXML))
 
-    def _addVolumeFractions(self, parent, mids):
+    def _addVolumeFractions(self, parent, mids: list[str]):
         for mid in mids:
             if xml.getElement(parent, f'volumeFraction[material="{mid}"]') is None:
                 parent.append(xml.createElement('<volumeFraction xmlns="http://www.baramcfd.org/baram">'

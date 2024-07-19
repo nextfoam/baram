@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
@@ -9,7 +10,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.openfoam.solver import findSolver, getSolverCapability
+from baramFlow.openfoam.solver import findSolver, allRoundSolver
 
 
 class FvSchemes(DictionaryFile):
@@ -18,21 +19,16 @@ class FvSchemes(DictionaryFile):
 
         self._rname = rname
         self._db = CoreDBReader()
-        self._cap = None
         self._mid = RegionDB.getMaterial(self._rname)
 
     def build(self):
         if self._data is not None:
             return self
 
-        solver = findSolver()
-        self._cap = getSolverCapability(solver)
-
-        phase = MaterialDB.getPhase(self._mid)
-
-        if solver == 'TSLAeroFoam':
+        if findSolver() == 'TSLAeroFoam':
             self._generateTSLAero()
         else:
+            phase = MaterialDB.getPhase(self._mid)
             if phase == 'solid':
                 self._generateSolid()
             else:  # fluid
@@ -128,11 +124,10 @@ class FvSchemes(DictionaryFile):
         }
 
     def _constructDdtSchemes(self):
-        timeTransient = self._db.getValue('.//general/timeTransient')
         time = self._db.getValue('.//discretizationSchemes/time')
 
         ddtSchemes = {}
-        if timeTransient == 'true':
+        if GeneralDB.isTimeTransient():
             if time == 'firstOrderImplicit':
                 ddtSchemes = {
                     'default': 'Euler'
@@ -142,7 +137,7 @@ class FvSchemes(DictionaryFile):
                     'default': 'backward'
                 }
         else:
-            if self._cap['timeTransient']:  # this solver is able to solve both steady and transient
+            if allRoundSolver():  # this solver is able to solve both steady and transient
                 ddtSchemes = {
                     'default': 'localEuler'
                 }
@@ -171,8 +166,8 @@ class FvSchemes(DictionaryFile):
         turbulentKineticEnergy = self._db.getValue('.//discretizationSchemes/turbulentKineticEnergy')
         volumeFraction = self._db.getValue('.//discretizationSchemes/volumeFraction')
 
-        # prepend 'bounded' prefix for steady state solvers
-        if self._cap['timeSteady'] and not self._cap['timeTransient']:
+        # prepend 'bounded' prefix for steady-only solvers
+        if not GeneralDB.isTimeTransient() and not allRoundSolver():
             bounded = 'bounded '
         else:
             bounded = ''
