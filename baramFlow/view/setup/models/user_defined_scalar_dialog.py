@@ -28,7 +28,7 @@ ALL_MATERIALS_TEXT = QCoreApplication.translate('UserDefinedScalar', 'All')
 
 SCALAR_SPECIFICATION_METHODS = {
     ScalarSpecificationMethod.CONSTANT:                         QCoreApplication.translate('UserDefinedScalar', 'Constant'),
-    ScalarSpecificationMethod.TURBULENT_VISCOSITY:              QCoreApplication.translate('UserDefinedScalar', 'Turbulent Viscosity'),
+    # ScalarSpecificationMethod.TURBULENT_VISCOSITY:              QCoreApplication.translate('UserDefinedScalar', 'Turbulent Viscosity'),
     ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY:  QCoreApplication.translate('UserDefinedScalar', 'Laminar and Turbulent Viscosity')
 }
 

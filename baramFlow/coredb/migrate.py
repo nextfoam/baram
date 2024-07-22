@@ -633,6 +633,19 @@ def _version_6(root: etree.Element):
             p.append(e)
 
 
+def _version_7(root: etree.Element):
+    logger.debug('  Upgrading to v8')
+
+    for p in root.findall('models/userDefinedScalars/scalar', namespaces=_nsmap):
+        e = p.find('diffusivity/specificationMethod', namespaces=_nsmap)
+        if e.text == 'turbulentViscosity':
+            logger.debug(f'    Updating "diffusivity" of {p}')
+
+            e.text = 'laminarAndTurbulentViscosity'
+            p.find('diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient', namespaces=_nsmap).text = '0'
+            p.find('diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient', namespaces=_nsmap).text = '1'
+
+
 _fTable = [
     None,
     _version_1,
@@ -640,7 +653,8 @@ _fTable = [
     _version_3,
     _version_4,
     _version_5,
-    _version_6
+    _version_6,
+    _version_7
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))

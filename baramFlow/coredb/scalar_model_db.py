@@ -15,7 +15,7 @@ USER_DEFINED_SCALAR_XPATH = 'models/userDefinedScalars/scalar'
 
 class ScalarSpecificationMethod(Enum):
     CONSTANT = 'constant'
-    TURBULENT_VISCOSITY = 'turbulentViscosity'
+    # TURBULENT_VISCOSITY = 'turbulentViscosity'
     LAMINAR_AND_TURBULENT_VISCOSITY = 'laminarAndTurbulentViscosity'
 
 

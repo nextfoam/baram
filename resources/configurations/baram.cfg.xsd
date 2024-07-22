@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="7">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="8">
 
     <!-- type definitions -->
     <xs:simpleType name="positive">
@@ -2024,7 +2024,6 @@
                                                                     <xs:simpleType>
                                                                         <xs:restriction base="xs:string">
                                                                             <xs:enumeration value="constant"/>
-                                                                            <xs:enumeration value="turbulentViscosity"/>
                                                                             <xs:enumeration value="laminarAndTurbulentViscosity"/>
                                                                         </xs:restriction>
                                                                     </xs:simpleType>

@@ -275,8 +275,8 @@ class ControlDict(DictionaryFile):
             specificationMethod = self._db.getValue(xpath + '/diffusivity/specificationMethod')
             if specificationMethod == ScalarSpecificationMethod.CONSTANT.value:
                 self._data['functions'][fieldName]['D'] = self._db.getValue(xpath + '/diffusivity/constant')
-            elif specificationMethod == ScalarSpecificationMethod.TURBULENT_VISCOSITY.value:
-                self._data['functions'][fieldName]['nut'] = 'nut'
+            # elif specificationMethod == ScalarSpecificationMethod.TURBULENT_VISCOSITY.value:
+            #     self._data['functions'][fieldName]['nut'] = 'nut'
             elif specificationMethod == ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY.value:
                 self._data['functions'][fieldName]['alphaD'] = self._db.getValue(
                     xpath + '/diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient')
