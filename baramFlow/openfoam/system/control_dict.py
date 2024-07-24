@@ -217,6 +217,7 @@ class ControlDict(DictionaryFile):
             'runTimeModifiable': 'yes',
             'adjustTimeStep': adjustTimeStep,
             'maxCo': self._db.getValue(xpath + '/maxCourantNumber'),
+            'maxDi': self._db.getValue(xpath + '/maxDiffusionNumber'),
             'functions': {}
         }
 

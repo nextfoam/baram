@@ -586,13 +586,6 @@ def _version_6(root: etree.Element):
 
             e = etree.Element(f'{{{_ns}}}species')
             p.insert(11, e)
-    #
-    # if (p := root.find('numericalConditions', namespaces=_nsmap)) is not None:
-    #     if p.find('species', namespaces=_nsmap) is None:
-    #         logger.debug(f'    Adding "species" to {p}')
-    #
-    #         e = etree.Element(f'{{{_ns}}}species')
-    #         p.insert(10, e)
 
     if (p := root.find('numericalConditions/discretizationSchemes', namespaces=_nsmap)) is not None:
         if p.find('species', namespaces=_nsmap) is None:
@@ -644,6 +637,13 @@ def _version_7(root: etree.Element):
             e.text = 'laminarAndTurbulentViscosity'
             p.find('diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient', namespaces=_nsmap).text = '0'
             p.find('diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient', namespaces=_nsmap).text = '1'
+
+    for p in root.findall('runCalculation/runConditions', namespaces=_nsmap):
+        if p.find('maxDiffusionNumber', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "maxDiffusionNumber" to {p}')
+            e = etree.Element(f'{{{_ns}}}maxDiffusionNumber')
+            e.text = '10'
+            p.insert(5, e)
 
 
 _fTable = [
