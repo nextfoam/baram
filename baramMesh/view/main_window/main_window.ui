@@ -423,7 +423,7 @@
                   </sizepolicy>
                  </property>
                  <property name="currentIndex">
-                  <number>5</number>
+                  <number>2</number>
                  </property>
                  <widget class="QWidget" name="geometryPage">
                   <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -950,7 +950,7 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>401</width>
+                        <width>272</width>
                         <height>592</height>
                        </rect>
                       </property>
@@ -1723,7 +1723,7 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>401</width>
+                        <width>396</width>
                         <height>661</height>
                        </rect>
                       </property>
@@ -2277,7 +2277,7 @@
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
-                 <widget class="QWidget" name="displayControl" native="true">
+                 <widget class="QWidget" name="widget_37" native="true">
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -2286,22 +2286,67 @@
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_3">
                    <property name="topMargin">
-                    <number>9</number>
+                    <number>2</number>
                    </property>
                    <property name="bottomMargin">
                     <number>0</number>
                    </property>
                    <item>
-                    <widget class="QLabel" name="label_61">
-                     <property name="font">
-                      <font>
-                       <pointsize>10</pointsize>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>Display Control</string>
-                     </property>
+                    <widget class="QWidget" name="widget_34" native="true">
+                     <layout class="QHBoxLayout" name="horizontalLayout_25">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_61">
+                        <property name="font">
+                         <font>
+                          <pointsize>10</pointsize>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>Display Control</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer_12">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                      <item>
+                       <widget class="QCheckBox" name="rendering">
+                        <property name="styleSheet">
+                         <string notr="true">QCheckBox::indicator:unchecked { image: url(:/images/toggle_off) }
+QCheckBox::indicator:checked { image: url(:/images/toggle_on) }</string>
+                        </property>
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="checked">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                    <item>
@@ -2312,11 +2357,8 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QWidget" name="cutTool" native="true">
-                     <layout class="QVBoxLayout" name="verticalLayout_7">
-                      <property name="spacing">
-                       <number>6</number>
-                      </property>
+                    <widget class="QWidget" name="displayControl" native="true">
+                     <layout class="QVBoxLayout" name="verticalLayout_17">
                       <property name="leftMargin">
                        <number>0</number>
                       </property>
@@ -2330,574 +2372,362 @@
                        <number>0</number>
                       </property>
                       <item>
-                       <widget class="FolderHeader" name="cutHeader">
-                        <property name="sizePolicy">
-                         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                          <horstretch>0</horstretch>
-                          <verstretch>0</verstretch>
-                         </sizepolicy>
-                        </property>
-                        <property name="font">
-                         <font>
-                          <bold>false</bold>
-                         </font>
-                        </property>
-                        <property name="text">
-                         <string>Cut</string>
-                        </property>
-                        <property name="checked">
-                         <bool>false</bool>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QGroupBox" name="cut">
-                        <layout class="QVBoxLayout" name="verticalLayout_21">
+                       <widget class="QWidget" name="cutTool" native="true">
+                        <layout class="QVBoxLayout" name="verticalLayout_7">
+                         <property name="spacing">
+                          <number>6</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
                          <item>
-                          <widget class="QWidget" name="widget_35" native="true">
-                           <layout class="QHBoxLayout" name="horizontalLayout_23">
-                            <property name="topMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="bottomMargin">
-                             <number>0</number>
-                            </property>
-                            <item>
-                             <widget class="QRadioButton" name="clip">
-                              <property name="text">
-                               <string>Clip</string>
-                              </property>
-                              <property name="checked">
-                               <bool>true</bool>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QRadioButton" name="slice">
-                              <property name="text">
-                               <string>Slice</string>
-                              </property>
-                             </widget>
-                            </item>
-                           </layout>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="Line" name="line_3">
-                           <property name="orientation">
-                            <enum>Qt::Horizontal</enum>
+                          <widget class="FolderHeader" name="cutHeader">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="font">
+                            <font>
+                             <bold>false</bold>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>Cut</string>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
                            </property>
                           </widget>
                          </item>
                          <item>
-                          <widget class="QWidget" name="clipOption" native="true">
-                           <layout class="QGridLayout" name="gridLayout_6">
-                            <property name="topMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="bottomMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="verticalSpacing">
-                             <number>0</number>
-                            </property>
-                            <item row="0" column="0">
-                             <widget class="QCheckBox" name="cutX">
-                              <property name="text">
-                               <string>X Plane</string>
-                              </property>
-                             </widget>
-                            </item>
-                            <item row="0" column="1">
-                             <widget class="QWidget" name="cutXPlane" native="true">
-                              <property name="enabled">
-                               <bool>false</bool>
-                              </property>
-                              <layout class="QHBoxLayout" name="horizontalLayout_6">
-                               <property name="leftMargin">
-                                <number>0</number>
-                               </property>
+                          <widget class="QGroupBox" name="cut">
+                           <layout class="QVBoxLayout" name="verticalLayout_21">
+                            <item>
+                             <widget class="QWidget" name="widget_35" native="true">
+                              <layout class="QHBoxLayout" name="horizontalLayout_23">
                                <property name="topMargin">
-                                <number>0</number>
-                               </property>
-                               <property name="rightMargin">
-                                <number>9</number>
-                               </property>
-                               <property name="bottomMargin">
-                                <number>0</number>
-                               </property>
-                               <item>
-                                <widget class="QWidget" name="widget_10" native="true">
-                                 <layout class="QHBoxLayout" name="horizontalLayout_20">
-                                  <property name="spacing">
-                                   <number>0</number>
-                                  </property>
-                                  <property name="leftMargin">
-                                   <number>0</number>
-                                  </property>
-                                  <property name="topMargin">
-                                   <number>0</number>
-                                  </property>
-                                  <property name="rightMargin">
-                                   <number>0</number>
-                                  </property>
-                                  <property name="bottomMargin">
-                                   <number>0</number>
-                                  </property>
-                                  <item>
-                                   <widget class="QLineEdit" name="xCutPlane">
-                                    <property name="sizePolicy">
-                                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                                      <horstretch>0</horstretch>
-                                      <verstretch>0</verstretch>
-                                     </sizepolicy>
-                                    </property>
-                                    <property name="text">
-                                     <string>0</string>
-                                    </property>
-                                   </widget>
-                                  </item>
-                                  <item>
-                                   <widget class="QPushButton" name="xPlaneHandle">
-                                    <property name="text">
-                                     <string/>
-                                    </property>
-                                    <property name="icon">
-                                     <iconset resource="../../../resource.qrc">
-                                      <normaloff>:/graphicsIcons/planeHandle.svg</normaloff>:/graphicsIcons/planeHandle.svg</iconset>
-                                    </property>
-                                    <property name="checkable">
-                                     <bool>true</bool>
-                                    </property>
-                                    <attribute name="buttonGroup">
-                                     <string notr="true">clipHandles</string>
-                                    </attribute>
-                                   </widget>
-                                  </item>
-                                 </layout>
-                                </widget>
-                               </item>
-                               <item>
-                                <widget class="QCheckBox" name="xCutInvert">
-                                 <property name="text">
-                                  <string>Invert</string>
-                                 </property>
-                                </widget>
-                               </item>
-                              </layout>
-                             </widget>
-                            </item>
-                            <item row="1" column="0">
-                             <widget class="QCheckBox" name="cutY">
-                              <property name="text">
-                               <string>Y Plane</string>
-                              </property>
-                             </widget>
-                            </item>
-                            <item row="1" column="1">
-                             <widget class="QWidget" name="cutYPlane" native="true">
-                              <property name="enabled">
-                               <bool>false</bool>
-                              </property>
-                              <layout class="QHBoxLayout" name="horizontalLayout_7">
-                               <property name="leftMargin">
-                                <number>0</number>
-                               </property>
-                               <property name="topMargin">
-                                <number>0</number>
-                               </property>
-                               <property name="rightMargin">
-                                <number>9</number>
-                               </property>
-                               <property name="bottomMargin">
-                                <number>0</number>
-                               </property>
-                               <item>
-                                <widget class="QWidget" name="widget_21" native="true">
-                                 <layout class="QHBoxLayout" name="horizontalLayout_21">
-                                  <property name="spacing">
-                                   <number>0</number>
-                                  </property>
-                                  <property name="leftMargin">
-                                   <number>0</number>
-                                  </property>
-                                  <property name="topMargin">
-                                   <number>0</number>
-                                  </property>
-                                  <property name="rightMargin">
-                                   <number>0</number>
-                                  </property>
-                                  <property name="bottomMargin">
-                                   <number>0</number>
-                                  </property>
-                                  <item>
-                                   <widget class="QLineEdit" name="yCutPlane">
-                                    <property name="sizePolicy">
-                                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                                      <horstretch>0</horstretch>
-                                      <verstretch>0</verstretch>
-                                     </sizepolicy>
-                                    </property>
-                                    <property name="text">
-                                     <string>0</string>
-                                    </property>
-                                   </widget>
-                                  </item>
-                                  <item>
-                                   <widget class="QPushButton" name="yPlaneHandle">
-                                    <property name="text">
-                                     <string/>
-                                    </property>
-                                    <property name="icon">
-                                     <iconset resource="../../../resource.qrc">
-                                      <normaloff>:/graphicsIcons/planeHandle.svg</normaloff>:/graphicsIcons/planeHandle.svg</iconset>
-                                    </property>
-                                    <property name="checkable">
-                                     <bool>true</bool>
-                                    </property>
-                                    <attribute name="buttonGroup">
-                                     <string notr="true">clipHandles</string>
-                                    </attribute>
-                                   </widget>
-                                  </item>
-                                 </layout>
-                                </widget>
-                               </item>
-                               <item>
-                                <widget class="QCheckBox" name="yCutInvert">
-                                 <property name="text">
-                                  <string>Invert</string>
-                                 </property>
-                                </widget>
-                               </item>
-                              </layout>
-                             </widget>
-                            </item>
-                            <item row="2" column="0">
-                             <widget class="QCheckBox" name="cutZ">
-                              <property name="text">
-                               <string>Z Plane</string>
-                              </property>
-                             </widget>
-                            </item>
-                            <item row="2" column="1">
-                             <widget class="QWidget" name="cutZPlane" native="true">
-                              <property name="enabled">
-                               <bool>false</bool>
-                              </property>
-                              <layout class="QHBoxLayout" name="horizontalLayout_8">
-                               <property name="leftMargin">
-                                <number>0</number>
-                               </property>
-                               <property name="topMargin">
-                                <number>0</number>
-                               </property>
-                               <property name="rightMargin">
-                                <number>9</number>
-                               </property>
-                               <property name="bottomMargin">
-                                <number>0</number>
-                               </property>
-                               <item>
-                                <widget class="QWidget" name="widget_24" native="true">
-                                 <layout class="QHBoxLayout" name="horizontalLayout_22">
-                                  <property name="spacing">
-                                   <number>0</number>
-                                  </property>
-                                  <property name="leftMargin">
-                                   <number>0</number>
-                                  </property>
-                                  <property name="topMargin">
-                                   <number>0</number>
-                                  </property>
-                                  <property name="rightMargin">
-                                   <number>0</number>
-                                  </property>
-                                  <property name="bottomMargin">
-                                   <number>0</number>
-                                  </property>
-                                  <item>
-                                   <widget class="QLineEdit" name="zCutPlane">
-                                    <property name="sizePolicy">
-                                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                                      <horstretch>0</horstretch>
-                                      <verstretch>0</verstretch>
-                                     </sizepolicy>
-                                    </property>
-                                    <property name="text">
-                                     <string>0</string>
-                                    </property>
-                                   </widget>
-                                  </item>
-                                  <item>
-                                   <widget class="QPushButton" name="zPlaneHandle">
-                                    <property name="text">
-                                     <string/>
-                                    </property>
-                                    <property name="icon">
-                                     <iconset resource="../../../resource.qrc">
-                                      <normaloff>:/graphicsIcons/planeHandle.svg</normaloff>:/graphicsIcons/planeHandle.svg</iconset>
-                                    </property>
-                                    <property name="checkable">
-                                     <bool>true</bool>
-                                    </property>
-                                    <attribute name="buttonGroup">
-                                     <string notr="true">clipHandles</string>
-                                    </attribute>
-                                   </widget>
-                                  </item>
-                                 </layout>
-                                </widget>
-                               </item>
-                               <item>
-                                <widget class="QCheckBox" name="zCutInvert">
-                                 <property name="text">
-                                  <string>Invert</string>
-                                 </property>
-                                </widget>
-                               </item>
-                              </layout>
-                             </widget>
-                            </item>
-                           </layout>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QWidget" name="widget_8" native="true">
-                           <layout class="QFormLayout" name="formLayout_2">
-                            <property name="verticalSpacing">
-                             <number>0</number>
-                            </property>
-                            <property name="leftMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="topMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="rightMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="bottomMargin">
-                             <number>0</number>
-                            </property>
-                           </layout>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QWidget" name="sliceOption" native="true">
-                           <layout class="QGridLayout" name="gridLayout_7">
-                            <property name="topMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="bottomMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="verticalSpacing">
-                             <number>0</number>
-                            </property>
-                            <item row="0" column="0">
-                             <widget class="QComboBox" name="slicePlane">
-                              <property name="currentIndex">
-                               <number>3</number>
-                              </property>
-                              <item>
-                               <property name="text">
-                                <string>X</string>
-                               </property>
-                              </item>
-                              <item>
-                               <property name="text">
-                                <string>Y</string>
-                               </property>
-                              </item>
-                              <item>
-                               <property name="text">
-                                <string>Z</string>
-                               </property>
-                              </item>
-                              <item>
-                               <property name="text">
-                                <string>None</string>
-                               </property>
-                              </item>
-                             </widget>
-                            </item>
-                            <item row="0" column="1">
-                             <widget class="QWidget" name="sliceBox" native="true">
-                              <property name="enabled">
-                               <bool>false</bool>
-                              </property>
-                              <layout class="QHBoxLayout" name="horizontalLayout_26">
-                               <property name="spacing">
-                                <number>0</number>
-                               </property>
-                               <property name="leftMargin">
-                                <number>0</number>
-                               </property>
-                               <property name="topMargin">
-                                <number>0</number>
-                               </property>
-                               <property name="rightMargin">
                                 <number>0</number>
                                </property>
                                <property name="bottomMargin">
                                 <number>0</number>
                                </property>
                                <item>
-                                <widget class="QLineEdit" name="sliceValue">
-                                 <property name="sizePolicy">
-                                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                                   <horstretch>0</horstretch>
-                                   <verstretch>0</verstretch>
-                                  </sizepolicy>
-                                 </property>
+                                <widget class="QRadioButton" name="clip">
                                  <property name="text">
-                                  <string>0</string>
+                                  <string>Clip</string>
                                  </property>
-                                </widget>
-                               </item>
-                               <item>
-                                <widget class="QPushButton" name="sliceHandle">
-                                 <property name="text">
-                                  <string/>
-                                 </property>
-                                 <property name="icon">
-                                  <iconset resource="../../../resource.qrc">
-                                   <normaloff>:/graphicsIcons/planeHandle.svg</normaloff>:/graphicsIcons/planeHandle.svg</iconset>
-                                 </property>
-                                 <property name="checkable">
+                                 <property name="checked">
                                   <bool>true</bool>
                                  </property>
                                 </widget>
                                </item>
+                               <item>
+                                <widget class="QRadioButton" name="slice">
+                                 <property name="text">
+                                  <string>Slice</string>
+                                 </property>
+                                </widget>
+                               </item>
                               </layout>
                              </widget>
                             </item>
-                           </layout>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QWidget" name="widget_6" native="true">
-                           <layout class="QHBoxLayout" name="horizontalLayout_19">
-                            <property name="topMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="rightMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="bottomMargin">
-                             <number>0</number>
-                            </property>
                             <item>
-                             <spacer name="horizontalSpacer_5">
-                              <property name="orientation">
-                               <enum>Qt::Horizontal</enum>
-                              </property>
-                              <property name="sizeHint" stdset="0">
-                               <size>
-                                <width>0</width>
-                                <height>20</height>
-                               </size>
-                              </property>
-                             </spacer>
-                            </item>
-                            <item>
-                             <widget class="QPushButton" name="cutApply">
-                              <property name="text">
-                               <string>Apply</string>
-                              </property>
-                             </widget>
-                            </item>
-                           </layout>
-                          </widget>
-                         </item>
-                        </layout>
-                       </widget>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QWidget" name="meshQualityInfo" native="true">
-                     <layout class="QVBoxLayout" name="verticalLayout_33">
-                      <property name="spacing">
-                       <number>6</number>
-                      </property>
-                      <property name="leftMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>0</number>
-                      </property>
-                      <item>
-                       <widget class="FolderHeader" name="meshQualityHeader">
-                        <property name="sizePolicy">
-                         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                          <horstretch>0</horstretch>
-                          <verstretch>0</verstretch>
-                         </sizepolicy>
-                        </property>
-                        <property name="font">
-                         <font>
-                          <bold>false</bold>
-                         </font>
-                        </property>
-                        <property name="text">
-                         <string>Mesh Quality</string>
-                        </property>
-                        <property name="checked">
-                         <bool>false</bool>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QGroupBox" name="meshQualityGroupBox">
-                        <layout class="QVBoxLayout" name="verticalLayout_34">
-                         <item>
-                          <widget class="QWidget" name="widget" native="true">
-                           <layout class="QGridLayout" name="gridLayout_5">
-                            <property name="leftMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="topMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="rightMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="bottomMargin">
-                             <number>0</number>
-                            </property>
-                            <item row="1" column="1">
-                             <widget class="QLabeledDoubleRangeSlider" name="meshQualityRangeSlider">
+                             <widget class="Line" name="line_3">
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
                               </property>
                              </widget>
                             </item>
-                            <item row="0" column="0">
-                             <widget class="QLabel" name="label_5">
-                              <property name="text">
-                               <string>Index</string>
-                              </property>
+                            <item>
+                             <widget class="QWidget" name="clipOption" native="true">
+                              <layout class="QGridLayout" name="gridLayout_6">
+                               <property name="topMargin">
+                                <number>0</number>
+                               </property>
+                               <property name="bottomMargin">
+                                <number>0</number>
+                               </property>
+                               <property name="verticalSpacing">
+                                <number>0</number>
+                               </property>
+                               <item row="0" column="0">
+                                <widget class="QCheckBox" name="cutX">
+                                 <property name="text">
+                                  <string>X Plane</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="0" column="1">
+                                <widget class="QWidget" name="cutXPlane" native="true">
+                                 <property name="enabled">
+                                  <bool>false</bool>
+                                 </property>
+                                 <layout class="QHBoxLayout" name="horizontalLayout_6">
+                                  <property name="leftMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="topMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="rightMargin">
+                                   <number>9</number>
+                                  </property>
+                                  <property name="bottomMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <item>
+                                   <widget class="QWidget" name="widget_10" native="true">
+                                    <layout class="QHBoxLayout" name="horizontalLayout_20">
+                                     <property name="spacing">
+                                      <number>0</number>
+                                     </property>
+                                     <property name="leftMargin">
+                                      <number>0</number>
+                                     </property>
+                                     <property name="topMargin">
+                                      <number>0</number>
+                                     </property>
+                                     <property name="rightMargin">
+                                      <number>0</number>
+                                     </property>
+                                     <property name="bottomMargin">
+                                      <number>0</number>
+                                     </property>
+                                     <item>
+                                      <widget class="QLineEdit" name="xCutPlane">
+                                       <property name="sizePolicy">
+                                        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                         <horstretch>0</horstretch>
+                                         <verstretch>0</verstretch>
+                                        </sizepolicy>
+                                       </property>
+                                       <property name="text">
+                                        <string>0</string>
+                                       </property>
+                                      </widget>
+                                     </item>
+                                     <item>
+                                      <widget class="QPushButton" name="xPlaneHandle">
+                                       <property name="text">
+                                        <string/>
+                                       </property>
+                                       <property name="icon">
+                                        <iconset resource="../../../resource.qrc">
+                                         <normaloff>:/graphicsIcons/planeHandle.svg</normaloff>:/graphicsIcons/planeHandle.svg</iconset>
+                                       </property>
+                                       <property name="checkable">
+                                        <bool>true</bool>
+                                       </property>
+                                       <attribute name="buttonGroup">
+                                        <string notr="true">clipHandles</string>
+                                       </attribute>
+                                      </widget>
+                                     </item>
+                                    </layout>
+                                   </widget>
+                                  </item>
+                                  <item>
+                                   <widget class="QCheckBox" name="xCutInvert">
+                                    <property name="text">
+                                     <string>Invert</string>
+                                    </property>
+                                   </widget>
+                                  </item>
+                                 </layout>
+                                </widget>
+                               </item>
+                               <item row="1" column="0">
+                                <widget class="QCheckBox" name="cutY">
+                                 <property name="text">
+                                  <string>Y Plane</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="1" column="1">
+                                <widget class="QWidget" name="cutYPlane" native="true">
+                                 <property name="enabled">
+                                  <bool>false</bool>
+                                 </property>
+                                 <layout class="QHBoxLayout" name="horizontalLayout_7">
+                                  <property name="leftMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="topMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="rightMargin">
+                                   <number>9</number>
+                                  </property>
+                                  <property name="bottomMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <item>
+                                   <widget class="QWidget" name="widget_21" native="true">
+                                    <layout class="QHBoxLayout" name="horizontalLayout_21">
+                                     <property name="spacing">
+                                      <number>0</number>
+                                     </property>
+                                     <property name="leftMargin">
+                                      <number>0</number>
+                                     </property>
+                                     <property name="topMargin">
+                                      <number>0</number>
+                                     </property>
+                                     <property name="rightMargin">
+                                      <number>0</number>
+                                     </property>
+                                     <property name="bottomMargin">
+                                      <number>0</number>
+                                     </property>
+                                     <item>
+                                      <widget class="QLineEdit" name="yCutPlane">
+                                       <property name="sizePolicy">
+                                        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                         <horstretch>0</horstretch>
+                                         <verstretch>0</verstretch>
+                                        </sizepolicy>
+                                       </property>
+                                       <property name="text">
+                                        <string>0</string>
+                                       </property>
+                                      </widget>
+                                     </item>
+                                     <item>
+                                      <widget class="QPushButton" name="yPlaneHandle">
+                                       <property name="text">
+                                        <string/>
+                                       </property>
+                                       <property name="icon">
+                                        <iconset resource="../../../resource.qrc">
+                                         <normaloff>:/graphicsIcons/planeHandle.svg</normaloff>:/graphicsIcons/planeHandle.svg</iconset>
+                                       </property>
+                                       <property name="checkable">
+                                        <bool>true</bool>
+                                       </property>
+                                       <attribute name="buttonGroup">
+                                        <string notr="true">clipHandles</string>
+                                       </attribute>
+                                      </widget>
+                                     </item>
+                                    </layout>
+                                   </widget>
+                                  </item>
+                                  <item>
+                                   <widget class="QCheckBox" name="yCutInvert">
+                                    <property name="text">
+                                     <string>Invert</string>
+                                    </property>
+                                   </widget>
+                                  </item>
+                                 </layout>
+                                </widget>
+                               </item>
+                               <item row="2" column="0">
+                                <widget class="QCheckBox" name="cutZ">
+                                 <property name="text">
+                                  <string>Z Plane</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="2" column="1">
+                                <widget class="QWidget" name="cutZPlane" native="true">
+                                 <property name="enabled">
+                                  <bool>false</bool>
+                                 </property>
+                                 <layout class="QHBoxLayout" name="horizontalLayout_8">
+                                  <property name="leftMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="topMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="rightMargin">
+                                   <number>9</number>
+                                  </property>
+                                  <property name="bottomMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <item>
+                                   <widget class="QWidget" name="widget_24" native="true">
+                                    <layout class="QHBoxLayout" name="horizontalLayout_22">
+                                     <property name="spacing">
+                                      <number>0</number>
+                                     </property>
+                                     <property name="leftMargin">
+                                      <number>0</number>
+                                     </property>
+                                     <property name="topMargin">
+                                      <number>0</number>
+                                     </property>
+                                     <property name="rightMargin">
+                                      <number>0</number>
+                                     </property>
+                                     <property name="bottomMargin">
+                                      <number>0</number>
+                                     </property>
+                                     <item>
+                                      <widget class="QLineEdit" name="zCutPlane">
+                                       <property name="sizePolicy">
+                                        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                         <horstretch>0</horstretch>
+                                         <verstretch>0</verstretch>
+                                        </sizepolicy>
+                                       </property>
+                                       <property name="text">
+                                        <string>0</string>
+                                       </property>
+                                      </widget>
+                                     </item>
+                                     <item>
+                                      <widget class="QPushButton" name="zPlaneHandle">
+                                       <property name="text">
+                                        <string/>
+                                       </property>
+                                       <property name="icon">
+                                        <iconset resource="../../../resource.qrc">
+                                         <normaloff>:/graphicsIcons/planeHandle.svg</normaloff>:/graphicsIcons/planeHandle.svg</iconset>
+                                       </property>
+                                       <property name="checkable">
+                                        <bool>true</bool>
+                                       </property>
+                                       <attribute name="buttonGroup">
+                                        <string notr="true">clipHandles</string>
+                                       </attribute>
+                                      </widget>
+                                     </item>
+                                    </layout>
+                                   </widget>
+                                  </item>
+                                  <item>
+                                   <widget class="QCheckBox" name="zCutInvert">
+                                    <property name="text">
+                                     <string>Invert</string>
+                                    </property>
+                                   </widget>
+                                  </item>
+                                 </layout>
+                                </widget>
+                               </item>
+                              </layout>
                              </widget>
                             </item>
-                            <item row="1" column="0">
-                             <widget class="QLabel" name="label_6">
-                              <property name="text">
-                               <string>Range</string>
-                              </property>
-                             </widget>
-                            </item>
-                            <item row="0" column="1">
-                             <widget class="QWidget" name="widget_9" native="true">
-                              <layout class="QHBoxLayout" name="horizontalLayout_14">
+                            <item>
+                             <widget class="QWidget" name="widget_8" native="true">
+                              <layout class="QFormLayout" name="formLayout_2">
+                               <property name="verticalSpacing">
+                                <number>0</number>
+                               </property>
                                <property name="leftMargin">
                                 <number>0</number>
                                </property>
@@ -2910,61 +2740,135 @@
                                <property name="bottomMargin">
                                 <number>0</number>
                                </property>
-                               <item>
-                                <widget class="QComboBox" name="meshQualityIndex"/>
+                              </layout>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QWidget" name="sliceOption" native="true">
+                              <layout class="QGridLayout" name="gridLayout_7">
+                               <property name="topMargin">
+                                <number>0</number>
+                               </property>
+                               <property name="bottomMargin">
+                                <number>0</number>
+                               </property>
+                               <property name="verticalSpacing">
+                                <number>0</number>
+                               </property>
+                               <item row="0" column="0">
+                                <widget class="QComboBox" name="slicePlane">
+                                 <property name="currentIndex">
+                                  <number>3</number>
+                                 </property>
+                                 <item>
+                                  <property name="text">
+                                   <string>X</string>
+                                  </property>
+                                 </item>
+                                 <item>
+                                  <property name="text">
+                                   <string>Y</string>
+                                  </property>
+                                 </item>
+                                 <item>
+                                  <property name="text">
+                                   <string>Z</string>
+                                  </property>
+                                 </item>
+                                 <item>
+                                  <property name="text">
+                                   <string>None</string>
+                                  </property>
+                                 </item>
+                                </widget>
                                </item>
+                               <item row="0" column="1">
+                                <widget class="QWidget" name="sliceBox" native="true">
+                                 <property name="enabled">
+                                  <bool>false</bool>
+                                 </property>
+                                 <layout class="QHBoxLayout" name="horizontalLayout_26">
+                                  <property name="spacing">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="leftMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="topMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="rightMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="bottomMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <item>
+                                   <widget class="QLineEdit" name="sliceValue">
+                                    <property name="sizePolicy">
+                                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                                      <horstretch>0</horstretch>
+                                      <verstretch>0</verstretch>
+                                     </sizepolicy>
+                                    </property>
+                                    <property name="text">
+                                     <string>0</string>
+                                    </property>
+                                   </widget>
+                                  </item>
+                                  <item>
+                                   <widget class="QPushButton" name="sliceHandle">
+                                    <property name="text">
+                                     <string/>
+                                    </property>
+                                    <property name="icon">
+                                     <iconset resource="../../../resource.qrc">
+                                      <normaloff>:/graphicsIcons/planeHandle.svg</normaloff>:/graphicsIcons/planeHandle.svg</iconset>
+                                    </property>
+                                    <property name="checkable">
+                                     <bool>true</bool>
+                                    </property>
+                                   </widget>
+                                  </item>
+                                 </layout>
+                                </widget>
+                               </item>
+                              </layout>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QWidget" name="widget_36" native="true">
+                              <layout class="QHBoxLayout" name="horizontalLayout_19">
+                               <property name="topMargin">
+                                <number>0</number>
+                               </property>
+                               <property name="rightMargin">
+                                <number>0</number>
+                               </property>
+                               <property name="bottomMargin">
+                                <number>0</number>
+                               </property>
                                <item>
-                                <spacer name="horizontalSpacer_11">
+                                <spacer name="horizontalSpacer_5">
                                  <property name="orientation">
                                   <enum>Qt::Horizontal</enum>
                                  </property>
                                  <property name="sizeHint" stdset="0">
                                   <size>
-                                   <width>40</width>
+                                   <width>0</width>
                                    <height>20</height>
                                   </size>
                                  </property>
                                 </spacer>
                                </item>
+                               <item>
+                                <widget class="QPushButton" name="cutApply">
+                                 <property name="text">
+                                  <string>Apply</string>
+                                 </property>
+                                </widget>
+                               </item>
                               </layout>
-                             </widget>
-                            </item>
-                           </layout>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QWidget" name="widget_7" native="true">
-                           <layout class="QHBoxLayout" name="horizontalLayout_28">
-                            <property name="leftMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="topMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="rightMargin">
-                             <number>0</number>
-                            </property>
-                            <property name="bottomMargin">
-                             <number>0</number>
-                            </property>
-                            <item>
-                             <spacer name="horizontalSpacer_10">
-                              <property name="orientation">
-                               <enum>Qt::Horizontal</enum>
-                              </property>
-                              <property name="sizeHint" stdset="0">
-                               <size>
-                                <width>0</width>
-                                <height>20</height>
-                               </size>
-                              </property>
-                             </spacer>
-                            </item>
-                            <item>
-                             <widget class="QPushButton" name="meshQualityApply">
-                              <property name="text">
-                               <string>Apply</string>
-                              </property>
                              </widget>
                             </item>
                            </layout>
@@ -2973,47 +2877,206 @@
                         </layout>
                        </widget>
                       </item>
+                      <item>
+                       <widget class="QWidget" name="meshQualityInfo" native="true">
+                        <layout class="QVBoxLayout" name="verticalLayout_33">
+                         <property name="spacing">
+                          <number>6</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <widget class="FolderHeader" name="meshQualityHeader">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="font">
+                            <font>
+                             <bold>false</bold>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>Mesh Quality</string>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QGroupBox" name="meshQualityGroupBox">
+                           <layout class="QVBoxLayout" name="verticalLayout_34">
+                            <item>
+                             <widget class="QWidget" name="widget_6" native="true">
+                              <layout class="QGridLayout" name="gridLayout_5">
+                               <property name="leftMargin">
+                                <number>0</number>
+                               </property>
+                               <property name="topMargin">
+                                <number>0</number>
+                               </property>
+                               <property name="rightMargin">
+                                <number>0</number>
+                               </property>
+                               <property name="bottomMargin">
+                                <number>0</number>
+                               </property>
+                               <item row="1" column="1">
+                                <widget class="QLabeledDoubleRangeSlider" name="meshQualityRangeSlider">
+                                 <property name="orientation">
+                                  <enum>Qt::Horizontal</enum>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="0" column="0">
+                                <widget class="QLabel" name="label_5">
+                                 <property name="text">
+                                  <string>Index</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="1" column="0">
+                                <widget class="QLabel" name="label_6">
+                                 <property name="text">
+                                  <string>Range</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item row="0" column="1">
+                                <widget class="QWidget" name="widget_9" native="true">
+                                 <layout class="QHBoxLayout" name="horizontalLayout_14">
+                                  <property name="leftMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="topMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="rightMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <property name="bottomMargin">
+                                   <number>0</number>
+                                  </property>
+                                  <item>
+                                   <widget class="QComboBox" name="meshQualityIndex"/>
+                                  </item>
+                                  <item>
+                                   <spacer name="horizontalSpacer_11">
+                                    <property name="orientation">
+                                     <enum>Qt::Horizontal</enum>
+                                    </property>
+                                    <property name="sizeHint" stdset="0">
+                                     <size>
+                                      <width>40</width>
+                                      <height>20</height>
+                                     </size>
+                                    </property>
+                                   </spacer>
+                                  </item>
+                                 </layout>
+                                </widget>
+                               </item>
+                              </layout>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QWidget" name="widget_7" native="true">
+                              <layout class="QHBoxLayout" name="horizontalLayout_28">
+                               <property name="leftMargin">
+                                <number>0</number>
+                               </property>
+                               <property name="topMargin">
+                                <number>0</number>
+                               </property>
+                               <property name="rightMargin">
+                                <number>0</number>
+                               </property>
+                               <property name="bottomMargin">
+                                <number>0</number>
+                               </property>
+                               <item>
+                                <spacer name="horizontalSpacer_10">
+                                 <property name="orientation">
+                                  <enum>Qt::Horizontal</enum>
+                                 </property>
+                                 <property name="sizeHint" stdset="0">
+                                  <size>
+                                   <width>0</width>
+                                   <height>20</height>
+                                  </size>
+                                 </property>
+                                </spacer>
+                               </item>
+                               <item>
+                                <widget class="QPushButton" name="meshQualityApply">
+                                 <property name="text">
+                                  <string>Apply</string>
+                                 </property>
+                                </widget>
+                               </item>
+                              </layout>
+                             </widget>
+                            </item>
+                           </layout>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QTreeWidget" name="actors">
+                        <property name="contextMenuPolicy">
+                         <enum>Qt::CustomContextMenu</enum>
+                        </property>
+                        <property name="editTriggers">
+                         <set>QAbstractItemView::NoEditTriggers</set>
+                        </property>
+                        <property name="selectionMode">
+                         <enum>QAbstractItemView::ExtendedSelection</enum>
+                        </property>
+                        <property name="sortingEnabled">
+                         <bool>true</bool>
+                        </property>
+                        <property name="columnCount">
+                         <number>3</number>
+                        </property>
+                        <attribute name="headerVisible">
+                         <bool>true</bool>
+                        </attribute>
+                        <attribute name="headerStretchLastSection">
+                         <bool>false</bool>
+                        </attribute>
+                        <column>
+                         <property name="text">
+                          <string>Name</string>
+                         </property>
+                        </column>
+                        <column>
+                         <property name="text">
+                          <string>Type</string>
+                         </property>
+                        </column>
+                        <column>
+                         <property name="text">
+                          <string/>
+                         </property>
+                        </column>
+                       </widget>
+                      </item>
                      </layout>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QTreeWidget" name="actors">
-                     <property name="contextMenuPolicy">
-                      <enum>Qt::CustomContextMenu</enum>
-                     </property>
-                     <property name="editTriggers">
-                      <set>QAbstractItemView::NoEditTriggers</set>
-                     </property>
-                     <property name="selectionMode">
-                      <enum>QAbstractItemView::ExtendedSelection</enum>
-                     </property>
-                     <property name="sortingEnabled">
-                      <bool>true</bool>
-                     </property>
-                     <property name="columnCount">
-                      <number>3</number>
-                     </property>
-                     <attribute name="headerVisible">
-                      <bool>true</bool>
-                     </attribute>
-                     <attribute name="headerStretchLastSection">
-                      <bool>false</bool>
-                     </attribute>
-                     <column>
-                      <property name="text">
-                       <string>Name</string>
-                      </property>
-                     </column>
-                     <column>
-                      <property name="text">
-                       <string>Type</string>
-                      </property>
-                     </column>
-                     <column>
-                      <property name="text">
-                       <string/>
-                      </property>
-                     </column>
                     </widget>
                    </item>
                   </layout>
@@ -3439,6 +3502,11 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>EnumComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widgets.enum_combo_box</header>
+  </customwidget>
+  <customwidget>
    <class>FlatPushButton</class>
    <extends>QPushButton</extends>
    <header location="global">widgets.flat_push_button</header>
@@ -3456,11 +3524,6 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>EnumComboBox</class>
-   <extends>QComboBox</extends>
-   <header>widgets.enum_combo_box</header>
-  </customwidget>
-  <customwidget>
    <class>FolderHeader</class>
    <extends>QCheckBox</extends>
    <header location="global">baramMesh.view.widgets.folder_header</header>
@@ -3472,7 +3535,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../resource.qrc"/>
   <include location="../../../resource.qrc"/>
  </resources>
  <connections/>

@@ -113,7 +113,7 @@ class CastellationPage(StepPage):
             self._load()
 
         self._updateControlButtons()
-        self._updateMesh()
+        self.updateMesh()
 
     async def save(self):
         try:

@@ -95,8 +95,11 @@ class StepManager(QObject):
 
         self._open(step)
 
+    def currentPage(self):
+        return self._pages[self._navigation.currentStep()]
+
     async def saveCurrentPage(self):
-        return await self._pages[self._navigation.currentStep()].save()
+        return await self.currentPage().save()
 
     def isOpenedStep(self, step):
         return step == self._openedStep

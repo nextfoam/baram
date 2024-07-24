@@ -16,6 +16,15 @@ class RenderingTool:
         self._ui.perspective.toggled.connect(self._view.setParallelProjection)
         self._ui.rotate.clicked.connect(self._view.rollCamera)
 
+    def enable(self):
+        self._ui.toolbar.setEnabled(True)
+        self._ui.renderingView.setEnabled(True)
+
+    def disable(self):
+        self.clear()
+        self._ui.toolbar.setEnabled(False)
+        self._ui.renderingView.setEnabled(False)
+
     def clear(self):
         self._ui.axis.setChecked(False)
         self._ui.cubeAxis.setChecked(False)

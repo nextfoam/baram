@@ -21,7 +21,7 @@ class ActorManager(QObject):
 
         self._actorInfos = {}
         self._visibility = True
-        self._displayController = app.window.displayControl
+        self._displayControl = app.window.displayControl
 
     def isEmpty(self):
         return not self._actorInfos
@@ -33,14 +33,14 @@ class ActorManager(QObject):
         if actorInfo.id() in self._actorInfos:
             raise KeyError
 
-        self._actorInfos[actorInfo.id()] = self._displayController.add(actorInfo)
+        self._actorInfos[actorInfo.id()] = self._displayControl.add(actorInfo)
 
     def update(self, id_, dataSet):
         self._actorInfos[id_].setDataSet(dataSet)
 
     def remove(self, key):
         if actorInfo := self._actorInfos.pop(key, None):
-            self._displayController.remove(actorInfo)
+            self._displayControl.remove(actorInfo)
 
     def getBounds(self) -> Optional[Bounds]:
         if self.isEmpty():
@@ -54,10 +54,10 @@ class ActorManager(QObject):
         return bounds
 
     def applyToDisplay(self):
-        self._displayController.refreshView()
+        self._displayControl.refreshView()
 
     def fitDisplay(self):
-        self._displayController.fitView()
+        self._displayControl.fitView()
 
     def clear(self):
         self.hide()
@@ -65,28 +65,28 @@ class ActorManager(QObject):
 
     def hide(self):
         for actorInfo in self._actorInfos.values():
-            self._displayController.hide(actorInfo)
+            self._displayControl.hide(actorInfo)
 
-        self._displayController.refreshView()
+        self._displayControl.refreshView()
         self._visibility = False
 
     def clip(self, planes):
         for actorInfo in self._actorInfos.values():
             actorInfo.clip(planes)
 
-        self._displayController.refreshView()
+        self._displayControl.refreshView()
 
     def slice(self, plane):
         for actorInfo in self._actorInfos.values():
             actorInfo.slice(plane)
 
-        self._displayController.refreshView()
+        self._displayControl.refreshView()
 
     def _show(self):
         for actorInfo in self._actorInfos.values():
-            self._displayController.add(actorInfo)
+            self._displayControl.add(actorInfo)
 
-        self._displayController.refreshView()
+        self._displayControl.refreshView()
         self._visibility = True
 
     def _updateActorName(self, id_, name):

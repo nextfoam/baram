@@ -39,8 +39,8 @@ class GeometryManager(ActorManager):
 
         self._syncingMode = None
 
-        self._displayController.selectedActorsChanged.connect(self._selectedActorsChanged)
-        self._displayController.selectionApplied.connect(self._clearSyncingToDisplay)
+        self._displayControl.selectedActorsChanged.connect(self._selectedActorsChanged)
+        self._displayControl.selectionApplied.connect(self._clearSyncingToDisplay)
 
     def subSurfaces(self, gId):
         return app.db.getElements('geometry', lambda i, e: e['volume'] == gId)
@@ -87,7 +87,7 @@ class GeometryManager(ActorManager):
             return
 
         self._syncingMode = self.SYNCING_TO_DISPLAY
-        self._displayController.setSelectedActors(ids)
+        self._displayControl.setSelectedActors(ids)
 
     def clearSyncingFromDisplay(self):
         if self._syncingMode != self.SYNCING_FROM_DISPLAY:
@@ -96,7 +96,7 @@ class GeometryManager(ActorManager):
         self._syncingMode = None
 
     def startSyncingFromDisplay(self):
-        self._displayController.selectedItemsChanged()
+        self._displayControl.selectedItemsChanged()
 
     def enableSyncingToDisplay(self):
         if self._syncingMode == self.SYNCING_TO_DISPLAY:

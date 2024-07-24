@@ -41,7 +41,7 @@ class BaseGridPage(StepPage):
             self._load()
 
         self._updatePage()
-        self._updateMesh()
+        self.updateMesh()
 
     async def save(self):
         try:

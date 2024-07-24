@@ -145,6 +145,8 @@ class MainWindow(QMainWindow):
         self._ui.actionLanguage.setShortcut('Ctrl+L')
 
     def _connectSignalsSlots(self):
+        app.renderingToggled.connect(self._setRenderingEnabled)
+
         self._ui.menuView.addAction(self._consoleView.toggleViewAction())
 
         self._ui.actionNew.triggered.connect(self._actionNew)
@@ -168,6 +170,17 @@ class MainWindow(QMainWindow):
         self._stepManager.currentStepChanged.connect(self._displayControl.currentStepChanged)
 
         self._closeTriggered.connect(self._closeProject)
+
+    def _setRenderingEnabled(self, enabled):
+        self._displayControl.setEnabled(enabled)
+        if enabled:
+            self._renderingTool.enable()
+            self._geometryManager.show()
+            self._stepManager.currentPage().updateMesh()    # This call meshManger.load()
+        else:
+            self._renderingTool.disable()
+            self._geometryManager.hide()
+            self._meshManager.unload()
 
     def _openRecent(self, path):
         self._openProject(path)
@@ -238,6 +251,8 @@ class MainWindow(QMainWindow):
     def _startDialogClosed(self):
         if app.project is None:
             self.close()
+
+        self._ui.menubar.repaint()
 
     @qasync.asyncSlot()
     async def _closeProject(self, toQuit=False):
