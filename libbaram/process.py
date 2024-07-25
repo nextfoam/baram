@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+import logging
 from pathlib import Path
 
 import psutil
@@ -12,6 +14,9 @@ from PySide6.QtCore import QObject, Signal
 
 from libbaram.exception import CanceledException
 from libbaram.mpi import ParallelEnvironment
+
+
+logger = logging.getLogger(__name__)
 
 
 class ProcessError(Exception):
@@ -136,14 +141,22 @@ class RunSubprocess(QObject):
 
             tasks = list(pending)
             if outTask in done:
-                if output := outTask.result().decode('UTF-8').rstrip():
-                    self.output.emit(output)
+                try:
+                    if output := outTask.result().decode('UTF-8').rstrip():
+                        self.output.emit(output)
+                except UnicodeDecodeError:
+                    logger.warning(f'Unicode Decode Error: {outTask.result()}')
+
                 if not stdout.at_eof():
                     outTask = asyncio.create_task(stdout.readline())
                     tasks.append(outTask)
 
             if errTask in done:
-                self.errorOutput.emit(errTask.result().decode('UTF-8').rstrip())
+                try:
+                    self.errorOutput.emit(errTask.result().decode('UTF-8').rstrip())
+                except UnicodeDecodeError:
+                    logger.warning(f'Unicode Decode Error: {errTask.result()}')
+
                 if not stderr.at_eof():
                     errTask = asyncio.create_task(stderr.readline())
                     tasks.append(errTask)
