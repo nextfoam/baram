@@ -115,7 +115,7 @@ class SnapPage(StepPage):
             await self._cm.start()
             rc = await self._cm.wait()
             if rc != 0:
-                raise ProcessError
+                raise ProcessError(rc)
 
             if app.db.elementCount('region') > 1:
                 TopoSetDict().build(TopoSetDict.Mode.CREATE_REGIONS).write()
@@ -126,7 +126,7 @@ class SnapPage(StepPage):
                 await self._cm.start()
                 rc = await self._cm.wait()
                 if rc != 0:
-                    raise ProcessError
+                    raise ProcessError(rc)
 
                 if app.db.elementCount('geometry', lambda i, e: e['cfdType'] == CFDType.CELL_ZONE.value):
                     snapDict.updateForCellZoneInterfacesSnap().write()
@@ -137,7 +137,7 @@ class SnapPage(StepPage):
                     await self._cm.start()
                     rc = await self._cm.wait()
                     if rc != 0:
-                        raise ProcessError
+                        raise ProcessError(rc)
 
             self._cm = RunParallelUtility('checkMesh', '-allRegions', '-writeFields', '(cellAspectRatio cellVolume nonOrthoAngle skewness)', '-time', str(self.OUTPUT_TIME), '-case', app.fileSystem.caseRoot(),
                                     cwd=app.fileSystem.caseRoot(), parallel=app.project.parallelEnvironment())

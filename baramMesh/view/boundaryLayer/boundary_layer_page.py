@@ -173,7 +173,7 @@ class BoundaryLayerPage(StepPage):
                 await self._cm.start()
                 rc = await self._cm.wait()
                 if rc != 0:
-                    raise ProcessError
+                    raise ProcessError(rc)
 
                 boundaryLayersAdded = True
 
