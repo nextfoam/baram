@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
@@ -62,26 +64,30 @@ def _constructFluid(region: str):
 
             data['species'].append(name)
             data[name] = {
-                'equationOfState': _mixtureEquationOfState(densitySpec, db, spath),
                 'thermodynamics': _mixtureThermodynamics(specificHeatSpec, db, spath),
                 'transport': _mixtureTransport(tModel, transport, db, spath),
                 'specie': _mixtureSpecie(db, spath)
             }
+            if eos := _mixtureEquationOfState(densitySpec, db, spath):
+                data[name]['equationOfState'] = eos
             data[name]['transport']['Dm'] = db.getValue(path + '/mixture/massDiffusivity')
 
         return data
+    elif materialType == MaterialType.NONMIXTURE:
+        mix = {
+            'thermodynamics': _mixtureThermodynamics(specificHeatSpec, db, path),
+            'transport': _mixtureTransport(tModel, transport, db, path),
+            'specie': _mixtureSpecie(db, path)
+        }
+        if eos := _mixtureEquationOfState(densitySpec, db, path):
+            mix['equationOfState'] = eos
 
-    mix = {
-        'equationOfState': _mixtureEquationOfState(densitySpec, db, path),
-        'thermodynamics': _mixtureThermodynamics(specificHeatSpec, db, path),
-        'transport': _mixtureTransport(tModel, transport, db, path),
-        'specie': _mixtureSpecie(db, path)
-    }
-
-    return {
-        'thermoType': thermo,
-        'mixture': {key: value for key, value in mix.items() if value}
-    }
+        return {
+            'thermoType': thermo,
+            'mixture': {key: value for key, value in mix.items() if value}
+        }
+    else:
+        raise AssertionError
 
 
 def _mixtureEquationOfState(spec, db, path):
@@ -99,6 +105,14 @@ def _mixtureEquationOfState(spec, db, path):
         data = {
             'rhoCoeffs<8>': rhoCoeffs
         }
+    elif spec == 'incompressiblePerfectGas':
+        referencePressure = float(db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'))
+        operatingPressure = float(db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
+        data = {
+            'pRef': referencePressure + operatingPressure
+        }
+    elif spec == 'perfectGas':
+        data = None
 
     return data
 
