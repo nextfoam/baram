@@ -119,7 +119,8 @@ class FileSystem:
 
     async def copyTimeDirectory(self, srcTime, destTime, processorNo=None):
         srcPath = self.timePath(srcTime, processorNo)
-        if srcPath.is_dir() and any(srcPath.iterdir()):
+        polyMeshPath = srcPath / Directory.POLY_MESH_DIRECTORY_NAME
+        if polyMeshPath.is_dir():
             await asyncio.to_thread(shutil.copytree, srcPath, self.timePath(destTime, processorNo))
             return True
 
@@ -129,7 +130,7 @@ class FileSystem:
         self._casePath = path
         self._constantPath = self._casePath / Directory.CONSTANT_DIRECTORY_NAME
         self._triSurfacePath = self._constantPath / Directory.TRI_SURFACE_DIRECTORY_NAME
-        
+
     def isPolyMesh(self, path: Path):
         checkFiles = ['boundary', 'faces', 'neighbour', 'owner', 'points']
         for f in checkFiles:

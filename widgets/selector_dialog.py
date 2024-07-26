@@ -57,6 +57,9 @@ class SelectorDialog(QDialog):
     def selectedItem(self):
         return self._ui.list.currentItem().data(ListDataRole.USER_DATA.value)
 
+    def selectedText(self):
+        return self._ui.list.currentItem().text()
+
     def showEvent(self, ev):
         if ev.spontaneous():
             return super().showEvent(ev)

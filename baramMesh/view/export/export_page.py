@@ -6,6 +6,10 @@ from pathlib import Path
 
 import qasync
 
+from baramMesh.openfoam.system.collapse_dict import CollapseDict
+from baramMesh.openfoam.system.extrude_mesh_dict import ExtrudeMeshDict
+from baramMesh.view.export.export_2D_plane_dialog import Export2DPlaneDialog
+from baramMesh.view.export.export_2D_wedge_dialog import Export2DWedgeDialog
 from libbaram.openfoam.constants import Directory
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
@@ -29,11 +33,6 @@ class ExportPage(StepPage):
         super().__init__(ui, ui.exportPage)
 
         self._dialog = None
-        # self._fileDialog = QFileDialog(self._widget, Qt.WindowType.Widget)
-        # self._fileDialog.setWindowFlags(self._fileDialog.windowFlags() & ~Qt.Dialog)
-        # self._fileDialog.setFileMode(QFileDialog.FileMode.Directory)
-        # self._fileDialog.setViewMode(QFileDialog.ViewMode.List)
-        # self._widget.layout().addWidget(self._fileDialog)
 
         self._connectSignalsSlots()
 
@@ -42,6 +41,8 @@ class ExportPage(StepPage):
 
     def _connectSignalsSlots(self):
         self._ui.export_.clicked.connect(self._openFileDialog)
+        self._ui.export2DPlane.clicked.connect(self._openExport2DPlaneDialog)
+        self._ui.export2DWedge.clicked.connect(self._openExport2DWedgeDialog)
 
     @qasync.asyncSlot()
     async def _openFileDialog(self):
@@ -49,17 +50,23 @@ class ExportPage(StepPage):
         self._dialog.accepted.connect(self._export)
         self._dialog.rejected.connect(self._ui.menubar.repaint)
         self._dialog.open()
-        #
-        # self._dialog = QFileDialog(self._widget, self.tr('Select Folder'))
-        # self._dialog.setFileMode(QFileDialog.FileMode.Directory)
-        # self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        # self._dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
-        # self._dialog.fileSelected.connect(self._export)
-        # self._dialog.rejected.connect(self._ui.menubar.repaint)
-        # self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _export(self):
+    async def _openExport2DPlaneDialog(self):
+        self._dialog = Export2DPlaneDialog(self._widget)
+        self._dialog.accepted.connect(self._export2D)
+        self._dialog.rejected.connect(self._ui.menubar.repaint)
+        self._dialog.open()
+
+    @qasync.asyncSlot()
+    async def _openExport2DWedgeDialog(self):
+        self._dialog = Export2DWedgeDialog(self._widget)
+        self._dialog.accepted.connect(self._export2D)
+        self._dialog.rejected.connect(self._ui.menubar.repaint)
+        self._dialog.open()
+
+    @qasync.asyncSlot()
+    async def _export(self, to2d=False):
         path = Path(self._dialog.projectLocation())
 
         progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
@@ -138,12 +145,10 @@ class ExportPage(StepPage):
                     p = baramSystem.processorPath(n, False)
                     p.mkdir()
                     shutil.move(fileSystem.timePath(self.OUTPUT_TIME, n), p / Directory.CONSTANT_DIRECTORY_NAME)
-
-                redistributionTask = RedistributionTask(baramSystem)
-                redistributionTask.progress.connect(progressDialog.setLabelText)
-
-                await redistributionTask.reconstruct()
-
+                #
+                # redistributionTask = RedistributionTask(baramSystem)
+                # redistributionTask.progress.connect(progressDialog.setLabelText)
+                # await redistributionTask.reconstruct()
             else:
                 if len(regions) > 1:
                     for region in regions.values():
@@ -151,12 +156,42 @@ class ExportPage(StepPage):
                 else:
                     shutil.move(self._outputPath() / Directory.POLY_MESH_DIRECTORY_NAME, baramSystem.polyMeshPath())
 
-                rmtree(self._outputPath())
+            if to2d:
+                progressDialog.setLabelText(self.tr('Extruding Mesh'))
 
+                ExtrudeMeshDict(baramSystem).build(self._dialog.extrudeOptions()).write()
+                cm = RunParallelUtility('extrudeMesh', cwd=baramSystem.caseRoot(), parallel=parallel)
+                cm.output.connect(console.append)
+                cm.errorOutput.connect(console.appendError)
+                await cm.start()
+                rc = await cm.wait()
+                if rc != 0:
+                    raise ProcessError(rc)
+
+                CollapseDict(baramSystem).create()
+                cm = RunParallelUtility('collapseEdges', '-overwrite', cwd=baramSystem.caseRoot(), parallel=parallel)
+                cm.output.connect(console.append)
+                cm.errorOutput.connect(console.appendError)
+                await cm.start()
+                rc = await cm.wait()
+                if rc != 0:
+                    raise ProcessError(rc)
+
+            if parallel.isParallelOn():
+                redistributionTask = RedistributionTask(baramSystem)
+                redistributionTask.progress.connect(progressDialog.setLabelText)
+                await redistributionTask.reconstruct()
+
+            rmtree(self._outputPath())
+
+            rmtree(baramSystem.polyMeshPath() / 'sets')
             progressDialog.finish(self.tr('Export completed'))
-
         except ProcessError as e:
             self.clearResult()
             progressDialog.finish(self.tr('Export failed. [') + str(e.returncode) + ']')
         finally:
             self.unlock()
+
+    @qasync.asyncSlot()
+    async def _export2D(self):
+        await self._export(True)

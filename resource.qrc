@@ -6,6 +6,9 @@
     <file alias="toggle_off">resources/images/toggle_off.svg</file>
     <file alias="toggle_on">resources/images/toggle_on.svg</file>
   </qresource>
+  <qresource prefix="images">
+    <file alias="export2D.png">resources/images/exoirt2D.png</file>
+  </qresource>
   <qresource prefix="graphicsIcons">
     <file alias="axesOff.png">resources/graphicsIcons/axesOff.png</file>
     <file alias="axesOn.png">resources/graphicsIcons/axesOn.png</file>

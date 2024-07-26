@@ -2171,6 +2171,9 @@
                    <item>
                     <widget class="QWidget" name="widget_20" native="true">
                      <layout class="QHBoxLayout" name="horizontalLayout_12">
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
                       <item>
                        <spacer name="horizontalSpacer_9">
                         <property name="orientation">
@@ -2185,13 +2188,33 @@
                        </spacer>
                       </item>
                       <item>
-                       <widget class="QPushButton" name="export_">
+                       <widget class="QPushButton" name="export2DPlane">
                         <property name="text">
-                         <string>Export as BaramFlow project</string>
+                         <string>Export as 2D Plane</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="export2DWedge">
+                        <property name="text">
+                         <string>Export as 2D Wedge</string>
                         </property>
                        </widget>
                       </item>
                      </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="export_">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>50</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Export as BaramFlow project</string>
+                     </property>
                     </widget>
                    </item>
                   </layout>
