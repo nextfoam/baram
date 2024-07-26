@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QCheckBox, QLab
 from PySide6.QtCore import Signal
 
 from baramFlow.coredb import coredb
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.material_db import MaterialDB
 from .materials_widget_ui import Ui_MaterialsWidget
@@ -73,7 +74,7 @@ class SurfaceTensionWidget(QWidget):
 
 
 class MaterialsWidget(QWidget):
-    materialsChanged = Signal(int, list)
+    materialsChanged = Signal(str, list)
 
     def __init__(self, rname, multiphase):
         super().__init__()
@@ -90,7 +91,6 @@ class MaterialsWidget(QWidget):
 
         self._material = None
         self._secondaryMaterials = None
-        self._oldMaterials = None
 
         self._surfaceTensionWidget = None
         self._dialog = None
@@ -103,13 +103,14 @@ class MaterialsWidget(QWidget):
         else:
             self._ui.multiphase.setVisible(False)
 
-            for mid, name, _, _ in self._db.getMaterials():
+            materials = self._db.getMaterials() if ModelsDB.isSpeciesModelOn() else self._db.getMaterials('nonmixture')
+            for mid, name, _, _ in materials:
                 self._ui.material.addItem(name, str(mid))
 
         self._connectSignalsSlots()
 
     def load(self):
-        self._material = int(self._db.getValue(self._xpath + '/material'))
+        self._material = self._db.getValue(self._xpath + '/material')
 
         if self._multiphase:
             surfaceTensions = self._db.getSurfaceTensions(self._rname)
@@ -121,8 +122,6 @@ class MaterialsWidget(QWidget):
                 self._setSecondaryMaterials(RegionDB.getSecondaryMaterials(self._rname))
         else:
             self._ui.material.setCurrentText(MaterialDB.getName(self._material))
-
-        self._oldMaterials = self._material, self._secondaryMaterials
 
     def updateDB(self, db):
         if self._surfaceTensionWidget:
@@ -151,7 +150,7 @@ class MaterialsWidget(QWidget):
         self._surfaceTensionsMap[(mid2, mid1)] = value
 
     def _setMaterial(self, mid):
-        self._material = int(mid)
+        self._material = mid
         self._ui.primaryMaterial.setText(self._addMaterialToMap(self._material))
 
     def _setSecondaryMaterials(self, materials, default=None):
@@ -179,7 +178,7 @@ class MaterialsWidget(QWidget):
             self._addSurfaceTensionRows(self._secondaryMaterials[i], i + 1, default)
 
     def _materialChanged(self):
-        self._material = int(self._ui.material.currentData())
+        self._material = self._ui.material.currentData()
         self.materialsChanged.emit(self._material, [])
 
     def _selectMaterials(self):

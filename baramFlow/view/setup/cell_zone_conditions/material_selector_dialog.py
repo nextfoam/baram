@@ -34,16 +34,14 @@ class MaterialSectorDialog(QDialog):
 
         self._primaryIndex = None
 
-        materials = coredb.CoreDB().getMaterials()
-        for id_, name, type_, phase in materials:
-            mid = str(id_)
+        for mid, name, type_, phase in coredb.CoreDB().getMaterials():
             index = self._ui.primary.count()
-            self._ui.primary.addItem(name, mid)
+            self._ui.primary.addItem(name, str(mid))
 
             item = None
             if phase != Phase.SOLID.value:
                 item = QListWidgetItem(name)
-                item.setData(ItemDataRole.USER_DATA.value, mid)
+                item.setData(ItemDataRole.USER_DATA.value, str(mid))
                 item.setData(ItemDataRole.FILTERING_TEXT.value, name.lower())
                 item.setData(ItemDataRole.SELECTION_FLAG.value, False)
 
@@ -55,7 +53,7 @@ class MaterialSectorDialog(QDialog):
 
                 self._ui.secondariesSelector.setEnabled(True)
 
-            if id_ == primary:
+            if mid == int(primary):
                 self._ui.primary.setCurrentText(name)
                 if item:
                     self._hideItemFromList(item)

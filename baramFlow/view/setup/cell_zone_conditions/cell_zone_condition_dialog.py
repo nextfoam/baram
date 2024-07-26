@@ -66,8 +66,8 @@ class CellZoneConditionDialog(QDialog):
         self._scalarSourceTerms = {}
         self._specieFixedValueWidgets = {}
 
-        self._materialSourceTermsLayout = None
-        self._specieFixedValuesLayout = None
+        self._materialSourceTermsLayout = QVBoxLayout()
+        self._specieFixedValuesLayout = QVBoxLayout()
 
         self._addedMaterialSourceTerms = []
 
@@ -85,10 +85,6 @@ class CellZoneConditionDialog(QDialog):
             self._ui.zoneType.setVisible(False)
 
             self._materialsWidget = MaterialsWidget(self._rname, isMultiPhaseOn)
-            if isMultiPhaseOn:
-                self._materialsWidget.materialsChanged.connect(self._setupMaterialSourceWidgets)
-            elif isSpeciesOn:
-                self._materialsWidget.materialsChanged.connect(self._setupSpeciesWidgets)
             layout.addWidget(self._materialsWidget)
 
             if self._rname:
@@ -119,23 +115,14 @@ class CellZoneConditionDialog(QDialog):
         layout.addStretch()
 
         layout = self._ui.sourceTerms.layout()
-        if isMultiPhaseOn:
-            self._materialSourceTermsLayout = QVBoxLayout()
-            layout.addLayout(self._materialSourceTermsLayout)
-            self._setupMaterialSourceWidgets(int(RegionDB.getMaterial(self._rname)),
-                                             RegionDB.getSecondaryMaterials(self._rname))
-        elif isSpeciesOn:
-            self._materialSourceTermsLayout = QVBoxLayout()
-            layout.addLayout(self._materialSourceTermsLayout)
+        layout.addLayout(self._materialSourceTermsLayout)
 
-            self._specieFixedValuesLayout = QVBoxLayout()
-            self._specieFixedValuesLayout.setContentsMargins(0, 0, 0, 0)
-            widget = QWidget()
-            widget.setLayout(self._specieFixedValuesLayout)
-            self._ui.fixedValues.layout().addWidget(widget)
+        self._specieFixedValuesLayout.setContentsMargins(0, 0, 0, 0)
+        widget = QWidget()
+        widget.setLayout(self._specieFixedValuesLayout)
+        self._ui.fixedValues.layout().addWidget(widget)
 
-            self._setupSpeciesWidgets(int(RegionDB.getMaterial(self._rname)))
-        else:
+        if not isMultiPhaseOn and not isSpeciesOn:
             self._massSourceTerm = VariableSourceWidget(
                 self.tr("Mass"), self._xpath + '/sourceTerms/mass', {
                     SpecificationMethod.VALUE_PER_UNIT_VOLUME: 'kg/m<sup>3</sup>s',
@@ -165,6 +152,7 @@ class CellZoneConditionDialog(QDialog):
         self._load()
 
     def _connectSignalsSlots(self):
+        self._materialsWidget.materialsChanged.connect(self._setMaterials)
         self._ui.ok.clicked.connect(self._accept)
 
     def reject(self):
@@ -203,12 +191,11 @@ class CellZoneConditionDialog(QDialog):
 
                 if ModelsDB.isMultiphaseModelOn():
                     for mid, widget in self._materialSourceTerms.items():
-                        if mid in self._secondaryMaterials and  not await self._materialSourceTerms[mid].updateDB(db):
+                        if mid in self._secondaryMaterials and not await self._materialSourceTerms[mid].updateDB(db):
                             return
-                elif ModelsDB.isSpeciesModelOn() and self._species:
-                    for mid, widget in self._materialSourceTerms.items():
-                        if mid in self._species and not await self._materialSourceTerms[mid].updateDB(db):
-                            return
+                for mid, widget in self._materialSourceTerms.items():
+                    if mid in self._species and not await self._materialSourceTerms[mid].updateDB(db):
+                        return
 
                 if self._energySourceTerm and not await self._energySourceTerm.updateDB(db):
                     return
@@ -271,6 +258,8 @@ class CellZoneConditionDialog(QDialog):
                 self._slidingMeshZone.load()
             self._actuatorDiskZone.load()
 
+        self._setMaterials(RegionDB.getMaterial(self._rname), RegionDB.getSecondaryMaterials(self._rname))
+
         if self._massSourceTerm:
             self._massSourceTerm.load()
 
@@ -296,6 +285,56 @@ class CellZoneConditionDialog(QDialog):
 
         for field, widget in self._scalarFixedValues.items():
             widget.load()
+
+    def _setMaterials(self, primary, secondaries):
+        # Clear Source Terms and Fixed Values
+        for mid, widget in self._materialSourceTerms.items():
+            widget.hide()
+
+        for mid, widget in self._specieFixedValueWidgets.items():
+            widget.hide()
+
+        # Setup Material Source Terms for multiphase model
+        for mid in secondaries:
+            if mid in self._materialSourceTerms:
+                self._materialSourceTerms[mid].show()
+            else:
+                widget = VariableSourceWidget(MaterialDB.getName(mid),
+                                              f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]')
+                self._materialSourceTerms[mid] = widget
+                self._materialSourceTermsLayout.addWidget(widget)
+                widget.load()
+
+        # Setup Material Source Terms and Fixed Values for species
+        self._species = []
+        if MaterialDB.getType(primary) == MaterialType.MIXTURE:
+            mixture = MaterialDB.getName(primary)
+            species = MaterialDB.getSpecies(primary)
+
+            for mid, name in species.items():
+                self._species.append(mid)
+
+                if mid in self._materialSourceTerms:
+                    self._materialSourceTerms[mid].show()
+                else:
+                    widget = VariableSourceWidget(name,
+                                                  f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]')
+                    self._materialSourceTerms[mid] = widget
+                    self._materialSourceTermsLayout.addWidget(widget)
+                    widget.load()
+
+                if mid in self._specieFixedValueWidgets:
+                    self._specieFixedValueWidgets[mid].show()
+                else:
+                    widget = FixedValueWidget(
+                        f'{mixture}.{name}', name,
+                        f'{self._xpath}/fixedValues/species/mixture[mid="{primary}"]/specie[mid="{mid}"]/value')
+                    self._specieFixedValueWidgets[mid] = widget
+                    self._specieFixedValuesLayout.addWidget(widget)
+                    widget.load()
+
+        self._material = primary
+        self._secondaryMaterials = secondaries
 
     def _setupTurbulenceWidgets(self):
         sourceTermsLayout = self._ui.sourceTerms.layout()
@@ -324,69 +363,6 @@ class CellZoneConditionDialog(QDialog):
             xpath = self._xpath + f'/fixedValues/userDefinedScalars/scalar[scalarID="{scalarID}"]/value'
             self._scalarFixedValues[scalarID] = FixedValueWidget(fieldName, fieldName, xpath)
             fixedValuesLayout.addWidget(self._scalarFixedValues[scalarID])
-
-    def _setupMaterialSourceWidgets(self, primary, secondaries):
-        for mid in self._secondaryMaterials:
-            if mid not in secondaries:
-                self._materialSourceTerms[mid].hide()
-                self._materialSourceTerms[mid].setChecked(False)
-
-        for mid in secondaries:
-            if mid in self._materialSourceTerms:
-                self._materialSourceTerms[mid].show()
-            else:
-                widget = VariableSourceWidget(MaterialDB.getName(mid),
-                                              f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]')
-                self._materialSourceTerms[mid] = widget
-                self._materialSourceTermsLayout.addWidget(widget)
-                widget.load()
-
-        self._material = primary
-        self._secondaryMaterials = secondaries
-
-    def _setupSpeciesWidgets(self, primary):
-        if self._material == primary:
-            return
-
-        for mid, widget in self._materialSourceTerms.items():
-            widget.hide()
-            widget.setChecked(False)
-
-        for mid, widget in self._specieFixedValueWidgets.items():
-            widget.hide()
-            widget.setChecked(False)
-
-        self._material = primary
-
-        if MaterialDB.getType(self._material) != MaterialType.MIXTURE:
-            self._species = None
-            return
-
-        mixture = MaterialDB.getName(self._material)
-        species = MaterialDB.getSpecies(self._material)
-        self._species = []
-
-        for mid, name in species.items():
-            self._species.append(mid)
-
-            if mid in self._materialSourceTerms:
-                self._materialSourceTerms[mid].show()
-            else:
-                widget = VariableSourceWidget(name,
-                                              f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]')
-                self._materialSourceTerms[mid] = widget
-                self._materialSourceTermsLayout.addWidget(widget)
-                widget.load()
-
-            if mid in self._specieFixedValueWidgets:
-                self._specieFixedValueWidgets[mid].show()
-            else:
-                widget = FixedValueWidget(
-                    f'{mixture}.{name}', name,
-                    f'{self._xpath}/fixedValues/species/mixture[mid="{self._material}"]/specie[mid="{mid}"]/value')
-                self._specieFixedValueWidgets[mid] = widget
-                self._specieFixedValuesLayout.addWidget(widget)
-                widget.load()
 
     def _zoneTypeChanged(self, id_, checked):
         if checked:
