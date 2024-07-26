@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
 import platform
 
 from libbaram.app_path import APP_PATH
 from libbaram.math import calucateDirectionsByRotation
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-import baramFlow.openfoam.solver
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, DirectionSpecificationMethod
@@ -25,7 +23,7 @@ from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baramFlow.mesh.vtk_loader import isPointInDataSet
 from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.openfoam.solver import findSolver, getSolverCapability
+from baramFlow.openfoam.solver import findSolver, usePrgh
 from .fv_options import generateSourceTermField, generateFixedValueField
 
 
@@ -68,8 +66,7 @@ def _getAvailableFields():
     else:
         fields = ['U']
 
-    cap = getSolverCapability(findSolver())
-    if cap['usePrgh']:
+    if usePrgh():
         fields.append('p_rgh')
     else:
         fields.append('p')
@@ -93,11 +90,11 @@ def _getAvailableFields():
 
     db = coredb.CoreDB()
     if ModelsDB.isMultiphaseModelOn():
-        for mid, name, _, phase in db.getMaterials():
+        for _, name, _, phase in db.getMaterials():
             if phase != Phase.SOLID.value:
                 fields.append(f'alpha.{name}')
     elif ModelsDB.isSpeciesModelOn():
-        for mixture, name in RegionDB.getMixturesInRegions():
+        for mixture, _ in RegionDB.getMixturesInRegions():
             for name in MaterialDB.getSpecies(mixture).values():
                 fields.append(name)
 
@@ -171,11 +168,6 @@ class ControlDict(DictionaryFile):
         self._db = CoreDBReader()
         xpath = RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions'
 
-        solvers = baramFlow.openfoam.solver.findSolvers()
-        if len(solvers) != 1:  # configuration not enough yet
-            solvers = ['solver']
-            # raise RuntimeError
-
         endTime = None
         deltaT = None
         adjustTimeStep = 'no'
@@ -199,7 +191,7 @@ class ControlDict(DictionaryFile):
             purgeWrite = self._db.getValue(xpath + '/maximumNumberOfDataFiles')
 
         self._data = {
-            'application': solvers[0],
+            'application': findSolver(),
             'startFrom': 'latestTime',
             'startTime': 0,
             'stopAt': 'endTime',
@@ -287,7 +279,7 @@ class ControlDict(DictionaryFile):
             if region := self._db.getValue(xpath + '/region'):
                 self._data['functions'][fieldName]['region'] = region
 
-            if mid := int(self._db.getValue(xpath + 'material')):
+            if mid := self._db.getValue(xpath + 'material'):
                 self._data['functions'][fieldName]['phase'] = MaterialDB.getName(mid)
 
     def _appendMonitoringFunctionObjects(self):

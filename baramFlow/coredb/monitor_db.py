@@ -9,7 +9,7 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.material_db import MaterialDB, Phase, MaterialType, IMaterialObserver
-from baramFlow.openfoam.solver import findSolver, getSolverCapability
+from baramFlow.openfoam.solver import usePrgh
 
 
 class Field(Enum):
@@ -170,8 +170,8 @@ class FieldHelper:
         def _appendField(field):
             fields.append(cls.FieldItem(cls.FIELD_TEXTS[field], field))
 
-        def _appendMaterial(mid, name):
-            fields.append(cls.FieldItem(name, Field.MATERIAL, str(mid)))
+        def _appendMaterial(mid_, name_):
+            fields.append(cls.FieldItem(name_, Field.MATERIAL, mid_))
 
         # Always available fields
         _appendField(Field.PRESSURE)
@@ -236,8 +236,7 @@ class FieldHelper:
 
             if fieldName == 'p':
                 try:
-                    cap = getSolverCapability(findSolver())
-                    if cap['usePrgh']:
+                    if usePrgh():
                         fieldName = 'p_rgh'
                 except RuntimeError:
                     pass
@@ -246,7 +245,7 @@ class FieldHelper:
 
 
 class MaterialObserver(IMaterialObserver):
-    def materialRemoving(self, db, mid: int):
+    def materialRemoving(self, db, mid: str):
         removed = self._removeMonitors(db, mid)
         if MaterialDB.getType(mid) == MaterialType.MIXTURE:
             for sid in MaterialDB.getSpecies(mid):
@@ -255,11 +254,11 @@ class MaterialObserver(IMaterialObserver):
         if removed:
             MonitorDB.signals.monitorChanged.emit()
 
-    def specieRemoving(self, db, mid, primarySpecie):
+    def specieRemoving(self, db, mid: str, primarySpecie: str):
         if self._removeMonitors(db, mid):
             MonitorDB.signals.monitorChanged.emit()
 
-    def _removeMonitors(self, db, mid):
+    def _removeMonitors(self, db, mid: str):
         referencingFields = db.getElements(f'monitors/*/*/field[field="material"][fieldID="{mid}"]')
         if not referencingFields:
             return False

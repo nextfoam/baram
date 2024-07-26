@@ -55,13 +55,13 @@ class RegionDB:
     @classmethod
     def getMixturesInRegions(cls):
         db = coredb.CoreDB()
-        mixtures = {str(mid): name for mid, name, _, _ in db.getMaterials('mixture')}
+        mixtures = {mid: name for mid, name, _, _ in db.getMaterials('mixture')}
         materialsInRegions = set(xml.getText(region, 'material') for region in db.getElements(f'{REGION_XPATH}'))
 
         return [(mid, name) for mid, name in mixtures.items() if mid in materialsInRegions]
 
     @classmethod
-    def updateMaterials(cls, rname, primary, secondaries):
+    def updateMaterials(cls, rname, primary: str, secondaries: list[str]):
         def addSurfaceTension(parent, mid1, mid2):
             if xml.getElement(parent, f'surfaceTension[mid="{mid1}"][mid="{mid2}"]') is None:
                 parent.append(xml.createElement(f'<surfaceTension xmlns="http://www.baramcfd.org/baram">'
@@ -70,7 +70,7 @@ class RegionDB:
 
         db = coredb.CoreDB()
 
-        currentPrimary = int(RegionDB.getMaterial(rname))
+        currentPrimary = RegionDB.getMaterial(rname)
         currentSecondaries = RegionDB.getSecondaryMaterials(rname)
 
         if primary == currentPrimary and set(secondaries) == set(currentSecondaries):
@@ -86,7 +86,7 @@ class RegionDB:
             observer.materialsUpdating(db, rname, primary, secondaries, species)
 
         xpath = cls.getXPath(rname)
-        db.setValue(xpath + '/material', str(primary))
+        db.setValue(xpath + '/material', primary)
         db.setValue(xpath + '/secondaryMaterials', ' '.join(secondaries))
 
         region = getRegionElement(rname)
@@ -104,9 +104,9 @@ def getRegionElement(rname):
 
 
 class MaterialObserver(IMaterialObserver):
-    def materialRemoving(self, db, mid: int):
+    def materialRemoving(self, db, mid: str):
         for region in db.getElements(REGION_XPATH):
-            if int(xml.getText(region, 'material')) == mid or f' {mid} ' in f" {xml.getText(region, 'secondaryMaterials')} ":
+            if xml.getText(region, 'material') == mid or f' {mid} ' in f" {xml.getText(region, 'secondaryMaterials')} ":
                 raise ConfigurationException(self.tr('{} is set as material of region {}').format(
                     MaterialDB.getName(mid), xml.getText(region, 'name')))
         #
@@ -118,7 +118,7 @@ class MaterialObserver(IMaterialObserver):
 class SpecieModelObserver(ISpecieModelObserver):
     def turningOff(self, db, mixtures):
         for region in db.getElements(REGION_XPATH):
-            if (mid := int(xml.getText(region, 'material'))) in mixtures:
+            if (mid := xml.getText(region, 'material')) in mixtures:
                 raise ConfigurationException(
                     self.tr('Cannot turn off specie model, Mixture {} is material of region {}.').format(
                         MaterialDB.getName(mid), xml.getText(region, 'name')))

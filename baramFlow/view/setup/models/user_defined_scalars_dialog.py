@@ -14,7 +14,7 @@ from widgets.flat_push_button import FlatPushButton
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.coredb.scalar_model_db import ScalarSpecificationMethod, UserDefinedScalarsDB
+from baramFlow.coredb.scalar_model_db import ScalarSpecificationMethod, UserDefinedScalarsDB, UserDefinedScalar
 from .user_defined_scalar_dialog import UserDefiendScalarDialog, ALL_MATERIALS_TEXT, SCALAR_SPECIFICATION_METHODS
 from .user_defined_scalars_dialog_ui import Ui_UserDefinedScalarsDialog
 
@@ -36,7 +36,7 @@ class UserDefinedScalarsDialog(QDialog):
         self._ui.setupUi(self)
 
         self._dialog = None
-        self._scalars = {}
+        self._scalars: dict[str:UserDefinedScalar] = {}
         self._toDelete = []
 
         self._ui.scalars.setColumnWidth(Column.REMOVE, 20)
@@ -84,9 +84,9 @@ class UserDefinedScalarsDialog(QDialog):
         self._dialog.accepted.connect(lambda: self._addScalar(self._dialog.scalar()))
         self._dialog.open()
 
-    def _addScalar(self,  scalar):
+    def _addScalar(self,  scalar: UserDefinedScalar):
         target = ALL_MATERIALS_TEXT
-        if ModelsDB.isMultiphaseModelOn() and int(scalar.material):
+        if ModelsDB.isMultiphaseModelOn() and scalar.material != '0':
             target = MaterialDB.getName(scalar.material)
         elif scalar.region:
             target = scalar.region

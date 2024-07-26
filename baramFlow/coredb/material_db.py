@@ -40,13 +40,13 @@ class MaterialType(Enum):
 
 
 class IMaterialObserver(QObject):
-    def specieAdded(self, db, mid: int, mixtureID):
+    def specieAdded(self, db, mid: str, mixtureID):
         pass
 
-    def materialRemoving(self, db, mid: int):
+    def materialRemoving(self, db, mid: str):
         pass
 
-    def specieRemoving(self, db, mid: int, primarySpecie):
+    def specieRemoving(self, db, mid: str, primarySpecie: str):
         pass
 
     def _removeSpecieInComposition(self, primarySpecie, specieElement):
@@ -84,23 +84,23 @@ class MaterialDB(object):
         cls._observers.append(observer)
 
     @classmethod
-    def getXPath(cls, mid) -> str:
+    def getXPath(cls, mid: str) -> str:
         return f'{MATERIAL_XPATH}[@mid="{mid}"]'
 
     @classmethod
-    def getXPathByName(cls, name) -> str:
+    def getXPathByName(cls, name: str) -> str:
         return f'{MATERIAL_XPATH}[name="{name}"]'
 
     @classmethod
-    def getName(cls, mid):
+    def getName(cls, mid: str):
         return coredb.CoreDB().getValue(cls.getXPath(mid) + '/name')
 
     @classmethod
-    def getPhase(cls, mid) -> Phase:
+    def getPhase(cls, mid: str) -> Phase:
         return Phase(coredb.CoreDB().getValue(cls.getXPath(mid) + '/phase'))
 
     @classmethod
-    def getType(cls, mid):
+    def getType(cls, mid: str):
         return MaterialType(coredb.CoreDB().getValue(cls.getXPath(mid) + '/type'))
 
     @classmethod
@@ -151,7 +151,7 @@ class MaterialDB(object):
         return cls.getPhase(mid) != Phase.SOLID
 
     @classmethod
-    def getMaterialComposition(cls, xpath, mid):
+    def getMaterialComposition(cls, xpath, mid: str):
         if MaterialDB.getType(mid) == MaterialType.MIXTURE:
             return [(xml.getText(e, 'mid'), float(xml.getText(e, 'value')))
                     for e in coredb.CoreDB().getElements(f'{xpath}/mixture[mid="{mid}"]/specie')]
@@ -159,12 +159,12 @@ class MaterialDB(object):
         return [(mid, 1)]
 
     @classmethod
-    def getPrimarySpecie(cls, mid):
-        return int(xml.getText(_rootElement(), f'material[@mid="{mid}"]/mixture/primarySpecie'))
+    def getPrimarySpecie(cls, mid: str) -> str:
+        return xml.getText(_rootElement(), f'material[@mid="{mid}"]/mixture/primarySpecie')
 
     @classmethod
-    def getSpecies(cls, mid):
-        return {int(xml.getAttribute(e.getparent(), 'mid')): xml.getText(e.getparent(), 'name')
+    def getSpecies(cls, mid: str):
+        return {xml.getAttribute(e.getparent(), 'mid'): xml.getText(e.getparent(), 'name')
                 for e in xml.getElements(_rootElement(), f'material/specie[mixture="{mid}"]')}
 
     @classmethod
@@ -172,7 +172,7 @@ class MaterialDB(object):
         return _materialTemplates.getMaterials(phase)
 
     @classmethod
-    def addMaterial(cls, db, template: str) -> int:
+    def addMaterial(cls, db, template: str) -> str:
         mid = _newID(db)
         name = _newName(db, template)
         _rootElement().append(
@@ -196,7 +196,7 @@ class MaterialDB(object):
                     MaterialTemplates.Specifications('mixture', _materialTemplates.template(species[0])['phase']),
                     _materialTemplates.mixtureXML())))
 
-        primary = 0
+        primary = None
         specieXML = _materialTemplates.specieXML(mid)
         for specie in species:
             sid = _newID(db)
@@ -204,9 +204,10 @@ class MaterialDB(object):
                 xml.createElement(
                     _materialTemplates.materialXML(
                         sid, _newName(db, specie), specie, MaterialTemplates.Specifications('specie'), specieXML)))
-            primary = primary or sid
+            if primary is None:
+                primary = sid
 
-        db.setValue(MaterialDB.getXPath(mid) + '/mixture/primarySpecie', str(primary))
+        db.setValue(MaterialDB.getXPath(mid) + '/mixture/primarySpecie', primary)
 
         return mid
 
@@ -254,7 +255,7 @@ class MaterialDB(object):
         materials.remove(material)
 
     @classmethod
-    def removeSpecie(cls, db, mid: int):
+    def removeSpecie(cls, db, mid: str):
         materials = _rootElement()
 
         specie = xml.getElement(materials, f'material[@mid="{mid}"]')
@@ -264,11 +265,11 @@ class MaterialDB(object):
         primarySpecie = None
         mixtureMid = xml.getText(specie, 'specie/mixture')
         mixture = xml.getElement(materials, f'material[@mid="{mixtureMid}"]')
-        if int(xml.getText(mixture, f'mixture/primarySpecie')) == mid:
+        if xml.getText(mixture, f'mixture/primarySpecie') == mid:
             species = xml.getElements(materials, f'material/specie[mixture="{mixtureMid}"]')
             mid1 = xml.getAttribute(species[0].getparent(), 'mid')
             mid2 = xml.getAttribute(species[1].getparent(), 'mid')
-            primarySpecie = mid2 if int(mid1) == mid else mid1
+            primarySpecie = mid2 if mid1 == mid else mid1
 
         for observer in cls._observers:
             observer.specieRemoving(db, mid, primarySpecie)

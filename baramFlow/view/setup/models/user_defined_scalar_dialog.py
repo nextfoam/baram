@@ -10,7 +10,7 @@ from widgets.async_message_box import AsyncMessageBox
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.coredb.scalar_model_db import ScalarSpecificationMethod
+from baramFlow.coredb.scalar_model_db import ScalarSpecificationMethod, UserDefinedScalar
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .user_defined_scalar_dialog_ui import Ui_UserDefinedScalarDialog
 
@@ -49,20 +49,21 @@ class Validator(QObject):
             self._message = self.tr('Value must be a float - ') + label
             raise
 
+
 class UserDefiendScalarDialog(ResizableDialog):
 
-    def __init__(self, parent, scalar):
+    def __init__(self, parent, scalar: UserDefinedScalar):
         super().__init__(parent)
         self._ui = Ui_UserDefinedScalarDialog()
         self._ui.setupUi(self)
 
         self._db = coredb.CoreDB()
-        self._scalar = scalar
+        self._scalar: UserDefinedScalar = scalar
         self._target = None
 
         if ModelsDB.isMultiphaseModelOn():
             self._ui.targetLabel.setText(self.tr('Material'))
-            self._ui.target.addItem(ALL_MATERIALS_TEXT, 0)
+            self._ui.target.addItem(ALL_MATERIALS_TEXT, '0')
             for mid, name, _, _ in self._db.getMaterials():
                 self._ui.target.addItem(name, mid)
         elif self._db.hasMultipleRegions():
@@ -84,7 +85,7 @@ class UserDefiendScalarDialog(ResizableDialog):
         self._connectSignalsSlots()
         self._load()
 
-    def scalar(self):
+    def scalar(self) -> UserDefinedScalar:
         return self._scalar
 
     def _connectSignalsSlots(self):
@@ -93,12 +94,12 @@ class UserDefiendScalarDialog(ResizableDialog):
 
     def _load(self):
         if ModelsDB.isMultiphaseModelOn():
-            if int(self._scalar.material):
+            if self._scalar.material != '0':
                 self._ui.target.setCurrentText(MaterialDB.getName(self._scalar.material))
             else:
                 self._ui.target.setCurrentIndex(0)
         elif self._db.hasMultipleRegions() and self._scalar.region:
-                self._ui.target.setCurrentText(self._scalar.region)
+            self._ui.target.setCurrentText(self._scalar.region)
 
         self._ui.fieldName.setText(self._scalar.fieldName)
         self._ui.specificationMethod.setCurrentData(self._scalar.specificationMethod)
