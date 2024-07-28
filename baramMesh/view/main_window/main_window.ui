@@ -55,7 +55,7 @@
               </size>
              </property>
              <property name="text">
-              <string>1. Geometry</string>
+              <string>&amp;1. Geometry</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
@@ -105,7 +105,7 @@
               </size>
              </property>
              <property name="text">
-              <string>2. Region</string>
+              <string>&amp;2. Region</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
@@ -155,7 +155,7 @@
               </size>
              </property>
              <property name="text">
-              <string>3. Base Grid</string>
+              <string>&amp;3. Base Grid</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
@@ -205,7 +205,7 @@
               </size>
              </property>
              <property name="text">
-              <string>4. Castellation</string>
+              <string>&amp;4. Castellation</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
@@ -255,7 +255,7 @@
               </size>
              </property>
              <property name="text">
-              <string>5. Snap</string>
+              <string>&amp;5. Snap</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
@@ -305,7 +305,7 @@
               </size>
              </property>
              <property name="text">
-              <string>6. Boundary Layer</string>
+              <string>&amp;6. Boundary Layer</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
@@ -355,7 +355,7 @@
               </size>
              </property>
              <property name="text">
-              <string>7. Export</string>
+              <string>&amp;7. Export</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
@@ -507,14 +507,14 @@
                       <item>
                        <widget class="QPushButton" name="import_">
                         <property name="text">
-                         <string>Import</string>
+                         <string>&amp;Import</string>
                         </property>
                        </widget>
                       </item>
                       <item>
                        <widget class="QPushButton" name="add">
                         <property name="text">
-                         <string>Add</string>
+                         <string>&amp;Add</string>
                         </property>
                        </widget>
                       </item>
@@ -883,14 +883,14 @@
                       <item>
                        <widget class="QPushButton" name="generate">
                         <property name="text">
-                         <string>Generate</string>
+                         <string>&amp;Generate</string>
                         </property>
                        </widget>
                       </item>
                       <item>
                        <widget class="QPushButton" name="baseGridReset">
                         <property name="text">
-                         <string>Reset</string>
+                         <string>&amp;Reset</string>
                         </property>
                        </widget>
                       </item>
@@ -1440,14 +1440,14 @@
                       <item>
                        <widget class="QPushButton" name="refine">
                         <property name="text">
-                         <string>Refine</string>
+                         <string>&amp;Refine</string>
                         </property>
                        </widget>
                       </item>
                       <item>
                        <widget class="QPushButton" name="castellationReset">
                         <property name="text">
-                         <string>Reset</string>
+                         <string>&amp;Reset</string>
                         </property>
                        </widget>
                       </item>
@@ -1656,14 +1656,14 @@
                       <item>
                        <widget class="QPushButton" name="snap">
                         <property name="text">
-                         <string>Snap</string>
+                         <string>S&amp;nap</string>
                         </property>
                        </widget>
                       </item>
                       <item>
                        <widget class="QPushButton" name="snapReset">
                         <property name="text">
-                         <string>Reset</string>
+                         <string>&amp;Reset</string>
                         </property>
                        </widget>
                       </item>
@@ -2107,14 +2107,14 @@
                       <item>
                        <widget class="QPushButton" name="boundaryLayerApply">
                         <property name="text">
-                         <string>Apply</string>
+                         <string>&amp;Apply</string>
                         </property>
                        </widget>
                       </item>
                       <item>
                        <widget class="QPushButton" name="boundaryLayerReset">
                         <property name="text">
-                         <string>Reset</string>
+                         <string>&amp;Reset</string>
                         </property>
                        </widget>
                       </item>
@@ -2187,7 +2187,7 @@
                       <item>
                        <widget class="QPushButton" name="export_">
                         <property name="text">
-                         <string>Export as BaramFlow project</string>
+                         <string>&amp;Export as BaramFlow project</string>
                         </property>
                        </widget>
                       </item>
@@ -2233,7 +2233,7 @@
                   <item>
                    <widget class="QPushButton" name="unlock">
                     <property name="text">
-                     <string>Unlock</string>
+                     <string>&amp;Unlock</string>
                     </property>
                    </widget>
                   </item>
@@ -2243,7 +2243,7 @@
                      <bool>false</bool>
                     </property>
                     <property name="text">
-                     <string>Next</string>
+                     <string>&amp;Next</string>
                     </property>
                    </widget>
                   </item>
@@ -3373,17 +3373,17 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionNew">
    <property name="text">
-    <string>New</string>
+    <string>&amp;New</string>
    </property>
   </action>
   <action name="actionOpen">
    <property name="text">
-    <string>Open</string>
+    <string>&amp;Open</string>
    </property>
   </action>
   <action name="actionSave">
    <property name="text">
-    <string>Save</string>
+    <string>&amp;Save</string>
    </property>
   </action>
   <action name="actionSave_As">
@@ -3403,22 +3403,22 @@
   </action>
   <action name="actionExit">
    <property name="text">
-    <string>Exit</string>
+    <string>&amp;Exit</string>
    </property>
   </action>
   <action name="actionParameters">
    <property name="text">
-    <string>Parameters</string>
+    <string>&amp;Parameters</string>
    </property>
   </action>
   <action name="actionScale">
    <property name="text">
-    <string>Scale</string>
+    <string>&amp;Scale</string>
    </property>
   </action>
   <action name="actionLanguage">
    <property name="text">
-    <string>Language</string>
+    <string>&amp;Language</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -3433,7 +3433,7 @@
   </action>
   <action name="actionParallelEnvironment">
    <property name="text">
-    <string>Environment</string>
+    <string>&amp;Environment</string>
    </property>
   </action>
  </widget>
