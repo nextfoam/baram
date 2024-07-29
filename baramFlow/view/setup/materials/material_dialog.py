@@ -230,21 +230,22 @@ class MaterialDialog(ResizableDialog):
         if self._type == MaterialType.SPECIE:
             self._setupSpecificationCombo(self._ui.densityType, [spec])
             self._ui.densityType.setEnabled(False)
-        elif self._phase == Phase.GAS:
-            self._setupSpecificationCombo(
-                self._ui.densityType, [
-                    Specification.CONSTANT,
-                    Specification.PERFECT_GAS,
-                    Specification.POLYNOMIAL
-                ]
-            )
         else:
-            self._setupSpecificationCombo(
-                self._ui.densityType, [
-                    Specification.CONSTANT,
-                ]
-            )
-            self._ui.densityType.setCurrentText(spec.value)
+            if self._phase == Phase.GAS:
+                self._setupSpecificationCombo(
+                    self._ui.densityType, [
+                        Specification.CONSTANT,
+                        Specification.PERFECT_GAS,
+                        Specification.POLYNOMIAL
+                    ]
+                )
+            else:
+                self._setupSpecificationCombo(
+                    self._ui.densityType, [
+                        Specification.CONSTANT,
+                    ]
+                )
+            self._ui.densityType.setCurrentText(MaterialDB.specificationToText(spec))
 
     def _setupSpecificHeatSpecification(self, spec):
         if self._type == MaterialType.SPECIE:
@@ -257,28 +258,29 @@ class MaterialDialog(ResizableDialog):
                     Specification.POLYNOMIAL
                 ]
             )
-            self._ui.specificHeatType.setCurrentText(spec.value)
+            self._ui.specificHeatType.setCurrentText(MaterialDB.specificationToText(spec))
 
     def _setupViscositySpecification(self, spec):
         if self._type == MaterialType.SPECIE:
             self._setupSpecificationCombo(self._ui.viscosityType, [spec])
             self._ui.viscosityType.setEnabled(False)
-        elif self._phase == Phase.GAS:
-            self._setupSpecificationCombo(
-                self._ui.viscosityType, [
-                    Specification.CONSTANT,
-                    Specification.SUTHERLAND,
-                    Specification.POLYNOMIAL
-                ]
-            )
-        elif self._phase == Phase.LIQUID:
-            self._setupSpecificationCombo(
-                self._ui.viscosityType, [
-                    Specification.CONSTANT,
-                    Specification.POLYNOMIAL
-                ]
-            )
-            self._ui.viscosityType.setCurrentText(spec.value)
+        else:
+            if self._phase == Phase.GAS:
+                self._setupSpecificationCombo(
+                    self._ui.viscosityType, [
+                        Specification.CONSTANT,
+                        Specification.SUTHERLAND,
+                        Specification.POLYNOMIAL
+                    ]
+                )
+            elif self._phase == Phase.LIQUID:
+                self._setupSpecificationCombo(
+                    self._ui.viscosityType, [
+                        Specification.CONSTANT,
+                        Specification.POLYNOMIAL
+                    ]
+                )
+            self._ui.viscosityType.setCurrentText(MaterialDB.specificationToText(spec))
 
     def _setupThermalConductivitySpecification(self, spec):
         if self._type == MaterialType.SPECIE:
@@ -291,7 +293,7 @@ class MaterialDialog(ResizableDialog):
                     Specification.POLYNOMIAL
                 ]
             )
-            self._ui.thermalConductivityType.setCurrentText(spec.value)
+            self._ui.thermalConductivityType.setCurrentText(MaterialDB.specificationToText(spec))
 
     def _setupSpecificationCombo(self, combo, types):
         for t in types:
