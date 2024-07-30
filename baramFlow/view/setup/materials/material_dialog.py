@@ -326,15 +326,21 @@ class MaterialDialog(ResizableDialog):
         self._ui.viscosityEdit.setEnabled(specification == Specification.POLYNOMIAL)
         self._ui.constantViscosity.setEnabled(specification == Specification.CONSTANT)
         if self._phase == Phase.GAS:
-            isSpecSutherland = specification == Specification.SUTHERLAND
-            self._ui.sutherlandCoefficient.setEnabled(isSpecSutherland)
-            self._ui.sutherlandTemperature.setEnabled(isSpecSutherland)
-            self._ui.thermalConductivity.setEnabled(not isSpecSutherland)
+            if specification == Specification.SUTHERLAND:
+                self._ui.sutherlandCoefficient.setEnabled(True)
+                self._ui.sutherlandTemperature.setEnabled(True)
+                self._ui.thermalConductivity.setEnabled(False)
+            else:
+                self._ui.sutherlandCoefficient.setEnabled(False)
+                self._ui.sutherlandTemperature.setEnabled(False)
+                self._ui.thermalConductivity.setEnabled(True)
+                self._ui.thermalConductivityType.setCurrentText(self._ui.viscosityType.currentText())
 
     def _thermalConductivityTypeChanged(self):
         specification = self._ui.thermalConductivityType.currentData(Qt.UserRole)
         self._ui.thermalConductivityEdit.setEnabled(specification == Specification.POLYNOMIAL)
         self._ui.constantThermalConductivity.setEnabled(specification == Specification.CONSTANT)
+        self._ui.viscosityType.setCurrentText(self._ui.thermalConductivityType.currentText())
 
     def _editDensity(self):
         if self._polynomialDensity is None:
