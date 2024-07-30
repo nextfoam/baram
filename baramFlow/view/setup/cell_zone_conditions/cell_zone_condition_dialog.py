@@ -152,7 +152,8 @@ class CellZoneConditionDialog(QDialog):
         self._load()
 
     def _connectSignalsSlots(self):
-        self._materialsWidget.materialsChanged.connect(self._setMaterials)
+        if CellZoneDB.isRegion(self._name):
+            self._materialsWidget.materialsChanged.connect(self._setMaterials)
         self._ui.ok.clicked.connect(self._accept)
 
     def reject(self):
