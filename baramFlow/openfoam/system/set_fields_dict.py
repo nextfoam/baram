@@ -74,7 +74,8 @@ class SetFieldsDict(DictionaryFile):
                     fieldValues.append(('volScalarFieldValue', fieldName, value))
                     if fieldName not in defaultFields:
                         defaultFields.append(fieldName)
-                        defaultFieldValues.append(('volScalarFieldValue', fieldName, value))
+                        defaultValue = db.getValue(ivPath + f'/userDefinedScalars/scalar[scalarID="{scalarID}"]/value')
+                        defaultFieldValues.append(('volScalarFieldValue', fieldName, defaultValue))
 
             if ModelsDB.isSpeciesModelOn():
                 mid = RegionDB.getMaterial(self._rname)
@@ -86,7 +87,8 @@ class SetFieldsDict(DictionaryFile):
                             fieldValues.append(('volScalarFieldValue', fieldName, value))
                             if fieldName not in defaultFields:
                                 defaultFields.append(fieldName)
-                                defaultFieldValues.append(('volScalarFieldValue', fieldName, value))
+                                defaultValue = db.getValue(ivPath + f'/species/mixture[mid="{mid}"]/specie[mid="{specie}"]/value')
+                                defaultFieldValues.append(('volScalarFieldValue', fieldName, defaultValue))
 
             if db.getValue(sPath + '/overrideBoundaryValue') == 'true':
                 overrideBoundaryValue = True

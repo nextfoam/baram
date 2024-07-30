@@ -104,7 +104,7 @@ class MixtureDialog(QDialog):
                     Specification.POLYNOMIAL,
                     Specification.PERFECT_GAS,
                     Specification.INCOMPRESSIBLE_PERFECT_GAS,
-                    Specification.REAL_GAS_PENG_ROBINSON
+                    # Specification.REAL_GAS_PENG_ROBINSON
                 ]
             )
         else:

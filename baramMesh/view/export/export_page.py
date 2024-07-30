@@ -93,7 +93,7 @@ class ExportPage(StepPage):
                 await cm.start()
                 rc = await cm.wait()
                 if rc != 0:
-                    raise ProcessError
+                    raise ProcessError(rc)
             if not fileSystem.timePathExists(self.OUTPUT_TIME, parallel.isParallelOn()):
                 progressDialog.setLabelText(self.tr('Copying Files'))
 
@@ -117,7 +117,7 @@ class ExportPage(StepPage):
                     await cm.start()
                     rc = await cm.wait()
                     if rc != 0:
-                        raise ProcessError
+                        raise ProcessError(rc)
 
                 else:
                     for region in regions.values():
@@ -130,7 +130,7 @@ class ExportPage(StepPage):
                         await cm.start()
                         rc = await cm.wait()
                         if rc != 0:
-                            raise ProcessError
+                            raise ProcessError(rc)
             path.mkdir(parents=True, exist_ok=True)
             baramSystem = FileSystem(path)
             baramSystem.createCase(resource.file('openfoam/case'))

@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QLabel, QLineEd
 from PySide6.QtCore import Signal
 
 from baramFlow.coredb import coredb
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.material_db import MaterialDB
 from .materials_widget_ui import Ui_MaterialsWidget
@@ -83,7 +84,8 @@ class MaterialsWidget(QWidget):
         else:
             self._ui.multiphase.setVisible(False)
 
-            for mid, name, _, _ in self._db.getMaterials():
+            materials = self._db.getMaterials() if ModelsDB.isSpeciesModelOn() else self._db.getMaterials('nonmixture')
+            for mid, name, _, _ in materials:
                 self._ui.material.addItem(name, mid)
 
         self._connectSignalsSlots()

@@ -499,8 +499,7 @@ def _version_5(root: etree.Element):
 def _version_6(root: etree.Element):
     logger.debug('  Upgrading to v7')
 
-    # Keep this commented until official v6 spec. is released
-    # root.set('version', '7')
+    root.set('version', '7')
     if (p := root.find('numericalConditions/advanced', namespaces=_nsmap)) is not None:
         if p.find('equations', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "equations" to {p}')

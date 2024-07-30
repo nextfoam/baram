@@ -34,8 +34,7 @@ class MaterialSectorDialog(QDialog):
 
         self._primaryIndex = None
 
-        materials = coredb.CoreDB().getMaterials()
-        for mid, name, type_, phase in materials:
+        for mid, name, type_, phase in coredb.CoreDB().getMaterials():
             index = self._ui.primary.count()
             self._ui.primary.addItem(name, mid)
 
