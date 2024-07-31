@@ -91,6 +91,16 @@ class InitializationPage(ContentPage):
 
     @qasync.asyncSlot()
     async def save(self):
+        #
+        # Validation check for parameters
+        #
+        for i in range(self._ui.tabWidget.count()):
+            widget: InitializationWidget = self._ui.tabWidget.widget(i)
+            valid, msg = widget.validate()
+            if not valid:
+                await AsyncMessageBox().warning(self, self.tr('Warning'), msg)
+                return False
+
         writer = CoreDBWriter()
 
         for i in range(self._ui.tabWidget.count()):
@@ -120,7 +130,7 @@ class InitializationPage(ContentPage):
 
     @qasync.asyncSlot()
     async def _initialize(self):
-        if not self.save():
+        if not await self.save():
             return
 
         confirm = await AsyncMessageBox().question(self, self.tr("Initialization"), self.tr("All saved data will be deleted. OK?"))

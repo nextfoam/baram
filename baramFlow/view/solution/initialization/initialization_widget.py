@@ -196,6 +196,14 @@ class InitializationWidget(QWidget):
             else:
                 self._addSectionRow(name)
 
+    def validate(self) -> (bool, str):
+        valid, msg = self._volumeFractionWidget.validate()
+        if not valid:
+            return valid, msg
+
+        # ToDo: Add validation for other parameters
+        return True, ''
+
     async def appendToWriter(self, writer):
         writer.append(self._initialValuesPath + '/velocity/x', self._ui.xVelocity.text(),
                       self.tr('X-Velocity of region [{}]').format(self._rname))
