@@ -12,13 +12,14 @@ from vtkmodules.vtkIOParallel import vtkPOpenFOAMReader
 from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA, vtkCommand
 
-from baramFlow.coredb.general_db import GeneralDB
 from libbaram.openfoam.constants import Directory
 
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryType, GeometricalType, BoundaryDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
+from baramFlow.coredb.general_db import GeneralDB
+from baramFlow.coredb.region_db import RegionDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.constant.region_properties import RegionProperties
 from baramFlow.mesh.mesh_model import ActorInfo, MeshModel
@@ -189,7 +190,7 @@ class PolyMeshLoader(QObject):
             return set(vtkMesh[region]['boundary'].keys())
 
         def oldCellZones(region):
-            return set(czname for _, czname in db.getCellZones(region) if czname != CellZoneDB.NAME_FOR_REGION)
+            return set(czname for _, czname in db.getCellZones(region) if not CellZoneDB.isRegion(czname))
 
         def newCellZones(region):
             return set(vtkMesh[region]['zones']['cellZones'].keys()) \
@@ -226,7 +227,7 @@ class PolyMeshLoader(QObject):
         db.clearMonitors()
 
         for rname in boundaries:
-            db.addRegion(rname)
+            RegionDB.addRegion(rname)
 
             # Initial value of "0" for pressure in density-based solvers causes trouble by making density zero
             # because operating pressure is fixed to "0" for density-based solvers

@@ -64,9 +64,7 @@ class MaterialPage(ContentPage):
         self._ui.add.clicked.connect(self._add)
 
     def _load(self):
-        materials = coredb.CoreDB().getMaterials()
-
-        for mid, name, formula, phase in materials:
+        for mid, name, formula, phase in MaterialDB.getMaterials():
             self._addCard(mid)
 
     def _add(self):

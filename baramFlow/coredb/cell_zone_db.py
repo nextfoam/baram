@@ -6,7 +6,7 @@ from enum import Enum
 import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import IMaterialObserver
-from baramFlow.coredb.region_db import IRegionMaterialObserver, RegionDB, REGION_XPATH
+from baramFlow.coredb.region_db import IRegionMaterialObserver, RegionDB, REGION_XPATH, CELL_ZONE_NAME_FOR_REGION
 from baramFlow.view.widgets.multi_selector_dialog import SelectorItem
 
 
@@ -39,7 +39,6 @@ class TemporalProfileType(Enum):
 
 class CellZoneDB:
     CELL_ZONE_CONDITIONS_XPATH = './/cellZones'
-    NAME_FOR_REGION = 'All'
 
     _cellzones = None
 
@@ -67,7 +66,7 @@ class CellZoneDB:
 
     @classmethod
     def isRegion(cls, czname):
-        return czname == cls.NAME_FOR_REGION
+        return czname == CELL_ZONE_NAME_FOR_REGION
 
     @classmethod
     def getCellZoneSelectorItems(cls):

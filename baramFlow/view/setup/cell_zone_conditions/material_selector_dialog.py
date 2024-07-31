@@ -4,11 +4,13 @@
 from dataclasses import dataclass
 from enum import Enum, auto
 
+import qasync
 from PySide6.QtWidgets import QDialog, QListWidgetItem
 from PySide6.QtCore import Qt
 
-from baramFlow.coredb import coredb
-from baramFlow.coredb.material_db import Phase
+from widgets.async_message_box import AsyncMessageBox
+
+from baramFlow.coredb.material_db import Phase, MaterialDB
 from .materials_selector_dialog_ui import Ui_MaterialsSelectorDialog
 
 
@@ -27,14 +29,16 @@ class SelectorItem:
 
 
 class MaterialSectorDialog(QDialog):
-    def __init__(self, parent, primary: str, secondaries: list[str]):
+    def __init__(self, parent, primary: str, secondaries: list[str], cavitationConfigured):
         super().__init__(parent)
         self._ui = Ui_MaterialsSelectorDialog()
         self._ui.setupUi(self)
 
-        self._primaryIndex = None
+        self._cavitationConfigured = cavitationConfigured
+        self._primary = None
+        self._secondaries = None
 
-        for mid, name, type_, phase in coredb.CoreDB().getMaterials():
+        for mid, name, type_, phase in MaterialDB.getMaterials():
             index = self._ui.primary.count()
             self._ui.primary.addItem(name, mid)
 
@@ -61,13 +65,10 @@ class MaterialSectorDialog(QDialog):
         self._connectSignalsSlots()
 
     def getPrimaryMaterial(self):
-        return self._ui.primary.currentData(ItemDataRole.USER_DATA.value)
+        return self._primary
 
     def getSecondaries(self):
-        return [
-            str(self._ui.list.item(
-                self._ui.secondaries.item(i).data(ItemDataRole.LIST_INDEX.value)).data(ItemDataRole.USER_DATA.value))
-            for i in range(self._ui.secondaries.count())]
+        return self._secondaries
 
     def _connectSignalsSlots(self):
         self._ui.primary.currentIndexChanged.connect(self._primaryChanged)
@@ -76,6 +77,7 @@ class MaterialSectorDialog(QDialog):
         self._ui.add.clicked.connect(self._addClicked)
         self._ui.remove.clicked.connect(self._removeClicked)
         self._ui.secondaries.itemDoubleClicked.connect(self._removeClicked)
+        self._ui.ok.clicked.connect(self._accept)
 
     def _primaryChanged(self):
         for i in range(self._ui.list.count()):
@@ -84,11 +86,11 @@ class MaterialSectorDialog(QDialog):
         self._ui.secondaries.clear()
         self._ui.list.clearSelection()
 
-        self._primaryIndex = self._ui.primary.currentData(ItemDataRole.LIST_INDEX.value)
-        if self._primaryIndex is None:
+        primaryIndex = self._ui.primary.currentData(ItemDataRole.LIST_INDEX.value)
+        if primaryIndex is None:
             self._ui.secondariesSelector.setEnabled(False)
         else:
-            item = self._ui.list.item(self._primaryIndex)
+            item = self._ui.list.item(primaryIndex)
             self._hideItemFromList(item)
             self._ui.secondariesSelector.setEnabled(True)
 
@@ -107,6 +109,38 @@ class MaterialSectorDialog(QDialog):
         for item in self._ui.secondaries.selectedItems():
             self._showItemInList(self._ui.list.item(item.data(ItemDataRole.LIST_INDEX.value)))
             self._ui.secondaries.takeItem(self._ui.secondaries.row(item))
+
+    @qasync.asyncSlot()
+    async def _accept(self):
+        count = self._ui.secondaries.count()
+        if count < 1:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Seconary Materials'))
+            return
+
+        primary = self._ui.primary.currentData(ItemDataRole.USER_DATA.value)
+        secondaries = [
+            str(self._ui.list.item(
+                self._ui.secondaries.item(i).data(ItemDataRole.LIST_INDEX.value)).data(ItemDataRole.USER_DATA.value))
+            for i in range(self._ui.secondaries.count())]
+
+        if self._cavitationConfigured:
+            if (count > 1
+                    and not await AsyncMessageBox().confirm(
+                        self, self.tr('Change Materials'),
+                        self.tr('Mass Transfer can be simulated only for two phases.'
+                                'Mass transfer setting is going to become inactive. Proceed?'))):
+                return
+
+            if MaterialDB.getPhase(primary) != Phase.GAS or MaterialDB.getPhase(secondaries[0]) != Phase.LIQUID:
+                await AsyncMessageBox().information(
+                    self, self.tr('Input Error'),
+                    self.tr('Primary material and Secondary Material should be gas and liquid phases respectively.'))
+                return
+
+        self._primary = primary
+        self._secondaries = secondaries
+
+        self.accept()
 
     def _addSelectedItem(self, item):
         self._hideItemFromList(item)

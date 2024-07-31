@@ -8,7 +8,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.region_db import RegionDB, CavitationModel
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import findSolver
 
@@ -24,12 +24,17 @@ class TransportProperties(DictionaryFile):
         if self._data is not None:
             return self
 
-        if findSolver() == 'interFoam':
+        solver = findSolver()
+        if solver == 'interFoam':
             self._data = self._buildForInterFoam()
             return self
 
-        elif findSolver() == 'multiphaseInterFoam':
+        elif solver == 'multiphaseInterFoam':
             self._data = self._buildForMultiphaseInterFoam()
+            return self
+
+        if solver == 'interPhaseChangeFoam':
+            self._data = self._buildForInterPhaseChangeFoam()
             return self
 
         # TransportProperties file is not used for now.
@@ -136,3 +141,78 @@ class TransportProperties(DictionaryFile):
 
         return data
 
+    def _buildForInterPhaseChangeFoam(self) -> Optional[dict]:
+        materials = RegionDB.getSecondaryMaterials(self._rname)
+        if len(materials) != 1:
+            return None
+
+        # * "interFoam" supports only one secondary material
+        # * primary material should go last
+        materials = [materials[0], RegionDB.getMaterial(self._rname)]
+
+        cavitationXPath = RegionDB.getXPath(self._rname) + '/phaseInteractions/massTransfers/massTransfer[mechanism="cavitation"]/cavitation'
+        cavitationModel = CavitationModel(self._db.getValue(cavitationXPath + '/model'))
+
+        tensions = dict([((mid1, mid2), tension) for mid1, mid2, tension in self._db.getSurfaceTensions(self._rname)])
+        if (materials[0], materials[1]) in tensions:
+            t = tensions[(materials[0], materials[1])]
+        elif (materials[1], materials[0]) in tensions:
+            t = tensions[(materials[1], materials[0])]
+        else:
+            t = 0
+
+        phases = []
+        data = {
+            'phases': phases,
+            'pSat': self._db.getValue(cavitationXPath + '/vaporizationPressure'),
+            'sigma': t
+        }
+
+        constantsXPath = f'{cavitationXPath}/{cavitationModel.value}'
+        for mid in materials:
+            name = MaterialDB.getName(mid)
+            density = self._db.getDensity([(mid, 1)], 0, 0)
+            viscosity = self._db.getViscosity([(mid, 1)], 0)
+            nu = viscosity / density
+
+            phases.append(name)
+            data[name] = {
+                'transportModel': 'Newtonian',
+                'nu': nu,
+                'rho': density
+            }
+
+        if cavitationModel == CavitationModel.SCHNERR_SAUER:
+            data['phaseChangeTwoPhaseMixture'] ='SchnerrSauer'
+            data['SchnerrSauerCoeffs'] = {
+                'n':self._db.getValue(constantsXPath + '/bubbleNumberDensity'),
+                'dNuc': self._db.getValue(constantsXPath + '/bubbleDiameter'),
+                'Cc': self._db.getValue(constantsXPath + '/evaporationCoefficient'),
+                'Cv': self._db.getValue(constantsXPath + '/condensationCoefficient')
+            }
+        elif cavitationModel == CavitationModel.KUNZ:
+            data['phaseChangeTwoPhaseMixture'] ='Kunz'
+            data['KunzCoeffs'] = {
+                'UInf':self._db.getValue(constantsXPath + '/freeStreamVelocity'),
+                'tInf': self._db.getValue(constantsXPath + '/meanFlowTimeScale'),
+                'Cc': self._db.getValue(constantsXPath + '/evaporationCoefficient'),
+                'Cv': self._db.getValue(constantsXPath + '/condensationCoefficient')
+            }
+        elif cavitationModel == CavitationModel.MERKLE:
+            data['phaseChangeTwoPhaseMixture'] ='Merkle'
+            data['MerkleCoeffs'] = {
+                'UInf':self._db.getValue(constantsXPath + '/freeStreamVelocity'),
+                'tInf': self._db.getValue(constantsXPath + '/meanFlowTimeScale'),
+                'Cc': self._db.getValue(constantsXPath + '/evaporationCoefficient'),
+                'Cv': self._db.getValue(constantsXPath + '/condensationCoefficient')
+            }
+        elif cavitationModel == CavitationModel.ZWART_GERBER_BELAMRI:
+            data['phaseChangeTwoPhaseMixture'] ='Zwart'
+            data['ZwartCoeffs'] = {
+                'aNuc':self._db.getValue(constantsXPath + '/nucleationSiteVolumeFraction'),
+                'dNuc': self._db.getValue(constantsXPath + '/bubbleDiameter'),
+                'Cc': self._db.getValue(constantsXPath + '/evaporationCoefficient'),
+                'Cv': self._db.getValue(constantsXPath + '/condensationCoefficient')
+            }
+
+        return data

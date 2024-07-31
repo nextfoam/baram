@@ -64,7 +64,7 @@ class UserDefiendScalarDialog(ResizableDialog):
         if ModelsDB.isMultiphaseModelOn():
             self._ui.targetLabel.setText(self.tr('Material'))
             self._ui.target.addItem(ALL_MATERIALS_TEXT, '0')
-            for mid, name, _, _ in self._db.getMaterials():
+            for mid, name, _, _ in MaterialDB.getMaterials():
                 self._ui.target.addItem(name, mid)
         elif self._db.hasMultipleRegions():
             for rname in self._db.getRegions():

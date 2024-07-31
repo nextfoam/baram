@@ -200,11 +200,11 @@ class FieldHelper:
         db = coredb.CoreDB()
         # Material fields on multiphase model
         if ModelsDB.isMultiphaseModelOn():
-            for mid, name, formula, phase in db.getMaterials():
+            for mid, name, formula, phase in MaterialDB.getMaterials():
                 if phase != Phase.SOLID.value:
                     _appendMaterial(mid, name)
         elif ModelsDB.isSpeciesModelOn():
-            for mid, _, _, _ in db.getMaterials(MaterialType.MIXTURE.value):
+            for mid, _, _, _ in MaterialDB.getMaterials(MaterialType.MIXTURE.value):
                 for specie, name in MaterialDB.getSpecies(mid).items():
                     _appendMaterial(specie, name)
 

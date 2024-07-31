@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from enum import Enum
+
 from PySide6.QtCore import QObject
 
 import baramFlow.coredb.libdb as xml
@@ -11,6 +13,15 @@ from baramFlow.coredb.specie_model_db import ISpecieModelObserver
 
 REGION_XPATH = '/regions/region'
 DEFAULT_REGION_NAME = 'region0'
+CELL_ZONE_NAME_FOR_REGION = 'All'
+
+
+class CavitationModel(Enum):
+    NONE= 'none'
+    SCHNERR_SAUER = 'schnerrSauer'
+    KUNZ = 'kunz'
+    MERKLE = 'merkle'
+    ZWART_GERBER_BELAMRI = 'zwartGerberBelamri'
 
 
 class IRegionMaterialObserver(QObject):
@@ -53,10 +64,79 @@ class RegionDB:
         return len(coredb.CoreDB().getRegions())
 
     @classmethod
-    def getMixturesInRegions(cls):
+    def addRegion(cls, rname: str):
         db = coredb.CoreDB()
-        mixtures = {mid: name for mid, name, _, _ in db.getMaterials('mixture')}
-        materialsInRegions = set(xml.getText(region, 'material') for region in db.getElements(f'{REGION_XPATH}'))
+        if db.exists(cls.getXPath(rname)):
+            raise FileExistsError
+
+        regions = db.getElement('/regions')
+        regions.append(xml.createElement('<region xmlns="http://www.baramcfd.org/baram">'
+                                         f' <name>{rname}</name>'
+                                         f' <material>{MaterialDB.getMaterials()[0][0]}</material>'
+                                         '  <secondaryMaterials/>'
+                                         '  <phaseInteractions>'
+                                         '      <surfaceTensions/>'
+                                         '      <massTransfers>'
+                                         '          <massTransfer>'
+                                         '              <from>0</from>'
+                                         '              <to>0</to>'
+                                         '              <mechanism>cavitation</mechanism>'
+                                         '              <cavitation>'
+                                         '                  <model>none</model>'
+                                         '                  <vaporizationPressure>2300</vaporizationPressure>'
+                                         '                  <schnerrSauer>'
+                                         '                      <evaporationCoefficient>1</evaporationCoefficient>'
+                                         '                      <condensationCoefficient>1</condensationCoefficient>'
+                                         '                      <bubbleDiameter>2.0e-06</bubbleDiameter>'
+                                         '                      <bubbleNumberDensity>1.6e+13</bubbleNumberDensity>'
+                                         '                  </schnerrSauer>'
+                                         '                  <kunz>'
+                                         '                      <evaporationCoefficient>1000</evaporationCoefficient>'
+                                         '                      <condensationCoefficient>1000</condensationCoefficient>'
+                                         '                      <meanFlowTimeScale>0.005</meanFlowTimeScale>'
+                                         '                      <freeStreamVelocity>20.0</freeStreamVelocity>'
+                                         '                  </kunz>'
+                                         '                  <merkle>'
+                                         '                      <evaporationCoefficient>1e-3</evaporationCoefficient>'
+                                         '                      <condensationCoefficient>80</condensationCoefficient>'
+                                         '                      <meanFlowTimeScale>0.005</meanFlowTimeScale>'
+                                         '                      <freeStreamVelocity>20.0</freeStreamVelocity>'
+                                         '                  </merkle>'
+                                         '                  <zwartGerberBelamri>'
+                                         '                      <evaporationCoefficient>1</evaporationCoefficient>'
+                                         '                      <condensationCoefficient>1</condensationCoefficient>'
+                                         '                      <bubbleDiameter>2e-6</bubbleDiameter>'
+                                         '                      <nucleationSiteVolumeFraction>1e-3</nucleationSiteVolumeFraction>'
+                                         '                  </zwartGerberBelamri>'
+                                         '              </cavitation>'
+                                         '          </massTransfer>'
+                                         '      </massTransfers>'
+                                         '  </phaseInteractions>'
+                                         '  <cellZones/>'
+                                         '  <boundaryConditions/>'
+                                         '  <initialization>'
+                                         '      <initialValues>'
+                                         '          <velocity><x>0</x><y>0</y><z>0</z></velocity>'
+                                         '          <pressure>0</pressure>'
+                                         '          <temperature>300</temperature>'
+                                         '          <scaleOfVelocity>1</scaleOfVelocity>'
+                                         '          <turbulentIntensity>1</turbulentIntensity>'
+                                         '          <turbulentViscosity>10</turbulentViscosity>'
+                                         '          <volumeFractions/>'
+                                         '          <userDefinedScalars/>'
+                                         '          <species/>'
+                                         '      </initialValues>'
+                                         '      <advanced><sections/></advanced>'
+                                         '  </initialization>'
+                                         '</region>'))
+
+        db.addCellZone(rname, CELL_ZONE_NAME_FOR_REGION)
+
+    @classmethod
+    def getMixturesInRegions(cls):
+        mixtures = {mid: name for mid, name, _, _ in MaterialDB.getMaterials('mixture')}
+        materialsInRegions = (set(xml.getText(region, 'material')
+                                  for region in coredb.CoreDB().getElements(f'{REGION_XPATH}')))
 
         return [(mid, name) for mid, name in mixtures.items() if mid in materialsInRegions]
 

@@ -90,7 +90,7 @@ def _getAvailableFields():
 
     db = coredb.CoreDB()
     if ModelsDB.isMultiphaseModelOn():
-        for _, name, _, phase in db.getMaterials():
+        for _, name, _, phase in MaterialDB.getMaterials():
             if phase != Phase.SOLID.value:
                 fields.append(f'alpha.{name}')
     elif ModelsDB.isSpeciesModelOn():
@@ -511,7 +511,7 @@ class ControlDict(DictionaryFile):
         }
 
         name = CellZoneDB.getCellZoneName(volume)
-        if name == CellZoneDB.NAME_FOR_REGION:
+        if CellZoneDB.isRegion(name):
             data['regionType'] = 'all'
         else:
             data['regionType'] = 'cellZone'

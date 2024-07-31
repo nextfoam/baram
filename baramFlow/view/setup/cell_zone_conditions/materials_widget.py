@@ -7,7 +7,8 @@ from PySide6.QtCore import Signal
 from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
-from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_db import MaterialDB, Phase
+from .cavitation_widget import CavitationWidget
 from .materials_widget_ui import Ui_MaterialsWidget
 from .material_selector_dialog import MaterialSectorDialog
 
@@ -57,13 +58,12 @@ class SurfaceTensionWidget(QWidget):
 class MaterialsWidget(QWidget):
     materialsChanged = Signal(str, list)
 
-    def __init__(self, rname, multiphase):
+    def __init__(self, rname):
         super().__init__()
         self._ui = Ui_MaterialsWidget()
         self._ui.setupUi(self)
 
         self._rname = rname
-        self._multiphase = multiphase
         self._db = coredb.CoreDB()
         self._xpath = RegionDB.getXPath(self._rname)
 
@@ -74,17 +74,20 @@ class MaterialsWidget(QWidget):
         self._secondaryMaterials = None
 
         self._surfaceTensionWidget = None
+        self._cavitationWidget = CavitationWidget(self._ui, self._xpath)
+
         self._dialog = None
 
-        if multiphase:
-            self._ui.singlephase.setVisible(False)
+        if ModelsDB.isMultiphaseModelOn():
+            self._ui.singlephase.hide()
 
             layout = QVBoxLayout(self._ui.surfaceTension)
             layout.setContentsMargins(0, 0, 0, 0)
         else:
-            self._ui.multiphase.setVisible(False)
+            self._ui.multiphase.hide()
 
-            materials = self._db.getMaterials() if ModelsDB.isSpeciesModelOn() else self._db.getMaterials('nonmixture')
+            materials = (MaterialDB.getMaterials() if ModelsDB.isSpeciesModelOn()
+                         else MaterialDB.getMaterials('nonmixture'))
             for mid, name, _, _ in materials:
                 self._ui.material.addItem(name, mid)
 
@@ -93,27 +96,30 @@ class MaterialsWidget(QWidget):
     def load(self):
         self._material = self._db.getValue(self._xpath + '/material')
 
-        if self._multiphase:
+        if ModelsDB.isMultiphaseModelOn():
             surfaceTensions = self._db.getSurfaceTensions(self._rname)
             for mid1, mid2, value in surfaceTensions:
                 self._addSurfaceTensionToMap(mid1, mid2, value)
 
             self._ui.primaryMaterial.setText(self._addMaterialToMap(self._material))
-            if MaterialDB.isFluid(self._material):
-                self._setSecondaryMaterials(RegionDB.getSecondaryMaterials(self._rname))
+            self._setSecondaryMaterials(RegionDB.getSecondaryMaterials(self._rname))
+            self._cavitationWidget.load()
         else:
             self._ui.material.setCurrentText(MaterialDB.getName(self._material))
 
     def updateDB(self, db):
-        if self._surfaceTensionWidget:
-            sfXpath = self._xpath + '/phaseInteractions/surfaceTensions'
-            if surfaceTensions := self._surfaceTensionWidget.values():
-                for mid1, mid2, value in surfaceTensions:
-                    db.addElementFromString(sfXpath, '<surfaceTension xmlns="http://www.baramcfd.org/baram">'
-                                                     f' <mid>{mid1}</mid><mid>{mid2}</mid><value>0</value>'
-                                                     '</surfaceTension>')
-                    db.setValue(f'{sfXpath}/surfaceTension[mid="{mid1}"][mid="{mid2}"]/value', value,
-                                self.tr('Surface Tension'))
+        if ModelsDB.isMultiphaseModelOn():
+            if self._surfaceTensionWidget:
+                sfXpath = self._xpath + '/phaseInteractions/surfaceTensions'
+                if surfaceTensions := self._surfaceTensionWidget.values():
+                    for mid1, mid2, value in surfaceTensions:
+                        db.addElementFromString(sfXpath, '<surfaceTension xmlns="http://www.baramcfd.org/baram">'
+                                                         f' <mid>{mid1}</mid><mid>{mid2}</mid><value>0</value>'
+                                                         '</surfaceTension>')
+                        db.setValue(f'{sfXpath}/surfaceTension[mid="{mid1}"][mid="{mid2}"]/value', value,
+                                    self.tr('Surface Tension'))
+
+            self._cavitationWidget.updateDB(db)
 
         return True
 
@@ -134,7 +140,7 @@ class MaterialsWidget(QWidget):
         self._material = mid
         self._ui.primaryMaterial.setText(self._addMaterialToMap(self._material))
 
-    def _setSecondaryMaterials(self, materials, default=None):
+    def _setSecondaryMaterials(self, materials):
         self._secondaryMaterials = materials
 
         self._ui.secondaryMaterials.clear()
@@ -142,21 +148,19 @@ class MaterialsWidget(QWidget):
             item = self._ui.surfaceTension.layout().takeAt(0)
             item.widget().deleteLater()
 
-        if not materials:
-            self._ui.fluid.setVisible(False)
-            self._surfaceTensionWidget = None
-            return
-
-        self._ui.fluid.setVisible(True)
         self._surfaceTensionWidget = SurfaceTensionWidget(self)
         self._ui.surfaceTension.layout().addWidget(self._surfaceTensionWidget)
 
         for mid in materials:
             self._ui.secondaryMaterials.addItem(self._addMaterialToMap(mid))
 
-        self._addSurfaceTensionRows(self._material, 0, default)
+        self._addSurfaceTensionRows(self._material, 0)
         for i in range(len(self._secondaryMaterials)):
-            self._addSurfaceTensionRows(self._secondaryMaterials[i], i + 1, default)
+            self._addSurfaceTensionRows(self._secondaryMaterials[i], i + 1)
+
+        self._cavitationWidget.setEnabled(len(materials) == 1
+                                          and MaterialDB.getPhase(self._material) == Phase.GAS
+                                          and MaterialDB.getPhase(materials[0]) == Phase.LIQUID)
 
     def _materialChanged(self):
         self._material = self._ui.material.currentData()
@@ -167,7 +171,8 @@ class MaterialsWidget(QWidget):
             for mid1, mid2, row in self._surfaceTensionWidget.rows():
                 self._addSurfaceTensionToMap(mid1, mid2, row.value())
 
-        self._dialog = MaterialSectorDialog(self, self._material, self._secondaryMaterials)
+        self._dialog = MaterialSectorDialog(
+            self, self._material, self._secondaryMaterials, self._cavitationWidget.isChecked())
         self._dialog.open()
         self._dialog.accepted.connect(self._materialsSelected)
 
@@ -177,9 +182,9 @@ class MaterialsWidget(QWidget):
         self._setSecondaryMaterials(secondaryMaterials)
         self.materialsChanged.emit(self._material, secondaryMaterials)
 
-    def _addSurfaceTensionRows(self, mid: str, offset, default):
+    def _addSurfaceTensionRows(self, mid: str, offset):
         for i in range(offset, len(self._secondaryMaterials)):
             key = (mid, self._secondaryMaterials[i])
             self._surfaceTensionWidget.addRow(
                 key, self._materialsMap[mid], self._materialsMap[self._secondaryMaterials[i]],
-                self._surfaceTensionsMap[key] if key in self._surfaceTensionsMap else default)
+                self._surfaceTensionsMap[key] if key in self._surfaceTensionsMap else '0')

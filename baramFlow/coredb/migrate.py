@@ -637,6 +637,46 @@ def _version_7(root: etree.Element):
             p.find('diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient', namespaces=_nsmap).text = '0'
             p.find('diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient', namespaces=_nsmap).text = '1'
 
+    for p in root.findall('regions/region/phaseInteractions', namespaces=_nsmap):
+        if p.find('massTransfers', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "massTransfers" to {p}')
+            e = etree.fromstring('<massTransfers xmlns="http://www.baramcfd.org/baram">'
+                                 '  <massTransfer>'
+                                 '      <from>0</from>'
+                                 '      <to>0</to>'
+                                 '      <mechanism>cavitation</mechanism>'
+                                 '      <cavitation>'
+                                 '          <model>none</model>'
+                                 '          <vaporizationPressure>2300</vaporizationPressure>'
+                                 '          <schnerrSauer>'
+                                 '              <evaporationCoefficient>1</evaporationCoefficient>'
+                                 '              <condensationCoefficient>1</condensationCoefficient>'
+                                 '              <bubbleDiameter>2.0e-06</bubbleDiameter>'
+                                 '              <bubbleNumberDensity>1.6e+13</bubbleNumberDensity>'
+                                 '          </schnerrSauer>'
+                                 '          <kunz>'
+                                 '              <evaporationCoefficient>1000</evaporationCoefficient>'
+                                 '              <condensationCoefficient>1000</condensationCoefficient>'
+                                 '              <meanFlowTimeScale>0.005</meanFlowTimeScale>'
+                                 '              <freeStreamVelocity>20.0</freeStreamVelocity>'
+                                 '          </kunz>'
+                                 '          <merkle>'
+                                 '              <evaporationCoefficient>1e-3</evaporationCoefficient>'
+                                 '              <condensationCoefficient>80</condensationCoefficient>'
+                                 '              <meanFlowTimeScale>0.005</meanFlowTimeScale>'
+                                 '              <freeStreamVelocity>20.0</freeStreamVelocity>'
+                                 '          </merkle>'
+                                 '          <zwartGerberBelamri>'
+                                 '              <evaporationCoefficient>1</evaporationCoefficient>'
+                                 '              <condensationCoefficient>1</condensationCoefficient>'
+                                 '              <bubbleDiameter>2e-6</bubbleDiameter>'
+                                 '              <nucleationSiteVolumeFraction>1e-3</nucleationSiteVolumeFraction>'
+                                 '          </zwartGerberBelamri>'
+                                 '      </cavitation>'
+                                 '  </massTransfer>'
+                                 '</massTransfers>')
+            p.append(e)
+
     for p in root.findall('runCalculation/runConditions', namespaces=_nsmap):
         if p.find('maxDiffusionNumber', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "maxDiffusionNumber" to {p}')

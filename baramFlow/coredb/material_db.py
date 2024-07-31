@@ -172,6 +172,33 @@ class MaterialDB(object):
         return _materialTemplates.getMaterials(phase)
 
     @classmethod
+    def getMaterials(cls, type_=None) -> list[(str, str, str, str)]:
+        """Returns configured materials
+
+        Returns configured materials with name, chemicalFormula and phase
+
+        Args:
+            type_: Material type (nonmixture, mixture, specie, or None)
+
+        Returns:
+            List of materials in tuple, '(id, name, chemicalFormula, phase)'
+        """
+        elements = coredb.CoreDB().getElements(f'/materials/material')
+
+        if type_ is None:
+            return [(xml.getAttribute(e, 'mid'),
+                     xml.getText(e, 'name'),
+                     xml.getText(e, 'type'),
+                     xml.getText(e, 'phase'))
+                    for e in elements if xml.getText(e, 'type') != 'specie']
+        else:
+            return [(xml.getAttribute(e, 'mid'),
+                     xml.getText(e, 'name'),
+                     xml.getText(e, 'type'),
+                     xml.getText(e, 'phase'))
+                    for e in elements if xml.getText(e, 'type') == type_]
+
+    @classmethod
     def addMaterial(cls, db, template: str) -> str:
         mid = _newID(db)
         name = _newName(db, template)

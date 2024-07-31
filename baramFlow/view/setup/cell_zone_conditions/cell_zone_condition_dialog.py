@@ -84,7 +84,7 @@ class CellZoneConditionDialog(QDialog):
             self.setWindowTitle(self.tr('Region Condition'))
             self._ui.zoneType.setVisible(False)
 
-            self._materialsWidget = MaterialsWidget(self._rname, isMultiPhaseOn)
+            self._materialsWidget = MaterialsWidget(self._rname)
             layout.addWidget(self._materialsWidget)
 
             if self._rname:
