@@ -62,4 +62,4 @@ class MeshInfoDialog(QDialog):
 
     def closeEvent(self, event):
         self._task.cancel()
-        event.accept()
+        super().closeEvent(event)
