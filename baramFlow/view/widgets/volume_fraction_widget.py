@@ -67,6 +67,20 @@ class VolumeFractionWidget(QGroupBox):
             for mid in self._fractions:
                 inputValue = self._fractions[mid].value
                 fractionPath = xpath + f'/volumeFraction/[material="{mid}"]/fraction'
-                writer.append(fractionPath, inputValue, self._fractions[mid].label)
+
+                try:
+                    savedValue = self._db.getValue(fractionPath)
+                except LookupError:  # the material should be added if it is not there
+                    writer.addElement(xpath,
+                                        f'''
+                                            <volumeFraction xmlns="http://www.baramcfd.org/baram">
+                                                <material>{mid}</material>
+                                                <fraction>{inputValue}</fraction>
+                                            </volumeFraction>
+                                        ''',
+                                      self._fractions[mid].label)
+                else:
+                    if inputValue != savedValue:
+                        writer.append(fractionPath, inputValue, self._fractions[mid].label)
 
         return True
