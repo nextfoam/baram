@@ -17,12 +17,12 @@ from .material_dialog_ui import Ui_MaterialDialog
 
 
 class MaterialDialog(ResizableDialog):
-    def __init__(self, parent, mid):
+    def __init__(self, parent, mid: str):
         super().__init__(parent)
         self._ui = Ui_MaterialDialog()
         self._ui.setupUi(self)
 
-        self._mid = mid
+        self._mid: str = mid
         self._xpath = MaterialDB.getXPath(mid)
         self._db = coredb.CoreDB()
         self._name = None
