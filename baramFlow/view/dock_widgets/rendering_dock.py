@@ -80,8 +80,6 @@ class RenderingView(QWidget):
         subprocess.Popen([f'{file}', f'{casePath}'])
 
     def _renderingModeChanged(self, index):
-        print(f'renderingModechanged to {DisplayMode(index)}')
-
         # self._widget.Render()
         self.renderingModeChanged.emit(DisplayMode(index))
 

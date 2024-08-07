@@ -46,12 +46,10 @@ class MeshQualityInfo(QObject):
         return self._widget.isVisible()
 
     def hide(self):
-        print(f'Hide')
         self._widget.hide()
         self._clean()
 
     def show(self):
-        print(f'Show')
         self._header.setChecked(False)
         self._widget.show()
 
@@ -61,7 +59,6 @@ class MeshQualityInfo(QObject):
         self._applyButton.clicked.connect(self._apply)
 
     def _toggled(self, checked):
-        print(f'Mesh Quality checked {checked}')
         if checked:
             self._index.setCurrentIndex(0)
         else:
@@ -71,11 +68,9 @@ class MeshQualityInfo(QObject):
 
     def _meshQualityIndexChanged(self, index: int):
         qualityIndex: MeshQualityIndex = self._index.itemData(index)
-        print(f'{qualityIndex.value} selected')
 
         if app.window.meshManager:
             left, right = app.window.meshManager.getScalarRange(qualityIndex)
-            print(f'Mesh {left, right}')
 
             # superqt Slider has an issue when left and right are same
             if left == right:
@@ -91,14 +86,11 @@ class MeshQualityInfo(QObject):
 
     def _apply(self):
         qualityIndex: MeshQualityIndex = self._index.currentData()
-        print(f'index {qualityIndex.value}')
-        print(f'value {self._slider.value()}')
 
         if app.window.meshManager:
             app.window.meshManager.setScalar(qualityIndex)
             app.window.meshManager.setScalarBand(*self._slider.value())
             app.window.meshManager.applyCellFilter()
-            print(f'num displayed cells {app.window.meshManager.getNumberOfDisplayedCells()}')
 
         if self._legend is None:
             self._legend = vtkScalarBarActor()
