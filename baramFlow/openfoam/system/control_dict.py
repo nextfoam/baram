@@ -515,9 +515,9 @@ class ControlDict(DictionaryFile):
         primary = RegionDB.getMaterial(rname)
         if fieldType == Field.MATERIAL:
             if MaterialDB.getType(fieldID) == MaterialType.SPECIE:
-                if int(fieldID) not in MaterialDB.getSpecies(primary):
+                if fieldID not in MaterialDB.getSpecies(primary):
                     return None
-            elif int(fieldID) != primary and fieldID not in RegionDB.getSecondaryMaterials(rname):
+            elif fieldID != primary and fieldID not in RegionDB.getSecondaryMaterials(rname):
                 return None
 
         field = FieldHelper.DBFieldKeyToField(fieldType, fieldID)

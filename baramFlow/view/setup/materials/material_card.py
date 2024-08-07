@@ -14,12 +14,12 @@ from .material_dialog import MaterialDialog
 class MaterialCard(QWidget):
     removeClicked = Signal(QWidget)
 
-    def __init__(self, mid):
+    def __init__(self, mid: str):
         super().__init__()
         self._ui = Ui_MaterialCard()
         self._ui.setupUi(self)
 
-        self._mid = mid
+        self._mid: str = mid
         self._dialog = None
 
         self._xpath = MaterialDB.getXPath(mid)
@@ -31,7 +31,7 @@ class MaterialCard(QWidget):
         return MaterialType.NONMIXTURE
 
     @property
-    def mid(self):
+    def mid(self) -> str:
         return self._mid
 
     @property

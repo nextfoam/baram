@@ -211,7 +211,7 @@ class MaterialDB(object):
         return mid
 
     @classmethod
-    def addMixture(cls, db, name: str, species: list):
+    def addMixture(cls, db, name: str, species: list) -> str:
         materials = _rootElement()
 
         mid = _newID(db)
@@ -264,7 +264,7 @@ class MaterialDB(object):
         return mid
 
     @classmethod
-    def removeMaterial(cls, db, mid: int):
+    def removeMaterial(cls, db, mid: str):
         materials = _rootElement()
 
         material = xml.getElement(materials, f'material[@mid="{mid}"]')
