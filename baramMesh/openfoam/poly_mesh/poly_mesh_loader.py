@@ -160,14 +160,10 @@ class PolyMeshLoader(QObject):
 
         for i in range(self._reader.GetNumberOfCellArrays()):
             name = self._reader.GetCellArrayName(i)
-            status = self._reader.GetCellArrayStatus(name)
-            print(f'CellArray {name} : {status}')
             self._reader.SetCellArrayStatus(name, 1)
 
         for i in range(self._reader.GetNumberOfPointArrays()):
             name = self._reader.GetPointArrayName(i)
-            status = self._reader.GetPointArrayStatus(name)
-            print(f'PointArray {name} : {status}')
             self._reader.SetPointArrayStatus(name, 1)
 
         self._reader.Update()

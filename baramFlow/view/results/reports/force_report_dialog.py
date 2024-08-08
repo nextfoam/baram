@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-import pathlib
+from pathlib import Path
 import uuid
 
 import pandas as pd
@@ -149,29 +149,32 @@ class ForceReportDialog(QDialog):
 
         caseRoot = FileSystem.caseRoot()
         solver = findSolver()
-        proc = await runParallelUtility(solver, '-postProcess', '-latestTime', '-dict', os.path.relpath(foDict.fullPath(), caseRoot), parallel=parallel.getEnvironment(), cwd=caseRoot)
+        dictRelativePath = Path(os.path.relpath(foDict.fullPath(), caseRoot)).as_posix()  # "as_posix()": OpenFOAM cannot handle double backward slash separators in parallel processing
+        proc = await runParallelUtility(solver, '-postProcess', '-latestTime', '-dict', str(dictRelativePath), parallel=parallel.getEnvironment(), cwd=caseRoot)
 
         rc = await proc.wait()
+
+        foDict.fullPath().unlink()
 
         if rc != 0:
             await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Computing failed'))
             self._ui.drag.setText('0')
             self._ui.lift.setText('0')
             self._ui.moment.setText('0')
-            self._ui.compute.setEnabled(False)
+            self._ui.compute.setEnabled(True)
             return
 
         forcePath = FileSystem.postProcessingPath(self._rname) / forceFoName
         coeffsPath = FileSystem.postProcessingPath(self._rname) / coeffsFoName
 
-        files: list[pathlib.Path] = list(coeffsPath.glob('**/coefficient.dat'))
+        files: list[Path] = list(coeffsPath.glob('**/coefficient.dat'))
 
         if len(files) < 1:
             await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Computing failed'))
             self._ui.drag.setText('0')
             self._ui.lift.setText('0')
             self._ui.moment.setText('0')
-            self._ui.compute.setEnabled(False)
+            self._ui.compute.setEnabled(True)
             return
 
         df = self._readDataFrame(files[0])
@@ -180,7 +183,6 @@ class ForceReportDialog(QDialog):
         self._ui.lift.setText(str(df['Cl'][0]))
         self._ui.moment.setText(str(df['CmPitch'][0]))
 
-        foDict.fullPath().unlink()
         utils.rmtree(forcePath)
         utils.rmtree(coeffsPath)
 
