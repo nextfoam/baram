@@ -10,6 +10,7 @@
     <file alias="export2D.png">resources/images/exoirt2D.png</file>
   </qresource>
   <qresource prefix="graphicsIcons">
+    <file alias="distance.png">resources/graphicsIcons/distance.png</file>
     <file alias="axesOff.png">resources/graphicsIcons/axesOff.png</file>
     <file alias="axesOn.png">resources/graphicsIcons/axesOn.png</file>
     <file alias="cubeAxesOff.png">resources/graphicsIcons/cubeAxesOff.png</file>

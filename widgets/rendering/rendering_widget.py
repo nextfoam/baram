@@ -51,6 +51,8 @@ class RenderingWidget(QWidget):
         self._originActor: Optional[vtkAxesActor] = None
         self._cubeAxesActor: Optional[vtkCubeAxesActor] = None
 
+        self._actorPicker = vtkPropPicker()
+
         self._pressPos = None
 
         self._style = vtkInteractorStyleTrackballCamera()
@@ -91,6 +93,9 @@ class RenderingWidget(QWidget):
     def interactor(self):
         return self._widget
 
+    def renderer(self):
+        return self._renderer
+
     def addActor(self, actor: vtkProp):
         self._renderer.AddActor(actor)
 
@@ -111,9 +116,8 @@ class RenderingWidget(QWidget):
         return super().close()
 
     def pickActor(self, x, y):
-        picker = vtkPropPicker()
-        picker.PickProp(x, y, self._renderer)
-        actor = picker.GetActor()
+        self._actorPicker.PickProp(x, y, self._renderer)
+        actor = self._actorPicker.GetActor()
 
         return actor
 
