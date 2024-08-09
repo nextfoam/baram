@@ -97,7 +97,6 @@ class BatchCasesImportDialog(QDialog):
                     if not value and (emptyColumns[icol] or not name):
                         df.iat[irow, icol] = ''
                     else:
-                        print(icol)
                         await AsyncMessageBox().information(
                             self, self.tr('Import Error'),
                             self.tr('Value must be a float - ' + f'{name}:{df.columns[icol]}'))

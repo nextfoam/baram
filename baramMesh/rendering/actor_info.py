@@ -273,7 +273,7 @@ class MeshActor(ActorInfo):
         return self._cutFilters[-1].GetOutput().GetNumberOfCells()
 
     def getScalarRange(self, index: MeshQualityIndex) -> (float, float):
-        print(f'Name: {self.name()} Field: {index.value}')
+        # print(f'Name: {self.name()} Field: {index.value}')
         scalars = self._dataSet.GetCellData().GetScalars(index.value)
         if scalars is None:
             return 0, 1
@@ -301,8 +301,6 @@ class MeshActor(ActorInfo):
         self._mapper.Update()
 
     def applyCellFilter(self):
-        print(f'enable cell filter')
-
         self._cellFilter = vtkThreshold()
         self._cellFilter.AllScalarsOff()
         self._cellFilter.SetThresholdFunction(vtkThreshold.THRESHOLD_BETWEEN)

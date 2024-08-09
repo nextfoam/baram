@@ -41,7 +41,7 @@ class MaterialPage(ContentPage):
         return super().showEvent(ev)
 
     @qasync.asyncSlot()
-    async def _remove(self, card):
+    async def _remove(self, card: MaterialCard):
         # The count of the layout returns one more than the number of cards, because of the stretch.
         if self._cardListLayout.count() < 3:
             await AsyncMessageBox().information(self, self.tr("Remove material"),
@@ -72,7 +72,7 @@ class MaterialPage(ContentPage):
         self._addDialog.accepted.connect(self._addDialogAccepted)
         self._addDialog.open()
 
-    def _addCard(self, mid, type_=None):
+    def _addCard(self, mid: str, type_=None):
         if type_ is None:
             type_ = MaterialDB.getType(mid)
 

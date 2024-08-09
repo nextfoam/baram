@@ -170,7 +170,6 @@ class DisplayControl(QObject):
             self._cutTool.hide()
 
     def currentStepChanged(self, step):
-        print(f'currentstepChanged {step}')
         if step >= Step.CASTELLATION.value:
             if not self._meshQualityInfo.isVisible():
                 self._meshQualityInfo.show()
