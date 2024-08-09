@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import platform
-
-from libbaram.app_path import APP_PATH
 from libbaram.math import calucateDirectionsByRotation
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+from libbaram.openfoam.of_utils import openfoamLibraryPath
 
 from baramFlow.app import app
 from baramFlow.coredb import coredb
@@ -45,18 +43,6 @@ VOLUME_MONITOR_OPERATION = {
     VolumeReportType.MAXIMUM.value: 'max',
     VolumeReportType.COEFFICIENT_OF_VARIATION.value: 'CoV',
 }
-
-_basePath = APP_PATH.joinpath('solvers', 'openfoam', 'lib')
-if platform.system() == 'Windows':
-    _libExt = '.dll'
-elif platform.system() == 'Darwin':
-    _libExt = '.dylib'
-else:
-    _libExt = '.so'
-
-
-def _libPath(baseName: str) -> str:
-    return f'"{str(_basePath.joinpath(baseName).with_suffix(_libExt))}"'
 
 
 def _getAvailableFields():
@@ -220,7 +206,7 @@ class ControlDict(DictionaryFile):
                 or any(
                     [self._db.getValue(BoundaryDB.getXPath(bcid) + '/wall/velocity/type') == WallVelocityCondition.ATMOSPHERIC_WALL.value
                      for bcid, _ in self._db.getBoundaryConditionsByType(BoundaryType.WALL.value)])):
-            self._data['libs'] = [_libPath('libatmosphericModels')]
+            self._data['libs'] = [openfoamLibraryPath('libatmosphericModels')]
 
         # calling order is important for these three function objects
         # scalar transport FO should be called first so that monitoring and residual can refer the scalar fields
@@ -253,7 +239,7 @@ class ControlDict(DictionaryFile):
 
             self._data['functions'][fieldName] = {
                 'type': 'scalarTransport',
-                'libs': [_libPath('libsolverFunctionObjects')],
+                'libs': [openfoamLibraryPath('libsolverFunctionObjects')],
                 'field': fieldName,
                 'schemesField': 'scalar',
                 'nCorr': 2,
@@ -321,7 +307,7 @@ class ControlDict(DictionaryFile):
 
             self._data['functions'][residualsName] = {
                 'type': 'solverInfo',
-                'libs': [_libPath('libutilityFunctionObjects')],
+                'libs': [openfoamLibraryPath('libutilityFunctionObjects')],
                 'executeControl': 'timeStep',
                 'executeInterval': '1',
                 'writeResidualFields': 'no',
@@ -334,7 +320,7 @@ class ControlDict(DictionaryFile):
     def _generateForces(self, xpath, patches):
         data = {
             'type': 'forces',
-            'libs': [_libPath('libforces')],
+            'libs': [openfoamLibraryPath('libforces')],
 
             'patches': patches,
             'CofR': self._db.getVector(xpath + '/centerOfRotation'),
@@ -361,7 +347,7 @@ class ControlDict(DictionaryFile):
 
         data = {
             'type': 'forceCoeffs',
-            'libs': [_libPath('libforces')],
+            'libs': [openfoamLibraryPath('libforces')],
 
             'patches': patches,
             'rho': 'rho',
@@ -400,7 +386,7 @@ class ControlDict(DictionaryFile):
 
             data = {
                 'type': 'patchProbes',
-                'libs': [_libPath('libsampling')],
+                'libs': [openfoamLibraryPath('libsampling')],
 
                 'patches': [BoundaryDB.getBoundaryName(self._db.getValue(xpath + '/boundary'))],
                 'fields': [field],
@@ -427,7 +413,7 @@ class ControlDict(DictionaryFile):
 
             data = {
                 'type': 'probes',
-                'libs': [_libPath('libsampling')],
+                'libs': [openfoamLibraryPath('libsampling')],
 
                 'fields': [field],
                 'probeLocations': [self._db.getVector(xpath + '/coordinate')],
@@ -462,7 +448,7 @@ class ControlDict(DictionaryFile):
 
         data = {
             'type': 'surfaceFieldValue',
-            'libs': [_libPath('libfieldFunctionObjects')],
+            'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
 
             'regionType': 'patch',
             'name': BoundaryDB.getBoundaryName(surface),
@@ -498,7 +484,7 @@ class ControlDict(DictionaryFile):
 
         data = {
             'type': 'volFieldValue',
-            'libs': [_libPath('libfieldFunctionObjects')],
+            'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
 
             'fields': [field],
             'operation': VOLUME_MONITOR_OPERATION[self._db.getValue(xpath + '/reportType')],
@@ -546,7 +532,7 @@ class ControlDict(DictionaryFile):
         if 'mag1' not in self._data['functions']:
             self._data['functions']['mag1'] = {
                 'type':            'mag',
-                'libs':            [_libPath('libfieldFunctionObjects')],
+                'libs':            [openfoamLibraryPath('libfieldFunctionObjects')],
 
                 'field':           '"U"',
 
@@ -562,7 +548,7 @@ class ControlDict(DictionaryFile):
         if 'components1' not in self._data['functions']:
             self._data['functions']['components1'] = {
                 'type':            'components',
-                'libs':            [_libPath('libfieldFunctionObjects')],
+                'libs':            [openfoamLibraryPath('libfieldFunctionObjects')],
 
                 'field':           '"U"',
 

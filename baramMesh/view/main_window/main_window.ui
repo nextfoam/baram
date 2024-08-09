@@ -2125,6 +2125,9 @@
                  </widget>
                  <widget class="QWidget" name="exportPage">
                   <layout class="QVBoxLayout" name="verticalLayout_22">
+                   <property name="spacing">
+                    <number>9</number>
+                   </property>
                    <item>
                     <widget class="QLabel" name="label_37">
                      <property name="font">
@@ -2169,35 +2172,62 @@
                     </spacer>
                    </item>
                    <item>
-                    <widget class="QWidget" name="widget_20" native="true">
-                     <layout class="QHBoxLayout" name="horizontalLayout_12">
+                    <widget class="QGroupBox" name="groupBox_20">
+                     <property name="title">
+                      <string> 2D Exports</string>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_37">
+                      <property name="leftMargin">
+                       <number>9</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>9</number>
+                      </property>
                       <property name="rightMargin">
-                       <number>0</number>
+                       <number>9</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>9</number>
                       </property>
                       <item>
-                       <spacer name="horizontalSpacer_9">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>93</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="export2DPlane">
-                        <property name="text">
-                         <string>Export as 2D Plane</string>
-                        </property>
+                       <widget class="QWidget" name="widget" native="true">
+                        <layout class="QHBoxLayout" name="horizontalLayout_12">
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <widget class="QPushButton" name="export2DPlane">
+                           <property name="text">
+                            <string>2D Plane</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QPushButton" name="export2DWedge">
+                           <property name="text">
+                            <string>Axi-Symmetry</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
                        </widget>
                       </item>
                       <item>
-                       <widget class="QPushButton" name="export2DWedge">
+                       <widget class="QLabel" name="label_13">
                         <property name="text">
-                         <string>Export as 2D Wedge</string>
+                         <string>&quot;2D exports&quot; exports generated mesh as BaramFlow project yet in 2D. It is implemented using OpenFOAM &quot;extrudeMesh&quot; utility. &quot;2D Plane&quot; uses &quot;plane&quot; extrudeModel and &quot;Axi-Symmetry&quot; uses &quot;wedge&quot;. This is for the users who are familiar with the operation of &quot;extrudeMesh&quot;.</string>
+                        </property>
+                        <property name="wordWrap">
+                         <bool>true</bool>
                         </property>
                        </widget>
                       </item>

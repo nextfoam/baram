@@ -72,14 +72,12 @@ class GravityModelPage(QWizardPage):
         self.registerField('gravityZ', self._ui.z)
 
     def isComplete(self):
-        complete = False
+        complete = True
 
         for field in (self._x, self._y, self._z):
             if field.value() is None:
                 complete = False
                 break
-            if field.value():
-                complete = True
 
         if complete != self._complete:
             self._complete = complete

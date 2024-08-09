@@ -51,6 +51,7 @@ from baramFlow.view.solution.monitors.monitors_page import MonitorsPage
 from baramFlow.view.solution.initialization.initialization_page import InitializationPage
 from baramFlow.view.solution.run_conditions.run_conditions_page import RunConditionsPage
 from baramFlow.view.solution.run.process_information_page import ProcessInformationPage
+from baramFlow.view.results.reports.reports_page import ReportsPage
 from .content_view import ContentView
 from .dock_view import DockView
 from .main_window_ui import Ui_MainWindow
@@ -117,17 +118,22 @@ class MainWindow(QMainWindow):
         self._menuPages = {
             MenuItem.MENU_SETUP.value: MenuPage(),
             MenuItem.MENU_SOLUTION.value: MenuPage(),
+            MenuItem.MENU_RESULTS.value: MenuPage(),
+
             MenuItem.MENU_SETUP_GENERAL.value: MenuPage(GeneralPage),
             MenuItem.MENU_SETUP_MATERIALS.value: MenuPage(MaterialPage),
             MenuItem.MENU_SETUP_MODELS.value: MenuPage(ModelsPage),
             MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value: MenuPage(CellZoneConditionsPage),
             MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value: MenuPage(BoundaryConditionsPage),
             MenuItem.MENU_SETUP_REFERENCE_VALUES.value: MenuPage(ReferenceValuesPage),
+
             MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value: MenuPage(NumericalConditionsPage),
             MenuItem.MENU_SOLUTION_MONITORS.value: MenuPage(MonitorsPage),
             MenuItem.MENU_SOLUTION_INITIALIZATION.value: MenuPage(InitializationPage),
             MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value: MenuPage(RunConditionsPage),
             MenuItem.MENU_SOLUTION_RUN.value: MenuPage(ProcessInformationPage),
+
+            MenuItem.MENU_RESULTS_REPORTS.value: MenuPage(ReportsPage),
         }
 
         self._dialog = None
