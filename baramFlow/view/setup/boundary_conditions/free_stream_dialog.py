@@ -20,7 +20,6 @@ class FreeStreamDialog(ResizableDialog):
         self._ui = Ui_FreeStreamDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
         self._turbulenceWidget = None
@@ -69,12 +68,13 @@ class FreeStreamDialog(ResizableDialog):
             self.accept()
 
     def _load(self):
+        db = coredb.CoreDB()
         path = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.xVelocity.setText(self._db.getValue(path + '/streamVelocity/x'))
-        self._ui.yVelocity.setText(self._db.getValue(path + '/streamVelocity/y'))
-        self._ui.zVelocity.setText(self._db.getValue(path + '/streamVelocity/z'))
-        self._ui.pressure.setText(self._db.getValue(path + '/pressure'))
+        self._ui.xVelocity.setText(db.getValue(path + '/streamVelocity/x'))
+        self._ui.yVelocity.setText(db.getValue(path + '/streamVelocity/y'))
+        self._ui.zVelocity.setText(db.getValue(path + '/streamVelocity/z'))
+        self._ui.pressure.setText(db.getValue(path + '/pressure'))
 
         self._turbulenceWidget.load()
         self._temperatureWidget.load()

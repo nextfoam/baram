@@ -42,9 +42,9 @@ class CellZoneConditionDialog(QDialog):
 
         self._czid = czid
         self._rname = rname
-        self._db = coredb.CoreDB()
         self._xpath = CellZoneDB.getXPath(self._czid)
-        self._name = self._db.getValue(self._xpath + '/name')
+        db = coredb.CoreDB()
+        self._name = db.getValue(self._xpath + '/name')
 
         self._material = None
         self._secondaryMaterials = []
@@ -157,15 +157,16 @@ class CellZoneConditionDialog(QDialog):
         self._ui.ok.clicked.connect(self._accept)
 
     def reject(self):
+        db = coredb.CoreDB()
         for mid in self._addedMaterialSourceTerms:
-            self._db.removeElement(f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]')
+            db.removeElement(f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]')
 
         super().reject()
 
     @qasync.asyncSlot()
     async def _accept(self):
         try:
-            with self._db as db:
+            with coredb.CoreDB() as db:
                 if CellZoneDB.isRegion(self._name):
                     RegionDB.updateMaterials(self._rname, self._material, self._secondaryMaterials)
                     if not self._materialsWidget.updateDB(db):
@@ -245,7 +246,8 @@ class CellZoneConditionDialog(QDialog):
             await AsyncMessageBox().information(self, self.tr("Input Error"), dbErrorToMessage(v))
 
     def _load(self):
-        self._getZoneTypeRadio(self._db.getValue(self._xpath + '/zoneType')).setChecked(True)
+        db = coredb.CoreDB()
+        self._getZoneTypeRadio(db.getValue(self._xpath + '/zoneType')).setChecked(True)
 
         if CellZoneDB.isRegion(self._name):
             if self._materialsWidget:
@@ -271,11 +273,11 @@ class CellZoneConditionDialog(QDialog):
             widget.load()
 
         self._ui.velocityGroup.setChecked(
-            self._db.getAttribute(self._xpath + '/fixedValues/velocity', 'disabled') == 'false')
-        self._ui.xVelocity.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/velocity/x'))
-        self._ui.yVelocity.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/velocity/y'))
-        self._ui.zVelocity.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/velocity/z'))
-        self._ui.relaxation.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/relaxation'))
+            db.getAttribute(self._xpath + '/fixedValues/velocity', 'disabled') == 'false')
+        self._ui.xVelocity.setText(db.getValue(self._xpath + '/fixedValues/velocity/velocity/x'))
+        self._ui.yVelocity.setText(db.getValue(self._xpath + '/fixedValues/velocity/velocity/y'))
+        self._ui.zVelocity.setText(db.getValue(self._xpath + '/fixedValues/velocity/velocity/z'))
+        self._ui.relaxation.setText(db.getValue(self._xpath + '/fixedValues/velocity/relaxation'))
 
         if ModelsDB.isEnergyModelOn():
             self._energySourceTerm.load()
@@ -353,10 +355,11 @@ class CellZoneConditionDialog(QDialog):
             fixedValuesLayout.addWidget(self._turbulenceFixedValues[field])
 
     def _setupScalarWidgets(self):
+        db = coredb.CoreDB()
         sourceTermsLayout = self._ui.sourceTerms.layout()
         fixedValuesLayout = self._ui.fixedValues.layout()
 
-        for scalarID, fieldName in self._db.getUserDefinedScalarsInRegion(self._rname):
+        for scalarID, fieldName in db.getUserDefinedScalarsInRegion(self._rname):
             xpath = self._xpath + f'/sourceTerms/userDefinedScalars/scalarSource[scalarID="{scalarID}"]'
             self._scalarSourceTerms[scalarID] = VariableSourceWidget(fieldName, xpath)
             sourceTermsLayout.addWidget(self._scalarSourceTerms[scalarID])

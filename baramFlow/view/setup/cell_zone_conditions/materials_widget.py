@@ -83,7 +83,6 @@ class MaterialsWidget(QWidget):
 
         self._rname = rname
         self._multiphase = multiphase
-        self._db = coredb.CoreDB()
         self._xpath = RegionDB.getXPath(self._rname)
 
         self._materialsMap = {}
@@ -103,17 +102,19 @@ class MaterialsWidget(QWidget):
         else:
             self._ui.multiphase.setVisible(False)
 
-            materials = self._db.getMaterials() if ModelsDB.isSpeciesModelOn() else self._db.getMaterials('nonmixture')
+            db = coredb.CoreDB()
+            materials = db.getMaterials() if ModelsDB.isSpeciesModelOn() else db.getMaterials('nonmixture')
             for mid, name, _, _ in materials:
                 self._ui.material.addItem(name, str(mid))
 
         self._connectSignalsSlots()
 
     def load(self):
-        self._material = self._db.getValue(self._xpath + '/material')
+        db = coredb.CoreDB()
+        self._material = db.getValue(self._xpath + '/material')
 
         if self._multiphase:
-            surfaceTensions = self._db.getSurfaceTensions(self._rname)
+            surfaceTensions = db.getSurfaceTensions(self._rname)
             for mid1, mid2, value in surfaceTensions:
                 self._addSurfaceTensionToMap(mid1, mid2, value)
 
@@ -123,15 +124,15 @@ class MaterialsWidget(QWidget):
         else:
             self._ui.material.setCurrentText(MaterialDB.getName(self._material))
 
-    def updateDB(self, db):
+    def updateDB(self, newDB):
         if self._surfaceTensionWidget:
             sfXpath = self._xpath + '/phaseInteractions/surfaceTensions'
             if surfaceTensions := self._surfaceTensionWidget.values():
                 for mid1, mid2, value in surfaceTensions:
-                    db.addElementFromString(sfXpath, '<surfaceTension xmlns="http://www.baramcfd.org/baram">'
+                    newDB.addElementFromString(sfXpath, '<surfaceTension xmlns="http://www.baramcfd.org/baram">'
                                                      f' <mid>{mid1}</mid><mid>{mid2}</mid><value>0</value>'
                                                      '</surfaceTension>')
-                    db.setValue(f'{sfXpath}/surfaceTension[mid="{mid1}"][mid="{mid2}"]/value', value,
+                    newDB.setValue(f'{sfXpath}/surfaceTension[mid="{mid1}"][mid="{mid2}"]/value', value,
                                 self.tr('Surface Tension'))
 
         return True

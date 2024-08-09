@@ -56,17 +56,17 @@ class UserDefiendScalarDialog(ResizableDialog):
         self._ui = Ui_UserDefinedScalarDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._scalar = scalar
         self._target = None
 
+        db = coredb.CoreDB()
         if ModelsDB.isMultiphaseModelOn():
             self._ui.targetLabel.setText(self.tr('Material'))
             self._ui.target.addItem(ALL_MATERIALS_TEXT, 0)
-            for mid, name, _, _ in self._db.getMaterials():
+            for mid, name, _, _ in db.getMaterials():
                 self._ui.target.addItem(name, mid)
-        elif self._db.hasMultipleRegions():
-            for rname in self._db.getRegions():
+        elif db.hasMultipleRegions():
+            for rname in db.getRegions():
                 self._ui.target.addItem(rname)
         else:
             self._ui.basicsLayout.setRowVisible(self._ui.target, False)
@@ -92,12 +92,13 @@ class UserDefiendScalarDialog(ResizableDialog):
         self._ui.ok.clicked.connect(self._accept)
 
     def _load(self):
+        db = coredb.CoreDB()
         if ModelsDB.isMultiphaseModelOn():
             if int(self._scalar.material):
                 self._ui.target.setCurrentText(MaterialDB.getName(self._scalar.material))
             else:
                 self._ui.target.setCurrentIndex(0)
-        elif self._db.hasMultipleRegions() and self._scalar.region:
+        elif db.hasMultipleRegions() and self._scalar.region:
                 self._ui.target.setCurrentText(self._scalar.region)
 
         self._ui.fieldName.setText(self._scalar.fieldName)
@@ -129,12 +130,13 @@ class UserDefiendScalarDialog(ResizableDialog):
 
         validator = Validator()
         try:
+            db = coredb.CoreDB()
             self._scalar.fieldName = self._ui.fieldName.text()
             self._scalar.specificationMethod = self._ui.specificationMethod.currentData()
 
             if ModelsDB.isMultiphaseModelOn():
                 self._scalar.material = self._ui.target.currentData()
-            elif self._db.hasMultipleRegions():
+            elif db.hasMultipleRegions():
                 self._scalar.region = self._ui.target.currentText()
 
             if self._scalar.specificationMethod == ScalarSpecificationMethod.CONSTANT:

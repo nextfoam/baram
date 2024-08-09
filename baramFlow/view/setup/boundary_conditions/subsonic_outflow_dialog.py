@@ -17,7 +17,6 @@ class SubsonicOutflowDialog(QDialog):
         self._ui = Ui_SubsonicOutflowDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
         self._load()
@@ -35,6 +34,7 @@ class SubsonicOutflowDialog(QDialog):
             super().accept()
 
     def _load(self):
+        db = coredb.CoreDB()
         path = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.pressure.setText(self._db.getValue(path + '/staticPressure'))
+        self._ui.pressure.setText(db.getValue(path + '/staticPressure'))

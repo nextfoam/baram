@@ -28,7 +28,6 @@ class VolumeDialog(QDialog):
 
         self._name = name
         self._isNew = False
-        self._db = coredb.CoreDB()
 
         self._xpath = None
         self._volume = None
@@ -40,7 +39,8 @@ class VolumeDialog(QDialog):
             self._ui.fieldVariable.addItem(f.text, f.key)
 
         if name is None:
-            self._name = self._db.addVolumeMonitor()
+            db = coredb.CoreDB()
+            self._name = db.addVolumeMonitor()
             self._isNew = True
         else:
             self._ui.nameWidget.hide()
@@ -56,7 +56,8 @@ class VolumeDialog(QDialog):
 
     def reject(self):
         if self._isNew:
-            self._db.removeVolumeMonitor(self._name)
+            db = coredb.CoreDB()
+            db.removeVolumeMonitor(self._name)
 
         super().reject()
 
@@ -65,13 +66,14 @@ class VolumeDialog(QDialog):
         self._ui.ok.clicked.connect(self._accept)
 
     def _load(self):
+        db = coredb.CoreDB()
         self._ui.name.setText(self._name)
-        self._ui.writeInterval.setText(self._db.getValue(self._xpath + '/writeInterval'))
-        self._ui.reportType.setCurrentData(VolumeReportType(self._db.getValue(self._xpath + '/reportType')))
+        self._ui.writeInterval.setText(db.getValue(self._xpath + '/writeInterval'))
+        self._ui.reportType.setCurrentData(VolumeReportType(db.getValue(self._xpath + '/reportType')))
         self._ui.fieldVariable.setCurrentText(
-            FieldHelper.DBFieldKeyToText(Field(self._db.getValue(self._xpath + '/field/field')),
-                                         self._db.getValue(self._xpath + '/field/fieldID')))
-        volume = self._db.getValue(self._xpath + '/volume')
+            FieldHelper.DBFieldKeyToText(Field(db.getValue(self._xpath + '/field/field')),
+                                         db.getValue(self._xpath + '/field/fieldID')))
+        volume = db.getValue(self._xpath + '/volume')
         if volume != '0':
             self._setVolume(volume)
 

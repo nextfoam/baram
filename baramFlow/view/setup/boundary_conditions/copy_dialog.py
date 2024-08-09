@@ -20,7 +20,6 @@ class CopyDialog(QDialog):
         self._ui = Ui_CopyDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._items = {}
         self._sourceId = None
         self._copied = set()
@@ -34,9 +33,10 @@ class CopyDialog(QDialog):
         self._ui.close.clicked.connect(self._close)
 
     def _load(self):
-        for rname in self._db.getRegions():
+        db = coredb.CoreDB()
+        for rname in db.getRegions():
             r = '' if rname == '' else rname + ':'
-            for bcid, bcname, bctype in self._db.getBoundaryConditions(rname):
+            for bcid, bcname, bctype in db.getBoundaryConditions(rname):
                 label = r + bcname
                 if not BoundaryDB.needsCoupledBoundary(bctype):
                     QListWidgetItem(label, self._ui.source, bcid)
@@ -60,7 +60,8 @@ class CopyDialog(QDialog):
 
         for item in self._ui.targets.selectedItems():
             self._copied.add(item.type())
-            self._db.copyBoundaryConditions(self._sourceId, item.type())
+            db = coredb.CoreDB()
+            db.copyBoundaryConditions(self._sourceId, item.type())
 
     def _close(self):
         self.boundariesCopied.emit(self._copied)

@@ -21,7 +21,6 @@ class ThermoCoupledWallDialog(CoupledBoundaryConditionDialog):
         self._ui = Ui_ThermoCoupledWallDailog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
         self._coupledBoundary = None
         self._dialog = None
@@ -50,7 +49,8 @@ class ThermoCoupledWallDialog(CoupledBoundaryConditionDialog):
         self._ui.select.clicked.connect(self._selectCoupledBoundary)
 
     def _load(self):
-        self._setCoupledBoundary(self._db.getValue(self._xpath + '/coupledBoundary'))
+        db = coredb.CoreDB()
+        self._setCoupledBoundary(db.getValue(self._xpath + '/coupledBoundary'))
 
     def _selectCoupledBoundary(self):
         if not self._dialog:

@@ -32,8 +32,6 @@ class PointDialog(QDialog):
         self._ui = Ui_PointDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
-
         self._name = name
         self._isNew = False
         self._xpath = None
@@ -46,7 +44,8 @@ class PointDialog(QDialog):
         self._setupFieldCombo(FieldHelper.getAvailableFields())
 
         if name is None:
-            self._name = self._db.addPointMonitor()
+            db = coredb.CoreDB()
+            self._name = db.addPointMonitor()
             self._isNew = True
         else:
             self._ui.nameWidget.hide()
@@ -65,7 +64,8 @@ class PointDialog(QDialog):
 
     def reject(self):
         if self._isNew:
-            self._db.removePointMonitor(self._name)
+            db = coredb.CoreDB()
+            db.removePointMonitor(self._name)
 
         super().reject()
 
@@ -82,17 +82,18 @@ class PointDialog(QDialog):
         self._ui.ok.clicked.connect(self._accept)
 
     def _load(self):
+        db = coredb.CoreDB()
         self._ui.name.setText(self._name)
-        self._ui.writeInterval.setText(self._db.getValue(self._xpath + '/writeInterval'))
+        self._ui.writeInterval.setText(db.getValue(self._xpath + '/writeInterval'))
         self._ui.field.setCurrentText(
-            FieldHelper.DBFieldKeyToText(Field(self._db.getValue(self._xpath + '/field/field')),
-                                         self._db.getValue(self._xpath + '/field/fieldID')))
-        self._ui.coordinateX.setText(self._db.getValue(self._xpath + '/coordinate/x'))
-        self._ui.coordinateY.setText(self._db.getValue(self._xpath + '/coordinate/y'))
-        self._ui.coordinateZ.setText(self._db.getValue(self._xpath + '/coordinate/z'))
-        snapOntoBoundary = self._db.getValue(self._xpath + '/snapOntoBoundary')
+            FieldHelper.DBFieldKeyToText(Field(db.getValue(self._xpath + '/field/field')),
+                                         db.getValue(self._xpath + '/field/fieldID')))
+        self._ui.coordinateX.setText(db.getValue(self._xpath + '/coordinate/x'))
+        self._ui.coordinateY.setText(db.getValue(self._xpath + '/coordinate/y'))
+        self._ui.coordinateZ.setText(db.getValue(self._xpath + '/coordinate/z'))
+        snapOntoBoundary = db.getValue(self._xpath + '/snapOntoBoundary')
         if snapOntoBoundary == 'true':
-            self._setSnapOntoBoundary(self._db.getValue(self._xpath + '/boundary'))
+            self._setSnapOntoBoundary(db.getValue(self._xpath + '/boundary'))
         else:
             self._setSnapOntoBoundary(None)
 
@@ -108,7 +109,8 @@ class PointDialog(QDialog):
                 await AsyncMessageBox().information(self, self.tr("Input Error"), self.tr("Enter Monitor Name."))
                 return
 
-        regions = self._db.getRegions()
+        db = coredb.CoreDB()
+        regions = db.getRegions()
         region = ''
         if len(regions) > 1:
             coordinate = (float(self._ui.coordinateX.text()),

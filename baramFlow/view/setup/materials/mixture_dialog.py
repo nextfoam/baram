@@ -22,9 +22,9 @@ class MixtureDialog(QDialog):
 
         self._mid = mid
         self._xpath = MaterialDB.getXPath(mid)
-        self._db = coredb.CoreDB()
         self._name = None
-        self._phase = Phase(self._db.getValue(self._xpath + '/phase'))
+        db = coredb.CoreDB()
+        self._phase = Phase(db.getValue(self._xpath + '/phase'))
 
         self._setupSpecifications()
 
@@ -32,16 +32,17 @@ class MixtureDialog(QDialog):
         self._load()
 
     def _load(self):
+        db = coredb.CoreDB()
         self._name = MaterialDB.getName(self._mid)
         self._ui.name.setText(self._name)
 
         energyModelOn = ModelsDB.isEnergyModelOn()
         layout = self._ui.properties.layout()
         if energyModelOn:
-            densitySpec = self._db.getValue(self._xpath + '/density/specification')
-            transportSpec = self._db.getValue(self._xpath + '/viscosity/specification')
+            densitySpec = db.getValue(self._xpath + '/density/specification')
+            transportSpec = db.getValue(self._xpath + '/viscosity/specification')
             self._ui.specificHeatSpec.setCurrentText(
-                MaterialDB.dbSpecificationToText(self._db.getValue(self._xpath + '/specificHeat/specification')))
+                MaterialDB.dbSpecificationToText(db.getValue(self._xpath + '/specificHeat/specification')))
         else:
             densitySpec = Specification.CONSTANT.value
             transportSpec = Specification.CONSTANT.value
@@ -55,9 +56,9 @@ class MixtureDialog(QDialog):
             layout.setRowVisible(self._ui.transportSpec, False)
 
         self._ui.densitySpec.setCurrentText(MaterialDB.dbSpecificationToText(densitySpec))
-        self._ui.massDiffusivity.setText(self._db.getValue(self._xpath + '/mixture/massDiffusivity'))
+        self._ui.massDiffusivity.setText(db.getValue(self._xpath + '/mixture/massDiffusivity'))
 
-        primarySpecie = int(self._db.getValue(self._xpath + '/mixture/primarySpecie'))
+        primarySpecie = int(db.getValue(self._xpath + '/mixture/primarySpecie'))
         for mid, name in MaterialDB.getSpecies(self._mid).items():
             self._ui.primarySpecie.addItem(name, str(mid))
             if mid == primarySpecie:

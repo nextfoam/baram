@@ -96,7 +96,6 @@ class Monitor(QObject):
     def __init__(self, name):
         super().__init__()
 
-        self._db = coredb.CoreDB()
         self._name = name
         self._rname = ''
         self._thread = None
@@ -162,10 +161,11 @@ class ForceMonitor(Monitor):
     def __init__(self, name, chart1, chart2, chart3):
         super().__init__(name)
 
+        db = coredb.CoreDB()
         xpath = MonitorDB.getForceMonitorXPath(name)
 
-        self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
-        self._rname = self._db.getValue(xpath + '/region')
+        self._showChart = db.getValue(xpath + '/showChart') == 'true'
+        self._rname = db.getValue(xpath + '/region')
         self._chart1 = chart1
         self._chart2 = chart2
         self._chart3 = chart3
@@ -193,18 +193,20 @@ class PointMonitor(Monitor):
     def __init__(self, name, chart):
         super().__init__(name)
 
+        db = coredb.CoreDB()
         self._xpath = MonitorDB.getPointMonitorXPath(name)
 
-        self._showChart = self._db.getValue(self._xpath + '/showChart') == 'true'
-        self._rname = self._db.getValue(self._xpath + '/region')
+        self._showChart = db.getValue(self._xpath + '/showChart') == 'true'
+        self._rname = db.getValue(self._xpath + '/region')
         self._chart = chart
 
         self._chart.setTitle(name)
 
     @property
     def fileName(self):
-        return FieldHelper.DBFieldKeyToField(Field(self._db.getValue(self._xpath + '/field/field')),
-                                             self._db.getValue(self._xpath + '/field/fieldID'))
+        db = coredb.CoreDB()
+        return FieldHelper.DBFieldKeyToField(Field(db.getValue(self._xpath + '/field/field')),
+                                             db.getValue(self._xpath + '/field/fieldID'))
 
     @property
     def extension(self):
@@ -221,10 +223,11 @@ class SurfaceMonitor(Monitor):
     def __init__(self, name, chart):
         super().__init__(name)
 
+        db = coredb.CoreDB()
         xpath = MonitorDB.getSurfaceMonitorXPath(name)
 
-        self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
-        self._rname = BoundaryDB.getBoundaryRegion(self._db.getValue(xpath + '/surface'))
+        self._showChart = db.getValue(xpath + '/showChart') == 'true'
+        self._rname = BoundaryDB.getBoundaryRegion(db.getValue(xpath + '/surface'))
         self._chart = chart
 
         self._chart.setTitle(name)
@@ -244,10 +247,11 @@ class VolumeMonitor(Monitor):
     def __init__(self, name, chart):
         super().__init__(name)
 
+        db = coredb.CoreDB()
         xpath = MonitorDB.getVolumeMonitorXPath(name)
 
-        self._showChart = self._db.getValue(xpath + '/showChart') == 'true'
-        self._rname = CellZoneDB.getCellZoneRegion(self._db.getValue(xpath + '/volume'))
+        self._showChart = db.getValue(xpath + '/showChart') == 'true'
+        self._rname = CellZoneDB.getCellZoneRegion(db.getValue(xpath + '/volume'))
         self._chart = chart
 
         self._chart.setTitle(name)

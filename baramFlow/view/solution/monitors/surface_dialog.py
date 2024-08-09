@@ -28,7 +28,6 @@ class SurfaceDialog(QDialog):
 
         self._name = name
         self._isNew = False
-        self._db = coredb.CoreDB()
 
         self._xpath = None
         self._surface = None
@@ -40,7 +39,8 @@ class SurfaceDialog(QDialog):
             self._ui.fieldVariable.addItem(f.text, f.key)
 
         if name is None:
-            self._name = self._db.addSurfaceMonitor()
+            db = coredb.CoreDB()
+            self._name = db.addSurfaceMonitor()
             self._isNew = True
         else:
             self._ui.nameWidget.hide()
@@ -56,7 +56,8 @@ class SurfaceDialog(QDialog):
 
     def reject(self):
         if self._isNew:
-            self._db.removeSurfaceMonitor(self._name)
+            db = coredb.CoreDB()
+            db.removeSurfaceMonitor(self._name)
 
         super().reject()
 
@@ -66,13 +67,14 @@ class SurfaceDialog(QDialog):
         self._ui.ok.clicked.connect(self._accept)
 
     def _load(self):
+        db = coredb.CoreDB()
         self._ui.name.setText(self._name)
-        self._ui.writeInterval.setText(self._db.getValue(self._xpath + '/writeInterval'))
-        self._ui.reportType.setCurrentData(SurfaceReportType(self._db.getValue(self._xpath + '/reportType')))
+        self._ui.writeInterval.setText(db.getValue(self._xpath + '/writeInterval'))
+        self._ui.reportType.setCurrentData(SurfaceReportType(db.getValue(self._xpath + '/reportType')))
         self._ui.fieldVariable.setCurrentText(
-            FieldHelper.DBFieldKeyToText(Field(self._db.getValue(self._xpath + '/field/field')),
-                                         self._db.getValue(self._xpath + '/field/fieldID')))
-        surface = self._db.getValue(self._xpath + '/surface')
+            FieldHelper.DBFieldKeyToText(Field(db.getValue(self._xpath + '/field/field')),
+                                         db.getValue(self._xpath + '/field/fieldID')))
+        surface = db.getValue(self._xpath + '/surface')
         if surface != '0':
             self._setSurface(surface)
 

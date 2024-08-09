@@ -20,7 +20,6 @@ class FixedValueWidget(QWidget):
         self._ui = Ui_FixedValueWidget()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._title = title
         self._xpath = xpath
 
@@ -31,17 +30,18 @@ class FixedValueWidget(QWidget):
         self._ui.groupBox.setChecked(checked)
 
     def load(self):
-        if self._db.exists(self._xpath):
-            self._ui.groupBox.setChecked(self._db.getAttribute(self._xpath, 'disabled') == 'false')
-            self._ui.value.setText(self._db.getValue(self._xpath))
+        db = coredb.CoreDB()
+        if db.exists(self._xpath):
+            self._ui.groupBox.setChecked(db.getAttribute(self._xpath, 'disabled') == 'false')
+            self._ui.value.setText(db.getValue(self._xpath))
         else:
             self._ui.groupBox.setChecked(False)
 
-    def updateDB(self, db):
+    def updateDB(self, newDB):
         if self._ui.groupBox.isChecked():
-            db.setAttribute(self._xpath, 'disabled', 'false')
-            db.setValue(self._xpath, self._ui.value.text(), self._title)
+            newDB.setAttribute(self._xpath, 'disabled', 'false')
+            newDB.setValue(self._xpath, self._ui.value.text(), self._title)
         else:
-            db.setAttribute(self._xpath, 'disabled', 'true')
+            newDB.setAttribute(self._xpath, 'disabled', 'true')
 
         return True

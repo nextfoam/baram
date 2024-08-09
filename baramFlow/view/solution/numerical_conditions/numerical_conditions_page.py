@@ -29,7 +29,6 @@ class NumericalConditionsPage(ContentPage):
         self._convergenceCriteriaCount = self._ui.convergenceCriteria.layout().count()
 
         self._xpath = NumericalDB.NUMERICAL_CONDITIONS_XPATH
-        self._db = coredb.CoreDB()
         self._dialog = None
 
         self._upwindDiscretizationSchemes = {
@@ -70,6 +69,7 @@ class NumericalConditionsPage(ContentPage):
         self._connectSignalsSlots()
 
     def _load(self):
+        db = coredb.CoreDB()
         timeIsTransient = GeneralDB.isTimeTransient()
         energyOn = ModelsDB.isEnergyModelOn()
         turbulenceOn = ModelsDB.getTurbulenceModel() not in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR)
@@ -127,7 +127,7 @@ class NumericalConditionsPage(ContentPage):
         self._ui.absoluteVolumeFraction.setEnabled(multiphaseOn)
         self._ui.relativeVolumeFraction.setEnabled(multiphaseOn)
 
-        if len(self._db.getUserDefinedScalars()):
+        if len(db.getUserDefinedScalars()):
             self._ui.discretizationSchemeScalar.setEnabled(True)
             self._ui.underRelaxationFactorScalar.setEnabled(True)
             self._ui.underRelaxationFactorScalarFinal.setEnabled(timeIsTransient or allRoundSolver)
@@ -154,104 +154,104 @@ class NumericalConditionsPage(ContentPage):
             self._ui.relativeSpecies.setEnabled(False)
 
         self._ui.pressureVelocityCouplingScheme.setCurrentData(
-            PressureVelocityCouplingScheme(self._db.getValue(self._xpath + '/pressureVelocityCouplingScheme')))
+            PressureVelocityCouplingScheme(db.getValue(self._xpath + '/pressureVelocityCouplingScheme')))
 
         self._ui.formulation.setCurrentData(Formulation(
-            self._db.getValue(self._xpath + '/densityBasedSolverParameters/formulation')))
+            db.getValue(self._xpath + '/densityBasedSolverParameters/formulation')))
         self._ui.fluxType.setCurrentData(FluxType(
-            self._db.getValue(self._xpath + '/densityBasedSolverParameters/fluxType')))
-        self._ui.entropyFixCoefficient.setText(self._db.getValue(
+            db.getValue(self._xpath + '/densityBasedSolverParameters/fluxType')))
+        self._ui.entropyFixCoefficient.setText(db.getValue(
             self._xpath + '/densityBasedSolverParameters/entropyFixCoefficient'))
         self._ui.cutOffMachNumber.setText(
-            self._db.getValue(self._xpath + '/densityBasedSolverParameters/cutOffMachNumber'))
+            db.getValue(self._xpath + '/densityBasedSolverParameters/cutOffMachNumber'))
 
-        self._ui.useMomentumPredictor.setChecked(self._db.getValue(self._xpath + '/useMomentumPredictor') == 'true')
+        self._ui.useMomentumPredictor.setChecked(db.getValue(self._xpath + '/useMomentumPredictor') == 'true')
         self._ui.discretizationSchemeTime.setCurrentData(
-            ImplicitDiscretizationScheme(self._db.getValue(self._xpath + '/discretizationSchemes/time')))
+            ImplicitDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/time')))
         self._ui.discretizationSchemePressure.setCurrentData(
-            InterpolationScheme(self._db.getValue(self._xpath + '/discretizationSchemes/pressure')))
+            InterpolationScheme(db.getValue(self._xpath + '/discretizationSchemes/pressure')))
         self._ui.discretizationSchemeMomentum.setCurrentData(
-            UpwindDiscretizationScheme(self._db.getValue(self._xpath + '/discretizationSchemes/momentum')))
+            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/momentum')))
         self._ui.discretizationSchemeEnergy.setCurrentData(
-            UpwindDiscretizationScheme(self._db.getValue(self._xpath + '/discretizationSchemes/energy')))
+            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/energy')))
         self._ui.discretizationSchemeTurbulence.setCurrentData(
             UpwindDiscretizationScheme(
-                self._db.getValue(self._xpath + '/discretizationSchemes/turbulentKineticEnergy')))
+                db.getValue(self._xpath + '/discretizationSchemes/turbulentKineticEnergy')))
         self._ui.discretizationSchemeVolumeFraction.setCurrentData(
-            UpwindDiscretizationScheme(self._db.getValue(self._xpath + '/discretizationSchemes/volumeFraction')))
+            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/volumeFraction')))
         self._ui.discretizationSchemeScalar.setCurrentData(
-            UpwindDiscretizationScheme(self._db.getValue(self._xpath + '/discretizationSchemes/scalar')))
+            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/scalar')))
         self._ui.discretizationSchemeSpecies.setCurrentData(
-            UpwindDiscretizationScheme(self._db.getValue(self._xpath + '/discretizationSchemes/species')))
+            UpwindDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/species')))
 
         self._ui.underRelaxationFactorPressure.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/pressure'))
+            db.getValue(self._xpath + '/underRelaxationFactors/pressure'))
         self._ui.underRelaxationFactorPressureFinal.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/pressureFinal'))
+            db.getValue(self._xpath + '/underRelaxationFactors/pressureFinal'))
         self._ui.underRelaxationFactorMomentum.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/momentum'))
+            db.getValue(self._xpath + '/underRelaxationFactors/momentum'))
         self._ui.underRelaxationFactorMomentumFinal.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/momentumFinal'))
-        self._ui.underRelaxationFactorEnergy.setText(self._db.getValue(self._xpath + '/underRelaxationFactors/energy'))
+            db.getValue(self._xpath + '/underRelaxationFactors/momentumFinal'))
+        self._ui.underRelaxationFactorEnergy.setText(db.getValue(self._xpath + '/underRelaxationFactors/energy'))
         self._ui.underRelaxationFactorEnergyFinal.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/energyFinal'))
+            db.getValue(self._xpath + '/underRelaxationFactors/energyFinal'))
         self._ui.underRelaxationFactorTurbulence.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/turbulence'))
+            db.getValue(self._xpath + '/underRelaxationFactors/turbulence'))
         self._ui.underRelaxationFactorTurbulenceFinal.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/turbulenceFinal'))
+            db.getValue(self._xpath + '/underRelaxationFactors/turbulenceFinal'))
         self._ui.underRelaxationFactorDensity.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/density'))
+            db.getValue(self._xpath + '/underRelaxationFactors/density'))
         self._ui.underRelaxationFactorDensityFinal.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/densityFinal'))
+            db.getValue(self._xpath + '/underRelaxationFactors/densityFinal'))
         self._ui.underRelaxationFactorVolumeFraction.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/volumeFraction'))
+            db.getValue(self._xpath + '/underRelaxationFactors/volumeFraction'))
         self._ui.underRelaxationFactorVolumeFractionFinal.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/volumeFractionFinal'))
-        self._ui.underRelaxationFactorScalar.setText(self._db.getValue(self._xpath + '/underRelaxationFactors/scalar'))
+            db.getValue(self._xpath + '/underRelaxationFactors/volumeFractionFinal'))
+        self._ui.underRelaxationFactorScalar.setText(db.getValue(self._xpath + '/underRelaxationFactors/scalar'))
         self._ui.underRelaxationFactorScalarFinal.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/scalarFinal'))
-        self._ui.underRelaxationFactorSpecies.setText(self._db.getValue(self._xpath + '/underRelaxationFactors/species'))
+            db.getValue(self._xpath + '/underRelaxationFactors/scalarFinal'))
+        self._ui.underRelaxationFactorSpecies.setText(db.getValue(self._xpath + '/underRelaxationFactors/species'))
         self._ui.underRelaxationFactorSpeciesFinal.setText(
-            self._db.getValue(self._xpath + '/underRelaxationFactors/speciesFinal'))
+            db.getValue(self._xpath + '/underRelaxationFactors/speciesFinal'))
 
-        self._ui.limitingFactor.setText(self._db.getValue(self._xpath + '/highOrderTermRelaxation/relaxationFactor'))
+        self._ui.limitingFactor.setText(db.getValue(self._xpath + '/highOrderTermRelaxation/relaxationFactor'))
         self._ui.improveStablitiy.setChecked(
-            self._db.getAttribute(self._xpath + '/highOrderTermRelaxation', 'disabled') == 'false')
+            db.getAttribute(self._xpath + '/highOrderTermRelaxation', 'disabled') == 'false')
 
-        self._ui.maxIterationsPerTimeStep.setText(self._db.getValue(self._xpath + '/maxIterationsPerTimeStep'))
-        self._ui.numberOfCorrectors.setText(self._db.getValue(self._xpath + '/numberOfCorrectors'))
+        self._ui.maxIterationsPerTimeStep.setText(db.getValue(self._xpath + '/maxIterationsPerTimeStep'))
+        self._ui.numberOfCorrectors.setText(db.getValue(self._xpath + '/numberOfCorrectors'))
 
         self._ui.multiphaseMaxIterationsPerTimeStep.setText(
-            self._db.getValue(self._xpath + '/multiphase/maxIterationsPerTimeStep'))
+            db.getValue(self._xpath + '/multiphase/maxIterationsPerTimeStep'))
         self._ui.multiphaseNumberOfCorrectors.setText(
-            self._db.getValue(self._xpath + '/multiphase/numberOfCorrectors'))
-        if self._db.getValue(self._xpath + '/multiphase/useSemiImplicitMules') == 'true':
+            db.getValue(self._xpath + '/multiphase/numberOfCorrectors'))
+        if db.getValue(self._xpath + '/multiphase/useSemiImplicitMules') == 'true':
             self._ui.mulesSemiImplicit.setChecked(True)
         else:
             self._ui.mullesExplicit.setChecked(True)
         self._ui.phaseInterfaceCompressionFactor.setText(
-            self._db.getValue(self._xpath + '/multiphase/phaseInterfaceCompressionFactor'))
+            db.getValue(self._xpath + '/multiphase/phaseInterfaceCompressionFactor'))
         self._ui.numberOfMulesIterations.setText(
-            self._db.getValue(self._xpath + '/multiphase/numberOfMulesIterations'))
+            db.getValue(self._xpath + '/multiphase/numberOfMulesIterations'))
 
-        self._ui.absolutePressure.setText(self._db.getValue(self._xpath + '/convergenceCriteria/pressure/absolute'))
-        self._ui.relativePressure.setText(self._db.getValue(self._xpath + '/convergenceCriteria/pressure/relative'))
-        self._ui.absoluteDensity.setText(self._db.getValue(self._xpath + '/convergenceCriteria/density/absolute'))
-        self._ui.relativeDensity.setText(self._db.getValue(self._xpath + '/convergenceCriteria/density/relative'))
-        self._ui.absoluteMomentum.setText(self._db.getValue(self._xpath + '/convergenceCriteria/momentum/absolute'))
-        self._ui.relativeMomentum.setText(self._db.getValue(self._xpath + '/convergenceCriteria/momentum/relative'))
-        self._ui.absoluteEnergy.setText(self._db.getValue(self._xpath + '/convergenceCriteria/energy/absolute'))
-        self._ui.relativeEnergy.setText(self._db.getValue(self._xpath + '/convergenceCriteria/energy/relative'))
-        self._ui.absoluteTurbulence.setText(self._db.getValue(self._xpath + '/convergenceCriteria/turbulence/absolute'))
-        self._ui.relativeTurbulence.setText(self._db.getValue(self._xpath + '/convergenceCriteria/turbulence/relative'))
+        self._ui.absolutePressure.setText(db.getValue(self._xpath + '/convergenceCriteria/pressure/absolute'))
+        self._ui.relativePressure.setText(db.getValue(self._xpath + '/convergenceCriteria/pressure/relative'))
+        self._ui.absoluteDensity.setText(db.getValue(self._xpath + '/convergenceCriteria/density/absolute'))
+        self._ui.relativeDensity.setText(db.getValue(self._xpath + '/convergenceCriteria/density/relative'))
+        self._ui.absoluteMomentum.setText(db.getValue(self._xpath + '/convergenceCriteria/momentum/absolute'))
+        self._ui.relativeMomentum.setText(db.getValue(self._xpath + '/convergenceCriteria/momentum/relative'))
+        self._ui.absoluteEnergy.setText(db.getValue(self._xpath + '/convergenceCriteria/energy/absolute'))
+        self._ui.relativeEnergy.setText(db.getValue(self._xpath + '/convergenceCriteria/energy/relative'))
+        self._ui.absoluteTurbulence.setText(db.getValue(self._xpath + '/convergenceCriteria/turbulence/absolute'))
+        self._ui.relativeTurbulence.setText(db.getValue(self._xpath + '/convergenceCriteria/turbulence/relative'))
         self._ui.absoluteVolumeFraction.setText(
-            self._db.getValue(self._xpath + '/convergenceCriteria/volumeFraction/absolute'))
+            db.getValue(self._xpath + '/convergenceCriteria/volumeFraction/absolute'))
         self._ui.relativeVolumeFraction.setText(
-            self._db.getValue(self._xpath + '/convergenceCriteria/volumeFraction/relative'))
-        self._ui.absoluteScalar.setText(self._db.getValue(self._xpath + '/convergenceCriteria/scalar/absolute'))
-        self._ui.relativeScalar.setText(self._db.getValue(self._xpath + '/convergenceCriteria/scalar/relative'))
-        self._ui.absoluteSpecies.setText(self._db.getValue(self._xpath + '/convergenceCriteria/species/absolute'))
-        self._ui.relativeSpecies.setText(self._db.getValue(self._xpath + '/convergenceCriteria/species/relative'))
+            db.getValue(self._xpath + '/convergenceCriteria/volumeFraction/relative'))
+        self._ui.absoluteScalar.setText(db.getValue(self._xpath + '/convergenceCriteria/scalar/absolute'))
+        self._ui.relativeScalar.setText(db.getValue(self._xpath + '/convergenceCriteria/scalar/relative'))
+        self._ui.absoluteSpecies.setText(db.getValue(self._xpath + '/convergenceCriteria/species/absolute'))
+        self._ui.relativeSpecies.setText(db.getValue(self._xpath + '/convergenceCriteria/species/relative'))
 
         discretizationSchemeLayout = self._ui.discretizationSchemes.layout()
         underRelaxationFactorLayout = self._ui.underRelaxationFactors.layout()

@@ -19,7 +19,6 @@ class SubsonicInletDialog(ResizableDialog):
         self._ui = Ui_SubsonicInletDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
         layout = self._ui.dialogContents.layout()
@@ -48,12 +47,13 @@ class SubsonicInletDialog(ResizableDialog):
             super().accept()
 
     def _load(self):
+        db = coredb.CoreDB()
         path = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.xComponent.setText(self._db.getValue(path + '/flowDirection/x'))
-        self._ui.yComponent.setText(self._db.getValue(path + '/flowDirection/y'))
-        self._ui.zComponent.setText(self._db.getValue(path + '/flowDirection/z'))
-        self._ui.totalPressure.setText(self._db.getValue(path + '/totalPressure'))
-        self._ui.totalTemperature.setText(self._db.getValue(path + '/totalTemperature'))
+        self._ui.xComponent.setText(db.getValue(path + '/flowDirection/x'))
+        self._ui.yComponent.setText(db.getValue(path + '/flowDirection/y'))
+        self._ui.zComponent.setText(db.getValue(path + '/flowDirection/z'))
+        self._ui.totalPressure.setText(db.getValue(path + '/totalPressure'))
+        self._ui.totalTemperature.setText(db.getValue(path + '/totalTemperature'))
 
         self._turbulenceWidget.load()

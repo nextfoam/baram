@@ -19,7 +19,6 @@ class FarfieldRiemannDialog(ResizableDialog):
         self._ui = Ui_FarfieldRiemannDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
         self._ui.specificationMethod.addEnumItems({
@@ -79,26 +78,27 @@ class FarfieldRiemannDialog(ResizableDialog):
         self._ui.specificationMethod.currentDataChanged.connect(self._specificationMethodChanged)
 
     def _load(self):
+        db = coredb.CoreDB()
         path = self._xpath + self.RELATIVE_XPATH
 
         self._ui.specificationMethod.setCurrentData(
-            DirectionSpecificationMethod(self._db.getValue(path + '/flowDirection/specificationMethod')))
+            DirectionSpecificationMethod(db.getValue(path + '/flowDirection/specificationMethod')))
 
-        self._ui.flowDirectionX.setText(self._db.getValue(path + '/flowDirection/dragDirection/x'))
-        self._ui.flowDirectionY.setText(self._db.getValue(path + '/flowDirection/dragDirection/y'))
-        self._ui.flowDirectionZ.setText(self._db.getValue(path + '/flowDirection/dragDirection/z'))
-        self._ui.dragDirectionX.setText(self._db.getValue(path + '/flowDirection/dragDirection/x'))
-        self._ui.dragDirectionY.setText(self._db.getValue(path + '/flowDirection/dragDirection/y'))
-        self._ui.dragDirectionZ.setText(self._db.getValue(path + '/flowDirection/dragDirection/z'))
-        self._ui.liftDirectionX.setText(self._db.getValue(path + '/flowDirection/liftDirection/x'))
-        self._ui.liftDirectionY.setText(self._db.getValue(path + '/flowDirection/liftDirection/y'))
-        self._ui.liftDirectionZ.setText(self._db.getValue(path + '/flowDirection/liftDirection/z'))
-        self._ui.AoA.setText(self._db.getValue(path + '/flowDirection/angleOfAttack'))
-        self._ui.AoS.setText(self._db.getValue(path + '/flowDirection/angleOfSideslip'))
+        self._ui.flowDirectionX.setText(db.getValue(path + '/flowDirection/dragDirection/x'))
+        self._ui.flowDirectionY.setText(db.getValue(path + '/flowDirection/dragDirection/y'))
+        self._ui.flowDirectionZ.setText(db.getValue(path + '/flowDirection/dragDirection/z'))
+        self._ui.dragDirectionX.setText(db.getValue(path + '/flowDirection/dragDirection/x'))
+        self._ui.dragDirectionY.setText(db.getValue(path + '/flowDirection/dragDirection/y'))
+        self._ui.dragDirectionZ.setText(db.getValue(path + '/flowDirection/dragDirection/z'))
+        self._ui.liftDirectionX.setText(db.getValue(path + '/flowDirection/liftDirection/x'))
+        self._ui.liftDirectionY.setText(db.getValue(path + '/flowDirection/liftDirection/y'))
+        self._ui.liftDirectionZ.setText(db.getValue(path + '/flowDirection/liftDirection/z'))
+        self._ui.AoA.setText(db.getValue(path + '/flowDirection/angleOfAttack'))
+        self._ui.AoS.setText(db.getValue(path + '/flowDirection/angleOfSideslip'))
 
-        self._ui.machNumber.setText(self._db.getValue(path + '/machNumber'))
-        self._ui.staticPressure.setText(self._db.getValue(path + '/staticPressure'))
-        self._ui.staticTemperature.setText(self._db.getValue(path + '/staticTemperature'))
+        self._ui.machNumber.setText(db.getValue(path + '/machNumber'))
+        self._ui.staticPressure.setText(db.getValue(path + '/staticPressure'))
+        self._ui.staticTemperature.setText(db.getValue(path + '/staticTemperature'))
 
         self._turbulenceWidget.load()
 

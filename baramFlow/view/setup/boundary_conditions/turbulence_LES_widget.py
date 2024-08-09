@@ -21,7 +21,6 @@ class TurbulenceLESWidget(QWidget):
             SubgridKineticEnergySpecificationMethod.SUBGRID_SCALE_INTENSITY:    self.tr('Subgrid-Scale Intensity')
         })
 
-        self._db = coredb.CoreDB()
         self._xpath = xpath
 
         self._connectSignalsSlots()
@@ -30,13 +29,14 @@ class TurbulenceLESWidget(QWidget):
         return True
 
     def load(self):
+        db = coredb.CoreDB()
         xpath = self._xpath + self.RELATIVE_XPATH
 
         self._ui.specificationMethod.setCurrentData(
-            SubgridKineticEnergySpecificationMethod(self._db.getValue(xpath + '/specification')))
-        self._ui.kineticEnergy.setText(self._db.getValue(xpath + '/subgridKineticEnergy'))
-        self._ui.turbulentIntensity.setText(self._db.getValue(xpath + '/subgridTurbulentIntensity'))
-        self._ui.turbulentViscosityRatio.setText(self._db.getValue(xpath + '/turbulentViscosityRatio'))
+            SubgridKineticEnergySpecificationMethod(db.getValue(xpath + '/specification')))
+        self._ui.kineticEnergy.setText(db.getValue(xpath + '/subgridKineticEnergy'))
+        self._ui.turbulentIntensity.setText(db.getValue(xpath + '/subgridTurbulentIntensity'))
+        self._ui.turbulentViscosityRatio.setText(db.getValue(xpath + '/turbulentViscosityRatio'))
 
     def appendToWriter(self, writer):
         xpath = self._xpath + self.RELATIVE_XPATH

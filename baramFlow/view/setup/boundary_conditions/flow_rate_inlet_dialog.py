@@ -22,7 +22,6 @@ class FlowRateInletDialog(ResizableDialog):
         self._ui = Ui_FlowRateInletDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
         self._flowRateSpecificationMethodsCombo = EnumComboBox(self._ui.flowRateSpecificationMethod)
@@ -87,11 +86,12 @@ class FlowRateInletDialog(ResizableDialog):
         self._ui.ok.clicked.connect(self._accept)
 
     def _load(self):
+        db = coredb.CoreDB()
         path = self._xpath + '/flowRateInlet'
 
-        self._flowRateSpecificationMethodsCombo.setCurrentValue(self._db.getValue(path + '/flowRate/specification'))
-        self._ui.volumeFlowRate.setText(self._db.getValue(path + '/flowRate/volumeFlowRate'))
-        self._ui.massFlowRate.setText(self._db.getValue(path + '/flowRate/massFlowRate'))
+        self._flowRateSpecificationMethodsCombo.setCurrentValue(db.getValue(path + '/flowRate/specification'))
+        self._ui.volumeFlowRate.setText(db.getValue(path + '/flowRate/volumeFlowRate'))
+        self._ui.massFlowRate.setText(db.getValue(path + '/flowRate/massFlowRate'))
         self._flowRateSpecificationMethodChanged()
 
         self._turbulenceWidget.load()

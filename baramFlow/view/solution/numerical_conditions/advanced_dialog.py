@@ -23,7 +23,6 @@ class AdvancedDialog(QDialog):
         self._ui = Ui_AdvancedDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = NumericalDB.NUMERICAL_CONDITIONS_XPATH + self.RELATIVE_XPATH
 
         self._connectSignalsSlots()
@@ -65,22 +64,23 @@ class AdvancedDialog(QDialog):
             self.accept()
 
     def _load(self):
-        self._ui.minimumStaticTemperature.setText(self._db.getValue(self._xpath + '/limits/minimumStaticTemperature'))
-        self._ui.maximumStaticTemperature.setText(self._db.getValue(self._xpath + '/limits/maximumStaticTemperature'))
-        self._ui.maximumViscosityRatio.setText(self._db.getValue(self._xpath + '/limits/maximumViscosityRatio'))
+        db = coredb.CoreDB()
+        self._ui.minimumStaticTemperature.setText(db.getValue(self._xpath + '/limits/minimumStaticTemperature'))
+        self._ui.maximumStaticTemperature.setText(db.getValue(self._xpath + '/limits/maximumStaticTemperature'))
+        self._ui.maximumViscosityRatio.setText(db.getValue(self._xpath + '/limits/maximumViscosityRatio'))
 
-        equationEnergyOn = self._db.getAttribute(self._xpath + '/equations/energy', 'disabled') == 'false'
-        self._ui.equationFlow.setChecked(self._db.getBool(self._xpath + '/equations/flow'))
+        equationEnergyOn = db.getAttribute(self._xpath + '/equations/energy', 'disabled') == 'false'
+        self._ui.equationFlow.setChecked(db.getBool(self._xpath + '/equations/flow'))
         self._ui.equationEnergy.setChecked(equationEnergyOn)
-        self._ui.equationUDS.setChecked(self._db.getBool(self._xpath + '/equations/UDS'))
+        self._ui.equationUDS.setChecked(db.getBool(self._xpath + '/equations/UDS'))
 
-        includeViscousDissipationTerms = self._db.getBool(
+        includeViscousDissipationTerms = db.getBool(
             self._xpath + '/equations/energy/includeViscousDissipationTerms')
         self._ui.includeViscousDissipationTerms.setChecked(includeViscousDissipationTerms)
         self._ui.includeKineticEnergyTerms.setChecked(
-            self._db.getBool(self._xpath + '/equations/energy/includeKineticEnergyTerms'))
+            db.getBool(self._xpath + '/equations/energy/includeKineticEnergyTerms'))
         self._ui.includePressureWorkTerms.setChecked(
-            self._db.getBool(self._xpath + '/equations/energy/includePressureWorkTerms'))
+            db.getBool(self._xpath + '/equations/energy/includePressureWorkTerms'))
 
         if not GeneralDB.isDensityBased():
             self._ui.energyTerms.setEnabled(equationEnergyOn)

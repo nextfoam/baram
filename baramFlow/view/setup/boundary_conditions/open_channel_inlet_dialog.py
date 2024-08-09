@@ -22,7 +22,6 @@ class OpenChannelInletDialog(ResizableDialog):
         self._ui = Ui_OpenChannelInletDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
         self._turbulenceWidget = None
@@ -61,9 +60,10 @@ class OpenChannelInletDialog(ResizableDialog):
             self.accept()
 
     def _load(self):
+        db = coredb.CoreDB()
         path = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.volumeFlowRate.setText(self._db.getValue(path + '/volumeFlowRate'))
+        self._ui.volumeFlowRate.setText(db.getValue(path + '/volumeFlowRate'))
 
         self._turbulenceWidget.load()
         self._scalarsWidget.load(self._xpath + '/userDefinedScalars')
