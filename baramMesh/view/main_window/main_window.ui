@@ -3237,6 +3237,32 @@ QCheckBox::indicator:checked { image: url(:/images/toggle_on) }</string>
                        </widget>
                       </item>
                       <item>
+                       <widget class="FlatPushButton" name="ruler">
+                        <property name="maximumSize">
+                         <size>
+                          <width>32</width>
+                          <height>32</height>
+                         </size>
+                        </property>
+                        <property name="toolTip">
+                         <string> Display x,y and z axis coordinates</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../../../resource.qrc">
+                          <normaloff>:/graphicsIcons/distance.png</normaloff>:/graphicsIcons/distance.png</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>24</width>
+                          <height>24</height>
+                         </size>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
                        <widget class="FlatPushButton" name="perspective">
                         <property name="maximumSize">
                          <size>
