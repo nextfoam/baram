@@ -38,7 +38,9 @@ def _constructFluid(region: str):
     thermo = {
         'type': 'heRhoThermo',
         'mixture': 'pureMixture',
-        'transport': ('const' if tModel == TurbulenceModel.INVISCID or viscositySpec == ViscositySpecification.CONSTANT
+        'transport': ('const' if tModel == TurbulenceModel.INVISCID
+                                 or viscositySpec == ViscositySpecification.CONSTANT
+                                 or MaterialDB.isNonNewtonianSpecification(viscositySpec)
                       else viscositySpec.value),
         'thermo': 'hConst' if specificHeatSpec == 'constant' else 'hPolynomial',
         'equationOfState': EQUATION_OF_STATES[densitySpec],
