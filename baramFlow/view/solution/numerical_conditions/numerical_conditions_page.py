@@ -10,10 +10,11 @@ import baramFlow.openfoam.solver
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.numerical_db import ImplicitDiscretizationScheme, UpwindDiscretizationScheme, InterpolationScheme
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.numerical_db import PressureVelocityCouplingScheme, Formulation, FluxType
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.view.widgets.content_page import ContentPage
 
 from .advanced_dialog import AdvancedDialog
@@ -74,7 +75,7 @@ class NumericalConditionsPage(ContentPage):
     def _load(self):
         timeIsTransient = GeneralDB.isTimeTransient()
         energyOn = ModelsDB.isEnergyModelOn()
-        turbulenceOn = ModelsDB.getTurbulenceModel() not in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR)
+        turbulenceOn = TurbulenceModelsDB.getModel()not in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR)
         multiphaseOn = ModelsDB.isMultiphaseModelOn()
         compressibleDensity = GeneralDB.isCompressibleDensity()
 

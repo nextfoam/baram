@@ -3,7 +3,8 @@
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from baramFlow.coredb.boundary_db import KEpsilonSpecification, KOmegaSpecification, InterfaceMode
-from baramFlow.coredb.models_db import TurbulenceModel, TurbulenceModelsDB, SubgridKineticEnergySpecificationMethod
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, SubgridKineticEnergySpecificationMethod
+from baramFlow.coredb.turbulence_model_db import TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 

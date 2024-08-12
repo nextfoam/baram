@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, KOmegaSpecification, WallVelocityCondition, InterfaceMode
-from baramFlow.coredb.models_db import TurbulenceModel, TurbulenceModelsDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 

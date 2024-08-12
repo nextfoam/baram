@@ -10,7 +10,8 @@ from PySide6.QtCore import Qt
 
 from widgets.async_message_box import AsyncMessageBox
 
-from baramFlow.coredb.material_db import Phase, MaterialDB
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import Phase
 from .materials_selector_dialog_ui import Ui_MaterialsSelectorDialog
 
 

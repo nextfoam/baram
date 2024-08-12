@@ -4,7 +4,7 @@
 from PySide6.QtWidgets import QWidget
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.models_db import SubgridKineticEnergySpecificationMethod
+from baramFlow.coredb.turbulence_model_db import SubgridKineticEnergySpecificationMethod
 from .turbulence_LES_widget_ui import Ui_TurbulenceLESWidget
 
 

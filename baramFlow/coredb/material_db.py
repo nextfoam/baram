@@ -1,42 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, Flag
-
 from PySide6.QtCore import QCoreApplication, QObject
 
 import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
-from baramFlow.coredb.configuraitions import ConfigurationException
-from baramFlow.coredb.meterial_templates import MaterialTemplates
+from .configuraitions import ConfigurationException
+from .material_schema import Phase, MaterialType, Specification, DensitySpecification, ViscositySpecification
+from .materials_base import MaterialsBase
+from .material_schema import MaterialSchema
+from .turbulence_model_db import ITurbulenceModelObserver, TurbulenceModelsDB, TurbulenceModel
 
 UNIVERSAL_GAS_CONSTANT = 8314.46261815324
 
 MATERIAL_XPATH = '/materials/material'
 
+NON_NEWTONIAN_VISCOSITY_SPECIFICATIONS = [ViscositySpecification.CROSS_POWER_LAW,
+                                          ViscositySpecification.HERSCHEL_BULKLEY,
+                                          ViscositySpecification.BIRD_CARREAU,
+                                          ViscositySpecification.POWER_LAW]
 
-_materialTemplates = MaterialTemplates()
-
-
-class Phase(Flag):
-    GAS = 'gas'
-    LIQUID = 'liquid'
-    SOLID = 'solid'
-
-
-class Specification(Enum):
-    CONSTANT = 'constant'
-    PERFECT_GAS = 'perfectGas'
-    SUTHERLAND = 'sutherland'
-    POLYNOMIAL = 'polynomial'
-    INCOMPRESSIBLE_PERFECT_GAS = 'incompressiblePerfectGas'
-    REAL_GAS_PENG_ROBINSON = 'PengRobinsonGas'
-
-
-class MaterialType(Enum):
-    NONMIXTURE = 'nonmixture'
-    MIXTURE = 'mixture'
-    SPECIE = 'specie'
+_materialsBase = MaterialsBase()
 
 
 class IMaterialObserver(QObject):
@@ -128,19 +112,28 @@ class MaterialDB(object):
     @classmethod
     def specificationToText(cls, specification) -> str:
         return {
-            Specification.CONSTANT:                     QCoreApplication.translate('MaterialDB', 'Constant'),
-            Specification.PERFECT_GAS:                  QCoreApplication.translate('MaterialDB', 'Perfect Gas'),
-            Specification.SUTHERLAND:                   QCoreApplication.translate('MaterialDB', 'Sutherland'),
-            Specification.POLYNOMIAL:                   QCoreApplication.translate('MaterialDB', 'Polynomial'),
-            Specification.INCOMPRESSIBLE_PERFECT_GAS:   QCoreApplication.translate('MaterialDB',
-                                                                                   'Incompressible-perfect-gas'),
-            Specification.REAL_GAS_PENG_ROBINSON:       QCoreApplication.translate('MaterialDB',
-                                                                                   'Real-gas-peng-robinson'),
-        }.get(Specification(specification))
-
-    @classmethod
-    def dbSpecificationToText(cls, DBText) -> str:
-        return cls.specificationToText(Specification(DBText))
+            Specification.CONSTANT:                             QCoreApplication.translate('MaterialDB', 'Constant'),
+            Specification.PERFECT_GAS:                          QCoreApplication.translate('MaterialDB', 'Perfect Gas'),
+            Specification.SUTHERLAND:                           QCoreApplication.translate('MaterialDB', 'Sutherland'),
+            Specification.POLYNOMIAL:                           QCoreApplication.translate('MaterialDB', 'Polynomial'),
+            DensitySpecification.CONSTANT:                      QCoreApplication.translate('MaterialDB', 'Constant'),
+            DensitySpecification.PERFECT_GAS:                   QCoreApplication.translate('MaterialDB', 'Perfect Gas'),
+            DensitySpecification.POLYNOMIAL:                    QCoreApplication.translate('MaterialDB', 'Polynomial'),
+            DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS:    QCoreApplication.translate('MaterialDB',
+                                                                                           'Incompressible-perfect-gas'),
+            DensitySpecification.REAL_GAS_PENG_ROBINSON:        QCoreApplication.translate('MaterialDB',
+                                                                                           'Real-gas-peng-robinson'),
+            ViscositySpecification.CONSTANT:                    QCoreApplication.translate('MaterialDB', 'Constant'),
+            ViscositySpecification.PERFECT_GAS:                 QCoreApplication.translate('MaterialDB', 'Perfect Gas'),
+            ViscositySpecification.SUTHERLAND:                  QCoreApplication.translate('MaterialDB', 'Sutherland'),
+            ViscositySpecification.POLYNOMIAL:                  QCoreApplication.translate('MaterialDB', 'Polynomial'),
+            ViscositySpecification.CROSS_POWER_LAW:             QCoreApplication.translate('MaterialDB', 'Cross'),
+            ViscositySpecification.HERSCHEL_BULKLEY:            QCoreApplication.translate('MaterialDB',
+                                                                                           'Herschel-bulkley'),
+            ViscositySpecification.BIRD_CARREAU:                QCoreApplication.translate('MaterialDB', 'Carreau'),
+            ViscositySpecification.POWER_LAW:                   QCoreApplication.translate('MaterialDB',
+                                                                                           'Non-newtonian-power-law'),
+        }.get(specification)
 
     @classmethod
     def isMaterialExists(cls, name) -> bool:
@@ -149,6 +142,10 @@ class MaterialDB(object):
     @classmethod
     def isFluid(cls, mid):
         return cls.getPhase(mid) != Phase.SOLID
+
+    @classmethod
+    def isNonNewtonianSpecification(cls, specification):
+        return specification in NON_NEWTONIAN_VISCOSITY_SPECIFICATIONS
 
     @classmethod
     def getMaterialComposition(cls, xpath, mid: str):
@@ -168,8 +165,12 @@ class MaterialDB(object):
                 for e in xml.getElements(_rootElement(), f'material/specie[mixture="{mid}"]')}
 
     @classmethod
-    def getMaterialsFromDB(cls, phase):
-        return _materialTemplates.getMaterials(phase)
+    def getMixture(cls, mid: str):
+        return xml.getText(coredb.CoreDB().getElement(MaterialDB.getXPath(mid) + '/specie'), 'mixture')
+    #
+    # @classmethod
+    # def getMaterialBases(cls, phase):
+    #     return _materialsBase.getBases(phase)
 
     @classmethod
     def getMaterials(cls, type_=None) -> list[(str, str, str, str)]:
@@ -199,38 +200,27 @@ class MaterialDB(object):
                     for e in elements if xml.getText(e, 'type') == type_]
 
     @classmethod
-    def addMaterial(cls, db, template: str) -> str:
+    def addNonMixture(cls, db, base: str) -> str:
         mid = _newID(db)
-        name = _newName(db, template)
-        _rootElement().append(
-            xml.createElement(
-                _materialTemplates.materialXML(mid, 'name', template, MaterialTemplates.DEFAULT_NONMIXTURE_SPEC)))
-
-        db.setValue(MaterialDB.getXPath(mid) + '/name', name)
+        name = _newName(db, base)
+        _rootElement().append(MaterialSchema.newNonMixture(mid, name, base))
+        db.setValue(MaterialDB.getXPath(mid) + '/name', name)   # For increase configuCount of CoreDB
 
         return mid
 
     @classmethod
-    def addMixture(cls, db, name: str, species: list) -> str:
+    def addMixture(cls, db, name: str, specieBases: list) -> str:
         materials = _rootElement()
 
         mid = _newID(db)
-        materials.append(
-            xml.createElement(
-                _materialTemplates.materialXML(
-                    mid, _newName(db, name),
-                    MaterialTemplates.MIXTURE_TEMPLATE_NAME,
-                    MaterialTemplates.Specifications('mixture', _materialTemplates.template(species[0])['phase']),
-                    _materialTemplates.mixtureXML())))
+        mixture = MaterialSchema.newMixture(mid,_newName(db, name), specieBases[0])
+        materials.append(mixture)
 
         primary = None
-        specieXML = _materialTemplates.specieXML(mid)
-        for specie in species:
+        for base in specieBases:
             sid = _newID(db)
             materials.append(
-                xml.createElement(
-                    _materialTemplates.materialXML(
-                        sid, _newName(db, specie), specie, MaterialTemplates.Specifications('specie'), specieXML)))
+                MaterialSchema.newSpecie(sid, _newName(db, base), base, MaterialSchema.defaultsToInherit(mixture), mid))
             if primary is None:
                 primary = sid
 
@@ -239,23 +229,14 @@ class MaterialDB(object):
         return mid
 
     @classmethod
-    def addSpecie(cls, db, template, mixtureID):
+    def addSpecie(cls, db, base: str, mixtureID: str):
         mid = _newID(db)
-        name = _newName(db, template)
+        name = _newName(db, base)
 
-        mixture = db.getElement(MaterialDB.getXPath(mixtureID))
         _rootElement().append(
-            xml.createElement(
-                _materialTemplates.materialXML(
-                    mid, 'name', template,
-                    MaterialTemplates.Specifications(
-                        type='specie',
-                        density=xml.getText(mixture, 'density/specification'),
-                        specificHeat=xml.getText(mixture, 'specificHeat/specification'),
-                        thermalConductivity=xml.getText(mixture, 'thermalConductivity/specification'),
-                        viscosity=xml.getText(mixture, 'viscosity/specification')),
-                    _materialTemplates.specieXML(mixtureID))))
-
+            MaterialSchema.newSpecie(mid, name, base,
+                                     MaterialSchema.defaultsToInherit(db.getElement(MaterialDB.getXPath(mixtureID))),
+                                     mixtureID))
         db.setValue(MaterialDB.getXPath(mid) + '/name', name)
 
         for observer in cls._observers:
@@ -305,3 +286,13 @@ class MaterialDB(object):
             db.setValue(MaterialDB.getXPath(mixtureMid) + 'mixture/primarySpecie', primarySpecie)
 
         materials.remove(specie)
+
+
+class TurbulenceModelObserver(ITurbulenceModelObserver):
+    def modelUpdating(self, db, model):
+        if TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR:
+            for viscosity in db.getElements(MaterialDB.MATERIALS_XPATH + '/material/viscosity'):
+                if (ViscositySpecification(xml.getText(viscosity, 'specification'))
+                        in NON_NEWTONIAN_VISCOSITY_SPECIFICATIONS):
+                    raise ConfigurationException(
+                        self.tr('Non-newtonian material is configured, and turbulecne model must be laminar.'))

@@ -8,6 +8,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import ViscositySpecification
 from baramFlow.coredb.region_db import RegionDB, CavitationModel
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import findSolver
@@ -73,16 +74,8 @@ class TransportProperties(DictionaryFile):
 
         for mid in materials:
             name = MaterialDB.getName(mid)
-            density = self._db.getDensity([(mid, 1)], 0, 0)
-            viscosity = self._db.getViscosity([(mid, 1)], 0)
-            nu = viscosity / density
-
             phases.append(name)
-            data[name] = {
-                'transportModel': 'Newtonian',
-                'nu': nu,
-                'rho': density
-            }
+            data[name] = self._buildMaterial(mid)
 
         tensions = dict([((mid1, mid2), tension) for mid1, mid2, tension in self._db.getSurfaceTensions(self._rname)])
         if (materials[0], materials[1]) in tensions:
@@ -110,15 +103,7 @@ class TransportProperties(DictionaryFile):
 
         for mid in materials:
             name = MaterialDB.getName(mid)
-            density = self._db.getDensity([(mid, 1)], 0, 0)
-            viscosity = self._db.getViscosity([(mid, 1)], 0)
-            nu = viscosity / density
-
-            phases.append((name, {
-                'transportModel': 'Newtonian',
-                'nu': nu,
-                'rho': density
-            }))
+            phases.append((name, self._buildMaterial(mid)))
 
         sigmas = []
 
@@ -168,20 +153,12 @@ class TransportProperties(DictionaryFile):
             'sigma': t
         }
 
-        constantsXPath = f'{cavitationXPath}/{cavitationModel.value}'
         for mid in materials:
             name = MaterialDB.getName(mid)
-            density = self._db.getDensity([(mid, 1)], 0, 0)
-            viscosity = self._db.getViscosity([(mid, 1)], 0)
-            nu = viscosity / density
-
             phases.append(name)
-            data[name] = {
-                'transportModel': 'Newtonian',
-                'nu': nu,
-                'rho': density
-            }
+            data[name] = self._buildMaterial(mid)
 
+        constantsXPath = f'{cavitationXPath}/{cavitationModel.value}'
         if cavitationModel == CavitationModel.SCHNERR_SAUER:
             data['phaseChangeTwoPhaseMixture'] ='SchnerrSauer'
             data['SchnerrSauerCoeffs'] = {
@@ -216,3 +193,63 @@ class TransportProperties(DictionaryFile):
             }
 
         return data
+
+    def _buildMaterial(self, mid):
+        xpath = MaterialDB.getXPath(mid)
+        viscositySpecification = ViscositySpecification(self._db.getValue(xpath + '/viscosity/specification'))
+
+        if viscositySpecification == ViscositySpecification.CROSS_POWER_LAW:
+            return {
+                'transportModel': 'CrossPowerLaw',
+                'CrossPowerLawCoeffs': {
+                    'nu0': self._db.getValue(xpath + '/viscosity/cross/zeroShearViscosity'),
+                    'nuInf': self._db.getValue(xpath + '/viscosity/cross/infiniteShearViscosity'),
+                    'm': self._db.getValue(xpath + '/viscosity/cross/naturalTime'),
+                    'n': self._db.getValue(xpath + '/viscosity/cross/powerLawIndex')
+                    # 'a': self._db.getValue(xpath + '/viscosity/cross/')
+                }
+            }
+
+        if viscositySpecification == ViscositySpecification.HERSCHEL_BULKLEY:
+            return {
+                'transportModel': 'HerschelBulkley',
+                'HerschelBulkleyCoeffs': {
+                    'nu0': self._db.getValue(xpath + '/viscosity/herschelBulkley/zeroShearViscosity'),
+                    'tau0': self._db.getValue(xpath + '/viscosity/herschelBulkley/yieldStressThreshold'),
+                    'k': self._db.getValue(xpath + '/viscosity/herschelBulkley/consistencyIndex'),
+                    'n': self._db.getValue(xpath + '/viscosity/herschelBulkley/powerLawIndex')
+                }
+            }
+
+        if viscositySpecification == ViscositySpecification.BIRD_CARREAU:
+            return {
+                'transportModel': 'BirdCarreau',
+                'BirdCarreauCoeffs': {
+                    'nu0': self._db.getValue(xpath + '/viscosity/carreau/zeroShearViscosity'),
+                    'nuInf': self._db.getValue(xpath + '/viscosity/carreau/infiniteShearViscosity'),
+                    'k': self._db.getValue(xpath + '/viscosity/carreau/relaxationTime'),
+                    'n': self._db.getValue(xpath + '/viscosity/carreau/powerLawIndex'),
+                    'a': self._db.getValue(xpath + '/viscosity/carreau/linearityDeviation')
+                }
+            }
+
+        if viscositySpecification == ViscositySpecification.POWER_LAW:
+            return {
+                'transportModel': 'powerLaw',
+                'powerLawCoeffs': {
+                    'nuMax': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/maximumViscosity'),
+                    'nuMin': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/minimumViscosity'),
+                    'k': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/consistencyIndex'),
+                    'n': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/powerLawIndex')
+                }
+            }
+
+        density = self._db.getDensity([(mid, 1)], 0, 0)
+        viscosity = self._db.getViscosity([(mid, 1)], 0)
+        nu = viscosity / density
+
+        return {
+            'transportModel': 'Newtonian',
+            'nu': nu,
+            'rho': density
+        }

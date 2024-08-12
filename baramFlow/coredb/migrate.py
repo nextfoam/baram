@@ -628,6 +628,57 @@ def _version_6(root: etree.Element):
 def _version_7(root: etree.Element):
     logger.debug('  Upgrading to v8')
 
+    for p in root.findall('materials/material/viscosity', namespaces=_nsmap):
+        if p.find('../phase', namespaces=_nsmap).text == 'liquid':
+            if p.find('cross', namespaces=_nsmap) is None:
+                logger.debug(f'    Adding "cross" to {p}')
+
+                e = etree.fromstring(
+                    '<cross xmlns="http://www.baramcfd.org/baram">'
+                    '   <zeroShearViscosity>1e-01</zeroShearViscosity>'
+                    '   <infiniteShearViscosity>1.5e-05</infiniteShearViscosity>'
+                    '   <naturalTime>1</naturalTime>'
+                    '   <powerLawIndex>0.5</powerLawIndex>'
+                    '</cross>')
+                p.append(e)
+
+            if p.find('herschelBulkley', namespaces=_nsmap) is None:
+                logger.debug(f'    Adding "herschelBulkley" to {p}')
+
+                e = etree.fromstring(
+                    '<herschelBulkley xmlns="http://www.baramcfd.org/baram">'
+                    '   <zeroShearViscosity>1.5e-04</zeroShearViscosity>'
+                    '   <yieldStressThreshold>1.75e-05</yieldStressThreshold>'
+                    '   <consistencyIndex>8.9721e-3</consistencyIndex>'
+                    '   <powerLawIndex>0.8601</powerLawIndex>'
+                    '</herschelBulkley>')
+                p.append(e)
+
+            if p.find('carreau', namespaces=_nsmap) is None:
+                logger.debug(f'    Adding "carreau" to {p}')
+
+                e = etree.fromstring(
+                    '<carreau xmlns="http://www.baramcfd.org/baram">'
+                    '   <zeroShearViscosity>1e-01</zeroShearViscosity>'
+                    '   <infiniteShearViscosity>0</infiniteShearViscosity>'
+                    '   <relaxationTime>0.0084033613</relaxationTime>'
+                    '   <powerLawIndex>0.353</powerLawIndex>'
+                    '   <linearityDeviation>1.433</linearityDeviation>'
+                    '</carreau>')
+                p.append(e)
+
+            if p.find('nonNewtonianPowerLaw', namespaces=_nsmap) is None:
+                logger.debug(f'    Adding "nonNewtonianPowerLaw" to {p}')
+
+                e = etree.fromstring(
+                    '<nonNewtonianPowerLaw xmlns="http://www.baramcfd.org/baram">'
+                    '   <maximumViscosity>1e-03</maximumViscosity>'
+                    '   <minimumViscosity>1e-06</minimumViscosity>'
+                    '   <consistencyIndex>8.42</consistencyIndex>'
+                    '   <powerLawIndex>0.61</powerLawIndex>'
+                    '</nonNewtonianPowerLaw>')
+                p.append(e)
+
     for p in root.findall('models/userDefinedScalars/scalar', namespaces=_nsmap):
         e = p.find('diffusivity/specificationMethod', namespaces=_nsmap)
         if e.text == 'turbulentViscosity':

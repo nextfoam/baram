@@ -8,9 +8,10 @@ from PySide6.QtCore import QCoreApplication
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb import ValueException, DBError, _CoreDB
 from baramFlow.coredb.initialization_db import InitializationDB
-from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT, Phase
-from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
+from baramFlow.coredb.material_schema import Phase, ViscositySpecification
 from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModelsDB
 from baramFlow.libbaram.calculation import AverageCalculator
 
 _mutex = Lock()
@@ -54,7 +55,7 @@ class Region:
             mu = db.getViscosity(material, self._t)  # Viscosity
 
             nu = mu / self._rho  # Kinetic Viscosity
-            pr = float(db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'))
+            pr = float(db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'))
 
             self._nut = b * nu
 
@@ -210,24 +211,40 @@ class CoreDBReader(_CoreDB):
     def getViscosity(self, materials: list, t: float) -> float:
         def viscosity(mid_):
             xpath = MaterialDB.getXPath(mid_)
-            spec = self.getValue(xpath + '/viscosity/specification')
-            if spec == 'constant':
+            spec = ViscositySpecification(self.getValue(xpath + '/viscosity/specification'))
+            if spec == ViscositySpecification.CONSTANT:
                 return float(self.getValue(xpath + '/viscosity/constant'))
-            elif spec == 'polynomial':
+
+            if spec == ViscositySpecification.POLYNOMIAL:
                 coeffs = list(map(float, self.getValue(xpath + '/viscosity/polynomial').split()))
                 mu = 0.0
                 for exp, c in enumerate(coeffs):
                     mu += c * t ** exp
                 return mu
-            elif spec == 'sutherland':
+
+            if spec == ViscositySpecification.SUTHERLAND:
                 r'''
                 .. math:: \mu = \frac{C_1 T^{3/2}}{T+S}
                 '''
                 c1 = float(self.getValue(xpath + '/viscosity/sutherland/coefficient'))
                 s = float(self.getValue(xpath + '/viscosity/sutherland/temperature'))
+
                 return c1 * t ** 1.5 / (t+s)
-            else:
-                raise KeyError
+
+            rho = float(self.getValue(xpath + '/density/constant'))
+            if spec == ViscositySpecification.CROSS_POWER_LAW:
+                return rho * float(self.getValue(xpath + '/viscosity/cross/zeroShearViscosity'))
+
+            if spec == ViscositySpecification.HERSCHEL_BULKLEY:
+                return rho * float(self.getValue(xpath + '/viscosity/herschelBulkley/zeroShearViscosity'))
+
+            if spec == ViscositySpecification.BIRD_CARREAU:
+                return rho * float(self.getValue(xpath + '/viscosity/carreau/zeroShearViscosity'))
+
+            if spec == ViscositySpecification.POWER_LAW:
+                return rho * float(self.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/consistencyIndex'))
+
+            raise KeyError
 
         calculator = AverageCalculator()
         for mid, rate in materials:

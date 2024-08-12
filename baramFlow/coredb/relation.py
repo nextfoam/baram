@@ -2,13 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from baramFlow.coredb import region_db, scalar_model_db, boundary_db, cell_zone_db, initialization_db, monitor_db
+from baramFlow.coredb import material_db
 
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.specie_model_db import SpecieModelDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModelsDB
 
 
 def registerObservers():
+    TurbulenceModelsDB.registerModelObserver(material_db.TurbulenceModelObserver())
+
     SpecieModelDB.registerObserver(region_db.SpecieModelObserver())
 
     MaterialDB.registerObserver(boundary_db.MaterialObserver())

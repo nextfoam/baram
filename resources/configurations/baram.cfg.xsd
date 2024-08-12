@@ -373,6 +373,10 @@
                                     <xs:enumeration value="constant"/>
                                     <xs:enumeration value="polynomial"/>
                                     <xs:enumeration value="sutherland"/>
+                                    <xs:enumeration value="cross"/>
+                                    <xs:enumeration value="herschelBulkley"/>
+                                    <xs:enumeration value="carreau"/>
+                                    <xs:enumeration value="nonNewtonianPowerLaw"/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
@@ -383,6 +387,47 @@
                                 <xs:sequence>
                                     <xs:element name="coefficient" type="inputNumberType"/>
                                     <xs:element name="temperature" type="inputNumberType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="cross" minOccurs="0">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="zeroShearViscosity" type="inputNumberType" default="1e-01"/>
+                                    <xs:element name="infiniteShearViscosity" type="inputNumberType" default="1.5e-05"/>
+                                    <xs:element name="naturalTime" type="inputNumberType" default="1"/>
+                                    <xs:element name="powerLawIndex" type="inputNumberType" default="0.5"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="herschelBulkley" minOccurs="0">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="zeroShearViscosity" type="inputNumberType" default="1.5e-04"/>
+                                    <xs:element name="yieldStressThreshold" type="inputNumberType" default="1.75e-05"/>
+                                    <xs:element name="consistencyIndex" type="inputNumberType" default="8.9721e-3"/>
+                                    <xs:element name="powerLawIndex" type="inputNumberType" default="0.8601"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="carreau" minOccurs="0">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="zeroShearViscosity" type="inputNumberType" default="1e-01"/>
+                                    <xs:element name="infiniteShearViscosity" type="inputNumberType" default="0"/>
+                                    <xs:element name="relaxationTime" type="inputNumberType" default="0.0084033613"/>
+                                    <xs:element name="powerLawIndex" type="inputNumberType" default="0.353"/>
+                                    <xs:element name="linearityDeviation" type="inputNumberType" default="1.433"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="nonNewtonianPowerLaw" minOccurs="0">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="maximumViscosity" type="inputNumberType" default="1e-03"/>
+                                    <xs:element name="minimumViscosity" type="inputNumberType" default="1e-06"/>
+                                    <xs:element name="consistencyIndex" type="inputNumberType" default="0.42"/>
+                                    <xs:element name="powerLawIndex" type="inputNumberType" default="0.61"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>

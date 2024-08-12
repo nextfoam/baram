@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, InterfaceMode, WallTemperature
-from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModelsDB, TurbulenceModel
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -15,6 +15,9 @@ class Alphat(BoundaryCondition):
         self._initialValue = region.initialAlphat
 
     def build0(self):
+        if TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR:
+            return None
+
         if self._region.isFluid():
             self._data = {
                 'dimensions': self.DIMENSIONS,
@@ -61,14 +64,14 @@ class Alphat(BoundaryCondition):
     def _constructCompressibleAlphatWallFunction(self):
         return {
             'type': 'compressible::alphatWallFunction',
-            'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
+            'Prt': self._db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
             'value': self._initialValueByTime()
         }
 
     def _constructCompressibleAlphatJayatillekeWallFunction(self):
         return {
             'type': 'compressible::alphatJayatillekeWallFunction',
-            'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
+            'Prt': self._db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/wallPrandtlNumber'),
             'value': self._initialValueByTime()
         }
 

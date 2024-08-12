@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, InterfaceMode
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, NearWallTreatment
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, KEpsilonModel, NearWallTreatment, TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -13,10 +13,11 @@ class Nut(BoundaryCondition):
         super().__init__(region, time, processorNo, 'nut')
 
         self._initialValue = region.initialNut
-        self._model = ModelsDB.getTurbulenceModel()
+        self._model = TurbulenceModelsDB.getModel()
 
     def build0(self):
-        self._data = None
+        if self._model == TurbulenceModel.LAMINAR:
+            return None
 
         if self._region.isFluid():
             self._data = {
@@ -64,9 +65,9 @@ class Nut(BoundaryCondition):
     def _constructWallFunctionByModel(self):
         if self._model == TurbulenceModel.K_EPSILON:
             # Wall type should be "nutSpaldingWallFunction" for "realizableKEtwoLayer" model
-            subModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
+            subModel = self._db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
             if subModel == KEpsilonModel.REALIZABLE.value:
-                treatment = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
+                treatment = self._db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
                 if treatment == NearWallTreatment.ENHANCED_WALL_TREATMENT.value:
                     return self._constructNEXTNutSpaldingWallFunction()
 

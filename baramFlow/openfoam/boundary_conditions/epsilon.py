@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, KEpsilonSpecification, WallVelocityCondition, InterfaceMode
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, NearWallTreatment
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
+from baramFlow.coredb.boundary_db import KEpsilonSpecification, WallVelocityCondition, InterfaceMode
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, KEpsilonModel, NearWallTreatment, TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -17,7 +18,7 @@ class Epsilon(BoundaryCondition):
     def build0(self):
         self._data = None
 
-        if ModelsDB.getTurbulenceModel() == TurbulenceModel.K_EPSILON and self._region.isFluid():
+        if TurbulenceModelsDB.getModel() == TurbulenceModel.K_EPSILON and self._region.isFluid():
             self._data = {
                 'dimensions': self.DIMENSIONS,
                 'internalField': ('uniform', self._initialValue),
@@ -87,11 +88,12 @@ class Epsilon(BoundaryCondition):
         }
 
         # Wall type should be "epsilonBlendedWallFunction" for "realizableKEtwoLayer" model
-        turbulenceModel = ModelsDB.getTurbulenceModel()
+        turbulenceModel = TurbulenceModelsDB.getModel()
         if turbulenceModel == TurbulenceModel.K_EPSILON:
-            subModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
+            subModel = self._db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
             if subModel == KEpsilonModel.REALIZABLE.value:
-                treatment = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
+                treatment = self._db.getValue(
+                    TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
                 if treatment == NearWallTreatment.ENHANCED_WALL_TREATMENT.value:
                     data['type'] = 'epsilonBlendedWallFunction'
 

@@ -7,7 +7,8 @@ from PySide6.QtCore import Signal
 from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
-from baramFlow.coredb.material_db import MaterialDB, Phase
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import Phase
 from .cavitation_widget import CavitationWidget
 from .materials_widget_ui import Ui_MaterialsWidget
 from .material_selector_dialog import MaterialSectorDialog

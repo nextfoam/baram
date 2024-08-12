@@ -11,7 +11,7 @@ from widgets.async_message_box import AsyncMessageBox
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.general_db import GeneralDB, SolverType
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.widgets.content_page import ContentPage
 from .general_page_ui import Ui_GeneralPage
@@ -62,8 +62,8 @@ class GeneralPage(ContentPage):
                     if confirm == QMessageBox.StandardButton.Yes:
                         FileSystem.latestTimeToZero()
             else:
-                if ModelsDB.getTurbulenceModel() == TurbulenceModel.LES \
-                        or ModelsDB.getTurbulenceModel() == TurbulenceModel.DES:
+                turbulenceModel = TurbulenceModelsDB.getModel()
+                if turbulenceModel == TurbulenceModel.LES or turbulenceModel == TurbulenceModel.DES:
                     await AsyncMessageBox().information(self, self.tr('Configurations Not Available'),
                                                         self.tr('Steady mode is not available on LES/DES models.'))
 

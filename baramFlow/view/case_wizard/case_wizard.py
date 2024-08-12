@@ -4,7 +4,8 @@
 from PySide6.QtWidgets import QWizard
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.material_db import MaterialDB, Specification
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import Specification
 from baramFlow.coredb.models_db import MultiphaseModel
 from baramFlow.coredb.numerical_db import NumericalDB
 from .case_wizard_ui import Ui_CaseWizard
@@ -37,7 +38,7 @@ class CaseWizard(QWizard):
         self._ui = Ui_CaseWizard()
         self._ui.setupUi(self)
 
-        MaterialDB.addMaterial(self._db, 'air')
+        MaterialDB.addNonMixture(self._db, 'air')
         self.setPage(WORKSPACE, WorkspacePage(self, path))
         self.setPage(FLOW_TYPE, FlowTypePage(self))
         self.setPage(SOLVER_TYPE, SolverTypePage(self))

@@ -5,7 +5,8 @@ from PySide6.QtWidgets import QGroupBox, QFormLayout, QLineEdit
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import boolToDBText
-from baramFlow.coredb.material_db import MaterialDB, MaterialType
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import MaterialType
 from widgets.async_message_box import AsyncMessageBox
 
 

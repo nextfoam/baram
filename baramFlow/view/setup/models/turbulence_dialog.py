@@ -2,14 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from PySide6.QtWidgets import QMessageBox
+
+from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_writer import CoreDBWriter
+from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, RANSModel, ShieldingFunctions
-from baramFlow.coredb.models_db import TurbulenceRasModels, KEpsilonModel, NearWallTreatment, KOmegaModel
-from baramFlow.coredb.models_db import SubgridScaleModel, LengthScaleModel
+from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, RANSModel, ShieldingFunctions
+from baramFlow.coredb.turbulence_model_db import TurbulenceRasModels, KEpsilonModel, NearWallTreatment, KOmegaModel
+from baramFlow.coredb.turbulence_model_db import SubgridScaleModel, LengthScaleModel, TurbulenceModelsDB
 from baramFlow.view.widgets.enum_button_group import EnumButtonGroup
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .turbulence_dialog_ui import Ui_TurbulenceDialog
@@ -34,7 +37,7 @@ class TurbulenceModelDialog(ResizableDialog):
         self._LESLengthScaleModelRadios = EnumButtonGroup()
 
         self._db = coredb.CoreDB()
-        self._xpath = ModelsDB.TURBULENCE_MODELS_XPATH
+        self._xpath = TurbulenceModelsDB.TURBULENCE_MODELS_XPATH
 
         self._modelRadios.addEnumButton(self._ui.inviscid,        TurbulenceModel.INVISCID)
         self._modelRadios.addEnumButton(self._ui.laminar,         TurbulenceModel.LAMINAR)
@@ -91,80 +94,80 @@ class TurbulenceModelDialog(ResizableDialog):
 
     @qasync.asyncSlot()
     async def _accept(self):
-        writer = CoreDBWriter()
+        try:
+            with coredb.CoreDB() as db:
+                model = self._modelRadios.checkedData()
+                TurbulenceModelsDB.updateModel(db, model)
 
-        model = self._modelRadios.checkedData()
-        writer.append(self._xpath + '/model', model.value, None)
+                if model in TurbulenceRasModels:
+                    if model == TurbulenceModel.K_EPSILON:
+                        kEpsilonModel = self._kEpsilonModelRadios.checkedData()
+                        db.setValue(self._xpath + '/k-epsilon/model', kEpsilonModel.value)
 
-        if model in TurbulenceRasModels:
-            if model == TurbulenceModel.K_EPSILON:
-                kEpsilonModel = self._kEpsilonModelRadios.checkedData()
-                writer.append(self._xpath + '/k-epsilon/model', kEpsilonModel.value, None)
+                        if kEpsilonModel == KEpsilonModel.REALIZABLE:
+                            nearWallTreatment = self._nearWallTreatmentRadios.checkedData()
+                            db.setValue(self._xpath + '/k-epsilon/realizable/nearWallTreatment',
+                                          nearWallTreatment.value, self.tr('Near-wall Treatment'))
+                            if nearWallTreatment == NearWallTreatment.ENHANCED_WALL_TREATMENT:
+                                db.setValue(self._xpath + '/k-epsilon/realizable/threshold',
+                                              self._ui.threshold.text(), self.tr('Reynolds Threshold'))
+                                db.setValue(self._xpath + '/k-epsilon/realizable/blendingWidth',
+                                              self._ui.blendingWidth.text(), self.tr('Reynolds Blending Width'))
+                    elif model == TurbulenceModel.K_OMEGA:
+                        db.setValue(self._xpath + '/k-omega/model', KOmegaModel.SST.value, None)
 
-                if kEpsilonModel == KEpsilonModel.REALIZABLE:
-                    nearWallTreatment = self._nearWallTreatmentRadios.checkedData()
-                    writer.append(self._xpath + '/k-epsilon/realizable/nearWallTreatment',
-                                  nearWallTreatment.value, self.tr('Near-wall Treatment'))
-                    if nearWallTreatment == NearWallTreatment.ENHANCED_WALL_TREATMENT:
-                        writer.append(self._xpath + '/k-epsilon/realizable/threshold',
-                                      self._ui.threshold.text(), self.tr('Reynolds Threshold'))
-                        writer.append(self._xpath + '/k-epsilon/realizable/blendingWidth',
-                                      self._ui.blendingWidth.text(), self.tr('Reynolds Blending Width'))
-            elif model == TurbulenceModel.K_OMEGA:
-                writer.append(self._xpath + '/k-omega/model', KOmegaModel.SST.value, None)
+                    db.setValue(self._xpath + '/energyPrandtlNumber',
+                                  self._ui.energyPrandtlNumber.text(), self.tr('Energy PrandtlNumber'))
+                    db.setValue(self._xpath + '/wallPrandtlNumber',
+                                  self._ui.wallPrandtlNumber.text(), self.tr('Wall PrandtlNumber'))
+                elif model == TurbulenceModel.DES:
+                    ransModel = self._RANSModelRadios.checkedData()
+                    db.setValue(self._xpath + '/des/RANSModel', ransModel.value, None)
+                    if ransModel == RANSModel.SPALART_ALLMARAS:
+                        db.setValue(self._xpath + '/des/spalartAllmarasOptions/lowReDamping',
+                                      'true' if self._ui.lowReDamping.isChecked() else 'false', None)
+                        db.setValue(self._xpath + '/des/modelConstants/DES', self._ui.cDES.text(),
+                                      self.tr('DES Model Constants'))
+                    elif ransModel == RANSModel.K_OMEGA_SST:
+                        db.setValue(self._xpath + '/des/modelConstants/DESKOmega', self._ui.cDESKOmega.text(),
+                                      self.tr('k-omega DES Model Constants'))
+                        db.setValue(self._xpath + '/des/modelConstants/DESKEpsilon', self._ui.cDESKEpsilon.text(),
+                                      self.tr('k-epsilon DES Model Constants'))
 
-            writer.append(self._xpath + '/energyPrandtlNumber',
-                          self._ui.energyPrandtlNumber.text(), self.tr('Energy PrandtlNumber'))
-            writer.append(self._xpath + '/wallPrandtlNumber',
-                          self._ui.wallPrandtlNumber.text(), self.tr('Wall PrandtlNumber'))
-        elif model == TurbulenceModel.DES:
-            ransModel = self._RANSModelRadios.checkedData()
-            writer.append(self._xpath + '/des/RANSModel', ransModel.value, None)
-            if ransModel == RANSModel.SPALART_ALLMARAS:
-                writer.append(self._xpath + '/des/spalartAllmarasOptions/lowReDamping',
-                              'true' if self._ui.lowReDamping.isChecked() else 'false', None)
-                writer.append(self._xpath + '/des/modelConstants/DES', self._ui.cDES.text(),
-                              self.tr('DES Model Constants'))
-            elif ransModel == RANSModel.K_OMEGA_SST:
-                writer.append(self._xpath + '/des/modelConstants/DESKOmega', self._ui.cDESKOmega.text(),
-                              self.tr('k-omega DES Model Constants'))
-                writer.append(self._xpath + '/des/modelConstants/DESKEpsilon', self._ui.cDESKEpsilon.text(),
-                              self.tr('k-epsilon DES Model Constants'))
+                    delayedDES = self._ui.delayedDES.isChecked()
+                    db.setValue(self._xpath + '/des/DESOptions/delayedDES', 'true' if delayedDES else 'false', None)
+                    shieldingFunctions = None
+                    if delayedDES:
+                        shieldingFunctions = self._shieldingFunctionsRadios.checkedData()
+                        db.setValue(self._xpath + '/des/shieldingFunctions',
+                                      shieldingFunctions.value, None)
+                    if shieldingFunctions != ShieldingFunctions.IDDES:
+                        db.setValue(self._xpath + '/des/lengthScaleModel',
+                                      self._DESLengthScaleModelRadios.checkedData().value, None)
+                elif model == TurbulenceModel.LES:
+                    subgridScaleModel = self._subgridScaleModelRadios.checkedData()
+                    db.setValue(self._xpath + '/les/subgridScaleModel', subgridScaleModel.value, None)
+                    db.setValue(self._xpath + '/les/lengthScaleModel',
+                                  self._LESLengthScaleModelRadios.checkedData().value, None)
 
-            delayedDES = self._ui.delayedDES.isChecked()
-            writer.append(self._xpath + '/des/DESOptions/delayedDES', 'true' if delayedDES else 'false', None)
-            shieldingFunctions = None
-            if delayedDES:
-                shieldingFunctions = self._shieldingFunctionsRadios.checkedData()
-                writer.append(self._xpath + '/des/shieldingFunctions',
-                              shieldingFunctions.value, None)
-            if shieldingFunctions != ShieldingFunctions.IDDES:
-                writer.append(self._xpath + '/des/lengthScaleModel',
-                              self._DESLengthScaleModelRadios.checkedData().value, None)
-        elif model == TurbulenceModel.LES:
-            subgridScaleModel = self._subgridScaleModelRadios.checkedData()
-            writer.append(self._xpath + '/les/subgridScaleModel', subgridScaleModel.value, None)
-            writer.append(self._xpath + '/les/lengthScaleModel',
-                          self._LESLengthScaleModelRadios.checkedData().value, None)
+                    if subgridScaleModel == SubgridScaleModel.DYNAMIC_KEQN:
+                        db.setValue(self._xpath + '/les/modelConstants/k', self._ui.ck.text(),
+                                      self.tr('LES Model Constants k'))
+                        db.setValue(self._xpath + '/les/modelConstants/e', self._ui.ce.text(),
+                                      self.tr('LES Model Constants e'))
+                    elif subgridScaleModel == SubgridScaleModel.WALE:
+                        db.setValue(self._xpath + '/les/modelConstants/w', self._ui.cw.text(),
+                                      self.tr('LES Model Constants w'))
 
-            if subgridScaleModel == SubgridScaleModel.DYNAMIC_KEQN:
-                writer.append(self._xpath + '/les/modelConstants/k', self._ui.ck.text(),
-                              self.tr('LES Model Constants k'))
-                writer.append(self._xpath + '/les/modelConstants/e', self._ui.ce.text(),
-                              self.tr('LES Model Constants e'))
-            elif subgridScaleModel == SubgridScaleModel.WALE:
-                writer.append(self._xpath + '/les/modelConstants/w', self._ui.cw.text(),
-                              self.tr('LES Model Constants w'))
+                if ModelsDB.isSpeciesModelOn():
+                    db.setValue(self._xpath + '/turbulentSchmidtNumber', self._ui.turbulentSchmidtNumber.text(),
+                                  self.tr('Turbulent Schmidt Number'))
 
-        if ModelsDB.isSpeciesModelOn():
-            writer.append(self._xpath + '/turbulentSchmidtNumber', self._ui.turbulentSchmidtNumber.text(),
-                          self.tr('Turbulent Schmidt Number'))
-
-        errorCount = writer.write()
-        if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            super().accept()
+                super().accept()
+        except ConfigurationException as ex:
+            await AsyncMessageBox().information(self, self.tr('Model Change Failed'), str(ex))
+        except ValueException as ve:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
 
     def _load(self):
         self._modelRadios.setCheckedData(TurbulenceModel(self._db.getValue(self._xpath + '/model')))

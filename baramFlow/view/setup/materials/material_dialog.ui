@@ -61,7 +61,7 @@
          <item row="0" column="1">
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
-            <widget class="QComboBox" name="densityType">
+            <widget class="EnumComboBox" name="densityType">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -173,7 +173,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QComboBox" name="specificHeatType">
+          <widget class="EnumComboBox" name="specificHeatType">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -240,7 +240,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QComboBox" name="viscosityType">
+          <widget class="EnumComboBox" name="viscosityType">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -333,7 +333,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QComboBox" name="thermalConductivityType">
+          <widget class="EnumComboBox" name="thermalConductivityType">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -458,6 +458,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>EnumComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widgets.enum_combo_box</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>name</tabstop>
   <tabstop>densityType</tabstop>

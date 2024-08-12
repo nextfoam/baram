@@ -6,9 +6,11 @@ from enum import Enum
 from PySide6.QtCore import QCoreApplication, QObject, Signal
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
-from baramFlow.coredb.material_db import MaterialDB, Phase, MaterialType, IMaterialObserver
+from baramFlow.coredb.material_db import MaterialDB, IMaterialObserver
+from baramFlow.coredb.material_schema import Phase, MaterialType
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.openfoam.solver import usePrgh
 
 
@@ -181,7 +183,7 @@ class FieldHelper:
         _appendField(Field.Z_VELOCITY)
 
         # Fields depending on the turbulence model
-        turbulenceModel = ModelsDB.getTurbulenceModel()
+        turbulenceModel = TurbulenceModelsDB.getModel()
         if turbulenceModel == TurbulenceModel.K_EPSILON:
             _appendField(Field.TURBULENT_KINETIC_ENERGY)
             _appendField(Field.TURBULENT_DISSIPATION_RATE)
