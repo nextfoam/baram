@@ -196,6 +196,8 @@ class TransportProperties(DictionaryFile):
 
     def _buildMaterial(self, mid):
         xpath = MaterialDB.getXPath(mid)
+
+        density = self._db.getDensity([(mid, 1)], 0, 0)
         viscositySpecification = ViscositySpecification(self._db.getValue(xpath + '/viscosity/specification'))
 
         if viscositySpecification == ViscositySpecification.CROSS_POWER_LAW:
@@ -206,8 +208,8 @@ class TransportProperties(DictionaryFile):
                     'nuInf': self._db.getValue(xpath + '/viscosity/cross/infiniteShearViscosity'),
                     'm': self._db.getValue(xpath + '/viscosity/cross/naturalTime'),
                     'n': self._db.getValue(xpath + '/viscosity/cross/powerLawIndex')
-                    # 'a': self._db.getValue(xpath + '/viscosity/cross/')
-                }
+                },
+                'rho': density
             }
 
         if viscositySpecification == ViscositySpecification.HERSCHEL_BULKLEY:
@@ -218,7 +220,8 @@ class TransportProperties(DictionaryFile):
                     'tau0': self._db.getValue(xpath + '/viscosity/herschelBulkley/yieldStressThreshold'),
                     'k': self._db.getValue(xpath + '/viscosity/herschelBulkley/consistencyIndex'),
                     'n': self._db.getValue(xpath + '/viscosity/herschelBulkley/powerLawIndex')
-                }
+                },
+                'rho': density
             }
 
         if viscositySpecification == ViscositySpecification.BIRD_CARREAU:
@@ -230,7 +233,8 @@ class TransportProperties(DictionaryFile):
                     'k': self._db.getValue(xpath + '/viscosity/carreau/relaxationTime'),
                     'n': self._db.getValue(xpath + '/viscosity/carreau/powerLawIndex'),
                     'a': self._db.getValue(xpath + '/viscosity/carreau/linearityDeviation')
-                }
+                },
+                'rho': density
             }
 
         if viscositySpecification == ViscositySpecification.POWER_LAW:
@@ -241,10 +245,10 @@ class TransportProperties(DictionaryFile):
                     'nuMin': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/minimumViscosity'),
                     'k': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/consistencyIndex'),
                     'n': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/powerLawIndex')
-                }
+                },
+                'rho': density
             }
 
-        density = self._db.getDensity([(mid, 1)], 0, 0)
         viscosity = self._db.getViscosity([(mid, 1)], 0)
         nu = viscosity / density
 
