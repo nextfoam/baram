@@ -67,7 +67,7 @@ class Epsilon(BoundaryCondition):
             return self._constructInletOutlet(
                 self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
         elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-            return self._constructNEXTViscosityRatioInletOutletTDR(
+            return self._constructViscosityRatioInletOutletTDR(
                 self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'))
 
     def _constructAtmBoundaryLayerInletEpsilon(self):
@@ -122,12 +122,12 @@ class Epsilon(BoundaryCondition):
 
     def _constructFreeStreamEpsilon(self, xpath):
         spec = self._db.getValue(xpath + '/turbulence/k-epsilon/specification')
-        epsilon = None
         if spec == KEpsilonSpecification.K_AND_EPSILON.value:
-            epsilon = float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
+            return self._constructFreeStream(
+                float(self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate')))
         elif spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-            _, epsilon = self._calculateFreeStreamKE(xpath, self._region)
-        return self._constructFreeStream(epsilon)
+            return self._constructViscosityRatioInletOutletTDR(
+                self._db.getValue(xpath + '/turbulence/k-epsilon/turbulentViscosityRatio'))
 
     def _constructInterfaceEpsilon(self, xpath):
         spec = self._db.getValue(xpath + '/interface/mode')
