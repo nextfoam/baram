@@ -162,8 +162,8 @@ schema = {
         'refinementVolumes': IntKeyList(volumeRefinement),
     },
     'snap': {
-        'nSmoothPatch': IntType().setDefault(3),
-        'nSmoothInternal': IntType().setDefault(3),
+        'nSmoothPatch': IntType().setDefault(0),
+        'nSmoothInternal': IntType().setDefault(0),
         'nSolveIter': IntType().setDefault(30),
         'nRelaxIter': IntType().setDefault(5),
         'nFeatureSnapIter': IntType().setDefault(15),
