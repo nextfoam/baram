@@ -2388,8 +2388,9 @@
                       <item>
                        <widget class="QCheckBox" name="rendering">
                         <property name="styleSheet">
-                         <string notr="true">QCheckBox::indicator:unchecked { image: url(:/images/toggle_off) }
-QCheckBox::indicator:checked { image: url(:/images/toggle_on) }</string>
+                         <string notr="true">QCheckBox::indicator { width: 32px; height: 32px;}
+QCheckBox::indicator:unchecked { image: url(:/images/toggle_off); padding: 0; }
+QCheckBox::indicator:checked { image: url(:/images/toggle_on); padding: 0; }</string>
                         </property>
                         <property name="text">
                          <string/>
@@ -3618,11 +3619,11 @@ QCheckBox::indicator:checked { image: url(:/images/toggle_on) }</string>
  </resources>
  <connections/>
  <buttongroups>
+  <buttongroup name="stepButtons"/>
   <buttongroup name="clipHandles">
    <property name="exclusive">
     <bool>false</bool>
    </property>
   </buttongroup>
-  <buttongroup name="stepButtons"/>
  </buttongroups>
 </ui>
