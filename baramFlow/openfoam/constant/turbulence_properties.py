@@ -64,7 +64,8 @@ class TurbulenceProperties(DictionaryFile):
         viscositySpecification = ViscositySpecification(self._db.getValue(xpath + '/viscosity/specification'))
         if viscositySpecification == ViscositySpecification.CROSS_POWER_LAW:
             self._data['laminar'] = {
-                'transportModel': 'CrossPowerLaw',
+                'model' : 'generalizedNewtonian',
+                'viscosityModel': 'CrossPowerLaw',
                 'CrossPowerLawCoeffs': {
                     'nu0': self._db.getValue(xpath + '/viscosity/cross/zeroShearViscosity'),
                     'nuInf': self._db.getValue(xpath + '/viscosity/cross/infiniteShearViscosity'),
@@ -75,7 +76,8 @@ class TurbulenceProperties(DictionaryFile):
             }
         elif viscositySpecification == ViscositySpecification.HERSCHEL_BULKLEY:
             self._data['laminar'] = {
-                'transportModel': 'HerschelBulkley',
+                'model' : 'generalizedNewtonian',
+                'viscosityModel': 'HerschelBulkley',
                 'HerschelBulkleyCoeffs': {
                     'nu0': self._db.getValue(xpath + '/viscosity/herschelBulkley/zeroShearViscosity'),
                     'tau0': self._db.getValue(xpath + '/viscosity/herschelBulkley/yieldStressThreshold'),
@@ -85,7 +87,8 @@ class TurbulenceProperties(DictionaryFile):
             }
         elif viscositySpecification == ViscositySpecification.BIRD_CARREAU:
             self._data['laminar'] = {
-                'transportModel': 'BirdCarreau',
+                'model' : 'generalizedNewtonian',
+                'viscosityModel': 'BirdCarreau',
                 'BirdCarreauCoeffs': {
                     'nu0': self._db.getValue(xpath + '/viscosity/carreau/zeroShearViscosity'),
                     'nuInf': self._db.getValue(xpath + '/viscosity/carreau/infiniteShearViscosity'),
@@ -96,7 +99,8 @@ class TurbulenceProperties(DictionaryFile):
             }
         elif viscositySpecification == ViscositySpecification.POWER_LAW:
             self._data['laminar'] = {
-                'transportModel': 'powerLaw',
+                'model' : 'generalizedNewtonian',
+                'viscosityModel': 'powerLaw',
                 'powerLawCoeffs': {
                     'nuMax': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/maximumViscosityLimit'),
                     'nuMin': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/minimumViscosityLimit'),

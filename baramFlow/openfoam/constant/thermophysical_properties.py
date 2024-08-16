@@ -199,25 +199,25 @@ def _mixtureTransport(tModel, viscositySpec, db, path):
     if viscositySpec == ViscositySpecification.CROSS_POWER_LAW:
         return {
             'mu': rho * float(db.getValue(path + '/viscosity/cross/zeroShearViscosity')),
-            'Pr': 0
+            'Pr': 0.7
         }
 
     if viscositySpec == ViscositySpecification.HERSCHEL_BULKLEY:
         return {
             'mu': rho * float(db.getValue(path + '/viscosity/herschelBulkley/zeroShearViscosity')),
-            'Pr': 0
+            'Pr': 0.7
         }
 
     if viscositySpec == ViscositySpecification.BIRD_CARREAU:
         return {
             'mu': rho * float(db.getValue(path + '/viscosity/carreau/zeroShearViscosity')),
-            'Pr': 0
+            'Pr': 0.7
         }
 
     if viscositySpec == ViscositySpecification.POWER_LAW:
         return {
             'mu': rho * float(db.getValue(path + '/viscosity/nonNewtonianPowerLaw/consistencyIndex')),
-            'Pr': 0
+            'Pr': 0.7
         }
 
 
