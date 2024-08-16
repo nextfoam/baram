@@ -106,7 +106,16 @@ class RenderingWidget(QWidget):
         self._widget.Render()
 
     def fitCamera(self):
+        cubeAxesOn = False
+        if self._cubeAxesActor is not None:
+            self._hideCubeAxes()
+            cubeAxesOn = True
+
         self._renderer.ResetCamera()
+
+        if cubeAxesOn:
+            self._showCubeAxes()
+
         self._widget.Render()
 
     def close(self):
@@ -149,9 +158,6 @@ class RenderingWidget(QWidget):
 
         self._turnCamera(orientation, up)
         self._widget.Render()
-
-    def _fitCameraClicked(self):
-        self.fitCamera()
 
     def rollCamera(self):
         self._renderer.GetActiveCamera().Roll(-90)
