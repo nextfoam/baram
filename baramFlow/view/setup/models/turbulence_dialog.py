@@ -36,8 +36,7 @@ class TurbulenceModelDialog(ResizableDialog):
         self._subgridScaleModelRadios = EnumButtonGroup()
         self._LESLengthScaleModelRadios = EnumButtonGroup()
 
-        self._db = coredb.CoreDB()
-        self._xpath = ModelsDB.TURBULENCE_MODELS_XPATH
+        self._xpath = TurbulenceModelsDB.TURBULENCE_MODELS_XPATH
 
         self._modelRadios.addEnumButton(self._ui.inviscid,        TurbulenceModel.INVISCID)
         self._modelRadios.addEnumButton(self._ui.laminar,         TurbulenceModel.LAMINAR)
@@ -107,32 +106,32 @@ class TurbulenceModelDialog(ResizableDialog):
                         if kEpsilonModel == KEpsilonModel.REALIZABLE:
                             nearWallTreatment = self._nearWallTreatmentRadios.checkedData()
                             db.setValue(self._xpath + '/k-epsilon/realizable/nearWallTreatment',
-                                          nearWallTreatment.value, self.tr('Near-wall Treatment'))
+                                        nearWallTreatment.value, self.tr('Near-wall Treatment'))
                             if nearWallTreatment == NearWallTreatment.ENHANCED_WALL_TREATMENT:
                                 db.setValue(self._xpath + '/k-epsilon/realizable/threshold',
-                                              self._ui.threshold.text(), self.tr('Reynolds Threshold'))
+                                            self._ui.threshold.text(), self.tr('Reynolds Threshold'))
                                 db.setValue(self._xpath + '/k-epsilon/realizable/blendingWidth',
-                                              self._ui.blendingWidth.text(), self.tr('Reynolds Blending Width'))
+                                            self._ui.blendingWidth.text(), self.tr('Reynolds Blending Width'))
                     elif model == TurbulenceModel.K_OMEGA:
                         db.setValue(self._xpath + '/k-omega/model', KOmegaModel.SST.value, None)
 
                     db.setValue(self._xpath + '/energyPrandtlNumber',
-                                  self._ui.energyPrandtlNumber.text(), self.tr('Energy PrandtlNumber'))
+                                self._ui.energyPrandtlNumber.text(), self.tr('Energy PrandtlNumber'))
                     db.setValue(self._xpath + '/wallPrandtlNumber',
-                                  self._ui.wallPrandtlNumber.text(), self.tr('Wall PrandtlNumber'))
+                                self._ui.wallPrandtlNumber.text(), self.tr('Wall PrandtlNumber'))
                 elif model == TurbulenceModel.DES:
                     ransModel = self._RANSModelRadios.checkedData()
                     db.setValue(self._xpath + '/des/RANSModel', ransModel.value, None)
                     if ransModel == RANSModel.SPALART_ALLMARAS:
                         db.setValue(self._xpath + '/des/spalartAllmarasOptions/lowReDamping',
-                                      'true' if self._ui.lowReDamping.isChecked() else 'false', None)
+                                    'true' if self._ui.lowReDamping.isChecked() else 'false', None)
                         db.setValue(self._xpath + '/des/modelConstants/DES', self._ui.cDES.text(),
-                                      self.tr('DES Model Constants'))
+                                    self.tr('DES Model Constants'))
                     elif ransModel == RANSModel.K_OMEGA_SST:
                         db.setValue(self._xpath + '/des/modelConstants/DESKOmega', self._ui.cDESKOmega.text(),
-                                      self.tr('k-omega DES Model Constants'))
+                                    self.tr('k-omega DES Model Constants'))
                         db.setValue(self._xpath + '/des/modelConstants/DESKEpsilon', self._ui.cDESKEpsilon.text(),
-                                      self.tr('k-epsilon DES Model Constants'))
+                                    self.tr('k-epsilon DES Model Constants'))
 
                     delayedDES = self._ui.delayedDES.isChecked()
                     db.setValue(self._xpath + '/des/DESOptions/delayedDES', 'true' if delayedDES else 'false', None)
@@ -140,28 +139,28 @@ class TurbulenceModelDialog(ResizableDialog):
                     if delayedDES:
                         shieldingFunctions = self._shieldingFunctionsRadios.checkedData()
                         db.setValue(self._xpath + '/des/shieldingFunctions',
-                                      shieldingFunctions.value, None)
+                                    shieldingFunctions.value, None)
                     if shieldingFunctions != ShieldingFunctions.IDDES:
                         db.setValue(self._xpath + '/des/lengthScaleModel',
-                                      self._DESLengthScaleModelRadios.checkedData().value, None)
+                                    self._DESLengthScaleModelRadios.checkedData().value, None)
                 elif model == TurbulenceModel.LES:
                     subgridScaleModel = self._subgridScaleModelRadios.checkedData()
                     db.setValue(self._xpath + '/les/subgridScaleModel', subgridScaleModel.value, None)
                     db.setValue(self._xpath + '/les/lengthScaleModel',
-                                  self._LESLengthScaleModelRadios.checkedData().value, None)
+                                self._LESLengthScaleModelRadios.checkedData().value, None)
 
                     if subgridScaleModel == SubgridScaleModel.DYNAMIC_KEQN:
                         db.setValue(self._xpath + '/les/modelConstants/k', self._ui.ck.text(),
-                                      self.tr('LES Model Constants k'))
+                                    self.tr('LES Model Constants k'))
                         db.setValue(self._xpath + '/les/modelConstants/e', self._ui.ce.text(),
-                                      self.tr('LES Model Constants e'))
+                                    self.tr('LES Model Constants e'))
                     elif subgridScaleModel == SubgridScaleModel.WALE:
                         db.setValue(self._xpath + '/les/modelConstants/w', self._ui.cw.text(),
-                                      self.tr('LES Model Constants w'))
+                                    self.tr('LES Model Constants w'))
 
                 if ModelsDB.isSpeciesModelOn():
                     db.setValue(self._xpath + '/turbulentSchmidtNumber', self._ui.turbulentSchmidtNumber.text(),
-                                  self.tr('Turbulent Schmidt Number'))
+                                self.tr('Turbulent Schmidt Number'))
 
                 super().accept()
         except ConfigurationException as ex:
