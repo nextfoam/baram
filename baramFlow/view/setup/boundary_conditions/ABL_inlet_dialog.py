@@ -19,7 +19,6 @@ class ABLInletDialog(QDialog):
         self._ui = Ui_ABLInletDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.ABL_INLET_CONDITIONS_XPATH
 
         self._scalarsWidget = ConditionalWidgetHelper.userDefinedScalarsWidget(BoundaryDB.getBoundaryRegion(bcid),
@@ -62,16 +61,17 @@ class ABLInletDialog(QDialog):
             self.accept()
 
     def _load(self):
-        self._ui.flowDirectionXComponent.setText(self._db.getValue(self._xpath + '/flowDirection/x'))
-        self._ui.flowDirectionYComponent.setText(self._db.getValue(self._xpath + '/flowDirection/y'))
-        self._ui.flowDirectionZComponent.setText(self._db.getValue(self._xpath + '/flowDirection/z'))
-        self._ui.groundNormalDirectionXComponent.setText(self._db.getValue(self._xpath + '/groundNormalDirection/x'))
-        self._ui.groundNormalDirectionYComponent.setText(self._db.getValue(self._xpath + '/groundNormalDirection/y'))
-        self._ui.groundNormalDirectionZComponent.setText(self._db.getValue(self._xpath + '/groundNormalDirection/z'))
-        self._ui.referenceFlowSpeed.setText(self._db.getValue(self._xpath + '/referenceFlowSpeed'))
-        self._ui.referenceHeight.setText(self._db.getValue(self._xpath + '/referenceHeight'))
-        self._ui.surfaceRoughnessLength.setText(self._db.getValue(self._xpath + '/surfaceRoughnessLength'))
-        self._ui.minimumZCoordinate.setText(self._db.getValue(self._xpath + '/minimumZCoordinate'))
+        db = coredb.CoreDB()
+        self._ui.flowDirectionXComponent.setText(db.getValue(self._xpath + '/flowDirection/x'))
+        self._ui.flowDirectionYComponent.setText(db.getValue(self._xpath + '/flowDirection/y'))
+        self._ui.flowDirectionZComponent.setText(db.getValue(self._xpath + '/flowDirection/z'))
+        self._ui.groundNormalDirectionXComponent.setText(db.getValue(self._xpath + '/groundNormalDirection/x'))
+        self._ui.groundNormalDirectionYComponent.setText(db.getValue(self._xpath + '/groundNormalDirection/y'))
+        self._ui.groundNormalDirectionZComponent.setText(db.getValue(self._xpath + '/groundNormalDirection/z'))
+        self._ui.referenceFlowSpeed.setText(db.getValue(self._xpath + '/referenceFlowSpeed'))
+        self._ui.referenceHeight.setText(db.getValue(self._xpath + '/referenceHeight'))
+        self._ui.surfaceRoughnessLength.setText(db.getValue(self._xpath + '/surfaceRoughnessLength'))
+        self._ui.minimumZCoordinate.setText(db.getValue(self._xpath + '/minimumZCoordinate'))
         self._scalarsWidget.load(self._xpath + '/userDefinedScalars')
 
     def _connectSignalsSlots(self):

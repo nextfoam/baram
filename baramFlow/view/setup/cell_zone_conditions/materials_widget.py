@@ -95,10 +95,11 @@ class MaterialsWidget(QWidget):
         self._connectSignalsSlots()
 
     def load(self):
-        self._material = self._db.getValue(self._xpath + '/material')
+        db = coredb.CoreDB()
+        self._material = db.getValue(self._xpath + '/material')
 
         if ModelsDB.isMultiphaseModelOn():
-            surfaceTensions = self._db.getSurfaceTensions(self._rname)
+            surfaceTensions = db.getSurfaceTensions(self._rname)
             for mid1, mid2, value in surfaceTensions:
                 self._addSurfaceTensionToMap(mid1, mid2, value)
 
@@ -128,7 +129,7 @@ class MaterialsWidget(QWidget):
         self._ui.material.currentTextChanged.connect(self._materialChanged)
         self._ui.materialsSelect.clicked.connect(self._selectMaterials)
 
-    def _addMaterialToMap(self, mid: str):
+    def _addMaterialToMap(self, mid):
         name = MaterialDB.getName(mid)
         self._materialsMap[mid] = name
         return name

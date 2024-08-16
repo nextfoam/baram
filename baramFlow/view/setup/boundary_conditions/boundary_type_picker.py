@@ -28,7 +28,6 @@ class BoundaryTypePicker(QWidget):
         self._ui = Ui_BoundaryTypePicker()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._bcid = None
 
         self._types = {
@@ -63,7 +62,7 @@ class BoundaryTypePicker(QWidget):
         isEnergyOn = ModelsDB.isEnergyModelOn()
         isMultiphase = ModelsDB.isMultiphaseModelOn()
         isSpeciesOn = ModelsDB.isSpeciesModelOn()
-        isMultiRegion = len(self._db.getRegions()) > 1
+        isMultiRegion = len(coredb.CoreDB().getRegions()) > 1
 
         if isCompressible or isMultiphase or isSpeciesOn:
             self._ui.ABLInlet.hide()

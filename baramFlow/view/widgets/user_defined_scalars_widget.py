@@ -11,7 +11,6 @@ class UserDefinedScalarsWidget(QGroupBox):
     def __init__(self, rname):
         super().__init__()
 
-        self._db = coredb.CoreDB()
         self._rname = rname
 
         self._on = False
@@ -20,7 +19,8 @@ class UserDefinedScalarsWidget(QGroupBox):
 
         self.setTitle(self.tr('User-defined Scalars'))
 
-        if scalars := self._db.getUserDefinedScalarsInRegion(rname):
+        db = coredb.CoreDB()
+        if scalars := db.getUserDefinedScalarsInRegion(rname):
             self._on = True
             self._layout = QFormLayout(self)
             for scalarID, fieldName in scalars:
@@ -33,9 +33,10 @@ class UserDefinedScalarsWidget(QGroupBox):
 
     def load(self, xpath):
         if self._on:
+            db = coredb.CoreDB()
             for scalarID in self._scalars:
                 fieldName, editor = self._scalars[scalarID]
-                editor.setText(self._db.getValue(f'{xpath}/scalar[scalarID="{scalarID}"]/value'))
+                editor.setText(db.getValue(f'{xpath}/scalar[scalarID="{scalarID}"]/value'))
 
     def appendToWriter(self, writer: CoreDBWriter, xpath):
         if self._on:

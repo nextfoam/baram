@@ -15,7 +15,6 @@ class OperatingConditionsDialog(QDialog):
         self._ui = Ui_OperatingConditionsDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = GeneralDB.OPERATING_CONDITIONS_XPATH
         self._load()
 
@@ -36,7 +35,8 @@ class OperatingConditionsDialog(QDialog):
             super().accept()
 
     def _load(self):
-        self._ui.operationPressure.setText(self._db.getValue(self._xpath + '/pressure'))
-        self._ui.referencePressureLocationX.setText(self._db.getValue(self._xpath + '/referencePressureLocation/x'))
-        self._ui.referencePressureLocationY.setText(self._db.getValue(self._xpath + '/referencePressureLocation/y'))
-        self._ui.referencePressureLocationZ.setText(self._db.getValue(self._xpath + '/referencePressureLocation/z'))
+        db = coredb.CoreDB()
+        self._ui.operationPressure.setText(db.getValue(self._xpath + '/pressure'))
+        self._ui.referencePressureLocationX.setText(db.getValue(self._xpath + '/referencePressureLocation/x'))
+        self._ui.referencePressureLocationY.setText(db.getValue(self._xpath + '/referencePressureLocation/y'))
+        self._ui.referencePressureLocationZ.setText(db.getValue(self._xpath + '/referencePressureLocation/z'))

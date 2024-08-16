@@ -21,7 +21,6 @@ class MultiphaseModelDialog(ResizableDialog):
             self._ui.modelRadioGroup.id(self._ui.volumeOfFluid): MultiphaseModel.VOLUME_OF_FLUID.value,
         }
 
-        self._db = coredb.CoreDB()
         self._xpath = ModelsDB.MULTIPHASE_MODELS_XPATH
 
         self._ui.volumeOfFluid.hide()
@@ -32,7 +31,7 @@ class MultiphaseModelDialog(ResizableDialog):
             return super().showEvent(ev)
 
         self._getRadio(
-            self._ui.modelRadioGroup, self._modelRadios, self._db.getValue(self._xpath + '/model')
+            self._ui.modelRadioGroup, self._modelRadios, coredb.CoreDB().getValue(self._xpath + '/model')
         ).setChecked(True)
 
         return super().showEvent(ev)

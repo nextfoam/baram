@@ -94,15 +94,19 @@ class ExportPage(StepPage):
                 rc = await cm.wait()
                 if rc != 0:
                     raise ProcessError(rc)
-            if not fileSystem.timePathExists(self.OUTPUT_TIME, parallel.isParallelOn()):
+
+            else:  # Single Region. "4" folder was not created by "splitMeshRegions"
                 progressDialog.setLabelText(self.tr('Copying Files'))
+
+                lastMeshTime = self.OUTPUT_TIME - 1  # Boundary Layer step
+                if not fileSystem.hasPolyMesh(lastMeshTime, parallel.isParallelOn()):
+                    lastMeshTime = self.OUTPUT_TIME - 2  # Snap step
 
                 if parallel.isParallelOn():
                     for n in range(parallel.np()):
-                        if not await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME, n):
-                            await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME, n)
-                elif not await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME):
-                    await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME)
+                        await fileSystem.copyTimeDirectory(lastMeshTime, self.OUTPUT_TIME, n)
+                else:
+                    await fileSystem.copyTimeDirectory(lastMeshTime, self.OUTPUT_TIME)
 
             topoSetDict = TopoSetDict().build(TopoSetDict.Mode.CREATE_CELL_ZONES)
             regions = app.db.getElements('region')

@@ -14,7 +14,6 @@ class SpeciesWidget(QGroupBox):
     def __init__(self, mid, species=None, optional=False):
         super().__init__()
 
-        self._db = coredb.CoreDB()
         self._mid = mid
 
         self._on = False
@@ -45,14 +44,15 @@ class SpeciesWidget(QGroupBox):
 
     def load(self, speciesXPath):
         if self._on:
+            db = coredb.CoreDB()
             xpath = f'{speciesXPath}/mixture[mid="{self._mid}"]'
-            if self._db.exists(xpath):
+            if db.exists(xpath):
                 if self._optional:
-                    self.setChecked(self._db.getAttribute(xpath, 'disabled') == 'false')
+                    self.setChecked(db.getAttribute(xpath, 'disabled') == 'false')
 
                 for mid in self._species:
                     _, editor = self._species[mid]
-                    editor.setText(self._db.getValue(f'{xpath}/specie[mid="{mid}"]/value'))
+                    editor.setText(db.getValue(f'{xpath}/specie[mid="{mid}"]/value'))
             else:
                 self.setChecked(False)
                 for mid in self._species:

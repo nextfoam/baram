@@ -17,7 +17,6 @@ class VariableSourceWidget(QWidget):
         self._ui = Ui_VariableSourceWidget()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._title = title
         self._xpath = xpath
         self._piecewiseLinear = None
@@ -41,53 +40,55 @@ class VariableSourceWidget(QWidget):
         self._ui.groupBox.setChecked(checked)
 
     def load(self):
-        if self._db.exists(self._xpath):
-            self._ui.groupBox.setChecked(self._db.getAttribute(self._xpath, 'disabled') == 'false')
-            self._ui.specificationMethod.setCurrentData(SpecificationMethod(self._db.getValue(self._xpath + '/unit')))
+        db = coredb.CoreDB()
+        if db.exists(self._xpath):
+            self._ui.groupBox.setChecked(db.getAttribute(self._xpath, 'disabled') == 'false')
+            self._ui.specificationMethod.setCurrentData(SpecificationMethod(db.getValue(self._xpath + '/unit')))
 
             if GeneralDB.isTimeTransient():
                 self._ui.temporalProfileType.setCurrentData(
-                    TemporalProfileType(self._db.getValue(self._xpath + '/specification')))
+                    TemporalProfileType(db.getValue(self._xpath + '/specification')))
             else:
                 self._ui.temporalProfileType.setCurrentData(TemporalProfileType(TemporalProfileType.CONSTANT))
 
             self._ui.temporalProfileType.setCurrentData(
-                TemporalProfileType(self._db.getValue(self._xpath + '/specification')))
-            self._ui.constantValue.setText(self._db.getValue(self._xpath + '/constant'))
+                TemporalProfileType(db.getValue(self._xpath + '/specification')))
+            self._ui.constantValue.setText(db.getValue(self._xpath + '/constant'))
         else:
             self._ui.groupBox.setChecked(False)
             self._ui.specificationMethod.setCurrentData(SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE)
 
         self._ui.temporalProfileType.setEnabled(GeneralDB.isTimeTransient())
 
-    async def updateDB(self, db):
+    async def updateDB(self, newDB):
+        db = coredb.CoreDB()
         if self._ui.groupBox.isChecked():
-            db.setAttribute(self._xpath, 'disabled', 'false')
-            db.setValue(self._xpath + '/unit', self._ui.specificationMethod.currentValue(), None)
+            newDB.setAttribute(self._xpath, 'disabled', 'false')
+            newDB.setValue(self._xpath + '/unit', self._ui.specificationMethod.currentValue(), None)
             specification = self._ui.temporalProfileType.currentData()
-            db.setValue(self._xpath + '/specification', specification.value, None)
+            newDB.setValue(self._xpath + '/specification', specification.value, None)
             if specification == TemporalProfileType.CONSTANT:
-                db.setValue(self._xpath + '/constant', self._ui.constantValue.text(), self._title)
+                newDB.setValue(self._xpath + '/constant', self._ui.constantValue.text(), self._title)
             elif specification == TemporalProfileType.PIECEWISE_LINEAR:
                 if self._piecewiseLinear is not None:
-                    db.setValue(self._xpath + '/piecewiseLinear/t',
+                    newDB.setValue(self._xpath + '/piecewiseLinear/t',
                                  self._piecewiseLinear[0], self.tr(f'{self._title} Piecewise Linear'))
-                    db.setValue(self._xpath + '/piecewiseLinear/v',
+                    newDB.setValue(self._xpath + '/piecewiseLinear/v',
                                  self._piecewiseLinear[1], self.tr(f'{self._title} Piecewise Linear'))
-                elif not self._db.getValue(self._xpath + '/piecewiseLinear/t') == '':
+                elif not db.getValue(self._xpath + '/piecewiseLinear/t') == '':
                     await AsyncMessageBox().information(self, self.tr("Input Error"),
                                                         self.tr(f'Edit {self._title} Piecewise Linear Values.'))
                     return False
             elif specification == TemporalProfileType.POLYNOMIAL:
                 if self._polynomial is not None:
-                    db.setValue(self._xpath + '/polynomial',
+                    newDB.setValue(self._xpath + '/polynomial',
                                  self._polynomial, self.tr(f'{self._title} Polynomial'))
-                elif not self._db.getValue(self._xpath + '/polynomial'):
+                elif not db.getValue(self._xpath + '/polynomial'):
                     await AsyncMessageBox().information(self, self.tr("Input Error"),
                                                         self.tr(f'Edit {self._title} Polynomial Values.'))
                     return False
         else:
-            db.setAttribute(self._xpath, 'disabled', 'true')
+            newDB.setAttribute(self._xpath, 'disabled', 'true')
 
         return True
 
@@ -110,13 +111,14 @@ class VariableSourceWidget(QWidget):
         self._ui.constantValue.setEnabled(temporalProfileType == TemporalProfileType.CONSTANT)
 
     def _edit(self):
+        db = coredb.CoreDB()
         temporalProfileType = self._ui.temporalProfileType.currentData()
         if temporalProfileType == TemporalProfileType.PIECEWISE_LINEAR:
             if self._ui.groupBox.title() == "Energy":
                 if self._piecewiseLinear is None:
                     self._piecewiseLinear = [
-                        self._db.getValue(self._xpath + '/piecewiseLinear/t'),
-                        self._db.getValue(self._xpath + '/piecewiseLinear/v')
+                        db.getValue(self._xpath + '/piecewiseLinear/t'),
+                        db.getValue(self._xpath + '/piecewiseLinear/v')
                     ]
 
                 self._dialog = PiecewiseLinearDialog(self, self.tr("Piecewise Linear"),
@@ -126,8 +128,8 @@ class VariableSourceWidget(QWidget):
             else:
                 if self._piecewiseLinear is None:
                     self._piecewiseLinear = [
-                        self._db.getValue(self._xpath + '/piecewiseLinear/t'),
-                        self._db.getValue(self._xpath + '/piecewiseLinear/v')
+                        db.getValue(self._xpath + '/piecewiseLinear/t'),
+                        db.getValue(self._xpath + '/piecewiseLinear/v')
                     ]
 
                 self._dialog = PiecewiseLinearDialog(self, self.tr("Piecewise Linear"),
@@ -136,7 +138,7 @@ class VariableSourceWidget(QWidget):
                 self._dialog.open()
         elif temporalProfileType == TemporalProfileType.POLYNOMIAL:
             if self._polynomial is None:
-                self._polynomial = self._db.getValue(self._xpath + '/polynomial')
+                self._polynomial = db.getValue(self._xpath + '/polynomial')
 
             self._dialog = PolynomialDialog(self, self.tr("Polynomial"), self._polynomial)
             self._dialog.accepted.connect(self._polynomialAccepted)

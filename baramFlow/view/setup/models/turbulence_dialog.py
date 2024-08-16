@@ -37,7 +37,7 @@ class TurbulenceModelDialog(ResizableDialog):
         self._LESLengthScaleModelRadios = EnumButtonGroup()
 
         self._db = coredb.CoreDB()
-        self._xpath = TurbulenceModelsDB.TURBULENCE_MODELS_XPATH
+        self._xpath = ModelsDB.TURBULENCE_MODELS_XPATH
 
         self._modelRadios.addEnumButton(self._ui.inviscid,        TurbulenceModel.INVISCID)
         self._modelRadios.addEnumButton(self._ui.laminar,         TurbulenceModel.LAMINAR)
@@ -170,41 +170,43 @@ class TurbulenceModelDialog(ResizableDialog):
             await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
 
     def _load(self):
-        self._modelRadios.setCheckedData(TurbulenceModel(self._db.getValue(self._xpath + '/model')))
-        self._kEpsilonModelRadios.setCheckedData(KEpsilonModel(self._db.getValue(self._xpath + '/k-epsilon/model')))
-        self._nearWallTreatmentRadios.setCheckedData(
-            NearWallTreatment(self._db.getValue(self._xpath + '/k-epsilon/realizable/nearWallTreatment')))
+        db = coredb.CoreDB()
 
-        self._RANSModelRadios.setCheckedData(RANSModel(self._db.getValue(self._xpath + '/des/RANSModel')))
+        self._modelRadios.setCheckedData(TurbulenceModel(db.getValue(self._xpath + '/model')))
+        self._kEpsilonModelRadios.setCheckedData(KEpsilonModel(db.getValue(self._xpath + '/k-epsilon/model')))
+        self._nearWallTreatmentRadios.setCheckedData(
+            NearWallTreatment(db.getValue(self._xpath + '/k-epsilon/realizable/nearWallTreatment')))
+
+        self._RANSModelRadios.setCheckedData(RANSModel(db.getValue(self._xpath + '/des/RANSModel')))
         self._ui.lowReDamping.setChecked(
-            self._db.getValue(self._xpath + '/des/spalartAllmarasOptions/lowReDamping') == 'true')
-        self._ui.delayedDES.setChecked(self._db.getValue(self._xpath + '/des/DESOptions/delayedDES') == 'true')
+            db.getValue(self._xpath + '/des/spalartAllmarasOptions/lowReDamping') == 'true')
+        self._ui.delayedDES.setChecked(db.getValue(self._xpath + '/des/DESOptions/delayedDES') == 'true')
         self._shieldingFunctionsRadios.setCheckedData(
-            ShieldingFunctions(self._db.getValue(self._xpath + '/des/shieldingFunctions')))
+            ShieldingFunctions(db.getValue(self._xpath + '/des/shieldingFunctions')))
         self._DESLengthScaleModelRadios.setCheckedData(
-            LengthScaleModel(self._db.getValue(self._xpath + '/des/lengthScaleModel')))
+            LengthScaleModel(db.getValue(self._xpath + '/des/lengthScaleModel')))
 
         self._subgridScaleModelRadios.setCheckedData(
-            SubgridScaleModel(self._db.getValue(self._xpath + '/les/subgridScaleModel')))
+            SubgridScaleModel(db.getValue(self._xpath + '/les/subgridScaleModel')))
         self._LESLengthScaleModelRadios.setCheckedData(
-            LengthScaleModel(self._db.getValue(self._xpath + '/les/lengthScaleModel')))
+            LengthScaleModel(db.getValue(self._xpath + '/les/lengthScaleModel')))
 
-        self._ui.energyPrandtlNumber.setText(self._db.getValue(self._xpath + '/energyPrandtlNumber'))
-        self._ui.wallPrandtlNumber.setText(self._db.getValue(self._xpath + '/wallPrandtlNumber'))
+        self._ui.energyPrandtlNumber.setText(db.getValue(self._xpath + '/energyPrandtlNumber'))
+        self._ui.wallPrandtlNumber.setText(db.getValue(self._xpath + '/wallPrandtlNumber'))
 
-        self._ui.threshold.setText(self._db.getValue(self._xpath + '/k-epsilon/realizable/threshold'))
-        self._ui.blendingWidth.setText(self._db.getValue(self._xpath + '/k-epsilon/realizable/blendingWidth'))
+        self._ui.threshold.setText(db.getValue(self._xpath + '/k-epsilon/realizable/threshold'))
+        self._ui.blendingWidth.setText(db.getValue(self._xpath + '/k-epsilon/realizable/blendingWidth'))
 
-        self._ui.cDES.setText(self._db.getValue(self._xpath + '/des/modelConstants/DES'))
-        self._ui.cDESKEpsilon.setText(self._db.getValue(self._xpath + '/des/modelConstants/DESKEpsilon'))
-        self._ui.cDESKOmega.setText(self._db.getValue(self._xpath + '/des/modelConstants/DESKOmega'))
+        self._ui.cDES.setText(db.getValue(self._xpath + '/des/modelConstants/DES'))
+        self._ui.cDESKEpsilon.setText(db.getValue(self._xpath + '/des/modelConstants/DESKEpsilon'))
+        self._ui.cDESKOmega.setText(db.getValue(self._xpath + '/des/modelConstants/DESKOmega'))
 
-        self._ui.ck.setText(self._db.getValue(self._xpath + '/les/modelConstants/k'))
-        self._ui.ce.setText(self._db.getValue(self._xpath + '/les/modelConstants/e'))
-        self._ui.cw.setText(self._db.getValue(self._xpath + '/les/modelConstants/w'))
+        self._ui.ck.setText(db.getValue(self._xpath + '/les/modelConstants/k'))
+        self._ui.ce.setText(db.getValue(self._xpath + '/les/modelConstants/e'))
+        self._ui.cw.setText(db.getValue(self._xpath + '/les/modelConstants/w'))
 
         if ModelsDB.isSpeciesModelOn():
-            self._ui.turbulentSchmidtNumber.setText(self._db.getValue(self._xpath + '/turbulentSchmidtNumber'))
+            self._ui.turbulentSchmidtNumber.setText(db.getValue(self._xpath + '/turbulentSchmidtNumber'))
 
         self._delayedDESChanged()
 

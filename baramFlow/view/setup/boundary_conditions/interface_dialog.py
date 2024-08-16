@@ -23,7 +23,6 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
         self._ui = Ui_InterfaceDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
         self._region = BoundaryDB.getBoundaryRegion(bcid)
         self._coupledBoundary = None
@@ -70,21 +69,23 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
             self._ui.coupledBoundary.setText('')
 
     def _load(self):
+        db = coredb.CoreDB()
         path = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.mode.setCurrentData(InterfaceMode(self._db.getValue(path + '/mode')))
-        self._setCoupledBoundary(self._db.getValue(self._xpath + '/coupledBoundary'))
-        self._ui.rotationAxisX.setText(self._db.getValue(path + '/rotationAxisOrigin/x'))
-        self._ui.rotationAxisY.setText(self._db.getValue(path + '/rotationAxisOrigin/y'))
-        self._ui.rotationAxisZ.setText(self._db.getValue(path + '/rotationAxisOrigin/z'))
-        self._ui.rotationDirectionX.setText(self._db.getValue(path + '/rotationAxisDirection/x'))
-        self._ui.rotationDirectionY.setText(self._db.getValue(path + '/rotationAxisDirection/y'))
-        self._ui.rotationDirectionZ.setText(self._db.getValue(path + '/rotationAxisDirection/z'))
-        self._ui.translationVectorX.setText(self._db.getValue(path + '/translationVector/x'))
-        self._ui.translationVectorY.setText(self._db.getValue(path + '/translationVector/y'))
-        self._ui.translationVectorZ.setText(self._db.getValue(path + '/translationVector/z'))
+        self._ui.mode.setCurrentData(InterfaceMode(db.getValue(path + '/mode')))
+        self._setCoupledBoundary(db.getValue(self._xpath + '/coupledBoundary'))
+        self._ui.rotationAxisX.setText(db.getValue(path + '/rotationAxisOrigin/x'))
+        self._ui.rotationAxisY.setText(db.getValue(path + '/rotationAxisOrigin/y'))
+        self._ui.rotationAxisZ.setText(db.getValue(path + '/rotationAxisOrigin/z'))
+        self._ui.rotationDirectionX.setText(db.getValue(path + '/rotationAxisDirection/x'))
+        self._ui.rotationDirectionY.setText(db.getValue(path + '/rotationAxisDirection/y'))
+        self._ui.rotationDirectionZ.setText(db.getValue(path + '/rotationAxisDirection/z'))
+        self._ui.translationVectorX.setText(db.getValue(path + '/translationVector/x'))
+        self._ui.translationVectorY.setText(db.getValue(path + '/translationVector/y'))
+        self._ui.translationVectorZ.setText(db.getValue(path + '/translationVector/z'))
 
     def _setupModeCombo(self):
+        db = coredb.CoreDB()
         self._ui.mode.addEnumItems({
             InterfaceMode.INTERNAL_INTERFACE: self.tr('Internal Interface'),
             InterfaceMode.ROTATIONAL_PERIODIC: self.tr('Rotational Periodic'),
@@ -92,7 +93,7 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
         })
 
         if (not GeneralDB.isCompressible() and not ModelsDB.isMultiphaseModelOn() and ModelsDB.isSpeciesModelOn()
-                and len(self._db.getRegions()) > 1):
+                and len(db.getRegions()) > 1):
             self._ui.mode.addEnumItem(InterfaceMode.REGION_INTERFACE, self.tr('Region Interface'))
 
     def _selectCoupledBoundary(self):

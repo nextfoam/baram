@@ -86,8 +86,6 @@ class SectionDialog(ResizableDialog):
         self._cellZoneRadio = {}
         self._scalars = {}
 
-        self._db = coredb.CoreDB()
-
         self._pageType = None
         self._volumeFractionWidget = None
         self._scalarsWidget = None
@@ -100,7 +98,8 @@ class SectionDialog(ResizableDialog):
             self._volumeFractionWidget.setChecked(False)
             self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
 
-        if scalars := self._db.getUserDefinedScalarsInRegion(self._rname):
+        db = coredb.CoreDB()
+        if scalars := db.getUserDefinedScalarsInRegion(self._rname):
             self._scalarsWidget = UserDefinedScalarList(scalars)
             self._ui.initialValuesLayout.addWidget(self._scalarsWidget)
 
@@ -134,12 +133,13 @@ class SectionDialog(ResizableDialog):
                                             self.tr('Section name can only contain letters, numbers, and underscores'))
             return
 
+        db = coredb.CoreDB()
         self._sectionName = self._ui.sectionNameInput.text()
 
         # Check if the name already exists
         sectionPath = InitializationDB.getSectionXPath(self._rname, self._sectionName)
         try:
-            _ = self._db.getValue(sectionPath + '/type')
+            _ = db.getValue(sectionPath + '/type')
         except LookupError:  # Ok, No Duplication
             pass
         else:
@@ -156,7 +156,7 @@ class SectionDialog(ResizableDialog):
             self._sectionType = SectionType.SPHERE
         elif self._ui.cellZoneType.isChecked():
             self._sectionType = SectionType.CELL_ZONE
-            cellZones = self._db.getCellZones(self._rname)
+            cellZones = db.getCellZones(self._rname)
             if len(cellZones) == 1:  # 'All' only
                 await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('No Cell Zone found in the region'))
                 return
@@ -437,34 +437,36 @@ class SectionDialog(ResizableDialog):
 
         self._ui.sectionName.setText(self._sectionName)
 
-        typeString = self._db.getValue(sectionPath+'/type')
+        db = coredb.CoreDB()
+
+        typeString = db.getValue(sectionPath+'/type')
         if typeString == 'hex':
             self._sectionType = SectionType.HEX
-            self._ui.minPointX.setText(self._db.getValue(sectionPath+'/point1/x'))
-            self._ui.minPointY.setText(self._db.getValue(sectionPath+'/point1/y'))
-            self._ui.minPointZ.setText(self._db.getValue(sectionPath+'/point1/z'))
-            self._ui.maxPointX.setText(self._db.getValue(sectionPath+'/point2/x'))
-            self._ui.maxPointY.setText(self._db.getValue(sectionPath+'/point2/y'))
-            self._ui.maxPointZ.setText(self._db.getValue(sectionPath+'/point2/z'))
+            self._ui.minPointX.setText(db.getValue(sectionPath+'/point1/x'))
+            self._ui.minPointY.setText(db.getValue(sectionPath+'/point1/y'))
+            self._ui.minPointZ.setText(db.getValue(sectionPath+'/point1/z'))
+            self._ui.maxPointX.setText(db.getValue(sectionPath+'/point2/x'))
+            self._ui.maxPointY.setText(db.getValue(sectionPath+'/point2/y'))
+            self._ui.maxPointZ.setText(db.getValue(sectionPath+'/point2/z'))
         elif typeString == 'cylinder':
             self._sectionType = SectionType.CYLINDER
-            self._ui.p1x.setText(self._db.getValue(sectionPath+'/point1/x'))
-            self._ui.p1y.setText(self._db.getValue(sectionPath+'/point1/y'))
-            self._ui.p1z.setText(self._db.getValue(sectionPath+'/point1/z'))
-            self._ui.p2x.setText(self._db.getValue(sectionPath+'/point2/x'))
-            self._ui.p2y.setText(self._db.getValue(sectionPath+'/point2/y'))
-            self._ui.p2z.setText(self._db.getValue(sectionPath+'/point2/z'))
-            self._ui.cylinderRadius.setText(self._db.getValue(sectionPath+'/radius'))
+            self._ui.p1x.setText(db.getValue(sectionPath+'/point1/x'))
+            self._ui.p1y.setText(db.getValue(sectionPath+'/point1/y'))
+            self._ui.p1z.setText(db.getValue(sectionPath+'/point1/z'))
+            self._ui.p2x.setText(db.getValue(sectionPath+'/point2/x'))
+            self._ui.p2y.setText(db.getValue(sectionPath+'/point2/y'))
+            self._ui.p2z.setText(db.getValue(sectionPath+'/point2/z'))
+            self._ui.cylinderRadius.setText(db.getValue(sectionPath+'/radius'))
         elif typeString == 'sphere':
             self._sectionType = SectionType.SPHERE
-            self._ui.cx.setText(self._db.getValue(sectionPath+'/point1/x'))
-            self._ui.cy.setText(self._db.getValue(sectionPath+'/point1/y'))
-            self._ui.cz.setText(self._db.getValue(sectionPath+'/point1/z'))
-            self._ui.sphereRadius.setText(self._db.getValue(sectionPath+'/radius'))
+            self._ui.cx.setText(db.getValue(sectionPath+'/point1/x'))
+            self._ui.cy.setText(db.getValue(sectionPath+'/point1/y'))
+            self._ui.cz.setText(db.getValue(sectionPath+'/point1/z'))
+            self._ui.sphereRadius.setText(db.getValue(sectionPath+'/radius'))
         elif typeString == 'cellZone':
             self._sectionType = SectionType.CELL_ZONE
-            savedId = self._db.getValue(sectionPath+'/cellZone')
-            cellZones = self._db.getCellZones(self._rname)
+            savedId = db.getValue(sectionPath+'/cellZone')
+            cellZones = db.getCellZones(self._rname)
             for czid, czname in cellZones:
                 if czname == 'All':
                     continue
@@ -476,23 +478,23 @@ class SectionDialog(ResizableDialog):
         else:
             raise AssertionError
 
-        self._ui.ux.setText(self._db.getValue(sectionPath+'/velocity/x'))
-        self._ui.uy.setText(self._db.getValue(sectionPath+'/velocity/y'))
-        self._ui.uz.setText(self._db.getValue(sectionPath+'/velocity/z'))
-        if self._db.getAttribute(sectionPath+'/velocity', 'disabled') == 'false':
+        self._ui.ux.setText(db.getValue(sectionPath+'/velocity/x'))
+        self._ui.uy.setText(db.getValue(sectionPath+'/velocity/y'))
+        self._ui.uz.setText(db.getValue(sectionPath+'/velocity/z'))
+        if db.getAttribute(sectionPath+'/velocity', 'disabled') == 'false':
             self._ui.velocityGroup.setChecked(True)
 
-        self._ui.pressure.setText(self._db.getValue(sectionPath+'/pressure'))
-        if self._db.getAttribute(sectionPath+'/pressure', 'disabled') == 'false':
+        self._ui.pressure.setText(db.getValue(sectionPath+'/pressure'))
+        if db.getAttribute(sectionPath+'/pressure', 'disabled') == 'false':
             self._ui.pressureCheckBox.setChecked(True)
 
-        self._ui.temperature.setText(self._db.getValue(sectionPath+'/temperature'))
-        if self._db.getAttribute(sectionPath+'/temperature', 'disabled') == 'false':
+        self._ui.temperature.setText(db.getValue(sectionPath+'/temperature'))
+        if db.getAttribute(sectionPath+'/temperature', 'disabled') == 'false':
             self._ui.temperatureCheckBox.setChecked(True)
 
         if self._volumeFractionWidget.on():
             self._volumeFractionWidget.load(sectionPath + '/volumeFractions')
-            if self._db.getAttribute(sectionPath + '/volumeFractions', 'disabled') == 'false':
+            if db.getAttribute(sectionPath + '/volumeFractions', 'disabled') == 'false':
                 self._volumeFractionWidget.setChecked(True)
 
         if self._scalarsWidget:
@@ -500,13 +502,13 @@ class SectionDialog(ResizableDialog):
                 xpath = f'{sectionPath}/userDefinedScalars/scalar[scalarID="{scalarID}"]/value'
                 self._scalarsWidget.setData(
                     scalarID,
-                    self._db.getAttribute(xpath, 'disabled') == 'false',
-                    self._db.getValue(xpath))
+                    db.getAttribute(xpath, 'disabled') == 'false',
+                    db.getValue(xpath))
 
         if self._speciesWidget and self._speciesWidget.on():
             self._speciesWidget.load(f'{sectionPath}/species')
 
-        if self._db.getValue(sectionPath+'/overrideBoundaryValue') == 'true':
+        if db.getValue(sectionPath+'/overrideBoundaryValue') == 'true':
             self._ui.overrideBoundaryValue.setChecked(True)
         else:
             self._ui.overrideBoundaryValue.setChecked(False)

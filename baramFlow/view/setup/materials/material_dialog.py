@@ -29,10 +29,10 @@ class MaterialDialog(ResizableDialog):
 
         self._mid: str = mid
         self._xpath = MaterialDB.getXPath(mid)
-        self._db = coredb.CoreDB()
         self._name = None
         self._type = MaterialDB.getType(self._mid)
-        self._phase = Phase(self._db.getValue(self._xpath + '/phase'))
+        db = coredb.CoreDB()
+        self._phase = Phase(db.getValue(self._xpath + '/phase'))
         self._polynomialDensity = None
         self._polynomialSpecificHeat = None
         self._polynomialThermalConductivity = None
@@ -59,34 +59,32 @@ class MaterialDialog(ResizableDialog):
     def _load(self):
         self._name = MaterialDB.getName(self._mid)
         self._ui.name.setText(self._name)
-        #
-        # specXPath = (MaterialDB.getXPath(self._db.getValue(self._xpath + '/specie/mixture'))
-        #              if self._type == MaterialType.SPECIE else self._xpath)
+        db = coredb.CoreDB()
 
         viscositySpecification = (
             None if self._phase == Phase.SOLID
-            else ViscositySpecification(self._db.getValue(self._xpath + '/viscosity/specification')))
+            else ViscositySpecification(db.getValue(self._xpath + '/viscosity/specification')))
 
         if ModelsDB.isEnergyModelOn():
-            densitySpecification = DensitySpecification(self._db.getValue(self._xpath + '/density/specification'))
+            densitySpecification = DensitySpecification(db.getValue(self._xpath + '/density/specification'))
 
-            specification = Specification(self._db.getValue(self._xpath + '/specificHeat/specification'))
+            specification = Specification(db.getValue(self._xpath + '/specificHeat/specification'))
             self._setupSpecificHeatSpecification(specification)
-            self._ui.constantSpecificHeat.setText(self._db.getValue(self._xpath + '/specificHeat/constant'))
+            self._ui.constantSpecificHeat.setText(db.getValue(self._xpath + '/specificHeat/constant'))
 
-            specification = Specification(self._db.getValue(self._xpath + '/thermalConductivity/specification'))
+            specification = Specification(db.getValue(self._xpath + '/thermalConductivity/specification'))
             self._setupThermalConductivitySpecification(specification)
             self._ui.constantThermalConductivity.setText(
-                self._db.getValue(self._xpath + '/thermalConductivity/constant'))
+                db.getValue(self._xpath + '/thermalConductivity/constant'))
 
             if self._phase == Phase.SOLID:
-                self._ui.emissivity.setText(self._db.getValue(self._xpath + '/emissivity'))
+                self._ui.emissivity.setText(db.getValue(self._xpath + '/emissivity'))
             else:
-                self._ui.molecularWeight.setText(self._db.getValue(self._xpath + '/molecularWeight'))
+                self._ui.molecularWeight.setText(db.getValue(self._xpath + '/molecularWeight'))
                 if self._phase == Phase.GAS:
-                    self._ui.absorptionCoefficient.setText(self._db.getValue(self._xpath + '/absorptionCoefficient'))
+                    self._ui.absorptionCoefficient.setText(db.getValue(self._xpath + '/absorptionCoefficient'))
                 elif self._phase == Phase.LIQUID:
-                    self._ui.saturationPressure.setText(self._db.getValue(self._xpath + '/saturationPressure'))
+                    self._ui.saturationPressure.setText(db.getValue(self._xpath + '/saturationPressure'))
         else:
             densitySpecification = DensitySpecification.CONSTANT
             if TurbulenceModelsDB.getModel() != TurbulenceModel.LAMINAR:
@@ -99,25 +97,25 @@ class MaterialDialog(ResizableDialog):
             self._ui.properties.hide()
 
         self._setupDensitySpecification(densitySpecification)
-        self._ui.constantDensity.setText(self._db.getValue(self._xpath + '/density/constant'))
+        self._ui.constantDensity.setText(db.getValue(self._xpath + '/density/constant'))
         if self._phase == Phase.GAS:
             self._ui.criticalTemperature.setText(
-                self._db.getValue(self._xpath + '/density/pengRobinsonParameters/criticalTemperature'))
+                db.getValue(self._xpath + '/density/pengRobinsonParameters/criticalTemperature'))
             self._ui.criticalPressure.setText(
-                self._db.getValue(self._xpath + '/density/pengRobinsonParameters/criticalPressure'))
+                db.getValue(self._xpath + '/density/pengRobinsonParameters/criticalPressure'))
             self._ui.criticalSpecificVolume.setText(
-                self._db.getValue(self._xpath + '/density/pengRobinsonParameters/criticalSpecificVolume'))
+                db.getValue(self._xpath + '/density/pengRobinsonParameters/criticalSpecificVolume'))
             self._ui.acentricFactor.setText(
-                self._db.getValue(self._xpath + '/density/pengRobinsonParameters/acentricFactor'))
+                db.getValue(self._xpath + '/density/pengRobinsonParameters/acentricFactor'))
 
         if self._phase != Phase.SOLID:
             self._setupViscositySpecification(viscositySpecification)
-            self._ui.constantViscosity.setText(self._db.getValue(self._xpath + '/viscosity/constant'))
+            self._ui.constantViscosity.setText(db.getValue(self._xpath + '/viscosity/constant'))
             if self._phase == Phase.GAS:
                 self._ui.sutherlandCoefficient.setText(
-                    self._db.getValue(self._xpath + '/viscosity/sutherland/coefficient'))
+                    db.getValue(self._xpath + '/viscosity/sutherland/coefficient'))
                 self._ui.sutherlandTemperature.setText(
-                    self._db.getValue(self._xpath + '/viscosity/sutherland/temperature'))
+                    db.getValue(self._xpath + '/viscosity/sutherland/temperature'))
 
         self._polynomialDensity = None
         self._polynomialSpecificHeat = None
@@ -152,7 +150,7 @@ class MaterialDialog(ResizableDialog):
                     if self._polynomialDensity:
                         db.setValue(self._xpath + '/density/polynomial',
                                       self._polynomialDensity, self.tr('Density Polynomial'))
-                    elif self._db.getValue(self._xpath + '/density/polynomial') == '':
+                    elif db.getValue(self._xpath + '/density/polynomial') == '':
                         await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                             self.tr('Edit Density Polynomial.'))
                         return
@@ -186,7 +184,7 @@ class MaterialDialog(ResizableDialog):
                             if viscosity:
                                 db.setValue(self._xpath + '/viscosity/polynomial', viscosity,
                                             self.tr('Viscosity Polynomial'))
-                            elif self._db.getValue(self._xpath + '/viscosity/polynomial') == '':
+                            elif db.getValue(self._xpath + '/viscosity/polynomial') == '':
                                 await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                                     self.tr('Edit Viscosity Polynomial.'))
                                 return
@@ -249,7 +247,7 @@ class MaterialDialog(ResizableDialog):
                         if self._polynomialSpecificHeat:
                             db.setValue(self._xpath + '/specificHeat/polynomial',
                                           self._polynomialSpecificHeat, self.tr('Specific Heat Polynomial'))
-                        elif self._db.getValue(self._xpath + '/specificHeat/polynomial') == '':
+                        elif db.getValue(self._xpath + '/specificHeat/polynomial') == '':
                             await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                                 self.tr('Edit Specific Heat Polynomial.'))
                             return
@@ -266,7 +264,7 @@ class MaterialDialog(ResizableDialog):
                                 db.setValue(self._xpath + '/thermalConductivity/polynomial',
                                             self._polynomialThermalConductivity,
                                             self.tr('Thermal Conductivity Polynomial'))
-                            elif self._db.getValue(self._xpath + '/thermalConductivity/polynomial') == '':
+                            elif db.getValue(self._xpath + '/thermalConductivity/polynomial') == '':
                                 await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                                     self.tr('Edit Thermal Conductivity Polynomial.'))
                                 return
@@ -282,7 +280,7 @@ class MaterialDialog(ResizableDialog):
                         elif self._phase == Phase.LIQUID:
                             db.setValue(self._xpath + '/saturationPressure',
                                           self._ui.saturationPressure.text(), self.tr('Saturation Pressure'))
-        
+
             self.accept()
         except ConfigurationException as ex:
             await AsyncMessageBox().information(self, self.tr('Model Change Failed'), str(ex))
@@ -420,26 +418,29 @@ class MaterialDialog(ResizableDialog):
             self._ui.viscosityType.setCurrentText(self._ui.thermalConductivityType.currentText())
 
     def _editDensity(self):
+        db = coredb.CoreDB()
         if self._polynomialDensity is None:
-            self._polynomialDensity = self._db.getValue(self._xpath + '/density/polynomial')
+            self._polynomialDensity = db.getValue(self._xpath + '/density/polynomial')
 
         self._dialog = PolynomialDialog(self, self.tr('Polynomial Density'), self._polynomialDensity)
         self._dialog.accepted.connect(self._polynomialDensityAccepted)
         self._dialog.open()
 
     def _editSpecificHeat(self):
+        db = coredb.CoreDB()
         if self._polynomialSpecificHeat is None:
-            self._polynomialSpecificHeat = self._db.getValue(self._xpath + '/specificHeat/polynomial')
+            self._polynomialSpecificHeat = db.getValue(self._xpath + '/specificHeat/polynomial')
 
         self._dialog = PolynomialDialog(self, self.tr('Polynomial Specific Heat'), self._polynomialSpecificHeat)
         self._dialog.accepted.connect(self._polynomialSpeicificHeatAccepted)
         self._dialog.open()
 
     def _editViscosity(self):
+        db = coredb.CoreDB()
         specification = self._ui.viscosityType.currentData()
         if specification == ViscositySpecification.POLYNOMIAL:
             if self._viscosities[specification] is None:
-                self._viscosities[specification] = self._db.getValue(self._xpath + '/viscosity/polynomial')
+                self._viscosities[specification] = db.getValue(self._xpath + '/viscosity/polynomial')
 
             self._dialog = PolynomialDialog(self, self.tr('Polynomial Viscosity'), self._viscosities[specification])
         elif specification == ViscositySpecification.CROSS_POWER_LAW:
@@ -455,8 +456,9 @@ class MaterialDialog(ResizableDialog):
         self._dialog.open()
 
     def _editThermalConductivity(self):
+        db = coredb.CoreDB()
         if self._polynomialThermalConductivity is None:
-            self._polynomialThermalConductivity = self._db.getValue(self._xpath + '/thermalConductivity/polynomial')
+            self._polynomialThermalConductivity = db.getValue(self._xpath + '/thermalConductivity/polynomial')
 
         self._dialog = PolynomialDialog(self, self.tr('Polynomial Thermal Conductivity'),
                                         self._polynomialThermalConductivity)

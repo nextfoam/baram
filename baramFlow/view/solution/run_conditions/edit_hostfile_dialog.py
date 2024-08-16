@@ -19,25 +19,25 @@ class EditHostfileDialog(QDialog):
         charFormat.setFont(fixedFont)
         self._ui.textEdit.setCurrentCharFormat(charFormat)
 
-        self._db = coredb.CoreDB()
-
         self._connectSignalsSlots()
         self._load()
 
     def accept(self):
         text = self._ui.textEdit.toPlainText()
         # data = text.encode('utf-8')
-        # self._db.setValue('.//parallel/hostfile', base64.b64encode(data))
-        self._db.setValue('.//parallel/hostfile', text)
+        # db.setValue('.//parallel/hostfile', base64.b64encode(data))
+        db = coredb.CoreDB()
+        db.setValue('.//parallel/hostfile', text)
         super().accept()
 
     def _connectSignalsSlots(self):
         self._ui.importButton.clicked.connect(self._selectHostfile)
 
     def _load(self):
-        # data = base64.b64decode(self._db.getValue('.//parallel/hostfile'))
+        # data = base64.b64decode(db.getValue('.//parallel/hostfile'))
         # self._ui.textEdit.setPlainText(data.decode('utf-8'))
-        self._ui.textEdit.setPlainText(self._db.getValue('.//parallel/hostfile'))
+        db = coredb.CoreDB()
+        self._ui.textEdit.setPlainText(db.getValue('.//parallel/hostfile'))
 
     def _selectHostfile(self):
         self._dialog = QFileDialog(self, self.tr('Select hostfile'))

@@ -22,7 +22,6 @@ class TurbulenceSpalartAllmarasWidget(QWidget):
         }
         self._setupSpecificationMethodCombo()
 
-        self._db = coredb.CoreDB()
         self._xpath = xpath
 
         self._connectSignalsSlots()
@@ -31,12 +30,13 @@ class TurbulenceSpalartAllmarasWidget(QWidget):
         return True
 
     def load(self):
+        db = coredb.CoreDB()
         xpath = self._xpath + self.RELATIVE_XPATH
 
         self._ui.specificationMethod.setCurrentText(
-            self._specificationMethods[self._db.getValue(xpath + '/specification')])
-        self._ui.modifiedTurbulentViscosity.setText(self._db.getValue(xpath + '/modifiedTurbulentViscosity'))
-        self._ui.turbulentViscosityRatio.setText(self._db.getValue(xpath + '/turbulentViscosityRatio'))
+            self._specificationMethods[db.getValue(xpath + '/specification')])
+        self._ui.modifiedTurbulentViscosity.setText(db.getValue(xpath + '/modifiedTurbulentViscosity'))
+        self._ui.turbulentViscosityRatio.setText(db.getValue(xpath + '/turbulentViscosityRatio'))
         self._specificationMethodChanged()
 
     def appendToWriter(self, writer):

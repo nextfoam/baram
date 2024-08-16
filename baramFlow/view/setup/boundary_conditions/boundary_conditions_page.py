@@ -66,7 +66,6 @@ class BoundaryConditionsPage(ContentPage):
         self._ui = Ui_BoundaryConditionsPage()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._boundaries = {}
 
         self._dialog = None
@@ -76,7 +75,8 @@ class BoundaryConditionsPage(ContentPage):
         self._load()
 
     def _load(self):
-        regions = self._db.getRegions()
+        db = coredb.CoreDB()
+        regions = db.getRegions()
         if len(regions) == 1 and not regions[0]:
             item = QTreeWidgetItem(self._ui.boundaries, [DEFAULT_REGION_NAME], 0)
             item.setFirstColumnSpanned(True)
@@ -121,7 +121,8 @@ class BoundaryConditionsPage(ContentPage):
                 childItem.setHidden(filterText not in boundaryWidget.bcname.lower())
 
     def _addBoundaryItems(self, parent, rname):
-        boundaries = self._db.getBoundaryConditions(rname)
+        db = coredb.CoreDB()
+        boundaries = db.getBoundaryConditions(rname)
         for bcid, bcname, bctype in boundaries:
             item = QTreeWidgetItem(parent, bcid)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
@@ -153,17 +154,18 @@ class BoundaryConditionsPage(ContentPage):
             self._edit()
 
     def _changeBoundaryType(self, bcid, bctype):
+        db = coredb.CoreDB()
         currentType = BoundaryDB.getBoundaryType(bcid)
         if currentType != bctype:
             xpath = BoundaryDB.getXPath(bcid)
-            self._db.setValue(xpath + '/physicalType', bctype)
+            db.setValue(xpath + '/physicalType', bctype)
             self._boundaries[bcid].reloadType()
             self._updateEditEnabled()
 
-            cpid = self._db.getValue(xpath + '/coupledBoundary')
+            cpid = db.getValue(xpath + '/coupledBoundary')
             if cpid != '0':
-                self._db.setValue(xpath + '/coupledBoundary', '0')
-                self._db.setValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary', '0')
+                db.setValue(xpath + '/coupledBoundary', '0')
+                db.setValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary', '0')
 
             if BoundaryDB.needsCoupledBoundary(bctype):
                 QMessageBox.information(

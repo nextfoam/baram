@@ -22,7 +22,6 @@ class PressureInletDialog(ResizableDialog):
         self._ui = Ui_PressureInletDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
         self._turbulenceWidget = None
@@ -82,9 +81,10 @@ class PressureInletDialog(ResizableDialog):
             self.accept()
 
     def _load(self):
+        db = coredb.CoreDB()
         path = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.totalPressure.setText(self._db.getValue(path + '/pressure'))
+        self._ui.totalPressure.setText(db.getValue(path + '/pressure'))
 
         self._turbulenceWidget.load()
         self._temperatureWidget.load()

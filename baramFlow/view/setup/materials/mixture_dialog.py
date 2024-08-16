@@ -24,9 +24,9 @@ class MixtureDialog(QDialog):
 
         self._mid = mid
         self._xpath = MaterialDB.getXPath(mid)
-        self._db = coredb.CoreDB()
         self._name = None
-        self._phase = Phase(self._db.getValue(self._xpath + '/phase'))
+        db = coredb.CoreDB()
+        self._phase = Phase(db.getValue(self._xpath + '/phase'))
 
         self._setupSpecifications()
 
@@ -34,6 +34,7 @@ class MixtureDialog(QDialog):
         self._load()
 
     def _load(self):
+        db = coredb.CoreDB()
         self._name = MaterialDB.getName(self._mid)
         self._ui.name.setText(self._name)
 
@@ -42,14 +43,14 @@ class MixtureDialog(QDialog):
         densitySpec = DensitySpecification.CONSTANT
         transportSpec = Specification.CONSTANT
         if energyModelOn:
-            densitySpec = DensitySpecification(self._db.getValue(self._xpath + '/density/specification'))
-            transportSpec = ViscositySpecification(self._db.getValue(self._xpath + '/viscosity/specification'))
+            densitySpec = DensitySpecification(db.getValue(self._xpath + '/density/specification'))
+            transportSpec = ViscositySpecification(db.getValue(self._xpath + '/viscosity/specification'))
             self._ui.specificHeatSpec.setCurrentText(
                 MaterialDB.specificationToText(Specification(
-                    self._db.getValue(self._xpath + '/specificHeat/specification'))))
+                    db.getValue(self._xpath + '/specificHeat/specification'))))
         else:
             if TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR and self._phase == Phase.LIQUID:
-                transportSpec = ViscositySpecification(self._db.getValue(self._xpath + '/viscosity/specification'))
+                transportSpec = ViscositySpecification(db.getValue(self._xpath + '/viscosity/specification'))
             else:
                 self._ui.transportSpec.setEnabled(False)
             self._ui.densitySpec.setEnabled(False)
@@ -61,9 +62,9 @@ class MixtureDialog(QDialog):
             layout.setRowVisible(self._ui.transportSpec, False)
 
         self._ui.densitySpec.setCurrentText(MaterialDB.specificationToText(densitySpec))
-        self._ui.massDiffusivity.setText(self._db.getValue(self._xpath + '/mixture/massDiffusivity'))
+        self._ui.massDiffusivity.setText(db.getValue(self._xpath + '/mixture/massDiffusivity'))
 
-        primarySpecie = self._db.getValue(self._xpath + '/mixture/primarySpecie')
+        primarySpecie = db.getValue(self._xpath + '/mixture/primarySpecie')
         for mid, name in MaterialDB.getSpecies(self._mid).items():
             self._ui.primarySpecie.addItem(name, mid)
             if mid == primarySpecie:

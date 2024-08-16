@@ -44,7 +44,6 @@ class VolumeFractionWidget(QGroupBox):
         self._on = ModelsDB.isMultiphaseModelOn()
         self._fractions = {}
 
-        self._db = coredb.CoreDB()
         self._rname = rname
 
         self._volumeFractionsLayout = None
@@ -64,7 +63,8 @@ class VolumeFractionWidget(QGroupBox):
                     self._fractions[mid] = FractionRow(self._volumeFractionsLayout, mid)
 
                 try:
-                    value = self._db.getValue(f'{xpath}/volumeFraction[material="{mid}"]/fraction')
+                    db = coredb.CoreDB()
+                    value = db.getValue(f'{xpath}/volumeFraction[material="{mid}"]/fraction')
                 except LookupError:
                     value = '0'
 
@@ -93,7 +93,8 @@ class VolumeFractionWidget(QGroupBox):
                 fractionPath = xpath + f'/volumeFraction/[material="{mid}"]/fraction'
 
                 try:
-                    savedValue = self._db.getValue(fractionPath)
+                    db = coredb.CoreDB()
+                    savedValue = db.getValue(fractionPath)
                 except LookupError:  # the material should be added if it is not there
                     writer.addElement(xpath,
                                         f'''
