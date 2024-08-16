@@ -64,19 +64,19 @@ class TurbulenceProperties(DictionaryFile):
         viscositySpecification = ViscositySpecification(self._db.getValue(xpath + '/viscosity/specification'))
         if viscositySpecification == ViscositySpecification.CROSS_POWER_LAW:
             self._data['laminar'] = {
-                'model' : 'generalizedNewtonian',
+                'model': 'generalizedNewtonian',
                 'viscosityModel': 'CrossPowerLaw',
                 'CrossPowerLawCoeffs': {
                     'nu0': self._db.getValue(xpath + '/viscosity/cross/zeroShearViscosity'),
                     'nuInf': self._db.getValue(xpath + '/viscosity/cross/infiniteShearViscosity'),
                     'm': self._db.getValue(xpath + '/viscosity/cross/naturalTime'),
-                    'n': self._db.getValue(xpath + '/viscosity/cross/powerLawIndex')
-                    # 'a': self._db.getValue(xpath + '/viscosity/cross/')
+                    'n': self._db.getValue(xpath + '/viscosity/cross/powerLawIndex'),
+                    'tauStar': '0'  # tauStar method is not used if tauStar is zero. ESI version has a bug in handling tauStar compared to Foundation version
                 }
             }
         elif viscositySpecification == ViscositySpecification.HERSCHEL_BULKLEY:
             self._data['laminar'] = {
-                'model' : 'generalizedNewtonian',
+                'model': 'generalizedNewtonian',
                 'viscosityModel': 'HerschelBulkley',
                 'HerschelBulkleyCoeffs': {
                     'nu0': self._db.getValue(xpath + '/viscosity/herschelBulkley/zeroShearViscosity'),
@@ -87,7 +87,7 @@ class TurbulenceProperties(DictionaryFile):
             }
         elif viscositySpecification == ViscositySpecification.BIRD_CARREAU:
             self._data['laminar'] = {
-                'model' : 'generalizedNewtonian',
+                'model': 'generalizedNewtonian',
                 'viscosityModel': 'BirdCarreau',
                 'BirdCarreauCoeffs': {
                     'nu0': self._db.getValue(xpath + '/viscosity/carreau/zeroShearViscosity'),
@@ -99,11 +99,11 @@ class TurbulenceProperties(DictionaryFile):
             }
         elif viscositySpecification == ViscositySpecification.POWER_LAW:
             self._data['laminar'] = {
-                'model' : 'generalizedNewtonian',
+                'model': 'generalizedNewtonian',
                 'viscosityModel': 'powerLaw',
                 'powerLawCoeffs': {
-                    'nuMax': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/maximumViscosityLimit'),
-                    'nuMin': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/minimumViscosityLimit'),
+                    'nuMax': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/maximumViscosity'),
+                    'nuMin': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/minimumViscosity'),
                     'k': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/consistencyIndex'),
                     'n': self._db.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/powerLawIndex')
                 }
