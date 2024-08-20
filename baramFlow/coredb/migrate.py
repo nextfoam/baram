@@ -728,6 +728,14 @@ def _version_7(root: etree.Element):
                                  '</massTransfers>')
             p.append(e)
 
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition//wall/temperature', namespaces=_nsmap):
+        if p.find('wallLayers', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "wallLayers" to {p}')
+            e = etree.fromstring('<wallLayers xmlns="http://www.baramcfd.org/baram">'
+                                 '  <thicknessLayers/><thermalConductivityLayers/>'
+                                 '</wallLayers>')
+            p.append(e)
+
     for p in root.findall('runCalculation/runConditions', namespaces=_nsmap):
         if p.find('maxDiffusionNumber', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "maxDiffusionNumber" to {p}')

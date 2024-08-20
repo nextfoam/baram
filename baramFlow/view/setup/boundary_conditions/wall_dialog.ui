@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>932</height>
+    <height>1150</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -83,7 +83,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="xVelocity">
+             <widget class="FloatEdit" name="xVelocity">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -100,7 +100,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="yVelocity">
+             <widget class="FloatEdit" name="yVelocity">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -117,7 +117,7 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QLineEdit" name="zVelocity">
+             <widget class="FloatEdit" name="zVelocity">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -155,7 +155,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="speed">
+                <widget class="FloatEdit" name="speed">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -181,7 +181,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="rotationAxisX">
+                <widget class="FloatEdit" name="rotationAxisX">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -198,7 +198,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="rotationAxisY">
+                <widget class="FloatEdit" name="rotationAxisY">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -215,7 +215,7 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLineEdit" name="rotationAxisZ">
+                <widget class="FloatEdit" name="rotationAxisZ">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -241,7 +241,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="rotationDirectionX">
+                <widget class="FloatEdit" name="rotationDirectionX">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -258,7 +258,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="rotationDirectionY">
+                <widget class="FloatEdit" name="rotationDirectionY">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -275,7 +275,7 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLineEdit" name="rotationDirectionZ">
+                <widget class="FloatEdit" name="rotationDirectionZ">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -330,6 +330,12 @@
          <item>
           <widget class="QWidget" name="constantTemperature" native="true">
            <layout class="QFormLayout" name="formLayout_9">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
             <item row="0" column="0">
              <widget class="QLabel" name="temperatureLabel">
               <property name="text">
@@ -338,7 +344,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="temperature">
+             <widget class="FloatEdit" name="temperature">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -353,6 +359,12 @@
          <item>
           <widget class="QWidget" name="constantHeatFlux" native="true">
            <layout class="QFormLayout" name="formLayout_10">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
             <item row="0" column="0">
              <widget class="QLabel" name="heatFluxLabel">
               <property name="text">
@@ -361,7 +373,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="heatFlux">
+             <widget class="FloatEdit" name="heatFlux">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -375,39 +387,209 @@
          </item>
          <item>
           <widget class="QWidget" name="convection" native="true">
-           <layout class="QFormLayout" name="formLayout_11">
-            <item row="0" column="0">
-             <widget class="QLabel" name="heatTransferCoefficientLabel">
-              <property name="text">
-               <string>Heat Transfer Coefficient (W/㎡⋅K)</string>
-              </property>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QWidget" name="widget_5" native="true">
+              <layout class="QFormLayout" name="formLayout_11">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="heatTransferCoefficientLabel">
+                 <property name="text">
+                  <string>Heat Transfer Coefficient (W/㎡⋅K)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="FloatEdit" name="heatTransferCoefficient">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="freeStreamTemperatureLabel">
+                 <property name="text">
+                  <string>Free Stream Temperature (K)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="FloatEdit" name="freeStreamTemperature">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="heatTransferCoefficient">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
+            <item>
+             <widget class="QGroupBox" name="wallLayers">
+              <property name="title">
+               <string>Wall Layers</string>
               </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="freeStreamTemperatureLabel">
-              <property name="text">
-               <string>Free Stream Temperature (K)</string>
+              <property name="checkable">
+               <bool>true</bool>
               </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="freeStreamTemperature">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
+              <property name="checked">
+               <bool>false</bool>
               </property>
+              <layout class="QVBoxLayout" name="verticalLayout_8">
+               <item>
+                <widget class="QScrollArea" name="scrollArea">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>160</height>
+                  </size>
+                 </property>
+                 <property name="widgetResizable">
+                  <bool>true</bool>
+                 </property>
+                 <widget class="QWidget" name="scrollAreaWidgetContents">
+                  <property name="geometry">
+                   <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>340</width>
+                    <height>158</height>
+                   </rect>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_9">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QFrame" name="wallLayersTable">
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_2">
+                      <property name="verticalSpacing">
+                       <number>2</number>
+                      </property>
+                      <item row="0" column="2">
+                       <widget class="QLabel" name="label_45">
+                        <property name="font">
+                         <font>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>Thermal Conductivity, K&lt;br/&gt;(W/m⋅K)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_46">
+                        <property name="font">
+                         <font>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string/>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QLabel" name="label_47">
+                        <property name="font">
+                         <font>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>Thickness, t&lt;br/&gt;(m)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="3">
+                       <widget class="FlatPushButton" name="addWallLayer">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../../../../resource.qrc">
+                          <normaloff>:/icons/add-circle-outline.svg</normaloff>:/icons/add-circle-outline.svg</iconset>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="verticalSpacer">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_14">
+                 <property name="text">
+                  <string>The first line is for the closest layer to the flow.</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </item>
            </layout>
@@ -477,7 +659,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="wallEmissivity">
+          <widget class="FloatEdit" name="wallEmissivity">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -494,7 +676,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="radiativeFluxRelaxation">
+          <widget class="FloatEdit" name="radiativeFluxRelaxation">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -521,7 +703,21 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <customwidgets>
+  <customwidget>
+   <class>FloatEdit</class>
+   <extends>QLineEdit</extends>
+   <header>widgets.float_edit</header>
+  </customwidget>
+  <customwidget>
+   <class>FlatPushButton</class>
+   <extends>QPushButton</extends>
+   <header location="global">widgets.flat_push_button</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../../../resource.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
