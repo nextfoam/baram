@@ -1426,6 +1426,14 @@
                         <xs:element name="heatFlux" type="inputNumberType" default="1000"/>
                         <xs:element name="heatTransferCoefficient" type="inputNumberType" default="100"/>
                         <xs:element name="freeStreamTemperature" type="inputNumberType" default="300"/>
+                        <xs:element name="wallLayers">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="thicknessLayers" type="inputNumberListType"/>
+                                    <xs:element name="thermalConductivityLayers" type="inputNumberListType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>

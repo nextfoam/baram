@@ -143,7 +143,10 @@ class T(BoundaryCondition):
             elif spec == WallTemperature.CONVECTION.value:
                 h = self._db.getValue(xpath + '/wall/temperature/heatTransferCoefficient')
                 ta = self._db.getValue(xpath + '/wall/temperature/freeStreamTemperature')
-                return {
+                thicknessLayers = self._db.getValue(xpath + '/wall/temperature/wallLayers/thicknessLayers').split()
+                kappaLayers = self._db.getValue(xpath + '/wall/temperature/wallLayers/thermalConductivityLayers').split()
+
+                data = {
                     'type': 'externalWallHeatFluxTemperature',
                     'mode': 'coefficient',
                     'h': ('uniform', h),
@@ -151,4 +154,10 @@ class T(BoundaryCondition):
                     'kappaMethod': 'fluidThermo' if self._region.isFluid() else 'solidThermo',
                     'value': self._initialValueByTime()
                 }
+
+                if thicknessLayers:
+                    data['thicknessLayers'] = thicknessLayers
+                    data['kappaLayers'] = kappaLayers
+
+                return data
 

@@ -51,11 +51,9 @@ def _constructFluid(region: str):
     if GeneralDB.isCompressible():
         thermo['type'] = 'hePsiThermo'
 
-    speciesModel = db.getValue('.//models/speciesModels')
-    if speciesModel == 'on':
+    if materialType == MaterialType.MIXTURE:
         thermo['mixture'] = 'multiComponentMixture'
 
-    if materialType == MaterialType.MIXTURE:
         data = {
             'thermoType': thermo,
             'species': [],
