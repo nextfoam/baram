@@ -61,8 +61,8 @@ class RegionDB:
         return coredb.CoreDB().getValue(cls.getXPath(rname) + '/secondaryMaterials').split()
 
     @classmethod
-    def getNumberOfRegions(cls):
-        return len(coredb.CoreDB().getRegions())
+    def isMultiRegion(cls):
+        return len(coredb.CoreDB().getRegions()) > 1
 
     @classmethod
     def addRegion(cls, rname: str):

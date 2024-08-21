@@ -526,7 +526,7 @@ class MainWindow(QMainWindow):
         self._dialog.open()
 
     def meshUpdated(self):
-        if RegionDB.getNumberOfRegions() > 1:  # multi-region
+        if RegionDB.isMultiRegion():
             ModelsDB.EnergyModelOn()
 
         self._project.save()

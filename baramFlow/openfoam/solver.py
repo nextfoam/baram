@@ -33,7 +33,7 @@ def findSolver():
 
     isTimeTransient = GeneralDB.isTimeTransient()
 
-    if RegionDB.getNumberOfRegions() > 1:
+    if RegionDB.isMultiRegion():
         if isTimeTransient:
             return 'chtMultiRegionPimpleNFoam'
         else:

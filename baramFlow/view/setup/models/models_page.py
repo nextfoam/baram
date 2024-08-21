@@ -96,7 +96,7 @@ class ModelsPage(ContentPage):
         self._addModelItem(Models.ENERGY,
                            self.tr('Energy'),
                            lambda: self.tr('Include') if ModelsDB.isEnergyModelOn() else self.tr('Not Include'),
-                           EnergyDialog if RegionDB.getNumberOfRegions() == 1 else None)
+                           EnergyDialog if not RegionDB.isMultiRegion() else None)
 
         self._addModelItem(Models.MULTIPHASE,
                            self.tr('Multiphase'),

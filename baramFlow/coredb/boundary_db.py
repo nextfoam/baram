@@ -9,6 +9,7 @@ import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import IMaterialObserver
 from baramFlow.coredb.region_db import IRegionMaterialObserver, RegionDB, REGION_XPATH
+from baramFlow.coredb.scalar_model_db import IUserDefinedScalarObserver
 from baramFlow.view.widgets.multi_selector_dialog import SelectorItem
 
 
@@ -310,3 +311,18 @@ class RegionMaterialObserver(IRegionMaterialObserver):
             speciesElement.clear()
             if species:
                 speciesElement.append(xml.createElement(speicesXML))
+
+
+class ScalarObserver(IUserDefinedScalarObserver):
+    def scalarAdded(self, db, scalarID):
+        scalarXML = f'''<scalar xmlns="http://www.baramcfd.org/baram">
+                            <scalarID>{scalarID}</scalarID>
+                            <value>0</value>
+                        </scalar>'''
+
+        for scalars in db.getElements(BOUNDARY_CONDITION_XPATH + '/userDefinedScalars'):
+            scalars.append(xml.createElement(scalarXML))
+
+    def scalarRemoving(self, db, scalarID):
+        for scalars in db.getElements(BOUNDARY_CONDITION_XPATH + '/userDefinedScalars'):
+            xml.removeElement(scalars, f'scalar[scalarID="{scalarID}"]')

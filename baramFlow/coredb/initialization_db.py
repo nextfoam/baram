@@ -6,7 +6,7 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.material_db import IMaterialObserver, MaterialDB
 from baramFlow.coredb.region_db import IRegionMaterialObserver, RegionDB, REGION_XPATH
-
+from baramFlow.coredb.scalar_model_db import IUserDefinedScalarObserver
 
 INITIALIZATION_XPATH = REGION_XPATH + '/initialization'
 
@@ -113,3 +113,24 @@ class RegionMaterialObserver(IRegionMaterialObserver):
                 parent.append(xml.createElement('<volumeFraction xmlns="http://www.baramcfd.org/baram">'
                                                 f'  <material>{mid}</material><fraction>0</fraction>'
                                                 '</volumeFraction>'))
+
+
+class ScalarObserver(IUserDefinedScalarObserver):
+    def scalarAdded(self, db, scalarID):
+        scalarXML = f'''<scalar xmlns="http://www.baramcfd.org/baram">
+                            <scalarID>{scalarID}</scalarID>
+                            <value disabled="true">0</value>
+                        </scalar>'''
+
+        for scalars in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/userDefinedScalars'):
+            scalars.append(xml.createElement(scalarXML))
+
+        for scalars in db.getElements(f'{INITIALIZATION_XPATH}/advanced/sections/section/userDefinedScalars'):
+            scalars.append(xml.createElement(scalarXML))
+
+    def scalarRemoving(self, db, scalarID):
+        for scalars in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/userDefinedScalars'):
+            xml.removeElement(scalars, f'scalar[scalarID="{scalarID}"]')
+
+        for scalars in db.getElements(f'{INITIALIZATION_XPATH}/advanced/sections/section/userDefinedScalars'):
+            xml.removeElement(scalars, f'scalar[scalarID="{scalarID}"]')

@@ -8,8 +8,9 @@ import qasync
 from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
-from baramFlow.coredb.run_calculation_db import TimeSteppingMethod, DataWriteFormat, RunCalculationDB
 from baramFlow.coredb.models_db import ModelsDB, MultiphaseModel
+from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.run_calculation_db import TimeSteppingMethod, DataWriteFormat, RunCalculationDB
 from baramFlow.view.widgets.content_page import ContentPage
 from widgets.async_message_box import AsyncMessageBox
 from .run_conditions_page_ui import Ui_RunConditionsPage
@@ -50,7 +51,7 @@ class RunConditionsPage(ContentPage):
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.endTime, True)
             self._ui.steadyReportInterval.setVisible(False)
             self._ui.transientReportInterval.setVisible(True)
-            self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxDi, coredb.CoreDB().hasMultipleRegions())
+            self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxDi, RegionDB.isMultiRegion())
         else:
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.numberOfIterations, True)
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.timeSteppingMethod, False)
@@ -133,7 +134,6 @@ class RunConditionsPage(ContentPage):
             await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
             return False
 
-
     def showEvent(self, ev):
         if not ev.spontaneous():
             self._load()
@@ -157,4 +157,4 @@ class RunConditionsPage(ContentPage):
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxCourantNumber, True)
             self._ui.iterationConditionsLayout.setRowVisible(
                 self._ui.maxCourantNumberForVoF, ModelsDB.getMultiphaseModel() == MultiphaseModel.VOLUME_OF_FLUID)
-            self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxDi, coredb.CoreDB().hasMultipleRegions())
+            self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxDi, RegionDB.isMultiRegion())

@@ -3,7 +3,9 @@
 
 from enum import Enum
 
+import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
+from baramFlow.coredb.scalar_model_db import IUserDefinedScalarObserver
 
 
 class SolverType(Enum):
@@ -38,3 +40,22 @@ class GeneralDB:
     @classmethod
     def isCompressibleDensity(cls):
         return cls.isCompressible() and cls.isDensityBased()
+
+
+class ScalarObserver(IUserDefinedScalarObserver):
+    ABL_SCALARS_XPATH = GeneralDB.GENERAL_XPATH + '/atmosphericBoundaryLayer/userDefinedScalars'
+
+    def scalarAdded(self, db, scalarID):
+        atmosphericBoundaryLayerScalars = db.getElement(self.ABL_SCALARS_XPATH)
+
+        atmosphericBoundaryLayerScalars.append(xml.createElement('<scalar xmlns="http://www.baramcfd.org/baram">'
+                                                                 f' <scalarID>{scalarID}</scalarID>'
+                                                                 '  <value>0</value>'
+                                                                 '</scalar>'))
+
+    def scalarRemoving(self, db, scalarID):
+        xml.removeElement(db.getElement(self.ABL_SCALARS_XPATH), f'scalar[scalarID="{scalarID}"]')
+
+    def scalarsCleared(self, db):
+        db.clearElement(self.ABL_SCALARS_XPATH)
+
