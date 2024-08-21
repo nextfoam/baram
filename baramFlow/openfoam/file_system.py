@@ -313,6 +313,9 @@ class FileSystem:
     def latestTimeToZero(cls):
         for parent in [cls._casePath, *cls.processorFolders()]:
             latestTime = cls.latestTime(parent)
+            if latestTime == '0':
+                continue
+
             zeroPath = parent / '0'
             latestPath = parent / latestTime
 

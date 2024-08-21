@@ -249,7 +249,7 @@ class PolyMeshLoader(QObject):
                             coupledBoundary = boundaries[sampleRegion][samplePatch]
                     elif 'neighbourPatch' in boundary:
                         neighbourPatch = getNeighbourPatch(rname, bcname)
-                        if neighbourPatch and getNeighbourPatch(rname, neighbourPatch) == (rname, bcname):
+                        if neighbourPatch and getNeighbourPatch(rname, neighbourPatch) == bcname:
                             coupledBoundary = boundaries[rname][neighbourPatch]
 
                     if coupledBoundary and 'bcid' in coupledBoundary:
