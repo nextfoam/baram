@@ -9,6 +9,8 @@ from PySide6.QtWidgets import QWidget
 from PySide6QtAds import CDockWidget
 from vtkmodules.vtkRenderingCore import vtkActor
 
+from widgets.rendering.ruler_widget import RulerWidget
+
 from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.dock_widgets.rendering_view_ui import Ui_RenderingView
@@ -65,6 +67,7 @@ class RenderingView(QWidget):
     def _connectSignalsSlots(self):
         self._ui.axis.toggled.connect(self._view.setAxisVisible)
         self._ui.cubeAxis.toggled.connect(self._view.setCubeAxisVisible)
+        self._ui.ruler.toggled.connect(self._setRulerVisible)
         self._ui.fit.clicked.connect(self._view.fitCamera)
         self._ui.perspective.toggled.connect(self._view.setParallelProjection)
         self._ui.alignAxis.clicked.connect(self._view.alignCamera)
@@ -74,13 +77,20 @@ class RenderingView(QWidget):
         self._view.actorPicked.connect(self.actorPicked)
         self._view.viewClosed.connect(self.viewClosed)
 
+    def _setRulerVisible(self, checked):
+        if checked:
+            self._ruler = RulerWidget(self._view.interactor(), self._view.renderer())
+            self._ruler.on()
+        else:
+            self._ruler.off()
+            self._ruler = None
+
     def _paraviewFileSelected(self, file):
         casePath = FileSystem.foamFilePath()
         AppSettings.updateParaviewInstalledPath(file)
         subprocess.Popen([f'{file}', f'{casePath}'])
 
     def _renderingModeChanged(self, index):
-        # self._widget.Render()
         self.renderingModeChanged.emit(DisplayMode(index))
 
 

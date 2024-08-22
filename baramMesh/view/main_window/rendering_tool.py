@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from widgets.rendering.ruler_widget import RulerWidget
+
 from baramMesh.view.main_window.main_window_ui import Ui_MainWindow
-from .ruler_widget import RulerWidget
 
 
 class RenderingTool:
