@@ -24,10 +24,10 @@ _materialsBase = MaterialsBase()
 
 
 class IMaterialObserver(QObject):
-    def specieAdded(self, db, mid: str, mixtureID):
+    def materialRemoving(self, db, mid: str):
         pass
 
-    def materialRemoving(self, db, mid: str):
+    def specieAdded(self, db, mid: str, mixtureID):
         pass
 
     def specieRemoving(self, db, mid: str, primarySpecie: str):
@@ -47,7 +47,7 @@ class IMaterialObserver(QObject):
 
 
 def _rootElement():
-    return coredb.CoreDB().getElement('materials')
+    return coredb.CoreDB().getElement(MaterialDB.MATERIALS_XPATH)
 
 
 def _newID(db):
@@ -249,7 +249,8 @@ class MaterialDB(object):
         materials = _rootElement()
 
         material = xml.getElement(materials, f'material[@mid="{mid}"]')
-        if material is None or xml.getText(material, 'type') == 'apecie':
+        materialType = MaterialType(xml.getText(material, 'type'))
+        if material is None or materialType == MaterialType.SPECIE:
             raise LookupError
 
         if len(xml.getElements(materials, f'material')) == 1:  # this is the last material in the list
@@ -259,6 +260,10 @@ class MaterialDB(object):
 
         for observer in cls._observers:
             observer.materialRemoving(db, mid)
+
+        if materialType == MaterialType.MIXTURE:
+            for sid in MaterialDB.getSpecies(mid):
+                xml.removeElement(materials, f'material[@mid="{sid}"]')
 
         materials.remove(material)
 
