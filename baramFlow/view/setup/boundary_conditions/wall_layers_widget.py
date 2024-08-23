@@ -117,7 +117,11 @@ class WallLayersWidget(QObject):
         thicknessLayers = db.getValue(self._xpath + '/thicknessLayers').split()
         thermalConductivityLayers = db.getValue(self._xpath + '/thermalConductivityLayers').split()
 
-        self._groupBox.setChecked(len(thicknessLayers) > 0)
+        if len(thicknessLayers) > 0:
+            self._groupBox.setChecked(True)
+        else:
+            self._groupBox.setChecked(False)
+            self.addRow('0.001', '10')
 
         for i in range(len(thicknessLayers)):
             self.addRow(thicknessLayers[i], thermalConductivityLayers[i])
