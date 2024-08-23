@@ -197,6 +197,18 @@ class RenderingWidget(QWidget):
 
         return bounds
 
+    def setBackground1(self, r, g, b):
+        self._renderer.SetBackground(r, g, b)
+
+    def setBackground2(self, r, g, b):
+        self._renderer.SetBackground2(r, g, b)
+
+    def background1(self):
+        return self._renderer.GetBackground()
+
+    def background2(self):
+        return self._renderer.GetBackground2()
+
     def _showCubeAxes(self):
         if self._cubeAxesActor is not None:
             return
