@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QColorDialog
+
 from widgets.rendering.ruler_widget import RulerWidget
 
+from baramMesh.app import app
 from baramMesh.view.main_window.main_window_ui import Ui_MainWindow
 
 
@@ -20,6 +25,8 @@ class RenderingTool:
         self._ui.fit.clicked.connect(self._view.fitCamera)
         self._ui.perspective.toggled.connect(self._view.setParallelProjection)
         self._ui.rotate.clicked.connect(self._view.rollCamera)
+        self._ui.bg1.clicked.connect(self._pickBackground1)
+        self._ui.bg2.clicked.connect(self._pickBackground2)
 
     def enable(self):
         self._ui.toolbar.setEnabled(True)
@@ -41,3 +48,36 @@ class RenderingTool:
         else:
             self._ruler.off()
             self._ruler = None
+
+    def _pickBackground1(self):
+        self._dialog = self._newBGColorDialog()
+        self._dialog.colorSelected.connect(self._setBackground1)
+        self._dialog.open()
+
+    def _pickBackground2(self):
+        self._dialog = self._newBGColorDialog()
+        self._dialog.colorSelected.connect(self._setBackground2)
+        self._dialog.open()
+
+    def _newBGColorDialog(self):
+        dialog = QColorDialog(app.window)
+        dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+        dialog.setCustomColor(0, QColor(56, 61, 84))
+        dialog.setCustomColor(1, QColor(209, 209, 209))
+
+        return dialog
+
+    def _setBackground1(self, color):
+        r, g, b, a = color.getRgbF()
+        self._view.setBackground1(r, g, b)
+        self._updateBGButtonStyle(self._ui.bg1, color)
+
+    def _setBackground2(self, color):
+        r, g, b, a = color.getRgbF()
+        self._view.setBackground2(r, g, b)
+        self._updateBGButtonStyle(self._ui.bg2, color)
+
+    def _updateBGButtonStyle(self, button, color):
+        r, g, b, a = color.getRgb()
+        button.setStyleSheet(
+            f'background: rgb({r}, {g}, {b}); border-style: solid; border-color:black; border-width: 1')
