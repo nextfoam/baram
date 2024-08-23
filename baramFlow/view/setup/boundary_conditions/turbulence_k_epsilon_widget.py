@@ -22,7 +22,6 @@ class TurbulenceKEpsilonWidget(QWidget):
         }
         self._setupSpecificationMethodCombo()
 
-        self._db = coredb.CoreDB()
         self._xpath = xpath
 
         self._connectSignalsSlots()
@@ -33,14 +32,15 @@ class TurbulenceKEpsilonWidget(QWidget):
         return True
 
     def load(self):
+        db = coredb.CoreDB()
         xpath = self._xpath + self.RELATIVE_XPATH
 
         self._ui.specificationMethod.setCurrentText(
-            self._specificationMethods[self._db.getValue(xpath + '/specification')])
-        self._ui.turbulentKineticEnergy.setText(self._db.getValue(xpath + '/turbulentKineticEnergy'))
-        self._ui.turbuelnetDissipationRate.setText(self._db.getValue(xpath + '/turbulentDissipationRate'))
-        self._ui.turbulentIntensity.setText(self._db.getValue(xpath + '/turbulentIntensity'))
-        self._ui.turbulentViscosityRatio.setText(self._db.getValue(xpath + '/turbulentViscosityRatio'))
+            self._specificationMethods[db.getValue(xpath + '/specification')])
+        self._ui.turbulentKineticEnergy.setText(db.getValue(xpath + '/turbulentKineticEnergy'))
+        self._ui.turbuelnetDissipationRate.setText(db.getValue(xpath + '/turbulentDissipationRate'))
+        self._ui.turbulentIntensity.setText(db.getValue(xpath + '/turbulentIntensity'))
+        self._ui.turbulentViscosityRatio.setText(db.getValue(xpath + '/turbulentViscosityRatio'))
         self._specificationMethodChanged()
 
     def appendToWriter(self, writer):

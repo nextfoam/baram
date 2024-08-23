@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from PySide6.QtGui import QColor
 from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonDataModel import vtkDataObject, vtkPlane
-from vtkmodules.vtkFiltersCore import vtkClipPolyData, vtkThreshold, vtkPassThrough
+from vtkmodules.vtkFiltersCore import vtkClipPolyData, vtkThreshold, vtkPassThrough, vtkCutter
 from vtkmodules.vtkFiltersExtraction import vtkExtractPolyDataGeometry, vtkExtractGeometry
 from vtkmodules.vtkRenderingCore import vtkPolyDataMapper, vtkDataSetMapper, vtkActor, vtkMapper
 from vtkmodules.vtkCommonColor import vtkNamedColors
@@ -174,18 +174,35 @@ class ActorInfo(QObject):
             else:
                 self._highlightOff()
 
-    def cut(self, cutters):
+    def clip(self, planes):
         for i in reversed(range(1, len(self._cutFilters))):
             self._cutFilters[i].RemoveAllInputConnections(0)
             self._cutFilters.pop()
 
         inputFilter = self._cutFilters[0]
-        if cutters and self._properties.cutEnabled:
-            for c in cutters:
+        if planes and self._properties.cutEnabled:
+            for c in planes:
                 f = self._clipFilter(c)
                 f.SetInputConnection(inputFilter.GetOutputPort())
                 self._cutFilters.append(f)
                 inputFilter = f
+
+        self._mapper.SetInputConnection(inputFilter.GetOutputPort())
+        self._mapper.Update()
+
+    def slice(self, plane):
+        for i in reversed(range(1, len(self._cutFilters))):
+            self._cutFilters[i].RemoveAllInputConnections(0)
+            self._cutFilters.pop()
+
+        inputFilter = self._cutFilters[0]
+        if plane is not None and self._properties.cutEnabled:
+            f = vtkCutter()
+            f.SetCutFunction(plane)
+            f.GenerateTrianglesOff()
+            f.SetInputConnection(inputFilter.GetOutputPort())
+            self._cutFilters.append(f)
+            inputFilter = f
 
         self._mapper.SetInputConnection(inputFilter.GetOutputPort())
         self._mapper.Update()

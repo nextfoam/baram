@@ -5,7 +5,8 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, KEpsilonModel, KOmegaModel, NearWallTreatment
-from baramFlow.coredb.models_db import SubgridScaleModel, LengthScaleModel
+from baramFlow.coredb.models_db import SubgridScaleModel, LengthScaleModel, RANSModel, ShieldingFunctions
+from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.openfoam.file_system import FileSystem
 
 
@@ -44,6 +45,8 @@ class TurbulenceProperties(DictionaryFile):
             subModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-omega/model')
             if subModel == KOmegaModel.SST.value:
                 self._constructRASproperties('kOmegaSST')
+        elif self._model == TurbulenceModel.DES:
+            self._constructDESProperties()
         elif self._model == TurbulenceModel.LES:
             self._constructLESProperties()
 
@@ -61,7 +64,7 @@ class TurbulenceProperties(DictionaryFile):
                 'RASModel': subModel,
                 'turbulence': 'on',
                 'printCoeffs': 'on',
-                'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/energyPrandtlNumber')
+                'viscosityRatioMax': self._getMaxViscosityRatio()
             }
         }
 
@@ -72,19 +75,98 @@ class TurbulenceProperties(DictionaryFile):
                 hasABLInlet = True
                 break
 
-        if hasABLInlet and self._model == TurbulenceModel.K_EPSILON:
-            self._data['RAS']['kEpsilonCoeffs'] = {
-                'Cmu': 0.09,
-                'C1': 1.44,
-                'C2': 1.92,
-                'sigmaEps': 1.11
+        if self._model == TurbulenceModel.K_EPSILON:
+            data = {
+                'Prt': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/energyPrandtlNumber'),
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
             }
+
+            if hasABLInlet:
+                data.update({
+                    'Cmu': 0.09,
+                    'C1': 1.44,
+                    'C2': 1.92,
+                    'sigmaEps': 1.11
+                })
+
+            self._data['RAS']['kEpsilonCoeffs'] = data
 
         if subModel == 'realizableKEtwoLayer':
             self._data['RAS']['ReyStar'] = self._db.getValue(
                 ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/threshold')
             self._data['RAS']['deltaRey'] = self._db.getValue(
                 ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/blendingWidth')
+
+    def _constructDESProperties(self):
+        ransModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/RANSModel')
+        lengthScaleModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/lengthScaleModel')
+
+        if self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/DESOptions/delayedDES') == 'true':
+            shieldingFunctions = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/shieldingFunctions')
+            if shieldingFunctions == ShieldingFunctions.IDDES.value:
+                lengthScaleModel = 'IDDESDelta'
+        else:
+            shieldingFunctions = 'DES'
+
+        self._data = {
+            'simulationType': 'LES',
+            'LES': {
+                'turbulence': 'on',
+                'delta': lengthScaleModel,
+                'viscosityRatioMax': self._getMaxViscosityRatio()
+            },
+        }
+
+        LESModel = None
+        if ransModel == RANSModel.SPALART_ALLMARAS.value:
+            LESModel = 'SpalartAllmaras' + shieldingFunctions
+            self._data['LES'][LESModel + 'Coeffs'] = {
+                'CDES': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/modelConstants/DES'),
+                'lowReCorrection':
+                    ('yes'
+                     if self._db.getValue(
+                        ModelsDB.TURBULENCE_MODELS_XPATH + '/des/spalartAllmarasOptions/lowReDamping') == 'true'
+                     else 'no'),
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
+            }
+        elif ransModel == RANSModel.K_OMEGA_SST.value:
+            LESModel = 'kOmegaSST' + shieldingFunctions
+            self._data['LES'][LESModel] = {
+                'CDESkom': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/modelConstants/DESKOmega'),
+                'CDESkeps': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/des/modelConstants/DESKEpsilon'),
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
+            }
+
+        self._data['LES']['LESModel'] = LESModel
+
+        if lengthScaleModel == 'IDDESDelta':
+            self._data['LES']['IDDESDeltaCoeffs'] = {
+                'hmax': 'maxDeltaxyzCubeRoot',
+                'maxDeltaxyzCubeRootCoeffs': {}
+            }
+        elif lengthScaleModel == LengthScaleModel.VAN_DRIEST.value:
+            self._data['LES']['vanDriestCoeffs'] = {
+                'delta': 'cubeRootVol',
+                'cubeRootVolCoeffs': {
+                    'deltaCoeff': 2.0,
+                },
+                'kappa': 0.41,
+                'Aplus': 26,
+                'Cdelta': 0.158,
+                'calcInterval': 1
+            }
+        elif lengthScaleModel == LengthScaleModel.CUBE_ROOT_VOLUME.value:
+            self._data['LES']['cubeRootVolCoeffs'] = {
+                'deltaCoeff': 1
+            }
+        elif lengthScaleModel == LengthScaleModel.SMOOTH.value:
+            self._data['LES']['smoothCoeffs'] = {
+                'delta': 'cubeRootVol',
+                'cubeRootVolCoeffs': {
+                    'deltaCoeff': 1,
+                },
+                'maxDeltaRatio': 1.1
+            }
 
     def _constructLESProperties(self):
         subgridScaleModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/subgridScaleModel')
@@ -96,29 +178,34 @@ class TurbulenceProperties(DictionaryFile):
                 'LESModel': subgridScaleModel,
                 'turbulence': 'on',
                 'printCoeffs': 'off',
-                'delta': lengthScaleModel
+                'delta': lengthScaleModel,
+                'viscosityRatioMax': self._getMaxViscosityRatio()
             }
         }
 
         if subgridScaleModel == SubgridScaleModel.SMAGORINSKY.value:
             self._data['LES']['SmagorinskyCoeffs'] = {
                 'Ck': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/k'),
-                'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e')
+                'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e'),
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
             }
         elif subgridScaleModel == SubgridScaleModel.WALE.value:
             self._data['LES']['WALECoeffs'] = {
                 'Ck': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/k'),
                 'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e'),
-                'Cw': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/w')
+                'Cw': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/w'),
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
             }
         elif subgridScaleModel == SubgridScaleModel.KEQN.value:
             self._data['LES']['kEqnCoeffs'] = {
                 'Ck': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/k'),
-                'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e')
+                'Ce': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/les/modelConstants/e'),
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
             }
         elif subgridScaleModel == SubgridScaleModel.DYNAMIC_KEQN.value:
             self._data['LES']['dynamicKEqnCoeffs'] = {
-                'filter': 'simple'
+                'filter': 'simple',
+                'Sct': self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/turbulentSchmidtNumber')
             }
 
         if lengthScaleModel == LengthScaleModel.VAN_DRIEST.value:
@@ -144,3 +231,6 @@ class TurbulenceProperties(DictionaryFile):
                 },
                 'maxDeltaRatio': 1.1
             }
+
+    def _getMaxViscosityRatio(self):
+        return self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/limits/maximumViscosityRatio')

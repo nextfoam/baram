@@ -1,46 +1,115 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
+from baramFlow.coredb.configuraitions import ConfigurationException
+from baramFlow.coredb.material_db import IMaterialObserver, MaterialDB
+from baramFlow.coredb.region_db import IRegionMaterialObserver, RegionDB, REGION_XPATH
+
+
+INITIALIZATION_XPATH = REGION_XPATH + '/initialization'
 
 
 class InitializationDB:
     @classmethod
-    def getVelocity(cls, rname: str) -> float:
-        db = coredb.CoreDB()
-        return db.getVector(f'.//regions/region[name="{rname}"]/initialization/initialValues/velocity')
+    def getXPath(cls, rname):
+        return f'{RegionDB.getXPath(rname)}/initialization'
 
     @classmethod
-    def getPressure(cls, rname: str) -> float:
-        db = coredb.CoreDB()
-        return float(db.retrieveValue(f'.//regions/region[name="{rname}"]/initialization/initialValues/pressure'))\
-            + float(db.retrieveValue('.//operatingConditions/pressure'))
+    def getSectionXPath(cls, rname, sectionName):
+        return f'{cls.getXPath(rname)}/advanced/sections/section[name="{sectionName}"]'
 
     @classmethod
-    def getGaugePressure(cls, rname: str) -> float:
-        db = coredb.CoreDB()
-        return float(db.retrieveValue(f'.//regions/region[name="{rname}"]/initialization/initialValues/pressure'))
+    def buildSectionUserDefinedScalar(cls, scalarId, value):
+        return ('<scalar xmlns="http://www.baramcfd.org/baram">'
+                f'  <scalarID>{scalarId}</scalarID>'
+                f'  <value disabled="{"false" if value else "true"}">{value if value else 0}</value>'
+                '</scalar>')
 
-    @classmethod
-    def getTemperature(cls, rname: str) -> float:
-        return float(
-            coredb.CoreDB().retrieveValue(
-                f'.//regions/region[name="{rname}"]/initialization/initialValues/temperature'))
 
-    @classmethod
-    def getScaleOfVelocity(cls, rname: str) -> float:
-        return float(
-            coredb.CoreDB().retrieveValue(
-                f'.//regions/region[name="{rname}"]/initialization/initialValues/scaleOfVelocity'))
+def getInitializationElement(rname):
+    return coredb.CoreDB().getElement(InitializationDB.getXPath(rname))
 
-    @classmethod
-    def getTurbulentViscosity(cls, rname: str) -> float:
-        return float(
-            coredb.CoreDB().retrieveValue(
-                f'.//regions/region[name="{rname}"]/initialization/initialValues/turbulentViscosity'))
 
-    @classmethod
-    def getTurbulentIntensity(cls, rname: str) -> float:
-        return float(
-            coredb.CoreDB().retrieveValue(
-                f'.//regions/region[name="{rname}"]/initialization/initialValues/turbulentIntensity')) / 100.0
+class MaterialObserver(IMaterialObserver):
+    def specieAdded(self, db, mid, mixtureID):
+        for mixture in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/species/mixture[mid="{mixtureID}"]'):
+            mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
+                                             f' <mid>{mid}</mid><value>0</value>'
+                                             '</specie>'))
+
+        for mixture in db.getElements(
+                f'{INITIALIZATION_XPATH}/advanced/sections/section/species/mixture[mid="{mixtureID}"]'):
+            mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
+                                             f' <mid>{mid}</mid><value>0</value>'
+                                             '</specie>'))
+
+    def materialRemoving(self, db, mid: int):
+        for volumeFraction in db.getElements(
+                f'{INITIALIZATION_XPATH}/initialValues/volumeFractions/volumeFraction[material="{mid}"]'):
+            volumeFraction.getparent().remove(volumeFraction)
+
+        for volumeFraction in db.getElements(
+                f'{INITIALIZATION_XPATH}/advanced/sections/section/volumeFractions/volumeFraction[material="{mid}"]'):
+            volumeFraction.getparent().remove(volumeFraction)
+
+    def specieRemoving(self, db, mid, primarySpecie):
+        for specie in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/species/mixture/specie[mid="{mid}"]'):
+            self._removeSpecieInComposition(primarySpecie, specie)
+
+        for specie in db.getElements(
+                f'{INITIALIZATION_XPATH}/advanced/sections/section/species/mixture/specie[mid="{mid}"]'):
+            self._removeSpecieInComposition(primarySpecie, specie)
+
+
+class RegionMaterialObserver(IRegionMaterialObserver):
+    def materialsUpdating(self, db, rname, primary, secondaries, species):
+        ratiosXML = self._specieRatiosXML(species)
+        initialValuesSpeciesXML = f'''<mixture xmlns="http://www.baramcfd.org/baram">
+                                        <mid>{primary}</mid>{ratiosXML}
+                                      </mixture>'''
+        sectionSpeicesXML = f'''<mixture disabled="true" xmlns="http://www.baramcfd.org/baram">
+                                    <mid>{primary}</mid>{ratiosXML}
+                                </mixture>'''
+
+        initialization = getInitializationElement(rname)
+
+        volumeFractions = xml.getElement(initialization, 'initialValues/volumeFractions')
+        # volumeFractions.clear()
+        self._addVolumeFractions(volumeFractions, secondaries)
+
+        initialSpecies = xml.getElement(initialization, 'initialValues/species')
+        initialSpecies.clear()
+        if species:
+            initialSpecies.append(xml.createElement(initialValuesSpeciesXML))
+
+        for section in xml.getElements(initialization, 'advanced/sections/section'):
+            volumeFractions = xml.getElement(section, 'volumeFractions')
+            # volumeFractions.clear()
+            self._addVolumeFractions(volumeFractions, secondaries)
+
+            if (not xml.getElements(section, '*[@disabled="false"]')
+                    and not xml.getElements(section, 'userDefinedScalars/scalar/value[@disabled="false"]')):
+                oldMaterial = RegionDB.getMaterial(rname)
+                for mixture in xml.getElements(section, 'species/mixture[@disabled="false"]'):
+                    if xml.getText(mixture, 'mid') != oldMaterial:
+                        break
+                else:
+
+                    raise ConfigurationException(
+                        self.tr('Material {0} has the only initialization setting in section {1},'
+                                'so it cannot be changed to a different material.').format(
+                            MaterialDB.getName(oldMaterial), xml.getText(section, 'name')))
+
+            speciesElement = xml.getElement(section, 'species')
+            speciesElement.clear()
+            if species:
+                speciesElement.append(xml.createElement(sectionSpeicesXML))
+
+    def _addVolumeFractions(self, parent, mids):
+        for mid in mids:
+            if xml.getElement(parent, f'volumeFraction[material="{mid}"]') is None:
+                parent.append(xml.createElement('<volumeFraction xmlns="http://www.baramcfd.org/baram">'
+                                                f'  <material>{mid}</material><fraction>0</fraction>'
+                                                '</volumeFraction>'))

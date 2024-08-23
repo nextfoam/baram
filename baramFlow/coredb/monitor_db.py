@@ -3,11 +3,12 @@
 
 from enum import Enum
 
-from PySide6.QtCore import QCoreApplication
+from PySide6.QtCore import QCoreApplication, QObject, Signal
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
-from baramFlow.coredb.material_db import MaterialDB, Phase
+from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
+from baramFlow.coredb.material_db import MaterialDB, Phase, MaterialType, IMaterialObserver
 from baramFlow.openfoam.solver import findSolver, getSolverCapability
 
 
@@ -24,6 +25,7 @@ class Field(Enum):
     TEMPERATURE = 'temperature'
     DENSITY = 'density'
     MATERIAL = 'material'
+    SCALAR = 'scalar'
 
 
 class SurfaceReportType(Enum):
@@ -50,11 +52,17 @@ class DirectionSpecificationMethod(Enum):
     AOA_AOS = 'AoA_AoS'
 
 
+class MonitorDBSignals(QObject):
+    monitorChanged = Signal()
+
+
 class MonitorDB:
     FORCE_MONITORS_XPATH = './/monitors/forces'
     POINT_MONITORS_XPATH = './/monitors/points'
     SURFACE_MONITORS_XPATH = './/monitors/surfaces'
     VOLUME_MONITORS_XPATH = './/monitors/volumes'
+
+    signals = MonitorDBSignals()
 
     @classmethod
     def getForceMonitorXPath(cls, name):
@@ -130,22 +138,22 @@ class FieldHelper:
 
     class FieldItem:
         class DBFieldKey:
-            def __init__(self, field, mid='1'):
+            def __init__(self, field, id_='1'):
                 # Values for coreDB's field element
-                self._field = field.value
-                self._mid = mid
+                self._field = field
+                self._id = id_
 
             @property
             def field(self):
                 return self._field
 
             @property
-            def mid(self):
-                return self._mid
+            def id(self):
+                return self._id
 
-        def __init__(self, text, field, mid='1'):
+        def __init__(self, text, field, id_='1'):
             self._text = text
-            self._key = self.DBFieldKey(field, mid)
+            self._key = self.DBFieldKey(field, id_)
 
         @property
         def text(self):
@@ -189,25 +197,40 @@ class FieldHelper:
             _appendField(Field.TEMPERATURE)
             _appendField(Field.DENSITY)
 
+        db = coredb.CoreDB()
         # Material fields on multiphase model
         if ModelsDB.isMultiphaseModelOn():
-            for mid, name, formula, phase in coredb.CoreDB().getMaterials():
-                if MaterialDB.dbTextToPhase(phase) != Phase.SOLID:
+            for mid, name, formula, phase in db.getMaterials():
+                if phase != Phase.SOLID.value:
                     _appendMaterial(mid, name)
+        elif ModelsDB.isSpeciesModelOn():
+            for mid, _, _, _ in db.getMaterials(MaterialType.MIXTURE.value):
+                for specie, name in MaterialDB.getSpecies(mid).items():
+                    _appendMaterial(specie, name)
+
+        for scalarID, fieldName in coredb.CoreDB().getUserDefinedScalars():
+            fields.append(cls.FieldItem(fieldName, Field.SCALAR, str(scalarID)))
 
         return fields
 
     @classmethod
-    def DBFieldKeyToText(cls, field, mid):
-        if field == Field.MATERIAL.value:
-            return MaterialDB.getName(mid)
+    def DBFieldKeyToText(cls, field, fieldID):
+        if field == Field.MATERIAL:
+            return MaterialDB.getName(fieldID)
+        elif field == Field.SCALAR:
+            return UserDefinedScalarsDB.getFieldName(fieldID)
         else:
             return cls.FIELD_TEXTS[Field(field)]
 
     @classmethod
-    def DBFieldKeyToField(cls, field, mid):
-        if field == Field.MATERIAL.value:
-            return 'alpha.' + MaterialDB.getName(mid)
+    def DBFieldKeyToField(cls, field, fieldID):
+        if field == Field.MATERIAL:
+            if MaterialDB.getType(fieldID) == MaterialType.SPECIE:
+                return MaterialDB.getName(fieldID)
+            else:
+                return 'alpha.' + MaterialDB.getName(fieldID)
+        elif field == Field.SCALAR:
+            return UserDefinedScalarsDB.getFieldName(fieldID)
         else:
             fieldName = cls.FIELDS[Field(field)]
 
@@ -220,3 +243,29 @@ class FieldHelper:
                     pass
 
             return fieldName
+
+
+class MaterialObserver(IMaterialObserver):
+    def materialRemoving(self, db, mid: int):
+        removed = self._removeMonitors(db, mid)
+        if MaterialDB.getType(mid) == MaterialType.MIXTURE:
+            for sid in MaterialDB.getSpecies(mid):
+                removed = removed or self._removeMonitors(db, sid)
+
+        if removed:
+            MonitorDB.signals.monitorChanged.emit()
+
+    def specieRemoving(self, db, mid, primarySpecie):
+        if self._removeMonitors(db, mid):
+            MonitorDB.signals.monitorChanged.emit()
+
+    def _removeMonitors(self, db, mid):
+        referencingFields = db.getElements(f'monitors/*/*/field[field="material"][fieldID="{mid}"]')
+        if not referencingFields:
+            return False
+
+        for field in referencingFields:
+            monitor = field.getparent()
+            monitor.getparent().remove(monitor)
+
+        return True

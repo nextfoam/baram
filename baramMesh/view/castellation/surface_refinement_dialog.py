@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import qasync
+from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QDialog
 
 from libbaram.simple_db.simple_schema import DBError
@@ -31,6 +32,14 @@ class SurfaceRefinementDialog(QDialog):
         self._surfaces = None
         self._oldSurfaces = None
         self._availableSurfaces = None
+
+        self._xCellSize = None
+        self._yCellSize = None
+        self._zCellSize = None
+
+        self._ui.minimumLevel.setValidator(QIntValidator(0, 100))
+        self._ui.maximumLevel.setValidator(QIntValidator(0, 100))
+        self._ui.featureEdgeRefinementLevel.setValidator(QIntValidator(0, 100))
 
         self._connectSignalsSlots()
 
@@ -91,19 +100,19 @@ class SurfaceRefinementDialog(QDialog):
                 else:
                     surfaces[gId] = self._groupId
 
-            geometryManager = app.window.geometryManager
             for gId, group in surfaces.items():
                 self._db.setValue(f'geometry/{gId}/castellationGroup', group)
-                geometryManager.updateGeometryProperty(gId, 'castellationGroup', group)
 
             super().accept()
         except DBError as error:
             await AsyncMessageBox().information(self, self.tr('Input Error'), error.toMessage())
 
     def _connectSignalsSlots(self):
+        self._ui.minimumLevel.editingFinished.connect(self._updateMinimumLevelCellSize)
+        self._ui.maximumLevel.editingFinished.connect(self._updateMaximumLevelCellSize)
+        self._ui.featureEdgeRefinementLevel.editingFinished.connect(self._updateFeatureEdgeLevelCellSize)
         self._ui.select.clicked.connect(self._selectSurfaces)
         self._ui.ok.clicked.connect(self._accept)
-        self._ui.cancel.clicked.connect(self.close)
 
     def _load(self):
         if self._groupId:
@@ -120,13 +129,13 @@ class SurfaceRefinementDialog(QDialog):
 
         self._surfaces = []
         self._availableSurfaces = []
-        for gId, geometry in app.window.geometryManager.geometries().items():
-            if geometry['gType'] == GeometryType.SURFACE.value:
+        for gId, geometry in self._db.getElements('geometry').items():
+            if geometry.value('gType') == GeometryType.SURFACE.value:
                 if app.window.geometryManager.isBoundingHex6(gId):
                     continue
 
-                name = geometry['name']
-                groupId = geometry['castellationGroup']
+                name = geometry.value('name')
+                groupId = geometry.value('castellationGroup')
                 if groupId is None:
                     self._availableSurfaces.append(SelectorItem(name, name, gId))
                 elif groupId == self._groupId:
@@ -136,13 +145,47 @@ class SurfaceRefinementDialog(QDialog):
 
         self._oldSurfaces = self._surfaces
 
+        self._loadCellSize()
+
+    def _loadCellSize(self):
+        gId, geometry = app.window.geometryManager.getBoundingHex6()
+        if geometry is None:
+            x1, x2, y1, y2, z1, z2 = app.window.geometryManager.getBounds().toTuple()
+        else:
+            x1, y1, z1 = geometry.vector('point1')
+            x2, y2, z2 = geometry.vector('point2')
+
+        self._xCellSize = (x2 - x1) / self._db.getFloat('baseGrid/numCellsX')
+        self._yCellSize = (y2 - y1) / self._db.getFloat('baseGrid/numCellsY')
+        self._zCellSize = (z2 - z1) / self._db.getFloat('baseGrid/numCellsZ')
+
+        self._updateMinimumLevelCellSize()
+        self._updateMaximumLevelCellSize()
+        self._updateFeatureEdgeLevelCellSize()
+
+    def _updateMinimumLevelCellSize(self):
+        self._updateCellSize(self._ui.minimumLevel, self._ui.minimumLevelCellSize)
+
+    def _updateMaximumLevelCellSize(self):
+        self._updateCellSize(self._ui.maximumLevel, self._ui.maximumLevelCellSzie)
+
+    def _updateFeatureEdgeLevelCellSize(self):
+        self._updateCellSize(self._ui.featureEdgeRefinementLevel, self._ui.featureEdgeLevelCellSize)
+
     def _selectSurfaces(self):
         self._dialog = MultiSelectorDialog(self, self.tr('Select Surfaces'), self._availableSurfaces, self._surfaces)
         self._dialog.itemsSelected.connect(self._setSurfaces)
         self._dialog.open()
 
-    def _setSurfaces(self, gIds):
-        self._surfaces = gIds
+    def _setSurfaces(self, items):
+        self._surfaces = []
         self._ui.surfaces.clear()
-        for gId in gIds:
-            self._ui.surfaces.addItem(app.window.geometryManager.geometry(gId)['name'])
+        for gId, name in items:
+            self._surfaces.append(gId)
+            self._ui.surfaces.addItem(name)
+
+    def _updateCellSize(self, level, cellSize):
+        d = 2 ** int(level.text())
+        cellSize.setText(
+            'cell size <b>({:6g} x {:6g} x {:6g})</b>'.format(
+                self._xCellSize / d, self._yCellSize / d, self._zCellSize / d))

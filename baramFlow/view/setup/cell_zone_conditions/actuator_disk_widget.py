@@ -26,34 +26,33 @@ class ActuatorDiskWidget(QWidget):
             self._ui.forceComputationRadioGroup.id(self._ui.variableScaling): ForceComputation.VARIABLE_SCALING.value,
         }
 
-        self._db = coredb.CoreDB()
         self._xpath = xpath + '/actuatorDisk'
 
     def load(self):
-        self._ui.diskDirectionX.setText(self._db.getValue(self._xpath + '/diskDirection/x'))
-        self._ui.diskDirectionY.setText(self._db.getValue(self._xpath + '/diskDirection/y'))
-        self._ui.diskDirectionZ.setText(self._db.getValue(self._xpath + '/diskDirection/z'))
-        self._ui.powerCoefficient.setText(self._db.getValue(self._xpath + '/powerCoefficient'))
-        self._ui.thrustCoefficient.setText(self._db.getValue(self._xpath + '/thrustCoefficient'))
-        self._ui.diskArea.setText(self._db.getValue(self._xpath + '/diskArea'))
-        self._ui.upstreamPointX.setText(self._db.getValue(self._xpath + '/upstreamPoint/x'))
-        self._ui.upstreamPointY.setText(self._db.getValue(self._xpath + '/upstreamPoint/y'))
-        self._ui.upstreamPointZ.setText(self._db.getValue(self._xpath + '/upstreamPoint/z'))
-        self._getForceComputationRadio(self._db.getValue(self._xpath + '/forceComputation')).setChecked(True)
+        db = coredb.CoreDB()
+        self._ui.diskDirectionX.setText(db.getValue(self._xpath + '/diskDirection/x'))
+        self._ui.diskDirectionY.setText(db.getValue(self._xpath + '/diskDirection/y'))
+        self._ui.diskDirectionZ.setText(db.getValue(self._xpath + '/diskDirection/z'))
+        self._ui.powerCoefficient.setText(db.getValue(self._xpath + '/powerCoefficient'))
+        self._ui.thrustCoefficient.setText(db.getValue(self._xpath + '/thrustCoefficient'))
+        self._ui.diskArea.setText(db.getValue(self._xpath + '/diskArea'))
+        self._ui.upstreamPointX.setText(db.getValue(self._xpath + '/upstreamPoint/x'))
+        self._ui.upstreamPointY.setText(db.getValue(self._xpath + '/upstreamPoint/y'))
+        self._ui.upstreamPointZ.setText(db.getValue(self._xpath + '/upstreamPoint/z'))
+        self._getForceComputationRadio(db.getValue(self._xpath + '/forceComputation')).setChecked(True)
 
-    def appendToWriter(self, writer):
-        writer.append(self._xpath + '/diskDirection/x', self._ui.diskDirectionX.text(), self.tr("Disk Direction X"))
-        writer.append(self._xpath + '/diskDirection/y', self._ui.diskDirectionY.text(), self.tr("Disk Direction Y"))
-        writer.append(self._xpath + '/diskDirection/z', self._ui.diskDirectionZ.text(), self.tr("Disk Direction Z"))
-        writer.append(self._xpath + '/powerCoefficient',
-                      self._ui.powerCoefficient.text(), self.tr("Power Coefficient"))
-        writer.append(self._xpath + '/thrustCoefficient',
-                      self._ui.thrustCoefficient.text(), self.tr("Thrust Coefficient"))
-        writer.append(self._xpath + '/diskArea', self._ui.diskArea.text(), self.tr("Disk Area"))
-        writer.append(self._xpath + '/upstreamPoint/x', self._ui.upstreamPointX.text(), self.tr("Upstream Point X"))
-        writer.append(self._xpath + '/upstreamPoint/y', self._ui.upstreamPointY.text(), self.tr("Upstream Point Y"))
-        writer.append(self._xpath + '/upstreamPoint/z', self._ui.upstreamPointZ.text(), self.tr("Upstream Point Z"))
-        writer.append(self._xpath + '/forceComputation', self._getForceComputationRadioValue(), None)
+    def updateDB(self, newDB):
+        newDB.setValue(self._xpath + '/diskDirection/x', self._ui.diskDirectionX.text(), self.tr("Disk Direction X"))
+        newDB.setValue(self._xpath + '/diskDirection/y', self._ui.diskDirectionY.text(), self.tr("Disk Direction Y"))
+        newDB.setValue(self._xpath + '/diskDirection/z', self._ui.diskDirectionZ.text(), self.tr("Disk Direction Z"))
+        newDB.setValue(self._xpath + '/powerCoefficient', self._ui.powerCoefficient.text(), self.tr("Power Coefficient"))
+        newDB.setValue(self._xpath + '/thrustCoefficient',
+                    self._ui.thrustCoefficient.text(), self.tr("Thrust Coefficient"))
+        newDB.setValue(self._xpath + '/diskArea', self._ui.diskArea.text(), self.tr("Disk Area"))
+        newDB.setValue(self._xpath + '/upstreamPoint/x', self._ui.upstreamPointX.text(), self.tr("Upstream Point X"))
+        newDB.setValue(self._xpath + '/upstreamPoint/y', self._ui.upstreamPointY.text(), self.tr("Upstream Point Y"))
+        newDB.setValue(self._xpath + '/upstreamPoint/z', self._ui.upstreamPointZ.text(), self.tr("Upstream Point Z"))
+        newDB.setValue(self._xpath + '/forceComputation', self._getForceComputationRadioValue(), None)
 
         return True
 

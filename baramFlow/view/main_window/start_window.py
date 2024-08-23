@@ -56,7 +56,6 @@ class Baram(QObject):
 
     @qasync.asyncSlot()
     async def _restart(self):
-        Project.close()
         await self.start()
 
     def _openExistingProject(self, directory):

@@ -6,12 +6,13 @@ from PySide6.QtWidgets import QWizard
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB, Specification
 from baramFlow.coredb.models_db import MultiphaseModel
+from baramFlow.coredb.numerical_db import NumericalDB
 from .case_wizard_ui import Ui_CaseWizard
 from .flow_type_page import FlowTypePage
-from .last_page import LastPage
-from .solver_type_page import SolverTypePage
-from .multiphase_model_page import MultiphaseModelPage
 from .gravity_model_page import GravityModelPage
+from .last_page import LastPage
+from .multiphase_model_page import MultiphaseModelPage
+from .solver_type_page import SolverTypePage
 from .species_model_page import SpeciesModelPage
 from .workspace_page import WorkspacePage
 
@@ -36,6 +37,7 @@ class CaseWizard(QWizard):
         self._ui = Ui_CaseWizard()
         self._ui.setupUi(self)
 
+        MaterialDB.addMaterial(self._db, 'air')
         self.setPage(WORKSPACE, WorkspacePage(self, path))
         self.setPage(FLOW_TYPE, FlowTypePage(self))
         self.setPage(SOLVER_TYPE, SolverTypePage(self))
@@ -59,12 +61,10 @@ class CaseWizard(QWizard):
                 return LAST_PAGE
         elif curId == MULTIPHASE_MODEL:
             if self.field('multiphaseModel') == MultiphaseModel.OFF.value:
-                return SPECIES_MODEL
+                return LAST_PAGE
             else:
                 return GRAVITY_MODEL
         elif curId == GRAVITY_MODEL:
-            return SPECIES_MODEL
-        elif curId == SPECIES_MODEL:
             return LAST_PAGE
         elif curId == LAST_PAGE:
             return LAST
@@ -84,6 +84,13 @@ class CaseWizard(QWizard):
             self._db.setValue(f'{generalXPath}/solverType', 'densityBased')
             self._db.setValue(f'{generalXPath}/flowType', 'compressible')
             self._db.setValue(f'{modelsXPath}/energyModels', 'on')
+            self._db.setValue(
+                f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/advanced/equations/energy/includeViscousDissipationTerms',
+                'true')
+            self._db.setValue(
+                f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/advanced/equations/energy/includeKineticEnergyTerms', 'true')
+            self._db.setValue(
+                f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/advanced/equations/energy/includePressureWorkTerms', 'true')
             self._db.setValue(f'{MaterialDB.getXPathByName("air")}/density/specification', Specification.PERFECT_GAS.value)
 
         self._db.setValue(f'{modelsXPath}/multiphaseModels/model', self.field('multiphaseModel'))

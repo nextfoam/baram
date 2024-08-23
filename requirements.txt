@@ -12,5 +12,5 @@ PyYAML==6.0
 qasync==0.24.0
 superqt==0.6.1
 tables==3.7.0
-vtk==9.2.6
+vtk==9.3.0
 xmlschema==1.10.0

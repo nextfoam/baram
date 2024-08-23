@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import qasync
+from PySide6.QtCore import Qt, QCoreApplication, QEvent
 from PySide6.QtWidgets import QWidget, QScrollArea, QVBoxLayout
-from PySide6.QtCore import Qt
+from PySide6QtAds import CDockWidget
 
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
@@ -11,15 +12,13 @@ from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.view.widgets.flow_layout import FlowLayout
 from baramFlow.view.widgets.chart_wigdet import ChartWidget
 from baramFlow.openfoam.post_processing.monitor import ForceMonitor, PointMonitor, SurfaceMonitor, VolumeMonitor, calculateMaxX
-from .tabified_dock import TabifiedDock
 
 
-class MonitorDock(TabifiedDock):
+class MonitorView(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._setupUi()
 
-        self._main_window = parent
         self._project = Project.instance()
         self._monitors = {}
         self._deletedMonitors = None
@@ -29,18 +28,10 @@ class MonitorDock(TabifiedDock):
         CaseManager().caseCleared.connect(self._caseCleared)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
-        self._translate()
-
-    def _translate(self):
-        self.setWindowTitle(self.tr("Monitor"))
-
     def _setupUi(self):
-        self.setAllowedAreas(Qt.RightDockWidgetArea)
-
-        self._widget = QWidget()
-        self._layout = QVBoxLayout(self._widget)
-        self._scrollArea = QScrollArea(self._widget)
-        self._scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._layout = QVBoxLayout(self)
+        self._scrollArea = QScrollArea(self)
+        self._scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._scrollArea.setWidgetResizable(True)
 
         self._chartsWidget = QWidget()
@@ -48,7 +39,6 @@ class MonitorDock(TabifiedDock):
 
         self._scrollArea.setWidget(self._chartsWidget)
         self._layout.addWidget(self._scrollArea)
-        self.setWidget(self._widget)
 
     @qasync.asyncSlot()
     async def _caseLoaded(self):
@@ -123,3 +113,18 @@ class MonitorDock(TabifiedDock):
         return chart
 
 
+class MonitorDock(CDockWidget):
+    def __init__(self):
+        super().__init__(self._title())
+
+        self._widget = MonitorView()
+        self.setWidget(self._widget)
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.LanguageChange:
+            self.setWindowTitle(self._title())
+
+        super().changeEvent(event)
+
+    def _title(self):
+        return QCoreApplication.translate('MonitorDock', 'Monitor')

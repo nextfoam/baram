@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QDialog, QListWidgetItem
 from PySide6.QtCore import Qt
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.material_db import MaterialDB, Phase
+from baramFlow.coredb.material_db import Phase
 from .materials_selector_dialog_ui import Ui_MaterialsSelectorDialog
 
 
@@ -16,7 +16,6 @@ class ItemDataRole(Enum):
     USER_DATA = Qt.UserRole
     FILTERING_TEXT = auto()
     SELECTION_FLAG = auto()
-    PHASE = auto()
     LIST_INDEX = auto()
 
 
@@ -35,36 +34,33 @@ class MaterialSectorDialog(QDialog):
 
         self._primaryIndex = None
 
-        materials = coredb.CoreDB().getMaterials()
-        for id_, name, formular, dbPhase in materials:
-            mid = str(id_)
+        for mid, name, type_, phase in coredb.CoreDB().getMaterials():
             index = self._ui.primary.count()
-            self._ui.primary.addItem(name, mid)
+            self._ui.primary.addItem(name, str(mid))
 
             item = None
-            if phase := MaterialDB.dbTextToPhase(dbPhase) != Phase.SOLID:
+            if phase != Phase.SOLID.value:
                 item = QListWidgetItem(name)
-                item.setData(ItemDataRole.USER_DATA.value, mid)
+                item.setData(ItemDataRole.USER_DATA.value, str(mid))
                 item.setData(ItemDataRole.FILTERING_TEXT.value, name.lower())
                 item.setData(ItemDataRole.SELECTION_FLAG.value, False)
-                item.setData(ItemDataRole.PHASE.value, phase)
 
                 self._ui.list.addItem(item)
                 self._ui.primary.setItemData(index, self._ui.list.row(item), ItemDataRole.LIST_INDEX.value)
 
-                if mid in secondaries:
+                if secondaries and mid in secondaries:
                     self._addSelectedItem(item)
 
                 self._ui.secondariesSelector.setEnabled(True)
 
-            if mid == primary:
+            if mid == int(primary):
                 self._ui.primary.setCurrentText(name)
                 if item:
                     self._hideItemFromList(item)
 
         self._connectSignalsSlots()
 
-    def getMaterial(self):
+    def getPrimaryMaterial(self):
         return self._ui.primary.currentData(ItemDataRole.USER_DATA.value)
 
     def getSecondaries(self):

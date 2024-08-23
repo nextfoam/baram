@@ -24,7 +24,7 @@ class EnumButtonGroup(QButtonGroup):
         self.addButton(button, len(self._buttons))
         self._buttons.append(enum)
 
-    def setCheckedValue(self, enum):
+    def setCheckedData(self, enum):
         self.button(self._buttons.index(enum)).setChecked(True)
 
     def checkedData(self):

@@ -5,7 +5,6 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, Signal, QPoint
 
-from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from .boundary_widget_ui import Ui_BoundaryWidget
 
@@ -17,8 +16,6 @@ class BoundaryWidget(QWidget):
         super().__init__()
         self._ui = Ui_BoundaryWidget()
         self._ui.setupUi(self)
-
-        self._db = coredb.CoreDB()
 
         self._rname = rname
         self._bcid = bcid

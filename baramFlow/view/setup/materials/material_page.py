@@ -2,20 +2,19 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from PySide6.QtWidgets import QVBoxLayout, QMessageBox
+from PySide6.QtWidgets import QVBoxLayout
 from PySide6.QtCore import Signal
 
+from baramFlow.coredb.configuraitions import ConfigurationException
 from widgets.async_message_box import AsyncMessageBox
-from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.project import Project
-from baramFlow.coredb.coredb import Error
-from baramFlow.view.widgets.multi_selector_dialog import SelectorItem
+from baramFlow.coredb.material_db import MaterialDB, MaterialType
 from baramFlow.view.widgets.content_page import ContentPage
-from .material_page_ui import Ui_MaterialPage
+from .material_add_dialog import MaterialAddDialog
 from .material_card import MaterialCard
+from .material_page_ui import Ui_MaterialPage
+from .mixture_card import MixtureCard
 
 
 class MaterialPage(ContentPage):
@@ -27,13 +26,10 @@ class MaterialPage(ContentPage):
         self._ui.setupUi(self)
 
         self._cardListLayout = QVBoxLayout(self._ui.cardList)
-        self._cardListLayout.setSpacing(0)
         self._cardListLayout.addStretch()
         self._cardListLayout.setContentsMargins(0, 0, 0, 0)
 
         self._addDialog = None
-
-        self._materialChanged = Project.instance().materialChanged
 
         self._connectSignalsSlots()
         self._load()
@@ -45,26 +41,24 @@ class MaterialPage(ContentPage):
         return super().showEvent(ev)
 
     @qasync.asyncSlot()
-    async def _remove(self, card):
+    async def _remove(self, card: MaterialCard):
         # The count of the layout returns one more than the number of cards, because of the stretch.
         if self._cardListLayout.count() < 3:
             await AsyncMessageBox().information(self, self.tr("Remove material"),
                                                 self.tr("At least one material is required and cannot be removed."))
             return
 
-        confirm = await AsyncMessageBox().question(
-            self, self.tr("Remove material"), self.tr(f'Remove material "{card.name}"'))
-        if confirm == QMessageBox.StandardButton.Yes:
-            error = coredb.CoreDB().removeMaterial(card.name)
-            if not error:
-                self._cardListLayout.removeWidget(card)
-                card.deleteLater()
-            elif error == Error.REFERENCED:
-                await AsyncMessageBox().critical(
-                    self, self.tr('Remove Meterial Failed'),
-                    self.tr(f'"{card.name}" is referenced by other configurations. It cannot be removed.'))
+        if not await AsyncMessageBox().confirm(
+                self, self.tr("Remove material"), self.tr('Remove material "{}"'.format(card.name))):
+            return
 
-        self._materialChanged.emit()
+        try:
+            with coredb.CoreDB() as db:
+                MaterialDB.removeMaterial(db, card.mid)
+            self._cardListLayout.removeWidget(card)
+            card.deleteLater()
+        except ConfigurationException as ex:
+            await AsyncMessageBox().information(self, self.tr('Material Removal Failed'), str(ex))
 
     def _connectSignalsSlots(self):
         self._ui.add.clicked.connect(self._add)
@@ -76,22 +70,28 @@ class MaterialPage(ContentPage):
             self._addCard(mid)
 
     def _add(self):
-        if self._addDialog is None:
-            materials = [
-                SelectorItem(f'{name} ({MaterialDB.getPhaseText(MaterialDB.dbTextToPhase(phase))})', name, name)
-                for name, formula, phase in coredb.CoreDB().getMaterialsFromDB()]
-            self._addDialog = SelectorDialog(self, self.tr("Material"), self.tr("Select material to add"), materials)
-            self._addDialog.accepted.connect(self._addDialogAccepted)
-
+        self._addDialog = MaterialAddDialog(self)
+        self._addDialog.accepted.connect(self._addDialogAccepted)
         self._addDialog.open()
 
-    def _addCard(self, mid):
-        card = MaterialCard(mid)
+    def _addCard(self, mid: str, type_=None):
+        if type_ is None:
+            type_ = MaterialDB.getType(mid)
+
+        if type_ == MaterialType.NONMIXTURE:
+            card = MaterialCard(mid)
+        elif type_ == MaterialType.MIXTURE:
+            card = MixtureCard(mid)
+        else:
+            return
+
         self._cardListLayout.insertWidget(0, card)
+        card.load()
         card.removeClicked.connect(self._remove)
         self.pageReload.connect(card.load)
 
     def _addDialogAccepted(self):
-        self._addCard(coredb.CoreDB().addMaterial(self._addDialog.selectedItem()))
-        self._materialChanged.emit()
+        type_, added = self._addDialog.result()
+        for mid in added:
+            self._addCard(mid, type_)
 

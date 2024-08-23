@@ -9,23 +9,21 @@ from .new_project_dialog_ui import Ui_NewProjectDialog
 
 
 class NewProjectDialog(QDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, title, path=None):
         super().__init__(parent)
 
         self._ui = Ui_NewProjectDialog()
         self._ui.setupUi(self)
 
         self._complete = False
-        self._baseLocation = Path.home()
+        self._baseLocation = Path.home() if path is None else path
         self._updateProjectLocation()
 
         self._dialog = None
 
-        self._connectSignalsSlots()
+        self.setWindowTitle(title)
 
-    def setBaseLocation(self, path):
-        self._baseLocation = path
-        self._updateProjectLocation()
+        self._connectSignalsSlots()
 
     def projectLocation(self):
         return Path(self._ui.projectLocation.text())

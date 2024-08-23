@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from baramFlow.coredb.region_db import RegionDB
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
@@ -22,10 +22,13 @@ class FvSolution(DictionaryFile):
         super().__init__(FileSystem.caseRoot(), self.systemLocation('' if rname is None else rname), 'fvSolution')
 
         self._db = CoreDBReader()
-        if rname is None:
-            self._region = None
-        else:
+
+        self._region = None
+        self._species = None
+
+        if rname is not None:
             self._region = self._db.getRegionProperties(rname)
+            self._species = MaterialDB.getSpecies(RegionDB.getMaterial(rname))
 
     def build(self):
         if self._data is not None:
@@ -43,6 +46,9 @@ class FvSolution(DictionaryFile):
 
             return self
 
+        convergenceCriteriaXPath = NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/convergenceCriteria'
+        underRelaxaitionFactorsXPath = NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors'
+
         # If region name is empty string, the only fvSolution in single region case.
         # Otherwise, fvSolution of specified region.
         scheme = self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/pressureVelocityCouplingScheme')
@@ -54,6 +60,15 @@ class FvSolution(DictionaryFile):
             consistent = 'yes'
         if self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/useMomentumPredictor') == 'false':
             momentumPredictor = 'off'
+
+        solveFlow = self._boolToYN(self._db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/flow'))
+        solveEnergy = self._boolToYN(
+            energyOn
+            and self._db.getAttribute(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/energy', 'disabled') == 'false')
+
+        solveSpecies = self._boolToYN(
+            ModelsDB.isSpeciesModelOn()
+            and self._db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/species'))
 
         self._data = {
             # For multiphase model
@@ -109,7 +124,7 @@ class FvSolution(DictionaryFile):
                     'maxIter': '5',
                 }),
                 'rhoFinal': rho,
-                '"(U|k|epsilon|omega|nuTilda)"': (others := {
+                f'"(U|k|epsilon|omega|nuTilda|scalar|Yi)"': (others := {
                     'solver': 'PBiCGStab',
                     'preconditioner': 'DILU',
                     'tolerance': '1e-16',
@@ -117,7 +132,7 @@ class FvSolution(DictionaryFile):
                     'minIter': '1',
                     'maxIter': '5',
                 }),
-                '"(U|k|epsilon|omega|nuTilda)Final"': others
+                f'"(U|k|epsilon|omega|nuTilda|scalar|Yi)Final"': others,
             },
             'SIMPLE': {
                 'consistent': consistent,
@@ -128,15 +143,21 @@ class FvSolution(DictionaryFile):
                 'pRefCell': 0,
                 # only for fluid
                 'pRefValue': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'),
-                'solveEnergy': 'yes' if energyOn else 'no',  # NEXTfoam custom option
+                'solveFlow': solveFlow,
+                'solveEnergy': solveEnergy,  # NEXTfoam custom option
+                'solveSpecies':  solveSpecies,
                 'residualControl': {
-                    'p': self._db.getValue('.//convergenceCriteria/pressure/absolute'),
-                    'p_rgh': self._db.getValue('.//convergenceCriteria/pressure/absolute'),
-                    'U': self._db.getValue('.//convergenceCriteria/momentum/absolute'),
-                    'h': self._db.getValue('.//convergenceCriteria/energy/absolute'),
-                    '"(k|epsilon|omega|nuTilda)"': self._db.getValue('.//convergenceCriteria/turbulence/absolute'),
+                    'p': self._db.getValue(convergenceCriteriaXPath + '/pressure/absolute'),
+                    'p_rgh': self._db.getValue(convergenceCriteriaXPath + '/pressure/absolute'),
+                    'U': self._db.getValue(convergenceCriteriaXPath + '/momentum/absolute'),
+                    'h': self._db.getValue(convergenceCriteriaXPath + '/energy/absolute'),
+                    '"(k|epsilon|omega|nuTilda)"': self._db.getValue(convergenceCriteriaXPath + '/turbulence/absolute'),
                     # For multiphase model
-                    '"alpha.*"': self._db.getValue('.//convergenceCriteria/volumeFraction/absolute'),
+                    '"alpha.*"': self._db.getValue(convergenceCriteriaXPath + '/volumeFraction/absolute'),
+                    **{
+                        specie: self._db.getValue(convergenceCriteriaXPath + '/species/absolute')
+                        for specie in self._species.values()
+                    }
                 }
             },
             'PIMPLE': {
@@ -164,60 +185,78 @@ class FvSolution(DictionaryFile):
                 'pRefValue': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'),
                 'rDeltaTSmoothingCoeff': '0.5',
                 'rDeltaTDampingCoeff': '0.5',
-                'solveEnergy': 'yes' if energyOn else 'no',  # NEXTfoam custom option
+                'solveFlow': solveFlow,
+                'solveEnergy': solveEnergy,  # NEXTfoam custom option
+                'solveSpecies':  solveSpecies,
                 'residualControl': {
                     'p': {
-                        'tolerance': self._db.getValue('.//convergenceCriteria/pressure/absolute'),
-                        'relTol': self._db.getValue('.//convergenceCriteria/pressure/relative'),
+                        'tolerance': self._db.getValue(convergenceCriteriaXPath + '/pressure/absolute'),
+                        'relTol': self._db.getValue(convergenceCriteriaXPath + '/pressure/relative'),
                     },
                     'p_rgh': {
-                        'tolerance': self._db.getValue('.//convergenceCriteria/pressure/absolute'),
-                        'relTol': self._db.getValue('.//convergenceCriteria/pressure/relative'),
+                        'tolerance': self._db.getValue(convergenceCriteriaXPath + '/pressure/absolute'),
+                        'relTol': self._db.getValue(convergenceCriteriaXPath + '/pressure/relative'),
                     },
                     'U': {
-                        'tolerance': self._db.getValue('.//convergenceCriteria/momentum/absolute'),
-                        'relTol': self._db.getValue('.//convergenceCriteria/momentum/relative'),
+                        'tolerance': self._db.getValue(convergenceCriteriaXPath + '/momentum/absolute'),
+                        'relTol': self._db.getValue(convergenceCriteriaXPath + '/momentum/relative'),
                     },
                     'h': {
-                        'tolerance': self._db.getValue('.//convergenceCriteria/energy/absolute'),
-                        'relTol': self._db.getValue('.//convergenceCriteria/energy/relative'),
+                        'tolerance': self._db.getValue(convergenceCriteriaXPath + '/energy/absolute'),
+                        'relTol': self._db.getValue(convergenceCriteriaXPath + '/energy/relative'),
                     },
                     '"(k|epsilon|omega|nuTilda)"': {
-                        'tolerance': self._db.getValue('.//convergenceCriteria/turbulence/absolute'),
-                        'relTol': self._db.getValue('.//convergenceCriteria/turbulence/relative'),
+                        'tolerance': self._db.getValue(convergenceCriteriaXPath + '/turbulence/absolute'),
+                        'relTol': self._db.getValue(convergenceCriteriaXPath + '/turbulence/relative'),
                     },
                     # For multiphase model
                     '"alpha.*"': {
-                        'tolerance': self._db.getValue('.//convergenceCriteria/volumeFraction/absolute'),
-                        'relTol': self._db.getValue('.//convergenceCriteria/volumeFraction/relative'),
+                        'tolerance': self._db.getValue(convergenceCriteriaXPath + '/volumeFraction/absolute'),
+                        'relTol': self._db.getValue(convergenceCriteriaXPath + '/volumeFraction/relative'),
                     },
+                    **{
+                        specie: {
+                            'tolerance': self._db.getValue(convergenceCriteriaXPath + '/species/absolute'),
+                            'relTol': self._db.getValue(convergenceCriteriaXPath + '/species/absolute')
+                        }
+                        for specie in self._species.values()
+                    }
                 }
             },
             'relaxationFactors': {
                 'fields': {
-                    'p': self._db.getValue('.//underRelaxationFactors/pressure'),
-                    'pFinal': self._db.getValue('.//underRelaxationFactors/pressureFinal'),
-                    'p_rgh': self._db.getValue('.//underRelaxationFactors/pressure'),
-                    'p_rghFinal': self._db.getValue('.//underRelaxationFactors/pressureFinal'),
-                    'rho': self._db.getValue('.//underRelaxationFactors/density'),
-                    'rhoFinal': self._db.getValue('.//underRelaxationFactors/densityFinal'),
+                    'p': self._db.getValue(underRelaxaitionFactorsXPath + '/pressure'),
+                    'pFinal': self._db.getValue(underRelaxaitionFactorsXPath + '/pressureFinal'),
+                    'p_rgh': self._db.getValue(underRelaxaitionFactorsXPath + '/pressure'),
+                    'p_rghFinal': self._db.getValue(underRelaxaitionFactorsXPath + '/pressureFinal'),
+                    'rho': self._db.getValue(underRelaxaitionFactorsXPath + '/density'),
+                    'rhoFinal': self._db.getValue(underRelaxaitionFactorsXPath + '/densityFinal'),
                 },
                 'equations': {
-                    'U': self._db.getValue('.//underRelaxationFactors/momentum'),
-                    'UFinal': self._db.getValue('.//underRelaxationFactors/momentumFinal'),
-                    'h': 1 if self._region.isSolid() else self._db.getValue('.//underRelaxationFactors/energy'),
+                    'U': self._db.getValue(underRelaxaitionFactorsXPath + '/momentum'),
+                    'UFinal': self._db.getValue(underRelaxaitionFactorsXPath + '/momentumFinal'),
+                    'h': 1 if self._region.isSolid() else self._db.getValue(underRelaxaitionFactorsXPath + '/energy'),
                     'hFinal':
-                        1 if self._region.isSolid() else self._db.getValue('.//underRelaxationFactors/energyFinal'),
-                    '"(k|epsilon|omega|nuTilda)"': self._db.getValue('.//underRelaxationFactors/turbulence'),
-                    '"(k|epsilon|omega|nuTilda)Final"': self._db.getValue('.//underRelaxationFactors/turbulenceFinal'),
+                        1 if self._region.isSolid() else self._db.getValue(underRelaxaitionFactorsXPath + '/energyFinal'),
+                    '"(k|epsilon|omega|nuTilda)"': self._db.getValue(underRelaxaitionFactorsXPath + '/turbulence'),
+                    '"(k|epsilon|omega|nuTilda)Final"':
+                        self._db.getValue(underRelaxaitionFactorsXPath + '/turbulenceFinal'),
+                    **{
+                        specie: self._db.getValue(underRelaxaitionFactorsXPath + '/species')
+                        for specie in self._species.values()
+                    },
+                    **{
+                        f'{specie}Final': self._db.getValue(underRelaxaitionFactorsXPath + '/speciesFinal')
+                        for specie in self._species.values()
+                    }
                 }
             },
             'LU-SGS': {
                 'residualControl': {
-                    'rho': self._db.getValue('.//convergenceCriteria/density/absolute'),
-                    'rhoU': self._db.getValue('.//convergenceCriteria/momentum/absolute'),
-                    'rhoE': self._db.getValue('.//convergenceCriteria/energy/absolute'),
-                    '"(k|epsilon|omega|nuTilda)"': self._db.getValue('.//convergenceCriteria/turbulence/absolute'),
+                    'rho': self._db.getValue(convergenceCriteriaXPath + '/density/absolute'),
+                    'rhoU': self._db.getValue(convergenceCriteriaXPath + '/momentum/absolute'),
+                    'rhoE': self._db.getValue(convergenceCriteriaXPath + '/energy/absolute'),
+                    '"(k|epsilon|omega|nuTilda)"': self._db.getValue(convergenceCriteriaXPath + '/turbulence/absolute'),
                 }
             },
             'Riemann': {
@@ -253,9 +292,22 @@ class FvSolution(DictionaryFile):
         for mid in self._region.secondaryMaterials:
             material = MaterialDB.getName(mid)
             self._data['relaxationFactors']['equations'][f'alpha.{material}'] = self._db.getValue(
-                NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors/volumeFraction')
+                underRelaxaitionFactorsXPath + '/volumeFraction')
             self._data['relaxationFactors']['equations'][f'alpha.{material}Final'] = self._db.getValue(
-                NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/underRelaxationFactors/volumeFractionFinal')
+                underRelaxaitionFactorsXPath + '/volumeFractionFinal')
+
+        absolute = self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/convergenceCriteria/scalar/absolute')
+        relative = self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/convergenceCriteria/scalar/relative')
+        self._data['SIMPLE']['residualControl']['scalar'] = absolute
+        self._data['PIMPLE']['residualControl']['scalar'] = {
+            'tolerance': absolute,
+            'relTol': relative
+        }
+
+        self._data['relaxationFactors']['equations']['scalar'] = self._db.getValue(
+            underRelaxaitionFactorsXPath + '/scalar')
+        self._data['relaxationFactors']['equations']['scalarFinal'] = self._db.getValue(
+            underRelaxaitionFactorsXPath + '/scalarFinal')
 
         return self
 

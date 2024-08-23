@@ -72,7 +72,7 @@
          <item>
           <widget class="QListWidget" name="list">
            <property name="selectionMode">
-            <enum>QAbstractItemView::MultiSelection</enum>
+            <enum>QAbstractItemView::ExtendedSelection</enum>
            </property>
           </widget>
          </item>
@@ -139,7 +139,7 @@
       <item>
        <widget class="QListWidget" name="secondaries">
         <property name="selectionMode">
-         <enum>QAbstractItemView::MultiSelection</enum>
+         <enum>QAbstractItemView::ExtendedSelection</enum>
         </property>
        </widget>
       </item>

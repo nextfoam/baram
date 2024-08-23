@@ -25,7 +25,6 @@ class ForceDialog(QDialog):
         self._name = name
         self._region = None
         self._isNew = False
-        self._db = coredb.CoreDB()
 
         self._xpath = None
         self._boundaries = None
@@ -36,7 +35,8 @@ class ForceDialog(QDialog):
         })
 
         if name is None:
-            self._name = self._db.addForceMonitor()
+            db = coredb.CoreDB()
+            self._name = db.addForceMonitor()
             self._isNew = True
         else:
             self._ui.nameWidget.hide()
@@ -111,32 +111,34 @@ class ForceDialog(QDialog):
     def reject(self):
         super().reject()
         if self._isNew:
-            self._db.removeForceMonitor(self._name)
+            db = coredb.CoreDB()
+            db.removeForceMonitor(self._name)
 
     def _connectSignalsSlots(self):
         self._ui.specificationMethod.currentDataChanged.connect(self._specificationMethodChanged)
         self._ui.select.clicked.connect(self._selectBoundaries)
 
     def _load(self):
+        db = coredb.CoreDB()
         self._ui.name.setText(self._name)
-        self._ui.writeInterval.setText(self._db.getValue(self._xpath + '/writeInterval'))
+        self._ui.writeInterval.setText(db.getValue(self._xpath + '/writeInterval'))
 
         self._ui.specificationMethod.setCurrentData(
-            DirectionSpecificationMethod(self._db.getValue(self._xpath + '/forceDirection/specificationMethod')))
-        self._ui.dragDirectionX.setText(self._db.getValue(self._xpath + '/forceDirection/dragDirection/x'))
-        self._ui.dragDirectionY.setText(self._db.getValue(self._xpath + '/forceDirection/dragDirection/y'))
-        self._ui.dragDirectionZ.setText(self._db.getValue(self._xpath + '/forceDirection/dragDirection/z'))
-        self._ui.liftDirectionX.setText(self._db.getValue(self._xpath + '/forceDirection/liftDirection/x'))
-        self._ui.liftDirectionY.setText(self._db.getValue(self._xpath + '/forceDirection/liftDirection/y'))
-        self._ui.liftDirectionZ.setText(self._db.getValue(self._xpath + '/forceDirection/liftDirection/z'))
-        self._ui.AoA.setText(self._db.getValue(self._xpath + '/forceDirection/angleOfAttack'))
-        self._ui.AoS.setText(self._db.getValue(self._xpath + '/forceDirection/angleOfSideslip'))
+            DirectionSpecificationMethod(db.getValue(self._xpath + '/forceDirection/specificationMethod')))
+        self._ui.dragDirectionX.setText(db.getValue(self._xpath + '/forceDirection/dragDirection/x'))
+        self._ui.dragDirectionY.setText(db.getValue(self._xpath + '/forceDirection/dragDirection/y'))
+        self._ui.dragDirectionZ.setText(db.getValue(self._xpath + '/forceDirection/dragDirection/z'))
+        self._ui.liftDirectionX.setText(db.getValue(self._xpath + '/forceDirection/liftDirection/x'))
+        self._ui.liftDirectionY.setText(db.getValue(self._xpath + '/forceDirection/liftDirection/y'))
+        self._ui.liftDirectionZ.setText(db.getValue(self._xpath + '/forceDirection/liftDirection/z'))
+        self._ui.AoA.setText(db.getValue(self._xpath + '/forceDirection/angleOfAttack'))
+        self._ui.AoS.setText(db.getValue(self._xpath + '/forceDirection/angleOfSideslip'))
 
-        self._ui.centerOfRotationX.setText(self._db.getValue(self._xpath + '/centerOfRotation/x'))
-        self._ui.centerOfRotationY.setText(self._db.getValue(self._xpath + '/centerOfRotation/y'))
-        self._ui.centerOfRotationZ.setText(self._db.getValue(self._xpath + '/centerOfRotation/z'))
-        self._region = self._db.getValue(self._xpath + '/region')
-        boundaries = self._db.getValue(self._xpath + '/boundaries')
+        self._ui.centerOfRotationX.setText(db.getValue(self._xpath + '/centerOfRotation/x'))
+        self._ui.centerOfRotationY.setText(db.getValue(self._xpath + '/centerOfRotation/y'))
+        self._ui.centerOfRotationZ.setText(db.getValue(self._xpath + '/centerOfRotation/z'))
+        self._region = db.getValue(self._xpath + '/region')
+        boundaries = db.getValue(self._xpath + '/boundaries')
         self._setBoundaries(boundaries.split() if boundaries else [])
 
     def _setBoundaries(self, boundaries):

@@ -14,7 +14,7 @@ from .mesh_quality_info import MeshQualityInfo
 
 from .opacity_dialog import OpacityDialog
 from .display_item import DisplayItem, Column
-from .cut_tool import CutTool
+from .cut_tool import CutTool, CutType
 
 
 class ContextMenu(QMenu):
@@ -278,9 +278,15 @@ class DisplayControl(QObject):
         self._view.refresh()
 
     def _applyCutOption(self, enabled):
-        for item in self._selectedItems:
-            item.setCutEnabled(enabled)
-            item.actorInfo().cut(self._cutTool.cutters())
+        cutType, planes = self._cutTool.option()
+        if cutType == CutType.CLIP:
+            for item in self._selectedItems:
+                item.setCutEnabled(enabled)
+                item.actorInfo().clip(planes)
+        else:
+            for item in self._selectedItems:
+                item.setCutEnabled(enabled)
+                item.actorInfo().slice(planes)
 
         self._view.refresh()
 
@@ -325,5 +331,10 @@ class DisplayControl(QObject):
                 item.setSelected(True)
 
     def _actorSourceUpdated(self, id_):
-        self._items[id_].actorInfo().cut(self._cutTool.cutters())
+        cutType, planes = self._cutTool.option()
+        if cutType == CutType.CLIP:
+            self._items[id_].actorInfo().clip(planes)
+        else:
+            self._items[id_].actorInfo().slice(planes)
+
 

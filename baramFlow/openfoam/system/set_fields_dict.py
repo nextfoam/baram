@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.region_db import RegionDB
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
-from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_db import MaterialDB, MaterialType
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 
 from baramFlow.openfoam.file_system import FileSystem
@@ -65,6 +66,29 @@ class SetFieldsDict(DictionaryFile):
                         defaultFields.append(fieldName)
                         defaultFraction = db.getValue(ivPath + f'/volumeFractions/volumeFraction[material="{mid}"]/fraction')
                         defaultFieldValues.append(('volScalarFieldValue', fieldName, defaultFraction))
+
+            for scalarID, fieldName in db.getUserDefinedScalarsInRegion(self._rname):
+                scalarXPath = f'{sPath}/userDefinedScalars/scalar[scalarID="{scalarID}"]/value'
+                if db.getAttribute(scalarXPath, 'disabled') == 'false':
+                    value = db.getValue(scalarXPath)
+                    fieldValues.append(('volScalarFieldValue', fieldName, value))
+                    if fieldName not in defaultFields:
+                        defaultFields.append(fieldName)
+                        defaultValue = db.getValue(ivPath + f'/userDefinedScalars/scalar[scalarID="{scalarID}"]/value')
+                        defaultFieldValues.append(('volScalarFieldValue', fieldName, defaultValue))
+
+            if ModelsDB.isSpeciesModelOn():
+                mid = RegionDB.getMaterial(self._rname)
+                if MaterialDB.getType(mid) == MaterialType.MIXTURE:
+                    mixtureXPath = f'{sPath}/species/mixture[mid="{mid}"]'
+                    if db.getAttribute(mixtureXPath, 'disabled') == 'false':
+                        for specie, fieldName in MaterialDB.getSpecies(mid).items():
+                            value = db.getValue(f'{mixtureXPath}/specie[mid="{specie}"]/value')
+                            fieldValues.append(('volScalarFieldValue', fieldName, value))
+                            if fieldName not in defaultFields:
+                                defaultFields.append(fieldName)
+                                defaultValue = db.getValue(ivPath + f'/species/mixture[mid="{mid}"]/specie[mid="{specie}"]/value')
+                                defaultFieldValues.append(('volScalarFieldValue', fieldName, defaultValue))
 
             if db.getValue(sPath + '/overrideBoundaryValue') == 'true':
                 overrideBoundaryValue = True

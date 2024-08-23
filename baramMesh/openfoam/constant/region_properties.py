@@ -13,16 +13,16 @@ class RegionProperties(DictionaryFile):
         super().__init__(casePath, self.constantLocation(), Directory.REGION_PROPERTIES_FILE_NAME)
 
     def build(self):
-        regions = app.db.getElements('region').values()
+        regions = app.db.getElements('region')
 
         if len(regions) > 1:
             fluids = []
             solids = []
-            for region in app.db.getElements('region').values():
-                if region['type'] == RegionType.SOLID.value:
-                    solids.append(region['name'])
+            for region in regions.values():
+                if region.value('type') == RegionType.SOLID.value:
+                    solids.append(region.value('name'))
                 else:
-                    fluids.append(region['name'])
+                    fluids.append(region.value('name'))
 
             self._data = {
                 'regions': [

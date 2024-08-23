@@ -52,9 +52,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-286</y>
+        <y>-664</y>
         <width>332</width>
-        <height>1170</height>
+        <height>1338</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -164,14 +164,14 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_4">
+        <widget class="QGroupBox" name="discretizationSchemes">
          <property name="layoutDirection">
           <enum>Qt::LeftToRight</enum>
          </property>
          <property name="title">
           <string>Discretization Schemes</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_5">
+         <layout class="QFormLayout" name="discretizationSchemesLayout">
           <item row="0" column="0">
            <widget class="QLabel" name="label_20">
             <property name="text">
@@ -232,15 +232,104 @@
           <item row="1" column="1">
            <widget class="EnumComboBox" name="discretizationSchemePressure"/>
           </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>Scalar</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="EnumComboBox" name="discretizationSchemeScalar"/>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_37">
+            <property name="text">
+             <string>Species</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="EnumComboBox" name="discretizationSchemeSpecies"/>
+          </item>
          </layout>
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="underRelaxationFactors">
          <property name="title">
           <string>Under-Relaxation Factors (0 &lt; R ≤ 1)</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_2">
+         <layout class="QGridLayout" name="underRelaxationFactorsLayout">
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>Turbulence</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLineEdit" name="underRelaxationFactorScalar"/>
+          </item>
+          <item row="6" column="2">
+           <widget class="QLineEdit" name="underRelaxationFactorVolumeFractionFinal"/>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_26">
+            <property name="text">
+             <string>Scalar</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_29">
+            <property name="text">
+             <string>Density</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLineEdit" name="underRelaxationFactorPressureFinal"/>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="underRelaxationFactorEnergy"/>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="underRelaxationFactorDensity"/>
+          </item>
+          <item row="5" column="2">
+           <widget class="QLineEdit" name="underRelaxationFactorDensityFinal"/>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_31">
+            <property name="text">
+             <string>Volume Fraction</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Momentum</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QLineEdit" name="underRelaxationFactorTurbulenceFinal"/>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLineEdit" name="underRelaxationFactorVolumeFraction"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>Energy</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="underRelaxationFactorMomentum"/>
+          </item>
           <item row="0" column="2">
            <widget class="QLabel" name="label_8">
             <property name="text">
@@ -251,6 +340,18 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="underRelaxationFactorPressure"/>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="underRelaxationFactorTurbulence"/>
+          </item>
+          <item row="7" column="2">
+           <widget class="QLineEdit" name="underRelaxationFactorScalarFinal"/>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLineEdit" name="underRelaxationFactorMomentumFinal"/>
+          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_7">
             <property name="text">
@@ -258,76 +359,21 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="underRelaxationFactorPressure"/>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLineEdit" name="underRelaxationFactorPressureFinal"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_9">
-            <property name="text">
-             <string>Momentum</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="underRelaxationFactorMomentum"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_11">
-            <property name="text">
-             <string>Energy</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="underRelaxationFactorEnergy"/>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_13">
-            <property name="text">
-             <string>Turbulence</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="underRelaxationFactorTurbulence"/>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_29">
-            <property name="text">
-             <string>Density</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QLineEdit" name="underRelaxationFactorDensity"/>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_31">
-            <property name="text">
-             <string>Volume Fraction</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1">
-           <widget class="QLineEdit" name="underRelaxationFactorVolumeFraction"/>
-          </item>
-          <item row="2" column="2">
-           <widget class="QLineEdit" name="underRelaxationFactorMomentumFinal"/>
-          </item>
           <item row="3" column="2">
            <widget class="QLineEdit" name="underRelaxationFactorEnergyFinal"/>
           </item>
-          <item row="4" column="2">
-           <widget class="QLineEdit" name="underRelaxationFactorTurbulenceFinal"/>
+          <item row="8" column="1">
+           <widget class="QLineEdit" name="underRelaxationFactorSpecies"/>
           </item>
-          <item row="5" column="2">
-           <widget class="QLineEdit" name="underRelaxationFactorDensityFinal"/>
+          <item row="8" column="2">
+           <widget class="QLineEdit" name="underRelaxationFactorSpeciesFinal"/>
           </item>
-          <item row="6" column="2">
-           <widget class="QLineEdit" name="underRelaxationFactorVolumeFractionFinal"/>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_38">
+            <property name="text">
+             <string>Species</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -501,11 +547,31 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="convergenceCriteria">
          <property name="title">
           <string>Convergence Criteria (range of values: 0~1)</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout">
+         <layout class="QGridLayout" name="convergenceCriteriaLyaout">
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="absoluteDensity"/>
+          </item>
+          <item row="3" column="2">
+           <widget class="QLineEdit" name="relativeMomentum"/>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_30">
+            <property name="text">
+             <string>Scalar</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_17">
+            <property name="text">
+             <string>Pressure</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="2">
            <widget class="QLabel" name="label_24">
             <property name="text">
@@ -516,8 +582,67 @@
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
-           <widget class="QLineEdit" name="absoluteVolumeFraction"/>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="absoluteMomentum"/>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="absolutePressure"/>
+          </item>
+          <item row="6" column="2">
+           <widget class="QLineEdit" name="relativeVolumeFraction"/>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="absoluteTurbulence"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_23">
+            <property name="text">
+             <string>Momentum</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QLineEdit" name="relativeTurbulence"/>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="absoluteEnergy"/>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLineEdit" name="relativePressure"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_27">
+            <property name="text">
+             <string>Turbulence</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_25">
+            <property name="text">
+             <string>Energy</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QLineEdit" name="relativeEnergy"/>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLineEdit" name="absoluteScalar"/>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_28">
+            <property name="text">
+             <string>Volume Fraction</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_21">
+            <property name="text">
+             <string>Density</string>
+            </property>
+           </widget>
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_18">
@@ -529,80 +654,27 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="2">
-           <widget class="QLineEdit" name="relativeMomentum"/>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLineEdit" name="relativePressure"/>
-          </item>
-          <item row="5" column="1">
-           <widget class="QLineEdit" name="absoluteTurbulence"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_17">
-            <property name="text">
-             <string>Pressure</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_28">
-            <property name="text">
-             <string>Volume Fraction</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="absolutePressure"/>
-          </item>
-          <item row="4" column="2">
-           <widget class="QLineEdit" name="relativeEnergy"/>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="absoluteMomentum"/>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="absoluteEnergy"/>
-          </item>
-          <item row="5" column="2">
-           <widget class="QLineEdit" name="relativeTurbulence"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_23">
-            <property name="text">
-             <string>Momentum</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="2">
-           <widget class="QLineEdit" name="relativeVolumeFraction"/>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_25">
-            <property name="text">
-             <string>Energy</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_27">
-            <property name="text">
-             <string>Turbulence</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_21">
-            <property name="text">
-             <string>Density</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="absoluteDensity"/>
+          <item row="7" column="2">
+           <widget class="QLineEdit" name="relativeScalar"/>
           </item>
           <item row="2" column="2">
            <widget class="QLineEdit" name="relativeDensity"/>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLineEdit" name="absoluteVolumeFraction"/>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_39">
+            <property name="text">
+             <string>Species</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QLineEdit" name="absoluteSpecies"/>
+          </item>
+          <item row="8" column="2">
+           <widget class="QLineEdit" name="relativeSpecies"/>
           </item>
          </layout>
         </widget>
@@ -643,7 +715,7 @@
       <item>
        <widget class="QPushButton" name="advanced">
         <property name="text">
-         <string>Advanced</string>
+         <string>&amp;Advanced</string>
         </property>
        </widget>
       </item>

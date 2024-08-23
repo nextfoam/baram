@@ -6,41 +6,35 @@ import asyncio
 import qasync
 
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QPlainTextEdit, QCheckBox
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QMargins, QEvent, QCoreApplication
 from PySide6.QtGui import QFontDatabase
+from PySide6QtAds import CDockWidget
 
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.openfoam.file_system import FileSystem
-from .tabified_dock import TabifiedDock
 
 
-class ConsoleDock(TabifiedDock):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self._main_window = parent
+class ConsoleView(QWidget):
+    def __init__(self):
+        super().__init__()
 
         self.stopReading = False
         self.readTask: Optional[asyncio.Task] = None
 
-        self.setAllowedAreas(Qt.RightDockWidgetArea)
-
-        self._widget = QWidget()
-        self.setWidget(self._widget)
-
-        layout = QVBoxLayout(self._widget)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(QMargins(0, 0, 0, 0))
 
         self._textView = QPlainTextEdit()
         self._textView.setReadOnly(True)
         # small case may print 2,000 lines per second
         self._textView.setMaximumBlockCount(100000)
-        self._textView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self._textView.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self._textView.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self._textView.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self._textView.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         self._textView.verticalScrollBar().setTracking(True)
         charFormat = self._textView.currentCharFormat()
-        fixedFont = QFontDatabase.systemFont(QFontDatabase.FixedFont)
+        fixedFont = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         charFormat.setFont(fixedFont)
         self._textView.setCurrentCharFormat(charFormat)
 
@@ -58,7 +52,7 @@ class ConsoleDock(TabifiedDock):
         CaseManager().caseLoaded.connect(self._caseLoaded)
         CaseManager().caseCleared.connect(self._caseCleared)
 
-        self._translate()
+        self.translate()
 
     def startCollecting(self):
         if self.readTask is None:
@@ -68,8 +62,7 @@ class ConsoleDock(TabifiedDock):
     def stopCollecting(self):
         self.stopReading = True
 
-    def _translate(self):
-        self.setWindowTitle(self.tr("Console"))
+    def translate(self):
         self._lineWrap.setText(self.tr('Line-Wrap'))
 
     def _lineWrapStateChanged(self):
@@ -117,6 +110,9 @@ class ConsoleDock(TabifiedDock):
                 stderr.close()
             self.readTask = None
 
+    def append(self, text):
+        self._textView.appendPlainText(text)
+
     @qasync.asyncSlot()
     async def _caseLoaded(self):
         if self.readTask is not None:
@@ -157,3 +153,21 @@ class ConsoleDock(TabifiedDock):
         root = FileSystem.caseRoot()
         await _readLog(root / 'stdout.log')
         await _readLog(root / 'stderr.log')
+
+
+class ConsoleDock(CDockWidget):
+    def __init__(self):
+        super().__init__(self._title())
+
+        self._widget = ConsoleView()
+        self.setWidget(self._widget)
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.LanguageChange:
+            self.setWindowTitle(self._title())
+            self._widget.translate()
+
+        super().changeEvent(event)
+
+    def _title(self):
+        return QCoreApplication.translate('ConsoleDock', 'Console')

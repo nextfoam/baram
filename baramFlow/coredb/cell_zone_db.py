@@ -3,8 +3,14 @@
 
 from enum import Enum
 
+import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
+from baramFlow.coredb.material_db import IMaterialObserver
+from baramFlow.coredb.region_db import IRegionMaterialObserver, RegionDB, REGION_XPATH
 from baramFlow.view.widgets.multi_selector_dialog import SelectorItem
+
+
+CELL_ZONE_CONDITION_XPATH = REGION_XPATH + '/cellZones/cellZone'
 
 
 class ZoneType(Enum):
@@ -39,7 +45,7 @@ class CellZoneDB:
 
     @classmethod
     def getXPath(cls, czid):
-        return f'{cls.CELL_ZONE_CONDITIONS_XPATH}/cellZone[@czid="{czid}"]'
+        return f'{CELL_ZONE_CONDITION_XPATH}[@czid="{czid}"]'
 
     @classmethod
     def getCellZoneName(cls, czid):
@@ -64,24 +70,6 @@ class CellZoneDB:
         return czname == cls.NAME_FOR_REGION
 
     @classmethod
-    def addMaterialSourceTerm(cls, czid, mid):
-        coredb.CoreDB().addElementFromString(
-            cls.getXPath(czid) + '/sourceTerms/materials',
-            f'''
-                <materialSource xmlns="http://www.baramcfd.org/baram" disabled="true">
-                    <material>{mid}</material>
-                    <unit>valueForEntireCellZone</unit>
-                    <specification>constant</specification>
-                    <constant>0</constant>
-                    <piecewiseLinear>
-                        <t>0</t>
-                        <v>0</v>
-                    </piecewiseLinear>
-                    <polynomial>0</polynomial>
-                </materialSource>
-            ''')
-
-    @classmethod
     def getCellZoneSelectorItems(cls):
         db = coredb.CoreDB()
 
@@ -95,3 +83,74 @@ class CellZoneDB:
                     cls._cellzones.append(SelectorItem(f'{r}{czname}', czname, str(czid)))
 
         return cls._cellzones
+
+
+def getCellZoneElements(rname=None):
+    return coredb.CoreDB().getElements(f'{RegionDB.getXPath(rname)}/cellZones/cellZone')
+
+
+def _addMaterialSourceTerm(parent, mid):
+    if xml.getElement(parent, f'materialSource[material="{mid}"]') is None:
+        parent.append(
+            xml.createElement('<materialSource xmlns="http://www.baramcfd.org/baram" disabled="true">'
+                              f'  <material>{mid}</material>'
+                              '   <unit>valueForEntireCellZone</unit>'
+                              '    <specification>constant</specification>'
+                              '    <constant>0</constant>'
+                              '    <piecewiseLinear>'
+                              '        <t>0</t>'
+                              '        <v>0</v>'
+                              '    </piecewiseLinear>'
+                              '    <polynomial>0</polynomial>'
+                              '</materialSource>')
+        )
+
+
+class MaterialObserver(IMaterialObserver):
+    def specieAdded(self, db, mid, mixtureID):
+        for cellZone in db.getElements(f'{REGION_XPATH}[material="{mixtureID}"]/cellZones/cellZone'):
+            for sourceTerms in xml.getElements(cellZone, f'sourceTerms/materials'):
+                _addMaterialSourceTerm(sourceTerms, mid)
+
+            for mixture in xml.getElements(cellZone, f'fixedValues/species/mixture[mid="{mixtureID}"]'):
+                mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
+                                                 f' <mid>{mid}</mid><value disabled="true">0</value>'
+                                                 '</specie>'))
+
+    def specieRemoving(self, db, mid, primarySpecie):
+        for cellZone in db.getElements(CELL_ZONE_CONDITION_XPATH):
+            for sourceTerm in xml.getElements(cellZone, f'sourceTerms/materials/materialSource[material="{mid}"]'):
+                sourceTerm.getparent().remove(sourceTerm)
+
+            for specie in xml.getElements(cellZone, f'fixedValues/species/mixture/specie[mid="{mid}"]'):
+                specie.getparent().remove(specie)
+
+
+class RegionMaterialObserver(IRegionMaterialObserver):
+    def materialsUpdating(self, db, rname, primary, secondaries, species):
+        fixedValuesSpeciesXML = ''
+        for mid in species:
+            fixedValuesSpeciesXML += f'<specie><mid>{mid}</mid><value disabled="true">0</value></specie>'
+
+        fixedValuesSpeciesXML = f'''<mixture xmlns="http://www.baramcfd.org/baram">
+                                        <mid>{primary}</mid>{fixedValuesSpeciesXML}
+                                    </mixture>'''
+
+        for cellZone in getCellZoneElements(rname):
+            materialSourceTerms = xml.getElement(cellZone, f'sourceTerms/materials')
+            for sourceTerm in xml.getElements(materialSourceTerms, f'materialSource'):
+                sourceTermMaterial = xml.getText(sourceTerm, 'material')
+                if sourceTermMaterial not in secondaries and sourceTermMaterial not in species:
+                    sourceTerm.getparent().remove(sourceTerm)
+
+            for mid in secondaries:
+                _addMaterialSourceTerm(materialSourceTerms, mid)
+
+            for mid in species:
+                _addMaterialSourceTerm(materialSourceTerms, mid)
+
+            fixedValuesSpecies = xml.getElement(cellZone, 'fixedValues/species')
+            fixedValuesSpecies.clear()
+
+            if species:
+                fixedValuesSpecies.append(xml.createElement(fixedValuesSpeciesXML))

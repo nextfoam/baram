@@ -63,7 +63,7 @@ class Nut(BoundaryCondition):
 
     def _constructWallFunctionByModel(self):
         if self._model == TurbulenceModel.K_EPSILON:
-            # Wall type should be "nutUSpaldingWallFunction" for "realizableKEtwoLayer" model
+            # Wall type should be "nutSpaldingWallFunction" for "realizableKEtwoLayer" model
             subModel = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
             if subModel == KEpsilonModel.REALIZABLE.value:
                 treatment = self._db.getValue(ModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
@@ -82,8 +82,7 @@ class Nut(BoundaryCondition):
 
     def _constructNEXTNutSpaldingWallFunction(self):
         return {
-            # 'type': 'nutSpaldingWallFunction',  # This type has not ported to OpenFOAM N yet
-            'type': 'nutUSpaldingWallFunction',
+            'type': 'nutSpaldingWallFunction',
             'value': self._initialValueByTime()
         }
 

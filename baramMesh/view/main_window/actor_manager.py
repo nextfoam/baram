@@ -70,9 +70,15 @@ class ActorManager(QObject):
         self._displayController.refreshView()
         self._visibility = False
 
-    def cut(self, cutters):
+    def clip(self, planes):
         for actorInfo in self._actorInfos.values():
-            actorInfo.cut(cutters)
+            actorInfo.clip(planes)
+
+        self._displayController.refreshView()
+
+    def slice(self, plane):
+        for actorInfo in self._actorInfos.values():
+            actorInfo.slice(plane)
 
         self._displayController.refreshView()
 

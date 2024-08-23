@@ -20,6 +20,7 @@ from .openfoam.system.control_dict import ControlDict
 from .solver_status import SolverStatus, RunType, SolverProcess
 from .coredb.coredb_reader import CoreDBReader
 
+
 SOLVER_CHECK_INTERVAL = 500
 BATCH_DIRECTORY_NAME = 'batch'
 
@@ -49,7 +50,6 @@ class CaseManager(QObject):
         super().__init__()
 
         self._project = None
-
         self._caseName = None
 
         self._runType = None
@@ -59,7 +59,6 @@ class CaseManager(QObject):
         self._monitor = None
         self._generator = None
         self._batchProcess = None
-        self._batchStop = False
         self._batchRunning = False
 
     @property
@@ -69,6 +68,15 @@ class CaseManager(QObject):
     def load(self):
         self._project = Project.instance()
         self.loadLiveCase(True)
+
+    def clear(self):
+        self._stopMonitor()
+
+        self._project = None
+        self._caseName = None
+
+        self._runType = None
+        self._status = None
 
     def loadLiveCase(self, projectLoaded=False):
         if self._caseName is None and not projectLoaded:  # it's already Live Case
@@ -278,14 +286,3 @@ class CaseManager(QObject):
         await self._generator.setupCase()
         await self._generator.initialize()
         self._generator = None
-    #
-    # async def _loadVtkMesh(self):
-    #     loader = PolyMeshLoader()
-    #     loader.progress.connect(self.progress)
-    #
-    #     # Workaround to give some time for QT to set up timer or event loop.
-    #     # This workaround is not necessary on Windows because BARAM for Windows
-    #     #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
-    #     await asyncio.sleep(0.1)
-    #
-    #     await loader.loadVtk()

@@ -43,6 +43,10 @@ class PlaneWidget(QObject):
     def setBounds(self, bounds):
         self._widget.GetImplicitPlaneRepresentation().PlaceWidget(bounds.toTuple())
 
+    def setNormal(self, normal):
+        self._widget.GetImplicitPlaneRepresentation().SetNormal(*normal)
+        self._view.refresh()
+
     def on(self, normal):
         self._widget.GetImplicitPlaneRepresentation().SetNormal(*normal)
         self._widget.On()
@@ -50,6 +54,9 @@ class PlaneWidget(QObject):
     def off(self):
         self._widget.Off()
         self._view.refresh()
+
+    def isEnabled(self):
+        return self._widget.GetEnabled()
 
     def close(self):
         self._widget.RemoveAllObservers()

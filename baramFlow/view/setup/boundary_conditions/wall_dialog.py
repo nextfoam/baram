@@ -73,7 +73,6 @@ class WallDialog(ResizableDialog):
         self._contactAngleModelCombo = None
         self._contactAngleLimitCombo = None
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
         self._setupVelocityConditionCombo()
@@ -156,30 +155,31 @@ class WallDialog(ResizableDialog):
             super().accept()
 
     def _load(self):
+        db = coredb.CoreDB()
         xpath = self._xpath + self.RELATIVE_XPATH
 
-        self._velocityConditionCombo.setCurrentValue(self._db.getValue(xpath + '/velocity/type'))
-        self._ui.xVelocity.setText(self._db.getValue(xpath + '/velocity/translationalMovingWall/velocity/x'))
-        self._ui.yVelocity.setText(self._db.getValue(xpath + '/velocity/translationalMovingWall/velocity/y'))
-        self._ui.zVelocity.setText(self._db.getValue(xpath + '/velocity/translationalMovingWall/velocity/z'))
-        self._ui.speed.setText(self._db.getValue(xpath + '/velocity/rotationalMovingWall/speed'))
-        self._ui.rotationAxisX.setText(self._db.getValue(xpath + '/velocity/rotationalMovingWall/rotationAxisOrigin/x'))
-        self._ui.rotationAxisY.setText(self._db.getValue(xpath + '/velocity/rotationalMovingWall/rotationAxisOrigin/y'))
-        self._ui.rotationAxisZ.setText(self._db.getValue(xpath + '/velocity/rotationalMovingWall/rotationAxisOrigin/z'))
+        self._velocityConditionCombo.setCurrentValue(db.getValue(xpath + '/velocity/type'))
+        self._ui.xVelocity.setText(db.getValue(xpath + '/velocity/translationalMovingWall/velocity/x'))
+        self._ui.yVelocity.setText(db.getValue(xpath + '/velocity/translationalMovingWall/velocity/y'))
+        self._ui.zVelocity.setText(db.getValue(xpath + '/velocity/translationalMovingWall/velocity/z'))
+        self._ui.speed.setText(db.getValue(xpath + '/velocity/rotationalMovingWall/speed'))
+        self._ui.rotationAxisX.setText(db.getValue(xpath + '/velocity/rotationalMovingWall/rotationAxisOrigin/x'))
+        self._ui.rotationAxisY.setText(db.getValue(xpath + '/velocity/rotationalMovingWall/rotationAxisOrigin/y'))
+        self._ui.rotationAxisZ.setText(db.getValue(xpath + '/velocity/rotationalMovingWall/rotationAxisOrigin/z'))
         self._ui.rotationDirectionX.setText(
-            self._db.getValue(xpath + '/velocity/rotationalMovingWall/rotationAxisDirection/x'))
+            db.getValue(xpath + '/velocity/rotationalMovingWall/rotationAxisDirection/x'))
         self._ui.rotationDirectionY.setText(
-            self._db.getValue(xpath + '/velocity/rotationalMovingWall/rotationAxisDirection/y'))
+            db.getValue(xpath + '/velocity/rotationalMovingWall/rotationAxisDirection/y'))
         self._ui.rotationDirectionZ.setText(
-            self._db.getValue(xpath + '/velocity/rotationalMovingWall/rotationAxisDirection/z'))
+            db.getValue(xpath + '/velocity/rotationalMovingWall/rotationAxisDirection/z'))
 
         if ModelsDB.isEnergyModelOn():
             self._setupTemperatureCombo()
-            self._temperatureTypeCombo.setCurrentValue(self._db.getValue(xpath + '/temperature/type'))
-            self._ui.temperature.setText(self._db.getValue(xpath + '/temperature/temperature'))
-            self._ui.heatFlux.setText(self._db.getValue(xpath + '/temperature/heatFlux'))
-            self._ui.heatTransferCoefficient.setText(self._db.getValue(xpath + '/temperature/heatTransferCoefficient'))
-            self._ui.freeStreamTemperature.setText(self._db.getValue(xpath + '/temperature/freeStreamTemperature'))
+            self._temperatureTypeCombo.setCurrentValue(db.getValue(xpath + '/temperature/type'))
+            self._ui.temperature.setText(db.getValue(xpath + '/temperature/temperature'))
+            self._ui.heatFlux.setText(db.getValue(xpath + '/temperature/heatFlux'))
+            self._ui.heatTransferCoefficient.setText(db.getValue(xpath + '/temperature/heatTransferCoefficient'))
+            self._ui.freeStreamTemperature.setText(db.getValue(xpath + '/temperature/freeStreamTemperature'))
             self._temperatureTypeChanged()
         else:
             self._ui.temperatureGroup.hide()
@@ -189,7 +189,7 @@ class WallDialog(ResizableDialog):
         if secondaryMaterials:
             self._loadContactAngles(rname, secondaryMaterials)
             self._setupContactAngleModelCombo()
-            self._contactAngleModelCombo.setCurrentValue(self._db.getValue(xpath + '/wallAdhesions/model'))
+            self._contactAngleModelCombo.setCurrentValue(db.getValue(xpath + '/wallAdhesions/model'))
 
         if not secondaryMaterials:
             self._ui.contactAngleGroup.hide()
@@ -198,24 +198,25 @@ class WallDialog(ResizableDialog):
             self._ui.contactAngleLimit = None
         else:
             self._setupContactAngleLimitCombo()
-            self._contactAngleLimitCombo.setCurrentValue(self._db.getValue(xpath + '/wallAdhesions/limit'))
+            self._contactAngleLimitCombo.setCurrentValue(db.getValue(xpath + '/wallAdhesions/limit'))
 
         if ModelsDB.isRadiationModelOn():
-            self._ui.wallEmissivity.setText(self._db.getValue(xpath + '/radiation/wallEmissivity'))
-            self._ui.radiativeFluxRelaxation.setText(self._db.getValue(xpath + '/radiation/radiativeFluxRelaxation'))
+            self._ui.wallEmissivity.setText(db.getValue(xpath + '/radiation/wallEmissivity'))
+            self._ui.radiativeFluxRelaxation.setText(db.getValue(xpath + '/radiation/radiativeFluxRelaxation'))
         else:
             self._ui.radiation.hide()
 
     def _loadContactAngles(self, rname, secondaryMaterials):
         def addAdhesionRows(mid1, mid2):
+            db = coredb.CoreDB()
             xpath = f'{self._xpath}{self.RELATIVE_XPATH}/wallAdhesions/wallAdhesion[mid="{mid1}"][mid="{mid2}"]'
             self._constantContactAngles.addRow(mid1, mid2, materials[mid1], materials[mid2],
-                                               [self._db.getValue(xpath + '/contactAngle')])
+                                               [db.getValue(xpath + '/contactAngle')])
             self._dynamicContactAngles.addRow(mid1, mid2, materials[mid1], materials[mid2],
-                                              [self._db.getValue(xpath + '/contactAngle'),
-                                               self._db.getValue(xpath + '/advancingContactAngle'),
-                                               self._db.getValue(xpath + '/recedingContactAngle'),
-                                               self._db.getValue(xpath + '/characteristicVelocityScale')])
+                                              [db.getValue(xpath + '/contactAngle'),
+                                               db.getValue(xpath + '/advancingContactAngle'),
+                                               db.getValue(xpath + '/recedingContactAngle'),
+                                               db.getValue(xpath + '/characteristicVelocityScale')])
 
         self._constantContactAngles = ContactAnglesWidget(
             self._ui.contactAngleGroup, [self.tr('Constant Angle (degree)')])

@@ -1,12 +1,9 @@
 Solver,usePrgh,useGaugePressureInPrgh,solverTypePressure,solverTypeDensity,timeSteady,timeTransient,flowTypeCompressible,flowTypeIncompressible,energyOn,energyOff,gravityOn,gravityOff,phaseSingle,phaseVOF,phaseCavitation,speciesSingle,speciesMultiple,regionSingle,regionMultiple
 interFoam,True,True,True,False,True,True,False,True,False,True,True,False,False,True,False,True,False,True,False
 PCNFoam,False,False,True,False,True,True,True,False,True,False,False,True,True,False,False,True,False,True,False
-buoyantSimpleNFoam,True,True,True,False,True,False,False,True,True,True,True,True,True,False,False,True,False,True,False
-buoyantPimpleNFoam,True,True,True,False,False,True,False,True,True,True,True,True,True,False,False,True,False,True,False
+buoyantSimpleNFoam,True,True,True,False,True,False,False,True,True,True,True,True,True,False,False,True,True,True,False
+buoyantPimpleNFoam,True,True,True,False,False,True,False,True,True,True,True,True,True,False,False,True,True,True,False
 interPhaseChangeFoam,True,False,True,False,True,True,False,True,False,True,True,False,False,False,True,True,False,True,False
-speciesSimpleNFoam,False,False,True,False,True,False,False,True,True,False,True,True,True,False,False,False,True,True,False
-speciesPimpleNFoam,False,False,True,False,False,True,False,True,True,False,True,True,True,False,False,False,True,True,False
-speciesPCNFoam,False,False,True,False,True,True,True,False,True,False,False,True,True,False,False,False,True,True,False
-chtMultiRegionSimpleNFoam,True,True,True,False,True,False,False,True,True,False,True,True,True,False,False,True,False,False,True
-chtMultiRegionPimpleNFoam,True,True,True,False,False,True,False,True,True,False,True,True,True,False,False,True,False,False,True
+chtMultiRegionSimpleNFoam,True,True,True,False,True,False,False,True,True,False,True,True,True,False,False,True,True,False,True
+chtMultiRegionPimpleNFoam,True,True,True,False,False,True,False,True,True,False,True,True,True,False,False,True,True,False,True
 TSLAeroFoam,False,False,False,True,True,False,True,False,True,False,False,True,True,False,False,True,False,True,False

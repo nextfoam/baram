@@ -49,7 +49,7 @@
       <item>
        <widget class="QPushButton" name="select">
         <property name="text">
-         <string>Select</string>
+         <string>&amp;Select</string>
         </property>
        </widget>
       </item>

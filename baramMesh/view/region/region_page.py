@@ -78,7 +78,7 @@ class RegionPage(StepPage):
         else:
             self._load()
 
-    def selected(self):
+    async def selected(self):
         if not self._loaded:
             self._load()
 
@@ -95,13 +95,13 @@ class RegionPage(StepPage):
     def _outputPath(self):
         return None
 
-    def _enableEdit(self):
+    def _enableStep(self):
         self._ui.regionAdd.setEnabled(True)
 
         for card in self._regions.values():
             card.setEnabled(True)
 
-    def _disableEdit(self):
+    def _disableStep(self):
         self._ui.regionAdd.setEnabled(False)
 
         for card in self._regions.values():
@@ -124,7 +124,7 @@ class RegionPage(StepPage):
     def _load(self):
         self._updateBounds()
 
-        regions = app.db.getElements('region', columns=[])
+        regions = app.db.getElements('region')
         for id_ in regions:
             self._add(id_)
 

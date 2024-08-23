@@ -34,6 +34,9 @@ class AsyncMessageBox:
         return self._showMessageBox(parent, QMessageBox.Icon.Warning, title, text,
                                     buttons=buttons, defaultButton=defaultButton)
 
+    async def confirm(self, parent, title, text, defaultButton=QMessageBox.StandardButton.NoButton):
+        return await self.question(parent, title, text, defaultButton=defaultButton) == QMessageBox.StandardButton.Yes
+
     def _showMessageBox(self, parent, icon, title, text, buttons, defaultButton):
         self._messageBoxes.add(self)
 

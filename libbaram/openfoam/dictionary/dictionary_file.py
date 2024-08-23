@@ -86,3 +86,6 @@ class DictionaryFile:
                 f.write(str(FoamFileGenerator(self._data, header=self._header)))
         else:
             path.unlink(missing_ok=True)
+
+    def _boolToYN(self, bool):
+        return 'yes' if bool else 'no'

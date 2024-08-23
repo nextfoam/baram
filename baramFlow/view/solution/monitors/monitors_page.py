@@ -4,6 +4,7 @@ import qasync
 from PySide6.QtWidgets import QMenu, QListWidgetItem, QMessageBox
 
 from baramFlow.coredb import coredb
+from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.view.widgets.content_page import ContentPage
 from widgets.async_message_box import AsyncMessageBox
 from .monitors_page_ui import Ui_MonitorsPage
@@ -21,10 +22,10 @@ class MonitorsPage(ContentPage):
         self._ui.setupUi(self)
 
         self._menu = QMenu()
-        self._forcesAdd     = self._menu.addAction(self.tr('Forces'))
-        self._pointsAdd     = self._menu.addAction(self.tr('Points'))
-        self._surfacesAdd   = self._menu.addAction(self.tr('Surfaces'))
-        self._volumesAdd    = self._menu.addAction(self.tr('Volumes'))
+        self._forcesAdd     = self._menu.addAction(self.tr('&Forces'))
+        self._pointsAdd     = self._menu.addAction(self.tr('&Points'))
+        self._surfacesAdd   = self._menu.addAction(self.tr('&Surfaces'))
+        self._volumesAdd    = self._menu.addAction(self.tr('&Volumes'))
         self._ui.add.setMenu(self._menu)
 
         self._dialog = None
@@ -54,6 +55,8 @@ class MonitorsPage(ContentPage):
         self._ui.list.itemDoubleClicked.connect(self._edit)
         self._ui.edit.clicked.connect(self._edit)
         self._ui.delete_.clicked.connect(self._delete)
+
+        MonitorDB.signals.monitorChanged.connect(self._load)
 
     def _openForcesAddDialog(self):
         self._dialog = ForceDialog(self)

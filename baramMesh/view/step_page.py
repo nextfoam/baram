@@ -3,6 +3,7 @@
 
 from pathlib import Path
 
+import qasync
 from PySide6.QtCore import QObject
 
 from libbaram.utils import rmtree
@@ -26,23 +27,24 @@ class StepPage(QObject):
         return app.fileSystem.timePathExists(self.OUTPUT_TIME, app.project.parallelCores() > 1)
 
     def lock(self):
-        self._disableEdit()
+        self._disableStep()
         self._locked = True
 
     def unlock(self):
-        self._enableEdit()
+        self._enableStep()
         self._locked = False
 
     def open(self):
         return
 
-    def selected(self):
+    async def selected(self):
         self._updateMesh()
 
     def deselected(self):
         return
 
-    def save(self):
+    @qasync.asyncSlot()
+    async def save(self):
         return True
 
     def unload(self):
@@ -110,10 +112,10 @@ class StepPage(QObject):
         self._ui.menuMesh_Quality.setEnabled(True)
         self._ui.menuParallel.setEnabled(True)
 
-    def _enableEdit(self):
+    def _enableStep(self):
         self._widget.setEnabled(True)
 
-    def _disableEdit(self):
+    def _disableStep(self):
         self._widget.setEnabled(False)
 
     def _clear(self):

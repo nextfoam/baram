@@ -26,19 +26,7 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <property name="minimumSize">
-    <size>
-     <width>600</width>
-     <height>0</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>600</width>
-     <height>16777215</height>
-    </size>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout_3">
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
      <widget class="QSplitter" name="splitter">
       <property name="sizePolicy">
@@ -68,7 +56,7 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>0</width>
+         <width>200</width>
          <height>0</height>
         </size>
        </property>
@@ -202,11 +190,11 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
     <widget class="QMenu" name="menuLoadMesh">
      <property name="title">
-      <string>Load Mesh</string>
+      <string>&amp;Load Mesh</string>
      </property>
      <addaction name="actionOpenFoam"/>
      <addaction name="actionMultiplePolyMesh"/>
@@ -219,18 +207,18 @@
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
     <addaction name="menuLoadMesh"/>
-    <addaction name="actionCloseCase"/>
+    <addaction name="actionCloseProject"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>&amp;View</string>
     </property>
    </widget>
    <widget class="QMenu" name="menuSetting">
     <property name="title">
-     <string>Settings</string>
+     <string>&amp;Settings</string>
     </property>
     <addaction name="actionScale"/>
     <addaction name="actionLanguage"/>
@@ -238,7 +226,7 @@
    </widget>
    <widget class="QMenu" name="menuMesh">
     <property name="title">
-     <string>Mesh</string>
+     <string>&amp;Mesh</string>
     </property>
     <addaction name="actionMeshInfo"/>
     <addaction name="actionMeshScale"/>
@@ -247,19 +235,19 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuParallel">
     <property name="title">
-     <string>Parallel</string>
+     <string>&amp;Parallel</string>
     </property>
     <addaction name="actionParallelEnvironment"/>
    </widget>
    <widget class="QMenu" name="menuExternal_Tools">
     <property name="title">
-     <string>External Tools</string>
+     <string>External &amp;Tools</string>
     </property>
     <addaction name="actionParaView"/>
    </widget>
@@ -272,62 +260,19 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QDockWidget" name="emptyDock">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="features">
-    <set>QDockWidget::NoDockWidgetFeatures</set>
-   </property>
-   <property name="allowedAreas">
-    <set>Qt::RightDockWidgetArea</set>
-   </property>
-   <property name="windowTitle">
-    <string/>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QVBoxLayout" name="verticalLayout_4">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <action name="actionCloseCase">
+  <action name="actionCloseProject">
    <property name="text">
-    <string>Close Project</string>
+    <string>&amp;Close Project</string>
    </property>
   </action>
   <action name="actionSave">
    <property name="text">
-    <string>Save</string>
+    <string>&amp;Save</string>
    </property>
   </action>
   <action name="actionSaveAs">
    <property name="text">
-    <string>Save As</string>
+    <string>Save &amp;As</string>
    </property>
   </action>
   <action name="actionPreference">
@@ -337,32 +282,32 @@
   </action>
   <action name="actionExit">
    <property name="text">
-    <string>Exit</string>
+    <string>&amp;Exit</string>
    </property>
   </action>
   <action name="actionScale">
    <property name="text">
-    <string>Scale</string>
+    <string>&amp;Scale</string>
    </property>
   </action>
   <action name="actionLanguage">
    <property name="text">
-    <string>Language</string>
+    <string>&amp;Language</string>
    </property>
   </action>
   <action name="actionMeshScale">
    <property name="text">
-    <string>Scale</string>
+    <string>&amp;Scale</string>
    </property>
   </action>
   <action name="actionMeshTranslate">
    <property name="text">
-    <string>Translate</string>
+    <string>&amp;Translate</string>
    </property>
   </action>
   <action name="actionMeshRotate">
    <property name="text">
-    <string>Rotate</string>
+    <string>&amp;Rotate</string>
    </property>
   </action>
   <action name="actionOpenFoam">
@@ -409,7 +354,7 @@
   </action>
   <action name="actionParaView">
    <property name="text">
-    <string>ParaView</string>
+    <string>&amp;ParaView</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -419,17 +364,17 @@
   </action>
   <action name="actionParallelEnvironment">
    <property name="text">
-    <string>Environment</string>
+    <string>&amp;Environment</string>
    </property>
   </action>
   <action name="actionParaViewSetting">
    <property name="text">
-    <string>ParaView</string>
+    <string>&amp;ParaView</string>
    </property>
   </action>
   <action name="actionMeshInfo">
    <property name="text">
-    <string>Info.</string>
+    <string>&amp;Info.</string>
    </property>
    <property name="toolTip">
     <string>Mesh Info.</string>

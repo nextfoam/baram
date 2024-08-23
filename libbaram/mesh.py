@@ -36,3 +36,10 @@ class Bounds:
             return (a + b) / 2
 
         return center(self.xMin, self.xMax), center(self.yMin, self.yMax), center(self.zMin, self.zMax)
+
+    def toInsidePoint(self, point):
+        x, y, z = point
+
+        return (self.xMin if x < self.xMin else self.xMax if x > self.xMax else x,
+                self.yMin if y < self.yMin else self.yMax if y > self.yMax else y,
+                self.zMin if z < self.zMin else self.zMax if z > self.zMax else z)

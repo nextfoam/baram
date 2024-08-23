@@ -25,7 +25,6 @@ class FanDialog(CoupledBoundaryConditionDialog):
         self._ui = Ui_FanDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
         self._coupledBoundary = None
         self._pqCurveFile = None
@@ -42,13 +41,14 @@ class FanDialog(CoupledBoundaryConditionDialog):
             QMessageBox.critical(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
             return
 
+        db = coredb.CoreDB()
         xpath = self._xpath + self.RELATIVE_XPATH
         fileDB = Project.instance().fileDB()
 
         oldFanCurveFile = None
         fanCurveFileKey = None
         if self._pqCurveFile:
-            oldFanCurveFile = self._db.getValue(xpath + '/fanCurveFile')
+            oldFanCurveFile = db.getValue(xpath + '/fanCurveFile')
             fanCurveFileKey = fileDB.putBcFile(self._bcid, BcFileRole.BC_FAN_CURVE, self._pqCurveFile)
         elif not self._pqCurveFileName:
             QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Fan P-Q Curve File."))
@@ -79,10 +79,11 @@ class FanDialog(CoupledBoundaryConditionDialog):
         self._ui.coupledBoundarySelect.clicked.connect(self._selectCoupledBoundary)
 
     def _load(self):
+        db = coredb.CoreDB()
         xpath = self._xpath + self.RELATIVE_XPATH
 
-        self._setCoupledBoundary(self._db.getValue(self._xpath + '/coupledBoundary'))
-        self._pqCurveFileName = Project.instance().fileDB().getUserFileName(self._db.getValue(xpath + '/fanCurveFile'))
+        self._setCoupledBoundary(db.getValue(self._xpath + '/coupledBoundary'))
+        self._pqCurveFileName = Project.instance().fileDB().getUserFileName(db.getValue(xpath + '/fanCurveFile'))
         self._ui.fanPQCurveFileName.setText(self._pqCurveFileName)
 
     def _selectFanPQCurveFile(self):

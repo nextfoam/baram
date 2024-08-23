@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
+
 import qasync
+
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMessageBox, QMenu
 from PySide6.QtCore import Signal
@@ -15,7 +18,8 @@ from .geometry import RESERVED_NAMES
 from .geometry_add_dialog import GeometryAddDialog
 from .geometry_import_dialog import ImportDialog
 from .geometry_list import GeometryList
-from .stl_file_loader import STLFileLoader
+from .split_dialog import SplitDialog
+from .stl_utility import StlImporter
 from .surface_dialog import SurfaceDialog
 from .volume_dialog import VolumeDialog
 
@@ -61,12 +65,12 @@ class GeometryPage(StepPage):
         self._connectSignalsSlots()
 
     def isNextStepAvailable(self):
-        return not app.window.geometryManager.isEmpty()
+        return app.db.elementCount('geometry') > 0
 
-    def selected(self):
+    async def selected(self):
         if not self._loaded:
             self._geometryManager = app.window.geometryManager
-            self._list.setGeometries(self._geometryManager.geometries())
+            self._list.load()
 
             self._geometryManager.selectedActorsChanged.connect(self._setSelectedGeometries)
 
@@ -83,8 +87,6 @@ class GeometryPage(StepPage):
         self._list.retranslate()
 
     def _connectSignalsSlots(self):
-        # self._list.itemDoubleClicked.connect(self._openEditDialog)
-        # self._ui.geometryList.currentItemChanged.connect(self._currentGeometryChanged)
         self._ui.geometryList.customContextMenuRequested.connect(self._executeContextMenu)
         self._list.selectedItemsChanged.connect(self._selectedItemsChanged)
         self._ui.import_.clicked.connect(self._importClicked)
@@ -121,20 +123,20 @@ class GeometryPage(StepPage):
         self._volumeDialog.open()
 
     def _openEditDialog(self):
-        gIds = self._list.selectedIDs()
+        items = self._list.selectedItems()
 
-        if len(gIds) == 1 and self._geometryManager.geometry(gIds[0])['gType'] == GeometryType.VOLUME.value:
+        if len(items) == 1 and items[0].isVolume():
+            gId = str(items[0].gId())
             self._actorsBackup = []
-            for g in self._geometryManager.geometries():
-                if self._geometryManager.geometry(g)['volume'] == gIds[0]:
-                    actorInfo = self._geometryManager.actorInfo(g)
-                    self._actorsBackup.append((actorInfo, actorInfo.properties().opacity))
-                    actorInfo.setOpacity(0.1)
+            for s in self._list.childSurfaces(gId):
+                actorInfo = self._geometryManager.actorInfo(s)
+                self._actorsBackup.append((actorInfo, actorInfo.properties().opacity))
+                actorInfo.setOpacity(0.1)
 
-            self._volumeDialog.setupForEdit(gIds[0])
+            self._volumeDialog.setupForEdit(gId)
             self._volumeDialog.open()
         else:
-            self._surfaceDialog.setGIds(gIds)
+            self._surfaceDialog.setGIds([item.gId() for item in items])
             self._surfaceDialog.open()
 
     def _removeGeometry(self):
@@ -143,15 +145,14 @@ class GeometryPage(StepPage):
         if confirm != QMessageBox.StandardButton.Yes:
             return
 
-        gIds = self._list.selectedIDs()
+        items = self._list.selectedItems()
 
         volume = None
-        if len(gIds) == 1 and self._geometryManager.geometry(gIds[0])['gType'] == GeometryType.VOLUME.value:
-            volume = gIds[0]
-            surfaces = [
-                g for g in self._geometryManager.geometries() if self._geometryManager.geometry(g)['volume'] == volume]
-        elif not any([self._geometryManager.geometry(gId)['volume'] for gId in gIds]):
-            surfaces = gIds
+        if len(items) == 1 and items[0].isVolume():
+            volume = str(items[0].gId())
+            surfaces = self._list.childSurfaces(volume)
+        elif not any([item.geometry().value('volume') for item in items]):
+            surfaces = {item.gId(): item.geometry() for item in items}
         else:
             QMessageBox.information(self._widget, self.tr('Delete Surfaces'),
                                     self.tr('Surfaces contained in a volume cannot be deleted.'))
@@ -159,8 +160,8 @@ class GeometryPage(StepPage):
 
         db = app.db.checkout()
 
-        for gId in surfaces:
-            db.removeGeometryPolyData(self._geometryManager.geometry(gId)['path'])
+        for gId, surface in surfaces.items():
+            db.removeGeometryPolyData(surface.value('path'))
             db.removeElement('geometry', gId)
             self._list.remove(gId)
         self._geometryManager.removeGeometry(surfaces)
@@ -182,55 +183,66 @@ class GeometryPage(StepPage):
 
             return db.getUniqueSeq('geometry', 'name', name, seq)
 
+        if self._dialog.featureAngle():
+            splitDialog = SplitDialog(self._widget, self._dialog.files(), float(self._dialog.featureAngle()))
+            try:
+                volumes, surfaces = await splitDialog.show()
+            except asyncio.exceptions.CancelledError:
+                return
+        else:
+            stlImporter = StlImporter()
+            stlImporter.load(self._dialog.files())
+            volumes, surfaces = stlImporter.identifyVolumes()
+
         try:
-            for path in self._dialog.files():
-                loader = STLFileLoader()
-                volumes, surfaces = await loader.load(path, self._dialog.featureAngle())
+            added = []
 
-                added = []
+            db = app.db.checkout()
+            seq = ''
+            for volume in volumes:
+                name = volume[0].sName if volume[0].sName else volume[0].fName
+                seq = getUniqueSeq(name, seq)
+                volumeName = name + seq
+                element = db.newElement('geometry')
+                element.setValue('gType', GeometryType.VOLUME)
+                element.setValue('name', volumeName)
+                element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
+                element.setValue('cfdType', CFDType.NONE.value)
+                volumeId = db.addElement('geometry', element)
+                added.append(volumeId)
 
-                db = app.db.checkout()
-                name = path.stem.replace(' ', '_')
-                seq = ''
-                for volume in volumes:
-                    seq = getUniqueSeq(name, seq)
-                    volumeName = f'{name}{seq}'
-                    element = db.newElement('geometry')
-                    element.setValue('gType', GeometryType.VOLUME)
-                    element.setValue('name', volumeName)
-                    element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
-                    element.setValue('cfdType', CFDType.NONE.value)
-                    volumeId = db.addElement('geometry', element)
-                    added.append(volumeId)
-
-                    surfaceName = f'{volumeName}_surface_'
-                    sseq = '0'
-                    for polyData in volume:
-                        sseq = db.getUniqueSeq('geometry', 'name', surfaceName, sseq)
-                        element = db.newElement('geometry')
-                        element.setValue('gType', GeometryType.SURFACE.value)
-                        element.setValue('volume', volumeId)
-                        element.setValue('name', f'{surfaceName}{sseq}')
-                        element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
-                        element.setValue('cfdType', CFDType.BOUNDARY.value)
-                        element.setValue('path', db.addGeometryPolyData(polyData))
-                        db.addElement('geometry', element)
-
-                for polyData in surfaces:
-                    seq = getUniqueSeq(name, seq)
+                sName = f'{volumeName}_surface'
+                sseq = ''
+                for surface in volume:
+                    name = surface.sName if surface.sName and surface.sName != volumeName else sName
+                    sseq = db.getUniqueSeq('geometry', 'name', name, sseq)
+                    surfaceName = name + getUniqueSeq(name, sseq)
                     element = db.newElement('geometry')
                     element.setValue('gType', GeometryType.SURFACE.value)
-                    element.setValue('name', f'{name}{seq}')
+                    element.setValue('volume', volumeId)
+                    element.setValue('name', surfaceName)
                     element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
                     element.setValue('cfdType', CFDType.BOUNDARY.value)
-                    element.setValue('path', db.addGeometryPolyData(polyData))
-                    gId = db.addElement('geometry', element)
-                    added.append(gId)
+                    element.setValue('path', db.addGeometryPolyData(surface.polyData))
+                    db.addElement('geometry', element)
 
-                app.db.commit(db)
+            for surface in surfaces:
+                name = surface.sName if surface.sName else surface.fName
+                seq = getUniqueSeq(name, seq)
+                surfaceName = name + seq
+                element = db.newElement('geometry')
+                element.setValue('gType', GeometryType.SURFACE.value)
+                element.setValue('name', surfaceName)
+                element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
+                element.setValue('cfdType', CFDType.BOUNDARY.value)
+                element.setValue('path', db.addGeometryPolyData(surface.polyData))
+                gId = db.addElement('geometry', element)
+                added.append(gId)
 
-                for gId in added:
-                    self._geometryCreated(gId)
+            app.db.commit(db)
+
+            for gId in added:
+                self._geometryCreated(gId)
         except OpenFOAMError as ex:
             code, message = ex.args
             QMessageBox.information(self._widget, self.tr('STL Loading Error'), f'{message} [{code}]')
@@ -240,11 +252,10 @@ class GeometryPage(StepPage):
             if self._volumeDialog.isForCreation():
                 self._geometryCreated(self._volumeDialog.gId())
             else:
-                if result == self._volumeDialog.DialogCode.Accepted:
-                    gId = self._volumeDialog.gId()
-                    volume = app.db.getElement('geometry',  gId)
-                    self._geometryManager.updateVolume(gId, volume, self._list.childSurfaces(gId))
-                    self._list.update(gId, volume)
+                gId = self._volumeDialog.gId()
+                volume = app.db.getElement('geometry',  gId)
+                self._geometryManager.updateVolume(volume, self._list.childSurfaces(gId))
+                self._list.update(gId, volume)
 
         if self._actorsBackup:
             for actorInfo, opacity in self._actorsBackup:
@@ -261,13 +272,13 @@ class GeometryPage(StepPage):
         geometry = app.db.getElement('geometry',  gId)
         self._addGeometry(gId, geometry)
 
-        if geometry['gType'] == GeometryType.VOLUME.value:
+        if geometry.value('gType') == GeometryType.VOLUME.value:
             surfaces = app.db.getElements('geometry', lambda i, e: e['volume'] == gId)
             for surfaceId in surfaces:
-                self._addGeometry(surfaceId, surfaces[surfaceId])
+                self._addGeometry(surfaceId, surfaces[surfaceId], geometry)
 
-    def _addGeometry(self, gId, geometry):
-        self._geometryManager.addGeometry(gId, geometry)
+    def _addGeometry(self, gId, geometry, volume=None):
+        self._geometryManager.addGeometry(gId, geometry, volume)
         self._list.add(gId, geometry)
         self._updateNextStepAvailable()
 
@@ -277,7 +288,7 @@ class GeometryPage(StepPage):
 
         self._geometryManager.clearSyncingFromDisplay()
 
-    def _enableEdit(self):
+    def _enableStep(self):
         if self._geometryManager is not None:
             self._geometryManager.startSyncingFromDisplay()
 
@@ -286,7 +297,7 @@ class GeometryPage(StepPage):
         self._volumeDialog.enableEdit()
         self._surfaceDialog.enableEdit()
 
-    def _disableEdit(self):
+    def _disableStep(self):
         # self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self._ui.buttons.setEnabled(False)
         self._volumeDialog.disableEdit()

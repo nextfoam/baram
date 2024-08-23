@@ -1,7 +1,7 @@
 import unittest
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT
+from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
 
 
 class TestMaterialDB(unittest.TestCase):
@@ -31,7 +31,7 @@ class TestMaterialDB(unittest.TestCase):
         .. math:: \rho = \frac{MW \times P}{R \times T}
         '''
         mw = float(coredb.CoreDB().getValue(self.xpath + '/molecularWeight'))
-        density = p * mw / (UNIVERSAL_GAL_CONSTANT * t)
+        density = p * mw / (UNIVERSAL_GAS_CONSTANT * t)
         self.assertEqual(density, MaterialDB.getDensity(self.mid, t, p))
 
     def testGetSpecificHeatConstant(self):

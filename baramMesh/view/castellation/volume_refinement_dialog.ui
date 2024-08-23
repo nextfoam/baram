@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>457</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,6 +39,72 @@
       </item>
       <item row="1" column="1">
        <widget class="QLineEdit" name="volumeRefinementLevel"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="cellSize">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="gapRefinement">
+     <property name="title">
+      <string>Gap Refinement</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayout_2">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Min. Cell Layers in a gap (n, n&gt;3)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="minCellLayers"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Gap Detection Start Level</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="detectionStartLevel"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Max. Refinement Level</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="maxRefinementLevel"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Direction</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="EnumComboBox" name="direction"/>
+      </item>
+      <item row="4" column="0" colspan="2">
+       <widget class="QCheckBox" name="gapSelf">
+        <property name="text">
+         <string>Include surface's own gap</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -119,6 +185,9 @@
         <property name="text">
          <string>OK</string>
         </property>
+        <property name="default">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -133,6 +202,30 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>EnumComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widgets.enum_combo_box</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>cancel</sender>
+   <signal>clicked()</signal>
+   <receiver>VolumeeRefinementDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>344</x>
+     <y>404</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>217</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

@@ -3,8 +3,7 @@
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from baramFlow.coredb.boundary_db import KEpsilonSpecification, KOmegaSpecification, InterfaceMode
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
-from baramFlow.coredb.models_db import TurbulenceModelsDB, SubgridScaleModel, SubgridKineticEnergySpecificationMethod
+from baramFlow.coredb.models_db import TurbulenceModel, TurbulenceModelsDB, SubgridKineticEnergySpecificationMethod
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -15,7 +14,7 @@ class K(BoundaryCondition):
         super().__init__(region, time, processorNo, 'k')
 
         self._initialValue = region.initialK
-        self._model = ModelsDB.getTurbulenceModel()
+        self._model = TurbulenceModelsDB.getRASModel()
 
     def build0(self):
         self._data = None
@@ -24,8 +23,7 @@ class K(BoundaryCondition):
             return self
 
         if (self._model == TurbulenceModel.K_EPSILON or self._model == TurbulenceModel.K_OMEGA
-                or TurbulenceModelsDB.getLESSubgridScaleModel() in (
-                        SubgridScaleModel.DYNAMIC_KEQN, SubgridScaleModel.KEQN)):
+                or TurbulenceModelsDB.isLESKEqnModel()):
             self._data = {
                 'dimensions': self.DIMENSIONS,
                 'internalField': ('uniform', self._initialValue),
@@ -92,7 +90,7 @@ class K(BoundaryCondition):
             elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
                 return self._constructNEXTTurbulentIntensityInletOutletTKE(
                     float(self._db.getValue(xpath + '/turbulence/k-omega/turbulentIntensity')) / 100.0)
-        elif TurbulenceModelsDB.getLESSubgridScaleModel() in (SubgridScaleModel.DYNAMIC_KEQN, SubgridScaleModel.KEQN):
+        elif TurbulenceModelsDB.isLESKEqnModel():
             spec = self._db.getValue(xpath + '/turbulence/les/specification')
             if spec == SubgridKineticEnergySpecificationMethod.SUBGRID_SCALE_K.value:
                 return self._constructInletOutlet(
@@ -145,14 +143,14 @@ class K(BoundaryCondition):
                 k = float(self._db.getValue(xpath + '/turbulence/k-omega/turbulentKineticEnergy'))
             elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
                 k, _ = self._calculateFreeStreamKW(xpath, self._region)
-        elif TurbulenceModelsDB.getLESSubgridScaleModel() in (SubgridScaleModel.DYNAMIC_KEQN, SubgridScaleModel.KEQN):
+        elif TurbulenceModelsDB.isLESKEqnModel():
             spec = self._db.getValue(xpath + '/turbulence/les/specification')
             if spec == SubgridKineticEnergySpecificationMethod.SUBGRID_SCALE_K.value:
                 k = float(self._db.getValue(xpath + '/turbulence/les/subgridKineticEnergy'))
             elif spec == SubgridKineticEnergySpecificationMethod.SUBGRID_SCALE_INTENSITY.value:
                 k, _ = self._calculateFreeStreamLES(xpath, self._region)
 
-        return self._constructFreestream(k)
+        return self._constructFreeStream(k)
 
     def _constructInterfaceK(self, xpath):
         spec = self._db.getValue(xpath + '/interface/mode')

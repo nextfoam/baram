@@ -107,7 +107,7 @@ class P(BoundaryCondition):
                     BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructZeroGradient()),
                     BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructZeroGradient()),
                     BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructTotalPressure(self._operatingPressure + float(self._db.getValue(xpath + '/pressureInlet/pressure')))),
-                    BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructTotalPressure(self._operatingPressure + float(self._db.getValue(xpath + '/pressureOutlet/totalPressure')))),
+                    BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletP(xpath)),
                     BoundaryType.ABL_INLET.value:           (lambda: self._constructZeroGradient()),
                     BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructZeroGradient()),
@@ -136,6 +136,16 @@ class P(BoundaryCondition):
             'type': 'totalPressure',
             'p0': ('uniform', pressure)
         }
+
+    def _constructPressureOutletP(self, xpath):
+        if self._db.getValue(xpath + '/pressureOutlet/nonReflective') == 'true':
+            t = 300
+            if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+                t = float(self._db.getValue(xpath + '/pressureOutlet/backflowTotalTemperature'))
+            return self._constructWaveTransmissive(xpath, t)
+        else:
+            return self._constructTotalPressure(
+                self._operatingPressure + float(self._db.getValue(xpath + '/pressureOutlet/totalPressure')))
 
     def _constructFreestreamPressure(self, pressure):
         return {

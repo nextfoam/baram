@@ -37,7 +37,7 @@ class ChartWidget(QWidget):
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        self._canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        self._canvas = FigureCanvas(Figure(figsize=(5, 3), layout='tight'))
         self._canvas.mpl_connect('scroll_event', self._onScroll)
 
         layout.addWidget(self._canvas)
@@ -174,8 +174,8 @@ class ChartWidget(QWidget):
 
         if self._logScale:
             # value cannot be "0" or close to "0" in log scale chart
-            minY = max(minY, sys.float_info.epsilon)
-            maxY = max(maxY, sys.float_info.epsilon)
+            minY = max(minY, sys.float_info.min)
+            maxY = max(maxY, sys.float_info.min)
 
             minY = minY / 10  # margin in log scale
 

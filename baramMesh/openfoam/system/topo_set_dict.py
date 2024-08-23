@@ -4,7 +4,6 @@
 from enum import Enum
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
-from libbaram.simple_db.simple_db import elementToVector
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import CFDType, Shape
@@ -111,22 +110,22 @@ class TopoSetDict(DictionaryFile):
             return self
 
         actions = []
+        regions = app.db.getElements('region')
         if mode == self.Mode.CREATE_REGIONS:
-            for region in app.db.getElements('region').values():
-                actions.append(self._constructClearCellSetAction(region['name']))
+            for region in regions.values():
+                actions.append(self._constructClearCellSetAction(region.value('name')))
                 actions.append(self._constuctNewRegionToCellAction(region))
-                actions.append(self._constructNewSetToCellZone(region['name'], region['name']))
+                actions.append(self._constructNewSetToCellZone(region.value('name'), region.value('name')))
         elif mode == self.Mode.CREATE_CELL_ZONES:
             for gId, geometry in app.db.getElements(
                     'geometry', lambda i, e: e['cfdType'] == CFDType.CELL_ZONE.value).items():
-                actions.append(self._constructClearCellSetAction(geometry['name']))
+                actions.append(self._constructClearCellSetAction(geometry.value('name')))
                 actions.append(self._constuctNewGeometryToCellAction(geometry))
-                actions.append(self._constructNewSetToCellZone(geometry['name'], geometry['name']))
+                actions.append(self._constructNewSetToCellZone(geometry.value('name'), geometry.value('name')))
 
-            regions = app.db.getElements('region', None, ['name'])
             if len(regions) > 1:
                 for region in regions.values():
-                    actions.append(self._constructRemoveCellZoneSet(region['name']))
+                    actions.append(self._constructRemoveCellZoneSet(region.value('name')))
 
         if actions:
             self._data = {
@@ -144,11 +143,11 @@ class TopoSetDict(DictionaryFile):
 
     def _constuctNewRegionToCellAction(self, region):
         return {
-            'name': region['name'],
+            'name': region.value('name'),
             'type': 'cellSet',
             'action': 'new',
             'source': 'regionToCell',
-            'insidePoints': [elementToVector(region['point'])]
+            'insidePoints': [region.vector('point')]
         }
 
     def _constructNewVolumeToCellAction(self, source):
@@ -162,19 +161,20 @@ class TopoSetDict(DictionaryFile):
             return self._constructNewCellZoneToCellAction(source.name, None)
 
     def _constuctNewGeometryToCellAction(self, geometry):
-        shape = geometry['shape']
+        shape = geometry.value('shape')
 
-        point1 = elementToVector(geometry['point1'])
-        point2 = elementToVector(geometry['point2'])
+        point1 = geometry.vector('point1')
+        point2 = geometry.vector('point2')
 
         if shape == Shape.TRI_SURFACE_MESH.value:
-            return self._constructNewSurfaceToCellAction(geometry['name'])
+            return self._constructNewSurfaceToCellAction(geometry.value('name'))
         elif shape == Shape.HEX.value or shape == Shape.HEX6.value:
-            return self._constuctNewBoxToCellAction(geometry['name'], point1, point2)
+            return self._constuctNewBoxToCellAction(geometry.value('name'), point1, point2)
         elif shape == Shape.CYLINDER.value:
-            return self._constsructNewCylinderToCellAction(geometry['name'], point1, point2, geometry['radius'])
+            return self._constsructNewCylinderToCellAction(
+                geometry.value('name'), point1, point2, geometry.value('radius'))
         elif shape == Shape.SPHERE.value:
-            return self._constructNewSphereToCellAction(geometry['name'], point1, geometry['radius'])
+            return self._constructNewSphereToCellAction(geometry.value('name'), point1, geometry.value('radius'))
 
     def _constructNewSetToCellZone(self, zoneName, setName):
         return {

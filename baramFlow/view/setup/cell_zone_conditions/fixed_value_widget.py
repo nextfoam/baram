@@ -20,22 +20,28 @@ class FixedValueWidget(QWidget):
         self._ui = Ui_FixedValueWidget()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._title = title
         self._xpath = xpath
 
         self._ui.groupBox.setTitle(title)
         self._ui.label.setText(label)
 
-    def load(self):
-        self._ui.groupBox.setChecked(self._db.getAttribute(self._xpath, 'disabled') == 'false')
-        self._ui.value.setText(self._db.getValue(self._xpath))
+    def setChecked(self, checked):
+        self._ui.groupBox.setChecked(checked)
 
-    def appendToWriter(self, writer):
-        if self._ui.groupBox.isChecked():
-            writer.setAttribute(self._xpath, 'disabled', 'false')
-            writer.append(self._xpath, self._ui.value.text(), self._title)
+    def load(self):
+        db = coredb.CoreDB()
+        if db.exists(self._xpath):
+            self._ui.groupBox.setChecked(db.getAttribute(self._xpath, 'disabled') == 'false')
+            self._ui.value.setText(db.getValue(self._xpath))
         else:
-            writer.setAttribute(self._xpath, 'disabled', 'true')
+            self._ui.groupBox.setChecked(False)
+
+    def updateDB(self, newDB):
+        if self._ui.groupBox.isChecked():
+            newDB.setAttribute(self._xpath, 'disabled', 'false')
+            newDB.setValue(self._xpath, self._ui.value.text(), self._title)
+        else:
+            newDB.setAttribute(self._xpath, 'disabled', 'true')
 
         return True

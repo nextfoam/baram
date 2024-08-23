@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import typing
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import qasync
-from PySide6.QtWidgets import QWidget
-from PySide6.QtCore import Qt
-
-import numpy as np
 from matplotlib import style as mplstyle
 from matplotlib import ticker
 from matplotlib.backends.qt_compat import QtWidgets
-from matplotlib.backends.backend_qtagg import (
-    FigureCanvas)
+from matplotlib.backends.backend_qtagg import FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
+from PySide6.QtCore import QMargins, QCoreApplication, QEvent
+from PySide6.QtWidgets import QWidget
+from PySide6QtAds import CDockWidget
 
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
@@ -24,29 +24,22 @@ from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver_info_manager import SolverInfoManager
-from .tabified_dock import TabifiedDock
 
 SIDE_MARGIN = 0.05  # 5% margin on left and right
 
 mplstyle.use('fast')
 
 
-class ChartDock(TabifiedDock):
+class ChartView(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        self._main_window = parent
 
         self._data = None
 
         self._lines: typing.Dict[str, Line2D] = {}
 
-        self.setAllowedAreas(Qt.RightDockWidgetArea)
-
-        self._widget = QWidget()
-        self.setWidget(self._widget)
-
-        layout = QtWidgets.QVBoxLayout(self._widget)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(QMargins(0, 0, 0, 0))
 
         self._canvas = FigureCanvas(Figure(figsize=(5, 3)))
         self._canvas.mpl_connect('scroll_event', self.onScroll)
@@ -66,8 +59,6 @@ class ChartDock(TabifiedDock):
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
         CaseManager().caseLoaded.connect(self._caseLoaded)
         CaseManager().caseCleared.connect(self._caseCleared)
-
-        self._translate()
 
     def startDrawing(self):
         self.solverInfoManager.startCollecting(Path(FileSystem.caseRoot()).resolve(), coredb.CoreDB().getRegions())
@@ -167,11 +158,6 @@ class ChartDock(TabifiedDock):
         self._canvas.draw()  # force re-draw the next time the GUI refreshes
         # self._canvas.draw_idle()
 
-        self._translate()
-
-    def _translate(self):
-        self.setWindowTitle(self.tr("Residuals"))
-
     def _adjustYRange(self, minX: float, maxX: float):
         data = self._data
 
@@ -180,11 +166,7 @@ class ChartDock(TabifiedDock):
         maxY = d.max().max()
 
         minY = minY / 10  # margin in log scale
-
-        if maxY < 0.1:
-            maxY = maxY * 10  # margin in log scale
-        else:
-            maxY = 1
+        maxY = maxY * 10  # margin in log scale
 
         self._axes.set_ylim([minY, maxY])
 
@@ -221,3 +203,20 @@ class ChartDock(TabifiedDock):
         self._axes.set_xlim([minX, maxX])
 
         self._canvas.draw()
+
+
+class ChartDock(CDockWidget):
+    def __init__(self):
+        super().__init__(self._title())
+
+        self._widget = ChartView()
+        self.setWidget(self._widget)
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.LanguageChange:
+            self.setWindowTitle(self._title())
+
+        super().changeEvent(event)
+
+    def _title(self):
+        return QCoreApplication.translate('ChartDock', 'Residuals')

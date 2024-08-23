@@ -52,6 +52,8 @@ class MeshManager(ActorManager):
         self.applyToDisplay()
         self.fitDisplay()
 
+        self._notifyCellCountChange()
+
         progressDialog.close()
 
     def unload(self):
@@ -64,8 +66,6 @@ class MeshManager(ActorManager):
             self._show()
         else:
             await self.load(time)
-
-        self._notifyCellCountChange()
 
     def boundaries(self):
         return self._actorInfos.keys()
@@ -105,11 +105,18 @@ class MeshManager(ActorManager):
 
         self._notifyCellCountChange()
 
-    def cut(self, cutters):
-        super().cut(cutters)
+    def clip(self, planes):
+        super().clip(planes)
+        self._notifyCellCountChange()
+
+    def slice(self, plane):
+        super().slice(plane)
         self._notifyCellCountChange()
 
     def _notifyCellCountChange(self):
         count = self.getNumberOfDisplayedCells()
         self.cellCountChanged.emit(count)
 
+    def _show(self):
+        super()._show()
+        self._notifyCellCountChange()

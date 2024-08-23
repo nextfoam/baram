@@ -6,7 +6,7 @@ from math import sqrt
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
 from baramFlow.coredb.boundary_db import FlowRateInletSpecification, WallVelocityCondition, InterfaceMode
-from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAL_CONSTANT
+from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from libbaram.openfoam.dictionary.dictionary_file import DataClass
@@ -41,7 +41,7 @@ class U(BoundaryCondition):
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructVelocityInletU(xpath, name)),
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFlowRateInletVelocity(xpath + '/flowRateInlet')),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructPressureInletOutletVelocity()),
-                BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureInletOutletVelocity()),
+                BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletU(xpath)),
                 BoundaryType.ABL_INLET.value:           (lambda: self._constructAtmBoundaryLayerInletVelocity()),
                 BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructVariableHeightFlowRateInletVelocity(self._db.getValue(xpath + '/openChannelInlet/volumeFlowRate'))),
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructOutletPhaseMeanVelocity(self._db.getValue(xpath + '/openChannelOutlet/meanVelocity'))),
@@ -84,6 +84,15 @@ class U(BoundaryCondition):
             'type': 'pressureInletOutletVelocity',
             'value': self._initialValueByTime()
         }
+
+    def _constructPressureOutletU(self, xpath):
+        if self._db.getValue(xpath + '/pressureOutlet/nonReflective') == 'true':
+            t = 300
+            if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
+                t = float(self._db.getValue(xpath + '/pressureOutlet/backflowTotalTemperature'))
+            return self._constructWaveTransmissive(xpath, t)
+        else:
+            return self._constructPressureInletOutletVelocity()
 
     def _constructAtmBoundaryLayerInletVelocity(self):
         return {
@@ -168,8 +177,8 @@ class U(BoundaryCondition):
 
     def _constructFarfieldRiemannU(self, xpath):
         gamma = 1.4
-        mw = self._db.getMolecularWeight(self._region.mid)
-        a = sqrt(gamma * (UNIVERSAL_GAL_CONSTANT / mw)
+        mw = self._db.getMolecularWeight(MaterialDB.getMaterialComposition(xpath + '/species', self._region.mid))
+        a = sqrt(gamma * (UNIVERSAL_GAS_CONSTANT / mw)
                  * float(self._db.getValue(xpath + '/farFieldRiemann/staticTemperature')))
         dx, dy, dz = self._calculateFarfiledRiemanFlowDirection(xpath + '/farFieldRiemann/flowDirection')
         dMag = sqrt(dx ** 2 + dy ** 2 + dz ** 2)

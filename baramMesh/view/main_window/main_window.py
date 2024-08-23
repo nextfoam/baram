@@ -9,9 +9,11 @@ from typing import Optional
 
 from filelock import Timeout
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
-from PySide6.QtCore import Signal, QEvent
+from PySide6.QtCore import Signal, QEvent, QMargins
+from PySide6QtAds import CDockManager, DockWidgetArea
 
 from libbaram.utils import getFit
+from widgets.new_project_dialog import NewProjectDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 from widgets.progress_dialog import ProgressDialog
 
@@ -19,7 +21,6 @@ from baramMesh.app import app
 from baramMesh.openfoam.redistribution_task import RedistributionTask
 from baramMesh.view.display_control.display_control import DisplayControl
 from baramMesh.view.widgets.project_dialog import ProjectDialog
-from baramMesh.view.widgets.new_project_dialog import NewProjectDialog
 from baramMesh.view.widgets.settings_scaling_dialog import SettingScalingDialog
 from baramMesh.view.widgets.language_dialog import LanugageDialog
 from baramMesh.view.menu.mesh_quality.mesh_quality_parameters_dialog import MeshQualityParametersDialog
@@ -36,6 +37,7 @@ from .main_window_ui import Ui_MainWindow
 
 class MainWindow(QMainWindow):
     _vtkReaderProgress = Signal(str)
+    _closeTriggered = Signal(bool)
 
     def __init__(self):
         super().__init__()
@@ -51,10 +53,12 @@ class MainWindow(QMainWindow):
         self._recentFilesMenu = RecentFilesMenu(self._ui.menuOpen_Recent)
         self._recentFilesMenu.setRecents(app.settings.getRecentProjects())
 
+        self._dockManager = CDockManager(self._ui.dockContainer)
+
         self._navigationView = NavigationView(self._ui.stepButtons)
         self._displayControl = DisplayControl(self._ui)
         self._renderingTool = RenderingTool(self._ui)
-        self._consoleView = ConsoleView(self._ui)
+        self._consoleView = ConsoleView()
 
         self._geometryManager: Optional[GeometryManager] = None
         self._meshManager = None
@@ -63,12 +67,22 @@ class MainWindow(QMainWindow):
         self._startDialog = ProjectDialog()
         self._dialog = None
 
+        self._readyToQuit = False
+
         self.setWindowIcon(app.properties.icon())
 
         self._contentLayout = QVBoxLayout(self._ui.content)
         self._contentLayout.setContentsMargins(0, 0, 0, 0)
 
+        self._setupShortcuts()
+
         self._connectSignalsSlots()
+
+        layout = QVBoxLayout(self._ui.dockContainer)
+        layout.setContentsMargins(QMargins(0, 0, 0, 0))
+        layout.addWidget(self._dockManager)
+
+        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._consoleView)
 
         geometry = app.settings.getLastMainWindowGeometry()
         display = app.qApplication.primaryScreen().availableVirtualGeometry()
@@ -85,7 +99,7 @@ class MainWindow(QMainWindow):
 
     @property
     def consoleView(self):
-        return self._consoleView
+        return self._consoleView.widget()
 
     @property
     def displayControl(self):
@@ -100,16 +114,19 @@ class MainWindow(QMainWindow):
         return self._meshManager
 
     def closeEvent(self, event):
-        if not self._closeProject():
+        if not self._readyToQuit:
+            self._closeTriggered.emit(True)
             event.ignore()
             return
 
         app.settings.updateLastMainWindowGeometry(self.geometry())
 
-        event.accept()
+        self._dockManager.deleteLater()
+
+        super().closeEvent(event)
 
     def changeEvent(self, event):
-        if event.type() == QEvent.LanguageChange:
+        if event.type() == QEvent.Type.LanguageChange:
             self._ui.retranslateUi(self)
             self._stepManager.retranslatePages()
 
@@ -119,8 +136,16 @@ class MainWindow(QMainWindow):
         self._startDialog.setRecents(app.settings.getRecentProjects())
         self._startDialog.open()
 
+    def _setupShortcuts(self):
+        self._ui.actionNew.setShortcut('Ctrl+N')
+        self._ui.actionOpen.setShortcut('Ctrl+O')
+        self._ui.actionSave.setShortcut('Ctrl+S')
+        self._ui.actionExit.setShortcut('Ctrl+Q')
+        self._ui.actionParallelEnvironment.setShortcut('Ctrl+P')
+        self._ui.actionLanguage.setShortcut('Ctrl+L')
+
     def _connectSignalsSlots(self):
-        self._ui.menuView.addAction(self._ui.consoleView.toggleViewAction())
+        self._ui.menuView.addAction(self._consoleView.toggleViewAction())
 
         self._ui.actionNew.triggered.connect(self._actionNew)
         self._ui.actionOpen.triggered.connect(self._actionOpen)
@@ -142,12 +167,13 @@ class MainWindow(QMainWindow):
         self._stepManager.openedStepChanged.connect(self._displayControl.openedStepChanged)
         self._stepManager.currentStepChanged.connect(self._displayControl.currentStepChanged)
 
+        self._closeTriggered.connect(self._closeProject)
+
     def _openRecent(self, path):
         self._openProject(path)
 
     def _actionNew(self):
-        self._dialog = NewProjectDialog(self)
-        self._dialog.setBaseLocation(Path(app.settings.getRecentLocation()).resolve())
+        self._dialog = NewProjectDialog(self, self.tr('New Project'), Path(app.settings.getRecentLocation()).resolve())
         self._dialog.accepted.connect(self._createProject)
         self._dialog.show()
 
@@ -157,8 +183,9 @@ class MainWindow(QMainWindow):
         self._dialog.fileSelected.connect(self._openProject)
         self._dialog.open()
 
-    def _actionSave(self):
-        if self._stepManager.saveCurrentPage():
+    @qasync.asyncSlot()
+    async def _actionSave(self):
+        if await self._stepManager.saveCurrentPage():
             app.project.save()
 
     def _actionParameters(self):
@@ -183,16 +210,18 @@ class MainWindow(QMainWindow):
         self._dialog = AboutDialog(self)
         self._dialog.open()
 
-    def _createProject(self):
-        self._closeProject()
+    @qasync.asyncSlot()
+    async def _createProject(self):
+        await self._closeProject()
         self._clear()
 
         if app.createProject(self._dialog.projectLocation()):
             self._recentFilesMenu.addRecentest(app.project.path)
             self._projectOpened()
 
-    def _openProject(self, file):
-        self._closeProject()
+    @qasync.asyncSlot()
+    async def _openProject(self, file):
+        await self._closeProject()
         self._clear()
 
         path = Path(file)
@@ -210,11 +239,12 @@ class MainWindow(QMainWindow):
         if app.project is None:
             self.close()
 
-    def _closeProject(self):
+    @qasync.asyncSlot()
+    async def _closeProject(self, toQuit=False):
         if app.project is None:
             return True
 
-        if not self._stepManager.saveCurrentPage():
+        if not await self._stepManager.saveCurrentPage():
             return False
 
         if app.db.isModified():
@@ -236,6 +266,10 @@ class MainWindow(QMainWindow):
 
         logging.getLogger().removeHandler(self._handler)
         self._handler.close()
+
+        if toQuit:
+            self._readyToQuit = True
+            self.close()
 
         return True
 

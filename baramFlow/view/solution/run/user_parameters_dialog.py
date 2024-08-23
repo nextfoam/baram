@@ -8,6 +8,7 @@ from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QIcon, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog, QTreeWidgetItem, QLineEdit, QHeaderView
 
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from widgets.async_message_box import AsyncMessageBox
 from widgets.flat_push_button import FlatPushButton
 
@@ -94,6 +95,8 @@ class UserParametersDialog(QDialog):
                               ''')
             elif value != self._parameters[name]['value']:
                 writer.append(f'{self.XPATH}/parameter[name="{name}"]/value', value, None)
+
+        CoreDBReader().setParameters(parameters)
 
         errorCount = writer.write()
         if errorCount > 0:

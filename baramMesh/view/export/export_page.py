@@ -5,13 +5,13 @@ import shutil
 from pathlib import Path
 
 import qasync
-from PySide6.QtWidgets import QFileDialog
 
 from libbaram.openfoam.constants import Directory
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
 from libbaram.utils import rmtree
 from resources import resource
+from widgets.new_project_dialog import NewProjectDialog
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
@@ -45,17 +45,22 @@ class ExportPage(StepPage):
 
     @qasync.asyncSlot()
     async def _openFileDialog(self):
-        self._dialog = QFileDialog(self._widget, self.tr('Select Folder'))
-        self._dialog.setFileMode(QFileDialog.FileMode.Directory)
-        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        self._dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
-        self._dialog.fileSelected.connect(self._export)
+        self._dialog = NewProjectDialog(self._widget, self.tr('Export Baram Project'))
+        self._dialog.accepted.connect(self._export)
         self._dialog.rejected.connect(self._ui.menubar.repaint)
         self._dialog.open()
+        #
+        # self._dialog = QFileDialog(self._widget, self.tr('Select Folder'))
+        # self._dialog.setFileMode(QFileDialog.FileMode.Directory)
+        # self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        # self._dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
+        # self._dialog.fileSelected.connect(self._export)
+        # self._dialog.rejected.connect(self._ui.menubar.repaint)
+        # self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _export(self, file):
-        path = Path(file)
+    async def _export(self):
+        path = Path(self._dialog.projectLocation())
 
         progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
         progressDialog.setLabelText(self.tr('Preparing'))
@@ -81,19 +86,23 @@ class ExportPage(StepPage):
                 await cm.start()
                 rc = await cm.wait()
                 if rc != 0:
-                    raise ProcessError
-            if not fileSystem.timePathExists(self.OUTPUT_TIME, parallel.isParallelOn()):
+                    raise ProcessError(rc)
+
+            else:  # Single Region. "4" folder was not created by "splitMeshRegions"
                 progressDialog.setLabelText(self.tr('Copying Files'))
+
+                lastMeshTime = self.OUTPUT_TIME - 1  # Boundary Layer step
+                if not fileSystem.hasPolyMesh(lastMeshTime, parallel.isParallelOn()):
+                    lastMeshTime = self.OUTPUT_TIME - 2  # Snap step
 
                 if parallel.isParallelOn():
                     for n in range(parallel.np()):
-                        if not await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME, n):
-                            await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME, n)
-                elif not await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 1, self.OUTPUT_TIME):
-                    await fileSystem.copyTimeDirectory(self.OUTPUT_TIME - 2, self.OUTPUT_TIME)
+                        await fileSystem.copyTimeDirectory(lastMeshTime, self.OUTPUT_TIME, n)
+                else:
+                    await fileSystem.copyTimeDirectory(lastMeshTime, self.OUTPUT_TIME)
 
             topoSetDict = TopoSetDict().build(TopoSetDict.Mode.CREATE_CELL_ZONES)
-            regions = app.db.getElements('region', None, ['name'])
+            regions = app.db.getElements('region')
             if topoSetDict.isBuilt():
                 progressDialog.setLabelText(self.tr('Processing Cell Zones'))
                 if len(regions) == 1:
@@ -105,11 +114,11 @@ class ExportPage(StepPage):
                     await cm.start()
                     rc = await cm.wait()
                     if rc != 0:
-                        raise ProcessError
+                        raise ProcessError(rc)
 
                 else:
                     for region in regions.values():
-                        rname = region['name']
+                        rname = region.value('name')
                         topoSetDict.setRegion(rname).write()
 
                         cm = RunParallelUtility('topoSet', '-region', rname, cwd=fileSystem.caseRoot(), parallel=parallel)
@@ -118,7 +127,7 @@ class ExportPage(StepPage):
                         await cm.start()
                         rc = await cm.wait()
                         if rc != 0:
-                            raise ProcessError
+                            raise ProcessError(rc)
             path.mkdir(parents=True, exist_ok=True)
             baramSystem = FileSystem(path)
             baramSystem.createCase(resource.file('openfoam/case'))
@@ -142,7 +151,7 @@ class ExportPage(StepPage):
             else:
                 if len(regions) > 1:
                     for region in regions.values():
-                        shutil.move(self._outputPath() / region['name'], baramSystem.constantPath())
+                        shutil.move(self._outputPath() / region.value('name'), baramSystem.constantPath())
                 else:
                     shutil.move(self._outputPath() / Directory.POLY_MESH_DIRECTORY_NAME, baramSystem.polyMeshPath())
 

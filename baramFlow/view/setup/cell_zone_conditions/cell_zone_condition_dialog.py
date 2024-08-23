@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QDialog, QMessageBox, QVBoxLayout
+import qasync
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QWidget
+
+from baramFlow.coredb.configuraitions import ConfigurationException
+from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.cell_zone_db import CellZoneDB, ZoneType, SpecificationMethod
-from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.models_db import TurbulenceModelHelper, ModelsDB
+from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
+from baramFlow.coredb.material_db import MaterialDB, MaterialType
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME, RegionDB
 from .actuator_disk_widget import ActuatorDiskWidget
 from .cell_zone_condition_dialog_ui import Ui_CellZoneConditionDialog
@@ -18,6 +22,7 @@ from .materials_widget import MaterialsWidget
 from .MRF_widget import MRFWidget
 from .porous_zone_widget import PorousZoneWidget
 from .sliding_mesh_widget import SlidingMeshWidget
+from .turbulence_fields import getTurbulenceFields
 from .variable_source_widget import VariableSourceWidget
 
 
@@ -37,26 +42,49 @@ class CellZoneConditionDialog(QDialog):
 
         self._czid = czid
         self._rname = rname
-        self._db = coredb.CoreDB()
         self._xpath = CellZoneDB.getXPath(self._czid)
-        self._name = self._db.getValue(self._xpath + '/name')
+        db = coredb.CoreDB()
+        self._name = db.getValue(self._xpath + '/name')
 
+        self._material = None
         self._secondaryMaterials = []
+        self._species = None
 
         self._materialsWidget = None
+
         # Zone Type Widgets
         self._MRFZone = None
         self._porousZone = None
         self._slidingMeshZone = None
         self._actuatorDiskZone = None
 
+        # Source Terms Widgets
+        self._massSourceTerm = None
+        self._materialSourceTerms = {}
+        self._energySourceTerm = None
+        self._turbulenceSourceTerms = {}
+        self._scalarSourceTerms = {}
+        self._specieFixedValueWidgets = {}
+
+        self._materialSourceTermsLayout = QVBoxLayout()
+        self._specieFixedValuesLayout = QVBoxLayout()
+
+        self._addedMaterialSourceTerms = []
+
+        # Fixed Value Widgets
+        self._turbulenceFixedValues = {}
+        self._temperature = None
+        self._scalarFixedValues = {}
+
+        isMultiPhaseOn = ModelsDB.isMultiphaseModelOn()
+        isSpeciesOn = ModelsDB.isSpeciesModelOn()
+
         layout = self._ui.setting.layout()
         if CellZoneDB.isRegion(self._name):
             self.setWindowTitle(self.tr('Region Condition'))
             self._ui.zoneType.setVisible(False)
 
-            self._materialsWidget = MaterialsWidget(self._rname, ModelsDB.isMultiphaseModelOn())
-            self._materialsWidget.materialsChanged.connect(self._setupMaterialSourceWidgets)
+            self._materialsWidget = MaterialsWidget(self._rname, isMultiPhaseOn)
             layout.addWidget(self._materialsWidget)
 
             if self._rname:
@@ -86,32 +114,21 @@ class CellZoneConditionDialog(QDialog):
             self._ui.zoneTypeRadioGroup.idToggled.connect(self._zoneTypeChanged)
         layout.addStretch()
 
-        # Source Terms Widgets
-        self._massSourceTerm = None
-        self._materialSourceTerms = {}
-        self._energySourceTerm = None
-        self._turbulenceSourceTerms = {}
-
-        self._materialSourceTermsLayout = None
-
         layout = self._ui.sourceTerms.layout()
-        if ModelsDB.isMultiphaseModelOn():
-            self._materialSourceTermsLayout = QVBoxLayout()
-            layout.addLayout(self._materialSourceTermsLayout)
-            self._setupMaterialSourceWidgets(RegionDB.getSecondaryMaterials(self._rname))
-        elif ModelsDB.isSpeciesModelOn():
-            pass
-        else:
+        layout.addLayout(self._materialSourceTermsLayout)
+
+        self._specieFixedValuesLayout.setContentsMargins(0, 0, 0, 0)
+        widget = QWidget()
+        widget.setLayout(self._specieFixedValuesLayout)
+        self._ui.fixedValues.layout().addWidget(widget)
+
+        if not isMultiPhaseOn and not isSpeciesOn:
             self._massSourceTerm = VariableSourceWidget(
                 self.tr("Mass"), self._xpath + '/sourceTerms/mass', {
                     SpecificationMethod.VALUE_PER_UNIT_VOLUME: 'kg/m<sup>3</sup>s',
                     SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: 'kg/s'
                 })
             layout.addWidget(self._massSourceTerm)
-
-        # Fixed Value Widgets
-        self._turbulenceFixedValues = {}
-        self._temperature = None
 
         if ModelsDB.isEnergyModelOn():
             self._energySourceTerm = VariableSourceWidget(
@@ -126,76 +143,111 @@ class CellZoneConditionDialog(QDialog):
             self._ui.fixedValues.layout().addWidget(self._temperature)
 
         self._setupTurbulenceWidgets()
+        self._setupScalarWidgets()
 
         self._ui.sourceTerms.layout().addStretch()
         self._ui.fixedValues.layout().addStretch()
 
+        self._connectSignalsSlots()
         self._load()
 
-    def accept(self):
-        writer = CoreDBWriter()
-
+    def _connectSignalsSlots(self):
         if CellZoneDB.isRegion(self._name):
-            if not self._materialsWidget.appendToWriter(writer):
-                return
-        else:
-            zoneType = self._getZoneTypeRadioValue()
-            writer.append(self._xpath + '/zoneType', zoneType, None)
+            self._materialsWidget.materialsChanged.connect(self._setMaterials)
+        self._ui.ok.clicked.connect(self._accept)
 
-            result = True
-            if zoneType == ZoneType.MRF.value:
-                result = self._MRFZone.appendToWriter(writer)
-            elif zoneType == ZoneType.POROUS.value:
-                result = self._porousZone.appendToWriter(writer)
-            elif zoneType == ZoneType.SLIDING_MESH.value:
-                result = self._slidingMeshZone.appendToWriter(writer)
-            elif zoneType == ZoneType.ACTUATOR_DISK.value:
-                result = self._actuatorDiskZone.appendToWriter(writer)
+    def reject(self):
+        db = coredb.CoreDB()
+        for mid in self._addedMaterialSourceTerms:
+            db.removeElement(f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]')
 
-            if not result:
-                return
+        super().reject()
 
-        if self._massSourceTerm and not self._massSourceTerm.appendToWriter(writer):
-            return
+    @qasync.asyncSlot()
+    async def _accept(self):
+        try:
+            with coredb.CoreDB() as db:
+                if CellZoneDB.isRegion(self._name):
+                    RegionDB.updateMaterials(self._rname, self._material, self._secondaryMaterials)
+                    if not self._materialsWidget.updateDB(db):
+                        return
+                else:
+                    zoneType = self._getZoneTypeRadioValue()
+                    db.setValue(self._xpath + '/zoneType', zoneType, None)
 
-        for mid in self._secondaryMaterials:
-            self._materialSourceTerms[mid].appendToWriter(writer)
+                    result = True
+                    if zoneType == ZoneType.MRF.value:
+                        result = self._MRFZone.updateDB(db)
+                    elif zoneType == ZoneType.POROUS.value:
+                        result = self._porousZone.updateDB(db)
+                    elif zoneType == ZoneType.SLIDING_MESH.value:
+                        result = self._slidingMeshZone.updateDB(db)
+                    elif zoneType == ZoneType.ACTUATOR_DISK.value:
+                        result = self._actuatorDiskZone.updateDB(db)
 
-        if self._energySourceTerm and not self._energySourceTerm.appendToWriter(writer):
-            return
+                    if not result:
+                        return
 
-        for field, widget in self._turbulenceSourceTerms.items():
-            if not widget.appendToWriter(writer):
-                return
+                if self._massSourceTerm and not await self._massSourceTerm.updateDB(db):
+                    return
 
-        if self._ui.velocityGroup.isChecked():
-            writer.setAttribute(self._xpath + 'fixedValues/velocity', 'disabled', 'false')
-            writer.append(self._xpath + '/fixedValues/velocity/velocity/x',
-                          self._ui.xVelocity.text(), self.tr("X-Velocity"))
-            writer.append(self._xpath + '/fixedValues/velocity/velocity/y',
-                          self._ui.yVelocity.text(), self.tr("Y-Velocity"))
-            writer.append(self._xpath + '/fixedValues/velocity/velocity/z',
-                          self._ui.zVelocity.text(), self.tr("Z-Velocity"))
-            writer.append(self._xpath + '/fixedValues/velocity/relaxation',
-                          self._ui.relaxation.text(), self.tr("relaxation"))
-        else:
-            writer.setAttribute(self._xpath + 'fixedValues/velocity', 'disabled', 'true')
+                if ModelsDB.isMultiphaseModelOn():
+                    for mid, widget in self._materialSourceTerms.items():
+                        if mid in self._secondaryMaterials and not await self._materialSourceTerms[mid].updateDB(db):
+                            return
+                for mid, widget in self._materialSourceTerms.items():
+                    if mid in self._species and not await self._materialSourceTerms[mid].updateDB(db):
+                        return
 
-        if self._temperature and not self._temperature.appendToWriter(writer):
-            return
+                if self._energySourceTerm and not await self._energySourceTerm.updateDB(db):
+                    return
 
-        for field, widget in self._turbulenceFixedValues.items():
-            if not widget.appendToWriter(writer):
-                return
+                for field, widget in self._turbulenceSourceTerms.items():
+                    if not widget.updateDB(db):
+                        return
 
-        errorCount = writer.write()
-        if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            super().accept()
+                for field, widget in self._scalarSourceTerms.items():
+                    if not await widget.updateDB(db):
+                        return
+
+                if self._ui.velocityGroup.isChecked():
+                    db.setAttribute(self._xpath + 'fixedValues/velocity', 'disabled', 'false')
+                    db.setValue(self._xpath + '/fixedValues/velocity/velocity/x',
+                                self._ui.xVelocity.text(), self.tr("X-Velocity"))
+                    db.setValue(self._xpath + '/fixedValues/velocity/velocity/y',
+                                self._ui.yVelocity.text(), self.tr("Y-Velocity"))
+                    db.setValue(self._xpath + '/fixedValues/velocity/velocity/z',
+                                self._ui.zVelocity.text(), self.tr("Z-Velocity"))
+                    db.setValue(self._xpath + '/fixedValues/velocity/relaxation',
+                                self._ui.relaxation.text(), self.tr("relaxation"))
+                else:
+                    db.setAttribute(self._xpath + 'fixedValues/velocity', 'disabled', 'true')
+
+                if self._temperature and not self._temperature.updateDB(db):
+                    return
+
+                for field, widget in self._turbulenceFixedValues.items():
+                    if not widget.updateDB(db):
+                        return
+
+                for field, widget in self._scalarFixedValues.items():
+                    if not widget.updateDB(db):
+                        return
+
+                if ModelsDB.isSpeciesModelOn() and MaterialDB.getType(self._material) == MaterialType.MIXTURE:
+                    for mid in MaterialDB.getSpecies(self._material):
+                        if not self._specieFixedValueWidgets[mid].updateDB(db):
+                            return
+
+            self.accept()
+        except ConfigurationException as c:
+            await AsyncMessageBox().information(self, self.tr("Input Error"), str(c))
+        except ValueException as v:
+            await AsyncMessageBox().information(self, self.tr("Input Error"), dbErrorToMessage(v))
 
     def _load(self):
-        self._getZoneTypeRadio(self._db.getValue(self._xpath + '/zoneType')).setChecked(True)
+        db = coredb.CoreDB()
+        self._getZoneTypeRadio(db.getValue(self._xpath + '/zoneType')).setChecked(True)
 
         if CellZoneDB.isRegion(self._name):
             if self._materialsWidget:
@@ -209,18 +261,23 @@ class CellZoneConditionDialog(QDialog):
                 self._slidingMeshZone.load()
             self._actuatorDiskZone.load()
 
+        self._setMaterials(RegionDB.getMaterial(self._rname), RegionDB.getSecondaryMaterials(self._rname))
+
         if self._massSourceTerm:
             self._massSourceTerm.load()
 
         for field, widget in self._turbulenceSourceTerms.items():
             widget.load()
 
+        for field, widget in self._scalarSourceTerms.items():
+            widget.load()
+
         self._ui.velocityGroup.setChecked(
-            self._db.getAttribute(self._xpath + '/fixedValues/velocity', 'disabled') == 'false')
-        self._ui.xVelocity.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/velocity/x'))
-        self._ui.yVelocity.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/velocity/y'))
-        self._ui.zVelocity.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/velocity/z'))
-        self._ui.relaxation.setText(self._db.getValue(self._xpath + '/fixedValues/velocity/relaxation'))
+            db.getAttribute(self._xpath + '/fixedValues/velocity', 'disabled') == 'false')
+        self._ui.xVelocity.setText(db.getValue(self._xpath + '/fixedValues/velocity/velocity/x'))
+        self._ui.yVelocity.setText(db.getValue(self._xpath + '/fixedValues/velocity/velocity/y'))
+        self._ui.zVelocity.setText(db.getValue(self._xpath + '/fixedValues/velocity/velocity/z'))
+        self._ui.relaxation.setText(db.getValue(self._xpath + '/fixedValues/velocity/relaxation'))
 
         if ModelsDB.isEnergyModelOn():
             self._energySourceTerm.load()
@@ -229,38 +286,87 @@ class CellZoneConditionDialog(QDialog):
         for field, widget in self._turbulenceFixedValues.items():
             widget.load()
 
+        for field, widget in self._scalarFixedValues.items():
+            widget.load()
+
+    def _setMaterials(self, primary, secondaries):
+        # Clear Source Terms and Fixed Values
+        for mid, widget in self._materialSourceTerms.items():
+            widget.hide()
+
+        for mid, widget in self._specieFixedValueWidgets.items():
+            widget.hide()
+
+        # Setup Material Source Terms for multiphase model
+        for mid in secondaries:
+            if mid in self._materialSourceTerms:
+                self._materialSourceTerms[mid].show()
+            else:
+                widget = VariableSourceWidget(MaterialDB.getName(mid),
+                                              f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]')
+                self._materialSourceTerms[mid] = widget
+                self._materialSourceTermsLayout.addWidget(widget)
+                widget.load()
+
+        # Setup Material Source Terms and Fixed Values for species
+        self._species = []
+        if MaterialDB.getType(primary) == MaterialType.MIXTURE:
+            mixture = MaterialDB.getName(primary)
+            species = MaterialDB.getSpecies(primary)
+
+            for mid, name in species.items():
+                self._species.append(mid)
+
+                if mid in self._materialSourceTerms:
+                    self._materialSourceTerms[mid].show()
+                else:
+                    widget = VariableSourceWidget(name,
+                                                  f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]')
+                    self._materialSourceTerms[mid] = widget
+                    self._materialSourceTermsLayout.addWidget(widget)
+                    widget.load()
+
+                if mid in self._specieFixedValueWidgets:
+                    self._specieFixedValueWidgets[mid].show()
+                else:
+                    widget = FixedValueWidget(
+                        f'{mixture}.{name}', name,
+                        f'{self._xpath}/fixedValues/species/mixture[mid="{primary}"]/specie[mid="{mid}"]/value')
+                    self._specieFixedValueWidgets[mid] = widget
+                    self._specieFixedValuesLayout.addWidget(widget)
+                    widget.load()
+
+        self._material = primary
+        self._secondaryMaterials = secondaries
+
     def _setupTurbulenceWidgets(self):
         sourceTermsLayout = self._ui.sourceTerms.layout()
         fixedValuesLayout = self._ui.fixedValues.layout()
-        for field in TurbulenceModelHelper.getFields():
+
+        for field in getTurbulenceFields():
             self._turbulenceSourceTerms[field] = ConstantSourceWidget(
                 f'{field.name()}, {field.symbol}', field.symbol, field.sourceUnits,
                 self._xpath + '/sourceTerms/' + field.xpathName)
             sourceTermsLayout.addWidget(self._turbulenceSourceTerms[field])
+
             self._turbulenceFixedValues[field] = FixedValueWidget(
                 f'{field.name()}, {field.symbol}', f'{field.symbol} ({field.unit})',
                 self._xpath + '/fixedValues/' + field.xpathName)
             fixedValuesLayout.addWidget(self._turbulenceFixedValues[field])
 
-    def _setupMaterialSourceWidgets(self, materials):
-        for mid in self._secondaryMaterials:
-            if mid not in materials:
-                self._materialSourceTerms[mid].hide()
+    def _setupScalarWidgets(self):
+        db = coredb.CoreDB()
+        sourceTermsLayout = self._ui.sourceTerms.layout()
+        fixedValuesLayout = self._ui.fixedValues.layout()
 
-        for mid in materials:
-            xpath = f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]'
-            if not self._db.exists(xpath):
-                CellZoneDB.addMaterialSourceTerm(self._czid, mid)
+        for scalarID, fieldName in db.getUserDefinedScalarsInRegion(self._rname):
+            xpath = self._xpath + f'/sourceTerms/userDefinedScalars/scalarSource[scalarID="{scalarID}"]'
+            self._scalarSourceTerms[scalarID] = VariableSourceWidget(fieldName, xpath)
+            sourceTermsLayout.addWidget(self._scalarSourceTerms[scalarID])
 
-            if mid in self._materialSourceTerms:
-                self._materialSourceTerms[mid].show()
-            else:
-                widget = VariableSourceWidget(MaterialDB.getName(mid), xpath)
-                self._materialSourceTerms[mid] = widget
-                self._materialSourceTermsLayout.addWidget(widget)
-                widget.load()
-
-        self._secondaryMaterials = materials
+            xpath = self._xpath + f'/fixedValues/userDefinedScalars/scalar[scalarID="{scalarID}"]/value'
+            self._scalarFixedValues[scalarID] = FixedValueWidget(fieldName, fieldName, xpath)
+            fixedValuesLayout.addWidget(self._scalarFixedValues[scalarID])
 
     def _zoneTypeChanged(self, id_, checked):
         if checked:

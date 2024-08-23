@@ -7,6 +7,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import findSolver
@@ -27,15 +28,16 @@ class TransportProperties(DictionaryFile):
             self._data = self._buildForInterFoam()
             return self
 
+        # TransportProperties file is not used for now.
+        # It may be used for Non-Newtonian fluid in the future
+        return self
+
         self._data = {}
 
-        mid = self._db.getValue(f'.//regions/region[name="{self._rname}"]/material')
-
-        energyModels = self._db.getValue('.//models/energyModels')
+        mid = RegionDB.getMaterial(self._rname)
         dSpec = self._db.getValue(f'{MaterialDB.getXPath(mid)}/density/specification')
         vSpec = self._db.getValue(f'{MaterialDB.getXPath(mid)}/viscosity/specification')
-
-        if energyModels == "off" and dSpec == 'constant' and vSpec == 'constant':
+        if dSpec == 'constant' and vSpec == 'constant':
             self._data['transportModel'] = 'Newtonian'
 
             density = self._db.getValue(f'{MaterialDB.getXPath(mid)}/density/constant')
@@ -60,11 +62,13 @@ class TransportProperties(DictionaryFile):
         # temperature and pressure are used because interFoam works only when energy off
         #     i.e. constant density and viscosity
 
-        baseDensity = self._db.getDensity(baseMaterialId, 0, 0)
-        secondaryDensity = self._db.getDensity(secondaryMaterialId, 0, 0)
+        baseMaterial = [(baseMaterialId, 1)]
+        secondaryMatrerial = [(secondaryMaterialId, 1)]
+        baseDensity = self._db.getDensity(baseMaterial, 0, 0)
+        secondaryDensity = self._db.getDensity(secondaryMatrerial, 0, 0)
 
-        baseViscosity = self._db.getViscosity(baseMaterialId, 0)
-        secondaryViscosity = self._db.getViscosity(secondaryMaterialId, 0)
+        baseViscosity = self._db.getViscosity(baseMaterial, 0)
+        secondaryViscosity = self._db.getViscosity(secondaryMatrerial, 0)
 
         baseNu = baseViscosity / baseDensity
         secondaryNu = secondaryViscosity / secondaryDensity

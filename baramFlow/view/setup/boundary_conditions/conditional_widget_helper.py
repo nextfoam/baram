@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.models_db import TurbulenceModel, ModelsDB, TurbulenceModelsDB, SubgridScaleModel
+from baramFlow.coredb.models_db import TurbulenceModel, ModelsDB, TurbulenceModelsDB, RANSModel
+from baramFlow.view.widgets.species_widget import SpeciesWidget
+from baramFlow.view.widgets.user_defined_scalars_widget import UserDefinedScalarsWidget
 from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
 from .turbulence_k_epsilon_widget import TurbulenceKEpsilonWidget
 from .turbulence_k_omega_widget import TurbulenceKOmegaWidget
@@ -36,8 +38,13 @@ class ConditionalWidgetHelper:
             widget = TurbulenceKOmegaWidget(xpath)
         elif turbulenceModel == TurbulenceModel.SPALART_ALLMARAS:
             widget = TurbulenceSpalartAllmarasWidget(xpath)
-        elif turbulenceModel == TurbulenceModel.LES:
-            if TurbulenceModelsDB.getLESSubgridScaleModel() in (SubgridScaleModel.DYNAMIC_KEQN, SubgridScaleModel.KEQN):
+        elif turbulenceModel == TurbulenceModel.DES:
+            ransModel = TurbulenceModelsDB.getDESRansModel()
+            if ransModel == RANSModel.SPALART_ALLMARAS:
+                widget = TurbulenceSpalartAllmarasWidget(xpath)
+            elif ransModel == RANSModel.K_OMEGA_SST:
+                widget = TurbulenceKOmegaWidget(xpath)
+        elif TurbulenceModelsDB.isLESKEqnModel():
                 widget = TurbulenceLESWidget(xpath)
 
         if widget:
@@ -56,8 +63,24 @@ class ConditionalWidgetHelper:
         return widget
 
     @classmethod
-    def volumeFractionWidget(cls, rname, xpath, layout):
-        widget = VolumeFractionWidget(rname, xpath)
+    def volumeFractionWidget(cls, rname, layout):
+        widget = VolumeFractionWidget(rname)
+        if widget.on():
+            layout.addWidget(widget)
+
+        return widget
+
+    @classmethod
+    def userDefinedScalarsWidget(cls, rname, layout):
+        widget = UserDefinedScalarsWidget(rname)
+        if widget.on():
+            layout.addWidget(widget)
+
+        return widget
+
+    @classmethod
+    def speciesWidget(cls, mid, layout):
+        widget = SpeciesWidget(mid)
         if widget.on():
             layout.addWidget(widget)
 

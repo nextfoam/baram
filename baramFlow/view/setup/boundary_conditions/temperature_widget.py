@@ -40,7 +40,6 @@ class TemperatureWidget(QWidget):
 
         self._setupProfileTypeCombo()
 
-        self._db = coredb.CoreDB()
         self._xpath = xpath + self.RELATIVE_XPATH
         self._piecewiseLinear = None
         self._polynomial = None
@@ -60,14 +59,15 @@ class TemperatureWidget(QWidget):
         if not self._on:
             return
 
-        self._ui.profileType.setCurrentText(self._profileTypes[self._db.getValue(self._xpath + '/profile')])
-        self._ui.temperature.setText(self._db.getValue(self._xpath + '/constant'))
+        db = coredb.CoreDB()
+        self._ui.profileType.setCurrentText(self._profileTypes[db.getValue(self._xpath + '/profile')])
+        self._ui.temperature.setText(db.getValue(self._xpath + '/constant'))
         self._getRadio(
             self._ui.temporalDistributionRadioGroup, self._temporalDistributionRadios,
-            self._db.getValue(self._xpath + '/temporalDistribution/specification')
+            db.getValue(self._xpath + '/temporalDistribution/specification')
         ).setChecked(True)
         self._spatialDistributionFileName = Project.instance().fileDB().getUserFileName(
-            self._db.getValue(self._xpath + '/spatialDistribution'))
+            db.getValue(self._xpath + '/spatialDistribution'))
         self._ui.spatialDistributionFileName.setText(self._spatialDistributionFileName)
         self._profileTypeChanged()
         self._temporalDistributionTypeChanged()
@@ -88,6 +88,7 @@ class TemperatureWidget(QWidget):
         if not self._on:
             return True
 
+        db = coredb.CoreDB()
         profile = self._ui.profileType.currentData()
         writer.append(self._xpath + '/profile', profile, None)
 
@@ -96,7 +97,7 @@ class TemperatureWidget(QWidget):
         elif profile == TemperatureProfile.SPATIAL_DISTRIBUTION.value:
             if self._spatialDistributionFile:
                 try:
-                    self._spatialDistributionFileOldKey = self._db.getValue(self._xpath + '/spatialDistribution')
+                    self._spatialDistributionFileOldKey = db.getValue(self._xpath + '/spatialDistribution')
                     self._spatialDistributionFileKey = Project.instance().fileDB().putBcFile(
                         self._bcid, BcFileRole.BC_TEMPERATURE, self._spatialDistributionFile)
                     writer.append(self._xpath + '/spatialDistribution', self._spatialDistributionFileKey, None)
@@ -116,14 +117,14 @@ class TemperatureWidget(QWidget):
                                   self._piecewiseLinear[0], self.tr("Piecewise Linear."))
                     writer.append(self._xpath + '/temporalDistribution/piecewiseLinear/v',
                                   self._piecewiseLinear[1], self.tr("Piecewise Linear."))
-                elif self._db.getValue(self._xpath + '/temporalDistribution/piecewiseLinear/t') == '':
+                elif db.getValue(self._xpath + '/temporalDistribution/piecewiseLinear/t') == '':
                     QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Piecewise Linear."))
                     return False
             elif specification == TemperatureTemporalDistribution.POLYNOMIAL.value:
                 if self._polynomial is not None:
                     writer.append(self._xpath + '/temporalDistribution/polynomial',
                                   self._polynomial, self.tr("Polynomial Linear."))
-                elif self._db.getValue(self._xpath + '/temporalDistribution/polynomial') == '':
+                elif db.getValue(self._xpath + '/temporalDistribution/polynomial') == '':
                     QMessageBox.critical(self, self.tr("Input Error"), self.tr("Edit Polynomial Linear."))
                     return False
 
@@ -133,9 +134,11 @@ class TemperatureWidget(QWidget):
         """
         Delete the old key of the spatial distribution file if it has been updated.
         This function should be called after all the data of the dialog containing this widget has been written to coredb.
+        Notice: Since the copy boundary conditions feature has been added, so old key should not be deleted.
         """
-        if self._spatialDistributionFileKey and self._spatialDistributionFileOldKey:
-            Project.instance().fileDB().delete(self._spatialDistributionFileOldKey)
+        # if self._spatialDistributionFileKey and self._spatialDistributionFileOldKey:
+        #     Project.instance().fileDB().delete(self._spatialDistributionFileOldKey)
+        return
 
     def rollbackWriting(self):
         """
@@ -174,9 +177,10 @@ class TemperatureWidget(QWidget):
 
     def _editPiecewiseLinear(self):
         if self._piecewiseLinear is None:
+            db = coredb.CoreDB()
             self._piecewiseLinear = [
-                self._db.getValue(self._xpath + '/temporalDistribution/piecewiseLinear/t'),
-                self._db.getValue(self._xpath + '/temporalDistribution/piecewiseLinear/v'),
+                db.getValue(self._xpath + '/temporalDistribution/piecewiseLinear/t'),
+                db.getValue(self._xpath + '/temporalDistribution/piecewiseLinear/v'),
             ]
         self._dialog = PiecewiseLinearDialog(self, self.tr("Temporal Distribution"), [self.tr("t"), self.tr("T")],
                                              self._piecewiseLinear)
@@ -185,7 +189,8 @@ class TemperatureWidget(QWidget):
 
     def _editPolynomial(self):
         if self._polynomial is None:
-            self._polynomial = self._db.getValue(self._xpath + '/temporalDistribution/polynomial')
+            db = coredb.CoreDB()
+            self._polynomial = db.getValue(self._xpath + '/temporalDistribution/polynomial')
 
         self._dialog = PolynomialDialog(self, self.tr("Temporal Distribution"), self._polynomial, "a")
         self._dialog.accepted.connect(self._polynomialAccepted)

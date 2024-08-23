@@ -21,7 +21,7 @@ class MultiphaseModelPage(QWizardPage):
         self._modelRadios.addEnumButton(self._ui.off, MultiphaseModel.OFF)
         self._modelRadios.addEnumButton(self._ui.volumeOfFluid, MultiphaseModel.VOLUME_OF_FLUID)
         self._modelRadios.dataChecked.connect(self._modelChanged)
-        self._modelRadios.setCheckedValue(MultiphaseModel.OFF)
+        self._modelRadios.setCheckedData(MultiphaseModel.OFF)
 
         self._ui.off.setChecked(True)
 

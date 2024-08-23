@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+import logging
 from pathlib import Path
 
 import psutil
@@ -14,6 +16,9 @@ from libbaram.exception import CanceledException
 from libbaram.mpi import ParallelEnvironment
 
 
+logger = logging.getLogger(__name__)
+
+
 class ProcessError(Exception):
     def __init__(self, returncode):
         self._returncode = returncode
@@ -21,6 +26,18 @@ class ProcessError(Exception):
     @property
     def returncode(self):
         return self._returncode
+
+
+def getAvailablePhysicalCores():
+    if platform.system() == 'Windows' or platform.system() == 'Linux' or platform.system() == 'FreeBSD':
+        # cpu_affinity() is available only on Linux, Windows, FreeBSD
+        numCores = min(len(psutil.Process().cpu_affinity()), psutil.cpu_count(logical=False))
+    elif platform.system() == 'Darwin':  # cpu_affinity() is not available on macOS
+        numCores = psutil.cpu_count(logical=False)
+    else:  # psutil.cpu_count(logical=False) always return None on OpenBSD and NetBSD
+        numCores = psutil.cpu_count()
+
+    return numCores
 
 
 def isRunning(pid, startTime):
@@ -124,14 +141,22 @@ class RunSubprocess(QObject):
 
             tasks = list(pending)
             if outTask in done:
-                if output := outTask.result().decode('UTF-8').rstrip():
-                    self.output.emit(output)
+                try:
+                    if output := outTask.result().decode('UTF-8').rstrip():
+                        self.output.emit(output)
+                except UnicodeDecodeError:
+                    logger.warning(f'Unicode Decode Error: {outTask.result()}')
+
                 if not stdout.at_eof():
                     outTask = asyncio.create_task(stdout.readline())
                     tasks.append(outTask)
 
             if errTask in done:
-                self.errorOutput.emit(errTask.result().decode('UTF-8').rstrip())
+                try:
+                    self.errorOutput.emit(errTask.result().decode('UTF-8').rstrip())
+                except UnicodeDecodeError:
+                    logger.warning(f'Unicode Decode Error: {errTask.result()}')
+
                 if not stderr.at_eof():
                     errTask = asyncio.create_task(stderr.readline())
                     tasks.append(errTask)

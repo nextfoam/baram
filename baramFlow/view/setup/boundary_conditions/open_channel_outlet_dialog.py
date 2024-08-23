@@ -19,7 +19,6 @@ class OpenChannelOutletDialog(ResizableDialog):
         self._ui = Ui_OpenChannelOutletDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
         self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, self._ui.dialogContents.layout())
 
@@ -41,8 +40,9 @@ class OpenChannelOutletDialog(ResizableDialog):
             super().accept()
 
     def _load(self):
+        db = coredb.CoreDB()
         path = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.meanVelocity.setText(self._db.getValue(path + '/meanVelocity'))
+        self._ui.meanVelocity.setText(db.getValue(path + '/meanVelocity'))
 
         self._turbulenceWidget.load()

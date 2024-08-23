@@ -11,19 +11,22 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 import baramFlow.openfoam.solver
 from baramFlow.app import app
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_reader import CoreDBReader
-from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, DirectionSpecificationMethod
 from baramFlow.coredb.cell_zone_db import CellZoneDB
-from baramFlow.coredb.region_db import RegionDB
-from baramFlow.coredb.material_db import MaterialDB, Phase
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
-from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
+from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.coredb.general_db import GeneralDB
+from baramFlow.coredb.material_db import MaterialDB, Phase, MaterialType
+from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceModelsDB
+from baramFlow.coredb.scalar_model_db import ScalarSpecificationMethod, UserDefinedScalarsDB
+from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType, Field
+from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
+from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baramFlow.mesh.vtk_loader import isPointInDataSet
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import findSolver, getSolverCapability
+from .fv_options import generateSourceTermField, generateFixedValueField
 
 
 SURFACE_MONITOR_OPERATION = {
@@ -72,14 +75,14 @@ def _getAvailableFields():
         fields.append('p')
 
     # Fields depending on the turbulence model
-    turbulenceModel = ModelsDB.getTurbulenceModel()
-    if turbulenceModel == TurbulenceModel.K_EPSILON:
+    rasModel = TurbulenceModelsDB.getRASModel()
+    if rasModel == TurbulenceModel.K_EPSILON or TurbulenceModelsDB.isLESKEqnModel():
         fields.append('k')
         fields.append('epsilon')
-    elif turbulenceModel == TurbulenceModel.K_OMEGA:
+    elif rasModel == TurbulenceModel.K_OMEGA:
         fields.append('k')
         fields.append('omega')
-    elif turbulenceModel == TurbulenceModel.SPALART_ALLMARAS:
+    elif rasModel == TurbulenceModel.SPALART_ALLMARAS:
         fields.append('nuTilda')
 
     if ModelsDB.isEnergyModelOn():
@@ -88,10 +91,18 @@ def _getAvailableFields():
         else:
             fields.append('h')
 
+    db = coredb.CoreDB()
     if ModelsDB.isMultiphaseModelOn():
-        for mid, name, _, phase in coredb.CoreDB().getMaterials():
-            if MaterialDB.dbTextToPhase(phase) != Phase.SOLID:
+        for mid, name, _, phase in db.getMaterials():
+            if phase != Phase.SOLID.value:
                 fields.append(f'alpha.{name}')
+    elif ModelsDB.isSpeciesModelOn():
+        for mixture, name in RegionDB.getMixturesInRegions():
+            for name in MaterialDB.getSpecies(mixture).values():
+                fields.append(name)
+
+    for _, fieldName in CoreDBReader().getUserDefinedScalars():
+        fields.append(fieldName)
 
     return fields
 
@@ -150,6 +161,8 @@ class ControlDict(DictionaryFile):
         super().__init__(FileSystem.caseRoot(), self.systemLocation(), 'controlDict')
         self._data = None
         self._db = None
+        self._writeControl = 'runTime'
+        self._writeInterval = None
 
     def build(self):
         if self._data is not None:
@@ -165,23 +178,21 @@ class ControlDict(DictionaryFile):
 
         endTime = None
         deltaT = None
-        writeControl = 'runTime'
-        writeInterval = None
         adjustTimeStep = 'no'
         if GeneralDB.isTimeTransient():
             endTime = self._db.getValue(xpath + '/endTime')
             timeSteppingMethod = self._db.getValue(xpath + '/timeSteppingMethod')
-            writeInterval = self._db.getValue(xpath + '/reportIntervalSeconds')
+            self._writeInterval = self._db.getValue(xpath + '/reportIntervalSeconds')
             if timeSteppingMethod == TimeSteppingMethod.FIXED.value:
                 deltaT = self._db.getValue(xpath + '/timeStepSize')
             elif timeSteppingMethod == TimeSteppingMethod.ADAPTIVE.value:
                 deltaT = 0.001
-                writeControl = 'adjustableRunTime'
+                self._writeControl = 'adjustableRunTime'
                 adjustTimeStep = 'yes'
         else:
             endTime = self._db.getValue(xpath + '/numberOfIterations')
             deltaT = 1
-            writeInterval = self._db.getValue(xpath + '/reportIntervalSteps')
+            self._writeInterval = self._db.getValue(xpath + '/reportIntervalSteps')
 
         purgeWrite = 0
         if self._db.getValue(xpath + '/retainOnlyTheMostRecentFiles') == 'true':
@@ -194,18 +205,19 @@ class ControlDict(DictionaryFile):
             'stopAt': 'endTime',
             'endTime': endTime,
             'deltaT': deltaT,
-            'writeControl': writeControl,
-            'writeInterval': writeInterval,
+            'writeControl': self._writeControl,
+            'writeInterval': self._writeInterval,
             'purgeWrite': purgeWrite,
             'writeFormat': self._db.getValue(xpath + '/dataWriteFormat'),
             'writePrecision': self._db.getValue(xpath + '/dataWritePrecision'),
             'writeCompression': 'off',
+            'writeAtEnd': 'true',
             'timeFormat': 'general',
             'timePrecision': self._db.getValue(xpath + '/timePrecision'),
             'runTimeModifiable': 'yes',
             'adjustTimeStep': adjustTimeStep,
             'maxCo': self._db.getValue(xpath + '/maxCourantNumber'),
-            'functions': self._generateResiduals()
+            'functions': {}
         }
 
         if ModelsDB.isMultiphaseModelOn():
@@ -217,9 +229,65 @@ class ControlDict(DictionaryFile):
                      for bcid, _ in self._db.getBoundaryConditionsByType(BoundaryType.WALL.value)])):
             self._data['libs'] = [_libPath('libatmosphericModels')]
 
+        # calling order is important for these three function objects
+        # scalar transport FO should be called first so that monitoring and residual can refer the scalar fields
+
+        if self._db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/UDS'):
+            self._appendScalarTransportFunctionObjects()
+
         self._appendMonitoringFunctionObjects()
 
+        self._appendResidualFunctionObjects()
+
         return self
+
+    def _appendScalarTransportFunctionObjects(self):
+        for scalarID, fieldName in self._db.getUserDefinedScalars():
+            fvOptions = {}
+            for rname in self._db.getRegions():
+                for czid, czname in self._db.getCellZones(rname):
+                    fullName = f'{rname}_{czname}' if rname else czname
+
+                    sourceTermXPath = f'{CellZoneDB.getXPath(czid)}/sourceTerms/userDefinedScalars/scalarSource[scalarID="{scalarID}"]'
+                    if self._db.getAttribute(sourceTermXPath, 'disabled') == 'false':
+                        fvOptions[f'scalarSource_{fullName}_{fieldName}'] = generateSourceTermField(
+                            czname, sourceTermXPath, fieldName)
+
+                    fixedValueXPath = f'{CellZoneDB.getXPath(czid)}/fixedValues/userDefinedScalars/scalar[scalarID="{scalarID}"]/value'
+                    if self._db.getAttribute(fixedValueXPath, 'disabled') == 'false':
+                        fvOptions[f'fixedValue_{fullName}_{fieldName}'] = generateFixedValueField(
+                            czname, fixedValueXPath, fieldName)
+
+            self._data['functions'][fieldName] = {
+                'type': 'scalarTransport',
+                'libs': [_libPath('libsolverFunctionObjects')],
+                'field': fieldName,
+                'schemesField': 'scalar',
+                'nCorr': 2,
+                'writeControl': self._writeControl,
+                'writeInterval': self._writeInterval,
+            }
+
+            if fvOptions:
+                self._data['functions'][fieldName]['fvOptions'] = fvOptions
+
+            xpath = UserDefinedScalarsDB.getXPath(scalarID)
+            specificationMethod = self._db.getValue(xpath + '/diffusivity/specificationMethod')
+            if specificationMethod == ScalarSpecificationMethod.CONSTANT.value:
+                self._data['functions'][fieldName]['D'] = self._db.getValue(xpath + '/diffusivity/constant')
+            elif specificationMethod == ScalarSpecificationMethod.TURBULENT_VISCOSITY.value:
+                self._data['functions'][fieldName]['nut'] = 'nut'
+            elif specificationMethod == ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY.value:
+                self._data['functions'][fieldName]['alphaD'] = self._db.getValue(
+                    xpath + '/diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient')
+                self._data['functions'][fieldName]['alphaDt'] = self._db.getValue(
+                    xpath + '/diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient')
+
+            if region := self._db.getValue(xpath + '/region'):
+                self._data['functions'][fieldName]['region'] = region
+
+            if mid := int(self._db.getValue(xpath + 'material')):
+                self._data['functions'][fieldName]['phase'] = MaterialDB.getName(mid)
 
     def _appendMonitoringFunctionObjects(self):
         for name in self._db.getForceMonitors():
@@ -229,17 +297,19 @@ class ControlDict(DictionaryFile):
             self._data['functions'][name] = self._generateForceMonitor(xpath, patches)
 
         for name in self._db.getPointMonitors():
-            self._data['functions'][name] = self._generatePointMonitor(MonitorDB.getPointMonitorXPath(name))
+            if monitorFunction := self._generatePointMonitor(MonitorDB.getPointMonitorXPath(name)):
+                self._data['functions'][name] = monitorFunction
 
         for name in self._db.getSurfaceMonitors():
-            self._data['functions'][name] = self._generateSurfaceMonitor(MonitorDB.getSurfaceMonitorXPath(name))
+            if monitorFunction := self._generateSurfaceMonitor(MonitorDB.getSurfaceMonitorXPath(name)):
+                self._data['functions'][name] = monitorFunction
 
         for name in self._db.getVolumeMonitors():
-            self._data['functions'][name] = self._generateVolumeMonitor(MonitorDB.getVolumeMonitorXPath(name))
+            if monitorFunction := self._generateVolumeMonitor(MonitorDB.getVolumeMonitorXPath(name)):
+                self._data['functions'][name] = monitorFunction
 
-    def _generateResiduals(self) -> dict:
+    def _appendResidualFunctionObjects(self):
         regions = self._db.getRegions()
-        data = {}
         regionNum = getRegionNumbers()
 
         for rname in regions:   # [''] is single region.
@@ -256,8 +326,7 @@ class ControlDict(DictionaryFile):
             else:
                 fields = _getAvailableFields()
 
-
-            data[residualsName] = {
+            self._data['functions'][residualsName] = {
                 'type': 'solverInfo',
                 'libs': [_libPath('libutilityFunctionObjects')],
                 'executeControl': 'timeStep',
@@ -267,8 +336,7 @@ class ControlDict(DictionaryFile):
                 'fields': fields
             }
             if rname != '':
-                data[residualsName].update({'region': rname})
-        return data
+                self._data['functions'][residualsName].update({'region': rname})
 
     def _generateForces(self, xpath, patches):
         data = {
@@ -318,23 +386,25 @@ class ControlDict(DictionaryFile):
             'log': 'false',
         }
 
+        if not GeneralDB.isDensityBased():
+            referencePressure = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'))
+            operatingPressure = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
+            data['pRef'] = referencePressure + operatingPressure
+
         if rname := self._db.getValue(xpath + '/region'):
             data['region'] = rname
 
         return data
 
     def _generatePointMonitor(self, xpath):
-        field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
-                                              self._db.getValue(xpath + '/field/mid'))
-
         coordinate = self._db.getVector(xpath + '/coordinate')
-
-        if field == 'mag(U)':
-            self._appendMagFieldFunctionObject()
-        elif field in ('Ux', 'Uy', 'Uz'):
-            self._appendComponentsFunctionObject()
+        region = self._db.getValue(xpath + '/region')
 
         if self._db.getValue(xpath + '/snapOntoBoundary') == 'true':
+            field = self._getMonitorField(xpath, region)
+            if not field:
+                return None
+
             data = {
                 'type': 'patchProbes',
                 'libs': [_libPath('libsampling')],
@@ -348,50 +418,54 @@ class ControlDict(DictionaryFile):
                 'updateHeader': 'false',
                 'log': 'false',
             }
-
-        data = {
-            'type': 'probes',
-            'libs': [_libPath('libsampling')],
-
-            'fields': [field],
-            'probeLocations': [self._db.getVector(xpath + '/coordinate')],
-
-            'writeControl': 'timeStep',
-            'writeInterval': self._db.getValue(xpath + '/writeInterval'),
-            'updateHeader': 'false',
-            'log': 'false',
-        }
-
-        if region := self._db.getValue(xpath + '/region'):
-            data['region'] = region
         else:
-            regions = self._db.getRegions()
-            if len(regions) > 1:
-                for rname in regions:
-                    if isPointInDataSet(coordinate, app.internalMeshActor(rname).dataSet):
-                        self._db.setValue(xpath + '/region', rname)
-                        data['region'] = rname
-                        break
+            if not region:
+                regions = self._db.getRegions()
+                if len(regions) > 1:
+                    for rname in regions:
+                        if isPointInDataSet(coordinate, app.internalMeshActor(rname).dataSet):
+                            self._db.setValue(xpath + '/region', rname)
+                            region = rname
+                            break
+
+            field = self._getMonitorField(xpath, region)
+            if not field:
+                return None
+
+            data = {
+                'type': 'probes',
+                'libs': [_libPath('libsampling')],
+
+                'fields': [field],
+                'probeLocations': [self._db.getVector(xpath + '/coordinate')],
+
+                'writeControl': 'timeStep',
+                'writeInterval': self._db.getValue(xpath + '/writeInterval'),
+                'updateHeader': 'false',
+                'log': 'false',
+            }
+
+        if region:
+            data['region'] = region
 
         return data
 
     def _generateSurfaceMonitor(self, xpath):
         reportType = self._db.getValue(xpath + 'reportType')
+        surface = self._db.getValue(xpath + '/surface')
+
+        region = BoundaryDB.getBoundaryRegion(surface)
+
         field = None
         if reportType == SurfaceReportType.MASS_FLOW_RATE.value:
             field = 'phi'
         elif reportType == SurfaceReportType.VOLUME_FLOW_RATE.value:
             field = 'U'
         else:
-            field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
-                                                  self._db.getValue(xpath + '/field/mid'))
+            field = self._getMonitorField(xpath, region)
 
-        if field == 'mag(U)':
-            self._appendMagFieldFunctionObject()
-        elif field in ('Ux', 'Uy', 'Uz'):
-            self._appendComponentsFunctionObject()
-
-        surface = self._db.getValue(xpath + '/surface')
+        if not field:
+            return None
 
         data = {
             'type': 'surfaceFieldValue',
@@ -416,19 +490,18 @@ class ControlDict(DictionaryFile):
         if reportType == SurfaceReportType.MASS_WEIGHTED_AVERAGE.value:
             data['weightField'] = 'phi'
 
-        if rname := BoundaryDB.getBoundaryRegion(surface):
-            data['region'] = rname
+        if region:
+            data['region'] = region
 
         return data
 
     def _generateVolumeMonitor(self, xpath):
-        field = FieldHelper.DBFieldKeyToField(self._db.getValue(xpath + '/field/field'),
-                                              self._db.getValue(xpath + '/field/mid'))
+        volume = self._db.getValue(xpath + '/volume')
 
-        if field == 'mag(U)':
-            self._appendMagFieldFunctionObject()
-        elif field in ('Ux', 'Uy', 'Uz'):
-            self._appendComponentsFunctionObject()
+        region = CellZoneDB.getCellZoneRegion(volume)
+        field = self._getMonitorField(xpath, region)
+        if not field:
+            return None
 
         data = {
             'type': 'volFieldValue',
@@ -444,7 +517,6 @@ class ControlDict(DictionaryFile):
             'log': 'false',
         }
 
-        volume = self._db.getValue(xpath + '/volume')
         name = CellZoneDB.getCellZoneName(volume)
         if name == CellZoneDB.NAME_FOR_REGION:
             data['regionType'] = 'all'
@@ -452,10 +524,30 @@ class ControlDict(DictionaryFile):
             data['regionType'] = 'cellZone'
             data['name'] = name
 
-        if rname := CellZoneDB.getCellZoneRegion(volume):
-            data['region'] = rname
+        if region:
+            data['region'] = region
 
         return data
+
+    def _getMonitorField(self, xpath, rname):
+        fieldType = Field(self._db.getValue(xpath + '/field/field'))
+        fieldID = self._db.getValue(xpath + '/field/fieldID')
+
+        primary = RegionDB.getMaterial(rname)
+        if fieldType == Field.MATERIAL:
+            if MaterialDB.getType(fieldID) == MaterialType.SPECIE:
+                if fieldID not in MaterialDB.getSpecies(primary):
+                    return None
+            elif fieldID != primary and fieldID not in RegionDB.getSecondaryMaterials(rname):
+                return None
+
+        field = FieldHelper.DBFieldKeyToField(fieldType, fieldID)
+        if field == 'mag(U)':
+            self._appendMagFieldFunctionObject()
+        elif field in ('Ux', 'Uy', 'Uz'):
+            self._appendComponentsFunctionObject()
+
+        return field
 
     def _appendMagFieldFunctionObject(self):
         if 'mag1' not in self._data['functions']:

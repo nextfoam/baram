@@ -38,11 +38,12 @@ class InitializationPage(ContentPage):
 
     def showEvent(self, ev):
         if not ev.spontaneous():
-            for i in range(self._ui.tabWidget.count()):
-                widget: InitializationWidget = self._ui.tabWidget.widget(i)
-                widget.load()
-
-            self._dbConfigCount = coredb.CoreDB().configCount
+            # for i in range(self._ui.tabWidget.count()):
+            #     widget: InitializationWidget = self._ui.tabWidget.widget(i)
+            #     widget.load()
+            #
+            # self._dbConfigCount = coredb.CoreDB().configCount
+            self._load()
 
         return super().showEvent(ev)
 
@@ -60,22 +61,27 @@ class InitializationPage(ContentPage):
         return super().hideEvent(ev)
 
     def _load(self):
+        self._ui.tabWidget.clear()
+
         regions = coredb.CoreDB().getRegions()
         if len(regions) == 1 and not regions[0]:
             widget = InitializationWidget('')
             widget.displayChecked.connect(self._showSectionActor)
             widget.displayUnchecked.connect(self._hideSectionActor)
             self._ui.tabWidget.addTab(widget, DEFAULT_REGION_NAME)
+            widget.load()
         else:
             for rname in regions:
                 widget = InitializationWidget(rname)
                 widget.displayChecked.connect(self._showSectionActor)
                 widget.displayUnchecked.connect(self._hideSectionActor)
                 self._ui.tabWidget.addTab(widget, rname)
+                widget.load()
+        #
+        # for i in range(self._ui.tabWidget.count()):
+        #     widget: InitializationWidget = self._ui.tabWidget.widget(i)
 
-        for i in range(self._ui.tabWidget.count()):
-            widget: InitializationWidget = self._ui.tabWidget.widget(i)
-            widget.load()
+        self._dbConfigCount = coredb.CoreDB().configCount
 
     def clear(self):
         for i in range(self._ui.tabWidget.count()):

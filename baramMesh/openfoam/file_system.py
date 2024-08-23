@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import re
 import shutil
 from typing import Optional
@@ -24,9 +25,9 @@ def makeDir(parent, directory, clear=False) -> Path:
 
 class FileSystem:
     def __init__(self, path):
-        self._casePath = None
-        self._constantPath = None
-        self._triSurfacePath = None
+        self._casePath: Optional[Path] = None
+        self._constantPath: Optional[Path] = None
+        self._triSurfacePath: Optional[Path] = None
 
         self._setCaseRoot(path / CASE_DIRECTORY_NAME)
 
@@ -43,7 +44,7 @@ class FileSystem:
         return self.constantPath(rname) / Directory.POLY_MESH_DIRECTORY_NAME
 
     def boundaryFilePath(self, rname=None):
-        return self.polyMeshPath(rname) / 'boundary'
+        return self.polyMeshPath(rname) / Directory.BOUNDARY_FILE_NAME
 
     def foamFilePath(self):
         return self._casePath / FOAM_FILE_NAME
@@ -59,6 +60,13 @@ class FileSystem:
 
     def timePathExists(self, time, parallel=False):
         return self.timePath(time, 0 if parallel else None).exists()
+
+    def hasPolyMesh(self, time, parallel=False):
+        timePath = self.timePath(time, 0 if parallel else None)
+        if not timePath.is_dir():
+            return False
+
+        return self.isPolyMesh(timePath / Directory.POLY_MESH_DIRECTORY_NAME)
 
     def latestTime(self, parent: Optional[Path] = None) -> str:
         times = self.times(parent)
@@ -119,11 +127,11 @@ class FileSystem:
 
     async def copyTimeDirectory(self, srcTime, destTime, processorNo=None):
         srcPath = self.timePath(srcTime, processorNo)
-        if srcPath.is_dir() and any(srcPath.iterdir()):
-            await asyncio.to_thread(shutil.copytree, srcPath, self.timePath(destTime, processorNo))
-            return True
+        if not srcPath.is_dir():
+            return
 
-        return False
+        destPath = self.timePath(destTime, processorNo)
+        await asyncio.to_thread(shutil.copytree, srcPath, destPath)
 
     def _setCaseRoot(self, path):
         self._casePath = path
@@ -131,6 +139,9 @@ class FileSystem:
         self._triSurfacePath = self._constantPath / Directory.TRI_SURFACE_DIRECTORY_NAME
         
     def isPolyMesh(self, path: Path):
+        if not path.is_dir():
+            return False
+
         checkFiles = ['boundary', 'faces', 'neighbour', 'owner', 'points']
         for f in checkFiles:
             if path.joinpath(f).is_file() or path.joinpath(f'{f}.gz').is_file():

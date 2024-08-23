@@ -5,7 +5,6 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal, QPoint
 
-from baramFlow.coredb import coredb
 from baramFlow.coredb.cell_zone_db import ZoneType, CellZoneDB
 from .cell_zone_widget_ui import Ui_CellZoneWidget
 
@@ -25,8 +24,6 @@ class CellZoneWidget(QWidget):
             ZoneType.SLIDING_MESH: self.tr('Sliding Mesh'),
             ZoneType.ACTUATOR_DISK: self.tr('Actuator Disk'),
         }
-
-        self._db = coredb.CoreDB()
 
         self._czid = czid
 

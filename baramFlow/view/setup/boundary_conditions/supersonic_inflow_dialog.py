@@ -19,7 +19,6 @@ class SupersonicInflowDialog(ResizableDialog):
         self._ui = Ui_SupersonicInflowDialog()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._xpath = BoundaryDB.getXPath(bcid)
 
         layout = self._ui.dialogContents.layout()
@@ -48,12 +47,13 @@ class SupersonicInflowDialog(ResizableDialog):
             super().accept()
 
     def _load(self):
+        db = coredb.CoreDB()
         xpath = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.xVelocity.setText(self._db.getValue(xpath + '/velocity/x'))
-        self._ui.yVelocity.setText(self._db.getValue(xpath + '/velocity/y'))
-        self._ui.zVelocity.setText(self._db.getValue(xpath + '/velocity/z'))
-        self._ui.staticPressure.setText(self._db.getValue(xpath + '/staticPressure'))
-        self._ui.staticTemperature.setText(self._db.getValue(xpath + '/staticTemperature'))
+        self._ui.xVelocity.setText(db.getValue(xpath + '/velocity/x'))
+        self._ui.yVelocity.setText(db.getValue(xpath + '/velocity/y'))
+        self._ui.zVelocity.setText(db.getValue(xpath + '/velocity/z'))
+        self._ui.staticPressure.setText(db.getValue(xpath + '/staticPressure'))
+        self._ui.staticTemperature.setText(db.getValue(xpath + '/staticTemperature'))
 
         self._turbulenceWidget.load()

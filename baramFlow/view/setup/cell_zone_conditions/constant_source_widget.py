@@ -21,7 +21,6 @@ class ConstantSourceWidget(QWidget):
         self._ui = Ui_ConstantSourceWidget()
         self._ui.setupUi(self)
 
-        self._db = coredb.CoreDB()
         self._title = title
         self._xpath = xpath
         self._label = label
@@ -38,17 +37,18 @@ class ConstantSourceWidget(QWidget):
         self._connectSignalsSlots()
 
     def load(self):
-        self._ui.groupBox.setChecked(self._db.getAttribute(self._xpath, 'disabled') == 'false')
-        self._ui.specificationMethod.setCurrentData(SpecificationMethod(self._db.getValue(self._xpath + '/unit')))
-        self._ui.value.setText(self._db.getValue(self._xpath + '/constant'))
+        db = coredb.CoreDB()
+        self._ui.groupBox.setChecked(db.getAttribute(self._xpath, 'disabled') == 'false')
+        self._ui.specificationMethod.setCurrentData(SpecificationMethod(db.getValue(self._xpath + '/unit')))
+        self._ui.value.setText(db.getValue(self._xpath + '/constant'))
 
-    def appendToWriter(self, writer):
+    def updateDB(self, newDB):
         if self._ui.groupBox.isChecked():
-            writer.setAttribute(self._xpath, 'disabled', 'false')
-            writer.append(self._xpath + '/unit', self._ui.specificationMethod.currentValue(), None)
-            writer.append(self._xpath + '/constant', self._ui.value.text(), self._title)
+            newDB.setAttribute(self._xpath, 'disabled', 'false')
+            newDB.setValue(self._xpath + '/unit', self._ui.specificationMethod.currentValue(), None)
+            newDB.setValue(self._xpath + '/constant', self._ui.value.text(), self._title)
         else:
-            writer.setAttribute(self._xpath, 'disabled', 'true')
+            newDB.setAttribute(self._xpath, 'disabled', 'true')
 
         return True
 

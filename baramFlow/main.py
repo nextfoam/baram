@@ -14,6 +14,7 @@ from PySide6.QtWidgets import QApplication
 # To render SVG files.
 # noinspection PyUnresolvedReferences
 import PySide6.QtSvg
+from vtkmodules.vtkCommonCore import vtkSMPTools
 
 # To use ".qrc" QT Resource files
 # noinspection PyUnresolvedReferences
@@ -24,7 +25,7 @@ from baramFlow.app_properties import AppProperties
 from baramFlow.app_plug_in import AppPlugIn
 from baramFlow.view.main_window.start_window import Baram
 from baramFlow.coredb.app_settings import AppSettings
-
+from libbaram.process import getAvailablePhysicalCores
 
 logger = logging.getLogger()
 formatter = logging.Formatter("[%(asctime)s][%(name)s] ==> %(message)s")
@@ -54,7 +55,15 @@ def main():
     }))
     app.setPlug(AppPlugIn())
 
+    os.environ['LC_NUMERIC'] = 'C'
     os.environ["QT_SCALE_FACTOR"] = AppSettings.getUiScaling()
+
+    # Leave 1 core for users
+    numCores = getAvailablePhysicalCores() - 1
+
+    smp = vtkSMPTools()
+    smp.Initialize(numCores)
+    smp.SetBackend('STDThread')
 
     application = QApplication(sys.argv)
     application.setQuitOnLastWindowClosed(False)

@@ -12,6 +12,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataCla
 
 from baramFlow.coredb.boundary_db import DirectionSpecificationMethod
 from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.coredb.material_db import UNIVERSAL_GAS_CONSTANT, MaterialDB
 from baramFlow.coredb.models_db import TurbulenceModel
 from baramFlow.openfoam.constant.boundary_data import BoundaryData
 from baramFlow.openfoam.file_system import FileSystem
@@ -220,7 +221,7 @@ class BoundaryCondition(DictionaryFile):
             'type': 'slip'
         }
 
-    def _constructFreestream(self, value):
+    def _constructFreeStream(self, value):
         return {
             'type': 'freestream',
             'freestreamValue': ('uniform', value)
@@ -238,6 +239,13 @@ class BoundaryCondition(DictionaryFile):
             'type': 'viscosityRatioInletOutletTDR',
             'viscosityRatio': ('uniform', viscosityRatio),
             'value': self._initialValueByTime()
+        }
+
+    def _constructWaveTransmissive(self, xpath, temperature: float):
+        return {
+            'type': 'waveTransmissive',
+            'gamma': self._calculateGamma(
+                MaterialDB.getMaterialComposition(xpath + '/species', self._region.mid), temperature)
         }
 
     def _calculateFreeStreamTurbulentValues(self, xpath, region, model):
@@ -262,8 +270,9 @@ class BoundaryCondition(DictionaryFile):
         else:
             raise AssertionError
 
-        rho = self._db.getDensity(region.mid, t, p)  # Density
-        mu = self._db.getViscosity(region.mid, t)  # Viscosity
+        materials = MaterialDB.getMaterialComposition(xpath + '/species', region.mid)
+        rho = self._db.getDensity(materials, t, p)  # Density
+        mu = self._db.getViscosity(materials, t)  # Viscosity
 
         nu = mu / rho  # Kinetic Viscosity
 
@@ -296,3 +305,9 @@ class BoundaryCondition(DictionaryFile):
                                                       float(self._db.getValue(xpath + '/angleOfSideslip')))
 
         return drag
+
+    def _calculateGamma(self, materials, t: float):
+        cp = self._db.getSpecificHeat(materials, t)
+        mw = self._db.getMolecularWeight(materials)
+
+        return cp / (cp - UNIVERSAL_GAS_CONSTANT / mw)
