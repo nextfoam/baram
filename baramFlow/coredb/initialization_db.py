@@ -33,6 +33,15 @@ def getInitializationElement(rname):
 
 
 class MaterialObserver(IMaterialObserver):
+    def materialRemoving(self, db, mid: str):
+        for volumeFraction in db.getElements(
+                f'{INITIALIZATION_XPATH}/initialValues/volumeFractions/volumeFraction[material="{mid}"]'):
+            volumeFraction.getparent().remove(volumeFraction)
+
+        for volumeFraction in db.getElements(
+                f'{INITIALIZATION_XPATH}/advanced/sections/section/volumeFractions/volumeFraction[material="{mid}"]'):
+            volumeFraction.getparent().remove(volumeFraction)
+
     def specieAdded(self, db, mid: str, mixtureID):
         for mixture in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/species/mixture[mid="{mixtureID}"]'):
             mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
@@ -44,15 +53,6 @@ class MaterialObserver(IMaterialObserver):
             mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
                                              f' <mid>{mid}</mid><value>0</value>'
                                              '</specie>'))
-
-    def materialRemoving(self, db, mid: str):
-        for volumeFraction in db.getElements(
-                f'{INITIALIZATION_XPATH}/initialValues/volumeFractions/volumeFraction[material="{mid}"]'):
-            volumeFraction.getparent().remove(volumeFraction)
-
-        for volumeFraction in db.getElements(
-                f'{INITIALIZATION_XPATH}/advanced/sections/section/volumeFractions/volumeFraction[material="{mid}"]'):
-            volumeFraction.getparent().remove(volumeFraction)
 
     def specieRemoving(self, db, mid: str, primarySpecie: str):
         for specie in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/species/mixture/specie[mid="{mid}"]'):

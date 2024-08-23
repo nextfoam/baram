@@ -252,12 +252,6 @@ def getBoundaryElements(rname):
 
 
 class MaterialObserver(IMaterialObserver):
-    def specieAdded(self, db, mid: str, mixtureID: str):
-        for mixture in db.getElements(f'{BOUNDARY_CONDITION_XPATH}/species/mixture[mid="{mixtureID}"]'):
-            mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
-                                             f' <mid>{mid}</mid><value>0</value>'
-                                             '</specie>'))
-
     def materialRemoving(self, db, mid: str):
         for wallAdhesion in db.getElements(
                 f'{BOUNDARY_CONDITION_XPATH}/wall/wallAdhesions/wallAdhesion[mid="{mid}"]'):
@@ -266,6 +260,12 @@ class MaterialObserver(IMaterialObserver):
         for volumeFraction in db.getElements(
                 f'{BOUNDARY_CONDITION_XPATH}/volumeFractions/volumeFraction[material="{mid}"]'):
             volumeFraction.getparent().remove(volumeFraction)
+
+    def specieAdded(self, db, mid: str, mixtureID: str):
+        for mixture in db.getElements(f'{BOUNDARY_CONDITION_XPATH}/species/mixture[mid="{mixtureID}"]'):
+            mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
+                                             f' <mid>{mid}</mid><value>0</value>'
+                                             '</specie>'))
 
     def specieRemoving(self, db, mid: str, primarySpecie):
         for boundaryCondition in db.getElements(BOUNDARY_CONDITION_XPATH):
