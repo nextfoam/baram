@@ -628,6 +628,11 @@ def _version_6(root: etree.Element):
 def _version_7(root: etree.Element):
     logger.debug('  Upgrading to v8')
 
+    if (p := root.find('general/atmosphericBoundaryLayer', namespaces=_nsmap)) is not None:
+        if (e := p.find('userDefinedScalars', namespaces=_nsmap)) is not None:
+            logger.debug(f'    Removing "userDefinedScalars" from {p}')
+            p.remove(e)
+
     for p in root.findall('materials/material/viscosity', namespaces=_nsmap):
         if p.find('../phase', namespaces=_nsmap).text == 'liquid':
             if p.find('cross', namespaces=_nsmap) is None:
@@ -728,7 +733,7 @@ def _version_7(root: etree.Element):
                                  '</massTransfers>')
             p.append(e)
 
-    for p in root.findall('regions/region/boundaryConditions/boundaryCondition//wall/temperature', namespaces=_nsmap):
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition/wall/temperature', namespaces=_nsmap):
         if p.find('wallLayers', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "wallLayers" to {p}')
             e = etree.fromstring('<wallLayers disabled="true" xmlns="http://www.baramcfd.org/baram">'

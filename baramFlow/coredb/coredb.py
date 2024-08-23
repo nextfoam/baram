@@ -954,4 +954,5 @@ class _CoreDB(object):
         return self._xmlTree.findall(xpath, namespaces=nsmap)
 
     def increaseConfigCount(self):
+        self._xmlSchema.assertValid(self._xmlTree)
         self._configCount += 1

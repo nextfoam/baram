@@ -40,9 +40,6 @@ class IUserDefinedScalarObserver(QObject):
     def scalarRemoving(self, db, scalarID):
         pass
 
-    def scalarsCleared(self, db):
-        pass
-
 
 def _rootElement():
     return coredb.CoreDB().getElement(UserDefinedScalarsDB.SCALAR_XPATH)
@@ -142,9 +139,6 @@ class UserDefinedScalarsDB:
                 removed = True
 
         if removed:
-            for observer in cls._observers:
-                observer.scalarsCleared(db)
-
             db.increaseConfigCount()
 
     @classmethod

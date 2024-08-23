@@ -26,6 +26,12 @@ _materialsBase = MaterialsBase()
 class IMaterialObserver(QObject):
     def materialRemoving(self, db, mid: str):
         pass
+    #
+    # def mixtureAdded(self, db, mid: str, species, primary):
+    #     pass
+    #
+    # def mixtureRemoving(self, db, mid: str):
+    #     pass
 
     def specieAdded(self, db, mid: str, mixtureID):
         pass
@@ -225,6 +231,7 @@ class MaterialDB(object):
                 primary = sid
 
         db.setValue(MaterialDB.getXPath(mid) + '/mixture/primarySpecie', primary)
+        db.increaseConfigCount()
 
         return mid
 
@@ -237,10 +244,11 @@ class MaterialDB(object):
             MaterialSchema.newSpecie(mid, name, base,
                                      MaterialSchema.defaultsToInherit(db.getElement(MaterialDB.getXPath(mixtureID))),
                                      mixtureID))
-        db.setValue(MaterialDB.getXPath(mid) + '/name', name)
 
         for observer in cls._observers:
             observer.specieAdded(db, mid, mixtureID)
+
+        db.increaseConfigCount()
 
         return mid
 

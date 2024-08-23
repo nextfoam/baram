@@ -279,7 +279,6 @@
                         <xs:element name="referenceHeight" type="inputNumberType" default="10"/>
                         <xs:element name="surfaceRoughnessLength" type="inputNumberType" default="0.01"/>
                         <xs:element name="minimumZCoordinate" type="inputNumberType" default="0.0"/>
-                        <xs:element name="userDefinedScalars" type="userDefinedScalarListType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>

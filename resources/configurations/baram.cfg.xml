@@ -29,7 +29,6 @@
             <referenceHeight>10</referenceHeight>
             <surfaceRoughnessLength>0.01</surfaceRoughnessLength>
             <minimumZCoordinate>0.0</minimumZCoordinate>
-            <userDefinedScalars/>
         </atmosphericBoundaryLayer>
     </general>
 

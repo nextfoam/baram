@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from baramFlow.coredb import region_db, scalar_model_db, boundary_db, cell_zone_db, initialization_db, monitor_db
-from baramFlow.coredb import material_db, general_db
+from baramFlow.coredb import material_db
 
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.region_db import RegionDB
@@ -16,6 +16,7 @@ def registerObservers():
 
     SpecieModelDB.registerObserver(region_db.SpecieModelObserver())
 
+    # MaterialDB.registerObserver(general_db.MaterialObserver())
     MaterialDB.registerObserver(boundary_db.MaterialObserver())
     MaterialDB.registerObserver(region_db.MaterialObserver())
     MaterialDB.registerObserver(cell_zone_db.MaterialObserver())
@@ -27,7 +28,7 @@ def registerObservers():
     RegionDB.registerMaterialObserver(cell_zone_db.RegionMaterialObserver())
     RegionDB.registerMaterialObserver(initialization_db.RegionMaterialObserver())
 
-    UserDefinedScalarsDB.registerObserver(general_db.ScalarObserver())
+    # UserDefinedScalarsDB.registerObserver(general_db.ScalarObserver())
     UserDefinedScalarsDB.registerObserver(boundary_db.ScalarObserver())
     UserDefinedScalarsDB.registerObserver(cell_zone_db.ScalarObserver())
     UserDefinedScalarsDB.registerObserver(initialization_db.ScalarObserver())

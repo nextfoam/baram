@@ -50,7 +50,12 @@ class DockView(QWidget):
 
     def close(self):
         self._dockManager.deleteLater()
+
+        self._consoleDock.widget().close()
         self._renderingDock.widget().close()
+        self._chartDock.widget().close()
+        self._monitorDock.widget().close()
+
         super().close()
 
     def _addDock(self, dock):
