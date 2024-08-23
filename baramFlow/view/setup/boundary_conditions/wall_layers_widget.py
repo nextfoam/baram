@@ -136,10 +136,7 @@ class WallLayersWidget(QObject):
                 thicknessLayers += row.thickness() + ' '
                 thermalConductivityLayers += row.thermalConductivity() + ' '
 
-        if not thicknessLayers:
-            await AsyncMessageBox().information(self._parent, self.tr('Input Error'), self.tr('Add Wall Layer'))
-            return False
-
+        db.setAttribute(self._xpath, 'disabled', 'false' if self._groupBox.isChecked() else 'true')
         db.setValue(self._xpath + '/thicknessLayers', thicknessLayers, self.tr('Thickness'))
         db.setValue(self._xpath + '/thermalConductivityLayers', thermalConductivityLayers, self.tr('Thermal Conductivity'))
 
