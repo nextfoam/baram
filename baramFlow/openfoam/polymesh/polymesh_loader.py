@@ -20,6 +20,7 @@ from baramFlow.coredb.boundary_db import BoundaryType, GeometricalType, Boundary
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.constant.region_properties import RegionProperties
 from baramFlow.mesh.mesh_model import ActorInfo, MeshModel
@@ -222,7 +223,7 @@ class PolyMeshLoader(QObject):
                     for rname in boundaries):
             return False
 
-        db.clearUserDefinedScalars()
+        UserDefinedScalarsDB.clearUserDefinedScalars(db)
         db.clearRegions()
         db.clearMonitors()
 
