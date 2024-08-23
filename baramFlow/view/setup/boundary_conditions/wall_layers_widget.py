@@ -117,11 +117,7 @@ class WallLayersWidget(QObject):
         thicknessLayers = db.getValue(self._xpath + '/thicknessLayers').split()
         thermalConductivityLayers = db.getValue(self._xpath + '/thermalConductivityLayers').split()
 
-        if len(thicknessLayers) > 0:
-            self._groupBox.setChecked(True)
-        else:
-            self._groupBox.setChecked(False)
-            self.addRow('0.001', '10')
+        self._groupBox.setChecked(db.getAttribute(self._xpath, 'disabled') == 'false')
 
         for i in range(len(thicknessLayers)):
             self.addRow(thicknessLayers[i], thermalConductivityLayers[i])
@@ -129,20 +125,20 @@ class WallLayersWidget(QObject):
     async def updateDB(self, db):
         thicknessLayers = ''
         thermalConductivityLayers = ''
-        if self._groupBox.isChecked():
-            for row in self._rows:
-                if not row.isHidden():
-                    valid, msg = row.validate()
-                    if not valid:
-                        await AsyncMessageBox().information(self._parent, self.tr('Input Error'), msg)
-                        return False
 
-                    thicknessLayers += row.thickness() + ' '
-                    thermalConductivityLayers += row.thermalConductivity() + ' '
+        for row in self._rows:
+            if not row.isHidden():
+                valid, msg = row.validate()
+                if not valid:
+                    await AsyncMessageBox().information(self._parent, self.tr('Input Error'), msg)
+                    return False
 
-            if not thicknessLayers:
-                await AsyncMessageBox().information(self._parent, self.tr('Input Error'), self.tr('Add Wall Layer'))
-                return False
+                thicknessLayers += row.thickness() + ' '
+                thermalConductivityLayers += row.thermalConductivity() + ' '
+
+        if not thicknessLayers:
+            await AsyncMessageBox().information(self._parent, self.tr('Input Error'), self.tr('Add Wall Layer'))
+            return False
 
         db.setValue(self._xpath + '/thicknessLayers', thicknessLayers, self.tr('Thickness'))
         db.setValue(self._xpath + '/thermalConductivityLayers', thermalConductivityLayers, self.tr('Thermal Conductivity'))

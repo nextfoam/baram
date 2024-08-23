@@ -731,8 +731,9 @@ def _version_7(root: etree.Element):
     for p in root.findall('regions/region/boundaryConditions/boundaryCondition//wall/temperature', namespaces=_nsmap):
         if p.find('wallLayers', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "wallLayers" to {p}')
-            e = etree.fromstring('<wallLayers xmlns="http://www.baramcfd.org/baram">'
-                                 '  <thicknessLayers/><thermalConductivityLayers/>'
+            e = etree.fromstring('<wallLayers disabled="true" xmlns="http://www.baramcfd.org/baram">'
+                                 '  <thicknessLayers>0.001</thicknessLayers>'
+                                 '  <thermalConductivityLayers>10</thermalConductivityLayers>'
                                  '</wallLayers>')
             p.append(e)
 

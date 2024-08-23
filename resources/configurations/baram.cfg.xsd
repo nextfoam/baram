@@ -1432,6 +1432,7 @@
                                     <xs:element name="thicknessLayers" type="inputNumberListType"/>
                                     <xs:element name="thermalConductivityLayers" type="inputNumberListType"/>
                                 </xs:sequence>
+                                <xs:attribute name="disabled" type="xs:boolean" use="required"/>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
