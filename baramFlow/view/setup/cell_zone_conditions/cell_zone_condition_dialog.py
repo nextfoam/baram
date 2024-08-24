@@ -321,8 +321,10 @@ class CellZoneConditionDialog(QDialog):
                 if mid in self._materialSourceTerms:
                     self._materialSourceTerms[mid].show()
                 else:
-                    widget = VariableSourceWidget(name,
-                                                  f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]')
+                    widget = VariableSourceWidget(
+                        name, f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]', {
+                              SpecificationMethod.VALUE_PER_UNIT_VOLUME: 'kg/m<sup>3</sup>s',
+                              SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: 'kg/s'})
                     self._materialSourceTerms[mid] = widget
                     self._materialSourceTermsLayout.addWidget(widget)
                     widget.load()
