@@ -48,8 +48,8 @@ class ScalarItem(QTreeWidgetItem):
         target = ALL_MATERIALS_TEXT
         if ModelsDB.isMultiphaseModelOn() and scalar.material != '0':
             target = MaterialDB.getName(scalar.material)
-        elif scalar.region:
-            target = scalar.region
+        elif scalar.rname:
+            target = scalar.rname
 
         self.setText(Column.FIELD_NAME, scalar.fieldName)
         self.setText(Column.TARGET, target)
@@ -149,7 +149,7 @@ class UserDefinedScalarsDialog(QDialog):
                             UserDefinedScalarsDB.removeUserDefinedScalar(db, scalar.scalarID)
                         elif item.isModified():
                             xpath = UserDefinedScalarsDB.getXPath(scalar.scalarID)
-                            db.setValue(xpath + '/region', scalar.region)
+                            db.setValue(xpath + '/region', scalar.rname)
                             db.setValue(xpath + '/material', scalar.material)
                             db.setValue(xpath + '/diffusivity/specificationMethod', scalar.specificationMethod.value)
                             if scalar.specificationMethod == ScalarSpecificationMethod.CONSTANT:

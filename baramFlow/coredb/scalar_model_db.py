@@ -25,7 +25,7 @@ class ScalarSpecificationMethod(Enum):
 class UserDefinedScalar:
     scalarID: int
     fieldName: str
-    region: int
+    rname: str
     material: str
     specificationMethod: ScalarSpecificationMethod
     constantDiffusivity: str
@@ -78,7 +78,7 @@ class UserDefinedScalarsDB:
         return UserDefinedScalar(
             scalarID=scalarID,
             fieldName=db.getValue(xpath + '/fieldName'),
-            region=db.getValue(xpath + '/region'),
+            rname=db.getValue(xpath + '/region'),
             material=db.getValue(xpath + '/material'),
             specificationMethod=ScalarSpecificationMethod(db.getValue(xpath + '/diffusivity/specificationMethod')),
             constantDiffusivity=db.getValue(xpath + '/diffusivity/constant'),
@@ -96,7 +96,7 @@ class UserDefinedScalarsDB:
             xml.createElement(
                 f'<scalar scalarID="{newID}" xmlns="http://www.baramcfd.org/baram">'
                 f'  <fieldName>{scalar.fieldName}</fieldName>'
-                f'  <region>{scalar.region}</region>'
+                f'  <region>{scalar.rname}</region>'
                 f'  <material>{scalar.material}</material>'
                 '   <diffusivity>'
                 f'      <specificationMethod>{scalar.specificationMethod.value}</specificationMethod>'

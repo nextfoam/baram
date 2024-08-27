@@ -83,7 +83,7 @@ class UserDefiendScalarDialog(ResizableDialog):
         if ModelsDB.isMultiphaseModelOn():
             self._scalar.material = self._ui.target.currentData()
         elif RegionDB.isMultiRegion():
-            self._scalar.region = self._ui.target.currentText()
+            self._scalar.rname = self._ui.target.currentText()
 
         self._scalar.specificationMethod = self._ui.specificationMethod.currentData()
         if self._scalar.specificationMethod == ScalarSpecificationMethod.CONSTANT:
@@ -104,8 +104,8 @@ class UserDefiendScalarDialog(ResizableDialog):
                 self._ui.target.setCurrentText(MaterialDB.getName(scalar.material))
             else:
                 self._ui.target.setCurrentIndex(0)
-        elif RegionDB.isMultiRegion() and scalar.region:
-            self._ui.target.setCurrentText(scalar.region)
+        elif RegionDB.isMultiRegion() and scalar.rname:
+            self._ui.target.setCurrentText(scalar.rname)
 
         self._ui.fieldName.setText(scalar.fieldName)
         self._ui.specificationMethod.setCurrentData(scalar.specificationMethod)

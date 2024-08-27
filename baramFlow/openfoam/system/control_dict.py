@@ -264,10 +264,11 @@ class ControlDict(DictionaryFile):
                 self._data['functions'][fieldName]['alphaDt'] = self._db.getValue(
                     xpath + '/diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient')
 
-            if region := self._db.getValue(xpath + '/region'):
-                self._data['functions'][fieldName]['region'] = region
+            if rname := self._db.getValue(xpath + '/region'):
+                self._data['functions'][fieldName]['region'] = rname
 
-            if mid := self._db.getValue(xpath + 'material'):
+            mid = self._db.getValue(xpath + 'material')
+            if mid != '0':
                 self._data['functions'][fieldName]['phase'] = MaterialDB.getName(mid)
 
     def _appendMonitoringFunctionObjects(self):
