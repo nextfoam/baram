@@ -11,7 +11,8 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.cell_zone_db import CellZoneDB, ZoneType, SpecificationMethod
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
-from baramFlow.coredb.material_db import MaterialDB, MaterialType
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import MaterialType
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME, RegionDB
 from .actuator_disk_widget import ActuatorDiskWidget
@@ -84,7 +85,7 @@ class CellZoneConditionDialog(QDialog):
             self.setWindowTitle(self.tr('Region Condition'))
             self._ui.zoneType.setVisible(False)
 
-            self._materialsWidget = MaterialsWidget(self._rname, isMultiPhaseOn)
+            self._materialsWidget = MaterialsWidget(self._rname)
             layout.addWidget(self._materialsWidget)
 
             if self._rname:
@@ -320,8 +321,10 @@ class CellZoneConditionDialog(QDialog):
                 if mid in self._materialSourceTerms:
                     self._materialSourceTerms[mid].show()
                 else:
-                    widget = VariableSourceWidget(name,
-                                                  f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]')
+                    widget = VariableSourceWidget(
+                        name, f'{self._xpath}/sourceTerms/materials/materialSource[material="{mid}"]', {
+                              SpecificationMethod.VALUE_PER_UNIT_VOLUME: 'kg/m<sup>3</sup>s',
+                              SpecificationMethod.VALUE_FOR_ENTIRE_CELL_ZONE: 'kg/s'})
                     self._materialSourceTerms[mid] = widget
                     self._materialSourceTermsLayout.addWidget(widget)
                     widget.load()

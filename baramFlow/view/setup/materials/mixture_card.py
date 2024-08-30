@@ -5,11 +5,15 @@ import qasync
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import Signal
 
+from widgets.async_message_box import AsyncMessageBox
+
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
-from baramFlow.coredb.material_db import MaterialDB, MaterialType
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
-from widgets.async_message_box import AsyncMessageBox
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import MaterialType
+from baramFlow.coredb.material_schema import DensitySpecification, Specification, ViscositySpecification
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from .material_add_dialog import MaterialAddDialog
 from .material_card import MaterialCard
 from .mixture_card_ui import Ui_MixtureCard
@@ -66,19 +70,19 @@ class MixtureCard(QWidget):
         self._ui.name.setText(MaterialDB.getName(self._mid))
 
         self._ui.densitySpec.setText(
-            MaterialDB.dbSpecificationToText(db.getValue(self._xpath + '/density/specification')))
+            MaterialDB.specificationToText(DensitySpecification(db.getValue(self._xpath + '/density/specification'))))
 
         energyModelOn = ModelsDB.isEnergyModelOn()
         if energyModelOn:
             self._ui.specificHeatWidget.show()
             self._ui.specificHeatSpec.setText(
-                MaterialDB.dbSpecificationToText(db.getValue(self._xpath + '/specificHeat/specification')))
+                MaterialDB.specificationToText(Specification(db.getValue(self._xpath + '/specificHeat/specification'))))
         else:
             self._ui.specificHeatWidget.hide()
 
-        if energyModelOn or ModelsDB.getTurbulenceModel() != TurbulenceModel.INVISCID:
+        if energyModelOn or TurbulenceModelsDB.getModel() != TurbulenceModel.INVISCID:
             self._ui.transportSpec.setText(
-                MaterialDB.dbSpecificationToText(db.getValue(self._xpath + '/viscosity/specification')))
+                MaterialDB.specificationToText(ViscositySpecification(db.getValue(self._xpath + '/viscosity/specification'))))
         else:
             self._ui.transportWidget.hide()
 

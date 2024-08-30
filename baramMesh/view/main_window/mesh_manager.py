@@ -13,7 +13,6 @@ from baramMesh.view.main_window.actor_manager import ActorManager
 
 
 class MeshManager(ActorManager):
-    progress = Signal(str)
     cellCountChanged = Signal(int)
 
     def __init__(self):
@@ -25,6 +24,9 @@ class MeshManager(ActorManager):
         self._name = 'Mesh'
 
     async def load(self, time=None):
+        if not self._displayControl.isEnabled():
+            return
+
         self.clear()
         self._visibility = True
 
@@ -69,9 +71,6 @@ class MeshManager(ActorManager):
 
     def boundaries(self):
         return self._actorInfos.keys()
-
-    def _connectSignalsSlots(self):
-        self._loader.progress.connect(self.progress)
 
     def getScalarRange(self, index: MeshQualityIndex) -> (float, float):
         actorInfo: ActorInfo

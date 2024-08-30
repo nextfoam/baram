@@ -3,7 +3,7 @@
 
 from typing import Optional
 
-from PySide6.QtCore import QObject, QTranslator, QCoreApplication, QLocale
+from PySide6.QtCore import QObject, QTranslator, QCoreApplication, QLocale, Signal
 from PySide6.QtWidgets import QApplication
 
 from baramMesh.db.project import Project
@@ -14,6 +14,8 @@ from resources import resource
 
 
 class App(QObject):
+    renderingToggled = Signal(bool)
+
     def __init__(self):
         super().__init__()
 

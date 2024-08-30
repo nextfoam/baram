@@ -47,6 +47,15 @@ class FlowRateInletDialog(ResizableDialog):
 
     @qasync.asyncSlot()
     async def _accept(self):
+        #
+        # Validation check for parameters
+        #
+        valid, msg = self._volumeFractionWidget.validate()
+        if not valid:
+            await AsyncMessageBox().warning(self, self.tr('Warning'), msg)
+            return
+        # ToDo: Add validation for other parameters
+
         path = self._xpath + '/flowRateInlet'
 
         writer = CoreDBWriter()

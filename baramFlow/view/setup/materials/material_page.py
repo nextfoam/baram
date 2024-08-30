@@ -9,7 +9,8 @@ from baramFlow.coredb.configuraitions import ConfigurationException
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.material_db import MaterialDB, MaterialType
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import MaterialType
 from baramFlow.view.widgets.content_page import ContentPage
 from .material_add_dialog import MaterialAddDialog
 from .material_card import MaterialCard
@@ -64,9 +65,7 @@ class MaterialPage(ContentPage):
         self._ui.add.clicked.connect(self._add)
 
     def _load(self):
-        materials = coredb.CoreDB().getMaterials()
-
-        for mid, name, formula, phase in materials:
+        for mid, name, formula, phase in MaterialDB.getMaterials():
             self._addCard(mid)
 
     def _add(self):

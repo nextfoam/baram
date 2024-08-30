@@ -7,8 +7,9 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.monitor_db import MonitorDB, DirectionSpecificationMethod
+from baramFlow.view.widgets.region_objects_selector import BoundariesSelector
+
 from .force_dialog_ui import Ui_ForceDialog
-from .region_objects_selector import BoundariesSelector
 
 
 class ForceDialog(QDialog):

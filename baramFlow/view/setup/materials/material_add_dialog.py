@@ -5,7 +5,9 @@ import qasync
 from PySide6.QtWidgets import QDialog, QListWidgetItem
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.material_db import MaterialDB, Phase, MaterialType
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import Phase, MaterialType
+from baramFlow.coredb.materials_base import MaterialsBase
 from baramFlow.coredb.models_db import ModelsDB
 from widgets.async_message_box import AsyncMessageBox
 from .material_add_dialog_ui import Ui_MaterialAddDialog
@@ -39,7 +41,7 @@ class MaterialAddDialog(QDialog):
         self._mixture = mixture
         self._added = None
 
-        for name, formula, phase in MaterialDB.getMaterialsFromDB(
+        for name, formula, phase in MaterialsBase.getMaterials(
                 None if mixture is None else MaterialDB.getPhase(mixture).value):
             MaterialItem(self._ui.list, name, Phase(phase))
 
@@ -106,7 +108,7 @@ class MaterialAddDialog(QDialog):
         with coredb.CoreDB() as db:
             if self._type == MaterialType.NONMIXTURE:
                 for item in materials:
-                    self._added.append(MaterialDB.addMaterial(db, item.name()))
+                    self._added.append(MaterialDB.addNonMixture(db, item.name()))
             elif self._type == MaterialType.SPECIE:
                 for item in materials:
                     self._added.append(MaterialDB.addSpecie(db, item.name(), self._mixture))

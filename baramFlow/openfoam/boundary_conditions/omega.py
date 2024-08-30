@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, KOmegaSpecification, WallVelocityCondition, InterfaceMode
-from baramFlow.coredb.models_db import TurbulenceModel, TurbulenceModelsDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -66,7 +66,7 @@ class Omega(BoundaryCondition):
             return self._constructInletOutlet(
                 self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))
         elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-            return self._constructNEXTViscosityRatioInletOutletTDR(
+            return self._constructViscosityRatioInletOutletTDR(
                 self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'))
 
     def _constructNEXTOmegaBlendedWallFunction(self):
@@ -92,12 +92,12 @@ class Omega(BoundaryCondition):
 
     def _constructFreeStreamOmega(self, xpath):
         spec = self._db.getValue(xpath + '/turbulence/k-omega/specification')
-        omega = None
         if spec == KOmegaSpecification.K_AND_OMEGA.value:
-            omega = float(self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))
+            return self._constructFreeStream(
+                float(self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate')))
         elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
-            _, omega = self._calculateFreeStreamKW(xpath, self._region)
-        return self._constructFreeStream(omega)
+            return self._constructViscosityRatioInletOutletTDR(
+                self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'))
 
     def _constructWallOmega(self, xpath):
         spec = self._db.getValue(xpath + '/wall/velocity/type')

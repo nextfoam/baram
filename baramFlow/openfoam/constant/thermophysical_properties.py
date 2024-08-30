@@ -1,24 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.material_db import MaterialDB, MaterialType, Specification
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import MaterialType, DensitySpecification, ViscositySpecification
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.numerical_db import NumericalDB
+from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.openfoam.file_system import FileSystem
 
 
 EQUATION_OF_STATES = {
-    Specification.CONSTANT.value                    : 'rhoConst',
-    Specification.PERFECT_GAS.value                 : 'perfectGas',
-    Specification.POLYNOMIAL.value                  : 'icoPolynomial',
-    Specification.INCOMPRESSIBLE_PERFECT_GAS.value  : 'incompressiblePerfectGas',
-    Specification.REAL_GAS_PENG_ROBINSON.value      : 'PengRobinsonGas'
+    DensitySpecification.CONSTANT.value                     : 'rhoConst',
+    DensitySpecification.PERFECT_GAS.value                  : 'perfectGas',
+    DensitySpecification.POLYNOMIAL.value                   : 'icoPolynomial',
+    DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS.value   : 'incompressiblePerfectGas',
+    DensitySpecification.REAL_GAS_PENG_ROBINSON.value       : 'PengRobinsonGas'
 }
 
 
@@ -28,17 +30,18 @@ def _constructFluid(region: str):
     materialType = MaterialDB.getType(mid)
     path = MaterialDB.getXPath(mid)
 
-    tModel = ModelsDB.getTurbulenceModel()
-    viscositySpec = db.getValue(path + '/viscosity/specification')
+    tModel = TurbulenceModelsDB.getModel()
+    viscositySpec = ViscositySpecification(db.getValue(path + '/viscosity/specification'))
     specificHeatSpec = db.getValue(path + '/specificHeat/specification')
     densitySpec = db.getValue(path + '/density/specification')
-
-    transport = 'const' if tModel == TurbulenceModel.INVISCID or viscositySpec == 'constant' else viscositySpec
 
     thermo = {
         'type': 'heRhoThermo',
         'mixture': 'pureMixture',
-        'transport': transport,
+        'transport': ('const' if tModel == TurbulenceModel.INVISCID
+                                 or viscositySpec == ViscositySpecification.CONSTANT
+                                 or MaterialDB.isNonNewtonianSpecification(viscositySpec)
+                      else viscositySpec.value),
         'thermo': 'hConst' if specificHeatSpec == 'constant' else 'hPolynomial',
         'equationOfState': EQUATION_OF_STATES[densitySpec],
         'specie': 'specie',
@@ -48,11 +51,9 @@ def _constructFluid(region: str):
     if GeneralDB.isCompressible():
         thermo['type'] = 'hePsiThermo'
 
-    speciesModel = db.getValue('.//models/speciesModels')
-    if speciesModel == 'on':
+    if materialType == MaterialType.MIXTURE:
         thermo['mixture'] = 'multiComponentMixture'
 
-    if materialType == MaterialType.MIXTURE:
         data = {
             'thermoType': thermo,
             'species': [],
@@ -65,7 +66,7 @@ def _constructFluid(region: str):
             data['species'].append(name)
             data[name] = {
                 'thermodynamics': _mixtureThermodynamics(specificHeatSpec, db, spath),
-                'transport': _mixtureTransport(tModel, transport, db, spath),
+                'transport': _mixtureTransport(tModel, viscositySpec, db, spath),
                 'specie': _mixtureSpecie(db, spath)
             }
             if eos := _mixtureEquationOfState(densitySpec, db, spath):
@@ -76,7 +77,7 @@ def _constructFluid(region: str):
     elif materialType == MaterialType.NONMIXTURE:
         mix = {
             'thermodynamics': _mixtureThermodynamics(specificHeatSpec, db, path),
-            'transport': _mixtureTransport(tModel, transport, db, path),
+            'transport': _mixtureTransport(tModel, viscositySpec, db, path),
             'specie': _mixtureSpecie(db, path)
         }
         if eos := _mixtureEquationOfState(densitySpec, db, path):
@@ -142,7 +143,7 @@ def _mixtureThermodynamics(spec, db, path):
     return data
 
 
-def _mixtureTransport(tModel, transport, db, path):
+def _mixtureTransport(tModel, viscositySpec, db, path):
     spec = db.getValue(path + '/thermalConductivity/specification')
     if spec == 'constant':
         kk = db.getValue(path + '/thermalConductivity/constant')
@@ -151,41 +152,71 @@ def _mixtureTransport(tModel, transport, db, path):
         for i, n in enumerate(db.getValue(path + '/thermalConductivity/polynomial').split()):
             kkCoeffs[i] = float(n)
 
-    data = None
+    if tModel == TurbulenceModel.INVISCID:
+        mu = 0.0
+        pr = 0.7
 
-    if transport == 'const':
-        if tModel == TurbulenceModel.INVISCID:
-            mu = 0.0
-        else:
-            mu = float(db.getValue(path + '/viscosity/constant'))
+        return {
+            'mu': str(mu),
+            'Pr': str(pr)
+        }
 
+    if viscositySpec == ViscositySpecification.CONSTANT:
+        mu = float(db.getValue(path + '/viscosity/constant'))
         if mu == 0.0:
             pr = 0.7
         else:
             cp = db.getValue(path + '/specificHeat/constant')
             pr = float(cp) * mu / float(kk)  # If viscosity spec is constant, thermalConductivity spec should be constant too
 
-        data = {
+        return {
             'mu': str(mu),
             'Pr': str(pr)
         }
-    elif transport == 'polynomial':
+
+    if viscositySpec == ViscositySpecification.POLYNOMIAL:
         muCoeffs: list[float] = [0] * 8  # To make sure that muCoeffs has length of 8
         for i, n in enumerate(db.getValue(path + '/viscosity/polynomial').split()):
             muCoeffs[i] = float(n)
-        data = {
+
+        return {
             'muCoeffs<8>': muCoeffs,
             'kappaCoeffs<8>': kkCoeffs  # If viscosity spec is polynomial, thermalConductivity spec should be polynomial too
         }
-    elif transport == 'sutherland':
+
+    if viscositySpec == ViscositySpecification.SUTHERLAND:
         as_ = db.getValue(path + '/viscosity/sutherland/coefficient')
         ts  = db.getValue(path + '/viscosity/sutherland/temperature')
-        data = {
+
+        return {
             'As': as_,
             'Ts': ts
         }
 
-    return data
+    rho = float(db.getValue(path + '/density/constant'))
+    if viscositySpec == ViscositySpecification.CROSS_POWER_LAW:
+        return {
+            'mu': rho * float(db.getValue(path + '/viscosity/cross/zeroShearViscosity')),
+            'Pr': 0.7
+        }
+
+    if viscositySpec == ViscositySpecification.HERSCHEL_BULKLEY:
+        return {
+            'mu': rho * float(db.getValue(path + '/viscosity/herschelBulkley/zeroShearViscosity')),
+            'Pr': 0.7
+        }
+
+    if viscositySpec == ViscositySpecification.BIRD_CARREAU:
+        return {
+            'mu': rho * float(db.getValue(path + '/viscosity/carreau/zeroShearViscosity')),
+            'Pr': 0.7
+        }
+
+    if viscositySpec == ViscositySpecification.POWER_LAW:
+        return {
+            'mu': rho * float(db.getValue(path + '/viscosity/nonNewtonianPowerLaw/consistencyIndex')),
+            'Pr': 0.7
+        }
 
 
 def _mixtureSpecie(db, path):

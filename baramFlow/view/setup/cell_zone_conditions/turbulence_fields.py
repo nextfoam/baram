@@ -4,7 +4,7 @@
 from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb.cell_zone_db import SpecificationMethod
-from baramFlow.coredb.models_db import TurbulenceModel, TurbulenceFields, ModelsDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceFields, TurbulenceModelsDB
 
 
 _modelFields = {
@@ -93,4 +93,4 @@ _fields = {
 
 
 def getTurbulenceFields():
-    return [_fields[f] for f in _modelFields[ModelsDB.getTurbulenceModel()]]
+    return [_fields[f] for f in _modelFields[TurbulenceModelsDB.getModel()]]

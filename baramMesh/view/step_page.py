@@ -38,7 +38,7 @@ class StepPage(QObject):
         return
 
     async def selected(self):
-        self._updateMesh()
+        self.updateMesh()
 
     def deselected(self):
         return
@@ -96,7 +96,7 @@ class StepPage(QObject):
     def _showPreviousMesh(self):
         app.window.meshManager.show(self.OUTPUT_TIME - 1)
 
-    def _updateMesh(self):
+    def updateMesh(self):
         if self.isNextStepAvailable():
             self._showResultMesh()
         else:

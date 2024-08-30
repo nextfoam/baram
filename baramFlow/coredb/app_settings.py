@@ -155,12 +155,12 @@ class AppSettings:
     def findParaviewInstalledPath(cls) -> Optional[Path]:
         def validate(pathString: str, update=True):
             if pathString:
-                path = Path(pathString)
-                if path.is_file():
+                p = Path(pathString)
+                if p.is_file():
                     if update:
-                        cls.updateParaviewInstalledPath(path)
+                        cls.updateParaviewInstalledPath(p)
 
-                    return path
+                    return p
 
             return None
 

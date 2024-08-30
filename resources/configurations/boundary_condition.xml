@@ -141,6 +141,10 @@
             <heatFlux>1000</heatFlux>
             <heatTransferCoefficient>100</heatTransferCoefficient>
             <freeStreamTemperature>300</freeStreamTemperature>
+            <wallLayers disabled="true">
+                <thicknessLayers>0.001</thicknessLayers>
+                <thermalConductivityLayers>10</thermalConductivityLayers>
+            </wallLayers>
         </temperature>
         <radiation>
             <wallEmissivity>1</wallEmissivity>

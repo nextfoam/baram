@@ -246,7 +246,12 @@ class FvOptions(DictionaryFile):
             materials: [str] = self._db.getList(xpath+'/materials/materialSource/material')
             for mid in materials:
                 name = MaterialDB.getName(mid)
-                self._generateSourceFields(czname, xpath + f'/materials/materialSource[material="{mid}"]', f'alpha.{name}')
+                if ModelsDB.isMultiphaseModelOn():
+                    name = 'alpha.' + name
+
+                if self._generateSourceFields(czname, xpath + f'/materials/materialSource[material="{mid}"]', name):
+                    sourceFieldName = self._sourceFieldName(czname, name)
+                    self._data[sourceFieldName]['sources']['rho'] = self._data[sourceFieldName]['sources'][name]
         else:
             self._generateSourceFields(czname, xpath + '/mass', 'rho')
 
@@ -268,7 +273,13 @@ class FvOptions(DictionaryFile):
 
     def _generateSourceFields(self, czname, xpath, fieldType):
         if self._db.getAttribute(xpath, 'disabled') == 'false':
-            self._data[f'scalarSource_{czname}_{fieldType}'] = generateSourceTermField(czname, xpath, fieldType)
+            self._data[self._sourceFieldName(czname, fieldType)] = generateSourceTermField(czname, xpath, fieldType)
+            return True
+
+        return False
+
+    def _sourceFieldName(self, czname, fieldType):
+        return f'scalarSource_{czname}_{fieldType}'
 
     def _generateFixedValues(self, czname, xpath):
         self._generateFixedVelocity(czname, xpath + '/velocity')

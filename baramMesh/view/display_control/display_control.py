@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from typing import Optional
 
 from PySide6.QtCore import QObject, Signal, Qt
@@ -106,13 +107,17 @@ class DisplayControl(QObject):
         self._selectedItems = None
 
         self._list.setColumnWidth(Column.COLOR_COLUMN, 20)
-        # self._list.setColumnWidth(Column.CUT_ICON_COLUMN, 20)
-        # self._list.setColumnWidth(Column.VISIBLE_ICON_COLUMN, 20)
 
         self._list.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
         self._list.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
 
         self._connectSignalsSlots()
+
+    def setEnabled(self, enabled):
+        self._ui.displayControl.setEnabled(enabled)
+
+    def isEnabled(self):
+        return self._ui.displayControl.isEnabled()
 
     def add(self, actorInfo):
         if actorInfo.id() in self._items:
@@ -151,9 +156,6 @@ class DisplayControl(QObject):
         self._view.removeActor(item.actorInfo().actor())
         item.setHidden(True)
 
-    def makeTranslucent(self, actorInfo):
-        print('translucent')
-
     def refreshView(self):
         self._view.refresh()
 
@@ -168,7 +170,6 @@ class DisplayControl(QObject):
             self._cutTool.hide()
 
     def currentStepChanged(self, step):
-        print(f'currentstepChanged {step}')
         if step >= Step.CASTELLATION.value:
             if not self._meshQualityInfo.isVisible():
                 self._meshQualityInfo.show()
@@ -176,6 +177,7 @@ class DisplayControl(QObject):
             self._meshQualityInfo.hide()
 
     def clear(self):
+        self._ui.rendering.setChecked(True)
         self._cutTool.hide()
         self._meshQualityInfo.hide()
         self._list.clear()
@@ -200,18 +202,9 @@ class DisplayControl(QObject):
 
         self.selectedActorsChanged.emit(ids)
         self._view.refresh()
-    #
-    # def selectedItemsChanged(self):
-    #     ids = []
-    #     for item in self._items.values():
-    #         item.actorInfo().setHighlighted(item.isSelected())
-    #         if item.isSelected():
-    #             ids.append(item.actorInfo().id())
-    #
-    #     self.selectedActorsChanged.emit(ids)
-    #     self._view.refresh()
 
     def _connectSignalsSlots(self):
+        self._ui.rendering.toggled.connect(app.renderingToggled)
         self._list.customContextMenuRequested.connect(self._showContextMenu)
         self._list.itemSelectionChanged.connect(self.selectedItemsChanged)
         self._view.customContextMenuRequested.connect(self._showContextMenuOnRenderingView)

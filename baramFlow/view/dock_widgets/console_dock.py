@@ -128,7 +128,8 @@ class ConsoleView(QWidget):
     async def _caseCleared(self):
         if self.readTask is not None:
             self.readTask.cancel()
-        self._textView.clear()
+        if self._textView is not None:
+            self._textView.clear()
 
     def _projectClosed(self):
         if self.readTask is not None:
@@ -153,6 +154,11 @@ class ConsoleView(QWidget):
         root = FileSystem.caseRoot()
         await _readLog(root / 'stdout.log')
         await _readLog(root / 'stderr.log')
+
+    def closeEvent(self, event):
+        self._textView = None
+
+        super().closeEvent(event)
 
 
 class ConsoleDock(CDockWidget):

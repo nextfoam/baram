@@ -61,20 +61,17 @@ class BoundaryTypePicker(QWidget):
         isCompressible = GeneralDB.isCompressible()
         isEnergyOn = ModelsDB.isEnergyModelOn()
         isMultiphase = ModelsDB.isMultiphaseModelOn()
-        isSpeciesOn = ModelsDB.isSpeciesModelOn()
         isMultiRegion = len(coredb.CoreDB().getRegions()) > 1
 
-        if isCompressible or isMultiphase or isSpeciesOn:
+        if isCompressible or isMultiphase:
             self._ui.ABLInlet.hide()
+            self._ui.freeStream.hide()
 
-        if isCompressible or isEnergyOn or not isMultiphase or isSpeciesOn or isMultiRegion:
+        if isCompressible or isEnergyOn or not isMultiphase or isMultiRegion:
             self._ui.openChannelInlet.hide()
             self._ui.openChannelOutlet.hide()
 
-        if isCompressible or isMultiphase:
-            self._ui.freeStream.hide()
-
-        if not isCompressible or not isEnergyOn or isMultiphase or isSpeciesOn or isMultiRegion:
+        if not isCompressible or not isEnergyOn or isMultiphase or isMultiRegion:
             self._ui.farFieldRiemann.hide()
             self._ui.subsonicInlet.hide()
             self._ui.supersonicInflow.hide()

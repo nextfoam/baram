@@ -8,7 +8,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.region_db import RegionDB
-from baramFlow.coredb.material_db import Phase
+from baramFlow.coredb.material_schema import Phase
 from baramFlow.openfoam.file_system import FileSystem, FileLoadingError
 
 

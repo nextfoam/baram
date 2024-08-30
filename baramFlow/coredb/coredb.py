@@ -492,7 +492,7 @@ class _CoreDB(object):
         while str(index) in idList:
             index += 1
 
-        return index
+        return str(index)
 
     def toUniqueText(self, xpath, name, desiredText):
         seq = 0
@@ -502,89 +502,6 @@ class _CoreDB(object):
             text = f'{desiredText}{seq}'
 
         return text
-
-    def getMaterials(self, type_=None) -> list[(int, str, str, str)]:
-        """Returns configured materials
-
-        Returns configured materials with name, chemicalFormula and phase
-
-        Args:
-            type_: Material type (nonmixture, mixture or specie)
-
-        Returns:
-            List of materials in tuple, '(id, name, chemicalFormula, phase)'
-        """
-        elements = self._xmlTree.findall(f'.//materials/material', namespaces=nsmap)
-
-        if type_ is None:
-            return [(int(e.attrib['mid']),
-                     e.findtext('name', namespaces=nsmap),
-                     e.findtext('type', namespaces=nsmap),
-                     e.findtext('phase', namespaces=nsmap))
-                    for e in elements if e.findtext('type', namespaces=nsmap) != 'specie']
-        else:
-            return [(int(e.attrib['mid']),
-                     e.findtext('name', namespaces=nsmap),
-                     e.findtext('type', namespaces=nsmap),
-                     e.findtext('phase', namespaces=nsmap))
-                    for e in elements if e.findtext('type', namespaces=nsmap) == type_]
-
-    def addRegion(self, rname: str):
-        region = self._xmlTree.find(f'.//regions/region[name="{rname}"]', namespaces=nsmap)
-
-        if region is not None:
-            raise FileExistsError
-
-        parent = self._xmlTree.find('.//regions', namespaces=nsmap)
-
-        region = etree.SubElement(parent, f'{{{ns}}}region')
-
-        etree.SubElement(region, f'{{{ns}}}name').text = rname
-
-        # set default material for the region
-        materials = self.getMaterials()
-        if len(materials) == 0:
-            raise AssertionError  # One material should exist
-
-        # use the first material for default material for the region
-        etree.SubElement(region, f'{{{ns}}}material').text = str(materials[0][0])
-        etree.SubElement(region, f'{{{ns}}}secondaryMaterials')
-        phaseInteraction = etree.SubElement(region, f'{{{ns}}}phaseInteractions')
-        etree.SubElement(phaseInteraction, f'{{{ns}}}surfaceTensions')
-
-        cellZones = etree.SubElement(region, f'{{{ns}}}cellZones')
-        etree.SubElement(region, f'{{{ns}}}boundaryConditions')
-
-        e = etree.fromstring('''
-                <initialization xmlns="http://www.baramcfd.org/baram">
-                    <initialValues>
-                        <velocity>
-                            <x>0</x>
-                            <y>0</y>
-                            <z>0</z>
-                        </velocity>
-                        <pressure>0</pressure>
-                        <temperature>300</temperature>
-                        <scaleOfVelocity>1</scaleOfVelocity>
-                        <turbulentIntensity>1</turbulentIntensity>
-                        <turbulentViscosity>10</turbulentViscosity>
-                        <volumeFractions/>
-                        <userDefinedScalars/>
-                        <species/>
-                    </initialValues>
-                    <advanced>
-                        <sections></sections>
-                    </advanced>
-                </initialization>
-            ''')
-        region.append(e)
-
-        # add default cell zone named "All"
-        self.addCellZone(rname, 'All')
-
-        self._configCount += 1
-
-        self._xmlSchema.assertValid(self._xmlTree)
 
     def getRegions(self) -> list[str]:
         elements = self._xmlTree.findall(f'.//regions/region', namespaces=nsmap)
@@ -598,9 +515,6 @@ class _CoreDB(object):
     def clearRegions(self):
         parent = self._xmlTree.find('.//regions', namespaces=nsmap)
         parent.clear()
-
-    def hasMultipleRegions(self):
-        return len(self._xmlTree.findall(f'.//regions/region', namespaces=nsmap)) > 1
 
     def addCellZone(self, rname: str, zname: str) -> int:
         zone = self._xmlTree.find(f'.//region[name="{rname}"]/cellZones/cellZone[name="{zname}"]', namespaces=nsmap)
@@ -636,7 +550,7 @@ class _CoreDB(object):
         elements = self._xmlTree.findall(f'.//region[name="{rname}"]/cellZones/cellZone', namespaces=nsmap)
         return [(int(e.attrib['czid']), e.find('name', namespaces=nsmap).text) for e in elements]
 
-    def getCellZonesByType(self, rname: str, zoneType: str) -> list[(int)]:
+    def getCellZonesByType(self, rname: str, zoneType: str) -> list[int]:
         elements = self._xmlTree.findall(f'.//region[name="{rname}"]/cellZones/cellZone[zoneType="{zoneType}"]',
                                          namespaces=nsmap)
         return [e.attrib['czid'] for e in elements]
@@ -927,142 +841,6 @@ class _CoreDB(object):
         return [(int(e.attrib['scalarID']), e.find('fieldName', namespaces=nsmap).text)
                 for e in elements if e.attrib['scalarID'] != '0']
 
-    def addUserDefinedScalar(self, scalar):
-        idList = self._xmlTree.xpath(f'.//x:userDefinedScalars/x:scalar/@scalarID', namespaces={'x': ns})
-
-        for index in range(1, self.USER_DEFINED_SCALAR_MAX_INDEX):
-            if str(index) not in idList:
-                scalarID = index
-                break
-        else:
-            raise OverflowError
-
-        parent = self.getElement('models/userDefinedScalars')
-        scalar = etree.fromstring(
-            f'<scalar scalarID="{scalarID}" xmlns="http://www.baramcfd.org/baram">'
-            f'  <fieldName>{scalar.fieldName}</fieldName>'
-            f'  <region>{scalar.region}</region>'
-            f'  <material>{scalar.material}</material>'
-            f'  <diffusivity>'
-            f'      <specificationMethod>{scalar.specificationMethod.value}</specificationMethod>'
-            f'      <constant>{scalar.constantDiffusivity}</constant>'
-            f'      <laminarAndTurbulentViscosity>'
-            f'          <laminarViscosityCoefficient>{scalar.laminarViscosityCoefficient}</laminarViscosityCoefficient>'
-            f'          <turbulentViscosityCoefficient>{scalar.turbulentViscosityCoefficient}</turbulentViscosityCoefficient>'
-            '       </laminarAndTurbulentViscosity>'
-            '  </diffusivity>'
-            '</scalar>')
-        parent.append(scalar)
-
-        parent = self._xmlTree.find('general/atmosphericBoundaryLayer/userDefinedScalars', namespaces=nsmap)
-        scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
-                                  f' <scalarID>{scalarID}</scalarID>'
-                                  '  <value>0</value>'
-                                  '</scalar>')
-        parent.append(scalar)
-
-        for parent in self._xmlTree.findall('regions/region/cellZones/cellZone/sourceTerms/userDefinedScalars',
-                                            namespaces=nsmap):
-            source = etree.fromstring('<scalarSource disabled="true" xmlns="http://www.baramcfd.org/baram">'
-                                      f' <scalarID>{scalarID}</scalarID>'
-                                      '  <unit>valueForEntireCellZone</unit>'
-                                      '  <specification>constant</specification>'
-                                      '  <constant>0</constant>'
-                                      '  <piecewiseLinear><t>0</t><v>0</v></piecewiseLinear>'
-                                      '  <polynomial>0</polynomial>'
-                                      '</scalarSource>')
-            parent.append(source)
-
-        for parent in self._xmlTree.findall('regions/region/cellZones/cellZone/fixedValues/userDefinedScalars',
-                                            namespaces=nsmap):
-            scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
-                                      f' <scalarID>{scalarID}</scalarID>'
-                                      '  <value disabled="true">0</value>'
-                                      '</scalar>')
-            parent.append(scalar)
-
-        for parent in self._xmlTree.findall('regions/region/boundaryConditions/boundaryCondition/userDefinedScalars',
-                                            namespaces=nsmap):
-            scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
-                                      f' <scalarID>{scalarID}</scalarID>'
-                                      '  <value>0</value>'
-                                      '</scalar>')
-            parent.append(scalar)
-
-        for parent in self._xmlTree.findall('regions/region/initialization/initialValues/userDefinedScalars',
-                                            namespaces=nsmap):
-            scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
-                                      f' <scalarID>{scalarID}</scalarID>'
-                                      '  <value disabled="true">0</value>'
-                                      '</scalar>')
-            parent.append(scalar)
-
-        for parent in self._xmlTree.findall('regions/region/initialization/advanced/sections/section/userDefinedScalars',
-                                            namespaces=nsmap):
-            scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
-                                      f' <scalarID>{scalarID}</scalarID>'
-                                      '  <value disabled="true">0</value>'
-                                      '</scalar>')
-            parent.append(scalar)
-        #
-        # parent = self._getElement('numericalConditions/underRelaxationFactors/userDefinedScalars')
-        # scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
-        #                           f' <scalarID>{scalarID}</scalarID>'
-        #                           '  <value>0.7</value>'
-        #                           '  <finalValue>1</finalValue>'
-        #                           '</scalar>')
-        # parent.append(scalar)
-        #
-        # parent = self._getElement('numericalConditions/convergenceCriteria/userDefinedScalars')
-        # scalar = etree.fromstring('<scalar xmlns="http://www.baramcfd.org/baram">'
-        #                           f' <scalarID>{scalarID}</scalarID>'
-        #                           '  <absolute>0.001</absolute>'
-        #                           '  <relative>0.05</relative>'
-        #                           '</scalar>')
-        # parent.append(scalar)
-
-    def removeUserDefinedScalar(self, scalarID):
-        parent = self.getElement('models/userDefinedScalars')
-        parent.remove(parent.find(f'scalar[@scalarID="{scalarID}"]', namespaces=nsmap))
-
-        parent = self._xmlTree.find('general/atmosphericBoundaryLayer/userDefinedScalars', namespaces=nsmap)
-        parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
-
-        for parent in self._xmlTree.findall('regions/region/cellZones/cellZone/sourceTerms/userDefinedScalars',
-                                            namespaces=nsmap):
-            parent.remove(parent.find(f'scalarSource[scalarID="{scalarID}"]', namespaces=nsmap))
-
-        for parent in self._xmlTree.findall('regions/region/cellZones/cellZone/fixedValues/userDefinedScalars',
-                                            namespaces=nsmap):
-            parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
-
-        for parent in self._xmlTree.findall('regions/region/boundaryConditions/boundaryCondition/userDefinedScalars',
-                                            namespaces=nsmap):
-            parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
-
-        for parent in self._xmlTree.findall('regions/region/initialization/initialValues/userDefinedScalars',
-                                            namespaces=nsmap):
-            parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
-
-        for parent in self._xmlTree.findall('regions/region/initialization/advanced/sections/section/userDefinedScalars',
-                                            namespaces=nsmap):
-            parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
-        #
-        # parent = self._getElement('numericalConditions/underRelaxationFactors/userDefinedScalars')
-        # parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
-        #
-        # parent = self._getElement('numericalConditions/convergenceCriteria/userDefinedScalars')
-        # parent.remove(parent.find(f'scalar[scalarID="{scalarID}"]', namespaces=nsmap))
-
-    def clearUserDefinedScalars(self):
-        parent = self.getElement('models/userDefinedScalars')
-        for element in parent.findall('scalar', namespaces=nsmap):
-            if element.get('scalarID') != '0':
-                parent.remove(element)
-
-        parent = self._xmlTree.find('general/atmosphericBoundaryLayer/userDefinedScalars', namespaces=nsmap)
-        parent.clear()
-
     def addElementFromString(self, xpath, text):
         parent = self._xmlTree.find(xpath, namespaces=nsmap)
         if parent is None:
@@ -1095,7 +873,7 @@ class _CoreDB(object):
         return [e.text for e in self._xmlTree.findall(xpath, namespaces=nsmap)]
 
     def exists(self, xpath: str):
-        """Returns if specified configuration path is exists.
+        """Returns if specified configuration path exists.
 
         Args:
             xpath: XML xpath for the configuration item.
@@ -1110,7 +888,7 @@ class _CoreDB(object):
                 float(self.getValue(xpath + '/y')),
                 float(self.getValue(xpath + '/z'))]
 
-    def getBool(self, xpath:str):
+    def getBool(self, xpath: str):
         return self.getValue(xpath) == 'true'
 
     @property
@@ -1174,3 +952,7 @@ class _CoreDB(object):
 
     def getElements(self, xpath):
         return self._xmlTree.findall(xpath, namespaces=nsmap)
+
+    def increaseConfigCount(self):
+        self._xmlSchema.assertValid(self._xmlTree)
+        self._configCount += 1

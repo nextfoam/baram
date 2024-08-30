@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.models_db import TurbulenceModel, ModelsDB, TurbulenceModelsDB, RANSModel
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB, RANSModel
 from baramFlow.view.widgets.species_widget import SpeciesWidget
 from baramFlow.view.widgets.user_defined_scalars_widget import UserDefinedScalarsWidget
 from baramFlow.view.widgets.volume_fraction_widget import VolumeFractionWidget
@@ -29,7 +29,7 @@ class EmptyWidget:
 class ConditionalWidgetHelper:
     @classmethod
     def turbulenceWidget(cls, xpath, layout):
-        turbulenceModel = ModelsDB.getTurbulenceModel()
+        turbulenceModel = TurbulenceModelsDB.getModel()
 
         widget = None
         if turbulenceModel == TurbulenceModel.K_EPSILON:

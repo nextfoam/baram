@@ -4,6 +4,7 @@
 from pathlib import Path
 
 import qasync
+from PySide6.QtGui import QIntValidator
 from vtkmodules.vtkCommonDataModel import vtkPlane
 from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges, vtkPolyDataPlaneCutter, \
     vtkTriangleFilter
@@ -20,6 +21,7 @@ from widgets.progress_dialog import ProgressDialog
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType
 from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
+from baramMesh.view.main_window.main_window_ui import Ui_MainWindow
 from baramMesh.view.step_page import StepPage
 from .surface_refinement_dialog import SurfaceRefinementDialog
 from .volume_refinement_dialog import VolumeRefinementDialog
@@ -85,7 +87,7 @@ def _writeFeatureFile(path: Path, pd):
 class CastellationPage(StepPage):
     OUTPUT_TIME = 1
 
-    def __init__(self, ui):
+    def __init__(self, ui: Ui_MainWindow):
         super().__init__(ui, ui.castellationPage)
 
         self._ui = ui
@@ -103,6 +105,8 @@ class CastellationPage(StepPage):
         ui.surfaceRefinement.setHeaderWithWidth([0, 0, 0, 16, 16])
         ui.volumeRefinement.setHeaderWithWidth([0, 0, 16, 16])
 
+        ui.nCellsBetweenLevels.setValidator(QIntValidator(1, 1000000))
+
         self._connectSignalsSlots()
 
     def open(self):
@@ -113,7 +117,7 @@ class CastellationPage(StepPage):
             self._load()
 
         self._updateControlButtons()
-        self._updateMesh()
+        self.updateMesh()
 
     async def save(self):
         try:
@@ -212,6 +216,12 @@ class CastellationPage(StepPage):
         if self._cm:
             self._cm.cancel()
             return
+
+        nCellsBetweenLevels = int(self._ui.nCellsBetweenLevels.text())
+        if nCellsBetweenLevels < 1:
+            await AsyncMessageBox().warning(self._widget, self.tr('Invalid Parameter'), self.tr('"Number of Cells between Levels" should be bigger than or equal to 1'))
+            return
+
 
         buttonText = self._ui.refine.text()
         try:

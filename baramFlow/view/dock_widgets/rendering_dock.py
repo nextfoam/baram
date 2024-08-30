@@ -4,10 +4,13 @@
 import subprocess
 from enum import Enum, auto
 
-from PySide6.QtCore import Signal, QCoreApplication, QEvent
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import Signal, QCoreApplication, QEvent, Qt
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QWidget, QColorDialog
 from PySide6QtAds import CDockWidget
 from vtkmodules.vtkRenderingCore import vtkActor
+
+from widgets.rendering.ruler_widget import RulerWidget
 
 from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.openfoam.file_system import FileSystem
@@ -34,6 +37,11 @@ class RenderingView(QWidget):
         self._ui.setupUi(self)
 
         self._view = self._ui.view
+
+        self._dialog = None
+
+        self._updateBGButtonStyle(self._ui.bg1, QColor.fromRgbF(*self._view.background1()))
+        self._updateBGButtonStyle(self._ui.bg2, QColor.fromRgbF(*self._view.background2()))
 
         for mode in DisplayMode:
             self._ui.renderingMode.setItemData(mode.value, mode)
@@ -65,14 +73,25 @@ class RenderingView(QWidget):
     def _connectSignalsSlots(self):
         self._ui.axis.toggled.connect(self._view.setAxisVisible)
         self._ui.cubeAxis.toggled.connect(self._view.setCubeAxisVisible)
+        self._ui.ruler.toggled.connect(self._setRulerVisible)
         self._ui.fit.clicked.connect(self._view.fitCamera)
         self._ui.perspective.toggled.connect(self._view.setParallelProjection)
         self._ui.alignAxis.clicked.connect(self._view.alignCamera)
         self._ui.rotate.clicked.connect(self._view.rollCamera)
         self._ui.renderingMode.currentIndexChanged.connect(self._renderingModeChanged)
+        self._ui.bg1.clicked.connect(self._pickBackground1)
+        self._ui.bg2.clicked.connect(self._pickBackground2)
 
         self._view.actorPicked.connect(self.actorPicked)
         self._view.viewClosed.connect(self.viewClosed)
+
+    def _setRulerVisible(self, checked):
+        if checked:
+            self._ruler = RulerWidget(self._view.interactor(), self._view.renderer())
+            self._ruler.on()
+        else:
+            self._ruler.off()
+            self._ruler = None
 
     def _paraviewFileSelected(self, file):
         casePath = FileSystem.foamFilePath()
@@ -80,10 +99,40 @@ class RenderingView(QWidget):
         subprocess.Popen([f'{file}', f'{casePath}'])
 
     def _renderingModeChanged(self, index):
-        print(f'renderingModechanged to {DisplayMode(index)}')
-
-        # self._widget.Render()
         self.renderingModeChanged.emit(DisplayMode(index))
+
+    def _pickBackground1(self):
+        self._dialog = self._newBGColorDialog()
+        self._dialog.colorSelected.connect(self._setBackground1)
+        self._dialog.open()
+
+    def _pickBackground2(self):
+        self._dialog = self._newBGColorDialog()
+        self._dialog.colorSelected.connect(self._setBackground2)
+        self._dialog.open()
+
+    def _newBGColorDialog(self):
+        dialog = QColorDialog(self)
+        dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+        dialog.setCustomColor(0, QColor(56, 61, 84))
+        dialog.setCustomColor(1, QColor(209, 209, 209))
+
+        return dialog
+
+    def _setBackground1(self, color):
+        r, g, b, a = color.getRgbF()
+        self._view.setBackground1(r, g, b)
+        self._updateBGButtonStyle(self._ui.bg1, color)
+
+    def _setBackground2(self, color):
+        r, g, b, a = color.getRgbF()
+        self._view.setBackground2(r, g, b)
+        self._updateBGButtonStyle(self._ui.bg2, color)
+
+    def _updateBGButtonStyle(self, button, color):
+        r, g, b, a = color.getRgb()
+        button.setStyleSheet(
+            f'background: rgb({r}, {g}, {b}); border-style: solid; border-color:black; border-width: 1')
 
 
 class RenderingDock(CDockWidget):

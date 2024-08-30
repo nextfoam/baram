@@ -1,31 +1,29 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
-import platform
-
-from libbaram.app_path import APP_PATH
 from libbaram.math import calucateDirectionsByRotation
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
+from libbaram.openfoam.of_utils import openfoamLibraryPath
 
-import baramFlow.openfoam.solver
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, DirectionSpecificationMethod
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.material_db import MaterialDB, Phase, MaterialType
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceModelsDB
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import Phase, MaterialType
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.scalar_model_db import ScalarSpecificationMethod, UserDefinedScalarsDB
 from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType, Field
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.mesh.vtk_loader import isPointInDataSet
 from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.openfoam.solver import findSolver, getSolverCapability
+from baramFlow.openfoam.solver import findSolver, usePrgh
 from .fv_options import generateSourceTermField, generateFixedValueField
 
 
@@ -48,18 +46,6 @@ VOLUME_MONITOR_OPERATION = {
     VolumeReportType.COEFFICIENT_OF_VARIATION.value: 'CoV',
 }
 
-_basePath = APP_PATH.joinpath('solvers', 'openfoam', 'lib')
-if platform.system() == 'Windows':
-    _libExt = '.dll'
-elif platform.system() == 'Darwin':
-    _libExt = '.dylib'
-else:
-    _libExt = '.so'
-
-
-def _libPath(baseName: str) -> str:
-    return f'"{str(_basePath.joinpath(baseName).with_suffix(_libExt))}"'
-
 
 def _getAvailableFields():
     compresibleDensity = GeneralDB.isCompressibleDensity()
@@ -68,8 +54,7 @@ def _getAvailableFields():
     else:
         fields = ['U']
 
-    cap = getSolverCapability(findSolver())
-    if cap['usePrgh']:
+    if usePrgh():
         fields.append('p_rgh')
     else:
         fields.append('p')
@@ -93,11 +78,11 @@ def _getAvailableFields():
 
     db = coredb.CoreDB()
     if ModelsDB.isMultiphaseModelOn():
-        for mid, name, _, phase in db.getMaterials():
+        for _, name, _, phase in MaterialDB.getMaterials():
             if phase != Phase.SOLID.value:
                 fields.append(f'alpha.{name}')
     elif ModelsDB.isSpeciesModelOn():
-        for mixture, name in RegionDB.getMixturesInRegions():
+        for mixture, _ in RegionDB.getMixturesInRegions():
             for name in MaterialDB.getSpecies(mixture).values():
                 fields.append(name)
 
@@ -171,11 +156,6 @@ class ControlDict(DictionaryFile):
         self._db = CoreDBReader()
         xpath = RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions'
 
-        solvers = baramFlow.openfoam.solver.findSolvers()
-        if len(solvers) != 1:  # configuration not enough yet
-            solvers = ['solver']
-            # raise RuntimeError
-
         endTime = None
         deltaT = None
         adjustTimeStep = 'no'
@@ -199,7 +179,7 @@ class ControlDict(DictionaryFile):
             purgeWrite = self._db.getValue(xpath + '/maximumNumberOfDataFiles')
 
         self._data = {
-            'application': solvers[0],
+            'application': findSolver(),
             'startFrom': 'latestTime',
             'startTime': 0,
             'stopAt': 'endTime',
@@ -217,6 +197,7 @@ class ControlDict(DictionaryFile):
             'runTimeModifiable': 'yes',
             'adjustTimeStep': adjustTimeStep,
             'maxCo': self._db.getValue(xpath + '/maxCourantNumber'),
+            'maxDi': self._db.getValue(xpath + '/maxDiffusionNumber'),
             'functions': {}
         }
 
@@ -227,7 +208,7 @@ class ControlDict(DictionaryFile):
                 or any(
                     [self._db.getValue(BoundaryDB.getXPath(bcid) + '/wall/velocity/type') == WallVelocityCondition.ATMOSPHERIC_WALL.value
                      for bcid, _ in self._db.getBoundaryConditionsByType(BoundaryType.WALL.value)])):
-            self._data['libs'] = [_libPath('libatmosphericModels')]
+            self._data['libs'] = [openfoamLibraryPath('libatmosphericModels')]
 
         # calling order is important for these three function objects
         # scalar transport FO should be called first so that monitoring and residual can refer the scalar fields
@@ -260,7 +241,7 @@ class ControlDict(DictionaryFile):
 
             self._data['functions'][fieldName] = {
                 'type': 'scalarTransport',
-                'libs': [_libPath('libsolverFunctionObjects')],
+                'libs': [openfoamLibraryPath('libsolverFunctionObjects')],
                 'field': fieldName,
                 'schemesField': 'scalar',
                 'nCorr': 2,
@@ -275,18 +256,19 @@ class ControlDict(DictionaryFile):
             specificationMethod = self._db.getValue(xpath + '/diffusivity/specificationMethod')
             if specificationMethod == ScalarSpecificationMethod.CONSTANT.value:
                 self._data['functions'][fieldName]['D'] = self._db.getValue(xpath + '/diffusivity/constant')
-            elif specificationMethod == ScalarSpecificationMethod.TURBULENT_VISCOSITY.value:
-                self._data['functions'][fieldName]['nut'] = 'nut'
+            # elif specificationMethod == ScalarSpecificationMethod.TURBULENT_VISCOSITY.value:
+            #     self._data['functions'][fieldName]['nut'] = 'nut'
             elif specificationMethod == ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY.value:
                 self._data['functions'][fieldName]['alphaD'] = self._db.getValue(
                     xpath + '/diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient')
                 self._data['functions'][fieldName]['alphaDt'] = self._db.getValue(
                     xpath + '/diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient')
 
-            if region := self._db.getValue(xpath + '/region'):
-                self._data['functions'][fieldName]['region'] = region
+            if rname := self._db.getValue(xpath + '/region'):
+                self._data['functions'][fieldName]['region'] = rname
 
-            if mid := int(self._db.getValue(xpath + 'material')):
+            mid = self._db.getValue(xpath + 'material')
+            if mid != '0':
                 self._data['functions'][fieldName]['phase'] = MaterialDB.getName(mid)
 
     def _appendMonitoringFunctionObjects(self):
@@ -328,7 +310,7 @@ class ControlDict(DictionaryFile):
 
             self._data['functions'][residualsName] = {
                 'type': 'solverInfo',
-                'libs': [_libPath('libutilityFunctionObjects')],
+                'libs': [openfoamLibraryPath('libutilityFunctionObjects')],
                 'executeControl': 'timeStep',
                 'executeInterval': '1',
                 'writeResidualFields': 'no',
@@ -341,7 +323,7 @@ class ControlDict(DictionaryFile):
     def _generateForces(self, xpath, patches):
         data = {
             'type': 'forces',
-            'libs': [_libPath('libforces')],
+            'libs': [openfoamLibraryPath('libforces')],
 
             'patches': patches,
             'CofR': self._db.getVector(xpath + '/centerOfRotation'),
@@ -368,7 +350,7 @@ class ControlDict(DictionaryFile):
 
         data = {
             'type': 'forceCoeffs',
-            'libs': [_libPath('libforces')],
+            'libs': [openfoamLibraryPath('libforces')],
 
             'patches': patches,
             'rho': 'rho',
@@ -407,7 +389,7 @@ class ControlDict(DictionaryFile):
 
             data = {
                 'type': 'patchProbes',
-                'libs': [_libPath('libsampling')],
+                'libs': [openfoamLibraryPath('libsampling')],
 
                 'patches': [BoundaryDB.getBoundaryName(self._db.getValue(xpath + '/boundary'))],
                 'fields': [field],
@@ -434,7 +416,7 @@ class ControlDict(DictionaryFile):
 
             data = {
                 'type': 'probes',
-                'libs': [_libPath('libsampling')],
+                'libs': [openfoamLibraryPath('libsampling')],
 
                 'fields': [field],
                 'probeLocations': [self._db.getVector(xpath + '/coordinate')],
@@ -469,7 +451,7 @@ class ControlDict(DictionaryFile):
 
         data = {
             'type': 'surfaceFieldValue',
-            'libs': [_libPath('libfieldFunctionObjects')],
+            'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
 
             'regionType': 'patch',
             'name': BoundaryDB.getBoundaryName(surface),
@@ -505,7 +487,7 @@ class ControlDict(DictionaryFile):
 
         data = {
             'type': 'volFieldValue',
-            'libs': [_libPath('libfieldFunctionObjects')],
+            'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
 
             'fields': [field],
             'operation': VOLUME_MONITOR_OPERATION[self._db.getValue(xpath + '/reportType')],
@@ -518,7 +500,7 @@ class ControlDict(DictionaryFile):
         }
 
         name = CellZoneDB.getCellZoneName(volume)
-        if name == CellZoneDB.NAME_FOR_REGION:
+        if CellZoneDB.isRegion(name):
             data['regionType'] = 'all'
         else:
             data['regionType'] = 'cellZone'
@@ -553,7 +535,7 @@ class ControlDict(DictionaryFile):
         if 'mag1' not in self._data['functions']:
             self._data['functions']['mag1'] = {
                 'type':            'mag',
-                'libs':            [_libPath('libfieldFunctionObjects')],
+                'libs':            [openfoamLibraryPath('libfieldFunctionObjects')],
 
                 'field':           '"U"',
 
@@ -569,7 +551,7 @@ class ControlDict(DictionaryFile):
         if 'components1' not in self._data['functions']:
             self._data['functions']['components1'] = {
                 'type':            'components',
-                'libs':            [_libPath('libfieldFunctionObjects')],
+                'libs':            [openfoamLibraryPath('libfieldFunctionObjects')],
 
                 'field':           '"U"',
 

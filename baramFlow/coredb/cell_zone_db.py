@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from enum import Enum
@@ -6,7 +5,8 @@ from enum import Enum
 import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import IMaterialObserver
-from baramFlow.coredb.region_db import IRegionMaterialObserver, RegionDB, REGION_XPATH
+from baramFlow.coredb.region_db import IRegionMaterialObserver, RegionDB, REGION_XPATH, CELL_ZONE_NAME_FOR_REGION
+from baramFlow.coredb.scalar_model_db import IUserDefinedScalarObserver
 from baramFlow.view.widgets.multi_selector_dialog import SelectorItem
 
 
@@ -39,7 +39,6 @@ class TemporalProfileType(Enum):
 
 class CellZoneDB:
     CELL_ZONE_CONDITIONS_XPATH = './/cellZones'
-    NAME_FOR_REGION = 'All'
 
     _cellzones = None
 
@@ -67,7 +66,7 @@ class CellZoneDB:
 
     @classmethod
     def isRegion(cls, czname):
-        return czname == cls.NAME_FOR_REGION
+        return czname == CELL_ZONE_NAME_FOR_REGION
 
     @classmethod
     def getCellZoneSelectorItems(cls):
@@ -154,3 +153,33 @@ class RegionMaterialObserver(IRegionMaterialObserver):
 
             if species:
                 fixedValuesSpecies.append(xml.createElement(fixedValuesSpeciesXML))
+
+
+class ScalarObserver(IUserDefinedScalarObserver):
+    def scalarAdded(self, db, scalarID):
+        sourceTermXML = f'''<scalarSource disabled="true" xmlns="http://www.baramcfd.org/baram">
+                                <scalarID>{scalarID}</scalarID>
+                                <unit>valueForEntireCellZone</unit>
+                                <specification>constant</specification>
+                                <constant>0</constant>
+                                <piecewiseLinear><t>0</t><v>0</v></piecewiseLinear>
+                                <polynomial>0</polynomial>
+                             </scalarSource>'''
+        fixedValueXML = f'''<scalar xmlns="http://www.baramcfd.org/baram">
+                                <scalarID>{scalarID}</scalarID>
+                                <value disabled="true">0</value>
+                            </scalar>'''
+
+        for cellZone in db.getElements(CELL_ZONE_CONDITION_XPATH):
+            scalarSourceTerms = xml.getElement(cellZone, 'sourceTerms/userDefinedScalars')
+            scalarSourceTerms.append(xml.createElement(sourceTermXML))
+
+            scalarFixedValues = xml.getElement(cellZone, 'fixedValues/userDefinedScalars')
+            scalarFixedValues.append(xml.createElement(fixedValueXML))
+
+    def scalarRemoving(self, db, scalarID):
+        for cellZone in db.getElements(CELL_ZONE_CONDITION_XPATH):
+            xml.removeElement(xml.getElement(cellZone, 'sourceTerms/userDefinedScalars'),
+                              f'scalarSource[scalarID="{scalarID}"]')
+            xml.removeElement(xml.getElement(cellZone, 'fixedValues/userDefinedScalars'),
+                              f'scalar[scalarID="{scalarID}"]')

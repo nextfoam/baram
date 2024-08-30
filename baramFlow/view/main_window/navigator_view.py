@@ -13,6 +13,7 @@ from baramFlow.case_manager import CaseManager
 class MenuItem(Enum):
     MENU_SETUP = QTreeWidgetItem.UserType
     MENU_SOLUTION = auto()
+    MENU_RESULTS = auto()
 
     # Setup
     MENU_SETUP_GENERAL = auto()
@@ -21,12 +22,16 @@ class MenuItem(Enum):
     MENU_SETUP_CELL_ZONE_CONDITIONS = auto()
     MENU_SETUP_BOUNDARY_CONDITIONS = auto()
     MENU_SETUP_REFERENCE_VALUES = auto()
+
     # Solution
     MENU_SOLUTION_NUMERICAL_CONDITIONS = auto()
     MENU_SOLUTION_MONITORS = auto()
     MENU_SOLUTION_INITIALIZATION = auto()
     MENU_SOLUTION_RUN_CONDITIONS = auto()
     MENU_SOLUTION_RUN = auto()
+
+    # Results
+    MENU_RESULTS_REPORTS = auto()
 
 
 class NavigatorView(QObject):
@@ -40,6 +45,8 @@ class NavigatorView(QObject):
         self._menuTexts = {
             MenuItem.MENU_SETUP.value: lambda: self.tr('Setup'),
             MenuItem.MENU_SOLUTION.value: lambda: self.tr('Solution'),
+            MenuItem.MENU_RESULTS.value: lambda: self.tr('Results'),
+
             # Setup
             MenuItem.MENU_SETUP_GENERAL.value: lambda: self.tr('General'),
             MenuItem.MENU_SETUP_MODELS.value: lambda: self.tr('Models'),
@@ -47,12 +54,16 @@ class NavigatorView(QObject):
             MenuItem.MENU_SETUP_CELL_ZONE_CONDITIONS.value: lambda: self.tr('Cell Zone Conditions'),
             MenuItem.MENU_SETUP_BOUNDARY_CONDITIONS.value: lambda: self.tr('Boundary Conditions'),
             MenuItem.MENU_SETUP_REFERENCE_VALUES.value: lambda: self.tr('Reference Values'),
+
             # Solution
             MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value: lambda: self.tr('Numerical Conditions'),
             MenuItem.MENU_SOLUTION_MONITORS.value: lambda: self.tr('Monitors'),
             MenuItem.MENU_SOLUTION_INITIALIZATION.value: lambda: self.tr('Initialization'),
             MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value: lambda: self.tr('Run Conditions'),
             MenuItem.MENU_SOLUTION_RUN.value: lambda: self.tr('Run'),
+
+            # Results
+            MenuItem.MENU_RESULTS_REPORTS.value: lambda: self.tr('Reports'),
         }
 
         self._menu = {}
@@ -71,6 +82,9 @@ class NavigatorView(QObject):
         self._addMenu(MenuItem.MENU_SOLUTION_INITIALIZATION, solutionMenu)
         self._addMenu(MenuItem.MENU_SOLUTION_RUN_CONDITIONS, solutionMenu)
         self._addMenu(MenuItem.MENU_SOLUTION_RUN, solutionMenu)
+
+        resultsMenu = self._addTopMenu(MenuItem.MENU_RESULTS)
+        self._addMenu(MenuItem.MENU_RESULTS_REPORTS, resultsMenu)
 
         self._connectSignalsSlots()
 
@@ -101,6 +115,8 @@ class NavigatorView(QObject):
         self._menu[MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value].setDisabled(CaseManager().isBatchRunning())
         self._menu[MenuItem.MENU_SOLUTION_MONITORS.value].setDisabled(CaseManager().isBatchRunning())
         self._menu[MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value].setDisabled(CaseManager().isBatchRunning())
+
+        self._menu[MenuItem.MENU_RESULTS_REPORTS.value].setDisabled(solverActivated)
 
     def translate(self):
         for key, menu in self._menu.items():

@@ -82,6 +82,9 @@
              <height>32</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string> Set the axis direction based on the origin</string>
+           </property>
            <property name="icon">
             <iconset resource="../../../resource.qrc">
              <normaloff>:/graphicsIcons/noun-axis-405079</normaloff>:/graphicsIcons/noun-axis-405079</iconset>
@@ -98,9 +101,6 @@
            <property name="checked">
             <bool>false</bool>
            </property>
-           <property name="toolTip">
-            <string> Set the axis direction based on the origin</string>
-           </property>
           </widget>
          </item>
          <item>
@@ -110,6 +110,9 @@
              <width>32</width>
              <height>32</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string> Display x,y and z axis coordinates</string>
            </property>
            <property name="icon">
             <iconset>
@@ -124,8 +127,31 @@
            <property name="checkable">
             <bool>true</bool>
            </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="FlatPushButton" name="ruler">
+           <property name="maximumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
            <property name="toolTip">
             <string> Display x,y and z axis coordinates</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../../../resource.qrc">
+             <normaloff>:/graphicsIcons/distance.png</normaloff>:/graphicsIcons/distance.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -136,6 +162,9 @@
              <width>32</width>
              <height>32</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string> Toggle between Persepctive and Orthogonal views</string>
            </property>
            <property name="icon">
             <iconset resource="../../../resource.qrc">
@@ -150,9 +179,6 @@
            <property name="checkable">
             <bool>true</bool>
            </property>
-           <property name="toolTip">
-            <string> Toggle between Persepctive and Orthogonal views</string>
-           </property>
           </widget>
          </item>
          <item>
@@ -162,6 +188,9 @@
              <width>32</width>
              <height>32</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string> Show the entire model in the windows to fit the view</string>
            </property>
            <property name="icon">
             <iconset resource="../../../resource.qrc">
@@ -173,9 +202,6 @@
              <height>24</height>
             </size>
            </property>
-           <property name="toolTip">
-            <string> Show the entire model in the windows to fit the view</string>
-           </property>
           </widget>
          </item>
          <item>
@@ -185,6 +211,9 @@
              <width>32</width>
              <height>32</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string> View the model from cross-section of the closest-axis, aligning with current state</string>
            </property>
            <property name="icon">
             <iconset resource="../../../resource.qrc">
@@ -196,9 +225,6 @@
              <height>24</height>
             </size>
            </property>
-           <property name="toolTip">
-            <string> View the model from cross-section of the closest-axis, aligning with current state</string>
-           </property>
           </widget>
          </item>
          <item>
@@ -209,6 +235,9 @@
              <height>32</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string> Rotate the model by 90 degrees</string>
+           </property>
            <property name="icon">
             <iconset resource="../../../resource.qrc">
              <normaloff>:/icons/reload.svg</normaloff>:/icons/reload.svg</iconset>
@@ -218,9 +247,6 @@
              <width>24</width>
              <height>24</height>
             </size>
-           </property>
-           <property name="toolTip">
-            <string> Rotate the model by 90 degrees</string>
            </property>
           </widget>
          </item>
@@ -268,6 +294,72 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QFrame" name="frame_2">
+           <property name="frameShape">
+            <enum>QFrame::Box</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <property name="spacing">
+             <number>2</number>
+            </property>
+            <property name="leftMargin">
+             <number>2</number>
+            </property>
+            <property name="topMargin">
+             <number>1</number>
+            </property>
+            <property name="rightMargin">
+             <number>1</number>
+            </property>
+            <property name="bottomMargin">
+             <number>1</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="font">
+               <font>
+                <pointsize>12</pointsize>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>BG</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="bg2">
+              <property name="maximumSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="bg1">
+              <property name="maximumSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
          </item>
         </layout>
        </widget>

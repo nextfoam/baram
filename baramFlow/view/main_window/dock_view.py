@@ -3,7 +3,7 @@
 
 from PySide6.QtCore import QMargins
 from PySide6.QtWidgets import QVBoxLayout, QWidget
-from PySide6QtAds import CDockManager, CDockWidget, DockWidgetArea
+from PySide6QtAds import CDockManager, DockWidgetArea
 
 from baramFlow.view.dock_widgets.chart_dock import ChartDock
 from baramFlow.view.dock_widgets.console_dock import ConsoleDock
@@ -28,10 +28,10 @@ class DockView(QWidget):
         layout.setContentsMargins(QMargins(0, 0, 0, 0))
         layout.addWidget(self._dockManager)
 
-        dockArea = self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._consoleDock)
-        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._renderingDock, dockArea)
-        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._chartDock, dockArea)
-        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._monitorDock, dockArea)
+        self._dockArea = self._addDock(self._consoleDock)
+        self._addDock(self._renderingDock)
+        self._addDock(self._chartDock)
+        self._addDock(self._monitorDock)
 
     def consoleView(self):
         return self._consoleDock.widget()
@@ -50,15 +50,18 @@ class DockView(QWidget):
 
     def close(self):
         self._dockManager.deleteLater()
+
+        self._consoleDock.widget().close()
         self._renderingDock.widget().close()
+        self._chartDock.widget().close()
+        self._monitorDock.widget().close()
+
         super().close()
 
-    def _addDock(self, name, widget):
-        dock = CDockWidget(name)
-        dock.setWidget(widget)
-        self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, dock, self._dockArea)
+    def _addDock(self, dock):
+        area = self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, dock, self._dockArea)
         self._menu.addAction(dock.toggleViewAction())
 
-        return dock
+        return area
 
 

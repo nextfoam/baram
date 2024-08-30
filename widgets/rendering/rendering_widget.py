@@ -51,6 +51,8 @@ class RenderingWidget(QWidget):
         self._originActor: Optional[vtkAxesActor] = None
         self._cubeAxesActor: Optional[vtkCubeAxesActor] = None
 
+        self._actorPicker = vtkPropPicker()
+
         self._pressPos = None
 
         self._style = vtkInteractorStyleTrackballCamera()
@@ -91,6 +93,9 @@ class RenderingWidget(QWidget):
     def interactor(self):
         return self._widget
 
+    def renderer(self):
+        return self._renderer
+
     def addActor(self, actor: vtkProp):
         self._renderer.AddActor(actor)
 
@@ -101,7 +106,16 @@ class RenderingWidget(QWidget):
         self._widget.Render()
 
     def fitCamera(self):
+        cubeAxesOn = False
+        if self._cubeAxesActor is not None:
+            self._hideCubeAxes()
+            cubeAxesOn = True
+
         self._renderer.ResetCamera()
+
+        if cubeAxesOn:
+            self._showCubeAxes()
+
         self._widget.Render()
 
     def close(self):
@@ -111,9 +125,8 @@ class RenderingWidget(QWidget):
         return super().close()
 
     def pickActor(self, x, y):
-        picker = vtkPropPicker()
-        picker.PickProp(x, y, self._renderer)
-        actor = picker.GetActor()
+        self._actorPicker.PickProp(x, y, self._renderer)
+        actor = self._actorPicker.GetActor()
 
         return actor
 
@@ -145,9 +158,6 @@ class RenderingWidget(QWidget):
 
         self._turnCamera(orientation, up)
         self._widget.Render()
-
-    def _fitCameraClicked(self):
-        self.fitCamera()
 
     def rollCamera(self):
         self._renderer.GetActiveCamera().Roll(-90)
@@ -186,6 +196,18 @@ class RenderingWidget(QWidget):
             self._originActor.SetVisibility(True)
 
         return bounds
+
+    def setBackground1(self, r, g, b):
+        self._renderer.SetBackground(r, g, b)
+
+    def setBackground2(self, r, g, b):
+        self._renderer.SetBackground2(r, g, b)
+
+    def background1(self):
+        return self._renderer.GetBackground()
+
+    def background2(self):
+        return self._renderer.GetBackground2()
 
     def _showCubeAxes(self):
         if self._cubeAxesActor is not None:

@@ -11,14 +11,18 @@ from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCo
 class Alpha(BoundaryCondition):
     DIMENSIONS = '[0 0 0 0 0 0 0]'
 
-    def __init__(self, region, time, processorNo, mid):
+    def __init__(self, region, time, processorNo, mid: str):
         super().__init__(region, time, processorNo, 'alpha.' + MaterialDB.getName(mid))
 
         self._mid = mid
 
-        xpath = RegionDB.getXPath(region.rname)
-        self._initialValue = self._db.getValue(
-            f'{xpath}/initialization/initialValues/volumeFractions/volumeFraction[material="{mid}"]/fraction')
+        if mid != region.mid:  # This material is not primary material
+            self._initialValue = self._getInitialFraction(mid)
+        else:
+            sumFractions = 0.0
+            for s in region.secondaryMaterials:
+                sumFractions += float(self._getInitialFraction(s))
+            self._initialValue = 1.0 - sumFractions
 
     def build0(self):
         self._data = None
@@ -37,7 +41,15 @@ class Alpha(BoundaryCondition):
 
         for bcid, name, type_ in self._region.boundaries:
             xpath = BoundaryDB.getXPath(bcid)
-            volumeFraction = self._db.getValue(f'{xpath}/volumeFractions/volumeFraction[material="{self._mid}"]/fraction')
+
+            if self._mid != self._region.mid:  # This material is not primary material
+                volumeFraction = self._getBoundaryFraction(bcid, self._mid)
+            else:
+                sumFractions = 0.0
+                for s in self._region.secondaryMaterials:
+                    fraction = self._getBoundaryFraction(bcid, s)
+                    sumFractions += float(fraction)
+                volumeFraction = 1.0 - sumFractions
 
             field[name] = {
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(volumeFraction)),
@@ -58,8 +70,8 @@ class Alpha(BoundaryCondition):
                 BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructZeroGradient()),
                 BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                 BoundaryType.INTERFACE.value:           (lambda: self._constructInterfaceAlpha(xpath)),
-                BoundaryType.POROUS_JUMP.value:         (lambda: self._constructZeroGradient()),
-                BoundaryType.FAN.value:                 (lambda: self._constructZeroGradient()),
+                BoundaryType.POROUS_JUMP.value:         (lambda: self._constructCyclic()),
+                BoundaryType.FAN.value:                 (lambda: self._constructCyclic()),
                 BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                 BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
                 BoundaryType.WEDGE.value:               (lambda: self._constructWedge()),
@@ -111,3 +123,16 @@ class Alpha(BoundaryCondition):
             return None
         else:
             return self._constructCyclicAMI()
+
+    def _getInitialFraction(self, mid: str) -> str:
+        xpath = RegionDB.getXPath(self._region.rname)
+        fraction = self._db.getValue(
+            f'{xpath}/initialization/initialValues/volumeFractions/volumeFraction[material="{mid}"]/fraction')
+
+        return fraction
+
+    def _getBoundaryFraction(self, bcid: int, mid: str) -> str:
+        xpath = BoundaryDB.getXPath(bcid)
+        fraction = self._db.getValue(f'{xpath}/volumeFractions/volumeFraction[material="{mid}"]/fraction')
+
+        return fraction

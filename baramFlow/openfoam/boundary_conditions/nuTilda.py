@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, SpalartAllmarasSpecification, InterfaceMode
-from baramFlow.coredb.models_db import TurbulenceModel, TurbulenceModelsDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
 
@@ -66,10 +66,7 @@ class NuTilda(BoundaryCondition):
             return self._constructFixedValue(
                 self._db.getValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity'))
         elif spec == SpalartAllmarasSpecification.TURBULENT_VISCOSITY_RATIO.value:
-            # ToDo: Setting according to boundary field spec
-            return {
-                'type': ''
-            }
+            return self._constructViscosityRatioInletOutletNuTilda(xpath)
 
     def _constructInletOutletByModel(self, xpath):
         spec = self._db.getValue(xpath + '/turbulence/spalartAllmaras/specification')
@@ -77,10 +74,7 @@ class NuTilda(BoundaryCondition):
             return self._constructInletOutlet(
                 self._db.getValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity'))
         elif spec == SpalartAllmarasSpecification.TURBULENT_VISCOSITY_RATIO.value:
-            # ToDo: Setting according to boundary field spec
-            return {
-                'type': ''
-            }
+            return self._constructViscosityRatioInletOutletNuTilda(xpath)
 
     def _constructPressureOutletNuTilda(self, xpath):
         if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
@@ -101,8 +95,12 @@ class NuTilda(BoundaryCondition):
             return self._constructFreeStream(
                 float(self._db.getValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity')))
         elif spec == SpalartAllmarasSpecification.TURBULENT_VISCOSITY_RATIO.value:
-            # ToDo: Setting according to boundary field spec
-            return {
-                'type': ''
-            }
+            return self._constructViscosityRatioInletOutletNuTilda(xpath)
+
+    def _constructViscosityRatioInletOutletNuTilda(self, xpath):
+        return {
+            'type': 'viscosityRatioInletOutletNuTilda',
+            'viscosityRatio': self._db.getValue(xpath + '/turbulence/spalartAllmaras/turbulentViscosityRatio'),
+            'value': ('uniform', '1e-4'),
+        }
 

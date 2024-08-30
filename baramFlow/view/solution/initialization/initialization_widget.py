@@ -15,8 +15,9 @@ from widgets.flat_push_button import FlatPushButton
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel, TurbulenceModelsDB, RANSModel
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB, RANSModel
 from baramFlow.mesh.vtk_loader import hexActor, cylinderActor, sphereActor
 from baramFlow.view.widgets.species_widget import SpeciesWidget
 from baramFlow.view.widgets.user_defined_scalars_widget import UserDefinedScalarsWidget
@@ -176,7 +177,7 @@ class InitializationWidget(QWidget):
         self._ui.turbulentIntensity.setText(db.getValue(self._initialValuesPath + '/turbulentIntensity'))
         self._ui.turbulentViscosityRatio.setText(db.getValue(self._initialValuesPath + '/turbulentViscosity'))
 
-        turbulenceModel = ModelsDB.getTurbulenceModel()
+        turbulenceModel = TurbulenceModelsDB.getModel()
         self._ui.temperature.setEnabled(ModelsDB.isEnergyModelOn())
         self._ui.turbulence.setDisabled(turbulenceModel in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR))
         self._ui.turbulentIntensity.setDisabled(
@@ -195,6 +196,14 @@ class InitializationWidget(QWidget):
                 self._rows[name].displayOff()
             else:
                 self._addSectionRow(name)
+
+    def validate(self) -> (bool, str):
+        valid, msg = self._volumeFractionWidget.validate()
+        if not valid:
+            return valid, msg
+
+        # ToDo: Add validation for other parameters
+        return True, ''
 
     async def appendToWriter(self, writer):
         writer.append(self._initialValuesPath + '/velocity/x', self._ui.xVelocity.text(),

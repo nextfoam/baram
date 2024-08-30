@@ -29,7 +29,6 @@
             <referenceHeight>10</referenceHeight>
             <surfaceRoughnessLength>0.01</surfaceRoughnessLength>
             <minimumZCoordinate>0.0</minimumZCoordinate>
-            <userDefinedScalars/>
         </atmosphericBoundaryLayer>
     </general>
 
@@ -231,6 +230,7 @@
             <timeStepSize>0.01</timeStepSize>
             <maxCourantNumber>1</maxCourantNumber>
             <VoFMaxCourantNumber>1</VoFMaxCourantNumber>
+            <maxDiffusionNumber>10</maxDiffusionNumber>
             <endTime>10</endTime>
             <reportIntervalSteps>100</reportIntervalSteps>
             <reportIntervalSeconds>0.1</reportIntervalSeconds>

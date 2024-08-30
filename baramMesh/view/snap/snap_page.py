@@ -35,7 +35,7 @@ class SnapPage(StepPage):
         if not self._loaded:
             self._load()
 
-        self._updateMesh()
+        self.updateMesh()
 
     async def save(self):
         try:

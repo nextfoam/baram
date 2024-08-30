@@ -3,6 +3,7 @@
 
 from PySide6.QtCore import QObject
 
+from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 
 
@@ -24,7 +25,7 @@ class SpecieModelDB:
 
     @classmethod
     def turnOff(cls, db):
-        mixtures = [mid for mid, _, _, _ in db.getMaterials('mixture')]
+        mixtures = [mid for mid, _, _, _ in MaterialDB.getMaterials('mixture')]
         if mixtures:
             for observer in cls._observers:
                 observer.turningOff(db, mixtures)

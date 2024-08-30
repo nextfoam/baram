@@ -8,9 +8,11 @@ from PySide6.QtWidgets import QDialog
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_writer import CoreDBWriter
-from baramFlow.coredb.material_db import MaterialDB, Specification, Phase
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
+from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import Specification, Phase, DensitySpecification, ViscositySpecification
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from .mixture_dialog_ui import Ui_MixtureDialog
 
 
@@ -38,29 +40,33 @@ class MixtureDialog(QDialog):
 
         energyModelOn = ModelsDB.isEnergyModelOn()
         layout = self._ui.properties.layout()
+        densitySpec = DensitySpecification.CONSTANT
+        transportSpec = Specification.CONSTANT
         if energyModelOn:
-            densitySpec = db.getValue(self._xpath + '/density/specification')
-            transportSpec = db.getValue(self._xpath + '/viscosity/specification')
+            densitySpec = DensitySpecification(db.getValue(self._xpath + '/density/specification'))
+            transportSpec = ViscositySpecification(db.getValue(self._xpath + '/viscosity/specification'))
             self._ui.specificHeatSpec.setCurrentText(
-                MaterialDB.dbSpecificationToText(db.getValue(self._xpath + '/specificHeat/specification')))
+                MaterialDB.specificationToText(Specification(
+                    db.getValue(self._xpath + '/specificHeat/specification'))))
         else:
-            densitySpec = Specification.CONSTANT.value
-            transportSpec = Specification.CONSTANT.value
+            if TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR and self._phase == Phase.LIQUID:
+                transportSpec = ViscositySpecification(db.getValue(self._xpath + '/viscosity/specification'))
+            else:
+                self._ui.transportSpec.setEnabled(False)
             self._ui.densitySpec.setEnabled(False)
-            self._ui.transportSpec.setEnabled(False)
             layout.setRowVisible(self._ui.specificHeatSpec, False)
 
-        if energyModelOn or ModelsDB.getTurbulenceModel() != TurbulenceModel.INVISCID:
-            self._ui.transportSpec.setCurrentText(MaterialDB.dbSpecificationToText(transportSpec))
+        if energyModelOn or TurbulenceModelsDB.getModel() != TurbulenceModel.INVISCID:
+            self._ui.transportSpec.setCurrentText(MaterialDB.specificationToText(transportSpec))
         else:
             layout.setRowVisible(self._ui.transportSpec, False)
 
-        self._ui.densitySpec.setCurrentText(MaterialDB.dbSpecificationToText(densitySpec))
+        self._ui.densitySpec.setCurrentText(MaterialDB.specificationToText(densitySpec))
         self._ui.massDiffusivity.setText(db.getValue(self._xpath + '/mixture/massDiffusivity'))
 
-        primarySpecie = int(db.getValue(self._xpath + '/mixture/primarySpecie'))
+        primarySpecie = db.getValue(self._xpath + '/mixture/primarySpecie')
         for mid, name in MaterialDB.getSpecies(self._mid).items():
-            self._ui.primarySpecie.addItem(name, str(mid))
+            self._ui.primarySpecie.addItem(name, mid)
             if mid == primarySpecie:
                 self._ui.primarySpecie.setCurrentText(name)
 
@@ -72,46 +78,62 @@ class MixtureDialog(QDialog):
                                                 self.tr(f'Material name "{name}" is already exists.'))
             return
 
-        writer = CoreDBWriter()
-        energyModelOn = ModelsDB.isEnergyModelOn()
+        try:
+            with coredb.CoreDB() as db:
+                # Update Mixture
+                db.setValue(self._xpath + '/name', name, self.tr("Name"))
 
-        writer.append(self._xpath + '/name', name, self.tr("Name"))
+                energyModelOn = ModelsDB.isEnergyModelOn()
 
-        writer.append(self._xpath + '/density/specification', self._ui.densitySpec.currentData().value, None)
+                specifications = {}
+                transportSpec = None
+                specifications['/density/specification'] = self._ui.densitySpec.currentData()
 
-        if ModelsDB.isEnergyModelOn():
-            writer.append(self._xpath + '/specificHeat/specification',
-                          self._ui.specificHeatSpec.currentData().value, None)
+                if energyModelOn:
+                    specifications['/specificHeat/specification'] = self._ui.specificHeatSpec.currentData()
 
-        if energyModelOn or ModelsDB.getTurbulenceModel() != TurbulenceModel.INVISCID:
-            writer.append(self._xpath + '/viscosity/specification', self._ui.transportSpec.currentData().value, None)
+                if energyModelOn or TurbulenceModelsDB.getModel() != TurbulenceModel.INVISCID:
+                    transportSpec = self._ui.transportSpec.currentData()
+                    specifications['/viscosity/specification'] = transportSpec
 
-        writer.append(self._xpath + '/mixture/massDiffusivity',
-                      self._ui.massDiffusivity.text(), self.tr("Mass Diffusivity"))
-        writer.append(self._xpath + '/mixture/primarySpecie',
-                      self._ui.primarySpecie.currentData(), self.tr("Mass Diffusivity"))
+                for subXPath, spec in specifications.items():
+                    db.setValue(self._xpath + subXPath, spec.value)
 
-        errorCount = writer.write()
-        if errorCount > 0:
-            await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            self.accept()
+                db.setValue(self._xpath + '/mixture/massDiffusivity',
+                            self._ui.massDiffusivity.text(), self.tr("Mass Diffusivity"))
+                db.setValue(self._xpath + '/mixture/primarySpecie', self._ui.primarySpecie.currentData())
+
+                # Update Speicies
+                if transportSpec and transportSpec != ViscositySpecification.SUTHERLAND:
+                    specifications['/thermalConductivity/specification'] = (
+                        Specification.CONSTANT if MaterialDB.isNonNewtonianSpecification(transportSpec)
+                        else transportSpec)
+
+                for mid in MaterialDB.getSpecies(self._mid):
+                    xpath = MaterialDB.getXPath(mid)
+                    for subXPath, spec in specifications.items():
+                        db.setValue(xpath + subXPath, spec.value)
+
+                self.accept()
+        except ValueException as ve:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
+            return False
 
     def _setupSpecifications(self):
         if self._phase == Phase.GAS:
             self._setupSpecificationCombo(
                 self._ui.densitySpec, [
-                    Specification.CONSTANT,
-                    Specification.POLYNOMIAL,
-                    Specification.PERFECT_GAS,
-                    Specification.INCOMPRESSIBLE_PERFECT_GAS,
-                    # Specification.REAL_GAS_PENG_ROBINSON
+                    DensitySpecification.CONSTANT,
+                    DensitySpecification.POLYNOMIAL,
+                    DensitySpecification.PERFECT_GAS,
+                    DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS,
+                    # DensitySpecification.REAL_GAS_PENG_ROBINSON
                 ]
             )
         else:
             self._setupSpecificationCombo(
                 self._ui.densitySpec, [
-                    Specification.CONSTANT,
+                    DensitySpecification.CONSTANT,
                 ]
             )
 
@@ -122,21 +144,26 @@ class MixtureDialog(QDialog):
             ]
         )
 
-        if self._phase == Phase.GAS:
-            self._setupSpecificationCombo(
-                self._ui.transportSpec, [
-                    Specification.CONSTANT,
-                    Specification.SUTHERLAND,
-                    Specification.POLYNOMIAL
-                ]
-            )
-        elif self._phase == Phase.LIQUID:
-            self._setupSpecificationCombo(
-                self._ui.transportSpec, [
-                    Specification.CONSTANT,
-                    Specification.POLYNOMIAL
-                ]
-            )
+        if self._phase != Phase.SOLID:
+            if self._phase == Phase.LIQUID and TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR:
+                self._setupSpecificationCombo(
+                    self._ui.transportSpec, [
+                        ViscositySpecification.CONSTANT,
+                        ViscositySpecification.POLYNOMIAL,
+                        ViscositySpecification.CROSS_POWER_LAW,
+                        ViscositySpecification.HERSCHEL_BULKLEY,
+                        ViscositySpecification.BIRD_CARREAU,
+                        ViscositySpecification.POWER_LAW
+                    ]
+                )
+            else:
+                self._setupSpecificationCombo(
+                    self._ui.transportSpec, [
+                        ViscositySpecification.CONSTANT,
+                        ViscositySpecification.SUTHERLAND,
+                        ViscositySpecification.POLYNOMIAL,
+                    ]
+                )
 
     def _setupSpecificationCombo(self, combo, types):
         for t in types:

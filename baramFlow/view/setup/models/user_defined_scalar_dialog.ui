@@ -91,7 +91,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="diffusivity"/>
+             <widget class="FloatEdit" name="diffusivity"/>
             </item>
            </layout>
           </widget>
@@ -110,7 +110,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="laminarViscosityCoefficient"/>
+             <widget class="FloatEdit" name="laminarViscosityCoefficient"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_5">
@@ -120,7 +120,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="turbulentViscosityCoefficient"/>
+             <widget class="FloatEdit" name="turbulentViscosityCoefficient"/>
             </item>
            </layout>
           </widget>
@@ -174,6 +174,11 @@
    <class>EnumComboBox</class>
    <extends>QComboBox</extends>
    <header>widgets.enum_combo_box</header>
+  </customwidget>
+  <customwidget>
+   <class>FloatEdit</class>
+   <extends>QLineEdit</extends>
+   <header>widgets.float_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -6,7 +6,7 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.material_db import IMaterialObserver, MaterialDB
 from baramFlow.coredb.region_db import IRegionMaterialObserver, RegionDB, REGION_XPATH
-
+from baramFlow.coredb.scalar_model_db import IUserDefinedScalarObserver
 
 INITIALIZATION_XPATH = REGION_XPATH + '/initialization'
 
@@ -33,7 +33,16 @@ def getInitializationElement(rname):
 
 
 class MaterialObserver(IMaterialObserver):
-    def specieAdded(self, db, mid, mixtureID):
+    def materialRemoving(self, db, mid: str):
+        for volumeFraction in db.getElements(
+                f'{INITIALIZATION_XPATH}/initialValues/volumeFractions/volumeFraction[material="{mid}"]'):
+            volumeFraction.getparent().remove(volumeFraction)
+
+        for volumeFraction in db.getElements(
+                f'{INITIALIZATION_XPATH}/advanced/sections/section/volumeFractions/volumeFraction[material="{mid}"]'):
+            volumeFraction.getparent().remove(volumeFraction)
+
+    def specieAdded(self, db, mid: str, mixtureID):
         for mixture in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/species/mixture[mid="{mixtureID}"]'):
             mixture.append(xml.createElement('<specie xmlns="http://www.baramcfd.org/baram">'
                                              f' <mid>{mid}</mid><value>0</value>'
@@ -45,16 +54,7 @@ class MaterialObserver(IMaterialObserver):
                                              f' <mid>{mid}</mid><value>0</value>'
                                              '</specie>'))
 
-    def materialRemoving(self, db, mid: int):
-        for volumeFraction in db.getElements(
-                f'{INITIALIZATION_XPATH}/initialValues/volumeFractions/volumeFraction[material="{mid}"]'):
-            volumeFraction.getparent().remove(volumeFraction)
-
-        for volumeFraction in db.getElements(
-                f'{INITIALIZATION_XPATH}/advanced/sections/section/volumeFractions/volumeFraction[material="{mid}"]'):
-            volumeFraction.getparent().remove(volumeFraction)
-
-    def specieRemoving(self, db, mid, primarySpecie):
+    def specieRemoving(self, db, mid: str, primarySpecie: str):
         for specie in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/species/mixture/specie[mid="{mid}"]'):
             self._removeSpecieInComposition(primarySpecie, specie)
 
@@ -107,9 +107,30 @@ class RegionMaterialObserver(IRegionMaterialObserver):
             if species:
                 speciesElement.append(xml.createElement(sectionSpeicesXML))
 
-    def _addVolumeFractions(self, parent, mids):
+    def _addVolumeFractions(self, parent, mids: list[str]):
         for mid in mids:
             if xml.getElement(parent, f'volumeFraction[material="{mid}"]') is None:
                 parent.append(xml.createElement('<volumeFraction xmlns="http://www.baramcfd.org/baram">'
                                                 f'  <material>{mid}</material><fraction>0</fraction>'
                                                 '</volumeFraction>'))
+
+
+class ScalarObserver(IUserDefinedScalarObserver):
+    def scalarAdded(self, db, scalarID):
+        scalarXML = f'''<scalar xmlns="http://www.baramcfd.org/baram">
+                            <scalarID>{scalarID}</scalarID>
+                            <value disabled="true">0</value>
+                        </scalar>'''
+
+        for scalars in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/userDefinedScalars'):
+            scalars.append(xml.createElement(scalarXML))
+
+        for scalars in db.getElements(f'{INITIALIZATION_XPATH}/advanced/sections/section/userDefinedScalars'):
+            scalars.append(xml.createElement(scalarXML))
+
+    def scalarRemoving(self, db, scalarID):
+        for scalars in db.getElements(f'{INITIALIZATION_XPATH}/initialValues/userDefinedScalars'):
+            xml.removeElement(scalars, f'scalar[scalarID="{scalarID}"]')
+
+        for scalars in db.getElements(f'{INITIALIZATION_XPATH}/advanced/sections/section/userDefinedScalars'):
+            xml.removeElement(scalars, f'scalar[scalarID="{scalarID}"]')

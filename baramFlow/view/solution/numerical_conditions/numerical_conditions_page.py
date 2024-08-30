@@ -5,17 +5,20 @@ import qasync
 
 from PySide6.QtWidgets import QMessageBox
 
+import baramFlow.openfoam.solver
+
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.numerical_db import PressureVelocityCouplingScheme, Formulation, FluxType
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.numerical_db import ImplicitDiscretizationScheme, UpwindDiscretizationScheme, InterpolationScheme
 from baramFlow.coredb.numerical_db import NumericalDB
-from baramFlow.coredb.models_db import ModelsDB, TurbulenceModel
-from baramFlow.openfoam.solver import findSolver, getSolverCapability
+from baramFlow.coredb.numerical_db import PressureVelocityCouplingScheme, Formulation, FluxType
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.view.widgets.content_page import ContentPage
-from .numerical_conditions_page_ui import Ui_NumericalConditionsPage
+
 from .advanced_dialog import AdvancedDialog
+from .numerical_conditions_page_ui import Ui_NumericalConditionsPage
 
 
 class NumericalConditionsPage(ContentPage):
@@ -72,12 +75,11 @@ class NumericalConditionsPage(ContentPage):
         db = coredb.CoreDB()
         timeIsTransient = GeneralDB.isTimeTransient()
         energyOn = ModelsDB.isEnergyModelOn()
-        turbulenceOn = ModelsDB.getTurbulenceModel() not in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR)
+        turbulenceOn = TurbulenceModelsDB.getModel()not in (TurbulenceModel.INVISCID, TurbulenceModel.LAMINAR)
         multiphaseOn = ModelsDB.isMultiphaseModelOn()
         compressibleDensity = GeneralDB.isCompressibleDensity()
 
-        solverCapability = getSolverCapability(findSolver())
-        allRoundSolver: bool = solverCapability['timeTransient'] and solverCapability['timeSteady']  # this solver is able to solve both steady and transient
+        allRoundSolver = baramFlow.openfoam.solver.allRoundSolver()  # this solver is able to solve both steady and transient
 
         self._ui.useMomentumPredictor.setVisible(timeIsTransient or allRoundSolver)
 

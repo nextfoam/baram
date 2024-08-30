@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import QGroupBox, QFormLayout, QLineEdit
 
 from baramFlow.coredb import coredb
@@ -10,10 +11,17 @@ from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 
 
+MIN_FRACTION = 0.0
+MAX_FRACTION = 1.0
+DECIMAL_PRECISION = 1000  # Default value for QDoubleValidator
+
+
 class FractionRow:
+
     def __init__(self, layout, mid):
         self._label = MaterialDB.getName(mid)
         self._value = QLineEdit('0')
+        self._value.setValidator(QDoubleValidator(MIN_FRACTION, MAX_FRACTION, DECIMAL_PRECISION))
         layout.addRow(self._label, self._value)
 
     @property
@@ -61,6 +69,22 @@ class VolumeFractionWidget(QGroupBox):
                     value = '0'
 
                 self._fractions[mid].value = value
+
+    def validate(self) -> (bool, str):
+        if self._on:
+            sumFraction = 0.0  # Sum of secondary material fractions
+            for mid in self._fractions:
+                value = float(self._fractions[mid].value)
+                if value < MIN_FRACTION:
+                    return False, self.tr('Fraction should have positive value')
+                if value > MAX_FRACTION:
+                    return False, self.tr(f'Fraction should be less than or equal to 1.0')
+                sumFraction += value
+
+            if sumFraction > MAX_FRACTION:
+                return False, self.tr('Sum of fractions should be less than or equal to 1.0')
+
+        return True, ''
 
     async def appendToWriter(self, writer: CoreDBWriter, xpath):
         if self._on:

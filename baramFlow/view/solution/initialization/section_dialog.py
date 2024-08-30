@@ -181,6 +181,16 @@ class SectionDialog(ResizableDialog):
 
     @qasync.asyncSlot()
     async def _accept(self) -> None:
+        #
+        # Validation check for parameters
+        #
+        if self._volumeFractionWidget.on() and self._volumeFractionWidget.isChecked():
+            valid, msg = self._volumeFractionWidget.validate()
+            if not valid:
+                await AsyncMessageBox().warning(self, self.tr('Warning'), msg)
+                return
+        # ToDo: Add validation for other parameters
+
         writer = CoreDBWriter()
 
         if self._pageType == PageType.CREATE:

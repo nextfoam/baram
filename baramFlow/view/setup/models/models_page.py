@@ -4,10 +4,11 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QListWidgetItem
 
-from baramFlow.coredb.models_db import Models, ModelsDB, MultiphaseModel, TurbulenceModel
+from baramFlow.coredb.models_db import Models, ModelsDB, MultiphaseModel
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.general_db import GeneralDB, SolverType
 from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.view.widgets.content_page import ContentPage
 from .energy_dialog import EnergyDialog
 from .models_page_ui import Ui_ModelsPage
@@ -90,19 +91,21 @@ class ModelsPage(ContentPage):
 
         self._addModelItem(Models.TURBULENCE,
                            self.tr('Turbulence'),
-                           lambda: turbulenceModelText[ModelsDB.getTurbulenceModel()], TurbulenceModelDialog)
+                           lambda: turbulenceModelText[TurbulenceModelsDB.getModel()], TurbulenceModelDialog)
 
         self._addModelItem(Models.ENERGY,
                            self.tr('Energy'),
                            lambda: self.tr('Include') if ModelsDB.isEnergyModelOn() else self.tr('Not Include'),
-                           EnergyDialog if RegionDB.getNumberOfRegions() == 1 else None)
+                           EnergyDialog if not RegionDB.isMultiRegion() else None)
 
         self._addModelItem(Models.MULTIPHASE,
                            self.tr('Multiphase'),
                            lambda: multiphaseModelText[ModelsDB.getMultiphaseModel()])
+
         self._addModelItem(Models.SOLVER_TYPE,
                            self.tr('Solver Type'),
                            lambda: solverTypeText[GeneralDB.getSolverType()])
+
         self._addModelItem(Models.SPECIES,
                            self.tr('Species'),
                            lambda: self.tr('Include') if ModelsDB.isSpeciesModelOn() else self.tr('Not Include'),

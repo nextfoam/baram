@@ -13,7 +13,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataCla
 from baramFlow.coredb.boundary_db import DirectionSpecificationMethod
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import UNIVERSAL_GAS_CONSTANT, MaterialDB
-from baramFlow.coredb.models_db import TurbulenceModel
+from baramFlow.coredb.turbulence_model_db import TurbulenceModel
 from baramFlow.openfoam.constant.boundary_data import BoundaryData
 from baramFlow.openfoam.file_system import FileSystem
 
@@ -234,7 +234,7 @@ class BoundaryCondition(DictionaryFile):
             'value': self._initialValueByTime()
         }
 
-    def _constructNEXTViscosityRatioInletOutletTDR(self, viscosityRatio):
+    def _constructViscosityRatioInletOutletTDR(self, viscosityRatio):
         return {
             'type': 'viscosityRatioInletOutletTDR',
             'viscosityRatio': ('uniform', viscosityRatio),

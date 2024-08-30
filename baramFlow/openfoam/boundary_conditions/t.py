@@ -49,7 +49,7 @@ class T(BoundaryCondition):
                     BoundaryType.FAR_FIELD_RIEMANN.value:   (lambda: self._constructFarfieldRiemann(xpath + '/farFieldRiemann', self._db.getValue(xpath + '/farFieldRiemann/staticTemperature'))),
                     BoundaryType.SUBSONIC_INLET.value:      (lambda: self._constructSubsonicInlet(xpath + '/subsonicInlet')),
                     BoundaryType.SUBSONIC_OUTFLOW.value:    (lambda: self._constructSubsonicOutflow(xpath + '/subsonicOutflow')),
-                    BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(constant)),
+                    BoundaryType.SUPERSONIC_INFLOW.value:   (lambda: self._constructFixedValue(float(self._db.getValue(xpath + '/supersonicInflow/staticTemperature')))),
                     BoundaryType.SUPERSONIC_OUTFLOW.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.WALL.value:                (lambda: self._constructWallT(xpath, constant)),
                     BoundaryType.THERMO_COUPLED_WALL.value: (lambda: self._constructCompressibleturbulentTemperatureRadCoupledMixed()),
@@ -143,7 +143,10 @@ class T(BoundaryCondition):
             elif spec == WallTemperature.CONVECTION.value:
                 h = self._db.getValue(xpath + '/wall/temperature/heatTransferCoefficient')
                 ta = self._db.getValue(xpath + '/wall/temperature/freeStreamTemperature')
-                return {
+                thicknessLayers = self._db.getValue(xpath + '/wall/temperature/wallLayers/thicknessLayers').split()
+                kappaLayers = self._db.getValue(xpath + '/wall/temperature/wallLayers/thermalConductivityLayers').split()
+
+                data = {
                     'type': 'externalWallHeatFluxTemperature',
                     'mode': 'coefficient',
                     'h': ('uniform', h),
@@ -151,4 +154,10 @@ class T(BoundaryCondition):
                     'kappaMethod': 'fluidThermo' if self._region.isFluid() else 'solidThermo',
                     'value': self._initialValueByTime()
                 }
+
+                if thicknessLayers:
+                    data['thicknessLayers'] = thicknessLayers
+                    data['kappaLayers'] = kappaLayers
+
+                return data
 

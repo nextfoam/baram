@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import re
 import shutil
 from typing import Optional
@@ -137,7 +136,7 @@ class FileSystem:
         self._casePath = path
         self._constantPath = self._casePath / Directory.CONSTANT_DIRECTORY_NAME
         self._triSurfacePath = self._constantPath / Directory.TRI_SURFACE_DIRECTORY_NAME
-        
+
     def isPolyMesh(self, path: Path):
         if not path.is_dir():
             return False

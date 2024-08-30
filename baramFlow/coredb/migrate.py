@@ -585,13 +585,6 @@ def _version_6(root: etree.Element):
 
             e = etree.Element(f'{{{_ns}}}species')
             p.insert(11, e)
-    #
-    # if (p := root.find('numericalConditions', namespaces=_nsmap)) is not None:
-    #     if p.find('species', namespaces=_nsmap) is None:
-    #         logger.debug(f'    Adding "species" to {p}')
-    #
-    #         e = etree.Element(f'{{{_ns}}}species')
-    #         p.insert(10, e)
 
     if (p := root.find('numericalConditions/discretizationSchemes', namespaces=_nsmap)) is not None:
         if p.find('species', namespaces=_nsmap) is None:
@@ -632,6 +625,131 @@ def _version_6(root: etree.Element):
             p.append(e)
 
 
+def _version_7(root: etree.Element):
+    logger.debug('  Upgrading to v8')
+
+    if (p := root.find('general/atmosphericBoundaryLayer', namespaces=_nsmap)) is not None:
+        if (e := p.find('userDefinedScalars', namespaces=_nsmap)) is not None:
+            logger.debug(f'    Removing "userDefinedScalars" from {p}')
+            p.remove(e)
+
+    for p in root.findall('materials/material/viscosity', namespaces=_nsmap):
+        if p.find('../phase', namespaces=_nsmap).text == 'liquid':
+            if p.find('cross', namespaces=_nsmap) is None:
+                logger.debug(f'    Adding "cross" to {p}')
+
+                e = etree.fromstring(
+                    '<cross xmlns="http://www.baramcfd.org/baram">'
+                    '   <zeroShearViscosity>1e-01</zeroShearViscosity>'
+                    '   <infiniteShearViscosity>1.5e-05</infiniteShearViscosity>'
+                    '   <naturalTime>1</naturalTime>'
+                    '   <powerLawIndex>0.5</powerLawIndex>'
+                    '</cross>')
+                p.append(e)
+
+            if p.find('herschelBulkley', namespaces=_nsmap) is None:
+                logger.debug(f'    Adding "herschelBulkley" to {p}')
+
+                e = etree.fromstring(
+                    '<herschelBulkley xmlns="http://www.baramcfd.org/baram">'
+                    '   <zeroShearViscosity>1.5e-04</zeroShearViscosity>'
+                    '   <yieldStressThreshold>1.75e-05</yieldStressThreshold>'
+                    '   <consistencyIndex>8.9721e-3</consistencyIndex>'
+                    '   <powerLawIndex>0.8601</powerLawIndex>'
+                    '</herschelBulkley>')
+                p.append(e)
+
+            if p.find('carreau', namespaces=_nsmap) is None:
+                logger.debug(f'    Adding "carreau" to {p}')
+
+                e = etree.fromstring(
+                    '<carreau xmlns="http://www.baramcfd.org/baram">'
+                    '   <zeroShearViscosity>1e-01</zeroShearViscosity>'
+                    '   <infiniteShearViscosity>0</infiniteShearViscosity>'
+                    '   <relaxationTime>0.0084033613</relaxationTime>'
+                    '   <powerLawIndex>0.353</powerLawIndex>'
+                    '   <linearityDeviation>1.433</linearityDeviation>'
+                    '</carreau>')
+                p.append(e)
+
+            if p.find('nonNewtonianPowerLaw', namespaces=_nsmap) is None:
+                logger.debug(f'    Adding "nonNewtonianPowerLaw" to {p}')
+
+                e = etree.fromstring(
+                    '<nonNewtonianPowerLaw xmlns="http://www.baramcfd.org/baram">'
+                    '   <maximumViscosity>1e-03</maximumViscosity>'
+                    '   <minimumViscosity>1e-06</minimumViscosity>'
+                    '   <consistencyIndex>8.42</consistencyIndex>'
+                    '   <powerLawIndex>0.61</powerLawIndex>'
+                    '</nonNewtonianPowerLaw>')
+                p.append(e)
+
+    for p in root.findall('models/userDefinedScalars/scalar', namespaces=_nsmap):
+        e = p.find('diffusivity/specificationMethod', namespaces=_nsmap)
+        if e.text == 'turbulentViscosity':
+            logger.debug(f'    Updating "diffusivity" of {p}')
+
+            e.text = 'laminarAndTurbulentViscosity'
+            p.find('diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient', namespaces=_nsmap).text = '0'
+            p.find('diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient', namespaces=_nsmap).text = '1'
+
+    for p in root.findall('regions/region/phaseInteractions', namespaces=_nsmap):
+        if p.find('massTransfers', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "massTransfers" to {p}')
+            e = etree.fromstring('<massTransfers xmlns="http://www.baramcfd.org/baram">'
+                                 '  <massTransfer>'
+                                 '      <from>0</from>'
+                                 '      <to>0</to>'
+                                 '      <mechanism>cavitation</mechanism>'
+                                 '      <cavitation>'
+                                 '          <model>none</model>'
+                                 '          <vaporizationPressure>2300</vaporizationPressure>'
+                                 '          <schnerrSauer>'
+                                 '              <evaporationCoefficient>1</evaporationCoefficient>'
+                                 '              <condensationCoefficient>1</condensationCoefficient>'
+                                 '              <bubbleDiameter>2.0e-06</bubbleDiameter>'
+                                 '              <bubbleNumberDensity>1.6e+13</bubbleNumberDensity>'
+                                 '          </schnerrSauer>'
+                                 '          <kunz>'
+                                 '              <evaporationCoefficient>1000</evaporationCoefficient>'
+                                 '              <condensationCoefficient>1000</condensationCoefficient>'
+                                 '              <meanFlowTimeScale>0.005</meanFlowTimeScale>'
+                                 '              <freeStreamVelocity>20.0</freeStreamVelocity>'
+                                 '          </kunz>'
+                                 '          <merkle>'
+                                 '              <evaporationCoefficient>1e-3</evaporationCoefficient>'
+                                 '              <condensationCoefficient>80</condensationCoefficient>'
+                                 '              <meanFlowTimeScale>0.005</meanFlowTimeScale>'
+                                 '              <freeStreamVelocity>20.0</freeStreamVelocity>'
+                                 '          </merkle>'
+                                 '          <zwartGerberBelamri>'
+                                 '              <evaporationCoefficient>1</evaporationCoefficient>'
+                                 '              <condensationCoefficient>1</condensationCoefficient>'
+                                 '              <bubbleDiameter>2e-6</bubbleDiameter>'
+                                 '              <nucleationSiteVolumeFraction>1e-3</nucleationSiteVolumeFraction>'
+                                 '          </zwartGerberBelamri>'
+                                 '      </cavitation>'
+                                 '  </massTransfer>'
+                                 '</massTransfers>')
+            p.append(e)
+
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition/wall/temperature', namespaces=_nsmap):
+        if p.find('wallLayers', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "wallLayers" to {p}')
+            e = etree.fromstring('<wallLayers disabled="true" xmlns="http://www.baramcfd.org/baram">'
+                                 '  <thicknessLayers>0.001</thicknessLayers>'
+                                 '  <thermalConductivityLayers>10</thermalConductivityLayers>'
+                                 '</wallLayers>')
+            p.append(e)
+
+    for p in root.findall('runCalculation/runConditions', namespaces=_nsmap):
+        if p.find('maxDiffusionNumber', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "maxDiffusionNumber" to {p}')
+            e = etree.Element(f'{{{_ns}}}maxDiffusionNumber')
+            e.text = '10'
+            p.insert(5, e)
+
+
 _fTable = [
     None,
     _version_1,
@@ -639,7 +757,8 @@ _fTable = [
     _version_3,
     _version_4,
     _version_5,
-    _version_6
+    _version_6,
+    _version_7
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))

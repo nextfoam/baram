@@ -8,7 +8,8 @@ from widgets.async_message_box import AsyncMessageBox
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb_writer import CoreDBWriter
-from baramFlow.coredb.material_db import MaterialDB, Phase, Specification
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.material_schema import Phase, Specification
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
@@ -61,6 +62,15 @@ class PressureOutletDialog(ResizableDialog):
 
     @qasync.asyncSlot()
     async def _accept(self):
+        #
+        # Validation check for parameters
+        #
+        valid, msg = self._volumeFractionWidget.validate()
+        if not valid:
+            await AsyncMessageBox().warning(self, self.tr('Warning'), msg)
+            return
+        # ToDo: Add validation for other parameters
+
         xpath = self._xpath + self.RELATIVE_XPATH
 
         writer = CoreDBWriter()

@@ -39,6 +39,7 @@ from baramFlow.openfoam.boundary_conditions.t import T
 from baramFlow.openfoam.boundary_conditions.u import U
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.polymesh.boundary import Boundary
+from baramFlow.openfoam.solver import findSolver
 from baramFlow.openfoam.system.control_dict import ControlDict
 from baramFlow.openfoam.system.fv_options import FvOptions
 from baramFlow.openfoam.system.fv_schemes import FvSchemes
@@ -153,6 +154,9 @@ class CaseGenerator(QObject):
         if ModelsDB.isMultiphaseModelOn():
             for mid in region.secondaryMaterials:
                 self._files.append(Alpha(region, time, processorNo, mid))
+            if findSolver() == 'multiphaseInterFoam':  # multiphaseInterFoam requires field file for all the phases
+                self._files.append(Alpha(region, time, processorNo, region.mid))
+
         elif ModelsDB.isSpeciesModelOn():
             for mid, name in MaterialDB.getSpecies(region.mid).items():
                 self._files.append(Specie(region, time, processorNo, mid, name))
