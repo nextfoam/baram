@@ -9,6 +9,29 @@ from PySide6.QtCore import QObject
 from baramFlow.openfoam.file_system import FileSystem
 
 
+def readPostFile(path) -> pd.DataFrame:
+    with path.open(mode='r') as f:
+        header = None
+        line = f.readline()
+        while line[0] == '#':
+            p = f.tell()
+            header = line
+            line = f.readline()
+
+        names = header[1:].split()  # read header
+        if names[0] != 'Time':
+            raise RuntimeError
+
+        if len(names) == 1:
+            names.append(path.stem)
+
+        f.seek(p)
+        df = pd.read_csv(f, sep=r'\s+', names=names, skiprows=0)
+        df.set_index('Time', inplace=True)
+
+        return df
+
+
 class PostFileReader(QObject):
     def __init__(self, name, rname, fileName, extension=None):
         super().__init__()

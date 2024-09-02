@@ -7,7 +7,12 @@ import logging
 from baramFlow.view.widgets.content_page import ContentPage
 
 from .force_report_dialog import ForceReportDialog
+from .point_report_dialog import PointReportDialog
+from .surface_report_dialog import SurfaceReportDialog
+from .volume_report_dialog import VolumeReportDialog
+
 from .reports_page_ui import Ui_ReportsPage
+
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +47,15 @@ class ReportsPage(ContentPage):
 
     @qasync.asyncSlot()
     async def _pointReportClicked(self):
-        pass
+        self._dialog = PointReportDialog(self)
+        self._dialog.open()
 
     @qasync.asyncSlot()
     async def _surfaceReportClicked(self):
-        pass
+        self._dialog = SurfaceReportDialog(self)
+        self._dialog.open()
 
     @qasync.asyncSlot()
     async def _volumeReportClicked(self):
-        pass
+        self._dialog = VolumeReportDialog(self)
+        self._dialog.open()

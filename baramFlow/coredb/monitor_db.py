@@ -11,6 +11,8 @@ from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.material_db import MaterialDB, IMaterialObserver
 from baramFlow.coredb.material_schema import Phase, MaterialType
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
+from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
+from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
 from baramFlow.openfoam.solver import usePrgh
 
 
@@ -28,25 +30,6 @@ class Field(Enum):
     DENSITY = 'density'
     MATERIAL = 'material'
     SCALAR = 'scalar'
-
-
-class SurfaceReportType(Enum):
-    AREA_WEIGHTED_AVERAGE = 'areaWeightedAverage'
-    MASS_WEIGHTED_AVERAGE = 'massWeightedAverage'
-    INTEGRAL = 'Integral'
-    MASS_FLOW_RATE = 'massFlowRate'
-    VOLUME_FLOW_RATE = 'volumeFlowRate'
-    MINIMUM = 'minimum'
-    MAXIMUM = 'maximum'
-    COEFFICIENT_OF_VARIATION = 'cov'
-
-
-class VolumeReportType(Enum):
-    VOLUME_AVERAGE = 'volumeAverage'
-    VOLUME_INTEGRAL = 'volumeIntegral'
-    MINIMUM = 'minimum'
-    MAXIMUM = 'maximum'
-    COEFFICIENT_OF_VARIATION = 'cov'
 
 
 class DirectionSpecificationMethod(Enum):

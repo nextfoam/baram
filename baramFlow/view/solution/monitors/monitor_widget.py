@@ -5,7 +5,9 @@
 from PySide6.QtWidgets import QWidget
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, SurfaceReportType, VolumeReportType, Field
+from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
+from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
+from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from .force_dialog import ForceDialog
@@ -29,6 +31,9 @@ class MonitorWidget(QWidget):
     @property
     def name(self):
         return self._name
+
+    def load(self):
+        raise NotImplementedError
 
 
 class ForceMonitorWidget(MonitorWidget):

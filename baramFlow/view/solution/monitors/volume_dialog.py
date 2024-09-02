@@ -11,7 +11,8 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
-from baramFlow.coredb.monitor_db import MonitorDB, VolumeReportType, FieldHelper, Field
+from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
+from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
 from .volume_dialog_ui import Ui_VolumeDialog
 
 

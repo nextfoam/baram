@@ -5,7 +5,6 @@ import os
 from pathlib import Path
 import uuid
 
-import pandas as pd
 import qasync
 
 from PySide6.QtGui import QDoubleValidator
@@ -18,52 +17,36 @@ from baramFlow.coredb.monitor_db import DirectionSpecificationMethod
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.function_objects import FoDict
+from baramFlow.openfoam.function_objects.force_coeffs import foForceCoeffsReport
+from baramFlow.openfoam.function_objects.forces import foForcesReport
+from baramFlow.openfoam.post_processing.post_file_reader import readPostFile
 from baramFlow.openfoam.solver import findSolver
 from baramFlow.view.widgets.region_objects_selector import BoundariesSelector
+
 from libbaram import utils
-
 from libbaram.math import calucateDirectionsByRotation
-from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
-from libbaram.openfoam.of_utils import openfoamLibraryPath
 from libbaram.run import runParallelUtility
-
 from widgets.async_message_box import AsyncMessageBox
 
 from .force_report_dialog_ui import Ui_ForceReportDialog
 
 
-class ForceDict(DictionaryFile):
-    def __init__(self, objectName: str):
-        super().__init__(FileSystem.caseRoot(), self.systemLocation(), objectName)
-
-        self._writeControl = 'runTime'
-        self._writeInterval = None
-
-    def build(self, data):
-        self._data = data
-        return self
-
-
 class ForceReportDialog(QDialog):
-    def __init__(self, parent, name=None):
-        """Constructs force monitor setup dialog.
-
-        Args:
-            name: Force Monitor name. If None, create a new monitor.
-        """
+    def __init__(self, parent):
         super().__init__(parent)
+
         self._ui = Ui_ForceReportDialog()
         self._ui.setupUi(self)
 
-        self._name = name
         self._rname = None
         self._boundaries = None
 
         self._db = coredb.CoreDB()
 
         self._ui.specificationMethod.addEnumItems({
-            DirectionSpecificationMethod.DIRECT:    self.tr('Direct'),
-            DirectionSpecificationMethod.AOA_AOS:   self.tr('Angles of Attack, Sideslip')
+            DirectionSpecificationMethod.DIRECT: self.tr('Direct'),
+            DirectionSpecificationMethod.AOA_AOS: self.tr('Angles of Attack, Sideslip')
         })
 
         self._setupValidators()
@@ -131,6 +114,24 @@ class ForceReportDialog(QDialog):
         self._ui.drag.setText('Calculating...')
         self._ui.lift.setText('Calculating...')
         self._ui.moment.setText('Calculating...')
+        self._ui.total_force_x.setText('Calculating...')
+        self._ui.total_force_y.setText('Calculating...')
+        self._ui.total_force_z.setText('Calculating...')
+        self._ui.pressure_force_x.setText('Calculating...')
+        self._ui.pressure_force_y.setText('Calculating...')
+        self._ui.pressure_force_z.setText('Calculating...')
+        self._ui.viscous_force_x.setText('Calculating...')
+        self._ui.viscous_force_y.setText('Calculating...')
+        self._ui.viscous_force_z.setText('Calculating...')
+        self._ui.total_moment_x.setText('Calculating...')
+        self._ui.total_moment_y.setText('Calculating...')
+        self._ui.total_moment_z.setText('Calculating...')
+        self._ui.pressure_moment_x.setText('Calculating...')
+        self._ui.pressure_moment_y.setText('Calculating...')
+        self._ui.pressure_moment_z.setText('Calculating...')
+        self._ui.viscous_moment_x.setText('Calculating...')
+        self._ui.viscous_moment_y.setText('Calculating...')
+        self._ui.viscous_moment_z.setText('Calculating...')
 
         seed = str(uuid.uuid4())
 
@@ -144,13 +145,15 @@ class ForceReportDialog(QDialog):
             }
         }
 
-        foDict = ForceDict(f'delete_me_{seed}').build(data)
+        foDict = FoDict(f'delete_me_{seed}').build(data)
         foDict.write()
 
         caseRoot = FileSystem.caseRoot()
         solver = findSolver()
-        dictRelativePath = Path(os.path.relpath(foDict.fullPath(), caseRoot)).as_posix()  # "as_posix()": OpenFOAM cannot handle double backward slash separators in parallel processing
-        proc = await runParallelUtility(solver, '-postProcess', '-latestTime', '-dict', str(dictRelativePath), parallel=parallel.getEnvironment(), cwd=caseRoot)
+        dictRelativePath = Path(os.path.relpath(foDict.fullPath(),
+                                                caseRoot)).as_posix()  # "as_posix()": OpenFOAM cannot handle double backward slash separators in parallel processing
+        proc = await runParallelUtility(solver, '-postProcess', '-latestTime', '-dict', str(dictRelativePath),
+                                        parallel=parallel.getEnvironment(), cwd=caseRoot)
 
         rc = await proc.wait()
 
@@ -167,21 +170,68 @@ class ForceReportDialog(QDialog):
         forcePath = FileSystem.postProcessingPath(self._rname) / forceFoName
         coeffsPath = FileSystem.postProcessingPath(self._rname) / coeffsFoName
 
-        files: list[Path] = list(coeffsPath.glob('**/coefficient.dat'))
+        forceFiles: list[Path] = list(forcePath.glob('**/force.dat'))
+        coeffsFiles: list[Path] = list(coeffsPath.glob('**/coefficient.dat'))
+        momentFiles: list[Path] = list(forcePath.glob('**/moment.dat'))
 
-        if len(files) < 1:
+        if len(coeffsFiles) < 1 or len(forceFiles) < 1:
             await AsyncMessageBox().warning(self, self.tr('Warning'), self.tr('Computing failed'))
+
             self._ui.drag.setText('0')
             self._ui.lift.setText('0')
             self._ui.moment.setText('0')
+            self._ui.total_force_x.setText('0')
+            self._ui.total_force_y.setText('0')
+            self._ui.total_force_z.setText('0')
+            self._ui.pressure_force_x.setText('0')
+            self._ui.pressure_force_y.setText('0')
+            self._ui.pressure_force_z.setText('0')
+            self._ui.viscous_force_x.setText('0')
+            self._ui.viscous_force_y.setText('0')
+            self._ui.viscous_force_z.setText('0')
+            self._ui.total_moment_x.setText('0')
+            self._ui.total_moment_y.setText('0')
+            self._ui.total_moment_z.setText('0')
+            self._ui.pressure_moment_x.setText('0')
+            self._ui.pressure_moment_y.setText('0')
+            self._ui.pressure_moment_z.setText('0')
+            self._ui.viscous_moment_x.setText('0')
+            self._ui.viscous_moment_y.setText('0')
+            self._ui.viscous_moment_z.setText('0')
+
             self._ui.compute.setEnabled(True)
+
             return
 
-        df = self._readDataFrame(files[0])
+        df = readPostFile(coeffsFiles[0])
 
-        self._ui.drag.setText(str(df['Cd'][0]))
-        self._ui.lift.setText(str(df['Cl'][0]))
-        self._ui.moment.setText(str(df['CmPitch'][0]))
+        self._ui.drag.setText(str(df['Cd'].iloc[0]))
+        self._ui.lift.setText(str(df['Cl'].iloc[0]))
+        self._ui.moment.setText(str(df['CmPitch'].iloc[0]))
+
+        df = readPostFile(forceFiles[0])
+
+        self._ui.total_force_x.setText(str(df['total_x'].iloc[0]))
+        self._ui.total_force_y.setText(str(df['total_y'].iloc[0]))
+        self._ui.total_force_z.setText(str(df['total_z'].iloc[0]))
+        self._ui.pressure_force_x.setText(str(df['pressure_x'].iloc[0]))
+        self._ui.pressure_force_y.setText(str(df['pressure_y'].iloc[0]))
+        self._ui.pressure_force_z.setText(str(df['pressure_z'].iloc[0]))
+        self._ui.viscous_force_x.setText(str(df['viscous_x'].iloc[0]))
+        self._ui.viscous_force_y.setText(str(df['viscous_y'].iloc[0]))
+        self._ui.viscous_force_z.setText(str(df['viscous_z'].iloc[0]))
+
+        df = readPostFile(momentFiles[0])
+
+        self._ui.total_moment_x.setText(str(df['total_x'].iloc[0]))
+        self._ui.total_moment_y.setText(str(df['total_y'].iloc[0]))
+        self._ui.total_moment_z.setText(str(df['total_z'].iloc[0]))
+        self._ui.pressure_moment_x.setText(str(df['pressure_x'].iloc[0]))
+        self._ui.pressure_moment_y.setText(str(df['pressure_y'].iloc[0]))
+        self._ui.pressure_moment_z.setText(str(df['pressure_z'].iloc[0]))
+        self._ui.viscous_moment_x.setText(str(df['viscous_x'].iloc[0]))
+        self._ui.viscous_moment_y.setText(str(df['viscous_y'].iloc[0]))
+        self._ui.viscous_moment_z.setText(str(df['viscous_z'].iloc[0]))
 
         utils.rmtree(forcePath)
         utils.rmtree(coeffsPath)
@@ -194,87 +244,46 @@ class ForceReportDialog(QDialog):
         for bcid in self._boundaries:
             boundaries.append(BoundaryDB.getBoundaryText(bcid))
 
-        data = {
-            'type': 'forces',
-            'libs': [openfoamLibraryPath('libforces')],
+        cofr = [float(self._ui.centerOfRotationX.text()),
+                float(self._ui.centerOfRotationY.text()),
+                float(self._ui.centerOfRotationZ.text())]
 
-            'patches': boundaries,
-            'CofR': [float(self._ui.centerOfRotationX.text()), float(self._ui.centerOfRotationY.text()), float(self._ui.centerOfRotationZ.text())],
-
-            'executeControl': 'onEnd',
-            'writeControl': 'onEnd',
-            'updateHeader': 'false',
-            'log': 'false',
-        }
-
-        if self._rname:
-            data['region'] = self._rname
+        data = foForcesReport(boundaries, cofr, self._rname)
 
         return data
 
     def _generateForceCoeffs(self):
-        drag = [float(self._ui.dragDirectionX.text()), float(self._ui.dragDirectionY.text()), float(self._ui.dragDirectionZ.text())]
-        lift = [float(self._ui.liftDirectionX.text()), float(self._ui.liftDirectionY.text()), float(self._ui.liftDirectionZ.text())]
+        boundaries = []
+        for bcid in self._boundaries:
+            boundaries.append(BoundaryDB.getBoundaryName(bcid))
+
+        aRef = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/area'))
+        lRef = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/length'))
+        magUInf = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/velocity'))
+        rhoInf = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/density'))
+        dragDir = [float(self._ui.dragDirectionX.text()),
+                   float(self._ui.dragDirectionY.text()),
+                   float(self._ui.dragDirectionZ.text())]
+        liftDir = [float(self._ui.liftDirectionX.text()),
+                   float(self._ui.liftDirectionY.text()),
+                   float(self._ui.liftDirectionZ.text())]
+        cofr = [float(self._ui.centerOfRotationX.text()),
+                float(self._ui.centerOfRotationY.text()),
+                float(self._ui.centerOfRotationZ.text())]
+
         if self._ui.specificationMethod.currentData() == DirectionSpecificationMethod.AOA_AOS.value:
-            drag, lift = calucateDirectionsByRotation(
-                drag, lift,
+            dragDir, liftDir = calucateDirectionsByRotation(
+                dragDir, liftDir,
                 float(self._ui.AoA),
                 float(self._ui.AoS))
 
-        boundaries = []
-
-        for bcid in self._boundaries:
-            boundaries.append(BoundaryDB.getBoundaryText(bcid))
-
-        data = {
-            'type': 'forceCoeffs',
-            'libs': [openfoamLibraryPath('libforces')],
-
-            'patches': boundaries,
-            'coefficients': ['Cd', 'Cl', 'CmPitch'],
-            'rho': 'rho',
-            'Aref': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/area'),
-            'lRef': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/length'),
-            'magUInf':  self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/velocity'),
-            'rhoInf': self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/density'),
-            'dragDir': drag,
-            'liftDir': lift,
-            'CofR': [float(self._ui.centerOfRotationX.text()), float(self._ui.centerOfRotationY.text()), float(self._ui.centerOfRotationZ.text())],
-
-            'executeControl': 'onEnd',
-            'writeControl': 'onEnd',
-            'updateHeader': 'false',
-            'log': 'false',
-        }
-
-        if not GeneralDB.isDensityBased():
+        if GeneralDB.isDensityBased():
+            pRef = None
+        else:
             referencePressure = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'))
             operatingPressure = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
-            data['pRef'] = referencePressure + operatingPressure
+            pRef = referencePressure + operatingPressure
 
-        if self._rname:
-            data['region'] = self._rname
+        data = foForceCoeffsReport(boundaries, aRef, lRef, magUInf, rhoInf, dragDir, liftDir, cofr, pRef, self._rname)
 
         return data
-
-    def _readDataFrame(self, path):
-        with path.open(mode='r') as f:
-            header = None
-            line = f.readline()
-            while line[0] == '#':
-                p = f.tell()
-                header = line
-                line = f.readline()
-
-            names = header[1:].split()  # read header
-            if names[0] != 'Time':
-                raise RuntimeError
-            if len(names) == 1:
-                names.append(path.stem)
-
-            f.seek(p)
-            df = pd.read_csv(f, sep=r'\s+', names=names, skiprows=0)
-            # df.set_index('Time', inplace=True)
-
-            return df
-
