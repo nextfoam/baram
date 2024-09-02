@@ -54,11 +54,7 @@ class Boundary(DictionaryFile):
         fullPath = self.fullPath(self._processorNo)
 
         self._boundaryDict = PolyMeshLoader.loadBoundaryDict(fullPath, longListOutputThreshold=1)
-        for bcname in list(self._boundaryDict.content.keys()):
-            if self._boundaryDict.content[bcname]['nFaces'] == 0:
-                del self._boundaryDict.content[bcname]
-                continue
-
+        for bcname in self._boundaryDict.content:
             xpath = BoundaryDB.getXPathByName(self._rname, bcname)
             if self._db.exists(xpath):
                 bctype = self._db.getValue(xpath + '/physicalType')

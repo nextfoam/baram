@@ -124,11 +124,6 @@ class PolyMeshLoader(QObject):
             boundaryDict = self.loadBoundaryDict(path / 'polyMesh' / 'boundary')
             boundaries[''] = boundaryDict.content
 
-        for rname in boundaries:
-            for b in list(boundaries[rname].keys()):
-                if boundaries[rname][b]['nFaces'] == 0:
-                    del boundaries[rname][b]
-
         return boundaries
 
     async def _loadVtkMesh(self):
@@ -242,9 +237,6 @@ class PolyMeshLoader(QObject):
                 db.setValue(pressurePath, '101325')
 
             for bcname in vtkMesh[rname]['boundary']:
-                if bcname not in boundaries[rname]:
-                    continue
-
                 boundary = boundaries[rname][bcname]
                 geometricalType = GeometricalType(boundary['type'])
                 boundaryType = defaultBoundaryType(bcname, geometricalType)
