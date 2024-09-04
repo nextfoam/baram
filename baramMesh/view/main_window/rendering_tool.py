@@ -18,6 +18,9 @@ class RenderingTool:
 
         self._ruler = None
 
+        self._updateBGButtonStyle(self._ui.bg1, QColor.fromRgbF(*self._view.background1()))
+        self._updateBGButtonStyle(self._ui.bg2, QColor.fromRgbF(*self._view.background2()))
+
         self._ui.alignAxis.clicked.connect(self._view.alignCamera)
         self._ui.axis.toggled.connect(self._view.setAxisVisible)
         self._ui.cubeAxis.toggled.connect(self._view.setCubeAxisVisible)
