@@ -112,7 +112,7 @@
   <customwidget>
    <class>FloatEdit</class>
    <extends>QLineEdit</extends>
-   <header>widgets.float_edit</header>
+   <header>widgets.typed_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>
