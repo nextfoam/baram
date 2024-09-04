@@ -13,10 +13,10 @@ from baramFlow.openfoam.file_system import FileSystem
 
 
 class SetFieldsDict(DictionaryFile):
-    def __init__(self, rname: str = ''):
-        super().__init__(FileSystem.caseRoot(), self.systemLocation(rname), 'setFieldsDict')
+    def __init__(self, region):
+        super().__init__(FileSystem.caseRoot(), self.systemLocation(region.rname), 'setFieldsDict')
 
-        self._rname = rname
+        self._region = region
 
     def build(self):
         if self._data is not None:
@@ -28,14 +28,15 @@ class SetFieldsDict(DictionaryFile):
 
         db = CoreDBReader()
 
-        sectionNames: [str] = db.getList(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section/name')
+        rname = self._region.rname
+        sectionNames: [str] = db.getList(f'.//regions/region[name="{rname}"]/initialization/advanced/sections/section/name')
         if len(sectionNames) == 0:
             return self
 
-        ivPath = f'.//regions/region[name="{self._rname}"]/initialization/initialValues'
+        ivPath = f'.//regions/region[name="{rname}"]/initialization/initialValues'
 
         for name in sectionNames:
-            sPath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{name}"]'
+            sPath = f'.//regions/region[name="{rname}"]/initialization/advanced/sections/section[name="{name}"]'
 
             fieldValues = []
 
@@ -59,16 +60,26 @@ class SetFieldsDict(DictionaryFile):
 
             if db.getAttribute(sPath+'/volumeFractions', 'disabled') == 'false':
                 materials: [str] = db.getList(sPath + f'/volumeFractions/volumeFraction/material')
+                defaultPrimaryFraction = 1
+                sectionPrimaryFraction = 1
                 for mid in materials:
                     fieldName = 'alpha.' + MaterialDB.getName(mid)
                     fraction = db.getValue(sPath + f'/volumeFractions/volumeFraction[material="{mid}"]/fraction')
+                    sectionPrimaryFraction -= float(fraction)
                     fieldValues.append(('volScalarFieldValue', fieldName, fraction))
                     if fieldName not in defaultFields:
                         defaultFields.append(fieldName)
                         defaultFraction = db.getValue(ivPath + f'/volumeFractions/volumeFraction[material="{mid}"]/fraction')
+                        defaultPrimaryFraction -= float(defaultFraction)
                         defaultFieldValues.append(('volScalarFieldValue', fieldName, defaultFraction))
 
-            for scalarID, fieldName in db.getUserDefinedScalarsInRegion(self._rname):
+                fieldName = 'alpha.' + MaterialDB.getName(self._region.mid)
+                if fieldName not in defaultFields:
+                    defaultFields.append(fieldName)
+                    defaultFieldValues.append(('volScalarFieldValue', fieldName, defaultPrimaryFraction))
+                fieldValues.append(('volScalarFieldValue', fieldName, sectionPrimaryFraction))
+
+            for scalarID, fieldName in db.getUserDefinedScalarsInRegion(rname):
                 scalarXPath = f'{sPath}/userDefinedScalars/scalar[scalarID="{scalarID}"]/value'
                 if db.getAttribute(scalarXPath, 'disabled') == 'false':
                     value = db.getValue(scalarXPath)
@@ -79,7 +90,7 @@ class SetFieldsDict(DictionaryFile):
                         defaultFieldValues.append(('volScalarFieldValue', fieldName, defaultValue))
 
             if ModelsDB.isSpeciesModelOn():
-                mid = RegionDB.getMaterial(self._rname)
+                mid = RegionDB.getMaterial(rname)
                 if MaterialDB.getType(mid) == MaterialType.MIXTURE:
                     mixtureXPath = f'{sPath}/species/mixture[mid="{mid}"]'
                     if db.getAttribute(mixtureXPath, 'disabled') == 'false':
