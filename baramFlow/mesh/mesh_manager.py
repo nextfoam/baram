@@ -16,6 +16,7 @@ from libbaram.openfoam.constants import CASE_DIRECTORY_NAME, Directory
 from libbaram.run import RunParallelUtility, RunUtility
 
 from baramFlow.coredb.project import Project
+from baramFlow.mesh.flument_to_foam_control import FluentMeshConverter
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.constant.region_properties import RegionProperties
 from baramFlow.openfoam.file_system import FileSystem, FileLoadingError
@@ -138,6 +139,17 @@ class MeshManager(QObject):
             raise RuntimeError(self.tr('File conversion failed.'))
 
         await FileSystem.removeFile(fileName)
+
+    async def waitCellZonesInfo(self, path):
+        fileName = 'meshToConvert' + path.suffix
+        await FileSystem.copyFileToCase(path, fileName)
+
+        self._process = FluentMeshConverter(fileName)
+
+        return await self._process.waitCellZonesInfo()
+
+    async def fulentCellZonesToRegions(self):
+        return await self._process.cellZonesToRegions()
 
     def cancel(self):
         if self._process:

@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QLabel
 from baramFlow.coredb import coredb
 from widgets.async_message_box import AsyncMessageBox
 from widgets.flat_push_button import FlatPushButton
-from widgets.float_edit import FloatEdit
+from widgets.typed_edit import FloatEdit
 
 
 class Column(IntEnum):
