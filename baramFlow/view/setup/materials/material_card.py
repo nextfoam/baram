@@ -50,9 +50,6 @@ class MaterialCard(QWidget):
         self._ui.phase.setText("(" + MaterialDB.getPhaseText(phase) + ")")
 
         energyModelOn = ModelsDB.isEnergyModelOn()
-        type_ = MaterialDB.getType(self._mid)
-        # specXPath = (MaterialDB.getXPath(db.getValue(self._xpath + '/specie/mixture'))
-        #              if type_ == MaterialType.SPECIE else self._xpath)
 
         specification = DensitySpecification(db.getValue(self._xpath + '/density/specification'))
         if specification == DensitySpecification.CONSTANT or not energyModelOn:
@@ -66,7 +63,7 @@ class MaterialCard(QWidget):
         else:
             viscositySpec = ViscositySpecification(db.getValue(self._xpath + '/viscosity/specification'))
             if (MaterialDB.isNonNewtonianSpecification(viscositySpec)
-                    or viscositySpec != ViscositySpecification.CONSTANT or energyModelOn):
+                    or (viscositySpec != ViscositySpecification.CONSTANT and energyModelOn)):
                 self._ui.viscosity.setText(MaterialDB.specificationToText(viscositySpec))
             else:
                 self._ui.viscosity.setText(db.getValue(self._xpath + '/viscosity/constant') + ' kg/m·s')
@@ -79,16 +76,16 @@ class MaterialCard(QWidget):
             else:
                 self._ui.specificHeat.setText(MaterialDB.specificationToText(specification))
 
-            if viscositySpec != ViscositySpecification.SUTHERLAND.value:
+            if viscositySpec == ViscositySpecification.SUTHERLAND:
+                self._ui.thermalConductivityWidget.hide()
+            else:
                 self._ui.thermalConductivityWidget.show()
                 specification = Specification(db.getValue(self._xpath + '/thermalConductivity/specification'))
-                if specification == Specification.CONSTANT.value:
+                if specification == Specification.CONSTANT:
                     self._ui.thermalConductivity.setText(
                         db.getValue(self._xpath + '/thermalConductivity/constant') + ' W/m·K')
                 else:
                     self._ui.thermalConductivity.setText(MaterialDB.specificationToText(specification))
-            else:
-                self._ui.thermalConductivityWidget.hide()
         else:
             self._ui.specificHeatWidget.hide()
             self._ui.thermalConductivityWidget.hide()
