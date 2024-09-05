@@ -13,6 +13,7 @@ from PySide6.QtCore import QObject, Signal
 
 from libbaram import utils
 from libbaram.openfoam.constants import CASE_DIRECTORY_NAME, Directory
+from libbaram.openfoam.polymesh import isPolyMesh
 from libbaram.run import RunParallelUtility, RunUtility
 
 from baramFlow.coredb.project import Project
@@ -198,10 +199,10 @@ class MeshManager(QObject):
         Raises:
             FileLoadingError: "path" does not have correct polyMesh
         """
-        if FileSystem.isPolyMesh(path):
+        if isPolyMesh(path):
             return path.parent
 
-        if FileSystem.isPolyMesh(path / 'polyMesh'):
+        if isPolyMesh(path / 'polyMesh'):
             return path
 
         regionPropFile = path / Directory.REGION_PROPERTIES_FILE_NAME
@@ -210,7 +211,7 @@ class MeshManager(QObject):
 
         regions = RegionProperties.loadRegions(path)
         for rname in regions:
-            if not FileSystem.isPolyMesh(path / rname / 'polyMesh'):
+            if not isPolyMesh(path / rname / 'polyMesh'):
                 raise FileLoadingError(f'Corrupted Multi-Region PolyMesh')
 
         return path

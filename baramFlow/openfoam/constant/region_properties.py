@@ -10,6 +10,7 @@ from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.material_schema import Phase
 from baramFlow.openfoam.file_system import FileSystem, FileLoadingError
+from libbaram.openfoam.polymesh import isPolyMesh
 
 
 class RegionProperties(DictionaryFile):
@@ -33,7 +34,7 @@ class RegionProperties(DictionaryFile):
 
         if regions:
             for g in regions:
-                if not FileSystem.isPolyMesh(path.joinpath(f'{g}/polyMesh')):
+                if not isPolyMesh(path.joinpath(f'{g}/polyMesh')):
                     raise FileLoadingError(f'Cannot find polyMesh files,')
 
         return regions if regions else ['']

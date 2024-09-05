@@ -16,6 +16,7 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
 from libbaram.exception import CanceledException
+from libbaram.openfoam.polymesh import removeVoidBoundaries
 from libbaram.run import hasUtility
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
@@ -759,6 +760,7 @@ class MainWindow(QMainWindow):
                     progressDialog.finish(self.tr('Failed to extract cell zones.'))
             else:
                 await meshManager.convertMesh(Path(file), meshType)
+                removeVoidBoundaries(FileSystem.caseRoot())
                 progressDialog.close()
                 await self._loadMesh()
         except CanceledException:
@@ -859,7 +861,6 @@ class MainWindow(QMainWindow):
         return True
 
     def _deleteMeshFilesAndData(self):
-        print('>>>>delete all')
         db = coredb.CoreDB()
         db.clearRegions()
         db.clearMonitors()

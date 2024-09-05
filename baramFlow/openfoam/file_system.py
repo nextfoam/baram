@@ -11,6 +11,7 @@ import asyncio
 
 from libbaram import utils
 from libbaram.openfoam.constants import Directory, CASE_DIRECTORY_NAME, FOAM_FILE_NAME
+from libbaram.openfoam.polymesh import isPolyMesh
 
 from resources import resource
 
@@ -224,7 +225,7 @@ class FileSystem:
 
     @classmethod
     def hasPolyMesh(cls):
-        return (cls.isPolyMesh(cls.polyMeshPath())
+        return (isPolyMesh(cls.polyMeshPath())
                 or cls.constantPath().joinpath(Directory.REGION_PROPERTIES_FILE_NAME).is_file())
 
     @classmethod

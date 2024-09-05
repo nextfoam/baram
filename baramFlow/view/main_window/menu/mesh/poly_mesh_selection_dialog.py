@@ -6,10 +6,10 @@ from pathlib import Path
 import qasync
 from PySide6.QtWidgets import QDialog, QFileDialog, QDialogButtonBox
 
+from libbaram.openfoam.polymesh import isPolyMesh
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb.app_settings import AppSettings
-from baramFlow.openfoam.file_system import FileSystem
 from .poly_mesh_selection_dialog_ui import Ui_PolyMeshSelectionDialog
 
 
@@ -40,7 +40,7 @@ class PolyMesheSelectionDialog(QDialog):
 
     @qasync.asyncSlot()
     async def _polyMeshSelected(self, directory):
-        if FileSystem.isPolyMesh(Path(directory)):
+        if isPolyMesh(Path(directory)):
             self._ui.polyMesh.setText(directory)
             self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(
                 len(self._ui.regionName.text().strip()))

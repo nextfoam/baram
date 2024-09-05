@@ -11,6 +11,7 @@ from baramMesh.openfoam.system.extrude_mesh_dict import ExtrudeMeshDict
 from baramMesh.view.export.export_2D_plane_dialog import Export2DPlaneDialog
 from baramMesh.view.export.export_2D_wedge_dialog import Export2DWedgeDialog
 from libbaram.openfoam.constants import Directory
+from libbaram.openfoam.polymesh import removeVoidBoundaries
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
 from libbaram.utils import rmtree
@@ -189,6 +190,9 @@ class ExportPage(StepPage):
             rmtree(self._outputPath())
 
             rmtree(baramSystem.polyMeshPath() / 'sets')
+
+            removeVoidBoundaries(baramSystem.caseRoot())
+
             progressDialog.finish(self.tr('Export completed'))
         except ProcessError as e:
             self.clearResult()
