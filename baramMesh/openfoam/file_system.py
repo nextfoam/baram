@@ -7,6 +7,7 @@ from pathlib import Path
 
 import asyncio
 
+from libbaram.openfoam.polymesh import isPolyMesh
 from libbaram.utils import rmtree
 from libbaram.openfoam.constants import Directory, CASE_DIRECTORY_NAME, FOAM_FILE_NAME
 
@@ -65,7 +66,7 @@ class FileSystem:
         if not timePath.is_dir():
             return False
 
-        return self.isPolyMesh(timePath / Directory.POLY_MESH_DIRECTORY_NAME)
+        return isPolyMesh(timePath / Directory.POLY_MESH_DIRECTORY_NAME)
 
     def latestTime(self, parent: Optional[Path] = None) -> str:
         times = self.times(parent)
@@ -137,15 +138,4 @@ class FileSystem:
         self._constantPath = self._casePath / Directory.CONSTANT_DIRECTORY_NAME
         self._triSurfacePath = self._constantPath / Directory.TRI_SURFACE_DIRECTORY_NAME
 
-    def isPolyMesh(self, path: Path):
-        if not path.is_dir():
-            return False
-
-        checkFiles = ['boundary', 'faces', 'neighbour', 'owner', 'points']
-        for f in checkFiles:
-            if path.joinpath(f).is_file() or path.joinpath(f'{f}.gz').is_file():
-                continue
-            else:
-                return False
-        return True
 

@@ -9,6 +9,9 @@ from libbaram.openfoam.constants import Directory
 
 
 def isPolyMesh(path: Path):
+    if not path.is_dir():
+        return False
+
     checkFiles = ['boundary', 'faces', 'neighbour', 'owner', 'points']
     for f in checkFiles:
         if path.joinpath(f).is_file() or path.joinpath(f'{f}.gz').is_file():
