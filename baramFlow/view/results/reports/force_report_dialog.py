@@ -46,7 +46,7 @@ class ForceReportDialog(QDialog):
 
         self._ui.specificationMethod.addEnumItems({
             DirectionSpecificationMethod.DIRECT: self.tr('Direct'),
-            DirectionSpecificationMethod.AOA_AOS: self.tr('Angles of Attack, Sideslip')
+            DirectionSpecificationMethod.AOA_AOS: self.tr('AOA and AOS')
         })
 
         self._setupValidators()
@@ -100,7 +100,7 @@ class ForceReportDialog(QDialog):
             self._ui.direction.setTitle(self.tr('Direction'))
             self._ui.angles.hide()
         else:
-            self._ui.direction.setTitle(self.tr('Direction at AoA=0, AoS=0'))
+            self._ui.direction.setTitle(self.tr('Direction at AOA=0, AOS=0'))
             self._ui.angles.show()
 
     @qasync.asyncSlot()

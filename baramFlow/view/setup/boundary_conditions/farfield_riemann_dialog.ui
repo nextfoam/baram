@@ -157,7 +157,7 @@
             <item>
              <widget class="QGroupBox" name="groupBox">
               <property name="title">
-               <string>Direction at AoA=0, AoS=0</string>
+               <string>Direction at AOA=0, AOS=0</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_5">
                <item>
@@ -255,7 +255,7 @@
                <item row="0" column="0">
                 <widget class="QLabel" name="label_18">
                  <property name="text">
-                  <string>Angle of Attack, AoA (degree)</string>
+                  <string>Angle of Attack, AOA (degree)</string>
                  </property>
                 </widget>
                </item>
@@ -265,7 +265,7 @@
                <item row="1" column="0">
                 <widget class="QLabel" name="label_19">
                  <property name="text">
-                  <string>Angle of Sideslip, AoS (degree)</string>
+                  <string>Angle of Sideslip, AOS (degree)</string>
                  </property>
                 </widget>
                </item>
