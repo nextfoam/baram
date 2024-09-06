@@ -140,5 +140,6 @@ class UserDefiendScalarDialog(ResizableDialog):
         valid, msg = validator.validate()
         if not valid:
             await AsyncMessageBox().information(self, self.tr('Input Error'), msg)
+            return
 
         self.accept()
