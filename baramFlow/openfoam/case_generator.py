@@ -97,7 +97,7 @@ class CaseGenerator(QObject):
             self._files.append(FvSchemes(rname))
             self._files.append(FvSolution(rname))
             self._files.append(FvOptions(rname))
-            self._files.append(SetFieldsDict(rname))
+            self._files.append(SetFieldsDict(region))
 
         # Files that should be created in case root folder in addition to the region folders.
 

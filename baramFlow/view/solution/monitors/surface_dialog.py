@@ -11,7 +11,8 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
-from baramFlow.coredb.monitor_db import MonitorDB, SurfaceReportType, FieldHelper, Field
+from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
+from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
 from .surface_dialog_ui import Ui_SurfaceDialog
 
 

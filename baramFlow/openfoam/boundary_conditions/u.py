@@ -7,7 +7,6 @@ from baramFlow.coredb.project import Project
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
 from baramFlow.coredb.boundary_db import FlowRateInletSpecification, WallVelocityCondition, InterfaceMode
 from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
-from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from libbaram.openfoam.dictionary.dictionary_file import DataClass
 
@@ -183,7 +182,7 @@ class U(BoundaryCondition):
         dx, dy, dz = self._calculateFarfiledRiemanFlowDirection(xpath + '/farFieldRiemann/flowDirection')
         dMag = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
         mInf = float(
-            self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/densityBasedSolverParameters/cutOffMachNumber'))
+            self._db.getValue(xpath + '/farFieldRiemann/machNumber'))
         am = a * mInf / dMag
 
         return self._constructFarfieldRiemann(xpath + '/farFieldRiemann', [am * dx, am * dy, am * dz])

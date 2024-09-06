@@ -15,6 +15,8 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
+from libbaram.exception import CanceledException
+from libbaram.openfoam.polymesh import removeVoidBoundaries
 from libbaram.run import hasUtility
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
@@ -31,6 +33,7 @@ from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.project import Project
 from baramFlow.mesh.mesh_manager import MeshManager, MeshType
 from baramFlow.openfoam import parallel
+from baramFlow.openfoam.constant.cell_zones_to_regions import CellZonesToRegions
 from baramFlow.openfoam.constant.region_properties import RegionProperties
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
@@ -54,6 +57,7 @@ from baramFlow.view.solution.run.process_information_page import ProcessInformat
 from baramFlow.view.results.reports.reports_page import ReportsPage
 from .content_view import ContentView
 from .dock_view import DockView
+from .fluent_regions_dialog import FluentRegionsDialog
 from .main_window_ui import Ui_MainWindow
 from .menu.mesh.mesh_info_dialog import MeshInfoDialog
 from .navigator_view import NavigatorView, MenuItem
@@ -695,6 +699,8 @@ class MainWindow(QMainWindow):
             progressDialog.setLabelText(self.tr('Copying files.'))
             await meshManager.importMeshFiles(path)
 
+            removeVoidBoundaries(FileSystem.caseRoot())
+
             progressDialog.close()
 
             await self._loadMesh()
@@ -714,6 +720,8 @@ class MainWindow(QMainWindow):
 
             progressDialog.setLabelText(self.tr('Copying files.'))
             await MeshManager().importPolyMeshes(self._dialog.data())
+
+            removeVoidBoundaries(FileSystem.caseRoot())
 
             progressDialog.close()
 
@@ -738,14 +746,57 @@ class MainWindow(QMainWindow):
             progressDialog.setLabelText(self.tr('Converting the mesh.'))
             progressDialog.cancelClicked.connect(meshManager.cancel)
             progressDialog.showCancelButton()
-            await meshManager.convertMesh(Path(file), meshType)
+            if meshType == MeshType.FLUENT:
+                if await meshManager.waitCellZonesInfo(Path(file)):
+                    progressDialog.close()
 
+                    cellZones = CellZonesToRegions().loadCellZones()
+                    if len(cellZones) > 1 or 'solid' in cellZones.values():
+                        self._dialog = FluentRegionsDialog(self, cellZones)
+                        self._dialog.accepted.connect(lambda: self._cellZonesToRegions(meshManager))
+                        self._dialog.rejected.connect(meshManager.cancel)
+                        self._dialog.open()
+                    else:
+                        CellZonesToRegions().setSingleCellZone(cellZones.keys()[0]).write()
+                        await self._cellZonesToRegions(meshManager)
+                else:
+                    self._deleteMeshFilesAndData()
+                    progressDialog.finish(self.tr('Failed to extract cell zones.'))
+            else:
+                await meshManager.convertMesh(Path(file), meshType)
+                removeVoidBoundaries(FileSystem.caseRoot())
+                progressDialog.close()
+                await self._loadMesh()
+        except CanceledException:
+            self._deleteMeshFilesAndData()
             progressDialog.close()
-
-            await self._loadMesh()
         except Exception as ex:
             self._deleteMeshFilesAndData()
             progressDialog.finish(self.tr('Mesh import failed:\n' + str(ex)))
+
+    @qasync.asyncSlot()
+    async def _cellZonesToRegions(self, meshManager):
+        progressDialog = ProgressDialog(self, self.tr('Mesh Converting'))
+        progressDialog.setLabelText(self.tr('Converting the mesh'))
+        progressDialog.showCancelButton()
+        progressDialog.cancelClicked.connect(meshManager.cancel)
+        progressDialog.open()
+
+        try:
+            result = await meshManager.fulentCellZonesToRegions()
+            if result == 0:
+                removeVoidBoundaries(FileSystem.caseRoot())
+                progressDialog.close()
+                await self._loadMesh()
+                return
+
+            progressDialog.finish(self.tr('Failed to convert mesh.'))
+        except CanceledException:
+            pass
+        except Exception as ex:
+            progressDialog.finish(self.tr('Mesh Convert failed:\n' + str(ex)))
+
+        self._deleteMeshFilesAndData()
 
     async def _loadMesh(self):
         progressDialog = ProgressDialog(self, self.tr('Mesh Loading'))
@@ -764,11 +815,10 @@ class MainWindow(QMainWindow):
             redistributeTask = RedistributionTask()
             redistributeTask.progress.connect(progressDialog.setLabelText)
             await redistributeTask.redistribute()
-
-            progressDialog.close()
-            return
         except Exception as ex:
             progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
+
+        progressDialog.close()
 
     def _runParaView(self, executable, updateSetting=True):
         casePath = FileSystem.foamFilePath()

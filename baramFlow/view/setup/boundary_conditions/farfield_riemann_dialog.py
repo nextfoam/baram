@@ -23,7 +23,7 @@ class FarfieldRiemannDialog(ResizableDialog):
 
         self._ui.specificationMethod.addEnumItems({
             DirectionSpecificationMethod.DIRECT:    self.tr('Direct'),
-            DirectionSpecificationMethod.AOA_AOS:   self.tr('Angles of Attack, Sideslip')
+            DirectionSpecificationMethod.AOA_AOS:   self.tr('AOA and AOS')
         })
 
         layout = self._ui.dialogContents.layout()

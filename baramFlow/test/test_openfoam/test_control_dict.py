@@ -1,7 +1,9 @@
 import unittest
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.monitor_db import MonitorDB, Field, SurfaceReportType, VolumeReportType
+from baramFlow.coredb.monitor_db import MonitorDB, Field
+from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
+from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.openfoam.system.control_dict import ControlDict
 

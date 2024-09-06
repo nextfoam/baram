@@ -3246,7 +3246,7 @@ QCheckBox::indicator:checked { image: url(:/images/toggle_on); padding: 0; }</st
                          </size>
                         </property>
                         <property name="toolTip">
-                         <string> Display x,y and z axis coordinates</string>
+                         <string>Ruler</string>
                         </property>
                         <property name="icon">
                          <iconset resource="../../../resource.qrc">

@@ -72,10 +72,13 @@ class MaterialDialog(ResizableDialog):
             self._setupSpecificHeatSpecification(specification)
             self._ui.constantSpecificHeat.setText(db.getValue(self._xpath + '/specificHeat/constant'))
 
-            specification = Specification(db.getValue(self._xpath + '/thermalConductivity/specification'))
-            self._setupThermalConductivitySpecification(specification)
-            self._ui.constantThermalConductivity.setText(
-                db.getValue(self._xpath + '/thermalConductivity/constant'))
+            if viscositySpecification == ViscositySpecification.SUTHERLAND and self._type == MaterialType.SPECIE:
+                self._ui.thermalConductivity.hide()
+            else:
+                specification = Specification(db.getValue(self._xpath + '/thermalConductivity/specification'))
+                self._setupThermalConductivitySpecification(specification)
+                self._ui.constantThermalConductivity.setText(
+                    db.getValue(self._xpath + '/thermalConductivity/constant'))
 
             if self._phase == Phase.SOLID:
                 self._ui.emissivity.setText(db.getValue(self._xpath + '/emissivity'))

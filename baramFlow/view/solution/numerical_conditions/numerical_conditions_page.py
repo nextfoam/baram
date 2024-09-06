@@ -103,8 +103,8 @@ class NumericalConditionsPage(ContentPage):
         self._ui.underRelaxationFactorEnergyFinal.setEnabled((timeIsTransient or allRoundSolver) and energyOn and not compressibleDensity)
         self._ui.underRelaxationFactorTurbulence.setEnabled(turbulenceOn)
         self._ui.underRelaxationFactorTurbulenceFinal.setEnabled((timeIsTransient or allRoundSolver) and turbulenceOn)
-        self._ui.underRelaxationFactorDensity.setEnabled((timeIsTransient or allRoundSolver) and not compressibleDensity)
-        self._ui.underRelaxationFactorDensityFinal.setEnabled(timeIsTransient or allRoundSolver)
+        self._ui.underRelaxationFactorDensity.setEnabled(not compressibleDensity)
+        self._ui.underRelaxationFactorDensityFinal.setEnabled((timeIsTransient or allRoundSolver) and not compressibleDensity)
         self._ui.underRelaxationFactorVolumeFraction.setEnabled(multiphaseOn and not compressibleDensity)
         self._ui.underRelaxationFactorVolumeFractionFinal.setEnabled(multiphaseOn and not compressibleDensity)
 
