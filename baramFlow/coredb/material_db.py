@@ -136,7 +136,7 @@ class MaterialDB(object):
             ViscositySpecification.CROSS_POWER_LAW:             QCoreApplication.translate('MaterialDB', 'Cross'),
             ViscositySpecification.HERSCHEL_BULKLEY:            QCoreApplication.translate('MaterialDB',
                                                                                            'Herschel-bulkley'),
-            ViscositySpecification.BIRD_CARREAU:                QCoreApplication.translate('MaterialDB', 'Carreau'),
+            ViscositySpecification.BIRD_CARREAU:                QCoreApplication.translate('MaterialDB', 'Bird-Carreau'),
             ViscositySpecification.POWER_LAW:                   QCoreApplication.translate('MaterialDB',
                                                                                            'Non-newtonian-power-law'),
         }.get(specification)

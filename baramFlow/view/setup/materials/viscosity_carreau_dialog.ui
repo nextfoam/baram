@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Carreau Viscosity</string>
+   <string>Bird-Carreau Viscosity</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -79,7 +79,7 @@
    <item>
     <widget class="QLabel" name="label_6">
      <property name="text">
-      <string>Parameters for &quot;Carreau&quot; viscosity model are shared among all the species in the mixture.</string>
+      <string>Parameters for &quot;Bird-Carreau&quot; viscosity models are shared among all the species in the mixture.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
