@@ -4,7 +4,7 @@ from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.coredb.coredb_reader import CoreDBReader, Region
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.material_schema import MaterialType
 from baramFlow.coredb.cell_zone_db import CellZoneDB
@@ -13,7 +13,7 @@ from baramFlow.openfoam.file_system import FileSystem
 
 
 class SetFieldsDict(DictionaryFile):
-    def __init__(self, region):
+    def __init__(self, region: Region):
         super().__init__(FileSystem.caseRoot(), self.systemLocation(region.rname), 'setFieldsDict')
 
         self._region = region
