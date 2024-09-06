@@ -37,7 +37,7 @@ class SettingKey(Enum):
 
 
 class _Project(QObject):
-    solverStatusChanged = Signal(SolverStatus, bool)    # parameters: solverStatus, liveStatusChanged
+    solverStatusChanged = Signal(SolverStatus, str, bool)    # parameters: solverStatus, batch name, liveStatusChanged
     projectOpened = Signal()
     projectClosed = Signal()
 
@@ -179,14 +179,14 @@ class _Project(QObject):
     def updateSolverStatus(self, name, status, process):
         if name:
             self._projectSettings.setBatchStatus(name, status)
-            self.solverStatusChanged.emit(status, False)
+            self.solverStatusChanged.emit(status, name, False)
 
             return
 
         if status == SolverStatus.RUNNING:
             self._projectSettings.setProcess(process)
 
-        self.solverStatusChanged.emit(status, self._liveStatus and self._liveStatus != status)
+        self.solverStatusChanged.emit(status, None, self._liveStatus and self._liveStatus != status)
         self._liveStatus = status
 
     def getBatchStatuses(self):
