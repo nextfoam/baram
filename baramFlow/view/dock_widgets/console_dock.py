@@ -136,7 +136,7 @@ class ConsoleView(QWidget):
             self.readTask.cancel()
 
     @qasync.asyncSlot()
-    async def _solverStatusChanged(self, status):
+    async def _solverStatusChanged(self, status, name, liveStatusChanged):
         if status == SolverStatus.NONE:
             self._textView.clear()
         elif status == SolverStatus.RUNNING:

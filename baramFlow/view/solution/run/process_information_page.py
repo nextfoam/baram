@@ -71,7 +71,7 @@ class ProcessInformationPage(ContentPage):
         return super().showEvent(ev)
 
     def _load(self):
-        self._statusChanged(self._caseManager.status())
+        self._statusChanged(self._caseManager.status(), None, False)
         self._updateUserParameters()
 
     def _connectSignalsSlots(self):
@@ -219,7 +219,7 @@ class ProcessInformationPage(ContentPage):
         self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _statusChanged(self, status, name=None):
+    async def _statusChanged(self, status, name=None, liveStatusChanged=False):
         if self._runningMode == RunningMode.BATCH_RUNNING_MODE:
             self._batchCaseList.updateStatus(status, name)
         else:

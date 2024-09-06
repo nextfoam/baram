@@ -557,7 +557,7 @@ class MainWindow(QMainWindow):
             self._loadForm(currentMenu)
 
     @qasync.asyncSlot()
-    async def _solverStatusChanged(self, status, liveStatusChanged=False):
+    async def _solverStatusChanged(self, status, name, liveStatusChanged=False):
         batchRunning = CaseManager().isBatchRunning()
         solverRunning = status == SolverStatus.RUNNING or batchRunning
 

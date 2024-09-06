@@ -53,7 +53,7 @@ class MonitorView(QWidget):
         self._clear()
 
     @qasync.asyncSlot()
-    async def _solverStatusChanged(self, status):
+    async def _solverStatusChanged(self, status, name, liveStatusChanged):
         if status == SolverStatus.NONE:
             self._deletedMonitors = self._monitors
             self._clear()
