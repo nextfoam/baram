@@ -35,9 +35,7 @@ class Export2DWedgeDialog(QDialog):
     def extrudeOptions(self):
         return ExtrudeOptions(self._ui.p1.text(), self._ui.p2.text(), ExtrudeModel.WEDGE,
                               point=[self._ui.originX.text(), self._ui.originY.text(), self._ui.originZ.text()],
-                              axis=[1 if self._ui.directionX.isChecked() else 0,
-                                    1 if self._ui.directionY.isChecked() else 0,
-                                    1 if self._ui.directionZ.isChecked() else 0],
+                              axis=[self._ui.directionX.text(), self._ui.directionY.text(), self._ui.directionZ.text()],
                               angle=self._ui.angle.text())
 
     def _connectSignalsSlots(self):

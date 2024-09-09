@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>418</width>
-    <height>508</height>
+    <height>430</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -230,28 +230,55 @@
            <property name="title">
             <string>Direction</string>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_2">
-            <item>
-             <widget class="QRadioButton" name="directionX">
+           <layout class="QFormLayout" name="formLayout_4">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_9">
               <property name="text">
-               <string>+X</string>
+               <string>X</string>
               </property>
-              <property name="checked">
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="directionX">
+              <property name="enabled">
                <bool>true</bool>
               </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="directionY">
               <property name="text">
-               <string>+Y</string>
+               <string>0</string>
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QRadioButton" name="directionZ">
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_10">
               <property name="text">
-               <string>+Z</string>
+               <string>Y</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="directionY">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="text">
+               <string>0</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>Z</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="directionZ">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="text">
+               <string>0</string>
               </property>
              </widget>
             </item>
@@ -259,19 +286,6 @@
           </widget>
          </item>
         </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string/>
-        </property>
-        <property name="pixmap">
-         <pixmap resource="../../../resource.qrc">:/images/export2D.png</pixmap>
-        </property>
-        <property name="scaledContents">
-         <bool>true</bool>
-        </property>
        </widget>
       </item>
      </layout>
