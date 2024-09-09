@@ -7,9 +7,11 @@ from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb import ValueException, DBError, _CoreDB
+from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.initialization_db import InitializationDB
 from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
 from baramFlow.coredb.material_schema import Phase, ViscositySpecification
+from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModelsDB
 from baramFlow.libbaram.calculation import AverageCalculator
@@ -199,6 +201,14 @@ class CoreDBReader(_CoreDB):
                 for exp, c in enumerate(coeffs):
                     rho += c * t ** exp
                 return rho
+            elif spec == 'incompressiblePerfectGas':
+                r'''
+                .. math:: \rho = \frac{MW \times P_{ref}}{R \times T}
+                '''
+                referencePressure = float(self.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'))
+                operatingPressure = float(self.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
+                mw = float(self.getValue(xpath + '/molecularWeight'))
+                return (referencePressure + operatingPressure) * mw / (UNIVERSAL_GAS_CONSTANT * t)
             else:
                 raise KeyError
 
