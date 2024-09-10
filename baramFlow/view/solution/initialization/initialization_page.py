@@ -149,6 +149,8 @@ class InitializationPage(ContentPage):
                 progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
             except CanceledException:
                 progressDialog.finish(self.tr('Calculation cancelled'))
+            except RuntimeError as r:
+                progressDialog.finish(str(r))
 
     def _showSectionActor(self, section):
         view = app.renderingView

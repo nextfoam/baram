@@ -1,21 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
 from PySide6.QtCore import QObject
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.region_db import CavitationModel
 from baramFlow.view.widgets.enum_button_group import EnumButtonGroup
+from widgets.async_message_box import AsyncMessageBox
 from .cavitation_constants_widget import CavitationConstantsWidget
 
 
 class CavitationWidget(QObject):
-    def __init__(self, ui, xpath):
+    def __init__(self, parent, ui, xpath):
         super().__init__()
+        self._parent = parent
         self._ui = ui
         self._xpath = xpath + '/phaseInteractions/massTransfers/massTransfer[mechanism="cavitation"]/cavitation'
 
         self._modelRadios = EnumButtonGroup()
+
+        self._model = None
         self._modelConstants = {}
 
         self._modelRadios.addEnumButton(self._ui.schnerrSauer, CavitationModel.SCHNERR_SAUER)
@@ -38,14 +43,14 @@ class CavitationWidget(QObject):
     def load(self):
         db = coredb.CoreDB()
 
-        model = CavitationModel(db.getValue(self._xpath + '/model'))
-        if model == CavitationModel.NONE:
+        self._model = CavitationModel(db.getValue(self._xpath + '/model'))
+        if self._model == CavitationModel.NONE:
             self._ui.cavitation.setChecked(False)
-            model = CavitationModel.SCHNERR_SAUER
+            self._model = CavitationModel.SCHNERR_SAUER
         else:
             self._ui.cavitation.setChecked(True)
 
-        self._modelRadios.setCheckedData(model)
+        self._modelRadios.setCheckedData(self._model)
         self._ui.vaporizationPressure.setText(db.getValue(self._xpath + '/vaporizationPressure'))
 
         self._modelConstants = {}
@@ -54,7 +59,7 @@ class CavitationWidget(QObject):
             if m != CavitationModel.NONE:
                 self._modelConstants[m] = CavitationConstantsWidget(m, f'{self._xpath}/{m.value}')
                 layout.addWidget(self._modelConstants[m])
-                self._modelConstants[m].setVisible(m == model)
+                self._modelConstants[m].setVisible(m == self._model)
                 self._modelConstants[m].load()
 
     def updateDB(self, db):
@@ -71,6 +76,15 @@ class CavitationWidget(QObject):
     def _connectSignalsSlots(self):
         self._modelRadios.dataChecked.connect(self._modelChanged)
 
-    def _modelChanged(self, model):
+    @qasync.asyncSlot()
+    async def _modelChanged(self, model):
+        if model == CavitationModel.ZWART_GERBER_BELAMRI:
+            self._modelRadios.setCheckedData(self._model)
+            await AsyncMessageBox().information(
+                self._parent, self.tr('Notification'),
+                self.tr('Zwart-Gerber-Belamri model will be supported in next release.'))
+            return
+
+        self._model = model
         for m, widget in self._modelConstants.items():
-            widget.setVisible(m == model)
+            widget.setVisible(m == self._model)

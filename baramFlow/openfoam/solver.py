@@ -6,7 +6,7 @@ from __future__ import annotations
 from baramFlow.coredb.coredb import CoreDB
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.models_db import MultiphaseModel, ModelsDB
-from baramFlow.coredb.region_db import RegionDB, CavitationModel
+from baramFlow.coredb.region_db import RegionDB, CavitationModel, REGION_XPATH
 
 
 class SolverNotFound(Exception):
@@ -27,7 +27,10 @@ def findSolver():
             cavitationModel = db.getValue(
                 RegionDB.getXPath(rname) + '/phaseInteractions/massTransfers/massTransfer[mechanism="cavitation"]/cavitation/model')
             if cavitationModel != CavitationModel.NONE.value:
-                return 'interPhaseChangeFoam'
+                if db.exists(REGION_XPATH + '/cellZones/cellZone[zoneType="slidingMesh"]'):
+                    return 'interPhaseChangeDyMFoam'
+                else:
+                    return 'interPhaseChangeFoam'
 
         return 'interFoam'
 

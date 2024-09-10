@@ -34,7 +34,7 @@ class TransportProperties(DictionaryFile):
             self._data = self._buildForMultiphaseInterFoam()
             return self
 
-        if solver == 'interPhaseChangeFoam':
+        if solver == 'interPhaseChangeFoam' or solver == 'interPhaseChangeDyMFoam':
             self._data = self._buildForInterPhaseChangeFoam()
             return self
 

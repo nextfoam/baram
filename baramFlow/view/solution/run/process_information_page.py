@@ -121,8 +121,8 @@ class ProcessInformationPage(ContentPage):
                 progressDialog.finish(self.tr('Case generating fail. - ') + str(e))
             except CanceledException:
                 progressDialog.finish(self.tr('Calculation cancelled'))
-            except RuntimeError:
-                progressDialog.finish(self.tr('Solver execution failed or terminated'))
+            except RuntimeError as r:
+                progressDialog.finish(str(r))
         else:
             cases = self._batchCaseList.batchSchedule()
             if not cases:
