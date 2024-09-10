@@ -6,7 +6,6 @@ import logging
 
 from PySide6.QtCore import QCoreApplication, QObject, Signal
 
-from baramFlow.coredb.material_db import MaterialDB
 from libbaram import utils
 from libbaram.exception import CanceledException
 from libbaram.run import RunUtility, RunParallelUtility
@@ -15,6 +14,8 @@ from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.coredb.general_db import GeneralDB
+from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.constant.dynamic_mesh_dict import DynamicMeshDict
@@ -64,7 +65,8 @@ class CaseGenerator(QObject):
         return self._errors
 
     def _gatherFiles(self):
-        if errors := self._validate():
+        solver = findSolver()
+        if errors := self._validate(solver):
             return errors
 
         # Files that can be in case root folder or region folders
@@ -119,9 +121,12 @@ class CaseGenerator(QObject):
                 return
             file.build().write()
 
-    def _validate(self):
-        errors = ''
+    def _validate(self, solver):
+        if solver == 'interPhaseChangeFoam' and not GeneralDB.isTimeTransient():
+            return QCoreApplication.translate('CaseGenerator',
+                                                 'interPhaseChangeFoam supports time transient calculation only.')
 
+        errors = ''
         regions = self._db.getRegions()
         for rname in regions:
             boundaries = self._db.getBoundaryConditions(rname)
