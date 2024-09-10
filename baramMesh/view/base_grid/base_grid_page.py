@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QMessageBox
 
 from libbaram.run import RunUtility, RunParallelUtility
 from libbaram.simple_db.simple_schema import DBError
+from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
@@ -158,8 +159,21 @@ class BaseGridPage(StepPage):
             return
         self._ui.zCell.setText('{:.6g}'.format(self._zLen / count))
 
+    def _validate(self) -> (bool, str):
+        if int(self._ui.numCellsX.text()) < 2 \
+                or int(self._ui.numCellsY.text()) < 2 \
+                or int(self._ui.numCellsZ.text()) < 2:
+            return False, self.tr('Number of Cells per Direction should be greater than 1')
+
+        return True, ''
+
     @qasync.asyncSlot()
     async def _generate(self):
+        valid, msg = self._validate()
+        if not valid:
+            await AsyncMessageBox().warning(self._widget, self.tr('Warning'), msg)
+            return
+
         await self.save()
 
         progressDialog = ProgressDialog(self._widget, self.tr('Base Grid Generating'))
