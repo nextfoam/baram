@@ -3,6 +3,7 @@
 
 from pathlib import Path
 
+from PyFoam.Basics.DataStructures import DictProxy
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict
 
 from libbaram.openfoam.constants import Directory
@@ -28,7 +29,7 @@ class RestoreCyclicPatchNames:
 
     def _updateCyclicPatchNames(self, path: Path):
         boundaryDict: ParsedBoundaryDict = ParsedBoundaryDict(str(path), treatBinaryAsASCII=True)
-
+        boundaries = boundaryDict.content.keys()  # To save the order of boundaries
         for interface in app.db.getElements(
                 'geometry', lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and not e['interRegion'] and not e['nonConformal']).values():
             master = interface.value('name')
@@ -62,6 +63,16 @@ class RestoreCyclicPatchNames:
             self._removeEntry(boundaryDict, slave,  'transform')
             self._removeEntry(boundaryDict, master, 'neighbourPatch')
             self._removeEntry(boundaryDict, slave,  'neighbourPatch')
+
+
+        #
+        #  Restore the original boundary order
+        #
+        oldContent = boundaryDict.content
+        boundaryDict.content = DictProxy()
+        for oldName in boundaries:
+            bName = oldName[len(self._prefix):] if oldName.startswith(self._prefix) else oldName
+            boundaryDict.content[bName] = oldContent[bName]
 
         boundaryDict.writeFile()
 

@@ -271,11 +271,11 @@ class ForceReportDialog(QDialog):
                 float(self._ui.centerOfRotationY.text()),
                 float(self._ui.centerOfRotationZ.text())]
 
-        if self._ui.specificationMethod.currentData() == DirectionSpecificationMethod.AOA_AOS.value:
+        if self._ui.specificationMethod.currentData() == DirectionSpecificationMethod.AOA_AOS:
             dragDir, liftDir = calucateDirectionsByRotation(
                 dragDir, liftDir,
-                float(self._ui.AoA),
-                float(self._ui.AoS))
+                float(self._ui.AoA.text()),
+                float(self._ui.AoS.text()))
 
         if GeneralDB.isDensityBased():
             pRef = None

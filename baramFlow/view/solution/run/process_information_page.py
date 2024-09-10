@@ -11,6 +11,9 @@ from enum import Enum, auto
 import pandas as pd
 from PySide6.QtWidgets import QFileDialog
 
+from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.openfoam.constant.turbulence_properties import TurbulenceProperties
+from baramFlow.openfoam.system.fv_options import FvOptions
 from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItem
 from widgets.progress_dialog import ProgressDialog
@@ -169,6 +172,12 @@ class ProcessInformationPage(ContentPage):
         for rname in regions:
             FvSchemes(rname).build().write()
             FvSolution(rname).build().write()
+            FvOptions(rname).build().write()
+
+            region = CoreDBReader().getRegionProperties(rname)
+            if region.isFluid():
+                TurbulenceProperties(rname).build().write()
+
         ControlDict().build().writeAtomic()
 
     def _toggleUserParameters(self, checked):
