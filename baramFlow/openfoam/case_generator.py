@@ -122,9 +122,13 @@ class CaseGenerator(QObject):
             file.build().write()
 
     def _validate(self, solver):
-        if solver == 'interPhaseChangeFoam' and not GeneralDB.isTimeTransient():
-            return QCoreApplication.translate('CaseGenerator',
-                                                 'interPhaseChangeFoam supports time transient calculation only.')
+        if not GeneralDB.isTimeTransient():
+            if solver == 'interPhaseChangeFoam':
+                return QCoreApplication.translate('CaseGenerator',
+                                                     'interPhaseChangeFoam supports time transient calculation only.')
+            if solver == 'multiphaseInterFoam':
+                return QCoreApplication.translate('CaseGenerator',
+                                                  'multiphaseInterFoam supports time transient calculation only.')
 
         errors = ''
         regions = self._db.getRegions()
