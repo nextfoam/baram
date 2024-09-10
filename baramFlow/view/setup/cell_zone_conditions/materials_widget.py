@@ -75,7 +75,7 @@ class MaterialsWidget(QWidget):
         self._secondaryMaterials = None
 
         self._surfaceTensionWidget = None
-        self._cavitationWidget = CavitationWidget(self._ui, self._xpath)
+        self._cavitationWidget = CavitationWidget(self, self._ui, self._xpath)
 
         self._dialog = None
 
