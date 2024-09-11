@@ -27,7 +27,7 @@ class FormValidator(Validator):
 
     def validate(self):
         for edit, name in self._required:
-            if not edit.text().strip():
+            if edit.isVisible() and not edit.text().strip():
                 return False, self.tr('{} is required.'.format(name))
 
         for v in self._validations:
