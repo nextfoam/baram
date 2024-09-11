@@ -149,12 +149,12 @@ class TurbulenceModelDialog(ResizableDialog):
                     db.setValue(self._xpath + '/les/lengthScaleModel',
                                 self._LESLengthScaleModelRadios.checkedData().value, None)
 
-                    if subgridScaleModel == SubgridScaleModel.DYNAMIC_KEQN:
+                    if subgridScaleModel != SubgridScaleModel.DYNAMIC_KEQN:
                         db.setValue(self._xpath + '/les/modelConstants/k', self._ui.ck.text(),
                                     self.tr('LES Model Constants k'))
                         db.setValue(self._xpath + '/les/modelConstants/e', self._ui.ce.text(),
                                     self.tr('LES Model Constants e'))
-                    elif subgridScaleModel == SubgridScaleModel.WALE:
+                    if subgridScaleModel == SubgridScaleModel.WALE:
                         db.setValue(self._xpath + '/les/modelConstants/w', self._ui.cw.text(),
                                     self.tr('LES Model Constants w'))
 
