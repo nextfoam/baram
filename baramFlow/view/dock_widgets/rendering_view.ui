@@ -87,7 +87,7 @@
            </property>
            <property name="icon">
             <iconset resource="../../../resource.qrc">
-             <normaloff>:/graphicsIcons/noun-axis-405079</normaloff>:/graphicsIcons/noun-axis-405079</iconset>
+             <normaloff>:/graphicsIcons/originAxes</normaloff>:/graphicsIcons/originAxes</iconset>
            </property>
            <property name="iconSize">
             <size>
