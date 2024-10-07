@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="ko_KR">
+<TS version="2.0" language="ko_KR">
 <context>
     <name>ABLInletDialog</name>
     <message>
@@ -308,7 +308,7 @@
     <message>
         <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="20"/>
         <source>Limits</source>
-        <translation>온도 제한</translation>
+        <translation type="unfinished">값의 제한</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="26"/>
@@ -583,7 +583,7 @@
     </message>
     <message>
         <source>Edit</source>
-        <translation type="vanished">편집</translation>
+        <translation>편집</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/boundary_conditions/boundary_conditions_page.py" line="172"/>
@@ -630,7 +630,7 @@
     </message>
     <message>
         <source>Subsonic Inflow</source>
-        <translation type="vanished">아음속 입구</translation>
+        <translation>아음속 입구</translation>
     </message>
     <message>
         <location filename="../../baramFlow/coredb/boundary_db.py" line="201"/>
@@ -823,7 +823,7 @@
     </message>
     <message>
         <source>Boundary layers applying failed. [</source>
-        <translation type="vanished">경계층격자 생성에 실패했습니다. [</translation>
+        <translation>경계층격자 생성에 실패했습니다. [</translation>
     </message>
 </context>
 <context>
@@ -954,7 +954,7 @@
     </message>
     <message>
         <source>Min. Total Tickness</source>
-        <translation type="vanished">최소 전체 높이</translation>
+        <translation>최소 전체 높이</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/boundaryLayer/boundary_setting_dialog.ui" line="218"/>
@@ -1001,7 +1001,7 @@
     </message>
     <message>
         <source>Open Channle Inlet</source>
-        <translation type="vanished">개수로 입구 유량</translation>
+        <translation>개수로 입구 유량</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/boundary_conditions/boundary_type_picker.ui" line="167"/>
@@ -1015,7 +1015,7 @@
     </message>
     <message>
         <source>Subsonic Inflow</source>
-        <translation type="vanished">아음속 입구</translation>
+        <translation>아음속 입구</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/boundary_conditions/boundary_type_picker.ui" line="224"/>
@@ -1034,7 +1034,7 @@
     </message>
     <message>
         <source>OpenChannel Outlet</source>
-        <translation type="vanished">개수로 출구 속도</translation>
+        <translation>개수로 출구 속도</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/boundary_conditions/boundary_type_picker.ui" line="148"/>
@@ -1277,39 +1277,39 @@
     </message>
     <message>
         <source>Castellation</source>
-        <translation type="vanished">격자세분화</translation>
+        <translation>격자세분화</translation>
     </message>
     <message>
         <source>Region</source>
-        <translation type="vanished">영역</translation>
+        <translation>영역</translation>
     </message>
     <message>
         <source>Add Region</source>
-        <translation type="vanished">영역 추가</translation>
+        <translation>영역 추가</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="vanished">이름</translation>
+        <translation>이름</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="vanished">물질의 종류</translation>
+        <translation>물질의 종류</translation>
     </message>
     <message>
         <source>Fluid</source>
-        <translation type="vanished">유체</translation>
+        <translation>유체</translation>
     </message>
     <message>
         <source>Solid</source>
-        <translation type="vanished">고체</translation>
+        <translation>고체</translation>
     </message>
     <message>
         <source>Point (Specify a point in ther region)</source>
-        <translation type="vanished">영역 안에 있는 점의 좌표</translation>
+        <translation>영역 안에 있는 점의 좌표</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation type="vanished">추가</translation>
+        <translation>추가</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/castellation/castellation_page.py" line="233"/>
@@ -1318,31 +1318,31 @@
     </message>
     <message>
         <source>Global Configuration</source>
-        <translation type="vanished">전역 설정</translation>
+        <translation>전역 설정</translation>
     </message>
     <message>
         <source>Keep Non-Manifold Edges</source>
-        <translation type="vanished">비매니폴드(non-manifold) 엣지 유지</translation>
+        <translation>비매니폴드(non-manifold) 엣지 유지</translation>
     </message>
     <message>
         <source>Keep Open Edges</source>
-        <translation type="vanished">열린 엣지(open edge) 유지</translation>
+        <translation>열린 엣지(open edge) 유지</translation>
     </message>
     <message>
         <source>Refinement Level</source>
-        <translation type="vanished">격자 세분화 레벨</translation>
+        <translation>격자 세분화 레벨</translation>
     </message>
     <message>
         <source>Advanced</source>
-        <translation type="vanished">고급 설정</translation>
+        <translation>고급 설정</translation>
     </message>
     <message>
         <source>Refine</source>
-        <translation type="vanished">격자 세분화</translation>
+        <translation>격자 세분화</translation>
     </message>
     <message>
         <source>Reset</source>
-        <translation type="vanished">초기화</translation>
+        <translation>초기화</translation>
     </message>
 </context>
 <context>
@@ -1584,7 +1584,7 @@
     </message>
     <message>
         <source>Edit</source>
-        <translation type="vanished">편집</translation>
+        <translation>편집</translation>
     </message>
 </context>
 <context>
@@ -1651,7 +1651,7 @@
     </message>
     <message>
         <source>Line-Wrap</source>
-        <translation type="vanished">자동 줄바꿈</translation>
+        <translation>자동 줄바꿈</translation>
     </message>
 </context>
 <context>
@@ -1749,7 +1749,7 @@
     </message>
     <message>
         <source>Edit</source>
-        <translation type="vanished">편집</translation>
+        <translation>편집</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/geometry/geometry_page.py" line="34"/>
@@ -2254,7 +2254,7 @@
     <name>ExportPage</name>
     <message>
         <source>Select Folder</source>
-        <translation type="vanished">폴더 선택</translation>
+        <translation>폴더 선택</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/export/export_page.py" line="50"/>
@@ -2362,15 +2362,15 @@
     <name>FarfieldRiemannDialog</name>
     <message>
         <source>X-Velocity</source>
-        <translation type="vanished">X 속도</translation>
+        <translation>X 속도</translation>
     </message>
     <message>
         <source>Y-Velocity</source>
-        <translation type="vanished">Y 속도</translation>
+        <translation>Y 속도</translation>
     </message>
     <message>
         <source>Z-Velocity</source>
-        <translation type="vanished">Z 속도</translation>
+        <translation>Z 속도</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/boundary_conditions/farfield_riemann_dialog.py" line="25"/>
@@ -2492,15 +2492,15 @@
     </message>
     <message>
         <source>X-Component</source>
-        <translation type="vanished">X 성분</translation>
+        <translation>X 성분</translation>
     </message>
     <message>
         <source>Y-Component</source>
-        <translation type="vanished">Y 성분</translation>
+        <translation>Y 성분</translation>
     </message>
     <message>
         <source>Z-Component</source>
-        <translation type="vanished">Z 성분</translation>
+        <translation>Z 성분</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/boundary_conditions/farfield_riemann_dialog.ui" line="290"/>
@@ -2509,7 +2509,7 @@
     </message>
     <message>
         <source>Static Pressure, P&lt;sub&gt;∞&lt;/sub&gt; (Pa)</source>
-        <translation type="vanished">압력, P&lt;sub&gt;∞&lt;/sub&gt; (Pa)</translation>
+        <translation>압력, P&lt;sub&gt;∞&lt;/sub&gt; (Pa)</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/boundary_conditions/farfield_riemann_dialog.ui" line="310"/>
@@ -2681,27 +2681,27 @@
     </message>
     <message>
         <source>Drag Direction X</source>
-        <translation type="vanished">항력 방향 X</translation>
+        <translation>항력 방향 X</translation>
     </message>
     <message>
         <source>Drag Direction Y</source>
-        <translation type="vanished">항력 방향 Y</translation>
+        <translation>항력 방향 Y</translation>
     </message>
     <message>
         <source>Drag Direction Z</source>
-        <translation type="vanished">항력 방향 Z</translation>
+        <translation>항력 방향 Z</translation>
     </message>
     <message>
         <source>Lift Direction X</source>
-        <translation type="vanished">양력 방향 X</translation>
+        <translation>양력 방향 X</translation>
     </message>
     <message>
         <source>Lift Direction Y</source>
-        <translation type="vanished">양력 방향 Y</translation>
+        <translation>양력 방향 Y</translation>
     </message>
     <message>
         <source>Lift Direction Z</source>
-        <translation type="vanished">양력 방향 Z</translation>
+        <translation>양력 방향 Z</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/monitors/force_dialog.py" line="34"/>
@@ -3212,15 +3212,15 @@
     </message>
     <message>
         <source>Reference Pressure Location X</source>
-        <translation type="vanished">기준압력위치 X</translation>
+        <translation>기준압력위치 X</translation>
     </message>
     <message>
         <source>Reference Pressure Location Y</source>
-        <translation type="vanished">기준압력위치 Y</translation>
+        <translation>기준압력위치 Y</translation>
     </message>
     <message>
         <source>Reference Pressure Location Z</source>
-        <translation type="vanished">기준압력위치 Z</translation>
+        <translation>기준압력위치 Z</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/general/general_page.py" line="53"/>
@@ -3284,7 +3284,7 @@
     </message>
     <message>
         <source>Reference Pressure Location</source>
-        <translation type="vanished">기준 압력 위치</translation>
+        <translation>기준 압력 위치</translation>
     </message>
 </context>
 <context>
@@ -3301,7 +3301,7 @@
     </message>
     <message>
         <source>Name</source>
-        <translation type="vanished">이름</translation>
+        <translation>이름</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/geometry/geometry_add_dialog.ui" line="20"/>
@@ -3479,7 +3479,7 @@
     </message>
     <message>
         <source>Select</source>
-        <translation type="vanished">선택</translation>
+        <translation>선택</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/geometry/geometry_import_dialog.ui" line="52"/>
@@ -3526,7 +3526,7 @@
     </message>
     <message>
         <source>Initialize</source>
-        <translation type="vanished">초기화</translation>
+        <translation>초기화</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="101"/>
@@ -3570,15 +3570,15 @@
     </message>
     <message>
         <source>Initialization cancelled</source>
-        <translation type="vanished">초기화가 취소되었습니다</translation>
+        <translation>초기화가 취소되었습니다</translation>
     </message>
     <message>
         <source>Case generation failed. - </source>
-        <translation type="vanished">케이스 생성에 실패했습니다. - </translation>
+        <translation>케이스 생성에 실패했습니다. - </translation>
     </message>
     <message>
         <source>Setting Section Values failed.</source>
-        <translation type="vanished">섹션 값 설정에 실패했습니다.</translation>
+        <translation>섹션 값 설정에 실패했습니다.</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="144"/>
@@ -3590,35 +3590,35 @@
     <name>InitializationWidget</name>
     <message>
         <source>X-Velocity</source>
-        <translation type="vanished">X 속도</translation>
+        <translation>X 속도</translation>
     </message>
     <message>
         <source>Y-Velocity</source>
-        <translation type="vanished">Y 속도</translation>
+        <translation>Y 속도</translation>
     </message>
     <message>
         <source>Z-Velocity</source>
-        <translation type="vanished">Z 속도</translation>
+        <translation>Z 속도</translation>
     </message>
     <message>
         <source>Pressure</source>
-        <translation type="vanished">압력</translation>
+        <translation>압력</translation>
     </message>
     <message>
         <source>Temperature</source>
-        <translation type="vanished">온도</translation>
+        <translation>온도</translation>
     </message>
     <message>
         <source>Scale of Velocity</source>
-        <translation type="vanished">기준속도</translation>
+        <translation>기준속도</translation>
     </message>
     <message>
         <source>Turbulent Intensity</source>
-        <translation type="vanished">난류 강도</translation>
+        <translation>난류 강도</translation>
     </message>
     <message>
         <source>Turbulent Viscosity</source>
-        <translation type="vanished">난류점도비율</translation>
+        <translation>난류점도비율</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="258"/>
@@ -3911,7 +3911,7 @@
     <message>
         <location filename="../../baramMesh/view/widgets/language_dialog.ui" line="35"/>
         <source>Setting</source>
-        <translation>해상도 설정</translation>
+        <translation type="unfinished">해상도 설정</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/widgets/language_dialog.ui" line="71"/>
@@ -3941,7 +3941,7 @@
     <name>LicenseDialog</name>
     <message>
         <source>Thrid-Party Software Used by BARAM 2023.0.0</source>
-        <translation type="vanished">BARAM 2023.0.0에 사용된 외부 소프트웨어</translation>
+        <translation>BARAM 2023.0.0에 사용된 외부 소프트웨어</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/menu/help/license_dialog.ui" line="14"/>
@@ -4214,39 +4214,39 @@
     </message>
     <message>
         <source>File</source>
-        <translation type="vanished">파일</translation>
+        <translation>파일</translation>
     </message>
     <message>
         <source>View</source>
-        <translation type="vanished">보기</translation>
+        <translation>보기</translation>
     </message>
     <message>
         <source>Settings</source>
-        <translation type="vanished">설정</translation>
+        <translation>설정</translation>
     </message>
     <message>
         <source>Mesh</source>
-        <translation type="vanished">격자</translation>
+        <translation>격자</translation>
     </message>
     <message>
         <source>Help</source>
-        <translation type="vanished">도움말</translation>
+        <translation>도움말</translation>
     </message>
     <message>
         <source>Parallel</source>
-        <translation type="vanished">병렬연산</translation>
+        <translation>병렬연산</translation>
     </message>
     <message>
         <source>External Tools</source>
-        <translation type="vanished">외부프로그램 실행</translation>
+        <translation>외부프로그램 실행</translation>
     </message>
     <message>
         <source>Close Case</source>
-        <translation type="vanished">닫기</translation>
+        <translation>닫기</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="vanished">저장</translation>
+        <translation>저장</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/main_window.ui" line="280"/>
@@ -4264,7 +4264,7 @@
         <location filename="../../baramFlow/view/main_window/main_window.ui" line="300"/>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="3625"/>
         <source>&amp;Scale</source>
-        <translation>축소/확대</translation>
+        <translation>해상도</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/main_window.ui" line="295"/>
@@ -4310,7 +4310,7 @@
     </message>
     <message>
         <source>Environment</source>
-        <translation type="vanished">병렬 환경</translation>
+        <translation>병렬 환경</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/main_window.py" line="314"/>
@@ -4512,7 +4512,7 @@ It cannot be recovered, and changed configurations will be saved automatically.<
     </message>
     <message>
         <source>Loading the boundaries.</source>
-        <translation type="vanished">경계면 정보를 읽고 있습니다.</translation>
+        <translation>경계면 정보를 읽고 있습니다.</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/main_window.py" line="635"/>
@@ -4597,7 +4597,7 @@ It cannot be recovered, and changed configurations will be saved automatically.<
     <message>
         <source>Current mesh and monitor configurations will be cleared.
 Would you like to load another mesh?</source>
-        <translation type="vanished">현재 격자와 모니터 설정이 지워집니다.
+        <translation>현재 격자와 모니터 설정이 지워집니다.
 새로운 격자를 읽겠습니까?</translation>
     </message>
     <message>
@@ -4608,27 +4608,27 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Exit</source>
-        <translation type="vanished">종료</translation>
+        <translation>종료</translation>
     </message>
     <message>
         <source>Scale</source>
-        <translation type="vanished">확대/축소</translation>
+        <translation>확대/축소</translation>
     </message>
     <message>
         <source>Language</source>
-        <translation type="vanished">언어</translation>
+        <translation>언어</translation>
     </message>
     <message>
         <source>Translate</source>
-        <translation type="vanished">평행이동</translation>
+        <translation>평행이동</translation>
     </message>
     <message>
         <source>Rotate</source>
-        <translation type="vanished">회전</translation>
+        <translation>회전</translation>
     </message>
     <message>
         <source>OpenFoam</source>
-        <translation type="vanished">오픈폼</translation>
+        <translation>오픈폼</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/main_window.ui" line="331"/>
@@ -4637,7 +4637,7 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Paraview</source>
-        <translation type="vanished">파라뷰</translation>
+        <translation>파라뷰</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.py" line="189"/>
@@ -4667,31 +4667,31 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>1. Geometry</source>
-        <translation type="vanished">1. 형상정의</translation>
+        <translation>1. 형상정의</translation>
     </message>
     <message>
         <source>2. Region</source>
-        <translation type="vanished">2. 영역정의</translation>
+        <translation>2. 영역정의</translation>
     </message>
     <message>
         <source>3. Base Grid</source>
-        <translation type="vanished">3. 배경격자</translation>
+        <translation>3. 배경격자</translation>
     </message>
     <message>
         <source>4. Castellation</source>
-        <translation type="vanished">4. 격자세분화</translation>
+        <translation>4. 격자세분화</translation>
     </message>
     <message>
         <source>5. Snap</source>
-        <translation type="vanished">5. 형상구현</translation>
+        <translation>5. 형상구현</translation>
     </message>
     <message>
         <source>6. Boundary Layer</source>
-        <translation type="vanished">6. 경계층격자</translation>
+        <translation>6. 경계층격자</translation>
     </message>
     <message>
         <source>7. Export</source>
-        <translation type="vanished">7. 내보내기</translation>
+        <translation>7. 내보내기</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="439"/>
@@ -4712,11 +4712,11 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Import</source>
-        <translation type="vanished">불러오기</translation>
+        <translation>불러오기</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation type="vanished">만들기</translation>
+        <translation>만들기</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="558"/>
@@ -4725,7 +4725,7 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot; color:#ff0000;&quot;&gt;At least one fluid region point should be configured.&lt;/p&gt;&lt;p&gt;Multiple region points can be configured for multi-region case.&lt;/p&gt;&lt;p style=&quot; font-weight: bold;&quot;&gt;You can add region points by clicking the plus(+) icon on the upper right corner.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot; color:#ff0000;&quot;&gt;최소 하나의 유체영역 내의 점이 지정되어야 합니다...&lt;/p&gt;&lt;p&gt;Multiple region 문제에서는 여러개의 점을 지정할 수 있습니다.&lt;/p&gt;&lt;p style=&quot; font-weight: bold;&quot;&gt;상단 오른쪽 모서리에 있는 플러스(+) 아이콘을 클릭하여 영역 점을 추가할 수 있습니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p style=&quot; color:#ff0000;&quot;&gt;최소 하나의 유체영역 내의 점이 지정되어야 합니다...&lt;/p&gt;&lt;p&gt;Multiple region 문제에서는 여러개의 점을 지정할 수 있습니다.&lt;/p&gt;&lt;p style=&quot; font-weight: bold;&quot;&gt;상단 오른쪽 모서리에 있는 플러스(+) 아이콘을 클릭하여 영역 점을 추가할 수 있습니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="635"/>
@@ -4744,7 +4744,7 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>MaX.</source>
-        <translation type="vanished">최대</translation>
+        <translation>최대</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="686"/>
@@ -4807,11 +4807,11 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Generate</source>
-        <translation type="vanished">격자생성</translation>
+        <translation>격자생성</translation>
     </message>
     <message>
         <source>Reset</source>
-        <translation type="vanished">초기화</translation>
+        <translation>초기화</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="926"/>
@@ -4898,7 +4898,7 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Refine</source>
-        <translation type="vanished">격자 세분화</translation>
+        <translation>격자 세분화</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="1470"/>
@@ -4917,11 +4917,11 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Smooting for Surface</source>
-        <translation type="vanished">표면 스무딩</translation>
+        <translation>표면 스무딩</translation>
     </message>
     <message>
         <source>Smooting for Internal</source>
-        <translation type="vanished">내부 스무딩</translation>
+        <translation>내부 스무딩</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="1527"/>
@@ -4986,7 +4986,7 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Starting Anaylysis</source>
-        <translation type="vanished">시작전 분석</translation>
+        <translation>시작전 분석</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="1931"/>
@@ -5346,15 +5346,15 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Console Log</source>
-        <translation type="vanished">콘솔 로그</translation>
+        <translation>콘솔 로그</translation>
     </message>
     <message>
         <source>New</source>
-        <translation type="vanished">새 작업</translation>
+        <translation>새 작업</translation>
     </message>
     <message>
         <source>Open</source>
-        <translation type="vanished">열기</translation>
+        <translation>열기</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="3610"/>
@@ -5363,7 +5363,7 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Parameters</source>
-        <translation type="vanished">파라미터</translation>
+        <translation>파라미터</translation>
     </message>
 </context>
 <context>
@@ -5836,15 +5836,15 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Remove Meterial Failed</source>
-        <translation type="vanished">물질 삭제에 실패했습니다</translation>
+        <translation>물질 삭제에 실패했습니다</translation>
     </message>
     <message>
         <source>Material</source>
-        <translation type="vanished">물질 선택</translation>
+        <translation>물질 선택</translation>
     </message>
     <message>
         <source>Select material to add</source>
-        <translation type="vanished">추가할 물질 선택</translation>
+        <translation>추가할 물질 선택</translation>
     </message>
 </context>
 <context>
@@ -5987,59 +5987,59 @@ Would you like to load another mesh?</source>
     <name>MeshDock</name>
     <message>
         <source>Mesh</source>
-        <translation type="vanished">격자</translation>
+        <translation>격자</translation>
     </message>
     <message>
         <source>Run ParaView</source>
-        <translation type="vanished">Paraview 실행</translation>
+        <translation>Paraview 실행</translation>
     </message>
     <message>
         <source>Axes On/Off</source>
-        <translation type="vanished">축 표시</translation>
+        <translation>축 표시</translation>
     </message>
     <message>
         <source>Origin Axes On/Off</source>
-        <translation type="vanished">원점 표시</translation>
+        <translation>원점 표시</translation>
     </message>
     <message>
         <source>Cube Axes On/Off</source>
-        <translation type="vanished">범위 표시</translation>
+        <translation>범위 표시</translation>
     </message>
     <message>
         <source>Orthogonal/Perspective View</source>
-        <translation type="vanished">원근 적용</translation>
+        <translation>원근 적용</translation>
     </message>
     <message>
         <source>Fit</source>
-        <translation type="vanished">맞춤</translation>
+        <translation>맞춤</translation>
     </message>
     <message>
         <source>Rotate</source>
-        <translation type="vanished">회전</translation>
+        <translation>회전</translation>
     </message>
     <message>
         <source>Points</source>
-        <translation type="vanished">점</translation>
+        <translation>점</translation>
     </message>
     <message>
         <source>Wireframe</source>
-        <translation type="vanished">선</translation>
+        <translation>선</translation>
     </message>
     <message>
         <source>Surface</source>
-        <translation type="vanished">면</translation>
+        <translation>면</translation>
     </message>
     <message>
         <source>SurfaceEdge</source>
-        <translation type="vanished">격자면</translation>
+        <translation>격자면</translation>
     </message>
     <message>
         <source>Feature</source>
-        <translation type="vanished">윤곽</translation>
+        <translation>윤곽</translation>
     </message>
     <message>
         <source>Select Paraview Program</source>
-        <translation type="vanished">Paraview 프로그램 선택</translation>
+        <translation>Paraview 프로그램 선택</translation>
     </message>
 </context>
 <context>
@@ -6131,24 +6131,24 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Mesh Loading</source>
-        <translation type="vanished">격자 읽어오는 중</translation>
+        <translation>격자 읽어오는 중</translation>
     </message>
     <message>
         <source>Checking the mesh.</source>
-        <translation type="vanished">격자 검사 중</translation>
+        <translation>격자 검사 중</translation>
     </message>
     <message>
         <source>Loading the boundaries.</source>
-        <translation type="vanished">경계면 정보 읽는 중</translation>
+        <translation>경계면 정보 읽는 중</translation>
     </message>
     <message>
         <source>Error occurred:
 </source>
-        <translation type="vanished">오류 발생</translation>
+        <translation>오류 발생</translation>
     </message>
     <message>
         <source>Converting the mesh.</source>
-        <translation type="vanished">격자를 변환하는 중</translation>
+        <translation>격자를 변환하는 중</translation>
     </message>
     <message>
         <location filename="../../baramFlow/mesh/mesh_manager.py" line="140"/>
@@ -6600,7 +6600,7 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="vanished">편집</translation>
+        <translation>편집</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/models/models_page.py" line="73"/>
@@ -6696,15 +6696,15 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Flow Type</source>
-        <translation type="vanished">압축성</translation>
+        <translation>압축성</translation>
     </message>
     <message>
         <source>Compressible</source>
-        <translation type="vanished">압축성</translation>
+        <translation>압축성</translation>
     </message>
     <message>
         <source>Incompressible</source>
-        <translation type="vanished">비압축성</translation>
+        <translation>비압축성</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/models/models_page.py" line="102"/>
@@ -6892,15 +6892,15 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Add</source>
-        <translation type="vanished">추가</translation>
+        <translation>추가</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="vanished">편집</translation>
+        <translation>편집</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="vanished">삭제</translation>
+        <translation>삭제</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="25"/>
@@ -7236,7 +7236,7 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Under-Relaxation Factors</source>
-        <translation type="vanished">완화계수</translation>
+        <translation>완화계수</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="336"/>
@@ -7316,7 +7316,7 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Convergence Criteria</source>
-        <translation type="vanished">수렴 판정 기준</translation>
+        <translation>수렴 판정 기준</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="650"/>
@@ -7330,7 +7330,7 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Advanced</source>
-        <translation type="vanished">고급설정</translation>
+        <translation>고급설정</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="43"/>
@@ -8437,11 +8437,11 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Total Pressure (Pa)</source>
-        <translation type="vanished">전압력 (Pa)</translation>
+        <translation>전압력 (Pa)</translation>
     </message>
     <message>
         <source>Calculate Backflow</source>
-        <translation type="vanished">유입류 조건 계산</translation>
+        <translation>유입류 조건 계산</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/boundary_conditions/pressure_outlet_dialog.ui" line="88"/>
@@ -8478,11 +8478,11 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <source>Calculation Execution Failed</source>
-        <translation type="vanished">계산 실행에 실패했습니다</translation>
+        <translation>계산 실행에 실패했습니다</translation>
     </message>
     <message>
         <source>Solver execution failed or terminated.</source>
-        <translation type="vanished">솔버 실행에 실패했거나 종료되었습니다.</translation>
+        <translation>솔버 실행에 실패했거나 종료되었습니다.</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="119"/>
@@ -9059,7 +9059,7 @@ Calculation stops as soon as possible</source>
     </message>
     <message>
         <source>Point (Specify a point in ther region)</source>
-        <translation type="vanished">영역 안에 있는 점의 좌표</translation>
+        <translation>영역 안에 있는 점의 좌표</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/region/region_form.ui" line="131"/>
@@ -9127,95 +9127,95 @@ Calculation stops as soon as possible</source>
     <name>RegionWidget</name>
     <message>
         <source>Velocity Inlet</source>
-        <translation type="vanished">입구 속도</translation>
+        <translation>입구 속도</translation>
     </message>
     <message>
         <source>Flow Rate Inlet</source>
-        <translation type="vanished">입구 유량</translation>
+        <translation>입구 유량</translation>
     </message>
     <message>
         <source>Pressure Inlet</source>
-        <translation type="vanished">입구 전압력</translation>
+        <translation>입구 전압력</translation>
     </message>
     <message>
         <source>ABL Inlet</source>
-        <translation type="vanished">대기경계층 입구</translation>
+        <translation>대기경계층 입구</translation>
     </message>
     <message>
         <source>Open Channel Inlet</source>
-        <translation type="vanished">개수로 입구 유량</translation>
+        <translation>개수로 입구 유량</translation>
     </message>
     <message>
         <source>Free Stream</source>
-        <translation type="vanished">비압축성 자유류</translation>
+        <translation>비압축성 자유류</translation>
     </message>
     <message>
         <source>Far-Field Riemann</source>
-        <translation type="vanished">압축성 원방 리만</translation>
+        <translation>압축성 원방 리만</translation>
     </message>
     <message>
         <source>Subsonic Inflow</source>
-        <translation type="vanished">아음속 입구</translation>
+        <translation>아음속 입구</translation>
     </message>
     <message>
         <source>Supersonic Inflow</source>
-        <translation type="vanished">초음속 입구</translation>
+        <translation>초음속 입구</translation>
     </message>
     <message>
         <source>Pressure Outlet</source>
-        <translation type="vanished">출구 전압력</translation>
+        <translation>출구 전압력</translation>
     </message>
     <message>
         <source>OpenChannel Outlet</source>
-        <translation type="vanished">개수로 출구 속도</translation>
+        <translation>개수로 출구 속도</translation>
     </message>
     <message>
         <source>Outflow</source>
-        <translation type="vanished">유출(outflow)</translation>
+        <translation>유출(outflow)</translation>
     </message>
     <message>
         <source>Subsonic Outflow</source>
-        <translation type="vanished">아음속 출구</translation>
+        <translation>아음속 출구</translation>
     </message>
     <message>
         <source>Supersonic Outflow</source>
-        <translation type="vanished">초음속 출구</translation>
+        <translation>초음속 출구</translation>
     </message>
     <message>
         <source>Wall</source>
-        <translation type="vanished">벽면</translation>
+        <translation>벽면</translation>
     </message>
     <message>
         <source>Thermo-Coupled Wall</source>
-        <translation type="vanished">연결 벽면</translation>
+        <translation>연결 벽면</translation>
     </message>
     <message>
         <source>Porous Jump</source>
-        <translation type="vanished">다공성 압력 점프</translation>
+        <translation>다공성 압력 점프</translation>
     </message>
     <message>
         <source>FAN</source>
-        <translation type="vanished">팬</translation>
+        <translation>팬</translation>
     </message>
     <message>
         <source>Symmetry</source>
-        <translation type="vanished">대칭</translation>
+        <translation>대칭</translation>
     </message>
     <message>
         <source>Interface</source>
-        <translation type="vanished">인터페이스</translation>
+        <translation>인터페이스</translation>
     </message>
     <message>
         <source>Empty</source>
-        <translation type="vanished">2차원 경계</translation>
+        <translation>2차원 경계</translation>
     </message>
     <message>
         <source>Wedge</source>
-        <translation type="vanished">축대칭 경계</translation>
+        <translation>축대칭 경계</translation>
     </message>
     <message>
         <source>GroupBox</source>
-        <translation type="vanished">그룹 박스</translation>
+        <translation>그룹 박스</translation>
     </message>
 </context>
 <context>
@@ -9351,7 +9351,7 @@ Calculation stops as soon as possible</source>
     </message>
     <message>
         <source>Max Courant Number For VoF</source>
-        <translation type="vanished">VOF의 최대 CFL 수</translation>
+        <translation>VOF의 최대 CFL 수</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="108"/>
@@ -9366,7 +9366,7 @@ Calculation stops as soon as possible</source>
     </message>
     <message>
         <source>Max Courant Number</source>
-        <translation type="vanished">최대 CFL 수</translation>
+        <translation>최대 CFL 수</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="102"/>
@@ -9692,7 +9692,7 @@ Calculation stops as soon as possible</source>
     <message>
         <location filename="../../baramFlow/view/main_window/menu/settrings/settings_language_dialog.ui" line="35"/>
         <source>Setting</source>
-        <translation>해상도 설정</translation>
+        <translation type="unfinished">설정</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/menu/settrings/settings_language_dialog.ui" line="71"/>
@@ -9921,39 +9921,39 @@ Calculation stops as soon as possible</source>
     </message>
     <message>
         <source>Snap</source>
-        <translation type="vanished">형상구현(스냅)</translation>
+        <translation>형상구현(스냅)</translation>
     </message>
     <message>
         <source>Global Configuration</source>
-        <translation type="vanished">전역 설정</translation>
+        <translation>전역 설정</translation>
     </message>
     <message>
         <source>Iteration Count</source>
-        <translation type="vanished">반복 회수</translation>
+        <translation>반복 회수</translation>
     </message>
     <message>
         <source>Smooting for Surface</source>
-        <translation type="vanished">표면 스무딩</translation>
+        <translation>표면 스무딩</translation>
     </message>
     <message>
         <source>Smooting for Internal</source>
-        <translation type="vanished">내부 스무딩</translation>
+        <translation>내부 스무딩</translation>
     </message>
     <message>
         <source>Snapping Relaxation</source>
-        <translation type="vanished">스내핑 완화</translation>
+        <translation>스내핑 완화</translation>
     </message>
     <message>
         <source>Feature Snapping</source>
-        <translation type="vanished">특징(feature) 스내핑</translation>
+        <translation>특징(feature) 스내핑</translation>
     </message>
     <message>
         <source>Multi-Surface Feature Snap</source>
-        <translation type="vanished">다중 표면 특징(feature) 스내핑</translation>
+        <translation>다중 표면 특징(feature) 스내핑</translation>
     </message>
     <message>
         <source>Concave Angle (degree)</source>
-        <translation type="vanished">오목한(concave) 각도</translation>
+        <translation>오목한(concave) 각도</translation>
     </message>
 </context>
 <context>
@@ -10176,54 +10176,54 @@ Calculation stops as soon as possible</source>
     <name>StartWindow</name>
     <message>
         <source>Start Baram</source>
-        <translation type="vanished">Baram 시작</translation>
+        <translation>Baram 시작</translation>
     </message>
     <message>
         <source>New Case</source>
-        <translation type="vanished">새 계산</translation>
+        <translation>새 계산</translation>
     </message>
     <message>
         <source>Open</source>
-        <translation type="vanished">열기</translation>
+        <translation>열기</translation>
     </message>
 </context>
 <context>
     <name>SubsonicInflowDialog</name>
     <message>
         <source>X-Component</source>
-        <translation type="vanished">X-성분</translation>
+        <translation>X-성분</translation>
     </message>
     <message>
         <source>Y-Component</source>
-        <translation type="vanished">Y-성분</translation>
+        <translation>Y-성분</translation>
     </message>
     <message>
         <source>Z-Component</source>
-        <translation type="vanished">Z-성분</translation>
+        <translation>Z-성분</translation>
     </message>
     <message>
         <source>Pressure</source>
-        <translation type="vanished">압력</translation>
+        <translation>압력</translation>
     </message>
     <message>
         <source>Input Error</source>
-        <translation type="vanished">입력 오류</translation>
+        <translation>입력 오류</translation>
     </message>
     <message>
         <source>Subsonic Inflow Boundary Condition</source>
-        <translation type="vanished">아음속 입구 경계조건</translation>
+        <translation>아음속 입구 경계조건</translation>
     </message>
     <message>
         <source>Flow Direction</source>
-        <translation type="vanished">유동 방향</translation>
+        <translation>유동 방향</translation>
     </message>
     <message>
         <source>Total (Stagnation) Pressure, P&lt;sub&gt;0&lt;/sub&gt; (Pa)</source>
-        <translation type="vanished">전압력, P&lt;sub&gt;0&lt;/sub&gt; (Pa)</translation>
+        <translation>전압력, P&lt;sub&gt;0&lt;/sub&gt; (Pa)</translation>
     </message>
     <message>
         <source>Total Temperature, T&lt;sub&gt;0&lt;/sub&gt; (K)</source>
-        <translation type="vanished">전온도, T&lt;sub&gt;0&lt;/sub&gt; (K)</translation>
+        <translation>전온도, T&lt;sub&gt;0&lt;/sub&gt; (K)</translation>
     </message>
 </context>
 <context>
@@ -10554,7 +10554,7 @@ Calculation stops as soon as possible</source>
     </message>
     <message>
         <source>Surface Refinement Level</source>
-        <translation type="vanished">면 격자 세분화 레벨</translation>
+        <translation>면 격자 세분화 레벨</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/castellation/surface_refinement_dialog.py" line="89"/>
@@ -12312,7 +12312,7 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
     </message>
     <message>
         <source>Each coordinate of point1 must be smaller than the coordinate of point2.</source>
-        <translation type="vanished">포인트 1의 각 성분 좌표값은 포인트 2의 값보다 작아야 합니다.</translation>
+        <translation>포인트 1의 각 성분 좌표값은 포인트 2의 값보다 작아야 합니다.</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/geometry/volume_dialog.py" line="225"/>
@@ -12538,7 +12538,7 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
     </message>
     <message>
         <source>Input Error</source>
-        <translation type="vanished">입력 오류</translation>
+        <translation>입력 오류</translation>
     </message>
 </context>
 <context>

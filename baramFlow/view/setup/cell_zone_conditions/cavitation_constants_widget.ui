@@ -29,7 +29,7 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Model Constrants</string>
+      <string>Model Constants</string>
      </property>
      <layout class="QFormLayout" name="constantsLayout">
       <item row="0" column="0">
