@@ -13,7 +13,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
-from baramFlow.case_manager import CaseManager
+from baramFlow.case_manager import CaseManager, BatchCase
 from baramFlow.coredb.filedb import FileDB
 from baramFlow.coredb.project import Project
 from baramFlow.solver_status import SolverStatus
@@ -47,6 +47,7 @@ class ContextMenu(QMenu):
             self.tr('Cancel Schedule'), lambda: self.cancelScheduleActionTriggered.emit(self._targets))
         self._deleteAction = self.addAction(
             self.tr('Delete'), lambda: self.deleteActionTriggered.emit(self._targets))
+
     def execute(self, pos, items):
         self._targets = items
 
@@ -275,7 +276,8 @@ class BatchCaseList(QObject):
 
         name = items[0].name()
         status = items[0].status()
-        CaseManager().loadBatchCase(name, self._cases[name], status if status else SolverStatus.NONE)
+        # CaseManager().loadBatchCase(name, self._cases[name], status if status else SolverStatus.NONE)
+        CaseManager().loadBatchCase(BatchCase(name, self._cases[name]))
 
         progressDialog.close()
 

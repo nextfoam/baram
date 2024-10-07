@@ -24,7 +24,7 @@ from widgets.progress_dialog import ProgressDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 from baramFlow.app import app
-from baramFlow.case_manager import CaseManager
+from baramFlow.case_manager import CaseManager, LiveCase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.coredb.general_db import GeneralDB
@@ -570,7 +570,7 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _projectOpened(self):
-        self._caseManager.load()
+        self._caseManager.load(LiveCase())
 
         if self._caseManager.isRunning():
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN.value)
