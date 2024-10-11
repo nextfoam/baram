@@ -108,7 +108,7 @@ class T(BoundaryCondition):
 
     def _constructPressureOutletT(self, xpath):
         if self._db.getValue(xpath + '/pressureOutlet/calculatedBackflow') == 'true':
-            constant = self._db.getValue(xpath + '/pressureOutlet/backflowTotalTemperature')
+            constant = float(self._db.getValue(xpath + '/pressureOutlet/backflowTotalTemperature'))
             return self._constructInletOutletTotalTemperature(xpath, constant)
         else:
             return self._constructZeroGradient()
