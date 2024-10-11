@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from itertools import combinations
+
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, ContactAngleModel, InterfaceMode
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
+from baramFlow.openfoam.solver import findSolver
 
 
 class Alpha(BoundaryCondition):
@@ -94,6 +97,10 @@ class Alpha(BoundaryCondition):
         }
 
     def _constructWallAlpha(self, xpath):
+        # "multiphaseInterFoam" has its own boundary type of "alphaContactAngle"
+        if findSolver() == 'multiphaseInterFoam':
+            return self._constructWallAlphaForMultiphaseInterFoam(xpath)
+
         contactAngleModel = self._db.getValue(xpath + '/wall/wallAdhesions/model')
         if contactAngleModel == ContactAngleModel.DISABLE.value:
             return self._constructZeroGradient()
@@ -136,3 +143,45 @@ class Alpha(BoundaryCondition):
         fraction = self._db.getValue(f'{xpath}/volumeFractions/volumeFraction[material="{mid}"]/fraction')
 
         return fraction
+
+    def _constructWallAlphaForMultiphaseInterFoam(self, xpath):
+        if self._mid != self._region.mid:  # This material is not primary material
+            return self._constructZeroGradient()
+
+        # The code from here applies only to primary material
+
+        contactAngleModel = ContactAngleModel(self._db.getValue(xpath + '/wall/wallAdhesions/model'))
+
+        if contactAngleModel == ContactAngleModel.DISABLE:
+            return self._constructZeroGradient()
+
+        materials = [self._mid, *self._region.secondaryMaterials]
+        valueList = []
+        for mid1, mid2 in combinations(materials, 2):
+            name1 = MaterialDB.getName(mid1)
+            name2 = MaterialDB.getName(mid2)
+            caXpath = f'{xpath}/wall/wallAdhesions/wallAdhesion[mid="{mid1}"][mid="{mid2}"]'
+
+            theta0 = self._db.getValue(caXpath + '/contactAngle')
+
+            if contactAngleModel == ContactAngleModel.DYNAMIC:
+                uTheta = self._db.getValue(caXpath + '/characteristicVelocityScale')
+                thetaA = self._db.getValue(caXpath + '/advancingContactAngle')
+                thetaR = self._db.getValue(caXpath + '/recedingContactAngle')
+            else:  # contactAngleModel == ContactAngleModel.CONSTANT:
+                uTheta = 0
+                thetaA = 0
+                thetaR = 0
+
+            valueList.extend([
+                [name1, name2],
+                theta0,
+                uTheta,
+                thetaA,
+                thetaR
+            ])
+        return {
+            'type': 'alphaContactAngle',
+            'thetaProperties': valueList,
+            'value': self._initialValueByTime()
+        }
