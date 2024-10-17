@@ -108,7 +108,7 @@ class MonitorView(QWidget):
             del self._deletedMonitors[name]
 
     def _createChart(self, maxX):
-        chart = ChartWidget()
+        chart = ChartWidget(maxX)
         self._chartsLayout.addWidget(chart)
         return chart
 
