@@ -254,10 +254,10 @@ class MainWindow(QMainWindow):
             app.openProject(path.resolve())
             self._projectOpened()
         except FileNotFoundError:
-            await AsyncMessageBox().information(self, self.tr('Case Open Error'),
+            await AsyncMessageBox().information(self, self.tr('Project Open Error'),
                                                 self.tr(f'{path.name} is not a baram project.'))
         except Timeout:
-            await AsyncMessageBox().information(self, self.tr('Case Open Error'),
+            await AsyncMessageBox().information(self, self.tr('Project Open Error'),
                                     self.tr(f'{path.name} is already open in another program.'))
 
     @qasync.asyncSlot()
@@ -270,7 +270,7 @@ class MainWindow(QMainWindow):
                                                     self.tr(f'{file} is not a directory.'))
                 return
             elif os.listdir(path):
-                await AsyncMessageBox().information(self, self.tr('Case Directory Error'),
+                await AsyncMessageBox().information(self, self.tr('Project Directory Error'),
                                                     self.tr(f'{file} is not empty.'))
                 return
 

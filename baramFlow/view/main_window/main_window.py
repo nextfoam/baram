@@ -661,7 +661,7 @@ class MainWindow(QMainWindow):
             progressDialog = ProgressDialog(self, self.tr('Save As'))
             progressDialog.open()
 
-            progressDialog.setLabelText(self.tr('Saving case'))
+            progressDialog.setLabelText(self.tr('Saving project'))
 
             await asyncio.to_thread(FileSystem.saveAs, self._project.path, path, coredb.CoreDB().getRegions())
             self._project.saveAs(path)
