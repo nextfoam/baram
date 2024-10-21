@@ -54,7 +54,7 @@ class ChartWidget(QWidget):
 
         for c in self._data.columns.values.tolist():
             if c not in self._lines:
-                self._lines[c] = self._chart.plot(times, self._data[c].to_numpy(), name=c, pen='b')
+                self._lines[c] = self._chart.plot(times, self._data[c].to_numpy(), name=c, pen={'color': '#1f77b4', 'width': 2})
             else:
                 self._lines[c].setData(times, self._data[c].to_numpy())
 
@@ -71,14 +71,22 @@ class ChartWidget(QWidget):
         self._lines = {}
 
         self._chart = pg.PlotWidget(background='w')
-        self._chart.addLegend(offset=(-10, 10), pen='lightGray', brush='w')
+
         self._chart.setLogMode(False, self._logScale)
-        self._chart.plotItem.setMouseEnabled(True, False)
-        self._chart.plotItem.getViewBox().setBorder('k')
-        self._chart.plotItem.showGrid(True, True)
         self._chart.setXRange(0, self._width, padding=SIDE_MARGIN)
         self._chart.sigRangeChanged.connect(self._adjustRange)
-        # axis = self._chart.getAxis('left')
+
+        plotItem: pg.PlotItem = self._chart.getPlotItem()
+
+        plotItem.setMouseEnabled(True, False)
+        plotItem.getViewBox().setBorder('k')
+        plotItem.showGrid(True, True)
+
+        legend = pg.LegendItem(offset=(-10, 10+30), pen='lightGray', brush='w')  # Chart Title has a height of 30
+        legend.setZValue(1)  # Raise LegendItem over Grid (Z-Value of Grid is 0.5)
+        legend.setParentItem(plotItem)
+
+        plotItem.legend = legend
 
         self.layout().addWidget(self._chart)
 

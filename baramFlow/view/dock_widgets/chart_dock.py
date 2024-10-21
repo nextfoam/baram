@@ -95,7 +95,7 @@ class ChartView(QWidget):
         for c in data.columns.values.tolist():
             if c not in self._lines:
                 self._lines[c] = self._chart.plot(
-                    times, data[c].to_numpy(), name=c, pen=COLORS[len(self._lines) % 10])
+                    times, data[c].to_numpy(), name=c, pen={'color': COLORS[len(self._lines) % 10], 'width': 2})
             else:
                 self._lines[c].setData(times, data[c].to_numpy())
 
@@ -160,13 +160,22 @@ class ChartView(QWidget):
             self._width = 50
 
         self._chart = pg.PlotWidget(background='w')
-        self._chart.addLegend(offset=(-10, 10), pen='lightGray', brush='w')
+
         self._chart.setLogMode(False, True)
-        self._chart.plotItem.setMouseEnabled(True, False)
-        self._chart.plotItem.getViewBox().setBorder('k')
-        self._chart.plotItem.showGrid(True, True)
         self._chart.setXRange(0, self._width, padding=SIDE_MARGIN)
         self._chart.sigRangeChanged.connect(self._adjustRange)
+
+        plotItem: pg.PlotItem = self._chart.getPlotItem()
+
+        plotItem.setMouseEnabled(True, False)
+        plotItem.getViewBox().setBorder('k')
+        plotItem.showGrid(True, True)
+
+        legend = pg.LegendItem(offset=(-10, 10), pen='lightGray', brush='w')
+        legend.setZValue(1)  # Raise LegendItem over Grid (Z-Value of Grid is 0.5)
+        legend.setParentItem(plotItem)
+
+        plotItem.legend = legend
 
         self.layout().addWidget(self._chart)
 
