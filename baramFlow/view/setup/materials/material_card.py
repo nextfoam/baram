@@ -77,7 +77,9 @@ class MaterialCard(QWidget):
             else:
                 self._ui.specificHeat.setText(MaterialDB.specificationToText(specification))
 
-            if viscositySpec == ViscositySpecification.SUTHERLAND:
+            if phase != Phase.SOLID \
+                    and (TurbulenceModelsDB.getModel() == TurbulenceModel.INVISCID
+                         or viscositySpec == ViscositySpecification.SUTHERLAND):
                 self._ui.thermalConductivityWidget.hide()
             else:
                 self._ui.thermalConductivityWidget.show()

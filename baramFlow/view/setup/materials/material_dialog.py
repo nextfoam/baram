@@ -52,6 +52,8 @@ class MaterialDialog(ResizableDialog):
 
         self._ui.viscosityGroup.setVisible(
             self._phase != Phase.SOLID and TurbulenceModelsDB.getModel() != TurbulenceModel.INVISCID)
+        self._ui.thermalConductivity.setVisible(
+            self._phase != Phase.SOLID and TurbulenceModelsDB.getModel() != TurbulenceModel.INVISCID)
 
         self._connectSignalsSlots()
         self._load()
