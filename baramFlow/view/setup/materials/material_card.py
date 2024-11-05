@@ -61,6 +61,7 @@ class MaterialCard(QWidget):
         if phase == Phase.SOLID or TurbulenceModelsDB.getModel() == TurbulenceModel.INVISCID:
             self._ui.viscosistyWidget.hide()
         else:
+            self._ui.viscosistyWidget.show()
             viscositySpec = ViscositySpecification(db.getValue(self._xpath + '/viscosity/specification'))
             if (MaterialDB.isNonNewtonianSpecification(viscositySpec)
                     or (viscositySpec != ViscositySpecification.CONSTANT and energyModelOn)):
