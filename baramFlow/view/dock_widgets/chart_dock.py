@@ -26,6 +26,9 @@ WIDTH_RATIO = 0.5 / (0.5 + SIDE_MARGIN)     # Ratio of the chart width excluding
 LEFT_RATIO = 1 - SIDE_MARGIN
 
 
+COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+
+
 class ChartView(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -91,7 +94,8 @@ class ChartView(QWidget):
 
         for c in data.columns.values.tolist():
             if c not in self._lines:
-                self._lines[c] = self._chart.plot(times, data[c].to_numpy(), name=c, pen=(len(self._lines) - 1, 20))
+                self._lines[c] = self._chart.plot(
+                    times, data[c].to_numpy(), name=c, pen=COLORS[len(self._lines) % 10])
             else:
                 self._lines[c].setData(times, data[c].to_numpy())
 
@@ -106,12 +110,16 @@ class ChartView(QWidget):
         minX, maxX = xRange
         width = (maxX - minX) * WIDTH_RATIO
 
-        maxX = float(self._data.last_valid_index())
-        if maxX < width:
+        maxTime = float(self._data.last_valid_index())
+        if minX < 0 and maxX >= maxTime:
+            return
+
+        if maxTime < width:
             minX = 0
             maxX = width
         else:
-            minX = maxX - width
+            minX = maxTime - width
+            maxX = maxTime
 
         d = self._data[(self._data.index >= minX * LEFT_RATIO) & (self._data.index <= maxX)]
         minY = d[d > 0].min().min()  # Residual value of "0" has been shown once

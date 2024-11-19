@@ -13,11 +13,13 @@ class ProjectManager(QObject):
     def createProject(self, path):
         path.mkdir()
 
-        return self.openProject(path)
+        project = Project(path)
+        project.new()
+
+        return project
 
     def openProject(self, path):
         project = Project(path)
-
         project.open()
 
         return project

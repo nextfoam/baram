@@ -248,13 +248,17 @@ class MainWindow(QMainWindow):
         if await self._saveCurrentPage():
             self._project.save()
 
-    def _saveAs(self):
-        QMessageBox.information(self, self.tr('Save as a new project'),
-                                self.tr('Only configuration and mesh are saved. (Calculation results are not copied)'))
+    @qasync.asyncSlot()
+    async def _saveAs(self):
+        await AsyncMessageBox().information(
+            self, self.tr('Save as a new project'),
+            self.tr('Only configuration and mesh are saved. (Calculation results are not copied)'))
 
         self._dialog = QFileDialog(self, self.tr('Select Project Directory'), AppSettings.getRecentLocation())
         self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        self._dialog.finished.connect(self._projectDirectorySelected)
+        self._dialog.fileSelected.connect(self._projectDirectorySelected)
+        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
+        self._dialog.finished.connect(self._ui.menubar.repaint)
         self._dialog.open()
 
     async def _saveCurrentPage(self):
@@ -640,31 +644,28 @@ class MainWindow(QMainWindow):
         self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _projectDirectorySelected(self, result):
-        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
-        self._ui.menubar.repaint()
+    async def _projectDirectorySelected(self, file):
+        path = Path(file).resolve()
 
-        if dirs := self._dialog.selectedFiles():
-            path = Path(dirs[0]).resolve()
+        if path.exists():
+            if not path.is_dir():
+                await AsyncMessageBox().information(self, self.tr('Project Directory Error'),
+                                                    self.tr(f'{path} is not a directory.'))
+                return
+            elif os.listdir(path):
+                AsyncMessageBox().information(self, self.tr('Project Directory Error'),
+                                              self.tr(f'{path} is not empty.'))
+                return
 
-            if path.exists():
-                if not path.is_dir():
-                    QMessageBox.critical(self, self.tr('Case Directory Error'),
-                                         self.tr(f'{dirs[0]} is not a directory.'))
-                    return
-                elif os.listdir(path):
-                    QMessageBox.critical(self, self.tr('Case Directory Error'), self.tr(f'{dirs[0]} is not empty.'))
-                    return
+        if await self._saveCurrentPage():
+            progressDialog = ProgressDialog(self, self.tr('Save As'))
+            progressDialog.open()
 
-            if await self._saveCurrentPage():
-                progressDialog = ProgressDialog(self, self.tr('Save As'))
-                progressDialog.open()
+            progressDialog.setLabelText(self.tr('Saving project'))
 
-                progressDialog.setLabelText(self.tr('Saving case'))
-
-                await asyncio.to_thread(FileSystem.saveAs, self._project.path, path, coredb.CoreDB().getRegions())
-                self._project.saveAs(path)
-                progressDialog.close()
+            await asyncio.to_thread(FileSystem.saveAs, self._project.path, path, coredb.CoreDB().getRegions())
+            self._project.saveAs(path)
+            progressDialog.close()
 
     def _openMeshSelectionDialog(self, meshType, fileFilter=None):
         self._dialog = QFileDialog(self, self.tr('Select Mesh Directory'),

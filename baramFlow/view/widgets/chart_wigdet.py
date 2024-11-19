@@ -54,7 +54,7 @@ class ChartWidget(QWidget):
 
         for c in self._data.columns.values.tolist():
             if c not in self._lines:
-                self._lines[c] = self._chart.plot(times, self._data[c].to_numpy(), name=c)
+                self._lines[c] = self._chart.plot(times, self._data[c].to_numpy(), name=c, pen='b')
             else:
                 self._lines[c].setData(times, self._data[c].to_numpy())
 
@@ -131,12 +131,16 @@ class ChartWidget(QWidget):
         minX, maxX = xRange
         width = (maxX - minX) * WIDTH_RATIO
 
-        maxX = float(self._data.last_valid_index())
-        if maxX < width:
+        maxTime = float(self._data.last_valid_index())
+        if minX < 0 and maxX >= maxTime:
+            return
+
+        if maxTime < width:
             minX = 0
             maxX = width
         else:
-            minX = maxX - width
+            minX = maxTime - width
+            maxX = maxTime
 
         with QSignalBlocker(self._chart):
             yRange = self._adjustedYRange(minX, maxX)
