@@ -3359,6 +3359,32 @@ QCheckBox::indicator:checked { image: url(:/images/toggle_on); padding: 0; }</st
                        </widget>
                       </item>
                       <item>
+                       <widget class="FlatPushButton" name="rotationCenter">
+                        <property name="maximumSize">
+                         <size>
+                          <width>32</width>
+                          <height>32</height>
+                         </size>
+                        </property>
+                        <property name="toolTip">
+                         <string>Rotation Center</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../../../resource.qrc">
+                          <normaloff>:/graphicsIcons/rotationCenter</normaloff>:/graphicsIcons/rotationCenter</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>24</width>
+                          <height>24</height>
+                         </size>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
                        <widget class="QWidget" name="widget_17" native="true">
                         <layout class="QHBoxLayout" name="horizontalLayout_24">
                          <property name="spacing">
@@ -3686,6 +3712,7 @@ QCheckBox::indicator:checked { image: url(:/images/toggle_on); padding: 0; }</st
   </customwidget>
  </customwidgets>
  <resources>
+  <include location="../../../resource.qrc"/>
   <include location="../../../resource.qrc"/>
  </resources>
  <connections/>
