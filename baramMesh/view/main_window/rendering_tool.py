@@ -4,6 +4,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QColorDialog
+
+from widgets.rendering.rendering_widget import RenderingWidget
 from widgets.rendering.rotation_center_widget import RotationCenterWidget
 from widgets.rendering.ruler_widget import RulerWidget
 
@@ -14,7 +16,7 @@ from baramMesh.view.main_window.main_window_ui import Ui_MainWindow
 class RenderingTool:
     def __init__(self, ui: Ui_MainWindow):
         self._ui = ui
-        self._view = ui.renderingView
+        self._view: RenderingWidget = ui.renderingView
 
         self._ruler = None
         self._rotationCenter = None
