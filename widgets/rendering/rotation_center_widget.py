@@ -7,38 +7,37 @@ from vtkmodules.vtkCommonTransforms import vtkTransform
 from vtkmodules.vtkFiltersSources import vtkSphereSource, vtkLineSource
 from vtkmodules.vtkRenderingCore import vtkPropPicker, vtkActor, vtkDataSetMapper, vtkPolyDataMapper
 
-from widgets.rendering.rendering_widget import MouseHandler
+from widgets.rendering.rendering_widget import MouseHandler, RenderingWidget
 
 
 class RotationMouseHandler(MouseHandler):
     centerChanged = Signal(list)
 
-    def __init__(self, view):
+    def __init__(self, view: RenderingWidget):
         super().__init__(view.interactor().GetInteractorStyle())
 
+        self._view = view
         self._renderer = view.renderer()
         self._camera = self._renderer.GetActiveCamera()
-        self._interactor = view.interactor()
 
         self._center = self._camera.GetFocalPoint()
 
     def center(self):
         return self._center
 
-    def _leftButtonClicked(self, obj, event):
-        x, y = self._style.GetInteractor().GetEventPosition()
+    def _leftButtonClicked(self, x, y):
         picker = vtkPropPicker()
         picker.PickProp(x, y, self._renderer, self._renderer.GetActors())
 
         self._center = picker.GetPickPosition()
         self.centerChanged.emit(self._center)
 
-    def _mouseMoved(self, obj, event):
+    def _mouseMoved(self, x, y, px, py):
         if not self._pressed:
-            self._style.OnMouseMove()
-            return
+            return False
 
-        x, y = self._style.GetInteractor().GetEventPosition()
+        dx = px - x
+        dy = py - y
 
         transform = vtkTransform()
 
@@ -52,24 +51,13 @@ class RotationMouseHandler(MouseHandler):
         self._camera.SetFocalPoint(temp[0] / scale, temp[1] / scale, temp[2] / scale)
         temp = self._camera.GetPosition()
         self._camera.SetPosition(temp[0] / scale, temp[1] / scale, temp[2] / scale)
-        print(self._camera.GetFocalPoint(), self._camera.GetPosition())
 
-        # tx = self._camera.GetFocalPoint()[0] - self._center[0]
-        # ty = self._camera.GetFocalPoint()[1] - self._center[1]
-        # tz = self._camera.GetFocalPoint()[2] - self._center[2]
         tx = self._center[0]
         ty = self._center[1]
         tz = self._center[2]
-        print(self._center)
 
-        v2 = [0, 0, 0]
         transform.Identity()
         transform.Translate(tx / scale, ty / scale, tz / scale)
-        print(self._camera.GetFocalPoint())
-
-        lastPositon = self._interactor.GetLastEventPosition()
-        dx = lastPositon[0] - x
-        dy = lastPositon[1] - y
 
         self._camera.OrthogonalizeViewUp()
         size = self._renderer.GetSize()
@@ -77,6 +65,7 @@ class RotationMouseHandler(MouseHandler):
         viewUp = self._camera.GetViewUp()
         transform.RotateWXYZ(360.0 * dx / size[0], viewUp[0], viewUp[1], viewUp[2])
 
+        v2 = [0, 0, 0]
         vtkMath.Cross(self._camera.GetDirectionOfProjection(), viewUp, v2)
         transform.RotateWXYZ(-360.0 * dy / size[1], v2[0], v2[1], v2[2])
 
@@ -90,7 +79,9 @@ class RotationMouseHandler(MouseHandler):
         temp = self._camera.GetPosition()
         self._camera.SetPosition(temp[0] * scale, temp[1] * scale, temp[2] * scale)
 
-        self._renderer.Render()
+        self._view.refresh()
+
+        return True
 
 
 class RotationCenterActors:
@@ -143,7 +134,7 @@ class RotationCenterActors:
 
 
 class RotationCenterWidget:
-    def __init__(self, view):
+    def __init__(self, view: RenderingWidget):
         self._view = view
         self._mouseHandler = RotationMouseHandler(view)
         self._actors = RotationCenterActors()

@@ -51,40 +51,51 @@ class MouseHandler(QObject):
 
     def leftButtonPressed(self, obj, event):
         self._pressed = True
-        self._pressPos = self._style.GetInteractor().GetEventPosition()
 
-        self._leftButtonPressed(obj, event)
+        x, y = self._style.GetInteractor().GetEventPosition()
+        self._pressPos = (x, y)
+
+        handled = self._leftButtonPressed(x, y)
 
         # The style does not run its own handler if observer is registered
-        self._style.OnLeftButtonDown()
+        if not handled:
+            self._style.OnLeftButtonDown()
 
     def leftButtonReleased(self, obj, event):
         self._pressed = False
-        self._leftButtonReleased(obj, event)
+
+        x, y = self._style.GetInteractor().GetEventPosition()
+
+        handled = self._leftButtonReleased(x, y)
 
         # The style does not run its own handler if observer is registered
-        self._style.OnLeftButtonUp()
+        if not handled:
+            self._style.OnLeftButtonUp()
 
     def mouseMoved(self, obj, event):
-        self._mouseMoved(obj, event)
-        self._style.OnMouseMove()
-
-    def _leftButtonPressed(self, obj, event):
-        return
-
-    def _leftButtonReleased(self, obj, event):
         x, y = self._style.GetInteractor().GetEventPosition()
+        px, py = self._style.GetInteractor().GetLastEventPosition()
 
+        handled = self._mouseMoved(x, y, px, py)
+
+        # The style does not run its own handler if observer is registered
+        if not handled:
+            self._style.OnMouseMove()
+
+    def _leftButtonPressed(self, x, y):
+        return False
+
+    def _leftButtonReleased(self, x, y):
         if (x, y) == self._pressPos:
-            self._leftButtonClicked(obj, event)
+            self._leftButtonClicked(x, y)
+        return False
 
-    def _leftButtonClicked(self, obj, event):
-        x, y = self._style.GetInteractor().GetEventPosition()
-
+    def _leftButtonClicked(self, x, y):
         self.mouseClicked.emit(x, y, self._style.GetInteractor().GetControlKey())
+        return False
 
-    def _mouseMoved(self, obj, event):
-        return
+    def _mouseMoved(self, x, y, px, py):
+        return False
 
 
 class RenderingWidget(QWidget):
@@ -127,8 +138,9 @@ class RenderingWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._widget)
 
-        self._mouseObserver = MouseHandler(self._style)
-        self._originalMouseObserver = self._mouseObserver
+        self._originalMouseObserver = MouseHandler(self._style)
+        self._mouseObserver = self._originalMouseObserver
+
         self._mouseObserver.mouseClicked.connect(self._mouseClicked)
 
         # To pick actors
