@@ -11,6 +11,7 @@ import qasync
 from PySide6.QtCore import QMargins, QCoreApplication, QEvent, QSignalBlocker
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6QtAds import CDockWidget
+from pyqtgraph import AxisItem
 from pyqtgraph.graphicsItems.PlotDataItem import PlotDataItem
 
 from baramFlow.case_manager import CaseManager
@@ -27,6 +28,12 @@ LEFT_RATIO = 1 - SIDE_MARGIN
 
 
 COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+
+
+class MajorOnlyAxisItem(AxisItem):
+    def tickValues(self, minVal, maxVal, size):
+        tickLevels = super().tickValues(minVal, maxVal, size)
+        return tickLevels[:1]  # Leave major tick only
 
 
 class ChartView(QWidget):
@@ -161,11 +168,11 @@ class ChartView(QWidget):
 
         self._chart = pg.PlotWidget(background='w')
 
-        self._chart.setLogMode(False, True)
-        self._chart.setXRange(0, self._width, padding=SIDE_MARGIN)
-        self._chart.sigRangeChanged.connect(self._adjustRange)
-
         plotItem: pg.PlotItem = self._chart.getPlotItem()
+        plotItem.setAxisItems({
+            'left': MajorOnlyAxisItem('left'),
+            'bottom': MajorOnlyAxisItem('bottom')
+        })
 
         plotItem.setMouseEnabled(True, False)
         plotItem.getViewBox().setBorder('k')
@@ -176,6 +183,10 @@ class ChartView(QWidget):
         legend.setParentItem(plotItem)
 
         plotItem.legend = legend
+
+        self._chart.setLogMode(False, True)
+        self._chart.setXRange(0, self._width, padding=SIDE_MARGIN)
+        self._chart.sigRangeChanged.connect(self._adjustRange)
 
         self.layout().addWidget(self._chart)
 

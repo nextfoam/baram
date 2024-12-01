@@ -9,11 +9,18 @@ import pandas as pd
 import pyqtgraph as pg
 from PySide6.QtCore import QSignalBlocker
 from PySide6.QtWidgets import QWidget, QVBoxLayout
+from pyqtgraph import AxisItem
 from pyqtgraph.graphicsItems.PlotDataItem import PlotDataItem
 
 SIDE_MARGIN = 0.05  # 5% margin between line end and right axis
 WIDTH_RATIO = 0.5 / (0.5 + SIDE_MARGIN)     # Ratio of the chart width excluding margins
 LEFT_RATIO = 1 - SIDE_MARGIN
+
+
+class MajorOnlyAxisItem(AxisItem):
+    def tickValues(self, minVal, maxVal, size):
+        tickLevels = super().tickValues(minVal, maxVal, size)
+        return tickLevels[:1]  # Leave major tick only
 
 
 class ChartWidget(QWidget):
@@ -72,11 +79,11 @@ class ChartWidget(QWidget):
 
         self._chart = pg.PlotWidget(background='w')
 
-        self._chart.setLogMode(False, self._logScale)
-        self._chart.setXRange(0, self._width, padding=SIDE_MARGIN)
-        self._chart.sigRangeChanged.connect(self._adjustRange)
-
         plotItem: pg.PlotItem = self._chart.getPlotItem()
+        plotItem.setAxisItems({
+            'left': MajorOnlyAxisItem('left'),
+            'bottom': MajorOnlyAxisItem('bottom')
+        })
 
         plotItem.setMouseEnabled(True, False)
         plotItem.getViewBox().setBorder('k')
@@ -87,6 +94,10 @@ class ChartWidget(QWidget):
         legend.setParentItem(plotItem)
 
         plotItem.legend = legend
+
+        self._chart.setLogMode(False, self._logScale)
+        self._chart.setXRange(0, self._width, padding=SIDE_MARGIN)
+        self._chart.sigRangeChanged.connect(self._adjustRange)
 
         self.layout().addWidget(self._chart)
 
