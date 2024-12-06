@@ -330,7 +330,7 @@ class MainWindow(QMainWindow):
         numCores = environment.np()
         oldNumCores = app.project.parallelCores()
 
-        progressDialog = ProgressDialog(self, self.tr('Case Redistribution'))
+        progressDialog = ProgressDialog(self._dialog, self.tr('Case Redistribution'))
         progressDialog.open()
 
         if numCores != oldNumCores:

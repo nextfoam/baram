@@ -473,7 +473,7 @@ class MainWindow(QMainWindow):
 
         parallel.setEnvironment(environment)
 
-        progressDialog = ProgressDialog(self, self.tr('Case Redistribution'))
+        progressDialog = ProgressDialog(self._dialog, self.tr('Case Redistribution'))
         progressDialog.open()
 
         if numCores != oldNumCores:
