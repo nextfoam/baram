@@ -40,6 +40,7 @@ class ChartWidget(QWidget):
         self._data = None
 
         self._chart = None
+        self._title = None
         self._lines: typing.Dict[str, PlotDataItem] = {}
 
         self._logScale = False
@@ -52,6 +53,7 @@ class ChartWidget(QWidget):
 
     def setTitle(self, title):
         self._chart.setTitle(title) # color="b", size="20pt"
+        self._title = title
 
     def logScaleOn(self):
         self._logScale = True
@@ -142,12 +144,9 @@ class ChartWidget(QWidget):
             minY = max(minY, sys.float_info.min)
             maxY = max(maxY, sys.float_info.min)
 
-            bottom = minY / 10  # margin in log scale
-
-            if maxY < 0.1:
-                top = maxY * 10  # margin in log scale
-            else:
-                top = 1
+            # 10x margin in log scale
+            bottom = minY / 10
+            top    = maxY * 10
 
             bottom = math.log10(bottom)
             top    = math.log10(top)
@@ -194,6 +193,7 @@ class ChartWidget(QWidget):
 
         plotItem.legend = legend
 
+        self._chart.setTitle(self._title)
         self._chart.setLogMode(False, self._logScale)
         self._chart.setXRange(0, self._width)
         self._chart.onScroll.connect(self.onScroll)
