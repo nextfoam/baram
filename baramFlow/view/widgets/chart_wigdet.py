@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 from PySide6.QtCore import Signal, Qt
-from PySide6.QtGui import QWheelEvent
+from PySide6.QtGui import QWheelEvent, QFont
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from pyqtgraph import AxisItem
 from pyqtgraph.graphicsItems.PlotDataItem import PlotDataItem
@@ -52,7 +52,7 @@ class ChartWidget(QWidget):
         self.clear()
 
     def setTitle(self, title):
-        self._chart.setTitle(title) # color="b", size="20pt"
+        self._chart.setTitle(title, color='#5f5f5f', size='12pt')
         self._title = title
 
     def logScaleOn(self):
@@ -176,10 +176,15 @@ class ChartWidget(QWidget):
         self._chart = WheelPlotWidget(enableMenu=False, background='w')
 
         plotItem: pg.PlotItem = self._chart.getPlotItem()
+
         plotItem.setAxisItems({
-            'left': MajorOnlyAxisItem('left', tickPen={'style': Qt.PenStyle.DashLine}),
-            'bottom': MajorOnlyAxisItem('bottom', tickPen={'style': Qt.PenStyle.DashLine})
+            'left': MajorOnlyAxisItem('left', textPen='#5f5f5f', tickPen={'style': Qt.PenStyle.DashLine}),
+            'bottom': MajorOnlyAxisItem('bottom', textPen='#5f5f5f', tickPen={'style': Qt.PenStyle.DashLine})
         })
+        font = QFont()
+        font.setPointSize(11)
+        plotItem.getAxis('left').setTickFont(font)
+        plotItem.getAxis('bottom').setTickFont(font)
 
         plotItem.setMouseEnabled(False, False)
         plotItem.setDefaultPadding(0)  # Padding is handled manually to set it asymmetrically
@@ -187,13 +192,13 @@ class ChartWidget(QWidget):
         plotItem.showGrid(True, True)
         plotItem.hideButtons()
 
-        legend = pg.LegendItem(offset=(-10, 10+30), pen='lightGray', brush='w')  # Chart Title has a height of 30
+        legend = pg.LegendItem(offset=(-10, 10+30), labelTextColor='#5f5f5f', labelTextSize='11pt', pen='lightGray', brush='w')  # Chart Title has a height of 30
         legend.setZValue(1)  # Raise LegendItem over Grid (Z-Value of Grid is 0.5)
         legend.setParentItem(plotItem)
 
         plotItem.legend = legend
 
-        self._chart.setTitle(self._title)
+        self._chart.setTitle(self._title, color='#5f5f5f', size='12pt')
         self._chart.setLogMode(False, self._logScale)
         self._chart.setXRange(0, self._width)
         self._chart.onScroll.connect(self.onScroll)

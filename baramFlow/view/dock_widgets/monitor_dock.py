@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from PySide6.QtCore import Qt, QCoreApplication, QEvent
+from PySide6.QtCore import Qt, QCoreApplication, QEvent, QMargins
+from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QWidget, QScrollArea, QVBoxLayout
 from PySide6QtAds import CDockWidget
 
@@ -109,7 +110,16 @@ class MonitorView(QWidget):
 
     def _createChart(self, maxX):
         chart = ChartWidget(maxX)
+        chart.setFixedSize(500, 300)
+        chart.layout().setContentsMargins(QMargins(15, 10, 15, 15))
+
+        pal = QPalette()
+        pal.setColor(QPalette.Window, Qt.white)
+        chart.setAutoFillBackground(True)
+        chart.setPalette(pal)
+
         self._chartsLayout.addWidget(chart)
+
         return chart
 
 
