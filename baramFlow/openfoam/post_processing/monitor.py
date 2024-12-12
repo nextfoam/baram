@@ -181,9 +181,9 @@ class ForceMonitor(Monitor):
         return 'coefficient'
 
     def _updateChart(self, data):
-        self._chart1.appendData(pd.DataFrame(data, columns=['Cd']))
-        self._chart2.appendData(pd.DataFrame(data, columns=['Cl']))
-        self._chart3.appendData(pd.DataFrame(data, columns=['CmPitch']).rename(columns={'CmPitch': 'Cm'}))
+        self._chart1.dataAppended(pd.DataFrame(data, columns=['Cd']))
+        self._chart2.dataAppended(pd.DataFrame(data, columns=['Cl']))
+        self._chart3.dataAppended(pd.DataFrame(data, columns=['CmPitch']).rename(columns={'CmPitch': 'Cm'}))
 
     def _fitChart(self):
         self._chart1.fitChart()
@@ -215,7 +215,7 @@ class PointMonitor(Monitor):
         return ''
 
     def _updateChart(self, data):
-        self._chart.appendData(data)
+        self._chart.dataAppended(data)
 
     def _fitChart(self):
         self._chart.fitChart()
@@ -239,7 +239,7 @@ class SurfaceMonitor(Monitor):
         return 'surfaceFieldValue'
 
     def _updateChart(self, data):
-        self._chart.appendData(data)
+        self._chart.dataAppended(data)
 
     def _fitChart(self):
         self._chart.fitChart()
@@ -263,7 +263,7 @@ class VolumeMonitor(Monitor):
         return 'volFieldValue'
 
     def _updateChart(self, data):
-        self._chart.appendData(data)
+        self._chart.dataAppended(data)
 
     def _fitChart(self):
         self._chart.fitChart()
