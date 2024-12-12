@@ -5,10 +5,12 @@ import math
 import typing
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 import qasync
-from PySide6.QtCore import QMargins, QCoreApplication, QEvent, QSignalBlocker
+from PySide6.QtCore import QMargins, QCoreApplication, QEvent, Qt, Signal
+from PySide6.QtGui import QWheelEvent
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6QtAds import CDockWidget
 from pyqtgraph import AxisItem
@@ -23,9 +25,6 @@ from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver_info_manager import SolverInfoManager
 
 SIDE_MARGIN = 0.05  # 5% margin on left and right
-WIDTH_RATIO = 0.5 / (0.5 + SIDE_MARGIN)     # Ratio of the chart width excluding margins
-LEFT_RATIO = 1 - SIDE_MARGIN
-
 
 COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
@@ -34,6 +33,14 @@ class MajorOnlyAxisItem(AxisItem):
     def tickValues(self, minVal, maxVal, size):
         tickLevels = super().tickValues(minVal, maxVal, size)
         return tickLevels[:1]  # Leave major tick only
+
+
+class WheelPlotWidget(pg.PlotWidget):
+    onScroll = Signal(QWheelEvent)
+
+    def wheelEvent(self, ev: QWheelEvent):
+        self.onScroll.emit(ev)
+        ev.accept()
 
 
 class ChartView(QWidget):
@@ -91,12 +98,25 @@ class ChartView(QWidget):
             self.stopDrawing()
 
     def fitChart(self):
-        self._chart.autoRange()
+        if self._data is None:
+            return
+
+        minX = float(self._data.first_valid_index())
+        maxX = float(self._data.last_valid_index())
+
+        if maxX <= minX:
+            maxX = minX + 1
+
+        dataWidth = maxX - minX
+        margin = dataWidth * SIDE_MARGIN / (1 - 2 * SIDE_MARGIN)
+
+        self._chart.setXRange(minX-margin, maxX+margin)
+        # To update Y range
+        self._updateChart(1.0)
 
     def updated(self, data: pd.DataFrame):
         self._data = data
 
-        # d = data.reset_index()  # "Time" is back to a column to serve as X value in numpy transpose below
         times = data.index.to_numpy()
 
         for c in data.columns.values.tolist():
@@ -106,40 +126,59 @@ class ChartView(QWidget):
             else:
                 self._lines[c].setData(times, data[c].to_numpy())
 
-        range = self._chart.viewRect()
-        self._adjustRange(self._chart, [[range.left(), range.right()], [range.bottom(), range.top()]])
+        self._updateChart(1.0)
 
-    def _adjustRange(self, widget, range):
+    def onScroll(self, ev: QWheelEvent):
+        angle = ev.angleDelta().y() / 8.0
+        scale = np.power(1.05, -angle/15)  # 15 degree is usually one step on mouse wheel
+
+        self._updateChart(scale)
+
+    def _updateChart(self, scale: float):
         if self._data is None:
             return
 
-        xRange, yRange = range
-        minX, maxX = xRange
-        width = (maxX - minX) * WIDTH_RATIO
+        data = self._data
 
-        maxTime = float(self._data.last_valid_index())
-        if minX < 0 and maxX >= maxTime:
-            return
+        timeMin = float(data.first_valid_index())
+        timeMax = float(data.last_valid_index())
 
-        if maxTime < width:
-            minX = 0
-            maxX = width
+        dataWidth = timeMax - timeMin
+
+        # chartWidth is effective width for lines excluding side margins
+        xRange, _ = self._chart.viewRange()
+        margin = (xRange[1] - xRange[0]) * SIDE_MARGIN
+        chartWidth = ((xRange[1] - xRange[0]) - 2 * margin)
+
+        margin *= scale
+        chartWidth *= scale
+
+        if dataWidth < chartWidth:
+            minX = timeMin
+            maxX = minX + chartWidth
         else:
-            minX = maxTime - width
-            maxX = maxTime
+            maxX = timeMax
+            minX = maxX - chartWidth
 
-        d = self._data[(self._data.index >= minX * LEFT_RATIO) & (self._data.index <= maxX)]
+        left = minX - margin
+        right = maxX + margin
+
+        d = data[(data.index >= minX) & (data.index <= maxX)]
         minY = d[d > 0].min().min()  # Residual value of "0" has been shown once
         maxY = d.max().max()
 
-        yRange = None if d.empty else [math.log10(minY / 10), math.log10(maxY * 10)]   # margin in log scalse
+        # 10x margin in log scale
+        bottom = minY / 10
+        top    = maxY * 10
 
-        with QSignalBlocker(self._chart):
-            self._chart.setRange(xRange=[minX, maxX], yRange=yRange, padding=SIDE_MARGIN)
+        bottom = math.log10(bottom)
+        top    = math.log10(top)
+
+        self._chart.setRange(xRange=[left, right], yRange=[bottom, top])
 
     def _clear(self):
         if self._chart:
-            self._chart.sigRangeChanged.disconnect(self._adjustRange)
+            self._chart.onScroll.disconnect(self.onScroll)
             self.layout().removeWidget(self._chart)
             self._chart.deleteLater()
 
@@ -166,17 +205,19 @@ class ChartView(QWidget):
             # 50 Residual points
             self._width = 50
 
-        self._chart = pg.PlotWidget(background='w')
+        self._chart = WheelPlotWidget(enableMenu=False, background='w')
 
         plotItem: pg.PlotItem = self._chart.getPlotItem()
         plotItem.setAxisItems({
-            'left': MajorOnlyAxisItem('left'),
-            'bottom': MajorOnlyAxisItem('bottom')
+            'left': MajorOnlyAxisItem('left', tickPen={'style': Qt.PenStyle.DashLine}),
+            'bottom': MajorOnlyAxisItem('bottom', tickPen={'style': Qt.PenStyle.DashLine})
         })
 
-        plotItem.setMouseEnabled(True, False)
+        plotItem.setMouseEnabled(False, False)
+        plotItem.setDefaultPadding(0)  # Padding is handled manually to set it asymmetrically
         plotItem.getViewBox().setBorder('k')
         plotItem.showGrid(True, True)
+        plotItem.hideButtons()
 
         legend = pg.LegendItem(offset=(-10, 10), pen='lightGray', brush='w')
         legend.setZValue(1)  # Raise LegendItem over Grid (Z-Value of Grid is 0.5)
@@ -185,8 +226,8 @@ class ChartView(QWidget):
         plotItem.legend = legend
 
         self._chart.setLogMode(False, True)
-        self._chart.setXRange(0, self._width, padding=SIDE_MARGIN)
-        self._chart.sigRangeChanged.connect(self._adjustRange)
+        self._chart.setXRange(0, self._width)
+        self._chart.onScroll.connect(self.onScroll)
 
         self.layout().addWidget(self._chart)
 
