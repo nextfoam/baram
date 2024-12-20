@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QWidget, QColorDialog
 from PySide6QtAds import CDockWidget
 from vtkmodules.vtkRenderingCore import vtkActor
 
+from widgets.rendering.rotation_center_widget import RotationCenterWidget
 from widgets.rendering.ruler_widget import RulerWidget
 
 from baramFlow.coredb.app_settings import AppSettings
@@ -37,6 +38,8 @@ class RenderingView(QWidget):
         self._ui.setupUi(self)
 
         self._view = self._ui.view
+
+        self._rotationCenter = None
 
         self._dialog = None
 
@@ -78,6 +81,7 @@ class RenderingView(QWidget):
         self._ui.perspective.toggled.connect(self._view.setParallelProjection)
         self._ui.alignAxis.clicked.connect(self._view.alignCamera)
         self._ui.rotate.clicked.connect(self._view.rollCamera)
+        self._ui.rotationCenter.clicked.connect(self._toggleRotationCenter)
         self._ui.renderingMode.currentIndexChanged.connect(self._renderingModeChanged)
         self._ui.bg1.clicked.connect(self._pickBackground1)
         self._ui.bg2.clicked.connect(self._pickBackground2)
@@ -97,6 +101,13 @@ class RenderingView(QWidget):
         casePath = FileSystem.foamFilePath()
         AppSettings.updateParaviewInstalledPath(file)
         subprocess.Popen([f'{file}', f'{casePath}'])
+
+    def _toggleRotationCenter(self, checked):
+        if checked:
+            self._rotationCenter = self._rotationCenter or RotationCenterWidget(self._view)
+            self._rotationCenter.on()
+        else:
+            self._rotationCenter.off()
 
     def _renderingModeChanged(self, index):
         self.renderingModeChanged.emit(DisplayMode(index))
