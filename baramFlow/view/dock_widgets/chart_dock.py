@@ -92,7 +92,7 @@ class ChartDock(CDockWidget):
     @qasync.asyncSlot()
     async def _solverStatusChanged(self, status, name, liveStatusChanged):
         if status == SolverStatus.NONE:
-            self._clear()
+            self._chart.clear()
         elif status == SolverStatus.RUNNING:
             self.startDrawing()
         else:
