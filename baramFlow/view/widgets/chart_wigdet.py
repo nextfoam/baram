@@ -182,7 +182,7 @@ class ChartWidget(QWidget):
             'bottom': MajorOnlyAxisItem('bottom', textPen='#5f5f5f', tickPen={'style': Qt.PenStyle.DashLine})
         })
         font = QFont()
-        font.setPointSize(11)
+        font.setPointSize(10)
         plotItem.getAxis('left').setTickFont(font)
         plotItem.getAxis('bottom').setTickFont(font)
 
@@ -192,7 +192,7 @@ class ChartWidget(QWidget):
         plotItem.showGrid(True, True)
         plotItem.hideButtons()
 
-        legend = pg.LegendItem(offset=(-10, 10+30), labelTextColor='#5f5f5f', labelTextSize='11pt', pen='lightGray', brush='w')  # Chart Title has a height of 30
+        legend = pg.LegendItem(offset=(-10, 10+30), horSpacing=5, labelTextColor='#5f5f5f', labelTextSize='10pt', pen='lightGray', brush='w')  # Chart Title has a height of 30
         legend.setZValue(1)  # Raise LegendItem over Grid (Z-Value of Grid is 0.5)
         legend.setParentItem(plotItem)
 
