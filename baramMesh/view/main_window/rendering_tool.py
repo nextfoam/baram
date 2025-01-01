@@ -5,6 +5,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QColorDialog
 
+from widgets.rendering.rendering_widget import RenderingWidget
+from widgets.rendering.rotation_center_widget import RotationCenterWidget
 from widgets.rendering.ruler_widget import RulerWidget
 
 from baramMesh.app import app
@@ -14,9 +16,10 @@ from baramMesh.view.main_window.main_window_ui import Ui_MainWindow
 class RenderingTool:
     def __init__(self, ui: Ui_MainWindow):
         self._ui = ui
-        self._view = ui.renderingView
+        self._view: RenderingWidget = ui.renderingView
 
         self._ruler = None
+        self._rotationCenter = None
 
         self._updateBGButtonStyle(self._ui.bg1, QColor.fromRgbF(*self._view.background1()))
         self._updateBGButtonStyle(self._ui.bg2, QColor.fromRgbF(*self._view.background2()))
@@ -28,6 +31,7 @@ class RenderingTool:
         self._ui.fit.clicked.connect(self._view.fitCamera)
         self._ui.perspective.toggled.connect(self._view.setParallelProjection)
         self._ui.rotate.clicked.connect(self._view.rollCamera)
+        self._ui.rotationCenter.clicked.connect(self._toggleRotationCenter)
         self._ui.bg1.clicked.connect(self._pickBackground1)
         self._ui.bg2.clicked.connect(self._pickBackground2)
 
@@ -51,6 +55,13 @@ class RenderingTool:
         else:
             self._ruler.off()
             self._ruler = None
+
+    def _toggleRotationCenter(self, checked):
+        if checked:
+            self._rotationCenter = self._rotationCenter or RotationCenterWidget(self._view)
+            self._rotationCenter.on()
+        else:
+            self._rotationCenter.off()
 
     def _pickBackground1(self):
         self._dialog = self._newBGColorDialog()
@@ -83,4 +94,4 @@ class RenderingTool:
     def _updateBGButtonStyle(self, button, color):
         r, g, b, a = color.getRgb()
         button.setStyleSheet(
-            f'background: rgb({r}, {g}, {b}); border-style: solid; border-color:black; border-width: 1')
+            f'background: rgb({r}, {g}, {b}) border-style: solid border-color:black border-width: 1')

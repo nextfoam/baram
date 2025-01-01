@@ -11,7 +11,7 @@ from libbaram.math import calucateDirectionsByRotation
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataClass
 
 from baramFlow.coredb.boundary_db import DirectionSpecificationMethod
-from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.coredb.coredb_reader import CoreDBReader, Region
 from baramFlow.coredb.material_db import UNIVERSAL_GAS_CONSTANT, MaterialDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel
 from baramFlow.openfoam.constant.boundary_data import BoundaryData
@@ -27,7 +27,7 @@ class BoundaryCondition(DictionaryFile):
         TEMPORAL_SCALAR_LIST = auto()
         TEMPORAL_VECTOR_LIST = auto()
 
-    def __init__(self, region, time, processorNo, field, class_=DataClass.CLASS_VOL_SCALAR_FIELD):
+    def __init__(self, region: Region, time, processorNo, field, class_=DataClass.CLASS_VOL_SCALAR_FIELD):
         super().__init__(FileSystem.caseRoot(), self.boundaryLocation(region.rname, time), field, class_)
 
         self._initialValue = None

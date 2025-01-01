@@ -73,11 +73,13 @@ class SetFieldsDict(DictionaryFile):
                         defaultPrimaryFraction -= float(defaultFraction)
                         defaultFieldValues.append(('volScalarFieldValue', fieldName, defaultFraction))
 
-                fieldName = 'alpha.' + MaterialDB.getName(self._region.mid)
-                if fieldName not in defaultFields:
-                    defaultFields.append(fieldName)
-                    defaultFieldValues.append(('volScalarFieldValue', fieldName, defaultPrimaryFraction))
-                fieldValues.append(('volScalarFieldValue', fieldName, sectionPrimaryFraction))
+                numPhases = len(RegionDB.getSecondaryMaterials(rname)) + 1  # secondary materials + primary material
+                if numPhases > 2:
+                    fieldName = 'alpha.' + MaterialDB.getName(self._region.mid)
+                    if fieldName not in defaultFields:
+                        defaultFields.append(fieldName)
+                        defaultFieldValues.append(('volScalarFieldValue', fieldName, defaultPrimaryFraction))
+                    fieldValues.append(('volScalarFieldValue', fieldName, sectionPrimaryFraction))
 
             for scalarID, fieldName in db.getUserDefinedScalarsInRegion(rname):
                 scalarXPath = f'{sPath}/userDefinedScalars/scalar[scalarID="{scalarID}"]/value'

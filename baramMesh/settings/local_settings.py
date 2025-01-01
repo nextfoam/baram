@@ -10,6 +10,7 @@ from filelock import FileLock
 from libbaram.mpi import ParallelEnvironment, ParallelType
 
 FORMAT_VERSION = 1
+FILE_NAME = 'local.cfg'
 
 
 class LocalSettingKey(Enum):
@@ -22,7 +23,7 @@ class LocalSettingKey(Enum):
 
 class LocalSettings:
     def __init__(self, path):
-        self._settingsFile = path / 'local.cfg'
+        self._settingsFile = path / FILE_NAME
 
         self._settings = {}
         self._lock = None
@@ -67,6 +68,13 @@ class LocalSettings:
         if self.get(key) != value:
             self._settings[key.value] = value
             self._save()
+
+    def saveAs(self, path):
+        self._settings[LocalSettingKey.FORMAT_VERSION.value] = FORMAT_VERSION
+        self._settings[LocalSettingKey.PATH.value] = str(path.resolve())
+
+        with open(path / FILE_NAME, 'w') as file:
+            yaml.dump(self._settings, file)
 
     def _load(self):
         if self._settingsFile.is_file():
