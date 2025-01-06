@@ -10,7 +10,7 @@ from typing import Optional
 import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
 import vtkmodules.vtkRenderingOpenGL2
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QObject
 from PySide6.QtWidgets import QWidget, QFileDialog, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkCommonColor import vtkNamedColors
@@ -39,6 +39,65 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
             self._RenderWindow = None
 
 
+class MouseHandler(QObject):
+    mouseClicked = Signal(float, float, bool)
+
+    def __init__(self, style):
+        super().__init__()
+
+        self._style = style
+        self._pressPos = None
+        self._pressed = False
+
+    def leftButtonPressed(self, obj, event):
+        self._pressed = True
+
+        x, y = self._style.GetInteractor().GetEventPosition()
+        self._pressPos = (x, y)
+
+        handled = self._leftButtonPressed(x, y)
+
+        # The style does not run its own handler if observer is registered
+        if not handled:
+            self._style.OnLeftButtonDown()
+
+    def leftButtonReleased(self, obj, event):
+        self._pressed = False
+
+        x, y = self._style.GetInteractor().GetEventPosition()
+
+        handled = self._leftButtonReleased(x, y)
+
+        # The style does not run its own handler if observer is registered
+        if not handled:
+            self._style.OnLeftButtonUp()
+
+    def mouseMoved(self, obj, event):
+        x, y = self._style.GetInteractor().GetEventPosition()
+        px, py = self._style.GetInteractor().GetLastEventPosition()
+
+        handled = self._mouseMoved(x, y, px, py)
+
+        # The style does not run its own handler if observer is registered
+        if not handled:
+            self._style.OnMouseMove()
+
+    def _leftButtonPressed(self, x, y):
+        return False
+
+    def _leftButtonReleased(self, x, y):
+        if (x, y) == self._pressPos:
+            self._leftButtonClicked(x, y)
+        return False
+
+    def _leftButtonClicked(self, x, y):
+        self.mouseClicked.emit(x, y, self._style.GetInteractor().GetControlKey())
+        return False
+
+    def _mouseMoved(self, x, y, px, py):
+        return False
+
+
 class RenderingWidget(QWidget):
     actorPicked = Signal(vtkActor, bool)
     viewClosed = Signal()
@@ -52,8 +111,6 @@ class RenderingWidget(QWidget):
         self._cubeAxesActor: Optional[vtkCubeAxesActor] = None
 
         self._actorPicker = vtkPropPicker()
-
-        self._pressPos = None
 
         self._style = vtkInteractorStyleTrackballCamera()
         self._widget = RenderWindowInteractor(self)
@@ -81,9 +138,16 @@ class RenderingWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._widget)
 
+        self._originalMouseObserver = MouseHandler(self._style)
+        self._mouseObserver = self._originalMouseObserver
+
+        self._mouseObserver.mouseClicked.connect(self._mouseClicked)
+
         # To pick actors
         self._style.AddObserver(vtkCommand.LeftButtonPressEvent, self._leftButtonPressEvent)
         self._style.AddObserver(vtkCommand.LeftButtonReleaseEvent, self._leftButtonReleaseEvent)
+
+        self._style.AddObserver(vtkCommand.MouseMoveEvent, self._mouseMoveEvent)
 
         # To adjust origin axes size on zoom
         self._style.AddObserver(vtkCommand.MouseWheelForwardEvent, self._mouseWheelForwardEvent)
@@ -209,6 +273,12 @@ class RenderingWidget(QWidget):
     def background2(self):
         return self._renderer.GetBackground2()
 
+    def setMouseHandler(self, observer):
+        self._mouseObserver = observer
+
+    def resetMouseHandler(self):
+        self._mouseObserver = self._originalMouseObserver
+
     def _showCubeAxes(self):
         if self._cubeAxesActor is not None:
             return
@@ -291,19 +361,16 @@ class RenderingWidget(QWidget):
             self._originActor.SetTotalLength(length, length, length)
 
     def _leftButtonPressEvent(self, obj, event):
-        self._pressPos = self._style.GetInteractor().GetEventPosition()
-
-        # The style does not run its own handler if observer is registered
-        self._style.OnLeftButtonDown()
+        self._mouseObserver.leftButtonPressed(obj, event)
 
     def _leftButtonReleaseEvent(self, obj, event):
-        x, y = self._style.GetInteractor().GetEventPosition()
+        self._mouseObserver.leftButtonReleased(obj, event)
 
-        if (x, y) == self._pressPos:
-            self.actorPicked.emit(self.pickActor(x, y), self._style.GetInteractor().GetControlKey())
+    def _mouseMoveEvent(self, obj, event):
+        self._mouseObserver.mouseMoved(obj, event)
 
-        # The style does not run its own handler if observer is registered
-        self._style.OnLeftButtonUp()
+    def _mouseClicked(self, x, y, controlKeyPressed):
+        self.actorPicked.emit(self.pickActor(x, y), controlKeyPressed)
 
     def _mouseWheelForwardEvent(self, obj, event):
         # The style does not run its own handler if observer is registered

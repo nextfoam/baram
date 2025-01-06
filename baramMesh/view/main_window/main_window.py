@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import asyncio
 import logging
+import os
+
 import qasync
+from filelock import Timeout
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional
-
-from filelock import Timeout
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
 from PySide6.QtCore import Signal, QEvent, QMargins
 from PySide6QtAds import CDockManager, DockWidgetArea
 
 from libbaram.utils import getFit
+from widgets.async_message_box import AsyncMessageBox
 from widgets.new_project_dialog import NewProjectDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 from widgets.progress_dialog import ProgressDialog
@@ -152,6 +154,7 @@ class MainWindow(QMainWindow):
         self._ui.actionNew.triggered.connect(self._actionNew)
         self._ui.actionOpen.triggered.connect(self._actionOpen)
         self._ui.actionSave.triggered.connect(self._actionSave)
+        self._ui.actionSaveAs.triggered.connect(self._actionSaveAs)
         self._ui.actionExit.triggered.connect(self.close)
         self._ui.actionParameters.triggered.connect(self._actionParameters)
         self._ui.actionParallelEnvironment.triggered.connect(self._openParallelEnvironmentDialog)
@@ -201,6 +204,15 @@ class MainWindow(QMainWindow):
         if await self._stepManager.saveCurrentPage():
             app.project.save()
 
+    @qasync.asyncSlot()
+    async def _actionSaveAs(self):
+        self._dialog = QFileDialog(self, self.tr('Select Project Directory'), app.settings.getRecentLocation())
+        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        self._dialog.fileSelected.connect(self._saveAs)
+        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
+        self._dialog.finished.connect(self._ui.menubar.repaint)
+        self._dialog.open()
+
     def _actionParameters(self):
         self._dialog = MeshQualityParametersDialog(self)
         self._dialog.open()
@@ -240,13 +252,42 @@ class MainWindow(QMainWindow):
         path = Path(file)
         try:
             app.openProject(path.resolve())
-            self._recentFilesMenu.updateRecentest(app.project.path)
             self._projectOpened()
         except FileNotFoundError:
-            QMessageBox.information(self, self.tr('Case Open Error'), self.tr(f'{path.name} is not a baram case.'))
+            await AsyncMessageBox().information(self, self.tr('Project Open Error'),
+                                                self.tr(f'{path.name} is not a baram project.'))
         except Timeout:
-            QMessageBox.information(self, self.tr('Case Open Error'),
+            await AsyncMessageBox().information(self, self.tr('Project Open Error'),
                                     self.tr(f'{path.name} is already open in another program.'))
+
+    @qasync.asyncSlot()
+    async def _saveAs(self, file):
+        path = Path(file).resolve()
+
+        if path.exists():
+            if not path.is_dir():
+                await AsyncMessageBox().information(self, self.tr('Project Directory Error'),
+                                                    self.tr(f'{file} is not a directory.'))
+                return
+            elif os.listdir(path):
+                await AsyncMessageBox().information(self, self.tr('Project Directory Error'),
+                                                    self.tr(f'{file} is not empty.'))
+                return
+
+        if await self._stepManager.saveCurrentPage():
+            progressDialog = ProgressDialog(self, self.tr('Save As'))
+            progressDialog.open()
+
+            progressDialog.setLabelText(self.tr('Saving Project'))
+
+            app.project.saveAs(path)
+            await asyncio.to_thread(app.fileSystem.saveAs, path)
+            await self._closeProject()
+            self._clear()
+            self._projectClosed()
+            app.openProject(path)
+            self._projectOpened()
+            progressDialog.close()
 
     def _startDialogClosed(self):
         if app.project is None:
@@ -263,24 +304,19 @@ class MainWindow(QMainWindow):
             return False
 
         if app.db.isModified():
-            msgBox = QMessageBox()
-            msgBox.setWindowTitle(self.tr('Save Changed'))
-            msgBox.setText(self.tr('Do you want save your changes?'))
-            msgBox.setStandardButtons(QMessageBox.StandardButton.Ok
-                                      | QMessageBox.StandardButton.Discard
-                                      | QMessageBox.StandardButton.Cancel)
-            msgBox.setDefaultButton(QMessageBox.StandardButton.Ok)
+            confirm = await AsyncMessageBox().question(self, self.tr('Save Changed'),
+                                                       self.tr('Do you want to save your changes?'),
+                                                       QMessageBox.StandardButton.Ok
+                                                       | QMessageBox.StandardButton.Cancel
+                                                       | QMessageBox.StandardButton.Discard)
 
-            result = msgBox.exec()
-            if result == QMessageBox.StandardButton.Ok:
+            if confirm == QMessageBox.StandardButton.Ok:
                 app.project.save()
-            elif result == QMessageBox.StandardButton.Cancel:
+            elif confirm == QMessageBox.StandardButton.Cancel:
                 return False
 
         app.closeProject()
-
-        logging.getLogger().removeHandler(self._handler)
-        self._handler.close()
+        self._projectClosed()
 
         if toQuit:
             self._readyToQuit = True
@@ -294,7 +330,7 @@ class MainWindow(QMainWindow):
         numCores = environment.np()
         oldNumCores = app.project.parallelCores()
 
-        progressDialog = ProgressDialog(self, self.tr('Case Redistribution'))
+        progressDialog = ProgressDialog(self._dialog, self.tr('Case Redistribution'))
         progressDialog.open()
 
         if numCores != oldNumCores:
@@ -313,6 +349,8 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, self.tr("Change Scale"), self.tr('Application restart is required.'))
 
     def _projectOpened(self):
+        self._recentFilesMenu.updateRecentest(app.project.path)
+
         # 10MB(=10,485,760=1024*1024*10)
         self._handler = RotatingFileHandler(app.project.path / 'log.txt', maxBytes=10485760, backupCount=5)
         self._handler.setFormatter(logging.Formatter("[%(asctime)s][%(name)s] ==> %(message)s"))
@@ -330,6 +368,10 @@ class MainWindow(QMainWindow):
 
         self._geometryManager.load()
         self._stepManager.load()
+
+    def _projectClosed(self):
+        logging.getLogger().removeHandler(self._handler)
+        self._handler.close()
 
     def _clear(self):
         self.setWindowTitle(f'{app.properties.fullName}')

@@ -45,14 +45,16 @@ class Project(QObject):
     def save(self):
         self._db.save()
 
-    def saveAs(self, directory):
-        # self._fileDB.saveAs(directory)
-        # self._close()
-        # self._open(directory, ProjectOpenType.SAVE_AS)
-        # self.projectOpened.emit()
-        return
+    def saveAs(self, path):
+        path.mkdir()
+        self._db.saveAs(path)
+        self._settings.saveAs(path)
 
-    def open(self):
+    def new(self):
+        self._settings.acquireLock(0.01)
+        self._db.create(self._path)
+
+    def open(self, create=False):
         self._settings.acquireLock(0.01)
         self._db.load(self._path)
 

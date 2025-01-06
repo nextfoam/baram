@@ -3,18 +3,25 @@
 
 from typing import Optional
 from enum import Enum, auto
+from math import sqrt
 
 from PySide6.QtWidgets import QWidget, QMessageBox, QPushButton, QHBoxLayout
 from PySide6.QtWidgets import QSizePolicy
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QDoubleValidator, QIcon
 from PySide6.QtCore import Signal
 
+from libbaram.math import calucateDirectionsByRotation
 from resources import resource
 from widgets.flat_push_button import FlatPushButton
 
 from baramFlow.app import app
 from baramFlow.coredb import coredb
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
+from baramFlow.coredb.boundary_db import DirectionSpecificationMethod, TemperatureProfile, VelocitySpecification, VelocityProfile
+from baramFlow.coredb.boundary_db import KEpsilonSpecification, KOmegaSpecification, SpalartAllmarasSpecification
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.coredb_writer import CoreDBWriter
+from baramFlow.coredb.material_db import UNIVERSAL_GAS_CONSTANT, MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB, RANSModel
@@ -158,15 +165,26 @@ class InitializationWidget(QWidget):
         if self._speciesWidget.on():
             self._ui.initialValuesLayout.addWidget(self._speciesWidget)
 
+        self._ui.scaleOfVelocity.setValidator(QDoubleValidator())
+
         self._connectSignalsSlots()
 
     def _connectSignalsSlots(self):
+        self._ui.computeFrom.currentIndexChanged.connect(self._computeFromChanged)
         self._ui.create.clicked.connect(self._createOption)
         self._ui.delete_.clicked.connect(self._deleteOption)
         self._ui.edit.clicked.connect(self._editOption)
 
     def load(self):
         db = coredb.CoreDB()
+
+        boundaries = coredb.CoreDB().getBoundaryConditions(self._rname)
+        self._ui.computeFrom.blockSignals(True)
+        for bcid, bcname, bctypestr in boundaries:
+            if BoundaryType(bctypestr) in [BoundaryType.VELOCITY_INLET, BoundaryType.FREE_STREAM, BoundaryType.FAR_FIELD_RIEMANN]:
+                self._ui.computeFrom.addItem(bcname, bcid)
+        self._ui.computeFrom.setCurrentIndex(-1)
+        self._ui.computeFrom.blockSignals(False)
 
         self._ui.xVelocity.setText(db.getValue(self._initialValuesPath + '/velocity/x'))
         self._ui.yVelocity.setText(db.getValue(self._initialValuesPath + '/velocity/y'))
@@ -233,6 +251,10 @@ class InitializationWidget(QWidget):
             return False
 
         return True
+
+    def _computeFromChanged(self):
+        bcid = self._ui.computeFrom.currentData()
+        self._computeFromBoundary(bcid)
 
     def _createOption(self):
         self._sectionDialog = SectionDialog(self, self._rname)
@@ -328,3 +350,145 @@ class InitializationWidget(QWidget):
         row.eyeToggled.connect(self._rowEyeToggled)
         idx = self._ui.sectionListLayout.count() - 1
         self._ui.sectionListLayout.insertWidget(idx, row)
+
+    def _computeFromBoundary(self, bcid: int):
+        db = CoreDBReader()  # Not "coredb" because Parsed data is required rather than raw USER PARAMETERS
+        bctype = BoundaryType(BoundaryDB.getBoundaryType(bcid))
+        xpath = BoundaryDB.getXPath(bcid)
+        
+        # Velocity
+        if bctype == BoundaryType.VELOCITY_INLET:
+            spec = VelocitySpecification(db.getValue(xpath + '/velocityInlet/velocity/specification'))
+            if spec == VelocitySpecification.COMPONENT:
+                profile = VelocityProfile(db.getValue(xpath + '/velocityInlet/velocity/component/profile'))
+                if profile == VelocityProfile.CONSTANT:
+                    self._ui.xVelocity.setText(db.getValue(xpath + '/velocityInlet/velocity/component/constant/x'))
+                    self._ui.yVelocity.setText(db.getValue(xpath + '/velocityInlet/velocity/component/constant/y'))
+                    self._ui.zVelocity.setText(db.getValue(xpath + '/velocityInlet/velocity/component/constant/z'))
+        elif bctype == BoundaryType.FREE_STREAM:
+            self._ui.xVelocity.setText(db.getValue(xpath + '/freeStream/streamVelocity/x'))
+            self._ui.yVelocity.setText(db.getValue(xpath + '/freeStream/streamVelocity/y'))
+            self._ui.zVelocity.setText(db.getValue(xpath + '/freeStream/streamVelocity/z'))
+        elif bctype == BoundaryType.FAR_FIELD_RIEMANN:
+            spec = DirectionSpecificationMethod(db.getValue(xpath + '/farFieldRiemann/flowDirection/specificationMethod'))
+            drag = db.getVector(xpath + '/farFieldRiemann/flowDirection/dragDirection')
+            lift = db.getVector(xpath + '/farFieldRiemann/flowDirection/liftDirection')
+            if spec == DirectionSpecificationMethod.AOA_AOS:
+                drag, lift = calucateDirectionsByRotation(drag, lift,
+                                                        float(db.getValue(xpath + '/farFieldRiemann/flowDirection/angleOfAttack')),
+                                                        float(db.getValue(xpath + '/farFieldRiemann/flowDirection/angleOfSideslip')))
+
+            dx, dy, dz = drag  # Flow Direction
+            gamma = 1.4
+            mw = db.getMolecularWeight(MaterialDB.getMaterialComposition(xpath + '/species', RegionDB.getMaterial(self._rname)))
+            a = sqrt(gamma * (UNIVERSAL_GAS_CONSTANT / mw) * float(db.getValue(xpath + '/farFieldRiemann/staticTemperature')))
+            mInf = float(db.getValue(xpath + '/farFieldRiemann/machNumber'))
+            dMag = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+            am = a * mInf / dMag
+
+            self._ui.xVelocity.setText(str(am * dx))
+            self._ui.yVelocity.setText(str(am * dy))
+            self._ui.zVelocity.setText(str(am * dz))
+
+        # pressure
+        if bctype == BoundaryType.FREE_STREAM:
+            self._ui.pressure.setText(db.getValue(xpath + '/freeStream/pressure'))
+        elif bctype == BoundaryType.FAR_FIELD_RIEMANN:
+            self._ui.pressure.setText(db.getValue(xpath + '/farFieldRiemann/staticPressure'))
+
+        # temperature
+        if bctype in [BoundaryType.VELOCITY_INLET, BoundaryType.FREE_STREAM]:
+            if ModelsDB.isEnergyModelOn():
+                tProfile = TemperatureProfile(db.getValue(xpath + '/temperature/profile'))
+                if tProfile == TemperatureProfile.CONSTANT:
+                    self._ui.temperature.setText(db.getValue(xpath + '/temperature/constant'))
+        elif bctype == BoundaryType.FAR_FIELD_RIEMANN:
+            self._ui.temperature.setText(db.getValue(xpath + '/farFieldRiemann/staticTemperature'))
+
+        # turbulence intensity
+        # turbulence viscosity
+        p = float(self._ui.pressure.text())
+        t = float(self._ui.temperature.text())
+        v = float(self._ui.scaleOfVelocity.text())
+
+        material = MaterialDB.getMaterialComposition(xpath + '/species', RegionDB.getMaterial(self._rname))
+        rho = db.getDensity(material, t, p)  # Density
+        mu = db.getViscosity(material, t)  # Viscosity
+        nu = mu / rho  # Kinetic Viscosity
+
+        if turbulenceModel := TurbulenceModelsDB.getRASModel():
+            if turbulenceModel == TurbulenceModel.K_EPSILON:
+                i, b = self._getTurbulenceFromKEpsilonBoundary(db, xpath, v, nu)
+                self._ui.turbulentIntensity.setText(i)
+                self._ui.turbulentViscosityRatio.setText(b)
+            elif turbulenceModel == TurbulenceModel.K_OMEGA:
+                i, b = self._getTurbulenceFromKOmegaBoundary(db, xpath, v, nu)
+                self._ui.turbulentIntensity.setText(i)
+                self._ui.turbulentViscosityRatio.setText(b)
+            elif turbulenceModel == TurbulenceModel.SPALART_ALLMARAS:
+                b = self._getTurbulenceFromSpalartAllmarasBoundary(db, xpath, v, nu)
+                self._ui.turbulentViscosityRatio.setText(b)
+            elif turbulenceModel == TurbulenceModel.DES:
+                ransModel = TurbulenceModelsDB.getDESRansModel()
+                if ransModel == RANSModel.SPALART_ALLMARAS:
+                    b = self._getTurbulenceFromSpalartAllmarasBoundary(db, xpath, v, nu)
+                    self._ui.turbulentViscosityRatio.setText(b)
+                elif ransModel == RANSModel.K_OMEGA_SST:
+                    i, b = self._getTurbulenceFromKOmegaBoundary(db, xpath, v, nu)
+                    self._ui.turbulentIntensity.setText(i)
+                    self._ui.turbulentViscosityRatio.setText(b)
+
+        # volume fraction
+        if bctype == BoundaryType.VELOCITY_INLET:
+            if self._volumeFractionWidget.on():
+                self._volumeFractionWidget.load(xpath + '/volumeFractions')
+
+        # UDS
+        if bctype in [BoundaryType.VELOCITY_INLET, BoundaryType.FREE_STREAM]:
+            if self._scalarsWidget.on():
+                self._scalarsWidget.load(xpath + '/userDefinedScalars')
+
+        # species
+        if bctype in [BoundaryType.VELOCITY_INLET, BoundaryType.FREE_STREAM]:
+            if self._speciesWidget.on():
+                self._speciesWidget.load(xpath + '/species')
+
+
+    def _getTurbulenceFromKEpsilonBoundary(self, db: CoreDBReader, xpath: str, v: float, nu: float) -> tuple[str, str]:
+        spec = KEpsilonSpecification(db.getValue(xpath + '/turbulence/k-epsilon/specification'))
+        if spec == KEpsilonSpecification.INTENSITY_AND_VISCOSITY_RATIO:
+            i = db.getValue(xpath + '/turbulence/k-epsilon/turbulentIntensity')
+            b = db.getValue(xpath + '/turbulence/k-epsilon/turbulentViscosityRatio')
+            return i, b
+        elif spec == KEpsilonSpecification.K_AND_EPSILON:
+            k = float(db.getValue(xpath + '/turbulence/k-epsilon/turbulentKineticEnergy'))
+            e = float(db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
+            i = sqrt(k / 1.5 * v * v)
+            nut = 0.09 * k * k / e
+            b = nut / nu
+            return str(i), str(b)
+
+    def _getTurbulenceFromKOmegaBoundary(self, db: CoreDBReader, xpath: str, v: float, nu: float) -> tuple[str, str]:
+        spec = KOmegaSpecification(db.getValue(xpath + '/turbulence/k-omega/specification'))
+        if spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO:
+            i = db.getValue(xpath + '/turbulence/k-omega/turbulentIntensity')
+            b = db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio')
+            return i, b
+        elif spec == KOmegaSpecification.K_AND_OMEGA:
+            k = float(db.getValue(xpath + '/turbulence/k-omega/turbulentKineticEnergy'))
+            w = float(db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))
+            i = sqrt(k / 1.5 * v * v)
+            nut = k / w
+            b = nut / nu
+            return str(i), str(b)
+
+    def _getTurbulenceFromSpalartAllmarasBoundary(self, db: CoreDBReader, xpath: str, v: float, nu: float) -> str:
+        spec = SpalartAllmarasSpecification(db.getValue(xpath + '/turbulence/spalartAllmaras/specification'))
+        if spec == SpalartAllmarasSpecification.TURBULENT_VISCOSITY_RATIO:
+            b = db.getValue(xpath + '/turbulence/spalartAllmaras/turbulentViscosityRatio')
+            return b
+        elif spec == SpalartAllmarasSpecification.MODIFIED_TURBULENT_VISCOSITY:
+            nuTilda = float(db.getValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity'))
+            b = nuTilda / nu
+            return str(b)
+ 

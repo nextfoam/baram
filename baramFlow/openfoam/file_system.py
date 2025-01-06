@@ -264,7 +264,8 @@ class FileSystem:
 
                 for rname in regions:
                     copyDirectory(sourceConstantPath, targetConstantPath, rname)
-                    copyFile(sourceSystemPath / rname, cls.makeDir(targetSystemPath, rname), 'decomposeParDict')
+                    if len(processorFolders):
+                        copyFile(sourceSystemPath / rname, cls.makeDir(targetSystemPath, rname), 'decomposeParDict')
 
                     for processorPath in processorFolders:
                         destProcessorPath = cls.makeDir(targetCaseRoot, processorPath.name)

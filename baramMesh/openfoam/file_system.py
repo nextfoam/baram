@@ -119,6 +119,9 @@ class FileSystem:
     #     with open(self.foamFilePath(), 'a'):
     #         pass
 
+    def saveAs(self, path):
+        shutil.copytree(self._casePath, path / CASE_DIRECTORY_NAME, copy_function=shutil.copyfile)
+
     async def copyTriSurfaceFrom(self, srcPath, fileName):
         targetFile = self._triSurfacePath / fileName
         await asyncio.to_thread(shutil.copyfile, srcPath, targetFile)

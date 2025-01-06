@@ -22,22 +22,24 @@ class Configurations(SimpleDB):
         self._path = None
         self._files = newFiles()
 
+    def create(self, path):
+        self._path = path / FILE_NAME
+        self.createData()
+
     def load(self, path):
         self._path = path / FILE_NAME
-        if self._path.exists():
-            data, files, maxIds = readConfigurations(self._path)
-
-            self._content = self.validateData(migrate(yaml.full_load(data)))
-
-            self._files = files
-            Configurations._geometryNextKey = maxIds[FileGroup.GEOMETRY_POLY_DATA.value]
-        else:
-            self.createData()
+        data, files, maxIds = readConfigurations(self._path)
+        self._content = self.validateData(migrate(yaml.full_load(data)))
+        self._files = files
+        Configurations._geometryNextKey = maxIds[FileGroup.GEOMETRY_POLY_DATA.value]
 
     def save(self):
         if self.isModified():
-            writeConfigurations(self._path, self.toYaml(), self._files)
-            self._modified = False
+            self._save()
+
+    def saveAs(self, path):
+        self._path = path / FILE_NAME
+        self._save()
 
     def addGeometryPolyData(self, pd):
         Configurations._geometryNextKey += 1
@@ -65,3 +67,7 @@ class Configurations(SimpleDB):
         db._editable = editable
 
         return db
+
+    def _save(self):
+        writeConfigurations(self._path, self.toYaml(), self._files)
+        self._modified = False

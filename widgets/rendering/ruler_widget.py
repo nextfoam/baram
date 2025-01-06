@@ -15,9 +15,6 @@ class RulerWidget:
         self._position1 = None
         self._position2 = None
 
-        self._pointPicker = vtkPointPicker()
-        self._propPicker = vtkPropPicker()
-
         self._widget.SetInteractor(interactor)
         self._widget.CreateDefaultRepresentation()
         self._widget.AddObserver(vtkCommand.PlacePointEvent, self._pointCreated)

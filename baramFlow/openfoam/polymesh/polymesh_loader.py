@@ -19,7 +19,7 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryType, GeometricalType, BoundaryDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.region_db import RegionDB, DEFAULT_REGION_NAME
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.constant.region_properties import RegionProperties
@@ -73,8 +73,14 @@ def defaultBoundaryType(name, geometricalType):
 
         return BoundaryType.WALL
 
-    if geometricalType in (GeometricalType.MAPPED_WALL, GeometricalType.CYCLIC, GeometricalType.CYCLIC_AMI):
+    if geometricalType == GeometricalType.CYCLIC:
+        return BoundaryType.CYCLIC
+
+    if geometricalType == GeometricalType.CYCLIC_AMI:
         return BoundaryType.INTERFACE
+
+    if geometricalType == GeometricalType.MAPPED_WALL:
+        return BoundaryType.THERMO_COUPLED_WALL
 
     if geometricalType == GeometricalType.SYMMETRY:
         return BoundaryType.SYMMETRY
@@ -202,11 +208,17 @@ class PolyMeshLoader(QObject):
             region = None
             patch = None
 
+            if rname == DEFAULT_REGION_NAME:
+                rname = ''
+
             if rname in boundaries and bcname in boundaries[rname]:
                 b = boundaries[rname][bcname]
                 if 'samplePatch' in b:
                     patch = b['samplePatch']
                     region = b['sampleRegion'] if 'sampleRegion' in b else rname
+
+            if region == DEFAULT_REGION_NAME:
+                region = ''
 
             return region, patch
 
@@ -242,7 +254,7 @@ class PolyMeshLoader(QObject):
                 boundaryType = defaultBoundaryType(bcname, geometricalType)
                 boundary['bcid'] = str(db.addBoundaryCondition(rname, bcname, boundary['type'], boundaryType.value))
 
-                if boundaryType == BoundaryType.INTERFACE:
+                if BoundaryDB.needsCoupledBoundary(boundaryType.value):
                     coupledBoundary = None
                     if geometricalType == GeometricalType.MAPPED_WALL and 'samplePatch' in boundary:
                         sampleRegion, samplePatch = getSamplePatch(rname, bcname)

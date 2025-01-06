@@ -8,30 +8,31 @@ from PySide6.QtCore import QThread, QObject, QTimer, Signal, Qt
 
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
-from baramFlow.coredb.project import Project
-from baramFlow.coredb.monitor_db import MonitorDB
-from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.run_calculation_db import RunCalculationDB
-from baramFlow.coredb.monitor_db import FieldHelper, Field
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.cell_zone_db import CellZoneDB
+from baramFlow.coredb.general_db import GeneralDB
+from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
+from baramFlow.coredb.project import Project
+from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
 from baramFlow.openfoam.post_processing.post_file_reader import PostFileReader
 
 
 def calculateMaxX():
     if GeneralDB.isTimeTransient():
-        # 10% of total case time
-        endTime = float(coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/endTime'))
-        maxX = endTime / 10
-    else:
-        # 10% of total iteration count or iteration count if it is less than MIN_COUNT
-        MIN_COUNT = 100
-        count = int(
-            coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/numberOfIterations'))
-        if count < MIN_COUNT:
-            maxX = count
+        timeSteppingMethod = coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/timeSteppingMethod')
+        if timeSteppingMethod == TimeSteppingMethod.FIXED.value:
+            # 50 Residual points
+            timeStep = float(
+                coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/timeStepSize'))
+            maxX = timeStep * 50
         else:
-            maxX = MIN_COUNT + count / 10
+            # 10% of total case time
+            endTime = float(
+                coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/endTime'))
+            maxX = endTime / 10
+    else:
+        # 50 Residual points
+        maxX = 50
 
     return maxX
 
@@ -65,14 +66,13 @@ class Worker(QObject):
             self._reader.openMonitor()
             self._monitor()
 
-            self.flushed.emit()
-
             if CaseManager().isRunning():
                 self._timer = QTimer()
                 self._timer.setInterval(500)
                 self._timer.timeout.connect(self._monitor)
                 self._timer.start()
             else:
+                self.flushed.emit()
                 self._reader.closeMonitor()
 
     def stopMonitor(self):
@@ -87,6 +87,7 @@ class Worker(QObject):
         data = self._reader.readTailDataFrame()
         if data is not None:
             self.dataUpdated.emit(data)
+
 
 class Monitor(QObject):
     startWorker = Signal()
@@ -157,6 +158,7 @@ class Monitor(QObject):
     def _stopped(self):
         self.stopped.emit(self._name)
 
+
 class ForceMonitor(Monitor):
     def __init__(self, name, chart1, chart2, chart3):
         super().__init__(name)
@@ -179,9 +181,9 @@ class ForceMonitor(Monitor):
         return 'coefficient'
 
     def _updateChart(self, data):
-        self._chart1.appendData(pd.DataFrame(data, columns=['Cd']))
-        self._chart2.appendData(pd.DataFrame(data, columns=['Cl']))
-        self._chart3.appendData(pd.DataFrame(data, columns=['CmPitch']).rename(columns={'CmPitch': 'Cm'}))
+        self._chart1.dataAppended(pd.DataFrame(data, columns=['Cd']))
+        self._chart2.dataAppended(pd.DataFrame(data, columns=['Cl']))
+        self._chart3.dataAppended(pd.DataFrame(data, columns=['CmPitch']).rename(columns={'CmPitch': 'Cm'}))
 
     def _fitChart(self):
         self._chart1.fitChart()
@@ -213,7 +215,7 @@ class PointMonitor(Monitor):
         return ''
 
     def _updateChart(self, data):
-        self._chart.appendData(data)
+        self._chart.dataAppended(data)
 
     def _fitChart(self):
         self._chart.fitChart()
@@ -237,7 +239,7 @@ class SurfaceMonitor(Monitor):
         return 'surfaceFieldValue'
 
     def _updateChart(self, data):
-        self._chart.appendData(data)
+        self._chart.dataAppended(data)
 
     def _fitChart(self):
         self._chart.fitChart()
@@ -261,7 +263,7 @@ class VolumeMonitor(Monitor):
         return 'volFieldValue'
 
     def _updateChart(self, data):
-        self._chart.appendData(data)
+        self._chart.dataAppended(data)
 
     def _fitChart(self):
         self._chart.fitChart()

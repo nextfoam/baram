@@ -628,6 +628,8 @@ def _version_6(root: etree.Element):
 def _version_7(root: etree.Element):
     logger.debug('  Upgrading to v8')
 
+    root.set('version', '8')
+
     if (p := root.find('general/atmosphericBoundaryLayer', namespaces=_nsmap)) is not None:
         if (e := p.find('userDefinedScalars', namespaces=_nsmap)) is not None:
             logger.debug(f'    Removing "userDefinedScalars" from {p}')

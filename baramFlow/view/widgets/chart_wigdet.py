@@ -5,56 +5,59 @@ import math
 import sys
 import typing
 
-from PySide6.QtWidgets import QWidget
-
 import numpy as np
 import pandas as pd
-from matplotlib import ticker
-from matplotlib.backends.qt_compat import QtWidgets
-from matplotlib.backends.backend_qtagg import (
-    FigureCanvas)
-from matplotlib.figure import Figure
-from matplotlib.lines import Line2D
-
-from baramFlow.coredb import coredb
-from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.run_calculation_db import TimeSteppingMethod, RunCalculationDB
+import pyqtgraph as pg
+from PySide6.QtCore import Signal, Qt
+from PySide6.QtGui import QWheelEvent, QFont
+from PySide6.QtWidgets import QWidget, QVBoxLayout
+from pyqtgraph import AxisItem
+from pyqtgraph.graphicsItems.PlotDataItem import PlotDataItem
 
 SIDE_MARGIN = 0.05  # 5% margin between line end and right axis
 
+COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+
+
+class MajorOnlyAxisItem(AxisItem):
+    def tickValues(self, minVal, maxVal, size):
+        tickLevels = super().tickValues(minVal, maxVal, size)
+        return tickLevels[:1]  # Leave major tick only
+
+
+class WheelPlotWidget(pg.PlotWidget):
+    onScroll = Signal(QWheelEvent)
+
+    def wheelEvent(self, ev: QWheelEvent):
+        self.onScroll.emit(ev)
+        ev.accept()
+
 
 class ChartWidget(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, width=10):
+        super().__init__()
 
         self._data = None
 
-        self._lines: typing.Dict[str, Line2D] = {}
+        self._chart = None
+        self._title = None
+        self._lines: typing.Dict[str, PlotDataItem] = {}
 
         self._logScale = False
-        self._initialMaxX = 10
+        self._width = width
 
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        self._canvas = FigureCanvas(Figure(figsize=(5, 3), layout='tight'))
-        self._canvas.mpl_connect('scroll_event', self._onScroll)
-
-        layout.addWidget(self._canvas)
-
-        self._axes = self._canvas.figure.subplots()
         self.clear()
 
     def setTitle(self, title):
-        self._axes.set_title(title)
+        self._chart.setTitle(title, color='#5f5f5f', size='12pt')
+        self._title = title
 
     def logScaleOn(self):
         self._logScale = True
-        self._axes.set_yscale('log')
-
-    def setData(self, data):
-        self._data = data
-        self._updateChart(1.0)
+        self._chart.setLogMode(False, True)
 
     def fitChart(self):
         if self._data is None:
@@ -63,110 +66,74 @@ class ChartWidget(QWidget):
         minX = float(self._data.first_valid_index())
         maxX = float(self._data.last_valid_index())
 
-        dataWidth = maxX - minX
-        if dataWidth == 0:
-            return
+        if maxX <= minX:
+            maxX = minX + 1
 
+        dataWidth = maxX - minX
         margin = dataWidth * SIDE_MARGIN / (1 - 2 * SIDE_MARGIN)
 
-        self._axes.set_xlim([minX-margin, maxX+margin])
-        self._adjustYRange(minX, maxX)
+        self._chart.setXRange(minX-margin, maxX+margin)
+        # To update Y range
+        self._updateChart(1.0)
 
-        self._canvas.draw()
-
-    def appendData(self, data: pd.DataFrame):
+    def dataAppended(self, data: pd.DataFrame):
         if self._data is None:
             self._data = data
         else:
             self._data = pd.concat([self._data[self._data.index < data.first_valid_index()], data])
 
-        d = self._data.reset_index()  # "Time" is back to a column to serve as X value in numpy transpose below
+        self._drawLines()
+
+    def _drawLines(self):
+        times = self._data.index.to_numpy()
 
         for c in self._data.columns.values.tolist():
             if c not in self._lines:
-                self._lines[c], = self._axes.plot('Time', c, '', label=c, data=d)
-                self._lines[c].set_linewidth(0.8)
+                self._lines[c] = self._chart.plot(
+                    times, self._data[c].to_numpy(), name=c, pen={'color': COLORS[len(self._lines) % 10], 'width': 2})
             else:
-                self._lines[c].set_data(d[['Time', c]].to_numpy().transpose())
-
-        legend = self._axes.legend()
-        for h in legend.legendHandles:
-            h.set_linewidth(1.6)
+                self._lines[c].setData(times, self._data[c].to_numpy())
 
         self._updateChart(1.0)
 
-    def clear(self):
-        self._axes.cla()
+    def dataUpdated(self, data: pd.DataFrame):
+        self._data = data
+        self._drawLines()
 
-        self._data = None
-        self._lines = {}
+    def onScroll(self, ev: QWheelEvent):
+        angle = ev.angleDelta().y() / 8.0
+        scale = np.power(1.05, -angle/15)  # 15 degree is usually one step on mouse wheel
 
-        self._axes.grid(alpha=0.6, linestyle='--')
-        self._axes.xaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
-        self._axes.yaxis.set_major_formatter(ticker.FuncFormatter(lambda num, _: '{:g}'.format(num)))
-        if self._logScale:
-            self._axes.set_yscale('log')
-
-        if GeneralDB.isTimeTransient():
-            timeSteppingMethod = coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/timeSteppingMethod')
-            if timeSteppingMethod == TimeSteppingMethod.FIXED.value:
-                # 50 Residual points
-                timeStep = float(
-                    coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/timeStepSize'))
-                chartWidth = timeStep * 50
-            else:
-                # 10% of total case time
-                endTime = float(
-                    coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/endTime'))
-                chartWidth = endTime / 10
-        else:
-            # 50 Residual points
-            chartWidth = 50
-
-        margin = chartWidth * SIDE_MARGIN
-        minX = -margin
-        maxX = chartWidth + margin
-        self._axes.set_xlim([minX, maxX])
-
-        self._canvas.draw()
+        self._updateChart(scale)
 
     def _updateChart(self, scale: float):
         if self._data is None:
             return
 
-        timeMin = float(self._data.first_valid_index())
-        timeMax = float(self._data.last_valid_index())
+        data = self._data
 
-        dataWidth = timeMax - timeMin
+        minTime = float(data.first_valid_index())
+        maxTime = float(data.last_valid_index())
+
+        dataWidth = maxTime - minTime
 
         # chartWidth is effective width for lines excluding side margins
-        left, right = self._axes.get_xlim()
-        margin = (right - left) * SIDE_MARGIN
-        chartWidth = ((right - left) - 2 * margin)
+        xRange, _ = self._chart.viewRange()
+        margin = (xRange[1] - xRange[0]) * SIDE_MARGIN
+        chartWidth = ((xRange[1] - xRange[0]) - 2 * margin)
 
         margin *= scale
         chartWidth *= scale
 
         if dataWidth < chartWidth:
-            minX = timeMin
+            minX = minTime
             maxX = minX + chartWidth
         else:
-            maxX = timeMax
-            minX = maxX - chartWidth
+            maxX = maxTime
+            minX = maxTime - chartWidth
 
-        self._axes.set_xlim([minX-margin, maxX+margin])
-
-        self._adjustYRange(minX, maxX)
-
-        self._canvas.draw()  # force re-draw the next time the GUI refreshes
-        # self._canvas.draw_idle()
-
-    def _onScroll(self, event):
-        scale = np.power(1.05, -event.step)
-        self._updateChart(scale)
-
-    def _adjustYRange(self, minX: float, maxX: float):
-        data = self._data
+        left = minX - margin
+        right = maxX + margin
 
         d = data[(data.index >= minX) & (data.index <= maxX)]
         minY = d.min().min()
@@ -177,33 +144,64 @@ class ChartWidget(QWidget):
             minY = max(minY, sys.float_info.min)
             maxY = max(maxY, sys.float_info.min)
 
-            minY = minY / 10  # margin in log scale
+            # 10x margin in log scale
+            bottom = minY / 10
+            top    = maxY * 10
 
-            if maxY < 0.1:
-                maxY = maxY * 10  # margin in log scale
-            else:
-                maxY = 1
-
-            self._axes.set_ylim([minY, maxY])
-
+            bottom = math.log10(bottom)
+            top    = math.log10(top)
         else:
             margin = (maxY - minY) * SIDE_MARGIN
-            if margin < sys.float_info.epsilon:
+            if margin < sys.float_info.epsilon:  # minY and maxY are almost same
                 if minY == 0:
-                    self._axes.set_ylim([-1, 1])
+                    margin = 1
                 else:
-                    a = abs(minY)
-                    g = math.floor(math.log10(a))
-                    p = float(pow(10, g))
-                    v = math.floor(a / p)
+                    exponent = math.floor(math.log10(abs(minY)))
+                    margin = 10**exponent
 
-                    bottom = v * p
-                    top = bottom + p
-                    if minY - bottom < sys.float_info.epsilon:
-                        bottom = bottom - p
-                    if minY < 0:
-                        bottom, top = -top, -bottom
+            bottom = minY - margin
+            top = maxY + margin
 
-                    self._axes.set_ylim([bottom, top])
-            else:
-                self._axes.set_ylim([minY-margin, maxY+margin])
+        self._chart.setRange(xRange=[left, right], yRange=[bottom, top])
+
+    def clear(self):
+        if self._chart:
+            self._chart.onScroll.disconnect(self.onScroll)
+            self.layout().removeWidget(self._chart)
+            self._chart.deleteLater()
+
+        self._data = None
+        self._lines = {}
+
+        self._chart = WheelPlotWidget(enableMenu=False, background='w')
+
+        plotItem: pg.PlotItem = self._chart.getPlotItem()
+
+        plotItem.setAxisItems({
+            'left': MajorOnlyAxisItem('left', textPen='#5f5f5f', tickPen={'style': Qt.PenStyle.DashLine}),
+            'bottom': MajorOnlyAxisItem('bottom', textPen='#5f5f5f', tickPen={'style': Qt.PenStyle.DashLine})
+        })
+        font = QFont()
+        font.setPointSize(10)
+        plotItem.getAxis('left').setTickFont(font)
+        plotItem.getAxis('bottom').setTickFont(font)
+
+        plotItem.setMouseEnabled(False, False)
+        plotItem.setDefaultPadding(0)  # Padding is handled manually to set it asymmetrically
+        plotItem.getViewBox().setBorder('k')
+        plotItem.showGrid(True, True)
+        plotItem.hideButtons()
+
+        legend = pg.LegendItem(offset=(-10, 10+30), horSpacing=5, labelTextColor='#5f5f5f', labelTextSize='10pt', pen='lightGray', brush='w')  # Chart Title has a height of 30
+        legend.setZValue(1)  # Raise LegendItem over Grid (Z-Value of Grid is 0.5)
+        legend.setParentItem(plotItem)
+
+        plotItem.legend = legend
+
+        self._chart.setTitle(self._title, color='#5f5f5f', size='12pt')
+        self._chart.setLogMode(False, self._logScale)
+        self._chart.setXRange(0, self._width)
+        self._chart.onScroll.connect(self.onScroll)
+
+        self.layout().addWidget(self._chart)
+
