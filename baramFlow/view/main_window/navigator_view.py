@@ -100,7 +100,7 @@ class NavigatorView(QObject):
 
     def updateEnabled(self):
         noMesh = not coredb.CoreDB().hasMesh()
-        solverActivated = CaseManager().isActive() or CaseManager().isBatchRunning()
+        solverActivated = CaseManager().isActive()
 
         self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(solverActivated)
         self._menu[MenuItem.MENU_SETUP_MODELS.value].setDisabled(solverActivated)

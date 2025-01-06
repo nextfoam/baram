@@ -11,21 +11,21 @@ from enum import Enum, auto
 import pandas as pd
 from PySide6.QtWidgets import QFileDialog
 
-from baramFlow.coredb.coredb_reader import CoreDBReader
-from baramFlow.openfoam.constant.turbulence_properties import TurbulenceProperties
-from baramFlow.openfoam.system.fv_options import FvOptions
 from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItem
 from widgets.progress_dialog import ProgressDialog
 
-from baramFlow.case_manager import CaseManager
+from baramFlow.case_manager import CaseManager, BatchCase
 from baramFlow.coredb import coredb
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.project import Project, SolverStatus
-from baramFlow.openfoam.solver import SolverNotFound
 from baramFlow.openfoam.case_generator import CanceledException
-from baramFlow.openfoam.system.fv_solution import FvSolution
+from baramFlow.openfoam.constant.turbulence_properties import TurbulenceProperties
+from baramFlow.openfoam.solver import SolverNotFound
 from baramFlow.openfoam.system.control_dict import ControlDict
+from baramFlow.openfoam.system.fv_options import FvOptions
 from baramFlow.openfoam.system.fv_schemes import FvSchemes
+from baramFlow.openfoam.system.fv_solution import FvSolution
 from baramFlow.view.widgets.content_page import ContentPage
 from .batch_case_list import BatchCaseList
 from .batch_cases_import_dialog import BatchCasesImportDialog
@@ -130,9 +130,16 @@ class ProcessInformationPage(ContentPage):
                                                     self.tr('No case is scheduled.'))
                 return
 
-            self._updateStatus(SolverStatus.RUNNING)
-            await self._caseManager.batchRun(cases)
-            self._updateStatus(SolverStatus.NONE)
+            try:
+                self._updateStatus(SolverStatus.RUNNING)
+                await self._caseManager.batchRun([BatchCase(name, parameters) for name, parameters in cases])
+            except CanceledException:
+                return
+            except Exception as ex:
+                await AsyncMessageBox().information(self, self.tr('Calculation Error'),
+                                                    self.tr('Error occurred:\n' + str(ex)))
+            finally:
+                self._updateStatus(SolverStatus.NONE)
 
     def _cancelCalculationClicked(self):
         controlDict = ControlDict().build()
@@ -245,7 +252,7 @@ class ProcessInformationPage(ContentPage):
                 self._stopDialog.close()
                 self._stopDialog = None
 
-        process = self._caseManager.process()
+        process = self._caseManager.liveProcess()
         if process:
             pid = str(process.pid)
             createTime = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime(process.startTime))
