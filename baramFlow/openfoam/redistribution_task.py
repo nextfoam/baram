@@ -92,12 +92,12 @@ class RedistributionTask(QObject):
 
                         args = ('-allRegions', '-fields', '-time', '0:', '-case', caseRoot)
 
-                    console = app.window.dockView.consoleView()
+                    console = app.window.consoleView()
                     cm = RunUtility('decomposePar', *args, cwd=caseRoot)
                     cm.output.connect(console.append)
                     cm.errorOutput.connect(console.append)
 
-                    app.window.dockView.showConsoleDock()
+                    app.window.showConsoleDock()
                     await cm.start()
                     result = await cm.wait()
                     if result != 0:

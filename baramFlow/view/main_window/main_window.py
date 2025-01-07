@@ -24,7 +24,7 @@ from widgets.progress_dialog import ProgressDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 from baramFlow.app import app
-from baramFlow.case_manager import CaseManager
+from baramFlow.case_manager import CaseManager, LiveCase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.coredb.general_db import GeneralDB
@@ -39,6 +39,10 @@ from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.polymesh.polymesh_loader import PolyMeshLoader
 from baramFlow.openfoam.redistribution_task import RedistributionTask
 from baramFlow.solver_status import SolverStatus
+from baramFlow.view.dock_widgets.chart_dock import ChartDock
+from baramFlow.view.dock_widgets.console_dock import ConsoleDock
+from baramFlow.view.dock_widgets.monitor_dock import MonitorDock
+from baramFlow.view.dock_widgets.rendering_dock import RenderingDock
 from baramFlow.view.main_window.menu.mesh.poly_meshes_dialog import PolyMeshesDialog
 from baramFlow.view.main_window.menu.settrings.settings_language_dialog import SettingLanguageDialog
 from baramFlow.view.main_window.menu.settrings.settings_paraveiw_dialog import SettingsParaViewDialog
@@ -119,6 +123,16 @@ class MainWindow(QMainWindow):
         self._contentView = ContentView(self._ui.formView, self._ui)
         self._dockView = DockView(self._ui.menuView)
 
+        self._consoleDock = ConsoleDock()
+        self._renderingDock = RenderingDock()
+        self._chartDock = ChartDock()
+        self._monitorDock = MonitorDock()
+
+        self._dockView.addDockWidget(self._consoleDock)
+        self._dockView.addDockWidget(self._renderingDock)
+        self._dockView.addDockWidget(self._chartDock)
+        self._dockView.addDockWidget(self._monitorDock)
+
         self._menuPages = {
             MenuItem.MENU_SETUP.value: MenuPage(),
             MenuItem.MENU_SOLUTION.value: MenuPage(),
@@ -156,12 +170,14 @@ class MainWindow(QMainWindow):
         self._ui.splitter.addWidget(self._dockView)
         self._ui.splitter.setStretchFactor(2, 1)
 
-    @property
-    def dockView(self):
-        return self._dockView
+    def consoleView(self):
+        return self._consoleDock.widget()
+
+    def showConsoleDock(self):
+        self._consoleDock.raise_()
 
     def renderingView(self):
-        return self._dockView.renderingView()
+        return self._renderingDock.widget()
 
     def case(self):
         return self._caseManager
@@ -178,6 +194,11 @@ class MainWindow(QMainWindow):
         self._caseManager.clear()
         Project.close()
 
+        self._consoleDock.widget().close()
+        self._renderingDock.widget().close()
+        self._chartDock.widget().close()
+        self._monitorDock.widget().close()
+        
         if self._closeType == CloseType.CLOSE_PROJECT:
             app.restart()
         else:
@@ -574,14 +595,14 @@ class MainWindow(QMainWindow):
 
     @qasync.asyncSlot()
     async def _projectOpened(self):
-        self._caseManager.load()
+        self._caseManager.load(LiveCase())
 
         if self._caseManager.isRunning():
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SOLUTION_RUN.value)
-            self._dockView.showChartDock()
+            self._chartDock.raise_()
         else:
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL.value)
-            self._dockView.showRenderingDock()
+            self._renderingDock.raise_()
 
         db = coredb.CoreDB()
         if db.hasMesh():

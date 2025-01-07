@@ -209,7 +209,7 @@ class CaseGenerator(QObject):
         if nProcessorFolders > 1:
             self.progress.emit(self.tr('Decomposing Field Data...'))
 
-            console = app.window.dockView.consoleView()
+            console = app.window.consoleView()
             self._cm = RunUtility('decomposePar', '-allRegions', '-fields', '-latestTime', '-case', caseRoot, cwd=caseRoot)
             self._cm.output.connect(console.append)
             self._cm.errorOutput.connect(console.append)
