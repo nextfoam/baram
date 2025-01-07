@@ -31,27 +31,27 @@ class BoundaryTypePicker(QWidget):
         self._bcid = None
 
         self._types = {
-            self._ui.velocityInlet:     BoundaryType.VELOCITY_INLET	 ,
-            self._ui.flowRateInlet:     BoundaryType.FLOW_RATE_INLET	 ,
-            self._ui.pressureInlet:     BoundaryType.PRESSURE_INLET	 ,
-            self._ui.ABLInlet:          BoundaryType.ABL_INLET	     ,
+            self._ui.velocityInlet:     BoundaryType.VELOCITY_INLET,
+            self._ui.flowRateInlet:     BoundaryType.FLOW_RATE_INLET,
+            self._ui.pressureInlet:     BoundaryType.PRESSURE_INLET,
+            self._ui.ABLInlet:          BoundaryType.ABL_INLET,
             self._ui.openChannelInlet:  BoundaryType.OPEN_CHANNEL_INLET,
-            self._ui.freeStream:        BoundaryType.FREE_STREAM	     ,
+            self._ui.freeStream:        BoundaryType.FREE_STREAM,
             self._ui.farFieldRiemann:   BoundaryType.FAR_FIELD_RIEMANN,
-            self._ui.subsonicInlet:     BoundaryType.SUBSONIC_INLET	 ,
+            self._ui.subsonicInlet:     BoundaryType.SUBSONIC_INLET,
             self._ui.supersonicInflow:  BoundaryType.SUPERSONIC_INFLOW,
-            self._ui.pressureOutlet:    BoundaryType.PRESSURE_OUTLET	 ,
+            self._ui.pressureOutlet:    BoundaryType.PRESSURE_OUTLET,
             self._ui.openChannelOutlet: BoundaryType.OPEN_CHANNEL_OUTLET,
-            self._ui.outflow:           BoundaryType.OUTFLOW	         ,
+            self._ui.outflow:           BoundaryType.OUTFLOW,
             self._ui.subsonicOutflow:   BoundaryType.SUBSONIC_OUTFLOW,
             self._ui.supersonicOutflow: BoundaryType.SUPERSONIC_OUTFLOW,
-            self._ui.wall:              BoundaryType.WALL	         ,
+            self._ui.wall:              BoundaryType.WALL,
             self._ui.thermoCoupledWall: BoundaryType.THERMO_COUPLED_WALL,
             self._ui.symmetry:          BoundaryType.SYMMETRY,
             self._ui.interface_:        BoundaryType.INTERFACE,
-            self._ui.empty:             BoundaryType.EMPTY	     ,
+            self._ui.empty:             BoundaryType.EMPTY,
             self._ui.cyclic:            BoundaryType.CYCLIC,
-            self._ui.wedge:             BoundaryType.WEDGE	         ,
+            self._ui.wedge:             BoundaryType.WEDGE,
             self._ui.porousJump:        BoundaryType.POROUS_JUMP,
             self._ui.FAN:               BoundaryType.FAN,
         }
@@ -72,11 +72,13 @@ class BoundaryTypePicker(QWidget):
             self._ui.openChannelOutlet.hide()
 
         if not isCompressible or not isEnergyOn or isMultiphase or isMultiRegion:
-            self._ui.farFieldRiemann.hide()
             self._ui.subsonicInlet.hide()
             self._ui.supersonicInflow.hide()
             self._ui.subsonicOutflow.hide()
             self._ui.supersonicOutflow.hide()
+
+        if not isEnergyOn or isMultiphase or isMultiRegion:
+            self._ui.farFieldRiemann.hide()
 
         self.adjustSize()
 
