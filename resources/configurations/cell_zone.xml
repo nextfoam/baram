@@ -10,9 +10,9 @@
             <z>0</z>
         </rotationAxisOrigin>
         <rotationAxisDirection>
-            <x>1</x>
+            <x>0</x>
             <y>0</y>
-            <z>0</z>
+            <z>1</z>
         </rotationAxisDirection>
         <staticBoundaries></staticBoundaries>
     </mrf>
@@ -53,16 +53,16 @@
             <z>0</z>
         </rotationAxisOrigin>
         <rotationAxisDirection>
-            <x>1</x>
+            <x>0</x>
             <y>0</y>
-            <z>0</z>
+            <z>1</z>
         </rotationAxisDirection>
     </slidingMesh>
     <actuatorDisk>
         <diskDirection>
-            <x>1</x>
+            <x>0</x>
             <y>0</y>
-            <z>0</z>
+            <z>1</z>
         </diskDirection>
         <powerCoefficient>0.1</powerCoefficient>
         <thrustCoefficient>0.1</thrustCoefficient>

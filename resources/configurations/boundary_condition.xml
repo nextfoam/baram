@@ -129,9 +129,9 @@
                     <z>0</z>
                 </rotationAxisOrigin>
                 <rotationAxisDirection>
-                    <x>1</x>
+                    <x>0</x>
                     <y>0</y>
-                    <z>0</z>
+                    <z>1</z>
                 </rotationAxisDirection>
             </rotationalMovingWall>
         </velocity>
@@ -163,9 +163,9 @@
             <z>0</z>
         </rotationAxisOrigin>
         <rotationAxisDirection>
-            <x>1</x>
+            <x>0</x>
             <y>0</y>
-            <z>0</z>
+            <z>1</z>
         </rotationAxisDirection>
         <translationVector>
             <x>1</x>
