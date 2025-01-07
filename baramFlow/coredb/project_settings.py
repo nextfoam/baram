@@ -57,30 +57,8 @@ class ProjectSettings:
 
         return None
 
-    def setBatchStatus(self, name, status):
-        batches = self.getBatchStatuses()
-        batches[name] = status.name
-
-        self.save()
-
-    def setBatchStatuses(self, batches):
-        self._set(ProjectSettingKey.BATCH_STATUS, batches)
-        self.save()
-
-    def removeBatchStatus(self, name):
-        batches = self.getBatchStatuses()
-        if name in batches:
-            del batches[name]
-
-        self.save()
-
-    def getBatchStatuses(self):
-        status = self.get(ProjectSettingKey.BATCH_STATUS)
-        if status is None:
-            status = {}
-            self._set(ProjectSettingKey.BATCH_STATUS, status)
-
-        return status
+    def popBatchStatuses(self):
+        return self._settings.pop(ProjectSettingKey.BATCH_STATUS.value, None)
 
     def acquireLock(self, timeout):
         lock = FileLock(self._settingsPath / 'case.lock')

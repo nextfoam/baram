@@ -34,6 +34,7 @@ class SettingKey(Enum):
     NP = 'np'
     PARALLEL_TYPE = 'parallel_type'
     HOSTFILE = 'hostfile'
+    BATCH_STATUS = 'batch_status'
 
 
 class _Project(QObject):
@@ -65,8 +66,12 @@ class _Project(QObject):
 
         def set(self, key, value):
             if self.get(key) != value:
-                self._settings[key.value] = str(value)
-                self._save()
+                self._settings[key.value] = value
+                self.save()
+
+        def save(self):
+            with open(self._settingsFile, 'w') as file:
+                yaml.dump(self._settings, file)
 
         def _load(self):
             if self._settingsFile.is_file():
@@ -78,16 +83,12 @@ class _Project(QObject):
             elif (oldFile := self._settingsFile.parent / 'baram.cfg').is_file():
                 with open(oldFile) as file:
                     self._settings = yaml.load(file, Loader=yaml.FullLoader)
-                    self._save()
+                    self.save()
             # End
             else:
                 self._settings = {}
 
-        def _save(self):
             self._settings[SettingKey.FORMAT_VERSION.value] = FORMAT_VERSION
-
-            with open(self._settingsFile, 'w') as file:
-                yaml.dump(self._settings, file)
 
     def __init__(self):
         super().__init__()
@@ -182,7 +183,7 @@ class _Project(QObject):
 
     def updateSolverStatus(self, name, status):
         if name:
-            self._projectSettings.setBatchStatus(name, status)
+            self.setBatchStatus(name, status)
             self.solverStatusChanged.emit(status, name, None)
 
             return
@@ -191,23 +192,38 @@ class _Project(QObject):
         self._liveStatus = status
 
     def getBatchStatuses(self):
-        return self._projectSettings.getBatchStatuses()
+        status = self._settings.get(SettingKey.BATCH_STATUS)
+        if status is None:
+            status = {}
+            self._settings.set(SettingKey.BATCH_STATUS, status)
+
+        return status
+
+    def setBatchStatus(self, name, status):
+        batches = self.getBatchStatuses()
+        batches[name] = status.name
+
+        self._settings.save()
 
     def updateBatchStatuses(self, statuses):
-        self._projectSettings.setBatchStatuses(statuses)
+        self._settings.set(SettingKey.BATCH_STATUS, statuses)
 
     def removeBatchStatus(self, name):
-        self._projectSettings.removeBatchStatus(name)
+        batches = self.getBatchStatuses()
+        if name in batches:
+            del batches[name]
+
+        self._settings.save()
 
     def clearBatchStatuses(self):
-        self._projectSettings.setBatchStatuses({})
+        self.updateBatchStatuses({})
 
     def _open(self, path: Path, route=ProjectOpenType.EXISTING):
         self._settings = self.LocalSettings(path, self._settings)
         if route != ProjectOpenType.SAVE_AS:
             self._projectSettings = ProjectSettings()
 
-        self._settings.set(SettingKey.PATH, path)
+        self._settings.set(SettingKey.PATH, str(path))
 
         if route != ProjectOpenType.EXISTING or self.uuid:
             projectPath = None
@@ -228,6 +244,15 @@ class _Project(QObject):
                 # then the project has been moved(renamed)
                 # So, update project settings with correct projectPath.
                 self._projectSettings.saveAs(self)
+
+            # ToDo: For compatibility. Remove this code block at the appropriate time. (Added on 2025.01.07)
+            # Move batch status from Project Settings to Local Settings.
+            # Begin
+            if not self.getBatchStatuses():
+                if statuses := self._projectSettings.popBatchStatuses():
+                    self.updateBatchStatuses(statuses)
+                self._projectSettings.save()
+            # End
         else:
             raise FileNotFoundError
 
