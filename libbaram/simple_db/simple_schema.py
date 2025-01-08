@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from enum import Enum, auto
+
+from PySide6.QtCore import QObject
 
 
 class ErrorType(Enum):
@@ -89,8 +92,10 @@ class DBError(ValueError):
         return f'{self._name} - {self._message}'
 
 
-class PrimitiveType:
+class PrimitiveType(QObject):
     def __init__(self):
+        super().__init__()
+
         self._required = True
         self._default = None
 
@@ -113,7 +118,7 @@ class PrimitiveType:
     def validate(self, value, name=None):
         validated = None if value is None else str(value).strip()
         if self._required and (validated is None or validated == ''):
-            raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', name)
+            raise DBError(ErrorType.EmptyError, self.tr('Empty value is not allowed'), name)
 
         return validated
 
@@ -138,7 +143,7 @@ class EnumType(PrimitiveType):
         if value in self._cls.__members__:
             return value
 
-        raise DBError(ErrorType.EnumError, f'Only {self._cls} are allowed.', name)
+        raise DBError(ErrorType.EnumError, self.tr('Only {} are allowed.').format(self._cls), name)
 
     def toEnum(self, value):
         return self._values.get(value) or self._cls[value]
@@ -156,14 +161,43 @@ class FloatType(PrimitiveType):
     def setLowLimit(self, limit, inclusive=True):
         self._lowLimit = limit
         self._lowLimitInclusive = inclusive
+
         return self
 
     def setHighLimit(self, limit, inclusive=True):
         self._highLimit = limit
         self._highLimitInclusive = inclusive
+
+        return self
+
+    def setRange(self, low, high):
+        self._lowLimit = low
+        self._highLimit = high
+        self._lowLimitInclusive = True
+        self._highLimitInclusive = True
+
         return self
 
     def validate(self, value, name=None):
+        def rangeToText():
+            if self._highLimit is None:
+                if self._lowLimitInclusive:
+                    return f' (value ≥ {self._lowLimit})'
+                else:
+                    return f' (value > {self._lowLimit})'
+
+            lowLimit = ' ('
+            if self._lowLimit is not None:
+                if self._lowLimitInclusive:
+                    lowLimit =  f' ({self._lowLimit} ≤ '
+                else:
+                    lowLimit =  f' ({self._lowLimit} < '
+
+            if self._highLimitInclusive:
+                return f'{lowLimit}value ≤ {self._highLimit})'
+            else:
+                return f'{lowLimit}value < {self._highLimit})'
+
         value = super().validate(value, name)
 
         if value is None:
@@ -176,10 +210,10 @@ class FloatType(PrimitiveType):
 
         if self._lowLimit is not None:
             if v < self._lowLimit or (v == self._lowLimit and not self._lowLimitInclusive):
-                raise DBError(ErrorType.RangeError, 'Out of Range', name)
+                raise DBError(ErrorType.RangeError, self.tr('Out of Range') + rangeToText(), name)
         if self._highLimit is not None:
             if v > self._highLimit or (v == self._highLimit and not self._highLimitInclusive):
-                raise DBError(ErrorType.RangeError, 'Out of Range', name)
+                raise DBError(ErrorType.RangeError, self.tr('Out of Range') + rangeToText(), name)
 
         return value
 
@@ -198,27 +232,7 @@ class IntType(FloatType):
         try:
             f = float(value)
             if int(f) != f:
-                raise DBError(ErrorType.TypeError, 'Only integers allowed', name)
-        except Exception as e:
-            raise DBError(ErrorType.TypeError, repr(e), name)
-
-        return value
-
-
-class PositiveIntType(IntType):
-    def __init__(self):
-        super().__init__()
-        self._default = '1'
-
-    def validate(self, value, name=None):
-        value = super().validate(value, name)
-
-        if value is None:
-            return None
-
-        try:
-            if int(value) < 1:
-                raise DBError(ErrorType.TypeError, 'Only positive integers allowed', name)
+                raise DBError(ErrorType.TypeError, self.tr('Only integers are allowed'), name)
         except Exception as e:
             raise DBError(ErrorType.TypeError, repr(e), name)
 
@@ -291,7 +305,7 @@ class IntKeyList(SchemaList):
             try:
                 int(key)
             except KeyError as ke:
-                raise DBError(ErrorType.TypeError, repr(ke), 'Key of List')
+                raise DBError(ErrorType.TypeError, repr(ke), self.tr('Key of List'))
 
         return str(key)
 
@@ -347,7 +361,7 @@ class ArrayType(PrimitiveType):
 
     def validate(self, value, name=None):
         if not isinstance(value, list):
-            raise DBError(ErrorType.TypeError, 'A list is required', name)
+            raise DBError(ErrorType.TypeError, self.tr('A list is required'), name)
 
         for i in range(len(value)):
             value[i] = self._validatElement(value[i])
@@ -357,7 +371,7 @@ class ArrayType(PrimitiveType):
     def _validatElement(self, value, name=None):
         validated = str(value).strip()
         if value is None or validated == '':
-            raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', name)
+            raise DBError(ErrorType.EmptyError, self.tr('Empty value is not allowed'), name)
 
         return validated
 
@@ -371,7 +385,7 @@ class IntArray(ArrayType):
         try:
             f = float(value)
             if int(f) != f:
-                raise DBError(ErrorType.TypeError, 'Only integers allowed', name)
+                raise DBError(ErrorType.TypeError, self.tr('Only integers allowed'), name)
         except Exception as e:
             raise DBError(ErrorType.TypeError, repr(e), name)
 

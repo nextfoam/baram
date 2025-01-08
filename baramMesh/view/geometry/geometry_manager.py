@@ -136,6 +136,21 @@ class GeometryManager(ActorManager):
 
         return False
 
+    def getCellSize(self):
+        gId, geometry = self.getBoundingHex6()
+        if geometry is None:
+            x1, x2, y1, y2, z1, z2 = self.getBounds().toTuple()
+        else:
+            x1, y1, z1 = geometry.vector('point1')
+            x2, y2, z2 = geometry.vector('point2')
+
+        baseGrid = app.db.getElement('baseGrid')
+
+        return ((x2 - x1) / baseGrid.float('numCellsX'),
+                (y2 - y1) / baseGrid.float('numCellsY'),
+                (z2 - z1) / baseGrid.float('numCellsZ'))
+
+
     def _add(self, gId, geometry, volume):
         if geometry.value('gType') == GeometryType.SURFACE.value:
             self.add(GeometryActor(self._surfaceToPolyData(geometry, volume), gId, geometry.value('name')))

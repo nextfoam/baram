@@ -4,7 +4,7 @@
 
 from enum import Enum, auto, IntEnum
 
-from libbaram.simple_db.simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, PositiveIntType
+from libbaram.simple_db.simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType
 from libbaram.simple_db.simple_schema import VectorComposite
 
 
@@ -106,19 +106,26 @@ region = {
 surfaceRefinement = {
     'groupName': TextType(),
     'surfaceRefinement': {
-        'minimumLevel': IntType().setDefault(1),
-        'maximumLevel': IntType().setDefault(1)
+        'minimumLevel': IntType().setRange(0, 10).setDefault(1),
+        'maximumLevel': IntType().setRange(1, 10).setDefault(1)
     },
-    'featureEdgeRefinementLevel': IntType().setDefault(1),
+    'featureEdgeRefinementLevel': IntType().setRange(1, 10).setDefault(1),
+    'curvatureRefinement': {
+        'disabled': BoolType(True),
+        'numberOfCells': IntType().setLowLimit(1).setDefault(10),
+        'maxLevel': IntType().setRange(1, 10).setDefault(7),
+        'excludeSharpSurface': BoolType(False),
+        'minRadius': FloatType().setLowLimit(0, False)
+    }
 }
 
 volumeRefinement = {
     'groupName': TextType(),
-    'volumeRefinementLevel': PositiveIntType().setDefault(1),
+    'volumeRefinementLevel': IntType().setRange(1, 10).setDefault(1),
     'gapRefinement': {
-        'minCellLayers': IntType().setDefault(4).setLowLimit(3, False),
-        'detectionStartLevel': PositiveIntType().setDefault(1),
-        'maxRefinementLevel': PositiveIntType().setDefault(2),
+        'minCellLayers': IntType().setLowLimit(3, False).setDefault(4),
+        'detectionStartLevel': IntType().setRange(0, 10).setDefault(1),
+        'maxRefinementLevel': IntType().setRange(1, 10).setDefault(1),
         'direction': EnumType(GapRefinementMode),
         'gapSelf': BoolType(True)
     }
@@ -126,7 +133,7 @@ volumeRefinement = {
 
 layer = {
     'groupName': TextType(),
-    'nSurfaceLayers': PositiveIntType().setDefault(1),
+    'nSurfaceLayers': IntType().setLowLimit(1),
     'thicknessModel': EnumType(ThicknessModel).setDefault(ThicknessModel.FINAL_AND_EXPANSION),
     'relativeSizes': BoolType(True),
     'firstLayerThickness': FloatType().setDefault(0.3),
@@ -143,9 +150,9 @@ schema = {
     'geometry': IntKeyList(geometry),
     'region': IntKeyList(region),
     'baseGrid': {
-        'numCellsX': PositiveIntType().setDefault(10),
-        'numCellsY': PositiveIntType().setDefault(10),
-        'numCellsZ': PositiveIntType().setDefault(10),
+        'numCellsX': IntType().setLowLimit(1).setDefault(10),
+        'numCellsY': IntType().setLowLimit(1).setDefault(10),
+        'numCellsZ': IntType().setLowLimit(1).setDefault(10),
         'boundingHex6': IntType().setOptional().setDefault(None)
     },
     'castellation': {

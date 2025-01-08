@@ -47,6 +47,9 @@ class Element:
     def float(self, field):
         return float(self.value(field))
 
+    def int(self, field):
+        return int(self.value(field))
+
     def elements(self, field):
         if not isinstance(self._scheme[field], SchemaList):
             raise TypeError

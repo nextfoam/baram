@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from math import log2
+
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 from libbaram.simple_db.simple_db import elementToVector
 
@@ -219,12 +221,6 @@ class SnappyHexMeshDict(DictionaryFile):
             if surface.value('shape') in Shape.PLATES.value and surface.value('volume') == boundingHex6:
                 continue
 
-            minLevel = 0
-            maxLevel = 0
-            if group := surface.value('castellationGroup'):
-                minLevel = int(refinements[group].element('surfaceRefinement').value('minimumLevel'))
-                maxLevel = int(refinements[group].element('surfaceRefinement').value('maximumLevel'))
-
             name = surface.value('name')
             cfdType = surface.value('cfdType')
 
@@ -249,7 +245,24 @@ class SnappyHexMeshDict(DictionaryFile):
                     'patchInfo': {'type': 'patch'}
                 }
 
-            data[name]['level'] = [minLevel, maxLevel]
+            if group := surface.value('castellationGroup'):
+                refinement = refinements[group].element('surfaceRefinement')
+                data[name]['level'] = [int(refinement.value('minimumLevel')), int(refinement.value('maximumLevel'))]
+
+                curvature = refinements[group].element('curvatureRefinement')
+                if not curvature.value('disabled'):
+                    minRadius = -1
+                    if curvature.value('excludeSharpSurface'):
+                        minEdgeLen = min(app.window.geometryManager.getCellSize())
+                        cells = min(curvature.float('minRadius'), minEdgeLen)
+                        minRadius = min(round(log2(minEdgeLen / cells)), 10)
+
+                    data[name]['curvatureLevel'] = [curvature.value('numberOfCells'),
+                                                    0,
+                                                    curvature.int('maxLevel'),
+                                                    minRadius]
+            else:
+                data[name]['level'] = [0, 0]
 
         return data
 

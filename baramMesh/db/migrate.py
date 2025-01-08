@@ -39,10 +39,23 @@ def _to_v3(data):
             }
 
 
+def _to_v4(data):
+    for surfaceRefinement in data['castellation']['refinementSurfaces'].values():
+        if 'curvatureRefinement' not in surfaceRefinement:
+            surfaceRefinement['curvatureRefinement'] = {
+                'disabled': True,
+                'numberOfCells': '1',
+                'maxLevel': '1',
+                'excludeSharpSurface': False,
+                'minRadius': '0'
+            }
+
+
 _migrates = {
     0: _to_v1,
     1: _to_v2,
-    2: _to_v3
+    2: _to_v3,
+    3: _to_v4
 }
 
 

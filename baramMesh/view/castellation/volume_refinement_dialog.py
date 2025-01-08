@@ -46,6 +46,8 @@ class VolumeRefinementDialog(QDialog):
 
         self._ui.volumeRefinementLevel.setValidator(QIntValidator(0, 100))
 
+        self._xCellSize, self._yCellSize, self._zCellSize = app.window.geometryManager.getCellSize()
+
         self._connectSignalsSlots()
 
         self._load()
@@ -100,7 +102,7 @@ class VolumeRefinementDialog(QDialog):
                 self._dbElement.setValue('gapRefinement/minCellLayers', self._ui.minCellLayers.text(),
                                          self.tr('Min. Cell Layers in a gap'))
                 self._dbElement.setValue('gapRefinement/detectionStartLevel', self._ui.detectionStartLevel.text(),
-                                         self.tr('Gap Ditection Start Level'))
+                                         self.tr('Gap Detection Start Level'))
                 self._dbElement.setValue('gapRefinement/maxRefinementLevel', self._ui.maxRefinementLevel.text(),
                                          self.tr('Max. Refinement Level'))
                 self._dbElement.setValue('gapRefinement/direction', self._ui.direction.currentValue())
@@ -172,20 +174,6 @@ class VolumeRefinementDialog(QDialog):
                 self._volumes.append(gId)
 
         self._oldVolumes = self._volumes
-
-        self._loadCellSize()
-
-    def _loadCellSize(self):
-        gId, geometry = app.window.geometryManager.getBoundingHex6()
-        if geometry is None:
-            x1, x2, y1, y2, z1, z2 = app.window.geometryManager.getBounds().toTuple()
-        else:
-            x1, y1, z1 = geometry.vector('point1')
-            x2, y2, z2 = geometry.vector('point2')
-
-        self._xCellSize = (x2 - x1) / app.db.getFloat('baseGrid/numCellsX')
-        self._yCellSize = (y2 - y1) / app.db.getFloat('baseGrid/numCellsY')
-        self._zCellSize = (z2 - z1) / app.db.getFloat('baseGrid/numCellsZ')
 
         self._updateCellSize()
 
