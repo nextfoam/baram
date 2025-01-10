@@ -115,7 +115,7 @@ surfaceRefinement = {
         'numberOfCells': IntType().setLowLimit(1).setDefault(10),
         'maxLevel': IntType().setRange(1, 10).setDefault(7),
         'excludeSharpSurface': BoolType(False),
-        'minRadius': FloatType().setLowLimit(0, False)
+        'minRadius': FloatType().setLowLimit(0, True)
     }
 }
 
