@@ -477,7 +477,7 @@ class InitializationWidget(QWidget):
         elif spec == KEpsilonSpecification.K_AND_EPSILON:
             k = float(db.getValue(xpath + '/turbulence/k-epsilon/turbulentKineticEnergy'))
             e = float(db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
-            i = sqrt(k / 1.5 * v * v)
+            i = sqrt(k / 1.5) / v
             nut = 0.09 * k * k / e
             b = nut / nu
             return str(i), str(b)
@@ -491,7 +491,7 @@ class InitializationWidget(QWidget):
         elif spec == KOmegaSpecification.K_AND_OMEGA:
             k = float(db.getValue(xpath + '/turbulence/k-omega/turbulentKineticEnergy'))
             w = float(db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))
-            i = sqrt(k / 1.5 * v * v)
+            i = sqrt(k / 1.5) / v
             nut = k / w
             b = nut / nu
             return str(i), str(b)
