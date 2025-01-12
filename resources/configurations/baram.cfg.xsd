@@ -3,7 +3,13 @@
            xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="8">
 
     <!-- type definitions -->
-    <xs:simpleType name="positive">
+    <xs:simpleType name="uuidType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+   <xs:simpleType name="positive">
         <xs:restriction base="xs:double">
             <xs:minExclusive value="0"/>
         </xs:restriction>
@@ -2385,6 +2391,42 @@
                                     <xs:sequence>
                                         <xs:element ref="volumeMonitor" minOccurs="0"
                                                     maxOccurs="unbounded"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <xs:element name="scaffolds">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="isoSurfaces">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="surface" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="fieldType">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="basic"/>
+                                                                <xs:enumeration value="collateral"/>
+                                                                <xs:enumeration value="phase"/>
+                                                                <xs:enumeration value="specie"/>
+                                                                <xs:enumeration value="userScalar"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="fieldName" type="xs:string"/>
+                                                    <xs:element name="isoValues" type="inputNumberListType"/>
+                                                    <xs:element name="surfacesPerValue" type="xs:positiveInteger" default="1"/>
+                                                    <xs:element name="spacing" type="inputPositiveNumberType"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>

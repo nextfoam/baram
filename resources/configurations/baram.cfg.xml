@@ -223,6 +223,10 @@
         <volumes/>
     </monitors>
 
+    <scaffolds>
+    <isoSurfaces/>
+    </scaffolds>
+
     <runCalculation>
         <runConditions>
             <numberOfIterations>1000</numberOfIterations>

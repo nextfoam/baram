@@ -9,6 +9,7 @@ import yaml
 from PySide6.QtCore import QObject, Signal
 from pathlib import Path
 
+from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.solver_status import SolverStatus
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_reader import CoreDBReader
@@ -269,6 +270,7 @@ class _Project(QObject):
             self._coreDB = self._fileDB.loadCoreDB()
 
         CoreDBReader().reloadCoreDB()
+        ScaffoldsDB().load()
 
     def _close(self):
         coredb.destroy()

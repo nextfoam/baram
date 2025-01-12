@@ -152,7 +152,7 @@ class FileSystem:
         return max(times, key=lambda x: float(x))
 
     @classmethod
-    def times(cls, parent: Optional[Path] = None):
+    def times(cls, parent: Optional[Path] = None) -> list[str]:
         if parent is None:
             parent = cls.processorPath(0)
             if parent is None:
