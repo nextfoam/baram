@@ -355,20 +355,32 @@ class InitializationWidget(QWidget):
         db = CoreDBReader()  # Not "coredb" because Parsed data is required rather than raw USER PARAMETERS
         bctype = BoundaryType(BoundaryDB.getBoundaryType(bcid))
         xpath = BoundaryDB.getXPath(bcid)
-        
+
+        v = float(self._ui.scaleOfVelocity.text())
+
         # Velocity
         if bctype == BoundaryType.VELOCITY_INLET:
             spec = VelocitySpecification(db.getValue(xpath + '/velocityInlet/velocity/specification'))
             if spec == VelocitySpecification.COMPONENT:
                 profile = VelocityProfile(db.getValue(xpath + '/velocityInlet/velocity/component/profile'))
                 if profile == VelocityProfile.CONSTANT:
-                    self._ui.xVelocity.setText(db.getValue(xpath + '/velocityInlet/velocity/component/constant/x'))
-                    self._ui.yVelocity.setText(db.getValue(xpath + '/velocityInlet/velocity/component/constant/y'))
-                    self._ui.zVelocity.setText(db.getValue(xpath + '/velocityInlet/velocity/component/constant/z'))
+                    ux = db.getValue(xpath + '/velocityInlet/velocity/component/constant/x')
+                    uy = db.getValue(xpath + '/velocityInlet/velocity/component/constant/y')
+                    uz = db.getValue(xpath + '/velocityInlet/velocity/component/constant/z')
+                    self._ui.xVelocity.setText(ux)
+                    self._ui.yVelocity.setText(uy)
+                    self._ui.zVelocity.setText(uz)
+                    v = sqrt(float(ux)**2 + float(uy)**2 + float(uz)**2)
+                    self._ui.scaleOfVelocity.setText(str(v))
         elif bctype == BoundaryType.FREE_STREAM:
-            self._ui.xVelocity.setText(db.getValue(xpath + '/freeStream/streamVelocity/x'))
-            self._ui.yVelocity.setText(db.getValue(xpath + '/freeStream/streamVelocity/y'))
-            self._ui.zVelocity.setText(db.getValue(xpath + '/freeStream/streamVelocity/z'))
+            ux = db.getValue(xpath + '/freeStream/streamVelocity/x')
+            uy = db.getValue(xpath + '/freeStream/streamVelocity/y')
+            uz = db.getValue(xpath + '/freeStream/streamVelocity/z')
+            self._ui.xVelocity.setText(ux)
+            self._ui.yVelocity.setText(uy)
+            self._ui.zVelocity.setText(uz)
+            v = sqrt(float(ux)**2 + float(uy)**2 + float(uz)**2)
+            self._ui.scaleOfVelocity.setText(str(v))
         elif bctype == BoundaryType.FAR_FIELD_RIEMANN:
             spec = DirectionSpecificationMethod(db.getValue(xpath + '/farFieldRiemann/flowDirection/specificationMethod'))
             drag = db.getVector(xpath + '/farFieldRiemann/flowDirection/dragDirection')
@@ -390,6 +402,9 @@ class InitializationWidget(QWidget):
             self._ui.yVelocity.setText(str(am * dy))
             self._ui.zVelocity.setText(str(am * dz))
 
+            v = a * mInf
+            self._ui.scaleOfVelocity.setText(str(v))
+
         # pressure
         if bctype == BoundaryType.FREE_STREAM:
             self._ui.pressure.setText(db.getValue(xpath + '/freeStream/pressure'))
@@ -409,7 +424,6 @@ class InitializationWidget(QWidget):
         # turbulence viscosity
         p = float(self._ui.pressure.text())
         t = float(self._ui.temperature.text())
-        v = float(self._ui.scaleOfVelocity.text())
 
         material = MaterialDB.getMaterialComposition(xpath + '/species', RegionDB.getMaterial(self._rname))
         rho = db.getDensity(material, t, p)  # Density
@@ -463,7 +477,7 @@ class InitializationWidget(QWidget):
         elif spec == KEpsilonSpecification.K_AND_EPSILON:
             k = float(db.getValue(xpath + '/turbulence/k-epsilon/turbulentKineticEnergy'))
             e = float(db.getValue(xpath + '/turbulence/k-epsilon/turbulentDissipationRate'))
-            i = sqrt(k / 1.5 * v * v)
+            i = sqrt(k / 1.5) / v
             nut = 0.09 * k * k / e
             b = nut / nu
             return str(i), str(b)
@@ -477,7 +491,7 @@ class InitializationWidget(QWidget):
         elif spec == KOmegaSpecification.K_AND_OMEGA:
             k = float(db.getValue(xpath + '/turbulence/k-omega/turbulentKineticEnergy'))
             w = float(db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))
-            i = sqrt(k / 1.5 * v * v)
+            i = sqrt(k / 1.5) / v
             nut = k / w
             b = nut / nu
             return str(i), str(b)
@@ -491,4 +505,3 @@ class InitializationWidget(QWidget):
             nuTilda = float(db.getValue(xpath + '/turbulence/spalartAllmaras/modifiedTurbulentViscosity'))
             b = nuTilda / nu
             return str(b)
- 
