@@ -186,7 +186,7 @@ class CoreDBReader(_CoreDB):
                 QCoreApplication.translate('CoreDBReader', 'Invalid value({0}) for parameter {1} - {2} for {3}')
                 .format(value, parameter, message, xpath))
 
-    def getDensity(self, materials, t: float, p: float) -> float:
+    def getDensity(self, materials, t: float, p: float) -> float:  # kg / m^3
         def density(mid_):
             xpath = MaterialDB.getXPath(mid_)
             spec = self.getValue(xpath + '/density/specification')
@@ -196,8 +196,9 @@ class CoreDBReader(_CoreDB):
                 r'''
                 .. math:: \rho = \frac{MW \times P}{R \times T}
                 '''
+                operatingPressure = float(self.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
                 mw = float(self.getValue(xpath + '/molecularWeight'))
-                return p * mw / (UNIVERSAL_GAS_CONSTANT * t)
+                return (p + operatingPressure) * mw / (UNIVERSAL_GAS_CONSTANT * t)
             elif spec == 'polynomial':
                 coeffs = list(map(float, self.getValue(xpath + '/density/polynomial').split()))
                 rho = 0.0
