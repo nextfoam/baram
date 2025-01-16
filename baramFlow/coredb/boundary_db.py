@@ -140,6 +140,12 @@ class DirectionSpecificationMethod(Enum):
     AOA_AOS = 'AoA_AoS'
 
 
+DirectionSpecificationMethodTexts = {
+    DirectionSpecificationMethod.DIRECT:    QCoreApplication.translate('BoundaryDB', 'Direct'),
+    DirectionSpecificationMethod.AOA_AOS:   QCoreApplication.translate('BoundaryDB', 'AOA and AOS')
+}
+
+
 class BoundaryDB:
     BOUNDARY_CONDITIONS_XPATH = './/boundaryConditions'
     ABL_INLET_CONDITIONS_XPATH = './/atmosphericBoundaryLayer'

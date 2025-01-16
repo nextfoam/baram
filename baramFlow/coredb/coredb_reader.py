@@ -5,16 +5,19 @@ from threading import Lock
 
 from PySide6.QtCore import QCoreApplication
 
-from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb import ValueException, DBError, _CoreDB
-from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.initialization_db import InitializationDB
-from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
-from baramFlow.coredb.material_schema import Phase, ViscositySpecification
-from baramFlow.coredb.reference_values_db import ReferenceValuesDB
-from baramFlow.coredb.region_db import RegionDB
-from baramFlow.coredb.turbulence_model_db import TurbulenceModelsDB
+from libbaram.math import calucateDirectionsByRotation
+
 from baramFlow.libbaram.calculation import AverageCalculator
+from . import coredb
+from .boundary_db import DirectionSpecificationMethod
+from .coredb import ValueException, DBError, _CoreDB
+from .general_db import GeneralDB
+from .initialization_db import InitializationDB
+from .material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
+from .material_schema import Phase, ViscositySpecification
+from .reference_values_db import ReferenceValuesDB
+from .region_db import RegionDB
+from .turbulence_model_db import TurbulenceModelsDB
 
 _mutex = Lock()
 
@@ -292,3 +295,14 @@ class CoreDBReader(_CoreDB):
 
     def getRegionProperties(self, rname):
         return Region(self, rname)
+
+    def getFlowDirection(self, xpath):
+        if self.getValue(xpath + '/specificationMethod') == DirectionSpecificationMethod.DIRECT.value:
+            return self.getVector(xpath + '/flowDirection')
+
+        drag, lift = calucateDirectionsByRotation(self.getVector(xpath + '/dragDirection'),
+                                                  self.getVector(xpath + '/liftDirection'),
+                                                  float(self.getValue(xpath + '/angleOfAttack')),
+                                                  float(self.getValue(xpath + '/angleOfSideslip')))
+
+        return drag

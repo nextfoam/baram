@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="8">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="9">
 
     <!-- type definitions -->
     <xs:simpleType name="positive">
@@ -1319,7 +1319,26 @@
 
     <xs:complexType name="freeStreamType">
         <xs:sequence>
-            <xs:element name="streamVelocity" type="vector"/>
+            <xs:element name="flowDirection">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="specificationMethod" default="direct">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="direct"/>
+                                    <xs:enumeration value="AoA_AoS"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="flowDirection" type="vector"/>
+                        <xs:element name="dragDirection" type="vector"/>
+                        <xs:element name="liftDirection" type="vector"/>
+                        <xs:element name="angleOfAttack" type="inputNumberType" default="0"/>
+                        <xs:element name="angleOfSideslip" type="inputNumberType" default="0"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="speed" type="inputNumberType" default="1"/>
             <xs:element name="pressure" type="inputNumberType" default="0"/>
         </xs:sequence>
     </xs:complexType>
@@ -1337,6 +1356,7 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
+                        <xs:element name="flowDirection" type="vector"/>
                         <xs:element name="dragDirection" type="vector"/>
                         <xs:element name="liftDirection" type="vector"/>
                         <xs:element name="angleOfAttack" type="inputNumberType" default="0"/>

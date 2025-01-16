@@ -373,14 +373,15 @@ class InitializationWidget(QWidget):
                     v = sqrt(float(ux)**2 + float(uy)**2 + float(uz)**2)
                     self._ui.scaleOfVelocity.setText(str(v))
         elif bctype == BoundaryType.FREE_STREAM:
-            ux = db.getValue(xpath + '/freeStream/streamVelocity/x')
-            uy = db.getValue(xpath + '/freeStream/streamVelocity/y')
-            uz = db.getValue(xpath + '/freeStream/streamVelocity/z')
-            self._ui.xVelocity.setText(ux)
-            self._ui.yVelocity.setText(uy)
-            self._ui.zVelocity.setText(uz)
-            v = sqrt(float(ux)**2 + float(uy)**2 + float(uz)**2)
-            self._ui.scaleOfVelocity.setText(str(v))
+            dx, dy, dz = db.getFlowDirection(xpath + '/freeStream/flowDirection')
+            dMag = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+            speed = db.getValue(xpath + '/freeStream/speed')
+            am = float(speed) / dMag
+
+            self._ui.xVelocity.setText(str(am * dx))
+            self._ui.yVelocity.setText(str(am * dy))
+            self._ui.zVelocity.setText(str(am * dz))
+            self._ui.scaleOfVelocity.setText(speed)
         elif bctype == BoundaryType.FAR_FIELD_RIEMANN:
             spec = DirectionSpecificationMethod(db.getValue(xpath + '/farFieldRiemann/flowDirection/specificationMethod'))
             drag = db.getVector(xpath + '/farFieldRiemann/flowDirection/dragDirection')
