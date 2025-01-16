@@ -300,7 +300,8 @@ class MaterialDialog(ResizableDialog):
                     self._ui.densityType, [
                         DensitySpecification.CONSTANT,
                         DensitySpecification.PERFECT_GAS,
-                        DensitySpecification.POLYNOMIAL
+                        DensitySpecification.POLYNOMIAL,
+                        DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS,
                     ]
                 )
             else:
