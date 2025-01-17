@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>280</width>
-    <height>372</height>
+    <height>664</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -110,6 +110,88 @@
        <widget class="QCheckBox" name="equationUDS">
         <property name="text">
          <string>User-defined Scalar</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Collateral Fields</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QCheckBox" name="collateralAge">
+        <property name="text">
+         <string>Age</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="collateralHeatTransferCoefficient">
+        <property name="text">
+         <string>Heat Transfer Coefficient</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="collateralMachNumber">
+        <property name="text">
+         <string>Mach Number</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="collateralQ">
+        <property name="text">
+         <string>Q</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="collateralTotalPressure">
+        <property name="text">
+         <string>Total Pressure</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="collateralVorticity">
+        <property name="text">
+         <string>Vorticity</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="collateralWallHeatFlux">
+        <property name="text">
+         <string>Wall Heat Flux</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="collateralWallShearStress">
+        <property name="text">
+         <string>Wall Shear Stress</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="collateralWallYPlus">
+        <property name="text">
+         <string>Wall y plus</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Selected field values will be written into time folders during calcuation, yet only the last time folder will have values in steady cases.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

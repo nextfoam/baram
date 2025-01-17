@@ -213,6 +213,17 @@
                 <UDS>true</UDS>
                 <species>true</species>
             </equations>
+            <collateralFields>
+                <age>false</age>
+                <heatTransferCoefficient>false</heatTransferCoefficient>
+                <machNumber>false</machNumber>
+                <q>false</q>
+                <totalPressure>false</totalPressure>
+                <vorticity>false</vorticity>
+                <wallHeatFlux>false</wallHeatFlux>
+                <wallShearStress>false</wallShearStress>
+                <wallYPlus>false</wallYPlus>
+            </collateralFields>
         </advanced>
     </numericalConditions>
 

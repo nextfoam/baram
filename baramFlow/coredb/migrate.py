@@ -791,7 +791,6 @@ def _version_8(root: etree.Element):
             p.insert(1, child)
 
     for p in root.findall(f'.//boundaryCondition/farFieldRiemann/flowDirection', namespaces=_nsmap):
-        speed = 1
         if p.find('flowDirection', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "flowDirection" to {p}')
 
@@ -804,6 +803,23 @@ def _version_8(root: etree.Element):
             e = etree.fromstring(
                 f'<flowDirection xmlns="http://www.baramcfd.org/baram"><x>{x}</x><y>{y}</y><z>{z}</z></flowDirection>')
             p.insert(1, e)
+
+    if (p := root.find('numericalConditions/advanced', namespaces=_nsmap)) is not None:
+        if p.find('collateralFields', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "collateralFields" to {p}')
+
+            e = etree.fromstring('<collateralFields xmlns="http://www.baramcfd.org/baram">'
+                                 '  <age>false</age>'
+                                 '  <heatTransferCoefficient>false</heatTransferCoefficient>'
+                                 '  <machNumber>false</machNumber>'
+                                 '  <q>false</q>'
+                                 '  <totalPressure>false</totalPressure>'
+                                 '  <vorticity>false</vorticity>'
+                                 '  <wallHeatFlux>false</wallHeatFlux>'
+                                 '  <wallShearStress>false</wallShearStress>'
+                                 '  <wallYPlus>false</wallYPlus>'
+                                 '</collateralFields>')
+            p.append(e)
 
 
 _fTable = [

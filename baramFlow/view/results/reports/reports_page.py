@@ -6,6 +6,7 @@ import logging
 
 from baramFlow.view.widgets.content_page import ContentPage
 
+from .collateral_fields_report_dialog import CollateralFieldsReportDialog
 from .force_report_dialog import ForceReportDialog
 from .point_report_dialog import PointReportDialog
 from .surface_report_dialog import SurfaceReportDialog
@@ -39,6 +40,7 @@ class ReportsPage(ContentPage):
         self._ui.pointReport.clicked.connect(self._pointReportClicked)
         self._ui.surfaceReport.clicked.connect(self._surfaceReportClicked)
         self._ui.volumeReport.clicked.connect(self._volumeReportClicked)
+        self._ui.collateralFieldsReprot.clicked.connect(self._collateralFieldsReportClicked)
 
     @qasync.asyncSlot()
     async def _forceReportClicked(self):
@@ -58,4 +60,9 @@ class ReportsPage(ContentPage):
     @qasync.asyncSlot()
     async def _volumeReportClicked(self):
         self._dialog = VolumeReportDialog(self)
+        self._dialog.open()
+
+    @qasync.asyncSlot()
+    async def _collateralFieldsReportClicked(self):
+        self._dialog = CollateralFieldsReportDialog(self)
         self._dialog.open()

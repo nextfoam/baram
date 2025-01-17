@@ -19,16 +19,19 @@ from baramFlow.coredb.scalar_model_db import ScalarSpecificationMethod, UserDefi
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.mesh.vtk_loader import isPointInDataSet
 from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.function_objects.collateral_fields import foAgeMonitor, foHeatTransferCoefficientMonitor
+from baramFlow.openfoam.function_objects.collateral_fields import foMachNumberMonitor, foQMonitor
+from baramFlow.openfoam.function_objects.collateral_fields import foTotalPressureMonitor, foVorticityMonitor
+from baramFlow.openfoam.function_objects.collateral_fields import foWallHeatFluxMonitor, foWallShearStressMonitor
+from baramFlow.openfoam.function_objects.collateral_fields import foWallYPlusMonitor
 from baramFlow.openfoam.function_objects.components import foComponentsMonitor
 from baramFlow.openfoam.function_objects.force_coeffs import foForceCoeffsMonitor
 from baramFlow.openfoam.function_objects.forces import foForcesMonitor
 from baramFlow.openfoam.function_objects.mag import foMagMonitor
 from baramFlow.openfoam.function_objects.patch_probes import foPatchProbesMonitor
 from baramFlow.openfoam.function_objects.probes import foProbesMonitor
-from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType, \
-    foSurfaceFieldValueMonitor
-from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType, VolumeType, \
-    foVolFieldValueMonitor
+from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType, foSurfaceFieldValueMonitor
+from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType, VolumeType, foVolFieldValueMonitor
 from baramFlow.openfoam.solver import findSolver, usePrgh
 
 from libbaram.math import calucateDirectionsByRotation
@@ -67,7 +70,6 @@ def _getAvailableFields():
         else:
             fields.append('h')
 
-    db = coredb.CoreDB()
     if ModelsDB.isMultiphaseModelOn():
         for _, name, _, phase in MaterialDB.getMaterials():
             if phase != Phase.SOLID.value:
@@ -195,10 +197,10 @@ class ControlDict(DictionaryFile):
         if ModelsDB.isMultiphaseModelOn():
             self._data['maxAlphaCo'] = self._db.getValue(xpath + '/VoFMaxCourantNumber')
 
-        if (self._db.getBoundaryConditionsByType(BoundaryType.ABL_INLET.value)
+        if (BoundaryDB.getBoundaryConditionsByType(BoundaryType.ABL_INLET)
                 or any(
                     [self._db.getValue(BoundaryDB.getXPath(bcid) + '/wall/velocity/type') == WallVelocityCondition.ATMOSPHERIC_WALL.value
-                     for bcid, _ in self._db.getBoundaryConditionsByType(BoundaryType.WALL.value)])):
+                     for bcid, _ in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL)])):
             self._data['libs'] = [openfoamLibraryPath('libatmosphericModels')]
 
         # calling order is important for these three function objects
@@ -210,6 +212,9 @@ class ControlDict(DictionaryFile):
         self._appendMonitoringFunctionObjects()
 
         self._appendResidualFunctionObjects()
+
+        self._generateCollateralFieldsFunctionObjects(
+            NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/collateralFields')
 
         return self
 
@@ -450,3 +455,33 @@ class ControlDict(DictionaryFile):
     def _appendComponentsFunctionObject(self):
         if 'components1' not in self._data['functions']:
             self._data['functions']['components1'] = foComponentsMonitor('U', 1)
+
+    def _generateCollateralFieldsFunctionObjects(self, xpath):
+        if self._db.getBool(xpath + '/age'):
+            self._data['functions']['collateralAge'] = foAgeMonitor(1)
+
+        for rname in self._db.getRegions():
+            if self._db.getBool(xpath + '/heatTransferCoefficient'):
+                self._data['functions']['collateralHeatTransferCoefficient_' + rname] = foHeatTransferCoefficientMonitor(
+                    [bcname for bcid, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL, rname)], 1)
+
+        if self._db.getBool(xpath + '/machNumber'):
+            self._data['functions']['collateralMachNumber'] = foMachNumberMonitor(1)
+
+        if self._db.getBool(xpath + '/q'):
+            self._data['functions']['collateralQ'] = foQMonitor(1)
+
+        if self._db.getBool(xpath + '/totalPressure'):
+            self._data['functions']['collateralTotalPressure'] = foTotalPressureMonitor(1)
+
+        if self._db.getBool(xpath + '/vorticity'):
+            self._data['functions']['collateralVorticity'] = foVorticityMonitor(1)
+
+        if self._db.getBool(xpath + '/wallHeatFlux'):
+            self._data['functions']['collateralWallHeatFlux'] = foWallHeatFluxMonitor(1)
+
+        if self._db.getBool(xpath + '/wallShearStress'):
+            self._data['functions']['collateralWallShearStress'] = foWallShearStressMonitor(1)
+
+        if self._db.getBool(xpath + '/wallYPlus'):
+            self._data['functions']['collateralWallYPlus'] = foWallYPlusMonitor(1)
