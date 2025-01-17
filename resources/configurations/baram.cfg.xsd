@@ -1934,6 +1934,21 @@
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
+                        <xs:element name="collateralFields">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="age" type="xs:boolean" default="false"/>
+                                    <xs:element name="heatTransferCoefficient" type="xs:boolean" default="false"/>
+                                    <xs:element name="machNumber" type="xs:boolean" default="false"/>
+                                    <xs:element name="q" type="xs:boolean" default="false"/>
+                                    <xs:element name="totalPressure" type="xs:boolean" default="false"/>
+                                    <xs:element name="vorticity" type="xs:boolean" default="false"/>
+                                    <xs:element name="wallHeatFlux" type="xs:boolean" default="false"/>
+                                    <xs:element name="wallShearStress" type="xs:boolean" default="false"/>
+                                    <xs:element name="wallYPlus" type="xs:boolean" default="false"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
