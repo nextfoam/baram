@@ -322,5 +322,6 @@ class ProcessInformationPage(ContentPage):
 
     def closeEvent(self, event):
         self._disconnectSignalsSlots()
+        self._batchCaseList.close()
 
         super().closeEvent(event)

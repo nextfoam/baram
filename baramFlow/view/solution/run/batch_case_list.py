@@ -156,7 +156,7 @@ class BatchCaseList(QObject):
 
         self._connectSignalsSlots()
 
-    def __del__(self):
+    def close(self):
         self._disconnectSignalsSlots()
 
     def _connectSignalsSlots(self):
