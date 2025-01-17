@@ -156,6 +156,22 @@ class BatchCaseList(QObject):
 
         self._connectSignalsSlots()
 
+    def __del__(self):
+        self._disconnectSignalsSlots()
+
+    def _connectSignalsSlots(self):
+        self._list.customContextMenuRequested.connect(self._showContextMenu)
+        self._menu.loadActionTriggered.connect(self._loadCase)
+        self._menu.scheduleActionTriggered.connect(self._scheduleCalculation)
+        self._menu.cancelScheduleActionTriggered.connect(self._cancelSchedule)
+        self._menu.deleteActionTriggered.connect(self._delete)
+
+        CaseManager().batchCleared.connect(self._clearStatuses)
+
+    def _disconnectSignalsSlots(self):
+        print('Disconnecting signals in BatchCaseList')
+        CaseManager().batchCleared.disconnect(self._clearStatuses)
+
     def parameters(self):
         return self._parameters
 
@@ -223,14 +239,6 @@ class BatchCaseList(QObject):
         if name:
             self._items[name].setStatus(status)
 
-    def _connectSignalsSlots(self):
-        self._list.customContextMenuRequested.connect(self._showContextMenu)
-        self._menu.loadActionTriggered.connect(self._loadCase)
-        self._menu.scheduleActionTriggered.connect(self._scheduleCalculation)
-        self._menu.cancelScheduleActionTriggered.connect(self._cancelSchedule)
-        self._menu.deleteActionTriggered.connect(self._delete)
-        CaseManager().batchCleared.connect(self._clearStatuses)
-
     def _adjustSize(self):
         if self._cases:
             rowHeight = self._list.rowHeight(self._list.model().index(0, 0, self._list.rootIndex()))
@@ -276,6 +284,7 @@ class BatchCaseList(QObject):
 
         CaseManager().loadBatchCase(BatchCase(item.name(), self._cases[item.name()]))
 
+        CaseManager().progress.disconnect(progressDialog.setLabelText)
         progressDialog.close()
 
     def _scheduleCalculation(self, items):
