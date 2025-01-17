@@ -103,10 +103,8 @@ class SnappyHexMeshDict(DictionaryFile):
         data = {}
         geometries = app.db.getElements('geometry')
         for gId, geometry in geometries.items():
-            volume = geometries[geometry.value('volume')] if geometry.value('volume') else geometry
-            if (geometry.value('cfdType') != CFDType.NONE.value
-                    or geometry.value('castellationGroup')
-                    or volume.value('cfdType') != CFDType.NONE.value):
+            if geometry.value('cfdType') != CFDType.NONE.value or geometry.value('castellationGroup'):
+                volume = geometries[geometry.value('volume')] if geometry.value('volume') else geometry
                 shape = geometry.value('shape')
 
                 if shape == Shape.TRI_SURFACE_MESH.value:
@@ -208,14 +206,11 @@ class SnappyHexMeshDict(DictionaryFile):
         boundingHex6 = app.db.getValue('baseGrid/boundingHex6')  # can be "None"
         refinements = app.db.getElements('castellation/refinementSurfaces')
 
-        cellZones = app.db.getElements(
-            'geometry', lambda i, e: e['gType'] == GeometryType.VOLUME.value and e['cfdType'] != CFDType.NONE.value)
-
         # Target is a boundary, interface, or surface included in a castellation group
         surfaces = app.db.getElements(
             'geometry',
             lambda i, e: e['gType'] == GeometryType.SURFACE.value
-                         and (e['cfdType'] != CFDType.NONE.value or e['castellationGroup'] or e['volume'] in cellZones))
+                         and (e['cfdType'] != CFDType.NONE.value or e['castellationGroup']))
 
         for surface in surfaces.values():
             if surface.value('shape') in Shape.PLATES.value and surface.value('volume') == boundingHex6:
