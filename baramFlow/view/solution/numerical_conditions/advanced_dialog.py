@@ -28,6 +28,14 @@ class AdvancedDialog(QDialog):
         isDensityBased = GeneralDB.isDensityBased()
         isEnergeOn = ModelsDB.isEnergyModelOn()
 
+        if not isEnergeOn:
+            self._ui.equationEnergy.setEnabled(False)
+            self._ui.includeViscousDissipationTerms.setEnabled(False)
+            self._ui.includeKineticEnergyTerms.setEnabled(False)
+            self._ui.includePressureWorkTerms.setEnabled(False)
+
+        self._ui.equationUDS.setEnabled(UserDefinedScalarsDB.hasDefined())
+
         self._ui.collateralAge.setEnabled(not GeneralDB.isTimeTransient() and not isDensityBased)
         self._ui.collateralHeatTransferCoefficient.setEnabled(isEnergeOn)
         self._ui.collateralMachNumber.setEnabled(isEnergeOn and not isDensityBased)
