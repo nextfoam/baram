@@ -133,6 +133,14 @@ class FvSolution(DictionaryFile):
                     'maxIter': '5',
                 }),
                 f'"(U|k|epsilon|omega|nuTilda|scalar|Yi)Final"': others,
+                'age': {  # no "ageFinal" because "age" supports only steady case
+                    'solver': 'PBiCGStab',
+                    'preconditioner': 'DILU',
+                    'tolerance': '1e-16',
+                    'relTol': '0.1',
+                    'minIter': '1',
+                    'maxIter': '5',
+                },
             },
             'SIMPLE': {
                 'consistent': consistent,

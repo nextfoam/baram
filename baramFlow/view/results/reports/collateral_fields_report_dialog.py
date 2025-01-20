@@ -9,6 +9,7 @@ import qasync
 from PySide6.QtWidgets import QDialog
 
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from libbaram.run import runParallelUtility
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
@@ -53,41 +54,47 @@ class CollateralFieldsReportDialog(QDialog):
     @qasync.asyncSlot()
     async def _compute(self):
         functions = {}
-        
-        if self._ui.age.isChecked():
-            functions['collateralAge'] = foAgeReport()
 
-        for rname in coredb.CoreDB().getRegions():
+        db = CoreDBReader()
+        for rname in db.getRegions():
+            region = db.getRegionProperties(rname)
+            if not region.isFluid():
+                continue
+
+            if self._ui.age.isChecked():
+                functions[f'collateralAge_{rname}'] = foAgeReport(rname)
+
             if self._ui.heatTransferCoefficient.isChecked():
-                functions['collateralHeatTransferCoefficient_' + rname] = foHeatTransferCoefficientReport(
-                    [bcname for bcid, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL, rname)])
+                walls = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL, rname)]
+                functions[f'collateralHeatTransferCoefficient__{rname}'] = foHeatTransferCoefficientReport(rname, walls)
 
-        if self._ui.machNumber.isChecked():
-            functions['collateralMachNumber'] = foMachNumberReport()
+            if self._ui.machNumber.isChecked():
+                functions[f'collateralMachNumber_{rname}'] = foMachNumberReport(rname)
 
-        if self._ui.q.isChecked():
-            functions['collateralQ'] = foQReport()
+            if self._ui.q.isChecked():
+                functions[f'collateralQ_{rname}'] = foQReport(rname)
 
-        if self._ui.totalPressure.isChecked():
-            functions['collateralTotalPressure'] = foTotalPressureReport()
+            if self._ui.totalPressure.isChecked():
+                functions[f'collateralTotalPressure_{rname}'] = foTotalPressureReport(rname)
 
-        if self._ui.vorticity.isChecked():
-            functions['collateralVorticity'] = foVorticityReport()
+            if self._ui.vorticity.isChecked():
+                functions[f'collateralVorticity_{rname}'] = foVorticityReport(rname)
 
-        if self._ui.wallHeatFlux.isChecked():
-            functions['collateralWallHeatFlux'] = foWallHeatFluxReport()
+            if self._ui.wallHeatFlux.isChecked():
+                functions[f'collateralWallHeatFlux_{rname}'] = foWallHeatFluxReport(rname)
 
-        if self._ui.wallShearStress.isChecked():
-            functions['collateralWallShearStress'] = foWallShearStressReport()
+            if self._ui.wallShearStress.isChecked():
+                functions[f'collateralWallShearStress_{rname}'] = foWallShearStressReport(rname)
 
-        if self._ui.wallYPlus.isChecked():
-            functions['collateralWallYPlus'] = foWallYPlusReport()
+            if self._ui.wallYPlus.isChecked():
+                functions[f'collateralWallYPlus_{rname}'] = foWallYPlusReport(rname)
 
         if not functions:
             await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Fields.'))
             return
 
         self._progressDialog = ProgressDialog(self, self.tr('Collateral Fields Calculation'))
+        self._progressDialog.setLabelText(self.tr('Calculating Collateral Fields'))
         self._progressDialog.open()
 
         data = {
@@ -100,8 +107,12 @@ class CollateralFieldsReportDialog(QDialog):
         caseRoot = FileSystem.caseRoot()
         solver = findSolver()
         dictRelativePath = Path(os.path.relpath(foDict.fullPath(), caseRoot)).as_posix()  # "as_posix()": OpenFOAM cannot handle double backward slash separators in parallel processing
+        if GeneralDB.isTimeTransient():
+            args = ['-postProcess', '-dict', str(dictRelativePath)]
+        else:
+            args = ['-postProcess', '-latestTime', '-dict', str(dictRelativePath)]
         proc = await runParallelUtility(
-            solver, '-postProcess', '-latestTime', '-dict', str(dictRelativePath),
+            solver, *args,
             parallel=parallel.getEnvironment(), cwd=caseRoot)
 
         rc = await proc.wait()
