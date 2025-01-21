@@ -10,6 +10,8 @@ def _foAgeBase():
     data = {
         'type': 'age',
         'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
+        'tolerance': 1e-4,
+        'nCorr': 1000,
     }
 
     return data
