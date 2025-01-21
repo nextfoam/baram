@@ -19,20 +19,14 @@ from baramFlow.openfoam.solver_info_manager import SolverInfoManager
 from baramFlow.view.widgets.chart_wigdet import ChartWidget
 
 
-class ChartDock(CDockWidget):
-    def __init__(self):
-        super().__init__(self._title())
+class ChartView(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
         self._solverInfoManager = SolverInfoManager()
         self._project = Project.instance()
 
-        self._solverInfoManager.residualsUpdated.connect(self._updated)
-        self._solverInfoManager.flushed.connect(self._flushed)
-
-        self._project.projectClosed.connect(self._projectClosed)
-        self._project.solverStatusChanged.connect(self._solverStatusChanged)
-        CaseManager().caseLoaded.connect(self._caseLoaded)
-        CaseManager().caseCleared.connect(self._caseCleared)
+        self._connectSignalsSlots()
 
         if GeneralDB.isTimeTransient():
             timeSteppingMethod = coredb.CoreDB().getValue(RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions/timeSteppingMethod')
@@ -51,25 +45,34 @@ class ChartDock(CDockWidget):
             self._width = 50
 
         self._chart = ChartWidget(self._width)
-        self._chart.setTitle(self._title())
+        self._chart.setTitle('Residuals')
         self._chart.logScaleOn()
 
-        self._widget = QWidget(self)
-        layout = QVBoxLayout(self._widget)
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(QMargins(40, 40, 40, 40))
         layout.addWidget(self._chart)
 
-        self.setWidget(self._widget)
         self.setStyleSheet('background-color: white')
 
-    def changeEvent(self, event):
-        if event.type() == QEvent.Type.LanguageChange:
-            self.setWindowTitle(self._title())
+    def _connectSignalsSlots(self):
+        self._solverInfoManager.residualsUpdated.connect(self._updated)
+        self._solverInfoManager.flushed.connect(self._flushed)
 
-        super().changeEvent(event)
+        self._project.projectClosed.connect(self._projectClosed)
+        self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
-    def _title(self):
-        return QCoreApplication.translate('ChartDock', 'Residuals')
+        CaseManager().caseLoaded.connect(self._caseLoaded)
+        CaseManager().caseCleared.connect(self._caseCleared)
+
+    def _disconnectSignalsSlots(self):
+        self._solverInfoManager.residualsUpdated.disconnect(self._updated)
+        self._solverInfoManager.flushed.disconnect(self._flushed)
+
+        self._project.projectClosed.disconnect(self._projectClosed)
+        self._project.solverStatusChanged.disconnect(self._solverStatusChanged)
+
+        CaseManager().caseLoaded.disconnect(self._caseLoaded)
+        CaseManager().caseCleared.disconnect(self._caseCleared)
 
     def startDrawing(self):
         self._solverInfoManager.startCollecting(Path(FileSystem.caseRoot()).resolve(), coredb.CoreDB().getRegions())
@@ -103,3 +106,25 @@ class ChartDock(CDockWidget):
 
     def _flushed(self):
         self._chart.fitChart()
+
+    def closeEvent(self, event):
+        self._disconnectSignalsSlots()
+
+        super().closeEvent(event)
+
+
+class ChartDock(CDockWidget):
+    def __init__(self):
+        super().__init__(self._title())
+
+        self._widget = ChartView()
+        self.setWidget(self._widget)
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.LanguageChange:
+            self.setWindowTitle(self._title())
+
+        super().changeEvent(event)
+
+    def _title(self):
+        return QCoreApplication.translate('ChartDock', 'Residuals')

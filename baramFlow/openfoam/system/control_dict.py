@@ -457,31 +457,38 @@ class ControlDict(DictionaryFile):
             self._data['functions']['components1'] = foComponentsMonitor('U', 1)
 
     def _generateCollateralFieldsFunctionObjects(self, xpath):
-        if self._db.getBool(xpath + '/age'):
-            self._data['functions']['collateralAge'] = foAgeMonitor(1)
-
         for rname in self._db.getRegions():
-            if self._db.getBool(xpath + '/heatTransferCoefficient'):
-                self._data['functions']['collateralHeatTransferCoefficient_' + rname] = foHeatTransferCoefficientMonitor(
-                    [bcname for bcid, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL, rname)], 1)
+            region = self._db.getRegionProperties(rname)
+            if not region.isFluid():
+                continue
 
-        if self._db.getBool(xpath + '/machNumber'):
-            self._data['functions']['collateralMachNumber'] = foMachNumberMonitor(1)
+            if not GeneralDB.isTimeTransient() and not GeneralDB.isDensityBased():
+                if self._db.getBool(xpath + '/age'):
+                    self._data['functions'][f'collateralAge_{rname}'] = foAgeMonitor(rname, 1)
 
-        if self._db.getBool(xpath + '/q'):
-            self._data['functions']['collateralQ'] = foQMonitor(1)
+            if ModelsDB.isEnergyModelOn():
+                if self._db.getBool(xpath + '/heatTransferCoefficient'):
+                    walls = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL, rname)]
+                    self._data['functions'][f'collateralHeatTransferCoefficient_{rname}'] = foHeatTransferCoefficientMonitor(rname, walls, 1)
 
-        if self._db.getBool(xpath + '/totalPressure'):
-            self._data['functions']['collateralTotalPressure'] = foTotalPressureMonitor(1)
+            if ModelsDB.isEnergyModelOn() and not GeneralDB.isDensityBased():
+                if self._db.getBool(xpath + '/machNumber'):
+                    self._data['functions'][f'collateralMachNumber_{rname}'] = foMachNumberMonitor(rname, 1)
 
-        if self._db.getBool(xpath + '/vorticity'):
-            self._data['functions']['collateralVorticity'] = foVorticityMonitor(1)
+            if self._db.getBool(xpath + '/q'):
+                self._data['functions'][f'collateralQ_{rname}'] = foQMonitor(rname, 1)
 
-        if self._db.getBool(xpath + '/wallHeatFlux'):
-            self._data['functions']['collateralWallHeatFlux'] = foWallHeatFluxMonitor(1)
+            if self._db.getBool(xpath + '/totalPressure'):
+                self._data['functions'][f'collateralTotalPressure_{rname}'] = foTotalPressureMonitor(rname, 1)
 
-        if self._db.getBool(xpath + '/wallShearStress'):
-            self._data['functions']['collateralWallShearStress'] = foWallShearStressMonitor(1)
+            if self._db.getBool(xpath + '/vorticity'):
+                self._data['functions'][f'collateralVorticity_{rname}'] = foVorticityMonitor(rname, 1)
 
-        if self._db.getBool(xpath + '/wallYPlus'):
-            self._data['functions']['collateralWallYPlus'] = foWallYPlusMonitor(1)
+            if self._db.getBool(xpath + '/wallHeatFlux'):
+                self._data['functions'][f'collateralWallHeatFlux_{rname}'] = foWallHeatFluxMonitor(rname, 1)
+
+            if self._db.getBool(xpath + '/wallShearStress'):
+                self._data['functions'][f'collateralWallShearStress_{rname}'] = foWallShearStressMonitor(rname, 1)
+
+            if self._db.getBool(xpath + '/wallYPlus'):
+                self._data['functions'][f'collateralWallYPlus_{rname}'] = foWallYPlusMonitor(rname, 1)

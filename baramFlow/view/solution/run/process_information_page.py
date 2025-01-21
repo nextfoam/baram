@@ -88,8 +88,13 @@ class ProcessInformationPage(ContentPage):
         self._ui.toBatchMode.clicked.connect(self._toBatchMode)
         self._ui.exportBatchCase.clicked.connect(self._openExportDialog)
         self._ui.importBatchCases.clicked.connect(self._openImportDialog)
+
         self._project.solverStatusChanged.connect(self._statusChanged)
         self._caseManager.caseLoaded.connect(self._caseLoaded)
+
+    def _disconnectSignalsSlots(self):
+        self._project.solverStatusChanged.disconnect(self._statusChanged)
+        self._caseManager.caseLoaded.disconnect(self._caseLoaded)
 
     def _setRunningMode(self, mode):
         if mode == RunningMode.LIVE_RUNNING_MODE:
@@ -123,6 +128,9 @@ class ProcessInformationPage(ContentPage):
                 progressDialog.finish(self.tr('Calculation cancelled'))
             except RuntimeError as r:
                 progressDialog.finish(str(r))
+            finally:
+                self._caseManager.progress.disconnect(progressDialog.setLabelText)
+
         else:
             cases = self._batchCaseList.batchSchedule()
             if not cases:
@@ -311,3 +319,9 @@ class ProcessInformationPage(ContentPage):
 
         self._caseManager.loadLiveCase()
         self._batchCaseList.importFromDataFrame(self._dialog.cases())
+
+    def closeEvent(self, event):
+        self._disconnectSignalsSlots()
+        self._batchCaseList.close()
+
+        super().closeEvent(event)

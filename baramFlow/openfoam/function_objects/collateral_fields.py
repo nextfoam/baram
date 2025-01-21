@@ -110,157 +110,167 @@ def _foWallYPlusBase():
     return data
 
 
-def _additionalEntriesForMonitor(interval):
+def _additionalEntriesForMonitor(rname: str, interval):
     if GeneralDB.isTimeTransient():
-        return {
-            'executeControl': 'timeStep',
+        data =  {
+            'executeControl': 'writeTime',
             'executeInterval': interval,
-            'writeControl': 'timeStep',
+            'writeControl': 'writeTime',
             'writeInterval': interval,
         }
     else:
-        return {
+        data = {
             'executeControl': 'onEnd',
             'writeControl': 'onEnd',
         }
 
+    if rname != '':
+        data.update({'region': rname})
 
-def _additionalEntriesForReport():
+    return data
+
+
+def _additionalEntriesForReport(rname: str):
     if GeneralDB.isTimeTransient():
-        return {
-            'executeControl': 'timeStep',
+        data = {
+            'executeControl': 'writeTime',
             'executeInterval': 1,
-            'writeControl': 'timeStep',
+            'writeControl': 'writeTime',
             'writeInterval': 1,
         }
     else:
-        return {
+        data = {
             'executeControl': 'onEnd',
             'writeControl': 'onEnd',
         }
 
+    if rname != '':
+        data.update({'region': rname})
 
-def foAgeMonitor(interval):
+    return data
+
+
+def foAgeMonitor(rname: str, interval):
     data = _foAgeBase()
-    data.update(_additionalEntriesForMonitor(interval))
+    data.update(_additionalEntriesForMonitor(rname, interval))
 
     return data
 
 
-def foHeatTransferCoefficientMonitor(patches, interval):
+def foHeatTransferCoefficientMonitor(rname: str, patches, interval):
     data = _foHeatTransferCoefficientBase(patches)
-    data.update(_additionalEntriesForMonitor(interval))
+    data.update(_additionalEntriesForMonitor(rname, interval))
 
     return data
 
 
-def foMachNumberMonitor(interval):
+def foMachNumberMonitor(rname: str, interval):
     data = _foMachNumberBase()
-    data.update(_additionalEntriesForMonitor(interval))
+    data.update(_additionalEntriesForMonitor(rname, interval))
 
     return data
 
 
-def foQMonitor(interval):
+def foQMonitor(rname: str, interval):
     data = _foQBase()
-    data.update(_additionalEntriesForMonitor(interval))
+    data.update(_additionalEntriesForMonitor(rname, interval))
 
     return data
 
 
-def foTotalPressureMonitor(interval):
+def foTotalPressureMonitor(rname: str, interval):
     data = _foTotalPressureBase()
-    data.update(_additionalEntriesForMonitor(interval))
+    data.update(_additionalEntriesForMonitor(rname, interval))
 
     return data
 
 
-def foVorticityMonitor(interval):
+def foVorticityMonitor(rname: str, interval):
     data = _foVorticityBase()
-    data.update(_additionalEntriesForMonitor(interval))
+    data.update(_additionalEntriesForMonitor(rname, interval))
 
     return data
 
 
-def foWallHeatFluxMonitor(interval):
+def foWallHeatFluxMonitor(rname: str, interval):
     data = _foWallHeatFluxBase()
-    data.update(_additionalEntriesForMonitor(interval))
+    data.update(_additionalEntriesForMonitor(rname, interval))
 
     return data
 
 
-def foWallShearStressMonitor(interval):
+def foWallShearStressMonitor(rname: str, interval):
     data = _foWallShearStressBase()
-    data.update(_additionalEntriesForMonitor(interval))
+    data.update(_additionalEntriesForMonitor(rname, interval))
 
     return data
 
 
-def foWallYPlusMonitor(interval):
+def foWallYPlusMonitor(rname: str, interval):
     data = _foWallYPlusBase()
-    data.update(_additionalEntriesForMonitor(interval))
+    data.update(_additionalEntriesForMonitor(rname, interval))
 
     return data
 
 
-def foAgeReport():
+def foAgeReport(rname: str):
     data = _foAgeBase()
-    data.update(_additionalEntriesForReport())
+    data.update(_additionalEntriesForReport(rname))
 
     return data
 
 
-def foHeatTransferCoefficientReport(patches):
+def foHeatTransferCoefficientReport(rname: str, patches):
     data = _foHeatTransferCoefficientBase(patches)
-    data.update(_additionalEntriesForReport())
+    data.update(_additionalEntriesForReport(rname))
 
     return data
 
 
-def foMachNumberReport():
+def foMachNumberReport(rname: str):
     data = _foMachNumberBase()
-    data.update(_additionalEntriesForReport())
+    data.update(_additionalEntriesForReport(rname))
 
     return data
 
 
-def foQReport():
+def foQReport(rname: str):
     data = _foQBase()
-    data.update(_additionalEntriesForReport())
+    data.update(_additionalEntriesForReport(rname))
 
     return data
 
 
-def foTotalPressureReport():
+def foTotalPressureReport(rname: str):
     data = _foTotalPressureBase()
-    data.update(_additionalEntriesForReport())
+    data.update(_additionalEntriesForReport(rname))
 
     return data
 
 
-def foVorticityReport():
+def foVorticityReport(rname: str):
     data = _foVorticityBase()
-    data.update(_additionalEntriesForReport())
+    data.update(_additionalEntriesForReport(rname))
 
     return data
 
 
-def foWallHeatFluxReport():
+def foWallHeatFluxReport(rname: str):
     data = _foWallHeatFluxBase()
-    data.update(_additionalEntriesForReport())
+    data.update(_additionalEntriesForReport(rname))
 
     return data
 
 
-def foWallShearStressReport():
+def foWallShearStressReport(rname: str):
     data = _foWallShearStressBase()
-    data.update(_additionalEntriesForReport())
+    data.update(_additionalEntriesForReport(rname))
 
     return data
 
 
-def foWallYPlusReport():
+def foWallYPlusReport(rname: str):
     data = _foWallYPlusBase()
-    data.update(_additionalEntriesForReport())
+    data.update(_additionalEntriesForReport(rname))
 
     return data
