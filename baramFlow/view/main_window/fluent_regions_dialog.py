@@ -4,10 +4,11 @@
 import qasync
 from PySide6.QtCore import Qt, QObject, Signal
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QLabel, QWidget, QComboBox, QRadioButton, QButtonGroup, QFrame, QPushButton
+from PySide6.QtWidgets import QDialog, QLabel, QWidget, QComboBox, QRadioButton, QButtonGroup, QFrame
 from PySide6.QtWidgets import QVBoxLayout, QGridLayout
 
 from widgets.async_message_box import AsyncMessageBox
+from widgets.flat_push_button import FlatPushButton
 from widgets.typed_edit import IdentifierEdit
 
 from baramFlow.openfoam.constant.cell_zones_to_regions import CellZonesToRegions
@@ -85,7 +86,7 @@ class RegionColumn(QObject):
             radio = QRadioButton()
             self._rows.append(radio)
 
-        button = QPushButton(removeIcon, '')
+        button = FlatPushButton(removeIcon, '')
         button.clicked.connect(lambda: self.removeClicked.emit(self._index))
         self._rows.append(button)
 
@@ -132,7 +133,7 @@ def toLinedWidget(widget, alignment=Qt.AlignmentFlag.AlignLeft):
     return linedWidget
 
 
-class FluentRegionsDialog(ResizableDialog):
+class FluentRegionsDialog(QDialog):
     def __init__(self, parent, cellZones):
         super().__init__(parent)
         self._ui = Ui_FlluentRegionsDialog()
