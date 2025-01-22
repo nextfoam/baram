@@ -76,9 +76,10 @@ class BoundaryTypePicker(QWidget):
             self._ui.supersonicInflow.hide()
             self._ui.subsonicOutflow.hide()
             self._ui.supersonicOutflow.hide()
-
-        if not isEnergyOn or isMultiphase or isMultiRegion:
             self._ui.farFieldRiemann.hide()
+        #
+        # if not isEnergyOn or isMultiphase or isMultiRegion:
+        #     self._ui.farFieldRiemann.hide()
 
         self.adjustSize()
 
