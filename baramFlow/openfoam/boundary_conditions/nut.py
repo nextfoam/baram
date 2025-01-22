@@ -64,16 +64,16 @@ class Nut(BoundaryCondition):
 
     def _constructWallFunctionByModel(self):
         if self._model == TurbulenceModel.K_EPSILON:
-            # Wall type should be "nutSpaldingWallFunction" for "realizableKEtwoLayer" model
+            # Wall type should be "nutUSpaldingWallFunction" for "realizableKEtwoLayer" model
             subModel = self._db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
             if subModel == KEpsilonModel.REALIZABLE.value:
                 treatment = self._db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
                 if treatment == NearWallTreatment.ENHANCED_WALL_TREATMENT.value:
-                    return self._constructNEXTNutSpaldingWallFunction()
+                    return self._constructNutUSpaldingWallFunction()
 
             return self._constructNEXTNutkWallFunction()
         else:
-            return self._constructNEXTNutSpaldingWallFunction()
+            return self._constructNutUSpaldingWallFunction()
 
     def _constructNEXTNutkWallFunction(self):
         return {
@@ -81,9 +81,12 @@ class Nut(BoundaryCondition):
             'value': self._initialValueByTime()
         }
 
-    def _constructNEXTNutSpaldingWallFunction(self):
+    def _constructNutUSpaldingWallFunction(self):
         return {
-            'type': 'nutSpaldingWallFunction',
+            'type': 'nutUSpaldingWallFunction',
+            'Cmu': 0.09,
+            'kappa': 0.4187,
+            'E': 9.793,
             'value': self._initialValueByTime()
         }
 
