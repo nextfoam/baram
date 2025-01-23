@@ -786,6 +786,7 @@ def _version_8(root: etree.Element):
 
         if p.find('speed', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "speed" to {p}')
+
             child = etree.Element(f'{{{_ns}}}speed')
             child.text = speed
             p.insert(1, child)
@@ -822,6 +823,20 @@ def _version_8(root: etree.Element):
             p.append(e)
 
 
+def _version_9(root: etree.Element):
+    logger.debug('  Upgrading to v9')
+
+    # root.set('version', '10')
+
+    for p in root.findall(f'.//boundaryCondition/wall/temperature', namespaces=_nsmap):
+        if p.find('externalEmissivity', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "externalEmissivity" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}externalEmissivity')
+            e.text = '0'
+            p.insert(5, e)
+
+
 _fTable = [
     None,
     _version_1,
@@ -832,6 +847,7 @@ _fTable = [
     _version_6,
     _version_7,
     _version_8,
+    _version_9,
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))

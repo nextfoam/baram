@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="9">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="10">
 
     <!-- type definitions -->
     <xs:simpleType name="positive">
@@ -1445,6 +1445,7 @@
                         <xs:element name="heatFlux" type="inputNumberType" default="1000"/>
                         <xs:element name="heatTransferCoefficient" type="inputNumberType" default="100"/>
                         <xs:element name="freeStreamTemperature" type="inputNumberType" default="300"/>
+                        <xs:element name="externalEmissivity" type="inputRatioType" default="0"/>
                         <xs:element name="wallLayers">
                             <xs:complexType>
                                 <xs:sequence>
