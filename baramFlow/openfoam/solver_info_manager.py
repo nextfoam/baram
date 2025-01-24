@@ -20,7 +20,7 @@ from baramFlow.case_manager import CaseManager
 #   It is tab separated yet has spaces in it.
 """
 # Solver information
-# Time          	U_solver        	Ux_initial      	Ux_final        	Ux_iters        	Uy_initial      	Uy_final        	Uy_iters        	Uz_initial      	Uz_final        	Uz_iters        	U_converged     
+# Time          	U_solver        	Ux_initial      	Ux_final        	Ux_iters        	Uy_initial      	Uy_final        	Uy_iters        	Uz_initial      	Uz_final        	Uz_iters        	U_converged
 0.0120482       	DILUPBiCGStab	1.00000000e+00	8.58724200e-08	1	1.00000000e+00	5.78842110e-14	1	1.00000000e+00	6.57355850e-14	1	false
 0.0265769       	DILUPBiCGStab	3.66757700e-01	2.17151110e-13	1	9.06273050e-01	3.18900850e-13	1	3.76387760e-01	3.48509970e-13	1	false
 0.0439595       	DILUPBiCGStab	2.31957720e-02	2.67950170e-08	1	5.38653860e-01	3.35496420e-13	1	3.79282860e-02	5.53125350e-08	1	false
@@ -169,7 +169,7 @@ class Worker(QObject):
         self.process()
 
         for s in self.changingFiles.values():
-            if s is not None:  # "s" could remain "None" if the solver stops by error as soon as it starts
+            if s is not None and s.f is not None:  # "s" or "s.f" could remain "None" if the solver stops by error as soon as it starts
                 s.f.close()
         QThread.currentThread().quit()
         self.running = False
