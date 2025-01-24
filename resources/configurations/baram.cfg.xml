@@ -128,10 +128,10 @@
             <momentum>secondOrderUpwind</momentum>
             <energy>secondOrderUpwind</energy>
             <turbulentKineticEnergy>firstOrderUpwind</turbulentKineticEnergy>
-            <volumeFraction>firstOrderUpwind</volumeFraction>
+            <volumeFraction>secondOrderUpwind</volumeFraction>
             <pressure>linear</pressure>
             <scalar>secondOrderUpwind</scalar>
-            <species>firstOrderUpwind</species>
+            <species>secondOrderUpwind</species>
         </discretizationSchemes>
         <underRelaxationFactors>
             <pressure>0.3</pressure>

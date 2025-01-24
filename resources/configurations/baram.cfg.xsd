@@ -1719,7 +1719,7 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-                        <xs:element name="volumeFraction" default="firstOrderUpwind">
+                        <xs:element name="volumeFraction" default="secondOrderUpwind">
                             <xs:simpleType>
                                 <xs:restriction base='xs:string'>
                                     <xs:enumeration value='firstOrderUpwind'/>
@@ -1736,7 +1736,7 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-                        <xs:element name="scalar" default="firstOrderUpwind">
+                        <xs:element name="scalar" default="secondOrderUpwind">
                             <xs:simpleType>
                                 <xs:restriction base='xs:string'>
                                     <xs:enumeration value='firstOrderUpwind'/>
@@ -1744,7 +1744,7 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-                        <xs:element name="species" default="firstOrderUpwind">
+                        <xs:element name="species" default="secondOrderUpwind">
                             <xs:simpleType>
                                 <xs:restriction base='xs:string'>
                                     <xs:enumeration value='firstOrderUpwind'/>
