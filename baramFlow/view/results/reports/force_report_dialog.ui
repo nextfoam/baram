@@ -419,7 +419,7 @@
           <widget class="QWidget" name="widget_7" native="true">
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
-             <widget class="QGroupBox" name="groupBox_6">
+             <widget class="QGroupBox" name="groupBox_12">
               <property name="title">
                <string>Force</string>
               </property>
@@ -491,7 +491,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QGroupBox" name="groupBox_8">
+                <widget class="QGroupBox" name="groupBox_13">
                  <property name="title">
                   <string>Pressure Force (N)</string>
                  </property>
@@ -626,7 +626,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_8">
+             <widget class="QGroupBox" name="groupBox_14">
               <property name="title">
                <string>Moment</string>
               </property>
