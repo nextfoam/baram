@@ -44,6 +44,7 @@ class CollateralFieldsReportDialog(QDialog):
 
         self._ui.age.setEnabled(not GeneralDB.isTimeTransient() and not isDensityBased)
         self._ui.heatTransferCoefficient.setEnabled(isEnergeOn)
+        self._ui.wallHeatFlux.setEnabled(isEnergeOn)
         self._ui.machNumber.setEnabled(isEnergeOn and not isDensityBased)
 
         self._connectSignalsSlots()
@@ -57,37 +58,40 @@ class CollateralFieldsReportDialog(QDialog):
 
         db = CoreDBReader()
         for rname in db.getRegions():
-            region = db.getRegionProperties(rname)
-            if not region.isFluid():
-                continue
-
-            if self._ui.age.isChecked():
-                functions[f'collateralAge_{rname}'] = foAgeReport(rname)
 
             if self._ui.heatTransferCoefficient.isChecked():
-                walls = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL, rname)]
-                functions[f'collateralHeatTransferCoefficient__{rname}'] = foHeatTransferCoefficientReport(rname, walls)
-
-            if self._ui.machNumber.isChecked():
-                functions[f'collateralMachNumber_{rname}'] = foMachNumberReport(rname)
-
-            if self._ui.q.isChecked():
-                functions[f'collateralQ_{rname}'] = foQReport(rname)
-
-            if self._ui.totalPressure.isChecked():
-                functions[f'collateralTotalPressure_{rname}'] = foTotalPressureReport(rname)
-
-            if self._ui.vorticity.isChecked():
-                functions[f'collateralVorticity_{rname}'] = foVorticityReport(rname)
+                plainWalls  = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL, rname)]
+                thermowalls = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.THERMO_COUPLED_WALL, rname)]
+                patches = plainWalls + thermowalls
+                functions[f'collateralHeatTransferCoefficient__{rname}'] = foHeatTransferCoefficientReport(rname, patches)
 
             if self._ui.wallHeatFlux.isChecked():
                 functions[f'collateralWallHeatFlux_{rname}'] = foWallHeatFluxReport(rname)
 
-            if self._ui.wallShearStress.isChecked():
-                functions[f'collateralWallShearStress_{rname}'] = foWallShearStressReport(rname)
+            region = db.getRegionProperties(rname)
 
-            if self._ui.wallYPlus.isChecked():
-                functions[f'collateralWallYPlus_{rname}'] = foWallYPlusReport(rname)
+            if region.isFluid():
+
+                if self._ui.age.isChecked():
+                    functions[f'collateralAge_{rname}'] = foAgeReport(rname)
+
+                if self._ui.machNumber.isChecked():
+                    functions[f'collateralMachNumber_{rname}'] = foMachNumberReport(rname)
+
+                if self._ui.q.isChecked():
+                    functions[f'collateralQ_{rname}'] = foQReport(rname)
+
+                if self._ui.totalPressure.isChecked():
+                    functions[f'collateralTotalPressure_{rname}'] = foTotalPressureReport(rname)
+
+                if self._ui.vorticity.isChecked():
+                    functions[f'collateralVorticity_{rname}'] = foVorticityReport(rname)
+
+                if self._ui.wallShearStress.isChecked():
+                    functions[f'collateralWallShearStress_{rname}'] = foWallShearStressReport(rname)
+
+                if self._ui.wallYPlus.isChecked():
+                    functions[f'collateralWallYPlus_{rname}'] = foWallYPlusReport(rname)
 
         if not functions:
             await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Fields.'))

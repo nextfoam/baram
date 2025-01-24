@@ -458,37 +458,41 @@ class ControlDict(DictionaryFile):
 
     def _generateCollateralFieldsFunctionObjects(self, xpath):
         for rname in self._db.getRegions():
-            region = self._db.getRegionProperties(rname)
-            if not region.isFluid():
-                continue
-
-            if not GeneralDB.isTimeTransient() and not GeneralDB.isDensityBased():
-                if self._db.getBool(xpath + '/age'):
-                    self._data['functions'][f'collateralAge_{rname}'] = foAgeMonitor(rname, 1)
 
             if ModelsDB.isEnergyModelOn():
                 if self._db.getBool(xpath + '/heatTransferCoefficient'):
-                    walls = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL, rname)]
-                    self._data['functions'][f'collateralHeatTransferCoefficient_{rname}'] = foHeatTransferCoefficientMonitor(rname, walls, 1)
+                    plainWalls  = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL, rname)]
+                    thermowalls = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.THERMO_COUPLED_WALL, rname)]
+                    patches = plainWalls + thermowalls
+                    self._data['functions'][f'collateralHeatTransferCoefficient_{rname}'] = foHeatTransferCoefficientMonitor(rname, patches, 1)
 
-            if ModelsDB.isEnergyModelOn() and not GeneralDB.isDensityBased():
-                if self._db.getBool(xpath + '/machNumber'):
-                    self._data['functions'][f'collateralMachNumber_{rname}'] = foMachNumberMonitor(rname, 1)
+            if ModelsDB.isEnergyModelOn():
+                if self._db.getBool(xpath + '/wallHeatFlux'):
+                    self._data['functions'][f'collateralWallHeatFlux_{rname}'] = foWallHeatFluxMonitor(rname, 1)
 
-            if self._db.getBool(xpath + '/q'):
-                self._data['functions'][f'collateralQ_{rname}'] = foQMonitor(rname, 1)
+            region = self._db.getRegionProperties(rname)
 
-            if self._db.getBool(xpath + '/totalPressure'):
-                self._data['functions'][f'collateralTotalPressure_{rname}'] = foTotalPressureMonitor(rname, 1)
+            if region.isFluid():
 
-            if self._db.getBool(xpath + '/vorticity'):
-                self._data['functions'][f'collateralVorticity_{rname}'] = foVorticityMonitor(rname, 1)
+                if not GeneralDB.isTimeTransient() and not GeneralDB.isDensityBased():
+                    if self._db.getBool(xpath + '/age'):
+                        self._data['functions'][f'collateralAge_{rname}'] = foAgeMonitor(rname, 1)
 
-            if self._db.getBool(xpath + '/wallHeatFlux'):
-                self._data['functions'][f'collateralWallHeatFlux_{rname}'] = foWallHeatFluxMonitor(rname, 1)
+                if ModelsDB.isEnergyModelOn() and not GeneralDB.isDensityBased():
+                    if self._db.getBool(xpath + '/machNumber'):
+                        self._data['functions'][f'collateralMachNumber_{rname}'] = foMachNumberMonitor(rname, 1)
 
-            if self._db.getBool(xpath + '/wallShearStress'):
-                self._data['functions'][f'collateralWallShearStress_{rname}'] = foWallShearStressMonitor(rname, 1)
+                if self._db.getBool(xpath + '/q'):
+                    self._data['functions'][f'collateralQ_{rname}'] = foQMonitor(rname, 1)
 
-            if self._db.getBool(xpath + '/wallYPlus'):
-                self._data['functions'][f'collateralWallYPlus_{rname}'] = foWallYPlusMonitor(rname, 1)
+                if self._db.getBool(xpath + '/totalPressure'):
+                    self._data['functions'][f'collateralTotalPressure_{rname}'] = foTotalPressureMonitor(rname, 1)
+
+                if self._db.getBool(xpath + '/vorticity'):
+                    self._data['functions'][f'collateralVorticity_{rname}'] = foVorticityMonitor(rname, 1)
+
+                if self._db.getBool(xpath + '/wallShearStress'):
+                    self._data['functions'][f'collateralWallShearStress_{rname}'] = foWallShearStressMonitor(rname, 1)
+
+                if self._db.getBool(xpath + '/wallYPlus'):
+                    self._data['functions'][f'collateralWallYPlus_{rname}'] = foWallYPlusMonitor(rname, 1)
