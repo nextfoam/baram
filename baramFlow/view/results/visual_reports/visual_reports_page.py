@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import qasync
+
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QVBoxLayout, QMenu, QListWidgetItem, QMessageBox
 
 from PySide6QtAds import DockWidgetArea, CDockManager, CDockWidget
 
 
-from baramFlow.view.results.graphics.contours_dialog import ContoursDialog
-from baramFlow.view.results.graphics.graphics_widget import ContoursWidget
+from baramFlow.view.results.visual_reports.contour_dialog import ContoursDialog
+from baramFlow.view.results.visual_reports.visual_report_widget import ContoursWidget
 from baramFlow.view.widgets.content_page import ContentPage
 
 from widgets.async_message_box import AsyncMessageBox
@@ -18,7 +20,7 @@ from .rendering_view import RenderingDock
 from .graphics_page_ui import Ui_GraphicsPage
 
 
-class GraphicsPage(ContentPage):
+class VisualReportsPage(ContentPage):
     def __init__(self, parent):
         super().__init__(parent)
 
@@ -26,10 +28,10 @@ class GraphicsPage(ContentPage):
         self._ui.setupUi(self)
 
         self._menu = QMenu()
-        self._addCoutours    = self._menu.addAction(self.tr('&Contours'))
-        self._addVectors     = self._menu.addAction(self.tr('&Vectors'))
-        self._addPathlines   = self._menu.addAction(self.tr('&Pathlines'))
-        self._addParticleTracks    = self._menu.addAction(self.tr('&Particle Tracks'))
+        self._addCoutours: QAction    = self._menu.addAction(self.tr('&Contours'))
+        self._addVectors: QAction     = self._menu.addAction(self.tr('&Vectors'))
+        self._addPathlines: QAction   = self._menu.addAction(self.tr('&Pathlines'))
+        self._addParticleTracks: QAction    = self._menu.addAction(self.tr('&Particle Tracks'))
         self._ui.add.setMenu(self._menu)
 
         self._dialog = None

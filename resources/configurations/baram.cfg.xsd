@@ -2434,6 +2434,62 @@
                     </xs:complexType>
                 </xs:element>
 
+                <xs:element name="visualReports">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="contours">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="contour" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="fieldType">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="basic"/>
+                                                                <xs:enumeration value="collateral"/>
+                                                                <xs:enumeration value="phase"/>
+                                                                <xs:enumeration value="specie"/>
+                                                                <xs:enumeration value="userScalar"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="fieldName" type="xs:string"/>
+                                                    <xs:element name="time" type="xs:string"/>
+                                                    <xs:element name="scaffolds">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="scaffold" minOccurs="0" maxOccurs="unbounded">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="boundary" type="xs:nonNegativeInteger" default="0"/>  <!-- boundary condition bcid -->
+                                                                            <xs:element name="scaffoldUuid" type="uuidType"/>  <!-- Used when boundary==0 -->
+                                                                            <xs:element name="visibility" type="xs:boolean" default="false"/>
+                                                                            <xs:element name="opacity" type="nonNegative" default="100"/>
+                                                                            <xs:element name="solidColor" type="xs:boolean" default="false"/>
+                                                                            <xs:element name="color" type="xs:string" default="#FFFFFF"/>  <!-- Can be #RRRGGGBBB in the future -->
+                                                                            <xs:element name="edges" type="xs:boolean" default="false"/>
+                                                                            <xs:element name="faces" type="xs:boolean" default="true"/>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="vectors">
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
                 <xs:element name="runCalculation">
                     <xs:complexType>
                         <xs:sequence>

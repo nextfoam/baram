@@ -58,7 +58,7 @@ from baramFlow.view.solution.monitors.monitors_page import MonitorsPage
 from baramFlow.view.solution.initialization.initialization_page import InitializationPage
 from baramFlow.view.solution.run_conditions.run_conditions_page import RunConditionsPage
 from baramFlow.view.solution.run.process_information_page import ProcessInformationPage
-from baramFlow.view.results.graphics.graphics_page import GraphicsPage
+from baramFlow.view.results.visual_reports.visual_reports_page import VisualReportsPage
 from baramFlow.view.results.reports.reports_page import ReportsPage
 from baramFlow.view.results.scaffolds.scaffolds_page import ScaffoldsPage
 from .content_view import ContentView
@@ -154,7 +154,7 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SOLUTION_RUN.value: MenuPage(ProcessInformationPage),
 
             MenuItem.MENU_RESULTS_SCAFFOLDS.value: MenuPage(ScaffoldsPage),
-            MenuItem.MENU_RESULTS_GRAPHICS.value: MenuPage(GraphicsPage),
+            MenuItem.MENU_RESULTS_GRAPHICS.value: MenuPage(VisualReportsPage),
             MenuItem.MENU_RESULTS_REPORTS.value: MenuPage(ReportsPage),
         }
 

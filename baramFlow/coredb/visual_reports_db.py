@@ -18,8 +18,8 @@ from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.material_schema import MaterialType, Phase
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.post_field import BasicField, CollateralField, PhaseField, SpecieField
-from baramFlow.coredb.scaffold import Scaffold
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
+from baramFlow.coredb.visual_report import VisualReport
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import usePrgh
 from baramFlow.solver_status import SolverStatus
@@ -31,12 +31,12 @@ ISO_SURFACE_NAME_PREFIX = 'iso-surface'
 _mutex = Lock()
 
 
-class ScaffoldsDB():
-    SCAFFOLDS_PATH = '/scaffolds'
+class VisualReportsDB():
+    VISUAL_REPORTS_PATH = '/visualReports'
     def __new__(cls, *args, **kwargs):
         with _mutex:
             if not hasattr(cls, '_instance'):
-                cls._instance = super(ScaffoldsDB, cls).__new__(cls, *args, **kwargs)
+                cls._instance = super(VisualReportsDB, cls).__new__(cls, *args, **kwargs)
 
         return cls._instance
 
@@ -49,90 +49,89 @@ class ScaffoldsDB():
 
         super().__init__()
 
-        self._scaffolds: dict[UUID, Scaffold] = {}
-
+        self._reports: dict[UUID, VisualReport] = {}
 
     def load(self):
-        self._scaffolds = self._parseScaffolds()
+        self._reports = self._parseVisualReports()
 
-    def _parseScaffolds(self) -> dict[UUID, Scaffold]:
-        scaffolds = {}
-        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH)
+    def _parseVisualReports(self) -> dict[UUID, VisualReport]:
+        reports = {}
+        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH)
 
-        isoSurfaces = parent.find('isoSurfaces', namespaces=nsmap)
-        for e in isoSurfaces.findall('surface', namespaces=nsmap):
+        contours = parent.find('contours', namespaces=nsmap)
+        for e in contours.findall('contour', namespaces=nsmap):
             s = IsoSurface.fromElement(e)
-            scaffolds[s.uuid] = s
+            reports[s.uuid] = s
 
-        return scaffolds
+        return reports
 
-    def getScaffolds(self):
-        return self._scaffolds
+    def getVisualReports(self):
+        return self._reports
 
-    def addScaffold(self, scaffold: Scaffold):
-        if scaffold.uuid in self._scaffolds:
+    def addVisualReport(self, report: VisualReport):
+        if report.uuid in self._reports:
             raise AssertionError
 
-        if isinstance(scaffold, IsoSurface):
-            tag = 'isoSurfaces'
+        if isinstance(report, IsoSurface):
+            tag = 'contours'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH)
+        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH)
         parent = parent.find(tag, namespaces=nsmap)
 
-        e = scaffold.toElement()
+        e = report.toElement()
         parent.append(e)
 
-        self._scaffolds[scaffold.uuid] = scaffold
+        self._reports[report.uuid] = report
 
-    def removeScaffold(self, scaffold: Scaffold):
-        if scaffold.uuid not in self._scaffolds:
+    def removeVisualReport(self, report: VisualReport):
+        if report.uuid not in self._reports:
             raise AssertionError
 
-        if isinstance(scaffold, IsoSurface):
-            tag = 'isoSurfaces'
+        if isinstance(report, IsoSurface):
+            tag = 'contours'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH)
+        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH)
         parent = parent.find(tag, namespaces=nsmap)
 
-        e = parent.find(f'./surface[uuid="{str(scaffold.uuid)}"]', namespaces=nsmap)
+        e = parent.find(f'./contour[uuid="{str(report.uuid)}"]', namespaces=nsmap)
         parent.remove(e)
 
-        del self._scaffolds[scaffold.uuid]
+        del self._reports[report.uuid]
 
-    def updateScaffold(self, scaffold: Scaffold):
-        if scaffold.uuid not in self._scaffolds:
+    def updateVisualReport(self, report: VisualReport):
+        if report.uuid not in self._reports:
             raise AssertionError
 
-        if isinstance(scaffold, IsoSurface):
-            tag = 'isoSurfaces'
+        if isinstance(report, IsoSurface):
+            tag = 'contours'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH)
+        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH)
         parent = parent.find(tag, namespaces=nsmap)
 
-        e = parent.find(f'./surface[uuid="{str(scaffold.uuid)}"]', namespaces=nsmap)
+        e = parent.find(f'./contour[uuid="{str(report.uuid)}"]', namespaces=nsmap)
         parent.remove(e)
 
-        e = scaffold.toElement()
+        e = report.toElement()
         parent.append(e)
 
     def nameDuplicates(self, uuid: UUID, name: str) -> bool:
-        for v in self._scaffolds.values():
+        for v in self._reports.values():
             if v.name == name and v.uuid != uuid:
                 return True
 
         return False
 
-    def getNewIsoSurfaceName(self) -> str:
-        return self._getNewScaffoldName(ISO_SURFACE_NAME_PREFIX)
+    def getNewContourName(self) -> str:
+        return self._getNewVisualReportName(ISO_SURFACE_NAME_PREFIX)
 
-    def _getNewScaffoldName(self, prefix: str) -> str:
-        suffixes = [v.name[len(prefix):] for v in self._scaffolds.values() if v.name.startswith(prefix)]
+    def _getNewVisualReportName(self, prefix: str) -> str:
+        suffixes = [v.name[len(prefix):] for v in self._reports.values() if v.name.startswith(prefix)]
         for i in range(1, 1000):
             if f'-{i}' not in suffixes:
                 return f'{prefix}-{i}'

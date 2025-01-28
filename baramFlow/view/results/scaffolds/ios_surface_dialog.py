@@ -27,8 +27,6 @@ from .iso_surface_dialog_ui import Ui_IsoSurfaceDialog
 
 
 class IsoSurfaceDialog(QDialog):
-    TEXT_FOR_NONE_BOUNDARY = 'None'
-
     def __init__(self, parent, surface: IsoSurface, isNew=False):
         super().__init__(parent)
 
@@ -49,23 +47,6 @@ class IsoSurfaceDialog(QDialog):
 
         if isNew:
             self._ui.ok.setText('Create')
-
-        # u0 = BasicField('jake0')
-        # u1 = BasicField('jake1')
-        # u2 = BasicField('jake2')
-        # u3 = BasicField('jake3')
-        # u4 = BasicField('jake4')
-
-        # self._ui.field.addItem(u0.name, u0)
-        # self._ui.field.addItem(u1.name, u1)
-        # self._ui.field.addItem(u2.name, u2)
-        # self._ui.field.addItem(u3.name, u3)
-        # self._ui.field.addItem(u4.name, u4)
-
-        # u = BasicField('jake2')
-        # index = self._ui.field.findData(u)
-        # print(index)
-        # self._ui.field.setCurrentIndex(index)
 
         self._ui.name.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Za-z_][A-Za-z0-9_-]*')))
         self._ui.spacing.setValidator(QDoubleValidator())
