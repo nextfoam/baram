@@ -188,6 +188,8 @@ class BatchCase(Case):
 
         self._process = None
 
+        self._status = self._project.getBatchStatus(name)
+
     def load(self):
         if not self._path.is_dir():
             FileSystem.createBatchCase(self._livePath, self._path, coredb.CoreDB().getRegions())
@@ -262,10 +264,10 @@ class CaseManager(QObject):
     def load(self, liveCase):
         self._project = Project.instance()
         self._liveCase = liveCase
-        self._setCurrentCase(liveCase)
         liveCase.load()
         liveCase.loadStatus()
         liveCase.progress.connect(self.progress)
+        self._setCurrentCase(liveCase)
 
     def clear(self):
         if self._liveCase:
@@ -379,5 +381,5 @@ class CaseManager(QObject):
 
     def _loadCase(self, case):
         self._currentCase.close()
+        case.load()
         self._setCurrentCase(case)
-        self._currentCase.load()

@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import qasync
 from PySide6.QtCore import Qt, QObject, Signal
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QDialog, QLabel, QWidget, QVBoxLayout, QComboBox, QRadioButton, QButtonGroup
-from PySide6.QtWidgets import QSizePolicy
-from PySide6.QtWidgets import QGridLayout
+from PySide6.QtWidgets import QDialog, QLabel, QWidget, QComboBox, QRadioButton, QButtonGroup, QFrame
+from PySide6.QtWidgets import QVBoxLayout, QGridLayout
 
 from widgets.async_message_box import AsyncMessageBox
 from widgets.flat_push_button import FlatPushButton
 from widgets.typed_edit import IdentifierEdit
 
 from baramFlow.openfoam.constant.cell_zones_to_regions import CellZonesToRegions
+from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 
 from .fluent_regions_dialog_ui import Ui_FlluentRegionsDialog
 
@@ -83,7 +84,6 @@ class RegionColumn(QObject):
 
         for i in range(CELL_ZONE_START_ROW, rowCount):
             radio = QRadioButton()
-            radio.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self._rows.append(radio)
 
         button = FlatPushButton(removeIcon, '')
@@ -120,6 +120,19 @@ class RegionColumn(QObject):
         return self._hidden
 
 
+def toLinedWidget(widget, alignment=Qt.AlignmentFlag.AlignLeft):
+    line = QFrame()
+    line.setFrameShape(QFrame.Shape.HLine)
+
+    linedWidget = QWidget()
+    layout = QGridLayout(linedWidget)
+    layout.setContentsMargins(0, 6, 0, 0)
+    layout.addWidget(widget, 0, 0, alignment)
+    layout.addWidget(line, 1, 0)
+
+    return linedWidget
+
+
 class FluentRegionsDialog(QDialog):
     def __init__(self, parent, cellZones):
         super().__init__(parent)
@@ -133,13 +146,15 @@ class FluentRegionsDialog(QDialog):
         self._columns = [RegionColumn(0, None, None, 0)]
 
         self._table: QGridLayout = self._ui.table.layout()
+        self._table.setSpacing(0)
+        self._table.setContentsMargins(0, 0, 0, 0)
 
         self._connectSignalsSlots()
 
         regions = {'fluid': [], 'solid': []}
 
         for czname, phase in cellZones.items():
-            self._table.addWidget(QLabel(czname), self._rowCount, COLUMN_HEADER_ROW)
+            self._table.addWidget(toLinedWidget(QLabel(czname)), self._rowCount, COLUMN_HEADER_ROW)
             regions[phase].append(self._rowCount)
             self._cellZones.append(czname)
             self._rowCount += 1
@@ -178,10 +193,10 @@ class FluentRegionsDialog(QDialog):
         self._table.addWidget(column.header(), 0, index)
         for i in range(1, self._rowCount):
             radio = column.radio(i)
-            self._table.addWidget(radio, i, index, Qt.AlignmentFlag.AlignCenter)
+            self._table.addWidget(toLinedWidget(radio, Qt.AlignmentFlag.AlignCenter), i, index)
             self._cellZones.addRadio(i, radio)
 
-        self._table.addWidget(column.removeButton(), self._rowCount, index)
+        self._table.addWidget(column.removeButton(), self._rowCount, index, Qt.AlignmentFlag.AlignCenter)
 
         return column
 

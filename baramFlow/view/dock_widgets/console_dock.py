@@ -47,12 +47,22 @@ class ConsoleView(QWidget):
         layout.addWidget(self._lineWrap)
 
         self._project = Project.instance()
+
+        self._connectSignalsSlots()
+
+        self.translate()
+
+    def _connectSignalsSlots(self):
         self._project.projectClosed.connect(self._projectClosed)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
         CaseManager().caseLoaded.connect(self._caseLoaded)
         CaseManager().caseCleared.connect(self._caseCleared)
 
-        self.translate()
+    def _disconnectSignalsSlots(self):
+        self._project.projectClosed.disconnect(self._projectClosed)
+        self._project.solverStatusChanged.disconnect(self._solverStatusChanged)
+        CaseManager().caseLoaded.disconnect(self._caseLoaded)
+        CaseManager().caseCleared.disconnect(self._caseCleared)
 
     def startCollecting(self):
         if self.readTask is None:
@@ -160,6 +170,10 @@ class ConsoleView(QWidget):
 
         super().closeEvent(event)
 
+    def closeEvent(self, event):
+        self._disconnectSignalsSlots()
+
+        super().closeEvent(event)
 
 class ConsoleDock(CDockWidget):
     def __init__(self):

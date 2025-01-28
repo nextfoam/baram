@@ -120,9 +120,14 @@ class U(BoundaryCondition):
         }
 
     def _constructFreestreamVelocity(self, xpath):
+        dx, dy, dz = self._db.getFlowDirection(xpath + '/flowDirection')
+        dMag = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+        speed = float(self._db.getValue(xpath + '/speed'))
+        am = speed / dMag
+
         return {
             'type': 'freestreamVelocity',
-            'freestreamValue': ('uniform', self._db.getVector(xpath + '/streamVelocity'))
+            'freestreamValue': ('uniform', [am * dx, am * dy, am * dz])
         }
 
     def _constructNoSlip(self):
@@ -179,10 +184,9 @@ class U(BoundaryCondition):
         mw = self._db.getMolecularWeight(MaterialDB.getMaterialComposition(xpath + '/species', self._region.mid))
         a = sqrt(gamma * (UNIVERSAL_GAS_CONSTANT / mw)
                  * float(self._db.getValue(xpath + '/farFieldRiemann/staticTemperature')))
-        dx, dy, dz = self._calculateFarfiledRiemanFlowDirection(xpath + '/farFieldRiemann/flowDirection')
+        dx, dy, dz = self._db.getFlowDirection(xpath + '/farFieldRiemann/flowDirection')
         dMag = sqrt(dx ** 2 + dy ** 2 + dz ** 2)
-        mInf = float(
-            self._db.getValue(xpath + '/farFieldRiemann/machNumber'))
+        mInf = float(self._db.getValue(xpath + '/farFieldRiemann/machNumber'))
         am = a * mInf / dMag
 
         return self._constructFarfieldRiemann(xpath + '/farFieldRiemann', [am * dx, am * dy, am * dz])

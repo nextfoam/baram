@@ -63,16 +63,37 @@
         <meanVelocity>1</meanVelocity>
     </openChannelOutlet>
     <freeStream>
-        <streamVelocity>
-            <x>1</x>
-            <y>0</y>
-            <z>0</z>
-        </streamVelocity>
+        <flowDirection>
+            <specificationMethod>direct</specificationMethod>
+            <flowDirection>
+                <x>1</x>
+                <y>0</y>
+                <z>0</z>
+            </flowDirection>
+            <dragDirection>
+                <x>1</x>
+                <y>0</y>
+                <z>0</z>
+            </dragDirection>
+            <liftDirection>
+                <x>0</x>
+                <y>1</y>
+                <z>0</z>
+            </liftDirection>
+            <angleOfAttack>0</angleOfAttack>
+            <angleOfSideslip>0</angleOfSideslip>
+        </flowDirection>
+        <speed>1</speed>
         <pressure>0</pressure>
     </freeStream>
     <farFieldRiemann>
         <flowDirection>
             <specificationMethod>direct</specificationMethod>
+            <flowDirection>
+                <x>1</x>
+                <y>0</y>
+                <z>0</z>
+            </flowDirection>
             <dragDirection>
                 <x>1</x>
                 <y>0</y>

@@ -140,6 +140,12 @@ class DirectionSpecificationMethod(Enum):
     AOA_AOS = 'AoA_AoS'
 
 
+DirectionSpecificationMethodTexts = {
+    DirectionSpecificationMethod.DIRECT:    QCoreApplication.translate('BoundaryDB', 'Direct'),
+    DirectionSpecificationMethod.AOA_AOS:   QCoreApplication.translate('BoundaryDB', 'AOA and AOS')
+}
+
+
 class BoundaryDB:
     BOUNDARY_CONDITIONS_XPATH = './/boundaryConditions'
     ABL_INLET_CONDITIONS_XPATH = './/atmosphericBoundaryLayer'
@@ -246,6 +252,27 @@ class BoundaryDB:
 
         return items
 
+    @classmethod
+    def getBoundaryConditionsByType(cls, physicalType: BoundaryType, rname=None) -> list[(int, str, str)]:
+        """Returns list of boundary conditions in the region
+
+        Returns list of boundary conditions for the type
+
+        Args:
+            physicalType: physical type
+            rname: region name, None or '' for all regions
+
+        Returns:
+            List of boundary conditions in tuple, '(bcid, name)'
+        """
+        regionXPath = RegionDB.getXPath(rname) if rname else REGION_XPATH
+
+        return [
+            # (int(e.attrib['bcid']), e.find('name', namespaces=nsmap).text)
+            (int(e.attrib['bcid']), xml.getText(e, 'name'))
+            for e
+            in coredb.CoreDB().getElements(
+                f'{regionXPath}/boundaryConditions/boundaryCondition[physicalType="{physicalType.value}"]')]
 
 def getBoundaryElements(rname):
     return coredb.CoreDB().getElements(f'{RegionDB.getXPath(rname)}/boundaryConditions/boundaryCondition')

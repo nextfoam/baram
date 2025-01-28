@@ -11,7 +11,7 @@ from .materials_base import MaterialsBase
 from .material_schema import MaterialSchema
 from .turbulence_model_db import ITurbulenceModelObserver, TurbulenceModelsDB, TurbulenceModel
 
-UNIVERSAL_GAS_CONSTANT = 8314.46261815324
+UNIVERSAL_GAS_CONSTANT = 8314.46261815324  # J / ( K · kmol )
 
 MATERIAL_XPATH = '/materials/material'
 
@@ -106,7 +106,7 @@ class MaterialDB(object):
             return Phase.LIQUID
         elif DBText == 'solid':
             return Phase.SOLID
-        
+
     @classmethod
     def getPhaseText(cls, phase) -> str:
         return {

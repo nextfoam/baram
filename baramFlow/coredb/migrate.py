@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+from math import sqrt
 
 import logging
 
@@ -752,6 +753,75 @@ def _version_7(root: etree.Element):
             p.insert(5, e)
 
 
+def _version_8(root: etree.Element):
+    logger.debug('  Upgrading to v9')
+
+    # root.set('version', '9')
+
+    for p in root.findall(f'.//boundaryCondition/freeStream', namespaces=_nsmap):
+        speed = '1'
+        if p.find('flowDirection', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "flowDirection" to {p}')
+
+            x, y, z = 1, 0, 0
+            if (e := p.find('streamVelocity', namespaces=_nsmap)) is not None:
+                x = e.find('x', namespaces=_nsmap).text
+                y = e.find('y', namespaces=_nsmap).text
+                z = e.find('z', namespaces=_nsmap).text
+
+                p.remove(e)
+
+                if s := sqrt(float(x) ** 2 + float(y) ** 2 + float(z) ** 2):
+                    speed = '{:.6g}'.format(s)
+
+            e = etree.fromstring('<flowDirection xmlns="http://www.baramcfd.org/baram">'
+                                 '  <specificationMethod>direct</specificationMethod>'
+                                 f' <flowDirection><x>{x}</x><y>{y}</y><z>{z}</z></flowDirection>'
+                                 '  <dragDirection><x>1</x><y>0</y><z>0</z></dragDirection>'
+                                 '  <liftDirection><x>0</x><y>1</y><z>0</z></liftDirection>'
+                                 '  <angleOfAttack>0</angleOfAttack>'
+                                 '  <angleOfSideslip>0</angleOfSideslip>'
+                                 '</flowDirection>')
+            p.insert(0, e)
+
+        if p.find('speed', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "speed" to {p}')
+            child = etree.Element(f'{{{_ns}}}speed')
+            child.text = speed
+            p.insert(1, child)
+
+    for p in root.findall(f'.//boundaryCondition/farFieldRiemann/flowDirection', namespaces=_nsmap):
+        if p.find('flowDirection', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "flowDirection" to {p}')
+
+            x, y, z = 1, 0, 0
+            if (e := p.find('dragDirection', namespaces=_nsmap)) is not None:
+                x = e.find('x', namespaces=_nsmap).text
+                y = e.find('y', namespaces=_nsmap).text
+                z = e.find('z', namespaces=_nsmap).text
+
+            e = etree.fromstring(
+                f'<flowDirection xmlns="http://www.baramcfd.org/baram"><x>{x}</x><y>{y}</y><z>{z}</z></flowDirection>')
+            p.insert(1, e)
+
+    if (p := root.find('numericalConditions/advanced', namespaces=_nsmap)) is not None:
+        if p.find('collateralFields', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "collateralFields" to {p}')
+
+            e = etree.fromstring('<collateralFields xmlns="http://www.baramcfd.org/baram">'
+                                 '  <age>false</age>'
+                                 '  <heatTransferCoefficient>false</heatTransferCoefficient>'
+                                 '  <machNumber>false</machNumber>'
+                                 '  <q>false</q>'
+                                 '  <totalPressure>false</totalPressure>'
+                                 '  <vorticity>false</vorticity>'
+                                 '  <wallHeatFlux>false</wallHeatFlux>'
+                                 '  <wallShearStress>false</wallShearStress>'
+                                 '  <wallYPlus>false</wallYPlus>'
+                                 '</collateralFields>')
+            p.append(e)
+
+
 _fTable = [
     None,
     _version_1,
@@ -760,7 +830,8 @@ _fTable = [
     _version_4,
     _version_5,
     _version_6,
-    _version_7
+    _version_7,
+    _version_8,
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))

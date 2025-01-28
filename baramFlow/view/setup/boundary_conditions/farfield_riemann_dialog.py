@@ -4,7 +4,7 @@
 from PySide6.QtWidgets import QMessageBox
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.boundary_db import BoundaryDB, DirectionSpecificationMethod
+from baramFlow.coredb.boundary_db import BoundaryDB, DirectionSpecificationMethod, DirectionSpecificationMethodTexts
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .farfield_riemann_dialog_ui import Ui_FarfieldRiemannDialog
@@ -21,15 +21,16 @@ class FarfieldRiemannDialog(ResizableDialog):
 
         self._xpath = BoundaryDB.getXPath(bcid)
 
-        self._ui.specificationMethod.addEnumItems({
-            DirectionSpecificationMethod.DIRECT:    self.tr('Direct'),
-            DirectionSpecificationMethod.AOA_AOS:   self.tr('AOA and AOS')
-        })
-
         layout = self._ui.dialogContents.layout()
         self._turbulenceWidget = ConditionalWidgetHelper.turbulenceWidget(self._xpath, layout)
 
         self._connectSignalsSlots()
+
+        self._ui.specificationMethod.addItem(DirectionSpecificationMethodTexts[DirectionSpecificationMethod.DIRECT],
+                                             DirectionSpecificationMethod.DIRECT)
+        self._ui.specificationMethod.addItem(DirectionSpecificationMethodTexts[DirectionSpecificationMethod.AOA_AOS],
+                                             DirectionSpecificationMethod.AOA_AOS)
+
         self._load()
 
     def accept(self):
@@ -40,11 +41,11 @@ class FarfieldRiemannDialog(ResizableDialog):
         specificationMethod = self._ui.specificationMethod.currentData()
         writer.append(path + '/flowDirection/specificationMethod', specificationMethod.value, None)
         if specificationMethod == DirectionSpecificationMethod.DIRECT:
-            writer.append(path + '/flowDirection/dragDirection/x', self._ui.flowDirectionX.text(),
+            writer.append(path + '/flowDirection/flowDirection/x', self._ui.flowDirectionX.text(),
                           self.tr('Flow Direction'))
-            writer.append(path + '/flowDirection/dragDirection/y', self._ui.flowDirectionY.text(),
+            writer.append(path + '/flowDirection/flowDirection/y', self._ui.flowDirectionY.text(),
                           self.tr('Flow Direction'))
-            writer.append(path + '/flowDirection/dragDirection/z', self._ui.flowDirectionZ.text(),
+            writer.append(path + '/flowDirection/flowDirection/z', self._ui.flowDirectionZ.text(),
                           self.tr('Flow Direction'))
         else:
             writer.append(path + '/flowDirection/dragDirection/x', self._ui.dragDirectionX.text(),
@@ -61,6 +62,7 @@ class FarfieldRiemannDialog(ResizableDialog):
                           self.tr('Lift Direction'))
             writer.append(path + '/flowDirection/angleOfAttack', self._ui.AoA.text(), self.tr('Angle of Attack'))
             writer.append(path + '/flowDirection/angleOfSideslip', self._ui.AoS.text(), self.tr('Angle of Sideslip'))
+
         writer.append(path + '/machNumber', self._ui.machNumber.text(), self.tr('Mach Number'))
         writer.append(path + '/staticPressure', self._ui.staticPressure.text(), self.tr('Static Pressure'))
         writer.append(path + '/staticTemperature', self._ui.staticTemperature.text(), self.tr('Static Temperature'))
@@ -75,18 +77,19 @@ class FarfieldRiemannDialog(ResizableDialog):
             super().accept()
 
     def _connectSignalsSlots(self):
-        self._ui.specificationMethod.currentDataChanged.connect(self._specificationMethodChanged)
+        self._ui.specificationMethod.currentIndexChanged.connect(self._specificationMethodChanged)
 
     def _load(self):
         db = coredb.CoreDB()
         path = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.specificationMethod.setCurrentData(
-            DirectionSpecificationMethod(db.getValue(path + '/flowDirection/specificationMethod')))
+        self._ui.specificationMethod.setCurrentIndex(
+            self._ui.specificationMethod.findData(
+                DirectionSpecificationMethod(db.getValue(path + '/flowDirection/specificationMethod'))))
 
-        self._ui.flowDirectionX.setText(db.getValue(path + '/flowDirection/dragDirection/x'))
-        self._ui.flowDirectionY.setText(db.getValue(path + '/flowDirection/dragDirection/y'))
-        self._ui.flowDirectionZ.setText(db.getValue(path + '/flowDirection/dragDirection/z'))
+        self._ui.flowDirectionX.setText(db.getValue(path + '/flowDirection/flowDirection/x'))
+        self._ui.flowDirectionY.setText(db.getValue(path + '/flowDirection/flowDirection/y'))
+        self._ui.flowDirectionZ.setText(db.getValue(path + '/flowDirection/flowDirection/z'))
         self._ui.dragDirectionX.setText(db.getValue(path + '/flowDirection/dragDirection/x'))
         self._ui.dragDirectionY.setText(db.getValue(path + '/flowDirection/dragDirection/y'))
         self._ui.dragDirectionZ.setText(db.getValue(path + '/flowDirection/dragDirection/z'))
@@ -102,7 +105,8 @@ class FarfieldRiemannDialog(ResizableDialog):
 
         self._turbulenceWidget.load()
 
-    def _specificationMethodChanged(self, method):
+    def _specificationMethodChanged(self):
+        method = self._ui.specificationMethod.currentData()
         if method == DirectionSpecificationMethod.DIRECT:
             self._ui.directFlowDirection.show()
             self._ui.anglesFlowDirection.hide()

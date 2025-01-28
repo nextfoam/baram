@@ -28,34 +28,6 @@ class Column(IntEnum):
     PARAMETER_START = auto()
 
 
-class ContextMenu(QMenu):
-    loadActionTriggered = Signal(list)
-    scheduleActionTriggered = Signal(list)
-    cancelScheduleActionTriggered = Signal(list)
-    deleteActionTriggered = Signal(list)
-
-    def __init__(self, parent):
-        super().__init__(parent)
-
-        self._targets = None
-
-        self._loadAction = self.addAction(
-            self.tr('Load'), lambda: self.loadActionTriggered.emit(self._targets))
-        self._scheduleAction = self.addAction(
-            self.tr('Schedule Calculation'), lambda: self.scheduleActionTriggered.emit(self._targets))
-        self._cancelScheduleAction = self.addAction(
-            self.tr('Cancel Schedule'), lambda: self.cancelScheduleActionTriggered.emit(self._targets))
-        self._deleteAction = self.addAction(
-            self.tr('Delete'), lambda: self.deleteActionTriggered.emit(self._targets))
-
-    def execute(self, pos, items):
-        self._targets = items
-
-        self._loadAction.setVisible(len(items) == 1)
-
-        self.exec(pos)
-
-
 class StatusWidget(QWidget):
     def __init__(self):
         super().__init__()
@@ -135,6 +107,34 @@ class CaseItem(QTreeWidgetItem):
         self._statusWidget.setStatus(status)
 
 
+class ContextMenu(QMenu):
+    loadActionTriggered = Signal(CaseItem)
+    scheduleActionTriggered = Signal(list)
+    cancelScheduleActionTriggered = Signal(list)
+    deleteActionTriggered = Signal(list)
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self._targets = None
+
+        self._loadAction = self.addAction(
+            self.tr('Load'), lambda: self.loadActionTriggered.emit(self._targets[0]))
+        self._scheduleAction = self.addAction(
+            self.tr('Schedule Calculation'), lambda: self.scheduleActionTriggered.emit(self._targets))
+        self._cancelScheduleAction = self.addAction(
+            self.tr('Cancel Schedule'), lambda: self.cancelScheduleActionTriggered.emit(self._targets))
+        self._deleteAction = self.addAction(
+            self.tr('Delete'), lambda: self.deleteActionTriggered.emit(self._targets))
+
+    def execute(self, pos, items):
+        self._targets = items
+
+        self._loadAction.setVisible(len(items) == 1)
+
+        self.exec(pos)
+
+
 class BatchCaseList(QObject):
     def __init__(self, parent, tree: QTreeWidget):
         super().__init__()
@@ -156,6 +156,22 @@ class BatchCaseList(QObject):
 
         self._connectSignalsSlots()
 
+    def close(self):
+        self._disconnectSignalsSlots()
+
+    def _connectSignalsSlots(self):
+        self._list.customContextMenuRequested.connect(self._showContextMenu)
+        self._menu.loadActionTriggered.connect(self._loadCase)
+        self._menu.scheduleActionTriggered.connect(self._scheduleCalculation)
+        self._menu.cancelScheduleActionTriggered.connect(self._cancelSchedule)
+        self._menu.deleteActionTriggered.connect(self._delete)
+
+        CaseManager().batchCleared.connect(self._clearStatuses)
+
+    def _disconnectSignalsSlots(self):
+        print('Disconnecting signals in BatchCaseList')
+        CaseManager().batchCleared.disconnect(self._clearStatuses)
+
     def parameters(self):
         return self._parameters
 
@@ -170,7 +186,7 @@ class BatchCaseList(QObject):
         if df is None:
             return
 
-        statuses = self._project.getBatchStatuses() if loading else {}
+        statuses = self._project.loadBatchStatuses() if loading else {}
 
         if self._parameters is None or self._parameters.empty:
             self._parameters = df.columns
@@ -223,14 +239,6 @@ class BatchCaseList(QObject):
         if name:
             self._items[name].setStatus(status)
 
-    def _connectSignalsSlots(self):
-        self._list.customContextMenuRequested.connect(self._showContextMenu)
-        self._menu.loadActionTriggered.connect(self._loadCase)
-        self._menu.scheduleActionTriggered.connect(self._scheduleCalculation)
-        self._menu.cancelScheduleActionTriggered.connect(self._cancelSchedule)
-        self._menu.deleteActionTriggered.connect(self._delete)
-        CaseManager().batchCleared.connect(self._clearStatuses)
-
     def _adjustSize(self):
         if self._cases:
             rowHeight = self._list.rowHeight(self._list.model().index(0, 0, self._list.rootIndex()))
@@ -269,16 +277,14 @@ class BatchCaseList(QObject):
         self._menu.execute(self._list.mapToGlobal(pos), items)
 
     @qasync.asyncSlot()
-    async def _loadCase(self, items):
+    async def _loadCase(self, item):
         progressDialog = ProgressDialog(self._parent, self.tr('Case Loading'))
         CaseManager().progress.connect(progressDialog.setLabelText)
         progressDialog.open()
 
-        name = items[0].name()
-        status = items[0].status()
-        # CaseManager().loadBatchCase(name, self._cases[name], status if status else SolverStatus.NONE)
-        CaseManager().loadBatchCase(BatchCase(name, self._cases[name]))
+        CaseManager().loadBatchCase(BatchCase(item.name(), self._cases[item.name()]))
 
+        CaseManager().progress.disconnect(progressDialog.setLabelText)
         progressDialog.close()
 
     def _scheduleCalculation(self, items):

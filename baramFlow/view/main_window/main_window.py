@@ -198,6 +198,8 @@ class MainWindow(QMainWindow):
             event.ignore()
             return
 
+        self._disconnectSignalsSlots()
+
         self._caseManager.clear()
         Project.close()
 
@@ -264,12 +266,18 @@ class MainWindow(QMainWindow):
 
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
 
+        self._closeTriggered.connect(self._closeProject)
+
         self._project.projectOpened.connect(self._projectOpened)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
 
         self._caseManager.caseLoaded.connect(self._caseLoaded)
 
-        self._closeTriggered.connect(self._closeProject)
+    def _disconnectSignalsSlots(self):
+        self._project.projectOpened.disconnect(self._projectOpened)
+        self._project.solverStatusChanged.disconnect(self._solverStatusChanged)
+
+        self._caseManager.caseLoaded.disconnect(self._caseLoaded)
 
     @qasync.asyncSlot()
     async def _save(self):

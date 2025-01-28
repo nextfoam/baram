@@ -52,8 +52,9 @@ class MaterialDialog(ResizableDialog):
 
         self._ui.viscosityGroup.setVisible(
             self._phase != Phase.SOLID and TurbulenceModelsDB.getModel() != TurbulenceModel.INVISCID)
-        self._ui.thermalConductivity.setVisible(
-            self._phase != Phase.SOLID and TurbulenceModelsDB.getModel() != TurbulenceModel.INVISCID)
+
+        if self._phase != Phase.SOLID and TurbulenceModelsDB.getModel() == TurbulenceModel.INVISCID:
+            self._ui.thermalConductivity.hide()
 
         self._connectSignalsSlots()
         self._load()
@@ -300,7 +301,8 @@ class MaterialDialog(ResizableDialog):
                     self._ui.densityType, [
                         DensitySpecification.CONSTANT,
                         DensitySpecification.PERFECT_GAS,
-                        DensitySpecification.POLYNOMIAL
+                        DensitySpecification.POLYNOMIAL,
+                        DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS,
                     ]
                 )
             else:

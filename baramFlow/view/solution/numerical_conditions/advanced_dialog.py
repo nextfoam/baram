@@ -25,6 +25,21 @@ class AdvancedDialog(QDialog):
 
         self._xpath = NumericalDB.NUMERICAL_CONDITIONS_XPATH + self.RELATIVE_XPATH
 
+        isDensityBased = GeneralDB.isDensityBased()
+        isEnergeOn = ModelsDB.isEnergyModelOn()
+
+        if not isEnergeOn:
+            self._ui.equationEnergy.setEnabled(False)
+            self._ui.includeViscousDissipationTerms.setEnabled(False)
+            self._ui.includeKineticEnergyTerms.setEnabled(False)
+            self._ui.includePressureWorkTerms.setEnabled(False)
+
+        self._ui.equationUDS.setEnabled(UserDefinedScalarsDB.hasDefined())
+
+        self._ui.collateralAge.setEnabled(not GeneralDB.isTimeTransient() and not isDensityBased)
+        self._ui.collateralHeatTransferCoefficient.setEnabled(isEnergeOn)
+        self._ui.collateralMachNumber.setEnabled(isEnergeOn and not isDensityBased)
+
         self._connectSignalsSlots()
         self._load()
 
@@ -57,6 +72,21 @@ class AdvancedDialog(QDialog):
         if UserDefinedScalarsDB.hasDefined():
             writer.append(self._xpath + '/equations/UDS', boolToDBText(self._ui.equationUDS.isChecked()), None)
 
+        writer.append(self._xpath + '/collateralFields/age', boolToDBText(self._ui.collateralAge.isChecked()), None)
+        writer.append(self._xpath + '/collateralFields/heatTransferCoefficient',
+                      boolToDBText(self._ui.collateralHeatTransferCoefficient.isChecked()), None)
+        writer.append(self._xpath + '/collateralFields/machNumber', boolToDBText(self._ui.collateralMachNumber.isChecked()), None)
+        writer.append(self._xpath + '/collateralFields/q', boolToDBText(self._ui.collateralQ.isChecked()), None)
+        writer.append(self._xpath + '/collateralFields/totalPressure',
+                      boolToDBText(self._ui.collateralTotalPressure.isChecked()), None)
+        writer.append(self._xpath + '/collateralFields/vorticity',
+                      boolToDBText(self._ui.collateralVorticity.isChecked()), None)
+        writer.append(self._xpath + '/collateralFields/wallHeatFlux',
+                      boolToDBText(self._ui.collateralWallHeatFlux.isChecked()), None)
+        writer.append(self._xpath + '/collateralFields/wallShearStress',
+                      boolToDBText(self._ui.collateralWallShearStress.isChecked()), None)
+        writer.append(self._xpath + '/collateralFields/wallYPlus',
+                      boolToDBText(self._ui.collateralWallYPlus.isChecked()), None)
         errorCount = writer.write()
         if errorCount > 0:
             await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
@@ -91,6 +121,17 @@ class AdvancedDialog(QDialog):
         else:
             self._ui.equationEnergy.setEnabled(False)
             self._ui.energyTerms.setEnabled(False)
+
+        self._ui.collateralAge.setChecked(db.getBool(self._xpath + '/collateralFields/age'))
+        self._ui.collateralHeatTransferCoefficient.setChecked(
+            db.getBool(self._xpath + '/collateralFields/heatTransferCoefficient'))
+        self._ui.collateralMachNumber.setChecked(db.getBool(self._xpath + '/collateralFields/machNumber'))
+        self._ui.collateralQ.setChecked(db.getBool(self._xpath + '/collateralFields/q'))
+        self._ui.collateralTotalPressure.setChecked(db.getBool(self._xpath + '/collateralFields/totalPressure'))
+        self._ui.collateralVorticity.setChecked(db.getBool(self._xpath + '/collateralFields/vorticity'))
+        self._ui.collateralWallHeatFlux.setChecked(db.getBool(self._xpath + '/collateralFields/wallHeatFlux'))
+        self._ui.collateralWallShearStress.setChecked(db.getBool(self._xpath + '/collateralFields/wallShearStress'))
+        self._ui.collateralWallYPlus.setChecked(db.getBool(self._xpath + '/collateralFields/wallYPlus'))
 
     def _equationEnergyToggled(self, checked):
         self._ui.energyTerms.setEnabled(checked)

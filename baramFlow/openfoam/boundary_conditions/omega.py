@@ -37,7 +37,7 @@ class Omega(BoundaryCondition):
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletOmega(xpath)),
-                BoundaryType.ABL_INLET.value:           (lambda: self._constructInletOutlet(self._db.getValue(xpath + '/turbulence/k-omega/specificDissipationRate'))),
+                BoundaryType.ABL_INLET.value:           (lambda: self._constructAtmBoundaryLayerInletOmega()),
                 BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.OUTFLOW.value:             (lambda: self._constructZeroGradient()),
@@ -68,6 +68,17 @@ class Omega(BoundaryCondition):
         elif spec == KOmegaSpecification.INTENSITY_AND_VISCOSITY_RATIO.value:
             return self._constructViscosityRatioInletOutletTDR(
                 self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'))
+
+    def _constructAtmBoundaryLayerInletOmega(self):
+        return {
+            'type': 'atmBoundaryLayerInletOmega',
+            'flowDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection'),
+            'zDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/groundNormalDirection'),
+            'Uref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
+            'Zref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceHeight'),
+            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
+            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
+        }
 
     def _constructNEXTOmegaBlendedWallFunction(self):
         return {

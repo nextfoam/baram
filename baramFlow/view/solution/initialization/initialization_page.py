@@ -151,6 +151,9 @@ class InitializationPage(ContentPage):
                 progressDialog.finish(self.tr('Calculation cancelled'))
             except RuntimeError as r:
                 progressDialog.finish(str(r))
+            finally:
+                CaseManager().progress.disconnect(progressDialog.setLabelText)
+
 
     def _showSectionActor(self, section):
         view = app.renderingView

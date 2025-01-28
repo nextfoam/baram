@@ -192,7 +192,7 @@ class _Project(QObject):
         self.solverStatusChanged.emit(status, None, self._liveStatus)
         self._liveStatus = status
 
-    def getBatchStatuses(self):
+    def loadBatchStatuses(self) -> list[str]:
         status = self._settings.get(SettingKey.BATCH_STATUS)
         if status is None:
             status = {}
@@ -200,17 +200,24 @@ class _Project(QObject):
 
         return status
 
-    def setBatchStatus(self, name, status):
-        batches = self.getBatchStatuses()
+    def updateBatchStatuses(self, statuses: list[str]):
+        self._settings.set(SettingKey.BATCH_STATUS, statuses)
+
+    def getBatchStatus(self, name) -> SolverStatus:
+        statuses = self._settings.get(SettingKey.BATCH_STATUS)
+        if statuses is None:
+            return SolverStatus.NONE
+
+        return SolverStatus[statuses[name]] if name in statuses else SolverStatus.NONE
+
+    def setBatchStatus(self, name, status: SolverStatus):
+        batches = self.loadBatchStatuses()
         batches[name] = status.name
 
         self._settings.save()
 
-    def updateBatchStatuses(self, statuses):
-        self._settings.set(SettingKey.BATCH_STATUS, statuses)
-
     def removeBatchStatus(self, name):
-        batches = self.getBatchStatuses()
+        batches = self.loadBatchStatuses()
         if name in batches:
             del batches[name]
 
@@ -249,7 +256,7 @@ class _Project(QObject):
             # ToDo: For compatibility. Remove this code block at the appropriate time. (Added on 2025.01.07)
             # Move batch status from Project Settings to Local Settings.
             # Begin
-            if not self.getBatchStatuses():
+            if not self.loadBatchStatuses():
                 if statuses := self._projectSettings.popBatchStatuses():
                     self.updateBatchStatuses(statuses)
                 self._projectSettings.save()
