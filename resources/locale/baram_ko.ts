@@ -2219,12 +2219,12 @@
     </message>
     <message>
         <location filename="../../baramMesh/view/export/export_2D_plane_dialog.ui" line="29"/>
-        <source>Projet Name</source>
+        <source>Project Name</source>
         <translation>프로젝트 이름</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/export/export_2D_plane_dialog.ui" line="43"/>
-        <source>Projet Location</source>
+        <source>Project Location</source>
         <translation>프로젝트 위치</translation>
     </message>
     <message>
@@ -2332,12 +2332,12 @@
     </message>
     <message>
         <location filename="../../baramMesh/view/export/export_2D_wedge_dialog.ui" line="29"/>
-        <source>Projet Name</source>
+        <source>Project Name</source>
         <translation>프로젝트 이름</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/export/export_2D_wedge_dialog.ui" line="43"/>
-        <source>Projet Location</source>
+        <source>Project Location</source>
         <translation>프로젝트 위치</translation>
     </message>
     <message>
@@ -7444,13 +7444,13 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../baramFlow/view/widgets/new_project_dialog.ui" line="29"/>
         <location filename="../../widgets/new_project_dialog.ui" line="32"/>
-        <source>Projet Name</source>
+        <source>Project Name</source>
         <translation>프로젝트 이름</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/widgets/new_project_dialog.ui" line="43"/>
         <location filename="../../widgets/new_project_dialog.ui" line="46"/>
-        <source>Projet Location</source>
+        <source>Project Location</source>
         <translation>폴더 위치</translation>
     </message>
     <message>

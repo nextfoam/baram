@@ -5824,12 +5824,12 @@ Laskenta pysähtyy mahdollisimman pian</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/workspace_page.ui" line="37"/>
-        <source>Projet Name</source>
+        <source>Project Name</source>
         <translation>Hankkee nimi</translation>
     </message>
     <message>
         <location filename="../../view/case_wizard/workspace_page.ui" line="51"/>
-        <source>Projet Location</source>
+        <source>Project Location</source>
         <translation>Hankkeen sijainti</translation>
     </message>
     <message>
