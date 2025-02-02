@@ -4,58 +4,53 @@
 
 from PySide6.QtWidgets import QWidget
 
-from baramFlow.coredb import coredb
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
-from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
-from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
-from baramFlow.coredb.boundary_db import BoundaryDB
-from baramFlow.coredb.cell_zone_db import CellZoneDB
-from .contours_dialog import ContoursDialog
+from baramFlow.coredb.visual_report import VisualReport
+from baramFlow.coredb.visual_reports_db import VisualReportsDB
 
-from .graphics_widget_ui import Ui_GraphicsWidget
+from .contour_dialog import ContourDialog
+
+from .visual_report_widget_ui import Ui_VisualReportWidget
 
 
-class GraphicsWidget(QWidget):
-    def __init__(self, name):
+class VisualReportWidget(QWidget):
+    def __init__(self, report: VisualReport):
         super().__init__()
 
-        self._ui = Ui_GraphicsWidget()
+        self._ui = Ui_VisualReportWidget()
         self._ui.setupUi(self)
 
-        self._name = name
+        self._report = report
         self._dialog = None
 
-        # self.load()
+        self.load()
 
     @property
     def name(self):
-        return self._name
+        return self._report.name
+
+    @property
+    def report(self):
+        return self._report
 
     def load(self):
         raise NotImplementedError
 
 
-class ContoursWidget(GraphicsWidget):
-    def __init__(self, name):
-        super().__init__(name)
+class ContourWidget(VisualReportWidget):
+    def __init__(self, report: VisualReport):
+        super().__init__(report)
+
+        self._ui.type.setText('Contour')
 
     def load(self):
-        db = coredb.CoreDB()
-        xpath = MonitorDB.getForceMonitorXPath(self._name)
-
-        region = db.getValue(xpath + '/region')
-        boundaries = db.getValue(xpath + '/boundaries').split()
-
-        region = f' ({region})' if region else ''
-        self._ui.name.setText(f'{self._name}{region}')
-        self._ui.type.setText(
-            f'Force on {len(boundaries)} Boundaries including {BoundaryDB.getBoundaryName(boundaries[0])}')
+        self._ui.name.setText(self._report.name)
 
     def edit(self):
-        self._dialog = ContoursDialog(self, self._name)
-        self._dialog.accepted.connect(self.load)
+        self._dialog = ContourDialog(self, self._report, isNew=False)
+        self._dialog.accepted.connect(self._editAccepted)
         self._dialog.open()
 
-    def delete(self):
-        coredb.CoreDB().removeForceMonitor(self._name)
+    def _editAccepted(self):
+        VisualReportsDB().updateVisualReport(self._report)
+        self.load()
 

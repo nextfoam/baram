@@ -2,8 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass
+from enum import Enum
 from uuid import UUID
 
+
+class ScaffoldType(Enum):
+    BOUNDARY	    = 'boundary'
+    ISO_SURFACE	    = 'isoSurface'
 
 @dataclass
 class Scaffold:

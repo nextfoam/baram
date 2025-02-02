@@ -5,15 +5,10 @@ from uuid import uuid4
 import qasync
 
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QVBoxLayout, QMenu, QListWidgetItem, QMessageBox
-
-from PySide6QtAds import DockWidgetArea, CDockManager, CDockWidget
-
+from PySide6.QtWidgets import QMenu, QListWidgetItem, QMessageBox
 
 from baramFlow.coredb.iso_surface import IsoSurface
-from baramFlow.coredb.scaffolds_db import ScaffoldsDB, ISO_SURFACE_NAME_PREFIX
-from baramFlow.view.results.graphics.contours_dialog import ContoursDialog
-from baramFlow.view.results.graphics.graphics_widget import ContoursWidget
+from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.view.results.scaffolds.ios_surface_dialog import IsoSurfaceDialog
 from baramFlow.view.results.scaffolds.scaffold_widget import IsoSurfaceWidget, ScaffoldWidget
 from baramFlow.view.widgets.content_page import ContentPage
@@ -30,8 +25,6 @@ class ScaffoldsPage(ContentPage):
         self._ui = Ui_ScaffoldsPage()
         self._ui.setupUi(self)
 
-        self._scaffold = None
-
         self._menu = QMenu()
 
         self._addIsoSurfaceMenu: QAction = self._menu.addAction(self.tr('&Iso Surface'))
@@ -39,6 +32,7 @@ class ScaffoldsPage(ContentPage):
 
         self._ui.add.setMenu(self._menu)
 
+        self._scaffold = None
         self._dialog = None
 
         self._connectSignalsSlots()
@@ -57,14 +51,14 @@ class ScaffoldsPage(ContentPage):
     def _load(self):
         self._ui.list.clear()
 
-        for _, s in ScaffoldsDB().getScaffolds().items():
+        for s in ScaffoldsDB().getScaffolds().values():
             if isinstance(s, IsoSurface):
                 self._addItem(IsoSurfaceWidget(s))
 
     def _openAddIsoSurfaceDialog(self):
         uuid = uuid4()
         name = ScaffoldsDB().getNewIsoSurfaceName()
-        self._scaffold = IsoSurface(uuid, name)
+        self._scaffold = IsoSurface(uuid=uuid, name=name)
         self._dialog = IsoSurfaceDialog(self, self._scaffold)
         self._dialog.accepted.connect(self._addIsoSurface)
         self._dialog.open()
@@ -99,7 +93,7 @@ class ScaffoldsPage(ContentPage):
     @qasync.asyncSlot()
     async def _delete(self):
         widget: ScaffoldWidget = self._currentWidget()
-        confirm = await AsyncMessageBox().question(self, self.tr("Remove monitor item"),
+        confirm = await AsyncMessageBox().question(self, self.tr("Remove Scaffold item"),
                                                    self.tr('Remove "{}"?'.format(widget.name)))
         if confirm == QMessageBox.StandardButton.Yes:
             ScaffoldsDB().removeScaffold(widget.scaffold)

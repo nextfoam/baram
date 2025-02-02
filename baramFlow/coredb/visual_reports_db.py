@@ -1,31 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import Field, dataclass
-from enum import Enum, auto
-from os import name
 from threading import Lock
 from uuid import UUID, uuid4
 
-from PySide6.QtCore import QCoreApplication
-import qasync
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.general_db import GeneralDB
-from baramFlow.coredb.iso_surface import IsoSurface
+from baramFlow.coredb.contour import Contour
+
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import MaterialType, Phase
-from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.coredb.post_field import BasicField, CollateralField, PhaseField, SpecieField
-from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
+
 from baramFlow.coredb.visual_report import VisualReport
-from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.openfoam.solver import usePrgh
-from baramFlow.solver_status import SolverStatus
 
 
-ISO_SURFACE_NAME_PREFIX = 'iso-surface'
+
+CONTOUR_NAME_PREFIX = 'contour'
 
 
 _mutex = Lock()
@@ -60,8 +49,8 @@ class VisualReportsDB():
 
         contours = parent.find('contours', namespaces=nsmap)
         for e in contours.findall('contour', namespaces=nsmap):
-            s = IsoSurface.fromElement(e)
-            reports[s.uuid] = s
+            c = Contour.fromElement(e)
+            reports[c.uuid] = c
 
         return reports
 
@@ -72,13 +61,12 @@ class VisualReportsDB():
         if report.uuid in self._reports:
             raise AssertionError
 
-        if isinstance(report, IsoSurface):
-            tag = 'contours'
+        if isinstance(report, Contour):
+            parentTag = 'contours'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH)
-        parent = parent.find(tag, namespaces=nsmap)
+        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH+'/'+parentTag)
 
         e = report.toElement()
         parent.append(e)
@@ -89,13 +77,12 @@ class VisualReportsDB():
         if report.uuid not in self._reports:
             raise AssertionError
 
-        if isinstance(report, IsoSurface):
-            tag = 'contours'
+        if isinstance(report, Contour):
+            parentTag = 'contours'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH)
-        parent = parent.find(tag, namespaces=nsmap)
+        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH + '/' + parentTag)
 
         e = parent.find(f'./contour[uuid="{str(report.uuid)}"]', namespaces=nsmap)
         parent.remove(e)
@@ -106,13 +93,12 @@ class VisualReportsDB():
         if report.uuid not in self._reports:
             raise AssertionError
 
-        if isinstance(report, IsoSurface):
-            tag = 'contours'
+        if isinstance(report, Contour):
+            parentTag = 'contours'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH)
-        parent = parent.find(tag, namespaces=nsmap)
+        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH + '/' + parentTag)
 
         e = parent.find(f'./contour[uuid="{str(report.uuid)}"]', namespaces=nsmap)
         parent.remove(e)
@@ -128,7 +114,7 @@ class VisualReportsDB():
         return False
 
     def getNewContourName(self) -> str:
-        return self._getNewVisualReportName(ISO_SURFACE_NAME_PREFIX)
+        return self._getNewVisualReportName(CONTOUR_NAME_PREFIX)
 
     def _getNewVisualReportName(self, prefix: str) -> str:
         suffixes = [v.name[len(prefix):] for v in self._reports.values() if v.name.startswith(prefix)]

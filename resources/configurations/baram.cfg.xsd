@@ -720,6 +720,13 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:simpleType name="scaffoldType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="boundary"/>
+            <xs:enumeration value="isoSurface"/>
+        </xs:restriction>
+    </xs:simpleType>
+
     <xs:element name="cellZone">
         <xs:complexType>
             <xs:sequence>
@@ -2499,10 +2506,11 @@
                                                                 <xs:element name="scaffold" minOccurs="0" maxOccurs="unbounded">
                                                                     <xs:complexType>
                                                                         <xs:sequence>
-                                                                            <xs:element name="boundary" type="xs:nonNegativeInteger" default="0"/>  <!-- boundary condition bcid -->
-                                                                            <xs:element name="scaffoldUuid" type="uuidType"/>  <!-- Used when boundary==0 -->
+                                                                            <xs:element name="type" type="scaffoldType"/>
+                                                                            <xs:element name="boundary" type="xs:nonNegativeInteger" default="0"/>  <!-- boundary condition bcid for boundary type scaffold -->
+                                                                            <xs:element name="scaffoldUuid" type="uuidType"/>  <!-- For other type scaffolds -->
                                                                             <xs:element name="visibility" type="xs:boolean" default="false"/>
-                                                                            <xs:element name="opacity" type="nonNegative" default="100"/>
+                                                                            <xs:element name="opacity" type="xs:nonNegativeInteger" default="100"/>
                                                                             <xs:element name="solidColor" type="xs:boolean" default="false"/>
                                                                             <xs:element name="color" type="xs:string" default="#FFFFFF"/>  <!-- Can be #RRRGGGBBB in the future -->
                                                                             <xs:element name="edges" type="xs:boolean" default="false"/>

@@ -1,28 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import Field, dataclass
-from enum import Enum, auto
-from os import name
 from threading import Lock
 from uuid import UUID, uuid4
 
-from PySide6.QtCore import QCoreApplication
-import qasync
-
 from baramFlow.coredb import coredb
-from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import MaterialType, Phase
-from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.coredb.post_field import BasicField, CollateralField, PhaseField, SpecieField
+
 from baramFlow.coredb.scaffold import Scaffold
-from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
-from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.openfoam.solver import usePrgh
-from baramFlow.solver_status import SolverStatus
 
 
 ISO_SURFACE_NAME_PREFIX = 'iso-surface'
@@ -74,12 +60,11 @@ class ScaffoldsDB():
             raise AssertionError
 
         if isinstance(scaffold, IsoSurface):
-            tag = 'isoSurfaces'
+            parentTag = 'isoSurfaces'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH)
-        parent = parent.find(tag, namespaces=nsmap)
+        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH+'/'+parentTag)
 
         e = scaffold.toElement()
         parent.append(e)
@@ -91,12 +76,11 @@ class ScaffoldsDB():
             raise AssertionError
 
         if isinstance(scaffold, IsoSurface):
-            tag = 'isoSurfaces'
+            parentTag = 'isoSurfaces'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH)
-        parent = parent.find(tag, namespaces=nsmap)
+        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH + '/' + parentTag)
 
         e = parent.find(f'./surface[uuid="{str(scaffold.uuid)}"]', namespaces=nsmap)
         parent.remove(e)
@@ -108,12 +92,11 @@ class ScaffoldsDB():
             raise AssertionError
 
         if isinstance(scaffold, IsoSurface):
-            tag = 'isoSurfaces'
+            parentTag = 'isoSurfaces'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH)
-        parent = parent.find(tag, namespaces=nsmap)
+        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH + '/' + parentTag)
 
         e = parent.find(f'./surface[uuid="{str(scaffold.uuid)}"]', namespaces=nsmap)
         parent.remove(e)

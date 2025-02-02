@@ -4,14 +4,7 @@
 
 from PySide6.QtWidgets import QWidget
 
-from baramFlow.coredb import coredb
-from baramFlow.coredb.iso_surface import IsoSurface
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
 from baramFlow.coredb.scaffolds_db import Scaffold, ScaffoldsDB
-from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
-from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
-from baramFlow.coredb.boundary_db import BoundaryDB
-from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.view.results.scaffolds.ios_surface_dialog import IsoSurfaceDialog
 
 from .scaffold_widget_ui import Ui_ScaffoldWidget
@@ -25,7 +18,6 @@ class ScaffoldWidget(QWidget):
         self._ui.setupUi(self)
 
         self._scaffold = scaffold
-
         self._dialog = None
 
         self.load()

@@ -235,8 +235,13 @@
     </monitors>
 
     <scaffolds>
-    <isoSurfaces/>
+        <isoSurfaces/>
     </scaffolds>
+
+    <visualReports>
+        <contours/>
+        <vectors/>
+    </visualReports>
 
     <runCalculation>
         <runConditions>
