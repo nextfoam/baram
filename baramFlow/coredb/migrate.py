@@ -828,6 +828,49 @@ def _version_9(root: etree.Element):
 
     # root.set('version', '10')
 
+    for p in root.findall(f'.//boundaryCondition/wall/velocity', namespaces=_nsmap):
+        if p.find('wallMotion', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "wallMotion" to {p}')
+
+            e = p.find('type', namespaces=_nsmap)
+            type_ = e.text
+
+            wallMotion = 'stationaryWall'
+            atmospheric = 'false'
+            movingMotion = 'translationalMotion'
+            shearCondition = 'noSlip'
+            if type_ == 'slip':
+                shearCondition = 'slip'
+            elif type_ == 'atmosphericWall':
+                atmospheric = 'true'
+            elif type_ != 'noSlip':
+                wallMotion = 'movingWall'
+
+                if type_ == 'movingWall':
+                    movingMotion = 'meshMotion'
+                elif type_ == 'translationalMovingWall':
+                    movingMotion = 'translationalMotion'
+                elif type_ == 'rotationalMovingWall':
+                    movingMotion = 'rotationalMotion'
+
+            p.remove(e)
+
+            e = etree.fromstring('<wallMotion xmlns="http://www.baramcfd.org/baram">'
+                                 f' <type>{wallMotion}</type>'
+                                 f' <stationaryWall><atmosphericWall>{atmospheric}</atmosphericWall></stationaryWall>'
+                                 f' <movingWall><motion>{movingMotion}</motion></movingWall>'
+                                 '</wallMotion>')
+            p.insert(0, e)
+
+            e = etree.fromstring(
+                f'<shearCondition xmlns="http://www.baramcfd.org/baram">{shearCondition}</shearCondition>')
+            p.insert(1, e)
+
+            e = etree.fromstring('<wallRoughness xmlns="http://www.baramcfd.org/baram">'
+                                 '  <height>0</height><constant>0.5</constant>'
+                                 '</wallRoughness>')
+            p.insert(2, e)
+
     for p in root.findall(f'.//boundaryCondition/wall/temperature', namespaces=_nsmap):
         if p.find('externalEmissivity', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "externalEmissivity" to {p}')

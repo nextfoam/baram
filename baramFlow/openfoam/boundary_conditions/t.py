@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallVelocityCondition, WallTemperature
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallTemperature
 from baramFlow.coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution, InterfaceMode
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
@@ -121,8 +121,7 @@ class T(BoundaryCondition):
             return self._constructCyclicAMI()
 
     def _constructWallT(self, xpath, constant):
-        spec = self._db.getValue(xpath + '/wall/velocity/type')
-        if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
+        if self._isAtmosphericWall(xpath):
             return self._constructFixedValue(constant)
         else:
             spec = self._db.getValue(xpath + '/wall/temperature/type')

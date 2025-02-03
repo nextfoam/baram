@@ -2,19 +2,23 @@
 # -*- coding: utf-8 -*-
 
 import qasync
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit
 
+from baramFlow.coredb.coredb_writer import boolToDBText
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
-from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.boundary_db import BoundaryDB, WallVelocityCondition, WallTemperature
-from baramFlow.coredb.boundary_db import ContactAngleModel, ContactAngleLimit
-from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.boundary_db import BoundaryDB, WallTemperature, ContactAngleModel, ContactAngleLimit
+from baramFlow.coredb.boundary_db import WallMotion, ShearCondition, MovingWallMotion
 from baramFlow.coredb.general_db import GeneralDB
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.region_db import RegionDB
+from baramFlow.view.widgets.enum_button_group import EnumButtonGroup
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
+from widgets.validation.validation import FormValidator, FloatValidator
 from .wall_dialog_ui import Ui_WallDialog
 from .wall_layers_widget import WallLayersWidget
 
@@ -71,6 +75,9 @@ class WallDialog(ResizableDialog):
 
         self._phases = 1
 
+        self._wallMotionRadios = EnumButtonGroup()
+        self._shearConditionRadios = EnumButtonGroup()
+
         self._constantContactAngles = None
         self._dynamicContactAngles = None
 
@@ -78,41 +85,77 @@ class WallDialog(ResizableDialog):
 
         self._xpath = BoundaryDB.getXPath(bcid)
 
-        self._connectSignalsSlots()
+        self._wallMotionRadios.addEnumButton(self._ui.stationaryWall,   WallMotion.STATIONARY_WALL)
+        self._wallMotionRadios.addEnumButton(self._ui.movingWall,       WallMotion.MOVING_WALL)
 
-        self._setupVelocityConditionCombo()
+        self._ui.atmosphericWall.setEnabled(not GeneralDB.isCompressible() and not ModelsDB.isMultiphaseModelOn())
+
+        self._ui.movingWallMotion.addItem(self.tr('Translational Motion'), MovingWallMotion.TRANSLATIONAL_MOTION)
+        self._ui.movingWallMotion.addItem(self.tr('Rotational Motion'), MovingWallMotion.ROTATIONAL_MOTION)
+        self._ui.movingWallMotion.addItem(self.tr('Mesh Motion'), MovingWallMotion.MESH_MOTION)
+
+        self._shearConditionRadios.addEnumButton(self._ui.noSlip,   ShearCondition.NO_SLIP)
+        self._shearConditionRadios.addEnumButton(self._ui.slip,     ShearCondition.SLIP)
+
+        self._connectSignalsSlots()
 
         self._load()
     
     @qasync.asyncSlot()
     async def accept(self):
         try:
-            with coredb.CoreDB() as db:
+            validator = FormValidator()
+            validator.addCustomValidation(
+                FloatValidator(self._ui.roughnessConstant, self.tr('Wall Roughness Constant')).setRange(0.5, 1))
+
+            valid, msg = validator.validate()
+            if not valid:
+                await AsyncMessageBox().information(self, self.tr('Input Error'), msg)
+                return
+
+            with (coredb.CoreDB() as db):
                 xpath = self._xpath + self.RELATIVE_XPATH
 
-                velocityCondition = WallVelocityCondition(self._ui.velocityCondition.currentData())
-                db.setValue(xpath + '/velocity/type', velocityCondition.value, None)
-                if velocityCondition == WallVelocityCondition.TRANSLATIONAL_MOVING_WALL:
-                    db.setValue(xpath + '/velocity/translationalMovingWall/velocity/x', self._ui.xVelocity.text(),
-                                self.tr('X-Velocity'))
-                    db.setValue(xpath + '/velocity/translationalMovingWall/velocity/y', self._ui.yVelocity.text(),
-                                self.tr('Y-Velocity'))
-                    db.setValue(xpath + '/velocity/translationalMovingWall/velocity/z', self._ui.zVelocity.text(),
-                                self.tr('Z-Velocity'))
-                elif velocityCondition == WallVelocityCondition.ROTATIONAL_MOVING_WALL:
-                    db.setValue(xpath + '/velocity/rotationalMovingWall/speed', self._ui.speed.text(), self.tr('Speed'))
-                    db.setValue(xpath + '/velocity/rotationalMovingWall/rotationAxisOrigin/x',
-                                self._ui.rotationAxisX.text(), self.tr('Rotation-Axis Origin X'))
-                    db.setValue(xpath + '/velocity/rotationalMovingWall/rotationAxisOrigin/y',
-                                self._ui.rotationAxisY.text(), self.tr('Rotation-Axis Origin Y'))
-                    db.setValue(xpath + '/velocity/rotationalMovingWall/rotationAxisOrigin/z',
-                                self._ui.rotationAxisZ.text(), self.tr('Rotation-Axis Origin Z'))
-                    db.setValue(xpath + '/velocity/rotationalMovingWall/rotationAxisDirection/x',
-                                self._ui.rotationDirectionX.text(), self.tr('Rotation-Axis Direction X'))
-                    db.setValue(xpath + '/velocity/rotationalMovingWall/rotationAxisDirection/y',
-                                self._ui.rotationDirectionY.text(), self.tr('Rotation-Axis Direction Y'))
-                    db.setValue(xpath + '/velocity/rotationalMovingWall/rotationAxisDirection/z',
-                                self._ui.rotationDirectionZ.text(), self.tr('Rotation-Axis Direction Z'))
+                wallMotion = self._wallMotionRadios.checkedData()
+                db.setValue(xpath + '/velocity/wallMotion/type', wallMotion.value)
+                if wallMotion == WallMotion.STATIONARY_WALL:
+                    db.setValue(xpath + '/velocity/wallMotion/stationaryWall/atmosphericWall',
+                                boolToDBText(self._ui.atmosphericWall.isChecked()))
+                else:
+                    movingMotion = self._ui.movingWallMotion.currentData()
+                    db.setValue(xpath + '/velocity/wallMotion/movingWall/motion', movingMotion.value)
+
+                    if movingMotion == MovingWallMotion.TRANSLATIONAL_MOTION:
+                        db.setValue(xpath + '/velocity/translationalMovingWall/velocity/x', self._ui.xVelocity.text(),
+                                    self.tr('X-Velocity'))
+                        db.setValue(xpath + '/velocity/translationalMovingWall/velocity/y', self._ui.yVelocity.text(),
+                                    self.tr('Y-Velocity'))
+                        db.setValue(xpath + '/velocity/translationalMovingWall/velocity/z', self._ui.zVelocity.text(),
+                                    self.tr('Z-Velocity'))
+                    elif movingMotion == MovingWallMotion.ROTATIONAL_MOTION:
+                        db.setValue(xpath + '/velocity/rotationalMovingWall/speed',
+                                    self._ui.speed.text(), self.tr('Speed'))
+                        db.setValue(xpath + '/velocity/rotationalMovingWall/rotationAxisOrigin/x',
+                                    self._ui.rotationAxisX.text(), self.tr('Rotation-Axis Origin X'))
+                        db.setValue(xpath + '/velocity/rotationalMovingWall/rotationAxisOrigin/y',
+                                    self._ui.rotationAxisY.text(), self.tr('Rotation-Axis Origin Y'))
+                        db.setValue(xpath + '/velocity/rotationalMovingWall/rotationAxisOrigin/z',
+                                    self._ui.rotationAxisZ.text(), self.tr('Rotation-Axis Origin Z'))
+                        db.setValue(xpath + '/velocity/rotationalMovingWall/rotationAxisDirection/x',
+                                    self._ui.rotationDirectionX.text(), self.tr('Rotation-Axis Direction X'))
+                        db.setValue(xpath + '/velocity/rotationalMovingWall/rotationAxisDirection/y',
+                                    self._ui.rotationDirectionY.text(), self.tr('Rotation-Axis Direction Y'))
+                        db.setValue(xpath + '/velocity/rotationalMovingWall/rotationAxisDirection/z',
+                                    self._ui.rotationDirectionZ.text(), self.tr('Rotation-Axis Direction Z'))
+
+                db.setValue(xpath + '/velocity/shearCondition', self._shearConditionRadios.checkedData().value)
+
+                if (not (self._ui.stationaryWall.isChecked() and self._ui.atmosphericWall.isChecked())
+                    and self._ui.noSlip.isChecked()):
+                    db.setValue(xpath + '/velocity/wallRoughness/height', self._ui.roughnessHeight.text(),
+                                self.tr('Wall Roughness Height'))
+                    db.setValue(xpath + '/velocity/wallRoughness/constant', self._ui.roughnessConstant.text(),
+                                self.tr('Wall Roughness Constant'))
 
                 if ModelsDB.isEnergyModelOn():
                     temparatureType = WallTemperature(self._ui.temperatureType.currentData())
@@ -166,7 +209,10 @@ class WallDialog(ResizableDialog):
             await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
 
     def _connectSignalsSlots(self):
-        self._ui.velocityCondition.currentIndexChanged.connect(self._velocityConditionChanged)
+        self._wallMotionRadios.dataChecked.connect(self._wallMotionChanged)
+        self._ui.atmosphericWall.stateChanged.connect(self._atomospericWallToggled)
+        self._ui.movingWallMotion.currentIndexChanged.connect(self._updateMovingWallParameters)
+        self._shearConditionRadios.dataChecked.connect(self._updateRoughnessEnabled)
         self._ui.temperatureType.currentIndexChanged.connect(self._temperatureTypeChanged)
         self._ui.contactAngleModel.currentIndexChanged.connect(self._contactAngleTypeChanged)
 
@@ -174,8 +220,15 @@ class WallDialog(ResizableDialog):
         db = coredb.CoreDB()
         xpath = self._xpath + self.RELATIVE_XPATH
 
-        self._ui.velocityCondition.setCurrentIndex(
-            self._ui.velocityCondition.findData(WallVelocityCondition(db.getValue(xpath + '/velocity/type'))))
+        self._wallMotionRadios.setCheckedData(WallMotion(db.getValue(xpath + '/velocity/wallMotion/type')))
+        self._ui.atmosphericWall.setChecked(db.getBool(xpath + '/velocity/wallMotion/stationaryWall/atmosphericWall'))
+        self._ui.movingWallMotion.setCurrentIndex(
+            self._ui.movingWallMotion.findData(
+                MovingWallMotion(db.getValue(xpath + '/velocity/wallMotion/movingWall/motion'))))
+        self._shearConditionRadios.setCheckedData(ShearCondition(db.getValue(xpath + '/velocity/shearCondition')))
+        self._ui.roughnessHeight.setText(db.getValue(xpath + '/velocity/wallRoughness/height'))
+        self._ui.roughnessConstant.setText(db.getValue(xpath + '/velocity/wallRoughness/constant'))
+
         self._ui.xVelocity.setText(db.getValue(xpath + '/velocity/translationalMovingWall/velocity/x'))
         self._ui.yVelocity.setText(db.getValue(xpath + '/velocity/translationalMovingWall/velocity/y'))
         self._ui.zVelocity.setText(db.getValue(xpath + '/velocity/translationalMovingWall/velocity/z'))
@@ -259,17 +312,6 @@ class WallDialog(ResizableDialog):
             for j in range(i + 1, count):
                 addAdhesionRows(secondaryMaterials[i], secondaryMaterials[j])
 
-    def _setupVelocityConditionCombo(self):
-        self._ui.velocityCondition.addItem(self.tr('No Slip'), WallVelocityCondition.NO_SLIP)
-        self._ui.velocityCondition.addItem(self.tr('Slip'), WallVelocityCondition.SLIP)
-        self._ui.velocityCondition.addItem(self.tr('Moving Wall'), WallVelocityCondition.MOVING_WALL)
-        if not GeneralDB.isCompressible() and not ModelsDB.isMultiphaseModelOn():
-            self._ui.velocityCondition.addItem(self.tr('Atmospheric Wall'), WallVelocityCondition.ATMOSPHERIC_WALL)
-        self._ui.velocityCondition.addItem(self.tr('Translational Moving Wall'),
-                                           WallVelocityCondition.TRANSLATIONAL_MOVING_WALL)
-        self._ui.velocityCondition.addItem(self.tr('Rotational Moving Wall'),
-                                           WallVelocityCondition.ROTATIONAL_MOVING_WALL)
-
     def _setupTemperatureCombo(self):
         self._ui.temperatureType.addItem(self.tr('Adiabatic'), WallTemperature.ADIABATIC)
         self._ui.temperatureType.addItem(self.tr('Constant Temperature'), WallTemperature.CONSTANT_TEMPERATURE)
@@ -287,12 +329,44 @@ class WallDialog(ResizableDialog):
         self._ui.contactAngleLimit.addItem(self.tr('Zero Gradient'), ContactAngleLimit.ZERO_GRADIENT)
         self._ui.contactAngleLimit.addItem(self.tr('Alpha'), ContactAngleLimit.ALPHA)
 
-    def _velocityConditionChanged(self):
-        velocityCondition = WallVelocityCondition(self._ui.velocityCondition.currentData())
+    def _wallMotionChanged(self, motion):
+        if motion == WallMotion.STATIONARY_WALL:
+            self._ui.atmosphericWall.setEnabled(True)
+            self._ui.movingWallMotion.setEnabled(False)
+        elif motion == WallMotion.MOVING_WALL:
+            self._ui.noSlip.setChecked(True)
+            self._ui.atmosphericWall.setEnabled(False)
+            self._ui.movingWallMotion.setEnabled(True)
 
-        self._ui.translationalMovingWall.setVisible(
-            velocityCondition == WallVelocityCondition.TRANSLATIONAL_MOVING_WALL)
-        self._ui.rotationalMovingWall.setVisible(velocityCondition == WallVelocityCondition.ROTATIONAL_MOVING_WALL)
+        self._updateShearConditionEnabled()
+        self._updateRoughnessEnabled()
+
+        self._updateMovingWallParameters()
+
+    def _atomospericWallToggled(self, state):
+        if state:
+            self._ui.noSlip.setChecked(True)
+
+        self._updateShearConditionEnabled()
+        self._updateRoughnessEnabled()
+
+    def _updateMovingWallParameters(self):
+        if self._wallMotionRadios.checkedData() == WallMotion.MOVING_WALL:
+            movingMotion = MovingWallMotion(self._ui.movingWallMotion.currentData())
+            self._ui.translationalMovingWall.setVisible(movingMotion == MovingWallMotion.TRANSLATIONAL_MOTION)
+            self._ui.rotationalMovingWall.setVisible(movingMotion == MovingWallMotion.ROTATIONAL_MOTION)
+        else:
+            self._ui.translationalMovingWall.setVisible(False)
+            self._ui.rotationalMovingWall.setVisible(False)
+
+    def _updateShearConditionEnabled(self):
+        self._ui.shearCondition.setEnabled(
+            self._ui.stationaryWall.isChecked() and not self._ui.atmosphericWall.isChecked())
+
+    def _updateRoughnessEnabled(self):
+        self._ui.wallRoughness.setEnabled(
+            not (self._ui.stationaryWall.isChecked() and self._ui.atmosphericWall.isChecked())
+            and self._ui.noSlip.isChecked())
 
     def _temperatureTypeChanged(self):
         temparatureType = WallTemperature(self._ui.temperatureType.currentData())
