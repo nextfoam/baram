@@ -3,7 +3,7 @@
 
 from baramFlow.app import app
 from baramFlow.coredb import coredb
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, DirectionSpecificationMethod
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallMotion, DirectionSpecificationMethod
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
@@ -134,6 +134,14 @@ def getRegionNumbers() -> dict:
     return regionNum
 
 
+def isAtmosphericWall(bcid):
+    db = coredb.CoreDB()
+    xpath = BoundaryDB.getXPath(bcid)
+
+    return (db.getValue(xpath + '/wall/velocity/wallMotion/type') == WallMotion.STATIONARY_WALL.value
+            and db.getBool(xpath + '/wall/velocity/wallMotion/stationaryWall/atmosphericWall'))
+
+
 class ControlDict(DictionaryFile):
     def __init__(self):
         super().__init__(FileSystem.caseRoot(), self.systemLocation(), 'controlDict')
@@ -198,9 +206,8 @@ class ControlDict(DictionaryFile):
             self._data['maxAlphaCo'] = self._db.getValue(xpath + '/VoFMaxCourantNumber')
 
         if (BoundaryDB.getBoundaryConditionsByType(BoundaryType.ABL_INLET)
-                or any(
-                    [self._db.getValue(BoundaryDB.getXPath(bcid) + '/wall/velocity/type') == WallVelocityCondition.ATMOSPHERIC_WALL.value
-                     for bcid, _ in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL)])):
+                or any([isAtmosphericWall(bcid)
+                        for bcid, _ in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL)])):
             self._data['libs'] = [openfoamLibraryPath('libatmosphericModels')]
 
         # calling order is important for these three function objects

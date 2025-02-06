@@ -88,13 +88,8 @@ class CellZoneConditionDialog(QDialog):
             self._materialsWidget = MaterialsWidget(self._rname)
             layout.addWidget(self._materialsWidget)
 
-            if self._rname:
-                self._ui.zoneName.setText(self._rname)
-            else:
-                self._ui.zoneName.setText(DEFAULT_REGION_NAME)
+            self._ui.zoneName.setText(self._rname if self._rname else DEFAULT_REGION_NAME)
         else:
-            self._rname = CellZoneDB.getCellZoneRegion(self._czid)
-
             self._ui.zoneName.setText(self._name)
 
             self._MRFZone = MRFWidget(self._xpath)

@@ -73,13 +73,20 @@ class FlowRateInletSpecification(Enum):
     MASS_FLOW_RATE = 'massFlowRate'
 
 
-class WallVelocityCondition(Enum):
+class WallMotion(Enum):
+    STATIONARY_WALL = 'stationaryWall'
+    MOVING_WALL = 'movingWall'
+
+
+class MovingWallMotion(Enum):
+    TRANSLATIONAL_MOTION = 'translationalMotion'
+    ROTATIONAL_MOTION = 'rotationalMotion'
+    MESH_MOTION = 'meshMotion'
+
+
+class ShearCondition(Enum):
     NO_SLIP = 'noSlip'
     SLIP = 'slip'
-    MOVING_WALL = 'movingWall'
-    ATMOSPHERIC_WALL = 'atmosphericWall'
-    TRANSLATIONAL_MOVING_WALL = 'translationalMovingWall'
-    ROTATIONAL_MOVING_WALL = 'rotationalMovingWall'
 
 
 class WallTemperature(Enum):
@@ -273,6 +280,7 @@ class BoundaryDB:
             for e
             in coredb.CoreDB().getElements(
                 f'{regionXPath}/boundaryConditions/boundaryCondition[physicalType="{physicalType.value}"]')]
+
 
 def getBoundaryElements(rname):
     return coredb.CoreDB().getElements(f'{RegionDB.getXPath(rname)}/boundaryConditions/boundaryCondition')

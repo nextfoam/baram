@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
-from baramFlow.coredb.boundary_db import KEpsilonSpecification, WallVelocityCondition, InterfaceMode
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, KEpsilonSpecification, InterfaceMode
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, KEpsilonModel, NearWallTreatment, TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -108,8 +107,7 @@ class Epsilon(BoundaryCondition):
         }
 
     def _constructWallEpsilon(self, xpath):
-        spec = self._db.getValue(xpath + '/wall/velocity/type')
-        if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
+        if self._isAtmosphericWall(xpath):
             return self._constructAtmEpsilonWallFunction()
         else:
             return self._constructNEXTEpsilonWallFunction()

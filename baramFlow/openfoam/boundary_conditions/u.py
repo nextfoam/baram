@@ -5,7 +5,8 @@ from math import sqrt
 
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
-from baramFlow.coredb.boundary_db import FlowRateInletSpecification, WallVelocityCondition, InterfaceMode
+from baramFlow.coredb.boundary_db import FlowRateInletSpecification, InterfaceMode
+from baramFlow.coredb.boundary_db import WallMotion, ShearCondition, MovingWallMotion
 from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from libbaram.openfoam.dictionary.dictionary_file import DataClass
@@ -192,20 +193,23 @@ class U(BoundaryCondition):
         return self._constructFarfieldRiemann(xpath + '/farFieldRiemann', [am * dx, am * dy, am * dz])
 
     def _constructWallU(self, xpath):
-        spec = self._db.getValue(xpath + '/wall/velocity/type')
-        if spec == WallVelocityCondition.NO_SLIP.value:
-            return self._constructNoSlip()
-        elif spec == WallVelocityCondition.SLIP.value:
-            return self._construcSlip()
-        elif spec == WallVelocityCondition.MOVING_WALL.value:
-            return self._constructMovingWallVelocity()
-        elif spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
-            return self._constructNoSlip()
-        elif spec == WallVelocityCondition.TRANSLATIONAL_MOVING_WALL.value:
-            return self._constructFixedValue(
-                self._db.getVector(xpath + '/wall/velocity/translationalMovingWall/velocity'))
-        elif spec == WallVelocityCondition.ROTATIONAL_MOVING_WALL.value:
-            return self._constructRotatingWallVelocity(xpath + '/wall/velocity/rotationalMovingWall')
+        wallMotion = WallMotion(self._db.getValue(xpath + '/wall/velocity/wallMotion/type'))
+        if wallMotion == WallMotion.STATIONARY_WALL:
+            if self._db.getBool(xpath + '/wall/velocity/wallMotion/stationaryWall/atmosphericWall'):
+                return self._constructNoSlip()
+            elif self._db.getValue(xpath + '/wall/velocity/shearCondition') == ShearCondition.NO_SLIP.value:
+                return self._constructNoSlip()
+            else:
+                return self._construcSlip()
+        else:
+            movingMotion = MovingWallMotion(self._db.getValue(xpath + '/wall/velocity/wallMotion/movingWall/motion'))
+            if movingMotion == MovingWallMotion.TRANSLATIONAL_MOTION:
+                return self._constructFixedValue(
+                    self._db.getVector(xpath + '/wall/velocity/translationalMovingWall/velocity'))
+            elif movingMotion == MovingWallMotion.ROTATIONAL_MOTION:
+                return self._constructRotatingWallVelocity(xpath + '/wall/velocity/rotationalMovingWall')
+            elif movingMotion == MovingWallMotion.MESH_MOTION:
+                return self._constructMovingWallVelocity()
 
     def _constructInterfaceU(self, xpath):
         spec = self._db.getValue(xpath + '/interface/mode')

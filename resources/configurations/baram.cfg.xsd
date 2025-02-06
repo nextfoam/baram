@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="9">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="10">
 
     <!-- type definitions -->
     <xs:simpleType name="positive">
@@ -1397,17 +1397,57 @@
             <xs:element name="velocity">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="type" default="noSlip">
+                        <xs:element name="wallMotion">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="type" default="stationaryWall">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="stationaryWall"/>
+                                                <xs:enumeration value="movingWall"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:element>
+                                    <xs:element name="stationaryWall">
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="atmosphericWall" type="xs:boolean" default="false"/>
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                    <xs:element name="movingWall">
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="motion" default="translationalMotion">
+                                                    <xs:simpleType>
+                                                        <xs:restriction base="xs:string">
+                                                            <xs:enumeration value="translationalMotion"/>
+                                                            <xs:enumeration value="rotationalMotion"/>
+                                                            <xs:enumeration value="meshMotion"/>
+                                                        </xs:restriction>
+                                                    </xs:simpleType>
+                                                </xs:element>
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="shearCondition" default="noSlip">
                             <xs:simpleType>
                                 <xs:restriction base="xs:string">
                                     <xs:enumeration value="noSlip"/>
                                     <xs:enumeration value="slip"/>
-                                    <xs:enumeration value="movingWall"/>
-                                    <xs:enumeration value="atmosphericWall"/>
-                                    <xs:enumeration value="translationalMovingWall"/>
-                                    <xs:enumeration value="rotationalMovingWall"/>
                                 </xs:restriction>
                             </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="wallRoughness">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="height" type="inputNumberType"/>
+                                    <xs:element name="constant" type="inputNumberType"/>
+                                </xs:sequence>
+                            </xs:complexType>
                         </xs:element>
                         <xs:element name="translationalMovingWall">
                             <xs:complexType>
@@ -1445,6 +1485,7 @@
                         <xs:element name="heatFlux" type="inputNumberType" default="1000"/>
                         <xs:element name="heatTransferCoefficient" type="inputNumberType" default="100"/>
                         <xs:element name="freeStreamTemperature" type="inputNumberType" default="300"/>
+                        <xs:element name="externalEmissivity" type="inputRatioType" default="0"/>
                         <xs:element name="wallLayers">
                             <xs:complexType>
                                 <xs:sequence>
