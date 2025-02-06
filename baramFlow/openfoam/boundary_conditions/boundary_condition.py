@@ -9,6 +9,7 @@ from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataClass
 
+from baramFlow.coredb.boundary_db import WallMotion
 from baramFlow.coredb.coredb_reader import CoreDBReader, Region
 from baramFlow.coredb.material_db import UNIVERSAL_GAS_CONSTANT, MaterialDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel
@@ -299,3 +300,7 @@ class BoundaryCondition(DictionaryFile):
         mw = self._db.getMolecularWeight(materials)
 
         return cp / (cp - UNIVERSAL_GAS_CONSTANT / mw)
+
+    def _isAtmosphericWall(self, xpath):
+        return (self._db.getValue(xpath + '/wall/velocity/wallMotion/type') == WallMotion.STATIONARY_WALL.value
+                and self._db.getBool(xpath + '/wall/velocity/wallMotion/stationaryWall/atmosphericWall'))

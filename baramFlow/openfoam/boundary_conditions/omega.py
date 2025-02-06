@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, KOmegaSpecification, WallVelocityCondition, InterfaceMode
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, KOmegaSpecification, InterfaceMode
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -111,8 +111,7 @@ class Omega(BoundaryCondition):
                 self._db.getValue(xpath + '/turbulence/k-omega/turbulentViscosityRatio'))
 
     def _constructWallOmega(self, xpath):
-        spec = self._db.getValue(xpath + '/wall/velocity/type')
-        if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
+        if self._isAtmosphericWall(xpath):
             return self._constructAtmOmegaWallFunction()
         else:
             return self._constructNEXTOmegaBlendedWallFunction()

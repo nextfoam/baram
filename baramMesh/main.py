@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-import os
-import logging
 import asyncio
+import logging
+import os
+import sys
 
 import qasync
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 # To render SVG files.
 # noinspection PyUnresolvedReferences
@@ -18,10 +18,12 @@ from vtkmodules.vtkCommonCore import vtkSMPTools
 # noinspection PyUnresolvedReferences
 import resource_rc
 
+from libbaram.mpi import checkMPI, MPIStatus
+from libbaram.process import getAvailablePhysicalCores
+
 from baramMesh.app import app
 from baramMesh.settings.app_properties import AppProperties
 from baramMesh.view.main_window.main_window import MainWindow
-from libbaram.process import getAvailablePhysicalCores
 
 logger = logging.getLogger()
 formatter = logging.Formatter("[%(asctime)s][%(name)s] ==> %(message)s")
@@ -43,6 +45,17 @@ sys.excepthook = handle_exception
 
 
 def main():
+    application = QApplication(sys.argv)
+
+    if mpiStatus := checkMPI():
+        if mpiStatus == MPIStatus.NOT_FOUND:
+            message = QApplication.translate('main', 'MPI package NOT available in the system.')
+        elif mpiStatus == MPIStatus.LOW_VERSION:
+            message = QApplication.translate('main', 'MPI package version low. Recent version required.')
+
+        QMessageBox.information(None, QApplication.translate('main', 'Check MPI'), message)
+        return
+
     app.setupApplication(AppProperties({
         'name': 'BaramMesh',
         'fullName': QApplication.translate('Main', 'BaramMesh'),
@@ -60,7 +73,6 @@ def main():
     smp.Initialize(numCores)
     smp.SetBackend('STDThread')
 
-    application = QApplication(sys.argv)
     app.qApplication = application
 
     loop = qasync.QEventLoop(application)

@@ -149,7 +149,7 @@ class FileSystem:
         if len(times) == 0:
             return '0'
 
-        return max(times, key=lambda x: float(x))
+        return times[-1]
 
     @classmethod
     def times(cls, parent: Optional[Path] = None) -> list[str]:
@@ -166,7 +166,7 @@ class FileSystem:
             if re.fullmatch(r'^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$', f.name):
                 times.append(f.name)
 
-        return times
+        return sorted(times, key=lambda x: float(x))
 
     @classmethod
     def polyMeshPath(cls, rname=''):

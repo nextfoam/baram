@@ -49,9 +49,63 @@ class FloatValidator(Validator):
         self._edit = edit
         self._name = name
 
+        self._lowLimit = None
+        self._lowLimitInclusive = True
+        self._highLimit = None
+        self._highLimitInclusive = True
+
+    def setLowLimit(self, limit, inclusive=True):
+        self._lowLimit = limit
+        self._lowLimitInclusive = inclusive
+
+        return self
+
+    def setHighLimit(self, limit, inclusive=True):
+        self._highLimit = limit
+        self._highLimitInclusive = inclusive
+
+        return self
+
+    def setRange(self, low, high):
+        self._lowLimit = low
+        self._highLimit = high
+        self._lowLimitInclusive = True
+        self._highLimitInclusive = True
+
+        return self
+
     def validate(self):
+        def rangeToText():
+            if self._highLimit is None:
+                if self._lowLimitInclusive:
+                    return f' (value ≥ {self._lowLimit})'
+                else:
+                    return f' (value > {self._lowLimit})'
+
+            lowLimit = ' ('
+            if self._lowLimit is not None:
+                if self._lowLimitInclusive:
+                    lowLimit =  f' ({self._lowLimit} ≤ '
+                else:
+                    lowLimit =  f' ({self._lowLimit} < '
+
+            if self._highLimitInclusive:
+                return f'{lowLimit}value ≤ {self._highLimit})'
+            else:
+                return f'{lowLimit}value < {self._highLimit})'
+
         try:
-            return True, float(self._edit.text())
+            value = float(self._edit.text())
+
+            if self._lowLimit is not None:
+                if value < self._lowLimit or (value == self._lowLimit and not self._lowLimitInclusive):
+                    return False, self.tr('Out of Range: ') + rangeToText()
+
+            if self._highLimit is not None:
+                if value > self._highLimit or (value == self._highLimit and not self._highLimitInclusive):
+                    return False, self.tr('Out of Range: ') + rangeToText()
+
+            return True, value
         except ValueError:
             return False, self.tr('{} must be a number'.format(self._name))
 
