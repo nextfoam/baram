@@ -9,8 +9,10 @@ from PySide6.QtWidgets import QMenu, QListWidgetItem, QMessageBox
 
 from baramFlow.coredb.contour import Contour
 from baramFlow.coredb.visual_reports_db import VisualReportsDB
+from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.results.visual_reports.contour_dialog import ContourDialog
-from baramFlow.view.results.visual_reports.visual_report_widget import ContourWidget
+from baramFlow.view.results.visual_reports.contour_widget import ContourWidget
+from baramFlow.view.results.visual_reports.visual_report_widget import VisualReportWidget
 from baramFlow.view.widgets.content_page import ContentPage
 
 from widgets.async_message_box import AsyncMessageBox
@@ -63,7 +65,7 @@ class VisualReportsPage(ContentPage):
         uuid = uuid4()
         name = VisualReportsDB().getNewContourName()
         self._report = Contour(uuid=uuid, name=name)
-        self._dialog = ContourDialog(self, self._report, isNew=True)
+        self._dialog = ContourDialog(self, self._report, FileSystem.times())
         self._dialog.accepted.connect(self._addContours)
         self._dialog.open()
 
@@ -84,7 +86,7 @@ class VisualReportsPage(ContentPage):
         self._report = None
         self._dialog = None
 
-    def _addItem(self, widget):
+    def _addItem(self, widget: VisualReportWidget):
         item = QListWidgetItem()
         item.setSizeHint(widget.size())
         self._ui.list.addItem(item)
@@ -97,8 +99,9 @@ class VisualReportsPage(ContentPage):
         self._ui.edit.setEnabled(True)
         self._ui.delete_.setEnabled(True)
 
-    def _edit(self):
-        self._currentWidget().edit()
+    @qasync.asyncSlot()
+    async def _edit(self):
+        await self._currentWidget().edit()
 
     @qasync.asyncSlot()
     async def _delete(self):
@@ -109,6 +112,6 @@ class VisualReportsPage(ContentPage):
             widget.delete()
             self._ui.list.takeItem(self._ui.list.currentRow())
 
-    def _currentWidget(self):
+    def _currentWidget(self) -> VisualReportWidget:
         return self._ui.list.itemWidget(self._ui.list.currentItem())
 

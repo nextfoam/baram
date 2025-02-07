@@ -18,15 +18,15 @@ from .contour_dialog_ui import Ui_ContourDialog
 
 
 class ContourDialog(QDialog):
-    def __init__(self, parent, contour: Contour, isNew=False):
+    def __init__(self, parent, contour: Contour, times: list[str]):
         super().__init__(parent)
 
         self._ui = Ui_ContourDialog()
         self._ui.setupUi(self)
 
         self._timeSlider = TimeSlider(self._ui.slider, self._ui.currentTime, self._ui.lastTime)
-
-        self._contour = contour
+        self._timeSlider.updateTimeValues(times)
+        self._timeSlider.setCurrentTime(contour.time)
 
         self._fields: list[Field] = getAvailableFields()
         for f in self._fields:
@@ -38,9 +38,6 @@ class ContourDialog(QDialog):
         index = self._ui.field.findData(contour.field)
         self._ui.field.setCurrentIndex(index)
 
-        if isNew:
-            self._ui.ok.setText('Create')
-
         self._ui.name.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Za-z_][A-Za-z0-9_-]*')))
 
         self._ui.name.setText(contour.name)
@@ -48,8 +45,7 @@ class ContourDialog(QDialog):
         index = self._ui.field.findData(contour.field)
         self._ui.field.setCurrentIndex(index)
 
-        # ToDo
-        # 1. Read and set time slider min/max/value
+        self._contour = contour
 
         self._connectSignalsSlots()
 
@@ -72,9 +68,6 @@ class ContourDialog(QDialog):
     @qasync.asyncSlot()
     async def _cancelClicked(self):
         super().reject()
-
-    def _load(self):
-        pass
 
     async def _valid(self) -> bool:
         name = self._ui.name.text()

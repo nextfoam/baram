@@ -35,6 +35,11 @@ class TimeSlider(QObject):
     def getCurrentTime(self) -> str:
         return self._timeValues[self._slider.value()]
 
+    def setCurrentTime(self, time: str):
+        if time in self._timeValues:
+            index = self._timeValues.index(time)
+            self._slider.setValue(index)
+
     def updateTimeValues(self, timeValues: list[str]):
         if (len(self._timeValues) == len(timeValues)
             and self._timeValues[-1] == timeValues[-1]):

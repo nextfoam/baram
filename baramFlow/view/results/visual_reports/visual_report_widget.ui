@@ -110,7 +110,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="type">
+       <widget class="QLabel" name="description">
         <property name="styleSheet">
          <string notr="true">color:grey</string>
         </property>
