@@ -203,11 +203,6 @@ class MainWindow(QMainWindow):
         self._caseManager.clear()
         Project.close()
 
-        self._consoleDock.widget().close()
-        self._renderingDock.widget().close()
-        self._chartDock.widget().close()
-        self._monitorDock.widget().close()
-
         if self._closeType == CloseType.CLOSE_PROJECT:
             app.restart()
         else:
