@@ -1,19 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import subprocess
 from enum import Enum, auto
 
-from PySide6.QtCore import Signal, QCoreApplication, QEvent, Qt
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QWidget, QColorDialog
-from PySide6QtAds import CDockWidget
 from vtkmodules.vtkRenderingCore import vtkActor
 
+from baramFlow.coredb.visual_report import VisualReport
+from baramFlow.view.results.visual_reports.control_panel import ControlPanel
 from widgets.rendering.rotation_center_widget import RotationCenterWidget
 from widgets.rendering.ruler_widget import RulerWidget
 
-from .rendering_view_ui import Ui_RenderingView
-from .control_panel import ControlPanel
+from baramFlow.coredb.app_settings import AppSettings
+from baramFlow.openfoam.file_system import FileSystem
+
+from .visual_report_view_ui import Ui_RenderingView
 
 
 class DisplayMode(Enum):
@@ -24,17 +28,16 @@ class DisplayMode(Enum):
     DISPLAY_MODE_WIREFRAME      = auto()
 
 
-class RenderingView(QWidget):
+class VisualReportView(QWidget):
     actorPicked = Signal(vtkActor, bool)
+    renderingModeChanged = Signal(DisplayMode)
     viewClosed = Signal()
 
-    def __init__(self, parent: QWidget = None):
-        super().__init__(parent)
+    def __init__(self, report: VisualReport):
+        super().__init__()
 
         self._ui = Ui_RenderingView()
         self._ui.setupUi(self)
-
-        self._controlPanel = ControlPanel(self)
 
         self._view = self._ui.view
 
@@ -45,6 +48,13 @@ class RenderingView(QWidget):
         self._updateBGButtonStyle(self._ui.bg1, QColor.fromRgbF(*self._view.background1()))
         self._updateBGButtonStyle(self._ui.bg2, QColor.fromRgbF(*self._view.background2()))
 
+        for mode in DisplayMode:
+            self._ui.renderingMode.setItemData(mode.value, mode)
+
+        self._controlPanel = ControlPanel(self._view)
+
+        self._report = report
+
         self._connectSignalsSlots()
 
     def view(self):
@@ -54,13 +64,8 @@ class RenderingView(QWidget):
         self._view.close()
         return super().close()
 
-    def resizeEvent(self, ev):
-        super(RenderingView, self).resizeEvent(ev)
-        self._controlPanel.updateGeometry()
-   
-    def showEvent(self, ev):
-        self._controlPanel.updateGeometry()
-        return super(RenderingView, self).showEvent(ev)
+    def renderingMode(self):
+        return self._ui.renderingMode.currentData()
 
     def addActor(self, actor: vtkActor):
         self._view.addActor(actor)
@@ -83,13 +88,12 @@ class RenderingView(QWidget):
         self._ui.alignAxis.clicked.connect(self._view.alignCamera)
         self._ui.rotate.clicked.connect(self._view.rollCamera)
         self._ui.rotationCenter.clicked.connect(self._toggleRotationCenter)
+        self._ui.renderingMode.currentIndexChanged.connect(self._renderingModeChanged)
         self._ui.bg1.clicked.connect(self._pickBackground1)
         self._ui.bg2.clicked.connect(self._pickBackground2)
 
         self._view.actorPicked.connect(self.actorPicked)
         self._view.viewClosed.connect(self.viewClosed)
-
-        self._controlPanel.collapsed.connect(self._controlPanelCollapsed)
 
     def _setRulerVisible(self, checked):
         if checked:
@@ -100,7 +104,9 @@ class RenderingView(QWidget):
             self._ruler = None
 
     def _paraviewFileSelected(self, file):
-        print('paraview selected')
+        casePath = FileSystem.foamFilePath()
+        AppSettings.updateParaviewInstalledPath(file)
+        subprocess.Popen([f'{file}', f'{casePath}'])
 
     def _toggleRotationCenter(self, checked):
         if checked:
@@ -108,6 +114,9 @@ class RenderingView(QWidget):
             self._rotationCenter.on()
         else:
             self._rotationCenter.off()
+
+    def _renderingModeChanged(self, index):
+        self.renderingModeChanged.emit(DisplayMode(index))
 
     def _pickBackground1(self):
         self._dialog = self._newBGColorDialog()
@@ -141,25 +150,3 @@ class RenderingView(QWidget):
         r, g, b, a = color.getRgb()
         button.setStyleSheet(
             f'background: rgb({r}, {g}, {b}); border-style: solid; border-color:black; border-width: 1')
-
-    def _controlPanelCollapsed(self, collapsed: bool):
-        if collapsed:
-            self._ui.frame.setEnabled(True)
-        else:
-            self._ui.frame.setEnabled(False)
-
-class RenderingDock(CDockWidget):
-    def __init__(self):
-        super().__init__(self._title())
-
-        self._widget = RenderingView()
-        self.setWidget(self._widget)
-
-    def changeEvent(self, event):
-        if event.type() == QEvent.Type.LanguageChange:
-            self.setWindowTitle(self._title())
-
-        super().changeEvent(event)
-
-    def _title(self):
-        return QCoreApplication.translate('RenderingDock', 'Mesh')

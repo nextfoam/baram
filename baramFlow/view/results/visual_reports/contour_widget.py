@@ -2,17 +2,14 @@
 # -*- coding: utf-8 -*-
 
 
-from PySide6.QtWidgets import QWidget
-
 from baramFlow.coredb.contour import Contour
-from baramFlow.coredb.visual_report import VisualReport
 from baramFlow.coredb.visual_reports_db import VisualReportsDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.results.results_model.post_field import FIELD_TEXTS
-from baramFlow.view.results.visual_reports.visual_report_widget import VisualReportWidget
 from widgets.async_message_box import AsyncMessageBox
 
 from .contour_dialog import ContourDialog
+from .visual_report_widget import VisualReportWidget
 
 
 class ContourWidget(VisualReportWidget):
@@ -23,6 +20,10 @@ class ContourWidget(VisualReportWidget):
         self._dialog = None
 
         self.load()
+
+    @property
+    def name(self):
+        return self._contour.name
 
     def load(self):
         self._ui.name.setText(self._contour.name)
@@ -47,3 +48,5 @@ class ContourWidget(VisualReportWidget):
         VisualReportsDB().updateVisualReport(self._contour)
         self.load()
 
+    def delete(self):
+        pass

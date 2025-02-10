@@ -4,6 +4,8 @@
 from threading import Lock
 from uuid import UUID, uuid4
 
+from PySide6.QtCore import QObject, Signal
+
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.contour import Contour
@@ -20,8 +22,13 @@ CONTOUR_NAME_PREFIX = 'contour'
 _mutex = Lock()
 
 
-class VisualReportsDB():
+class VisualReportsDB(QObject):
+    ReportAdded    = Signal(UUID)
+    ReportUpdated  = Signal(UUID)
+    ReportRemoving = Signal(UUID)
+
     VISUAL_REPORTS_PATH = '/visualReports'
+
     def __new__(cls, *args, **kwargs):
         with _mutex:
             if not hasattr(cls, '_instance'):
@@ -41,7 +48,13 @@ class VisualReportsDB():
         self._reports: dict[UUID, VisualReport] = {}
 
     def load(self):
-        self._reports = self._parseVisualReports()
+         for report in self._reports.values():
+            self.ReportRemoving.emit(report.uuid)
+
+         self._reports = self._parseVisualReports()
+
+         for report in self._reports.values():
+            self.ReportAdded.emit(report.uuid)
 
     def _parseVisualReports(self) -> dict[UUID, VisualReport]:
         reports = {}
@@ -57,35 +70,36 @@ class VisualReportsDB():
     def getVisualReports(self):
         return self._reports
 
+    def getVisualReport(self, uuid: UUID):
+        return self._reports[uuid]
+
     def addVisualReport(self, report: VisualReport):
         if report.uuid in self._reports:
             raise AssertionError
 
         if isinstance(report, Contour):
-            parentTag = 'contours'
+            parent = self.VISUAL_REPORTS_PATH + '/contours'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH+'/'+parentTag)
-
-        e = report.toElement()
-        parent.append(e)
+        coredb.CoreDB().addElement(parent, report.toElement())
 
         self._reports[report.uuid] = report
+
+        self.ReportAdded.emit(report.uuid)
 
     def removeVisualReport(self, report: VisualReport):
         if report.uuid not in self._reports:
             raise AssertionError
 
         if isinstance(report, Contour):
-            parentTag = 'contours'
+            parent = self.VISUAL_REPORTS_PATH + '/contours'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH + '/' + parentTag)
+        self.ReportRemoving.emit(report.uuid)
 
-        e = parent.find(f'./contour[uuid="{str(report.uuid)}"]', namespaces=nsmap)
-        parent.remove(e)
+        coredb.CoreDB().removeElement(parent + f'/contour[uuid="{str(report.uuid)}"]')
 
         del self._reports[report.uuid]
 
@@ -94,17 +108,14 @@ class VisualReportsDB():
             raise AssertionError
 
         if isinstance(report, Contour):
-            parentTag = 'contours'
+            parent = self.VISUAL_REPORTS_PATH + '/contours'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH + '/' + parentTag)
+        coredb.CoreDB().removeElement(parent + f'/contour[uuid="{str(report.uuid)}"]')
+        coredb.CoreDB().addElement(parent, report.toElement())
 
-        e = parent.find(f'./contour[uuid="{str(report.uuid)}"]', namespaces=nsmap)
-        parent.remove(e)
-
-        e = report.toElement()
-        parent.append(e)
+        self.ReportUpdated.emit(report.uuid)
 
     def nameDuplicates(self, uuid: UUID, name: str) -> bool:
         for v in self._reports.values():

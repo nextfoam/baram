@@ -15,6 +15,7 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
+from baramFlow.view.results.visual_reports.visual_report_dock_manager import VisualReportDockManager
 from libbaram.exception import CanceledException
 from libbaram.openfoam.polymesh import removeVoidBoundaries
 from libbaram.run import hasUtility
@@ -186,10 +187,15 @@ class MainWindow(QMainWindow):
     def addDockWidget(self, dockWidget):
         self._dockView.addDockWidget(dockWidget)
 
+    def removeDockWidget(self, dockWidget):
+        self._dockView.removeWidget(dockWidget)
+
     def case(self):
         return self._caseManager
 
     def load(self):
+        VisualReportDockManager().load()
+
         self._project.opened()
 
     def closeEvent(self, event):

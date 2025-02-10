@@ -28,3 +28,7 @@ class DockView(QWidget):
     def addDockWidget(self, dockWidget):
         self._dockManager.addDockWidgetTab(DockWidgetArea.CenterDockWidgetArea, dockWidget)
         self._menu.addAction(dockWidget.toggleViewAction())
+
+    def removeDockWidget(self, dockWidget):
+        self._menu.removeAction(dockWidget.toggleViewAction())
+        self._dockManager.remove

@@ -836,6 +836,17 @@ class _CoreDB(object):
 
         self._configCount += 1
 
+    def addElement(self, xpath, element):
+        parent = self._xmlTree.find(xpath, namespaces=nsmap)
+        if parent is None:
+            raise LookupError
+
+        parent.append(element)
+
+        self._xmlSchema.assertValid(self._xmlTree)
+
+        self._configCount += 1
+
     def removeElement(self, xpath):
         element = self._xmlTree.find(xpath, namespaces=nsmap)
         if element is None:

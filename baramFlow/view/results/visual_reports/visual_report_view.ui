@@ -86,7 +86,7 @@
             <string> Set the axis direction based on the origin</string>
            </property>
            <property name="icon">
-            <iconset resource="resource.qrc">
+            <iconset resource="../../../../resource.qrc">
              <normaloff>:/graphicsIcons/originAxes</normaloff>:/graphicsIcons/originAxes</iconset>
            </property>
            <property name="iconSize">
@@ -141,7 +141,7 @@
             <string>Ruler</string>
            </property>
            <property name="icon">
-            <iconset resource="resource.qrc">
+            <iconset resource="../../../../resource.qrc">
              <normaloff>:/graphicsIcons/distance.png</normaloff>:/graphicsIcons/distance.png</iconset>
            </property>
            <property name="iconSize">
@@ -167,7 +167,7 @@
             <string> Toggle between Persepctive and Orthogonal views</string>
            </property>
            <property name="icon">
-            <iconset resource="resource.qrc">
+            <iconset resource="../../../../resource.qrc">
              <normaloff>:/graphicsIcons/2d-label-icon.svg</normaloff>:/graphicsIcons/2d-label-icon.svg</iconset>
            </property>
            <property name="iconSize">
@@ -193,7 +193,7 @@
             <string> Show the entire model in the windows to fit the view</string>
            </property>
            <property name="icon">
-            <iconset resource="resource.qrc">
+            <iconset resource="../../../../resource.qrc">
              <normaloff>:/icons/expand.svg</normaloff>:/icons/expand.svg</iconset>
            </property>
            <property name="iconSize">
@@ -216,7 +216,7 @@
             <string> View the model from cross-section of the closest-axis, aligning with current state</string>
            </property>
            <property name="icon">
-            <iconset resource="resource.qrc">
+            <iconset resource="../../../../resource.qrc">
              <normaloff>:/graphicsIcons/alignAxis.svg</normaloff>:/graphicsIcons/alignAxis.svg</iconset>
            </property>
            <property name="iconSize">
@@ -239,7 +239,7 @@
             <string> Rotate the model by 90 degrees</string>
            </property>
            <property name="icon">
-            <iconset resource="resource.qrc">
+            <iconset resource="../../../../resource.qrc">
              <normaloff>:/icons/reload.svg</normaloff>:/icons/reload.svg</iconset>
            </property>
            <property name="iconSize">
@@ -262,7 +262,7 @@
             <string>Rotation Center</string>
            </property>
            <property name="icon">
-            <iconset resource="resource.qrc">
+            <iconset resource="../../../../resource.qrc">
              <normaloff>:/graphicsIcons/rotationCenter</normaloff>:/graphicsIcons/rotationCenter</iconset>
            </property>
            <property name="iconSize">
@@ -274,6 +274,38 @@
            <property name="checkable">
             <bool>true</bool>
            </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="renderingMode">
+           <property name="sizeAdjustPolicy">
+            <enum>QComboBox::AdjustToContents</enum>
+           </property>
+           <item>
+            <property name="text">
+             <string>Feature Edges</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Points</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Surface</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Surface With Edges</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Wireframe</string>
+            </property>
+           </item>
           </widget>
          </item>
          <item>
@@ -380,7 +412,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="resource.qrc"/>
+  <include location="../../../../resource.qrc"/>
  </resources>
  <connections/>
 </ui>

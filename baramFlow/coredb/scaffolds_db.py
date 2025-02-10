@@ -60,14 +60,11 @@ class ScaffoldsDB():
             raise AssertionError
 
         if isinstance(scaffold, IsoSurface):
-            parentTag = 'isoSurfaces'
+            parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH+'/'+parentTag)
-
-        e = scaffold.toElement()
-        parent.append(e)
+        coredb.CoreDB().addElement(parent, scaffold.toElement())
 
         self._scaffolds[scaffold.uuid] = scaffold
 
@@ -76,14 +73,11 @@ class ScaffoldsDB():
             raise AssertionError
 
         if isinstance(scaffold, IsoSurface):
-            parentTag = 'isoSurfaces'
+            parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH + '/' + parentTag)
-
-        e = parent.find(f'./surface[uuid="{str(scaffold.uuid)}"]', namespaces=nsmap)
-        parent.remove(e)
+        coredb.CoreDB().removeElement(parent + f'/surface[uuid="{str(scaffold.uuid)}"]')
 
         del self._scaffolds[scaffold.uuid]
 
@@ -92,17 +86,12 @@ class ScaffoldsDB():
             raise AssertionError
 
         if isinstance(scaffold, IsoSurface):
-            parentTag = 'isoSurfaces'
+            parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
         else:
             raise AssertionError
 
-        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH + '/' + parentTag)
-
-        e = parent.find(f'./surface[uuid="{str(scaffold.uuid)}"]', namespaces=nsmap)
-        parent.remove(e)
-
-        e = scaffold.toElement()
-        parent.append(e)
+        coredb.CoreDB().removeElement(parent + f'/surface[uuid="{str(scaffold.uuid)}"]')
+        coredb.CoreDB().addElement(parent, scaffold.toElement())
 
     def nameDuplicates(self, uuid: UUID, name: str) -> bool:
         for v in self._scaffolds.values():

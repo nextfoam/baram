@@ -29,7 +29,7 @@ class ControlPanel(QFrame):
         self._leftArrow = QPixmap(u":/icons/chevron-back.svg")
 
         self._controlHandle = AspectRatioLabel(parent)
-    
+
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -50,7 +50,7 @@ class ControlPanel(QFrame):
         self._agroup = QParallelAnimationGroup()
         self._agroup.addAnimation(self._animPanel)
         self._agroup.addAnimation(self._animHandle)
-        
+
         self._collapsed = True
 
         self._connectSignalsSlots()
@@ -59,20 +59,21 @@ class ControlPanel(QFrame):
         self.updateGeometry()
         super(FlatPushButton, self._controlHandle).setParent(parent)
         return super(ControlPanel, self).setParent(parent)
-  
+
     def _connectSignalsSlots(self):
+        self._ui.update.clicked.connect(self._updateView)
         self._controlHandle.clicked.connect(self._handleClicked)
         self._agroup.finished.connect(self._animationFinished)
 
     def isCollapsed(self) -> bool:
         return self._collapsed
-    
+
     def updateGeometry(self):
         if hasattr(self.parent(), 'viewport'):
             parentRect = self.parent().viewport().rect()
         else:
             parentRect = self.parent().rect()
-            
+
         if not parentRect:
             return
 
@@ -82,13 +83,21 @@ class ControlPanel(QFrame):
         else:
             self.setGeometry(0, self.MARGIN, self.width(), parentRect.height()-self.MARGIN*2)
             handleX = self.width()
-            
+
         self._controlHandle.setGeometry(handleX, self.MARGIN + self.height() // 2, self._controlHandle.width(), self._controlHandle.height())
-    
+
+    def resizeEvent(self, event):
+        super(ControlPanel, self).resizeEvent(event)
+        self.updateGeometry()
+
+    def showEvent(self, event):
+        self.updateGeometry()
+        return super(ControlPanel, self).showEvent(event)
+
     def _handleClicked(self, ev: QMouseEvent):
         if self._agroup.state() == QAbstractAnimation.Running:
             return
-        
+
         if self._collapsed:
             self._animPanel.setEndValue(QPoint(0, self.pos().y()))
             self._animHandle.setEndValue(QPoint(self.width(), self._controlHandle.pos().y()))
@@ -108,4 +117,5 @@ class ControlPanel(QFrame):
             self._controlHandle.setPixmap(self._rightArrow)
             self.collapsed.emit(True)
 
-
+    def _updateView(self):
+        pass
