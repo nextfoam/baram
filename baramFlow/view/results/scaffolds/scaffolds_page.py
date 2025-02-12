@@ -7,10 +7,12 @@ import qasync
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QListWidgetItem, QMessageBox
 
+from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
-from baramFlow.view.results.scaffolds.ios_surface_dialog import IsoSurfaceDialog
-from baramFlow.view.results.scaffolds.scaffold_widget import IsoSurfaceWidget, ScaffoldWidget
+from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
+from baramFlow.view.results.scaffolds.iso_surface_dialog import IsoSurfaceDialog
+from baramFlow.view.results.scaffolds.scaffold_widget import BoundaryScaffoldWidget, IsoSurfaceWidget, ScaffoldWidget
 from baramFlow.view.widgets.content_page import ContentPage
 
 from widgets.async_message_box import AsyncMessageBox
@@ -27,6 +29,7 @@ class ScaffoldsPage(ContentPage):
 
         self._menu = QMenu()
 
+        self._addBoundaryScaffoldMenu: QAction   = self._menu.addAction(self.tr('&Boundary'))
         self._addIsoSurfaceMenu: QAction = self._menu.addAction(self.tr('&Iso Surface'))
         self._addPlaneMenu: QAction      = self._menu.addAction(self.tr('&Plane'))
 
@@ -40,6 +43,7 @@ class ScaffoldsPage(ContentPage):
         self._load()
 
     def _connectSignalsSlots(self):
+        self._addBoundaryScaffoldMenu.triggered.connect(self._openAddBoundaryScaffoldDialog)
         self._addIsoSurfaceMenu.triggered.connect(self._openAddIsoSurfaceDialog)
         self._addPlaneMenu.triggered.connect(self._openAddPlaneDialog)
 
@@ -52,8 +56,18 @@ class ScaffoldsPage(ContentPage):
         self._ui.list.clear()
 
         for s in ScaffoldsDB().getScaffolds().values():
-            if isinstance(s, IsoSurface):
+            if isinstance(s, BoundaryScaffold):
+                self._addItem(BoundaryScaffoldWidget(s))
+            elif isinstance(s, IsoSurface):
                 self._addItem(IsoSurfaceWidget(s))
+
+    def _openAddBoundaryScaffoldDialog(self):
+        uuid = uuid4()
+        name = ScaffoldsDB().getNewBoundaryScaffoldName()
+        self._scaffold = BoundaryScaffold(uuid=uuid, name=name)
+        self._dialog = BoundaryScaffoldDialog(self, self._scaffold)
+        self._dialog.accepted.connect(self._addBoundaryScaffold)
+        self._dialog.open()
 
     def _openAddIsoSurfaceDialog(self):
         uuid = uuid4()
@@ -65,6 +79,14 @@ class ScaffoldsPage(ContentPage):
 
     def _openAddPlaneDialog(self):
         pass
+
+    def _addBoundaryScaffold(self):
+        ScaffoldsDB().addScaffold(self._scaffold)
+
+        self._addItem(BoundaryScaffoldWidget(self._scaffold))
+
+        self._scaffold = None
+        self._dialog = None
 
     def _addIsoSurface(self):
         ScaffoldsDB().addScaffold(self._scaffold)

@@ -2484,6 +2484,21 @@
                 <xs:element name="scaffolds">
                     <xs:complexType>
                         <xs:sequence>
+                            <xs:element name="boundaries">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="boundary" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="bcid" type="xs:nonNegativeInteger"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                             <xs:element name="isoSurfaces">
                                 <xs:complexType>
                                     <xs:sequence>
@@ -2548,8 +2563,7 @@
                                                                     <xs:complexType>
                                                                         <xs:sequence>
                                                                             <xs:element name="type" type="scaffoldType"/>
-                                                                            <xs:element name="boundary" type="xs:nonNegativeInteger" default="0"/>  <!-- boundary condition bcid for boundary type scaffold -->
-                                                                            <xs:element name="scaffoldUuid" type="uuidType"/>  <!-- For other type scaffolds -->
+                                                                            <xs:element name="uuid" type="uuidType"/>  <!-- For other type scaffolds -->
                                                                             <xs:element name="visibility" type="xs:boolean" default="false"/>
                                                                             <xs:element name="opacity" type="xs:nonNegativeInteger" default="100"/>
                                                                             <xs:element name="solidColor" type="xs:boolean" default="false"/>

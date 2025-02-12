@@ -235,6 +235,7 @@
     </monitors>
 
     <scaffolds>
+        <boundaries/>
         <isoSurfaces/>
     </scaffolds>
 

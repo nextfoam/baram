@@ -5,12 +5,14 @@ from threading import Lock
 from uuid import UUID, uuid4
 
 from baramFlow.coredb import coredb
+from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.libdb import nsmap
 
 from baramFlow.coredb.scaffold import Scaffold
 
 
+BOUNDARY_SCAFFOLD_NAME_PREFIX = 'boundary'
 ISO_SURFACE_NAME_PREFIX = 'iso-surface'
 
 
@@ -45,6 +47,11 @@ class ScaffoldsDB():
         scaffolds = {}
         parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH)
 
+        boundaries = parent.find('boundaries', namespaces=nsmap)
+        for e in boundaries.findall('boundary', namespaces=nsmap):
+            s = BoundaryScaffold.fromElement(e)
+            scaffolds[s.uuid] = s
+
         isoSurfaces = parent.find('isoSurfaces', namespaces=nsmap)
         for e in isoSurfaces.findall('surface', namespaces=nsmap):
             s = IsoSurface.fromElement(e)
@@ -59,7 +66,9 @@ class ScaffoldsDB():
         if scaffold.uuid in self._scaffolds:
             raise AssertionError
 
-        if isinstance(scaffold, IsoSurface):
+        if isinstance(scaffold, BoundaryScaffold):
+            parent = self.SCAFFOLDS_PATH + '/boundaries'
+        elif isinstance(scaffold, IsoSurface):
             parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
         else:
             raise AssertionError
@@ -72,7 +81,9 @@ class ScaffoldsDB():
         if scaffold.uuid not in self._scaffolds:
             raise AssertionError
 
-        if isinstance(scaffold, IsoSurface):
+        if isinstance(scaffold, BoundaryScaffold):
+            parent = self.SCAFFOLDS_PATH + '/boundaries'
+        elif isinstance(scaffold, IsoSurface):
             parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
         else:
             raise AssertionError
@@ -85,7 +96,9 @@ class ScaffoldsDB():
         if scaffold.uuid not in self._scaffolds:
             raise AssertionError
 
-        if isinstance(scaffold, IsoSurface):
+        if isinstance(scaffold, BoundaryScaffold):
+            parent = self.SCAFFOLDS_PATH + '/boundaries'
+        elif isinstance(scaffold, IsoSurface):
             parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
         else:
             raise AssertionError
@@ -99,6 +112,9 @@ class ScaffoldsDB():
                 return True
 
         return False
+
+    def getNewBoundaryScaffoldName(self) -> str:
+        return self._getNewScaffoldName(BOUNDARY_SCAFFOLD_NAME_PREFIX)
 
     def getNewIsoSurfaceName(self) -> str:
         return self._getNewScaffoldName(ISO_SURFACE_NAME_PREFIX)

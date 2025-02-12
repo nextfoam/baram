@@ -3,5 +3,17 @@
         "resources",
         "solvers",
         "venv"
+    ],
+    "python.analysis.packageIndexDepths": [
+
+
+        {
+            "name": "PySide6",
+            "depth": 2
+        },
+        {
+            "name": "vtkmodules",
+            "depth": 2
+        }
     ]
 }

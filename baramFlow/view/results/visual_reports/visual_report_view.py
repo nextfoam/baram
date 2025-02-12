@@ -6,16 +6,19 @@ from enum import Enum, auto
 
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QWidget, QColorDialog
+from PySide6.QtWidgets import QVBoxLayout, QWidget, QColorDialog
+
 from vtkmodules.vtkRenderingCore import vtkActor
 
+from baramFlow.coredb.app_settings import AppSettings
 from baramFlow.coredb.visual_report import VisualReport
-from baramFlow.view.results.visual_reports.control_panel import ControlPanel
+from baramFlow.openfoam.file_system import FileSystem
+
+from widgets.overlay_frame import OverlayFrame
 from widgets.rendering.rotation_center_widget import RotationCenterWidget
 from widgets.rendering.ruler_widget import RulerWidget
 
-from baramFlow.coredb.app_settings import AppSettings
-from baramFlow.openfoam.file_system import FileSystem
+from .display_control.display_control import DisplayControl
 
 from .visual_report_view_ui import Ui_RenderingView
 
@@ -51,7 +54,10 @@ class VisualReportView(QWidget):
         for mode in DisplayMode:
             self._ui.renderingMode.setItemData(mode.value, mode)
 
-        self._controlPanel = ControlPanel(self._view)
+        self._overlayFrame = OverlayFrame(self._view)
+        self._displayControl = DisplayControl(self._overlayFrame, self._view)
+        layout = QVBoxLayout(self._overlayFrame)
+        layout.addWidget(self._displayControl)
 
         self._report = report
 
@@ -136,17 +142,17 @@ class VisualReportView(QWidget):
 
         return dialog
 
-    def _setBackground1(self, color):
+    def _setBackground1(self, color: QColor):
         r, g, b, a = color.getRgbF()
         self._view.setBackground1(r, g, b)
         self._updateBGButtonStyle(self._ui.bg1, color)
 
-    def _setBackground2(self, color):
+    def _setBackground2(self, color: QColor):
         r, g, b, a = color.getRgbF()
         self._view.setBackground2(r, g, b)
         self._updateBGButtonStyle(self._ui.bg2, color)
 
-    def _updateBGButtonStyle(self, button, color):
+    def _updateBGButtonStyle(self, button, color: QColor):
         r, g, b, a = color.getRgb()
         button.setStyleSheet(
             f'background: rgb({r}, {g}, {b}); border-style: solid; border-color:black; border-width: 1')

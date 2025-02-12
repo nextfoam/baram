@@ -4,24 +4,19 @@
 
 from PySide6.QtCore import QAbstractAnimation, QEasingCurve, QParallelAnimationGroup, QPoint, QPropertyAnimation, QSize, Signal
 from PySide6.QtGui import QMouseEvent, QPixmap
-from PySide6.QtWidgets import QWidget, QFrame, QSizePolicy
+from PySide6.QtWidgets import QVBoxLayout, QWidget, QFrame, QSizePolicy
 
 from widgets.flat_push_button import FlatPushButton
 
-from .aspect_ratio_label import AspectRatioLabel
-
-from .control_panel_ui import Ui_ControlPanel
+from baramFlow.view.results.visual_reports.aspect_ratio_label import AspectRatioLabel
 
 
-class ControlPanel(QFrame):
+class OverlayFrame(QFrame):
     MARGIN = 0
     collapsed = Signal(bool)
 
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
-
-        self._ui = Ui_ControlPanel()
-        self._ui.setupUi(self)
 
         self.setAutoFillBackground(True)
 
@@ -55,13 +50,7 @@ class ControlPanel(QFrame):
 
         self._connectSignalsSlots()
 
-    def setParent(self, parent):
-        self.updateGeometry()
-        super(FlatPushButton, self._controlHandle).setParent(parent)
-        return super(ControlPanel, self).setParent(parent)
-
     def _connectSignalsSlots(self):
-        self._ui.update.clicked.connect(self._updateView)
         self._controlHandle.clicked.connect(self._handleClicked)
         self._agroup.finished.connect(self._animationFinished)
 
@@ -87,12 +76,14 @@ class ControlPanel(QFrame):
         self._controlHandle.setGeometry(handleX, self.MARGIN + self.height() // 2, self._controlHandle.width(), self._controlHandle.height())
 
     def resizeEvent(self, event):
-        super(ControlPanel, self).resizeEvent(event)
+        super(OverlayFrame, self).resizeEvent(event)
         self.updateGeometry()
 
     def showEvent(self, event):
-        self.updateGeometry()
-        return super(ControlPanel, self).showEvent(event)
+        if not event.spontaneous():
+            self.updateGeometry()
+
+        return super(OverlayFrame, self).showEvent(event)
 
     def _handleClicked(self, ev: QMouseEvent):
         if self._agroup.state() == QAbstractAnimation.Running:

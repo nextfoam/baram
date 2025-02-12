@@ -32,7 +32,7 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Surface Name</string>
+         <string>Scaffold Name</string>
         </property>
        </widget>
       </item>
