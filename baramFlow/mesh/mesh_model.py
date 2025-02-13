@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import asyncio
+from enum import Enum, auto
 import re
 from io import StringIO
 
@@ -18,9 +19,16 @@ from baramFlow.openfoam import parallel
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.system.fv_schemes import FvSchemes
 from baramFlow.openfoam.system.fv_solution import FvSolution
-from baramFlow.view.dock_widgets.rendering_dock import DisplayMode
 from libbaram.exception import CanceledException
 from libbaram.run import RunParallelUtility
+
+
+class DisplayMode(Enum):
+    DISPLAY_MODE_FEATURE        = 0
+    DISPLAY_MODE_POINTS         = auto()
+    DISPLAY_MODE_SURFACE        = auto()
+    DISPLAY_MODE_SURFACE_EDGE   = auto()
+    DISPLAY_MODE_WIREFRAME      = auto()
 
 
 def getActor(dataset):
