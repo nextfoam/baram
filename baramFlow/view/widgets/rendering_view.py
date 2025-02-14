@@ -121,17 +121,17 @@ class RenderingView(QWidget):
 
         return dialog
 
-    def _setBackground1(self, color):
+    def _setBackground1(self, color: QColor):
         r, g, b, a = color.getRgbF()
         self._view.setBackground1(r, g, b)
         self._updateBGButtonStyle(self._ui.bg1, color)
 
-    def _setBackground2(self, color):
+    def _setBackground2(self, color: QColor):
         r, g, b, a = color.getRgbF()
         self._view.setBackground2(r, g, b)
         self._updateBGButtonStyle(self._ui.bg2, color)
 
-    def _updateBGButtonStyle(self, button, color):
+    def _updateBGButtonStyle(self, button, color: QColor):
         r, g, b, a = color.getRgb()
         button.setStyleSheet(
             f'background: rgb({r}, {g}, {b}); border-style: solid; border-color:black; border-width: 1')
