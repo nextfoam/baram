@@ -1,10 +1,12 @@
-from baramFlow.view.results.visual_reports.display_control.opacity_dialog import OpacityDialog
-from baramMesh.rendering.actor_info import DisplayMode, Properties
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction, QColor
 from PySide6.QtWidgets import QColorDialog, QMenu
+
+from .display_item import DisplayMode, Properties
+from .opacity_dialog import OpacityDialog
 
 
 class DisplayContextMenu(QMenu):

@@ -4,9 +4,7 @@
 
 from PySide6.QtCore import QAbstractAnimation, QEasingCurve, QParallelAnimationGroup, QPoint, QPropertyAnimation, QSize, Signal
 from PySide6.QtGui import QMouseEvent, QPixmap
-from PySide6.QtWidgets import QVBoxLayout, QWidget, QFrame, QSizePolicy
-
-from widgets.flat_push_button import FlatPushButton
+from PySide6.QtWidgets import QWidget, QFrame, QSizePolicy
 
 from baramFlow.view.results.visual_reports.aspect_ratio_label import AspectRatioLabel
 
@@ -73,17 +71,7 @@ class OverlayFrame(QFrame):
             self.setGeometry(0, self.MARGIN, self.width(), parentRect.height()-self.MARGIN*2)
             handleX = self.width()
 
-        self._controlHandle.setGeometry(handleX, self.MARGIN + self.height() // 2, self._controlHandle.width(), self._controlHandle.height())
-
-    def resizeEvent(self, event):
-        super(OverlayFrame, self).resizeEvent(event)
-        self.updateGeometry()
-
-    def showEvent(self, event):
-        if not event.spontaneous():
-            self.updateGeometry()
-
-        return super(OverlayFrame, self).showEvent(event)
+        self._controlHandle.setGeometry(handleX, self.MARGIN + (self.height() - self._controlHandle.height()) // 2, self._controlHandle.width(), self._controlHandle.height())
 
     def _handleClicked(self, ev: QMouseEvent):
         if self._agroup.state() == QAbstractAnimation.Running:

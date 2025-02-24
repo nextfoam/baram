@@ -38,6 +38,7 @@ class VisualReportView(RenderingView):
         self._displayControl = DisplayControl(self._overlayFrame, self._view)
         layout = QVBoxLayout(self._overlayFrame)
         layout.addWidget(self._displayControl)
+        self._overlayFrame.adjustSize()
 
         self._report = report
 
@@ -65,6 +66,10 @@ class VisualReportView(RenderingView):
         ScaffoldsDB().ScaffoldAdded.disconnect(self._scaffoldUpdated)
         ScaffoldsDB().ScaffoldUpdated.disconnect(self._scaffoldUpdated)
         ScaffoldsDB().RemovingScaffold.disconnect(self._scaffoldUpdated)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._overlayFrame.updateGeometry()
 
     def closeEvent(self, event):
         self._disconnectSignalsSlots()

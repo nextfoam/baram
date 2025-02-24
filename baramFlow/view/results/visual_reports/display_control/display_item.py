@@ -4,13 +4,11 @@
 from dataclasses import dataclass
 from enum import Enum, IntEnum, auto
 
-from PySide6.QtCore import QCoreApplication, QObject, Signal
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTreeWidgetItem, QLabel, QWidget, QHBoxLayout
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkRenderingCore import vtkActor, vtkMapper, vtkPolyDataMapper
-
-from baramMesh.rendering.actor_info import ActorType
 
 
 class DisplayMode(Enum):

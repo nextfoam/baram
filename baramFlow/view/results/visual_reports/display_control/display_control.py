@@ -7,13 +7,13 @@ from uuid import UUID, uuid4
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QHeaderView, QHeaderView, QWidget
 
-from baramFlow.view.results.visual_reports.display_control.display_context_menu import DisplayContextMenu
-from baramFlow.view.results.visual_reports.display_control.display_control_ui import Ui_DisplayControl
-from baramMesh.app import app
-from baramMesh.rendering.actor_info import DisplayMode, Properties
+from baramFlow.app import app
+
 from widgets.rendering.rendering_widget import RenderingWidget
 
-from .display_item import DisplayItem, Column
+from .display_context_menu import DisplayContextMenu
+from .display_control_ui import Ui_DisplayControl
+from .display_item import DisplayMode, Properties, DisplayItem, Column
 
 
 class DisplayControl(QWidget):
