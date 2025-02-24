@@ -13,7 +13,7 @@ class VisualReportDock(CDockWidget):
     def __init__(self, report: VisualReport):
         super().__init__(report.name)
 
-        self._widget = VisualReportView(report)
+        self._widget = VisualReportView(self, report)
         self.setWidget(self._widget)
 
 

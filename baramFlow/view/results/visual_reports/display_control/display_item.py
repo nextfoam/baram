@@ -45,44 +45,33 @@ class Column(IntEnum):
 
 
 class DisplayItem(QTreeWidgetItem):
-    # _emptyIcon = QIcon()
-    # _notCutIcon = QIcon(':graphicsIcons/no-cutter.svg')
-    # _bulbOnIcon = QIcon(':graphicsIcons/bulb-on.svg')
-    # _bulbOffIcon = QIcon(':graphicsIcons/bulb-off.svg')
 
     sourceChanged = Signal(str)
     nameChanged = Signal(str)
 
-    _types = {
-        ActorType.GEOMETRY: QCoreApplication.translate('DisplayControl', 'Geometry'),
-        ActorType.BOUNDARY: QCoreApplication.translate('DisplayControl', 'Boundary'),
-        ActorType.MESH: QCoreApplication.translate('DisplayControl', 'Mesh')
-    }
 
-    def __init__(self, dataSet, id_, name, type_):
+    def __init__(self, did, name, dataSet):
 
         super().__init__()
 
         self._dataSet = dataSet
-        self._id = id_
+        self._did = did
         self._name = name
-        self._type = type_
-
 
         self._mapper: vtkMapper = vtkPolyDataMapper()
         self._mapper.SetInputData(dataSet)
         self._mapper.ScalarVisibilityOff()
         self._mapper.SetScalarModeToUseCellFieldData()
         self._mapper.SetColorModeToMapScalars()
-        self._mapper.SetLookupTable(sequentialRedLut)
+#        self._mapper.SetLookupTable(sequentialRedLut)
 
         self._actor = vtkActor()
         self._actor.SetMapper(self._mapper)
         self._actor.GetProperty().SetDiffuse(0.3)
         self._actor.GetProperty().SetOpacity(0.9)
         self._actor.GetProperty().SetAmbient(0.3)
-        self._actor.SetObjectName(self._id)
-
+        self._actor.SetObjectName(str(self._did))
+        print(f'{self._did} added')
         prop = self._actor.GetProperty()
         self._properties = Properties(bool(self._actor.GetVisibility()),
                                       prop.GetOpacity(),
@@ -99,7 +88,7 @@ class DisplayItem(QTreeWidgetItem):
         self._colorWidget = QLabel()
 
         self.setText(Column.NAME_COLUMN, name)
-        self.setText(Column.TYPE_COLUMN, self._types[type_])
+        self.setText(Column.TYPE_COLUMN, name)
         self._updateColorColumn()
         # self._updateCutIcon()
         # self._updateVisibleIcon()
@@ -115,6 +104,22 @@ class DisplayItem(QTreeWidgetItem):
 
     def properties(self):
         return self._properties
+
+    def actor(self):
+        return self._actor
+
+    def did(self):
+        return self._did
+
+    def isVisible(self):
+        return self._properties.visibility
+
+    def color(self):
+        return self._properties.color
+
+    def setVisible(self, visibility):
+        self._properties.visibility = visibility
+        self._actor.SetVisibility(visibility)
 
     def setupColorWidget(self, parent):
         widget = QWidget()
@@ -181,8 +186,8 @@ class DisplayItem(QTreeWidgetItem):
         self._actor.GetProperty().SetLineWidth(1.0)
 
     def _updateColorColumn(self):
-        if self._actorInfo.isVisible():
-            color = self._actorInfo.color()
+        if self.isVisible():
+            color = self.color()
             self._colorWidget.setStyleSheet(
                 f'background-color: rgb({color.red()}, {color.green()}, {color.blue()}); border: 1px solid LightGrey; border-radius: 3px;')
         else:
@@ -205,4 +210,4 @@ class DisplayItem(QTreeWidgetItem):
     #         self.setIcon(Column.VISIBLE_ICON_COLUMN, self._bulbOffIcon)
 
     def _connectSignalsSlots(self):
-        self._actorInfo.nameChanged.connect(self._updateName)
+        pass

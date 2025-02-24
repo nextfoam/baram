@@ -37,6 +37,9 @@ class ScaffoldWidget(QWidget):
         ScaffoldsDB().updateScaffold(self._scaffold)
         self.load()
 
+    def delete(self):
+        ScaffoldsDB().removeScaffold(self._scaffold)
+
     def load(self):
         raise NotImplementedError
 

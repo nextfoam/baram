@@ -118,7 +118,7 @@ class ScaffoldsPage(ContentPage):
         confirm = await AsyncMessageBox().question(self, self.tr("Remove Scaffold item"),
                                                    self.tr('Remove "{}"?'.format(widget.name)))
         if confirm == QMessageBox.StandardButton.Yes:
-            ScaffoldsDB().removeScaffold(widget.scaffold)
+            widget.delete()
             self._ui.list.takeItem(self._ui.list.currentRow())
 
     def _currentWidget(self):

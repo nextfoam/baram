@@ -39,7 +39,7 @@ class VisualReportDockManager():
 
         VisualReportsDB().ReportAdded.connect(self._reportAdded)
         VisualReportsDB().ReportUpdated.connect(self._reportUpdated)
-        VisualReportsDB().ReportRemoving.connect(self._reportRemoving)
+        VisualReportsDB().RemovingReport.connect(self._reportRemoving)
 
 
     def load(self):

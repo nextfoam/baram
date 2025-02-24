@@ -15,6 +15,7 @@ from baramFlow.openfoam.solver import usePrgh
 
 
 class FieldType(Enum):
+    GEOMETRY    = 'geometry'
     BASIC       = 'basic'
     COLLATERAL  = 'collateral'
     PHASE       = 'phase'
@@ -35,11 +36,18 @@ class Field:
     def name(self):
         return self._name
 
+    # To make all Field instances with same name and type equal
     def __hash__(self):
         return hash((self._type, self.name))
 
+    # To make all Field instances with same name and type equal
     def __eq__(self, other):
         return (self._type, self.name) == (other._type, other.name)
+
+class GeometryField(Field):
+    def __init__(self, name):
+        super().__init__(name)
+        self._type = FieldType.GEOMETRY
 
 class BasicField(Field):
     def __init__(self, name):
@@ -66,6 +74,9 @@ class UserScalarField(Field):
         super().__init__(name)
         self._type = FieldType.USER_SCALAR
 
+X_COORDINATE = GeometryField('X-Coordinate')
+Y_COORDINATE = GeometryField('Y-Coordinate')
+Z_COORDINATE = GeometryField('Z-Coordinate')
 
 PRESSURE   = BasicField('pressure')
 SPEED      = BasicField('speed')

@@ -233,7 +233,7 @@ class BoundaryDB:
         }.get(dbText)
 
     @classmethod
-    def getBoundarySelectorItems(cls):
+    def getBoundarySelectorItems(cls) -> list[SelectorItem]:
         db = coredb.CoreDB()
 
         items = []

@@ -49,4 +49,4 @@ class ContourWidget(VisualReportWidget):
         self.load()
 
     def delete(self):
-        pass
+        VisualReportsDB().removeVisualReport(self._contour)

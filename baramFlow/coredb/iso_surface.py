@@ -6,8 +6,12 @@ from uuid import UUID
 
 from lxml import etree
 
+from vtkmodules.vtkCommonDataModel import vtkDataObject, vtkMultiBlockDataSet, vtkPlane, vtkPolyData
+from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkContourFilter, vtkCutter
+
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.coredb.post_field import X_VELOCITY, Field, getFieldInstance
+from baramFlow.coredb.post_field import Field, getFieldInstance
+from baramFlow.coredb.post_field import X_VELOCITY, X_COORDINATE, Y_COORDINATE, Z_COORDINATE
 from baramFlow.coredb.scaffold import Scaffold
 
 
@@ -47,3 +51,54 @@ class IsoSurface(Scaffold):
                  f'    <spacing>{self.spacing}</spacing>'
                   '</surface>')
         return etree.fromstring(string)
+
+    def xpath(self):
+        return f'/surface[uuid="{str(self.uuid)}"]'
+
+    def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
+        values = self._getValues()
+        polyData = vtkAppendPolyData()
+        meshes = self._collectInternalMesh(mBlock)
+
+        for mesh in meshes:
+            if self.field in [X_COORDINATE, Y_COORDINATE, Z_COORDINATE]:
+                plane = vtkPlane()
+                plane.SetOrigin(0, 0, 0)
+                if self.field == X_COORDINATE:
+                    plane.SetNormal(1, 0, 0)
+                elif self.field == Y_COORDINATE:
+                    plane.SetNormal(0, 1, 0)
+                elif self.field == Z_COORDINATE:
+                    plane.SetNormal(0, 0, 1)
+
+                filter = vtkCutter()
+                filter.SetInputData(mesh)
+                filter.SetCutFunction(plane)
+            else:
+                filter = vtkContourFilter()
+                filter.SetInputData(mesh)
+
+                filter.SetInputArrayToProcess(0, 0, 0,
+                                                vtkDataObject.FIELD_ASSOCIATION_POINTS,
+                                                self.field.name)
+
+            for i, v in enumerate(values):
+                filter.SetValue(i, v)
+
+            filter.Update()
+
+            polyData.AddInputData(filter.GetOutput())
+
+        polyData.Update()
+
+        return polyData.GetOutput()
+
+    def _getValues(self):
+        values: list[float] = []
+
+        for s in self.isoValues.split():
+            v = float(s)
+            for i in range(int(self.surfacePerValue)):
+                values.append(v + i * float(self.spacing))
+
+        return sorted(values)

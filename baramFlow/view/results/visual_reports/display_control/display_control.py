@@ -2,91 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from typing import Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from PySide6.QtCore import QObject, Signal, Qt
-from PySide6.QtGui import QAction, QColor
-from PySide6.QtWidgets import QMenu, QColorDialog, QHeaderView, QTreeWidget, QHeaderView, QWidget
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QHeaderView, QHeaderView, QWidget
 
-from baramFlow.coredb.scaffold import Scaffold
-from baramFlow.coredb.scaffolds_db import ScaffoldsDB
+from baramFlow.view.results.visual_reports.display_control.display_context_menu import DisplayContextMenu
 from baramFlow.view.results.visual_reports.display_control.display_control_ui import Ui_DisplayControl
 from baramMesh.app import app
 from baramMesh.rendering.actor_info import DisplayMode, Properties
 from widgets.rendering.rendering_widget import RenderingWidget
 
-from .opacity_dialog import OpacityDialog
 from .display_item import DisplayItem, Column
-
-
-class ContextMenu(QMenu):
-    showActionTriggered = Signal()
-    hideActionTriggered = Signal()
-    opacitySelected = Signal(float)
-    colorPicked = Signal(QColor)
-    noCutActionTriggered = Signal(bool)
-
-    wireframeDisplayModeSelected = Signal()
-    surfaceDisplayModeSelected = Signal()
-    surfaceEdgeDisplayModeSelected = Signal()
-
-    def __init__(self, parent):
-        super().__init__(parent)
-
-        self._opacityDialog = OpacityDialog(app.window)
-        self._colorDialog = QColorDialog(app.window)
-        self._colorDialog.setWindowModality(Qt.WindowModality.ApplicationModal)
-        self._properties = None
-
-        self._showAction = self.addAction(self.tr('Show'), lambda: self.showActionTriggered.emit())
-        self._hideAction = self.addAction(self.tr('Hide'), lambda: self.hideActionTriggered.emit())
-        self._opacityAction = self.addAction(self.tr('Opacity'), self._openOpacityDialog)
-        self._colorAction = self.addAction(self.tr('Color'), self._openColorDialog)
-
-        displayMenu = self.addMenu(self.tr('Display Mode'))
-        self._wireFrameDisplayAction = displayMenu.addAction(
-            self.tr('Wireframe'), lambda: self.wireframeDisplayModeSelected.emit())
-        self._surfaceDisplayAction = displayMenu.addAction(
-            self.tr('Surface'), lambda: self.surfaceDisplayModeSelected.emit())
-        self._surfaceEdgeDisplayAction = displayMenu.addAction(
-            self.tr('Surface with Edges'), lambda: self.surfaceEdgeDisplayModeSelected.emit())
-
-        self._noCutAction: QAction = self.addAction(self.tr('No Cut'), self._noCutActionTriggered)
-
-        self._wireFrameDisplayAction.setCheckable(True)
-        self._surfaceDisplayAction.setCheckable(True)
-        self._surfaceEdgeDisplayAction.setCheckable(True)
-        self._noCutAction.setCheckable(True)
-
-        self._connectSignalsSlots()
-
-    def execute(self, pos, properties: Properties):
-        self._properties = properties
-
-        self._showAction.setVisible(not properties.visibility)
-        self._hideAction.setVisible(properties.visibility is None or properties.visibility)
-        self._wireFrameDisplayAction.setChecked(properties.displayMode == DisplayMode.WIREFRAME)
-        self._surfaceDisplayAction.setChecked(properties.displayMode == DisplayMode.SURFACE)
-        self._surfaceEdgeDisplayAction.setChecked(properties.displayMode == DisplayMode.SURFACE_EDGE)
-        self._noCutAction.setChecked(properties.cutEnabled is False)
-
-        self.exec(pos)
-
-    def _connectSignalsSlots(self):
-        self._opacityDialog.accepted.connect(lambda: self.opacitySelected.emit(self._opacityDialog.opacity()))
-        self._colorDialog.accepted.connect(lambda: self.colorPicked.emit(self._colorDialog.selectedColor()))
-
-    def _openOpacityDialog(self):
-        self._opacityDialog.setOpacity(self._properties.opacity)
-        self._opacityDialog.show()
-
-    def _openColorDialog(self):
-        self._colorDialog.setCurrentColor(
-            Qt.GlobalColor.white if self._properties.color is None else self._properties.color)
-        self._colorDialog.show()
-
-    def _noCutActionTriggered(self):
-        self.noCutActionTriggered.emit(not self._properties.cutEnabled)
 
 
 class DisplayControl(QWidget):
@@ -102,9 +29,9 @@ class DisplayControl(QWidget):
         self._scaffoldList = self._ui.actors
         self._view = view
 
-        self._menu = ContextMenu(self._scaffoldList)
+        self._menu = DisplayContextMenu(self._scaffoldList)
 
-        self._items = {}
+        self._items: dict[UUID, DisplayItem] = {}
         self._selectedItems = None
 
         self._scaffoldList.setColumnWidth(Column.COLOR_COLUMN, 20)
@@ -112,49 +39,66 @@ class DisplayControl(QWidget):
         self._scaffoldList.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
         self._scaffoldList.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
 
-        self._scaffolds: dict[UUID, Scaffold] = {}
-
-        for s in ScaffoldsDB().getScaffolds().values():
-            self._scaffolds[s.uuid] = s
 
         self._connectSignalsSlots()
 
-    def add(self, actorInfo):
-        if actorInfo.id() in self._items:
-            item = self._items[actorInfo.id()]
-            item.actorInfo().setDataSet(actorInfo.dataSet())
-            item.setHidden(False)
+    def add(self, name, dataSet) -> UUID:
+        did = uuid4()
+        item = DisplayItem(did, name, dataSet)
 
-            actorInfo = item.actorInfo()
-        else:
-            actorInfo.sourceChanged.connect(self._actorSourceUpdated)
+        self._items[did] = item
 
-            item = DisplayItem(actorInfo)
-            self._items[actorInfo.id()] = item
-            self._scaffoldList.addTopLevelItem(item)
-            item.setupColorWidget(self._scaffoldList)
+        self._scaffoldList.addTopLevelItem(item)
+        item.setupColorWidget(self._scaffoldList)
 
-        self._view.addActor(actorInfo.actor())
+        self._view.addActor(item.actor())
 
-        return actorInfo
+        return did
 
-    def remove(self, actorInfo):
-        index = -1
+    def remove(self, did: UUID):
+        if did not in self._items:
+            return
+
         for i in range(self._scaffoldList.topLevelItemCount()):
-            if self._scaffoldList.topLevelItem(i).actorInfo().id() == actorInfo.id():
-                index = i
-                break
+            item: DisplayItem = self._scaffoldList.topLevelItem(i)
+            if item.did() != did:
+                continue
 
-        if index > -1:
-            item = self._scaffoldList.takeTopLevelItem(index)
-            self._view.removeActor(item.actorInfo().actor())
-            del self._items[str(actorInfo.id())]
+            self._scaffoldList.takeTopLevelItem(i)
+
+            self._view.removeActor(item.actor())
+
+            del self._items[did]
             del item
 
-    def hide(self, actorInfo):
-        item = self._items[actorInfo.id()]
-        self._view.removeActor(item.actorInfo().actor())
-        item.setHidden(True)
+            break
+
+    def update(self, did: UUID, name: str, dataSet) -> UUID:
+        if did not in self._items:
+            return
+
+        for i in range(self._scaffoldList.topLevelItemCount()):
+            item: DisplayItem = self._scaffoldList.topLevelItem(i)
+            if item.did() != did:
+                continue
+
+            self._scaffoldList.takeTopLevelItem(i)
+
+            self._view.removeActor(item.actor())
+
+            did = uuid4()
+            item = DisplayItem(did, name, dataSet)
+
+            self._scaffoldList.insertTopLevelItem(i, item)
+            item.setupColorWidget(self._scaffoldList)
+
+            self._view.addActor(item.actor())
+
+
+    # def hide(self, actorInfo):
+    #     item = self._items[actorInfo.id()]
+    #     self._view.removeActor(item.actorInfo().actor())
+    #     item.setHidden(True)
 
     def refreshView(self):
         self._view.refresh()
@@ -168,20 +112,20 @@ class DisplayControl(QWidget):
         self._items = {}
         self._selectedItems = None
 
-    def setSelectedActors(self, ids):
-        self._scaffoldList.clearSelection()
-        for i in ids:
-            if i in self._items:
-                self._items[i].setSelected(True)
+    # def setSelectedActors(self, ids):
+    #     self._scaffoldList.clearSelection()
+    #     for i in ids:
+    #         if i in self._items:
+    #             self._items[i].setSelected(True)
 
-        self.selectionApplied.emit()
+    #     self.selectionApplied.emit()
 
     def selectedItemsChanged(self):
         ids = []
         for item in self._items.values():
             item.setHighlighted(item.isSelected())
             if item.isSelected():
-                ids.append(item.actorInfo().id())
+                ids.append(item.did())
 
         self.selectedActorsChanged.emit(ids)
         self._view.refresh()
@@ -282,7 +226,8 @@ class DisplayControl(QWidget):
             self._scaffoldList.clearSelection()
 
         if actor:
-            item = self._items[actor.GetObjectName()]
+            print(f'{actor.GetObjectName()} picked')
+            item = self._items[UUID(actor.GetObjectName())]
             if not item.isSelected() and forContextMenu:
                 self._scaffoldList.clearSelection()
 
@@ -293,5 +238,3 @@ class DisplayControl(QWidget):
 
     def _actorSourceUpdated(self, id_):
         pass
-
-

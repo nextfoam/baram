@@ -6,9 +6,10 @@ from uuid import UUID
 
 from lxml import etree
 
+from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.post_field import X_VELOCITY, Field, getFieldInstance
-from baramFlow.coredb.visual_report import ReportingScaffold, VisualReport
+from baramFlow.coredb.visual_report import VisualReport
 
 
 @dataclass
@@ -57,3 +58,6 @@ class Contour(VisualReport):
             scaffoldsElement.append(s)
 
         return etree.fromstring(string)
+
+    def xpath(self):
+        return f'/contour[uuid="{str(self.uuid)}"]'

@@ -4,6 +4,8 @@
 from threading import Lock
 from uuid import UUID, uuid4
 
+from PySide6.QtCore import QObject, Signal
+
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
@@ -19,8 +21,13 @@ ISO_SURFACE_NAME_PREFIX = 'iso-surface'
 _mutex = Lock()
 
 
-class ScaffoldsDB():
+class ScaffoldsDB(QObject):
     SCAFFOLDS_PATH = '/scaffolds'
+
+    ScaffoldAdded = Signal(UUID)
+    ScaffoldUpdated = Signal(UUID)
+    RemovingScaffold = Signal(UUID)
+
     def __new__(cls, *args, **kwargs):
         with _mutex:
             if not hasattr(cls, '_instance'):
@@ -62,6 +69,12 @@ class ScaffoldsDB():
     def getScaffolds(self):
         return self._scaffolds
 
+    def getScaffold(self, uuid: UUID):
+        return self._scaffolds[uuid]
+
+    def hasScaffold(self, uuid: UUID):
+        return uuid in self._scaffolds
+
     def addScaffold(self, scaffold: Scaffold):
         if scaffold.uuid in self._scaffolds:
             raise AssertionError
@@ -77,6 +90,8 @@ class ScaffoldsDB():
 
         self._scaffolds[scaffold.uuid] = scaffold
 
+        self.ScaffoldAdded.emit(scaffold.uuid)
+
     def removeScaffold(self, scaffold: Scaffold):
         if scaffold.uuid not in self._scaffolds:
             raise AssertionError
@@ -88,7 +103,9 @@ class ScaffoldsDB():
         else:
             raise AssertionError
 
-        coredb.CoreDB().removeElement(parent + f'/surface[uuid="{str(scaffold.uuid)}"]')
+        self.RemovingScaffold.emit(scaffold.uuid)
+
+        coredb.CoreDB().removeElement(parent + scaffold.xpath())
 
         del self._scaffolds[scaffold.uuid]
 
@@ -103,12 +120,23 @@ class ScaffoldsDB():
         else:
             raise AssertionError
 
-        coredb.CoreDB().removeElement(parent + f'/surface[uuid="{str(scaffold.uuid)}"]')
+        coredb.CoreDB().removeElement(parent + scaffold.xpath())
         coredb.CoreDB().addElement(parent, scaffold.toElement())
 
+        self.ScaffoldUpdated.emit(scaffold.uuid)
+
+    def getBoundariesInUse(self):
+        boundaries = []
+
+        for scaffold in self._scaffolds.values():
+            if isinstance(scaffold, BoundaryScaffold):
+                boundaries.append(scaffold.bcid)
+
+        return boundaries
+
     def nameDuplicates(self, uuid: UUID, name: str) -> bool:
-        for v in self._scaffolds.values():
-            if v.name == name and v.uuid != uuid:
+        for scaffold in self._scaffolds.values():
+            if scaffold.name == name and scaffold.uuid != uuid:
                 return True
 
         return False
@@ -120,7 +148,7 @@ class ScaffoldsDB():
         return self._getNewScaffoldName(ISO_SURFACE_NAME_PREFIX)
 
     def _getNewScaffoldName(self, prefix: str) -> str:
-        suffixes = [v.name[len(prefix):] for v in self._scaffolds.values() if v.name.startswith(prefix)]
+        suffixes = [scaffold.name[len(prefix):] for scaffold in self._scaffolds.values() if scaffold.name.startswith(prefix)]
         for i in range(1, 1000):
             if f'-{i}' not in suffixes:
                 return f'{prefix}-{i}'

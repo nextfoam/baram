@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtCore import QCoreApplication, QObject, Signal
+from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb import post_field
 
 
 FIELD_TEXTS = {
+    post_field.X_COORDINATE: QCoreApplication.translate('PostField', 'X-Coordinate'),
+    post_field.Y_COORDINATE: QCoreApplication.translate('PostField', 'Y-Coordinate'),
+    post_field.Z_COORDINATE: QCoreApplication.translate('PostField', 'Z-Coordinate'),
     post_field.PRESSURE: QCoreApplication.translate('PostField', 'Pressure'),
     post_field.SPEED: QCoreApplication.translate('PostField', 'Speed'),
     post_field.X_VELOCITY: QCoreApplication.translate('PostField', 'X-Velocity'),

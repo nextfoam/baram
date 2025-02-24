@@ -1,58 +1,38 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import subprocess
-from enum import Enum, auto
+from dataclasses import dataclass
+from random import random
+from uuid import UUID
 
-from PySide6.QtCore import Signal, Qt
-from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QVBoxLayout, QWidget, QColorDialog
+from PySide6.QtCore import QTimer, Signal
+from PySide6.QtWidgets import QWidget, QVBoxLayout
 
+import qasync
 from vtkmodules.vtkRenderingCore import vtkActor
 
-from baramFlow.coredb.app_settings import AppSettings
+from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_report import VisualReport
-from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.mesh.mesh_model import DisplayMode
 
+from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
+from baramFlow.view.widgets.rendering_view import RenderingView
 from widgets.overlay_frame import OverlayFrame
-from widgets.rendering.rotation_center_widget import RotationCenterWidget
-from widgets.rendering.ruler_widget import RulerWidget
 
 from .display_control.display_control import DisplayControl
 
-from .visual_report_view_ui import Ui_RenderingView
+@dataclass
+class ScaffoldDisplayItem:
+    scaffold: UUID
+    displayItem: UUID
 
-
-class DisplayMode(Enum):
-    DISPLAY_MODE_FEATURE        = 0
-    DISPLAY_MODE_POINTS         = auto()
-    DISPLAY_MODE_SURFACE        = auto()
-    DISPLAY_MODE_SURFACE_EDGE   = auto()
-    DISPLAY_MODE_WIREFRAME      = auto()
-
-
-class VisualReportView(QWidget):
+class VisualReportView(RenderingView):
     actorPicked = Signal(vtkActor, bool)
     renderingModeChanged = Signal(DisplayMode)
     viewClosed = Signal()
 
-    def __init__(self, report: VisualReport):
-        super().__init__()
-
-        self._ui = Ui_RenderingView()
-        self._ui.setupUi(self)
-
-        self._view = self._ui.view
-
-        self._rotationCenter = None
-
-        self._dialog = None
-
-        self._updateBGButtonStyle(self._ui.bg1, QColor.fromRgbF(*self._view.background1()))
-        self._updateBGButtonStyle(self._ui.bg2, QColor.fromRgbF(*self._view.background2()))
-
-        for mode in DisplayMode:
-            self._ui.renderingMode.setItemData(mode.value, mode)
+    def __init__(self, parent: QWidget = None, report: VisualReport = None):
+        super().__init__(parent)
 
         self._overlayFrame = OverlayFrame(self._view)
         self._displayControl = DisplayControl(self._overlayFrame, self._view)
@@ -61,98 +41,67 @@ class VisualReportView(QWidget):
 
         self._report = report
 
-        self._connectSignalsSlots()
+        self._scaffolds: dict[UUID, UUID] = {}
+        self._updatedScaffolds: set[UUID] = set()
 
-    def view(self):
-        return self._view
+        self._timer = QTimer()
+        self._timer.setInterval(200*(1+random()))  # "random" is introduced to distribute the execution
+        self._timer.setSingleShot(True)
+        self._timer.timeout.connect(self._refresh)
 
-    def close(self):
-        self._view.close()
-        return super().close()
+        for s in ScaffoldsDB().getScaffolds().values():
+            self._updatedScaffolds.add(s.uuid)
 
-    def renderingMode(self):
-        return self._ui.renderingMode.currentData()
-
-    def addActor(self, actor: vtkActor):
-        self._view.addActor(actor)
-
-    def removeActor(self, actor):
-        self._view.removeActor(actor)
-
-    def refresh(self):
-        self._view.refresh()
-
-    def fitCamera(self):
-        self._view.fitCamera()
+        self._timer.start()
 
     def _connectSignalsSlots(self):
-        self._ui.axis.toggled.connect(self._view.setAxisVisible)
-        self._ui.cubeAxis.toggled.connect(self._view.setCubeAxisVisible)
-        self._ui.ruler.toggled.connect(self._setRulerVisible)
-        self._ui.fit.clicked.connect(self._view.fitCamera)
-        self._ui.perspective.toggled.connect(self._view.setParallelProjection)
-        self._ui.alignAxis.clicked.connect(self._view.alignCamera)
-        self._ui.rotate.clicked.connect(self._view.rollCamera)
-        self._ui.rotationCenter.clicked.connect(self._toggleRotationCenter)
-        self._ui.renderingMode.currentIndexChanged.connect(self._renderingModeChanged)
-        self._ui.bg1.clicked.connect(self._pickBackground1)
-        self._ui.bg2.clicked.connect(self._pickBackground2)
+        super()._connectSignalsSlots()
 
-        self._view.actorPicked.connect(self.actorPicked)
-        self._view.viewClosed.connect(self.viewClosed)
+        ScaffoldsDB().ScaffoldAdded.connect(self._scaffoldUpdated)
+        ScaffoldsDB().ScaffoldUpdated.connect(self._scaffoldUpdated)
+        ScaffoldsDB().RemovingScaffold.connect(self._scaffoldUpdated)
 
-    def _setRulerVisible(self, checked):
-        if checked:
-            self._ruler = RulerWidget(self._view.interactor(), self._view.renderer())
-            self._ruler.on()
-        else:
-            self._ruler.off()
-            self._ruler = None
+    def _disconnectSignalsSlots(self):
+        ScaffoldsDB().ScaffoldAdded.disconnect(self._scaffoldUpdated)
+        ScaffoldsDB().ScaffoldUpdated.disconnect(self._scaffoldUpdated)
+        ScaffoldsDB().RemovingScaffold.disconnect(self._scaffoldUpdated)
 
-    def _paraviewFileSelected(self, file):
-        casePath = FileSystem.foamFilePath()
-        AppSettings.updateParaviewInstalledPath(file)
-        subprocess.Popen([f'{file}', f'{casePath}'])
+    def closeEvent(self, event):
+        self._disconnectSignalsSlots()
 
-    def _toggleRotationCenter(self, checked):
-        if checked:
-            self._rotationCenter = self._rotationCenter or RotationCenterWidget(self._view)
-            self._rotationCenter.on()
-        else:
-            self._rotationCenter.off()
+        super().closeEvent(event)
 
-    def _renderingModeChanged(self, index):
-        self.renderingModeChanged.emit(DisplayMode(index))
+    @qasync.asyncSlot()
+    async def _scaffoldUpdated(self, uuid: UUID):
+        self._updatedScaffolds.add(uuid)
 
-    def _pickBackground1(self):
-        self._dialog = self._newBGColorDialog()
-        self._dialog.colorSelected.connect(self._setBackground1)
-        self._dialog.open()
+        self._timer.start()
 
-    def _pickBackground2(self):
-        self._dialog = self._newBGColorDialog()
-        self._dialog.colorSelected.connect(self._setBackground2)
-        self._dialog.open()
+    @qasync.asyncSlot()
+    async def _refresh(self):
+        if len(self._updatedScaffolds) == 0:
+            return
 
-    def _newBGColorDialog(self):
-        dialog = QColorDialog(self)
-        dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
-        dialog.setCustomColor(0, QColor(56, 61, 84))
-        dialog.setCustomColor(1, QColor(209, 209, 209))
+        with OpenFOAMReader() as reader:
+            reader.setTimeValue(float(self._report.time))
+            while len(self._updatedScaffolds) > 0:
+                uuid = self._updatedScaffolds.pop()
+                mBlock = reader.getOutput()
+                if ScaffoldsDB().hasScaffold(uuid):
+                    scaffold = ScaffoldsDB().getScaffold(uuid)
+                    dataset = scaffold.getDataSet(mBlock)
+                    if uuid in self._scaffolds:
+                        id_ = self._scaffolds[uuid]
+                        self._displayControl.update(id_, scaffold.name, dataset)
+                    else:
+                        id_ = self._displayControl.add(scaffold.name, dataset)
+                        self._scaffolds[uuid] = id_
+                else:
+                    if uuid in self._scaffolds:
+                        id_ = self._scaffolds[uuid]
+                        self._displayControl.remove(id_)
 
-        return dialog
+                        del self._scaffolds[uuid]
 
-    def _setBackground1(self, color: QColor):
-        r, g, b, a = color.getRgbF()
-        self._view.setBackground1(r, g, b)
-        self._updateBGButtonStyle(self._ui.bg1, color)
+        self._view.refresh()
 
-    def _setBackground2(self, color: QColor):
-        r, g, b, a = color.getRgbF()
-        self._view.setBackground2(r, g, b)
-        self._updateBGButtonStyle(self._ui.bg2, color)
-
-    def _updateBGButtonStyle(self, button, color: QColor):
-        r, g, b, a = color.getRgb()
-        button.setStyleSheet(
-            f'background: rgb({r}, {g}, {b}); border-style: solid; border-color:black; border-width: 1')

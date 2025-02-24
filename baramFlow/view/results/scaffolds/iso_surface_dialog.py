@@ -7,22 +7,14 @@ from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QDoubleValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.coredb.post_field import BasicField, getAvailableFields
-from baramFlow.view.results.results_model.post_field import FIELD_TEXTS
-from libbaram.mesh import Bounds
-from widgets.async_message_box import AsyncMessageBox
-from widgets.rendering.point_widget import PointWidget
-from widgets.selector_dialog import SelectorDialog
-
-from baramFlow.app import app
-from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_writer import CoreDBWriter
-from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.post_field import Field, X_COORDINATE, Y_COORDINATE, Z_COORDINATE
+from baramFlow.coredb.post_field import getAvailableFields
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
-from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
-from baramFlow.mesh.vtk_loader import isPointInDataSet
+from baramFlow.view.results.results_model.post_field import FIELD_TEXTS
+
+from widgets.async_message_box import AsyncMessageBox
+
 from .iso_surface_dialog_ui import Ui_IsoSurfaceDialog
 
 
@@ -35,7 +27,9 @@ class IsoSurfaceDialog(QDialog):
 
         self._surface = surface
 
-        self._fields: list[Field] = getAvailableFields()
+        self._fields: list[Field] = [X_COORDINATE, Y_COORDINATE, Z_COORDINATE]
+        self._fields.extend(getAvailableFields())
+
         for f in self._fields:
             if f in FIELD_TEXTS:
                 self._ui.field.addItem(FIELD_TEXTS[f], f)

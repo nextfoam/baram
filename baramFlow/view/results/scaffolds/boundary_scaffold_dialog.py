@@ -49,8 +49,11 @@ class BoundaryScaffoldDialog(QDialog):
     @qasync.asyncSlot()
     async def _selectClicked(self):
         if not self._dialog:
-            self._dialog = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"),
-                                          BoundaryDB.getBoundarySelectorItems())
+            boundaries = BoundaryDB.getBoundarySelectorItems()
+            boundariesInUse = ScaffoldsDB().getBoundariesInUse()
+            items = filter(lambda item: item.data not in boundariesInUse, boundaries)
+
+            self._dialog = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"), items)
             self._dialog.accepted.connect(self._boundarySelected)
 
         self._dialog.open()

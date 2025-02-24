@@ -25,7 +25,7 @@ _mutex = Lock()
 class VisualReportsDB(QObject):
     ReportAdded    = Signal(UUID)
     ReportUpdated  = Signal(UUID)
-    ReportRemoving = Signal(UUID)
+    RemovingReport = Signal(UUID)
 
     VISUAL_REPORTS_PATH = '/visualReports'
 
@@ -49,7 +49,7 @@ class VisualReportsDB(QObject):
 
     def load(self):
          for report in self._reports.values():
-            self.ReportRemoving.emit(report.uuid)
+            self.RemovingReport.emit(report.uuid)
 
          self._reports = self._parseVisualReports()
 
@@ -97,9 +97,9 @@ class VisualReportsDB(QObject):
         else:
             raise AssertionError
 
-        self.ReportRemoving.emit(report.uuid)
+        self.RemovingReport.emit(report.uuid)
 
-        coredb.CoreDB().removeElement(parent + f'/contour[uuid="{str(report.uuid)}"]')
+        coredb.CoreDB().removeElement(parent + report.xpath())
 
         del self._reports[report.uuid]
 
@@ -112,7 +112,7 @@ class VisualReportsDB(QObject):
         else:
             raise AssertionError
 
-        coredb.CoreDB().removeElement(parent + f'/contour[uuid="{str(report.uuid)}"]')
+        coredb.CoreDB().removeElement(parent + report.xpath())
         coredb.CoreDB().addElement(parent, report.toElement())
 
         self.ReportUpdated.emit(report.uuid)
