@@ -28,11 +28,15 @@ class ScaffoldDisplayItem:
 
 class VisualReportView(RenderingView):
     actorPicked = Signal(vtkActor, bool)
-    renderingModeChanged = Signal(DisplayMode)
     viewClosed = Signal()
 
     def __init__(self, parent: QWidget = None, report: VisualReport = None):
         super().__init__(parent)
+
+        layout = self._ui.renderingMode.parentWidget().layout()
+        layout.removeWidget(self._ui.renderingMode)
+        self._ui.renderingMode.setParent(None)
+        self._ui.renderingMode = None
 
         self._overlayFrame = OverlayFrame(self._view)
         self._displayControl = DisplayControl(self._overlayFrame, self._view)

@@ -122,6 +122,8 @@ class NavigatorView(QObject):
         self._menu[MenuItem.MENU_SOLUTION_MONITORS.value].setDisabled(CaseManager().isBatchRunning())
         self._menu[MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value].setDisabled(CaseManager().isBatchRunning())
 
+        self._menu[MenuItem.MENU_RESULTS_SCAFFOLDS.value].setDisabled(noMesh)
+        self._menu[MenuItem.MENU_RESULTS_GRAPHICS.value].setDisabled(noMesh)
         self._menu[MenuItem.MENU_RESULTS_REPORTS.value].setDisabled(solverActivated)
 
     def translate(self):

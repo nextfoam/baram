@@ -73,6 +73,12 @@ class OverlayFrame(QFrame):
 
         self._controlHandle.setGeometry(handleX, self.MARGIN + (self.height() - self._controlHandle.height()) // 2, self._controlHandle.width(), self._controlHandle.height())
 
+    def showEvent(self, event):
+        if not event.spontaneous():
+            self.updateGeometry()
+
+        return super(OverlayFrame, self).showEvent(event)
+
     def _handleClicked(self, ev: QMouseEvent):
         if self._agroup.state() == QAbstractAnimation.Running:
             return

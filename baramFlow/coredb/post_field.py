@@ -103,7 +103,9 @@ WALL_Y_PLUS         = CollateralField('wallYPlus')
 
 def getFieldInstance(type_: str, name: str, *args, **kwargs):
     fieldType = FieldType(type_)
-    if fieldType == FieldType.BASIC:
+    if fieldType == FieldType.GEOMETRY:
+        return GeometryField(name, *args, **kwargs)
+    elif fieldType == FieldType.BASIC:
         return BasicField(name, *args, **kwargs)
     elif fieldType == FieldType.COLLATERAL:
         return CollateralField(name, *args, **kwargs)

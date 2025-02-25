@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction, QColor
 from PySide6.QtWidgets import QColorDialog, QMenu
 
-from .display_item import DisplayMode, Properties
+from .display_item import ColorMode, DisplayMode, Properties
 from .opacity_dialog import OpacityDialog
 
 
@@ -14,7 +14,8 @@ class DisplayContextMenu(QMenu):
     hideActionTriggered = Signal()
     opacitySelected = Signal(float)
     colorPicked = Signal(QColor)
-    noCutActionTriggered = Signal(bool)
+    solidColorModeSelected = Signal()
+    fieldColorModeSelected = Signal()
 
     wireframeDisplayModeSelected = Signal()
     surfaceDisplayModeSelected = Signal()
@@ -28,25 +29,37 @@ class DisplayContextMenu(QMenu):
         self._colorDialog.setWindowModality(Qt.WindowModality.ApplicationModal)
         self._properties = None
 
-        self._showAction = self.addAction(self.tr('Show'), lambda: self.showActionTriggered.emit())
-        self._hideAction = self.addAction(self.tr('Hide'), lambda: self.hideActionTriggered.emit())
-        self._opacityAction = self.addAction(self.tr('Opacity'), self._openOpacityDialog)
-        self._colorAction = self.addAction(self.tr('Color'), self._openColorDialog)
+        self._showAction: QAction = self.addAction(self.tr('Show'))
+        self._showAction.triggered.connect(self.showActionTriggered)
 
-        displayMenu = self.addMenu(self.tr('Display Mode'))
-        self._wireFrameDisplayAction = displayMenu.addAction(
-            self.tr('Wireframe'), lambda: self.wireframeDisplayModeSelected.emit())
-        self._surfaceDisplayAction = displayMenu.addAction(
-            self.tr('Surface'), lambda: self.surfaceDisplayModeSelected.emit())
-        self._surfaceEdgeDisplayAction = displayMenu.addAction(
-            self.tr('Surface with Edges'), lambda: self.surfaceEdgeDisplayModeSelected.emit())
+        self._hideAction: QAction = self.addAction(self.tr('Hide'))
+        self._hideAction.triggered.connect(self.hideActionTriggered)
 
-        self._noCutAction: QAction = self.addAction(self.tr('No Cut'), self._noCutActionTriggered)
+        self._opacityAction: QAction = self.addAction(self.tr('Opacity'), self._openOpacityDialog)
 
+        self._colorAction: QAction = self.addAction(self.tr('Color'), self._openColorDialog)
+
+        self._colorModeMenu: QMenu = self.addMenu(self.tr('Color Mode'))
+
+        self._solidColorAction: QAction = self._colorModeMenu.addAction(self.tr('Solid'), self._solidColorActionTriggered)
+        self._solidColorAction.setCheckable(True)
+
+        self._fieldColorAction: QAction = self._colorModeMenu.addAction(self.tr('Field'), self._fieldColorActionTriggered)
+        self._fieldColorAction.setCheckable(True)
+
+        displayMenu: QMenu = self.addMenu(self.tr('Display Mode'))
+
+        self._wireFrameDisplayAction: QAction = displayMenu.addAction(self.tr('Wireframe'))
+        self._wireFrameDisplayAction.triggered.connect(self.wireframeDisplayModeSelected)
         self._wireFrameDisplayAction.setCheckable(True)
+
+        self._surfaceDisplayAction: QAction = displayMenu.addAction(self.tr('Surface'))
+        self._surfaceDisplayAction.triggered.connect(self.surfaceDisplayModeSelected)
         self._surfaceDisplayAction.setCheckable(True)
+
+        self._surfaceEdgeDisplayAction: QAction = displayMenu.addAction(self.tr('Surface with Edges'))
+        self._surfaceEdgeDisplayAction.triggered.connect(self.surfaceEdgeDisplayModeSelected)
         self._surfaceEdgeDisplayAction.setCheckable(True)
-        self._noCutAction.setCheckable(True)
 
         self._connectSignalsSlots()
 
@@ -55,10 +68,11 @@ class DisplayContextMenu(QMenu):
 
         self._showAction.setVisible(not properties.visibility)
         self._hideAction.setVisible(properties.visibility is None or properties.visibility)
+        self._solidColorAction.setChecked(properties.colorMode == ColorMode.SOLID)
+        self._fieldColorAction.setChecked(properties.colorMode == ColorMode.FIELD)
         self._wireFrameDisplayAction.setChecked(properties.displayMode == DisplayMode.WIREFRAME)
         self._surfaceDisplayAction.setChecked(properties.displayMode == DisplayMode.SURFACE)
         self._surfaceEdgeDisplayAction.setChecked(properties.displayMode == DisplayMode.SURFACE_EDGE)
-        self._noCutAction.setChecked(properties.cutEnabled is False)
 
         self.exec(pos)
 
@@ -75,5 +89,11 @@ class DisplayContextMenu(QMenu):
             Qt.GlobalColor.white if self._properties.color is None else self._properties.color)
         self._colorDialog.show()
 
-    def _noCutActionTriggered(self):
-        self.noCutActionTriggered.emit(not self._properties.cutEnabled)
+    def _solidColorActionTriggered(self):
+        self._colorAction.setEnabled(True)
+        self.solidColorModeSelected.emit()
+
+    def _fieldColorActionTriggered(self):
+        self._colorAction.setEnabled(False)
+        self.fieldColorModeSelected.emit()
+

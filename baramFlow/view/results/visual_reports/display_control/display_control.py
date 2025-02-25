@@ -4,7 +4,7 @@
 from typing import Optional
 from uuid import UUID, uuid4
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QHeaderView, QHeaderView, QWidget
 
 from baramFlow.app import app
@@ -13,7 +13,7 @@ from widgets.rendering.rendering_widget import RenderingWidget
 
 from .display_context_menu import DisplayContextMenu
 from .display_control_ui import Ui_DisplayControl
-from .display_item import DisplayMode, Properties, DisplayItem, Column
+from .display_item import ColorMode, DisplayMode, Properties, DisplayItem, Column
 
 
 class DisplayControl(QWidget):
@@ -29,10 +29,12 @@ class DisplayControl(QWidget):
         self._scaffoldList = self._ui.actors
         self._view = view
 
+        self._view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+
         self._menu = DisplayContextMenu(self._scaffoldList)
 
         self._items: dict[UUID, DisplayItem] = {}
-        self._selectedItems = None
+        self._selectedItems: list[DisplayItem] = []
 
         self._scaffoldList.setColumnWidth(Column.COLOR_COLUMN, 20)
 
@@ -110,7 +112,7 @@ class DisplayControl(QWidget):
         self._scaffoldList.clear()
         self._view.clear()
         self._items = {}
-        self._selectedItems = None
+        self._selectedItems.clear()
 
     # def setSelectedActors(self, ids):
     #     self._scaffoldList.clearSelection()
@@ -139,6 +141,8 @@ class DisplayControl(QWidget):
         self._menu.hideActionTriggered.connect(self._hideActors)
         self._menu.opacitySelected.connect(self._applyOpacity)
         self._menu.colorPicked.connect(self._applyColor)
+        self._menu.solidColorModeSelected.connect(self._solidColorMode)
+        self._menu.fieldColorModeSelected.connect(self._fieldColorMode)
         self._menu.wireframeDisplayModeSelected.connect(self._displayWireframe)
         self._menu.surfaceDisplayModeSelected.connect(self._displaySurface)
         self._menu.surfaceEdgeDisplayModeSelected.connect(self._displayWireSurfaceWithEdges)
@@ -168,13 +172,13 @@ class DisplayControl(QWidget):
         if not items:
             return None
 
-        self._selectedItems = []
+        self._selectedItems.clear()
         baseProp: Properties = items[0].properties()
         properties = Properties(baseProp.visibility,
                                 baseProp.opacity,
                                 baseProp.color,
+                                baseProp.colorMode,
                                 baseProp.displayMode,
-                                baseProp.cutEnabled,
                                 baseProp.highlighted)
 
         for item in items:
@@ -220,6 +224,18 @@ class DisplayControl(QWidget):
     def _applyColor(self, color):
         for item in self._selectedItems:
             item.setActorColor(color)
+
+    def _solidColorMode(self):
+        for item in self._selectedItems:
+            item.setColorMode(ColorMode.SOLID)
+
+        self._view.refresh()
+
+    def _fieldColorMode(self):
+        for item in self._selectedItems:
+            item.setColorMode(ColorMode.FIELD)
+
+        self._view.refresh()
 
     def _actorPicked(self, actor, ctrlKeyPressed=False, forContextMenu=False):
         if not ctrlKeyPressed and not forContextMenu:

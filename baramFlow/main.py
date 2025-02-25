@@ -13,7 +13,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 # To render SVG files.
 # noinspection PyUnresolvedReferences
 import PySide6.QtSvg
-from vtkmodules.vtkCommonCore import vtkSMPTools
+from vtkmodules.vtkCommonCore import vtkOutputWindow, vtkSMPTools, vtkStringOutputWindow
 
 # To use ".qrc" QT Resource files
 # noinspection PyUnresolvedReferences
@@ -69,6 +69,9 @@ def main():
 
     os.environ['LC_NUMERIC'] = 'C'
     os.environ["QT_SCALE_FACTOR"] = AppSettings.getUiScaling()
+
+    errOut = vtkStringOutputWindow()
+    vtkOutputWindow.SetInstance(errOut)
 
     # Leave 1 core for users
     numCores = getAvailablePhysicalCores() - 1

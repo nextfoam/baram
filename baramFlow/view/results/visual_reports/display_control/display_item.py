@@ -10,6 +10,13 @@ from PySide6.QtWidgets import QTreeWidgetItem, QLabel, QWidget, QHBoxLayout
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkRenderingCore import vtkActor, vtkMapper, vtkPolyDataMapper
 
+from libbaram.colormap import sequentialRedLut
+
+
+class ColorMode(Enum):
+    SOLID = auto()  # noqa: E221
+    FIELD = auto()  # noqa: E221
+
 
 class DisplayMode(Enum):
     WIREFRAME      = auto()  # noqa: E221
@@ -22,16 +29,16 @@ class Properties:
     visibility: bool
     opacity: float
     color: QColor
+    colorMode: ColorMode
     displayMode: DisplayMode
-    cutEnabled: bool
     highlighted: bool
 
     def merge(self, properties):
         self.visibility = properties.visibility if properties.visibility == self.visibility else None
         self.opacity = properties.opacity if properties.opacity == self.opacity else None
         self.color = properties.color if properties.color == self.color else None
+        self.colorMode = properties.colorMode if properties.colorMode == self.colorMode else None
         self.displayMode = properties.displayMode if properties.displayMode == self.displayMode else None
-        self.cutEnabled = properties.cutEnabled if properties.cutEnabled == self.cutEnabled else None
 
 
 class Column(IntEnum):
@@ -59,9 +66,10 @@ class DisplayItem(QTreeWidgetItem):
         self._mapper: vtkMapper = vtkPolyDataMapper()
         self._mapper.SetInputData(dataSet)
         self._mapper.ScalarVisibilityOff()
-        self._mapper.SetScalarModeToUseCellFieldData()
+        self._mapper.SetScalarModeToUsePointData()
         self._mapper.SetColorModeToMapScalars()
-#        self._mapper.SetLookupTable(sequentialRedLut)
+        self._mapper.SetLookupTable(sequentialRedLut)
+        self._mapper.SelectColorArray('T')
 
         self._actor = vtkActor()
         self._actor.SetMapper(self._mapper)
@@ -74,8 +82,9 @@ class DisplayItem(QTreeWidgetItem):
         self._properties = Properties(bool(self._actor.GetVisibility()),
                                       prop.GetOpacity(),
                                       QColor.fromRgbF(*prop.GetColor()),
+                                      ColorMode.SOLID,
                                       DisplayMode.SURFACE,
-                                      True, False)
+                                      False)
 
         self._displayModeApplicator = {
             DisplayMode.WIREFRAME: self._applyWireframeMode,
@@ -133,7 +142,7 @@ class DisplayItem(QTreeWidgetItem):
         self._actor.SetVisibility(visibility)
         self._updateColorColumn()
 
-    def setDisplayMode(self, mode):
+    def setDisplayMode(self, mode: DisplayMode):
         self._properties.displayMode = mode
         self._displayModeApplicator[mode]()
 
@@ -144,6 +153,17 @@ class DisplayItem(QTreeWidgetItem):
     def setActorColor(self, color: QColor):
         self._properties.color = color
         self._actor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
+        self._updateColorColumn()
+
+    def setColorMode(self, mode: ColorMode):
+        self._properties.colorMode = mode
+        if mode == ColorMode.SOLID:
+            self._mapper.ScalarVisibilityOff()
+        elif mode == ColorMode.FIELD:
+            self._mapper.ScalarVisibilityOn()
+        else:
+            raise AssertionError
+
         self._updateColorColumn()
 
     def setHighlighted(self, highlighted):
@@ -185,9 +205,17 @@ class DisplayItem(QTreeWidgetItem):
 
     def _updateColorColumn(self):
         if self.isVisible():
-            color = self.color()
-            self._colorWidget.setStyleSheet(
-                f'background-color: rgb({color.red()}, {color.green()}, {color.blue()}); border: 1px solid LightGrey; border-radius: 3px;')
+            if self._properties.colorMode == ColorMode.SOLID:
+                color = self.color()
+                self._colorWidget.setStyleSheet(
+                    f'background-color: rgb({color.red()}, {color.green()}, {color.blue()});'
+                    'border: 1px solid LightGrey; border-radius: 3px;')
+            elif self._properties.colorMode == ColorMode.FIELD:
+                self._colorWidget.setStyleSheet(
+                    'background-color: qlineargradient(x1: 0, y1: 0,x2: 1, y2: 1, stop: 0 #ff0000, stop: 0.33 #ffff00, stop: 0.66 #00c0ff, stop: 1 #c000ff);'
+                    'border: 1px solid LightGrey; border-radius: 3px;')
+            else:
+                raise AssertionError
         else:
             self._colorWidget.setStyleSheet('')
 
