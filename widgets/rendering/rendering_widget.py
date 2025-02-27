@@ -11,6 +11,7 @@ import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
 import vtkmodules.vtkRenderingOpenGL2
 from PySide6.QtCore import Qt, Signal, QObject
+from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QWidget, QFileDialog, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkCommonColor import vtkNamedColors
@@ -37,6 +38,21 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
         if self._RenderWindow is not None:
             self._RenderWindow.Finalize()
             self._RenderWindow = None
+
+    def mouseDoubleClickEvent(self, ev: QMouseEvent):
+        ctrl, shift = self._GetCtrlShift(ev)
+
+        x, y = ev.position().x(), ev.position().y()
+
+        self._setEventInformation(x, y,
+                                  ctrl, shift, chr(0), 0, None)
+
+        if self._ActiveButton == Qt.MouseButton.LeftButton:
+            self._Iren.InvokeEvent(vtkCommand.LeftButtonDoubleClickEvent, None)
+        elif self._ActiveButton == Qt.MouseButton.RightButton:
+            self._Iren.InvokeEvent(vtkCommand.RightButtonDoubleClickEvent, None)
+        elif self._ActiveButton == Qt.MiddleButton:
+            self._Iren.InvokeEvent(vtkCommand.MiddleButtonDoubleClickEvent, None)
 
 
 class MouseHandler(QObject):
@@ -155,7 +171,7 @@ class RenderingWidget(QWidget):
         self._style.AddObserver(vtkCommand.InteractionEvent, self._interactionEvent)
 
     def interactor(self):
-        return self._widget
+        return self._widget._Iren
 
     def renderer(self):
         return self._renderer
