@@ -1,0 +1,16 @@
+<svg id="icons"
+     viewBox="0 0 512 512"
+     xmlns="http://www.w3.org/2000/svg">
+	<path id="back"
+	      style="fill:none;stroke:#808080;stroke-width:16;stroke-linecap:round;stroke-linejoin:round"
+	      d="M 158,354 L 158,32 M 158,354 L 480,354 M 158,354 L 32,480 Z"/>
+	<path id="front"
+	      style="fill:none;stroke:#101010;stroke-width:16;stroke-linecap:round;stroke-linejoin:round"
+	      d="M 354,158 L 32,158 L 32,480 L 354,480"/>
+	<path id="right"
+	      style="fill:#000000;fill-opacity:0.8;stroke:#101010;stroke-width:16;stroke-linecap:round;stroke-linejoin:round"
+	      d="M 354,158 L 480,32 L 480,354 L 354,480 Z"/>
+	<path id="top"
+	      style="fill:none;stroke:#101010;stroke-width:16;stroke-linecap:round;stroke-linejoin:round"
+	      d="M 32,158 L 158,32 L 480,32 L 354,158"/>
+</svg>
