@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QWidget
 
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.scaffolds_db import Scaffold, ScaffoldsDB
-from baramFlow.view.results.results_model.post_field import FIELD_TEXTS
+from baramFlow.coredb.post_field import FIELD_TEXTS
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
 from baramFlow.view.results.scaffolds.iso_surface_dialog import IsoSurfaceDialog
 

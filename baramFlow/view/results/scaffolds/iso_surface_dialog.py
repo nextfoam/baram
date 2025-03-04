@@ -11,7 +11,7 @@ from baramFlow.coredb.post_field import Field, X_COORDINATE, Y_COORDINATE, Z_COO
 from baramFlow.coredb.post_field import getAvailableFields
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
-from baramFlow.view.results.results_model.post_field import FIELD_TEXTS
+from baramFlow.coredb.post_field import FIELD_TEXTS
 
 from widgets.async_message_box import AsyncMessageBox
 

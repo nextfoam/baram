@@ -5,7 +5,7 @@
 from baramFlow.coredb.contour import Contour
 from baramFlow.coredb.visual_reports_db import VisualReportsDB
 from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.view.results.results_model.post_field import FIELD_TEXTS
+from baramFlow.coredb.post_field import FIELD_TEXTS
 from widgets.async_message_box import AsyncMessageBox
 
 from .contour_dialog import ContourDialog
@@ -45,7 +45,7 @@ class ContourWidget(VisualReportWidget):
         self._dialog.open()
 
     def _editAccepted(self):
-        VisualReportsDB().updateVisualReport(self._contour)
+        self._contour.markUpdated()
         self.load()
 
     def delete(self):

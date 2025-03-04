@@ -6,49 +6,14 @@ from uuid import UUID, uuid4
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QHeaderView, QHeaderView, QWidget
-from vtkmodules.vtkCommonCore import vtkCommand
-from vtkmodules.vtkInteractionWidgets import vtkBorderRepresentation, vtkScalarBarWidget
-from vtkmodules.vtkRenderingAnnotation import vtkScalarBarActor
 
 from baramFlow.app import app
-
-from libbaram.colormap import sequentialRedLut
 
 from widgets.rendering.rendering_widget import RenderingWidget
 
 from .display_context_menu import DisplayContextMenu
 from .display_control_ui import Ui_DisplayControl
 from .display_item import ColorMode, DisplayMode, Properties, DisplayItem, Column
-
-
-class MyScalarBarWidget(vtkScalarBarWidget):
-    def __init__(self):
-        super().__init__()
-
-        self._doubleClickTag = None
-
-        self._enableTag  = self.AddObserver(vtkCommand.EnableEvent, self._enabled)
-        self._disableTag = self.AddObserver(vtkCommand.DisableEvent, self._disabled)
-
-    def _enabled(self, obj, event):
-        interactor = self.GetInteractor()
-        self._doubleClickTag = interactor.AddObserver(vtkCommand.LeftButtonDoubleClickEvent, self._leftButtonDoubleClickEvent)
-
-    def _disabled(self, obj, event):
-        interactor = self.GetInteractor()
-        interactor.RemoveObserver(self._doubleClickTag)
-        self._doubleClickTag = None
-
-    def __del__(self):
-        if self._doubleClickTag is not None:
-            self._disabled()
-
-    def _leftButtonDoubleClickEvent(self, obj, event):
-        representation = self.GetScalarBarRepresentation()
-        if representation.GetInteractionState() == vtkBorderRepresentation.Outside:
-            return
-
-        print(f'Left mouse button Double Clicked')
 
 
 class DisplayControl(QWidget):
@@ -65,19 +30,6 @@ class DisplayControl(QWidget):
         self._view = view
 
         self._view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-
-        self._legendWidget = MyScalarBarWidget()
-        self._legendWidget.SetInteractor(self._view.interactor())
-
-        actor: vtkScalarBarActor = self._legendWidget.GetScalarBarActor()
-        actor.SetLookupTable(sequentialRedLut)
-        actor.UnconstrainedFontSizeOn()
-
-        representation = self._legendWidget.GetScalarBarRepresentation()
-        representation.SetPosition(0.03, 0.03)
-        representation.SetPosition2(0.08, 0.33)
-
-        self._legendWidget.On()
 
         self._menu = DisplayContextMenu(self._scaffoldList)
 

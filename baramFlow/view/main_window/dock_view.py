@@ -31,4 +31,4 @@ class DockView(QWidget):
 
     def removeDockWidget(self, dockWidget):
         self._menu.removeAction(dockWidget.toggleViewAction())
-        self._dockManager.remove
+        self._dockManager.removeDockWidget(dockWidget)

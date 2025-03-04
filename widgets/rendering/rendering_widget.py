@@ -213,14 +213,14 @@ class RenderingWidget(QWidget):
     def clear(self):
         self._renderer.RemoveAllViewProps()
 
-    def _turnCamera(self, orientation: (float, float, float), up: (float, float, float)):
+    def _turnCamera(self, orientation: tuple[float, float, float], up: tuple[float, float, float]):
         camera = self._renderer.GetActiveCamera()
         d = camera.GetDistance()
         fx, fy, fz = camera.GetFocalPoint()
         camera.SetPosition(fx-orientation[0]*d, fy-orientation[1]*d, fz-orientation[2]*d)
         camera.SetViewUp(up[0], up[1], up[2])
 
-    def _getClosestAxis(self, u: (float, float, float)) -> (float, float, float):
+    def _getClosestAxis(self, u: tuple[float, float, float]) -> tuple[float, float, float]:
         axis = [0, 0, 0]
         i = u.index(max(u, key=abs))
         v = 1 if u[i] > 0 else -1

@@ -10,7 +10,7 @@ import qasync
 from baramFlow.coredb.contour import Contour
 from baramFlow.coredb.post_field import Field, getAvailableFields
 from baramFlow.coredb.visual_reports_db import VisualReportsDB
-from baramFlow.view.results.results_model.post_field import FIELD_TEXTS
+from baramFlow.coredb.post_field import FIELD_TEXTS
 from widgets.async_message_box import AsyncMessageBox
 from widgets.time_slider import TimeSlider
 

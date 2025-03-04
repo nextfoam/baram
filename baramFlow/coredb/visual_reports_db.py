@@ -48,13 +48,17 @@ class VisualReportsDB(QObject):
         self._reports: dict[UUID, VisualReport] = {}
 
     def load(self):
-         for report in self._reports.values():
+        self._reports = self._parseVisualReports()
+
+        for report in self._reports.values():
+            report.instanceUpdated.connect(self._reportUpdated)
+            self.ReportAdded.emit(report.uuid)
+
+    def close(self):
+        for report in self._reports.values():
             self.RemovingReport.emit(report.uuid)
 
-         self._reports = self._parseVisualReports()
-
-         for report in self._reports.values():
-            self.ReportAdded.emit(report.uuid)
+        self._reports = {}
 
     def _parseVisualReports(self) -> dict[UUID, VisualReport]:
         reports = {}
@@ -86,6 +90,8 @@ class VisualReportsDB(QObject):
 
         self._reports[report.uuid] = report
 
+        report.instanceUpdated.connect(self._reportUpdated)
+
         self.ReportAdded.emit(report.uuid)
 
     def removeVisualReport(self, report: VisualReport):
@@ -103,9 +109,11 @@ class VisualReportsDB(QObject):
 
         del self._reports[report.uuid]
 
-    def updateVisualReport(self, report: VisualReport):
-        if report.uuid not in self._reports:
-            raise AssertionError
+    def _reportUpdated(self, uuid: UUID):
+        if uuid not in self._reports:
+            return
+
+        report = self._reports[uuid]
 
         if isinstance(report, Contour):
             parent = self.VISUAL_REPORTS_PATH + '/contours'

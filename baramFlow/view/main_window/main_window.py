@@ -8,6 +8,7 @@ import subprocess
 from enum import Enum, auto
 from pathlib import Path
 import platform
+from uuid import UUID
 
 import qasync
 import asyncio
@@ -15,7 +16,10 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
-from baramFlow.view.results.visual_reports.visual_report_dock_manager import VisualReportDockManager
+from baramFlow.coredb.contour import Contour
+from baramFlow.coredb.visual_report import VisualReport
+from baramFlow.coredb.visual_reports_db import VisualReportsDB
+from baramFlow.view.results.visual_reports.visual_report_dock import VisualReportDock
 from libbaram.exception import CanceledException
 from libbaram.openfoam.polymesh import removeVoidBoundaries
 from libbaram.run import hasUtility
@@ -175,6 +179,8 @@ class MainWindow(QMainWindow):
         self._ui.splitter.addWidget(self._dockView)
         self._ui.splitter.setStretchFactor(2, 1)
 
+        self._docks: dict[UUID, VisualReportDock] = {}
+
     def consoleView(self):
         return self._consoleDock.widget()
 
@@ -188,13 +194,15 @@ class MainWindow(QMainWindow):
         self._dockView.addDockWidget(dockWidget)
 
     def removeDockWidget(self, dockWidget):
-        self._dockView.removeWidget(dockWidget)
+        self._dockView.removeDockWidget(dockWidget)
 
     def case(self):
         return self._caseManager
 
     def load(self):
-        VisualReportDockManager().load()
+        for report in VisualReportsDB().getVisualReports().values():
+            if isinstance(report, Contour):
+                self._addNewReportDock(report)
 
         self._project.opened()
 
@@ -274,11 +282,19 @@ class MainWindow(QMainWindow):
 
         self._caseManager.caseLoaded.connect(self._caseLoaded)
 
+        VisualReportsDB().ReportAdded.connect(self._reportAdded)
+        VisualReportsDB().ReportUpdated.connect(self._reportUpdated)
+        VisualReportsDB().RemovingReport.connect(self._reportRemoving)
+
     def _disconnectSignalsSlots(self):
         self._project.projectOpened.disconnect(self._projectOpened)
         self._project.solverStatusChanged.disconnect(self._solverStatusChanged)
 
         self._caseManager.caseLoaded.disconnect(self._caseLoaded)
+
+        VisualReportsDB().ReportAdded.disconnect(self._reportAdded)
+        VisualReportsDB().ReportUpdated.disconnect(self._reportUpdated)
+        VisualReportsDB().RemovingReport.disconnect(self._reportRemoving)
 
     @qasync.asyncSlot()
     async def _save(self):
@@ -904,3 +920,22 @@ class MainWindow(QMainWindow):
         db.clearMonitors()
         FileSystem.deleteMesh()
         self.meshUpdated()
+
+    def _addNewReportDock(self, report: VisualReport):
+        dock = VisualReportDock(report)
+        self._docks[report.uuid] = dock
+        self.addDockWidget(dock)
+
+    def _reportAdded(self, uuid: UUID):
+        report = VisualReportsDB().getVisualReport(uuid)
+        self._addNewReportDock(report)
+
+    def _reportUpdated(self, uuid: UUID):
+        if uuid in self._docks:
+            dock = self._docks[uuid]
+            # ToDo: what to do?
+
+    def _reportRemoving(self, uuid: UUID):
+        if uuid in self._docks:
+            self.removeDockWidget(self._docks[uuid])
+            del self._docks[uuid]

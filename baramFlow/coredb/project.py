@@ -282,6 +282,7 @@ class _Project(QObject):
         VisualReportsDB().load()
 
     def _close(self):
+        VisualReportsDB().close()
         coredb.destroy()
         self.projectClosed.emit()
         if self._projectLock:

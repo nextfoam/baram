@@ -163,4 +163,6 @@ class OpenFOAMReader(QObject):
     @qasync.asyncSlot()
     async def _caseLoaded(self, name: str):
         print('caseLoaded====================')
+        self.__enter__()
         self._setupReader()
+        self.__exit__(None, None, None)

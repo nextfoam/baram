@@ -2557,6 +2557,18 @@
                                                     </xs:element>
                                                     <xs:element name="fieldName" type="xs:string"/>
                                                     <xs:element name="time" type="xs:string"/>
+                                                    <!-- color map configuration begin -->
+                                                    <xs:element name="fieldDisplayName" type="xs:string"/>
+                                                    <xs:element name="numberOfLevels" type="xs:positiveInteger" default="256"/>
+                                                    <xs:element name="useCustomRange" type="xs:boolean" default="false"/>
+                                                    <xs:element name="customRangeMin" type="xs:double" default="0"/>
+                                                    <xs:element name="customRangeMax" type="xs:double" default="0"/>
+                                                    <xs:element name="clipToRange" type="xs:boolean" default="false"/>
+                                                    <xs:element name="useCustomColorScheme" type="xs:boolean" default="false"/>
+                                                    <xs:element name="colorScheme" type="xs:positiveInteger" default="1"/>
+                                                    <xs:element name="customMinColor" type="xs:string" default="#000000"/>
+                                                    <xs:element name="customMaxColor" type="xs:string" default="#ffffff"/>
+                                                    <!-- color map configuration end -->
                                                     <xs:element name="scaffolds">
                                                         <xs:complexType>
                                                             <xs:sequence>

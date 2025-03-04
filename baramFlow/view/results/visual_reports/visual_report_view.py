@@ -9,14 +9,19 @@ from PySide6.QtCore import QTimer, Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 
 import qasync
+from vtkmodules.vtkRenderingAnnotation import vtkScalarBarActor
 from vtkmodules.vtkRenderingCore import vtkActor
 
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_report import VisualReport
-from baramFlow.mesh.mesh_model import DisplayMode
 
+from baramFlow.view.results.visual_reports.display_control.contour_colormap_dialog import ContourColormapDialog
 from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
+from baramFlow.view.results.visual_reports.scalar_bar_widget import ScalarBarWidget
 from baramFlow.view.widgets.rendering_view import RenderingView
+
+from libbaram.colormap import sequentialRedLut
+
 from widgets.overlay_frame import OverlayFrame
 
 from .display_control.display_control import DisplayControl
@@ -25,6 +30,7 @@ from .display_control.display_control import DisplayControl
 class ScaffoldDisplayItem:
     scaffold: UUID
     displayItem: UUID
+
 
 class VisualReportView(RenderingView):
     actorPicked = Signal(vtkActor, bool)
@@ -38,11 +44,26 @@ class VisualReportView(RenderingView):
         self._ui.renderingMode.setParent(None)
         self._ui.renderingMode = None
 
+        self._dialog = None
+
         self._overlayFrame = OverlayFrame(self._view)
         self._displayControl = DisplayControl(self._overlayFrame, self._view)
         layout = QVBoxLayout(self._overlayFrame)
         layout.addWidget(self._displayControl)
         self._overlayFrame.adjustSize()
+
+        self._colormap = ScalarBarWidget(self, report, self._colormapDoubleClicked)
+        self._colormap.SetInteractor(self._view.interactor())
+
+        actor: vtkScalarBarActor = self._colormap.GetScalarBarActor()
+        actor.SetLookupTable(sequentialRedLut)
+        actor.UnconstrainedFontSizeOn()
+
+        representation = self._colormap.GetScalarBarRepresentation()
+        representation.SetPosition(0.03, 0.03)
+        representation.SetPosition2(0.08, 0.33)
+
+        self._colormap.On()
 
         self._report = report
 
@@ -79,6 +100,10 @@ class VisualReportView(RenderingView):
         self._disconnectSignalsSlots()
 
         super().closeEvent(event)
+
+    def _colormapDoubleClicked(self):
+        self._dialog = ContourColormapDialog(self, self._report)
+        self._dialog.open()
 
     @qasync.asyncSlot()
     async def _scaffoldUpdated(self, uuid: UUID):
