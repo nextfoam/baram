@@ -3,13 +3,20 @@
 
 from dataclasses import dataclass
 from enum import Enum, IntEnum, auto
+import sys
+from uuid import UUID
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTreeWidgetItem, QLabel, QWidget, QHBoxLayout
 from vtkmodules.vtkCommonColor import vtkNamedColors
+from vtkmodules.vtkCommonCore import vtkDataArray, vtkLookupTable
+from vtkmodules.vtkCommonDataModel import vtkPolyData
+from vtkmodules.vtkFiltersCore import vtkArrayCalculator
 from vtkmodules.vtkRenderingCore import vtkActor, vtkMapper, vtkPolyDataMapper
 
+from baramFlow.coredb.post_field import Field, VectorComponent
+from baramFlow.openfoam.solver_field import getSolverFieldName
 from libbaram.colormap import sequentialRedLut
 
 
@@ -50,26 +57,34 @@ class Column(IntEnum):
 
 
 class DisplayItem(QTreeWidgetItem):
-
-    sourceChanged = Signal(str)
+    sourceChanged = Signal(UUID)
     nameChanged = Signal(str)
 
-
-    def __init__(self, did, name, dataSet):
-
+    def __init__(self, did: UUID, name: str, dataSet: vtkPolyData, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable):
         super().__init__()
 
-        self._dataSet = dataSet
         self._did = did
         self._name = name
+        self._dataSet = dataSet
+        self._field = field
+        self._useNodeValues = useNodeValues
+        self._lookupTable = lookupTable
 
         self._mapper: vtkMapper = vtkPolyDataMapper()
         self._mapper.SetInputData(dataSet)
         self._mapper.ScalarVisibilityOff()
-        self._mapper.SetScalarModeToUsePointData()
+
+        if useNodeValues:
+            self._mapper.SetScalarModeToUsePointData()
+        else:
+            self._mapper.SetScalarModeToUseCellData()
+
         self._mapper.SetColorModeToMapScalars()
-        self._mapper.SetLookupTable(sequentialRedLut)
-        self._mapper.SelectColorArray('T')
+        self._mapper.UseLookupTableScalarRangeOn()
+        self._mapper.SetLookupTable(lookupTable)
+
+        solverFieldName = getSolverFieldName(field)
+        self._mapper.SelectColorArray(solverFieldName)
 
         self._actor = vtkActor()
         self._actor.SetMapper(self._mapper)
@@ -97,17 +112,83 @@ class DisplayItem(QTreeWidgetItem):
         self.setText(Column.NAME_COLUMN, name)
         self.setText(Column.TYPE_COLUMN, name)
         self._updateColorColumn()
-        # self._updateCutIcon()
-        # self._updateVisibleIcon()
 
         self._connectSignalsSlots()
 
-    def setDataSet(self, dataSet):
+    def setDataSet(self, dataSet: vtkPolyData):
         self._dataSet = dataSet
+
+        self._mapper.SetInputData(dataSet)
+        self._mapper.Update()
+
+        # self.sourceChanged.emit(self._did)
+
+    def setField(self, field: Field):
+        self._field = field
+        solverFieldName = getSolverFieldName(field)
+        self._mapper.SelectColorArray(solverFieldName)
+        self._mapper.Update()
+
+    def setUseNodeValues(self, useNodeValues: bool):
+        self._useNodeValues = useNodeValues
+
+        if useNodeValues:
+            self._mapper.SetScalarModeToUsePointData()
+        else:
+            self._mapper.SetScalarModeToUseCellData()
 
         self._mapper.Update()
 
-        self.sourceChanged.emit(self._id)
+    def getScalarRange(self, field: Field, useNodeValues: bool) -> tuple[float, float]:
+        solverFieldName = getSolverFieldName(field)
+        if useNodeValues:
+            scalars: vtkDataArray = self._dataSet.GetPointData().GetScalars(solverFieldName)
+        else:
+            scalars: vtkDataArray = self._dataSet.GetCellData().GetScalars(solverFieldName)
+
+        if scalars:
+            return scalars.GetRange()
+        else:
+            return (sys.float_info.min, sys.float_info.max)
+
+    def getVectorRange(self, field: Field, vectorComponent: VectorComponent, useNodeValues: bool) -> tuple[float, float]:
+        solverFieldName = getSolverFieldName(field)
+        if useNodeValues:
+            vectors: vtkDataArray = self._dataSet.GetPointData().GetVectors(solverFieldName)
+        else:
+            vectors: vtkDataArray = self._dataSet.GetCellData().GetVectors(solverFieldName)
+
+        if not vectors:
+            return (sys.float_info.min, sys.float_info.max)
+
+        if vectorComponent == VectorComponent.MAGNITUDE:
+            filter = vtkArrayCalculator()
+            filter.SetInputData(self._dataSet)
+            if useNodeValues:
+                filter.SetAttributeTypeToPointData()
+            else:
+                filter.SetAttributeTypeToCellData()
+            filter.AddVectorArrayName(solverFieldName)
+            filter.SetFunction(f'mag({solverFieldName})')
+            RESULT_ARRAY_NAME = 'magnitude'
+            filter.SetResultArrayName(RESULT_ARRAY_NAME)
+            filter.Update()
+            if useNodeValues:
+                scalars: vtkDataArray = filter.GetOutput().GetPointData().GetScalars(RESULT_ARRAY_NAME)
+            else:
+                scalars: vtkDataArray = filter.GetOutput().GetCellData().GetScalars(RESULT_ARRAY_NAME)
+
+            if scalars:
+                return scalars.GetRange()
+            else:
+                return (sys.float_info.min, sys.float_info.max)
+
+        elif vectorComponent == VectorComponent.X:
+            return vectors.GetRange(0)
+        elif vectorComponent == VectorComponent.Y:
+            return vectors.GetRange(1)
+        elif vectorComponent == VectorComponent.Z:
+            return vectors.GetRange(2)
 
     def properties(self):
         return self._properties
@@ -118,15 +199,11 @@ class DisplayItem(QTreeWidgetItem):
     def did(self):
         return self._did
 
-    def isVisible(self):
+    def isActorVisible(self):
         return self._properties.visibility
 
-    def color(self):
-        return self._properties.color
-
-    def setVisible(self, visibility):
-        self._properties.visibility = visibility
-        self._actor.SetVisibility(visibility)
+    def colorMode(self):
+        return self._properties.colorMode
 
     def setupColorWidget(self, parent):
         widget = QWidget()
@@ -204,9 +281,9 @@ class DisplayItem(QTreeWidgetItem):
         self._actor.GetProperty().SetLineWidth(1.0)
 
     def _updateColorColumn(self):
-        if self.isVisible():
+        if self.isActorVisible():
             if self._properties.colorMode == ColorMode.SOLID:
-                color = self.color()
+                color = self._properties.color
                 self._colorWidget.setStyleSheet(
                     f'background-color: rgb({color.red()}, {color.green()}, {color.blue()});'
                     'border: 1px solid LightGrey; border-radius: 3px;')
@@ -219,7 +296,7 @@ class DisplayItem(QTreeWidgetItem):
         else:
             self._colorWidget.setStyleSheet('')
 
-    def _updateName(self, name):
+    def setName(self, name):
         self.setText(Column.NAME_COLUMN, name)
     #
     # def _updateCutIcon(self):
@@ -230,7 +307,7 @@ class DisplayItem(QTreeWidgetItem):
     #         self._colorWidget.setPixmap(icon.scaled(18, 18))
     #
     # def _updateVisibleIcon(self):
-    #     if self._actorInfo.isVisible():
+    #     if self._actorInfo.isActorVisible():
     #         self.setIcon(Column.VISIBLE_ICON_COLUMN, self._bulbOnIcon)
     #     else:
     #         self.setIcon(Column.VISIBLE_ICON_COLUMN, self._bulbOffIcon)

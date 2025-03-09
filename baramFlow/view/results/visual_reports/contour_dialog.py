@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QDialog
 import qasync
 
 from baramFlow.coredb.contour import Contour
-from baramFlow.coredb.post_field import Field, getAvailableFields
+from baramFlow.coredb.post_field import Field, FieldType, getAvailableFields
 from baramFlow.coredb.visual_reports_db import VisualReportsDB
 from baramFlow.coredb.post_field import FIELD_TEXTS
 from widgets.async_message_box import AsyncMessageBox
@@ -33,10 +33,18 @@ class ContourDialog(QDialog):
             if f in FIELD_TEXTS:
                 self._ui.field.addItem(FIELD_TEXTS[f], f)
             else:
-                self._ui.field.addItem(f.name, f)
+                self._ui.field.addItem(f.codeName, f)
 
+        # Set Configured Field into combobox
         index = self._ui.field.findData(contour.field)
         self._ui.field.setCurrentIndex(index)
+
+        if contour.field.type == FieldType.VECTOR:
+            self._ui.vectorComponent.setEnabled(True)
+            index = self._ui.vectorComponent.findData(contour.vectorComponent)
+            self._ui.vectorComponent.setCurrentIndex(index)
+        else:
+            self._ui.vectorComponent.setEnabled(False)
 
         self._ui.name.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Za-z_][A-Za-z0-9_-]*')))
 
@@ -50,6 +58,7 @@ class ContourDialog(QDialog):
         self._connectSignalsSlots()
 
     def _connectSignalsSlots(self):
+        self._ui.field.currentIndexChanged.connect(self._fieldChanged)
         self._ui.ok.clicked.connect(self._okClicked)
         self._ui.cancel.clicked.connect(self._cancelClicked)
 
@@ -60,6 +69,7 @@ class ContourDialog(QDialog):
 
         self._contour.name = self._ui.name.text()
         self._contour.field = self._ui.field.currentData()
+        self._contour.vectorComponent = self._ui.vectorComponent.currentData()
 
         self._contour.time = self._timeSlider.getCurrentTime()
 
@@ -77,3 +87,11 @@ class ContourDialog(QDialog):
             return False
 
         return True
+
+    def _fieldChanged(self, index):
+        field: Field = self._ui.field.currentData()
+
+        if field.type == FieldType.VECTOR:
+            self._ui.vectorComponent.setEnabled(True)
+        else:
+            self._ui.vectorComponent.setEnabled(False)

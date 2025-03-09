@@ -7,7 +7,7 @@ from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QDoubleValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.coredb.post_field import Field, X_COORDINATE, Y_COORDINATE, Z_COORDINATE
+from baramFlow.coredb.post_field import COORDINATE, Field, FieldType
 from baramFlow.coredb.post_field import getAvailableFields
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
@@ -27,17 +27,25 @@ class IsoSurfaceDialog(QDialog):
 
         self._surface = surface
 
-        self._fields: list[Field] = [X_COORDINATE, Y_COORDINATE, Z_COORDINATE]
+        self._fields: list[Field] = [COORDINATE]
         self._fields.extend(getAvailableFields())
 
         for f in self._fields:
             if f in FIELD_TEXTS:
                 self._ui.field.addItem(FIELD_TEXTS[f], f)
             else:
-                self._ui.field.addItem(f.name, f)
+                self._ui.field.addItem(f.codeName, f)
 
+        # Set Configured Field into combobox
         index = self._ui.field.findData(surface.field)
         self._ui.field.setCurrentIndex(index)
+
+        if surface.field.type == FieldType.VECTOR:
+            self._ui.vectorComponent.setEnabled(True)
+            index = self._ui.vectorComponent.findData(surface.vectorComponent)
+            self._ui.vectorComponent.setCurrentIndex(index)
+        else:
+            self._ui.vectorComponent.setEnabled(False)
 
         if isNew:
             self._ui.ok.setText('Create')
@@ -59,6 +67,7 @@ class IsoSurfaceDialog(QDialog):
         self._connectSignalsSlots()
 
     def _connectSignalsSlots(self):
+        self._ui.field.currentIndexChanged.connect(self._fieldChanged)
         self._ui.computeRange.clicked.connect(self._computeRangeClicked)
         self._ui.surfacesPerValue.valueChanged.connect(self._surfacesPerValueChanged)
         self._ui.ok.clicked.connect(self._okClicked)
@@ -79,6 +88,7 @@ class IsoSurfaceDialog(QDialog):
 
         self._surface.name = self._ui.name.text()
         self._surface.field = self._ui.field.currentData()
+        self._surface.vectorComponent = self._ui.vectorComponent.currentData()
         self._surface.isoValues = self._ui.isoValues.text().strip()
         self._surface.surfacePerValue = self._ui.surfacesPerValue.value()
         self._surface.spacing = self._ui.spacing.text().strip()
@@ -120,3 +130,11 @@ class IsoSurfaceDialog(QDialog):
             return False
 
         return True
+
+    def _fieldChanged(self, index):
+        field: Field = self._ui.field.currentData()
+
+        if field.type == FieldType.VECTOR:
+            self._ui.vectorComponent.setEnabled(True)
+        else:
+            self._ui.vectorComponent.setEnabled(False)

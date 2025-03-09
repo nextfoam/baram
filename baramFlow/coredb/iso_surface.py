@@ -6,18 +6,19 @@ from uuid import UUID
 
 from lxml import etree
 
-from vtkmodules.vtkCommonDataModel import vtkDataObject, vtkMultiBlockDataSet, vtkPlane, vtkPolyData
+from vtkmodules.vtkCommonDataModel import vtkDataObject, vtkMultiBlockDataSet, vtkPlane, vtkPolyData, vtkSphere
 from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkContourFilter, vtkCutter
 
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.coredb.post_field import Field, getFieldInstance
-from baramFlow.coredb.post_field import X_VELOCITY, X_COORDINATE, Y_COORDINATE, Z_COORDINATE
+from baramFlow.coredb.post_field import COORDINATE, Field, VectorComponent, getFieldInstance
+from baramFlow.coredb.post_field import VELOCITY
 from baramFlow.coredb.scaffold import Scaffold
 
 
 @dataclass
 class IsoSurface(Scaffold):
-    field: Field = X_VELOCITY
+    field: Field = VELOCITY
+    vectorComponent: VectorComponent = VectorComponent.MAGNITUDE
     isoValues: str = '0'
     surfacePerValue: int = 1
     spacing: str = '1'
@@ -26,9 +27,10 @@ class IsoSurface(Scaffold):
     def fromElement(cls, e):
         uuid = UUID(e.find('uuid', namespaces=nsmap).text)
         name = e.find('name', namespaces=nsmap).text
-        fieldType = e.find('fieldType', namespaces=nsmap).text
-        fieldName = e.find('fieldName', namespaces=nsmap).text
-        field = getFieldInstance(fieldType, fieldName)
+        fieldCategory = e.find('fieldCategory', namespaces=nsmap).text
+        fieldCodeName = e.find('fieldCodeName', namespaces=nsmap).text
+        field = getFieldInstance(fieldCategory, fieldCodeName)
+        vectorComponent = VectorComponent(int(e.find('vectorComponent', namespaces=nsmap).text))
         isoValues = e.find('isoValues', namespaces=nsmap).text
         surfacePerValue = int(e.find('surfacesPerValue', namespaces=nsmap).text)
         spacing = e.find('spacing', namespaces=nsmap).text
@@ -36,6 +38,7 @@ class IsoSurface(Scaffold):
         return IsoSurface(uuid=uuid,
                           name=name,
                           field=field,
+                          vectorComponent=vectorComponent,
                           isoValues=isoValues,
                           surfacePerValue=surfacePerValue,
                           spacing=spacing)
@@ -44,8 +47,9 @@ class IsoSurface(Scaffold):
         string = ('<surface xmlns="http://www.baramcfd.org/baram">'
                  f'    <uuid>{str(self.uuid)}</uuid>'
                  f'    <name>{self.name}</name>'
-                 f'    <fieldType>{self.field.type}</fieldType>'
-                 f'    <fieldName>{self.field.name}</fieldName>'
+                 f'    <fieldCategory>{self.field.category}</fieldCategory>'
+                 f'    <fieldCodeName>{self.field.codeName}</fieldCodeName>'
+                 f'    <vectorComponent>{self.vectorComponent.value}</vectorComponent>'
                  f'    <isoValues>{self.isoValues}</isoValues>'
                  f'    <surfacesPerValue>{self.surfacePerValue}</surfacesPerValue>'
                  f'    <spacing>{self.spacing}</spacing>'
@@ -61,26 +65,33 @@ class IsoSurface(Scaffold):
         meshes = self._collectInternalMesh(mBlock)
 
         for mesh in meshes:
-            if self.field in [X_COORDINATE, Y_COORDINATE, Z_COORDINATE]:
-                plane = vtkPlane()
-                plane.SetOrigin(0, 0, 0)
-                if self.field == X_COORDINATE:
-                    plane.SetNormal(1, 0, 0)
-                elif self.field == Y_COORDINATE:
-                    plane.SetNormal(0, 1, 0)
-                elif self.field == Z_COORDINATE:
-                    plane.SetNormal(0, 0, 1)
+            if self.field == COORDINATE:
+                if self.vectorComponent == VectorComponent.MAGNITUDE:
+                    cutFunction = vtkSphere()
+                    cutFunction.SetCenter(0, 0, 0)
+                    cutFunction.SetRadius(0)
+                else:
+                    cutFunction = vtkPlane()
+                    cutFunction.SetOrigin(0, 0, 0)
+                    if self.vectorComponent == VectorComponent.X:
+                        cutFunction.SetNormal(1, 0, 0)
+                    elif self.vectorComponent == VectorComponent.Y:
+                        cutFunction.SetNormal(0, 1, 0)
+                    elif self.vectorComponent == VectorComponent.Z:
+                        cutFunction.SetNormal(0, 0, 1)
+                    else:  # ToDo: jake, How to handle this? Magnitude? Is it necessary?
+                        cutFunction.SetNormal(1, 0, 0)
 
                 filter = vtkCutter()
                 filter.SetInputData(mesh)
-                filter.SetCutFunction(plane)
+                filter.SetCutFunction(cutFunction)
             else:
                 filter = vtkContourFilter()
                 filter.SetInputData(mesh)
 
                 filter.SetInputArrayToProcess(0, 0, 0,
                                                 vtkDataObject.FIELD_ASSOCIATION_POINTS,
-                                                self.field.name)
+                                                self.field.codeName)
 
             for i, v in enumerate(values):
                 filter.SetValue(i, v)

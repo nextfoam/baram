@@ -9,17 +9,20 @@ from lxml import etree
 
 from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.coredb.post_field import FIELD_TEXTS, X_VELOCITY, Field, getFieldInstance
+from baramFlow.coredb.post_field import FIELD_TEXTS, VELOCITY, Field, VectorComponent, getFieldInstance
 from baramFlow.coredb.visual_report import VisualReport
 from baramFlow.coredb.color_scheme import ColormapScheme
 
 
 @dataclass
 class Contour(VisualReport):
-    field: Field = X_VELOCITY
+    field: Field = VELOCITY
+    vectorComponent: VectorComponent = VectorComponent.MAGNITUDE
 
-    fieldDisplayName: str = FIELD_TEXTS[X_VELOCITY]
+    fieldDisplayName: str = FIELD_TEXTS[VELOCITY]
     numberOfLevels: int = 256
+    useNodeValues: bool = False
+    relevantScaffoldsOnly: bool = False
     useCustomRange: bool = False
     customRangeMin: str = '0.0'
     customRangeMax: str = '0.0'
@@ -29,19 +32,26 @@ class Contour(VisualReport):
     customMinColor: QColor = QColor.fromString('#000000')
     customMaxColor: QColor = QColor.fromString('#ffffff')
 
+    rangeMin: float = 0  # Not a configuration, Not saved in CoreDB
+    rangeMax: float = 0  # Not a configuration, Not saved in CoreDB
+
     @classmethod
     def fromElement(cls, e):
         uuid = UUID(e.find('uuid', namespaces=nsmap).text)
         name = e.find('name', namespaces=nsmap).text
 
-        fieldType = e.find('fieldType', namespaces=nsmap).text
-        fieldName = e.find('fieldName', namespaces=nsmap).text
-        field = getFieldInstance(fieldType, fieldName)
+        fieldCategory = e.find('fieldCategory', namespaces=nsmap).text
+        fieldCodeName = e.find('fieldCodeName', namespaces=nsmap).text
+        field = getFieldInstance(fieldCategory, fieldCodeName)
+
+        vectorComponent = VectorComponent(int(e.find('vectorComponent', namespaces=nsmap).text))
 
         time = e.find('time', namespaces=nsmap).text
 
         fieldDisplayName = e.find('fieldDisplayName', namespaces=nsmap).text
         numberOfLevels = int(e.find('numberOfLevels', namespaces=nsmap).text)
+        useNodeValues = True if e.find('useNodeValues', namespaces=nsmap).text == 'true' else False
+        relevantScaffoldsOnly = True if e.find('relevantScaffoldsOnly', namespaces=nsmap).text == 'true' else False
         useCustomRange = True if e.find('useCustomRange', namespaces=nsmap).text == 'true' else False
         customRangeMin = e.find('customRangeMin', namespaces=nsmap).text
         customRangeMax = e.find('customRangeMax', namespaces=nsmap).text
@@ -61,9 +71,12 @@ class Contour(VisualReport):
         return Contour(uuid=uuid,
                           name=name,
                           field=field,
+                          vectorComponent=vectorComponent,
                           time=time,
                           fieldDisplayName=fieldDisplayName,
                           numberOfLevels=numberOfLevels,
+                          useNodeValues=useNodeValues,
+                          relevantScaffoldsOnly=relevantScaffoldsOnly,
                           useCustomRange=useCustomRange,
                           customRangeMin=customRangeMin,
                           customRangeMax=customRangeMax,
@@ -78,11 +91,14 @@ class Contour(VisualReport):
         string =   ('<contour xmlns="http://www.baramcfd.org/baram">'
                    f'    <uuid>{str(self.uuid)}</uuid>'
                    f'    <name>{self.name}</name>'
-                   f'    <fieldType>{self.field.type}</fieldType>'
-                   f'    <fieldName>{self.field.name}</fieldName>'
+                   f'    <fieldCategory>{self.field.category}</fieldCategory>'
+                   f'    <fieldCodeName>{self.field.codeName}</fieldCodeName>'
+                   f'    <vectorComponent>{self.vectorComponent.value}</vectorComponent>'
                    f'    <time>{self.time}</time>'
                    f'    <fieldDisplayName>{self.fieldDisplayName}</fieldDisplayName>'
                    f'    <numberOfLevels>{str(self.numberOfLevels)}</numberOfLevels>'
+                   f'    <useNodeValues>{"true" if self.useNodeValues else "false"}</useNodeValues>'
+                   f'    <relevantScaffoldsOnly>{"true" if self.relevantScaffoldsOnly else "false"}</relevantScaffoldsOnly>'
                    f'    <useCustomRange>{"true" if self.useCustomRange else "false"}</useCustomRange>'
                    f'    <customRangeMin>{self.customRangeMin}</customRangeMin>'
                    f'    <customRangeMax>{self.customRangeMax}</customRangeMax>'

@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QColorDialog
 import qasync
 
 from baramFlow.coredb.contour import Contour
+from baramFlow.view.results.visual_reports.display_control.display_control import DisplayControl
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from widgets.async_message_box import AsyncMessageBox
 from .colormap.colormap import colormapName, colormapImage
@@ -15,12 +16,13 @@ from .contour_colormap_dialog_ui import Ui_ContourColormapDialog
 
 
 class ContourColormapDialog(ResizableDialog):
-    def __init__(self, parent, contour: Contour):
+    def __init__(self, parent, contour: Contour, displayControl: DisplayControl):
         super().__init__(parent)
         self._ui = Ui_ContourColormapDialog()
         self._ui.setupUi(self)
 
         self._contour = contour
+        self._displayControl = displayControl  # ToDo: It's not good to have display control here
 
         self._dialog = None
 
@@ -29,6 +31,10 @@ class ContourColormapDialog(ResizableDialog):
 
         self._ui.numberOfLevels.setText(str(contour.numberOfLevels))
         self._ui.numberOfLevels.setValidator(QIntValidator(1, 256))
+
+        self._ui.useNodeValues.setChecked(contour.useNodeValues)
+
+        self._ui.relevantScaffoldsOnly.setChecked(contour.relevantScaffoldsOnly)
 
         self._ui.rangeMin.setText('0')
         self._ui.rangeMax.setText('0')
@@ -62,9 +68,12 @@ class ContourColormapDialog(ResizableDialog):
         self._ui.customMaxColor.setStyleSheet(sheet)
         self._customMaxColor = contour.customMaxColor
 
+        self._updateCustomColorBar()
+
         self._connectSignalsSlots()
 
     def _connectSignalsSlots(self):
+        self._ui.computeRange.clicked.connect(self._computeRange)
         self._ui.useCustomRange.stateChanged.connect(self._updateCustomRangeGroupVisibility)
         self._ui.useCustomColorScheme.toggled.connect(self._useCustomColorSchemeToggled)
         self._ui.customMinColor.clicked.connect(self._customMinColorClicked)
@@ -80,6 +89,8 @@ class ContourColormapDialog(ResizableDialog):
 
         self._contour.fieldDisplayName = self._ui.fieldDisplayName.text()
         self._contour.numberOfLevels = int(self._ui.numberOfLevels.text())
+        self._contour.useNodeValues = True if self._ui.useNodeValues.isChecked() else False
+        self._contour.relevantScaffoldsOnly = True if self._ui.relevantScaffoldsOnly.isChecked() else False
         self._contour.useCustomRange = True if self._ui.useCustomRange.isChecked() else False
         self._contour.customRangeMin = self._ui.customRangeMin.text()
         self._contour.customRangeMax = self._ui.customRangeMax.text()
@@ -119,6 +130,17 @@ class ContourColormapDialog(ResizableDialog):
 
         return True
 
+    def _computeRange(self):
+        rMin, rMax = self._displayControl.getValueRange(self._contour.field,
+                                                        self._contour.vectorComponent,
+                                                        self._ui.useNodeValues.isChecked(),
+                                                        self._ui.relevantScaffoldsOnly.isChecked())
+        self._ui.rangeMin.setText(str(rMin))
+        self._ui.rangeMax.setText(str(rMax))
+
+        self._contour.rangeMin = rMin
+        self._contour.rangeMax = rMax
+
     def _openSchemeDialog(self):
         self._dialog = ColormapSchemeDialog(self, self._contour.colorScheme)
         self._dialog.schemeSelected.connect(self._setPresetColorScheme)
@@ -143,21 +165,30 @@ class ContourColormapDialog(ResizableDialog):
     def _customMinColorClicked(self):
         self._dialog = QColorDialog(self._customMinColor, self)
         self._dialog.colorSelected.connect(self._customMinColorSelected)
+        self._dialog.open()
+
+    def _customMaxColorClicked(self):
+        self._dialog = QColorDialog(self._customMaxColor, self)
+        self._dialog.colorSelected.connect(self._customMaxColorSelected)
+        self._dialog.open()
 
     def _customMinColorSelected(self, color: QColor):
         sheet = self._getCustomColorButtonStyleSheet(color)
         self._ui.customMinColor.setStyleSheet(sheet)
         self._customMinColor = color
-
-    def _customMaxColorClicked(self):
-        self._dialog = QColorDialog(self._customMaxColor, self)
-        self._dialog.colorSelected.connect(self._customMaxColorSelected)
+        self._updateCustomColorBar()
 
     def _customMaxColorSelected(self, color: QColor):
         sheet = self._getCustomColorButtonStyleSheet(color)
         self._ui.customMaxColor.setStyleSheet(sheet)
         self._customMaxColor = color
+        self._updateCustomColorBar()
 
     def _getCustomColorButtonStyleSheet(self, color: QColor):
         r, g, b, a = color.getRgb()
         return f'background: rgb({r}, {g}, {b}); border-style: solid; border-color:black; border-width: 1'
+
+    def _updateCustomColorBar(self):
+        self._ui.customColorBar.setStyleSheet(
+            f'background-color: qlineargradient(x1: 0, y1: 0,x2: 1, y2: 0, stop: 0 {self._customMinColor.name()}, stop: 1 {self._customMaxColor.name()});'
+            'border-style: solid; border-color:black; border-width: 1;')

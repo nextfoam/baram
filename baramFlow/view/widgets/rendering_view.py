@@ -40,7 +40,7 @@ class RenderingView(QWidget):
         for mode in DisplayMode:
             self._ui.renderingMode.setItemData(mode.value, mode)
 
-        self._connectSignalsSlots()
+        RenderingView._connectSignalsSlots(self)
 
     def view(self):
         return self._view

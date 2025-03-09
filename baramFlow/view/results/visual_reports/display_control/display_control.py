@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 from typing import Optional
 from uuid import UUID, uuid4
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QHeaderView, QHeaderView, QWidget
+from vtkmodules.vtkCommonCore import vtkLookupTable
+from vtkmodules.vtkRenderingCore import vtkActor
 
 from baramFlow.app import app
 
+from baramFlow.coredb.post_field import Field, FieldType, VectorComponent
 from widgets.rendering.rendering_widget import RenderingWidget
 
 from .display_context_menu import DisplayContextMenu
@@ -20,7 +24,7 @@ class DisplayControl(QWidget):
     selectedActorsChanged = Signal(list)
     selectionApplied = Signal()
 
-    def __init__(self, parent, view: RenderingWidget):
+    def __init__(self, parent, view: RenderingWidget, lookupTable: vtkLookupTable):
         super().__init__(parent)
 
         self._ui = Ui_DisplayControl()
@@ -28,6 +32,7 @@ class DisplayControl(QWidget):
 
         self._scaffoldList = self._ui.actors
         self._view = view
+        self._lookupTable = lookupTable
 
         self._view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
 
@@ -44,9 +49,9 @@ class DisplayControl(QWidget):
 
         self._connectSignalsSlots()
 
-    def add(self, name, dataSet) -> UUID:
+    def addItem(self, name, dataSet, field: Field, useNodeValues: bool) -> UUID:
         did = uuid4()
-        item = DisplayItem(did, name, dataSet)
+        item = DisplayItem(did, name, dataSet, field, useNodeValues, self._lookupTable)
 
         self._items[did] = item
 
@@ -57,7 +62,7 @@ class DisplayControl(QWidget):
 
         return did
 
-    def remove(self, did: UUID):
+    def removeItem(self, did: UUID):
         if did not in self._items:
             return
 
@@ -75,27 +80,32 @@ class DisplayControl(QWidget):
 
             break
 
-    def update(self, did: UUID, name: str, dataSet) -> UUID:
+    def updateItemScaffold
+    def updateItem(self, did: UUID, name: str, dataSet) -> UUID:
         if did not in self._items:
             return
 
-        for i in range(self._scaffoldList.topLevelItemCount()):
-            item: DisplayItem = self._scaffoldList.topLevelItem(i)
-            if item.did() != did:
-                continue
+        item = self._items[did]
+        item.setName(name)
+        item.setDataSet(dataSet)
+        # for i in range(self._scaffoldList.topLevelItemCount()):
+        #     item: DisplayItem = self._scaffoldList.topLevelItem(i)
+        #     if item.did() != did:
+        #         continue
 
-            self._scaffoldList.takeTopLevelItem(i)
+        #     self._scaffoldList.takeTopLevelItem(i)
 
-            self._view.removeActor(item.actor())
+        #     self._view.removeActor(item.actor())
 
-            did = uuid4()
-            item = DisplayItem(did, name, dataSet)
+        #     item = DisplayItem(did, name, dataSet)
+        #     self._items[did] = item
 
-            self._scaffoldList.insertTopLevelItem(i, item)
-            item.setupColorWidget(self._scaffoldList)
+        #     self._scaffoldList.insertTopLevelItem(i, item)
+        #     item.setupColorWidget(self._scaffoldList)
 
-            self._view.addActor(item.actor())
+        #     self._view.addActor(item.actor())
 
+        #     break
 
     # def hide(self, actorInfo):
     #     item = self._items[actorInfo.id()]
@@ -114,6 +124,25 @@ class DisplayControl(QWidget):
         self._items = {}
         self._selectedItems.clear()
 
+    def getValueRange(self, field: Field, vectorComponent: VectorComponent, useNodeValues: bool, relevantScaffoldsOnly: bool) -> tuple[float, float]:
+        rMin = sys.float_info.max
+        rMax = sys.float_info.min
+
+        for item in self._items.values():
+            if relevantScaffoldsOnly:
+                if  not item.isActorVisible() or item.colorMode() == ColorMode.SOLID:
+                    continue
+
+            if field.type == FieldType.VECTOR:
+                valueRange = item.getVectorRange(field, vectorComponent, useNodeValues)
+            else:
+                valueRange = item.getScalarRange(field, useNodeValues)
+
+            rMin = min(rMin, valueRange[0])
+            rMax = max(rMax, valueRange[1])
+
+        return rMin, rMax
+
     # def setSelectedActors(self, ids):
     #     self._scaffoldList.clearSelection()
     #     for i in ids:
@@ -122,7 +151,7 @@ class DisplayControl(QWidget):
 
     #     self.selectionApplied.emit()
 
-    def selectedItemsChanged(self):
+    def _selectedItemsChanged(self):
         ids = []
         for item in self._items.values():
             item.setHighlighted(item.isSelected())
@@ -134,7 +163,7 @@ class DisplayControl(QWidget):
 
     def _connectSignalsSlots(self):
         self._scaffoldList.customContextMenuRequested.connect(self._showContextMenu)
-        self._scaffoldList.itemSelectionChanged.connect(self.selectedItemsChanged)
+        self._scaffoldList.itemSelectionChanged.connect(self._selectedItemsChanged)
         self._view.customContextMenuRequested.connect(self._showContextMenuOnRenderingView)
         self._view.actorPicked.connect(self._actorPicked)
         self._menu.showActionTriggered.connect(self._showActors)
@@ -237,7 +266,7 @@ class DisplayControl(QWidget):
 
         self._view.refresh()
 
-    def _actorPicked(self, actor, ctrlKeyPressed=False, forContextMenu=False):
+    def _actorPicked(self, actor: vtkActor, ctrlKeyPressed=False, forContextMenu=False):
         if not ctrlKeyPressed and not forContextMenu:
             self._scaffoldList.clearSelection()
 

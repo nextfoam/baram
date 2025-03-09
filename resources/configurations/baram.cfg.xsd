@@ -2507,7 +2507,7 @@
                                                 <xs:sequence>
                                                     <xs:element name="uuid" type="uuidType"/>
                                                     <xs:element name="name" type="xs:string"/>
-                                                    <xs:element name="fieldType">
+                                                    <xs:element name="fieldCategory">
                                                         <xs:simpleType>
                                                             <xs:restriction base="xs:string">
                                                                 <xs:enumeration value="geometry"/>
@@ -2519,7 +2519,8 @@
                                                             </xs:restriction>
                                                         </xs:simpleType>
                                                     </xs:element>
-                                                    <xs:element name="fieldName" type="xs:string"/>
+                                                    <xs:element name="fieldCodeName" type="xs:string"/>
+                                                    <xs:element name="vectorComponent" type="xs:nonNegativeInteger" default="0"/>
                                                     <xs:element name="isoValues" type="inputNumberListType"/>
                                                     <xs:element name="surfacesPerValue" type="xs:positiveInteger" default="1"/>
                                                     <xs:element name="spacing" type="inputPositiveNumberType"/>
@@ -2544,7 +2545,7 @@
                                                 <xs:sequence>
                                                     <xs:element name="uuid" type="uuidType"/>
                                                     <xs:element name="name" type="xs:string"/>
-                                                    <xs:element name="fieldType">
+                                                    <xs:element name="fieldCategory">
                                                         <xs:simpleType>
                                                             <xs:restriction base="xs:string">
                                                                 <xs:enumeration value="basic"/>
@@ -2555,11 +2556,14 @@
                                                             </xs:restriction>
                                                         </xs:simpleType>
                                                     </xs:element>
-                                                    <xs:element name="fieldName" type="xs:string"/>
+                                                    <xs:element name="fieldCodeName" type="xs:string"/>
+                                                    <xs:element name="vectorComponent" type="xs:nonNegativeInteger" default="0"/>
                                                     <xs:element name="time" type="xs:string"/>
                                                     <!-- color map configuration begin -->
                                                     <xs:element name="fieldDisplayName" type="xs:string"/>
                                                     <xs:element name="numberOfLevels" type="xs:positiveInteger" default="256"/>
+                                                    <xs:element name="useNodeValues" type="xs:boolean" default="false"/>
+                                                    <xs:element name="relevantScaffoldsOnly" type="xs:boolean" default="false"/>
                                                     <xs:element name="useCustomRange" type="xs:boolean" default="false"/>
                                                     <xs:element name="customRangeMin" type="xs:double" default="0"/>
                                                     <xs:element name="customRangeMax" type="xs:double" default="0"/>

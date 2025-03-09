@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>286</width>
-    <height>629</height>
+    <width>303</width>
+    <height>677</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,6 +54,19 @@
       </item>
       <item>
        <widget class="QLineEdit" name="numberOfLevels"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget_12" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout_8">
+      <item>
+       <widget class="QCheckBox" name="useNodeValues">
+        <property name="text">
+         <string>Use Node Values</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -156,12 +169,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="excludeHidden">
+          <widget class="QCheckBox" name="relevantScaffoldsOnly">
            <property name="text">
-            <string>Exclude hidden scaffolds</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
+            <string>Relevant scaffolds only</string>
            </property>
           </widget>
          </item>
@@ -402,6 +412,9 @@
            </property>
            <property name="text">
             <string/>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
            </property>
           </widget>
          </item>

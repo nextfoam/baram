@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>233</width>
-    <height>434</height>
+    <height>462</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,6 +66,9 @@
       </item>
       <item>
        <widget class="PythonComboBox" name="field"/>
+      </item>
+      <item>
+       <widget class="VectorComponentComboBox" name="vectorComponent"/>
       </item>
      </layout>
     </widget>
@@ -279,6 +282,11 @@
    <class>PythonComboBox</class>
    <extends>QComboBox</extends>
    <header>widgets.python_combo_box</header>
+  </customwidget>
+  <customwidget>
+   <class>VectorComponentComboBox</class>
+   <extends>QComboBox</extends>
+   <header>baramFlow.view.widgets.vector_component_combo_box</header>
   </customwidget>
  </customwidgets>
  <resources/>

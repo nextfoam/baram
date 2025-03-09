@@ -139,6 +139,7 @@ class OpenFOAMReader(QObject):
             self._setupReader()
 
         time = self._reader.GetTimeValue()
+        print(f'read {time} set {value}')
         if time == value:
             return
 
@@ -150,6 +151,12 @@ class OpenFOAMReader(QObject):
             raise AssertionError
 
         return self._reader.GetTimeValue()
+
+    def Update(self):
+        holdRendering()
+        # await to_vtk_thread(self._reader.Update)
+        self._reader.Update()
+        resumeRendering()
 
     def refresh(self):
         if not self._acquired:

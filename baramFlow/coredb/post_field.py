@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-from enum import Enum
+from enum import Enum, IntFlag
 
 from PySide6.QtCore import QCoreApplication
 
-from baramFlow.coredb import coredb, post_field
+from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.material_schema import MaterialType, Phase
@@ -14,7 +14,7 @@ from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 
 
-class FieldType(Enum):
+class FieldCategory(Enum):
     GEOMETRY    = 'geometry'
     BASIC       = 'basic'
     COLLATERAL  = 'collateral'
@@ -23,66 +23,84 @@ class FieldType(Enum):
     USER_SCALAR = 'userScalar'
 
 
+class FieldType(Enum):
+    VECTOR = 'vector'
+    SCALAR = 'scalar'
+
+
+class VectorComponent(IntFlag):
+    MAGNITUDE = 1
+    X         = 2
+    Y         = 4
+    Z         = 8
+
+
 class Field:
-    def __init__(self, name):
-        self._type: FieldType = FieldType.BASIC
-        self._name: str = name
+    def __init__(self, category: FieldCategory, codeName: str, type_: FieldType):
+        self._category = category
+        self._codeName = codeName
+        self._type = type_
+
+    @property
+    def category(self):
+        return self._category.value
+
+    @property
+    def codeName(self):
+        return self._codeName
 
     @property
     def type(self):
-        return self._type.value
+        return self._type
 
-    @property
-    def name(self):
-        return self._name
 
-    # To make all Field instances with same name and type equal
+    # To make all Field instances with same category and codeName equal
     def __hash__(self):
-        return hash((self._type, self.name))
+        return hash((self._category, self._codeName))
 
-    # To make all Field instances with same name and type equal
+    # To make all Field instances with same category and codeName equal
     def __eq__(self, other):
-        return (self._type, self.name) == (other._type, other.name)
+        return (self._category, self._codeName) == (other._category, other._codeName)
+
 
 class GeometryField(Field):
-    def __init__(self, name):
-        super().__init__(name)
-        self._type = FieldType.GEOMETRY
+    def __init__(self, codeName: str, type_: FieldType = FieldType.SCALAR):
+        super().__init__(FieldCategory.GEOMETRY, codeName, type_)
+
 
 class BasicField(Field):
-    def __init__(self, name):
-        super().__init__(name)
-        self._type = FieldType.BASIC
+    def __init__(self, codeName: str, type_: FieldType = FieldType.SCALAR):
+        super().__init__(FieldCategory.BASIC, codeName, type_)
+
 
 class CollateralField(Field):
-    def __init__(self, name):
-        super().__init__(name)
-        self._type = FieldType.COLLATERAL
+    def __init__(self, codeName: str, type_: FieldType = FieldType.SCALAR):
+        super().__init__(FieldCategory.COLLATERAL, codeName, type_)
+
 
 class PhaseField(Field):
-    def __init__(self, name):
-        super().__init__(name)
-        self._type = FieldType.PHASE
+    def __init__(self, codeName: str):
+        super().__init__(FieldCategory.PHASE, codeName, FieldType.SCALAR)
+
 
 class SpecieField(Field):
-    def __init__(self, name):
-        super().__init__(name)
-        self._type = FieldType.SPECIE
+    def __init__(self, codeName: str):
+        super().__init__(FieldCategory.SPECIE, codeName, FieldType.SCALAR)
+
 
 class UserScalarField(Field):
-    def __init__(self, name):
-        super().__init__(name)
-        self._type = FieldType.USER_SCALAR
+    def __init__(self, codeName: str):
+        super().__init__(FieldCategory.USER_SCALAR, codeName, FieldType.SCALAR)
 
-X_COORDINATE = GeometryField('X-Coordinate')
-Y_COORDINATE = GeometryField('Y-Coordinate')
-Z_COORDINATE = GeometryField('Z-Coordinate')
+
+
+COORDINATE = GeometryField('Coordinate', FieldType.VECTOR)
 
 PRESSURE   = BasicField('pressure')
-SPEED      = BasicField('speed')
-X_VELOCITY = BasicField('X-Velocity')
-Y_VELOCITY = BasicField('Y-Velocity')
-Z_VELOCITY = BasicField('Z-Velocity')
+
+VELOCITY = BasicField('Velocity', FieldType.VECTOR)
+
+
 TURBULENT_KINETIC_ENERGY     = BasicField('turbulentKineticEnergy')
 TURBULENT_DISSIPATION_RATE   = BasicField('turbulentDissipationRate')
 SPECIFIC_DISSIPATION_RATE    = BasicField('specificDissipationRate')
@@ -95,54 +113,56 @@ HEAT_TRANSFER_COEFF = CollateralField('heatTransferCoeff')
 MACH_NUMBER         = CollateralField('machNumber')
 Q                   = CollateralField('Q')
 TOTAL_PRESSURE      = CollateralField('totalPressure')
-VORTICITY           = CollateralField('vorticity')
+VORTICITY           = CollateralField('vorticity', FieldType.VECTOR)
 WALL_HEAT_FLUX      = CollateralField('wallHeatFlux')
-WALL_SHEAR_STRESS   = CollateralField('wallShearStress')
+WALL_SHEAR_STRESS   = CollateralField('wallShearStress', FieldType.VECTOR)
 WALL_Y_PLUS         = CollateralField('wallYPlus')
 
 
 FIELD_TEXTS = {
-    post_field.X_COORDINATE: QCoreApplication.translate('PostField', 'X-Coordinate'),
-    post_field.Y_COORDINATE: QCoreApplication.translate('PostField', 'Y-Coordinate'),
-    post_field.Z_COORDINATE: QCoreApplication.translate('PostField', 'Z-Coordinate'),
-    post_field.PRESSURE: QCoreApplication.translate('PostField', 'Pressure'),
-    post_field.SPEED: QCoreApplication.translate('PostField', 'Speed'),
-    post_field.X_VELOCITY: QCoreApplication.translate('PostField', 'X-Velocity'),
-    post_field.Y_VELOCITY: QCoreApplication.translate('PostField', 'Y-Velocity'),
-    post_field.Z_VELOCITY: QCoreApplication.translate('PostField', 'Z-Velocity'),
-    post_field.TURBULENT_KINETIC_ENERGY: QCoreApplication.translate('PostField', 'Turbulent Kinetic Energy'),
-    post_field.TURBULENT_DISSIPATION_RATE: QCoreApplication.translate('PostField', 'Turbulent Dissipation Rate'),
-    post_field.SPECIFIC_DISSIPATION_RATE: QCoreApplication.translate('PostField', 'Specific Dissipation Rate'),
-    post_field.MODIFIED_TURBULENT_VISCOSITY: QCoreApplication.translate('PostField', 'Modified Turbulent Viscosity'),
-    post_field.TEMPERATURE: QCoreApplication.translate('PostField', 'Temperature'),
-    post_field.DENSITY: QCoreApplication.translate('PostField', 'Density'),
-    post_field.AGE: QCoreApplication.translate('PostField', 'Age'),
-    post_field.HEAT_TRANSFER_COEFF: QCoreApplication.translate('PostField', 'Heat Transfer Coefficient'),
-    post_field.MACH_NUMBER: QCoreApplication.translate('PostField', 'Mach Number'),
-    post_field.Q: QCoreApplication.translate('PostField', 'Q'),
-    post_field.TOTAL_PRESSURE: QCoreApplication.translate('PostField', 'Total Pressure'),
-    post_field.VORTICITY: QCoreApplication.translate('PostField', 'Vorticity'),
-    post_field.WALL_HEAT_FLUX: QCoreApplication.translate('PostField', 'Wall Heat Flux'),
-    post_field.WALL_SHEAR_STRESS: QCoreApplication.translate('PostField', 'Wall Shear Stress'),
-    post_field.WALL_Y_PLUS: QCoreApplication.translate('PostField', 'Wall Y Plus'),
-
+    COORDINATE: QCoreApplication.translate('PostField', 'Coordinate'),
+    PRESSURE: QCoreApplication.translate('PostField', 'Pressure'),
+    VELOCITY: QCoreApplication.translate('PostField', 'Velocity'),
+    TURBULENT_KINETIC_ENERGY: QCoreApplication.translate('PostField', 'Turbulent Kinetic Energy'),
+    TURBULENT_DISSIPATION_RATE: QCoreApplication.translate('PostField', 'Turbulent Dissipation Rate'),
+    SPECIFIC_DISSIPATION_RATE: QCoreApplication.translate('PostField', 'Specific Dissipation Rate'),
+    MODIFIED_TURBULENT_VISCOSITY: QCoreApplication.translate('PostField', 'Modified Turbulent Viscosity'),
+    TEMPERATURE: QCoreApplication.translate('PostField', 'Temperature'),
+    DENSITY: QCoreApplication.translate('PostField', 'Density'),
+    AGE: QCoreApplication.translate('PostField', 'Age'),
+    HEAT_TRANSFER_COEFF: QCoreApplication.translate('PostField', 'Heat Transfer Coefficient'),
+    MACH_NUMBER: QCoreApplication.translate('PostField', 'Mach Number'),
+    Q: QCoreApplication.translate('PostField', 'Q'),
+    TOTAL_PRESSURE: QCoreApplication.translate('PostField', 'Total Pressure'),
+    VORTICITY: QCoreApplication.translate('PostField', 'Vorticity'),
+    WALL_HEAT_FLUX: QCoreApplication.translate('PostField', 'Wall Heat Flux'),
+    WALL_SHEAR_STRESS: QCoreApplication.translate('PostField', 'Wall Shear Stress'),
+    WALL_Y_PLUS: QCoreApplication.translate('PostField', 'Wall Y Plus'),
 }
 
 
-def getFieldInstance(type_: str, name: str, *args, **kwargs):
-    fieldType = FieldType(type_)
-    if fieldType == FieldType.GEOMETRY:
-        return GeometryField(name, *args, **kwargs)
-    elif fieldType == FieldType.BASIC:
-        return BasicField(name, *args, **kwargs)
-    elif fieldType == FieldType.COLLATERAL:
-        return CollateralField(name, *args, **kwargs)
-    elif fieldType == FieldType.COLLATERAL:
-        return PhaseField(name, *args, **kwargs)
-    elif fieldType == FieldType.COLLATERAL:
-        return SpecieField(name, *args, **kwargs)
-    elif fieldType == FieldType.COLLATERAL:
-        return UserScalarField(name, *args, **kwargs)
+VECTOR_COMPONENT_TEXTS = {
+    VectorComponent.MAGNITUDE: QCoreApplication.translate('PostField', 'Magnitude'),
+    VectorComponent.X: QCoreApplication.translate('PostField', 'X Component'),
+    VectorComponent.Y: QCoreApplication.translate('PostField', 'Y Component'),
+    VectorComponent.Z: QCoreApplication.translate('PostField', 'Z Component'),
+}
+
+
+def getFieldInstance(categoryStr: str, codeName: str, *args, **kwargs):
+    category = FieldCategory(categoryStr)
+    if category == FieldCategory.GEOMETRY:
+        return GeometryField(codeName, *args, **kwargs)
+    elif category == FieldCategory.BASIC:
+        return BasicField(codeName, *args, **kwargs)
+    elif category == FieldCategory.COLLATERAL:
+        return CollateralField(codeName, *args, **kwargs)
+    elif category == FieldCategory.PHASE:
+        return PhaseField(codeName, *args, **kwargs)
+    elif category == FieldCategory.SPECIE:
+        return SpecieField(codeName, *args, **kwargs)
+    elif category == FieldCategory.USER_SCALAR:
+        return UserScalarField(codeName, *args, **kwargs)
     else:
         raise AssertionError
 
@@ -151,12 +171,10 @@ def getAvailableFields() -> list[Field]:
     fields = []
 
     # Always available fields
+
     fields.append(PRESSURE)
 
-    fields.append(SPEED)
-    fields.append(X_VELOCITY)
-    fields.append(Y_VELOCITY)
-    fields.append(Z_VELOCITY)
+    fields.append(VELOCITY)
 
     fields.append(Q)
     fields.append(TOTAL_PRESSURE)
@@ -190,17 +208,17 @@ def getAvailableFields() -> list[Field]:
 
     # Material fields on multiphase model
     if ModelsDB.isMultiphaseModelOn():
-        for _, name, _, phase in MaterialDB.getMaterials():
+        for mid, _, _, phase in MaterialDB.getMaterials():
             if phase != Phase.SOLID.value:
-                fields.append(PhaseField(name))
+                fields.append(PhaseField(mid))
 
     elif ModelsDB.isSpeciesModelOn():
         for mid, _, _, _ in MaterialDB.getMaterials(MaterialType.MIXTURE.value):
-            for _, name in MaterialDB.getSpecies(mid).items():
-                fields.append(SpecieField(name))
+            for sid in MaterialDB.getSpecies(mid):
+                fields.append(SpecieField(sid))
 
-    for _, name in coredb.CoreDB().getUserDefinedScalars():
-        fields.append(SpecieField(name))
+    for sid, _ in coredb.CoreDB().getUserDefinedScalars():
+        fields.append(SpecieField(sid))
 
     return fields
 

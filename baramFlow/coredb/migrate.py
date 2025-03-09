@@ -824,7 +824,7 @@ def _version_8(root: etree.Element):
 
 
 def _version_9(root: etree.Element):
-    logger.debug('  Upgrading to v9')
+    logger.debug('  Upgrading to v10')
 
     # root.set('version', '10')
 
@@ -878,6 +878,25 @@ def _version_9(root: etree.Element):
             e = etree.Element(f'{{{_ns}}}externalEmissivity')
             e.text = '0'
             p.insert(5, e)
+
+    if root.find('scaffolds', namespaces=_nsmap) is None:
+        index = root.index(root.find('monitors', namespaces=_nsmap))
+        p = etree.Element(f'{{{_ns}}}scaffolds')
+        root.insert(index + 1, p)
+        e = etree.Element(f'{{{_ns}}}boundaries')
+        p.append(e)
+        e = etree.Element(f'{{{_ns}}}isoSurfaces')
+        p.append(e)
+
+    if root.find('visualReports', namespaces=_nsmap) is None:
+        index = root.index(root.find('scaffolds', namespaces=_nsmap))
+        p = etree.Element(f'{{{_ns}}}visualReports')
+        root.insert(index + 1, p)
+        e = etree.Element(f'{{{_ns}}}contours')
+        p.append(e)
+        e = etree.Element(f'{{{_ns}}}vectors')
+        p.append(e)
+
 
 
 _fTable = [

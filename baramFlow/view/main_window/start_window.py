@@ -96,6 +96,7 @@ class Baram(QObject):
         except Exception as ex:
             await AsyncMessageBox().warning(self._projectSelector, self.tr('Project Open Error'),
                                             self.tr('Fail to open case\n' + str(ex)))
+            raise ex
 
         if openedProject is None:
             Project.close()
