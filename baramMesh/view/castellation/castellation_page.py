@@ -5,6 +5,7 @@ from pathlib import Path
 
 import qasync
 from PySide6.QtGui import QIntValidator
+from PySide6.QtWidgets import QApplication
 from vtkmodules.vtkCommonDataModel import vtkPlane
 from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges, vtkPolyDataPlaneCutter, \
     vtkTriangleFilter
@@ -19,7 +20,7 @@ from widgets.list_table import ListItemWithButtons
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
-from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType
+from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType, VolumeRefinementType
 from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramMesh.view.main_window.main_window_ui import Ui_MainWindow
 from baramMesh.view.step_page import StepPage
@@ -187,8 +188,15 @@ class CastellationPage(StepPage):
 
         for groupId, element in castellation.elements('refinementVolumes').items():
             if groupId in groups[GeometryType.VOLUME.value]:
-                self._addVolumeRefinementItem(groupId,
-                                              element.value('groupName'), element.value('volumeRefinementLevel'))
+                if element.enum('refinementType') == VolumeRefinementType.OMNIDIRECTIONAL:
+                    detail = element.element('omnidirectional').value('volumeRefinementLevel')
+                else:
+                    directional = element.element('directional')
+                    detail = (f'({directional.value("splitCountX")},' 
+                              f' {directional.value("splitCountY")},'
+                              f' {directional.value("splitCountZ")})')
+
+                self._addVolumeRefinementItem(groupId, element.value('groupName'), detail)
             else:
                 self._db.removeElement('castellation/refinementVolumes', groupId)
 
@@ -314,15 +322,20 @@ class CastellationPage(StepPage):
 
     def _volumeRefinementDialogAccepted(self):
         element = self._dialog.dbElement()
-        if self._dialog.isCreationMode():
-            self._addVolumeRefinementItem(self._dialog.groupId(), element.getValue('groupName'),
-                                          element.getValue('volumeRefinementLevel'))
+        if element.getEnum('refinementType') == VolumeRefinementType.OMNIDIRECTIONAL:
+            detail = element.getValue('omnidirectional/volumeRefinementLevel')
         else:
-            self._ui.volumeRefinement.item(self._dialog.groupId()).update(
-                [element.getValue('groupName'), element.getValue('volumeRefinementLevel')])
+            detail = (f'({element.getValue("directional/splitCountX")},' 
+                      f' {element.getValue("directional/splitCountY")},'
+                      f' {element.getValue("directional/splitCountZ")})')
+            
+        if self._dialog.isCreationMode():
+            self._addVolumeRefinementItem(self._dialog.groupId(), element.getValue('groupName'), detail)
+        else:
+            self._ui.volumeRefinement.item(self._dialog.groupId()).update([element.getValue('groupName'), detail])
 
-    def _addVolumeRefinementItem(self, groupId, name, level):
-        item = ListItemWithButtons(groupId, [name, level])
+    def _addVolumeRefinementItem(self, groupId, name, detail):
+        item = ListItemWithButtons(groupId, [name, detail])
         item.editClicked.connect(lambda: self._openVolumeRefinementDialog(groupId))
         item.removeClicked.connect(lambda: self._removeVolumeRefinement(groupId))
         self._ui.volumeRefinement.addItem(item)

@@ -8,7 +8,7 @@ from libbaram.simple_db.simple_schema import FloatType, IntKeyList, EnumType, In
 from libbaram.simple_db.simple_schema import VectorComposite
 
 
-CURRENT_CONFIGURATIONS_VERSION = 3
+CURRENT_CONFIGURATIONS_VERSION = 4
 CONFIGURATIONS_VERSION_KEY = 'version'
 
 
@@ -73,6 +73,11 @@ class FeatureSnapType(Enum):
     IMPLICIT = 'implicit'
 
 
+class VolumeRefinementType(Enum):
+    OMNIDIRECTIONAL = auto()
+    DIRECTIONAL = auto()
+
+
 class GapRefinementMode(Enum):
     NONE = 'none'
     INSIDE = 'inside'
@@ -121,13 +126,23 @@ surfaceRefinement = {
 
 volumeRefinement = {
     'groupName': TextType(),
-    'volumeRefinementLevel': IntType().setRange(1, 10).setDefault(1),
-    'gapRefinement': {
-        'minCellLayers': IntType().setLowLimit(3, False).setDefault(4),
-        'detectionStartLevel': IntType().setRange(0, 10).setDefault(1),
-        'maxRefinementLevel': IntType().setRange(1, 10).setDefault(1),
-        'direction': EnumType(GapRefinementMode),
-        'gapSelf': BoolType(True)
+    'refinementType': EnumType(VolumeRefinementType),
+    'omnidirectional': {
+        'volumeRefinementLevel': IntType().setRange(1, 10).setDefault(1),
+        'gapRefinement': {
+            'minCellLayers': IntType().setLowLimit(3, False).setDefault(4),
+            'detectionStartLevel': IntType().setRange(0, 10).setDefault(1),
+            'maxRefinementLevel': IntType().setRange(1, 10).setDefault(1),
+            'direction': EnumType(GapRefinementMode),
+            'gapSelf': BoolType(True)
+        }
+    },
+    'directional': {
+        'splitCountX': IntType().setRange(0, 10).setDefault(1),
+        'splitCountY': IntType().setRange(0, 10),
+        'splitCountZ': IntType().setRange(0, 10),
+        'minLevel': IntType().setRange(0, 10),
+        'maxLevel': IntType().setRange(0, 10).setDefault(10),
     }
 }
 

@@ -8,7 +8,7 @@ from libbaram.simple_db.simple_db import elementToVector
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType, ThicknessModel, FeatureSnapType
-from baramMesh.db.configurations_schema import GapRefinementMode
+from baramMesh.db.configurations_schema import GapRefinementMode, VolumeRefinementType
 
 
 def boolToText(value):
@@ -279,12 +279,14 @@ class SnappyHexMeshDict(DictionaryFile):
         data = {}
         for group, refinement in groups.items():
             for volume in volumes[group]:
+                omnidirectional = refinement.element('omnidirectional')
+                
                 data[volume.value('name')] = {
                     'mode': 'inside',
-                    'levels': [[1E15, refinement.value('volumeRefinementLevel')]],
+                    'levels': [[1E15, omnidirectional.value('volumeRefinementLevel')]],
                 }
 
-                gapRefinement = refinement.element('gapRefinement')
+                gapRefinement = omnidirectional.element('gapRefinement')
                 gapMode = gapRefinement.value('direction')
                 if gapMode != GapRefinementMode.NONE.value:
                     data[volume.value('name')]['gapLevel'] = [
@@ -293,6 +295,14 @@ class SnappyHexMeshDict(DictionaryFile):
                         gapRefinement.value('maxRefinementLevel')]
                     data[volume.value('name')]['gapMode'] = gapMode
                     data[volume.value('name')]['gapSelf'] = 'true' if gapRefinement.value('gapSelf') else 'false'
+                    
+                if refinement.enum('refinementType') == VolumeRefinementType.DIRECTIONAL:
+                    directional = refinement.element('directional')
+                    data[volume.value('name')]['levelIncrement'] = [
+                        directional.value('minLevel'), directional.value('maxLevel'), [
+                            directional.value('splitCountX'),
+                            directional.value('splitCountY'),
+                            directional.value('splitCountZ')]]
 
         return data
 
