@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .configurations_schema import CURRENT_CONFIGURATIONS_VERSION, CONFIGURATIONS_VERSION_KEY
+from .configurations_schema import CURRENT_CONFIGURATIONS_VERSION, CONFIGURATIONS_VERSION_KEY, VolumeRefinementType
 from .configurations_schema import FeatureSnapType, GapRefinementMode
 
 
@@ -51,11 +51,29 @@ def _to_v4(data):
             }
 
 
+def _to_v5(data):
+    for volumeRefinement in data['castellation']['refinementVolumes'].values():
+        if 'refinementType' not in volumeRefinement:
+            volumeRefinement['refinementType'] = VolumeRefinementType.OMNIDIRECTIONAL
+            volumeRefinement['omnidirectional'] = {
+                'volumeRefinementLevel': volumeRefinement.pop('volumeRefinementLevel'),
+                'gapRefinement': volumeRefinement.pop('gapRefinement')
+            }
+            volumeRefinement['directional'] = {
+                'splitCountX': 1,
+                'splitCountY': 0,
+                'splitCountZ': 0,
+                'minLevel': 0,
+                'maxLevel': 10
+            }
+
+
 _migrates = {
     0: _to_v1,
     1: _to_v2,
     2: _to_v3,
-    3: _to_v4
+    3: _to_v4,
+    4: _to_v5,
 }
 
 

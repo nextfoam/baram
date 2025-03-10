@@ -400,7 +400,7 @@
              <widget class="QGroupBox" name="groupBox_9">
               <property name="minimumSize">
                <size>
-                <width>300</width>
+                <width>320</width>
                 <height>0</height>
                </size>
               </property>
@@ -423,7 +423,7 @@
                   </sizepolicy>
                  </property>
                  <property name="currentIndex">
-                  <number>2</number>
+                  <number>3</number>
                  </property>
                  <widget class="QWidget" name="geometryPage">
                   <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -612,8 +612,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>100</width>
-                        <height>30</height>
+                        <width>65</width>
+                        <height>16</height>
                        </rect>
                       </property>
                      </widget>
@@ -949,8 +949,8 @@
                       <property name="geometry">
                        <rect>
                         <x>0</x>
-                        <y>0</y>
-                        <width>272</width>
+                        <y>-52</y>
+                        <width>432</width>
                         <height>592</height>
                        </rect>
                       </property>
@@ -1394,7 +1394,7 @@
                                 </font>
                                </property>
                                <property name="text">
-                                <string>Level</string>
+                                <string>Level / Split</string>
                                </property>
                               </widget>
                              </item>
@@ -3718,11 +3718,11 @@ QCheckBox::indicator:checked { image: url(:/images/toggle_on); padding: 0; }</st
  </resources>
  <connections/>
  <buttongroups>
+  <buttongroup name="stepButtons"/>
   <buttongroup name="clipHandles">
    <property name="exclusive">
     <bool>false</bool>
    </property>
   </buttongroup>
-  <buttongroup name="stepButtons"/>
  </buttongroups>
 </ui>
