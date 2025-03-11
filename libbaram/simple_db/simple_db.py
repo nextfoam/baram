@@ -28,9 +28,9 @@ def _getField(pathData):
 
 
 class Element:
-    def __init__(self, element, scheme):
+    def __init__(self, element, schema):
         self._data = element
-        self._scheme = scheme
+        self._schema = schema
 
     def value(self, field):
         if isinstance(self._data[field], dict):
@@ -49,19 +49,23 @@ class Element:
 
     def int(self, field):
         return int(self.value(field))
+    
+    def enum(self, field):
+        return self._schema[field].toEnum(self.value(field))
+
 
     def elements(self, field):
-        if not isinstance(self._scheme[field], SchemaList):
+        if not isinstance(self._schema[field], SchemaList):
             raise TypeError
 
-        return {key: Element(self._data[field][key], self._scheme[field].elementSchema())
+        return {key: Element(self._data[field][key], self._schema[field].elementSchema())
                 for key in self._data[field]}
 
     def element(self, field):
         if not isinstance(self._data[field], dict):
             raise LookupError
 
-        return Element(self._data[field], self._scheme[field])
+        return Element(self._data[field], self._schema[field])
 
 
 class SimpleDB(SimpleSchema):

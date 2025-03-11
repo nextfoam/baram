@@ -10,8 +10,8 @@ from PySide6.QtGui import QIcon
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import CFDType, GeometryType
 
-VOLUME_ICON_FILE = ':/icons/prism-outline.svg'
-SURFACE_ICON_FILE = ':/icons/prism.svg'
+VOLUME_ICON_FILE = ':/graphicsIcons/volume.svg'
+SURFACE_ICON_FILE = ':/graphicsIcons/face.svg'
 
 def cfdTypeToText(cfdType):
     return {

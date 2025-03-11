@@ -1,0 +1,19 @@
+<svg id="icons"
+     viewBox="0 0 512 512"
+     xmlns="http://www.w3.org/2000/svg">
+	<path id="front-face"
+	      style="fill:#000000;fill-opacity:0.8;stroke:#ffffff"
+	      d="M 354,158 L 32,158 L 32,480 L 354,480"/>
+	<path id="right-face"
+	      style="fill:#000000;fill-opacity:0.8;stroke:#ffffff"
+	      d="M 354,158 L 480,32 L 480,354 L 354,480 Z"/>
+	<path id="top-face"
+	      style="fill:#000000;fill-opacity:0.8;stroke:#ffffff"
+	      d="M 32,158 L 158,32 L 480,32 L 354,158"/>
+	<path id="front-edge"
+	      style="fill:none;stroke:#ffffff;stroke-width:32;stroke-linecap:round;stroke-linejoin:round"
+	      d="M 32,480 L 32,158 L 354,158 L 354,480"/>
+	<path id="right-edge"
+	      style="fill:none;stroke:#ffffff;stroke-width:48;stroke-linecap:round;stroke-linejoin:round"
+	      d="M 354,158 L 480,32"/>
+</svg>

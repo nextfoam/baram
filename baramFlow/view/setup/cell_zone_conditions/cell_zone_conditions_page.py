@@ -84,7 +84,7 @@ class CellZoneConditionsPage(ContentPage):
     def _load(self):
         regions = coredb.CoreDB().getRegions()
         if len(regions) == 1 and not regions[0]:
-            self._addRegion(None)
+            self._addRegion('')
         else:
             for rname in regions:
                 self._addRegion(rname)
@@ -119,13 +119,13 @@ class CellZoneConditionsPage(ContentPage):
 
         view.refresh()
 
-    def _addRegion(self, rname):
+    def _addRegion(self, rname=''):
         item = RegionItem(self._ui.cellZones)
 
         cellZones = coredb.CoreDB().getCellZones(rname)
         for czid, czname in cellZones:
             if CellZoneDB.isRegion(czname):
-                item.setRegion(czid, '' if rname is None else rname)
+                item.setRegion(czid, rname)
             else:
                 child = CellZoneItem(item)
                 child.setCellZone(czid, czname)

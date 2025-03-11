@@ -45,7 +45,7 @@ class RegionWidget(QWidget):
         self._czid = czid
         self._rname = rname
 
-        self._ui.name.setText(DEFAULT_REGION_NAME if rname is None else rname)
+        self._ui.name.setText( rname if rname else DEFAULT_REGION_NAME)
         self.load()
 
     def czid(self):
