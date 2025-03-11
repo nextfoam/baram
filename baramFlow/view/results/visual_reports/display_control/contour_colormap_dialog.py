@@ -16,13 +16,12 @@ from .contour_colormap_dialog_ui import Ui_ContourColormapDialog
 
 
 class ContourColormapDialog(ResizableDialog):
-    def __init__(self, parent, contour: Contour, displayControl: DisplayControl):
+    def __init__(self, parent, contour: Contour):
         super().__init__(parent)
         self._ui = Ui_ContourColormapDialog()
         self._ui.setupUi(self)
 
         self._contour = contour
-        self._displayControl = displayControl  # ToDo: It's not good to have display control here
 
         self._dialog = None
 
@@ -131,12 +130,13 @@ class ContourColormapDialog(ResizableDialog):
         return True
 
     def _computeRange(self):
-        rMin, rMax = self._displayControl.getValueRange(self._contour.field,
+        # ToDo: jake, this is not quite natural
+        rMin, rMax = self.parent().getValueRange(self._contour.field,
                                                         self._contour.vectorComponent,
                                                         self._ui.useNodeValues.isChecked(),
                                                         self._ui.relevantScaffoldsOnly.isChecked())
-        self._ui.rangeMin.setText(str(rMin))
-        self._ui.rangeMax.setText(str(rMax))
+        self._ui.rangeMin.setText(f'{rMin:g}')
+        self._ui.rangeMax.setText(f'{rMax:g}')
 
         self._contour.rangeMin = rMin
         self._contour.rangeMax = rMax

@@ -6,7 +6,7 @@ from enum import Enum, IntEnum, auto
 import sys
 from uuid import UUID
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTreeWidgetItem, QLabel, QWidget, QHBoxLayout
 from vtkmodules.vtkCommonColor import vtkNamedColors
@@ -17,7 +17,6 @@ from vtkmodules.vtkRenderingCore import vtkActor, vtkMapper, vtkPolyDataMapper
 
 from baramFlow.coredb.post_field import Field, VectorComponent
 from baramFlow.openfoam.solver_field import getSolverFieldName
-from libbaram.colormap import sequentialRedLut
 
 
 class ColorMode(Enum):
@@ -74,17 +73,9 @@ class DisplayItem(QTreeWidgetItem):
         self._mapper.SetInputData(dataSet)
         self._mapper.ScalarVisibilityOff()
 
-        if useNodeValues:
-            self._mapper.SetScalarModeToUsePointData()
-        else:
-            self._mapper.SetScalarModeToUseCellData()
-
         self._mapper.SetColorModeToMapScalars()
         self._mapper.UseLookupTableScalarRangeOn()
         self._mapper.SetLookupTable(lookupTable)
-
-        solverFieldName = getSolverFieldName(field)
-        self._mapper.SelectColorArray(solverFieldName)
 
         self._actor = vtkActor()
         self._actor.SetMapper(self._mapper)
@@ -113,9 +104,15 @@ class DisplayItem(QTreeWidgetItem):
         self.setText(Column.TYPE_COLUMN, name)
         self._updateColorColumn()
 
+        self._setField(field, useNodeValues)
+
         self._connectSignalsSlots()
 
     def setDataSet(self, dataSet: vtkPolyData):
+        if dataSet == self._dataSet:
+            print('Same dataSet configured')
+            return
+
         self._dataSet = dataSet
 
         self._mapper.SetInputData(dataSet)
@@ -123,19 +120,24 @@ class DisplayItem(QTreeWidgetItem):
 
         # self.sourceChanged.emit(self._did)
 
-    def setField(self, field: Field):
-        self._field = field
-        solverFieldName = getSolverFieldName(field)
-        self._mapper.SelectColorArray(solverFieldName)
-        self._mapper.Update()
+    def setField(self, field: Field, useNodeValues: bool):
+        if field == self._field and useNodeValues == self._useNodeValues:
+            print('same field configured')
+            return
 
-    def setUseNodeValues(self, useNodeValues: bool):
+        self._field = field
         self._useNodeValues = useNodeValues
 
+        self._setField(field, useNodeValues)
+
+    def _setField(self, field: Field, useNodeValues: bool):
         if useNodeValues:
-            self._mapper.SetScalarModeToUsePointData()
+            self._mapper.SetScalarModeToUsePointFieldData()
         else:
-            self._mapper.SetScalarModeToUseCellData()
+            self._mapper.SetScalarModeToUseCellFieldData()
+
+        solverFieldName = getSolverFieldName(field)
+        self._mapper.SelectColorArray(solverFieldName)
 
         self._mapper.Update()
 

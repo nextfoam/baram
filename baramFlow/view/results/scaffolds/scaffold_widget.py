@@ -34,7 +34,7 @@ class ScaffoldWidget(QWidget):
         return self._scaffold
 
     def _editAccepted(self):
-        ScaffoldsDB().updateScaffold(self._scaffold)
+        self._scaffold.markUpdated()
         self.load()
 
     def delete(self):

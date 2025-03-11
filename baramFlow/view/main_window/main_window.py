@@ -200,10 +200,6 @@ class MainWindow(QMainWindow):
         return self._caseManager
 
     def load(self):
-        for report in VisualReportsDB().getVisualReports().values():
-            if isinstance(report, Contour):
-                self._addNewReportDock(report)
-
         self._project.opened()
 
     def closeEvent(self, event):
@@ -661,6 +657,11 @@ class MainWindow(QMainWindow):
             self._project.fileDB().saveCoreDB()
 
         self._navigatorView.updateEnabled()
+
+        for report in VisualReportsDB().getVisualReports().values():
+            if isinstance(report, Contour):
+                self._addNewReportDock(report)
+
 
     @qasync.asyncSlot()
     async def _caseLoaded(self, name=None):

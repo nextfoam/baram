@@ -58,11 +58,13 @@ class ScaffoldsDB(QObject):
         for e in boundaries.findall('boundary', namespaces=nsmap):
             s = BoundaryScaffold.fromElement(e)
             scaffolds[s.uuid] = s
+            s.instanceUpdated.connect(self._scaffoldUpdated)
 
         isoSurfaces = parent.find('isoSurfaces', namespaces=nsmap)
         for e in isoSurfaces.findall('surface', namespaces=nsmap):
             s = IsoSurface.fromElement(e)
             scaffolds[s.uuid] = s
+            s.instanceUpdated.connect(self._scaffoldUpdated)
 
         return scaffolds
 
@@ -90,6 +92,8 @@ class ScaffoldsDB(QObject):
 
         self._scaffolds[scaffold.uuid] = scaffold
 
+        scaffold.instanceUpdated.connect(self._scaffoldUpdated)
+
         self.ScaffoldAdded.emit(scaffold.uuid)
 
     def removeScaffold(self, scaffold: Scaffold):
@@ -109,9 +113,12 @@ class ScaffoldsDB(QObject):
 
         del self._scaffolds[scaffold.uuid]
 
-    def updateScaffold(self, scaffold: Scaffold):
-        if scaffold.uuid not in self._scaffolds:
-            raise AssertionError
+    def _scaffoldUpdated(self, uuid: UUID):
+        print('scaffold updated')
+        if uuid not in self._scaffolds:
+            return
+
+        scaffold = self._scaffolds[uuid]
 
         if isinstance(scaffold, BoundaryScaffold):
             parent = self.SCAFFOLDS_PATH + '/boundaries'
