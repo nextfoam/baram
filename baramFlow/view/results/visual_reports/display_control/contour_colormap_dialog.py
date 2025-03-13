@@ -7,7 +7,6 @@ from PySide6.QtWidgets import QColorDialog
 import qasync
 
 from baramFlow.coredb.contour import Contour
-from baramFlow.view.results.visual_reports.display_control.display_control import DisplayControl
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from widgets.async_message_box import AsyncMessageBox
 from .colormap.colormap import colormapName, colormapImage
