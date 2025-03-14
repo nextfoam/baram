@@ -31,8 +31,6 @@ from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
 from baramFlow.view.results.visual_reports.scalar_bar_widget import ScalarBarWidget
 from baramFlow.view.widgets.rendering_view import RenderingView
 
-from baramMesh.view.display_control.display_item import DisplayItem
-
 from widgets.overlay_frame import OverlayFrame
 
 from baramFlow.view.results.visual_reports.display_control.display_item import ColorMode, DisplayMode, Properties, DisplayItem, Column
@@ -92,7 +90,6 @@ class VisualReportView(RenderingView):
         self._scaffoldList.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
         self._scaffoldList.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
 
-
         self._colormap = ScalarBarWidget(self, report, self._colormapDoubleClicked)
         self._colormap.SetInteractor(self._view.interactor())
 
@@ -124,7 +121,7 @@ class VisualReportView(RenderingView):
 
         contour: Contour = report
         contour.rangeMin, contour.rangeMax = self.getValueRange(contour.field,
-                                                        contour.vectorComponent,
+                                                        contour.fieldComponent,
                                                         contour.useNodeValues,
                                                         contour.relevantScaffoldsOnly)
         self._updateLookupTable()
@@ -145,6 +142,7 @@ class VisualReportView(RenderingView):
         self._menu.wireframeDisplayModeSelected.connect(self._displayWireframe)
         self._menu.surfaceDisplayModeSelected.connect(self._displaySurface)
         self._menu.surfaceEdgeDisplayModeSelected.connect(self._displayWireSurfaceWithEdges)
+        self._menu.vectorsToggled.connect(self._vectorsToggled)
 
         ScaffoldsDB().ScaffoldAdded.connect(self._scaffoldUpdated)
         ScaffoldsDB().ScaffoldUpdated.connect(self._scaffoldUpdated)
@@ -225,20 +223,20 @@ class VisualReportView(RenderingView):
         contour: Contour = self._report
 
         if contour.field.type == FieldType.VECTOR:
-            if contour.vectorComponent == VectorComponent.MAGNITUDE:
+            if contour.fieldComponent == VectorComponent.MAGNITUDE:
                 if self._lookupTable.GetVectorMode() != vtkScalarsToColors.MAGNITUDE:
                     self._lookupTable.SetVectorMode(vtkScalarsToColors.MAGNITUDE)
             else:
                 if self._lookupTable.GetVectorMode() != vtkScalarsToColors.COMPONENT:
                     self._lookupTable.SetVectorMode(vtkScalarsToColors.COMPONENT)
 
-                if contour.vectorComponent == VectorComponent.X:
+                if contour.fieldComponent == VectorComponent.X:
                     if self._lookupTable.GetVectorComponent() != 0:
                         self._lookupTable.SetVectorComponent(0)
-                elif contour.vectorComponent == VectorComponent.Y:
+                elif contour.fieldComponent == VectorComponent.Y:
                     if self._lookupTable.GetVectorComponent() != 1:
                         self._lookupTable.SetVectorComponent(1)
-                elif contour.vectorComponent == VectorComponent.Z:
+                elif contour.fieldComponent == VectorComponent.Z:
                     if self._lookupTable.GetVectorComponent() != 2:
                         self._lookupTable.SetVectorComponent(2)
 
@@ -266,7 +264,7 @@ class VisualReportView(RenderingView):
                         displayUuid = self._scaffold2displayItem[uuid]
                         self.updateItemScaffold(displayUuid, scaffold.name, dataset)
                     else:
-                        displayUuid = self.addItem(scaffold.name, dataset)
+                        displayUuid = self.addItem(scaffold.name, scaffold.uuid, dataset)
                         self._scaffold2displayItem[uuid] = displayUuid
                 else:
                     if uuid in self._scaffold2displayItem:
@@ -414,18 +412,23 @@ class VisualReportView(RenderingView):
     def _actorSourceUpdated(self, id_):
         pass
 
+    def _vectorsToggled(self, checked: bool):
+        for item in self._selectedItems:
+            if checked:
+                item.showVectors()
+            else:
+                item.hideVectors()
 
-    def addItem(self, name, dataSet) -> UUID:
+        self._view.refresh()
+
+    def addItem(self, name: str, scaffold: UUID, dataSet) -> UUID:
         did = uuid4()
         contour: Contour = self._report
-        item = DisplayItem(did, name, dataSet, contour.field, contour.useNodeValues, self._lookupTable)
+        item = DisplayItem(self._scaffoldList, did, name, scaffold, dataSet, contour.field, contour.useNodeValues, self._lookupTable, self._view)
 
         self._items[did] = item
 
-        self._scaffoldList.addTopLevelItem(item)
         item.setupColorWidget(self._scaffoldList)
-
-        self._view.addActor(item.actor())
 
         return did
 
@@ -440,7 +443,7 @@ class VisualReportView(RenderingView):
 
             self._scaffoldList.takeTopLevelItem(i)
 
-            self._view.removeActor(item.actor())
+            item.close()
 
             del self._items[did]
             del item

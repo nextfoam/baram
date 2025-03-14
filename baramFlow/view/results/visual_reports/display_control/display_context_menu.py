@@ -21,6 +21,8 @@ class DisplayContextMenu(QMenu):
     surfaceDisplayModeSelected = Signal()
     surfaceEdgeDisplayModeSelected = Signal()
 
+    vectorsToggled = Signal(bool)
+
     def __init__(self, parent):
         super().__init__(parent)
 
@@ -47,19 +49,23 @@ class DisplayContextMenu(QMenu):
         self._fieldColorAction: QAction = self._colorModeMenu.addAction(self.tr('Field'), self._fieldColorActionTriggered)
         self._fieldColorAction.setCheckable(True)
 
-        displayMenu: QMenu = self.addMenu(self.tr('Display Mode'))
+        self._displayModeMenu: QMenu = self.addMenu(self.tr('Display Mode'))
 
-        self._wireFrameDisplayAction: QAction = displayMenu.addAction(self.tr('Wireframe'))
+        self._wireFrameDisplayAction: QAction = self._displayModeMenu.addAction(self.tr('Wireframe'))
         self._wireFrameDisplayAction.triggered.connect(self.wireframeDisplayModeSelected)
         self._wireFrameDisplayAction.setCheckable(True)
 
-        self._surfaceDisplayAction: QAction = displayMenu.addAction(self.tr('Surface'))
+        self._surfaceDisplayAction: QAction = self._displayModeMenu.addAction(self.tr('Surface'))
         self._surfaceDisplayAction.triggered.connect(self.surfaceDisplayModeSelected)
         self._surfaceDisplayAction.setCheckable(True)
 
-        self._surfaceEdgeDisplayAction: QAction = displayMenu.addAction(self.tr('Surface with Edges'))
+        self._surfaceEdgeDisplayAction: QAction = self._displayModeMenu.addAction(self.tr('Surface with Edges'))
         self._surfaceEdgeDisplayAction.triggered.connect(self.surfaceEdgeDisplayModeSelected)
         self._surfaceEdgeDisplayAction.setCheckable(True)
+
+        self._vectorsAction: QAction = self.addAction(self.tr('Vectors'))
+        self._vectorsAction.toggled.connect(self._vectorsActionToggled)
+        self._vectorsAction.setCheckable(True)
 
         self._connectSignalsSlots()
 
@@ -73,6 +79,10 @@ class DisplayContextMenu(QMenu):
         self._wireFrameDisplayAction.setChecked(properties.displayMode == DisplayMode.WIREFRAME)
         self._surfaceDisplayAction.setChecked(properties.displayMode == DisplayMode.SURFACE)
         self._surfaceEdgeDisplayAction.setChecked(properties.displayMode == DisplayMode.SURFACE_EDGE)
+
+        if properties.showVectors is not None:
+            self._vectorsAction.setVisible(True)
+            self._vectorsAction.setChecked(properties.showVectors)
 
         self.exec(pos)
 
@@ -96,4 +106,7 @@ class DisplayContextMenu(QMenu):
     def _fieldColorActionTriggered(self):
         self._colorAction.setEnabled(False)
         self.fieldColorModeSelected.emit()
+
+    def _vectorsActionToggled(self, checked: bool):
+        self.vectorsToggled.emit(checked)
 

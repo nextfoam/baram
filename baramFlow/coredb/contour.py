@@ -17,7 +17,7 @@ from baramFlow.coredb.color_scheme import ColormapScheme
 @dataclass
 class Contour(VisualReport):
     field: Field = VELOCITY
-    vectorComponent: VectorComponent = VectorComponent.MAGNITUDE
+    fieldComponent: VectorComponent = VectorComponent.MAGNITUDE
 
     fieldDisplayName: str = FIELD_TEXTS[VELOCITY]
     numberOfLevels: int = 256
@@ -32,6 +32,12 @@ class Contour(VisualReport):
     customMinColor: QColor = QColor.fromString('#000000')
     customMaxColor: QColor = QColor.fromString('#ffffff')
 
+    includeVectors: bool = False
+    vectorField: Field = VELOCITY
+    vectorScaleFactor: str = '1.0'
+    vectorOnRatio: int = 1
+    vectorNumMax: int = 1000
+
     rangeMin: float = 0  # Not a configuration, Not saved in CoreDB
     rangeMax: float = 0  # Not a configuration, Not saved in CoreDB
 
@@ -44,7 +50,7 @@ class Contour(VisualReport):
         fieldCodeName = e.find('fieldCodeName', namespaces=nsmap).text
         field = getFieldInstance(fieldCategory, fieldCodeName)
 
-        vectorComponent = VectorComponent(int(e.find('vectorComponent', namespaces=nsmap).text))
+        fieldComponent = VectorComponent(int(e.find('fieldComponent', namespaces=nsmap).text))
 
         time = e.find('time', namespaces=nsmap).text
 
@@ -61,6 +67,14 @@ class Contour(VisualReport):
         customMinColor = QColor.fromString(e.find('customMinColor', namespaces=nsmap).text)
         customMaxColor = QColor.fromString(e.find('customMaxColor', namespaces=nsmap).text)
 
+        includeVectors = True if e.find('includeVectors', namespaces=nsmap).text == 'true' else False
+        vectorFieldCategory = e.find('vectorFieldCategory', namespaces=nsmap).text
+        vectorFieldCodeName = e.find('vectorFieldCodeName', namespaces=nsmap).text
+        vectorField = getFieldInstance(vectorFieldCategory, vectorFieldCodeName)
+        vectorScaleFactor = e.find('vectorScaleFactor', namespaces=nsmap).text
+        vectorOnRatio = int(e.find('vectorOnRatio', namespaces=nsmap).text)
+        vectorNumMax = int(e.find('vectorNumMax', namespaces=nsmap).text)
+
         scaffoldsElement = e.find('scaffolds', namespaces=nsmap)
 
         scaffolds = []
@@ -71,7 +85,7 @@ class Contour(VisualReport):
         return Contour(uuid=uuid,
                           name=name,
                           field=field,
-                          vectorComponent=vectorComponent,
+                          fieldComponent=fieldComponent,
                           time=time,
                           fieldDisplayName=fieldDisplayName,
                           numberOfLevels=numberOfLevels,
@@ -85,6 +99,11 @@ class Contour(VisualReport):
                           colorScheme=colorScheme,
                           customMinColor=customMinColor,
                           customMaxColor=customMaxColor,
+                          includeVectors=includeVectors,
+                          vectorField=vectorField,
+                          vectorScaleFactor=vectorScaleFactor,
+                          vectorOnRatio=vectorOnRatio,
+                          vectorNumMax=vectorNumMax,
                           scaffolds=scaffolds)
 
     def toElement(self):
@@ -93,7 +112,7 @@ class Contour(VisualReport):
                    f'    <name>{self.name}</name>'
                    f'    <fieldCategory>{self.field.category}</fieldCategory>'
                    f'    <fieldCodeName>{self.field.codeName}</fieldCodeName>'
-                   f'    <vectorComponent>{self.vectorComponent.value}</vectorComponent>'
+                   f'    <fieldComponent>{self.fieldComponent.value}</fieldComponent>'
                    f'    <time>{self.time}</time>'
                    f'    <fieldDisplayName>{self.fieldDisplayName}</fieldDisplayName>'
                    f'    <numberOfLevels>{str(self.numberOfLevels)}</numberOfLevels>'
@@ -107,6 +126,12 @@ class Contour(VisualReport):
                    f'    <colorScheme>{str(self.colorScheme.value)}</colorScheme>'
                    f'    <customMinColor>{self.customMinColor.name()}</customMinColor>'
                    f'    <customMaxColor>{self.customMaxColor.name()}</customMaxColor>'
+                   f'    <includeVectors>{"true" if self.includeVectors else "false"}</includeVectors>'
+                   f'    <vectorFieldCategory>{self.vectorField.category}</vectorFieldCategory>'
+                   f'    <vectorFieldCodeName>{self.vectorField.codeName}</vectorFieldCodeName>'
+                   f'    <vectorScaleFactor>{self.vectorScaleFactor}</vectorScaleFactor>'
+                   f'    <vectorOnRatio>{str(self.vectorOnRatio)}</vectorOnRatio>'
+                   f'    <vectorNumMax>{str(self.vectorNumMax)}</vectorNumMax>'
                    f'    <scaffolds/>'
                    f'</contour>')
 

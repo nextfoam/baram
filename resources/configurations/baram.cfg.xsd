@@ -2557,7 +2557,7 @@
                                                         </xs:simpleType>
                                                     </xs:element>
                                                     <xs:element name="fieldCodeName" type="xs:string"/>
-                                                    <xs:element name="vectorComponent" type="xs:nonNegativeInteger" default="0"/>
+                                                    <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
                                                     <xs:element name="time" type="xs:string"/>
                                                     <!-- color map configuration begin -->
                                                     <xs:element name="fieldDisplayName" type="xs:string"/>
@@ -2573,6 +2573,22 @@
                                                     <xs:element name="customMinColor" type="xs:string" default="#000000"/>
                                                     <xs:element name="customMaxColor" type="xs:string" default="#ffffff"/>
                                                     <!-- color map configuration end -->
+                                                    <xs:element name="includeVectors" type="xs:boolean" default="false"/>
+                                                    <xs:element name="vectorFieldCategory">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="basic"/>
+                                                                <xs:enumeration value="collateral"/>
+                                                                <xs:enumeration value="phase"/>
+                                                                <xs:enumeration value="specie"/>
+                                                                <xs:enumeration value="userScalar"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="vectorFieldCodeName" type="xs:string"/>
+                                                    <xs:element name="vectorScaleFactor" type="xs:double" default="1.0"/>
+                                                    <xs:element name="vectorOnRatio" type="xs:positiveInteger" default="1"/>
+                                                    <xs:element name="vectorNumMax" type="xs:positiveInteger" default="1000"/>
                                                     <xs:element name="scaffolds">
                                                         <xs:complexType>
                                                             <xs:sequence>
@@ -2587,6 +2603,7 @@
                                                                             <xs:element name="color" type="xs:string" default="#FFFFFF"/>  <!-- Can be #RRRGGGBBB in the future -->
                                                                             <xs:element name="edges" type="xs:boolean" default="false"/>
                                                                             <xs:element name="faces" type="xs:boolean" default="true"/>
+                                                                            <xs:element name="showVectors" type="xs:boolean" default="false"/>
                                                                         </xs:sequence>
                                                                     </xs:complexType>
                                                                 </xs:element>

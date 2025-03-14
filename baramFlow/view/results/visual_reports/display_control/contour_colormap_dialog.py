@@ -131,7 +131,7 @@ class ContourColormapDialog(ResizableDialog):
     def _computeRange(self):
         # ToDo: jake, this is not quite natural
         rMin, rMax = self.parent().getValueRange(self._contour.field,
-                                                        self._contour.vectorComponent,
+                                                        self._contour.fieldComponent,
                                                         self._ui.useNodeValues.isChecked(),
                                                         self._ui.relevantScaffoldsOnly.isChecked())
         self._ui.rangeMin.setText(f'{rMin:g}')

@@ -24,6 +24,10 @@ class ContourDialog(QDialog):
         self._ui = Ui_ContourDialog()
         self._ui.setupUi(self)
 
+        self._ui.name.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Za-z_][A-Za-z0-9_-]*')))
+
+        self._ui.name.setText(contour.name)
+
         self._timeSlider = TimeSlider(self._ui.slider, self._ui.currentTime, self._ui.lastTime)
         self._timeSlider.updateTimeValues(times)
         self._timeSlider.setCurrentTime(contour.time)
@@ -31,27 +35,33 @@ class ContourDialog(QDialog):
         self._fields: list[Field] = getAvailableFields()
         for f in self._fields:
             if f in FIELD_TEXTS:
-                self._ui.field.addItem(FIELD_TEXTS[f], f)
+                text = FIELD_TEXTS[f]
             else:
-                self._ui.field.addItem(f.codeName, f)
+                text = f.codeName
+
+            self._ui.field.addItem(text, f)
+
+            if f.type == FieldType.VECTOR:
+                self._ui.vectorField.addItem(text, f)
 
         # Set Configured Field into combobox
         index = self._ui.field.findData(contour.field)
         self._ui.field.setCurrentIndex(index)
 
         if contour.field.type == FieldType.VECTOR:
-            self._ui.vectorComponent.setEnabled(True)
-            index = self._ui.vectorComponent.findData(contour.vectorComponent)
-            self._ui.vectorComponent.setCurrentIndex(index)
+            self._ui.fieldComponent.setEnabled(True)
+            index = self._ui.fieldComponent.findData(contour.fieldComponent)
+            self._ui.fieldComponent.setCurrentIndex(index)
         else:
-            self._ui.vectorComponent.setEnabled(False)
+            self._ui.fieldComponent.setEnabled(False)
 
-        self._ui.name.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Za-z_][A-Za-z0-9_-]*')))
+        self._ui.includeVectors.setChecked(contour.includeVectors)
 
-        self._ui.name.setText(contour.name)
+        index = self._ui.vectorField.findData(contour.vectorField)
+        self._ui.vectorField.setCurrentIndex(index)
 
-        index = self._ui.field.findData(contour.field)
-        self._ui.field.setCurrentIndex(index)
+        self._ui.scaleFactor.setText(contour.vectorScaleFactor)
+        self._ui.skip.setText(str(contour.vectorOnRatio))
 
         self._contour = contour
 
@@ -68,10 +78,14 @@ class ContourDialog(QDialog):
             return
 
         self._contour.name = self._ui.name.text()
-        self._contour.field = self._ui.field.currentData()
-        self._contour.vectorComponent = self._ui.vectorComponent.currentData()
-
         self._contour.time = self._timeSlider.getCurrentTime()
+        self._contour.field = self._ui.field.currentData()
+        self._contour.fieldComponent = self._ui.fieldComponent.currentData()
+
+        self._contour.includeVectors = True if self._ui.includeVectors.isChecked() else False
+        self._contour.vectorField = self._ui.vectorField.currentData()
+        self._contour.vectorScaleFactor = self._ui.scaleFactor.text()
+        self._contour.vectorOnRatio = int(self._ui.skip.text())
 
         super().accept()
 
@@ -92,6 +106,6 @@ class ContourDialog(QDialog):
         field: Field = self._ui.field.currentData()
 
         if field.type == FieldType.VECTOR:
-            self._ui.vectorComponent.setEnabled(True)
+            self._ui.fieldComponent.setEnabled(True)
         else:
-            self._ui.vectorComponent.setEnabled(False)
+            self._ui.fieldComponent.setEnabled(False)

@@ -8,15 +8,18 @@ from uuid import UUID
 
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QTreeWidgetItem, QLabel, QWidget, QHBoxLayout
+from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QLabel, QWidget, QHBoxLayout
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import vtkDataArray, vtkLookupTable
 from vtkmodules.vtkCommonDataModel import vtkPolyData
-from vtkmodules.vtkFiltersCore import vtkArrayCalculator
-from vtkmodules.vtkRenderingCore import vtkActor, vtkMapper, vtkPolyDataMapper
+from vtkmodules.vtkFiltersCore import vtkArrayCalculator, vtkGlyph3D, vtkMaskPoints
+from vtkmodules.vtkFiltersSources import vtkArrowSource
+from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 
 from baramFlow.coredb.post_field import Field, VectorComponent
 from baramFlow.openfoam.solver_field import getSolverFieldName
+
+from widgets.rendering.rendering_widget import RenderingWidget
 
 
 class ColorMode(Enum):
@@ -38,6 +41,7 @@ class Properties:
     colorMode: ColorMode
     displayMode: DisplayMode
     highlighted: bool
+    showVectors: bool = None
 
     def merge(self, properties):
         self.visibility = properties.visibility if properties.visibility == self.visibility else None
@@ -45,6 +49,7 @@ class Properties:
         self.color = properties.color if properties.color == self.color else None
         self.colorMode = properties.colorMode if properties.colorMode == self.colorMode else None
         self.displayMode = properties.displayMode if properties.displayMode == self.displayMode else None
+        self.showVectors = properties.showVectors if properties.showVectors == self.showVectors else None
 
 
 class Column(IntEnum):
@@ -59,38 +64,46 @@ class DisplayItem(QTreeWidgetItem):
     sourceChanged = Signal(UUID)
     nameChanged = Signal(str)
 
-    def __init__(self, did: UUID, name: str, dataSet: vtkPolyData, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable):
-        super().__init__()
+    def __init__(self, parent, did: UUID, name: str, scaffold: UUID, dataSet: vtkPolyData, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable, view: RenderingWidget):
+        super().__init__(parent)
 
         self._did = did
         self._name = name
+        self._scaffold = scaffold
         self._dataSet = dataSet
         self._field = field
         self._useNodeValues = useNodeValues
         self._lookupTable = lookupTable
+        self._view = view
 
-        self._mapper: vtkMapper = vtkPolyDataMapper()
-        self._mapper.SetInputData(dataSet)
-        self._mapper.ScalarVisibilityOff()
+        self._scaffoldMapper: vtkPolyDataMapper = vtkPolyDataMapper()
+        self._scaffoldMapper.SetInputData(dataSet)
+        self._scaffoldMapper.ScalarVisibilityOff()
 
-        self._mapper.SetColorModeToMapScalars()
-        self._mapper.UseLookupTableScalarRangeOn()
-        self._mapper.SetLookupTable(lookupTable)
+        self._scaffoldMapper.SetColorModeToMapScalars()
+        self._scaffoldMapper.UseLookupTableScalarRangeOn()
+        self._scaffoldMapper.SetLookupTable(lookupTable)
 
-        self._actor = vtkActor()
-        self._actor.SetMapper(self._mapper)
-        self._actor.GetProperty().SetDiffuse(0.3)
-        self._actor.GetProperty().SetOpacity(0.9)
-        self._actor.GetProperty().SetAmbient(0.3)
-        self._actor.SetObjectName(str(self._did))
-        print(f'{self._did} added')
-        prop = self._actor.GetProperty()
-        self._properties = Properties(bool(self._actor.GetVisibility()),
-                                      prop.GetOpacity(),
-                                      QColor.fromRgbF(*prop.GetColor()),
+        self._scaffoldActor: vtkActor = vtkActor()
+        self._scaffoldActor.SetMapper(self._scaffoldMapper)
+        self._scaffoldActor.GetProperty().SetDiffuse(0.3)
+        self._scaffoldActor.GetProperty().SetOpacity(0.9)
+        self._scaffoldActor.GetProperty().SetAmbient(0.3)
+        self._scaffoldActor.SetObjectName(str(self._did))
+
+
+        self._vectorMask: vtkMaskPoints = None
+        self._vectorArrow: vtkArrowSource = None
+        self._vectorGlyph: vtkGlyph3D = None
+        self._vectorMapper: vtkPolyDataMapper = None
+        self._vectorActor: vtkActor = None
+
+        self._properties = Properties(True,  # Visibility
+                                      0.9,   # Opacity
+                                      QColor.fromString('#FFFFFF'),
                                       ColorMode.SOLID,
                                       DisplayMode.SURFACE,
-                                      False)
+                                      highlighted=False)
 
         self._displayModeApplicator = {
             DisplayMode.WIREFRAME: self._applyWireframeMode,
@@ -104,9 +117,9 @@ class DisplayItem(QTreeWidgetItem):
         self.setText(Column.TYPE_COLUMN, name)
         self._updateColorColumn()
 
-        self._setField(field, useNodeValues)
+        self._view.addActor(self._scaffoldActor)
 
-        self._connectSignalsSlots()
+        self._setField(field, useNodeValues)
 
     def setDataSet(self, dataSet: vtkPolyData):
         if dataSet == self._dataSet:
@@ -115,10 +128,10 @@ class DisplayItem(QTreeWidgetItem):
 
         self._dataSet = dataSet
 
-        self._mapper.SetInputData(dataSet)
-        self._mapper.Update()
+        self._scaffoldMapper.SetInputData(dataSet)
+        self._scaffoldMapper.Update()
 
-        # self.sourceChanged.emit(self._did)
+        self._setUpVectors()
 
     def setField(self, field: Field, useNodeValues: bool):
         if field == self._field and useNodeValues == self._useNodeValues:
@@ -132,14 +145,14 @@ class DisplayItem(QTreeWidgetItem):
 
     def _setField(self, field: Field, useNodeValues: bool):
         if useNodeValues:
-            self._mapper.SetScalarModeToUsePointFieldData()
+            self._scaffoldMapper.SetScalarModeToUsePointFieldData()
         else:
-            self._mapper.SetScalarModeToUseCellFieldData()
+            self._scaffoldMapper.SetScalarModeToUseCellFieldData()
 
         solverFieldName = getSolverFieldName(field)
-        self._mapper.SelectColorArray(solverFieldName)
+        self._scaffoldMapper.SelectColorArray(solverFieldName)
 
-        self._mapper.Update()
+        self._scaffoldMapper.Update()
 
     def getScalarRange(self, field: Field, useNodeValues: bool) -> tuple[float, float]:
         solverFieldName = getSolverFieldName(field)
@@ -192,33 +205,43 @@ class DisplayItem(QTreeWidgetItem):
         elif vectorComponent == VectorComponent.Z:
             return vectors.GetRange(2)
 
-    def properties(self):
+    def properties(self) -> Properties:
         return self._properties
 
-    def actor(self):
-        return self._actor
+    def actor(self) -> vtkActor:
+        return self._scaffoldActor
 
-    def did(self):
+    def did(self) -> UUID:
         return self._did
 
-    def isActorVisible(self):
+    def scaffold(self) -> UUID:
+        return self._scaffold
+
+    def dataSEt(self):
+        return self._dataSet
+
+    def isActorVisible(self) -> bool:
         return self._properties.visibility
 
-    def colorMode(self):
+    def colorMode(self) -> ColorMode:
         return self._properties.colorMode
 
-    def setupColorWidget(self, parent):
+    def setupColorWidget(self, treeWidget: QTreeWidget):
         widget = QWidget()
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(9, 1, 9, 1)
         layout.addWidget(self._colorWidget)
         # self._colorWidget.setFrameShape(QFrame.Shape.Box)
         self._colorWidget.setMinimumSize(16, 16)
-        parent.setItemWidget(self, Column.COLOR_COLUMN, widget)
+        treeWidget.setItemWidget(self, Column.COLOR_COLUMN, widget)
 
     def setActorVisible(self, visibility):
         self._properties.visibility = visibility
-        self._actor.SetVisibility(visibility)
+        self._scaffoldActor.SetVisibility(visibility)
+        if visibility and self._properties.showVectors:
+            self._vectorActor.SetVisibility(True)
+        else:
+            self._vectorActor.SetVisibility(False)
         self._updateColorColumn()
 
     def setDisplayMode(self, mode: DisplayMode):
@@ -227,19 +250,27 @@ class DisplayItem(QTreeWidgetItem):
 
     def setOpacity(self, opacity):
         self._properties.opacity = opacity
-        self._actor.GetProperty().SetOpacity(opacity)
+        self._scaffoldActor.GetProperty().SetOpacity(opacity)
+        if self._vectorActor is not None:
+            self._vectorActor.GetProperty().SetOpacity(opacity)
 
     def setActorColor(self, color: QColor):
         self._properties.color = color
-        self._actor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
+        self._scaffoldActor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
+        if self._vectorActor is not None:
+            self._vectorActor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
         self._updateColorColumn()
 
     def setColorMode(self, mode: ColorMode):
         self._properties.colorMode = mode
         if mode == ColorMode.SOLID:
-            self._mapper.ScalarVisibilityOff()
+            self._scaffoldMapper.ScalarVisibilityOff()
+            if self._vectorActor is not None:
+                self._vectorMapper.ScalarVisibilityOff()
         elif mode == ColorMode.FIELD:
-            self._mapper.ScalarVisibilityOn()
+            self._scaffoldMapper.ScalarVisibilityOn()
+            if self._vectorActor is not None:
+                self._vectorMapper.ScalarVisibilityOn()
         else:
             raise AssertionError
 
@@ -255,32 +286,32 @@ class DisplayItem(QTreeWidgetItem):
 
     def _highlightOn(self):
         self._applySurfaceEdgeMode()
-        self._actor.GetProperty().SetDiffuse(0.6)
-        self._actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Magenta'))
-        self._actor.GetProperty().SetLineWidth(2)
+        self._scaffoldActor.GetProperty().SetDiffuse(0.6)
+        self._scaffoldActor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Magenta'))
+        self._scaffoldActor.GetProperty().SetLineWidth(2)
 
     def _highlightOff(self):
         self._displayModeApplicator[self._properties.displayMode]()
-        self._actor.GetProperty().SetDiffuse(0.3)
-        self._actor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Gray'))
-        self._actor.GetProperty().SetLineWidth(1)
+        self._scaffoldActor.GetProperty().SetDiffuse(0.3)
+        self._scaffoldActor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Gray'))
+        self._scaffoldActor.GetProperty().SetLineWidth(1)
 
     def colorWidget(self):
         return self._colorWidget
 
     def _applyWireframeMode(self):
         if not self._properties.highlighted:
-            self._actor.GetProperty().SetRepresentationToWireframe()
+            self._scaffoldActor.GetProperty().SetRepresentationToWireframe()
 
     def _applySurfaceMode(self):
         if not self._properties.highlighted:
-            self._actor.GetProperty().SetRepresentationToSurface()
-            self._actor.GetProperty().EdgeVisibilityOff()
+            self._scaffoldActor.GetProperty().SetRepresentationToSurface()
+            self._scaffoldActor.GetProperty().EdgeVisibilityOff()
 
     def _applySurfaceEdgeMode(self):
-        self._actor.GetProperty().SetRepresentationToSurface()
-        self._actor.GetProperty().EdgeVisibilityOn()
-        self._actor.GetProperty().SetLineWidth(1.0)
+        self._scaffoldActor.GetProperty().SetRepresentationToSurface()
+        self._scaffoldActor.GetProperty().EdgeVisibilityOn()
+        self._scaffoldActor.GetProperty().SetLineWidth(1.0)
 
     def _updateColorColumn(self):
         if self.isActorVisible():
@@ -300,19 +331,72 @@ class DisplayItem(QTreeWidgetItem):
 
     def setName(self, name):
         self.setText(Column.NAME_COLUMN, name)
-    #
-    # def _updateCutIcon(self):
-    #     if self._actorInfo.isCutEnabled():
-    #         self._colorWidget.clear()
-    #     else:
-    #         icon = QPixmap(':/icons/lock-closed.svg')
-    #         self._colorWidget.setPixmap(icon.scaled(18, 18))
-    #
-    # def _updateVisibleIcon(self):
-    #     if self._actorInfo.isActorVisible():
-    #         self.setIcon(Column.VISIBLE_ICON_COLUMN, self._bulbOnIcon)
-    #     else:
-    #         self.setIcon(Column.VISIBLE_ICON_COLUMN, self._bulbOffIcon)
 
-    def _connectSignalsSlots(self):
-        pass
+    def close(self):
+        self._view.removeActor(self._scaffoldActor)
+        if self._vectorActor is not None:
+            self._view.removeActor(self._vectorActor)
+
+    def showVectors(self):
+        if self._vectorActor is None:
+            self._setUpVectors()
+
+        self._properties.showVectors = True
+        self._vectorActor.SetVisibility(True)
+
+    def hideVectors(self):
+        if self._vectorActor is None:
+            return
+
+        self._properties.showVectors = False
+        self._vectorActor.SetVisibility(False)
+
+    def _prepareVectorFilterPipeline(self):
+        self._vectorMask = vtkMaskPoints()
+        self._vectorMask.SetOnRatio(5)
+        self._vectorMask.RandomModeOn()
+
+        self._vectorArrow = vtkArrowSource()
+        self._vectorArrow.SetTipResolution(16)
+        self._vectorArrow.SetTipLength(0.3)
+        self._vectorArrow.SetTipRadius(0.1)
+
+        self._vectorGlyph = vtkGlyph3D()
+        self._vectorGlyph.SetVectorModeToUseVector()
+        self._vectorGlyph.SetScaleFactor(1.0)
+        self._vectorGlyph.SetColorModeToColorByScalar()
+        self._vectorGlyph.SetScaleModeToScaleByVector()
+        self._vectorGlyph.OrientOn()
+
+        self._vectorGlyph.SetSourceConnection(self._vectorArrow.GetOutputPort())
+        self._vectorGlyph.SetInputConnection(self._vectorMask.GetOutputPort())
+
+        self._vectorMapper = vtkPolyDataMapper()
+        self._vectorMapper.SetColorModeToMapScalars()
+        self._vectorMapper.UseLookupTableScalarRangeOn()
+        self._vectorMapper.SetLookupTable(self._lookupTable)
+
+        self._vectorActor = vtkActor()
+        self._vectorActor.SetMapper(self._vectorMapper)
+        self._vectorActor.GetProperty().SetDiffuse(0.3)
+        self._vectorActor.GetProperty().SetAmbient(0.3)
+        self._vectorActor.SetObjectName(str(self._did))
+
+        self._view.addActor(self._vectorActor)
+
+    def _setUpVectors(self):
+        if self._vectorActor is None:
+            self._prepareVectorFilterPipeline()
+
+        self._vectorMask.SetInputData(self._dataSet)
+
+        self._vectorGlyph.Update()
+
+        self._vectorMapper.SetInputData(self._vectorGlyph.GetOutput())
+
+        if self._properties.colorMode == ColorMode.FIELD:
+            self._vectorMapper.ScalarVisibilityOn()
+        else:
+            self._vectorMapper.ScalarVisibilityOff()
+
+        self._vectorActor.GetProperty().SetOpacity(self._properties.opacity)
