@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>239</width>
-    <height>208</height>
+    <width>198</width>
+    <height>225</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,7 +44,7 @@
    </item>
    <item>
     <widget class="QWidget" name="widget_2" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -58,42 +58,43 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>Boundary</string>
+         <string>Static Boundary</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="dialogContents" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLineEdit" name="boundary">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="select">
-           <property name="text">
-            <string>Select</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="select">
+        <property name="text">
+         <string>Select</string>
+        </property>
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QListWidget" name="boundaries">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
     </widget>
    </item>
    <item>

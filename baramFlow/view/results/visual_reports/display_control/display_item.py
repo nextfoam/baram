@@ -17,6 +17,7 @@ from vtkmodules.vtkFiltersSources import vtkArrowSource
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 
 from baramFlow.coredb.post_field import Field, VectorComponent
+from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 from baramFlow.openfoam.solver_field import getSolverFieldName
 
 from widgets.rendering.rendering_widget import RenderingWidget
@@ -64,12 +65,12 @@ class DisplayItem(QTreeWidgetItem):
     sourceChanged = Signal(UUID)
     nameChanged = Signal(str)
 
-    def __init__(self, parent, did: UUID, name: str, scaffold: UUID, dataSet: vtkPolyData, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable, view: RenderingWidget):
+    def __init__(self, parent, did: UUID, name: str, reportingScaffold: ReportingScaffold, dataSet: vtkPolyData, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable, view: RenderingWidget):
         super().__init__(parent)
 
         self._did = did
         self._name = name
-        self._scaffold = scaffold
+        self._reportingScaffold = reportingScaffold
         self._dataSet = dataSet
         self._field = field
         self._useNodeValues = useNodeValues
@@ -98,11 +99,25 @@ class DisplayItem(QTreeWidgetItem):
         self._vectorMapper: vtkPolyDataMapper = None
         self._vectorActor: vtkActor = None
 
-        self._properties = Properties(True,  # Visibility
-                                      0.9,   # Opacity
-                                      QColor.fromString('#FFFFFF'),
-                                      ColorMode.SOLID,
-                                      DisplayMode.SURFACE,
+        if reportingScaffold.solidColor:
+            colorMode = ColorMode.SOLID
+        else:
+            colorMode = ColorMode.FIELD
+
+        if reportingScaffold.edges and reportingScaffold.faces:
+            displayMode = DisplayMode.SURFACE_EDGE
+        elif reportingScaffold.faces:
+            displayMode = DisplayMode.SURFACE
+        elif reportingScaffold.edges:
+            displayMode = DisplayMode.WIREFRAME
+        else:
+            raise AssertionError
+
+        self._properties = Properties(reportingScaffold.visibility,
+                                      reportingScaffold.opacity,
+                                      reportingScaffold.color,
+                                      colorMode,
+                                      displayMode,
                                       highlighted=False)
 
         self._displayModeApplicator = {
@@ -115,6 +130,7 @@ class DisplayItem(QTreeWidgetItem):
 
         self.setText(Column.NAME_COLUMN, name)
         self.setText(Column.TYPE_COLUMN, name)
+
         self._updateColorColumn()
 
         self._view.addActor(self._scaffoldActor)
@@ -214,8 +230,8 @@ class DisplayItem(QTreeWidgetItem):
     def did(self) -> UUID:
         return self._did
 
-    def scaffold(self) -> UUID:
-        return self._scaffold
+    def scaffold(self) -> ReportingScaffold:
+        return self._reportingScaffold
 
     def dataSEt(self):
         return self._dataSet
@@ -237,44 +253,76 @@ class DisplayItem(QTreeWidgetItem):
 
     def setActorVisible(self, visibility):
         self._properties.visibility = visibility
+        self._reportingScaffold.visibility = visibility
+
         self._scaffoldActor.SetVisibility(visibility)
         if visibility and self._properties.showVectors:
             self._vectorActor.SetVisibility(True)
         else:
             self._vectorActor.SetVisibility(False)
+
         self._updateColorColumn()
+
+        self._reportingScaffold.markUpdated()
 
     def setDisplayMode(self, mode: DisplayMode):
         self._properties.displayMode = mode
         self._displayModeApplicator[mode]()
 
+        if mode == DisplayMode.SURFACE_EDGE:
+            self._reportingScaffold.edges = True
+            self._reportingScaffold.faces = True
+        elif mode == DisplayMode.SURFACE:
+            self._reportingScaffold.edges = False
+            self._reportingScaffold.faces = True
+        elif mode == DisplayMode.WIREFRAME:
+            self._reportingScaffold.edges = True
+            self._reportingScaffold.faces = False
+        else:
+            raise AssertionError
+
+        self._reportingScaffold.markUpdated()
+
     def setOpacity(self, opacity):
         self._properties.opacity = opacity
+        self._reportingScaffold.opacity = opacity
+
         self._scaffoldActor.GetProperty().SetOpacity(opacity)
         if self._vectorActor is not None:
             self._vectorActor.GetProperty().SetOpacity(opacity)
 
+        self._reportingScaffold.markUpdated()
+
     def setActorColor(self, color: QColor):
         self._properties.color = color
+        self._reportingScaffold.color = color
+
         self._scaffoldActor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
         if self._vectorActor is not None:
             self._vectorActor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
         self._updateColorColumn()
 
+        self._reportingScaffold.markUpdated()
+
     def setColorMode(self, mode: ColorMode):
         self._properties.colorMode = mode
         if mode == ColorMode.SOLID:
             self._scaffoldMapper.ScalarVisibilityOff()
+            self._reportingScaffold.solidColor = False
             if self._vectorActor is not None:
                 self._vectorMapper.ScalarVisibilityOff()
+            self._reportingScaffold.solidColor = True
         elif mode == ColorMode.FIELD:
             self._scaffoldMapper.ScalarVisibilityOn()
+            self._reportingScaffold.solidColor = False
             if self._vectorActor is not None:
                 self._vectorMapper.ScalarVisibilityOn()
         else:
             raise AssertionError
 
         self._updateColorColumn()
+
+        self._reportingScaffold.markUpdated()
 
     def setHighlighted(self, highlighted):
         if self._properties.highlighted != highlighted:
@@ -342,14 +390,22 @@ class DisplayItem(QTreeWidgetItem):
             self._setUpVectors()
 
         self._properties.showVectors = True
+        self._reportingScaffold.showVectors = True
+
         self._vectorActor.SetVisibility(True)
+
+        self._reportingScaffold.markUpdated()
 
     def hideVectors(self):
         if self._vectorActor is None:
             return
 
         self._properties.showVectors = False
+        self._reportingScaffold.showVectors = False
+
         self._vectorActor.SetVisibility(False)
+
+        self._reportingScaffold.markUpdated()
 
     def _prepareVectorFilterPipeline(self):
         self._vectorMask = vtkMaskPoints()

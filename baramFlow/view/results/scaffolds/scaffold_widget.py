@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 
 
+from PySide6.QtGui import QFontMetrics, Qt
 from PySide6.QtWidgets import QWidget
 
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
+from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.scaffolds_db import Scaffold, ScaffoldsDB
 from baramFlow.coredb.post_field import FIELD_TEXTS
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
@@ -49,10 +52,16 @@ class BoundaryScaffoldWidget(ScaffoldWidget):
         super().__init__(scaffold)
 
     def load(self):
-        self._ui.name.setText(self._scaffold.name)
+        scaffold: BoundaryScaffold = self._scaffold
 
-        bcname = BoundaryDB.getBoundaryText(self._scaffold.bcid)
-        self._ui.type.setText(f'boundary scaffold for <b>{bcname}</b>')
+        self._ui.name.setText(scaffold.name)
+
+        bcNamesList = [BoundaryDB.getBoundaryText(bcid) for bcid in scaffold.boundaries]
+        bcNames = ', '.join(bcNamesList)
+        metrics = QFontMetrics(self._ui.type.font())
+        elidedText = metrics.elidedText(bcNames, Qt.TextElideMode.ElideRight, 100);
+
+        self._ui.type.setText(f'boundary scaffold for <b>{elidedText}</b>')
 
     def edit(self):
         self._dialog = BoundaryScaffoldDialog(self, self._scaffold)
@@ -65,12 +74,13 @@ class IsoSurfaceWidget(ScaffoldWidget):
         super().__init__(scaffold)
 
     def load(self):
-        self._ui.name.setText(self._scaffold.name)
+        scaffold: IsoSurface = self._scaffold
+        self._ui.name.setText(scaffold.name)
 
-        if self._scaffold.field in FIELD_TEXTS:
-            fieldName = FIELD_TEXTS[self._scaffold.field]
+        if scaffold.field in FIELD_TEXTS:
+            fieldName = FIELD_TEXTS[scaffold.field]
         else:
-            fieldName = self._scaffold.field.name
+            fieldName = scaffold.field.codeName
 
         self._ui.type.setText(f'iso surface for field <b>{fieldName}</b>')
 

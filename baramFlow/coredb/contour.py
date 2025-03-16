@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass
+from typing import ClassVar
 from uuid import UUID
 
 from PySide6.QtGui import QColor
 from lxml import etree
 
+from baramFlow.coredb import coredb
 from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.post_field import FIELD_TEXTS, VELOCITY, Field, VectorComponent, getFieldInstance
@@ -16,6 +18,8 @@ from baramFlow.coredb.color_scheme import ColormapScheme
 
 @dataclass
 class Contour(VisualReport):
+    VISUAL_REPORTS_PATH: ClassVar[str] = '/visualReports/contours'
+
     field: Field = VELOCITY
     fieldComponent: VectorComponent = VectorComponent.MAGNITUDE
 
@@ -77,12 +81,12 @@ class Contour(VisualReport):
 
         scaffoldsElement = e.find('scaffolds', namespaces=nsmap)
 
-        scaffolds = []
+        reportingScaffolds: dict[UUID, ReportingScaffold] = {}
         for scaffoldElement in scaffoldsElement.findall('scaffold', namespaces=nsmap):
-            scaffold = ReportingScaffold.fromElement(scaffoldElement)
-            scaffolds.append(scaffold)
+            rs = ReportingScaffold.fromElement(scaffoldElement)
+            reportingScaffolds[rs.scaffoldUuid] = rs
 
-        return Contour(uuid=uuid,
+        contour = Contour(uuid=uuid,
                           name=name,
                           field=field,
                           fieldComponent=fieldComponent,
@@ -104,7 +108,12 @@ class Contour(VisualReport):
                           vectorScaleFactor=vectorScaleFactor,
                           vectorOnRatio=vectorOnRatio,
                           vectorNumMax=vectorNumMax,
-                          scaffolds=scaffolds)
+                          reportingScaffolds=reportingScaffolds)
+
+        for rs in reportingScaffolds:
+            rs.instanceUpdated.connect(contour._reportingScaffoldUpdated)
+
+        return contour
 
     def toElement(self):
         string =   ('<contour xmlns="http://www.baramcfd.org/baram">'
@@ -139,10 +148,17 @@ class Contour(VisualReport):
 
         scaffoldsElement = element.find('scaffolds', namespaces=nsmap)
 
-        for s in self.scaffolds:
-            scaffoldsElement.append(s)
+        for rs in self.reportingScaffolds.values():
+            scaffoldsElement.append(rs.toElement())
 
         return etree.fromstring(string)
 
     def xpath(self):
         return f'/contour[uuid="{str(self.uuid)}"]'
+
+    def _saveToCoreDB(self):
+        coredb.CoreDB().removeElement(self.VISUAL_REPORTS_PATH + self.xpath())
+        coredb.CoreDB().addElement(self.VISUAL_REPORTS_PATH, self.toElement())
+
+    def _reportingScaffoldUpdated(self, scaffold: UUID):
+        self._saveToCoreDB()

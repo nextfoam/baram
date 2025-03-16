@@ -22,7 +22,7 @@ class VisualReport(VisualReportObserver):
 
     time: str = '0'
 
-    scaffolds: list[ReportingScaffold] = field(default_factory=list)
+    reportingScaffolds: dict[UUID, ReportingScaffold] = field(default_factory=dict)
 
     def __post_init__(self):
         super().__init__()
@@ -35,5 +35,8 @@ class VisualReport(VisualReportObserver):
         raise NotImplementedError
 
     def markUpdated(self):
+        self._saveToCoreDB()
         self.instanceUpdated.emit(self.uuid)
 
+    def _saveToCoreDB(self):
+        raise NotImplementedError

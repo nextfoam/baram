@@ -21,6 +21,7 @@ from baramFlow.app import app
 
 from baramFlow.coredb.contour import Contour
 from baramFlow.coredb.post_field import FieldType, VectorComponent
+from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_report import VisualReport
 
@@ -124,6 +125,7 @@ class VisualReportView(RenderingView):
                                                         contour.fieldComponent,
                                                         contour.useNodeValues,
                                                         contour.relevantScaffoldsOnly)
+
         self._updateLookupTable()
 
         self._connectSignalsSlots()
@@ -421,10 +423,14 @@ class VisualReportView(RenderingView):
 
         self._view.refresh()
 
-    def addItem(self, name: str, scaffold: UUID, dataSet) -> UUID:
+    def addItem(self, name: str, scaffoldUuid: UUID, dataSet) -> UUID:
         did = uuid4()
         contour: Contour = self._report
-        item = DisplayItem(self._scaffoldList, did, name, scaffold, dataSet, contour.field, contour.useNodeValues, self._lookupTable, self._view)
+        if scaffoldUuid in contour.reportingScaffolds:
+            rs = contour[scaffoldUuid]
+        else:
+            rs = ReportingScaffold(scaffoldUuid=scaffoldUuid)
+        item = DisplayItem(self._scaffoldList, did, name, rs, dataSet, contour.field, contour.useNodeValues, self._lookupTable, self._view)
 
         self._items[did] = item
 

@@ -1,6 +1,7 @@
-from baramFlow.coredb.libdb import nsmap
-from baramFlow.coredb.scaffold import ScaffoldType
+from typing import ClassVar
 
+from PySide6.QtCore import QObject, Signal
+from baramFlow.coredb.libdb import nsmap
 
 from PySide6.QtGui import QColor
 from lxml import etree
@@ -11,10 +12,10 @@ from uuid import UUID
 
 
 @dataclass
-class ReportingScaffold:
-    type_: ScaffoldType
-    boundary: int = 0
-    scaffold: UUID  = UUID(int = 0)
+class ReportingScaffold(QObject):
+    instanceUpdated: ClassVar[Signal] = Signal(UUID)
+
+    scaffoldUuid: UUID  = UUID(int = 0)
 
     visibility: bool = False
     opacity: int = 100
@@ -22,41 +23,45 @@ class ReportingScaffold:
     color: QColor = QColor.fromString('#FFFFFF')
     edges: bool = False
     faces: bool = True
+    showVectors: bool = False
+
+    def __post_init__(self):
+        super().__init__()
 
     @classmethod
     def fromElement(cls, e):
-        type_ = ScaffoldType(e.find('type', namespaces=nsmap).text)
-        boundary = int(e.find('boundary', namespaces=nsmap).text)
-        scaffold = UUID(e.find('scaffoldUuid', namespaces=nsmap).text)
+        scaffoldUuid = UUID(e.find('scaffoldUuid', namespaces=nsmap).text)
         visibility = (e.find('visibility', namespaces=nsmap).text == 'true')
         opacity = int(e.find('opacity', namespaces=nsmap).text)
         solidColor = (e.find('solidColor', namespaces=nsmap).text == 'true')
         color = QColor.fromString(e.find('color', namespaces=nsmap).text)
         edges = (e.find('edges', namespaces=nsmap).text == 'true')
         faces = (e.find('faces', namespaces=nsmap).text == 'true')
+        showVectors = (e.find('showVectors', namespaces=nsmap).text == 'true')
 
 
-        return ReportingScaffold(type_=type_,
-                          boundary=boundary,
-                          scaffold=scaffold,
+        return ReportingScaffold(scaffoldUuid=scaffoldUuid,
                           visibility=visibility,
                           opacity=opacity,
                           solidColor=solidColor,
                           color=color,
                           edges=edges,
-                          faces=faces)
+                          faces=faces,
+                          showVectors=showVectors)
 
     def toElement(self):
-        string = (f'<saffold>'
-                  f'    <type>{self.type_.value}</type>'
-                  f'    <boundary>{self.boundary}</boundary>'
-                  f'    <scaffoldUuid>{str(self.scaffold)}</scaffoldUuid>'
+        string = (f'<scaffold>'
+                  f'    <scaffoldUuid>{str(self.scaffoldUuid)}</scaffoldUuid>'
                   f'    <visibility>{"true" if self.visibility else "false"}</visibility>'
                   f'    <opacity>{str(self.opacity)}</opacity>'
                   f'    <solidColor>{"true" if self.solidColor else "false"}</solidColor>'
                   f'    <color>{self.color.name()}</color>'
                   f'    <edges>{"true" if self.edges else "false"}</edges>'
                   f'    <faces>{"true" if self.faces else "false"}</faces>'
+                  f'    <showVectors>{"true" if self.showVectors else "false"}</showVectors>'
                   f'</scaffold>')
 
         return etree.fromstring(string)
+
+    def markUpdated(self):
+        self.instanceUpdated.emit(self.scaffoldUuid)

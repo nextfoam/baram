@@ -132,14 +132,14 @@ class ScaffoldsDB(QObject):
 
         self.ScaffoldUpdated.emit(scaffold.uuid)
 
-    def getBoundariesInUse(self):
-        boundaries = []
+    # def getBoundariesInUse(self):
+    #     boundaries = []
 
-        for scaffold in self._scaffolds.values():
-            if isinstance(scaffold, BoundaryScaffold):
-                boundaries.append(scaffold.bcid)
+    #     for scaffold in self._scaffolds.values():
+    #         if isinstance(scaffold, BoundaryScaffold):
+    #             boundaries.append(scaffold.bcid)
 
-        return boundaries
+    #     return boundaries
 
     def nameDuplicates(self, uuid: UUID, name: str) -> bool:
         for scaffold in self._scaffolds.values():

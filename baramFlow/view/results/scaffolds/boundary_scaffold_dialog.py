@@ -9,11 +9,11 @@ from PySide6.QtWidgets import QDialog
 
 from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
 
+from baramFlow.view.widgets.multi_selector_dialog import MultiSelectorDialog
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
-from widgets.selector_dialog import SelectorDialog
 
 from .boundary_scaffold_dialog_ui import Ui_BoundaryScaffoldDialog
 
@@ -26,18 +26,14 @@ class BoundaryScaffoldDialog(QDialog):
         self._ui.setupUi(self)
 
         self._scaffold = scaffold
-        self._bcid = scaffold.bcid
+        self._boundaries = scaffold.boundaries
 
         self._dialog = None
 
         self._ui.name.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Za-z_][A-Za-z0-9_-]*')))
         self._ui.name.setText(scaffold.name)
 
-        if scaffold.bcid == '0':
-            self._ui.boundary.setText('')
-        else:
-            bcname = BoundaryDB.getBoundaryText(scaffold.bcid)
-            self._ui.boundary.setText(bcname)
+        self._setBoundaries(self._boundaries)
 
         self._connectSignalsSlots()
 
@@ -48,21 +44,22 @@ class BoundaryScaffoldDialog(QDialog):
 
     @qasync.asyncSlot()
     async def _selectClicked(self):
-        if not self._dialog:
-            boundaries = BoundaryDB.getBoundarySelectorItems()
-            boundariesInUse = ScaffoldsDB().getBoundariesInUse()
-            items = filter(lambda item: item.data not in boundariesInUse, boundaries)
-
-            self._dialog = SelectorDialog(self, self.tr("Select Boundary"), self.tr("Select Boundary"), items)
-            self._dialog.accepted.connect(self._boundarySelected)
-
+        boundaries = BoundaryDB.getBoundarySelectorItems()
+        self._dialog = MultiSelectorDialog(self, self.tr("Select Boundaries"), boundaries, self._boundaries)
+        self._dialog.accepted.connect(self._boundariesChanged)
         self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _boundarySelected(self):
-        self._bcid = str(self._dialog.selectedItem())
-        bcname = BoundaryDB.getBoundaryText(self._bcid)
-        self._ui.boundary.setText(bcname)
+    async def _boundariesChanged(self):
+        boundaries: list[str] = self._dialog.selectedItems()
+        self._setBoundaries(boundaries)
+
+    def _setBoundaries(self, boundaries):
+        self._boundaries = boundaries
+
+        self._ui.boundaries.clear()
+        for bcid in boundaries:
+            self._ui.boundaries.addItem(BoundaryDB.getBoundaryText(bcid))
 
     @qasync.asyncSlot()
     async def _okClicked(self):
@@ -70,7 +67,7 @@ class BoundaryScaffoldDialog(QDialog):
             return
 
         self._scaffold.name = self._ui.name.text()
-        self._scaffold.bcid = self._bcid
+        self._scaffold.boundaries = self._boundaries
 
         self.accept()
 
@@ -85,7 +82,7 @@ class BoundaryScaffoldDialog(QDialog):
                                                 self.tr('Surface Name already exists.'))
             return False
 
-        if self._bcid == '0':
+        if len(self._boundaries) == 0:
             await AsyncMessageBox().critical(self, self.tr('Input Error'),
                                                 self.tr('One boundary should be selected.'))
             return False

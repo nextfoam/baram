@@ -115,14 +115,6 @@ class VisualReportsDB(QObject):
 
         report = self._reports[uuid]
 
-        if isinstance(report, Contour):
-            parent = self.VISUAL_REPORTS_PATH + '/contours'
-        else:
-            raise AssertionError
-
-        coredb.CoreDB().removeElement(parent + report.xpath())
-        coredb.CoreDB().addElement(parent, report.toElement())
-
         self.ReportUpdated.emit(report.uuid)
 
     def nameDuplicates(self, uuid: UUID, name: str) -> bool:
