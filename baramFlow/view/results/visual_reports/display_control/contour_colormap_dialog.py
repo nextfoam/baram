@@ -98,7 +98,7 @@ class ContourColormapDialog(ResizableDialog):
         self._contour.customMinColor = self._customMinColor
         self._contour.customMaxColor = self._customMaxColor
 
-        self._contour.markUpdated()
+        self._contour.notifyReportUpdated()
 
         super().accept()
 
@@ -129,11 +129,8 @@ class ContourColormapDialog(ResizableDialog):
         return True
 
     def _computeRange(self):
-        # ToDo: jake, this is not quite natural
-        rMin, rMax = self.parent().getValueRange(self._contour.field,
-                                                        self._contour.fieldComponent,
-                                                        self._ui.useNodeValues.isChecked(),
-                                                        self._ui.relevantScaffoldsOnly.isChecked())
+        rMin, rMax = self._contour.getValueRange(self._ui.useNodeValues.isChecked(),
+                                                 self._ui.relevantScaffoldsOnly.isChecked())
         self._ui.rangeMin.setText(f'{rMin:g}')
         self._ui.rangeMax.setText(f'{rMax:g}')
 

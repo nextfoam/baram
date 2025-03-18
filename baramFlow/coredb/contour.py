@@ -11,7 +11,7 @@ from lxml import etree
 from baramFlow.coredb import coredb
 from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.coredb.post_field import FIELD_TEXTS, VELOCITY, Field, VectorComponent, getFieldInstance
+from baramFlow.coredb.post_field import FIELD_TEXTS, VELOCITY, Field, FieldType, VectorComponent, getFieldInstance
 from baramFlow.coredb.visual_report import VisualReport
 from baramFlow.coredb.color_scheme import ColormapScheme
 
@@ -110,7 +110,7 @@ class Contour(VisualReport):
                           vectorNumMax=vectorNumMax,
                           reportingScaffolds=reportingScaffolds)
 
-        for rs in reportingScaffolds:
+        for rs in reportingScaffolds.values():
             rs.instanceUpdated.connect(contour._reportingScaffoldUpdated)
 
         return contour
@@ -151,7 +151,7 @@ class Contour(VisualReport):
         for rs in self.reportingScaffolds.values():
             scaffoldsElement.append(rs.toElement())
 
-        return etree.fromstring(string)
+        return element
 
     def xpath(self):
         return f'/contour[uuid="{str(self.uuid)}"]'
@@ -162,3 +162,34 @@ class Contour(VisualReport):
 
     def _reportingScaffoldUpdated(self, scaffold: UUID):
         self._saveToCoreDB()
+
+    def notifyReportingScaffoldAdded(self, uuid: UUID):
+        super().notifyReportingScaffoldAdded(uuid)
+        self._saveToCoreDB()
+
+    def notifyReportingScaffoldRemoved(self, uuid: UUID):
+        super().notifyReportingScaffoldRemoved(uuid)
+        self._saveToCoreDB()
+
+    def getValueRange(self, useNodeValues: bool, relevantScaffoldsOnly: bool) -> tuple[float, float]:
+        if len(self.reportingScaffolds) == 0:
+            return 0, 1
+
+        rMin = float('inf')
+        rMax = float('-inf')
+
+        for rs in self.reportingScaffolds.values():
+            if relevantScaffoldsOnly:
+                if  not rs.visibility or rs.solidColor:
+                    continue
+
+            if self.field.type == FieldType.VECTOR:
+                valueRange = rs.getVectorRange(self.field, self.fieldComponent, useNodeValues)
+            else:
+                valueRange = rs.getScalarRange(self.field, useNodeValues)
+
+            rMin = min(rMin, valueRange[0])
+            rMax = max(rMax, valueRange[1])
+
+        return rMin, rMax
+

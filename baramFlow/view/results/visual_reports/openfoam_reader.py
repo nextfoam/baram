@@ -14,8 +14,6 @@ from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkIOParallel import vtkPOpenFOAMReader
 from vtkmodules.vtkCommonCore import vtkCommand
 
-from baramFlow.case_manager import CaseManager
-
 from baramFlow.openfoam.file_system import FileSystem
 
 from libbaram.vtk_threads import holdRendering, resumeRendering, to_vtk_thread
@@ -49,9 +47,6 @@ class OpenFOAMReader(QObject):
         self._acquired = False
 
         self._reader: Optional[vtkPOpenFOAMReader] = None
-
-        CaseManager().caseLoaded.connect(self._caseLoaded)
-
 
     def __enter__(self):
         _mutex.acquire()
@@ -166,10 +161,3 @@ class OpenFOAMReader(QObject):
         self._reader.UpdateInformation()
 
         self._reader.GetTimeValues()
-
-    @qasync.asyncSlot()
-    async def _caseLoaded(self, name: str):
-        print('caseLoaded====================')
-        self.__enter__()
-        self._setupReader()
-        self.__exit__(None, None, None)

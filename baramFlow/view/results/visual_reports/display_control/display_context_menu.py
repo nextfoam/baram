@@ -63,7 +63,7 @@ class DisplayContextMenu(QMenu):
         self._surfaceEdgeDisplayAction.triggered.connect(self.surfaceEdgeDisplayModeSelected)
         self._surfaceEdgeDisplayAction.setCheckable(True)
 
-        self._vectorsAction: QAction = self.addAction(self.tr('Vectors'))
+        self._vectorsAction: QAction = self.addAction(self.tr('Show Vectors'))
         self._vectorsAction.toggled.connect(self._vectorsActionToggled)
         self._vectorsAction.setCheckable(True)
 

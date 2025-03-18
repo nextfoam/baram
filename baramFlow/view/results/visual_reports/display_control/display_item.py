@@ -41,8 +41,9 @@ class Properties:
     color: QColor
     colorMode: ColorMode
     displayMode: DisplayMode
-    highlighted: bool
     showVectors: bool = None
+
+    highlighted: bool
 
     def merge(self, properties):
         self.visibility = properties.visibility if properties.visibility == self.visibility else None
@@ -65,21 +66,22 @@ class DisplayItem(QTreeWidgetItem):
     sourceChanged = Signal(UUID)
     nameChanged = Signal(str)
 
-    def __init__(self, parent, did: UUID, name: str, reportingScaffold: ReportingScaffold, dataSet: vtkPolyData, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable, view: RenderingWidget):
+    def __init__(self, parent, did: UUID, reportingScaffold: ReportingScaffold, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable, view: RenderingWidget):
         super().__init__(parent)
 
         self._did = did
-        self._name = name
         self._reportingScaffold = reportingScaffold
-        self._dataSet = dataSet
         self._field = field
         self._useNodeValues = useNodeValues
         self._lookupTable = lookupTable
         self._view = view
 
         self._scaffoldMapper: vtkPolyDataMapper = vtkPolyDataMapper()
-        self._scaffoldMapper.SetInputData(dataSet)
-        self._scaffoldMapper.ScalarVisibilityOff()
+        self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
+        if reportingScaffold.solidColor:
+            self._scaffoldMapper.ScalarVisibilityOff()
+        else:
+            self._scaffoldMapper.ScalarVisibilityOn()
 
         self._scaffoldMapper.SetColorModeToMapScalars()
         self._scaffoldMapper.UseLookupTableScalarRangeOn()
@@ -88,10 +90,13 @@ class DisplayItem(QTreeWidgetItem):
         self._scaffoldActor: vtkActor = vtkActor()
         self._scaffoldActor.SetMapper(self._scaffoldMapper)
         self._scaffoldActor.GetProperty().SetDiffuse(0.3)
-        self._scaffoldActor.GetProperty().SetOpacity(0.9)
+        self._scaffoldActor.GetProperty().SetOpacity(reportingScaffold.opacity)
         self._scaffoldActor.GetProperty().SetAmbient(0.3)
         self._scaffoldActor.SetObjectName(str(self._did))
-
+        self._scaffoldActor.SetVisibility(reportingScaffold.visibility)
+        self._scaffoldActor.GetProperty().SetColor(reportingScaffold.color.redF(),
+                                                   reportingScaffold.color.greenF(),
+                                                   reportingScaffold.color.blueF())
 
         self._vectorMask: vtkMaskPoints = None
         self._vectorArrow: vtkArrowSource = None
@@ -118,6 +123,7 @@ class DisplayItem(QTreeWidgetItem):
                                       reportingScaffold.color,
                                       colorMode,
                                       displayMode,
+                                      reportingScaffold.showVectors,
                                       highlighted=False)
 
         self._displayModeApplicator = {
@@ -128,26 +134,29 @@ class DisplayItem(QTreeWidgetItem):
 
         self._colorWidget = QLabel()
 
-        self.setText(Column.NAME_COLUMN, name)
-        self.setText(Column.TYPE_COLUMN, name)
+        self.setText(Column.NAME_COLUMN, reportingScaffold.name)
+        self.setText(Column.TYPE_COLUMN, reportingScaffold.name)
 
         self._updateColorColumn()
 
+        self._displayModeApplicator[displayMode]()
+
         self._view.addActor(self._scaffoldActor)
+
+        if reportingScaffold.showVectors:
+            self._setUpVectors()
+            self._vectorActor.SetVisibility(True)
 
         self._setField(field, useNodeValues)
 
-    def setDataSet(self, dataSet: vtkPolyData):
-        if dataSet == self._dataSet:
-            print('Same dataSet configured')
-            return
+    def updateScaffoldInfo(self):
+        self.setText(Column.NAME_COLUMN, self._reportingScaffold.name)
 
-        self._dataSet = dataSet
-
-        self._scaffoldMapper.SetInputData(dataSet)
+        self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
         self._scaffoldMapper.Update()
 
-        self._setUpVectors()
+        if self._properties.showVectors:
+            self._setUpVectors()
 
     def setField(self, field: Field, useNodeValues: bool):
         if field == self._field and useNodeValues == self._useNodeValues:
@@ -170,57 +179,6 @@ class DisplayItem(QTreeWidgetItem):
 
         self._scaffoldMapper.Update()
 
-    def getScalarRange(self, field: Field, useNodeValues: bool) -> tuple[float, float]:
-        solverFieldName = getSolverFieldName(field)
-        if useNodeValues:
-            scalars: vtkDataArray = self._dataSet.GetPointData().GetScalars(solverFieldName)
-        else:
-            scalars: vtkDataArray = self._dataSet.GetCellData().GetScalars(solverFieldName)
-
-        if scalars:
-            return scalars.GetRange()
-        else:
-            return (sys.float_info.min, sys.float_info.max)
-
-    def getVectorRange(self, field: Field, vectorComponent: VectorComponent, useNodeValues: bool) -> tuple[float, float]:
-        solverFieldName = getSolverFieldName(field)
-        if useNodeValues:
-            vectors: vtkDataArray = self._dataSet.GetPointData().GetVectors(solverFieldName)
-        else:
-            vectors: vtkDataArray = self._dataSet.GetCellData().GetVectors(solverFieldName)
-
-        if not vectors:
-            return (sys.float_info.min, sys.float_info.max)
-
-        if vectorComponent == VectorComponent.MAGNITUDE:
-            filter = vtkArrayCalculator()
-            filter.SetInputData(self._dataSet)
-            if useNodeValues:
-                filter.SetAttributeTypeToPointData()
-            else:
-                filter.SetAttributeTypeToCellData()
-            filter.AddVectorArrayName(solverFieldName)
-            filter.SetFunction(f'mag({solverFieldName})')
-            RESULT_ARRAY_NAME = 'magnitude'
-            filter.SetResultArrayName(RESULT_ARRAY_NAME)
-            filter.Update()
-            if useNodeValues:
-                scalars: vtkDataArray = filter.GetOutput().GetPointData().GetScalars(RESULT_ARRAY_NAME)
-            else:
-                scalars: vtkDataArray = filter.GetOutput().GetCellData().GetScalars(RESULT_ARRAY_NAME)
-
-            if scalars:
-                return scalars.GetRange()
-            else:
-                return (sys.float_info.min, sys.float_info.max)
-
-        elif vectorComponent == VectorComponent.X:
-            return vectors.GetRange(0)
-        elif vectorComponent == VectorComponent.Y:
-            return vectors.GetRange(1)
-        elif vectorComponent == VectorComponent.Z:
-            return vectors.GetRange(2)
-
     def properties(self) -> Properties:
         return self._properties
 
@@ -234,7 +192,7 @@ class DisplayItem(QTreeWidgetItem):
         return self._reportingScaffold
 
     def dataSEt(self):
-        return self._dataSet
+        return self._reportingScaffold.dataSet
 
     def isActorVisible(self) -> bool:
         return self._properties.visibility
@@ -256,10 +214,6 @@ class DisplayItem(QTreeWidgetItem):
         self._reportingScaffold.visibility = visibility
 
         self._scaffoldActor.SetVisibility(visibility)
-        if visibility and self._properties.showVectors:
-            self._vectorActor.SetVisibility(True)
-        else:
-            self._vectorActor.SetVisibility(False)
 
         self._updateColorColumn()
 
@@ -377,8 +331,6 @@ class DisplayItem(QTreeWidgetItem):
         else:
             self._colorWidget.setStyleSheet('')
 
-    def setName(self, name):
-        self.setText(Column.NAME_COLUMN, name)
 
     def close(self):
         self._view.removeActor(self._scaffoldActor)
@@ -444,7 +396,7 @@ class DisplayItem(QTreeWidgetItem):
         if self._vectorActor is None:
             self._prepareVectorFilterPipeline()
 
-        self._vectorMask.SetInputData(self._dataSet)
+        self._vectorMask.SetInputData(self._reportingScaffold.dataSet)
 
         self._vectorGlyph.Update()
 

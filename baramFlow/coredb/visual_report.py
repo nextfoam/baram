@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
+from typing import ClassVar
 from uuid import UUID
 
 from PySide6.QtCore import QObject, Signal
@@ -11,12 +12,13 @@ from PySide6.QtCore import QObject, Signal
 from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 
 
-class VisualReportObserver(QObject):
-    instanceUpdated = Signal(UUID)
-
-
 @dataclass
-class VisualReport(VisualReportObserver):
+class VisualReport(QObject):
+    instanceUpdated: ClassVar[Signal] = Signal(UUID)
+    reportingScaffoldAdded:  ClassVar[Signal] = Signal(UUID)
+    reportingScaffoldRemoving:  ClassVar[Signal] = Signal(UUID)
+    reportingScaffoldRemoved:  ClassVar[Signal] = Signal(UUID)
+
     uuid: UUID
     name: str
 
@@ -34,9 +36,18 @@ class VisualReport(VisualReportObserver):
     def toElement(self):
         raise NotImplementedError
 
-    def markUpdated(self):
+    def notifyReportUpdated(self):
         self._saveToCoreDB()
         self.instanceUpdated.emit(self.uuid)
+
+    def notifyReportingScaffoldAdded(self, uuid: UUID):
+        self.reportingScaffoldAdded.emit(uuid)
+
+    def notifyScaffoldRemoving(self, uuid: UUID):
+        self.reportingScaffoldRemoving.emit(uuid)
+
+    def notifyReportingScaffoldRemoved(self, uuid: UUID):
+        self.reportingScaffoldRemoved.emit(uuid)
 
     def _saveToCoreDB(self):
         raise NotImplementedError

@@ -278,11 +278,8 @@ class _Project(QObject):
             self._coreDB = self._fileDB.loadCoreDB()
 
         CoreDBReader().reloadCoreDB()
-        ScaffoldsDB().load()
-        VisualReportsDB().load()
 
     def _close(self):
-        VisualReportsDB().close()
         coredb.destroy()
         self.projectClosed.emit()
         if self._projectLock:

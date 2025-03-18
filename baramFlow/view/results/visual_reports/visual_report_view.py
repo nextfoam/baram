@@ -109,22 +109,17 @@ class VisualReportView(RenderingView):
         self._scaffold2displayItem: dict[UUID, UUID] = {}
         self._updatedScaffolds: set[UUID] = set()
 
-        #  "random" is introduced to distribute the execution
-        self._timer = QTimer()
-        self._timer.setInterval(200*(1+random()))
-        self._timer.setSingleShot(True)
-        self._timer.timeout.connect(self._refresh)
+        for rs in self._report.reportingScaffolds.values():
 
-        for s in ScaffoldsDB().getScaffolds().values():
-            self._updatedScaffolds.add(s.uuid)
+            displayUuid = self.addItem(rs)
 
-        self._refresh()
+            self._scaffold2displayItem[rs.scaffoldUuid] = displayUuid
+
+        self._view.refresh()
+
 
         contour: Contour = report
-        contour.rangeMin, contour.rangeMax = self.getValueRange(contour.field,
-                                                        contour.fieldComponent,
-                                                        contour.useNodeValues,
-                                                        contour.relevantScaffoldsOnly)
+        contour.rangeMin, contour.rangeMax = contour.getValueRange(contour.useNodeValues, contour.relevantScaffoldsOnly)
 
         self._updateLookupTable()
 
@@ -146,18 +141,18 @@ class VisualReportView(RenderingView):
         self._menu.surfaceEdgeDisplayModeSelected.connect(self._displayWireSurfaceWithEdges)
         self._menu.vectorsToggled.connect(self._vectorsToggled)
 
-        ScaffoldsDB().ScaffoldAdded.connect(self._scaffoldUpdated)
         ScaffoldsDB().ScaffoldUpdated.connect(self._scaffoldUpdated)
-        ScaffoldsDB().RemovingScaffold.connect(self._scaffoldUpdated)
 
         self._report.instanceUpdated.connect(self._reportUpdated)
+        self._report.reportingScaffoldAdded.connect(self._reportingScaffoldAdded)
+        self._report.reportingScaffoldRemoving.connect(self._reportingScaffoldRemoving)
 
     def _disconnectSignalsSlots(self):
-        ScaffoldsDB().ScaffoldAdded.disconnect(self._scaffoldUpdated)
         ScaffoldsDB().ScaffoldUpdated.disconnect(self._scaffoldUpdated)
-        ScaffoldsDB().RemovingScaffold.disconnect(self._scaffoldUpdated)
 
         self._report.instanceUpdated.disconnect(self._reportUpdated)
+        self._report.reportingScaffoldAdded.disconnect(self._reportingScaffoldAdded)
+        self._report.reportingScaffoldRemoving.disconnect(self._reportingScaffoldRemoving)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -215,11 +210,24 @@ class VisualReportView(RenderingView):
 
         self._view.refresh()
 
-    @qasync.asyncSlot()
-    async def _scaffoldUpdated(self, uuid: UUID):
-        self._updatedScaffolds.add(uuid)
+    def _scaffoldUpdated(self, uuid: UUID):
+        with OpenFOAMReader() as reader:
+            reader.setTimeValue(float(self._report.time))
+            reader.Update()
 
-        self._timer.start()
+            mBlock = reader.getOutput()
+
+            scaffold = ScaffoldsDB().getScaffold(uuid)
+            dataSet = scaffold.getDataSet(mBlock)
+            self._report.reportingScaffolds[uuid].dataSet = dataSet
+
+            displayUuid = self._scaffold2displayItem[uuid]
+            item = self._items[displayUuid]
+
+            item.updateScaffoldInfo()
+
+            self._view.refresh()
+
 
     def _reportUpdated(self, uuid: UUID):
         contour: Contour = self._report
@@ -247,55 +255,6 @@ class VisualReportView(RenderingView):
             item.setField(contour.field, contour.useNodeValues)
 
         self._view.refresh()
-
-    def _refresh(self):
-        if len(self._updatedScaffolds) == 0:
-            return
-
-        with OpenFOAMReader() as reader:
-            reader.setTimeValue(float(self._report.time))
-            reader.Update()
-            print(f'OF Time {self._report.time}')
-            while len(self._updatedScaffolds) > 0:
-                uuid = self._updatedScaffolds.pop()
-                mBlock = reader.getOutput()
-                if ScaffoldsDB().hasScaffold(uuid):
-                    scaffold = ScaffoldsDB().getScaffold(uuid)
-                    dataset = scaffold.getDataSet(mBlock)
-                    if uuid in self._scaffold2displayItem:
-                        displayUuid = self._scaffold2displayItem[uuid]
-                        self.updateItemScaffold(displayUuid, scaffold.name, dataset)
-                    else:
-                        displayUuid = self.addItem(scaffold.name, scaffold.uuid, dataset)
-                        self._scaffold2displayItem[uuid] = displayUuid
-                else:
-                    if uuid in self._scaffold2displayItem:
-                        displayUuid = self._scaffold2displayItem[uuid]
-                        self.removeItem(displayUuid)
-
-                        del self._scaffold2displayItem[uuid]
-
-        self._view.refresh()
-
-
-    def getValueRange(self, field: Field, vectorComponent: VectorComponent, useNodeValues: bool, relevantScaffoldsOnly: bool) -> tuple[float, float]:
-        rMin = sys.float_info.max
-        rMax = sys.float_info.min
-
-        for item in self._items.values():
-            if relevantScaffoldsOnly:
-                if  not item.isActorVisible() or item.colorMode() == ColorMode.SOLID:
-                    continue
-
-            if field.type == FieldType.VECTOR:
-                valueRange = item.getVectorRange(field, vectorComponent, useNodeValues)
-            else:
-                valueRange = item.getScalarRange(field, useNodeValues)
-
-            rMin = min(rMin, valueRange[0])
-            rMax = max(rMax, valueRange[1])
-
-        return rMin, rMax
 
     def _selectedItemsChanged(self):
         ids = []
@@ -338,6 +297,7 @@ class VisualReportView(RenderingView):
                                 baseProp.color,
                                 baseProp.colorMode,
                                 baseProp.displayMode,
+                                baseProp.showVectors,
                                 baseProp.highlighted)
 
         for item in items:
@@ -423,14 +383,11 @@ class VisualReportView(RenderingView):
 
         self._view.refresh()
 
-    def addItem(self, name: str, scaffoldUuid: UUID, dataSet) -> UUID:
+    def addItem(self, rs: ReportingScaffold) -> UUID:
         did = uuid4()
         contour: Contour = self._report
-        if scaffoldUuid in contour.reportingScaffolds:
-            rs = contour[scaffoldUuid]
-        else:
-            rs = ReportingScaffold(scaffoldUuid=scaffoldUuid)
-        item = DisplayItem(self._scaffoldList, did, name, rs, dataSet, contour.field, contour.useNodeValues, self._lookupTable, self._view)
+
+        item = DisplayItem(self._scaffoldList, did, rs, contour.field, contour.useNodeValues, self._lookupTable, self._view)
 
         self._items[did] = item
 
@@ -456,10 +413,18 @@ class VisualReportView(RenderingView):
 
             break
 
-    def updateItemScaffold(self, did: UUID, name: str, dataSet) -> UUID:
-        if did not in self._items:
-            return
+    def _reportingScaffoldAdded(self, uuid: UUID):
+        rs = self._report.reportingScaffolds[uuid]
+        displayUuid = self.addItem(rs)
 
-        item = self._items[did]
-        item.setName(name)
-        item.setDataSet(dataSet)
+        self._scaffold2displayItem[uuid] = displayUuid
+
+        self._view.refresh()
+
+    def _reportingScaffoldRemoving(self, uuid: UUID):
+        displayUuid = self._scaffold2displayItem[uuid]
+        self.removeItem(displayUuid)
+
+        del self._scaffold2displayItem[uuid]
+
+        self._view.refresh()

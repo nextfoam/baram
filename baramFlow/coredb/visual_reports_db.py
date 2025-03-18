@@ -12,7 +12,9 @@ from baramFlow.coredb.contour import Contour
 
 from baramFlow.coredb.libdb import nsmap
 
+from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_report import VisualReport
+from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
 
 
 
@@ -68,6 +70,17 @@ class VisualReportsDB(QObject):
         for e in contours.findall('contour', namespaces=nsmap):
             c = Contour.fromElement(e)
             reports[c.uuid] = c
+
+            if len(c.reportingScaffolds) == 0:
+                continue
+
+            with OpenFOAMReader() as reader:
+                reader.setTimeValue(float(c.time))
+                reader.Update()
+                mBlock = reader.getOutput()
+                for rs in c.reportingScaffolds.values():
+                    scaffold = ScaffoldsDB().getScaffold(rs.scaffoldUuid)
+                    rs.dataSet = scaffold.getDataSet(mBlock)
 
         return reports
 

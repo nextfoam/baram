@@ -16,7 +16,7 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
-from baramFlow.coredb.contour import Contour
+from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_report import VisualReport
 from baramFlow.coredb.visual_reports_db import VisualReportsDB
 from baramFlow.view.results.visual_reports.visual_report_dock import VisualReportDock
@@ -209,6 +209,8 @@ class MainWindow(QMainWindow):
             return
 
         self._disconnectSignalsSlots()
+
+        VisualReportsDB().close()
 
         self._caseManager.clear()
         Project.close()
@@ -658,10 +660,8 @@ class MainWindow(QMainWindow):
 
         self._navigatorView.updateEnabled()
 
-        for report in VisualReportsDB().getVisualReports().values():
-            if isinstance(report, Contour):
-                self._addNewReportDock(report)
-
+        ScaffoldsDB().load()
+        VisualReportsDB().load()
 
     @qasync.asyncSlot()
     async def _caseLoaded(self, name=None):

@@ -45,7 +45,7 @@ class ContourWidget(VisualReportWidget):
         self._dialog.open()
 
     def _editAccepted(self):
-        self._contour.markUpdated()
+        self._contour.notifyReportUpdated()
         self.load()
 
     def delete(self):
