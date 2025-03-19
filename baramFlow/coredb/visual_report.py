@@ -6,6 +6,7 @@ from typing import ClassVar
 from uuid import UUID
 
 from PySide6.QtCore import QObject, Signal
+from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkUnstructuredGrid
 
 
 
@@ -23,6 +24,9 @@ class VisualReport(QObject):
     name: str
 
     time: str = '0'
+
+    polyMesh: vtkMultiBlockDataSet = None  # Not a configuration, Not saved in CoreDB
+    internalMesh: vtkUnstructuredGrid = None  # Not a configuration, Not saved in CoreDB
 
     reportingScaffolds: dict[UUID, ReportingScaffold] = field(default_factory=dict)
 

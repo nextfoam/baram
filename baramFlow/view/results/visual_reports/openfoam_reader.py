@@ -48,14 +48,17 @@ class OpenFOAMReader(QObject):
 
         self._reader: Optional[vtkPOpenFOAMReader] = None
 
-    def __enter__(self):
+    async def __aenter__(self):
         _mutex.acquire()
 
         self._acquired = True
 
+        if self._reader is None:
+            await self._setupReader()
+
         return self
 
-    def __exit__(self, eType, eValue, eTraceback):
+    async def __aexit__(self, eType, eValue, eTraceback):
         _mutex.release()
 
         self._acquired = False
@@ -67,12 +70,9 @@ class OpenFOAMReader(QObject):
         if not self._acquired:
             raise AssertionError
 
-        if self._reader is None:
-            self._setupReader()
-
         return self._reader.GetOutput()
 
-    def _setupReader(self):
+    async def _setupReader(self):
         if not self._acquired:
             raise AssertionError
 
@@ -102,8 +102,7 @@ class OpenFOAMReader(QObject):
         self._reader.SetFileName(str(FileSystem.foamFilePath()))
 
         holdRendering()
-        # await to_vtk_thread(self._reader.Update)
-        self._reader.Update()
+        await to_vtk_thread(self._reader.Update)
         resumeRendering()
 
         for i in range(self._reader.GetNumberOfCellArrays()):
@@ -119,8 +118,7 @@ class OpenFOAMReader(QObject):
             self._reader.SetPatchArrayStatus(name, 1)
 
         holdRendering()
-        # await to_vtk_thread(self._reader.Update)
-        self._reader.Update()
+        await to_vtk_thread(self._reader.Update)
         resumeRendering()
 
     def _readerProgressEvent(self, caller: vtkPOpenFOAMReader, ev):
@@ -129,9 +127,6 @@ class OpenFOAMReader(QObject):
     def setTimeValue(self, value: float):
         if not self._acquired:
             raise AssertionError
-
-        if self._reader is None:
-            self._setupReader()
 
         time = self._reader.GetTimeValue()
         print(f'read {time} set {value}')
@@ -147,10 +142,9 @@ class OpenFOAMReader(QObject):
 
         return self._reader.GetTimeValue()
 
-    def Update(self):
+    async def Update(self):
         holdRendering()
-        # await to_vtk_thread(self._reader.Update)
-        self._reader.Update()
+        await to_vtk_thread(self._reader.Update)
         resumeRendering()
 
     def refresh(self):

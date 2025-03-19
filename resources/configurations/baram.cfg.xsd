@@ -2593,6 +2593,26 @@
                                                     <xs:element name="vectorScaleFactor" type="xs:double" default="1.0"/>
                                                     <xs:element name="vectorOnRatio" type="xs:positiveInteger" default="1"/>
                                                     <xs:element name="vectorNumMax" type="xs:positiveInteger" default="1000"/>
+                                                    <xs:element name="streamlineIntegratorType">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="rungeKutta2"/>
+                                                                <xs:enumeration value="rungeKutta4"/>
+                                                                <xs:enumeration value="rungeKutta45"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="integrateForward" type="xs:boolean" default="true"/>
+                                                    <xs:element name="integrateBackward" type="xs:boolean" default="false"/>
+                                                    <xs:element name="streamlineMaxLength" type="xs:double" default="1.0"/>
+                                                    <xs:element name="streamlineType" default="ribbon">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="line"/>
+                                                                <xs:enumeration value="ribbon"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
                                                     <xs:element name="scaffolds">
                                                         <xs:complexType>
                                                             <xs:sequence>
@@ -2607,6 +2627,8 @@
                                                                             <xs:element name="edges" type="xs:boolean" default="false"/>
                                                                             <xs:element name="faces" type="xs:boolean" default="true"/>
                                                                             <xs:element name="showVectors" type="xs:boolean" default="false"/>
+                                                                            <xs:element name="showStreamlines" type="xs:boolean" default="false"/>
+                                                                            <xs:element name="maxNumberOfSamplePoints" type="xs:positiveInteger" default="100"/>
                                                                         </xs:sequence>
                                                                     </xs:complexType>
                                                                 </xs:element>

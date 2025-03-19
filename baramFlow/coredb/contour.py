@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import ClassVar
 from uuid import UUID
 
 from PySide6.QtGui import QColor
 from lxml import etree
+from vtkmodules.vtkFiltersFlowPaths import vtkStreamTracer
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.reporting_scaffold import ReportingScaffold
@@ -14,6 +16,28 @@ from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.post_field import FIELD_TEXTS, VELOCITY, Field, FieldType, VectorComponent, getFieldInstance
 from baramFlow.coredb.visual_report import VisualReport
 from baramFlow.coredb.color_scheme import ColormapScheme
+
+
+class StreamlineIntegratorType(Enum):
+    RUNGE_KUTTA2 = 'rungeKutta2'
+    RUNGE_KUTTA4 = 'rungeKutta4'
+    RUNGE_KUTTA45 = 'rungeKutta45'
+
+    @property
+    def vtkType(self):
+        if self == StreamlineIntegratorType.RUNGE_KUTTA2:
+            return vtkStreamTracer.RUNGE_KUTTA2
+        elif self == StreamlineIntegratorType.RUNGE_KUTTA4:
+            return vtkStreamTracer.RUNGE_KUTTA4
+        elif self == StreamlineIntegratorType.RUNGE_KUTTA45:
+            return vtkStreamTracer.RUNGE_KUTTA45
+        else:
+            raise AssertionError
+
+
+class StreamlineType(Enum):
+    LINE = 'line'
+    RIBBON = 'ribbon'
 
 
 @dataclass
@@ -41,6 +65,12 @@ class Contour(VisualReport):
     vectorScaleFactor: str = '1.0'
     vectorOnRatio: int = 1
     vectorNumMax: int = 1000
+
+    streamlineIntegratorType: StreamlineIntegratorType = StreamlineIntegratorType.RUNGE_KUTTA2
+    integrateForward: bool = True
+    integrateBackward: bool = False
+    streamlineMaxLength: str = '1.0'
+    streamlineType: StreamlineType = StreamlineType.RIBBON
 
     rangeMin: float = 0  # Not a configuration, Not saved in CoreDB
     rangeMax: float = 0  # Not a configuration, Not saved in CoreDB
@@ -79,6 +109,12 @@ class Contour(VisualReport):
         vectorOnRatio = int(e.find('vectorOnRatio', namespaces=nsmap).text)
         vectorNumMax = int(e.find('vectorNumMax', namespaces=nsmap).text)
 
+        streamlineIntegratorType = StreamlineIntegratorType(e.find('streamlineIntegratorType', namespaces=nsmap).text)
+        integrateForward = True if e.find('integrateForward', namespaces=nsmap).text == 'true' else False
+        integrateBackward = True if e.find('integrateBackward', namespaces=nsmap).text == 'true' else False
+        streamlineMaxLength = e.find('streamlineMaxLength', namespaces=nsmap).text
+        streamlineType = StreamlineType(e.find('streamlineType', namespaces=nsmap).text)
+
         scaffoldsElement = e.find('scaffolds', namespaces=nsmap)
 
         reportingScaffolds: dict[UUID, ReportingScaffold] = {}
@@ -108,7 +144,12 @@ class Contour(VisualReport):
                           vectorScaleFactor=vectorScaleFactor,
                           vectorOnRatio=vectorOnRatio,
                           vectorNumMax=vectorNumMax,
-                          reportingScaffolds=reportingScaffolds)
+                          reportingScaffolds=reportingScaffolds,
+                          streamlineIntegratorType=streamlineIntegratorType,
+                          integrateForward=integrateForward,
+                          integrateBackward=integrateBackward,
+                          streamlineMaxLength=streamlineMaxLength,
+                          streamlineType=streamlineType)
 
         for rs in reportingScaffolds.values():
             rs.instanceUpdated.connect(contour._reportingScaffoldUpdated)
@@ -141,6 +182,11 @@ class Contour(VisualReport):
                    f'    <vectorScaleFactor>{self.vectorScaleFactor}</vectorScaleFactor>'
                    f'    <vectorOnRatio>{str(self.vectorOnRatio)}</vectorOnRatio>'
                    f'    <vectorNumMax>{str(self.vectorNumMax)}</vectorNumMax>'
+                   f'    <streamlineIntegratorType>{self.streamlineIntegratorType.value}</streamlineIntegratorType>'
+                   f'    <integrateForward>{"true" if self.integrateForward else "false"}</integrateForward>'
+                   f'    <integrateBackward>{"true" if self.integrateBackward else "false"}</integrateBackward>'
+                   f'    <streamlineMaxLength>{self.streamlineMaxLength}</streamlineMaxLength>'
+                   f'    <streamlineType>{self.streamlineType.value}</streamlineType>'
                    f'    <scaffolds/>'
                    f'</contour>')
 

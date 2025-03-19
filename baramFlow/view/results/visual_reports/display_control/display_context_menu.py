@@ -22,6 +22,7 @@ class DisplayContextMenu(QMenu):
     surfaceEdgeDisplayModeSelected = Signal()
 
     vectorsToggled = Signal(bool)
+    streamsToggled = Signal(bool)
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -63,9 +64,17 @@ class DisplayContextMenu(QMenu):
         self._surfaceEdgeDisplayAction.triggered.connect(self.surfaceEdgeDisplayModeSelected)
         self._surfaceEdgeDisplayAction.setCheckable(True)
 
+        self.addSeparator()
+
         self._vectorsAction: QAction = self.addAction(self.tr('Show Vectors'))
         self._vectorsAction.toggled.connect(self._vectorsActionToggled)
         self._vectorsAction.setCheckable(True)
+
+        self.addSeparator()
+
+        self._streamsAction: QAction = self.addAction(self.tr('Show Streamlines'))
+        self._streamsAction.toggled.connect(self._streamsActionToggled)
+        self._streamsAction.setCheckable(True)
 
         self._connectSignalsSlots()
 
@@ -83,6 +92,10 @@ class DisplayContextMenu(QMenu):
         if properties.showVectors is not None:
             self._vectorsAction.setVisible(True)
             self._vectorsAction.setChecked(properties.showVectors)
+
+        if properties.showStreamlines is not None:
+            self._streamsAction.setVisible(True)
+            self._streamsAction.setChecked(properties.showStreamlines)
 
         self.exec(pos)
 
@@ -110,3 +123,5 @@ class DisplayContextMenu(QMenu):
     def _vectorsActionToggled(self, checked: bool):
         self.vectorsToggled.emit(checked)
 
+    def _streamsActionToggled(self, checked: bool):
+        self.streamsToggled.emit(checked)

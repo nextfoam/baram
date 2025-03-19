@@ -16,6 +16,7 @@ from baramFlow.coredb.visual_reports_db import VisualReportsDB
 from baramFlow.coredb.post_field import FIELD_TEXTS
 from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
 from baramFlow.view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
+from libbaram.openfoam.polymesh import collectInternalMesh2
 from widgets.async_message_box import AsyncMessageBox
 from widgets.time_slider import TimeSlider
 
@@ -70,9 +71,9 @@ class ContourDialog(QDialog):
 
         self._contour = contour
 
-        self._selectedScaffolds: list[SelectorItem] = []
+        self._selectedScaffolds: list[UUID] = []
 
-        self._setScaffolds(self._contour.reportingScaffolds.keys())
+        self._setScaffolds(list(self._contour.reportingScaffolds.keys()))
 
         self._connectSignalsSlots()
 
@@ -98,7 +99,7 @@ class ContourDialog(QDialog):
         self._contour.vectorOnRatio = int(self._ui.skip.text())
 
         current = set(self._contour.reportingScaffolds.keys())
-        selected = {UUID(x.data) for x in self._selectedScaffolds}
+        selected = set(self._selectedScaffolds)
 
         removedScaffolds = current - selected
         addedScaffolds = selected - current
@@ -108,14 +109,17 @@ class ContourDialog(QDialog):
             del self._contour.reportingScaffolds[uuid]
             self._contour.notifyReportingScaffoldRemoved(uuid)
 
-        with OpenFOAMReader() as reader:
+        async with OpenFOAMReader() as reader:
             reader.setTimeValue(float(self._contour.time))
-            reader.Update()
+            await reader.Update()
             mBlock = reader.getOutput()
+
+            self._contour.polyMesh = mBlock
+            self._contour.internalMesh = collectInternalMesh2(mBlock)
 
             for uuid in addedScaffolds:
                 scaffold = ScaffoldsDB().getScaffold(uuid)
-                dataSet = scaffold.getDataSet(mBlock)
+                dataSet = await scaffold.getDataSet(mBlock)
                 rs = ReportingScaffold(scaffoldUuid=uuid, dataSet=dataSet)
                 self._contour.reportingScaffolds[uuid] = rs
                 self._contour.notifyReportingScaffoldAdded(uuid)
@@ -146,8 +150,8 @@ class ContourDialog(QDialog):
     @qasync.asyncSlot()
     async def _selectClicked(self):
         allScaffolds = [SelectorItem(s.name, s.name, str(s.uuid)) for s in ScaffoldsDB().getScaffolds().values()]
-
-        self._dialog = MultiSelectorDialog(self, self.tr("Select Scaffolds"), allScaffolds, self._selectedScaffolds)
+        selectedScaffolds = [str(uuid) for uuid in self._selectedScaffolds]
+        self._dialog = MultiSelectorDialog(self, self.tr("Select Scaffolds"), allScaffolds, selectedScaffolds)
         self._dialog.accepted.connect(self._scaffoldsChanged)
         self._dialog.open()
 
@@ -157,10 +161,9 @@ class ContourDialog(QDialog):
         self._setScaffolds(scaffoldUuidList)
 
     def _setScaffolds(self, scaffoldUuidList: list[UUID]):
-        self._selectedScaffolds.clear()
+        self._selectedScaffolds = scaffoldUuidList
         self._ui.scaffolds.clear()
         for uuid in scaffoldUuidList:
             s = ScaffoldsDB().getScaffold(uuid)
-            self._selectedScaffolds.append(SelectorItem(s.name, s.name, str(s.uuid)))
             self._ui.scaffolds.addItem(s.name)
 

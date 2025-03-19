@@ -1,25 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
 from dataclasses import dataclass
 from enum import Enum, IntEnum, auto
-import sys
 from uuid import UUID
 
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QLabel, QWidget, QHBoxLayout
 from vtkmodules.vtkCommonColor import vtkNamedColors
-from vtkmodules.vtkCommonCore import vtkDataArray, vtkLookupTable
-from vtkmodules.vtkCommonDataModel import vtkPolyData
-from vtkmodules.vtkFiltersCore import vtkArrayCalculator, vtkGlyph3D, vtkMaskPoints
+from vtkmodules.vtkCommonCore import vtkLookupTable
+from vtkmodules.vtkCommonDataModel import vtkUnstructuredGrid
+from vtkmodules.vtkFiltersCore import vtkGlyph3D, vtkMaskPoints, vtkPassThrough
+from vtkmodules.vtkFiltersFlowPaths import vtkStreamTracer
+from vtkmodules.vtkFiltersModeling import vtkRibbonFilter
 from vtkmodules.vtkFiltersSources import vtkArrowSource
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 
-from baramFlow.coredb.post_field import Field, VectorComponent
+from baramFlow.coredb.post_field import Field
 from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 from baramFlow.openfoam.solver_field import getSolverFieldName
 
+from libbaram.vtk_threads import holdRendering, resumeRendering, to_vtk_thread
 from widgets.rendering.rendering_widget import RenderingWidget
 
 
@@ -42,8 +45,9 @@ class Properties:
     colorMode: ColorMode
     displayMode: DisplayMode
     showVectors: bool = None
+    showStreamlines: bool = None
 
-    highlighted: bool
+    highlighted: bool = False
 
     def merge(self, properties):
         self.visibility = properties.visibility if properties.visibility == self.visibility else None
@@ -52,6 +56,7 @@ class Properties:
         self.colorMode = properties.colorMode if properties.colorMode == self.colorMode else None
         self.displayMode = properties.displayMode if properties.displayMode == self.displayMode else None
         self.showVectors = properties.showVectors if properties.showVectors == self.showVectors else None
+        self.showStreamlines = properties.showStreamlines if properties.showStreamlines == self.showStreamlines else None
 
 
 class Column(IntEnum):
@@ -66,11 +71,12 @@ class DisplayItem(QTreeWidgetItem):
     sourceChanged = Signal(UUID)
     nameChanged = Signal(str)
 
-    def __init__(self, parent, did: UUID, reportingScaffold: ReportingScaffold, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable, view: RenderingWidget):
+    def __init__(self, parent, did: UUID, reportingScaffold: ReportingScaffold, internalMesh: vtkUnstructuredGrid, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable, view: RenderingWidget):
         super().__init__(parent)
 
         self._did = did
         self._reportingScaffold = reportingScaffold
+        self._internalMesh = internalMesh
         self._field = field
         self._useNodeValues = useNodeValues
         self._lookupTable = lookupTable
@@ -104,6 +110,10 @@ class DisplayItem(QTreeWidgetItem):
         self._vectorMapper: vtkPolyDataMapper = None
         self._vectorActor: vtkActor = None
 
+        self._streamMask: vtkMaskPoints = None
+        self._streamMapper: vtkPolyDataMapper = None
+        self._streamActor: vtkActor = None
+
         if reportingScaffold.solidColor:
             colorMode = ColorMode.SOLID
         else:
@@ -124,6 +134,7 @@ class DisplayItem(QTreeWidgetItem):
                                       colorMode,
                                       displayMode,
                                       reportingScaffold.showVectors,
+                                      reportingScaffold.showStreamlines,
                                       highlighted=False)
 
         self._displayModeApplicator = {
@@ -143,20 +154,23 @@ class DisplayItem(QTreeWidgetItem):
 
         self._view.addActor(self._scaffoldActor)
 
-        if reportingScaffold.showVectors:
-            self._setUpVectors()
-            self._vectorActor.SetVisibility(True)
+        self._task = asyncio.create_task(self.updateScaffoldInfo())
 
         self._setField(field, useNodeValues)
 
-    def updateScaffoldInfo(self):
+    async def updateScaffoldInfo(self):
         self.setText(Column.NAME_COLUMN, self._reportingScaffold.name)
 
         self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
-        self._scaffoldMapper.Update()
+        holdRendering()
+        await to_vtk_thread(self._scaffoldMapper.Update)
+        resumeRendering()
 
         if self._properties.showVectors:
-            self._setUpVectors()
+            await self._setUpVectors()
+
+        if self._properties.showStreamlines:
+            self._setUpStreamlines()
 
     def setField(self, field: Field, useNodeValues: bool):
         if field == self._field and useNodeValues == self._useNodeValues:
@@ -337,9 +351,9 @@ class DisplayItem(QTreeWidgetItem):
         if self._vectorActor is not None:
             self._view.removeActor(self._vectorActor)
 
-    def showVectors(self):
+    async def showVectors(self):
         if self._vectorActor is None:
-            self._setUpVectors()
+            await self._setUpVectors()
 
         self._properties.showVectors = True
         self._reportingScaffold.showVectors = True
@@ -361,8 +375,9 @@ class DisplayItem(QTreeWidgetItem):
 
     def _prepareVectorFilterPipeline(self):
         self._vectorMask = vtkMaskPoints()
-        self._vectorMask.SetOnRatio(5)
         self._vectorMask.RandomModeOn()
+        self._vectorMask.SetRandomModeType(vtkMaskPoints.RANDOM_SAMPLING)  # Configuration ???
+        self._vectorMask.SetMaximumNumberOfPoints(100)  # Configuration
 
         self._vectorArrow = vtkArrowSource()
         self._vectorArrow.SetTipResolution(16)
@@ -392,7 +407,7 @@ class DisplayItem(QTreeWidgetItem):
 
         self._view.addActor(self._vectorActor)
 
-    def _setUpVectors(self):
+    async def _setUpVectors(self):
         if self._vectorActor is None:
             self._prepareVectorFilterPipeline()
 
@@ -408,3 +423,105 @@ class DisplayItem(QTreeWidgetItem):
             self._vectorMapper.ScalarVisibilityOff()
 
         self._vectorActor.GetProperty().SetOpacity(self._properties.opacity)
+        self._vectorActor.SetVisibility(self._properties.showVectors)
+
+    def showStreamlines(self):
+        if self._streamActor is None:
+            self._setUpStreamlines()
+
+        self._properties.showStreamlines = True
+        self._reportingScaffold.showStreamlines = True
+
+        self._streamActor.SetVisibility(True)
+
+        self._reportingScaffold.markUpdated()
+
+    def hideStreamlines(self):
+        if self._streamActor is None:
+            return
+
+        self._properties.showStreamlines = False
+        self._reportingScaffold.showStreamlines = False
+
+        self._streamActor.SetVisibility(False)
+
+        self._reportingScaffold.markUpdated()
+
+    def _prepareStreamFilterPipeline(self):
+        self._streamMask = vtkMaskPoints()
+        self._streamMask.RandomModeOn()
+        self._streamMask.SetRandomModeType(vtkMaskPoints.RANDOM_SAMPLING)  # Configuration ???
+        self._streamMask.SetMaximumNumberOfPoints(100)  # Configuration
+
+        self._streamTracer = vtkStreamTracer()
+        self._streamTracer.SetComputeVorticity(True)
+
+        self._streamTracer.SetIntegratorType(vtkStreamTracer.RUNGE_KUTTA45)  # Configuration
+
+        self._streamTracer.SetInitialIntegrationStep(0.3)  # Configuration
+        self._streamTracer.SetMinimumIntegrationStep(0.1)  # Configuration
+        self._streamTracer.SetMaximumError(0.1)  # Configuration ???
+
+        self._streamTracer.SetMaximumPropagation(3)  # Configuration
+
+        self._integrateForward = True  # Configuration
+        self._integrateBackward = False  # Configuration
+
+        if self._integrateForward and self._integrateBackward:
+            self._streamTracer.SetIntegrationDirectionToBoth()
+        elif self._integrateForward:
+            self._streamTracer.SetIntegrationDirectionToForward()
+        elif self._integrateBackward:
+            self._streamTracer.SetIntegrationDirectionToBackward()
+        else:
+            raise AssertionError
+
+        self._streamTracer.SetSourceConnection(self._streamMask.GetOutputPort())
+
+        self._lineType = 'ribbon'
+
+        if self._lineType == 'ribbon':
+            self._streamDeco = vtkRibbonFilter()
+            self._streamDeco.SetInputConnection(self._streamTracer.GetOutputPort())
+            self._streamDeco.SetWidth(0.01)  # Configuration
+            self._streamDeco.SetAngle(0)
+            self._streamDeco.VaryWidthOff()
+        elif self._lineType == 'line':
+            self._streamDeco = vtkPassThrough()
+        else:
+            raise AssertionError
+
+
+        self._streamMapper = vtkPolyDataMapper()
+        self._streamMapper.SetColorModeToMapScalars()
+        self._streamMapper.UseLookupTableScalarRangeOn()
+        self._streamMapper.SetLookupTable(self._lookupTable)
+
+        self._streamActor = vtkActor()
+        self._streamActor.SetMapper(self._streamMapper)
+        self._streamActor.GetProperty().SetDiffuse(0.3)
+        self._streamActor.GetProperty().SetAmbient(0.3)
+        self._streamActor.SetObjectName(str(self._did))
+
+        self._view.addActor(self._streamActor)
+
+    def _setUpStreamlines(self):
+        if self._streamActor is None:
+            self._prepareStreamFilterPipeline()
+
+        self._streamMask.SetInputData(self._reportingScaffold.dataSet)
+
+        self._streamTracer.SetInputData(self._internalMesh)
+
+        self._streamDeco.Update()
+
+        self._streamMapper.SetInputData(self._streamDeco.GetOutput())
+
+        if self._properties.colorMode == ColorMode.FIELD:
+            self._streamMapper.ScalarVisibilityOn()
+        else:
+            self._streamMapper.ScalarVisibilityOff()
+
+        self._streamActor.GetProperty().SetOpacity(self._properties.opacity)
+        self._streamActor.SetVisibility(self._properties.showStreamlines)
+

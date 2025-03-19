@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import Field, dataclass
-from random import random
-import sys
+import asyncio
+from dataclasses import dataclass
 from typing import Optional
 from uuid import UUID, uuid4
 
 import matplotlib as mpl
 
-from PySide6.QtCore import QTimer, Qt, Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QAbstractItemView, QHeaderView, QTreeWidget, QWidget, QVBoxLayout
 
 import qasync
@@ -28,7 +27,6 @@ from baramFlow.coredb.visual_report import VisualReport
 from baramFlow.view.results.visual_reports.display_control.colormap.colormap import colormapData
 from baramFlow.view.results.visual_reports.display_control.contour_colormap_dialog import ContourColormapDialog
 from baramFlow.view.results.visual_reports.display_control.display_context_menu import DisplayContextMenu
-from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
 from baramFlow.view.results.visual_reports.scalar_bar_widget import ScalarBarWidget
 from baramFlow.view.widgets.rendering_view import RenderingView
 
@@ -66,30 +64,30 @@ class VisualReportView(RenderingView):
 
         self._overlayFrame = OverlayFrame(self._view)
 
-        self._scaffoldList = QTreeWidget(self._overlayFrame)
-        self._scaffoldList.headerItem().setText(2, "")
-        self._scaffoldList.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self._scaffoldList.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self._scaffoldList.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self._scaffoldList.setSortingEnabled(True)
-        self._scaffoldList.setColumnCount(3)
-        self._scaffoldList.header().setVisible(True)
-        self._scaffoldList.header().setStretchLastSection(False)
+        self._scaffoldTreeWidget = QTreeWidget(self._overlayFrame)
+        self._scaffoldTreeWidget.headerItem().setText(2, "")
+        self._scaffoldTreeWidget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self._scaffoldTreeWidget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self._scaffoldTreeWidget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self._scaffoldTreeWidget.setSortingEnabled(True)
+        self._scaffoldTreeWidget.setColumnCount(3)
+        self._scaffoldTreeWidget.header().setVisible(True)
+        self._scaffoldTreeWidget.header().setStretchLastSection(False)
 
         layout = QVBoxLayout(self._overlayFrame)
-        layout.addWidget(self._scaffoldList)
+        layout.addWidget(self._scaffoldTreeWidget)
 
         self._overlayFrame.adjustSize()
 
-        self._menu = DisplayContextMenu(self._scaffoldList)
+        self._menu = DisplayContextMenu(self._scaffoldTreeWidget)
 
         self._items: dict[UUID, DisplayItem] = {}
         self._selectedItems: list[DisplayItem] = []
 
-        self._scaffoldList.setColumnWidth(Column.COLOR_COLUMN, 20)
+        self._scaffoldTreeWidget.setColumnWidth(Column.COLOR_COLUMN, 20)
 
-        self._scaffoldList.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
-        self._scaffoldList.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
+        self._scaffoldTreeWidget.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
+        self._scaffoldTreeWidget.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
 
         self._colormap = ScalarBarWidget(self, report, self._colormapDoubleClicked)
         self._colormap.SetInteractor(self._view.interactor())
@@ -109,14 +107,7 @@ class VisualReportView(RenderingView):
         self._scaffold2displayItem: dict[UUID, UUID] = {}
         self._updatedScaffolds: set[UUID] = set()
 
-        for rs in self._report.reportingScaffolds.values():
-
-            displayUuid = self.addItem(rs)
-
-            self._scaffold2displayItem[rs.scaffoldUuid] = displayUuid
-
-        self._view.refresh()
-
+        self._initLatterTask = asyncio.create_task(self._registerReportingScaffolds())
 
         contour: Contour = report
         contour.rangeMin, contour.rangeMax = contour.getValueRange(contour.useNodeValues, contour.relevantScaffoldsOnly)
@@ -125,9 +116,20 @@ class VisualReportView(RenderingView):
 
         self._connectSignalsSlots()
 
+    async def _registerReportingScaffolds(self):
+        for rs in self._report.reportingScaffolds.values():
+
+            displayUuid = self._addItem(rs)
+
+            self._scaffold2displayItem[rs.scaffoldUuid] = displayUuid
+
+        self._view.fitCamera()
+
+        self._view.refresh()
+
     def _connectSignalsSlots(self):
-        self._scaffoldList.customContextMenuRequested.connect(self._showContextMenu)
-        self._scaffoldList.itemSelectionChanged.connect(self._selectedItemsChanged)
+        self._scaffoldTreeWidget.customContextMenuRequested.connect(self._showContextMenu)
+        self._scaffoldTreeWidget.itemSelectionChanged.connect(self._selectedItemsChanged)
         self._view.customContextMenuRequested.connect(self._showContextMenuOnRenderingView)
         self._view.actorPicked.connect(self._actorPicked)
         self._menu.showActionTriggered.connect(self._showActors)
@@ -140,6 +142,7 @@ class VisualReportView(RenderingView):
         self._menu.surfaceDisplayModeSelected.connect(self._displaySurface)
         self._menu.surfaceEdgeDisplayModeSelected.connect(self._displayWireSurfaceWithEdges)
         self._menu.vectorsToggled.connect(self._vectorsToggled)
+        self._menu.streamsToggled.connect(self._streamsToggled)
 
         ScaffoldsDB().ScaffoldUpdated.connect(self._scaffoldUpdated)
 
@@ -210,23 +213,18 @@ class VisualReportView(RenderingView):
 
         self._view.refresh()
 
-    def _scaffoldUpdated(self, uuid: UUID):
-        with OpenFOAMReader() as reader:
-            reader.setTimeValue(float(self._report.time))
-            reader.Update()
+    @qasync.asyncSlot()
+    async def _scaffoldUpdated(self, uuid: UUID):
+        scaffold = ScaffoldsDB().getScaffold(uuid)
+        dataSet = await scaffold.getDataSet(self._report.polyMesh)
+        self._report.reportingScaffolds[uuid].dataSet = dataSet
 
-            mBlock = reader.getOutput()
+        displayUuid = self._scaffold2displayItem[uuid]
+        item = self._items[displayUuid]
 
-            scaffold = ScaffoldsDB().getScaffold(uuid)
-            dataSet = scaffold.getDataSet(mBlock)
-            self._report.reportingScaffolds[uuid].dataSet = dataSet
+        await item.updateScaffoldInfo()
 
-            displayUuid = self._scaffold2displayItem[uuid]
-            item = self._items[displayUuid]
-
-            item.updateScaffoldInfo()
-
-            self._view.refresh()
+        self._view.refresh()
 
 
     def _reportUpdated(self, uuid: UUID):
@@ -273,7 +271,7 @@ class VisualReportView(RenderingView):
         self._menu.execute(pos, properties)
 
     def _showContextMenu(self, pos):
-        self._executeContextMenu(self._scaffoldList.mapToGlobal(pos))
+        self._executeContextMenu(self._scaffoldTreeWidget.mapToGlobal(pos))
 
     def _showContextMenuOnRenderingView(self, pos):
         #  VTK ignores device pixel ratio and uses real pixel values only
@@ -286,7 +284,7 @@ class VisualReportView(RenderingView):
             self._executeContextMenu(self._view.mapToGlobal(pos))
 
     def _selectedItemsInfo(self) -> Optional[Properties]:
-        items = self._scaffoldList.selectedItems()
+        items = self._scaffoldTreeWidget.selectedItems()
         if not items:
             return None
 
@@ -358,13 +356,13 @@ class VisualReportView(RenderingView):
 
     def _actorPicked(self, actor: vtkActor, ctrlKeyPressed=False, forContextMenu=False):
         if not ctrlKeyPressed and not forContextMenu:
-            self._scaffoldList.clearSelection()
+            self._scaffoldTreeWidget.clearSelection()
 
         if actor:
             print(f'{actor.GetObjectName()} picked')
             item = self._items[UUID(actor.GetObjectName())]
             if not item.isSelected() and forContextMenu:
-                self._scaffoldList.clearSelection()
+                self._scaffoldTreeWidget.clearSelection()
 
             if ctrlKeyPressed:
                 item.setSelected(not item.isSelected())
@@ -374,24 +372,34 @@ class VisualReportView(RenderingView):
     def _actorSourceUpdated(self, id_):
         pass
 
-    def _vectorsToggled(self, checked: bool):
+    @qasync.asyncSlot()
+    async def _vectorsToggled(self, checked: bool):
         for item in self._selectedItems:
             if checked:
-                item.showVectors()
+                await item.showVectors()
             else:
                 item.hideVectors()
 
         self._view.refresh()
 
-    def addItem(self, rs: ReportingScaffold) -> UUID:
+    def _streamsToggled(self, checked: bool):
+        for item in self._selectedItems:
+            if checked:
+                item.showStreamlines()
+            else:
+                item.hideStreamlines()
+
+        self._view.refresh()
+
+    def _addItem(self, rs: ReportingScaffold) -> UUID:
         did = uuid4()
         contour: Contour = self._report
 
-        item = DisplayItem(self._scaffoldList, did, rs, contour.field, contour.useNodeValues, self._lookupTable, self._view)
+        item = DisplayItem(self._scaffoldTreeWidget, did, rs, contour.internalMesh, contour.field, contour.useNodeValues, self._lookupTable, self._view)
 
         self._items[did] = item
 
-        item.setupColorWidget(self._scaffoldList)
+        item.setupColorWidget(self._scaffoldTreeWidget)
 
         return did
 
@@ -399,12 +407,12 @@ class VisualReportView(RenderingView):
         if did not in self._items:
             return
 
-        for i in range(self._scaffoldList.topLevelItemCount()):
-            item: DisplayItem = self._scaffoldList.topLevelItem(i)
+        for i in range(self._scaffoldTreeWidget.topLevelItemCount()):
+            item: DisplayItem = self._scaffoldTreeWidget.topLevelItem(i)
             if item.did() != did:
                 continue
 
-            self._scaffoldList.takeTopLevelItem(i)
+            self._scaffoldTreeWidget.takeTopLevelItem(i)
 
             item.close()
 
@@ -415,7 +423,7 @@ class VisualReportView(RenderingView):
 
     def _reportingScaffoldAdded(self, uuid: UUID):
         rs = self._report.reportingScaffolds[uuid]
-        displayUuid = self.addItem(rs)
+        displayUuid = self._addItem(rs)
 
         self._scaffold2displayItem[uuid] = displayUuid
 

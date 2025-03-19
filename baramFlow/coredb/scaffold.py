@@ -32,29 +32,8 @@ class Scaffold(QObject):
     def toElement(self):
         raise NotImplementedError
 
-    def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
+    async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
         raise NotImplementedError
-
-    def _collectInternalMesh(self, mBlock: vtkMultiBlockDataSet) -> list[vtkDataObject]:
-        meshes = []
-        iterator: vtkCompositeDataIterator = mBlock.NewIterator()
-        while not iterator.IsDoneWithTraversal():
-            if not iterator.HasCurrentMetaData():
-                iterator.GoToNextItem()
-                continue
-
-            name = iterator.GetCurrentMetaData().Get(vtkCompositeDataSet.NAME())
-            if name != 'internalMesh':
-                iterator.GoToNextItem()
-                continue
-
-            dobj = iterator.GetCurrentDataObject()
-            if dobj is not None:
-                meshes.append(dobj)
-
-            iterator.GoToNextItem()
-
-        return meshes
 
     def markUpdated(self):
         self.instanceUpdated.emit(self.uuid)

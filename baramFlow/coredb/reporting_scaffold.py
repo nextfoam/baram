@@ -35,6 +35,8 @@ class ReportingScaffold(QObject):
     edges: bool = False
     faces: bool = True
     showVectors: bool = False
+    showStreamlines: bool = False
+    maxNumberOfSamplePoints: int = 100
 
     def __post_init__(self):
         super().__init__()
@@ -49,6 +51,8 @@ class ReportingScaffold(QObject):
         edges = (e.find('edges', namespaces=nsmap).text == 'true')
         faces = (e.find('faces', namespaces=nsmap).text == 'true')
         showVectors = (e.find('showVectors', namespaces=nsmap).text == 'true')
+        showStreamlines = (e.find('showStreamlines', namespaces=nsmap).text == 'true')
+        maxNumberOfSamplePoints = int(e.find('maxNumberOfSamplePoints', namespaces=nsmap).text)
 
 
         return ReportingScaffold(scaffoldUuid=scaffoldUuid,
@@ -58,7 +62,9 @@ class ReportingScaffold(QObject):
                           color=color,
                           edges=edges,
                           faces=faces,
-                          showVectors=showVectors)
+                          showVectors=showVectors,
+                          showStreamlines=showStreamlines,
+                          maxNumberOfSamplePoints=maxNumberOfSamplePoints)
 
     def toElement(self):
         string = (f'<scaffold xmlns="http://www.baramcfd.org/baram">'
@@ -70,6 +76,8 @@ class ReportingScaffold(QObject):
                   f'    <edges>{"true" if self.edges else "false"}</edges>'
                   f'    <faces>{"true" if self.faces else "false"}</faces>'
                   f'    <showVectors>{"true" if self.showVectors else "false"}</showVectors>'
+                  f'    <showStreamlines>{"true" if self.showStreamlines else "false"}</showStreamlines>'
+                  f'    <maxNumberOfSamplePoints>{str(self.maxNumberOfSamplePoints)}</maxNumberOfSamplePoints>'
                   f'</scaffold>')
 
         return etree.fromstring(string)

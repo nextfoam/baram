@@ -15,7 +15,7 @@ from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_report import VisualReport
 from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
-
+from libbaram.openfoam.polymesh import collectInternalMesh2
 
 
 CONTOUR_NAME_PREFIX = 'contour'
@@ -49,8 +49,8 @@ class VisualReportsDB(QObject):
 
         self._reports: dict[UUID, VisualReport] = {}
 
-    def load(self):
-        self._reports = self._parseVisualReports()
+    async def load(self):
+        self._reports = await self._parseVisualReports()
 
         for report in self._reports.values():
             report.instanceUpdated.connect(self._reportUpdated)
@@ -62,7 +62,7 @@ class VisualReportsDB(QObject):
 
         self._reports = {}
 
-    def _parseVisualReports(self) -> dict[UUID, VisualReport]:
+    async def _parseVisualReports(self) -> dict[UUID, VisualReport]:
         reports = {}
         parent = coredb.CoreDB().getElement(self.VISUAL_REPORTS_PATH)
 
@@ -74,13 +74,15 @@ class VisualReportsDB(QObject):
             if len(c.reportingScaffolds) == 0:
                 continue
 
-            with OpenFOAMReader() as reader:
+            async with OpenFOAMReader() as reader:
                 reader.setTimeValue(float(c.time))
-                reader.Update()
+                await reader.Update()
                 mBlock = reader.getOutput()
+                c.polyMesh = mBlock
+                c.internalMesh = collectInternalMesh2(mBlock)
                 for rs in c.reportingScaffolds.values():
                     scaffold = ScaffoldsDB().getScaffold(rs.scaffoldUuid)
-                    rs.dataSet = scaffold.getDataSet(mBlock)
+                    rs.dataSet = await scaffold.getDataSet(mBlock)
 
         return reports
 

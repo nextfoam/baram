@@ -23,6 +23,7 @@ from vtkmodules.vtkIOImage import vtkPNGReader
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor, vtkCubeAxesActor
 from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vtkLightKit, vtkProp
 
+from libbaram.vtk_threads import isRenderingHold
 from resources import resource
 
 # To fix middle button issue in vtkmodules
@@ -38,6 +39,14 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
         if self._RenderWindow is not None:
             self._RenderWindow.Finalize()
             self._RenderWindow = None
+
+    def paintEvent(self, ev):
+        if not isRenderingHold():
+            super().paintEvent(ev)
+
+    def Render(self):
+        if not isRenderingHold():
+            super().Render()
 
     def mouseDoubleClickEvent(self, ev: QMouseEvent):
         ctrl, shift = self._GetCtrlShift(ev)

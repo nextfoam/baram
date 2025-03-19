@@ -541,21 +541,6 @@ class MainWindow(QMainWindow):
 
         progressDialog.finish('Parallel Environment was Applied.')
 
-    async def _loadVtkMesh(self):
-        progressDialog = ProgressDialog(self, self.tr('Case Loading.'))
-        progressDialog.open()
-
-        # Workaround to give some time for QT to set up timer or event loop.
-        # This workaround is not necessary on Windows because BARAM for Windows
-        #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
-        await asyncio.sleep(0.1)
-
-        loader = PolyMeshLoader()
-        loader.progress.connect(progressDialog.setLabelText)
-        await loader.loadVtk()
-
-        progressDialog.close()
-
     @qasync.asyncSlot()
     async def _changeForm(self, currentMenu, previousMenu=-1):
         if previousMenu > -1:
@@ -634,13 +619,22 @@ class MainWindow(QMainWindow):
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL.value)
             self._renderingDock.raise_()
 
+        progressDialog = ProgressDialog(self, self.tr('Case Loading'))
+        progressDialog.open()
+
         db = coredb.CoreDB()
         if db.hasMesh():
-            await self._loadVtkMesh()
+            # Workaround to give some time for QT to set up timer or event loop.
+            # This workaround is not necessary on Windows because BARAM for Windows
+            #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
+            await asyncio.sleep(0.1)
+
+            loader = PolyMeshLoader()
+            loader.progress.connect(progressDialog.setLabelText)
+            await loader.loadVtk()
+
         elif FileSystem.hasPolyMesh():
             # BaramMesh Project is opened
-            progressDialog = ProgressDialog(self, self.tr('Mesh Loading'))
-            progressDialog.open()
 
             # Workaround to give some time for QT to set up timer or event loop.
             # This workaround is not necessary on Windows because BARAM for Windows
@@ -652,16 +646,19 @@ class MainWindow(QMainWindow):
                 loader.progress.connect(progressDialog.setLabelText)
                 await loader.loadMesh()
 
-                progressDialog.close()
             except Exception as ex:
                 progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
 
             self._project.fileDB().saveCoreDB()
 
+        progressDialog.setLabelText(self.tr('Building Graphics Reports'))
+
         self._navigatorView.updateEnabled()
 
         ScaffoldsDB().load()
-        VisualReportsDB().load()
+        await VisualReportsDB().load()
+
+        progressDialog.close()
 
     @qasync.asyncSlot()
     async def _caseLoaded(self, name=None):

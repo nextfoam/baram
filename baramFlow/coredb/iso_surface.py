@@ -13,6 +13,8 @@ from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.post_field import COORDINATE, Field, VectorComponent, getFieldInstance
 from baramFlow.coredb.post_field import VELOCITY
 from baramFlow.coredb.scaffold import Scaffold
+from libbaram.openfoam.polymesh import collectInternalMesh
+from libbaram.vtk_threads import holdRendering, resumeRendering, to_vtk_thread
 
 
 @dataclass
@@ -59,10 +61,10 @@ class IsoSurface(Scaffold):
     def xpath(self):
         return f'/surface[uuid="{str(self.uuid)}"]'
 
-    def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
+    async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
         values = self._getValues()
         polyData = vtkAppendPolyData()
-        meshes = self._collectInternalMesh(mBlock)
+        meshes = collectInternalMesh(mBlock)
 
         for mesh in meshes:
             if self.field == COORDINATE:
@@ -96,11 +98,15 @@ class IsoSurface(Scaffold):
             for i, v in enumerate(values):
                 filter.SetValue(i, v)
 
-            filter.Update()
+            holdRendering()
+            await to_vtk_thread(filter.Update)
+            resumeRendering()
 
             polyData.AddInputData(filter.GetOutput())
 
-        polyData.Update()
+        holdRendering()
+        await to_vtk_thread(polyData.Update)
+        resumeRendering()
 
         return polyData.GetOutput()
 
