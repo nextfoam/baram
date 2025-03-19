@@ -146,9 +146,9 @@ class T(BoundaryCondition):
                 data = {
                     'type': 'externalWallHeatFluxTemperature',
                     'mode': 'coefficient',
-                    'h': ('uniform', self._db.getValue(xpath + '/wall/temperature/heatTransferCoefficient')),
-                    'Ta': ('uniform', self._db.getValue(xpath + '/wall/temperature/freeStreamTemperature')),
-                    'emissivity': ('uniform', self._db.getValue(xpath + '/wall/temperature/externalEmissivity')),
+                    'h': ('constant', self._db.getValue(xpath + '/wall/temperature/heatTransferCoefficient')),
+                    'Ta': ('constant', self._db.getValue(xpath + '/wall/temperature/freeStreamTemperature')),
+                    'emissivity': self._db.getValue(xpath + '/wall/temperature/externalEmissivity'),
                     'kappaMethod': 'fluidThermo' if self._region.isFluid() else 'solidThermo',
                     'value': self._initialValueByTime()
                 }
