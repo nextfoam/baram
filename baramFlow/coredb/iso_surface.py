@@ -13,8 +13,10 @@ from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.post_field import COORDINATE, Field, VectorComponent, getFieldInstance
 from baramFlow.coredb.post_field import VELOCITY
 from baramFlow.coredb.scaffold import Scaffold
+from baramFlow.openfoam.solver_field import getSolverFieldName
 from libbaram.openfoam.polymesh import collectInternalMesh
 from libbaram.vtk_threads import holdRendering, resumeRendering, to_vtk_thread
+from libbaram import vtk_threads
 
 
 @dataclass
@@ -90,23 +92,25 @@ class IsoSurface(Scaffold):
             else:
                 filter = vtkContourFilter()
                 filter.SetInputData(mesh)
-
+                solverFieldName = getSolverFieldName(self.field)
                 filter.SetInputArrayToProcess(0, 0, 0,
                                                 vtkDataObject.FIELD_ASSOCIATION_POINTS,
-                                                self.field.codeName)
+                                                solverFieldName)
 
             for i, v in enumerate(values):
                 filter.SetValue(i, v)
 
-            holdRendering()
-            await to_vtk_thread(filter.Update)
-            resumeRendering()
+            async with vtk_threads.vtkThreadLock:
+                holdRendering()
+                await to_vtk_thread(filter.Update)
+                resumeRendering()
 
             polyData.AddInputData(filter.GetOutput())
 
-        holdRendering()
-        await to_vtk_thread(polyData.Update)
-        resumeRendering()
+        async with vtk_threads.vtkThreadLock:
+            holdRendering()
+            await to_vtk_thread(polyData.Update)
+            resumeRendering()
 
         return polyData.GetOutput()
 

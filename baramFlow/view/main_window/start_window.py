@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
 import ctypes
 import logging
 import platform
@@ -15,6 +16,7 @@ from PySide6.QtWidgets import QApplication, QDialog
 
 from libbaram.openfoam.constants import isBaramProject
 from widgets.async_message_box import AsyncMessageBox
+from libbaram import vtk_threads
 
 from baramFlow.app import app
 from baramFlow.coredb.app_settings import AppSettings
@@ -37,6 +39,7 @@ class Baram(QObject):
         app.projectCreated.connect(self._openProject)
 
     async def start(self):
+        vtk_threads.vtkThreadLock = asyncio.Lock()
         try:
             self._applicationLock = AppSettings.acquireLock(5)
         except Timeout:

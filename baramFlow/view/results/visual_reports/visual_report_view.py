@@ -227,7 +227,8 @@ class VisualReportView(RenderingView):
         self._view.refresh()
 
 
-    def _reportUpdated(self, uuid: UUID):
+    @qasync.asyncSlot()
+    async def _reportUpdated(self, uuid: UUID):
         contour: Contour = self._report
 
         if contour.field.type == FieldType.VECTOR:
@@ -250,7 +251,7 @@ class VisualReportView(RenderingView):
 
         for did in self._items:
             item = self._items[did]
-            item.setField(contour.field, contour.useNodeValues)
+            await item.updateScaffoldInfo()
 
         self._view.refresh()
 
@@ -395,7 +396,7 @@ class VisualReportView(RenderingView):
         did = uuid4()
         contour: Contour = self._report
 
-        item = DisplayItem(self._scaffoldTreeWidget, did, rs, contour.internalMesh, contour.field, contour.useNodeValues, self._lookupTable, self._view)
+        item = DisplayItem(self._scaffoldTreeWidget, did, contour, rs, contour.internalMesh, contour.field, contour.useNodeValues, self._lookupTable, self._view)
 
         self._items[did] = item
 

@@ -2,13 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import asyncio
-import re
-from pathlib import Path
 from threading import Lock
 from typing import Optional
-
-import qasync
 
 from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkIOParallel import vtkPOpenFOAMReader
@@ -17,7 +12,7 @@ from vtkmodules.vtkCommonCore import vtkCommand
 from baramFlow.openfoam.file_system import FileSystem
 
 from libbaram.vtk_threads import holdRendering, resumeRendering, to_vtk_thread
-
+from libbaram import vtk_threads
 
 logger = logging.getLogger(__name__)
 
@@ -101,9 +96,10 @@ class OpenFOAMReader(QObject):
 
         self._reader.SetFileName(str(FileSystem.foamFilePath()))
 
-        holdRendering()
-        await to_vtk_thread(self._reader.Update)
-        resumeRendering()
+        async with vtk_threads.vtkThreadLock:
+            holdRendering()
+            await to_vtk_thread(self._reader.Update)
+            resumeRendering()
 
         for i in range(self._reader.GetNumberOfCellArrays()):
             name = self._reader.GetCellArrayName(i)
@@ -117,9 +113,10 @@ class OpenFOAMReader(QObject):
             name = self._reader.GetPatchArrayName(i)
             self._reader.SetPatchArrayStatus(name, 1)
 
-        holdRendering()
-        await to_vtk_thread(self._reader.Update)
-        resumeRendering()
+        async with vtk_threads.vtkThreadLock:
+            holdRendering()
+            await to_vtk_thread(self._reader.Update)
+            resumeRendering()
 
     def _readerProgressEvent(self, caller: vtkPOpenFOAMReader, ev):
         self._vtkReaderProgress.emit(self.tr('Loading Mesh : ') + f'{int(float(caller.GetProgress()) * 100)}%')
@@ -143,9 +140,10 @@ class OpenFOAMReader(QObject):
         return self._reader.GetTimeValue()
 
     async def Update(self):
-        holdRendering()
-        await to_vtk_thread(self._reader.Update)
-        resumeRendering()
+        async with vtk_threads.vtkThreadLock:
+            holdRendering()
+            await to_vtk_thread(self._reader.Update)
+            resumeRendering()
 
     def refresh(self):
         if not self._acquired:

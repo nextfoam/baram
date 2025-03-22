@@ -2593,18 +2593,13 @@
                                                     <xs:element name="vectorScaleFactor" type="xs:double" default="1.0"/>
                                                     <xs:element name="vectorOnRatio" type="xs:positiveInteger" default="1"/>
                                                     <xs:element name="vectorNumMax" type="xs:positiveInteger" default="1000"/>
-                                                    <xs:element name="streamlineIntegratorType">
-                                                        <xs:simpleType>
-                                                            <xs:restriction base="xs:string">
-                                                                <xs:enumeration value="rungeKutta2"/>
-                                                                <xs:enumeration value="rungeKutta4"/>
-                                                                <xs:enumeration value="rungeKutta45"/>
-                                                            </xs:restriction>
-                                                        </xs:simpleType>
-                                                    </xs:element>
                                                     <xs:element name="integrateForward" type="xs:boolean" default="true"/>
                                                     <xs:element name="integrateBackward" type="xs:boolean" default="false"/>
-                                                    <xs:element name="streamlineMaxLength" type="xs:double" default="1.0"/>
+                                                    <xs:element name="stepSize" type="xs:double" default="0.001"/>
+                                                    <xs:element name="maxSteps" type="xs:positiveInteger" default="2000"/>
+                                                    <xs:element name="maxLength" type="xs:double" default="1.0"/>
+                                                    <xs:element name="accuracyControl" type="xs:boolean" default="false"/>
+                                                    <xs:element name="tolerance" type="xs:double" default="1e-6"/>
                                                     <xs:element name="streamlineType" default="ribbon">
                                                         <xs:simpleType>
                                                             <xs:restriction base="xs:string">
@@ -2613,6 +2608,7 @@
                                                             </xs:restriction>
                                                         </xs:simpleType>
                                                     </xs:element>
+                                                    <xs:element name="lineWidth" type="xs:double" default="0.01"/>
                                                     <xs:element name="scaffolds">
                                                         <xs:complexType>
                                                             <xs:sequence>

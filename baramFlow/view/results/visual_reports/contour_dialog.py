@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from uuid import UUID
-from PySide6.QtCore import QRegularExpression
-from PySide6.QtGui import QRegularExpressionValidator
+from PySide6.QtCore import QCoreApplication, QRegularExpression
+from PySide6.QtGui import QDoubleValidator, QIntValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
 import qasync
 
-from baramFlow.coredb.contour import Contour
+from baramFlow.coredb.contour import Contour, StreamlineType
 from baramFlow.coredb.post_field import Field, FieldType, getAvailableFields
 from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
@@ -29,6 +29,9 @@ class ContourDialog(QDialog):
 
         self._ui = Ui_ContourDialog()
         self._ui.setupUi(self)
+
+        self._STREAMLINE_TYPE_TEXTS: dict[StreamlineType, str] = None
+        self._retranslateUi()
 
         self._ui.name.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Za-z_][A-Za-z0-9_-]*')))
 
@@ -71,6 +74,27 @@ class ContourDialog(QDialog):
 
         self._contour = contour
 
+        self._ui.integrateForward.setChecked(contour.integrateForward)
+        self._ui.integrateBackward.setChecked(contour.integrateBackward)
+        self._ui.stepSize.setText(contour.stepSize)
+        self._ui.maxSteps.setText(str(contour.maxSteps))
+        self._ui.maxLength.setText(contour.maxLength)
+        self._ui.accuracyControl.setChecked(contour.accuracyControl)
+        self._ui.tolerance.setText(contour.tolerance)
+
+        self._ui.stepSize.setValidator(QDoubleValidator())
+        self._ui.maxSteps.setValidator(QIntValidator())
+        self._ui.maxLength.setValidator(QDoubleValidator())
+        self._ui.tolerance.setValidator(QDoubleValidator())
+
+        for lineType in StreamlineType:
+            self._ui.lineStyle.addItem(self.STREAMLINE_TYPE_TEXTS[lineType], lineType)
+        index = self._ui.lineStyle.findData(contour.streamlineType)
+        self._ui.lineStyle.setCurrentIndex(index)
+
+        self._ui.lineWidth.setText(contour.lineWidth)
+        self._ui.lineWidth.setValidator(QDoubleValidator())
+
         self._selectedScaffolds: list[UUID] = []
 
         self._setScaffolds(list(self._contour.reportingScaffolds.keys()))
@@ -97,6 +121,17 @@ class ContourDialog(QDialog):
         self._contour.vectorField = self._ui.vectorField.currentData()
         self._contour.vectorScaleFactor = self._ui.scaleFactor.text()
         self._contour.vectorOnRatio = int(self._ui.skip.text())
+
+        self._contour.integrateForward = True if self._ui.integrateForward.isChecked() else False
+        self._contour.integrateBackward = True if self._ui.integrateBackward.isChecked() else False
+        self._contour.stepSize = self._ui.stepSize.text()
+        self._contour.maxSteps = int(self._ui.maxSteps.text())
+        self._contour.maxLength = self._ui.maxLength.text()
+        self._contour.stepSize = self._ui.stepSize.text()
+        self._contour.accuracyControl = True if self._ui.accuracyControl.isChecked() else False
+        self._contour.tolerance = self._ui.tolerance.text()
+        self._contour.streamlineType = self._ui.lineStyle.currentData()
+        self._contour.lineWidth = self._ui.lineWidth.text()
 
         current = set(self._contour.reportingScaffolds.keys())
         selected = set(self._selectedScaffolds)
@@ -137,6 +172,36 @@ class ContourDialog(QDialog):
                                                 self.tr('Contour Name already exists.'))
             return False
 
+        stepSize = float(self._ui.stepSize.text())
+        if stepSize <= 0:
+            await AsyncMessageBox().critical(self, self.tr('Input Error'),
+                                                self.tr('Step Size should be greater than zero.'))
+            return False
+
+        maxSteps = int(self._ui.maxSteps.text())
+        if maxSteps <= 0:
+            await AsyncMessageBox().critical(self, self.tr('Input Error'),
+                                                self.tr('Steps should be greater than zero.'))
+            return False
+
+        maxLength = float(self._ui.maxLength.text())
+        if maxLength <= 0:
+            await AsyncMessageBox().critical(self, self.tr('Input Error'),
+                                                self.tr('Maximum Length should be greater than zero.'))
+            return False
+
+        tolerance = float(self._ui.tolerance.text())
+        if tolerance <= 0:
+            await AsyncMessageBox().critical(self, self.tr('Input Error'),
+                                                self.tr('Tolerance should be greater than zero.'))
+            return False
+
+        lineWidth = float(self._ui.lineWidth.text())
+        if lineWidth <= 0:
+            await AsyncMessageBox().critical(self, self.tr('Input Error'),
+                                                self.tr('Line width should be greater than zero.'))
+            return False
+
         return True
 
     def _fieldChanged(self, index):
@@ -166,4 +231,10 @@ class ContourDialog(QDialog):
         for uuid in scaffoldUuidList:
             s = ScaffoldsDB().getScaffold(uuid)
             self._ui.scaffolds.addItem(s.name)
+
+    def _retranslateUi(self):
+        self.STREAMLINE_TYPE_TEXTS = {
+            StreamlineType.LINE: QCoreApplication.translate('ContourDialog', 'Line'),
+            StreamlineType.RIBBON: QCoreApplication.translate('ContourDialog', 'Ribbon'),
+        }
 

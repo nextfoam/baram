@@ -9,6 +9,9 @@ from concurrent.futures import ThreadPoolExecutor
 
 _pool = ThreadPoolExecutor(1)  # To make only one thread running for VTK
 
+# vtkThreadLock = asyncio.Lock()
+vtkThreadLock: asyncio.Lock = None  # it should be initialized in main as soon as main loop is created
+
 
 # Copied from asyncio.to_thread
 async def to_vtk_thread(func, /, *args, **kwargs):

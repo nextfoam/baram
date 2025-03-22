@@ -66,11 +66,15 @@ class Contour(VisualReport):
     vectorOnRatio: int = 1
     vectorNumMax: int = 1000
 
-    streamlineIntegratorType: StreamlineIntegratorType = StreamlineIntegratorType.RUNGE_KUTTA2
     integrateForward: bool = True
     integrateBackward: bool = False
-    streamlineMaxLength: str = '1.0'
+    stepSize: str = '0.001'
+    maxSteps: int = 2000
+    maxLength: str = '1.0'
+    accuracyControl: bool = False
+    tolerance: str = '1.0e-6'
     streamlineType: StreamlineType = StreamlineType.RIBBON
+    lineWidth: str = '0.01'
 
     rangeMin: float = 0  # Not a configuration, Not saved in CoreDB
     rangeMax: float = 0  # Not a configuration, Not saved in CoreDB
@@ -109,11 +113,15 @@ class Contour(VisualReport):
         vectorOnRatio = int(e.find('vectorOnRatio', namespaces=nsmap).text)
         vectorNumMax = int(e.find('vectorNumMax', namespaces=nsmap).text)
 
-        streamlineIntegratorType = StreamlineIntegratorType(e.find('streamlineIntegratorType', namespaces=nsmap).text)
         integrateForward = True if e.find('integrateForward', namespaces=nsmap).text == 'true' else False
         integrateBackward = True if e.find('integrateBackward', namespaces=nsmap).text == 'true' else False
-        streamlineMaxLength = e.find('streamlineMaxLength', namespaces=nsmap).text
+        stepSize = e.find('stepSize', namespaces=nsmap).text
+        maxSteps = int(e.find('maxSteps', namespaces=nsmap).text)
+        maxLength = e.find('maxLength', namespaces=nsmap).text
+        accuracyControl = True if e.find('accuracyControl', namespaces=nsmap).text == 'true' else False
+        tolerance = e.find('tolerance', namespaces=nsmap).text
         streamlineType = StreamlineType(e.find('streamlineType', namespaces=nsmap).text)
+        lineWidth = e.find('lineWidth', namespaces=nsmap).text
 
         scaffoldsElement = e.find('scaffolds', namespaces=nsmap)
 
@@ -145,11 +153,15 @@ class Contour(VisualReport):
                           vectorOnRatio=vectorOnRatio,
                           vectorNumMax=vectorNumMax,
                           reportingScaffolds=reportingScaffolds,
-                          streamlineIntegratorType=streamlineIntegratorType,
                           integrateForward=integrateForward,
                           integrateBackward=integrateBackward,
-                          streamlineMaxLength=streamlineMaxLength,
-                          streamlineType=streamlineType)
+                          stepSize=stepSize,
+                          maxSteps=maxSteps,
+                          maxLength=maxLength,
+                          accuracyControl=accuracyControl,
+                          tolerance=tolerance,
+                          streamlineType=streamlineType,
+                          lineWidth=lineWidth)
 
         for rs in reportingScaffolds.values():
             rs.instanceUpdated.connect(contour._reportingScaffoldUpdated)
@@ -182,11 +194,15 @@ class Contour(VisualReport):
                    f'    <vectorScaleFactor>{self.vectorScaleFactor}</vectorScaleFactor>'
                    f'    <vectorOnRatio>{str(self.vectorOnRatio)}</vectorOnRatio>'
                    f'    <vectorNumMax>{str(self.vectorNumMax)}</vectorNumMax>'
-                   f'    <streamlineIntegratorType>{self.streamlineIntegratorType.value}</streamlineIntegratorType>'
                    f'    <integrateForward>{"true" if self.integrateForward else "false"}</integrateForward>'
                    f'    <integrateBackward>{"true" if self.integrateBackward else "false"}</integrateBackward>'
-                   f'    <streamlineMaxLength>{self.streamlineMaxLength}</streamlineMaxLength>'
+                   f'    <stepSize>{self.stepSize}</stepSize>'
+                   f'    <maxSteps>{str(self.maxSteps)}</maxSteps>'
+                   f'    <maxLength>{self.maxLength}</maxLength>'
+                   f'    <accuracyControl>{"true" if self.accuracyControl else "false"}</accuracyControl>'
+                   f'    <tolerance>{self.tolerance}</tolerance>'
                    f'    <streamlineType>{self.streamlineType.value}</streamlineType>'
+                   f'    <lineWidth>{self.lineWidth}</lineWidth>'
                    f'    <scaffolds/>'
                    f'</contour>')
 

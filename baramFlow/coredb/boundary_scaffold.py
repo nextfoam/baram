@@ -14,6 +14,7 @@ from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.scaffold import Scaffold
 from libbaram.openfoam.polymesh import findBlock
 from libbaram.vtk_threads import holdRendering, resumeRendering, to_vtk_thread
+from libbaram import vtk_threads
 
 
 @dataclass
@@ -66,8 +67,9 @@ class BoundaryScaffold(Scaffold):
 
             polyData.AddInputData(data)
 
-        holdRendering()
-        await to_vtk_thread(polyData.Update)
-        resumeRendering()
+        async with vtk_threads.vtkThreadLock:
+            holdRendering()
+            await to_vtk_thread(polyData.Update)
+            resumeRendering()
 
         return polyData.GetOutput()
