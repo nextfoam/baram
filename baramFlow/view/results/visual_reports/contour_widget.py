@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 
+import qasync
+
 from baramFlow.coredb.contour import Contour
 from baramFlow.coredb.visual_reports_db import VisualReportsDB
 from baramFlow.openfoam.file_system import FileSystem
@@ -44,9 +46,10 @@ class ContourWidget(VisualReportWidget):
         self._dialog.accepted.connect(self._editAccepted)
         self._dialog.open()
 
-    def _editAccepted(self):
-        self._contour.notifyReportUpdated()
+    @qasync.asyncSlot()
+    async def _editAccepted(self):
+        await self._contour.notifyReportUpdated()
         self.load()
 
-    def delete(self):
-        VisualReportsDB().removeVisualReport(self._contour)
+    async def delete(self):
+        await VisualReportsDB().removeVisualReport(self._contour)

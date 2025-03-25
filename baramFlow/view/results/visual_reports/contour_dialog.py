@@ -70,7 +70,6 @@ class ContourDialog(QDialog):
         self._ui.vectorField.setCurrentIndex(index)
 
         self._ui.scaleFactor.setText(contour.vectorScaleFactor)
-        self._ui.skip.setText(str(contour.vectorOnRatio))
 
         self._contour = contour
 
@@ -118,7 +117,6 @@ class ContourDialog(QDialog):
         self._contour.includeVectors = self._ui.includeVectors.isChecked()
         self._contour.vectorField = self._ui.vectorField.currentData()
         self._contour.vectorScaleFactor = self._ui.scaleFactor.text()
-        self._contour.vectorOnRatio = int(self._ui.skip.text())
 
         self._contour.stepSize = self._ui.stepSize.text()
         self._contour.maxSteps = int(self._ui.maxSteps.text())
@@ -136,9 +134,9 @@ class ContourDialog(QDialog):
         addedScaffolds = selected - current
 
         for uuid in removedScaffolds:
-            self._contour.notifyScaffoldRemoving(uuid)
+            await self._contour.notifyScaffoldRemoving(uuid)
             del self._contour.reportingScaffolds[uuid]
-            self._contour.notifyReportingScaffoldRemoved(uuid)
+            await self._contour.notifyReportingScaffoldRemoved(uuid)
 
         async with OpenFOAMReader() as reader:
             reader.setTimeValue(float(self._contour.time))
@@ -153,7 +151,7 @@ class ContourDialog(QDialog):
                 dataSet = await scaffold.getDataSet(mBlock)
                 rs = ReportingScaffold(scaffoldUuid=uuid, dataSet=dataSet)
                 self._contour.reportingScaffolds[uuid] = rs
-                self._contour.notifyReportingScaffoldAdded(uuid)
+                await self._contour.notifyReportingScaffoldAdded(uuid)
 
         super().accept()
 

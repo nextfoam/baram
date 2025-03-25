@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QDialog
 import qasync
@@ -25,6 +26,8 @@ class ReportingScaffoldDialog(QDialog):
         self._connectSignalsSlots()
 
     def _connectSignalsSlots(self):
+        self._ui.streamlinesIntegrateForward.clicked.connect(self._forwardStateClicked)
+        self._ui.streamlinesIntegrateBackward.clicked.connect(self._backwardStateClicked)
         self._ui.ok.clicked.connect(self._okClicked)
         self._ui.cancel.clicked.connect(self._cancelClicked)
 
@@ -37,6 +40,16 @@ class ReportingScaffoldDialog(QDialog):
         self._ui.streamlinesIntegrateBackward.setChecked(displayItem.scaffold().streamlinesIntegrateBackward)
 
         super().open()
+
+    def _forwardStateClicked(self, checked: bool):
+        if not checked:
+            if not self._ui.streamlinesIntegrateBackward.isChecked():
+                self._ui.streamlinesIntegrateForward.setChecked(True)
+
+    def _backwardStateClicked(self, checked: bool):
+        if not checked:
+            if not self._ui.streamlinesIntegrateForward.isChecked():
+                self._ui.streamlinesIntegrateBackward.setChecked(True)
 
     @qasync.asyncSlot()
     async def _okClicked(self):
@@ -53,7 +66,7 @@ class ReportingScaffoldDialog(QDialog):
             self._displayItem.scaffold().streamlinesIntegrateForward = self._ui.streamlinesIntegrateForward.isChecked()
             self._displayItem.scaffold().streamlinesIntegrateBackward = self._ui.streamlinesIntegrateBackward.isChecked()
 
-            self._displayItem.scaffold().markUpdated()
+            await self._displayItem.scaffold().markUpdated()
 
             await self._displayItem.executePipeline()
 

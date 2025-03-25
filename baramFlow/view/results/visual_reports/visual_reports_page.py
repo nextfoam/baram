@@ -78,8 +78,9 @@ class VisualReportsPage(ContentPage):
     def _openAddParticleTracksDialog(self):
         pass
 
-    def _addContours(self):
-        VisualReportsDB().addVisualReport(self._report)
+    @qasync.asyncSlot()
+    async def _addContours(self):
+        await VisualReportsDB().addVisualReport(self._report)
 
         self._addItem(ContourWidget(self._report))
 
@@ -109,7 +110,7 @@ class VisualReportsPage(ContentPage):
         confirm = await AsyncMessageBox().question(self, self.tr("Remove Visual Report item"),
                                                    self.tr('Remove "{}"?'.format(widget.name)))
         if confirm == QMessageBox.StandardButton.Yes:
-            widget.delete()
+            await widget.delete()
             self._ui.list.takeItem(self._ui.list.currentRow())
 
     def _currentWidget(self) -> VisualReportWidget:

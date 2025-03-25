@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
 
 from PySide6.QtGui import QFontMetrics, Qt
 from PySide6.QtWidgets import QWidget
@@ -36,12 +37,13 @@ class ScaffoldWidget(QWidget):
     def scaffold(self):
         return self._scaffold
 
-    def _editAccepted(self):
-        self._scaffold.markUpdated()
+    @qasync.asyncSlot()
+    async def _editAccepted(self):
+        await self._scaffold.markUpdated()
         self.load()
 
-    def delete(self):
-        ScaffoldsDB().removeScaffold(self._scaffold)
+    async def delete(self):
+        await ScaffoldsDB().removeScaffold(self._scaffold)
 
     def load(self):
         raise NotImplementedError

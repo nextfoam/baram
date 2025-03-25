@@ -98,7 +98,7 @@ class ContourColormapDialog(ResizableDialog):
         self._contour.customMinColor = self._customMinColor
         self._contour.customMaxColor = self._customMaxColor
 
-        self._contour.notifyReportUpdated()
+        await self._contour.notifyReportUpdated()
 
         super().accept()
 

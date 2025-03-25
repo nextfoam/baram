@@ -202,7 +202,8 @@ class MainWindow(QMainWindow):
     def load(self):
         self._project.opened()
 
-    def closeEvent(self, event):
+    @qasync.asyncClose()
+    async def closeEvent(self, event):
         if self._closeType is None:
             self._closeTriggered.emit(CloseType.EXIT_APP)
             event.ignore()
@@ -210,7 +211,7 @@ class MainWindow(QMainWindow):
 
         self._disconnectSignalsSlots()
 
-        VisualReportsDB().close()
+        await VisualReportsDB().close()
 
         self._caseManager.clear()
         Project.close()
@@ -280,9 +281,9 @@ class MainWindow(QMainWindow):
 
         self._caseManager.caseLoaded.connect(self._caseLoaded)
 
-        VisualReportsDB().ReportAdded.connect(self._reportAdded)
-        VisualReportsDB().ReportUpdated.connect(self._reportUpdated)
-        VisualReportsDB().RemovingReport.connect(self._reportRemoving)
+        VisualReportsDB().reportAdded.asyncConnect(self._reportAdded)
+        VisualReportsDB().reportUpdated.asyncConnect(self._reportUpdated)
+        VisualReportsDB().removingReport.asyncConnect(self._reportRemoving)
 
     def _disconnectSignalsSlots(self):
         self._project.projectOpened.disconnect(self._projectOpened)
@@ -290,9 +291,9 @@ class MainWindow(QMainWindow):
 
         self._caseManager.caseLoaded.disconnect(self._caseLoaded)
 
-        VisualReportsDB().ReportAdded.disconnect(self._reportAdded)
-        VisualReportsDB().ReportUpdated.disconnect(self._reportUpdated)
-        VisualReportsDB().RemovingReport.disconnect(self._reportRemoving)
+        VisualReportsDB().reportAdded.disconnect(self._reportAdded)
+        VisualReportsDB().reportUpdated.disconnect(self._reportUpdated)
+        VisualReportsDB().removingReport.disconnect(self._reportRemoving)
 
     @qasync.asyncSlot()
     async def _save(self):
@@ -924,16 +925,16 @@ class MainWindow(QMainWindow):
         self._docks[report.uuid] = dock
         self.addDockWidget(dock)
 
-    def _reportAdded(self, uuid: UUID):
+    async def _reportAdded(self, uuid: UUID):
         report = VisualReportsDB().getVisualReport(uuid)
         self._addNewReportDock(report)
 
-    def _reportUpdated(self, uuid: UUID):
+    async def _reportUpdated(self, uuid: UUID):
         if uuid in self._docks:
             dock = self._docks[uuid]
             # ToDo: what to do?
 
-    def _reportRemoving(self, uuid: UUID):
+    async def _reportRemoving(self, uuid: UUID):
         if uuid in self._docks:
             self.removeDockWidget(self._docks[uuid])
             del self._docks[uuid]

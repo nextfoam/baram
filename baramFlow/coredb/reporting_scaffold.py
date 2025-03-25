@@ -1,29 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from typing import ClassVar
+from dataclasses import dataclass, field
+from uuid import UUID
 
-from PySide6.QtCore import QObject, Signal
+from lxml import etree
+
+from PySide6.QtGui import QColor
+
 from vtkmodules.vtkCommonCore import vtkDataArray
 from vtkmodules.vtkCommonDataModel import vtkDataSet
 from vtkmodules.vtkFiltersCore import vtkArrayCalculator
+
 from baramFlow.coredb.libdb import nsmap
-
-from PySide6.QtGui import QColor
-from lxml import etree
-
-
-from dataclasses import dataclass
-from uuid import UUID
-
 from baramFlow.coredb.post_field import Field, VectorComponent
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.openfoam.solver_field import getSolverFieldName
 
+from libbaram.async_signal import AsyncSignal
+
 
 @dataclass
-class ReportingScaffold(QObject):
-    instanceUpdated: ClassVar[Signal] = Signal(UUID)
+class ReportingScaffold:
+    instanceUpdated: AsyncSignal = field(init=False)
 
     scaffoldUuid: UUID  = UUID(int = 0)
     dataSet: vtkDataSet = None
@@ -41,7 +40,7 @@ class ReportingScaffold(QObject):
     streamlinesIntegrateBackward: bool = False
 
     def __post_init__(self):
-        super().__init__()
+        self.instanceUpdated = AsyncSignal(UUID)
 
     @classmethod
     def fromElement(cls, e):
@@ -90,8 +89,8 @@ class ReportingScaffold(QObject):
 
         return etree.fromstring(string)
 
-    def markUpdated(self):
-        self.instanceUpdated.emit(self.scaffoldUuid)
+    async def markUpdated(self):
+        await self.instanceUpdated.emit(self.scaffoldUuid)
 
     @property
     def name(self):

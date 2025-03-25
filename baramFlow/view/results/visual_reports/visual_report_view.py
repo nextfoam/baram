@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
-from dataclasses import dataclass
 from uuid import UUID, uuid4
 
 from PySide6.QtGui import QAction
 import matplotlib as mpl
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QAbstractItemView, QColorDialog, QHeaderView, QMenu, QTreeWidget, QWidget, QVBoxLayout
 
 import qasync
@@ -36,18 +35,7 @@ from widgets.overlay_frame import OverlayFrame
 from baramFlow.view.results.visual_reports.display_control.display_item import ColorMode, DisplayMode, DisplayItem, Column
 
 
-@dataclass
-class ScaffoldDisplayItem:
-    selectedActorsChanged = Signal(list)
-    selectionApplied = Signal()
-    scaffold: UUID
-    displayItem: UUID
-
-
 class VisualReportView(RenderingView):
-    actorPicked = Signal(vtkActor, bool)
-    viewClosed = Signal()
-
     def __init__(self, parent: QWidget = None, report: VisualReport = None):
         super().__init__(parent)
 
@@ -138,14 +126,14 @@ class VisualReportView(RenderingView):
         self._opacityDialog.accepted.connect(self._opacityChanged)
         self._colorDialog.accepted.connect(self._colorChanged)
 
-        ScaffoldsDB().ScaffoldUpdated.connect(self._scaffoldUpdated)
+        ScaffoldsDB().scaffoldUpdated.asyncConnect(self._scaffoldUpdated)
 
-        self._report.instanceUpdated.connect(self._reportUpdated)
-        self._report.reportingScaffoldAdded.connect(self._reportingScaffoldAdded)
-        self._report.reportingScaffoldRemoving.connect(self._reportingScaffoldRemoving)
+        self._report.instanceUpdated.asyncConnect(self._reportUpdated)
+        self._report.reportingScaffoldAdded.asyncConnect(self._reportingScaffoldAdded)
+        self._report.reportingScaffoldRemoving.asyncConnect(self._reportingScaffoldRemoving)
 
     def _disconnectSignalsSlots(self):
-        ScaffoldsDB().ScaffoldUpdated.disconnect(self._scaffoldUpdated)
+        ScaffoldsDB().scaffoldUpdated.disconnect(self._scaffoldUpdated)
 
         self._report.instanceUpdated.disconnect(self._reportUpdated)
         self._report.reportingScaffoldAdded.disconnect(self._reportingScaffoldAdded)
@@ -207,7 +195,6 @@ class VisualReportView(RenderingView):
 
         self._view.refresh()
 
-    @qasync.asyncSlot()
     async def _scaffoldUpdated(self, uuid: UUID):
         scaffold = ScaffoldsDB().getScaffold(uuid)
         dataSet = await scaffold.getDataSet(self._report.polyMesh)
@@ -221,7 +208,6 @@ class VisualReportView(RenderingView):
         self._view.refresh()
 
 
-    @qasync.asyncSlot()
     async def _reportUpdated(self, uuid: UUID):
         contour: Contour = self._report
 
@@ -268,6 +254,8 @@ class VisualReportView(RenderingView):
         self._showAction.setVisible(not all([item.properties().visibility for item in items]))
         self._hideAction.setVisible(not all([not item.properties().visibility for item in items]))
 
+        self._colorAction.setEnabled(not all([item.properties().colorMode == ColorMode.FIELD for item in items]))
+
         self._solidColorAction.setChecked(all([item.properties().colorMode == ColorMode.SOLID for item in items]))
         self._fieldColorAction.setChecked(all([item.properties().colorMode == ColorMode.FIELD for item in items]))
 
@@ -298,57 +286,66 @@ class VisualReportView(RenderingView):
             self._actorPicked(actor, False, True)
             self._executeContextMenu(self._view.mapToGlobal(pos))
 
-    def _showActors(self):
+    @qasync.asyncSlot()
+    async def _showActors(self):
         for item in self._selectedItems:
-            item.setActorVisible(True)
+            await item.setActorVisible(True)
 
         self._view.refresh()
 
-    def _hideActors(self):
+    @qasync.asyncSlot()
+    async def _hideActors(self):
         for item in self._selectedItems:
-            item.setActorVisible(False)
+            await item.setActorVisible(False)
 
         self._view.refresh()
 
-    def _displayWireframe(self):
+    @qasync.asyncSlot()
+    async def _displayWireframe(self):
         for item in self._selectedItems:
-            item.setDisplayMode(DisplayMode.WIREFRAME)
+            await item.setDisplayMode(DisplayMode.WIREFRAME)
 
         self._view.refresh()
 
-    def _displaySurface(self):
+    @qasync.asyncSlot()
+    async def _displaySurface(self):
         for item in self._selectedItems:
-            item.setDisplayMode(DisplayMode.SURFACE)
+            await item.setDisplayMode(DisplayMode.SURFACE)
 
         self._view.refresh()
 
-    def _displayWireSurfaceWithEdges(self):
+    @qasync.asyncSlot()
+    async def _displayWireSurfaceWithEdges(self):
         for item in self._selectedItems:
-            item.setDisplayMode(DisplayMode.SURFACE_EDGE)
+            await item.setDisplayMode(DisplayMode.SURFACE_EDGE)
 
         self._view.refresh()
 
-    def _opacityChanged(self):
+    @qasync.asyncSlot()
+    async def _opacityChanged(self):
         opacity = self._opacityDialog.opacity()
         for item in self._selectedItems:
-            item.setOpacity(opacity)
+            await item.setOpacity(opacity)
 
-    def _colorChanged(self):
+    @qasync.asyncSlot()
+    async def _colorChanged(self):
         color = self._colorDialog.selectedColor()
         for item in self._selectedItems:
-            item.setActorColor(color)
+            await item.setActorColor(color)
 
-    def _solidColorMode(self):
+    @qasync.asyncSlot()
+    async def _solidColorMode(self):
         self._colorAction.setEnabled(True)
         for item in self._selectedItems:
-            item.setColorMode(ColorMode.SOLID)
+            await item.setColorMode(ColorMode.SOLID)
 
         self._view.refresh()
 
-    def _fieldColorMode(self):
+    @qasync.asyncSlot()
+    async def _fieldColorMode(self):
         self._colorAction.setEnabled(False)
         for item in self._selectedItems:
-            item.setColorMode(ColorMode.FIELD)
+            await item.setColorMode(ColorMode.FIELD)
 
         self._view.refresh()
 
@@ -380,19 +377,21 @@ class VisualReportView(RenderingView):
     @qasync.asyncSlot()
     async def _hideVectors(self):
         for item in self._selectedItems:
-            item.hideVectors()
+            await item.hideVectors()
 
         self._view.refresh()
 
-    def _showStreams(self):
+    @qasync.asyncSlot()
+    async def _showStreams(self):
         for item in self._selectedItems:
-            item.showStreamlines()
+            await item.showStreamlines()
 
         self._view.refresh()
 
-    def _hideStreams(self):
+    @qasync.asyncSlot()
+    async def _hideStreams(self):
         for item in self._selectedItems:
-            item.hideStreamlines()
+            await item.hideStreamlines()
 
         self._view.refresh()
 
@@ -426,7 +425,7 @@ class VisualReportView(RenderingView):
 
             break
 
-    def _reportingScaffoldAdded(self, uuid: UUID):
+    async def _reportingScaffoldAdded(self, uuid: UUID):
         rs = self._report.reportingScaffolds[uuid]
         displayUuid = self._addItem(rs)
 
@@ -434,7 +433,7 @@ class VisualReportView(RenderingView):
 
         self._view.refresh()
 
-    def _reportingScaffoldRemoving(self, uuid: UUID):
+    async def _reportingScaffoldRemoving(self, uuid: UUID):
         displayUuid = self._scaffold2displayItem[uuid]
         self.removeItem(displayUuid)
 

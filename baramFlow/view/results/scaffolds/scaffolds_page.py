@@ -80,16 +80,18 @@ class ScaffoldsPage(ContentPage):
     def _openAddPlaneDialog(self):
         pass
 
-    def _addBoundaryScaffold(self):
-        ScaffoldsDB().addScaffold(self._scaffold)
+    @qasync.asyncSlot()
+    async def _addBoundaryScaffold(self):
+        await ScaffoldsDB().addScaffold(self._scaffold)
 
         self._addItem(BoundaryScaffoldWidget(self._scaffold))
 
         self._scaffold = None
         self._dialog = None
 
-    def _addIsoSurface(self):
-        ScaffoldsDB().addScaffold(self._scaffold)
+    @qasync.asyncSlot()
+    async def _addIsoSurface(self):
+        await ScaffoldsDB().addScaffold(self._scaffold)
 
         self._addItem(IsoSurfaceWidget(self._scaffold))
 
@@ -118,7 +120,7 @@ class ScaffoldsPage(ContentPage):
         confirm = await AsyncMessageBox().question(self, self.tr("Remove Scaffold item"),
                                                    self.tr('Remove "{}"?'.format(widget.name)))
         if confirm == QMessageBox.StandardButton.Yes:
-            widget.delete()
+            await widget.delete()
             self._ui.list.takeItem(self._ui.list.currentRow())
 
     def _currentWidget(self):

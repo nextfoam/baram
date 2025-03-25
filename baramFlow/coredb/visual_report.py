@@ -2,23 +2,20 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
-from typing import ClassVar
 from uuid import UUID
 
-from PySide6.QtCore import QObject, Signal
 from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkUnstructuredGrid
 
-
-
 from baramFlow.coredb.reporting_scaffold import ReportingScaffold
+from libbaram.async_signal import AsyncSignal
 
 
 @dataclass
-class VisualReport(QObject):
-    instanceUpdated: ClassVar[Signal] = Signal(UUID)
-    reportingScaffoldAdded:  ClassVar[Signal] = Signal(UUID)
-    reportingScaffoldRemoving:  ClassVar[Signal] = Signal(UUID)
-    reportingScaffoldRemoved:  ClassVar[Signal] = Signal(UUID)
+class VisualReport:
+    instanceUpdated: AsyncSignal = field(init=False)
+    reportingScaffoldAdded: AsyncSignal = field(init=False)
+    reportingScaffoldRemoving: AsyncSignal = field(init=False)
+    reportingScaffoldRemoved: AsyncSignal = field(init=False)
 
     uuid: UUID
     name: str
@@ -31,7 +28,10 @@ class VisualReport(QObject):
     reportingScaffolds: dict[UUID, ReportingScaffold] = field(default_factory=dict)
 
     def __post_init__(self):
-        super().__init__()
+        self.instanceUpdated = AsyncSignal(UUID)
+        self.reportingScaffoldAdded = AsyncSignal(UUID)
+        self.reportingScaffoldRemoving = AsyncSignal(UUID)
+        self.reportingScaffoldRemoved = AsyncSignal(UUID)
 
     @classmethod
     def fromElement(cls, e):
@@ -40,18 +40,18 @@ class VisualReport(QObject):
     def toElement(self):
         raise NotImplementedError
 
-    def notifyReportUpdated(self):
+    async def notifyReportUpdated(self):
         self._saveToCoreDB()
-        self.instanceUpdated.emit(self.uuid)
+        await self.instanceUpdated.emit(self.uuid)
 
-    def notifyReportingScaffoldAdded(self, uuid: UUID):
-        self.reportingScaffoldAdded.emit(uuid)
+    async def notifyReportingScaffoldAdded(self, uuid: UUID):
+        await self.reportingScaffoldAdded.emit(uuid)
 
-    def notifyScaffoldRemoving(self, uuid: UUID):
-        self.reportingScaffoldRemoving.emit(uuid)
+    async def notifyScaffoldRemoving(self, uuid: UUID):
+        await self.reportingScaffoldRemoving.emit(uuid)
 
-    def notifyReportingScaffoldRemoved(self, uuid: UUID):
-        self.reportingScaffoldRemoved.emit(uuid)
+    async def notifyReportingScaffoldRemoved(self, uuid: UUID):
+        await self.reportingScaffoldRemoved.emit(uuid)
 
     def _saveToCoreDB(self):
         raise NotImplementedError

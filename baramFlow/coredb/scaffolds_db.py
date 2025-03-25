@@ -4,14 +4,13 @@
 from threading import Lock
 from uuid import UUID, uuid4
 
-from PySide6.QtCore import QObject, Signal
-
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.libdb import nsmap
 
 from baramFlow.coredb.scaffold import Scaffold
+from libbaram.async_signal import AsyncSignal
 
 
 BOUNDARY_SCAFFOLD_NAME_PREFIX = 'boundary'
@@ -21,12 +20,8 @@ ISO_SURFACE_NAME_PREFIX = 'iso-surface'
 _mutex = Lock()
 
 
-class ScaffoldsDB(QObject):
+class ScaffoldsDB:
     SCAFFOLDS_PATH = '/scaffolds'
-
-    ScaffoldAdded = Signal(UUID)
-    ScaffoldUpdated = Signal(UUID)
-    RemovingScaffold = Signal(UUID)
 
     def __new__(cls, *args, **kwargs):
         with _mutex:
@@ -42,10 +37,11 @@ class ScaffoldsDB(QObject):
             else:
                 self._initialized = True
 
-        super().__init__()
+        self.scaffoldAdded = AsyncSignal(UUID)
+        self.scaffoldUpdated = AsyncSignal(UUID)
+        self.removingScaffold = AsyncSignal(UUID)
 
         self._scaffolds: dict[UUID, Scaffold] = {}
-
 
     def load(self):
         self._scaffolds = self._parseScaffolds()
@@ -58,13 +54,13 @@ class ScaffoldsDB(QObject):
         for e in boundaries.findall('boundary', namespaces=nsmap):
             s = BoundaryScaffold.fromElement(e)
             scaffolds[s.uuid] = s
-            s.instanceUpdated.connect(self._scaffoldUpdated)
+            s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
 
         isoSurfaces = parent.find('isoSurfaces', namespaces=nsmap)
         for e in isoSurfaces.findall('surface', namespaces=nsmap):
             s = IsoSurface.fromElement(e)
             scaffolds[s.uuid] = s
-            s.instanceUpdated.connect(self._scaffoldUpdated)
+            s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
 
         return scaffolds
 
@@ -77,7 +73,7 @@ class ScaffoldsDB(QObject):
     def hasScaffold(self, uuid: UUID):
         return uuid in self._scaffolds
 
-    def addScaffold(self, scaffold: Scaffold):
+    async def addScaffold(self, scaffold: Scaffold):
         if scaffold.uuid in self._scaffolds:
             raise AssertionError
 
@@ -92,11 +88,11 @@ class ScaffoldsDB(QObject):
 
         self._scaffolds[scaffold.uuid] = scaffold
 
-        scaffold.instanceUpdated.connect(self._scaffoldUpdated)
+        scaffold.instanceUpdated.asyncConnect(self._scaffoldUpdated)
 
-        self.ScaffoldAdded.emit(scaffold.uuid)
+        await self.scaffoldAdded.emit(scaffold.uuid)
 
-    def removeScaffold(self, scaffold: Scaffold):
+    async def removeScaffold(self, scaffold: Scaffold):
         if scaffold.uuid not in self._scaffolds:
             raise AssertionError
 
@@ -107,13 +103,13 @@ class ScaffoldsDB(QObject):
         else:
             raise AssertionError
 
-        self.RemovingScaffold.emit(scaffold.uuid)
+        await self.removingScaffold.emit(scaffold.uuid)
 
         coredb.CoreDB().removeElement(parent + scaffold.xpath())
 
         del self._scaffolds[scaffold.uuid]
 
-    def _scaffoldUpdated(self, uuid: UUID):
+    async def _scaffoldUpdated(self, uuid: UUID):
         print('scaffold updated')
         if uuid not in self._scaffolds:
             return
@@ -130,7 +126,7 @@ class ScaffoldsDB(QObject):
         coredb.CoreDB().removeElement(parent + scaffold.xpath())
         coredb.CoreDB().addElement(parent, scaffold.toElement())
 
-        self.ScaffoldUpdated.emit(scaffold.uuid)
+        await self.scaffoldUpdated.emit(scaffold.uuid)
 
     # def getBoundariesInUse(self):
     #     boundaries = []

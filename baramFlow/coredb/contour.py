@@ -63,7 +63,6 @@ class Contour(VisualReport):
     includeVectors: bool = False
     vectorField: Field = VELOCITY
     vectorScaleFactor: str = '1.0'
-    vectorOnRatio: int = 1
     vectorNumMax: int = 1000
 
     stepSize: str = '0.001'
@@ -108,7 +107,6 @@ class Contour(VisualReport):
         vectorFieldCodeName = e.find('vectorFieldCodeName', namespaces=nsmap).text
         vectorField = getFieldInstance(vectorFieldCategory, vectorFieldCodeName)
         vectorScaleFactor = e.find('vectorScaleFactor', namespaces=nsmap).text
-        vectorOnRatio = int(e.find('vectorOnRatio', namespaces=nsmap).text)
         vectorNumMax = int(e.find('vectorNumMax', namespaces=nsmap).text)
 
         stepSize = e.find('stepSize', namespaces=nsmap).text
@@ -146,7 +144,6 @@ class Contour(VisualReport):
                           includeVectors=includeVectors,
                           vectorField=vectorField,
                           vectorScaleFactor=vectorScaleFactor,
-                          vectorOnRatio=vectorOnRatio,
                           vectorNumMax=vectorNumMax,
                           reportingScaffolds=reportingScaffolds,
                           stepSize=stepSize,
@@ -158,7 +155,7 @@ class Contour(VisualReport):
                           lineWidth=lineWidth)
 
         for rs in reportingScaffolds.values():
-            rs.instanceUpdated.connect(contour._reportingScaffoldUpdated)
+            rs.instanceUpdated.asyncConnect(contour._reportingScaffoldUpdated)
 
         return contour
 
@@ -186,7 +183,6 @@ class Contour(VisualReport):
                    f'    <vectorFieldCategory>{self.vectorField.category}</vectorFieldCategory>'
                    f'    <vectorFieldCodeName>{self.vectorField.codeName}</vectorFieldCodeName>'
                    f'    <vectorScaleFactor>{self.vectorScaleFactor}</vectorScaleFactor>'
-                   f'    <vectorOnRatio>{str(self.vectorOnRatio)}</vectorOnRatio>'
                    f'    <vectorNumMax>{str(self.vectorNumMax)}</vectorNumMax>'
                    f'    <stepSize>{self.stepSize}</stepSize>'
                    f'    <maxSteps>{str(self.maxSteps)}</maxSteps>'
@@ -214,15 +210,15 @@ class Contour(VisualReport):
         coredb.CoreDB().removeElement(self.VISUAL_REPORTS_PATH + self.xpath())
         coredb.CoreDB().addElement(self.VISUAL_REPORTS_PATH, self.toElement())
 
-    def _reportingScaffoldUpdated(self, scaffold: UUID):
+    async def _reportingScaffoldUpdated(self, scaffold: UUID):
         self._saveToCoreDB()
 
-    def notifyReportingScaffoldAdded(self, uuid: UUID):
-        super().notifyReportingScaffoldAdded(uuid)
+    async def notifyReportingScaffoldAdded(self, uuid: UUID):
+        await super().notifyReportingScaffoldAdded(uuid)
         self._saveToCoreDB()
 
-    def notifyReportingScaffoldRemoved(self, uuid: UUID):
-        super().notifyReportingScaffoldRemoved(uuid)
+    async def notifyReportingScaffoldRemoved(self, uuid: UUID):
+        await super().notifyReportingScaffoldRemoved(uuid)
         self._saveToCoreDB()
 
     def getValueRange(self, useNodeValues: bool, relevantScaffoldsOnly: bool) -> tuple[float, float]:

@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from enum import Enum, IntEnum, auto
 from uuid import UUID
 
-from PySide6.QtCore import Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QLabel, QWidget, QHBoxLayout
 from vtkmodules.vtkCommonColor import vtkNamedColors
@@ -77,9 +76,6 @@ class Column(IntEnum):
 
 
 class DisplayItem(QTreeWidgetItem):
-    sourceChanged = Signal(UUID)
-    nameChanged = Signal(str)
-
     def __init__(self, parent, did: UUID, contour: Contour, reportingScaffold: ReportingScaffold, internalMesh: vtkUnstructuredGrid, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable, view: RenderingWidget):
         super().__init__(parent)
 
@@ -247,7 +243,7 @@ class DisplayItem(QTreeWidgetItem):
         self._colorWidget.setMinimumSize(16, 16)
         treeWidget.setItemWidget(self, Column.COLOR_COLUMN, widget)
 
-    def setActorVisible(self, visibility):
+    async def setActorVisible(self, visibility):
         self._properties.visibility = visibility
         self._reportingScaffold.visibility = visibility
 
@@ -255,9 +251,9 @@ class DisplayItem(QTreeWidgetItem):
 
         self._updateColorColumn()
 
-        self._reportingScaffold.markUpdated()
+        await self._reportingScaffold.markUpdated()
 
-    def setDisplayMode(self, mode: DisplayMode):
+    async def setDisplayMode(self, mode: DisplayMode):
         self._properties.displayMode = mode
         self._displayModeApplicator[mode]()
 
@@ -273,9 +269,9 @@ class DisplayItem(QTreeWidgetItem):
         else:
             raise AssertionError
 
-        self._reportingScaffold.markUpdated()
+        await self._reportingScaffold.markUpdated()
 
-    def setOpacity(self, opacity):
+    async def setOpacity(self, opacity):
         self._properties.opacity = opacity
         self._reportingScaffold.opacity = opacity
 
@@ -283,9 +279,9 @@ class DisplayItem(QTreeWidgetItem):
         if self._vectorActor is not None:
             self._vectorActor.GetProperty().SetOpacity(opacity)
 
-        self._reportingScaffold.markUpdated()
+        await self._reportingScaffold.markUpdated()
 
-    def setActorColor(self, color: QColor):
+    async def setActorColor(self, color: QColor):
         self._properties.color = color
         self._reportingScaffold.color = color
 
@@ -294,9 +290,9 @@ class DisplayItem(QTreeWidgetItem):
             self._vectorActor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
         self._updateColorColumn()
 
-        self._reportingScaffold.markUpdated()
+        await self._reportingScaffold.markUpdated()
 
-    def setColorMode(self, mode: ColorMode):
+    async def setColorMode(self, mode: ColorMode):
         self._properties.colorMode = mode
         if mode == ColorMode.SOLID:
             self._reportingScaffold.solidColor = True
@@ -317,7 +313,7 @@ class DisplayItem(QTreeWidgetItem):
 
         self._updateColorColumn()
 
-        self._reportingScaffold.markUpdated()
+        await self._reportingScaffold.markUpdated()
 
     def setHighlighted(self, highlighted):
         if self._properties.highlighted != highlighted:
@@ -387,11 +383,11 @@ class DisplayItem(QTreeWidgetItem):
 
         self._vectorActor.SetVisibility(True)
 
-        self._reportingScaffold.markUpdated()
+        await self._reportingScaffold.markUpdated()
 
         self._updateColorColumn()
 
-    def hideVectors(self):
+    async def hideVectors(self):
         if self._vectorActor is None:
             return
 
@@ -400,7 +396,7 @@ class DisplayItem(QTreeWidgetItem):
 
         self._vectorActor.SetVisibility(False)
 
-        self._reportingScaffold.markUpdated()
+        await self._reportingScaffold.markUpdated()
 
         self._updateColorColumn()
 
@@ -466,7 +462,7 @@ class DisplayItem(QTreeWidgetItem):
         self._vectorActor.GetProperty().SetOpacity(self._properties.opacity)
         self._vectorActor.SetVisibility(self._properties.showVectors)
 
-    def showStreamlines(self):
+    async def showStreamlines(self):
         if self._streamActor is None:
             self._setUpStreamlines()
 
@@ -475,11 +471,11 @@ class DisplayItem(QTreeWidgetItem):
 
         self._streamActor.SetVisibility(True)
 
-        self._reportingScaffold.markUpdated()
+        await self._reportingScaffold.markUpdated()
 
         self._updateColorColumn()
 
-    def hideStreamlines(self):
+    async def hideStreamlines(self):
         if self._streamActor is None:
             return
 
@@ -488,7 +484,7 @@ class DisplayItem(QTreeWidgetItem):
 
         self._streamActor.SetVisibility(False)
 
-        self._reportingScaffold.markUpdated()
+        await self._reportingScaffold.markUpdated()
 
         self._updateColorColumn()
 
@@ -579,8 +575,8 @@ class DisplayItem(QTreeWidgetItem):
 
             holdRendering()
             self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
-            await to_vtk_thread(self._scaffoldMapper.Update)
-            await asyncio.sleep(1)
+            #await to_vtk_thread(self._scaffoldMapper.Update)
+            #await asyncio.sleep(1)
             self._scaffoldMapper.Update()
 
             if self._properties.showVectors or self._vectorActor is not None:

@@ -2591,7 +2591,6 @@
                                                     </xs:element>
                                                     <xs:element name="vectorFieldCodeName" type="xs:string"/>
                                                     <xs:element name="vectorScaleFactor" type="xs:double" default="1.0"/>
-                                                    <xs:element name="vectorOnRatio" type="xs:positiveInteger" default="1"/>
                                                     <xs:element name="vectorNumMax" type="xs:positiveInteger" default="1000"/>
                                                     <xs:element name="stepSize" type="xs:double" default="0.001"/>
                                                     <xs:element name="maxSteps" type="xs:positiveInteger" default="2000"/>

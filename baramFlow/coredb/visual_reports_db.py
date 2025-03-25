@@ -4,9 +4,6 @@
 from threading import Lock
 from uuid import UUID, uuid4
 
-from PySide6.QtCore import QObject, Signal
-
-
 from baramFlow.coredb import coredb
 from baramFlow.coredb.contour import Contour
 
@@ -15,6 +12,7 @@ from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_report import VisualReport
 from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
+from libbaram.async_signal import AsyncSignal
 from libbaram.openfoam.polymesh import collectInternalMesh2
 
 
@@ -24,11 +22,7 @@ CONTOUR_NAME_PREFIX = 'contour'
 _mutex = Lock()
 
 
-class VisualReportsDB(QObject):
-    ReportAdded    = Signal(UUID)
-    ReportUpdated  = Signal(UUID)
-    RemovingReport = Signal(UUID)
-
+class VisualReportsDB:
     VISUAL_REPORTS_PATH = '/visualReports'
 
     def __new__(cls, *args, **kwargs):
@@ -45,7 +39,9 @@ class VisualReportsDB(QObject):
             else:
                 self._initialized = True
 
-        super().__init__()
+        self.reportAdded    = AsyncSignal(UUID)
+        self.reportUpdated  = AsyncSignal(UUID)
+        self.removingReport = AsyncSignal(UUID)
 
         self._reports: dict[UUID, VisualReport] = {}
 
@@ -53,12 +49,12 @@ class VisualReportsDB(QObject):
         self._reports = await self._parseVisualReports()
 
         for report in self._reports.values():
-            report.instanceUpdated.connect(self._reportUpdated)
-            self.ReportAdded.emit(report.uuid)
+            report.instanceUpdated.asyncConnect(self._reportUpdated)
+            await self.reportAdded.emit(report.uuid)
 
-    def close(self):
+    async def close(self):
         for report in self._reports.values():
-            self.RemovingReport.emit(report.uuid)
+            await self.removingReport.emit(report.uuid)
 
         self._reports = {}
 
@@ -92,7 +88,7 @@ class VisualReportsDB(QObject):
     def getVisualReport(self, uuid: UUID):
         return self._reports[uuid]
 
-    def addVisualReport(self, report: VisualReport):
+    async def addVisualReport(self, report: VisualReport):
         if report.uuid in self._reports:
             raise AssertionError
 
@@ -105,11 +101,11 @@ class VisualReportsDB(QObject):
 
         self._reports[report.uuid] = report
 
-        report.instanceUpdated.connect(self._reportUpdated)
+        report.instanceUpdated.asyncConnect(self._reportUpdated)
 
-        self.ReportAdded.emit(report.uuid)
+        await self.reportAdded.emit(report.uuid)
 
-    def removeVisualReport(self, report: VisualReport):
+    async def removeVisualReport(self, report: VisualReport):
         if report.uuid not in self._reports:
             raise AssertionError
 
@@ -118,19 +114,19 @@ class VisualReportsDB(QObject):
         else:
             raise AssertionError
 
-        self.RemovingReport.emit(report.uuid)
+        await self.removingReport.emit(report.uuid)
 
         coredb.CoreDB().removeElement(parent + report.xpath())
 
         del self._reports[report.uuid]
 
-    def _reportUpdated(self, uuid: UUID):
+    async def _reportUpdated(self, uuid: UUID):
         if uuid not in self._reports:
             return
 
         report = self._reports[uuid]
 
-        self.ReportUpdated.emit(report.uuid)
+        await self.reportUpdated.emit(report.uuid)
 
     def nameDuplicates(self, uuid: UUID, name: str) -> bool:
         for v in self._reports.values():

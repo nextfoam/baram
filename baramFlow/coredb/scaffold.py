@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import ClassVar
 from uuid import UUID
 
-from PySide6.QtCore import QObject, Signal
-from vtkmodules.vtkCommonDataModel import vtkCompositeDataIterator, vtkCompositeDataSet, vtkDataObject, vtkMultiBlockDataSet, vtkPolyData
+from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkPolyData
+
+from libbaram.async_signal import AsyncSignal
 
 
 class ScaffoldType(Enum):
@@ -16,14 +16,14 @@ class ScaffoldType(Enum):
 
 
 @dataclass
-class Scaffold(QObject):
-    instanceUpdated: ClassVar[Signal] = Signal(UUID)
+class Scaffold:
+    instanceUpdated: AsyncSignal = field(init=False)
 
     uuid: UUID
     name: str
 
     def __post_init__(self):
-        super().__init__()
+        self.instanceUpdated = AsyncSignal(UUID)
 
     @classmethod
     def fromElement(cls, e):
@@ -35,5 +35,5 @@ class Scaffold(QObject):
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
         raise NotImplementedError
 
-    def markUpdated(self):
-        self.instanceUpdated.emit(self.uuid)
+    async def markUpdated(self):
+        await self.instanceUpdated.emit(self.uuid)
