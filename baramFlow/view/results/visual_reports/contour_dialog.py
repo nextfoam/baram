@@ -74,8 +74,6 @@ class ContourDialog(QDialog):
 
         self._contour = contour
 
-        self._ui.integrateForward.setChecked(contour.integrateForward)
-        self._ui.integrateBackward.setChecked(contour.integrateBackward)
         self._ui.stepSize.setText(contour.stepSize)
         self._ui.maxSteps.setText(str(contour.maxSteps))
         self._ui.maxLength.setText(contour.maxLength)
@@ -117,18 +115,16 @@ class ContourDialog(QDialog):
         self._contour.field = self._ui.field.currentData()
         self._contour.fieldComponent = self._ui.fieldComponent.currentData()
 
-        self._contour.includeVectors = True if self._ui.includeVectors.isChecked() else False
+        self._contour.includeVectors = self._ui.includeVectors.isChecked()
         self._contour.vectorField = self._ui.vectorField.currentData()
         self._contour.vectorScaleFactor = self._ui.scaleFactor.text()
         self._contour.vectorOnRatio = int(self._ui.skip.text())
 
-        self._contour.integrateForward = True if self._ui.integrateForward.isChecked() else False
-        self._contour.integrateBackward = True if self._ui.integrateBackward.isChecked() else False
         self._contour.stepSize = self._ui.stepSize.text()
         self._contour.maxSteps = int(self._ui.maxSteps.text())
         self._contour.maxLength = self._ui.maxLength.text()
         self._contour.stepSize = self._ui.stepSize.text()
-        self._contour.accuracyControl = True if self._ui.accuracyControl.isChecked() else False
+        self._contour.accuracyControl = self._ui.accuracyControl.isChecked()
         self._contour.tolerance = self._ui.tolerance.text()
         self._contour.streamlineType = self._ui.lineStyle.currentData()
         self._contour.lineWidth = self._ui.lineWidth.text()

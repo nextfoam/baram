@@ -66,8 +66,6 @@ class Contour(VisualReport):
     vectorOnRatio: int = 1
     vectorNumMax: int = 1000
 
-    integrateForward: bool = True
-    integrateBackward: bool = False
     stepSize: str = '0.001'
     maxSteps: int = 2000
     maxLength: str = '1.0'
@@ -113,8 +111,6 @@ class Contour(VisualReport):
         vectorOnRatio = int(e.find('vectorOnRatio', namespaces=nsmap).text)
         vectorNumMax = int(e.find('vectorNumMax', namespaces=nsmap).text)
 
-        integrateForward = True if e.find('integrateForward', namespaces=nsmap).text == 'true' else False
-        integrateBackward = True if e.find('integrateBackward', namespaces=nsmap).text == 'true' else False
         stepSize = e.find('stepSize', namespaces=nsmap).text
         maxSteps = int(e.find('maxSteps', namespaces=nsmap).text)
         maxLength = e.find('maxLength', namespaces=nsmap).text
@@ -153,8 +149,6 @@ class Contour(VisualReport):
                           vectorOnRatio=vectorOnRatio,
                           vectorNumMax=vectorNumMax,
                           reportingScaffolds=reportingScaffolds,
-                          integrateForward=integrateForward,
-                          integrateBackward=integrateBackward,
                           stepSize=stepSize,
                           maxSteps=maxSteps,
                           maxLength=maxLength,
@@ -194,8 +188,6 @@ class Contour(VisualReport):
                    f'    <vectorScaleFactor>{self.vectorScaleFactor}</vectorScaleFactor>'
                    f'    <vectorOnRatio>{str(self.vectorOnRatio)}</vectorOnRatio>'
                    f'    <vectorNumMax>{str(self.vectorNumMax)}</vectorNumMax>'
-                   f'    <integrateForward>{"true" if self.integrateForward else "false"}</integrateForward>'
-                   f'    <integrateBackward>{"true" if self.integrateBackward else "false"}</integrateBackward>'
                    f'    <stepSize>{self.stepSize}</stepSize>'
                    f'    <maxSteps>{str(self.maxSteps)}</maxSteps>'
                    f'    <maxLength>{self.maxLength}</maxLength>'

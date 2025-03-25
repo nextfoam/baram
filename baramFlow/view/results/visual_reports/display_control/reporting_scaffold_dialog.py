@@ -33,6 +33,9 @@ class ReportingScaffoldDialog(QDialog):
 
         self._ui.maxNumberOfSamplingPoints.setText(str(displayItem.scaffold().maxNumberOfSamplePoints))
 
+        self._ui.streamlinesIntegrateForward.setChecked(displayItem.scaffold().streamlinesIntegrateForward)
+        self._ui.streamlinesIntegrateBackward.setChecked(displayItem.scaffold().streamlinesIntegrateBackward)
+
         super().open()
 
     @qasync.asyncSlot()
@@ -47,6 +50,9 @@ class ReportingScaffoldDialog(QDialog):
             progressDialog.open()
 
             self._displayItem.scaffold().maxNumberOfSamplePoints = maxNumberOfSamplePoints
+            self._displayItem.scaffold().streamlinesIntegrateForward = self._ui.streamlinesIntegrateForward.isChecked()
+            self._displayItem.scaffold().streamlinesIntegrateBackward = self._ui.streamlinesIntegrateBackward.isChecked()
+
             self._displayItem.scaffold().markUpdated()
 
             await self._displayItem.executePipeline()

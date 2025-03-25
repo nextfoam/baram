@@ -2593,8 +2593,6 @@
                                                     <xs:element name="vectorScaleFactor" type="xs:double" default="1.0"/>
                                                     <xs:element name="vectorOnRatio" type="xs:positiveInteger" default="1"/>
                                                     <xs:element name="vectorNumMax" type="xs:positiveInteger" default="1000"/>
-                                                    <xs:element name="integrateForward" type="xs:boolean" default="true"/>
-                                                    <xs:element name="integrateBackward" type="xs:boolean" default="false"/>
                                                     <xs:element name="stepSize" type="xs:double" default="0.001"/>
                                                     <xs:element name="maxSteps" type="xs:positiveInteger" default="2000"/>
                                                     <xs:element name="maxLength" type="xs:double" default="1.0"/>
@@ -2625,6 +2623,8 @@
                                                                             <xs:element name="showVectors" type="xs:boolean" default="false"/>
                                                                             <xs:element name="showStreamlines" type="xs:boolean" default="false"/>
                                                                             <xs:element name="maxNumberOfSamplePoints" type="xs:positiveInteger" default="100"/>
+                                                                            <xs:element name="streamlinesIntegrateForward" type="xs:boolean" default="true"/>
+                                                                            <xs:element name="streamlinesIntegrateBackward" type="xs:boolean" default="false"/>
                                                                         </xs:sequence>
                                                                     </xs:complexType>
                                                                 </xs:element>

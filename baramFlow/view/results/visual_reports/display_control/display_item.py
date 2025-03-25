@@ -357,7 +357,7 @@ class DisplayItem(QTreeWidgetItem):
         self._scaffoldActor.GetProperty().SetLineWidth(1.0)
 
     def _updateColorColumn(self):
-        if self.isActorVisible():
+        if self.isActorVisible() or self._properties.showVectors or self._properties.showStreamlines:
             if self._properties.colorMode == ColorMode.SOLID:
                 color = self._properties.color
                 self._colorWidget.setStyleSheet(
@@ -389,6 +389,8 @@ class DisplayItem(QTreeWidgetItem):
 
         self._reportingScaffold.markUpdated()
 
+        self._updateColorColumn()
+
     def hideVectors(self):
         if self._vectorActor is None:
             return
@@ -399,6 +401,8 @@ class DisplayItem(QTreeWidgetItem):
         self._vectorActor.SetVisibility(False)
 
         self._reportingScaffold.markUpdated()
+
+        self._updateColorColumn()
 
     def _prepareVectorFilterPipeline(self):
         self._vectorMask = vtkMaskPoints()
@@ -473,6 +477,8 @@ class DisplayItem(QTreeWidgetItem):
 
         self._reportingScaffold.markUpdated()
 
+        self._updateColorColumn()
+
     def hideStreamlines(self):
         if self._streamActor is None:
             return
@@ -483,6 +489,8 @@ class DisplayItem(QTreeWidgetItem):
         self._streamActor.SetVisibility(False)
 
         self._reportingScaffold.markUpdated()
+
+        self._updateColorColumn()
 
     def _prepareStreamFilterPipeline(self):
         self._streamMask = vtkMaskPoints()
@@ -528,11 +536,11 @@ class DisplayItem(QTreeWidgetItem):
 
         self._streamTracer.SetMaximumPropagation(float(self._contour.maxLength))
 
-        if self._contour.integrateForward and self._contour.integrateBackward:
+        if self._reportingScaffold.streamlinesIntegrateForward and self._reportingScaffold.streamlinesIntegrateBackward:
             self._streamTracer.SetIntegrationDirectionToBoth()
-        elif self._contour.integrateForward:
+        elif self._reportingScaffold.streamlinesIntegrateForward:
             self._streamTracer.SetIntegrationDirectionToForward()
-        elif self._contour.integrateBackward:
+        elif self._reportingScaffold.streamlinesIntegrateBackward:
             self._streamTracer.SetIntegrationDirectionToBackward()
         else:
             raise AssertionError

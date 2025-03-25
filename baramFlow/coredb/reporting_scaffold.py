@@ -37,6 +37,8 @@ class ReportingScaffold(QObject):
     showVectors: bool = False
     showStreamlines: bool = False
     maxNumberOfSamplePoints: int = 100
+    streamlinesIntegrateForward: bool = True
+    streamlinesIntegrateBackward: bool = False
 
     def __post_init__(self):
         super().__init__()
@@ -53,6 +55,8 @@ class ReportingScaffold(QObject):
         showVectors = (e.find('showVectors', namespaces=nsmap).text == 'true')
         showStreamlines = (e.find('showStreamlines', namespaces=nsmap).text == 'true')
         maxNumberOfSamplePoints = int(e.find('maxNumberOfSamplePoints', namespaces=nsmap).text)
+        streamlinesIntegrateForward = True if e.find('streamlinesIntegrateForward', namespaces=nsmap).text == 'true' else False
+        streamlinesIntegrateBackward = True if e.find('streamlinesIntegrateBackward', namespaces=nsmap).text == 'true' else False
 
 
         return ReportingScaffold(scaffoldUuid=scaffoldUuid,
@@ -64,7 +68,9 @@ class ReportingScaffold(QObject):
                           faces=faces,
                           showVectors=showVectors,
                           showStreamlines=showStreamlines,
-                          maxNumberOfSamplePoints=maxNumberOfSamplePoints)
+                          maxNumberOfSamplePoints=maxNumberOfSamplePoints,
+                          streamlinesIntegrateForward=streamlinesIntegrateForward,
+                          streamlinesIntegrateBackward=streamlinesIntegrateBackward)
 
     def toElement(self):
         string = (f'<scaffold xmlns="http://www.baramcfd.org/baram">'
@@ -78,6 +84,8 @@ class ReportingScaffold(QObject):
                   f'    <showVectors>{"true" if self.showVectors else "false"}</showVectors>'
                   f'    <showStreamlines>{"true" if self.showStreamlines else "false"}</showStreamlines>'
                   f'    <maxNumberOfSamplePoints>{str(self.maxNumberOfSamplePoints)}</maxNumberOfSamplePoints>'
+                  f'    <streamlinesIntegrateForward>{"true" if self.streamlinesIntegrateForward else "false"}</streamlinesIntegrateForward>'
+                  f'    <streamlinesIntegrateBackward>{"true" if self.streamlinesIntegrateBackward else "false"}</streamlinesIntegrateBackward>'
                   f'</scaffold>')
 
         return etree.fromstring(string)
