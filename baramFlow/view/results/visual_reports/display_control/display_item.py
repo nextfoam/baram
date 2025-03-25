@@ -3,7 +3,6 @@
 
 import asyncio
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum, IntEnum, auto
 from uuid import UUID
 
@@ -403,9 +402,9 @@ class DisplayItem(QTreeWidgetItem):
 
     def _prepareVectorFilterPipeline(self):
         self._vectorMask = vtkMaskPoints()
+        self._vectorMask.SetOnRatio(1)
         self._vectorMask.RandomModeOn()
-        self._vectorMask.SetRandomModeType(vtkMaskPoints.RANDOM_SAMPLING)  # Configuration ???
-        self._vectorMask.SetMaximumNumberOfPoints(100)  # Configuration
+        self._vectorMask.SetRandomModeType(vtkMaskPoints.SPATIALLY_STRATIFIED)
 
         self._vectorArrow = vtkArrowSource()
         self._vectorArrow.SetTipResolution(16)
@@ -440,10 +439,9 @@ class DisplayItem(QTreeWidgetItem):
             self._prepareVectorFilterPipeline()
 
         self._vectorMask.SetInputData(self._reportingScaffold.dataSet)
-
+        self._vectorMask.SetMaximumNumberOfPoints(self._reportingScaffold.maxNumberOfSamplePoints)
 
         self._vectorGlyph.SetScaleFactor(float(self._contour.vectorScaleFactor))
-
 
         solverFieldName = getSolverFieldName(self._contour.vectorField)
         self._vectorGlyph.SetInputArrayToProcess(Glyph3DArray.VECTORS.value, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, solverFieldName)
@@ -488,9 +486,9 @@ class DisplayItem(QTreeWidgetItem):
 
     def _prepareStreamFilterPipeline(self):
         self._streamMask = vtkMaskPoints()
+        self._streamMask.SetOnRatio(1)
         self._streamMask.RandomModeOn()
-        self._streamMask.SetRandomModeType(vtkMaskPoints.RANDOM_SAMPLING)
-        self._streamMask.SetMaximumNumberOfPoints(100)  # Configuration
+        self._streamMask.SetRandomModeType(vtkMaskPoints.SPATIALLY_STRATIFIED)
 
         self._streamTracer = vtkStreamTracer()
         self._streamTracer.SetComputeVorticity(True)
@@ -516,6 +514,7 @@ class DisplayItem(QTreeWidgetItem):
             self._prepareStreamFilterPipeline()
 
         self._streamMask.SetInputData(self._reportingScaffold.dataSet)
+        self._streamMask.SetMaximumNumberOfPoints(self._reportingScaffold.maxNumberOfSamplePoints)
 
         if self._contour.accuracyControl:
             self._streamTracer.SetIntegratorType(vtkStreamTracer.RUNGE_KUTTA45)
@@ -566,3 +565,22 @@ class DisplayItem(QTreeWidgetItem):
 
         self._streamActor.GetProperty().SetOpacity(self._properties.opacity)
         self._streamActor.SetVisibility(self._properties.showStreamlines)
+
+    async def executePipeline(self):
+        async with vtk_threads.vtkThreadLock:
+
+            holdRendering()
+            self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
+            await to_vtk_thread(self._scaffoldMapper.Update)
+            await asyncio.sleep(1)
+            self._scaffoldMapper.Update()
+
+            if self._properties.showVectors or self._vectorActor is not None:
+                await self._setUpVectors()
+
+            if self._properties.showStreamlines or self._streamActor is not None:
+                self._setUpStreamlines()
+
+            self._setField(self._contour.field, self._contour.useNodeValues)
+
+            resumeRendering()
