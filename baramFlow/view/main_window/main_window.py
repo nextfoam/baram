@@ -202,16 +202,13 @@ class MainWindow(QMainWindow):
     def load(self):
         self._project.opened()
 
-    @qasync.asyncClose()
-    async def closeEvent(self, event):
+    def closeEvent(self, event):
         if self._closeType is None:
             self._closeTriggered.emit(CloseType.EXIT_APP)
             event.ignore()
             return
 
         self._disconnectSignalsSlots()
-
-        await VisualReportsDB().close()
 
         self._caseManager.clear()
         Project.close()
@@ -376,6 +373,8 @@ class MainWindow(QMainWindow):
                 await self._save()
             elif confirm == QMessageBox.StandardButton.Cancel:
                 return
+
+        await VisualReportsDB().close()
 
         self._dockView.close()
         logging.getLogger().removeHandler(self._handler)

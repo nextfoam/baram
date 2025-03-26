@@ -17,5 +17,5 @@ class VisualReportWidget(QWidget):
     async def edit(self):
         raise NotImplementedError
 
-    def delete(self):
+    async def delete(self):
         raise NotImplementedError

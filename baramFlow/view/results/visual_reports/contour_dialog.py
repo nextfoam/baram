@@ -16,7 +16,7 @@ from baramFlow.coredb.visual_reports_db import VisualReportsDB
 from baramFlow.coredb.post_field import FIELD_TEXTS
 from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
 from baramFlow.view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
-from libbaram.openfoam.polymesh import collectInternalMesh2
+from libbaram.openfoam.polymesh import collectInternalMesh
 from widgets.async_message_box import AsyncMessageBox
 from widgets.time_slider import TimeSlider
 
@@ -144,7 +144,7 @@ class ContourDialog(QDialog):
             mBlock = reader.getOutput()
 
             self._contour.polyMesh = mBlock
-            self._contour.internalMesh = collectInternalMesh2(mBlock)
+            self._contour.internalMesh = collectInternalMesh(mBlock)
 
             for uuid in addedScaffolds:
                 scaffold = ScaffoldsDB().getScaffold(uuid)

@@ -89,28 +89,7 @@ def findBlock(mBlock: vtkMultiBlockDataSet, name: str, type_: int):
     return None
 
 
-def collectInternalMesh(mBlock: vtkMultiBlockDataSet) -> list[vtkDataObject]:
-    meshes = []
-    iterator: vtkCompositeDataIterator = mBlock.NewIterator()
-    while not iterator.IsDoneWithTraversal():
-        if not iterator.HasCurrentMetaData():
-            iterator.GoToNextItem()
-            continue
-
-        name = iterator.GetCurrentMetaData().Get(vtkCompositeDataSet.NAME())
-        if name != 'internalMesh':
-            iterator.GoToNextItem()
-            continue
-
-        dobj = iterator.GetCurrentDataObject()
-        if dobj is not None:
-            meshes.append(dobj)
-
-        iterator.GoToNextItem()
-
-    return meshes
-
-def collectInternalMesh2(mBlock: vtkMultiBlockDataSet) -> vtkUnstructuredGrid:
+def collectInternalMesh(mBlock: vtkMultiBlockDataSet) -> vtkUnstructuredGrid:
     combined = vtkAppendFilter()
     iterator: vtkCompositeDataIterator = mBlock.NewIterator()
     while not iterator.IsDoneWithTraversal():

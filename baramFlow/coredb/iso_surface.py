@@ -65,54 +65,45 @@ class IsoSurface(Scaffold):
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
         values = self._getValues()
-        polyData = vtkAppendPolyData()
-        meshes = collectInternalMesh(mBlock)
+        mesh = collectInternalMesh(mBlock)
 
-        for mesh in meshes:
-            if self.field == COORDINATE:
-                if self.vectorComponent == VectorComponent.MAGNITUDE:
-                    cutFunction = vtkSphere()
-                    cutFunction.SetCenter(0, 0, 0)
-                    cutFunction.SetRadius(0)
-                else:
-                    cutFunction = vtkPlane()
-                    cutFunction.SetOrigin(0, 0, 0)
-                    if self.vectorComponent == VectorComponent.X:
-                        cutFunction.SetNormal(1, 0, 0)
-                    elif self.vectorComponent == VectorComponent.Y:
-                        cutFunction.SetNormal(0, 1, 0)
-                    elif self.vectorComponent == VectorComponent.Z:
-                        cutFunction.SetNormal(0, 0, 1)
-                    else:  # ToDo: jake, How to handle this? Magnitude? Is it necessary?
-                        cutFunction.SetNormal(1, 0, 0)
-
-                filter = vtkCutter()
-                filter.SetInputData(mesh)
-                filter.SetCutFunction(cutFunction)
+        if self.field == COORDINATE:
+            if self.vectorComponent == VectorComponent.MAGNITUDE:
+                cutFunction = vtkSphere()
+                cutFunction.SetCenter(0, 0, 0)
+                cutFunction.SetRadius(0)
             else:
-                filter = vtkContourFilter()
-                filter.SetInputData(mesh)
-                solverFieldName = getSolverFieldName(self.field)
-                filter.SetInputArrayToProcess(0, 0, 0,
-                                                vtkDataObject.FIELD_ASSOCIATION_POINTS,
-                                                solverFieldName)
+                cutFunction = vtkPlane()
+                cutFunction.SetOrigin(0, 0, 0)
+                if self.vectorComponent == VectorComponent.X:
+                    cutFunction.SetNormal(1, 0, 0)
+                elif self.vectorComponent == VectorComponent.Y:
+                    cutFunction.SetNormal(0, 1, 0)
+                elif self.vectorComponent == VectorComponent.Z:
+                    cutFunction.SetNormal(0, 0, 1)
+                else:  # ToDo: jake, How to handle this? Magnitude? Is it necessary?
+                    cutFunction.SetNormal(1, 0, 0)
 
-            for i, v in enumerate(values):
-                filter.SetValue(i, v)
+            filter = vtkCutter()
+            filter.SetInputData(mesh)
+            filter.SetCutFunction(cutFunction)
+        else:
+            filter = vtkContourFilter()
+            filter.SetInputData(mesh)
+            solverFieldName = getSolverFieldName(self.field)
+            filter.SetInputArrayToProcess(0, 0, 0,
+                                            vtkDataObject.FIELD_ASSOCIATION_POINTS,
+                                            solverFieldName)
 
-            async with vtk_threads.vtkThreadLock:
-                holdRendering()
-                await to_vtk_thread(filter.Update)
-                resumeRendering()
-
-            polyData.AddInputData(filter.GetOutput())
+        for i, v in enumerate(values):
+            filter.SetValue(i, v)
 
         async with vtk_threads.vtkThreadLock:
             holdRendering()
-            await to_vtk_thread(polyData.Update)
+            await to_vtk_thread(filter.Update)
             resumeRendering()
 
-        return polyData.GetOutput()
+        return filter.GetOutput()
 
     def _getValues(self):
         values: list[float] = []
