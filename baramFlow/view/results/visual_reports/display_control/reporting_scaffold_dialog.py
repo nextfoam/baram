@@ -6,6 +6,7 @@ from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QDialog
 import qasync
 
+from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 from baramFlow.view.results.visual_reports.display_control.display_item import DisplayItem
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
@@ -34,10 +35,12 @@ class ReportingScaffoldDialog(QDialog):
     def open(self, displayItem: DisplayItem):
         self._displayItem = displayItem
 
-        self._ui.maxNumberOfSamplingPoints.setText(str(displayItem.scaffold().maxNumberOfSamplePoints))
+        rs = displayItem.reportingScaffold
 
-        self._ui.streamlinesIntegrateForward.setChecked(displayItem.scaffold().streamlinesIntegrateForward)
-        self._ui.streamlinesIntegrateBackward.setChecked(displayItem.scaffold().streamlinesIntegrateBackward)
+        self._ui.maxNumberOfSamplingPoints.setText(str(rs.maxNumberOfSamplePoints))
+
+        self._ui.streamlinesIntegrateForward.setChecked(rs.streamlinesIntegrateForward)
+        self._ui.streamlinesIntegrateBackward.setChecked(rs.streamlinesIntegrateBackward)
 
         super().open()
 
@@ -58,15 +61,17 @@ class ReportingScaffoldDialog(QDialog):
 
         maxNumberOfSamplePoints = int(self._ui.maxNumberOfSamplingPoints.text())
 
-        if maxNumberOfSamplePoints != self._displayItem.scaffold().maxNumberOfSamplePoints:
+        rs = self._displayItem.reportingScaffold
+
+        if maxNumberOfSamplePoints != rs.maxNumberOfSamplePoints:
             progressDialog = ProgressDialog(self, self.tr('Updating Graphics'))
             progressDialog.open()
 
-            self._displayItem.scaffold().maxNumberOfSamplePoints = maxNumberOfSamplePoints
-            self._displayItem.scaffold().streamlinesIntegrateForward = self._ui.streamlinesIntegrateForward.isChecked()
-            self._displayItem.scaffold().streamlinesIntegrateBackward = self._ui.streamlinesIntegrateBackward.isChecked()
+            rs.maxNumberOfSamplePoints = maxNumberOfSamplePoints
+            rs.streamlinesIntegrateForward = self._ui.streamlinesIntegrateForward.isChecked()
+            rs.streamlinesIntegrateBackward = self._ui.streamlinesIntegrateBackward.isChecked()
 
-            await self._displayItem.scaffold().markUpdated()
+            await rs.markUpdated()
 
             await self._displayItem.executePipeline()
 

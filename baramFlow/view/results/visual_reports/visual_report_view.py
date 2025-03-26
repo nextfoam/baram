@@ -251,23 +251,23 @@ class VisualReportView(RenderingView):
 
         self._selectedItems = items
 
-        self._showAction.setVisible(not all([item.properties().visibility for item in items]))
-        self._hideAction.setVisible(not all([not item.properties().visibility for item in items]))
+        self._showAction.setVisible(not all([item.visibility for item in items]))
+        self._hideAction.setVisible(not all([not item.visibility for item in items]))
 
-        self._colorAction.setEnabled(not all([item.properties().colorMode == ColorMode.FIELD for item in items]))
+        self._colorAction.setEnabled(not all([item.colorMode == ColorMode.FIELD for item in items]))
 
-        self._solidColorAction.setChecked(all([item.properties().colorMode == ColorMode.SOLID for item in items]))
-        self._fieldColorAction.setChecked(all([item.properties().colorMode == ColorMode.FIELD for item in items]))
+        self._solidColorAction.setChecked(all([item.colorMode == ColorMode.SOLID for item in items]))
+        self._fieldColorAction.setChecked(all([item.colorMode == ColorMode.FIELD for item in items]))
 
-        self._wireFrameDisplayAction.setChecked(all([item.properties().displayMode == DisplayMode.WIREFRAME for item in items]))
-        self._surfaceDisplayAction.setChecked(all([item.properties().displayMode == DisplayMode.SURFACE for item in items]))
-        self._surfaceEdgeDisplayAction.setChecked(all([item.properties().displayMode == DisplayMode.SURFACE_EDGE for item in items]))
+        self._wireFrameDisplayAction.setChecked(all([item.displayMode == DisplayMode.WIREFRAME for item in items]))
+        self._surfaceDisplayAction.setChecked(all([item.displayMode == DisplayMode.SURFACE for item in items]))
+        self._surfaceEdgeDisplayAction.setChecked(all([item.displayMode == DisplayMode.SURFACE_EDGE for item in items]))
 
-        self._showVectorsAction.setVisible(not all([item.properties().showVectors for item in items]))
-        self._hideVectorsAction.setVisible(not all([not item.properties().showVectors for item in items]))
+        self._showVectorsAction.setVisible(not all([item.showVectors for item in items]))
+        self._hideVectorsAction.setVisible(not all([not item.showVectors for item in items]))
 
-        self._showStreamsAction.setVisible(not all([item.properties().showStreamlines for item in items]))
-        self._hideStreamsAction.setVisible(not all([not item.properties().showStreamlines for item in items]))
+        self._showStreamsAction.setVisible(not all([item.showStreamlines for item in items]))
+        self._hideStreamsAction.setVisible(not all([not item.showStreamlines for item in items]))
 
         self._moreAction.setVisible(len(items)==1)  # This, detailed setting, is configured one by one because this may have complex settings.
 
@@ -446,8 +446,6 @@ class VisualReportView(RenderingView):
         self._colorDialog = QColorDialog(self)
         self._reportingScaffoldDialog = ReportingScaffoldDialog(self)
 
-        self._properties = None
-
         self._showAction: QAction = menu.addAction(self.tr('Show'), self._showActors)
 
         self._hideAction: QAction = menu.addAction(self.tr('Hide'), self._hideActors)
@@ -490,8 +488,8 @@ class VisualReportView(RenderingView):
         self._moreAction: QAction = menu.addAction(self.tr('More...'), self._openReportingScaffoldDialog)
 
     def _openOpacityDialog(self):
-        if all([item.properties().opacity == self._selectedItems[0].properties().opacity for item in self._selectedItems]):
-            opacity = self._selectedItems[0].properties().opacity
+        if all([item.opacity == self._selectedItems[0].opacity for item in self._selectedItems]):
+            opacity = self._selectedItems[0].opacity
         else:
             opacity = 0.9
 
@@ -499,8 +497,8 @@ class VisualReportView(RenderingView):
         self._opacityDialog.open()
 
     def _openColorDialog(self):
-        if all([item.properties().color == self._selectedItems[0].properties().color for item in self._selectedItems]):
-            color = self._selectedItems[0].properties().color
+        if all([item.color == self._selectedItems[0].color for item in self._selectedItems]):
+            color = self._selectedItems[0].color
         else:
             color = Qt.GlobalColor.white
 
