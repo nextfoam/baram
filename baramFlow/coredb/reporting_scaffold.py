@@ -33,8 +33,8 @@ class ReportingScaffold:
     color: QColor = QColor.fromString('#FFFFFF')
     edges: bool = False
     faces: bool = True
-    showVectors: bool = False
-    showStreamlines: bool = False
+    vectorsOn: bool = False
+    streamlinesOn: bool = False
     maxNumberOfSamplePoints: int = 100
     streamlinesIntegrateForward: bool = True
     streamlinesIntegrateBackward: bool = False
@@ -51,8 +51,8 @@ class ReportingScaffold:
         color = QColor.fromString(e.find('color', namespaces=nsmap).text)
         edges = (e.find('edges', namespaces=nsmap).text == 'true')
         faces = (e.find('faces', namespaces=nsmap).text == 'true')
-        showVectors = (e.find('showVectors', namespaces=nsmap).text == 'true')
-        showStreamlines = (e.find('showStreamlines', namespaces=nsmap).text == 'true')
+        vectorsOn = (e.find('vectorsOn', namespaces=nsmap).text == 'true')
+        streamlinesOn = (e.find('streamlinesOn', namespaces=nsmap).text == 'true')
         maxNumberOfSamplePoints = int(e.find('maxNumberOfSamplePoints', namespaces=nsmap).text)
         streamlinesIntegrateForward = True if e.find('streamlinesIntegrateForward', namespaces=nsmap).text == 'true' else False
         streamlinesIntegrateBackward = True if e.find('streamlinesIntegrateBackward', namespaces=nsmap).text == 'true' else False
@@ -65,8 +65,8 @@ class ReportingScaffold:
                           color=color,
                           edges=edges,
                           faces=faces,
-                          showVectors=showVectors,
-                          showStreamlines=showStreamlines,
+                          vectorsOn=vectorsOn,
+                          streamlinesOn=streamlinesOn,
                           maxNumberOfSamplePoints=maxNumberOfSamplePoints,
                           streamlinesIntegrateForward=streamlinesIntegrateForward,
                           streamlinesIntegrateBackward=streamlinesIntegrateBackward)
@@ -80,8 +80,8 @@ class ReportingScaffold:
                   f'    <color>{self.color.name()}</color>'
                   f'    <edges>{"true" if self.edges else "false"}</edges>'
                   f'    <faces>{"true" if self.faces else "false"}</faces>'
-                  f'    <showVectors>{"true" if self.showVectors else "false"}</showVectors>'
-                  f'    <showStreamlines>{"true" if self.showStreamlines else "false"}</showStreamlines>'
+                  f'    <vectorsOn>{"true" if self.vectorsOn else "false"}</vectorsOn>'
+                  f'    <streamlinesOn>{"true" if self.streamlinesOn else "false"}</streamlinesOn>'
                   f'    <maxNumberOfSamplePoints>{str(self.maxNumberOfSamplePoints)}</maxNumberOfSamplePoints>'
                   f'    <streamlinesIntegrateForward>{"true" if self.streamlinesIntegrateForward else "false"}</streamlinesIntegrateForward>'
                   f'    <streamlinesIntegrateBackward>{"true" if self.streamlinesIntegrateBackward else "false"}</streamlinesIntegrateBackward>'

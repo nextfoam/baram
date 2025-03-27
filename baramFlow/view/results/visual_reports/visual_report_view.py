@@ -263,11 +263,11 @@ class VisualReportView(RenderingView):
         self._surfaceDisplayAction.setChecked(all([item.displayMode == DisplayMode.SURFACE for item in items]))
         self._surfaceEdgeDisplayAction.setChecked(all([item.displayMode == DisplayMode.SURFACE_EDGE for item in items]))
 
-        self._showVectorsAction.setVisible(not all([item.showVectors for item in items]))
-        self._hideVectorsAction.setVisible(not all([not item.showVectors for item in items]))
+        self._showVectorsAction.setVisible(not all([item.vectorsOn for item in items]))
+        self._hideVectorsAction.setVisible(not all([not item.vectorsOn for item in items]))
 
-        self._showStreamsAction.setVisible(not all([item.showStreamlines for item in items]))
-        self._hideStreamsAction.setVisible(not all([not item.showStreamlines for item in items]))
+        self._showStreamsAction.setVisible(not all([item.streamlinesOn for item in items]))
+        self._hideStreamsAction.setVisible(not all([not item.streamlinesOn for item in items]))
 
         self._moreAction.setVisible(len(items)==1)  # This, detailed setting, is configured one by one because this may have complex settings.
 
