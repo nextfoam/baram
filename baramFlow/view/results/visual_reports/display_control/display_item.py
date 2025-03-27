@@ -21,9 +21,8 @@ from baramFlow.coredb.post_field import Field
 from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 from baramFlow.openfoam.solver_field import getSolverFieldName
 
-from libbaram.vtk_threads import holdRendering, resumeRendering, to_vtk_thread
+from libbaram.vtk_threads import vtk_run_in_thread
 from widgets.rendering.rendering_widget import RenderingWidget
-from libbaram import vtk_threads
 
 
 class ColorMode(Enum):
@@ -118,22 +117,17 @@ class DisplayItem(QTreeWidgetItem):
         self.setText(Column.NAME_COLUMN, self._reportingScaffold.name)
 
 
-        async with vtk_threads.vtkThreadLock:
+        self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
 
-            self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
-            # holdRendering()
-            # await to_vtk_thread(self._scaffoldMapper.Update)
-            # await asyncio.sleep(1)
-            # resumeRendering()
-            self._scaffoldMapper.Update()
+        await vtk_run_in_thread(self._scaffoldMapper.Update)
 
-            if self._reportingScaffold.vectorsOn or self._vectorActor is not None:
-                await self._setUpVectors()
+        if self._reportingScaffold.vectorsOn or self._vectorActor is not None:
+            await self._setUpVectors()
 
-            if self._reportingScaffold.streamlinesOn or self._streamActor is not None:
-                self._setUpStreamlines()
+        if self._reportingScaffold.streamlinesOn or self._streamActor is not None:
+            await self._setUpStreamlines()
 
-            self._setField(self._contour.field, self._contour.useNodeValues)
+        await self._setField(self._contour.field, self._contour.useNodeValues)
 
 
     # def setField(self, field: Field, useNodeValues: bool):
@@ -146,7 +140,7 @@ class DisplayItem(QTreeWidgetItem):
 
     #     self._setField(field, useNodeValues)
 
-    def _setField(self, field: Field, useNodeValues: bool):
+    async def _setField(self, field: Field, useNodeValues: bool):
         if useNodeValues:
             self._scaffoldMapper.SetScalarModeToUsePointFieldData()
         else:
@@ -155,15 +149,15 @@ class DisplayItem(QTreeWidgetItem):
         solverFieldName = getSolverFieldName(field)
         self._scaffoldMapper.SelectColorArray(solverFieldName)
 
-        self._scaffoldMapper.Update()
+        await vtk_run_in_thread(self._scaffoldMapper.Update)
 
         if self._vectorActor is not None:
             self._vectorMapper.SelectColorArray(solverFieldName)
-            self._vectorMapper.Update()
+            await vtk_run_in_thread(self._vectorMapper.Update)
 
         if self._streamActor is not None:
             self._streamMapper.SelectColorArray(solverFieldName)
-            self._streamMapper.Update()
+            await vtk_run_in_thread(self._streamMapper.Update)
 
     @property
     def opacity(self) -> float:
@@ -412,7 +406,7 @@ class DisplayItem(QTreeWidgetItem):
         solverFieldName = getSolverFieldName(self._contour.field)
         self._vectorGlyph.SetInputArrayToProcess(Glyph3DArray.COLOR_SCALARS.value, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, solverFieldName)
 
-        self._vectorGlyph.Update()
+        await vtk_run_in_thread(self._vectorGlyph.Update)
 
         self._vectorMapper.SetInputData(self._vectorGlyph.GetOutput())
 
@@ -423,14 +417,14 @@ class DisplayItem(QTreeWidgetItem):
 
         self._vectorMapper.SelectColorArray(solverFieldName)
 
-        self._vectorMapper.Update()
+        vtk_run_in_thread(self._vectorMapper.Update)
 
         self._vectorActor.GetProperty().SetOpacity(self._reportingScaffold.opacity)
         self._vectorActor.SetVisibility(self._reportingScaffold.vectorsOn)
 
     async def showStreamlines(self):
         if self._streamActor is None:
-            self._setUpStreamlines()
+            await self._setUpStreamlines()
 
         self._reportingScaffold.streamlinesOn = True
 
@@ -477,7 +471,7 @@ class DisplayItem(QTreeWidgetItem):
 
         self._view.addActor(self._streamActor)
 
-    def _setUpStreamlines(self):
+    async def _setUpStreamlines(self):
         if self._streamActor is None:
             self._prepareStreamFilterPipeline()
 
@@ -520,7 +514,7 @@ class DisplayItem(QTreeWidgetItem):
         else:
             raise AssertionError
 
-        self._streamDeco.Update()
+        await vtk_run_in_thread(self._streamDeco.Update)
 
         self._streamMapper.SetInputData(self._streamDeco.GetOutput())
 
@@ -532,26 +526,21 @@ class DisplayItem(QTreeWidgetItem):
         solverFieldName = getSolverFieldName(self._contour.field)
         self._streamMapper.SelectColorArray(solverFieldName)
 
-        self._streamMapper.Update()
+        await vtk_run_in_thread(self._streamMapper.Update)
 
         self._streamActor.GetProperty().SetOpacity(self._reportingScaffold.opacity)
         self._streamActor.SetVisibility(self._reportingScaffold.streamlinesOn)
 
     async def executePipeline(self):
-        async with vtk_threads.vtkThreadLock:
+        self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
 
-            holdRendering()
-            self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
-            #await to_vtk_thread(self._scaffoldMapper.Update)
-            #await asyncio.sleep(1)
-            self._scaffoldMapper.Update()
+        vtk_run_in_thread(self._scaffoldMapper.Update)
 
-            if self._reportingScaffold.vectorsOn or self._vectorActor is not None:
-                await self._setUpVectors()
+        if self._reportingScaffold.vectorsOn or self._vectorActor is not None:
+            await self._setUpVectors()
 
-            if self._reportingScaffold.streamlinesOn or self._streamActor is not None:
-                self._setUpStreamlines()
+        if self._reportingScaffold.streamlinesOn or self._streamActor is not None:
+            await self._setUpStreamlines()
 
-            self._setField(self._contour.field, self._contour.useNodeValues)
+        await self._setField(self._contour.field, self._contour.useNodeValues)
 
-            resumeRendering()

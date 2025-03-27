@@ -14,7 +14,7 @@ vtkThreadLock: asyncio.Lock = None  # it should be initialized in main as soon a
 
 
 # Copied from asyncio.to_thread
-async def to_vtk_thread(func, /, *args, **kwargs):
+async def _to_vtk_thread(func, /, *args, **kwargs):
     loop = asyncio.get_running_loop()
     ctx = contextvars.copy_context()
     func_call = functools.partial(ctx.run, func, *args, **kwargs)
@@ -54,3 +54,10 @@ def resumeRendering():
 
 def isRenderingHold():
     return _holdRendering
+
+
+async def vtk_run_in_thread(func, /, *args, **kwargs):
+    async with vtkThreadLock:
+        holdRendering()
+        await _to_vtk_thread(func, *args, **kwargs)
+        resumeRendering()

@@ -11,8 +11,7 @@ from vtkmodules.vtkCommonCore import vtkCommand
 
 from baramFlow.openfoam.file_system import FileSystem
 
-from libbaram.vtk_threads import holdRendering, resumeRendering, to_vtk_thread
-from libbaram import vtk_threads
+from libbaram.vtk_threads import vtk_run_in_thread
 
 logger = logging.getLogger(__name__)
 
@@ -96,10 +95,7 @@ class OpenFOAMReader(QObject):
 
         self._reader.SetFileName(str(FileSystem.foamFilePath()))
 
-        async with vtk_threads.vtkThreadLock:
-            holdRendering()
-            await to_vtk_thread(self._reader.Update)
-            resumeRendering()
+        await vtk_run_in_thread(self._reader.Update)
 
         for i in range(self._reader.GetNumberOfCellArrays()):
             name = self._reader.GetCellArrayName(i)
@@ -113,10 +109,7 @@ class OpenFOAMReader(QObject):
             name = self._reader.GetPatchArrayName(i)
             self._reader.SetPatchArrayStatus(name, 1)
 
-        async with vtk_threads.vtkThreadLock:
-            holdRendering()
-            await to_vtk_thread(self._reader.Update)
-            resumeRendering()
+        await vtk_run_in_thread(self._reader.Update)
 
     def _readerProgressEvent(self, caller: vtkPOpenFOAMReader, ev):
         self._vtkReaderProgress.emit(self.tr('Loading Mesh : ') + f'{int(float(caller.GetProgress()) * 100)}%')
@@ -140,10 +133,7 @@ class OpenFOAMReader(QObject):
         return self._reader.GetTimeValue()
 
     async def Update(self):
-        async with vtk_threads.vtkThreadLock:
-            holdRendering()
-            await to_vtk_thread(self._reader.Update)
-            resumeRendering()
+        await vtk_run_in_thread(self._reader.Update)
 
     def refresh(self):
         if not self._acquired:

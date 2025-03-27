@@ -33,6 +33,7 @@ from baramFlow.view.widgets.rendering_view import RenderingView
 from widgets.overlay_frame import OverlayFrame
 
 from baramFlow.view.results.visual_reports.display_control.display_item import ColorMode, DisplayMode, DisplayItem, Column
+from widgets.progress_dialog import ProgressDialog
 
 
 class VisualReportView(RenderingView):
@@ -369,10 +370,15 @@ class VisualReportView(RenderingView):
 
     @qasync.asyncSlot()
     async def _showVectors(self):
+        progressDialog = ProgressDialog(self, self.tr('Vectors'))
+        progressDialog.setLabelText(self.tr('Setting up Vectors...'))
+        progressDialog.open()
+
         for item in self._selectedItems:
                 await item.showVectors()
 
         self._view.refresh()
+        progressDialog.close()
 
     @qasync.asyncSlot()
     async def _hideVectors(self):
@@ -383,10 +389,16 @@ class VisualReportView(RenderingView):
 
     @qasync.asyncSlot()
     async def _showStreams(self):
+        progressDialog = ProgressDialog(self, self.tr('Streamlines'))
+        progressDialog.setLabelText(self.tr('Setting up Streamlines...'))
+        progressDialog.open()
+
         for item in self._selectedItems:
             await item.showStreamlines()
 
         self._view.refresh()
+
+        progressDialog.close()
 
     @qasync.asyncSlot()
     async def _hideStreams(self):

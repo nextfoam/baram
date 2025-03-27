@@ -15,8 +15,7 @@ from baramFlow.coredb.post_field import VELOCITY
 from baramFlow.coredb.scaffold import Scaffold
 from baramFlow.openfoam.solver_field import getSolverFieldName
 from libbaram.openfoam.polymesh import collectInternalMesh
-from libbaram.vtk_threads import holdRendering, resumeRendering, to_vtk_thread
-from libbaram import vtk_threads
+from libbaram.vtk_threads import vtk_run_in_thread
 
 
 @dataclass
@@ -98,10 +97,7 @@ class IsoSurface(Scaffold):
         for i, v in enumerate(values):
             filter.SetValue(i, v)
 
-        async with vtk_threads.vtkThreadLock:
-            holdRendering()
-            await to_vtk_thread(filter.Update)
-            resumeRendering()
+        await vtk_run_in_thread(filter.Update)
 
         return filter.GetOutput()
 
