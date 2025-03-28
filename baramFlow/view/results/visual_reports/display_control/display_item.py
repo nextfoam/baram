@@ -115,20 +115,7 @@ class DisplayItem(QTreeWidgetItem):
 
     async def updateScaffoldInfo(self):
         self.setText(Column.NAME_COLUMN, self._reportingScaffold.name)
-
-
-        self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
-
-        await vtk_run_in_thread(self._scaffoldMapper.Update)
-
-        if self._reportingScaffold.vectorsOn or self._vectorActor is not None:
-            await self._setUpVectors()
-
-        if self._reportingScaffold.streamlinesOn or self._streamActor is not None:
-            await self._setUpStreamlines()
-
-        await self._setField(self._contour.field, self._contour.useNodeValues)
-
+        await self.executePipeline()
 
     # def setField(self, field: Field, useNodeValues: bool):
     #     if field == self._field and useNodeValues == self._useNodeValues:
@@ -534,7 +521,7 @@ class DisplayItem(QTreeWidgetItem):
     async def executePipeline(self):
         self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
 
-        vtk_run_in_thread(self._scaffoldMapper.Update)
+        await vtk_run_in_thread(self._scaffoldMapper.Update)
 
         if self._reportingScaffold.vectorsOn or self._vectorActor is not None:
             await self._setUpVectors()

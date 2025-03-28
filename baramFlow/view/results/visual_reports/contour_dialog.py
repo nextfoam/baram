@@ -9,15 +9,19 @@ from PySide6.QtWidgets import QDialog
 import qasync
 
 from baramFlow.coredb.contour import Contour, StreamlineType
-from baramFlow.coredb.post_field import Field, FieldType, getAvailableFields
+from baramFlow.coredb.post_field import CollateralField, Field, FieldType, getAvailableFields
 from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_reports_db import VisualReportsDB
 from baramFlow.coredb.post_field import FIELD_TEXTS
+from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.solver_field import getSolverFieldName
 from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
 from baramFlow.view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
+from libbaram.openfoam.collateral_fields import calculateCollateralField
 from libbaram.openfoam.polymesh import collectInternalMesh
 from widgets.async_message_box import AsyncMessageBox
+from widgets.progress_dialog import ProgressDialog
 from widgets.time_slider import TimeSlider
 
 from .contour_dialog_ui import Ui_ContourDialog
@@ -109,8 +113,36 @@ class ContourDialog(QDialog):
         if not await self._valid():
             return
 
+        fieldValueNeedUpdate = False
+
+        time = self._timeSlider.getCurrentTime()
+        field: Field = self._ui.field.currentData()
+
+        progressDialog = ProgressDialog(self, self.tr('Graphics Parameters'))
+        progressDialog.setLabelText(self.tr('Applying Graphics parameters...'))
+        progressDialog.open()
+
+        if isinstance(field, CollateralField):
+            solverFieldName = getSolverFieldName(field)
+            if not FileSystem.fieldExists(time, solverFieldName):
+                progressDialog.setLabelText(self.tr('Calculating Collateral Field...'))
+
+                rc = await calculateCollateralField([field], [time])
+
+                if rc != 0:
+                    progressDialog.finish(self.tr('Calculation failed'))
+                    return
+
+                fieldValueNeedUpdate = True
+
+        progressDialog.setLabelText(self.tr('Applying Graphics parameters...'))
+
         self._contour.name = self._ui.name.text()
-        self._contour.time = self._timeSlider.getCurrentTime()
+
+        if self._contour.time != time:
+            self._contour.time = time
+            fieldValueNeedUpdate = True
+
         self._contour.field = self._ui.field.currentData()
         self._contour.fieldComponent = self._ui.fieldComponent.currentData()
 
@@ -138,13 +170,24 @@ class ContourDialog(QDialog):
             del self._contour.reportingScaffolds[uuid]
             await self._contour.notifyReportingScaffoldRemoved(uuid)
 
+
+        progressDialog.setLabelText(self.tr('Updading Graphics...'))
+
         async with OpenFOAMReader() as reader:
+            if fieldValueNeedUpdate:
+                await reader.refresh()
+
             reader.setTimeValue(float(self._contour.time))
-            await reader.Update()
+            await reader.update()
             mBlock = reader.getOutput()
 
             self._contour.polyMesh = mBlock
             self._contour.internalMesh = collectInternalMesh(mBlock)
+
+            if fieldValueNeedUpdate:  # field values in internalMesh have changed
+                for uuid, rs in self._contour.reportingScaffolds.items():
+                    scaffold = ScaffoldsDB().getScaffold(uuid)
+                    rs.dataSet = await scaffold.getDataSet(mBlock)
 
             for uuid in addedScaffolds:
                 scaffold = ScaffoldsDB().getScaffold(uuid)
@@ -152,6 +195,8 @@ class ContourDialog(QDialog):
                 rs = ReportingScaffold(scaffoldUuid=uuid, dataSet=dataSet)
                 self._contour.reportingScaffolds[uuid] = rs
                 await self._contour.notifyReportingScaffoldAdded(uuid)
+
+        progressDialog.close()
 
         super().accept()
 

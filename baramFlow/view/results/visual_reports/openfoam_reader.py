@@ -74,7 +74,6 @@ class OpenFOAMReader(QObject):
         if caseRoot is None:
             return
 
-        print(f'root {caseRoot}')
         self._reader = vtkPOpenFOAMReader()
 
         self._reader.EnableAllCellArrays()
@@ -132,14 +131,12 @@ class OpenFOAMReader(QObject):
 
         return self._reader.GetTimeValue()
 
-    async def Update(self):
+    async def update(self):
         await vtk_run_in_thread(self._reader.Update)
 
-    def refresh(self):
+    async def refresh(self):
         if not self._acquired:
             raise AssertionError
 
         self._reader.SetRefresh()
         self._reader.UpdateInformation()
-
-        self._reader.GetTimeValues()

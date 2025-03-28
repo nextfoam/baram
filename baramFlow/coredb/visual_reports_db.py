@@ -72,7 +72,7 @@ class VisualReportsDB:
 
             async with OpenFOAMReader() as reader:
                 reader.setTimeValue(float(c.time))
-                await reader.Update()
+                await reader.update()
                 mBlock = reader.getOutput()
                 c.polyMesh = mBlock
                 c.internalMesh = collectInternalMesh(mBlock)
