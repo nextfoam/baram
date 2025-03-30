@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
+from baramFlow.coredb.disk_scaffold import DiskScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.libdb import nsmap
 
@@ -15,7 +16,7 @@ from libbaram.async_signal import AsyncSignal
 
 BOUNDARY_SCAFFOLD_NAME_PREFIX = 'boundary'
 ISO_SURFACE_NAME_PREFIX = 'iso-surface'
-
+DISK_SCAFFOLD_NAME_PREFIX = 'disk-scaffold'
 
 _mutex = Lock()
 
@@ -62,6 +63,12 @@ class ScaffoldsDB:
             scaffolds[s.uuid] = s
             s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
 
+        disks = parent.find('diskScaffolds', namespaces=nsmap)
+        for e in disks.findall('diskScaffold', namespaces=nsmap):
+            s = DiskScaffold.fromElement(e)
+            scaffolds[s.uuid] = s
+            s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
+
         return scaffolds
 
     def getScaffolds(self):
@@ -81,6 +88,8 @@ class ScaffoldsDB:
             parent = self.SCAFFOLDS_PATH + '/boundaries'
         elif isinstance(scaffold, IsoSurface):
             parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
+        elif isinstance(scaffold, DiskScaffold):
+            parent = self.SCAFFOLDS_PATH + '/diskScaffolds'
         else:
             raise AssertionError
 
@@ -100,6 +109,8 @@ class ScaffoldsDB:
             parent = self.SCAFFOLDS_PATH + '/boundaries'
         elif isinstance(scaffold, IsoSurface):
             parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
+        elif isinstance(scaffold, DiskScaffold):
+            parent = self.SCAFFOLDS_PATH + '/diskScaffolds'
         else:
             raise AssertionError
 
@@ -120,6 +131,8 @@ class ScaffoldsDB:
             parent = self.SCAFFOLDS_PATH + '/boundaries'
         elif isinstance(scaffold, IsoSurface):
             parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
+        elif isinstance(scaffold, DiskScaffold):
+            parent = self.SCAFFOLDS_PATH + '/diskScaffolds'
         else:
             raise AssertionError
 
@@ -149,6 +162,9 @@ class ScaffoldsDB:
 
     def getNewIsoSurfaceName(self) -> str:
         return self._getNewScaffoldName(ISO_SURFACE_NAME_PREFIX)
+
+    def getNewDiskName(self) -> str:
+        return self._getNewScaffoldName(DISK_SCAFFOLD_NAME_PREFIX)
 
     def _getNewScaffoldName(self, prefix: str) -> str:
         suffixes = [scaffold.name[len(prefix):] for scaffold in self._scaffolds.values() if scaffold.name.startswith(prefix)]

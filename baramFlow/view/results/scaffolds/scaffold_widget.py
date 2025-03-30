@@ -8,10 +8,12 @@ from PySide6.QtWidgets import QWidget
 
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
+from baramFlow.coredb.disk_scaffold import DiskScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.scaffolds_db import Scaffold, ScaffoldsDB
 from baramFlow.coredb.post_field import FIELD_TEXTS
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
+from baramFlow.view.results.scaffolds.disk_scaffold_dialog import DiskScaffoldDialog
 from baramFlow.view.results.scaffolds.iso_surface_dialog import IsoSurfaceDialog
 
 from .scaffold_widget_ui import Ui_ScaffoldWidget
@@ -88,6 +90,22 @@ class IsoSurfaceWidget(ScaffoldWidget):
 
     def edit(self):
         self._dialog = IsoSurfaceDialog(self, self._scaffold)
+        self._dialog.accepted.connect(self._editAccepted)
+        self._dialog.open()
+
+
+class DiskScaffoldWidget(ScaffoldWidget):
+    def __init__(self, scaffold: Scaffold):
+        super().__init__(scaffold)
+
+    def load(self):
+        scaffold: DiskScaffold = self._scaffold
+        self._ui.name.setText(scaffold.name)
+
+        self._ui.type.setText(f'Disk of radius <b>{scaffold.radius}</b> at({scaffold.centerX}, {scaffold.centerY}, {scaffold.centerZ})')
+
+    def edit(self):
+        self._dialog = DiskScaffoldDialog(self, self._scaffold)
         self._dialog.accepted.connect(self._editAccepted)
         self._dialog.open()
 

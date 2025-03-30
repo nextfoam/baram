@@ -404,7 +404,7 @@ class DisplayItem(QTreeWidgetItem):
 
         self._vectorMapper.SelectColorArray(solverFieldName)
 
-        vtk_run_in_thread(self._vectorMapper.Update)
+        await vtk_run_in_thread(self._vectorMapper.Update)
 
         self._vectorActor.GetProperty().SetOpacity(self._reportingScaffold.opacity)
         self._vectorActor.SetVisibility(self._reportingScaffold.vectorsOn)

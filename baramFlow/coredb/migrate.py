@@ -883,9 +883,12 @@ def _version_9(root: etree.Element):
         index = root.index(root.find('monitors', namespaces=_nsmap))
         p = etree.Element(f'{{{_ns}}}scaffolds')
         root.insert(index + 1, p)
+
         e = etree.Element(f'{{{_ns}}}boundaries')
         p.append(e)
         e = etree.Element(f'{{{_ns}}}isoSurfaces')
+        p.append(e)
+        e = etree.Element(f'{{{_ns}}}diskScaffolds')
         p.append(e)
 
     if root.find('visualReports', namespaces=_nsmap) is None:

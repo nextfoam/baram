@@ -2534,6 +2534,23 @@
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
+                            <xs:element name="diskScaffolds">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="diskScaffold" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="center" type="vector"/>
+                                                    <xs:element name="normal" type="vector"/>
+                                                    <xs:element name="radius" type="inputNumberType" default="0"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>

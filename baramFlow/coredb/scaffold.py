@@ -13,6 +13,7 @@ from libbaram.async_signal import AsyncSignal
 class ScaffoldType(Enum):
     BOUNDARY	    = 'boundary'
     ISO_SURFACE	    = 'isoSurface'
+    DISK_SCAFFOLD   = 'diskScaffold'
 
 
 @dataclass
