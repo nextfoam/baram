@@ -2544,7 +2544,10 @@
                                                     <xs:element name="name" type="xs:string"/>
                                                     <xs:element name="center" type="vector"/>
                                                     <xs:element name="normal" type="vector"/>
-                                                    <xs:element name="radius" type="inputNumberType" default="0"/>
+                                                    <xs:element name="outerRadius" type="positive" default="1"/>
+                                                    <xs:element name="innerRadius" type="nonNegative" default="0"/>
+                                                    <xs:element name="radialSamples" type="xs:positiveInteger" default="10"/>
+                                                    <xs:element name="circumferentialSamples" type="xs:positiveInteger" default="20"/>
                                                 </xs:sequence>
                                             </xs:complexType>
                                         </xs:element>

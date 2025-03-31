@@ -59,17 +59,21 @@ class ReportingScaffoldDialog(QDialog):
         if not await self._valid():
             return
 
-        maxNumberOfSamplePoints = int(self._ui.maxNumberOfSamplingPoints.text())
+        maxNumber = int(self._ui.maxNumberOfSamplingPoints.text())
+        forward = self._ui.streamlinesIntegrateForward.isChecked()
+        backward = self._ui.streamlinesIntegrateBackward.isChecked()
 
         rs = self._displayItem.reportingScaffold
 
-        if maxNumberOfSamplePoints != rs.maxNumberOfSamplePoints:
+        if maxNumber != rs.maxNumberOfSamplePoints \
+            or forward != rs.streamlinesIntegrateForward \
+                or backward != rs.streamlinesIntegrateBackward:
             progressDialog = ProgressDialog(self, self.tr('Updating Graphics'))
             progressDialog.open()
 
-            rs.maxNumberOfSamplePoints = maxNumberOfSamplePoints
-            rs.streamlinesIntegrateForward = self._ui.streamlinesIntegrateForward.isChecked()
-            rs.streamlinesIntegrateBackward = self._ui.streamlinesIntegrateBackward.isChecked()
+            rs.maxNumberOfSamplePoints = maxNumber
+            rs.streamlinesIntegrateForward = forward
+            rs.streamlinesIntegrateBackward = backward
 
             await rs.markUpdated()
 

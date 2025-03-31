@@ -102,7 +102,7 @@ class DiskScaffoldWidget(ScaffoldWidget):
         scaffold: DiskScaffold = self._scaffold
         self._ui.name.setText(scaffold.name)
 
-        self._ui.type.setText(f'Disk of radius <b>{scaffold.radius}</b> at({scaffold.centerX}, {scaffold.centerY}, {scaffold.centerZ})')
+        self._ui.type.setText(f'Disk of Outer Radius <b>{scaffold.outerRadius}</b> at({scaffold.centerX}, {scaffold.centerY}, {scaffold.centerZ})')
 
     def edit(self):
         self._dialog = DiskScaffoldDialog(self, self._scaffold)

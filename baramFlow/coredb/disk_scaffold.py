@@ -2,19 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass
+from lxml import etree
 from uuid import UUID
 
-from lxml import etree
-
-from vtkmodules.vtkCommonDataModel import vtkCylinder, vtkDataObject, vtkImplicitBoolean, vtkMultiBlockDataSet, vtkPlane, vtkPolyData, vtkSphere
-from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkContourFilter, vtkCutter
-from vtkmodules.vtkFiltersGeneral import vtkClipDataSet
+from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkPolyData
+from vtkmodules.vtkFiltersCore import vtkPointDataToCellData, vtkResampleWithDataSet
+from vtkmodules.vtkFiltersSources import vtkDiskSource
 
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.coredb.post_field import COORDINATE, Field, VectorComponent, getFieldInstance
-from baramFlow.coredb.post_field import VELOCITY
 from baramFlow.coredb.scaffold import Scaffold
-from baramFlow.openfoam.solver_field import getSolverFieldName
 from libbaram.openfoam.polymesh import collectInternalMesh
 from libbaram.vtk_threads import vtk_run_in_thread
 
@@ -29,7 +25,11 @@ class DiskScaffold(Scaffold):
     normalY: str = '0'
     normalZ: str = '0'
 
-    radius: str = '1'
+    outerRadius: str = '1'
+    innerRadius: str = '0'
+
+    radialSamples: int = 10
+    circumferentialSamples: int = 20
 
     @classmethod
     def fromElement(cls, e):
@@ -44,7 +44,11 @@ class DiskScaffold(Scaffold):
         normalY = e.find('normal/y', namespaces=nsmap).text
         normalZ = e.find('normal/z', namespaces=nsmap).text
 
-        radius = e.find('radius', namespaces=nsmap).text
+        outerRadius = e.find('outerRadius', namespaces=nsmap).text
+        innerRadius = e.find('innerRadius', namespaces=nsmap).text
+
+        radialSamples = int(e.find('radialSamples', namespaces=nsmap).text)
+        circumferentialSamples = int(e.find('circumferentialSamples', namespaces=nsmap).text)
 
         return DiskScaffold(uuid=uuid,
                           name=name,
@@ -54,7 +58,10 @@ class DiskScaffold(Scaffold):
                           normalX=normalX,
                           normalY=normalY,
                           normalZ=normalZ,
-                          radius=radius)
+                          outerRadius=outerRadius,
+                          innerRadius=innerRadius,
+                          radialSamples=radialSamples,
+                          circumferentialSamples=circumferentialSamples)
 
     def toElement(self):
         string = ('<diskScaffold xmlns="http://www.baramcfd.org/baram">'
@@ -70,7 +77,10 @@ class DiskScaffold(Scaffold):
                  f'        <y>{self.normalY}</y>'
                  f'        <z>{self.normalZ}</z>'
                  f'    </normal>'
-                 f'    <radius>{self.radius}</radius>'
+                 f'    <outerRadius>{self.outerRadius}</outerRadius>'
+                 f'    <innerRadius>{self.innerRadius}</innerRadius>'
+                 f'    <radialSamples>{str(self.radialSamples)}</radialSamples>'
+                 f'    <circumferentialSamples>{str(self.circumferentialSamples)}</circumferentialSamples>'
                   '</diskScaffold>')
         return etree.fromstring(string)
 
@@ -80,31 +90,23 @@ class DiskScaffold(Scaffold):
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
         mesh = collectInternalMesh(mBlock)
 
-        cylinder = vtkCylinder()
-        cylinder.SetCenter(float(self.centerX), float(self.centerY), float(self.centerZ))
-        cylinder.SetAxis(float(self.normalX), float(self.normalY), float(self.normalZ))
-        cylinder.SetRadius(float(self.radius))
+        disk = vtkDiskSource()
+        disk.SetCenter(float(self.centerX), float(self.centerY), float(self.centerZ))
+        disk.SetNormal(float(self.normalX), float(self.normalY), float(self.normalZ))
+        disk.SetOuterRadius(float(self.outerRadius))
+        disk.SetInnerRadius(float(self.innerRadius))
+        disk.SetRadialResolution(self.radialSamples)
+        disk.SetCircumferentialResolution(self.circumferentialSamples)
 
-        plane = vtkPlane()
-        plane.SetOrigin(0, 0, 0)
-        plane.SetOrigin(float(self.centerX), float(self.centerY), float(self.centerZ))
-        plane.SetNormal(float(self.normalX), float(self.normalY), float(self.normalZ))
+        resample = vtkResampleWithDataSet()
+        resample.SetSourceData(mesh)
+        resample.SetInputConnection(disk.GetOutputPort())
 
+        p2c = vtkPointDataToCellData()
+        p2c.PassPointDataOn()
+        p2c.ProcessAllArraysOn()
+        p2c.SetInputConnection(resample.GetOutputPort())
 
-        clip = vtkClipDataSet()
-        clip.InsideOutOn()
-        clip.SetClipFunction(cylinder)
-        clip.SetInputData(mesh)
+        await vtk_run_in_thread(p2c.Update)
 
-        # boolean = vtkImplicitBoolean()
-        # boolean.SetOperationTypeToIntersection()
-        # boolean.AddFunction(cylinder)
-        # boolean.AddFunction(plane)
-
-        cutter = vtkCutter()
-        cutter.SetInputConnection(clip.GetOutputPort())
-        cutter.SetCutFunction(plane)
-
-        await vtk_run_in_thread(cutter.Update)
-
-        return cutter.GetOutput()
+        return p2c.GetOutput()

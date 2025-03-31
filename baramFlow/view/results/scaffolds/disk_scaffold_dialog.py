@@ -4,7 +4,7 @@
 import qasync
 
 from PySide6.QtCore import QRegularExpression
-from PySide6.QtGui import QDoubleValidator, QRegularExpressionValidator
+from PySide6.QtGui import QDoubleValidator, QIntValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
 from baramFlow.coredb.disk_scaffold import DiskScaffold
@@ -37,7 +37,11 @@ class DiskScaffoldDialog(QDialog):
         self._ui.normalY.setValidator(QDoubleValidator())
         self._ui.normalZ.setValidator(QDoubleValidator())
 
-        self._ui.radius.setValidator(QDoubleValidator())
+        self._ui.outerRadius.setValidator(QDoubleValidator())
+        self._ui.innerRadius.setValidator(QDoubleValidator())
+
+        self._ui.radialSamples.setValidator(QIntValidator())
+        self._ui.circumferentialSamples.setValidator(QIntValidator())
 
         self._ui.name.setText(disk.name)
 
@@ -49,7 +53,11 @@ class DiskScaffoldDialog(QDialog):
         self._ui.normalY.setText(disk.normalY)
         self._ui.normalZ.setText(disk.normalZ)
 
-        self._ui.radius.setText(disk.radius)
+        self._ui.outerRadius.setText(disk.outerRadius)
+        self._ui.innerRadius.setText(disk.innerRadius)
+
+        self._ui.radialSamples.setText(str(disk.radialSamples))
+        self._ui.circumferentialSamples.setText(str(disk.circumferentialSamples))
 
         self._connectSignalsSlots()
 
@@ -72,7 +80,11 @@ class DiskScaffoldDialog(QDialog):
         self._disk.normalY = self._ui.normalY.text()
         self._disk.normalZ = self._ui.normalZ.text()
 
-        self._disk.radius = self._ui.radius.text()
+        self._disk.outerRadius = self._ui.outerRadius.text()
+        self._disk.innerRadius = self._ui.innerRadius.text()
+
+        self._disk.radialSamples = int(self._ui.radialSamples.text())
+        self._disk.circumferentialSamples = int(self._ui.circumferentialSamples.text())
 
         self.accept()
 
@@ -87,10 +99,28 @@ class DiskScaffoldDialog(QDialog):
                                                 self.tr('Surface Name already exists.'))
             return False
 
-        radius = float(self._ui.radius.text())
-        if radius <= 0:
+        outerRadius = float(self._ui.outerRadius.text())
+        if outerRadius <= 0:
             await AsyncMessageBox().critical(self, self.tr('Input Error'),
-                                                self.tr('Radius should be greater than zero.'))
+                                                self.tr('Outer Radius should be greater than zero.'))
+            return False
+
+        innerRadius = float(self._ui.innerRadius.text())
+        if innerRadius < 0:
+            await AsyncMessageBox().critical(self, self.tr('Input Error'),
+                                                self.tr('Inner Radius should not be negative value.'))
+            return False
+
+        radialSamples = int(self._ui.radialSamples.text())
+        if radialSamples <= 0:
+            await AsyncMessageBox().critical(self, self.tr('Input Error'),
+                                                self.tr('Radial number of samples should be greater than zero.'))
+            return False
+
+        circumferentialSamples = int(self._ui.circumferentialSamples.text())
+        if circumferentialSamples <= 0:
+            await AsyncMessageBox().critical(self, self.tr('Input Error'),
+                                                self.tr('Circumferential number of samples should be greater than zero.'))
             return False
 
         return True
