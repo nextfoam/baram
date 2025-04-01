@@ -238,6 +238,7 @@
         <boundaries/>
         <isoSurfaces/>
         <diskScaffolds/>
+        <lineScaffolds/>
     </scaffolds>
 
     <visualReports>

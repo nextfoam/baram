@@ -10,11 +10,13 @@ from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
 from baramFlow.coredb.disk_scaffold import DiskScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
+from baramFlow.coredb.line_scaffold import LineScaffold
 from baramFlow.coredb.scaffolds_db import Scaffold, ScaffoldsDB
 from baramFlow.coredb.post_field import FIELD_TEXTS
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
 from baramFlow.view.results.scaffolds.disk_scaffold_dialog import DiskScaffoldDialog
 from baramFlow.view.results.scaffolds.iso_surface_dialog import IsoSurfaceDialog
+from baramFlow.view.results.scaffolds.line_scaffold_dialog import LineScaffoldDialog
 
 from .scaffold_widget_ui import Ui_ScaffoldWidget
 
@@ -106,6 +108,22 @@ class DiskScaffoldWidget(ScaffoldWidget):
 
     def edit(self):
         self._dialog = DiskScaffoldDialog(self, self._scaffold)
+        self._dialog.accepted.connect(self._editAccepted)
+        self._dialog.open()
+
+
+class LineScaffoldWidget(ScaffoldWidget):
+    def __init__(self, scaffold: Scaffold):
+        super().__init__(scaffold)
+
+    def load(self):
+        scaffold: LineScaffold = self._scaffold
+        self._ui.name.setText(scaffold.name)
+
+        self._ui.type.setText(f'Line between ({scaffold.point1X}, {scaffold.point1Y}, {scaffold.point1Z}) and ({scaffold.point2X}, {scaffold.point2Y}, {scaffold.point2Z})')
+
+    def edit(self):
+        self._dialog = LineScaffoldDialog(self, self._scaffold)
         self._dialog.accepted.connect(self._editAccepted)
         self._dialog.open()
 

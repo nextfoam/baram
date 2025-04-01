@@ -10,11 +10,13 @@ from PySide6.QtWidgets import QMenu, QListWidgetItem, QMessageBox
 from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
 from baramFlow.coredb.disk_scaffold import DiskScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
+from baramFlow.coredb.line_scaffold import LineScaffold
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
 from baramFlow.view.results.scaffolds.disk_scaffold_dialog import DiskScaffoldDialog
 from baramFlow.view.results.scaffolds.iso_surface_dialog import IsoSurfaceDialog
-from baramFlow.view.results.scaffolds.scaffold_widget import BoundaryScaffoldWidget, DiskScaffoldWidget, IsoSurfaceWidget, ScaffoldWidget
+from baramFlow.view.results.scaffolds.line_scaffold_dialog import LineScaffoldDialog
+from baramFlow.view.results.scaffolds.scaffold_widget import BoundaryScaffoldWidget, DiskScaffoldWidget, IsoSurfaceWidget, LineScaffoldWidget, ScaffoldWidget
 from baramFlow.view.widgets.content_page import ContentPage
 
 from widgets.async_message_box import AsyncMessageBox
@@ -35,6 +37,7 @@ class ScaffoldsPage(ContentPage):
         self._addIsoSurfaceMenu: QAction         = self._menu.addAction(self.tr('&Iso Surface'))
         self._addPlaneMenu: QAction              = self._menu.addAction(self.tr('&Plane'))
         self._addDIskScaffoldMenu: QAction       = self._menu.addAction(self.tr('&Disk'))
+        self._addLineScaffoldMenu: QAction       = self._menu.addAction(self.tr('&Line'))
 
         self._ui.add.setMenu(self._menu)
 
@@ -50,6 +53,7 @@ class ScaffoldsPage(ContentPage):
         self._addIsoSurfaceMenu.triggered.connect(self._openAddIsoSurfaceDialog)
         self._addPlaneMenu.triggered.connect(self._openAddPlaneDialog)
         self._addDIskScaffoldMenu.triggered.connect(self._openDiskScaffoldDialog)
+        self._addLineScaffoldMenu.triggered.connect(self._openLineScaffoldDialog)
 
         self._ui.list.currentItemChanged.connect(self._itemSelected)
         self._ui.list.itemDoubleClicked.connect(self._edit)
@@ -66,6 +70,8 @@ class ScaffoldsPage(ContentPage):
                 self._addItem(IsoSurfaceWidget(s))
             elif isinstance(s, DiskScaffold):
                 self._addItem(DiskScaffoldWidget(s))
+            elif isinstance(s, LineScaffold):
+                self._addItem(LineScaffoldWidget(s))
 
     def _openAddBoundaryScaffoldDialog(self):
         uuid = uuid4()
@@ -94,6 +100,14 @@ class ScaffoldsPage(ContentPage):
         self._dialog.accepted.connect(self._addDiskScaffold)
         self._dialog.open()
 
+    def _openLineScaffoldDialog(self):
+        uuid = uuid4()
+        name = ScaffoldsDB().getNewLineName()
+        self._scaffold = LineScaffold(uuid=uuid, name=name)
+        self._dialog = LineScaffoldDialog(self, self._scaffold)
+        self._dialog.accepted.connect(self._addLineScaffold)
+        self._dialog.open()
+
     @qasync.asyncSlot()
     async def _addBoundaryScaffold(self):
         await ScaffoldsDB().addScaffold(self._scaffold)
@@ -117,6 +131,15 @@ class ScaffoldsPage(ContentPage):
         await ScaffoldsDB().addScaffold(self._scaffold)
 
         self._addItem(DiskScaffoldWidget(self._scaffold))
+
+        self._scaffold = None
+        self._dialog = None
+
+    @qasync.asyncSlot()
+    async def _addLineScaffold(self):
+        await ScaffoldsDB().addScaffold(self._scaffold)
+
+        self._addItem(LineScaffoldWidget(self._scaffold))
 
         self._scaffold = None
         self._dialog = None

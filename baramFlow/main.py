@@ -14,6 +14,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 # noinspection PyUnresolvedReferences
 import PySide6.QtSvg
 from vtkmodules.vtkCommonCore import vtkOutputWindow, vtkSMPTools, vtkStringOutputWindow
+from vtkmodules.vtkParallelCore import vtkDummyController, vtkMultiProcessController
 
 # To use ".qrc" QT Resource files
 # noinspection PyUnresolvedReferences
@@ -84,6 +85,9 @@ def main():
     smp = vtkSMPTools()
     smp.Initialize(numCores)
     smp.SetBackend('STDThread')
+
+    controller = vtkDummyController()
+    vtkMultiProcessController.SetGlobalController(controller)
 
     application.setQuitOnLastWindowClosed(False)
 

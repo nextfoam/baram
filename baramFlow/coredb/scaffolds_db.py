@@ -10,6 +10,7 @@ from baramFlow.coredb.disk_scaffold import DiskScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.libdb import nsmap
 
+from baramFlow.coredb.line_scaffold import LineScaffold
 from baramFlow.coredb.scaffold import Scaffold
 from libbaram.async_signal import AsyncSignal
 
@@ -17,6 +18,7 @@ from libbaram.async_signal import AsyncSignal
 BOUNDARY_SCAFFOLD_NAME_PREFIX = 'boundary'
 ISO_SURFACE_NAME_PREFIX = 'iso-surface'
 DISK_SCAFFOLD_NAME_PREFIX = 'disk-scaffold'
+LINE_SCAFFOLD_NAME_PREFIX = 'line-scaffold'
 
 _mutex = Lock()
 
@@ -69,6 +71,12 @@ class ScaffoldsDB:
             scaffolds[s.uuid] = s
             s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
 
+        lines = parent.find('lineScaffolds', namespaces=nsmap)
+        for e in lines.findall('lineScaffold', namespaces=nsmap):
+            s = LineScaffold.fromElement(e)
+            scaffolds[s.uuid] = s
+            s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
+
         return scaffolds
 
     def getScaffolds(self):
@@ -90,6 +98,8 @@ class ScaffoldsDB:
             parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
         elif isinstance(scaffold, DiskScaffold):
             parent = self.SCAFFOLDS_PATH + '/diskScaffolds'
+        elif isinstance(scaffold, LineScaffold):
+            parent = self.SCAFFOLDS_PATH + '/lineScaffolds'
         else:
             raise AssertionError
 
@@ -111,6 +121,8 @@ class ScaffoldsDB:
             parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
         elif isinstance(scaffold, DiskScaffold):
             parent = self.SCAFFOLDS_PATH + '/diskScaffolds'
+        elif isinstance(scaffold, LineScaffold):
+            parent = self.SCAFFOLDS_PATH + '/lineScaffolds'
         else:
             raise AssertionError
 
@@ -133,6 +145,8 @@ class ScaffoldsDB:
             parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
         elif isinstance(scaffold, DiskScaffold):
             parent = self.SCAFFOLDS_PATH + '/diskScaffolds'
+        elif isinstance(scaffold, LineScaffold):
+            parent = self.SCAFFOLDS_PATH + '/lineScaffolds'
         else:
             raise AssertionError
 
@@ -165,6 +179,9 @@ class ScaffoldsDB:
 
     def getNewDiskName(self) -> str:
         return self._getNewScaffoldName(DISK_SCAFFOLD_NAME_PREFIX)
+
+    def getNewLineName(self) -> str:
+        return self._getNewScaffoldName(LINE_SCAFFOLD_NAME_PREFIX)
 
     def _getNewScaffoldName(self, prefix: str) -> str:
         suffixes = [scaffold.name[len(prefix):] for scaffold in self._scaffolds.values() if scaffold.name.startswith(prefix)]
