@@ -7,7 +7,6 @@ from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QDoubleValidator, QIntValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.coredb.line_scaffold import LineScaffold
 from baramFlow.coredb.parallelogram import Parallelogram
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 

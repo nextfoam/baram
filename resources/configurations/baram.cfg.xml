@@ -240,6 +240,7 @@
         <diskScaffolds/>
         <lineScaffolds/>
         <parallelograms/>
+        <sphereScaffolds/>
     </scaffolds>
 
     <visualReports>

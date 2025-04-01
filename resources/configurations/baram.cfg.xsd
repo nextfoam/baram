@@ -2590,6 +2590,24 @@
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
+                            <xs:element name="sphereScaffolds">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="sphereScaffold" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="center" type="vector"/>
+                                                    <xs:element name="radius" type="positive" default="1"/>
+                                                    <xs:element name="longitudeSamples" type="xs:positiveInteger" default="20"/>
+                                                    <xs:element name="latitudeSamples" type="xs:positiveInteger" default="20"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>

@@ -13,6 +13,7 @@ from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.line_scaffold import LineScaffold
 from baramFlow.coredb.parallelogram import Parallelogram
 from baramFlow.coredb.scaffold import Scaffold
+from baramFlow.coredb.sphere_scaffold import SphereScaffold
 from libbaram.async_signal import AsyncSignal
 
 
@@ -21,6 +22,7 @@ ISO_SURFACE_NAME_PREFIX = 'iso-surface'
 DISK_SCAFFOLD_NAME_PREFIX = 'disk-scaffold'
 LINE_SCAFFOLD_NAME_PREFIX = 'line-scaffold'
 PARALLELOGRAM_NAME_PREFIX = 'parallelogram'
+SPHERE_SCAFFOLD_NAME_PREFIX = 'sphere-scaffold'
 
 _mutex = Lock()
 
@@ -53,35 +55,41 @@ class ScaffoldsDB:
 
     def _parseScaffolds(self) -> dict[UUID, Scaffold]:
         scaffolds = {}
-        parent = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH)
+        root = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH)
 
-        boundaries = parent.find('boundaries', namespaces=nsmap)
-        for e in boundaries.findall('boundary', namespaces=nsmap):
+        parent = root.find('boundaries', namespaces=nsmap)
+        for e in parent.findall('boundary', namespaces=nsmap):
             s = BoundaryScaffold.fromElement(e)
             scaffolds[s.uuid] = s
             s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
 
-        isoSurfaces = parent.find('isoSurfaces', namespaces=nsmap)
-        for e in isoSurfaces.findall('surface', namespaces=nsmap):
+        parent = root.find('isoSurfaces', namespaces=nsmap)
+        for e in parent.findall('surface', namespaces=nsmap):
             s = IsoSurface.fromElement(e)
             scaffolds[s.uuid] = s
             s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
 
-        disks = parent.find('diskScaffolds', namespaces=nsmap)
-        for e in disks.findall('diskScaffold', namespaces=nsmap):
+        parent = root.find('diskScaffolds', namespaces=nsmap)
+        for e in parent.findall('diskScaffold', namespaces=nsmap):
             s = DiskScaffold.fromElement(e)
             scaffolds[s.uuid] = s
             s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
 
-        lines = parent.find('lineScaffolds', namespaces=nsmap)
-        for e in lines.findall('lineScaffold', namespaces=nsmap):
+        parent = root.find('lineScaffolds', namespaces=nsmap)
+        for e in parent.findall('lineScaffold', namespaces=nsmap):
             s = LineScaffold.fromElement(e)
             scaffolds[s.uuid] = s
             s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
 
-        lines = parent.find('parallelograms', namespaces=nsmap)
-        for e in lines.findall('parallelogram', namespaces=nsmap):
+        parent = root.find('parallelograms', namespaces=nsmap)
+        for e in parent.findall('parallelogram', namespaces=nsmap):
             s = Parallelogram.fromElement(e)
+            scaffolds[s.uuid] = s
+            s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
+
+        parent = root.find('sphereScaffolds', namespaces=nsmap)
+        for e in parent.findall('sphereScaffold', namespaces=nsmap):
+            s = SphereScaffold.fromElement(e)
             scaffolds[s.uuid] = s
             s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
 
@@ -110,6 +118,8 @@ class ScaffoldsDB:
             parent = self.SCAFFOLDS_PATH + '/lineScaffolds'
         elif isinstance(scaffold, Parallelogram):
             parent = self.SCAFFOLDS_PATH + '/parallelograms'
+        elif isinstance(scaffold, SphereScaffold):
+            parent = self.SCAFFOLDS_PATH + '/sphereScaffolds'
         else:
             raise AssertionError
 
@@ -135,6 +145,8 @@ class ScaffoldsDB:
             parent = self.SCAFFOLDS_PATH + '/lineScaffolds'
         elif isinstance(scaffold, Parallelogram):
             parent = self.SCAFFOLDS_PATH + '/parallelograms'
+        elif isinstance(scaffold, SphereScaffold):
+            parent = self.SCAFFOLDS_PATH + '/sphereScaffolds'
         else:
             raise AssertionError
 
@@ -161,6 +173,8 @@ class ScaffoldsDB:
             parent = self.SCAFFOLDS_PATH + '/lineScaffolds'
         elif isinstance(scaffold, Parallelogram):
             parent = self.SCAFFOLDS_PATH + '/parallelograms'
+        elif isinstance(scaffold, SphereScaffold):
+            parent = self.SCAFFOLDS_PATH + '/sphereScaffolds'
         else:
             raise AssertionError
 
@@ -199,6 +213,9 @@ class ScaffoldsDB:
 
     def getNewParallelogramName(self) -> str:
         return self._getNewScaffoldName(PARALLELOGRAM_NAME_PREFIX)
+
+    def getNewSphereName(self) -> str:
+        return self._getNewScaffoldName(SPHERE_SCAFFOLD_NAME_PREFIX)
 
     def _getNewScaffoldName(self, prefix: str) -> str:
         suffixes = [scaffold.name[len(prefix):] for scaffold in self._scaffolds.values() if scaffold.name.startswith(prefix)]
