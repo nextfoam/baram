@@ -2571,6 +2571,25 @@
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
+                            <xs:element name="parallelograms">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="parallelogram" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="origin" type="vector"/>
+                                                    <xs:element name="point1" type="vector"/>
+                                                    <xs:element name="point2" type="vector"/>
+                                                    <xs:element name="point1Samples" type="xs:positiveInteger" default="10"/>
+                                                    <xs:element name="point2Samples" type="xs:positiveInteger" default="10"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>

@@ -15,6 +15,7 @@ class ScaffoldType(Enum):
     ISO_SURFACE	    = 'isoSurface'
     DISK_SCAFFOLD   = 'diskScaffold'
     LINE_SCAFFOLD   = 'lineScaffold'
+    PARALLELOGRAM   = 'parallelogram'
 
 
 @dataclass

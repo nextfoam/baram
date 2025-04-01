@@ -11,12 +11,14 @@ from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
 from baramFlow.coredb.disk_scaffold import DiskScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.line_scaffold import LineScaffold
+from baramFlow.coredb.parallelogram import Parallelogram
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
 from baramFlow.view.results.scaffolds.disk_scaffold_dialog import DiskScaffoldDialog
 from baramFlow.view.results.scaffolds.iso_surface_dialog import IsoSurfaceDialog
 from baramFlow.view.results.scaffolds.line_scaffold_dialog import LineScaffoldDialog
-from baramFlow.view.results.scaffolds.scaffold_widget import BoundaryScaffoldWidget, DiskScaffoldWidget, IsoSurfaceWidget, LineScaffoldWidget, ScaffoldWidget
+from baramFlow.view.results.scaffolds.parallelogram_dialog import ParallelogramDialog
+from baramFlow.view.results.scaffolds.scaffold_widget import BoundaryScaffoldWidget, DiskScaffoldWidget, IsoSurfaceWidget, LineScaffoldWidget, ParallelogramWidget, ScaffoldWidget
 from baramFlow.view.widgets.content_page import ContentPage
 
 from widgets.async_message_box import AsyncMessageBox
@@ -38,6 +40,7 @@ class ScaffoldsPage(ContentPage):
         self._addPlaneMenu: QAction              = self._menu.addAction(self.tr('&Plane'))
         self._addDIskScaffoldMenu: QAction       = self._menu.addAction(self.tr('&Disk'))
         self._addLineScaffoldMenu: QAction       = self._menu.addAction(self.tr('&Line'))
+        self._addParallelogramMenu: QAction       = self._menu.addAction(self.tr('&Parallelogram'))
 
         self._ui.add.setMenu(self._menu)
 
@@ -54,6 +57,7 @@ class ScaffoldsPage(ContentPage):
         self._addPlaneMenu.triggered.connect(self._openAddPlaneDialog)
         self._addDIskScaffoldMenu.triggered.connect(self._openDiskScaffoldDialog)
         self._addLineScaffoldMenu.triggered.connect(self._openLineScaffoldDialog)
+        self._addParallelogramMenu.triggered.connect(self._openParallelogramDialog)
 
         self._ui.list.currentItemChanged.connect(self._itemSelected)
         self._ui.list.itemDoubleClicked.connect(self._edit)
@@ -72,6 +76,8 @@ class ScaffoldsPage(ContentPage):
                 self._addItem(DiskScaffoldWidget(s))
             elif isinstance(s, LineScaffold):
                 self._addItem(LineScaffoldWidget(s))
+            elif isinstance(s, Parallelogram):
+                self._addItem(ParallelogramWidget(s))
 
     def _openAddBoundaryScaffoldDialog(self):
         uuid = uuid4()
@@ -108,6 +114,14 @@ class ScaffoldsPage(ContentPage):
         self._dialog.accepted.connect(self._addLineScaffold)
         self._dialog.open()
 
+    def _openParallelogramDialog(self):
+        uuid = uuid4()
+        name = ScaffoldsDB().getNewLineName()
+        self._scaffold = Parallelogram(uuid=uuid, name=name)
+        self._dialog = ParallelogramDialog(self, self._scaffold)
+        self._dialog.accepted.connect(self._addParallelogram)
+        self._dialog.open()
+
     @qasync.asyncSlot()
     async def _addBoundaryScaffold(self):
         await ScaffoldsDB().addScaffold(self._scaffold)
@@ -140,6 +154,15 @@ class ScaffoldsPage(ContentPage):
         await ScaffoldsDB().addScaffold(self._scaffold)
 
         self._addItem(LineScaffoldWidget(self._scaffold))
+
+        self._scaffold = None
+        self._dialog = None
+
+    @qasync.asyncSlot()
+    async def _addParallelogram(self):
+        await ScaffoldsDB().addScaffold(self._scaffold)
+
+        self._addItem(ParallelogramWidget(self._scaffold))
 
         self._scaffold = None
         self._dialog = None

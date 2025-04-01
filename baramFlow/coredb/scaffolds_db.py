@@ -11,6 +11,7 @@ from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.libdb import nsmap
 
 from baramFlow.coredb.line_scaffold import LineScaffold
+from baramFlow.coredb.parallelogram import Parallelogram
 from baramFlow.coredb.scaffold import Scaffold
 from libbaram.async_signal import AsyncSignal
 
@@ -19,6 +20,7 @@ BOUNDARY_SCAFFOLD_NAME_PREFIX = 'boundary'
 ISO_SURFACE_NAME_PREFIX = 'iso-surface'
 DISK_SCAFFOLD_NAME_PREFIX = 'disk-scaffold'
 LINE_SCAFFOLD_NAME_PREFIX = 'line-scaffold'
+PARALLELOGRAM_NAME_PREFIX = 'parallelogram'
 
 _mutex = Lock()
 
@@ -77,6 +79,12 @@ class ScaffoldsDB:
             scaffolds[s.uuid] = s
             s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
 
+        lines = parent.find('parallelograms', namespaces=nsmap)
+        for e in lines.findall('parallelogram', namespaces=nsmap):
+            s = Parallelogram.fromElement(e)
+            scaffolds[s.uuid] = s
+            s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
+
         return scaffolds
 
     def getScaffolds(self):
@@ -100,6 +108,8 @@ class ScaffoldsDB:
             parent = self.SCAFFOLDS_PATH + '/diskScaffolds'
         elif isinstance(scaffold, LineScaffold):
             parent = self.SCAFFOLDS_PATH + '/lineScaffolds'
+        elif isinstance(scaffold, Parallelogram):
+            parent = self.SCAFFOLDS_PATH + '/parallelograms'
         else:
             raise AssertionError
 
@@ -123,6 +133,8 @@ class ScaffoldsDB:
             parent = self.SCAFFOLDS_PATH + '/diskScaffolds'
         elif isinstance(scaffold, LineScaffold):
             parent = self.SCAFFOLDS_PATH + '/lineScaffolds'
+        elif isinstance(scaffold, Parallelogram):
+            parent = self.SCAFFOLDS_PATH + '/parallelograms'
         else:
             raise AssertionError
 
@@ -147,6 +159,8 @@ class ScaffoldsDB:
             parent = self.SCAFFOLDS_PATH + '/diskScaffolds'
         elif isinstance(scaffold, LineScaffold):
             parent = self.SCAFFOLDS_PATH + '/lineScaffolds'
+        elif isinstance(scaffold, Parallelogram):
+            parent = self.SCAFFOLDS_PATH + '/parallelograms'
         else:
             raise AssertionError
 
@@ -182,6 +196,9 @@ class ScaffoldsDB:
 
     def getNewLineName(self) -> str:
         return self._getNewScaffoldName(LINE_SCAFFOLD_NAME_PREFIX)
+
+    def getNewParallelogramName(self) -> str:
+        return self._getNewScaffoldName(PARALLELOGRAM_NAME_PREFIX)
 
     def _getNewScaffoldName(self, prefix: str) -> str:
         suffixes = [scaffold.name[len(prefix):] for scaffold in self._scaffolds.values() if scaffold.name.startswith(prefix)]

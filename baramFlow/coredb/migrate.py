@@ -892,6 +892,8 @@ def _version_9(root: etree.Element):
         p.append(e)
         e = etree.Element(f'{{{_ns}}}lineScaffolds')
         p.append(e)
+        e = etree.Element(f'{{{_ns}}}parallelograms')
+        p.append(e)
 
     if root.find('visualReports', namespaces=_nsmap) is None:
         index = root.index(root.find('scaffolds', namespaces=_nsmap))
