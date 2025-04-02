@@ -21,6 +21,7 @@ from baramFlow.view.results.scaffolds.iso_surface_dialog import IsoSurfaceDialog
 from baramFlow.view.results.scaffolds.line_scaffold_dialog import LineScaffoldDialog
 from baramFlow.view.results.scaffolds.parallelogram_dialog import ParallelogramDialog
 from baramFlow.view.results.scaffolds.sphere_scaffold_dialog import SphereScaffoldDialog
+from widgets.progress_dialog import ProgressDialog
 
 from .scaffold_widget_ui import Ui_ScaffoldWidget
 
@@ -47,13 +48,22 @@ class ScaffoldWidget(QWidget):
 
     @qasync.asyncSlot()
     async def _editAccepted(self):
+        progressDialog = ProgressDialog(self, self.tr('Scaffold Parameters'))
+        progressDialog.setLabelText(self.tr('Applying Scaffold parameters...'))
+        progressDialog.open()
+
         await self._scaffold.markUpdated()
         self.load()
+
+        progressDialog.close()
 
     async def delete(self):
         await ScaffoldsDB().removeScaffold(self._scaffold)
 
     def load(self):
+        raise NotImplementedError
+
+    def edit(self):
         raise NotImplementedError
 
 

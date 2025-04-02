@@ -204,7 +204,8 @@ class ScaffoldsPage(ContentPage):
         self._ui.delete_.setEnabled(True)
 
     def _edit(self):
-        self._currentWidget().edit()
+        widget: ScaffoldWidget = self._currentWidget()
+        widget.edit()
 
     @qasync.asyncSlot()
     async def _delete(self):

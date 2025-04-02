@@ -2524,7 +2524,7 @@
                                                         </xs:simpleType>
                                                     </xs:element>
                                                     <xs:element name="fieldCodeName" type="xs:string"/>
-                                                    <xs:element name="vectorComponent" type="xs:nonNegativeInteger" default="0"/>
+                                                    <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
                                                     <xs:element name="isoValues" type="inputNumberListType"/>
                                                     <xs:element name="surfacesPerValue" type="xs:positiveInteger" default="1"/>
                                                     <xs:element name="spacing" type="inputPositiveNumberType"/>

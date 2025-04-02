@@ -68,7 +68,7 @@
        <widget class="PythonComboBox" name="field"/>
       </item>
       <item>
-       <widget class="VectorComponentComboBox" name="vectorComponent"/>
+       <widget class="VectorComponentComboBox" name="fieldComponent"/>
       </item>
      </layout>
     </widget>

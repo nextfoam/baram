@@ -41,11 +41,11 @@ class IsoSurfaceDialog(QDialog):
         self._ui.field.setCurrentIndex(index)
 
         if surface.field.type == FieldType.VECTOR:
-            self._ui.vectorComponent.setEnabled(True)
-            index = self._ui.vectorComponent.findData(surface.vectorComponent)
-            self._ui.vectorComponent.setCurrentIndex(index)
+            self._ui.fieldComponent.setEnabled(True)
+            index = self._ui.fieldComponent.findData(surface.fieldComponent)
+            self._ui.fieldComponent.setCurrentIndex(index)
         else:
-            self._ui.vectorComponent.setEnabled(False)
+            self._ui.fieldComponent.setEnabled(False)
 
         if isNew:
             self._ui.ok.setText('Create')
@@ -88,7 +88,7 @@ class IsoSurfaceDialog(QDialog):
 
         self._surface.name = self._ui.name.text()
         self._surface.field = self._ui.field.currentData()
-        self._surface.vectorComponent = self._ui.vectorComponent.currentData()
+        self._surface.fieldComponent = self._ui.fieldComponent.currentData()
         self._surface.isoValues = self._ui.isoValues.text().strip()
         self._surface.surfacePerValue = self._ui.surfacesPerValue.value()
         self._surface.spacing = self._ui.spacing.text().strip()
@@ -135,6 +135,6 @@ class IsoSurfaceDialog(QDialog):
         field: Field = self._ui.field.currentData()
 
         if field.type == FieldType.VECTOR:
-            self._ui.vectorComponent.setEnabled(True)
+            self._ui.fieldComponent.setEnabled(True)
         else:
-            self._ui.vectorComponent.setEnabled(False)
+            self._ui.fieldComponent.setEnabled(False)
