@@ -9,6 +9,7 @@ from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_POLY_DATA
 from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkPolyData
 from vtkmodules.vtkFiltersCore import vtkAppendPolyData
 
+from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.scaffold import Scaffold
@@ -19,6 +20,16 @@ from libbaram.vtk_threads import vtk_run_in_thread
 @dataclass
 class BoundaryScaffold(Scaffold):
     boundaries: list[str] = field(default_factory=list)
+
+    @classmethod
+    def parseScaffolds(cls) -> dict[UUID, Scaffold]:
+        scaffolds: dict[UUID, Scaffold] = {}
+
+        for e in coredb.CoreDB().getElements(Scaffold.SCAFFOLDS_PATH + '/boundaries/boundary'):
+            s = BoundaryScaffold.fromElement(e)
+            scaffolds[s.uuid] = s
+
+        return scaffolds
 
     @classmethod
     def fromElement(cls, e):
@@ -41,6 +52,12 @@ class BoundaryScaffold(Scaffold):
 
     def xpath(self):
         return f'/boundary[uuid="{str(self.uuid)}"]'
+
+    def addElement(self):
+        coredb.CoreDB().addElement(Scaffold.SCAFFOLDS_PATH + '/boundaries', self.toElement())
+
+    def removeElement(self):
+        coredb.CoreDB().removeElement(Scaffold.SCAFFOLDS_PATH + '/boundaries' + self.xpath())
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
         polyData = vtkAppendPolyData()

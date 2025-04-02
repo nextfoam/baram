@@ -10,6 +10,7 @@ from vtkmodules.vtkFiltersCore import vtkPointDataToCellData
 from vtkmodules.vtkFiltersParallelDIY2 import vtkProbeLineFilter
 from vtkmodules.vtkFiltersSources import vtkLineSource
 
+from baramFlow.coredb import coredb
 from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.scaffold import Scaffold
 from libbaram.openfoam.polymesh import collectInternalMesh
@@ -27,6 +28,16 @@ class LineScaffold(Scaffold):
     point2Z: str = '0'
 
     numberOfSamples: int = 10
+
+    @classmethod
+    def parseScaffolds(cls) -> dict[UUID, Scaffold]:
+        scaffolds: dict[UUID, Scaffold] = {}
+
+        for e in coredb.CoreDB().getElements(Scaffold.SCAFFOLDS_PATH + '/lineScaffolds/lineScaffold'):
+            s = LineScaffold.fromElement(e)
+            scaffolds[s.uuid] = s
+
+        return scaffolds
 
     @classmethod
     def fromElement(cls, e):
@@ -73,6 +84,12 @@ class LineScaffold(Scaffold):
 
     def xpath(self):
         return f'/lineScaffold[uuid="{str(self.uuid)}"]'
+
+    def addElement(self):
+        coredb.CoreDB().addElement(Scaffold.SCAFFOLDS_PATH + '/lineScaffolds', self.toElement())
+
+    def removeElement(self):
+        coredb.CoreDB().removeElement(Scaffold.SCAFFOLDS_PATH + '/lineScaffolds' + self.xpath())
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
         mesh = collectInternalMesh(mBlock)

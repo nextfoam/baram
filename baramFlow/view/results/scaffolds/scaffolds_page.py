@@ -42,8 +42,8 @@ class ScaffoldsPage(ContentPage):
         self._addPlaneMenu: QAction              = self._menu.addAction(self.tr('&Plane'))
         self._addDIskScaffoldMenu: QAction       = self._menu.addAction(self.tr('&Disk'))
         self._addLineScaffoldMenu: QAction       = self._menu.addAction(self.tr('&Line'))
-        self._addParallelogramMenu: QAction       = self._menu.addAction(self.tr('&Parallelogram'))
-        self._addSphereScaffoldMenu: QAction       = self._menu.addAction(self.tr('&Sphere'))
+        self._addParallelogramMenu: QAction      = self._menu.addAction(self.tr('&Parallelogram'))
+        self._addSphereScaffoldMenu: QAction     = self._menu.addAction(self.tr('&Sphere'))
 
         self._ui.add.setMenu(self._menu)
 

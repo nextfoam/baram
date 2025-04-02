@@ -3,6 +3,7 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import ClassVar
 from uuid import UUID
 
 from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkPolyData
@@ -21,6 +22,8 @@ class ScaffoldType(Enum):
 
 @dataclass
 class Scaffold:
+    SCAFFOLDS_PATH: ClassVar[str] = '/scaffolds'
+
     instanceUpdated: AsyncSignal = field(init=False)
 
     uuid: UUID
@@ -34,6 +37,15 @@ class Scaffold:
         raise NotImplementedError
 
     def toElement(self):
+        raise NotImplementedError
+
+    def xpath(self) -> str:
+        raise NotImplementedError
+
+    def addElement(self):
+        raise NotImplementedError
+
+    def removeElement(self):
         raise NotImplementedError
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:

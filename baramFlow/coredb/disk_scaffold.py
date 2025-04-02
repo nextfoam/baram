@@ -9,6 +9,7 @@ from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkPolyData
 from vtkmodules.vtkFiltersCore import vtkPointDataToCellData, vtkResampleWithDataSet
 from vtkmodules.vtkFiltersSources import vtkDiskSource
 
+from baramFlow.coredb import coredb
 from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.scaffold import Scaffold
 from libbaram.openfoam.polymesh import collectInternalMesh
@@ -30,6 +31,16 @@ class DiskScaffold(Scaffold):
 
     radialSamples: int = 10
     circumferentialSamples: int = 20
+
+    @classmethod
+    def parseScaffolds(cls) -> dict[UUID, Scaffold]:
+        scaffolds: dict[UUID, Scaffold] = {}
+
+        for e in coredb.CoreDB().getElements(Scaffold.SCAFFOLDS_PATH + '/diskScaffolds/diskScaffold'):
+            s = DiskScaffold.fromElement(e)
+            scaffolds[s.uuid] = s
+
+        return scaffolds
 
     @classmethod
     def fromElement(cls, e):
@@ -86,6 +97,12 @@ class DiskScaffold(Scaffold):
 
     def xpath(self):
         return f'/diskScaffold[uuid="{str(self.uuid)}"]'
+
+    def addElement(self):
+        coredb.CoreDB().addElement(Scaffold.SCAFFOLDS_PATH + '/diskScaffolds', self.toElement())
+
+    def removeElement(self):
+        coredb.CoreDB().removeElement(Scaffold.SCAFFOLDS_PATH + '/diskScaffolds' + self.xpath())
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
         mesh = collectInternalMesh(mBlock)

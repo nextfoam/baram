@@ -7,8 +7,9 @@ from uuid import UUID
 from lxml import etree
 
 from vtkmodules.vtkCommonDataModel import vtkDataObject, vtkMultiBlockDataSet, vtkPlane, vtkPolyData, vtkSphere
-from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkContourFilter, vtkCutter
+from vtkmodules.vtkFiltersCore import vtkContourFilter, vtkCutter
 
+from baramFlow.coredb import coredb
 from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.post_field import COORDINATE, Field, VectorComponent, getFieldInstance
 from baramFlow.coredb.post_field import VELOCITY
@@ -25,6 +26,16 @@ class IsoSurface(Scaffold):
     isoValues: str = '0'
     surfacePerValue: int = 1
     spacing: str = '1'
+
+    @classmethod
+    def parseScaffolds(cls) -> dict[UUID, Scaffold]:
+        scaffolds: dict[UUID, Scaffold] = {}
+
+        for e in coredb.CoreDB().getElements(Scaffold.SCAFFOLDS_PATH + '/isoSurfaces/isoSurface'):
+            s = IsoSurface.fromElement(e)
+            scaffolds[s.uuid] = s
+
+        return scaffolds
 
     @classmethod
     def fromElement(cls, e):
@@ -61,6 +72,12 @@ class IsoSurface(Scaffold):
 
     def xpath(self):
         return f'/surface[uuid="{str(self.uuid)}"]'
+
+    def addElement(self):
+        coredb.CoreDB().addElement(Scaffold.SCAFFOLDS_PATH + '/isoSurfaces', self.toElement())
+
+    def removeElement(self):
+        coredb.CoreDB().removeElement(Scaffold.SCAFFOLDS_PATH + '/isoSurfaces' + self.xpath())
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
         values = self._getValues()

@@ -9,6 +9,7 @@ from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkPolyData
 from vtkmodules.vtkFiltersCore import vtkPointDataToCellData, vtkResampleWithDataSet
 from vtkmodules.vtkFiltersSources import vtkPlaneSource
 
+from baramFlow.coredb import coredb
 from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.scaffold import Scaffold
 from libbaram.openfoam.polymesh import collectInternalMesh
@@ -31,6 +32,16 @@ class Parallelogram(Scaffold):
 
     point1Samples: int = 10
     point2Samples: int = 10
+
+    @classmethod
+    def parseScaffolds(cls) -> dict[UUID, Scaffold]:
+        scaffolds: dict[UUID, Scaffold] = {}
+
+        for e in coredb.CoreDB().getElements(Scaffold.SCAFFOLDS_PATH + '/parallelograms/parallelogram'):
+            s = Parallelogram.fromElement(e)
+            scaffolds[s.uuid] = s
+
+        return scaffolds
 
     @classmethod
     def fromElement(cls, e):
@@ -92,6 +103,12 @@ class Parallelogram(Scaffold):
 
     def xpath(self):
         return f'/parallelogram[uuid="{str(self.uuid)}"]'
+
+    def addElement(self):
+        coredb.CoreDB().addElement(Scaffold.SCAFFOLDS_PATH + '/parallelograms', self.toElement())
+
+    def removeElement(self):
+        coredb.CoreDB().removeElement(Scaffold.SCAFFOLDS_PATH + '/parallelograms' + self.xpath())
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
         mesh = collectInternalMesh(mBlock)

@@ -4,11 +4,9 @@
 from threading import Lock
 from uuid import UUID, uuid4
 
-from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
 from baramFlow.coredb.disk_scaffold import DiskScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
-from baramFlow.coredb.libdb import nsmap
 
 from baramFlow.coredb.line_scaffold import LineScaffold
 from baramFlow.coredb.parallelogram import Parallelogram
@@ -28,8 +26,6 @@ _mutex = Lock()
 
 
 class ScaffoldsDB:
-    SCAFFOLDS_PATH = '/scaffolds'
-
     def __new__(cls, *args, **kwargs):
         with _mutex:
             if not hasattr(cls, '_instance'):
@@ -51,49 +47,19 @@ class ScaffoldsDB:
         self._scaffolds: dict[UUID, Scaffold] = {}
 
     def load(self):
-        self._scaffolds = self._parseScaffolds()
+        scaffolds: dict[UUID, Scaffold] = {}
 
-    def _parseScaffolds(self) -> dict[UUID, Scaffold]:
-        scaffolds = {}
-        root = coredb.CoreDB().getElement(self.SCAFFOLDS_PATH)
+        scaffolds.update(BoundaryScaffold.parseScaffolds())
+        scaffolds.update(IsoSurface.parseScaffolds())
+        scaffolds.update(DiskScaffold.parseScaffolds())
+        scaffolds.update(LineScaffold.parseScaffolds())
+        scaffolds.update(Parallelogram.parseScaffolds())
+        scaffolds.update(SphereScaffold.parseScaffolds())
 
-        parent = root.find('boundaries', namespaces=nsmap)
-        for e in parent.findall('boundary', namespaces=nsmap):
-            s = BoundaryScaffold.fromElement(e)
-            scaffolds[s.uuid] = s
+        for s in scaffolds.values():
             s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
 
-        parent = root.find('isoSurfaces', namespaces=nsmap)
-        for e in parent.findall('surface', namespaces=nsmap):
-            s = IsoSurface.fromElement(e)
-            scaffolds[s.uuid] = s
-            s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
-
-        parent = root.find('diskScaffolds', namespaces=nsmap)
-        for e in parent.findall('diskScaffold', namespaces=nsmap):
-            s = DiskScaffold.fromElement(e)
-            scaffolds[s.uuid] = s
-            s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
-
-        parent = root.find('lineScaffolds', namespaces=nsmap)
-        for e in parent.findall('lineScaffold', namespaces=nsmap):
-            s = LineScaffold.fromElement(e)
-            scaffolds[s.uuid] = s
-            s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
-
-        parent = root.find('parallelograms', namespaces=nsmap)
-        for e in parent.findall('parallelogram', namespaces=nsmap):
-            s = Parallelogram.fromElement(e)
-            scaffolds[s.uuid] = s
-            s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
-
-        parent = root.find('sphereScaffolds', namespaces=nsmap)
-        for e in parent.findall('sphereScaffold', namespaces=nsmap):
-            s = SphereScaffold.fromElement(e)
-            scaffolds[s.uuid] = s
-            s.instanceUpdated.asyncConnect(self._scaffoldUpdated)
-
-        return scaffolds
+        self._scaffolds = scaffolds
 
     def getScaffolds(self):
         return self._scaffolds
@@ -108,22 +74,7 @@ class ScaffoldsDB:
         if scaffold.uuid in self._scaffolds:
             raise AssertionError
 
-        if isinstance(scaffold, BoundaryScaffold):
-            parent = self.SCAFFOLDS_PATH + '/boundaries'
-        elif isinstance(scaffold, IsoSurface):
-            parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
-        elif isinstance(scaffold, DiskScaffold):
-            parent = self.SCAFFOLDS_PATH + '/diskScaffolds'
-        elif isinstance(scaffold, LineScaffold):
-            parent = self.SCAFFOLDS_PATH + '/lineScaffolds'
-        elif isinstance(scaffold, Parallelogram):
-            parent = self.SCAFFOLDS_PATH + '/parallelograms'
-        elif isinstance(scaffold, SphereScaffold):
-            parent = self.SCAFFOLDS_PATH + '/sphereScaffolds'
-        else:
-            raise AssertionError
-
-        coredb.CoreDB().addElement(parent, scaffold.toElement())
+        scaffold.addElement()
 
         self._scaffolds[scaffold.uuid] = scaffold
 
@@ -135,24 +86,9 @@ class ScaffoldsDB:
         if scaffold.uuid not in self._scaffolds:
             raise AssertionError
 
-        if isinstance(scaffold, BoundaryScaffold):
-            parent = self.SCAFFOLDS_PATH + '/boundaries'
-        elif isinstance(scaffold, IsoSurface):
-            parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
-        elif isinstance(scaffold, DiskScaffold):
-            parent = self.SCAFFOLDS_PATH + '/diskScaffolds'
-        elif isinstance(scaffold, LineScaffold):
-            parent = self.SCAFFOLDS_PATH + '/lineScaffolds'
-        elif isinstance(scaffold, Parallelogram):
-            parent = self.SCAFFOLDS_PATH + '/parallelograms'
-        elif isinstance(scaffold, SphereScaffold):
-            parent = self.SCAFFOLDS_PATH + '/sphereScaffolds'
-        else:
-            raise AssertionError
-
         await self.removingScaffold.emit(scaffold.uuid)
 
-        coredb.CoreDB().removeElement(parent + scaffold.xpath())
+        scaffold.removeElement()
 
         del self._scaffolds[scaffold.uuid]
 
@@ -163,23 +99,8 @@ class ScaffoldsDB:
 
         scaffold = self._scaffolds[uuid]
 
-        if isinstance(scaffold, BoundaryScaffold):
-            parent = self.SCAFFOLDS_PATH + '/boundaries'
-        elif isinstance(scaffold, IsoSurface):
-            parent = self.SCAFFOLDS_PATH + '/isoSurfaces'
-        elif isinstance(scaffold, DiskScaffold):
-            parent = self.SCAFFOLDS_PATH + '/diskScaffolds'
-        elif isinstance(scaffold, LineScaffold):
-            parent = self.SCAFFOLDS_PATH + '/lineScaffolds'
-        elif isinstance(scaffold, Parallelogram):
-            parent = self.SCAFFOLDS_PATH + '/parallelograms'
-        elif isinstance(scaffold, SphereScaffold):
-            parent = self.SCAFFOLDS_PATH + '/sphereScaffolds'
-        else:
-            raise AssertionError
-
-        coredb.CoreDB().removeElement(parent + scaffold.xpath())
-        coredb.CoreDB().addElement(parent, scaffold.toElement())
+        scaffold.removeElement()
+        scaffold.addElement()
 
         await self.scaffoldUpdated.emit(scaffold.uuid)
 
