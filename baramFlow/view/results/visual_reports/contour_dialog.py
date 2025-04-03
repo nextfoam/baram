@@ -118,7 +118,7 @@ class ContourDialog(QDialog):
         time = self._timeSlider.getCurrentTime()
         field: Field = self._ui.field.currentData()
 
-        progressDialog = ProgressDialog(self, self.tr('Graphics Parameters'))
+        progressDialog = ProgressDialog(self, self.tr('Graphics Parameters'), openDelay=500)
         progressDialog.setLabelText(self.tr('Applying Graphics parameters...'))
         progressDialog.open()
 

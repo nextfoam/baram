@@ -8,14 +8,12 @@ from lxml import etree
 
 from PySide6.QtGui import QColor
 
-from vtkmodules.vtkCommonCore import vtkDataArray
 from vtkmodules.vtkCommonDataModel import vtkDataSet
-from vtkmodules.vtkFiltersCore import vtkArrayCalculator
 
 from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.post_field import Field, VectorComponent
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
-from baramFlow.openfoam.solver_field import getSolverFieldName
+from baramFlow.openfoam.polymesh.util import getScalarRange, getVectorRange
 
 from libbaram.async_signal import AsyncSignal
 
@@ -98,52 +96,7 @@ class ReportingScaffold:
         return scaffold.name
 
     def getScalarRange(self, field: Field, useNodeValues: bool) -> tuple[float, float]:
-        solverFieldName = getSolverFieldName(field)
-        if useNodeValues:
-            scalars: vtkDataArray = self.dataSet.GetPointData().GetScalars(solverFieldName)
-        else:
-            scalars: vtkDataArray = self.dataSet.GetCellData().GetScalars(solverFieldName)
-
-        if scalars:
-            return scalars.GetRange()
-        else:
-            return (0, 1)
+        return getScalarRange(self.dataSet, field, useNodeValues)
 
     def getVectorRange(self, field: Field, vectorComponent: VectorComponent, useNodeValues: bool) -> tuple[float, float]:
-        solverFieldName = getSolverFieldName(field)
-        if useNodeValues:
-            vectors: vtkDataArray = self.dataSet.GetPointData().GetVectors(solverFieldName)
-        else:
-            vectors: vtkDataArray = self.dataSet.GetCellData().GetVectors(solverFieldName)
-
-        if not vectors:
-            return (0, 1)
-
-        if vectorComponent == VectorComponent.MAGNITUDE:
-            filter = vtkArrayCalculator()
-            filter.SetInputData(self.dataSet)
-            if useNodeValues:
-                filter.SetAttributeTypeToPointData()
-            else:
-                filter.SetAttributeTypeToCellData()
-            filter.AddVectorArrayName(solverFieldName)
-            filter.SetFunction(f'mag({solverFieldName})')
-            RESULT_ARRAY_NAME = 'magnitude'
-            filter.SetResultArrayName(RESULT_ARRAY_NAME)
-            filter.Update()
-            if useNodeValues:
-                scalars: vtkDataArray = filter.GetOutput().GetPointData().GetScalars(RESULT_ARRAY_NAME)
-            else:
-                scalars: vtkDataArray = filter.GetOutput().GetCellData().GetScalars(RESULT_ARRAY_NAME)
-
-            if scalars:
-                return scalars.GetRange()
-            else:
-                return (0, 1)
-
-        elif vectorComponent == VectorComponent.X:
-            return vectors.GetRange(0)
-        elif vectorComponent == VectorComponent.Y:
-            return vectors.GetRange(1)
-        elif vectorComponent == VectorComponent.Z:
-            return vectors.GetRange(2)
+        return getVectorRange(self.dataSet, field, vectorComponent, useNodeValues)

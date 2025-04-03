@@ -7,19 +7,27 @@ from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QDoubleValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.coredb.post_field import COORDINATE, Field, FieldType
+from baramFlow.coredb.post_field import COORDINATE, CollateralField, Field, FieldType, VectorComponent
 from baramFlow.coredb.post_field import getAvailableFields
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.post_field import FIELD_TEXTS
 
+from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.polymesh.util import getScalarRange, getVectorRange
+from baramFlow.openfoam.solver_field import getSolverFieldName
+from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
+from libbaram.openfoam.collateral_fields import calculateCollateralField
+from libbaram.openfoam.polymesh import collectInternalMesh
 from widgets.async_message_box import AsyncMessageBox
+from widgets.progress_dialog import ProgressDialog
+from widgets.time_slider import TimeSlider
 
 from .iso_surface_dialog_ui import Ui_IsoSurfaceDialog
 
 
 class IsoSurfaceDialog(QDialog):
-    def __init__(self, parent, surface: IsoSurface, isNew=False):
+    def __init__(self, parent, surface: IsoSurface, times: list[str], isNew=False):
         super().__init__(parent)
 
         self._ui = Ui_IsoSurfaceDialog()
@@ -50,6 +58,10 @@ class IsoSurfaceDialog(QDialog):
         if isNew:
             self._ui.ok.setText('Create')
 
+        self._timeSlider = TimeSlider(self._ui.slider, self._ui.currentTime, self._ui.lastTime)
+        self._timeSlider.updateTimeValues(times)
+        self._timeSlider.setCurrentTime(times[-1])
+
         self._ui.name.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Za-z_][A-Za-z0-9_-]*')))
         self._ui.spacing.setValidator(QDoubleValidator())
 
@@ -75,7 +87,44 @@ class IsoSurfaceDialog(QDialog):
 
     @qasync.asyncSlot()
     async def _computeRangeClicked(self):
-        pass
+        time = self._timeSlider.getCurrentTime()
+        field: Field = self._ui.field.currentData()
+        fieldComponent: VectorComponent = self._ui.fieldComponent.currentData()
+
+        progressDialog = ProgressDialog(self, self.tr('Range Calculation'))
+        progressDialog.setLabelText(self.tr('Computing range...'))
+        progressDialog.open()
+
+        if isinstance(field, CollateralField):
+            solverFieldName = getSolverFieldName(field)
+            if not FileSystem.fieldExists(time, solverFieldName):
+                progressDialog.setLabelText(self.tr('Calculating Collateral Field...'))
+
+                rc = await calculateCollateralField([field], [time])
+
+                if rc != 0:
+                    progressDialog.finish(self.tr('Calculation failed'))
+                    return
+
+        progressDialog.setLabelText(self.tr('Computing range...'))
+
+        async with OpenFOAMReader() as reader:
+            await reader.refresh()
+
+            reader.setTimeValue(float(time))
+            await reader.update()
+            mBlock = reader.getOutput()
+
+            mesh = collectInternalMesh(mBlock)
+            if field.type == FieldType.VECTOR:
+                rangeMin, rangeMax = getVectorRange(mesh, field, fieldComponent, useNodeValues=True)
+            else:
+                rangeMin, rangeMax = getScalarRange(mesh, field, useNodeValues=True)
+
+        self._ui.rangeMin.setText(f'{rangeMin:.4g}')
+        self._ui.rangeMax.setText(f'{rangeMax:.4g}')
+
+        progressDialog.close()
 
     @qasync.asyncSlot()
     async def _surfacesPerValueChanged(self, value):

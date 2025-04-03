@@ -15,6 +15,7 @@ from baramFlow.coredb.parallelogram import Parallelogram
 from baramFlow.coredb.scaffolds_db import Scaffold, ScaffoldsDB
 from baramFlow.coredb.post_field import FIELD_TEXTS
 from baramFlow.coredb.sphere_scaffold import SphereScaffold
+from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
 from baramFlow.view.results.scaffolds.disk_scaffold_dialog import DiskScaffoldDialog
 from baramFlow.view.results.scaffolds.iso_surface_dialog import IsoSurfaceDialog
@@ -48,7 +49,7 @@ class ScaffoldWidget(QWidget):
 
     @qasync.asyncSlot()
     async def _editAccepted(self):
-        progressDialog = ProgressDialog(self, self.tr('Scaffold Parameters'))
+        progressDialog = ProgressDialog(self, self.tr('Scaffold Parameters'), openDelay=500)
         progressDialog.setLabelText(self.tr('Applying Scaffold parameters...'))
         progressDialog.open()
 
@@ -105,7 +106,7 @@ class IsoSurfaceWidget(ScaffoldWidget):
         self._ui.type.setText(f'iso surface for field <b>{fieldName}</b>')
 
     def edit(self):
-        self._dialog = IsoSurfaceDialog(self, self._scaffold)
+        self._dialog = IsoSurfaceDialog(self, self._scaffold, FileSystem.times())
         self._dialog.accepted.connect(self._editAccepted)
         self._dialog.open()
 

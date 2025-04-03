@@ -14,6 +14,7 @@ from baramFlow.coredb.line_scaffold import LineScaffold
 from baramFlow.coredb.parallelogram import Parallelogram
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.sphere_scaffold import SphereScaffold
+from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
 from baramFlow.view.results.scaffolds.disk_scaffold_dialog import DiskScaffoldDialog
 from baramFlow.view.results.scaffolds.iso_surface_dialog import IsoSurfaceDialog
@@ -97,7 +98,7 @@ class ScaffoldsPage(ContentPage):
         uuid = uuid4()
         name = ScaffoldsDB().getNewIsoSurfaceName()
         self._scaffold = IsoSurface(uuid=uuid, name=name)
-        self._dialog = IsoSurfaceDialog(self, self._scaffold)
+        self._dialog = IsoSurfaceDialog(self, self._scaffold, FileSystem.times())
         self._dialog.accepted.connect(self._addIsoSurface)
         self._dialog.open()
 

@@ -370,7 +370,7 @@ class VisualReportView(RenderingView):
 
     @qasync.asyncSlot()
     async def _showVectors(self):
-        progressDialog = ProgressDialog(self, self.tr('Vectors'))
+        progressDialog = ProgressDialog(self, self.tr('Vectors'), openDelay=500)
         progressDialog.setLabelText(self.tr('Setting up Vectors...'))
         progressDialog.open()
 
@@ -389,7 +389,7 @@ class VisualReportView(RenderingView):
 
     @qasync.asyncSlot()
     async def _showStreams(self):
-        progressDialog = ProgressDialog(self, self.tr('Streamlines'))
+        progressDialog = ProgressDialog(self, self.tr('Streamlines'), openDelay=500)
         progressDialog.setLabelText(self.tr('Setting up Streamlines...'))
         progressDialog.open()
 
