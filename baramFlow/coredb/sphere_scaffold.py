@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from lxml import etree
 from uuid import UUID
 
-from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkPolyData
+from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkPolyData, vtkStaticCellLocator
 from vtkmodules.vtkFiltersCore import vtkPointDataToCellData, vtkResampleWithDataSet
 from vtkmodules.vtkFiltersSources import vtkSphereSource
 
@@ -24,7 +24,7 @@ class SphereScaffold(Scaffold):
 
     radius: str = '1'
 
-    longitudeSamples: int = 20
+    longitudeSamples: int = 40
     latitudeSamples: int = 20
 
     @classmethod
@@ -94,6 +94,11 @@ class SphereScaffold(Scaffold):
         sphere.SetPhiResolution(self.latitudeSamples)
 
         resample = vtkResampleWithDataSet()
+        locator = vtkStaticCellLocator()
+        resample.SetCellLocatorPrototype(locator)
+        resample.ComputeToleranceOff()  #  Computed tolerance is too small so that some field values are not interpolated
+        resample.SetTolerance(1.0)  # "1.0" is the default value for "Tolerance" in vtkResampleWithDataSet
+        resample.PassPartialArraysOn()
         resample.SetSourceData(mesh)
         resample.SetInputConnection(sphere.GetOutputPort())
 
@@ -104,4 +109,4 @@ class SphereScaffold(Scaffold):
 
         await vtk_run_in_thread(p2c.Update)
 
-        return p2c.GetOutput()
+        return p2c.GetPolyDataOutput()

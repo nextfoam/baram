@@ -242,8 +242,12 @@ class DisplayItem(QTreeWidgetItem):
         self._reportingScaffold.opacity = opacity
 
         self._scaffoldActor.GetProperty().SetOpacity(opacity)
+
         if self._vectorActor is not None:
             self._vectorActor.GetProperty().SetOpacity(opacity)
+
+        if self._streamActor is not None:
+            self._streamActor.GetProperty().SetOpacity(opacity)
 
         await self._reportingScaffold.markUpdated()
 
@@ -251,8 +255,13 @@ class DisplayItem(QTreeWidgetItem):
         self._reportingScaffold.color = color
 
         self._scaffoldActor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
+
         if self._vectorActor is not None:
             self._vectorActor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
+
+        if self._streamActor is not None:
+            self._streamActor.GetProperty().SetCoatColor(color.redF(), color.greenF(), color.blueF())
+
         self._updateColorColumn()
 
         await self._reportingScaffold.markUpdated()
@@ -317,8 +326,12 @@ class DisplayItem(QTreeWidgetItem):
 
     def close(self):
         self._view.removeActor(self._scaffoldActor)
+
         if self._vectorActor is not None:
             self._view.removeActor(self._vectorActor)
+
+        if self._streamActor is not None:
+            self._view.removeActor(self._streamActor)
 
     async def showVectors(self):
         if self._vectorActor is None:
@@ -388,10 +401,11 @@ class DisplayItem(QTreeWidgetItem):
 
         self._vectorGlyph.SetScaleFactor(float(self._contour.vectorScaleFactor))
 
-        solverFieldName = getSolverFieldName(self._contour.vectorField)
-        self._vectorGlyph.SetInputArrayToProcess(Glyph3DArray.VECTORS.value, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, solverFieldName)
-        solverFieldName = getSolverFieldName(self._contour.field)
-        self._vectorGlyph.SetInputArrayToProcess(Glyph3DArray.COLOR_SCALARS.value, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, solverFieldName)
+        vectorField = getSolverFieldName(self._contour.vectorField)
+        self._vectorGlyph.SetInputArrayToProcess(Glyph3DArray.VECTORS.value, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, vectorField)
+
+        colorField = getSolverFieldName(self._contour.field)
+        self._vectorGlyph.SetInputArrayToProcess(Glyph3DArray.COLOR_SCALARS.value, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, colorField)
 
         await vtk_run_in_thread(self._vectorGlyph.Update)
 
@@ -402,7 +416,7 @@ class DisplayItem(QTreeWidgetItem):
         else:
             self._vectorMapper.ScalarVisibilityOn()
 
-        self._vectorMapper.SelectColorArray(solverFieldName)
+        self._vectorMapper.SelectColorArray(colorField)
 
         await vtk_run_in_thread(self._vectorMapper.Update)
 

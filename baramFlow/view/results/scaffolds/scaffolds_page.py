@@ -123,7 +123,7 @@ class ScaffoldsPage(ContentPage):
 
     def _openParallelogramDialog(self):
         uuid = uuid4()
-        name = ScaffoldsDB().getNewLineName()
+        name = ScaffoldsDB().getNewParallelogramName()
         self._scaffold = Parallelogram(uuid=uuid, name=name)
         self._dialog = ParallelogramDialog(self, self._scaffold)
         self._dialog.accepted.connect(self._addParallelogram)

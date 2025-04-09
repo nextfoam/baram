@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from vtkmodules.vtkCommonCore import vtkDataArray
+from vtkmodules.vtkCommonCore import vtkDataArray, vtkMath
 from vtkmodules.vtkCommonDataModel import vtkDataSet
 from vtkmodules.vtkFiltersCore import vtkArrayCalculator
 
@@ -18,10 +18,12 @@ def getVectorRange(dataSet: vtkDataSet, field: Field, vectorComponent: VectorCom
         vectors: vtkDataArray = dataSet.GetCellData().GetVectors(solverFieldName)
 
     if not vectors:
-        return (0, 1)
+        return (vtkMath.Nan(), vtkMath.Nan())
 
     if vectorComponent == VectorComponent.MAGNITUDE:
         filter = vtkArrayCalculator()
+        filter.ReplaceInvalidValuesOn()
+        filter.SetReplacementValue(0.0)
         filter.SetInputData(dataSet)
         if useNodeValues:
             filter.SetAttributeTypeToPointData()
@@ -40,7 +42,7 @@ def getVectorRange(dataSet: vtkDataSet, field: Field, vectorComponent: VectorCom
         if scalars:
             return scalars.GetRange()
         else:
-            return (0, 1)
+            return (vtkMath.Nan(), vtkMath.Nan())
 
     elif vectorComponent == VectorComponent.X:
         return vectors.GetRange(0)
@@ -60,5 +62,5 @@ def getScalarRange(dataSet: vtkDataSet, field: Field, useNodeValues: bool) -> tu
     if scalars:
         return scalars.GetRange()
     else:
-        return (0, 1)
+        return (vtkMath.Nan(), vtkMath.Nan())
 

@@ -92,12 +92,7 @@ class VisualReportsDB:
         if report.uuid in self._reports:
             raise AssertionError
 
-        if isinstance(report, Contour):
-            parent = self.VISUAL_REPORTS_PATH + '/contours'
-        else:
-            raise AssertionError
-
-        coredb.CoreDB().addElement(parent, report.toElement())
+        report.saveToCoreDB()
 
         self._reports[report.uuid] = report
 

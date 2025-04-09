@@ -206,20 +206,20 @@ class Contour(VisualReport):
     def xpath(self):
         return f'/contour[uuid="{str(self.uuid)}"]'
 
-    def _saveToCoreDB(self):
+    def saveToCoreDB(self):
         coredb.CoreDB().removeElement(self.VISUAL_REPORTS_PATH + self.xpath())
         coredb.CoreDB().addElement(self.VISUAL_REPORTS_PATH, self.toElement())
 
     async def _reportingScaffoldUpdated(self, scaffold: UUID):
-        self._saveToCoreDB()
+        self.saveToCoreDB()
 
     async def notifyReportingScaffoldAdded(self, uuid: UUID):
         await super().notifyReportingScaffoldAdded(uuid)
-        self._saveToCoreDB()
+        self.saveToCoreDB()
 
     async def notifyReportingScaffoldRemoved(self, uuid: UUID):
         await super().notifyReportingScaffoldRemoved(uuid)
-        self._saveToCoreDB()
+        self.saveToCoreDB()
 
     def getValueRange(self, useNodeValues: bool, relevantScaffoldsOnly: bool) -> tuple[float, float]:
         if len(self.reportingScaffolds) == 0:

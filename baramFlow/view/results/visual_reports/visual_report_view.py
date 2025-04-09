@@ -180,6 +180,11 @@ class VisualReportView(RenderingView):
         self._lookupTable.SetAboveRangeColor(0, 0, 0, 0)  # Transparent
         self._lookupTable.SetBelowRangeColor(0, 0, 0, 0)  # Transparent
 
+        # White for NaN Value, for missing fields in Solid Region for example
+        # Transparent value of 0.5 might be better
+        # But it did not work well on OpenGL
+        self._lookupTable.SetNanColor(1, 1, 1, 1)
+
         if contour.useCustomRange:
             self._lookupTable.SetTableRange(float(contour.customRangeMin), float(contour.customRangeMax))
         else:

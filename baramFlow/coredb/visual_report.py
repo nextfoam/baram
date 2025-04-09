@@ -41,7 +41,7 @@ class VisualReport:
         raise NotImplementedError
 
     async def notifyReportUpdated(self):
-        self._saveToCoreDB()
+        self.saveToCoreDB()
         await self.instanceUpdated.emit(self.uuid)
 
     async def notifyReportingScaffoldAdded(self, uuid: UUID):
@@ -53,5 +53,5 @@ class VisualReport:
     async def notifyReportingScaffoldRemoved(self, uuid: UUID):
         await self.reportingScaffoldRemoved.emit(uuid)
 
-    def _saveToCoreDB(self):
+    def saveToCoreDB(self):
         raise NotImplementedError

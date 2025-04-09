@@ -31,7 +31,7 @@ class IsoSurface(Scaffold):
     def parseScaffolds(cls) -> dict[UUID, Scaffold]:
         scaffolds: dict[UUID, Scaffold] = {}
 
-        for e in coredb.CoreDB().getElements(Scaffold.SCAFFOLDS_PATH + '/isoSurfaces/isoSurface'):
+        for e in coredb.CoreDB().getElements(Scaffold.SCAFFOLDS_PATH + '/isoSurfaces/surface'):
             s = IsoSurface.fromElement(e)
             scaffolds[s.uuid] = s
 

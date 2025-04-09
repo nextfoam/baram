@@ -171,7 +171,7 @@ class ContourDialog(QDialog):
             await self._contour.notifyReportingScaffoldRemoved(uuid)
 
 
-        progressDialog.setLabelText(self.tr('Updading Graphics...'))
+        progressDialog.setLabelText(self.tr('Updating Graphics...'))
 
         async with OpenFOAMReader() as reader:
             if fieldValueNeedUpdate:
