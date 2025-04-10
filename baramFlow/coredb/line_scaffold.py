@@ -115,6 +115,6 @@ class LineScaffold(Scaffold):
         p2c.ProcessAllArraysOn()
         p2c.SetInputConnection(probe.GetOutputPort())
 
-        await vtk_run_in_thread(probe.Update)
+        await vtk_run_in_thread(p2c.Update)
 
         return p2c.GetOutput()
