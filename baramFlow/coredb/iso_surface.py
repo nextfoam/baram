@@ -6,7 +6,7 @@ from uuid import UUID
 
 from lxml import etree
 
-from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkPlane, vtkPolyData, vtkSphere
+from vtkmodules.vtkCommonDataModel import vtkDataObject, vtkMultiBlockDataSet, vtkPlane, vtkPolyData, vtkSphere
 from vtkmodules.vtkFiltersCore import vtkArrayCalculator, vtkContourFilter, vtkCutter
 
 from baramFlow.coredb import coredb
@@ -106,10 +106,12 @@ class IsoSurface(Scaffold):
         else:
             solverFieldName = getSolverFieldName(self.field)
             filter = vtkContourFilter()
-
+            filter.ComputeNormalsOn()
+            filter.GenerateTrianglesOn()
             if self.field.type == FieldType.VECTOR:
-                mesh.GetPointData().SetActiveVectors(solverFieldName)
                 calc = vtkArrayCalculator()
+                calc.ReplaceInvalidValuesOn()
+                calc.SetReplacementValue(0.0)
                 calc.SetInputData(mesh)
                 calc.SetAttributeTypeToPointData()
                 if self.fieldComponent == VectorComponent.MAGNITUDE:
@@ -129,9 +131,10 @@ class IsoSurface(Scaffold):
 
                 calc.SetResultArrayName('isoScalar')
                 filter.SetInputConnection(calc.GetOutputPort())
+                filter.SetInputArrayToProcess(0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, 'isoScalar')
             else:  # FieldType.SCALAR
-                mesh.GetPointData().SetActiveScalars(solverFieldName)
                 filter.SetInputData(mesh)
+                filter.SetInputArrayToProcess(0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, solverFieldName)
 
         for i, v in enumerate(values):
             filter.SetValue(i, v)
