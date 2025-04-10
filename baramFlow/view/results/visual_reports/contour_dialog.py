@@ -116,7 +116,9 @@ class ContourDialog(QDialog):
         fieldValueNeedUpdate = False
 
         time = self._timeSlider.getCurrentTime()
+
         field: Field = self._ui.field.currentData()
+        fieldComponent = self._ui.fieldComponent.currentData()
 
         progressDialog = ProgressDialog(self, self.tr('Graphics Parameters'), openDelay=500)
         progressDialog.setLabelText(self.tr('Applying Graphics parameters...'))
@@ -143,8 +145,13 @@ class ContourDialog(QDialog):
             self._contour.time = time
             fieldValueNeedUpdate = True
 
-        self._contour.field = self._ui.field.currentData()
-        self._contour.fieldComponent = self._ui.fieldComponent.currentData()
+        if self._contour.field != field:
+            self._contour.field = field
+            fieldValueNeedUpdate = True
+
+        if self._contour.fieldComponent != fieldComponent:
+            self._contour.fieldComponent = fieldComponent
+            fieldValueNeedUpdate = True
 
         self._contour.includeVectors = self._ui.includeVectors.isChecked()
         self._contour.vectorField = self._ui.vectorField.currentData()

@@ -160,10 +160,26 @@ class VisualReportView(RenderingView):
         self._lookupTable.SetNumberOfTableValues(contour.numberOfLevels)
 
         if contour.useCustomColorScheme:
-            self._lookupTable.SetHueRange(contour.customMinColor.hueF(), contour.customMaxColor.hueF())
-            self._lookupTable.SetSaturationRange(contour.customMinColor.saturationF(), contour.customMaxColor.saturationF())
-            self._lookupTable.SetValueRange(contour.customMinColor.valueF(), contour.customMaxColor.valueF())
-            self._lookupTable.Build()
+            rMin = contour.customMinColor.redF()
+            gMin = contour.customMinColor.greenF()
+            bMin = contour.customMinColor.blueF()
+
+            rMax = contour.customMaxColor.redF()
+            gMax = contour.customMaxColor.greenF()
+            bMax = contour.customMaxColor.blueF()
+
+            if contour.numberOfLevels > 1:
+                rInc = (rMax - rMin) / (contour.numberOfLevels-1)
+                gInc = (gMax - gMin) / (contour.numberOfLevels-1)
+                bInc = (bMax - bMin) / (contour.numberOfLevels-1)
+                for i in range(0, contour.numberOfLevels):
+                    r = rMin + i * rInc
+                    g = gMin + i * gInc
+                    b = bMin + i * bInc
+                    self._lookupTable.SetTableValue(i, r, g, b)
+            else:
+                self._lookupTable.SetTableValue(0, rMin, gMin, bMin)
+
         else:
             levels = contour.numberOfLevels
             # cmap = mpl.colormaps['viridis']
