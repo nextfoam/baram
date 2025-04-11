@@ -160,13 +160,8 @@ class VisualReportView(RenderingView):
         self._lookupTable.SetNumberOfTableValues(contour.numberOfLevels)
 
         if contour.useCustomColorScheme:
-            rMin = contour.customMinColor.redF()
-            gMin = contour.customMinColor.greenF()
-            bMin = contour.customMinColor.blueF()
-
-            rMax = contour.customMaxColor.redF()
-            gMax = contour.customMaxColor.greenF()
-            bMax = contour.customMaxColor.blueF()
+            rMin, gMin, bMin, _ = contour.customMinColor.getRgbF()
+            rMax, gMax, bMax, _ = contour.customMaxColor.getRgbF()
 
             if contour.numberOfLevels > 1:
                 rInc = (rMax - rMin) / (contour.numberOfLevels-1)
