@@ -11,7 +11,7 @@ from baramFlow.coredb.libdb import nsmap
 
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_report import VisualReport
-from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
+from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram.async_signal import AsyncSignal
 from libbaram.openfoam.polymesh import collectInternalMesh
 

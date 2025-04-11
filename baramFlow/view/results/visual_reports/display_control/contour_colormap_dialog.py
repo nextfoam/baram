@@ -7,8 +7,10 @@ from PySide6.QtWidgets import QColorDialog
 import qasync
 
 from baramFlow.coredb.contour import Contour
+from baramFlow.coredb.post_field import FIELD_TEXTS, VECTOR_COMPONENT_TEXTS, FieldType
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from widgets.async_message_box import AsyncMessageBox
+from widgets.progress_dialog import ProgressDialog
 from .colormap.colormap import colormapName, colormapImage
 from .colormap_scheme_dialog import ColormapSchemeDialog
 from .contour_colormap_dialog_ui import Ui_ContourColormapDialog
@@ -34,8 +36,18 @@ class ContourColormapDialog(ResizableDialog):
 
         self._ui.relevantScaffoldsOnly.setChecked(contour.relevantScaffoldsOnly)
 
-        self._ui.rangeMin.setText('0')
-        self._ui.rangeMax.setText('0')
+        if contour.field in FIELD_TEXTS:
+            fieldName = FIELD_TEXTS[contour.field]
+        else:
+            fieldName = contour.field.codeName
+
+        if contour.field.type == FieldType.VECTOR:
+            fieldName += '  ( ' + VECTOR_COMPONENT_TEXTS[contour.fieldComponent] + ' )'
+
+        self._ui.colorBy.setText(fieldName)
+
+        self._ui.rangeMin.setText(f'{contour.rangeMin:g}')
+        self._ui.rangeMax.setText(f'{contour.rangeMax:g}')
 
         self._ui.useCustomRange.setChecked(contour.useCustomRange)
         self._updateCustomRangeGroupVisibility(contour.useCustomRange)
@@ -98,7 +110,13 @@ class ContourColormapDialog(ResizableDialog):
         self._contour.customMinColor = self._customMinColor
         self._contour.customMaxColor = self._customMaxColor
 
+        progressDialog = ProgressDialog(self, self.tr('Graphics Parameters'), openDelay=500)
+        progressDialog.setLabelText(self.tr('Applying Graphics parameters...'))
+        progressDialog.open()
+
         await self._contour.notifyReportUpdated()
+
+        progressDialog.close()
 
         super().accept()
 

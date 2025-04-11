@@ -16,7 +16,7 @@ from baramFlow.coredb.visual_reports_db import VisualReportsDB
 from baramFlow.coredb.post_field import FIELD_TEXTS
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver_field import getSolverFieldName
-from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
+from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 from libbaram.openfoam.collateral_fields import calculateCollateralField
 from libbaram.openfoam.polymesh import collectInternalMesh
@@ -147,10 +147,12 @@ class ContourDialog(QDialog):
 
         if self._contour.field != field:
             self._contour.field = field
+            self._contour.useCustomRange = False
             fieldValueNeedUpdate = True
 
         if self._contour.fieldComponent != fieldComponent:
             self._contour.fieldComponent = fieldComponent
+            self._contour.useCustomRange = False
             fieldValueNeedUpdate = True
 
         self._contour.includeVectors = self._ui.includeVectors.isChecked()
@@ -177,7 +179,6 @@ class ContourDialog(QDialog):
             del self._contour.reportingScaffolds[uuid]
             await self._contour.notifyReportingScaffoldRemoved(uuid)
 
-
         progressDialog.setLabelText(self.tr('Updating Graphics...'))
 
         async with OpenFOAMReader() as reader:
@@ -202,6 +203,8 @@ class ContourDialog(QDialog):
                 rs = ReportingScaffold(scaffoldUuid=uuid, dataSet=dataSet)
                 self._contour.reportingScaffolds[uuid] = rs
                 await self._contour.notifyReportingScaffoldAdded(uuid)
+
+        self._contour.rangeMin, self._contour.rangeMax = self._contour.getValueRange(self._contour.useNodeValues, self._contour.relevantScaffoldsOnly)
 
         progressDialog.close()
 

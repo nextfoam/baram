@@ -175,7 +175,15 @@ class FileSystem:
             parent = cls._casePath
 
         path = parent / time / fieldStr
-        return path.is_file()
+        if path.is_file():
+            return True
+
+        # in case it is multi-region case
+        for path in parent.joinpath(time).glob(f'*/{fieldStr}'):
+            if path.is_file():
+                return True
+
+        return False
 
     @classmethod
     def polyMeshPath(cls, rname=''):

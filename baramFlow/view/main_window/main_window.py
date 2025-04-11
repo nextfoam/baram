@@ -19,6 +19,7 @@ from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_report import VisualReport
 from baramFlow.coredb.visual_reports_db import VisualReportsDB
+from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.view.results.visual_reports.visual_report_dock import VisualReportDock
 from libbaram.exception import CanceledException
 from libbaram.openfoam.polymesh import removeVoidBoundaries
@@ -654,6 +655,9 @@ class MainWindow(QMainWindow):
         progressDialog.setLabelText(self.tr('Building Graphics Reports'))
 
         self._navigatorView.updateEnabled()
+
+        async with OpenFOAMReader() as reader:
+            await reader.setupReader()
 
         ScaffoldsDB().load()
         await VisualReportsDB().load()

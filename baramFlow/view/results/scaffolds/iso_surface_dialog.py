@@ -16,7 +16,7 @@ from baramFlow.coredb.post_field import FIELD_TEXTS
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.polymesh.util import getScalarRange, getVectorRange
 from baramFlow.openfoam.solver_field import getSolverFieldName
-from baramFlow.view.results.visual_reports.openfoam_reader import OpenFOAMReader
+from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram.openfoam.collateral_fields import calculateCollateralField
 from libbaram.openfoam.polymesh import collectInternalMesh
 from widgets.async_message_box import AsyncMessageBox

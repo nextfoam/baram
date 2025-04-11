@@ -48,7 +48,7 @@ class OpenFOAMReader(QObject):
         self._acquired = True
 
         if self._reader is None:
-            await self._setupReader()
+            await self.setupReader()
 
         return self
 
@@ -66,7 +66,7 @@ class OpenFOAMReader(QObject):
 
         return self._reader.GetOutput()
 
-    async def _setupReader(self):
+    async def setupReader(self):
         if not self._acquired:
             raise AssertionError
 

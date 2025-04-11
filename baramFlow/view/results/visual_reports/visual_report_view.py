@@ -250,6 +250,8 @@ class VisualReportView(RenderingView):
             item = self._items[did]
             await item.updateScaffoldInfo()
 
+        self._updateLookupTable()
+
         self._view.refresh()
 
     def _selectedItemsChanged(self):
