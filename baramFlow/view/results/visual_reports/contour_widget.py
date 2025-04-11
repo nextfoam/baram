@@ -39,7 +39,7 @@ class ContourWidget(VisualReportWidget):
             if not await AsyncMessageBox().confirm(
                     self,
                     self.tr('Warning'),
-                    self.tr('Configured time folder is not in the disk. Time will be reconfigured if you proceed. Proceed?')):
+                    self.tr('Configured time folder is not in the file system. Time will be reconfigured if you proceed. Proceed?')):
                 return
 
         self._dialog = ContourDialog(self, self._contour, times)
