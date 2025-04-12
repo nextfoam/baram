@@ -12,6 +12,7 @@ from baramFlow.coredb.disk_scaffold import DiskScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.line_scaffold import LineScaffold
 from baramFlow.coredb.parallelogram import Parallelogram
+from baramFlow.coredb.plane_scaffold import PlaneScaffold
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.sphere_scaffold import SphereScaffold
 from baramFlow.openfoam.file_system import FileSystem
@@ -20,7 +21,8 @@ from baramFlow.view.results.scaffolds.disk_scaffold_dialog import DiskScaffoldDi
 from baramFlow.view.results.scaffolds.iso_surface_dialog import IsoSurfaceDialog
 from baramFlow.view.results.scaffolds.line_scaffold_dialog import LineScaffoldDialog
 from baramFlow.view.results.scaffolds.parallelogram_dialog import ParallelogramDialog
-from baramFlow.view.results.scaffolds.scaffold_widget import BoundaryScaffoldWidget, DiskScaffoldWidget, IsoSurfaceWidget, LineScaffoldWidget, ParallelogramWidget, ScaffoldWidget, SphereScaffoldWidget
+from baramFlow.view.results.scaffolds.plane_scaffold_dialog import PlaneScaffoldDialog
+from baramFlow.view.results.scaffolds.scaffold_widget import BoundaryScaffoldWidget, DiskScaffoldWidget, IsoSurfaceWidget, LineScaffoldWidget, ParallelogramWidget, PlaneScaffoldWidget, ScaffoldWidget, SphereScaffoldWidget
 from baramFlow.view.results.scaffolds.sphere_scaffold_dialog import SphereScaffoldDialog
 from baramFlow.view.widgets.content_page import ContentPage
 
@@ -39,11 +41,11 @@ class ScaffoldsPage(ContentPage):
         self._menu = QMenu()
 
         self._addBoundaryScaffoldMenu: QAction   = self._menu.addAction(self.tr('&Boundary'))
-        self._addIsoSurfaceMenu: QAction         = self._menu.addAction(self.tr('&Iso Surface'))
-        self._addPlaneMenu: QAction              = self._menu.addAction(self.tr('&Plane'))
         self._addDIskScaffoldMenu: QAction       = self._menu.addAction(self.tr('&Disk'))
+        self._addIsoSurfaceMenu: QAction         = self._menu.addAction(self.tr('&Iso Surface'))
         self._addLineScaffoldMenu: QAction       = self._menu.addAction(self.tr('&Line'))
         self._addParallelogramMenu: QAction      = self._menu.addAction(self.tr('&Parallelogram'))
+        self._addPlaneMenu: QAction              = self._menu.addAction(self.tr('&Plane'))
         self._addSphereScaffoldMenu: QAction     = self._menu.addAction(self.tr('&Sphere'))
 
         self._ui.add.setMenu(self._menu)
@@ -57,11 +59,11 @@ class ScaffoldsPage(ContentPage):
 
     def _connectSignalsSlots(self):
         self._addBoundaryScaffoldMenu.triggered.connect(self._openAddBoundaryScaffoldDialog)
-        self._addIsoSurfaceMenu.triggered.connect(self._openAddIsoSurfaceDialog)
-        self._addPlaneMenu.triggered.connect(self._openAddPlaneDialog)
         self._addDIskScaffoldMenu.triggered.connect(self._openDiskScaffoldDialog)
+        self._addIsoSurfaceMenu.triggered.connect(self._openAddIsoSurfaceDialog)
         self._addLineScaffoldMenu.triggered.connect(self._openLineScaffoldDialog)
         self._addParallelogramMenu.triggered.connect(self._openParallelogramDialog)
+        self._addPlaneMenu.triggered.connect(self._openAddPlaneDialog)
         self._addSphereScaffoldMenu.triggered.connect(self._openSphereScaffoldDialog)
 
         self._ui.list.currentItemChanged.connect(self._itemSelected)
@@ -75,14 +77,16 @@ class ScaffoldsPage(ContentPage):
         for s in ScaffoldsDB().getScaffolds().values():
             if isinstance(s, BoundaryScaffold):
                 self._addItem(BoundaryScaffoldWidget(s))
-            elif isinstance(s, IsoSurface):
-                self._addItem(IsoSurfaceWidget(s))
             elif isinstance(s, DiskScaffold):
                 self._addItem(DiskScaffoldWidget(s))
+            elif isinstance(s, IsoSurface):
+                self._addItem(IsoSurfaceWidget(s))
             elif isinstance(s, LineScaffold):
                 self._addItem(LineScaffoldWidget(s))
             elif isinstance(s, Parallelogram):
                 self._addItem(ParallelogramWidget(s))
+            elif isinstance(s, PlaneScaffold):
+                self._addItem(PlaneScaffoldWidget(s))
             elif isinstance(s, SphereScaffold):
                 self._addItem(SphereScaffoldWidget(s))
 
@@ -94,23 +98,20 @@ class ScaffoldsPage(ContentPage):
         self._dialog.accepted.connect(self._addBoundaryScaffold)
         self._dialog.open()
 
-    def _openAddIsoSurfaceDialog(self):
-        uuid = uuid4()
-        name = ScaffoldsDB().getNewIsoSurfaceName()
-        self._scaffold = IsoSurface(uuid=uuid, name=name)
-        self._dialog = IsoSurfaceDialog(self, self._scaffold, FileSystem.times())
-        self._dialog.accepted.connect(self._addIsoSurface)
-        self._dialog.open()
-
-    def _openAddPlaneDialog(self):
-        pass
-
     def _openDiskScaffoldDialog(self):
         uuid = uuid4()
         name = ScaffoldsDB().getNewDiskName()
         self._scaffold = DiskScaffold(uuid=uuid, name=name)
         self._dialog = DiskScaffoldDialog(self, self._scaffold)
         self._dialog.accepted.connect(self._addDiskScaffold)
+        self._dialog.open()
+
+    def _openAddIsoSurfaceDialog(self):
+        uuid = uuid4()
+        name = ScaffoldsDB().getNewIsoSurfaceName()
+        self._scaffold = IsoSurface(uuid=uuid, name=name)
+        self._dialog = IsoSurfaceDialog(self, self._scaffold, FileSystem.times())
+        self._dialog.accepted.connect(self._addIsoSurface)
         self._dialog.open()
 
     def _openLineScaffoldDialog(self):
@@ -127,6 +128,14 @@ class ScaffoldsPage(ContentPage):
         self._scaffold = Parallelogram(uuid=uuid, name=name)
         self._dialog = ParallelogramDialog(self, self._scaffold)
         self._dialog.accepted.connect(self._addParallelogram)
+        self._dialog.open()
+
+    def _openAddPlaneDialog(self):
+        uuid = uuid4()
+        name = ScaffoldsDB().getNewPlaneName()
+        self._scaffold = PlaneScaffold(uuid=uuid, name=name)
+        self._dialog = PlaneScaffoldDialog(self, self._scaffold)
+        self._dialog.accepted.connect(self._addPlaneScaffold)
         self._dialog.open()
 
     def _openSphereScaffoldDialog(self):
@@ -147,19 +156,19 @@ class ScaffoldsPage(ContentPage):
         self._dialog = None
 
     @qasync.asyncSlot()
-    async def _addIsoSurface(self):
+    async def _addDiskScaffold(self):
         await ScaffoldsDB().addScaffold(self._scaffold)
 
-        self._addItem(IsoSurfaceWidget(self._scaffold))
+        self._addItem(DiskScaffoldWidget(self._scaffold))
 
         self._scaffold = None
         self._dialog = None
 
     @qasync.asyncSlot()
-    async def _addDiskScaffold(self):
+    async def _addIsoSurface(self):
         await ScaffoldsDB().addScaffold(self._scaffold)
 
-        self._addItem(DiskScaffoldWidget(self._scaffold))
+        self._addItem(IsoSurfaceWidget(self._scaffold))
 
         self._scaffold = None
         self._dialog = None
@@ -178,6 +187,15 @@ class ScaffoldsPage(ContentPage):
         await ScaffoldsDB().addScaffold(self._scaffold)
 
         self._addItem(ParallelogramWidget(self._scaffold))
+
+        self._scaffold = None
+        self._dialog = None
+
+    @qasync.asyncSlot()
+    async def _addPlaneScaffold(self):
+        await ScaffoldsDB().addScaffold(self._scaffold)
+
+        self._addItem(PlaneScaffoldWidget(self._scaffold))
 
         self._scaffold = None
         self._dialog = None

@@ -12,6 +12,7 @@ from baramFlow.coredb.disk_scaffold import DiskScaffold
 from baramFlow.coredb.iso_surface import IsoSurface
 from baramFlow.coredb.line_scaffold import LineScaffold
 from baramFlow.coredb.parallelogram import Parallelogram
+from baramFlow.coredb.plane_scaffold import PlaneScaffold
 from baramFlow.coredb.scaffolds_db import Scaffold, ScaffoldsDB
 from baramFlow.coredb.post_field import FIELD_TEXTS
 from baramFlow.coredb.sphere_scaffold import SphereScaffold
@@ -21,6 +22,7 @@ from baramFlow.view.results.scaffolds.disk_scaffold_dialog import DiskScaffoldDi
 from baramFlow.view.results.scaffolds.iso_surface_dialog import IsoSurfaceDialog
 from baramFlow.view.results.scaffolds.line_scaffold_dialog import LineScaffoldDialog
 from baramFlow.view.results.scaffolds.parallelogram_dialog import ParallelogramDialog
+from baramFlow.view.results.scaffolds.plane_scaffold_dialog import PlaneScaffoldDialog
 from baramFlow.view.results.scaffolds.sphere_scaffold_dialog import SphereScaffoldDialog
 from widgets.progress_dialog import ProgressDialog
 
@@ -90,6 +92,22 @@ class BoundaryScaffoldWidget(ScaffoldWidget):
         self._dialog.open()
 
 
+class DiskScaffoldWidget(ScaffoldWidget):
+    def __init__(self, scaffold: Scaffold):
+        super().__init__(scaffold)
+
+    def load(self):
+        scaffold: DiskScaffold = self._scaffold
+        self._ui.name.setText(scaffold.name)
+
+        self._ui.type.setText(f'Disk of Outer Radius <b>{scaffold.outerRadius}</b> at({scaffold.centerX}, {scaffold.centerY}, {scaffold.centerZ})')
+
+    def edit(self):
+        self._dialog = DiskScaffoldDialog(self, self._scaffold)
+        self._dialog.accepted.connect(self._editAccepted)
+        self._dialog.open()
+
+
 class IsoSurfaceWidget(ScaffoldWidget):
     def __init__(self, scaffold: Scaffold):
         super().__init__(scaffold)
@@ -107,22 +125,6 @@ class IsoSurfaceWidget(ScaffoldWidget):
 
     def edit(self):
         self._dialog = IsoSurfaceDialog(self, self._scaffold, FileSystem.times())
-        self._dialog.accepted.connect(self._editAccepted)
-        self._dialog.open()
-
-
-class DiskScaffoldWidget(ScaffoldWidget):
-    def __init__(self, scaffold: Scaffold):
-        super().__init__(scaffold)
-
-    def load(self):
-        scaffold: DiskScaffold = self._scaffold
-        self._ui.name.setText(scaffold.name)
-
-        self._ui.type.setText(f'Disk of Outer Radius <b>{scaffold.outerRadius}</b> at({scaffold.centerX}, {scaffold.centerY}, {scaffold.centerZ})')
-
-    def edit(self):
-        self._dialog = DiskScaffoldDialog(self, self._scaffold)
         self._dialog.accepted.connect(self._editAccepted)
         self._dialog.open()
 
@@ -155,6 +157,22 @@ class ParallelogramWidget(ScaffoldWidget):
 
     def edit(self):
         self._dialog = ParallelogramDialog(self, self._scaffold)
+        self._dialog.accepted.connect(self._editAccepted)
+        self._dialog.open()
+
+
+class PlaneScaffoldWidget(ScaffoldWidget):
+    def __init__(self, scaffold: Scaffold):
+        super().__init__(scaffold)
+
+    def load(self):
+        scaffold: PlaneScaffold = self._scaffold
+        self._ui.name.setText(scaffold.name)
+
+        self._ui.type.setText(f'Plane at ({scaffold.originX}, {scaffold.originY}, {scaffold.originZ}) with Normal of ({scaffold.normalX}, {scaffold.normalY}, {scaffold.normalZ})')
+
+    def edit(self):
+        self._dialog = PlaneScaffoldDialog(self, self._scaffold)
         self._dialog.accepted.connect(self._editAccepted)
         self._dialog.open()
 

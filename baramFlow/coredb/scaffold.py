@@ -13,10 +13,11 @@ from libbaram.async_signal import AsyncSignal
 
 class ScaffoldType(Enum):
     BOUNDARY	    = 'boundary'
-    ISO_SURFACE	    = 'isoSurface'
     DISK_SCAFFOLD   = 'diskScaffold'
+    ISO_SURFACE	    = 'isoSurface'
     LINE_SCAFFOLD   = 'lineScaffold'
     PARALLELOGRAM   = 'parallelogram'
+    PLANE_SCAFFOLD  = 'planeScaffold'
     SPHERE_SCAFFOLD   = 'sphereScaffold'
 
 

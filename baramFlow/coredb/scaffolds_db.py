@@ -10,16 +10,18 @@ from baramFlow.coredb.iso_surface import IsoSurface
 
 from baramFlow.coredb.line_scaffold import LineScaffold
 from baramFlow.coredb.parallelogram import Parallelogram
+from baramFlow.coredb.plane_scaffold import PlaneScaffold
 from baramFlow.coredb.scaffold import Scaffold
 from baramFlow.coredb.sphere_scaffold import SphereScaffold
 from libbaram.async_signal import AsyncSignal
 
 
 BOUNDARY_SCAFFOLD_NAME_PREFIX = 'boundary'
-ISO_SURFACE_NAME_PREFIX = 'iso-surface'
 DISK_SCAFFOLD_NAME_PREFIX = 'disk-scaffold'
+ISO_SURFACE_NAME_PREFIX = 'iso-surface'
 LINE_SCAFFOLD_NAME_PREFIX = 'line-scaffold'
 PARALLELOGRAM_NAME_PREFIX = 'parallelogram'
+PLANE_SCAFFOLD_NAME_PREFIX = 'plane-scaffold'
 SPHERE_SCAFFOLD_NAME_PREFIX = 'sphere-scaffold'
 
 _mutex = Lock()
@@ -50,10 +52,11 @@ class ScaffoldsDB:
         scaffolds: dict[UUID, Scaffold] = {}
 
         scaffolds.update(BoundaryScaffold.parseScaffolds())
-        scaffolds.update(IsoSurface.parseScaffolds())
         scaffolds.update(DiskScaffold.parseScaffolds())
+        scaffolds.update(IsoSurface.parseScaffolds())
         scaffolds.update(LineScaffold.parseScaffolds())
         scaffolds.update(Parallelogram.parseScaffolds())
+        scaffolds.update(PlaneScaffold.parseScaffolds())
         scaffolds.update(SphereScaffold.parseScaffolds())
 
         for s in scaffolds.values():
@@ -123,17 +126,20 @@ class ScaffoldsDB:
     def getNewBoundaryScaffoldName(self) -> str:
         return self._getNewScaffoldName(BOUNDARY_SCAFFOLD_NAME_PREFIX)
 
-    def getNewIsoSurfaceName(self) -> str:
-        return self._getNewScaffoldName(ISO_SURFACE_NAME_PREFIX)
-
     def getNewDiskName(self) -> str:
         return self._getNewScaffoldName(DISK_SCAFFOLD_NAME_PREFIX)
+
+    def getNewIsoSurfaceName(self) -> str:
+        return self._getNewScaffoldName(ISO_SURFACE_NAME_PREFIX)
 
     def getNewLineName(self) -> str:
         return self._getNewScaffoldName(LINE_SCAFFOLD_NAME_PREFIX)
 
     def getNewParallelogramName(self) -> str:
         return self._getNewScaffoldName(PARALLELOGRAM_NAME_PREFIX)
+
+    def getNewPlaneName(self) -> str:
+        return self._getNewScaffoldName(PLANE_SCAFFOLD_NAME_PREFIX)
 
     def getNewSphereName(self) -> str:
         return self._getNewScaffoldName(SPHERE_SCAFFOLD_NAME_PREFIX)

@@ -236,10 +236,11 @@
 
     <scaffolds>
         <boundaries/>
-        <isoSurfaces/>
         <diskScaffolds/>
+        <isoSurfaces/>
         <lineScaffolds/>
         <parallelograms/>
+        <planeScaffolds/>
         <sphereScaffolds/>
     </scaffolds>
 

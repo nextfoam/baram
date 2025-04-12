@@ -2503,6 +2503,26 @@
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
+                            <xs:element name="diskScaffolds">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="diskScaffold" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="center" type="vector"/>
+                                                    <xs:element name="normal" type="vector"/>
+                                                    <xs:element name="outerRadius" type="positive" default="1"/>
+                                                    <xs:element name="innerRadius" type="nonNegative" default="0"/>
+                                                    <xs:element name="radialSamples" type="xs:positiveInteger" default="10"/>
+                                                    <xs:element name="circumferentialSamples" type="xs:positiveInteger" default="20"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                             <xs:element name="isoSurfaces">
                                 <xs:complexType>
                                     <xs:sequence>
@@ -2528,26 +2548,6 @@
                                                     <xs:element name="isoValues" type="inputNumberListType"/>
                                                     <xs:element name="surfacesPerValue" type="xs:positiveInteger" default="1"/>
                                                     <xs:element name="spacing" type="inputPositiveNumberType"/>
-                                                </xs:sequence>
-                                            </xs:complexType>
-                                        </xs:element>
-                                    </xs:sequence>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="diskScaffolds">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="diskScaffold" minOccurs="0" maxOccurs="unbounded">
-                                            <xs:complexType>
-                                                <xs:sequence>
-                                                    <xs:element name="uuid" type="uuidType"/>
-                                                    <xs:element name="name" type="xs:string"/>
-                                                    <xs:element name="center" type="vector"/>
-                                                    <xs:element name="normal" type="vector"/>
-                                                    <xs:element name="outerRadius" type="positive" default="1"/>
-                                                    <xs:element name="innerRadius" type="nonNegative" default="0"/>
-                                                    <xs:element name="radialSamples" type="xs:positiveInteger" default="10"/>
-                                                    <xs:element name="circumferentialSamples" type="xs:positiveInteger" default="20"/>
                                                 </xs:sequence>
                                             </xs:complexType>
                                         </xs:element>
@@ -2584,6 +2584,22 @@
                                                     <xs:element name="point2" type="vector"/>
                                                     <xs:element name="point1Samples" type="xs:positiveInteger" default="10"/>
                                                     <xs:element name="point2Samples" type="xs:positiveInteger" default="10"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="planeScaffolds">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="planeScaffold" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="origin" type="vector"/>
+                                                    <xs:element name="normal" type="vector"/>
                                                 </xs:sequence>
                                             </xs:complexType>
                                         </xs:element>
