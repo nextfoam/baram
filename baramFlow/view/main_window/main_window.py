@@ -924,9 +924,9 @@ class MainWindow(QMainWindow):
         self.meshUpdated()
 
     def _addNewReportDock(self, report: VisualReport):
-        dock = VisualReportDock(report)
-        self._docks[report.uuid] = dock
-        self.addDockWidget(dock)
+        dockWidget = VisualReportDock(report)
+        self._docks[report.uuid] = dockWidget
+        self.addDockWidget(dockWidget)
 
     async def _reportAdded(self, uuid: UUID):
         report = VisualReportsDB().getVisualReport(uuid)
@@ -939,5 +939,8 @@ class MainWindow(QMainWindow):
 
     async def _reportRemoving(self, uuid: UUID):
         if uuid in self._docks:
-            self.removeDockWidget(self._docks[uuid])
+            dockWidget = self._docks[uuid]
+            self.removeDockWidget(dockWidget)
+            dockWidget.close()
+
             del self._docks[uuid]

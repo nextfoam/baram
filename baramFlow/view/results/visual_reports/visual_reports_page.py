@@ -4,8 +4,7 @@
 from uuid import uuid4
 import qasync
 
-from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QMenu, QListWidgetItem, QMessageBox
+from PySide6.QtWidgets import QListWidgetItem, QMessageBox
 
 from baramFlow.coredb.contour import Contour
 from baramFlow.coredb.visual_reports_db import VisualReportsDB
@@ -27,15 +26,6 @@ class VisualReportsPage(ContentPage):
         self._ui = Ui_VisualReportsPage()
         self._ui.setupUi(self)
 
-        self._menu = QMenu()
-
-        self._addCoutours: QAction    = self._menu.addAction(self.tr('&Contours'))
-        self._addVectors: QAction     = self._menu.addAction(self.tr('&Vectors'))
-        self._addPathlines: QAction   = self._menu.addAction(self.tr('&Pathlines'))
-        self._addParticleTracks: QAction    = self._menu.addAction(self.tr('&Particle Tracks'))
-
-        self._ui.add.setMenu(self._menu)
-
         self._report = None
         self._dialog = None
 
@@ -44,10 +34,7 @@ class VisualReportsPage(ContentPage):
         self._load()
 
     def _connectSignalsSlots(self):
-        self._addCoutours.triggered.connect(self._openAddContoursDialog)
-        self._addVectors.triggered.connect(self._openAddVectorsDialog)
-        self._addPathlines.triggered.connect(self._openAddPathlinesDialog)
-        self._addParticleTracks.triggered.connect(self._openAddParticleTracksDialog)
+        self._ui.add.clicked.connect(self._openAddContoursDialog)
 
         self._ui.list.currentItemChanged.connect(self._itemSelected)
         self._ui.list.itemDoubleClicked.connect(self._edit)
@@ -69,15 +56,6 @@ class VisualReportsPage(ContentPage):
         self._dialog.accepted.connect(self._addContours)
         self._dialog.open()
 
-    def _openAddVectorsDialog(self):
-        pass
-
-    def _openAddPathlinesDialog(self):
-        pass
-
-    def _openAddParticleTracksDialog(self):
-        pass
-
     @qasync.asyncSlot()
     async def _addContours(self):
         await VisualReportsDB().addVisualReport(self._report)
@@ -92,9 +70,6 @@ class VisualReportsPage(ContentPage):
         item.setSizeHint(widget.size())
         self._ui.list.addItem(item)
         self._ui.list.setItemWidget(item, widget)
-
-    def _removeItem(self, row):
-        self._ui.list.takeItem(row)
 
     def _itemSelected(self):
         self._ui.edit.setEnabled(True)
@@ -112,6 +87,9 @@ class VisualReportsPage(ContentPage):
         if confirm == QMessageBox.StandardButton.Yes:
             await widget.delete()
             self._ui.list.takeItem(self._ui.list.currentRow())
+            if self._ui.list.count() < 1:
+                self._ui.edit.setEnabled(False)
+                self._ui.delete_.setEnabled(False)
 
     def _currentWidget(self) -> VisualReportWidget:
         return self._ui.list.itemWidget(self._ui.list.currentItem())

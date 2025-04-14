@@ -82,6 +82,14 @@ class VisualReportsDB:
 
         return reports
 
+    def isScaffoldUsed(self, scaffoldUuid: UUID) -> bool:
+        for report in self._reports.values():
+            for rs in report.reportingScaffolds.values():
+                if rs.scaffoldUuid == scaffoldUuid:
+                    return True
+
+        return False
+
     def getVisualReports(self):
         return self._reports
 

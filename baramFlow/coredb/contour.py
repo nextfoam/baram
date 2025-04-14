@@ -241,5 +241,8 @@ class Contour(VisualReport):
             rMin = min(rMin, valueRange[0])
             rMax = max(rMax, valueRange[1])
 
+        if rMin == float('inf') or rMax == float('-inf'):
+            return 0, 1
+
         return rMin, rMax
 

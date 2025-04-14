@@ -16,4 +16,7 @@ class VisualReportDock(CDockWidget):
         self._widget = VisualReportView(self, report)
         self.setWidget(self._widget)
 
+    def close(self):
+        self._widget.close()
+        super().close()
 

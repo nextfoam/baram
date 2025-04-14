@@ -15,6 +15,7 @@ from baramFlow.coredb.parallelogram import Parallelogram
 from baramFlow.coredb.plane_scaffold import PlaneScaffold
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.sphere_scaffold import SphereScaffold
+from baramFlow.coredb.visual_reports_db import VisualReportsDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
 from baramFlow.view.results.scaffolds.disk_scaffold_dialog import DiskScaffoldDialog
@@ -215,9 +216,6 @@ class ScaffoldsPage(ContentPage):
         self._ui.list.addItem(item)
         self._ui.list.setItemWidget(item, widget)
 
-    def _removeItem(self, row):
-        self._ui.list.takeItem(row)
-
     def _itemSelected(self):
         self._ui.edit.setEnabled(True)
         self._ui.delete_.setEnabled(True)
@@ -229,11 +227,20 @@ class ScaffoldsPage(ContentPage):
     @qasync.asyncSlot()
     async def _delete(self):
         widget: ScaffoldWidget = self._currentWidget()
+
+        if VisualReportsDB().isScaffoldUsed(widget.scaffold.uuid):
+            await AsyncMessageBox().warning(self, self.tr('Warning'),
+                                            self.tr('Scaffold cannot be deleted.\nIt is being used in Graphics report'))
+            return
+
         confirm = await AsyncMessageBox().question(self, self.tr("Remove Scaffold item"),
                                                    self.tr('Remove "{}"?'.format(widget.name)))
         if confirm == QMessageBox.StandardButton.Yes:
             await widget.delete()
             self._ui.list.takeItem(self._ui.list.currentRow())
+            if self._ui.list.count() < 1:
+                self._ui.edit.setEnabled(False)
+                self._ui.delete_.setEnabled(False)
 
     def _currentWidget(self):
         return self._ui.list.itemWidget(self._ui.list.currentItem())
