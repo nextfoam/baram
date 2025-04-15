@@ -85,7 +85,7 @@ class SphereScaffold(Scaffold):
         coredb.CoreDB().removeElement(Scaffold.SCAFFOLDS_PATH + '/sphereScaffolds' + self.xpath())
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
-        mesh = collectInternalMesh(mBlock)
+        mesh = await collectInternalMesh(mBlock)
 
         sphere = vtkSphereSource()
         sphere.SetCenter(float(self.centerX), float(self.centerY), float(self.centerZ))

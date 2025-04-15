@@ -84,7 +84,7 @@ class PlaneScaffold(Scaffold):
         coredb.CoreDB().removeElement(Scaffold.SCAFFOLDS_PATH + '/planeScaffolds' + self.xpath())
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
-        mesh = collectInternalMesh(mBlock)
+        mesh = await collectInternalMesh(mBlock)
 
         plane = vtkPlane()
         plane.SetOrigin(float(self.originX), float(self.originY), float(self.originZ))

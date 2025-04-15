@@ -19,7 +19,6 @@ from baramFlow.openfoam.solver_field import getSolverFieldName
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 from libbaram.openfoam.collateral_fields import calculateCollateralField
-from libbaram.openfoam.polymesh import collectInternalMesh
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 from widgets.time_slider import TimeSlider
@@ -185,24 +184,14 @@ class ContourDialog(QDialog):
             if fieldValueNeedUpdate:
                 await reader.refresh()
 
-            reader.setTimeValue(float(self._contour.time))
-            await reader.update()
-            mBlock = reader.getOutput()
+        await self._contour.updatePolyMesh()
 
-            self._contour.polyMesh = mBlock
-            self._contour.internalMesh = collectInternalMesh(mBlock)
-
-            if fieldValueNeedUpdate:  # field values in internalMesh have changed
-                for uuid, rs in self._contour.reportingScaffolds.items():
-                    scaffold = ScaffoldsDB().getScaffold(uuid)
-                    rs.dataSet = await scaffold.getDataSet(mBlock)
-
-            for uuid in addedScaffolds:
-                scaffold = ScaffoldsDB().getScaffold(uuid)
-                dataSet = await scaffold.getDataSet(mBlock)
-                rs = ReportingScaffold(scaffoldUuid=uuid, dataSet=dataSet)
-                self._contour.reportingScaffolds[uuid] = rs
-                await self._contour.notifyReportingScaffoldAdded(uuid)
+        for uuid in addedScaffolds:
+            scaffold = ScaffoldsDB().getScaffold(uuid)
+            dataSet = await scaffold.getDataSet(self._contour.polyMesh)
+            rs = ReportingScaffold(scaffoldUuid=uuid, dataSet=dataSet)
+            self._contour.reportingScaffolds[uuid] = rs
+            await self._contour.notifyReportingScaffoldAdded(uuid)
 
         self._contour.rangeMin, self._contour.rangeMax = self._contour.getValueRange(self._contour.useNodeValues, self._contour.relevantScaffoldsOnly)
 

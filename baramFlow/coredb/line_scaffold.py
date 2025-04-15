@@ -92,7 +92,7 @@ class LineScaffold(Scaffold):
         coredb.CoreDB().removeElement(Scaffold.SCAFFOLDS_PATH + '/lineScaffolds' + self.xpath())
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
-        mesh = collectInternalMesh(mBlock)
+        mesh = await collectInternalMesh(mBlock)
 
         line = vtkLineSource()
         line.SetPoint1(float(self.point1X), float(self.point1Y), float(self.point1Z))

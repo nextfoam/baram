@@ -115,7 +115,7 @@ class IsoSurfaceDialog(QDialog):
             await reader.update()
             mBlock = reader.getOutput()
 
-            mesh = collectInternalMesh(mBlock)
+            mesh = await collectInternalMesh(mBlock)
             if field.type == FieldType.VECTOR:
                 rangeMin, rangeMax = getVectorRange(mesh, field, fieldComponent, useNodeValues=True)
             else:

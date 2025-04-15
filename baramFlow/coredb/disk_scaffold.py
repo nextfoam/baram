@@ -105,7 +105,7 @@ class DiskScaffold(Scaffold):
         coredb.CoreDB().removeElement(Scaffold.SCAFFOLDS_PATH + '/diskScaffolds' + self.xpath())
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
-        mesh = collectInternalMesh(mBlock)
+        mesh = await collectInternalMesh(mBlock)
 
         disk = vtkDiskSource()
         disk.SetCenter(float(self.centerX), float(self.centerY), float(self.centerZ))

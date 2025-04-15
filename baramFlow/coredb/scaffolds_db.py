@@ -107,6 +107,10 @@ class ScaffoldsDB:
 
         await self.scaffoldUpdated.emit(scaffold.uuid)
 
+    async def refreshAllScaffolds(self):
+        for scaffold in self._scaffolds.values():
+            await self.scaffoldUpdated.emit(scaffold.uuid)
+
     # def getBoundariesInUse(self):
     #     boundaries = []
 

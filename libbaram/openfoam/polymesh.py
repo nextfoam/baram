@@ -10,6 +10,7 @@ from vtkmodules.vtkFiltersCore import vtkAppendFilter
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict, ParsedParameterFile
 
 from libbaram.openfoam.constants import Directory
+from libbaram.vtk_threads import vtk_run_in_thread
 
 
 def _addArrayIfNotExists(dsa: vtkDataSetAttributes, name: str, numComponents: int):
@@ -175,7 +176,7 @@ def collectInternalMeshMultiBlock(mBlock: vtkMultiBlockDataSet) -> vtkMultiBlock
 
     return newBlock
 
-def collectInternalMeshUnstructuredGrid(mBlock: vtkMultiBlockDataSet) -> vtkUnstructuredGrid:
+async def collectInternalMeshUnstructuredGrid(mBlock: vtkMultiBlockDataSet) -> vtkUnstructuredGrid:
     # Collect Fields to make union Field list
     cellFields: dict[str, int] = {}   # FieldName, NumberOfComponent
     pointFields: dict[str, int] = {}  # FieldName, NumberOfComponent
@@ -228,7 +229,8 @@ def collectInternalMeshUnstructuredGrid(mBlock: vtkMultiBlockDataSet) -> vtkUnst
 
         iterator.GoToNextItem()
 
-    combined.Update()
+    await vtk_run_in_thread(combined.Update)
+
     dataSet: vtkUnstructuredGrid = combined.GetOutput()
 
     dataSet.GetCellData().SetActiveVectors('U')
@@ -236,5 +238,5 @@ def collectInternalMeshUnstructuredGrid(mBlock: vtkMultiBlockDataSet) -> vtkUnst
 
     return dataSet
 
-def collectInternalMesh(mBlock: vtkMultiBlockDataSet) -> vtkDataSet:
-    return collectInternalMeshUnstructuredGrid(mBlock)
+async def collectInternalMesh(mBlock: vtkMultiBlockDataSet) -> vtkDataSet:
+    return await collectInternalMeshUnstructuredGrid(mBlock)

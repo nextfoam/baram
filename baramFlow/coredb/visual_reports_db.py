@@ -9,11 +9,8 @@ from baramFlow.coredb.contour import Contour
 
 from baramFlow.coredb.libdb import nsmap
 
-from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_report import VisualReport
-from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram.async_signal import AsyncSignal
-from libbaram.openfoam.polymesh import collectInternalMesh
 
 
 CONTOUR_NAME_PREFIX = 'contour'
@@ -70,15 +67,7 @@ class VisualReportsDB:
             if len(c.reportingScaffolds) == 0:
                 continue
 
-            async with OpenFOAMReader() as reader:
-                reader.setTimeValue(float(c.time))
-                await reader.update()
-                mBlock = reader.getOutput()
-                c.polyMesh = mBlock
-                c.internalMesh = collectInternalMesh(mBlock)
-                for rs in c.reportingScaffolds.values():
-                    scaffold = ScaffoldsDB().getScaffold(rs.scaffoldUuid)
-                    rs.dataSet = await scaffold.getDataSet(mBlock)
+            await c.updatePolyMesh()
 
         return reports
 
@@ -89,6 +78,10 @@ class VisualReportsDB:
                     return True
 
         return False
+
+    async def updatePolyMeshAll(self):
+        for report in self._reports.values():
+            await report.updatePolyMesh()
 
     def getVisualReports(self):
         return self._reports

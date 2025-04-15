@@ -81,7 +81,7 @@ class IsoSurface(Scaffold):
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
         values = self._getValues()
-        mesh = collectInternalMesh(mBlock)
+        mesh = await collectInternalMesh(mBlock)
 
         if self.field == COORDINATE:
             if self.fieldComponent == VectorComponent.MAGNITUDE:

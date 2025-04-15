@@ -111,7 +111,7 @@ class Parallelogram(Scaffold):
         coredb.CoreDB().removeElement(Scaffold.SCAFFOLDS_PATH + '/parallelograms' + self.xpath())
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
-        mesh = collectInternalMesh(mBlock)
+        mesh = await collectInternalMesh(mBlock)
 
         plane = vtkPlaneSource()
         plane.SetOrigin(float(self.originX), float(self.originY), float(self.originZ))

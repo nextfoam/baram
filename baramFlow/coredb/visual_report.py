@@ -7,7 +7,10 @@ from uuid import UUID
 from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkUnstructuredGrid
 
 from baramFlow.coredb.reporting_scaffold import ReportingScaffold
+from baramFlow.coredb.scaffolds_db import ScaffoldsDB
+from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram.async_signal import AsyncSignal
+from libbaram.openfoam.polymesh import collectInternalMesh
 
 
 @dataclass
@@ -22,8 +25,12 @@ class VisualReport:
 
     time: str = '0'
 
-    polyMesh: vtkMultiBlockDataSet = None  # Not a configuration, Not saved in CoreDB
-    internalMesh: vtkUnstructuredGrid = None  # Not a configuration, Not saved in CoreDB
+    # Not a configuration, Not saved in CoreDB
+    polyMesh: vtkMultiBlockDataSet = None
+
+    # Not a configuration, Not saved in CoreDB.
+    # It is calculated and stored for caching.
+    internalMesh: vtkUnstructuredGrid = None
 
     reportingScaffolds: dict[UUID, ReportingScaffold] = field(default_factory=dict)
 
@@ -55,3 +62,20 @@ class VisualReport:
 
     def saveToCoreDB(self):
         raise NotImplementedError
+
+    async def updatePolyMesh(self):
+        async with OpenFOAMReader() as reader:
+            reader.setTimeValue(float(self.time))
+            await reader.update()
+            mBlock = reader.getOutput()
+
+        self.polyMesh = mBlock
+        self.internalMesh = await collectInternalMesh(mBlock)
+
+        for rs in self.reportingScaffolds.values():
+            scaffold = ScaffoldsDB().getScaffold(rs.scaffoldUuid)
+            rs.dataSet = await scaffold.getDataSet(self.polyMesh)
+
+        self.rangeMin, self.rangeMax = self.getValueRange(self.useNodeValues, self.relevantScaffoldsOnly)
+
+        await self.instanceUpdated.emit(self.uuid)
