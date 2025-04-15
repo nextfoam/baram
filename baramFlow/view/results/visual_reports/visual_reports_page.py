@@ -7,6 +7,7 @@ import qasync
 from PySide6.QtWidgets import QListWidgetItem, QMessageBox
 
 from baramFlow.coredb.contour import Contour
+from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_reports_db import VisualReportsDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.results.visual_reports.contour_dialog import ContourDialog
@@ -48,7 +49,13 @@ class VisualReportsPage(ContentPage):
             if isinstance(s, Contour):
                 self._addItem(ContourWidget(s))
 
-    def _openAddContoursDialog(self):
+    @qasync.asyncSlot()
+    async def _openAddContoursDialog(self):
+        if len(ScaffoldsDB().getScaffolds()) == 0:
+            await AsyncMessageBox().warning(self, self.tr('Warning'),
+                                            self.tr('There is no Scaffold.\nAt least one scaffold is required to configure Graphics Report'))
+            return
+
         uuid = uuid4()
         name = VisualReportsDB().getNewContourName()
         self._report = Contour(uuid=uuid, name=name)
