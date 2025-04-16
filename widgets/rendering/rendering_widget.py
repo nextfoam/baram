@@ -10,7 +10,7 @@ from typing import Optional
 import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
 import vtkmodules.vtkRenderingOpenGL2
-from PySide6.QtCore import Qt, Signal, QObject
+from PySide6.QtCore import QTimer, Qt, Signal, QObject
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QWidget, QFileDialog, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -26,27 +26,32 @@ from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vt
 from libbaram.vtk_threads import isRenderingHold
 from resources import resource
 
-# To fix middle button issue in vtkmodules
-# Qt.MidButton that is not available in PySide6 is use in QVTKRenderWindowInteractor
-# Remove this line when vtk 9.2.2 or later is used
-Qt.MidButton = Qt.MiddleButton
 
 colors = vtkNamedColors()
 
+RENDER_RETRY_INTERVAL = 200
+
 
 class RenderWindowInteractor(QVTKRenderWindowInteractor):
+    def __init__(self, parent=None, **kw):
+        self._timer = QTimer()
+        self._timer.setInterval(RENDER_RETRY_INTERVAL)
+        self._timer.setSingleShot(True)
+        self._timer.timeout.connect(self._timeout)
+
+        super().__init__(parent=parent, **kw)
+
     def Finalize(self):
         if self._RenderWindow is not None:
             self._RenderWindow.Finalize()
             self._RenderWindow = None
 
     def paintEvent(self, ev):
-        if not isRenderingHold():
-            super().paintEvent(ev)
+        if isRenderingHold():
+            self._timer.start()
+            return
 
-    def Render(self):
-        if not isRenderingHold():
-            super().Render()
+        super().paintEvent(ev)
 
     def mouseDoubleClickEvent(self, ev: QMouseEvent):
         ctrl, shift = self._GetCtrlShift(ev)
@@ -62,6 +67,9 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
             self._Iren.InvokeEvent(vtkCommand.RightButtonDoubleClickEvent, None)
         elif self._ActiveButton == Qt.MiddleButton:
             self._Iren.InvokeEvent(vtkCommand.MiddleButtonDoubleClickEvent, None)
+
+    def _timeout(self):
+        self.Render()  # Render() just calls QWidget.update(), which just schedules repaint
 
 
 class MouseHandler(QObject):

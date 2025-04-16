@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import asyncio
 from uuid import UUID, uuid4
 
 from PySide6.QtGui import QAction
@@ -98,16 +97,10 @@ class VisualReportView(RenderingView):
         self._scaffold2displayItem: dict[UUID, UUID] = {}
         self._updatedScaffolds: set[UUID] = set()
 
-        self._initLatterTask = asyncio.create_task(self._registerReportingScaffolds())
-
         contour: Contour = report
+
         contour.rangeMin, contour.rangeMax = contour.getValueRange(contour.useNodeValues, contour.relevantScaffoldsOnly)
 
-        self._updateLookupTable()
-
-        self._connectSignalsSlots()
-
-    async def _registerReportingScaffolds(self):
         for rs in self._report.reportingScaffolds.values():
 
             displayUuid = self._addItem(rs)
@@ -116,7 +109,9 @@ class VisualReportView(RenderingView):
 
         self._view.fitCamera()
 
-        self._view.refresh()
+        self._updateLookupTable()
+
+        self._connectSignalsSlots()
 
     def _connectSignalsSlots(self):
         self._scaffoldTreeWidget.customContextMenuRequested.connect(self._showContextMenu)
@@ -156,6 +151,24 @@ class VisualReportView(RenderingView):
 
     def _updateLookupTable(self):
         contour: Contour = self._report
+
+        if contour.field.type == FieldType.VECTOR:
+            if contour.fieldComponent == VectorComponent.MAGNITUDE:
+                if self._lookupTable.GetVectorMode() != vtkScalarsToColors.MAGNITUDE:
+                    self._lookupTable.SetVectorMode(vtkScalarsToColors.MAGNITUDE)
+            else:
+                if self._lookupTable.GetVectorMode() != vtkScalarsToColors.COMPONENT:
+                    self._lookupTable.SetVectorMode(vtkScalarsToColors.COMPONENT)
+
+                if contour.fieldComponent == VectorComponent.X:
+                    if self._lookupTable.GetVectorComponent() != 0:
+                        self._lookupTable.SetVectorComponent(0)
+                elif contour.fieldComponent == VectorComponent.Y:
+                    if self._lookupTable.GetVectorComponent() != 1:
+                        self._lookupTable.SetVectorComponent(1)
+                elif contour.fieldComponent == VectorComponent.Z:
+                    if self._lookupTable.GetVectorComponent() != 2:
+                        self._lookupTable.SetVectorComponent(2)
 
         self._lookupTable.SetNumberOfTableValues(contour.numberOfLevels)
 
@@ -210,8 +223,6 @@ class VisualReportView(RenderingView):
 
         self._lookupTable.Build()
 
-        self._view.refresh()
-
     async def _scaffoldUpdated(self, uuid: UUID):
         scaffold = ScaffoldsDB().getScaffold(uuid)
         dataSet = await scaffold.getDataSet(self._report.polyMesh)
@@ -226,25 +237,6 @@ class VisualReportView(RenderingView):
 
 
     async def _reportUpdated(self, uuid: UUID):
-        contour: Contour = self._report
-
-        if contour.field.type == FieldType.VECTOR:
-            if contour.fieldComponent == VectorComponent.MAGNITUDE:
-                if self._lookupTable.GetVectorMode() != vtkScalarsToColors.MAGNITUDE:
-                    self._lookupTable.SetVectorMode(vtkScalarsToColors.MAGNITUDE)
-            else:
-                if self._lookupTable.GetVectorMode() != vtkScalarsToColors.COMPONENT:
-                    self._lookupTable.SetVectorMode(vtkScalarsToColors.COMPONENT)
-
-                if contour.fieldComponent == VectorComponent.X:
-                    if self._lookupTable.GetVectorComponent() != 0:
-                        self._lookupTable.SetVectorComponent(0)
-                elif contour.fieldComponent == VectorComponent.Y:
-                    if self._lookupTable.GetVectorComponent() != 1:
-                        self._lookupTable.SetVectorComponent(1)
-                elif contour.fieldComponent == VectorComponent.Z:
-                    if self._lookupTable.GetVectorComponent() != 2:
-                        self._lookupTable.SetVectorComponent(2)
 
         for did in self._items:
             item = self._items[did]
