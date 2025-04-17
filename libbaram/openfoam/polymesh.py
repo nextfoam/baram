@@ -3,9 +3,9 @@
 
 from pathlib import Path
 
-from vtkmodules.vtkCommonCore import vtkDataArray, vtkFloatArray, vtkMath
-from vtkmodules.vtkCommonDataModel import vtkCompositeDataIterator, vtkCompositeDataSet, vtkDataSet, vtkDataSetAttributes, vtkMultiBlockDataSet, vtkUnstructuredGrid
-from vtkmodules.vtkFiltersCore import vtkAppendFilter
+from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_POLY_DATA, vtkDataArray, vtkFloatArray, vtkMath
+from vtkmodules.vtkCommonDataModel import vtkCompositeDataIterator, vtkCompositeDataSet, vtkDataSet, vtkDataSetAttributes, vtkMultiBlockDataSet, vtkPolyData, vtkUnstructuredGrid
+from vtkmodules.vtkFiltersCore import vtkAppendFilter, vtkAppendPolyData
 
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict, ParsedParameterFile
 
@@ -117,7 +117,9 @@ def findBlock(mBlock: vtkMultiBlockDataSet, name: str, type_: int):
     return None
 
 
-def collectInternalMeshMultiBlock(mBlock: vtkMultiBlockDataSet) -> vtkMultiBlockDataSet:
+async def collectInternalMesh(mBlock: vtkMultiBlockDataSet) -> vtkUnstructuredGrid:
+    dataSetList: list[vtkDataSet] = []
+
     # Collect Fields to make union Field list
     cellFields: dict[str, int] = {}   # FieldName, NumberOfComponent
     pointFields: dict[str, int] = {}  # FieldName, NumberOfComponent
@@ -133,110 +135,97 @@ def collectInternalMeshMultiBlock(mBlock: vtkMultiBlockDataSet) -> vtkMultiBlock
             iterator.GoToNextItem()
             continue
 
-        dobj: vtkDataSet = iterator.GetCurrentDataObject()
-        if dobj is not None:
-            fields = _collectArrayFields(dobj.GetCellData())
+        dataSet: vtkDataSet = iterator.GetCurrentDataObject()
+        if dataSet is not None:
+            fields = _collectArrayFields(dataSet.GetCellData())
             cellFields.update(fields)
 
-            fields = _collectArrayFields(dobj.GetPointData())
+            fields = _collectArrayFields(dataSet.GetPointData())
             pointFields.update(fields)
 
-        iterator.GoToNextItem()
-
-    newBlock = vtkMultiBlockDataSet()
-    blockNo = 0
-
-    iterator: vtkCompositeDataIterator = mBlock.NewIterator()
-    while not iterator.IsDoneWithTraversal():
-        if not iterator.HasCurrentMetaData():
-            iterator.GoToNextItem()
-            continue
-
-        name = iterator.GetCurrentMetaData().Get(vtkCompositeDataSet.NAME())
-        if name != 'internalMesh':
-            iterator.GoToNextItem()
-            continue
-
-        dobj: vtkDataSet = iterator.GetCurrentDataObject()
-        if dobj is not None:
-            cellData = dobj.GetCellData()
-            for name, numComponents in cellFields.items():
-                _addArrayIfNotExists(cellData, name, numComponents)
-            cellData.SetActiveVectors('U')
-
-            pointData = dobj.GetPointData()
-            for name, numComponents in pointFields.items():
-                _addArrayIfNotExists(pointData, name, numComponents)
-            pointData.SetActiveVectors('U')
-
-            newBlock.SetBlock(blockNo, dobj)
-            blockNo += 1
+            dataSetList.append(dataSet)
 
         iterator.GoToNextItem()
 
-    return newBlock
+    appendFilter = vtkAppendFilter()
 
-async def collectInternalMeshUnstructuredGrid(mBlock: vtkMultiBlockDataSet) -> vtkUnstructuredGrid:
+    for dataSet in dataSetList:
+        cellData = dataSet.GetCellData()
+        for name, numComponents in cellFields.items():
+            _addArrayIfNotExists(cellData, name, numComponents)
+
+        pointData = dataSet.GetPointData()
+        for name, numComponents in pointFields.items():
+            _addArrayIfNotExists(pointData, name, numComponents)
+
+        appendFilter.AddInputData(dataSet)
+
+    await vtk_run_in_thread(appendFilter.Update)
+
+    collectedMesh: vtkUnstructuredGrid = appendFilter.GetOutput()
+
+    collectedMesh.GetCellData().SetActiveVectors('U')
+    collectedMesh.GetPointData().SetActiveVectors('U')
+
+    return collectedMesh
+
+
+async def collectBoundaryMesh(mBlock: vtkMultiBlockDataSet, boundaries: list[tuple[str, str]]) -> vtkPolyData:
+    """Returns merged vtkPolyData
+
+    Returns a vtkPolyData that includes all the boundaries in the list
+
+    Args:
+        mBlock: Output of vtkOpenFOAMReader()
+        boundaries: List of tuples consist of rname and bcname
+
+    Returns:
+        vtkPolyData that includes all the boundaries in the list
+    """
+
+    dataSetList: list[vtkPolyData] = []
+
     # Collect Fields to make union Field list
     cellFields: dict[str, int] = {}   # FieldName, NumberOfComponent
     pointFields: dict[str, int] = {}  # FieldName, NumberOfComponent
 
-    iterator: vtkCompositeDataIterator = mBlock.NewIterator()
-    while not iterator.IsDoneWithTraversal():
-        if not iterator.HasCurrentMetaData():
-            iterator.GoToNextItem()
-            continue
+    for rname, bcname in boundaries:
+        if rname != '':  # multi-region
+            block = findBlock(mBlock, rname, VTK_MULTIBLOCK_DATA_SET)
+            if block is None:
+                raise AssertionError('Corrupted Case: Region not exists')
+        else:
+            block = mBlock
 
-        name = iterator.GetCurrentMetaData().Get(vtkCompositeDataSet.NAME())
-        if name != 'internalMesh':
-            iterator.GoToNextItem()
-            continue
+        block = findBlock(block, 'boundary', VTK_MULTIBLOCK_DATA_SET)
+        if block is None:
+            raise AssertionError('Corrupted Case: boundary group not exists')
 
-        dobj: vtkDataSet = iterator.GetCurrentDataObject()
-        if dobj is not None:
-            fields = _collectArrayFields(dobj.GetCellData())
-            cellFields.update(fields)
+        dataSet = findBlock(block, bcname, VTK_POLY_DATA)
+        if dataSet is None:
+            raise AssertionError('Corrupted Case: boundary not exists')
 
-            fields = _collectArrayFields(dobj.GetPointData())
-            pointFields.update(fields)
+        dataSetList.append(dataSet)
 
-        iterator.GoToNextItem()
+        fields = _collectArrayFields(dataSet.GetCellData())
+        cellFields.update(fields)
 
-    combined = vtkAppendFilter()
+        fields = _collectArrayFields(dataSet.GetPointData())
+        pointFields.update(fields)
 
-    iterator: vtkCompositeDataIterator = mBlock.NewIterator()
-    while not iterator.IsDoneWithTraversal():
-        if not iterator.HasCurrentMetaData():
-            iterator.GoToNextItem()
-            continue
+    appendFilter = vtkAppendPolyData()
 
-        name = iterator.GetCurrentMetaData().Get(vtkCompositeDataSet.NAME())
-        if name != 'internalMesh':
-            iterator.GoToNextItem()
-            continue
+    for dataSet in dataSetList:
+        cellData = dataSet.GetCellData()
+        for name, numComponents in cellFields.items():
+            _addArrayIfNotExists(cellData, name, numComponents)
 
-        dobj: vtkDataSet = iterator.GetCurrentDataObject()
-        if dobj is not None:
-            cellData = dobj.GetCellData()
-            for name, numComponents in cellFields.items():
-                _addArrayIfNotExists(cellData, name, numComponents)
+        pointData = dataSet.GetPointData()
+        for name, numComponents in pointFields.items():
+            _addArrayIfNotExists(pointData, name, numComponents)
 
-            pointData = dobj.GetPointData()
-            for name, numComponents in pointFields.items():
-                _addArrayIfNotExists(pointData, name, numComponents)
+        appendFilter.AddInputData(dataSet)
 
-            combined.AddInputData(dobj)
+    await vtk_run_in_thread(appendFilter.Update)
 
-        iterator.GoToNextItem()
-
-    await vtk_run_in_thread(combined.Update)
-
-    dataSet: vtkUnstructuredGrid = combined.GetOutput()
-
-    dataSet.GetCellData().SetActiveVectors('U')
-    dataSet.GetPointData().SetActiveVectors('U')
-
-    return dataSet
-
-async def collectInternalMesh(mBlock: vtkMultiBlockDataSet) -> vtkDataSet:
-    return await collectInternalMeshUnstructuredGrid(mBlock)
+    return appendFilter.GetOutput()

@@ -68,7 +68,8 @@ class ReportingScaffoldDialog(QDialog):
         if maxNumber != rs.maxNumberOfSamplePoints \
             or forward != rs.streamlinesIntegrateForward \
                 or backward != rs.streamlinesIntegrateBackward:
-            progressDialog = ProgressDialog(self, self.tr('Updating Graphics'), openDelay=500)
+            progressDialog = ProgressDialog(self, self.tr('Graphics Parameters'), openDelay=500)
+            progressDialog.setLabelText(self.tr('Updating Graphics...'))
             progressDialog.open()
 
             rs.maxNumberOfSamplePoints = maxNumber

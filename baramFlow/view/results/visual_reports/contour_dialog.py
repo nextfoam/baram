@@ -67,12 +67,12 @@ class ContourDialog(QDialog):
         else:
             self._ui.fieldComponent.setEnabled(False)
 
-        self._ui.includeVectors.setChecked(contour.includeVectors)
-
         index = self._ui.vectorField.findData(contour.vectorField)
         self._ui.vectorField.setCurrentIndex(index)
 
         self._ui.scaleFactor.setText(contour.vectorScaleFactor)
+
+        self._ui.vectorFixedLength.setChecked(contour.vectorFixedLength)
 
         self._contour = contour
 
@@ -154,9 +154,9 @@ class ContourDialog(QDialog):
             self._contour.useCustomRange = False
             fieldValueNeedUpdate = True
 
-        self._contour.includeVectors = self._ui.includeVectors.isChecked()
         self._contour.vectorField = self._ui.vectorField.currentData()
         self._contour.vectorScaleFactor = self._ui.scaleFactor.text()
+        self._contour.vectorFixedLength = self._ui.vectorFixedLength.isChecked()
 
         self._contour.stepSize = self._ui.stepSize.text()
         self._contour.maxSteps = int(self._ui.maxSteps.text())

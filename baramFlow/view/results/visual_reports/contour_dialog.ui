@@ -348,6 +348,13 @@
            </layout>
           </widget>
          </item>
+         <item>
+          <widget class="QCheckBox" name="vectorFixedLength">
+           <property name="text">
+            <string>Fixed Length</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>

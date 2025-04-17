@@ -372,7 +372,6 @@ class DisplayItem(QTreeWidgetItem):
         self._vectorGlyph.SetVectorModeToUseVector()
 
         self._vectorGlyph.SetColorModeToColorByScalar()
-        self._vectorGlyph.SetScaleModeToScaleByVector()
         self._vectorGlyph.OrientOn()
 
         self._vectorGlyph.SetSourceConnection(self._vectorArrow.GetOutputPort())
@@ -406,6 +405,11 @@ class DisplayItem(QTreeWidgetItem):
 
         colorField = getSolverFieldName(self._contour.field)
         self._vectorGlyph.SetInputArrayToProcess(Glyph3DArray.COLOR_SCALARS.value, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, colorField)
+
+        if self._contour.vectorFixedLength:
+            self._vectorGlyph.SetScaleModeToDataScalingOff()
+        else:
+            self._vectorGlyph.SetScaleModeToScaleByVector()
 
         await vtk_run_in_thread(self._vectorGlyph.Update)
 

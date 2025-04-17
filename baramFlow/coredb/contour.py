@@ -19,8 +19,8 @@ from baramFlow.coredb.color_scheme import ColormapScheme
 
 
 class StreamlineIntegratorType(Enum):
-    RUNGE_KUTTA2 = 'rungeKutta2'
-    RUNGE_KUTTA4 = 'rungeKutta4'
+    RUNGE_KUTTA2  = 'rungeKutta2'
+    RUNGE_KUTTA4  = 'rungeKutta4'
     RUNGE_KUTTA45 = 'rungeKutta45'
 
     @property
@@ -64,6 +64,7 @@ class Contour(VisualReport):
     vectorField: Field = VELOCITY
     vectorScaleFactor: str = '1.0'
     vectorNumMax: int = 1000
+    vectorFixedLength: bool = False
 
     stepSize: str = '0.001'
     maxSteps: int = 2000
@@ -108,6 +109,7 @@ class Contour(VisualReport):
         vectorField = getFieldInstance(vectorFieldCategory, vectorFieldCodeName)
         vectorScaleFactor = e.find('vectorScaleFactor', namespaces=nsmap).text
         vectorNumMax = int(e.find('vectorNumMax', namespaces=nsmap).text)
+        vectorFixedLength = True if e.find('vectorFixedLength', namespaces=nsmap).text == 'true' else False
 
         stepSize = e.find('stepSize', namespaces=nsmap).text
         maxSteps = int(e.find('maxSteps', namespaces=nsmap).text)
@@ -145,6 +147,7 @@ class Contour(VisualReport):
                           vectorField=vectorField,
                           vectorScaleFactor=vectorScaleFactor,
                           vectorNumMax=vectorNumMax,
+                          vectorFixedLength=vectorFixedLength,
                           reportingScaffolds=reportingScaffolds,
                           stepSize=stepSize,
                           maxSteps=maxSteps,
@@ -184,6 +187,7 @@ class Contour(VisualReport):
                    f'    <vectorFieldCodeName>{self.vectorField.codeName}</vectorFieldCodeName>'
                    f'    <vectorScaleFactor>{self.vectorScaleFactor}</vectorScaleFactor>'
                    f'    <vectorNumMax>{str(self.vectorNumMax)}</vectorNumMax>'
+                   f'    <vectorFixedLength>{"true" if self.vectorFixedLength else "false"}</vectorFixedLength>'
                    f'    <stepSize>{self.stepSize}</stepSize>'
                    f'    <maxSteps>{str(self.maxSteps)}</maxSteps>'
                    f'    <maxLength>{self.maxLength}</maxLength>'

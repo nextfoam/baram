@@ -7,14 +7,12 @@ from uuid import UUID
 from lxml import etree
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_POLY_DATA
 from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkPolyData
-from vtkmodules.vtkFiltersCore import vtkAppendPolyData
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.libdb import nsmap
 from baramFlow.coredb.scaffold import Scaffold
-from libbaram.openfoam.polymesh import findBlock
-from libbaram.vtk_threads import vtk_run_in_thread
+from libbaram.openfoam.polymesh import collectBoundaryMesh
 
 
 @dataclass
@@ -60,29 +58,12 @@ class BoundaryScaffold(Scaffold):
         coredb.CoreDB().removeElement(Scaffold.SCAFFOLDS_PATH + '/boundaries' + self.xpath())
 
     async def getDataSet(self, mBlock: vtkMultiBlockDataSet) -> vtkPolyData:
-        polyData = vtkAppendPolyData()
+        boundaries: list[tuple[str, str]] = []
 
         for bcid in self.boundaries:
             rname = BoundaryDB.getBoundaryRegion(bcid)
             bcname = BoundaryDB.getBoundaryName(bcid)
 
-            if rname != '':  # multi-region
-                block = findBlock(mBlock, rname, VTK_MULTIBLOCK_DATA_SET)
-                if block is None:
-                    raise AssertionError('Corrupted Case: Region not exists')
-            else:
-                block = mBlock
+            boundaries.append((rname, bcname))
 
-            block = findBlock(block, 'boundary', VTK_MULTIBLOCK_DATA_SET)
-            if block is None:
-                raise AssertionError('Corrupted Case: boundary group not exists')
-
-            data = findBlock(block, bcname, VTK_POLY_DATA)
-            if data is None:
-                raise AssertionError('Corrupted Case: boundary not exists')
-
-            polyData.AddInputData(data)
-
-        await vtk_run_in_thread(polyData.Update)
-
-        return polyData.GetOutput()
+        return await collectBoundaryMesh(mBlock, boundaries)
