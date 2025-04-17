@@ -5,7 +5,6 @@ from dataclasses import dataclass, field
 from uuid import UUID
 
 from lxml import etree
-from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_POLY_DATA
 from vtkmodules.vtkCommonDataModel import vtkMultiBlockDataSet, vtkPolyData
 
 from baramFlow.coredb import coredb
