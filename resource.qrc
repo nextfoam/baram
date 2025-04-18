@@ -38,11 +38,6 @@
     <file alias="planeHandle.svg">resources/graphicsIcons/planeHandle.svg</file>
     <file alias="volume.svg">resources/graphicsIcons/volume.svg</file>
   </qresource>
-  <qresource prefix="colorSchemes">
-    <file alias="grey.png">resources/colorSchemes/grey.png</file>
-    <file alias="spectral.png">resources/colorSchemes/spectral.png</file>
-    <file alias="turbo.png">resources/colorSchemes/turbo.png</file>
-  </qresource>
   <qresource prefix="icons">
     <file alias="accessibility.svg">resources/ionicons/accessibility.svg</file>
     <file alias="accessibility-outline.svg">resources/ionicons/accessibility-outline.svg</file>
