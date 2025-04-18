@@ -16,11 +16,10 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
-from baramFlow.coredb.scaffolds_db import ScaffoldsDB
-from baramFlow.coredb.visual_report import VisualReport
-from baramFlow.coredb.visual_reports_db import VisualReportsDB
+from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
+from baramFlow.base.graphics.graphics_db import GraphicsDB
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
-from baramFlow.view.results.visual_reports.visual_report_dock import VisualReportDock
+from baramFlow.view.results.graphics.graphic_dock import GraphicDock
 from libbaram.exception import CanceledException
 from libbaram.openfoam.polymesh import removeVoidBoundaries
 from libbaram.run import hasUtility
@@ -64,7 +63,7 @@ from baramFlow.view.solution.monitors.monitors_page import MonitorsPage
 from baramFlow.view.solution.initialization.initialization_page import InitializationPage
 from baramFlow.view.solution.run_conditions.run_conditions_page import RunConditionsPage
 from baramFlow.view.solution.run.process_information_page import ProcessInformationPage
-from baramFlow.view.results.visual_reports.visual_reports_page import VisualReportsPage
+from baramFlow.view.results.graphics.graphics_page import GraphicsPage
 from baramFlow.view.results.reports.reports_page import ReportsPage
 from baramFlow.view.results.scaffolds.scaffolds_page import ScaffoldsPage
 from .content_view import ContentView
@@ -77,6 +76,7 @@ from .menu.mesh.mesh_scale_dialog import MeshScaleDialog
 from .menu.mesh.mesh_translate_dialog import MeshTranslateDialog
 from .menu.mesh.mesh_rotate_dialog import MeshRotateDialog
 from .menu.help.about_dialog import AboutDialog
+from ...base.graphics.graphic import Graphic
 
 logger = logging.getLogger(__name__)
 
@@ -160,7 +160,7 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SOLUTION_RUN.value: MenuPage(ProcessInformationPage),
 
             MenuItem.MENU_RESULTS_SCAFFOLDS.value: MenuPage(ScaffoldsPage),
-            MenuItem.MENU_RESULTS_GRAPHICS.value: MenuPage(VisualReportsPage),
+            MenuItem.MENU_RESULTS_GRAPHICS.value: MenuPage(GraphicsPage),
             MenuItem.MENU_RESULTS_REPORTS.value: MenuPage(ReportsPage),
         }
 
@@ -180,7 +180,7 @@ class MainWindow(QMainWindow):
         self._ui.splitter.addWidget(self._dockView)
         self._ui.splitter.setStretchFactor(2, 1)
 
-        self._docks: dict[UUID, VisualReportDock] = {}
+        self._docks: dict[UUID, GraphicDock] = {}
 
     def consoleView(self):
         return self._consoleDock.widget()
@@ -190,12 +190,6 @@ class MainWindow(QMainWindow):
 
     def renderingView(self):
         return self._renderingDock.widget()
-
-    def addDockWidget(self, dockWidget):
-        self._dockView.addDockWidget(dockWidget)
-
-    def removeDockWidget(self, dockWidget):
-        self._dockView.removeDockWidget(dockWidget)
 
     def case(self):
         return self._caseManager
@@ -279,9 +273,9 @@ class MainWindow(QMainWindow):
 
         self._caseManager.caseLoaded.connect(self._caseLoaded)
 
-        VisualReportsDB().reportAdded.asyncConnect(self._reportAdded)
-        VisualReportsDB().reportUpdated.asyncConnect(self._reportUpdated)
-        VisualReportsDB().removingReport.asyncConnect(self._reportRemoving)
+        GraphicsDB().reportAdded.asyncConnect(self._reportAdded)
+        GraphicsDB().reportUpdated.asyncConnect(self._reportUpdated)
+        GraphicsDB().removingReport.asyncConnect(self._reportRemoving)
 
     def _disconnectSignalsSlots(self):
         self._project.projectOpened.disconnect(self._projectOpened)
@@ -289,9 +283,9 @@ class MainWindow(QMainWindow):
 
         self._caseManager.caseLoaded.disconnect(self._caseLoaded)
 
-        VisualReportsDB().reportAdded.disconnect(self._reportAdded)
-        VisualReportsDB().reportUpdated.disconnect(self._reportUpdated)
-        VisualReportsDB().removingReport.disconnect(self._reportRemoving)
+        GraphicsDB().reportAdded.disconnect(self._reportAdded)
+        GraphicsDB().reportUpdated.disconnect(self._reportUpdated)
+        GraphicsDB().removingReport.disconnect(self._reportRemoving)
 
     @qasync.asyncSlot()
     async def _save(self):
@@ -375,7 +369,7 @@ class MainWindow(QMainWindow):
             elif confirm == QMessageBox.StandardButton.Cancel:
                 return
 
-        await VisualReportsDB().close()
+        await GraphicsDB().close()
 
         self._dockView.close()
         logging.getLogger().removeHandler(self._handler)
@@ -660,7 +654,7 @@ class MainWindow(QMainWindow):
             await reader.setupReader()
 
         ScaffoldsDB().load()
-        await VisualReportsDB().load()
+        await GraphicsDB().load()
 
         progressDialog.close()
 
@@ -923,13 +917,13 @@ class MainWindow(QMainWindow):
         FileSystem.deleteMesh()
         self.meshUpdated()
 
-    def _addNewReportDock(self, report: VisualReport):
-        dockWidget = VisualReportDock(report)
+    def _addNewReportDock(self, report: Graphic):
+        dockWidget = GraphicDock(report)
         self._docks[report.uuid] = dockWidget
-        self.addDockWidget(dockWidget)
+        self._dockView.addDockWidget(dockWidget)
 
     async def _reportAdded(self, uuid: UUID):
-        report = VisualReportsDB().getVisualReport(uuid)
+        report = GraphicsDB().getVisualReport(uuid)
         self._addNewReportDock(report)
 
     async def _reportUpdated(self, uuid: UUID):
@@ -940,7 +934,7 @@ class MainWindow(QMainWindow):
     async def _reportRemoving(self, uuid: UUID):
         if uuid in self._docks:
             dockWidget = self._docks[uuid]
-            self.removeDockWidget(dockWidget)
+            self._dockView.removeDockWidget(dockWidget)
             dockWidget.close()
 
             del self._docks[uuid]

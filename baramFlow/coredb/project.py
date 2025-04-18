@@ -9,8 +9,6 @@ import yaml
 from PySide6.QtCore import QObject, Signal
 from pathlib import Path
 
-from baramFlow.coredb.scaffolds_db import ScaffoldsDB
-from baramFlow.coredb.visual_reports_db import VisualReportsDB
 from baramFlow.solver_status import SolverStatus
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_reader import CoreDBReader

@@ -7,8 +7,8 @@ from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QDoubleValidator, QIntValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.coredb.sphere_scaffold import SphereScaffold
-from baramFlow.coredb.scaffolds_db import ScaffoldsDB
+from baramFlow.base.scaffold.sphere_scaffold import SphereScaffold
+from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 
 from widgets.async_message_box import AsyncMessageBox
 
@@ -98,6 +98,3 @@ class SphereScaffoldDialog(QDialog):
             return False
 
         return True
-
-        return True
-

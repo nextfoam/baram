@@ -720,13 +720,6 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:simpleType name="scaffoldType">
-        <xs:restriction base="xs:string">
-            <xs:enumeration value="boundary"/>
-            <xs:enumeration value="isoSurface"/>
-        </xs:restriction>
-    </xs:simpleType>
-
     <xs:element name="cellZone">
         <xs:complexType>
             <xs:sequence>
@@ -2628,13 +2621,10 @@
                     </xs:complexType>
                 </xs:element>
 
-                <xs:element name="visualReports">
+                <xs:element name="graphics">
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="contours">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="contour" minOccurs="0" maxOccurs="unbounded">
+                            <xs:element name="graphic" minOccurs="0" maxOccurs="unbounded">
                                             <xs:complexType>
                                                 <xs:sequence>
                                                     <xs:element name="uuid" type="uuidType"/>
@@ -2724,11 +2714,6 @@
                                                 </xs:sequence>
                                             </xs:complexType>
                                         </xs:element>
-                                    </xs:sequence>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="vectors">
-                            </xs:element>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>

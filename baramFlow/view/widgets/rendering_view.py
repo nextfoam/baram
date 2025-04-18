@@ -40,6 +40,9 @@ class RenderingView(QWidget):
         for mode in DisplayMode:
             self._ui.renderingMode.setItemData(mode.value, mode)
 
+        # Class name of "RenderingView" is used
+        # not to call the method of my children
+        # but to call my own method
         RenderingView._connectSignalsSlots(self)
 
     def view(self):

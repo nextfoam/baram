@@ -5,13 +5,13 @@
 import qasync
 from PySide6.QtWidgets import QDialog
 
-from libbaram.openfoam.collateral_fields import calculateCollateralField
+from baramFlow.libbaram.collateral_fields import calculateCollateralField
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.coredb.post_field import AGE, HEAT_TRANSFER_COEFF, MACH_NUMBER, Q, TOTAL_PRESSURE, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS, CollateralField, Field
+from baramFlow.base.field import AGE, HEAT_TRANSFER_COEFF, MACH_NUMBER, Q, TOTAL_PRESSURE, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS
 from baramFlow.openfoam.file_system import FileSystem
 
 

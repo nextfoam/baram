@@ -244,10 +244,8 @@
         <sphereScaffolds/>
     </scaffolds>
 
-    <visualReports>
-        <contours/>
-        <vectors/>
-    </visualReports>
+    <graphics>
+    </graphics>
 
     <runCalculation>
         <runConditions>

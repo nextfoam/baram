@@ -899,15 +899,10 @@ def _version_9(root: etree.Element):
         e = etree.Element(f'{{{_ns}}}sphereScaffolds')
         p.append(e)
 
-    if root.find('visualReports', namespaces=_nsmap) is None:
+    if root.find('graphics', namespaces=_nsmap) is None:
         index = root.index(root.find('scaffolds', namespaces=_nsmap))
-        p = etree.Element(f'{{{_ns}}}visualReports')
+        p = etree.Element(f'{{{_ns}}}graphics')
         root.insert(index + 1, p)
-        e = etree.Element(f'{{{_ns}}}contours')
-        p.append(e)
-        e = etree.Element(f'{{{_ns}}}vectors')
-        p.append(e)
-
 
 
 _fTable = [

@@ -7,8 +7,8 @@ from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QDoubleValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.coredb.plane_scaffold import PlaneScaffold
-from baramFlow.coredb.scaffolds_db import ScaffoldsDB
+from baramFlow.base.scaffold.plane_scaffold import PlaneScaffold
+from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 
 from widgets.async_message_box import AsyncMessageBox
 

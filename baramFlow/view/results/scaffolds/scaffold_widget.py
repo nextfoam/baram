@@ -7,15 +7,15 @@ from PySide6.QtGui import QFontMetrics, Qt
 from PySide6.QtWidgets import QWidget
 
 from baramFlow.coredb.boundary_db import BoundaryDB
-from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
-from baramFlow.coredb.disk_scaffold import DiskScaffold
-from baramFlow.coredb.iso_surface import IsoSurface
-from baramFlow.coredb.line_scaffold import LineScaffold
-from baramFlow.coredb.parallelogram import Parallelogram
-from baramFlow.coredb.plane_scaffold import PlaneScaffold
-from baramFlow.coredb.scaffolds_db import Scaffold, ScaffoldsDB
-from baramFlow.coredb.post_field import FIELD_TEXTS
-from baramFlow.coredb.sphere_scaffold import SphereScaffold
+from baramFlow.base.scaffold.boundary_scaffold import BoundaryScaffold
+from baramFlow.base.scaffold.disk_scaffold import DiskScaffold
+from baramFlow.base.scaffold.iso_surface import IsoSurface
+from baramFlow.base.scaffold.line_scaffold import LineScaffold
+from baramFlow.base.scaffold.parallelogram import Parallelogram
+from baramFlow.base.scaffold.plane_scaffold import PlaneScaffold
+from baramFlow.base.scaffold.scaffolds_db import Scaffold, ScaffoldsDB
+from baramFlow.base.field import FIELD_TEXTS
+from baramFlow.base.scaffold.sphere_scaffold import SphereScaffold
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
 from baramFlow.view.results.scaffolds.disk_scaffold_dialog import DiskScaffoldDialog
@@ -82,7 +82,7 @@ class BoundaryScaffoldWidget(ScaffoldWidget):
         bcNamesList = [BoundaryDB.getBoundaryText(bcid) for bcid in scaffold.boundaries]
         bcNames = ', '.join(bcNamesList)
         metrics = QFontMetrics(self._ui.type.font())
-        elidedText = metrics.elidedText(bcNames, Qt.TextElideMode.ElideRight, 100);
+        elidedText = metrics.elidedText(bcNames, Qt.TextElideMode.ElideRight, 100)
 
         self._ui.type.setText(f'boundary scaffold for <b>{elidedText}</b>')
 

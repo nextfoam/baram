@@ -4,16 +4,16 @@
 import qasync
 
 from PySide6.QtCore import QRegularExpression
-from PySide6.QtGui import QDoubleValidator, QRegularExpressionValidator
+from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
+from baramFlow.base.scaffold.boundary_scaffold import BoundaryScaffold
 
 from baramFlow.view.widgets.multi_selector_dialog import MultiSelectorDialog
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb.boundary_db import BoundaryDB
-from baramFlow.coredb.scaffolds_db import ScaffoldsDB
+from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 
 from .boundary_scaffold_dialog_ui import Ui_BoundaryScaffoldDialog
 

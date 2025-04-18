@@ -5,7 +5,7 @@ from threading import Lock
 
 from PySide6.QtCore import Signal, QTimer, QObject
 
-from baramFlow.coredb.visual_reports_db import VisualReportsDB
+from baramFlow.base.graphics.graphics_db import GraphicsDB
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram.utils import rmtree
 from libbaram.openfoam.constants import CASE_DIRECTORY_NAME
@@ -285,7 +285,7 @@ class CaseManager(QObject):
             async with OpenFOAMReader() as reader:
                 await reader.setupReader()
 
-            await VisualReportsDB().updatePolyMeshAll()
+            await GraphicsDB().updatePolyMeshAll()
 
         return self._currentCase
 
@@ -334,7 +334,7 @@ class CaseManager(QObject):
         async with OpenFOAMReader() as reader:
             await reader.setupReader()
 
-        await VisualReportsDB().updatePolyMeshAll()
+        await GraphicsDB().updatePolyMeshAll()
 
     async def initialize(self):
         case = await self.loadLiveCase()

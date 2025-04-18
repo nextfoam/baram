@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.material_db import MaterialDB, IMaterialObserver
-from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.coredb.post_field import AGE, DENSITY, HEAT_TRANSFER_COEFF, MACH_NUMBER, MODIFIED_TURBULENT_VISCOSITY, PRESSURE, Q, SPECIFIC_DISSIPATION_RATE, TEMPERATURE, TOTAL_PRESSURE, TURBULENT_DISSIPATION_RATE, TURBULENT_KINETIC_ENERGY, VELOCITY, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS, SpecieField, UserScalarField
-from baramFlow.coredb.post_field import BasicField, CollateralField, Field, GeometryField, PhaseField
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.base.field import AGE, DENSITY, HEAT_TRANSFER_COEFF, MACH_NUMBER, MODIFIED_TURBULENT_VISCOSITY, PRESSURE, Q, SPECIFIC_DISSIPATION_RATE, TEMPERATURE, TOTAL_PRESSURE, TURBULENT_DISSIPATION_RATE, TURBULENT_KINETIC_ENERGY, VELOCITY, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS, SpecieField, UserScalarField
+from baramFlow.base.field import BasicField, CollateralField, Field, GeometryField, PhaseField
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.openfoam.solver import usePrgh
 

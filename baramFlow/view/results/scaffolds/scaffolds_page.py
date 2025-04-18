@@ -7,15 +7,15 @@ import qasync
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QListWidgetItem, QMessageBox
 
-from baramFlow.coredb.boundary_scaffold import BoundaryScaffold
-from baramFlow.coredb.disk_scaffold import DiskScaffold
-from baramFlow.coredb.iso_surface import IsoSurface
-from baramFlow.coredb.line_scaffold import LineScaffold
-from baramFlow.coredb.parallelogram import Parallelogram
-from baramFlow.coredb.plane_scaffold import PlaneScaffold
-from baramFlow.coredb.scaffolds_db import ScaffoldsDB
-from baramFlow.coredb.sphere_scaffold import SphereScaffold
-from baramFlow.coredb.visual_reports_db import VisualReportsDB
+from baramFlow.base.scaffold.boundary_scaffold import BoundaryScaffold
+from baramFlow.base.scaffold.disk_scaffold import DiskScaffold
+from baramFlow.base.scaffold.iso_surface import IsoSurface
+from baramFlow.base.scaffold.line_scaffold import LineScaffold
+from baramFlow.base.scaffold.parallelogram import Parallelogram
+from baramFlow.base.scaffold.plane_scaffold import PlaneScaffold
+from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
+from baramFlow.base.scaffold.sphere_scaffold import SphereScaffold
+from baramFlow.base.graphics.graphics_db import GraphicsDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
 from baramFlow.view.results.scaffolds.disk_scaffold_dialog import DiskScaffoldDialog
@@ -228,7 +228,7 @@ class ScaffoldsPage(ContentPage):
     async def _delete(self):
         widget: ScaffoldWidget = self._currentWidget()
 
-        if VisualReportsDB().isScaffoldUsed(widget.scaffold.uuid):
+        if GraphicsDB().isScaffoldUsed(widget.scaffold.uuid):
             await AsyncMessageBox().warning(self, self.tr('Warning'),
                                             self.tr('Scaffold cannot be deleted.\nIt is being used in Graphics report'))
             return

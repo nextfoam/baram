@@ -7,17 +7,17 @@ from PySide6.QtCore import QRegularExpression
 from PySide6.QtGui import QDoubleValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.coredb.post_field import COORDINATE, CollateralField, Field, FieldType, VectorComponent
-from baramFlow.coredb.post_field import getAvailableFields
-from baramFlow.coredb.iso_surface import IsoSurface
-from baramFlow.coredb.scaffolds_db import ScaffoldsDB
-from baramFlow.coredb.post_field import FIELD_TEXTS
+from baramFlow.base.field import COORDINATE, CollateralField, Field, FieldType, VectorComponent
+from baramFlow.base.field import getAvailableFields
+from baramFlow.base.scaffold.iso_surface import IsoSurface
+from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
+from baramFlow.base.field import FIELD_TEXTS
 
 from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.openfoam.polymesh.util import getScalarRange, getVectorRange
+from baramFlow.libbaram.util import getScalarRange, getVectorRange
 from baramFlow.openfoam.solver_field import getSolverFieldName
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
-from libbaram.openfoam.collateral_fields import calculateCollateralField
+from baramFlow.libbaram.collateral_fields import calculateCollateralField
 from libbaram.openfoam.polymesh import collectInternalMesh
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog

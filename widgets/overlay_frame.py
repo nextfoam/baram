@@ -6,7 +6,7 @@ from PySide6.QtCore import QAbstractAnimation, QEasingCurve, QParallelAnimationG
 from PySide6.QtGui import QMouseEvent, QPixmap
 from PySide6.QtWidgets import QWidget, QFrame, QSizePolicy
 
-from baramFlow.view.results.visual_reports.aspect_ratio_label import AspectRatioLabel
+from widgets.aspect_ratio_label import AspectRatioLabel
 
 
 class OverlayFrame(QFrame):

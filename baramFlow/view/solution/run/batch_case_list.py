@@ -10,7 +10,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QHeaderView, QMenu, QMessageBox
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel
 
-from baramFlow.coredb.visual_reports_db import VisualReportsDB
+from baramFlow.base.graphics.graphics_db import GraphicsDB
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
@@ -290,7 +290,7 @@ class BatchCaseList(QObject):
         async with OpenFOAMReader() as reader:
             await reader.setupReader()
 
-        await VisualReportsDB().updatePolyMeshAll()
+        await GraphicsDB().updatePolyMeshAll()
 
         CaseManager().progress.disconnect(progressDialog.setLabelText)
         progressDialog.close()

@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtCore import Qt
-
-from baramFlow.coredb.post_field import VECTOR_COMPONENT_TEXTS, VectorComponent
+from baramFlow.base.field import VECTOR_COMPONENT_TEXTS, VectorComponent
 from widgets.python_combo_box import PythonComboBox
 
 

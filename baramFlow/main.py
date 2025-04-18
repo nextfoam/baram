@@ -48,7 +48,7 @@ def handle_exception(eType, eValue, eTraceback):
 sys.excepthook = handle_exception
 
 
-def loop_exeption(loop, context):
+def loop_exception(loop, context):
     print("exception handling: ", context["exception"])
     loop.stop()
 
@@ -86,6 +86,7 @@ def main():
     smp.Initialize(numCores)
     smp.SetBackend('STDThread')
 
+    # "vtkProbeLineFilter" runs only on parallel
     controller = vtkDummyController()
     vtkMultiProcessController.SetGlobalController(controller)
 
@@ -96,7 +97,7 @@ def main():
     loop = qasync.QEventLoop(application)
     asyncio.set_event_loop(loop)
 
-    loop.set_exception_handler(loop_exeption)
+    loop.set_exception_handler(loop_exception)
 
     file = QFile(u":/ElegantDark.qss")
     file.open(QIODevice.ReadOnly | QIODevice.Text)

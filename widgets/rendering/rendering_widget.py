@@ -24,6 +24,7 @@ from vtkmodules.vtkRenderingAnnotation import vtkAxesActor, vtkCubeAxesActor
 from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vtkLightKit, vtkProp
 
 from libbaram.vtk_threads import isRenderingHold
+
 from resources import resource
 
 
@@ -53,6 +54,9 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
 
         super().paintEvent(ev)
 
+    def _timeout(self):
+        self.Render()  # Render() just calls QWidget.update(), which just schedules repaint
+
     def mouseDoubleClickEvent(self, ev: QMouseEvent):
         ctrl, shift = self._GetCtrlShift(ev)
 
@@ -67,9 +71,6 @@ class RenderWindowInteractor(QVTKRenderWindowInteractor):
             self._Iren.InvokeEvent(vtkCommand.RightButtonDoubleClickEvent, None)
         elif self._ActiveButton == Qt.MiddleButton:
             self._Iren.InvokeEvent(vtkCommand.MiddleButtonDoubleClickEvent, None)
-
-    def _timeout(self):
-        self.Render()  # Render() just calls QWidget.update(), which just schedules repaint
 
 
 class MouseHandler(QObject):
