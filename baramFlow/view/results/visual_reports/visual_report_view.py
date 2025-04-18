@@ -3,13 +3,14 @@
 
 from uuid import UUID, uuid4
 
+from matplotlib import pyplot as plt
 from PySide6.QtGui import QAction
-import matplotlib as mpl
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QAbstractItemView, QColorDialog, QHeaderView, QMenu, QTreeWidget, QWidget, QVBoxLayout
 
 import qasync
+
 from vtkmodules.vtkCommonCore import vtkLookupTable, vtkScalarsToColors
 from vtkmodules.vtkRenderingAnnotation import vtkScalarBarActor
 from vtkmodules.vtkRenderingCore import vtkActor
@@ -22,7 +23,6 @@ from baramFlow.coredb.reporting_scaffold import ReportingScaffold
 from baramFlow.coredb.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb.visual_report import VisualReport
 
-from baramFlow.view.results.visual_reports.display_control.colormap.colormap import colormapData
 from baramFlow.view.results.visual_reports.display_control.contour_colormap_dialog import ContourColormapDialog
 from baramFlow.view.results.visual_reports.display_control.opacity_dialog import OpacityDialog
 from baramFlow.view.results.visual_reports.display_control.reporting_scaffold_dialog import ReportingScaffoldDialog
@@ -190,16 +190,14 @@ class VisualReportView(RenderingView):
 
         else:
             levels = contour.numberOfLevels
-            # cmap = mpl.colormaps['viridis']
-
-            # for i in range(0, STEP):
-            #     rgb = cmap(i/(STEP-1))[:3]  # Extract RGB values excluding Alpha
-            #     lut.SetTableValue(i, *rgb)
-
-            cmap = colormapData(contour.colorScheme)
-            for i in range(0, levels):
-                rgb = cmap[i * 255 // ( levels - 1)]
-                self._lookupTable.SetTableValue(i, *rgb)
+            if contour.numberOfLevels > 1:
+                cmap = plt.cm.get_cmap(contour.colorScheme.value)
+                for i in range(0, levels):
+                    rgb = cmap(i/(levels-1))[:3]  # Extract RGB values excluding Alpha
+                    self._lookupTable.SetTableValue(i, *rgb)
+            else:
+                rgb = cmap(0)[:3]  # Extract RGB values excluding Alpha
+                self._lookupTable.SetTableValue(0, *rgb)
 
         self._lookupTable.SetAboveRangeColor(0, 0, 0, 0)  # Transparent
         self._lookupTable.SetBelowRangeColor(0, 0, 0, 0)  # Transparent

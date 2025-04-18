@@ -5,36 +5,34 @@ from PySide6.QtCore import Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QListWidgetItem, QHBoxLayout, QLabel, QWidget, QSizePolicy
 
-from baramFlow.view.results.visual_reports.display_control.color_scheme_widget_ui import Ui_ColorSchemeWidget
-from .....coredb.color_scheme import ColormapScheme
+from baramFlow.coredb.color_scheme import ColormapScheme, getColormapSchemeImage
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
-from .colormap.colormap import colormapName, colormapImage
+from .colormap.colormap import colormapName
 from .colormap_scheme_dialog_ui import Ui_ColormapSchemeDialog
 
-
-def createSchemeWidget(img, name):
-    widget = QWidget()
-    layout = QHBoxLayout(widget)
-    image = QLabel()
-    image.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred))
-    image.setPixmap(QPixmap(img).scaled(240, 20))
-    layout.addWidget(image)
-    label = QLabel(name)
-    layout.addWidget(label)
-    layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetFixedSize)
-
-    return widget
 
 class ColorSchemeWidget(QWidget):
     def __init__(self, scheme: ColormapScheme):
         super().__init__()
-        self._ui = Ui_ColorSchemeWidget()
-        self._ui.setupUi(self)
 
-        self._ui.image.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred))
-        self._ui.image.setPixmap(QPixmap(colormapImage[scheme]).scaled(240, 20))
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(9, 9, 9, 9)
+        layout.setSpacing(9)
 
-        self._ui.name.setText(colormapName[scheme])
+        self.image = QLabel()
+        image = getColormapSchemeImage(scheme, 240, 20)
+        self.image.setPixmap(QPixmap(image))
+        self.image.setScaledContents(True)
+        self.image.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed))
+        self.image.setMinimumSize(240, 20)
+        layout.addWidget(self.image)
+
+        self.title = QLabel()
+        self.title.setText(colormapName[scheme])
+        self.title.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
+        self.title.setMinimumSize(60, 20)
+        self.title.setMaximumSize(90, 20)
+        layout.addWidget(self.title)
 
         self.scheme = scheme
 

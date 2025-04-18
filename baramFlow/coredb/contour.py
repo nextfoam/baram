@@ -99,7 +99,7 @@ class Contour(VisualReport):
         customRangeMax = e.find('customRangeMax', namespaces=nsmap).text
         clipToRange = True if e.find('clipToRange', namespaces=nsmap).text == 'true' else False
         useCustomColorScheme = True if e.find('useCustomColorScheme', namespaces=nsmap).text == 'true' else False
-        colorScheme = ColormapScheme(int(e.find('colorScheme', namespaces=nsmap).text))
+        colorScheme = ColormapScheme(e.find('colorScheme', namespaces=nsmap).text)
         customMinColor = QColor.fromString(e.find('customMinColor', namespaces=nsmap).text)
         customMaxColor = QColor.fromString(e.find('customMaxColor', namespaces=nsmap).text)
 
@@ -179,7 +179,7 @@ class Contour(VisualReport):
                    f'    <customRangeMax>{self.customRangeMax}</customRangeMax>'
                    f'    <clipToRange>{"true" if self.clipToRange else "false"}</clipToRange>'
                    f'    <useCustomColorScheme>{"true" if self.useCustomColorScheme else "false"}</useCustomColorScheme>'
-                   f'    <colorScheme>{str(self.colorScheme.value)}</colorScheme>'
+                   f'    <colorScheme>{self.colorScheme.value}</colorScheme>'
                    f'    <customMinColor>{self.customMinColor.name()}</customMinColor>'
                    f'    <customMaxColor>{self.customMaxColor.name()}</customMaxColor>'
                    f'    <includeVectors>{"true" if self.includeVectors else "false"}</includeVectors>'

@@ -6,12 +6,13 @@ from PySide6.QtGui import QColor, QDoubleValidator, QIntValidator, QPixmap, QReg
 from PySide6.QtWidgets import QColorDialog
 import qasync
 
+from baramFlow.coredb.color_scheme import ColormapScheme, getColormapSchemeImage
 from baramFlow.coredb.contour import Contour
 from baramFlow.coredb.post_field import FIELD_TEXTS, VECTOR_COMPONENT_TEXTS, FieldType
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
-from .colormap.colormap import colormapName, colormapImage
+from .colormap.colormap import colormapName
 from .colormap_scheme_dialog import ColormapSchemeDialog
 from .contour_colormap_dialog_ui import Ui_ContourColormapDialog
 
@@ -156,7 +157,7 @@ class ContourColormapDialog(ResizableDialog):
         self._contour.rangeMax = rMax
 
     def _openSchemeDialog(self):
-        self._dialog = ColormapSchemeDialog(self, self._contour.colorScheme)
+        self._dialog = ColormapSchemeDialog(self, self._presetColorScheme)
         self._dialog.schemeSelected.connect(self._setPresetColorScheme)
         self._dialog.open()
 
@@ -171,9 +172,13 @@ class ContourColormapDialog(ResizableDialog):
             self._ui.customSchemeGroup.hide()
             self._ui.presetSchemeGroup.show()
 
-    def _setPresetColorScheme(self, scheme):
+    def _setPresetColorScheme(self, scheme: ColormapScheme):
         self._ui.presetColorScheme.setText(colormapName[scheme])
-        self._ui.presetColorBar.setPixmap(QPixmap(colormapImage[scheme]))
+
+        size = self._ui.presetColorBar.size()
+        image = getColormapSchemeImage(scheme, size.width(), size.height())
+        self._ui.presetColorBar.setPixmap(QPixmap(image))
+
         self._presetColorScheme = scheme
 
     def _customMinColorClicked(self):
