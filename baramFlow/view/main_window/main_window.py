@@ -274,7 +274,6 @@ class MainWindow(QMainWindow):
         self._caseManager.caseLoaded.connect(self._caseLoaded)
 
         GraphicsDB().reportAdded.asyncConnect(self._reportAdded)
-        GraphicsDB().reportUpdated.asyncConnect(self._reportUpdated)
         GraphicsDB().removingReport.asyncConnect(self._reportRemoving)
 
     def _disconnectSignalsSlots(self):
@@ -284,7 +283,6 @@ class MainWindow(QMainWindow):
         self._caseManager.caseLoaded.disconnect(self._caseLoaded)
 
         GraphicsDB().reportAdded.disconnect(self._reportAdded)
-        GraphicsDB().reportUpdated.disconnect(self._reportUpdated)
         GraphicsDB().removingReport.disconnect(self._reportRemoving)
 
     @qasync.asyncSlot()
@@ -925,11 +923,6 @@ class MainWindow(QMainWindow):
     async def _reportAdded(self, uuid: UUID):
         report = GraphicsDB().getVisualReport(uuid)
         self._addNewReportDock(report)
-
-    async def _reportUpdated(self, uuid: UUID):
-        if uuid in self._docks:
-            dock = self._docks[uuid]
-            # ToDo: what to do?
 
     async def _reportRemoving(self, uuid: UUID):
         if uuid in self._docks:

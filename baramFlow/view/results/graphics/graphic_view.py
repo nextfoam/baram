@@ -38,9 +38,10 @@ class VisualReportView(RenderingView):
     def __init__(self, parent: QWidget = None, graphic: Graphic = None):
         super().__init__(parent)
 
-        # Remove RenderingMode tool menu, which is not used in Visual Report
+        # To Remove RenderingMode tool menu, which is not used in Visual Report
         layout = self._ui.renderingMode.parentWidget().layout()
         layout.removeWidget(self._ui.renderingMode)
+
         self._ui.renderingMode.setParent(None)
         self._ui.renderingMode = None
 
@@ -53,12 +54,14 @@ class VisualReportView(RenderingView):
         self._overlayFrame = OverlayFrame(self._view)
 
         self._displayControlTreeWidget = QTreeWidget(self._overlayFrame)
-        self._displayControlTreeWidget.headerItem().setText(2, "")
         self._displayControlTreeWidget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self._displayControlTreeWidget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self._displayControlTreeWidget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self._displayControlTreeWidget.setSortingEnabled(True)
         self._displayControlTreeWidget.setColumnCount(3)
+        self._displayControlTreeWidget.headerItem().setText(Column.NAME_COLUMN, self.tr('Name'))
+        self._displayControlTreeWidget.headerItem().setText(Column.TYPE_COLUMN, self.tr('Type'))
+        self._displayControlTreeWidget.headerItem().setText(Column.COLOR_COLUMN, '')
         self._displayControlTreeWidget.header().setVisible(True)
         self._displayControlTreeWidget.header().setStretchLastSection(False)
 

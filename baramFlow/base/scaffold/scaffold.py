@@ -18,7 +18,7 @@ class ScaffoldType(Enum):
     LINE_SCAFFOLD   = 'lineScaffold'
     PARALLELOGRAM   = 'parallelogram'
     PLANE_SCAFFOLD  = 'planeScaffold'
-    SPHERE_SCAFFOLD   = 'sphereScaffold'
+    SPHERE_SCAFFOLD = 'sphereScaffold'
 
 
 @dataclass

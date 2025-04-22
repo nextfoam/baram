@@ -119,7 +119,7 @@ WALL_SHEAR_STRESS   = CollateralField('wallShearStress', FieldType.VECTOR)
 WALL_Y_PLUS         = CollateralField('wallYPlus')
 
 
-ALL_FIELDS: dict[(str, str), Field] = {
+ALL_FIELDS: dict[tuple[str, str], Field] = {
     (COORDINATE.category,                   COORDINATE.codeName):                   COORDINATE,
     (PRESSURE.category,                     PRESSURE.codeName):                     PRESSURE,
     (VELOCITY.category,                     VELOCITY.codeName):                     VELOCITY,

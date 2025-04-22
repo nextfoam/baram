@@ -19,6 +19,7 @@ from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 from baramFlow.base.graphic.graphic import Graphic, StreamlineType
 from baramFlow.base.field import Field
 from baramFlow.base.graphic.display_item import DisplayItem
+from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.openfoam.solver_field import getSolverFieldName
 
 from libbaram.vtk_threads import vtk_run_in_thread
@@ -103,7 +104,8 @@ class DisplayControl(QTreeWidgetItem):
         self._colorWidget = QLabel()
 
         self.setText(Column.NAME_COLUMN, displayItem.name)
-        self.setText(Column.TYPE_COLUMN, displayItem.name)
+        typeString = ScaffoldsDB().scaffoldTypeString(displayItem.scaffoldUuid)
+        self.setText(Column.TYPE_COLUMN, typeString)
 
         self._updateColorColumn()
 

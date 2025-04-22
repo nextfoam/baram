@@ -4,6 +4,8 @@
 from threading import Lock
 from uuid import UUID, uuid4
 
+from PySide6.QtCore import QCoreApplication
+
 from baramFlow.base.scaffold.boundary_scaffold import BoundaryScaffold
 from baramFlow.base.scaffold.disk_scaffold import DiskScaffold
 from baramFlow.base.scaffold.iso_surface import IsoSurface
@@ -155,4 +157,24 @@ class ScaffoldsDB:
                 return f'{prefix}-{i}'
         return f'{prefix}-{uuid4()}'
 
+    def scaffoldTypeString(self, uuid: UUID):
+        if uuid not in self._scaffolds:
+            return None
 
+        scaffold = self._scaffolds[uuid]
+        if isinstance(scaffold, BoundaryScaffold):
+            return QCoreApplication.translate('Scaffold', 'Boundary')
+        elif isinstance(scaffold, DiskScaffold):
+            return QCoreApplication.translate('Scaffold', 'Disk')
+        elif isinstance(scaffold, IsoSurface):
+            return QCoreApplication.translate('Scaffold', 'Iso-surface')
+        elif isinstance(scaffold, LineScaffold):
+            return QCoreApplication.translate('Scaffold', 'Line')
+        elif isinstance(scaffold, Parallelogram):
+            return QCoreApplication.translate('Scaffold', 'Parallelogram')
+        elif isinstance(scaffold, PlaneScaffold):
+            return QCoreApplication.translate('Scaffold', 'Plane')
+        elif isinstance(scaffold, SphereScaffold):
+            return QCoreApplication.translate('Scaffold', 'Sphere')
+        else:
+            return None
