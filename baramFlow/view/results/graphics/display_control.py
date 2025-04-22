@@ -16,9 +16,9 @@ from vtkmodules.vtkFiltersModeling import vtkRibbonFilter
 from vtkmodules.vtkFiltersSources import vtkArrowSource
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 
-from baramFlow.base.graphics.graphic import Graphic, StreamlineType
+from baramFlow.base.graphic.graphic import Graphic, StreamlineType
 from baramFlow.base.field import Field
-from baramFlow.base.graphics.reporting_scaffold import ReportingScaffold
+from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.openfoam.solver_field import getSolverFieldName
 
 from libbaram.vtk_threads import vtk_run_in_thread
@@ -51,13 +51,13 @@ class Column(IntEnum):
     # VISIBLE_ICON_COLUMN = auto()
 
 
-class DisplayItem(QTreeWidgetItem):
-    def __init__(self, parent, did: UUID, graphic: Graphic, reportingScaffold: ReportingScaffold, internalMesh: vtkUnstructuredGrid, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable, view: RenderingWidget):
+class DisplayControl(QTreeWidgetItem):
+    def __init__(self, parent, did: UUID, graphic: Graphic, displayItem: DisplayItem, internalMesh: vtkUnstructuredGrid, field: Field, useNodeValues: bool, lookupTable: vtkLookupTable, view: RenderingWidget):
         super().__init__(parent)
 
         self._did = did
         self._graphic = graphic
-        self._reportingScaffold = reportingScaffold
+        self._displayItem = displayItem
         self._internalMesh = internalMesh
         self._field = field
         self._useNodeValues = useNodeValues
@@ -65,8 +65,8 @@ class DisplayItem(QTreeWidgetItem):
         self._view = view
 
         self._scaffoldMapper: vtkPolyDataMapper = vtkPolyDataMapper()
-        self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
-        if reportingScaffold.solidColor:
+        self._scaffoldMapper.SetInputData(self._displayItem.dataSet)
+        if displayItem.solidColor:
             self._scaffoldMapper.ScalarVisibilityOff()
         else:
             self._scaffoldMapper.ScalarVisibilityOn()
@@ -78,13 +78,13 @@ class DisplayItem(QTreeWidgetItem):
         self._scaffoldActor: vtkActor = vtkActor()
         self._scaffoldActor.SetMapper(self._scaffoldMapper)
         self._scaffoldActor.GetProperty().SetDiffuse(0.3)
-        self._scaffoldActor.GetProperty().SetOpacity(reportingScaffold.opacity)
+        self._scaffoldActor.GetProperty().SetOpacity(displayItem.opacity)
         self._scaffoldActor.GetProperty().SetAmbient(0.3)
         self._scaffoldActor.SetObjectName(str(self._did))
-        self._scaffoldActor.SetVisibility(reportingScaffold.visibility)
-        self._scaffoldActor.GetProperty().SetColor(reportingScaffold.color.redF(),
-                                                   reportingScaffold.color.greenF(),
-                                                   reportingScaffold.color.blueF())
+        self._scaffoldActor.SetVisibility(displayItem.visibility)
+        self._scaffoldActor.GetProperty().SetColor(displayItem.color.redF(),
+                                                   displayItem.color.greenF(),
+                                                   displayItem.color.blueF())
         self._scaffoldActor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Gray'))
         self._scaffoldActor.GetProperty().SetLineWidth(1.0)
 
@@ -102,8 +102,8 @@ class DisplayItem(QTreeWidgetItem):
 
         self._colorWidget = QLabel()
 
-        self.setText(Column.NAME_COLUMN, reportingScaffold.name)
-        self.setText(Column.TYPE_COLUMN, reportingScaffold.name)
+        self.setText(Column.NAME_COLUMN, displayItem.name)
+        self.setText(Column.TYPE_COLUMN, displayItem.name)
 
         self._updateColorColumn()
 
@@ -114,7 +114,7 @@ class DisplayItem(QTreeWidgetItem):
         self._task = asyncio.create_task(self.updateScaffoldInfo(), name=str(self._did))
 
     async def updateScaffoldInfo(self):
-        self.setText(Column.NAME_COLUMN, self._reportingScaffold.name)
+        self.setText(Column.NAME_COLUMN, self._displayItem.name)
         await self.executePipeline()
 
     # def setField(self, field: Field, useNodeValues: bool):
@@ -148,48 +148,48 @@ class DisplayItem(QTreeWidgetItem):
 
     @property
     def opacity(self) -> float:
-        return self._reportingScaffold.opacity
+        return self._displayItem.opacity
 
     @property
     def color(self) -> QColor:
-        return self._reportingScaffold.color
+        return self._displayItem.color
 
     @property
     def visibility(self) -> bool:
-        return self._reportingScaffold.visibility
+        return self._displayItem.visibility
 
     def did(self) -> UUID:
         return self._did
 
     @property
-    def reportingScaffold(self) -> ReportingScaffold:
-        return self._reportingScaffold
+    def displayItem(self) -> DisplayItem:
+        return self._displayItem
 
     @property
     def colorMode(self) -> ColorMode:
-        if self._reportingScaffold.solidColor:
+        if self._displayItem.solidColor:
             return ColorMode.SOLID
         else:
             return ColorMode.FIELD
 
     @property
     def displayMode(self) -> DisplayMode:
-        if self._reportingScaffold.edges and self._reportingScaffold.faces:
+        if self._displayItem.edges and self._displayItem.faces:
             return DisplayMode.SURFACE_EDGE
-        elif self._reportingScaffold.faces:
+        elif self._displayItem.faces:
             return DisplayMode.SURFACE
-        elif self._reportingScaffold.edges:
+        elif self._displayItem.edges:
             return DisplayMode.WIREFRAME
         else:
             raise AssertionError
 
     @property
     def vectorsOn(self) -> bool:
-        return self._reportingScaffold.vectorsOn
+        return self._displayItem.vectorsOn
 
     @property
     def streamlinesOn(self) -> bool:
-        return self._reportingScaffold.streamlinesOn
+        return self._displayItem.streamlinesOn
 
     def setupColorWidget(self, treeWidget: QTreeWidget):
         widget = QWidget()
@@ -201,45 +201,45 @@ class DisplayItem(QTreeWidgetItem):
         treeWidget.setItemWidget(self, Column.COLOR_COLUMN, widget)
 
     async def setActorVisible(self, visibility):
-        self._reportingScaffold.visibility = visibility
+        self._displayItem.visibility = visibility
 
         self._scaffoldActor.SetVisibility(visibility)
 
         self._updateColorColumn()
 
-        await self._reportingScaffold.markUpdated()
+        await self._displayItem.markUpdated()
 
     async def setDisplayMode(self, mode: DisplayMode):
         if mode == DisplayMode.SURFACE_EDGE:
-            self._reportingScaffold.edges = True
-            self._reportingScaffold.faces = True
+            self._displayItem.edges = True
+            self._displayItem.faces = True
         elif mode == DisplayMode.SURFACE:
-            self._reportingScaffold.edges = False
-            self._reportingScaffold.faces = True
+            self._displayItem.edges = False
+            self._displayItem.faces = True
         elif mode == DisplayMode.WIREFRAME:
-            self._reportingScaffold.edges = True
-            self._reportingScaffold.faces = False
+            self._displayItem.edges = True
+            self._displayItem.faces = False
         else:
             raise AssertionError
 
-        await self._reportingScaffold.markUpdated()
+        await self._displayItem.markUpdated()
 
         if not self._highlighted:
             self._applyDisplayMode()
 
     def _applyDisplayMode(self):
-        if self._reportingScaffold.edges:
+        if self._displayItem.edges:
             self._scaffoldActor.GetProperty().EdgeVisibilityOn()
         else:
             self._scaffoldActor.GetProperty().EdgeVisibilityOff()
 
-        if self._reportingScaffold.faces:
+        if self._displayItem.faces:
             self._scaffoldActor.GetProperty().SetRepresentationToSurface()
         else:
             self._scaffoldActor.GetProperty().SetRepresentationToWireframe()
 
     async def setOpacity(self, opacity):
-        self._reportingScaffold.opacity = opacity
+        self._displayItem.opacity = opacity
 
         self._scaffoldActor.GetProperty().SetOpacity(opacity)
 
@@ -249,10 +249,10 @@ class DisplayItem(QTreeWidgetItem):
         if self._streamActor is not None:
             self._streamActor.GetProperty().SetOpacity(opacity)
 
-        await self._reportingScaffold.markUpdated()
+        await self._displayItem.markUpdated()
 
     async def setActorColor(self, color: QColor):
-        self._reportingScaffold.color = color
+        self._displayItem.color = color
 
         self._scaffoldActor.GetProperty().SetColor(color.redF(), color.greenF(), color.blueF())
 
@@ -264,18 +264,18 @@ class DisplayItem(QTreeWidgetItem):
 
         self._updateColorColumn()
 
-        await self._reportingScaffold.markUpdated()
+        await self._displayItem.markUpdated()
 
     async def setColorMode(self, mode: ColorMode):
         if mode == ColorMode.SOLID:
-            self._reportingScaffold.solidColor = True
+            self._displayItem.solidColor = True
             self._scaffoldMapper.ScalarVisibilityOff()
             if self._vectorActor is not None:
                 self._vectorMapper.ScalarVisibilityOff()
             if self._streamMapper is not None:
                 self._streamMapper.ScalarVisibilityOff()
         elif mode == ColorMode.FIELD:
-            self._reportingScaffold.solidColor = False
+            self._displayItem.solidColor = False
             self._scaffoldMapper.ScalarVisibilityOn()
             if self._vectorActor is not None:
                 self._vectorMapper.ScalarVisibilityOn()
@@ -286,7 +286,7 @@ class DisplayItem(QTreeWidgetItem):
 
         self._updateColorColumn()
 
-        await self._reportingScaffold.markUpdated()
+        await self._displayItem.markUpdated()
 
     def setHighlighted(self, highlighted):
         if self._highlighted != highlighted:
@@ -310,9 +310,9 @@ class DisplayItem(QTreeWidgetItem):
         self._scaffoldActor.GetProperty().SetLineWidth(1)
 
     def _updateColorColumn(self):
-        if self._reportingScaffold.visibility or self._reportingScaffold.vectorsOn or self._reportingScaffold.streamlinesOn:
-            if self._reportingScaffold.solidColor:
-                color = self._reportingScaffold.color
+        if self._displayItem.visibility or self._displayItem.vectorsOn or self._displayItem.streamlinesOn:
+            if self._displayItem.solidColor:
+                color = self._displayItem.color
                 self._colorWidget.setStyleSheet(
                     f'background-color: rgb({color.red()}, {color.green()}, {color.blue()});'
                     'border: 1px solid LightGrey; border-radius: 3px;')
@@ -337,11 +337,11 @@ class DisplayItem(QTreeWidgetItem):
         if self._vectorActor is None:
             await self._setUpVectors()
 
-        self._reportingScaffold.vectorsOn = True
+        self._displayItem.vectorsOn = True
 
         self._vectorActor.SetVisibility(True)
 
-        await self._reportingScaffold.markUpdated()
+        await self._displayItem.markUpdated()
 
         self._updateColorColumn()
 
@@ -349,11 +349,11 @@ class DisplayItem(QTreeWidgetItem):
         if self._vectorActor is None:
             return
 
-        self._reportingScaffold.vectorsOn = False
+        self._displayItem.vectorsOn = False
 
         self._vectorActor.SetVisibility(False)
 
-        await self._reportingScaffold.markUpdated()
+        await self._displayItem.markUpdated()
 
         self._updateColorColumn()
 
@@ -395,8 +395,8 @@ class DisplayItem(QTreeWidgetItem):
         if self._vectorActor is None:
             self._prepareVectorFilterPipeline()
 
-        self._vectorMask.SetInputData(self._reportingScaffold.dataSet)
-        self._vectorMask.SetMaximumNumberOfPoints(self._reportingScaffold.maxNumberOfSamplePoints)
+        self._vectorMask.SetInputData(self._displayItem.dataSet)
+        self._vectorMask.SetMaximumNumberOfPoints(self._displayItem.maxNumberOfSamplePoints)
 
         self._vectorGlyph.SetScaleFactor(float(self._graphic.vectorScaleFactor))
 
@@ -415,7 +415,7 @@ class DisplayItem(QTreeWidgetItem):
 
         self._vectorMapper.SetInputData(self._vectorGlyph.GetOutput())
 
-        if self._reportingScaffold.solidColor:
+        if self._displayItem.solidColor:
             self._vectorMapper.ScalarVisibilityOff()
         else:
             self._vectorMapper.ScalarVisibilityOn()
@@ -424,18 +424,18 @@ class DisplayItem(QTreeWidgetItem):
 
         await vtk_run_in_thread(self._vectorMapper.Update)
 
-        self._vectorActor.GetProperty().SetOpacity(self._reportingScaffold.opacity)
-        self._vectorActor.SetVisibility(self._reportingScaffold.vectorsOn)
+        self._vectorActor.GetProperty().SetOpacity(self._displayItem.opacity)
+        self._vectorActor.SetVisibility(self._displayItem.vectorsOn)
 
     async def showStreamlines(self):
         if self._streamActor is None:
             await self._setUpStreamlines()
 
-        self._reportingScaffold.streamlinesOn = True
+        self._displayItem.streamlinesOn = True
 
         self._streamActor.SetVisibility(True)
 
-        await self._reportingScaffold.markUpdated()
+        await self._displayItem.markUpdated()
 
         self._updateColorColumn()
 
@@ -443,11 +443,11 @@ class DisplayItem(QTreeWidgetItem):
         if self._streamActor is None:
             return
 
-        self._reportingScaffold.streamlinesOn = False
+        self._displayItem.streamlinesOn = False
 
         self._streamActor.SetVisibility(False)
 
-        await self._reportingScaffold.markUpdated()
+        await self._displayItem.markUpdated()
 
         self._updateColorColumn()
 
@@ -480,8 +480,8 @@ class DisplayItem(QTreeWidgetItem):
         if self._streamActor is None:
             self._prepareStreamFilterPipeline()
 
-        self._streamMask.SetInputData(self._reportingScaffold.dataSet)
-        self._streamMask.SetMaximumNumberOfPoints(self._reportingScaffold.maxNumberOfSamplePoints)
+        self._streamMask.SetInputData(self._displayItem.dataSet)
+        self._streamMask.SetMaximumNumberOfPoints(self._displayItem.maxNumberOfSamplePoints)
 
         if self._graphic.accuracyControl:
             self._streamTracer.SetIntegratorType(vtkStreamTracer.RUNGE_KUTTA45)
@@ -495,11 +495,11 @@ class DisplayItem(QTreeWidgetItem):
 
         self._streamTracer.SetMaximumPropagation(float(self._graphic.maxLength))
 
-        if self._reportingScaffold.streamlinesIntegrateForward and self._reportingScaffold.streamlinesIntegrateBackward:
+        if self._displayItem.streamlinesIntegrateForward and self._displayItem.streamlinesIntegrateBackward:
             self._streamTracer.SetIntegrationDirectionToBoth()
-        elif self._reportingScaffold.streamlinesIntegrateForward:
+        elif self._displayItem.streamlinesIntegrateForward:
             self._streamTracer.SetIntegrationDirectionToForward()
-        elif self._reportingScaffold.streamlinesIntegrateBackward:
+        elif self._displayItem.streamlinesIntegrateBackward:
             self._streamTracer.SetIntegrationDirectionToBackward()
         else:
             raise AssertionError
@@ -523,7 +523,7 @@ class DisplayItem(QTreeWidgetItem):
 
         self._streamMapper.SetInputData(self._streamDeco.GetOutput())
 
-        if self._reportingScaffold.solidColor:
+        if self._displayItem.solidColor:
             self._streamMapper.ScalarVisibilityOff()
         else:
             self._streamMapper.ScalarVisibilityOn()
@@ -533,18 +533,18 @@ class DisplayItem(QTreeWidgetItem):
 
         await vtk_run_in_thread(self._streamMapper.Update)
 
-        self._streamActor.GetProperty().SetOpacity(self._reportingScaffold.opacity)
-        self._streamActor.SetVisibility(self._reportingScaffold.streamlinesOn)
+        self._streamActor.GetProperty().SetOpacity(self._displayItem.opacity)
+        self._streamActor.SetVisibility(self._displayItem.streamlinesOn)
 
     async def executePipeline(self):
-        self._scaffoldMapper.SetInputData(self._reportingScaffold.dataSet)
+        self._scaffoldMapper.SetInputData(self._displayItem.dataSet)
 
         await vtk_run_in_thread(self._scaffoldMapper.Update)
 
-        if self._reportingScaffold.vectorsOn or self._vectorActor is not None:
+        if self._displayItem.vectorsOn or self._vectorActor is not None:
             await self._setUpVectors()
 
-        if self._reportingScaffold.streamlinesOn or self._streamActor is not None:
+        if self._displayItem.streamlinesOn or self._streamActor is not None:
             await self._setUpStreamlines()
 
         await self._setField(self._graphic.field, self._graphic.useNodeValues)

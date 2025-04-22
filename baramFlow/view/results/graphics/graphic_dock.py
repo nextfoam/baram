@@ -4,7 +4,7 @@
 
 from PySide6QtAds import CDockWidget
 
-from baramFlow.base.graphics.graphic import Graphic
+from baramFlow.base.graphic.graphic import Graphic
 
 from .graphic_view import VisualReportView
 

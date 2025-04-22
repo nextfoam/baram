@@ -17,7 +17,7 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
-from baramFlow.base.graphics.graphics_db import GraphicsDB
+from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.view.results.graphics.graphic_dock import GraphicDock
 from libbaram.exception import CanceledException
@@ -29,6 +29,7 @@ from widgets.progress_dialog import ProgressDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 from baramFlow.app import app
+from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.case_manager import CaseManager, LiveCase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.app_settings import AppSettings
@@ -76,7 +77,6 @@ from .menu.mesh.mesh_scale_dialog import MeshScaleDialog
 from .menu.mesh.mesh_translate_dialog import MeshTranslateDialog
 from .menu.mesh.mesh_rotate_dialog import MeshRotateDialog
 from .menu.help.about_dialog import AboutDialog
-from ...base.graphics.graphic import Graphic
 
 logger = logging.getLogger(__name__)
 

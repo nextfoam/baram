@@ -17,20 +17,20 @@ from vtkmodules.vtkRenderingCore import vtkActor
 
 from baramFlow.app import app
 
-from baramFlow.base.graphics.graphic import Graphic
+from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.base.field import FieldType, VectorComponent
-from baramFlow.base.graphics.reporting_scaffold import ReportingScaffold
+from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 
 from baramFlow.view.results.graphics.colormap_dialog import ColormapDialog
 from baramFlow.view.results.graphics.opacity_dialog import OpacityDialog
-from baramFlow.view.results.graphics.reporting_scaffold_dialog import ReportingScaffoldDialog
+from baramFlow.view.results.graphics.display_item_dialog import DisplayItemDialog
 from baramFlow.view.results.graphics.scalar_bar_widget import ScalarBarWidget
 from baramFlow.view.widgets.rendering_view import RenderingView
 
 from widgets.overlay_frame import OverlayFrame
 
-from baramFlow.view.results.graphics.display_item import ColorMode, DisplayMode, DisplayItem, Column
+from baramFlow.view.results.graphics.display_control import ColorMode, DisplayMode, DisplayControl, Column
 from widgets.progress_dialog import ProgressDialog
 
 
@@ -52,31 +52,31 @@ class VisualReportView(RenderingView):
 
         self._overlayFrame = OverlayFrame(self._view)
 
-        self._scaffoldTreeWidget = QTreeWidget(self._overlayFrame)
-        self._scaffoldTreeWidget.headerItem().setText(2, "")
-        self._scaffoldTreeWidget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self._scaffoldTreeWidget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self._scaffoldTreeWidget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self._scaffoldTreeWidget.setSortingEnabled(True)
-        self._scaffoldTreeWidget.setColumnCount(3)
-        self._scaffoldTreeWidget.header().setVisible(True)
-        self._scaffoldTreeWidget.header().setStretchLastSection(False)
+        self._displayControlTreeWidget = QTreeWidget(self._overlayFrame)
+        self._displayControlTreeWidget.headerItem().setText(2, "")
+        self._displayControlTreeWidget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self._displayControlTreeWidget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self._displayControlTreeWidget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self._displayControlTreeWidget.setSortingEnabled(True)
+        self._displayControlTreeWidget.setColumnCount(3)
+        self._displayControlTreeWidget.header().setVisible(True)
+        self._displayControlTreeWidget.header().setStretchLastSection(False)
 
         layout = QVBoxLayout(self._overlayFrame)
-        layout.addWidget(self._scaffoldTreeWidget)
+        layout.addWidget(self._displayControlTreeWidget)
 
         self._overlayFrame.adjustSize()
 
-        self._menu = QMenu(self._scaffoldTreeWidget)
+        self._menu = QMenu(self._displayControlTreeWidget)
         self._setUpContextMenu(self._menu)
 
-        self._items: dict[UUID, DisplayItem] = {}
-        self._selectedItems: list[DisplayItem] = []
+        self._controls: dict[UUID, DisplayControl] = {}
+        self._selectedControls: list[DisplayControl] = []
 
-        self._scaffoldTreeWidget.setColumnWidth(Column.COLOR_COLUMN, 20)
+        self._displayControlTreeWidget.setColumnWidth(Column.COLOR_COLUMN, 20)
 
-        self._scaffoldTreeWidget.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
-        self._scaffoldTreeWidget.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
+        self._displayControlTreeWidget.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
+        self._displayControlTreeWidget.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
 
         self._colormap = ScalarBarWidget(self, graphic, self._colormapDoubleClicked)
         self._colormap.SetInteractor(self._view.interactor())
@@ -93,16 +93,16 @@ class VisualReportView(RenderingView):
 
         self._graphic = graphic
 
-        self._scaffold2displayItem: dict[UUID, UUID] = {}
+        self._scaffold2displayControl: dict[UUID, UUID] = {}
         self._updatedScaffolds: set[UUID] = set()
 
         graphic.rangeMin, graphic.rangeMax = graphic.getValueRange(graphic.useNodeValues, graphic.relevantScaffoldsOnly)
 
-        for rs in self._graphic.reportingScaffolds.values():
+        for item in self._graphic.displayItems.values():
 
-            displayUuid = self._addItem(rs)
+            displayUuid = self._createDisplayControl(item)
 
-            self._scaffold2displayItem[rs.scaffoldUuid] = displayUuid
+            self._scaffold2displayControl[item.scaffoldUuid] = displayUuid
 
         self._view.fitCamera()
 
@@ -111,8 +111,8 @@ class VisualReportView(RenderingView):
         self._connectSignalsSlots()
 
     def _connectSignalsSlots(self):
-        self._scaffoldTreeWidget.customContextMenuRequested.connect(self._showContextMenu)
-        self._scaffoldTreeWidget.itemSelectionChanged.connect(self._selectedItemsChanged)
+        self._displayControlTreeWidget.customContextMenuRequested.connect(self._showContextMenu)
+        self._displayControlTreeWidget.itemSelectionChanged.connect(self._selectedItemsChanged)
         self._view.customContextMenuRequested.connect(self._showContextMenuOnRenderingView)
         self._view.actorPicked.connect(self._actorPicked)
 
@@ -122,15 +122,15 @@ class VisualReportView(RenderingView):
         ScaffoldsDB().scaffoldUpdated.asyncConnect(self._scaffoldUpdated)
 
         self._graphic.instanceUpdated.asyncConnect(self._reportUpdated)
-        self._graphic.reportingScaffoldAdded.asyncConnect(self._reportingScaffoldAdded)
-        self._graphic.reportingScaffoldRemoving.asyncConnect(self._reportingScaffoldRemoving)
+        self._graphic.displayItemAdded.asyncConnect(self._displayItemAdded)
+        self._graphic.displayItemRemoving.asyncConnect(self._displayItemRemoving)
 
     def _disconnectSignalsSlots(self):
         ScaffoldsDB().scaffoldUpdated.disconnect(self._scaffoldUpdated)
 
         self._graphic.instanceUpdated.disconnect(self._reportUpdated)
-        self._graphic.reportingScaffoldAdded.disconnect(self._reportingScaffoldAdded)
-        self._graphic.reportingScaffoldRemoving.disconnect(self._reportingScaffoldRemoving)
+        self._graphic.displayItemAdded.disconnect(self._displayItemAdded)
+        self._graphic.displayItemRemoving.disconnect(self._displayItemRemoving)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -221,21 +221,21 @@ class VisualReportView(RenderingView):
     async def _scaffoldUpdated(self, uuid: UUID):
         scaffold = ScaffoldsDB().getScaffold(uuid)
         dataSet = await scaffold.getDataSet(self._graphic.polyMesh)
-        self._graphic.reportingScaffolds[uuid].dataSet = dataSet
+        self._graphic.displayItems[uuid].dataSet = dataSet
 
-        displayUuid = self._scaffold2displayItem[uuid]
-        item = self._items[displayUuid]
+        displayUuid = self._scaffold2displayControl[uuid]
+        control = self._controls[displayUuid]
 
-        await item.updateScaffoldInfo()
+        await control.updateScaffoldInfo()
 
         self._view.refresh()
 
 
     async def _reportUpdated(self, uuid: UUID):
 
-        for did in self._items:
-            item = self._items[did]
-            await item.updateScaffoldInfo()
+        for did in self._controls:
+            control = self._controls[did]
+            await control.updateScaffoldInfo()
 
         self._updateLookupTable()
 
@@ -243,44 +243,44 @@ class VisualReportView(RenderingView):
 
     def _selectedItemsChanged(self):
         ids = []
-        for item in self._items.values():
-            item.setHighlighted(item.isSelected())
-            if item.isSelected():
-                ids.append(item.did())
+        for control in self._controls.values():
+            control.setHighlighted(control.isSelected())
+            if control.isSelected():
+                ids.append(control.did())
 
         self._view.refresh()
 
     def _executeContextMenu(self, pos):
-        items: list[DisplayItem] = self._scaffoldTreeWidget.selectedItems()
-        if len(items) == 0:
+        controls: list[DisplayControl] = self._displayControlTreeWidget.selectedItems()
+        if len(controls) == 0:
             return
 
-        self._selectedItems = items
+        self._selectedControls = controls
 
-        self._showAction.setVisible(not all([item.visibility for item in items]))
-        self._hideAction.setVisible(not all([not item.visibility for item in items]))
+        self._showAction.setVisible(not all([control.visibility for control in controls]))
+        self._hideAction.setVisible(not all([not control.visibility for control in controls]))
 
-        self._colorAction.setEnabled(not all([item.colorMode == ColorMode.FIELD for item in items]))
+        self._colorAction.setEnabled(not all([control.colorMode == ColorMode.FIELD for control in controls]))
 
-        self._solidColorAction.setChecked(all([item.colorMode == ColorMode.SOLID for item in items]))
-        self._fieldColorAction.setChecked(all([item.colorMode == ColorMode.FIELD for item in items]))
+        self._solidColorAction.setChecked(all([control.colorMode == ColorMode.SOLID for control in controls]))
+        self._fieldColorAction.setChecked(all([control.colorMode == ColorMode.FIELD for control in controls]))
 
-        self._wireFrameDisplayAction.setChecked(all([item.displayMode == DisplayMode.WIREFRAME for item in items]))
-        self._surfaceDisplayAction.setChecked(all([item.displayMode == DisplayMode.SURFACE for item in items]))
-        self._surfaceEdgeDisplayAction.setChecked(all([item.displayMode == DisplayMode.SURFACE_EDGE for item in items]))
+        self._wireFrameDisplayAction.setChecked(all([control.displayMode == DisplayMode.WIREFRAME for control in controls]))
+        self._surfaceDisplayAction.setChecked(all([control.displayMode == DisplayMode.SURFACE for control in controls]))
+        self._surfaceEdgeDisplayAction.setChecked(all([control.displayMode == DisplayMode.SURFACE_EDGE for control in controls]))
 
-        self._showVectorsAction.setVisible(not all([item.vectorsOn for item in items]))
-        self._hideVectorsAction.setVisible(not all([not item.vectorsOn for item in items]))
+        self._showVectorsAction.setVisible(not all([control.vectorsOn for control in controls]))
+        self._hideVectorsAction.setVisible(not all([not control.vectorsOn for control in controls]))
 
-        self._showStreamsAction.setVisible(not all([item.streamlinesOn for item in items]))
-        self._hideStreamsAction.setVisible(not all([not item.streamlinesOn for item in items]))
+        self._showStreamsAction.setVisible(not all([control.streamlinesOn for control in controls]))
+        self._hideStreamsAction.setVisible(not all([not control.streamlinesOn for control in controls]))
 
-        self._moreAction.setVisible(len(items)==1)  # This, detailed setting, is configured one by one because this may have complex settings.
+        self._moreAction.setVisible(len(controls)==1)  # This, detailed setting, is configured one by one because this may have complex settings.
 
         self._menu.exec(pos)
 
     def _showContextMenu(self, pos):
-        self._executeContextMenu(self._scaffoldTreeWidget.mapToGlobal(pos))
+        self._executeContextMenu(self._displayControlTreeWidget.mapToGlobal(pos))
 
     def _showContextMenuOnRenderingView(self, pos):
         #  VTK ignores device pixel ratio and uses real pixel values only
@@ -294,81 +294,81 @@ class VisualReportView(RenderingView):
 
     @qasync.asyncSlot()
     async def _showActors(self):
-        for item in self._selectedItems:
-            await item.setActorVisible(True)
+        for control in self._selectedControls:
+            await control.setActorVisible(True)
 
         self._view.refresh()
 
     @qasync.asyncSlot()
     async def _hideActors(self):
-        for item in self._selectedItems:
-            await item.setActorVisible(False)
+        for control in self._selectedControls:
+            await control.setActorVisible(False)
 
         self._view.refresh()
 
     @qasync.asyncSlot()
     async def _displayWireframe(self):
-        for item in self._selectedItems:
-            await item.setDisplayMode(DisplayMode.WIREFRAME)
+        for control in self._selectedControls:
+            await control.setDisplayMode(DisplayMode.WIREFRAME)
 
         self._view.refresh()
 
     @qasync.asyncSlot()
     async def _displaySurface(self):
-        for item in self._selectedItems:
-            await item.setDisplayMode(DisplayMode.SURFACE)
+        for control in self._selectedControls:
+            await control.setDisplayMode(DisplayMode.SURFACE)
 
         self._view.refresh()
 
     @qasync.asyncSlot()
     async def _displayWireSurfaceWithEdges(self):
-        for item in self._selectedItems:
-            await item.setDisplayMode(DisplayMode.SURFACE_EDGE)
+        for control in self._selectedControls:
+            await control.setDisplayMode(DisplayMode.SURFACE_EDGE)
 
         self._view.refresh()
 
     @qasync.asyncSlot()
     async def _opacityChanged(self):
         opacity = self._opacityDialog.opacity()
-        for item in self._selectedItems:
-            await item.setOpacity(opacity)
+        for control in self._selectedControls:
+            await control.setOpacity(opacity)
 
     @qasync.asyncSlot()
     async def _colorChanged(self):
         color = self._colorDialog.selectedColor()
-        for item in self._selectedItems:
-            await item.setActorColor(color)
+        for control in self._selectedControls:
+            await control.setActorColor(color)
 
     @qasync.asyncSlot()
     async def _solidColorMode(self):
         self._colorAction.setEnabled(True)
-        for item in self._selectedItems:
-            await item.setColorMode(ColorMode.SOLID)
+        for control in self._selectedControls:
+            await control.setColorMode(ColorMode.SOLID)
 
         self._view.refresh()
 
     @qasync.asyncSlot()
     async def _fieldColorMode(self):
         self._colorAction.setEnabled(False)
-        for item in self._selectedItems:
-            await item.setColorMode(ColorMode.FIELD)
+        for control in self._selectedControls:
+            await control.setColorMode(ColorMode.FIELD)
 
         self._view.refresh()
 
     def _actorPicked(self, actor: vtkActor, ctrlKeyPressed=False, forContextMenu=False):
         if not ctrlKeyPressed and not forContextMenu:
-            self._scaffoldTreeWidget.clearSelection()
+            self._displayControlTreeWidget.clearSelection()
 
         if actor:
             print(f'{actor.GetObjectName()} picked')
-            item = self._items[UUID(actor.GetObjectName())]
-            if not item.isSelected() and forContextMenu:
-                self._scaffoldTreeWidget.clearSelection()
+            control = self._controls[UUID(actor.GetObjectName())]
+            if not control.isSelected() and forContextMenu:
+                self._displayControlTreeWidget.clearSelection()
 
             if ctrlKeyPressed:
-                item.setSelected(not item.isSelected())
+                control.setSelected(not control.isSelected())
             else:
-                item.setSelected(True)
+                control.setSelected(True)
 
     def _actorSourceUpdated(self, id_):
         pass
@@ -379,16 +379,16 @@ class VisualReportView(RenderingView):
         progressDialog.setLabelText(self.tr('Setting up Vectors...'))
         progressDialog.open()
 
-        for item in self._selectedItems:
-                await item.showVectors()
+        for control in self._selectedControls:
+                await control.showVectors()
 
         self._view.refresh()
         progressDialog.close()
 
     @qasync.asyncSlot()
     async def _hideVectors(self):
-        for item in self._selectedItems:
-            await item.hideVectors()
+        for control in self._selectedControls:
+            await control.hideVectors()
 
         self._view.refresh()
 
@@ -398,8 +398,8 @@ class VisualReportView(RenderingView):
         progressDialog.setLabelText(self.tr('Setting up Streamlines...'))
         progressDialog.open()
 
-        for item in self._selectedItems:
-            await item.showStreamlines()
+        for control in self._selectedControls:
+            await control.showStreamlines()
 
         self._view.refresh()
 
@@ -407,61 +407,61 @@ class VisualReportView(RenderingView):
 
     @qasync.asyncSlot()
     async def _hideStreams(self):
-        for item in self._selectedItems:
-            await item.hideStreamlines()
+        for control in self._selectedControls:
+            await control.hideStreamlines()
 
         self._view.refresh()
 
-    def _addItem(self, rs: ReportingScaffold) -> UUID:
+    def _createDisplayControl(self, displayItem: DisplayItem) -> UUID:
         did = uuid4()
         graphic: Graphic = self._graphic
 
-        item = DisplayItem(self._scaffoldTreeWidget, did, graphic, rs, graphic.internalMesh, graphic.field, graphic.useNodeValues, self._lookupTable, self._view)
+        control = DisplayControl(self._displayControlTreeWidget, did, graphic, displayItem, graphic.internalMesh, graphic.field, graphic.useNodeValues, self._lookupTable, self._view)
 
-        self._items[did] = item
+        self._controls[did] = control
 
-        item.setupColorWidget(self._scaffoldTreeWidget)
+        control.setupColorWidget(self._displayControlTreeWidget)
 
         return did
 
-    def removeItem(self, did: UUID):
-        if did not in self._items:
+    def removeDisplayControl(self, did: UUID):
+        if did not in self._controls:
             return
 
-        for i in range(self._scaffoldTreeWidget.topLevelItemCount()):
-            item: DisplayItem = self._scaffoldTreeWidget.topLevelItem(i)
-            if item.did() != did:
+        for i in range(self._displayControlTreeWidget.topLevelItemCount()):
+            control: DisplayControl = self._displayControlTreeWidget.topLevelItem(i)
+            if control.did() != did:
                 continue
 
-            self._scaffoldTreeWidget.takeTopLevelItem(i)
+            self._displayControlTreeWidget.takeTopLevelItem(i)
 
-            item.close()
+            control.close()
 
-            del self._items[did]
-            del item
+            del self._controls[did]
+            del control
 
             break
 
-    async def _reportingScaffoldAdded(self, uuid: UUID):
-        rs = self._graphic.reportingScaffolds[uuid]
-        displayUuid = self._addItem(rs)
+    async def _displayItemAdded(self, uuid: UUID):
+        item = self._graphic.displayItems[uuid]
+        controlUuid = self._createDisplayControl(item)
 
-        self._scaffold2displayItem[uuid] = displayUuid
+        self._scaffold2displayControl[uuid] = controlUuid
 
         self._view.refresh()
 
-    async def _reportingScaffoldRemoving(self, uuid: UUID):
-        displayUuid = self._scaffold2displayItem[uuid]
-        self.removeItem(displayUuid)
+    async def _displayItemRemoving(self, uuid: UUID):
+        controlUuid = self._scaffold2displayControl[uuid]
+        self.removeDisplayControl(controlUuid)
 
-        del self._scaffold2displayItem[uuid]
+        del self._scaffold2displayControl[uuid]
 
         self._view.refresh()
 
     def _setUpContextMenu(self, menu: QMenu):
         self._opacityDialog = OpacityDialog(self)
         self._colorDialog = QColorDialog(self)
-        self._reportingScaffoldDialog = ReportingScaffoldDialog(self)
+        self._displayItemDialog = DisplayItemDialog(self)
 
         self._showAction: QAction = menu.addAction(self.tr('Show'), self._showActors)
 
@@ -502,11 +502,11 @@ class VisualReportView(RenderingView):
 
         menu.addSeparator()
 
-        self._moreAction: QAction = menu.addAction(self.tr('More...'), self._openReportingScaffoldDialog)
+        self._moreAction: QAction = menu.addAction(self.tr('More...'), self._openDisplayItemDialog)
 
     def _openOpacityDialog(self):
-        if all([item.opacity == self._selectedItems[0].opacity for item in self._selectedItems]):
-            opacity = self._selectedItems[0].opacity
+        if all([control.opacity == self._selectedControls[0].opacity for control in self._selectedControls]):
+            opacity = self._selectedControls[0].opacity
         else:
             opacity = 0.9
 
@@ -514,15 +514,15 @@ class VisualReportView(RenderingView):
         self._opacityDialog.open()
 
     def _openColorDialog(self):
-        if all([item.color == self._selectedItems[0].color for item in self._selectedItems]):
-            color = self._selectedItems[0].color
+        if all([control.color == self._selectedControls[0].color for control in self._selectedControls]):
+            color = self._selectedControls[0].color
         else:
             color = Qt.GlobalColor.white
 
         self._colorDialog.setCurrentColor(color)
         self._colorDialog.open()
 
-    def _openReportingScaffoldDialog(self):
-        self._reportingScaffoldDialog.setDisplayItem(self._selectedItems[0])  # this is for only one item
-        self._reportingScaffoldDialog.open()
+    def _openDisplayItemDialog(self):
+        self._displayItemDialog.setDisplayControl(self._selectedControls[0])  # this is for only one item
+        self._displayItemDialog.open()
 

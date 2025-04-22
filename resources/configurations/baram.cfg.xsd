@@ -2625,95 +2625,95 @@
                     <xs:complexType>
                         <xs:sequence>
                             <xs:element name="graphic" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="uuid" type="uuidType"/>
+                                        <xs:element name="name" type="xs:string"/>
+                                        <xs:element name="fieldCategory">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="basic"/>
+                                                    <xs:enumeration value="collateral"/>
+                                                    <xs:enumeration value="phase"/>
+                                                    <xs:enumeration value="specie"/>
+                                                    <xs:enumeration value="userScalar"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="fieldCodeName" type="xs:string"/>
+                                        <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
+                                        <xs:element name="time" type="xs:string"/>
+                                        <!-- color map configuration begin -->
+                                        <xs:element name="fieldDisplayName" type="xs:string"/>
+                                        <xs:element name="numberOfLevels" type="xs:positiveInteger" default="256"/>
+                                        <xs:element name="useNodeValues" type="xs:boolean" default="false"/>
+                                        <xs:element name="relevantScaffoldsOnly" type="xs:boolean" default="false"/>
+                                        <xs:element name="useCustomRange" type="xs:boolean" default="false"/>
+                                        <xs:element name="customRangeMin" type="xs:double" default="0"/>
+                                        <xs:element name="customRangeMax" type="xs:double" default="0"/>
+                                        <xs:element name="clipToRange" type="xs:boolean" default="false"/>
+                                        <xs:element name="useCustomColorScheme" type="xs:boolean" default="false"/>
+                                        <xs:element name="colorScheme" type="xs:string" default="turbo"/>
+                                        <xs:element name="customMinColor" type="xs:string" default="#000000"/>
+                                        <xs:element name="customMaxColor" type="xs:string" default="#ffffff"/>
+                                        <!-- color map configuration end -->
+                                        <xs:element name="includeVectors" type="xs:boolean" default="false"/>
+                                        <xs:element name="vectorFieldCategory">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="basic"/>
+                                                    <xs:enumeration value="collateral"/>
+                                                    <xs:enumeration value="phase"/>
+                                                    <xs:enumeration value="specie"/>
+                                                    <xs:enumeration value="userScalar"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="vectorFieldCodeName" type="xs:string"/>
+                                        <xs:element name="vectorScaleFactor" type="xs:double" default="1.0"/>
+                                        <xs:element name="vectorNumMax" type="xs:positiveInteger" default="1000"/>
+                                        <xs:element name="vectorFixedLength" type="xs:boolean" default="false"/>
+                                        <xs:element name="stepSize" type="xs:double" default="0.001"/>
+                                        <xs:element name="maxSteps" type="xs:positiveInteger" default="2000"/>
+                                        <xs:element name="maxLength" type="xs:double" default="1.0"/>
+                                        <xs:element name="accuracyControl" type="xs:boolean" default="false"/>
+                                        <xs:element name="tolerance" type="xs:double" default="1e-6"/>
+                                        <xs:element name="streamlineType" default="ribbon">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="line"/>
+                                                    <xs:enumeration value="ribbon"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="lineWidth" type="xs:double" default="0.01"/>
+                                        <xs:element name="displayItems">
                                             <xs:complexType>
                                                 <xs:sequence>
-                                                    <xs:element name="uuid" type="uuidType"/>
-                                                    <xs:element name="name" type="xs:string"/>
-                                                    <xs:element name="fieldCategory">
-                                                        <xs:simpleType>
-                                                            <xs:restriction base="xs:string">
-                                                                <xs:enumeration value="basic"/>
-                                                                <xs:enumeration value="collateral"/>
-                                                                <xs:enumeration value="phase"/>
-                                                                <xs:enumeration value="specie"/>
-                                                                <xs:enumeration value="userScalar"/>
-                                                            </xs:restriction>
-                                                        </xs:simpleType>
-                                                    </xs:element>
-                                                    <xs:element name="fieldCodeName" type="xs:string"/>
-                                                    <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
-                                                    <xs:element name="time" type="xs:string"/>
-                                                    <!-- color map configuration begin -->
-                                                    <xs:element name="fieldDisplayName" type="xs:string"/>
-                                                    <xs:element name="numberOfLevels" type="xs:positiveInteger" default="256"/>
-                                                    <xs:element name="useNodeValues" type="xs:boolean" default="false"/>
-                                                    <xs:element name="relevantScaffoldsOnly" type="xs:boolean" default="false"/>
-                                                    <xs:element name="useCustomRange" type="xs:boolean" default="false"/>
-                                                    <xs:element name="customRangeMin" type="xs:double" default="0"/>
-                                                    <xs:element name="customRangeMax" type="xs:double" default="0"/>
-                                                    <xs:element name="clipToRange" type="xs:boolean" default="false"/>
-                                                    <xs:element name="useCustomColorScheme" type="xs:boolean" default="false"/>
-                                                    <xs:element name="colorScheme" type="xs:string" default="turbo"/>
-                                                    <xs:element name="customMinColor" type="xs:string" default="#000000"/>
-                                                    <xs:element name="customMaxColor" type="xs:string" default="#ffffff"/>
-                                                    <!-- color map configuration end -->
-                                                    <xs:element name="includeVectors" type="xs:boolean" default="false"/>
-                                                    <xs:element name="vectorFieldCategory">
-                                                        <xs:simpleType>
-                                                            <xs:restriction base="xs:string">
-                                                                <xs:enumeration value="basic"/>
-                                                                <xs:enumeration value="collateral"/>
-                                                                <xs:enumeration value="phase"/>
-                                                                <xs:enumeration value="specie"/>
-                                                                <xs:enumeration value="userScalar"/>
-                                                            </xs:restriction>
-                                                        </xs:simpleType>
-                                                    </xs:element>
-                                                    <xs:element name="vectorFieldCodeName" type="xs:string"/>
-                                                    <xs:element name="vectorScaleFactor" type="xs:double" default="1.0"/>
-                                                    <xs:element name="vectorNumMax" type="xs:positiveInteger" default="1000"/>
-                                                    <xs:element name="vectorFixedLength" type="xs:boolean" default="false"/>
-                                                    <xs:element name="stepSize" type="xs:double" default="0.001"/>
-                                                    <xs:element name="maxSteps" type="xs:positiveInteger" default="2000"/>
-                                                    <xs:element name="maxLength" type="xs:double" default="1.0"/>
-                                                    <xs:element name="accuracyControl" type="xs:boolean" default="false"/>
-                                                    <xs:element name="tolerance" type="xs:double" default="1e-6"/>
-                                                    <xs:element name="streamlineType" default="ribbon">
-                                                        <xs:simpleType>
-                                                            <xs:restriction base="xs:string">
-                                                                <xs:enumeration value="line"/>
-                                                                <xs:enumeration value="ribbon"/>
-                                                            </xs:restriction>
-                                                        </xs:simpleType>
-                                                    </xs:element>
-                                                    <xs:element name="lineWidth" type="xs:double" default="0.01"/>
-                                                    <xs:element name="scaffolds">
+                                                    <xs:element name="displayItem" minOccurs="0" maxOccurs="unbounded">
                                                         <xs:complexType>
                                                             <xs:sequence>
-                                                                <xs:element name="scaffold" minOccurs="0" maxOccurs="unbounded">
-                                                                    <xs:complexType>
-                                                                        <xs:sequence>
-                                                                            <xs:element name="scaffoldUuid" type="uuidType"/>  <!-- For other type scaffolds -->
-                                                                            <xs:element name="visibility" type="xs:boolean" default="false"/>
-                                                                            <xs:element name="opacity" type="ratio" default="0.9"/>
-                                                                            <xs:element name="solidColor" type="xs:boolean" default="false"/>
-                                                                            <xs:element name="color" type="xs:string" default="#FFFFFF"/>  <!-- Can be #RRRGGGBBB in the future -->
-                                                                            <xs:element name="edges" type="xs:boolean" default="false"/>
-                                                                            <xs:element name="faces" type="xs:boolean" default="true"/>
-                                                                            <xs:element name="vectorsOn" type="xs:boolean" default="false"/>
-                                                                            <xs:element name="streamlinesOn" type="xs:boolean" default="false"/>
-                                                                            <xs:element name="maxNumberOfSamplePoints" type="xs:positiveInteger" default="100"/>
-                                                                            <xs:element name="streamlinesIntegrateForward" type="xs:boolean" default="true"/>
-                                                                            <xs:element name="streamlinesIntegrateBackward" type="xs:boolean" default="false"/>
-                                                                        </xs:sequence>
-                                                                    </xs:complexType>
-                                                                </xs:element>
+                                                                <xs:element name="scaffoldUuid" type="uuidType"/>  <!-- For other type scaffolds -->
+                                                                <xs:element name="visibility" type="xs:boolean" default="false"/>
+                                                                <xs:element name="opacity" type="ratio" default="0.9"/>
+                                                                <xs:element name="solidColor" type="xs:boolean" default="false"/>
+                                                                <xs:element name="color" type="xs:string" default="#FFFFFF"/>  <!-- Can be #RRRGGGBBB in the future -->
+                                                                <xs:element name="edges" type="xs:boolean" default="false"/>
+                                                                <xs:element name="faces" type="xs:boolean" default="true"/>
+                                                                <xs:element name="vectorsOn" type="xs:boolean" default="false"/>
+                                                                <xs:element name="streamlinesOn" type="xs:boolean" default="false"/>
+                                                                <xs:element name="maxNumberOfSamplePoints" type="xs:positiveInteger" default="100"/>
+                                                                <xs:element name="streamlinesIntegrateForward" type="xs:boolean" default="true"/>
+                                                                <xs:element name="streamlinesIntegrateBackward" type="xs:boolean" default="false"/>
                                                             </xs:sequence>
                                                         </xs:complexType>
                                                     </xs:element>
                                                 </xs:sequence>
                                             </xs:complexType>
                                         </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>

@@ -8,11 +8,11 @@ from PySide6.QtWidgets import QDialog
 
 import qasync
 
-from baramFlow.base.graphics.graphic import Graphic, StreamlineType
+from baramFlow.base.graphic.graphic import Graphic, StreamlineType
 from baramFlow.base.field import CollateralField, Field, FieldType, getAvailableFields
-from baramFlow.base.graphics.reporting_scaffold import ReportingScaffold
+from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
-from baramFlow.base.graphics.graphics_db import GraphicsDB
+from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.base.field import FIELD_TEXTS
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver_field import getSolverFieldName
@@ -97,7 +97,7 @@ class GraphicDialog(QDialog):
 
         self._selectedScaffolds: list[UUID] = []
 
-        self._setScaffolds(list(self._graphic.reportingScaffolds.keys()))
+        self._setScaffolds(list(self._graphic.displayItems.keys()))
 
         self._connectSignalsSlots()
 
@@ -167,16 +167,16 @@ class GraphicDialog(QDialog):
         self._graphic.streamlineType = self._ui.lineStyle.currentData()
         self._graphic.lineWidth = self._ui.lineWidth.text()
 
-        current = set(self._graphic.reportingScaffolds.keys())
+        current = set(self._graphic.displayItems.keys())
         selected = set(self._selectedScaffolds)
 
         removedScaffolds = current - selected
         addedScaffolds = selected - current
 
         for uuid in removedScaffolds:
-            await self._graphic.notifyScaffoldRemoving(uuid)
-            del self._graphic.reportingScaffolds[uuid]
-            await self._graphic.notifyReportingScaffoldRemoved(uuid)
+            await self._graphic.notifyDisplayItemRemoving(uuid)
+            del self._graphic.displayItems[uuid]
+            await self._graphic.notifyDisplayItemRemoved(uuid)
 
         progressDialog.setLabelText(self.tr('Updating Graphics...'))
 
@@ -189,9 +189,9 @@ class GraphicDialog(QDialog):
         for uuid in addedScaffolds:
             scaffold = ScaffoldsDB().getScaffold(uuid)
             dataSet = await scaffold.getDataSet(self._graphic.polyMesh)
-            rs = ReportingScaffold(scaffoldUuid=uuid, dataSet=dataSet)
-            self._graphic.reportingScaffolds[uuid] = rs
-            await self._graphic.notifyReportingScaffoldAdded(uuid)
+            item = DisplayItem(scaffoldUuid=uuid, dataSet=dataSet)
+            self._graphic.displayItems[uuid] = item
+            await self._graphic.notifyDisplayItemAdded(uuid)
 
         self._graphic.rangeMin, self._graphic.rangeMax = self._graphic.getValueRange(self._graphic.useNodeValues, self._graphic.relevantScaffoldsOnly)
 

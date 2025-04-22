@@ -5,7 +5,7 @@ from threading import Lock
 from uuid import UUID, uuid4
 
 from baramFlow.coredb import coredb
-from baramFlow.base.graphics.graphic import Graphic
+from baramFlow.base.graphic.graphic import Graphic
 
 from baramFlow.coredb.libdb import nsmap
 
@@ -62,7 +62,7 @@ class GraphicsDB:
             c = Graphic.fromElement(e)
             reports[c.uuid] = c
 
-            if len(c.reportingScaffolds) == 0:
+            if len(c.displayItems) == 0:
                 continue
 
             await c.updatePolyMesh()
@@ -71,8 +71,8 @@ class GraphicsDB:
 
     def isScaffoldUsed(self, scaffoldUuid: UUID) -> bool:
         for report in self._reports.values():
-            for rs in report.reportingScaffolds.values():
-                if rs.scaffoldUuid == scaffoldUuid:
+            for item in report.displayItems.values():
+                if item.scaffoldUuid == scaffoldUuid:
                     return True
 
         return False

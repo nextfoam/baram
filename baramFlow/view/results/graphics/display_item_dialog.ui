@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ReportingScaffoldDialog</class>
- <widget class="QDialog" name="ReportingScaffoldDialog">
+ <class>DisplayItemDialog</class>
+ <widget class="QDialog" name="DisplayItemDialog">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>

@@ -15,7 +15,7 @@ from baramFlow.base.scaffold.parallelogram import Parallelogram
 from baramFlow.base.scaffold.plane_scaffold import PlaneScaffold
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.base.scaffold.sphere_scaffold import SphereScaffold
-from baramFlow.base.graphics.graphics_db import GraphicsDB
+from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
 from baramFlow.view.results.scaffolds.disk_scaffold_dialog import DiskScaffoldDialog

@@ -6,9 +6,9 @@ import qasync
 
 from PySide6.QtWidgets import QListWidgetItem, QMessageBox
 
-from baramFlow.base.graphics.graphic import Graphic
+from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
-from baramFlow.base.graphics.graphics_db import GraphicsDB
+from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.results.graphics.graphic_dialog import GraphicDialog
 from baramFlow.view.results.graphics.graphic_widget import GraphicWidget

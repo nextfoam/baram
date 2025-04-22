@@ -5,22 +5,22 @@ from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QDialog
 import qasync
 
-from baramFlow.view.results.graphics.display_item import DisplayItem
+from baramFlow.view.results.graphics.display_control import DisplayControl
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
-from .reporting_scaffold_dialog_ui import Ui_ReportingScaffoldDialog
+from .display_item_dialog_ui import Ui_DisplayItemDialog
 
 
-class ReportingScaffoldDialog(QDialog):
+class DisplayItemDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
-        self._ui = Ui_ReportingScaffoldDialog()
+        self._ui = Ui_DisplayItemDialog()
         self._ui.setupUi(self)
 
         self._ui.maxNumberOfSamplingPoints.setValidator(QIntValidator())
 
-        self._displayItem: DisplayItem = None
+        self._displayControl: DisplayControl = None
 
         self._connectSignalsSlots()
 
@@ -30,15 +30,15 @@ class ReportingScaffoldDialog(QDialog):
         self._ui.ok.clicked.connect(self._okClicked)
         self._ui.cancel.clicked.connect(self._cancelClicked)
 
-    def setDisplayItem(self, displayItem: DisplayItem):
-        self._displayItem = displayItem
+    def setDisplayControl(self, displayControl: DisplayControl):
+        self._displayControl = displayControl
 
-        rs = displayItem.reportingScaffold
+        item = displayControl.displayItem
 
-        self._ui.maxNumberOfSamplingPoints.setText(str(rs.maxNumberOfSamplePoints))
+        self._ui.maxNumberOfSamplingPoints.setText(str(item.maxNumberOfSamplePoints))
 
-        self._ui.streamlinesIntegrateForward.setChecked(rs.streamlinesIntegrateForward)
-        self._ui.streamlinesIntegrateBackward.setChecked(rs.streamlinesIntegrateBackward)
+        self._ui.streamlinesIntegrateForward.setChecked(item.streamlinesIntegrateForward)
+        self._ui.streamlinesIntegrateBackward.setChecked(item.streamlinesIntegrateBackward)
 
     def _forwardStateClicked(self, checked: bool):
         if not checked:
@@ -59,22 +59,22 @@ class ReportingScaffoldDialog(QDialog):
         forward = self._ui.streamlinesIntegrateForward.isChecked()
         backward = self._ui.streamlinesIntegrateBackward.isChecked()
 
-        rs = self._displayItem.reportingScaffold
+        item = self._displayControl.displayItem
 
-        if maxNumber != rs.maxNumberOfSamplePoints \
-            or forward != rs.streamlinesIntegrateForward \
-                or backward != rs.streamlinesIntegrateBackward:
+        if maxNumber != item.maxNumberOfSamplePoints \
+            or forward != item.streamlinesIntegrateForward \
+                or backward != item.streamlinesIntegrateBackward:
             progressDialog = ProgressDialog(self, self.tr('Graphics Parameters'), openDelay=500)
             progressDialog.setLabelText(self.tr('Updating Graphics...'))
             progressDialog.open()
 
-            rs.maxNumberOfSamplePoints = maxNumber
-            rs.streamlinesIntegrateForward = forward
-            rs.streamlinesIntegrateBackward = backward
+            item.maxNumberOfSamplePoints = maxNumber
+            item.streamlinesIntegrateForward = forward
+            item.streamlinesIntegrateBackward = backward
 
-            await rs.markUpdated()
+            await item.markUpdated()
 
-            await self._displayItem.executePipeline()
+            await self._displayControl.executePipeline()
 
             progressDialog.close()
 

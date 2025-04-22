@@ -5,7 +5,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QListWidgetItem, QHBoxLayout, QLabel, QWidget, QSizePolicy
 
-from baramFlow.base.graphics.color_scheme import ColormapScheme, getColormapSchemeImage
+from baramFlow.base.graphic.color_scheme import ColormapScheme, getColormapSchemeImage
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from baramFlow.view.results.graphics.colormap import colormapName
 from .colormap_scheme_dialog_ui import Ui_ColormapSchemeDialog

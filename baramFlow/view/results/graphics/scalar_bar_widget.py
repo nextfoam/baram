@@ -3,12 +3,12 @@ from typing import Callable
 from vtkmodules.vtkCommonCore import vtkCommand
 from vtkmodules.vtkInteractionWidgets import vtkBorderRepresentation, vtkScalarBarWidget
 
-from baramFlow.base.graphics.graphic import Graphic
+from baramFlow.base.graphic.graphic import Graphic
 
 
 class ScalarBarWidget(vtkScalarBarWidget):
 
-    def __init__(self, parent, report: Graphic, callback: Callable[[None], None]):
+    def __init__(self, parent, report: Graphic, callback: Callable[[], None]):
         super().__init__()
 
         self._parent = parent

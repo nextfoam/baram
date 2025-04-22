@@ -19,7 +19,7 @@ from libbaram.async_signal import AsyncSignal
 
 
 @dataclass
-class ReportingScaffold:
+class DisplayItem:
     instanceUpdated: AsyncSignal = field(init=False)
 
     scaffoldUuid: UUID  = UUID(int = 0)
@@ -55,21 +55,21 @@ class ReportingScaffold:
         streamlinesIntegrateForward = True if e.find('streamlinesIntegrateForward', namespaces=nsmap).text == 'true' else False
         streamlinesIntegrateBackward = True if e.find('streamlinesIntegrateBackward', namespaces=nsmap).text == 'true' else False
 
-        return ReportingScaffold(scaffoldUuid=scaffoldUuid,
-                          visibility=visibility,
-                          opacity=opacity,
-                          solidColor=solidColor,
-                          color=color,
-                          edges=edges,
-                          faces=faces,
-                          vectorsOn=vectorsOn,
-                          streamlinesOn=streamlinesOn,
-                          maxNumberOfSamplePoints=maxNumberOfSamplePoints,
-                          streamlinesIntegrateForward=streamlinesIntegrateForward,
-                          streamlinesIntegrateBackward=streamlinesIntegrateBackward)
+        return DisplayItem(scaffoldUuid=scaffoldUuid,
+                           visibility=visibility,
+                           opacity=opacity,
+                           solidColor=solidColor,
+                           color=color,
+                           edges=edges,
+                           faces=faces,
+                           vectorsOn=vectorsOn,
+                           streamlinesOn=streamlinesOn,
+                           maxNumberOfSamplePoints=maxNumberOfSamplePoints,
+                           streamlinesIntegrateForward=streamlinesIntegrateForward,
+                           streamlinesIntegrateBackward=streamlinesIntegrateBackward)
 
     def toElement(self):
-        string = (f'<scaffold xmlns="http://www.baramcfd.org/baram">'
+        string = (f'<displayItem xmlns="http://www.baramcfd.org/baram">'
                   f'    <scaffoldUuid>{str(self.scaffoldUuid)}</scaffoldUuid>'
                   f'    <visibility>{"true" if self.visibility else "false"}</visibility>'
                   f'    <opacity>{str(self.opacity)}</opacity>'
@@ -82,7 +82,7 @@ class ReportingScaffold:
                   f'    <maxNumberOfSamplePoints>{str(self.maxNumberOfSamplePoints)}</maxNumberOfSamplePoints>'
                   f'    <streamlinesIntegrateForward>{"true" if self.streamlinesIntegrateForward else "false"}</streamlinesIntegrateForward>'
                   f'    <streamlinesIntegrateBackward>{"true" if self.streamlinesIntegrateBackward else "false"}</streamlinesIntegrateBackward>'
-                  f'</scaffold>')
+                  f'</displayItem>')
 
         return etree.fromstring(string)
 

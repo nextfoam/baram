@@ -5,8 +5,8 @@
 import qasync
 from PySide6.QtWidgets import QWidget
 
-from baramFlow.base.graphics.graphic import Graphic
-from baramFlow.base.graphics.graphics_db import GraphicsDB
+from baramFlow.base.graphic.graphic import Graphic
+from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.base.field import FIELD_TEXTS
 from widgets.async_message_box import AsyncMessageBox

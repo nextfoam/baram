@@ -3,7 +3,7 @@
 
 from PySide6.QtCore import QCoreApplication
 
-from baramFlow.base.graphics.color_scheme import ColormapScheme
+from baramFlow.base.graphic.color_scheme import ColormapScheme
 
 
 colormapName = {

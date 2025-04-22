@@ -15,10 +15,10 @@ from vtkmodules.vtkFiltersFlowPaths import vtkStreamTracer
 
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb import coredb
-from baramFlow.base.graphics.reporting_scaffold import ReportingScaffold
+from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.coredb.libdb import nsmap
 from baramFlow.base.field import FIELD_TEXTS, VELOCITY, Field, FieldType, VectorComponent, getFieldInstance
-from baramFlow.base.graphics.color_scheme import ColormapScheme
+from baramFlow.base.graphic.color_scheme import ColormapScheme
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram.async_signal import AsyncSignal
 from libbaram.openfoam.polymesh import collectInternalMesh
@@ -54,9 +54,9 @@ class Graphic:
     name: str
 
     instanceUpdated: AsyncSignal = dataClassField(init=False)
-    reportingScaffoldAdded: AsyncSignal = dataClassField(init=False)
-    reportingScaffoldRemoving: AsyncSignal = dataClassField(init=False)
-    reportingScaffoldRemoved: AsyncSignal = dataClassField(init=False)
+    displayItemAdded: AsyncSignal = dataClassField(init=False)
+    displayItemRemoving: AsyncSignal = dataClassField(init=False)
+    displayItemRemoved: AsyncSignal = dataClassField(init=False)
 
     time: str = '0'
 
@@ -67,7 +67,7 @@ class Graphic:
     # It is calculated and stored for caching.
     internalMesh: vtkUnstructuredGrid = None
 
-    reportingScaffolds: dict[UUID, ReportingScaffold] = dataClassField(default_factory=dict)
+    displayItems: dict[UUID, DisplayItem] = dataClassField(default_factory=dict)
     field: Field = VELOCITY
     fieldComponent: VectorComponent = VectorComponent.MAGNITUDE
 
@@ -103,9 +103,9 @@ class Graphic:
 
     def __post_init__(self):
         self.instanceUpdated = AsyncSignal(UUID)
-        self.reportingScaffoldAdded = AsyncSignal(UUID)
-        self.reportingScaffoldRemoving = AsyncSignal(UUID)
-        self.reportingScaffoldRemoved = AsyncSignal(UUID)
+        self.displayItemAdded = AsyncSignal(UUID)
+        self.displayItemRemoving = AsyncSignal(UUID)
+        self.displayItemRemoved = AsyncSignal(UUID)
 
     @classmethod
     def fromElement(cls, e):
@@ -149,46 +149,46 @@ class Graphic:
         streamlineType = StreamlineType(e.find('streamlineType', namespaces=nsmap).text)
         lineWidth = e.find('lineWidth', namespaces=nsmap).text
 
-        scaffoldsElement = e.find('scaffolds', namespaces=nsmap)
+        displayItemsElement = e.find('displayItems', namespaces=nsmap)
 
-        reportingScaffolds: dict[UUID, ReportingScaffold] = {}
-        for scaffoldElement in scaffoldsElement.findall('scaffold', namespaces=nsmap):
-            rs = ReportingScaffold.fromElement(scaffoldElement)
-            reportingScaffolds[rs.scaffoldUuid] = rs
+        displayItems: dict[UUID, DisplayItem] = {}
+        for displayItemElement in displayItemsElement.findall('displayItem', namespaces=nsmap):
+            item = DisplayItem.fromElement(displayItemElement)
+            displayItems[item.scaffoldUuid] = item
 
         graphic = Graphic(uuid=uuid,
-                           name=name,
-                           field=field,
-                           fieldComponent=fieldComponent,
-                           time=time,
-                           fieldDisplayName=fieldDisplayName,
-                           numberOfLevels=numberOfLevels,
-                           useNodeValues=useNodeValues,
-                           relevantScaffoldsOnly=relevantScaffoldsOnly,
-                           useCustomRange=useCustomRange,
-                           customRangeMin=customRangeMin,
-                           customRangeMax=customRangeMax,
-                           clipToRange=clipToRange,
-                           useCustomColorScheme=useCustomColorScheme,
-                           colorScheme=colorScheme,
-                           customMinColor=customMinColor,
-                           customMaxColor=customMaxColor,
-                           includeVectors=includeVectors,
-                           vectorField=vectorField,
-                           vectorScaleFactor=vectorScaleFactor,
-                           vectorNumMax=vectorNumMax,
-                           vectorFixedLength=vectorFixedLength,
-                           reportingScaffolds=reportingScaffolds,
-                           stepSize=stepSize,
-                           maxSteps=maxSteps,
-                           maxLength=maxLength,
-                           accuracyControl=accuracyControl,
-                           tolerance=tolerance,
-                           streamlineType=streamlineType,
-                           lineWidth=lineWidth)
+                          name=name,
+                          field=field,
+                          fieldComponent=fieldComponent,
+                          time=time,
+                          fieldDisplayName=fieldDisplayName,
+                          numberOfLevels=numberOfLevels,
+                          useNodeValues=useNodeValues,
+                          relevantScaffoldsOnly=relevantScaffoldsOnly,
+                          useCustomRange=useCustomRange,
+                          customRangeMin=customRangeMin,
+                          customRangeMax=customRangeMax,
+                          clipToRange=clipToRange,
+                          useCustomColorScheme=useCustomColorScheme,
+                          colorScheme=colorScheme,
+                          customMinColor=customMinColor,
+                          customMaxColor=customMaxColor,
+                          includeVectors=includeVectors,
+                          vectorField=vectorField,
+                          vectorScaleFactor=vectorScaleFactor,
+                          vectorNumMax=vectorNumMax,
+                          vectorFixedLength=vectorFixedLength,
+                          displayItems=displayItems,
+                          stepSize=stepSize,
+                          maxSteps=maxSteps,
+                          maxLength=maxLength,
+                          accuracyControl=accuracyControl,
+                          tolerance=tolerance,
+                          streamlineType=streamlineType,
+                          lineWidth=lineWidth)
 
-        for rs in reportingScaffolds.values():
-            rs.instanceUpdated.asyncConnect(graphic._reportingScaffoldUpdated)
+        for item in displayItems.values():
+            item.instanceUpdated.asyncConnect(graphic._displayItemUpdated)
 
         return graphic
 
@@ -225,15 +225,15 @@ class Graphic:
                    f'    <tolerance>{self.tolerance}</tolerance>'
                    f'    <streamlineType>{self.streamlineType.value}</streamlineType>'
                    f'    <lineWidth>{self.lineWidth}</lineWidth>'
-                   f'    <scaffolds/>'
+                   f'    <displayItems/>'
                    f'</graphic>')
 
         element = etree.fromstring(string)
 
-        scaffoldsElement = element.find('scaffolds', namespaces=nsmap)
+        scaffoldsElement = element.find('displayItems', namespaces=nsmap)
 
-        for rs in self.reportingScaffolds.values():
-            scaffoldsElement.append(rs.toElement())
+        for item in self.displayItems.values():
+            scaffoldsElement.append(item.toElement())
 
         return element
 
@@ -244,18 +244,18 @@ class Graphic:
         coredb.CoreDB().removeElement(self.GRAPHICS_PATH + self.xpath())
         coredb.CoreDB().addElement(self.GRAPHICS_PATH, self.toElement())
 
-    async def _reportingScaffoldUpdated(self, scaffold: UUID):
+    async def _displayItemUpdated(self, scaffold: UUID):
         self.saveToCoreDB()
 
-    async def notifyReportingScaffoldAdded(self, uuid: UUID):
-        await self.reportingScaffoldAdded.emit(uuid)
+    async def notifyDisplayItemAdded(self, uuid: UUID):
+        await self.displayItemAdded.emit(uuid)
         self.saveToCoreDB()
 
-    async def notifyScaffoldRemoving(self, uuid: UUID):
-        await self.reportingScaffoldRemoving.emit(uuid)
+    async def notifyDisplayItemRemoving(self, uuid: UUID):
+        await self.displayItemRemoving.emit(uuid)
 
-    async def notifyReportingScaffoldRemoved(self, uuid: UUID):
-        await self.reportingScaffoldRemoved.emit(uuid)
+    async def notifyDisplayItemRemoved(self, uuid: UUID):
+        await self.displayItemRemoved.emit(uuid)
         self.saveToCoreDB()
 
     async def notifyReportUpdated(self):
@@ -263,21 +263,21 @@ class Graphic:
         await self.instanceUpdated.emit(self.uuid)
 
     def getValueRange(self, useNodeValues: bool, relevantScaffoldsOnly: bool) -> tuple[float, float]:
-        if len(self.reportingScaffolds) == 0:
+        if len(self.displayItems) == 0:
             return 0, 1
 
         rMin = float('inf')
         rMax = float('-inf')
 
-        for rs in self.reportingScaffolds.values():
+        for item in self.displayItems.values():
             if relevantScaffoldsOnly:
-                if  not rs.visibility or rs.solidColor:
+                if  not item.visibility or item.solidColor:
                     continue
 
             if self.field.type == FieldType.VECTOR:
-                valueRange = rs.getVectorRange(self.field, self.fieldComponent, useNodeValues)
+                valueRange = item.getVectorRange(self.field, self.fieldComponent, useNodeValues)
             else:
-                valueRange = rs.getScalarRange(self.field, useNodeValues)
+                valueRange = item.getScalarRange(self.field, useNodeValues)
 
             rMin = min(rMin, valueRange[0])
             rMax = max(rMax, valueRange[1])
@@ -296,9 +296,9 @@ class Graphic:
         self.polyMesh = mBlock
         self.internalMesh = await collectInternalMesh(mBlock)
 
-        for rs in self.reportingScaffolds.values():
-            scaffold = ScaffoldsDB().getScaffold(rs.scaffoldUuid)
-            rs.dataSet = await scaffold.getDataSet(self.polyMesh)
+        for item in self.displayItems.values():
+            scaffold = ScaffoldsDB().getScaffold(item.scaffoldUuid)
+            item.dataSet = await scaffold.getDataSet(self.polyMesh)
 
         self.rangeMin, self.rangeMax = self.getValueRange(self.useNodeValues, self.relevantScaffoldsOnly)
 
