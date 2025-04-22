@@ -224,15 +224,15 @@ class VisualReportView(RenderingView):
     async def _scaffoldUpdated(self, uuid: UUID):
         scaffold = ScaffoldsDB().getScaffold(uuid)
         dataSet = await scaffold.getDataSet(self._graphic.polyMesh)
-        self._graphic.displayItems[uuid].dataSet = dataSet
 
         displayUuid = self._scaffold2displayControl[uuid]
         control = self._controls[displayUuid]
 
+        control.displayItem.dataSet = dataSet
+
         await control.updateScaffoldInfo()
 
         self._view.refresh()
-
 
     async def _reportUpdated(self, uuid: UUID):
 
