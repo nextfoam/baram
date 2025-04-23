@@ -2646,7 +2646,7 @@
                                         <!-- color map configuration begin -->
                                         <xs:element name="fieldDisplayName" type="xs:string"/>
                                         <xs:element name="numberOfLevels" type="xs:positiveInteger" default="256"/>
-                                        <xs:element name="useNodeValues" type="xs:boolean" default="false"/>
+                                        <xs:element name="useNodeValues" type="xs:boolean" default="true"/>
                                         <xs:element name="relevantScaffoldsOnly" type="xs:boolean" default="false"/>
                                         <xs:element name="useCustomRange" type="xs:boolean" default="false"/>
                                         <xs:element name="customRangeMin" type="xs:double" default="0"/>

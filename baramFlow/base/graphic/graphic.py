@@ -73,7 +73,7 @@ class Graphic:
 
     fieldDisplayName: str = ''
     numberOfLevels: int = 256
-    useNodeValues: bool = False
+    useNodeValues: bool = True
     relevantScaffoldsOnly: bool = False
     useCustomRange: bool = False
     customRangeMin: str = '0.0'
