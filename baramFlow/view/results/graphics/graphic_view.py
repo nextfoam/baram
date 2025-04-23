@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from PySide6.QtGui import QAction
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QAbstractItemView, QColorDialog, QHeaderView, QMenu, QTreeWidget, QWidget, QVBoxLayout
+from PySide6.QtWidgets import QColorDialog, QHeaderView, QMenu, QWidget
 
 import qasync
 
@@ -23,6 +23,7 @@ from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 
 from baramFlow.view.results.graphics.colormap_dialog import ColormapDialog
+from baramFlow.view.results.graphics.display_control_panel_ui import Ui_DisplayControlPanel
 from baramFlow.view.results.graphics.opacity_dialog import OpacityDialog
 from baramFlow.view.results.graphics.display_item_dialog import DisplayItemDialog
 from baramFlow.view.results.graphics.scalar_bar_widget import ScalarBarWidget
@@ -53,33 +54,24 @@ class VisualReportView(RenderingView):
 
         self._overlayFrame = OverlayFrame(self._view)
 
-        self._displayControlTreeWidget = QTreeWidget(self._overlayFrame)
-        self._displayControlTreeWidget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self._displayControlTreeWidget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self._displayControlTreeWidget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self._displayControlTreeWidget.setSortingEnabled(True)
-        self._displayControlTreeWidget.setColumnCount(3)
-        self._displayControlTreeWidget.headerItem().setText(Column.NAME_COLUMN, self.tr('Name'))
-        self._displayControlTreeWidget.headerItem().setText(Column.TYPE_COLUMN, self.tr('Type'))
-        self._displayControlTreeWidget.headerItem().setText(Column.COLOR_COLUMN, '')
-        self._displayControlTreeWidget.header().setVisible(True)
-        self._displayControlTreeWidget.header().setStretchLastSection(False)
+        self._displayControlUi = Ui_DisplayControlPanel()
+        self._displayControlUi.setupUi(self._overlayFrame)
 
-        layout = QVBoxLayout(self._overlayFrame)
-        layout.addWidget(self._displayControlTreeWidget)
+        self._treeWidget = self._displayControlUi.treeWidget
+        self._treeWidget.headerItem().setText(Column.NAME_COLUMN, self.tr('Name'))
+        self._treeWidget.headerItem().setText(Column.TYPE_COLUMN, self.tr('Type'))
+        self._treeWidget.headerItem().setText(Column.COLOR_COLUMN, '')
 
-        self._overlayFrame.adjustSize()
-
-        self._menu = QMenu(self._displayControlTreeWidget)
+        self._menu = QMenu(self._treeWidget)
         self._setUpContextMenu(self._menu)
 
         self._controls: dict[UUID, DisplayControl] = {}
         self._selectedControls: list[DisplayControl] = []
 
-        self._displayControlTreeWidget.setColumnWidth(Column.COLOR_COLUMN, 20)
+        self._treeWidget.setColumnWidth(Column.COLOR_COLUMN, 20)
 
-        self._displayControlTreeWidget.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
-        self._displayControlTreeWidget.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
+        self._treeWidget.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
+        self._treeWidget.header().setSectionResizeMode(Column.TYPE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
 
         self._colormap = ScalarBarWidget(self, graphic, self._colormapDoubleClicked)
         self._colormap.SetInteractor(self._view.interactor())
@@ -117,8 +109,8 @@ class VisualReportView(RenderingView):
         self._connectSignalsSlots()
 
     def _connectSignalsSlots(self):
-        self._displayControlTreeWidget.customContextMenuRequested.connect(self._showContextMenu)
-        self._displayControlTreeWidget.itemSelectionChanged.connect(self._selectedItemsChanged)
+        self._treeWidget.customContextMenuRequested.connect(self._showContextMenu)
+        self._treeWidget.itemSelectionChanged.connect(self._selectedItemsChanged)
         self._view.customContextMenuRequested.connect(self._showContextMenuOnRenderingView)
         self._view.actorPicked.connect(self._actorPicked)
 
@@ -260,7 +252,7 @@ class VisualReportView(RenderingView):
         self._view.refresh()
 
     def _executeContextMenu(self, pos):
-        controls: list[DisplayControl] = self._displayControlTreeWidget.selectedItems()
+        controls: list[DisplayControl] = self._treeWidget.selectedItems()
         if len(controls) == 0:
             return
 
@@ -289,7 +281,7 @@ class VisualReportView(RenderingView):
         self._menu.exec(pos)
 
     def _showContextMenu(self, pos):
-        self._executeContextMenu(self._displayControlTreeWidget.mapToGlobal(pos))
+        self._executeContextMenu(self._treeWidget.mapToGlobal(pos))
 
     def _showContextMenuOnRenderingView(self, pos):
         #  VTK ignores device pixel ratio and uses real pixel values only
@@ -366,13 +358,13 @@ class VisualReportView(RenderingView):
 
     def _actorPicked(self, actor: vtkActor, ctrlKeyPressed=False, forContextMenu=False):
         if not ctrlKeyPressed and not forContextMenu:
-            self._displayControlTreeWidget.clearSelection()
+            self._treeWidget.clearSelection()
 
         if actor:
             print(f'{actor.GetObjectName()} picked')
             control = self._controls[UUID(actor.GetObjectName())]
             if not control.isSelected() and forContextMenu:
-                self._displayControlTreeWidget.clearSelection()
+                self._treeWidget.clearSelection()
 
             if ctrlKeyPressed:
                 control.setSelected(not control.isSelected())
@@ -425,11 +417,11 @@ class VisualReportView(RenderingView):
         did = uuid4()
         graphic: Graphic = self._graphic
 
-        control = DisplayControl(self._displayControlTreeWidget, did, graphic, displayItem, graphic.internalMesh, graphic.field, graphic.useNodeValues, self._lookupTable, self._view)
+        control = DisplayControl(self._treeWidget, did, graphic, displayItem, graphic.internalMesh, graphic.field, graphic.useNodeValues, self._lookupTable, self._view)
 
         self._controls[did] = control
 
-        control.setupColorWidget(self._displayControlTreeWidget)
+        control.setupColorWidget(self._treeWidget)
 
         return did
 
@@ -437,12 +429,12 @@ class VisualReportView(RenderingView):
         if did not in self._controls:
             return
 
-        for i in range(self._displayControlTreeWidget.topLevelItemCount()):
-            control: DisplayControl = self._displayControlTreeWidget.topLevelItem(i)
+        for i in range(self._treeWidget.topLevelItemCount()):
+            control: DisplayControl = self._treeWidget.topLevelItem(i)
             if control.did() != did:
                 continue
 
-            self._displayControlTreeWidget.takeTopLevelItem(i)
+            self._treeWidget.takeTopLevelItem(i)
 
             control.close()
 
