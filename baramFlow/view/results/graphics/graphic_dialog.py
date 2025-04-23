@@ -147,10 +147,12 @@ class GraphicDialog(QDialog):
         if self._graphic.field != field:
             self._graphic.field = field
             self._graphic.useCustomRange = False
+            self._graphic.fieldDisplayName = self._graphic.getDefaultFieldDisplayName()
             fieldValueNeedUpdate = True
 
         if self._graphic.fieldComponent != fieldComponent:
             self._graphic.fieldComponent = fieldComponent
+            self._graphic.fieldDisplayName = self._graphic.getDefaultFieldDisplayName()
             self._graphic.useCustomRange = False
             fieldValueNeedUpdate = True
 

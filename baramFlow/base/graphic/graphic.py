@@ -17,7 +17,7 @@ from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb import coredb
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.base.field import FIELD_TEXTS, VELOCITY, Field, FieldType, VectorComponent, getFieldInstance
+from baramFlow.base.field import FIELD_TEXTS, VECTOR_COMPONENT_TEXTS, VELOCITY, Field, FieldType, VectorComponent, getFieldInstance
 from baramFlow.base.graphic.color_scheme import ColormapScheme
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram.async_signal import AsyncSignal
@@ -71,7 +71,7 @@ class Graphic:
     field: Field = VELOCITY
     fieldComponent: VectorComponent = VectorComponent.MAGNITUDE
 
-    fieldDisplayName: str = FIELD_TEXTS[VELOCITY]
+    fieldDisplayName: str = ''
     numberOfLevels: int = 256
     useNodeValues: bool = False
     relevantScaffoldsOnly: bool = False
@@ -106,6 +106,8 @@ class Graphic:
         self.displayItemAdded = AsyncSignal(UUID)
         self.displayItemRemoving = AsyncSignal(UUID)
         self.displayItemRemoved = AsyncSignal(UUID)
+        if not self.fieldDisplayName:  # this means empty string ('')
+            self.fieldDisplayName = self.getDefaultFieldDisplayName()
 
     @classmethod
     def fromElement(cls, e):
@@ -303,3 +305,9 @@ class Graphic:
         self.rangeMin, self.rangeMax = self.getValueRange(self.useNodeValues, self.relevantScaffoldsOnly)
 
         await self.instanceUpdated.emit(self.uuid)
+
+    def getDefaultFieldDisplayName(self) -> str:
+        if self.field.type == FieldType.VECTOR:
+            return f'{FIELD_TEXTS[self.field]} ({VECTOR_COMPONENT_TEXTS[self.fieldComponent]})'
+        else:
+            return f'{FIELD_TEXTS[self.field]}'

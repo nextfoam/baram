@@ -88,6 +88,9 @@ class VisualReportView(RenderingView):
         actor.SetLookupTable(self._lookupTable)
         actor.UnconstrainedFontSizeOn()
 
+        actor.GetTitleTextProperty().SetLineSpacing(1.5)
+        actor.SetTitle(graphic.fieldDisplayName+'\n')  # '\n' is added to set title apart from the bar
+
         representation = self._colormap.GetScalarBarRepresentation()
         representation.SetPosition(0.03, 0.03)
         representation.SetPosition2(0.08, 0.33)
@@ -151,6 +154,9 @@ class VisualReportView(RenderingView):
 
     def _updateLookupTable(self):
         graphic: Graphic = self._graphic
+
+        actor: vtkScalarBarActor = self._colormap.GetScalarBarActor()
+        actor.SetTitle(graphic.fieldDisplayName+'\n')  # '\n' is added to set title apart from the bar
 
         if graphic.field.type == FieldType.VECTOR:
             if graphic.fieldComponent == VectorComponent.MAGNITUDE:

@@ -274,6 +274,7 @@ class MainWindow(QMainWindow):
         self._caseManager.caseLoaded.connect(self._caseLoaded)
 
         GraphicsDB().reportAdded.asyncConnect(self._reportAdded)
+        GraphicsDB().reportUpdated.asyncConnect(self._reportUpdated)
         GraphicsDB().removingReport.asyncConnect(self._reportRemoving)
 
     def _disconnectSignalsSlots(self):
@@ -283,6 +284,7 @@ class MainWindow(QMainWindow):
         self._caseManager.caseLoaded.disconnect(self._caseLoaded)
 
         GraphicsDB().reportAdded.disconnect(self._reportAdded)
+        GraphicsDB().reportUpdated.disconnect(self._reportUpdated)
         GraphicsDB().removingReport.disconnect(self._reportRemoving)
 
     @qasync.asyncSlot()
@@ -915,14 +917,17 @@ class MainWindow(QMainWindow):
         FileSystem.deleteMesh()
         self.meshUpdated()
 
-    def _addNewReportDock(self, report: Graphic):
-        dockWidget = GraphicDock(report)
-        self._docks[report.uuid] = dockWidget
-        self._dockView.addDockWidget(dockWidget)
-
     async def _reportAdded(self, uuid: UUID):
         report = GraphicsDB().getVisualReport(uuid)
-        self._addNewReportDock(report)
+        dockWidget = GraphicDock(report)
+        self._dockView.addDockWidget(dockWidget)
+        self._docks[uuid] = dockWidget
+
+    async def _reportUpdated(self, uuid: UUID):
+        if uuid in self._docks:
+            report = GraphicsDB().getVisualReport(uuid)
+            dockWidget = self._docks[uuid]
+            dockWidget.setWindowTitle(report.name)
 
     async def _reportRemoving(self, uuid: UUID):
         if uuid in self._docks:
