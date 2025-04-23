@@ -89,7 +89,7 @@ class GraphicsPage(ContentPage):
     async def _delete(self):
         widget = self._currentWidget()
         confirm = await AsyncMessageBox().question(self, self.tr("Remove Visual Report item"),
-                                                   self.tr('Remove "{}"?'.format(widget.name())))
+                                                   self.tr('Remove "{}"?'.format(widget.name)))
         if confirm == QMessageBox.StandardButton.Yes:
             await widget.delete()
             self._ui.list.takeItem(self._ui.list.currentRow())

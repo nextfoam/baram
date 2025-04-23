@@ -455,15 +455,16 @@ class VisualReportView(RenderingView):
         item = self._graphic.displayItems[uuid]
         controlUuid = self._createDisplayControl(item)
 
-        self._scaffold2displayControl[uuid] = controlUuid
+        self._scaffold2displayControl[item.scaffoldUuid] = controlUuid
 
         self._view.refresh()
 
     async def _displayItemRemoving(self, uuid: UUID):
-        controlUuid = self._scaffold2displayControl[uuid]
+        item = self._graphic.displayItems[uuid]
+        controlUuid = self._scaffold2displayControl[item.scaffoldUuid]
         self.removeDisplayControl(controlUuid)
 
-        del self._scaffold2displayControl[uuid]
+        del self._scaffold2displayControl[item.scaffoldUuid]
 
         self._view.refresh()
 
