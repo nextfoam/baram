@@ -2695,7 +2695,7 @@
                                                             <xs:sequence>
                                                                 <xs:element name="scaffoldUuid" type="uuidType"/>  <!-- For other type scaffolds -->
                                                                 <xs:element name="visibility" type="xs:boolean" default="false"/>
-                                                                <xs:element name="opacity" type="ratio" default="0.9"/>
+                                                                <xs:element name="opacity" type="ratio" default="1"/>
                                                                 <xs:element name="solidColor" type="xs:boolean" default="false"/>
                                                                 <xs:element name="color" type="xs:string" default="#FFFFFF"/>  <!-- Can be #RRRGGGBBB in the future -->
                                                                 <xs:element name="edges" type="xs:boolean" default="false"/>

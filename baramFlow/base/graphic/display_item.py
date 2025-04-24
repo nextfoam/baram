@@ -26,7 +26,7 @@ class DisplayItem:
     dataSet: vtkDataSet = None
 
     visibility: bool = True
-    opacity: float = 0.9
+    opacity: float = 1
     solidColor: bool = False
     color: QColor = QColor.fromString('#FFFFFF')
     edges: bool = False
