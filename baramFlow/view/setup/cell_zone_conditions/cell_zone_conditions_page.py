@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTreeWidgetItem
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
@@ -38,6 +39,10 @@ class ListItem(QTreeWidgetItem):
 class RegionItem(ListItem):
     def __init__(self, parent):
         super().__init__(parent, True)
+    
+    def __lt__(self, other):
+        print(self._widget.rname().lower(), other._widget.rname().lower())
+        return self._widget.rname().lower() < other._widget.rname().lower()
 
     def rname(self):
         return self._widget.rname()
@@ -49,6 +54,9 @@ class RegionItem(ListItem):
 class CellZoneItem(ListItem):
     def __init_(self, parent):
         super().__init__(parent)
+    
+    def __lt__(self, other):
+        return self._widget.czname().lower() < other._widget.czname().lower()
 
     def rname(self):
         return self.parent().rname()
@@ -62,6 +70,9 @@ class CellZoneConditionsPage(ContentPage):
         super().__init__(parent)
         self._ui = Ui_CellZoneConditionsPage()
         self._ui.setupUi(self)
+
+        self._ui.cellZones.setSortingEnabled(True)
+        self._ui.cellZones.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
         self._connectSignalsSlots()
 
