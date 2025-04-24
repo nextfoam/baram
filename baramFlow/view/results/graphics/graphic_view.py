@@ -35,6 +35,10 @@ from baramFlow.view.results.graphics.display_control import ColorMode, DisplayMo
 from widgets.progress_dialog import ProgressDialog
 
 
+VTK_ORIENT_HORIZONTAL = 0
+VTK_ORIENT_VERTICAL   = 1
+
+
 class VisualReportView(RenderingView):
     def __init__(self, parent: QWidget = None, graphic: Graphic = None):
         super().__init__(parent)
@@ -84,8 +88,9 @@ class VisualReportView(RenderingView):
         actor.SetTitle(graphic.fieldDisplayName+'\n')  # '\n' is added to set title apart from the bar
 
         representation = self._colormap.GetScalarBarRepresentation()
-        representation.SetPosition(0.03, 0.03)
-        representation.SetPosition2(0.08, 0.33)
+        representation.SetOrientation(VTK_ORIENT_HORIZONTAL)
+        representation.SetPosition(0.35, 0.03)
+        representation.SetPosition2(0.3, 0.1)  # Relative position from position1
 
         self._colormap.On()
 
