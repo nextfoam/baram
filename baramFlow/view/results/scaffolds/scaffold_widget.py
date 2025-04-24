@@ -14,7 +14,6 @@ from baramFlow.base.scaffold.line_scaffold import LineScaffold
 from baramFlow.base.scaffold.parallelogram import Parallelogram
 from baramFlow.base.scaffold.plane_scaffold import PlaneScaffold
 from baramFlow.base.scaffold.scaffolds_db import Scaffold, ScaffoldsDB
-from baramFlow.base.field import FIELD_TEXTS
 from baramFlow.base.scaffold.sphere_scaffold import SphereScaffold
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.results.scaffolds.boundary_scaffold_dialog import BoundaryScaffoldDialog
@@ -116,12 +115,7 @@ class IsoSurfaceWidget(ScaffoldWidget):
         scaffold: IsoSurface = self._scaffold
         self._ui.name.setText(scaffold.name)
 
-        if scaffold.field in FIELD_TEXTS:
-            fieldName = FIELD_TEXTS[scaffold.field]
-        else:
-            fieldName = scaffold.field.codeName
-
-        self._ui.type.setText(f'iso surface for field <b>{fieldName}</b>')
+        self._ui.type.setText(f'iso surface for field <b>{scaffold.field.text}</b>')
 
     def edit(self):
         self._dialog = IsoSurfaceDialog(self, self._scaffold, FileSystem.times())

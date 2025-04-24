@@ -8,10 +8,9 @@ from PySide6.QtGui import QDoubleValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import QDialog
 
 from baramFlow.base.field import COORDINATE, CollateralField, Field, FieldType, VectorComponent
-from baramFlow.base.field import getAvailableFields
+from baramFlow.openfoam.solver_field import getAvailableFields
 from baramFlow.base.scaffold.iso_surface import IsoSurface
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
-from baramFlow.base.field import FIELD_TEXTS
 
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.libbaram.util import getScalarRange, getVectorRange
@@ -39,10 +38,7 @@ class IsoSurfaceDialog(QDialog):
         self._fields.extend(getAvailableFields())
 
         for f in self._fields:
-            if f in FIELD_TEXTS:
-                self._ui.field.addItem(FIELD_TEXTS[f], f)
-            else:
-                self._ui.field.addItem(f.codeName, f)
+            self._ui.field.addItem(f.text, f)
 
         # Set Configured Field into combobox
         index = self._ui.field.findData(surface.field)

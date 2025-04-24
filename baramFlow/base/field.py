@@ -6,12 +6,8 @@ from enum import Enum, IntFlag
 
 from PySide6.QtCore import QCoreApplication
 
-from baramFlow.coredb import coredb
-from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import MaterialType, Phase
-from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
+from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 
 
 class FieldCategory(Enum):
@@ -42,17 +38,20 @@ class Field:
         self._type = type_
 
     @property
-    def category(self):
-        return self._category.value
+    def category(self) -> FieldCategory:
+        return self._category
 
     @property
-    def codeName(self):
+    def codeName(self) -> str:
         return self._codeName
 
     @property
-    def type(self):
+    def type(self) -> FieldType:
         return self._type
 
+    @property
+    def text(self) -> str:
+        return NotImplementedError
 
     # To make all Field instances with same category and codeName equal
     def __hash__(self):
@@ -67,31 +66,51 @@ class GeometryField(Field):
     def __init__(self, codeName: str, type_: FieldType = FieldType.SCALAR):
         super().__init__(FieldCategory.GEOMETRY, codeName, type_)
 
+    @property
+    def text(self) -> str:
+        return _getPredefinedFieldText(self)
 
 class BasicField(Field):
     def __init__(self, codeName: str, type_: FieldType = FieldType.SCALAR):
         super().__init__(FieldCategory.BASIC, codeName, type_)
 
+    @property
+    def text(self) -> str:
+        return _getPredefinedFieldText(self)
 
 class CollateralField(Field):
     def __init__(self, codeName: str, type_: FieldType = FieldType.SCALAR):
         super().__init__(FieldCategory.COLLATERAL, codeName, type_)
 
+    @property
+    def text(self) -> str:
+        return _getPredefinedFieldText(self)
 
 class PhaseField(Field):
     def __init__(self, codeName: str):
         super().__init__(FieldCategory.PHASE, codeName, FieldType.SCALAR)
+
+    @property
+    def text(self):
+        return MaterialDB.getName(self._codeName)
 
 
 class SpecieField(Field):
     def __init__(self, codeName: str):
         super().__init__(FieldCategory.SPECIE, codeName, FieldType.SCALAR)
 
+    @property
+    def text(self) -> str:
+        return MaterialDB.getName(self._codeName)
+
 
 class UserScalarField(Field):
     def __init__(self, codeName: str):
         super().__init__(FieldCategory.USER_SCALAR, codeName, FieldType.SCALAR)
 
+    @property
+    def text(self) -> str:
+        return UserDefinedScalarsDB.getFieldName(self._codeName)
 
 
 COORDINATE = GeometryField('Coordinate', FieldType.VECTOR)
@@ -119,7 +138,7 @@ WALL_SHEAR_STRESS   = CollateralField('wallShearStress', FieldType.VECTOR)
 WALL_Y_PLUS         = CollateralField('wallYPlus')
 
 
-ALL_FIELDS: dict[tuple[str, str], Field] = {
+ALL_FIELDS: dict[tuple[FieldCategory, str], Field] = {
     (COORDINATE.category,                   COORDINATE.codeName):                   COORDINATE,
     (PRESSURE.category,                     PRESSURE.codeName):                     PRESSURE,
     (VELOCITY.category,                     VELOCITY.codeName):                     VELOCITY,
@@ -140,26 +159,30 @@ ALL_FIELDS: dict[tuple[str, str], Field] = {
     (WALL_Y_PLUS.category,                  WALL_Y_PLUS.codeName):                  WALL_Y_PLUS,
 }
 
-FIELD_TEXTS = {
-    COORDINATE: QCoreApplication.translate('PostField', 'Coordinate'),
-    PRESSURE: QCoreApplication.translate('PostField', 'Pressure'),
-    VELOCITY: QCoreApplication.translate('PostField', 'Velocity'),
-    TURBULENT_KINETIC_ENERGY: QCoreApplication.translate('PostField', 'Turbulent Kinetic Energy'),
-    TURBULENT_DISSIPATION_RATE: QCoreApplication.translate('PostField', 'Turbulent Dissipation Rate'),
-    SPECIFIC_DISSIPATION_RATE: QCoreApplication.translate('PostField', 'Specific Dissipation Rate'),
-    MODIFIED_TURBULENT_VISCOSITY: QCoreApplication.translate('PostField', 'Modified Turbulent Viscosity'),
-    TEMPERATURE: QCoreApplication.translate('PostField', 'Temperature'),
-    DENSITY: QCoreApplication.translate('PostField', 'Density'),
-    AGE: QCoreApplication.translate('PostField', 'Age'),
-    HEAT_TRANSFER_COEFF: QCoreApplication.translate('PostField', 'Heat Transfer Coefficient'),
-    MACH_NUMBER: QCoreApplication.translate('PostField', 'Mach Number'),
-    Q: QCoreApplication.translate('PostField', 'Q'),
-    TOTAL_PRESSURE: QCoreApplication.translate('PostField', 'Total Pressure'),
-    VORTICITY: QCoreApplication.translate('PostField', 'Vorticity'),
-    WALL_HEAT_FLUX: QCoreApplication.translate('PostField', 'Wall Heat Flux'),
-    WALL_SHEAR_STRESS: QCoreApplication.translate('PostField', 'Wall Shear Stress'),
-    WALL_Y_PLUS: QCoreApplication.translate('PostField', 'Wall Y Plus'),
-}
+
+def _getPredefinedFieldText(field: Field):
+    FIELD_TEXTS = {  # This is created whenever it is called so that translation is updated
+        COORDINATE: QCoreApplication.translate('PostField', 'Coordinate'),
+        PRESSURE: QCoreApplication.translate('PostField', 'Pressure'),
+        VELOCITY: QCoreApplication.translate('PostField', 'Velocity'),
+        TURBULENT_KINETIC_ENERGY: QCoreApplication.translate('PostField', 'Turbulent Kinetic Energy'),
+        TURBULENT_DISSIPATION_RATE: QCoreApplication.translate('PostField', 'Turbulent Dissipation Rate'),
+        SPECIFIC_DISSIPATION_RATE: QCoreApplication.translate('PostField', 'Specific Dissipation Rate'),
+        MODIFIED_TURBULENT_VISCOSITY: QCoreApplication.translate('PostField', 'Modified Turbulent Viscosity'),
+        TEMPERATURE: QCoreApplication.translate('PostField', 'Temperature'),
+        DENSITY: QCoreApplication.translate('PostField', 'Density'),
+        AGE: QCoreApplication.translate('PostField', 'Age'),
+        HEAT_TRANSFER_COEFF: QCoreApplication.translate('PostField', 'Heat Transfer Coefficient'),
+        MACH_NUMBER: QCoreApplication.translate('PostField', 'Mach Number'),
+        Q: QCoreApplication.translate('PostField', 'Q'),
+        TOTAL_PRESSURE: QCoreApplication.translate('PostField', 'Total Pressure'),
+        VORTICITY: QCoreApplication.translate('PostField', 'Vorticity'),
+        WALL_HEAT_FLUX: QCoreApplication.translate('PostField', 'Wall Heat Flux'),
+        WALL_SHEAR_STRESS: QCoreApplication.translate('PostField', 'Wall Shear Stress'),
+        WALL_Y_PLUS: QCoreApplication.translate('PostField', 'Wall Y Plus'),
+    }
+
+    return FIELD_TEXTS[field]
 
 
 VECTOR_COMPONENT_TEXTS = {
@@ -171,64 +194,18 @@ VECTOR_COMPONENT_TEXTS = {
 
 
 def getFieldInstance(categoryStr: str, codeName: str):
-    if (categoryStr, codeName) in ALL_FIELDS:
-        return ALL_FIELDS[(categoryStr, codeName)]
+    category = FieldCategory(categoryStr)
+    if (category, codeName) in ALL_FIELDS:
+        return ALL_FIELDS[(category, codeName)]
+    elif category == FieldCategory.PHASE:
+        return PhaseField(codeName)
+    elif category == FieldCategory.SPECIE:
+        return SpecieField(codeName)
+    elif category == FieldCategory.USER_SCALAR:
+        return UserScalarField(codeName)
     else:
         raise AssertionError
 
 
-def getAvailableFields() -> list[Field]:
-    fields = []
 
-    # Always available fields
-
-    fields.append(PRESSURE)
-
-    fields.append(VELOCITY)
-
-    fields.append(Q)
-    fields.append(TOTAL_PRESSURE)
-    fields.append(VORTICITY)
-    fields.append(WALL_HEAT_FLUX)
-    fields.append(WALL_SHEAR_STRESS)
-    fields.append(WALL_Y_PLUS)
-
-    if not GeneralDB.isTimeTransient() and not GeneralDB.isDensityBased():
-        fields.append(AGE)
-
-    # Fields depending on the turbulence model
-    turbulenceModel = TurbulenceModelsDB.getModel()
-    if turbulenceModel == TurbulenceModel.K_EPSILON:
-        fields.append(TURBULENT_KINETIC_ENERGY)
-        fields.append(TURBULENT_DISSIPATION_RATE)
-    elif turbulenceModel == TurbulenceModel.K_OMEGA:
-        fields.append(TURBULENT_KINETIC_ENERGY)
-        fields.append(SPECIFIC_DISSIPATION_RATE)
-    elif turbulenceModel == TurbulenceModel.SPALART_ALLMARAS:
-        fields.append(MODIFIED_TURBULENT_VISCOSITY)
-
-    # Fields depending on the energy model
-    energyOn = ModelsDB.isEnergyModelOn()
-    if energyOn:
-        fields.append(TEMPERATURE)
-        fields.append(DENSITY)
-        fields.append(HEAT_TRANSFER_COEFF)
-        if not GeneralDB.isDensityBased():
-            fields.append(MACH_NUMBER)
-
-    # Material fields on multiphase model
-    if ModelsDB.isMultiphaseModelOn():
-        for mid, _, _, phase in MaterialDB.getMaterials():
-            if phase != Phase.SOLID.value:
-                fields.append(PhaseField(mid))
-
-    elif ModelsDB.isSpeciesModelOn():
-        for mid, _, _, _ in MaterialDB.getMaterials(MaterialType.MIXTURE.value):
-            for sid in MaterialDB.getSpecies(mid):
-                fields.append(SpecieField(sid))
-
-    for sid, _ in coredb.CoreDB().getUserDefinedScalars():
-        fields.append(SpecieField(sid))
-
-    return fields
 

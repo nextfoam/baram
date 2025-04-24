@@ -11,7 +11,7 @@ from vtkmodules.vtkFiltersCore import vtkArrayCalculator, vtkContourFilter, vtkC
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.base.field import COORDINATE, Field, FieldType, VectorComponent, getFieldInstance
+from baramFlow.base.field import COORDINATE, Field, FieldCategory, FieldType, VectorComponent, getFieldInstance
 from baramFlow.base.field import VELOCITY
 from baramFlow.base.scaffold.scaffold import Scaffold
 from baramFlow.openfoam.solver_field import getSolverFieldName
@@ -41,7 +41,7 @@ class IsoSurface(Scaffold):
     def fromElement(cls, e):
         uuid = UUID(e.find('uuid', namespaces=nsmap).text)
         name = e.find('name', namespaces=nsmap).text
-        fieldCategory = e.find('fieldCategory', namespaces=nsmap).text
+        fieldCategory = FieldCategory(e.find('fieldCategory', namespaces=nsmap).text)
         fieldCodeName = e.find('fieldCodeName', namespaces=nsmap).text
         field = getFieldInstance(fieldCategory, fieldCodeName)
         fieldComponent = VectorComponent(int(e.find('fieldComponent', namespaces=nsmap).text))
@@ -61,7 +61,7 @@ class IsoSurface(Scaffold):
         string = ('<surface xmlns="http://www.baramcfd.org/baram">'
                  f'    <uuid>{str(self.uuid)}</uuid>'
                  f'    <name>{self.name}</name>'
-                 f'    <fieldCategory>{self.field.category}</fieldCategory>'
+                 f'    <fieldCategory>{self.field.category.value}</fieldCategory>'
                  f'    <fieldCodeName>{self.field.codeName}</fieldCodeName>'
                  f'    <fieldComponent>{self.fieldComponent.value}</fieldComponent>'
                  f'    <isoValues>{self.isoValues}</isoValues>'

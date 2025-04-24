@@ -8,7 +8,7 @@ import qasync
 
 from baramFlow.base.graphic.color_scheme import ColormapScheme, getColormapSchemeImage
 from baramFlow.base.graphic.graphic import Graphic
-from baramFlow.base.field import FIELD_TEXTS, VECTOR_COMPONENT_TEXTS, FieldType
+from baramFlow.base.field import VECTOR_COMPONENT_TEXTS, FieldType
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
@@ -37,10 +37,7 @@ class ColormapDialog(ResizableDialog):
 
         self._ui.relevantScaffoldsOnly.setChecked(graphic.relevantScaffoldsOnly)
 
-        if graphic.field in FIELD_TEXTS:
-            fieldName = FIELD_TEXTS[graphic.field]
-        else:
-            fieldName = graphic.field.codeName
+        fieldName = graphic.field.text
 
         if graphic.field.type == FieldType.VECTOR:
             fieldName += '  ( ' + VECTOR_COMPONENT_TEXTS[graphic.fieldComponent] + ' )'

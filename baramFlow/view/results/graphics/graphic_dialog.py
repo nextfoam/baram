@@ -9,13 +9,12 @@ from PySide6.QtWidgets import QDialog
 import qasync
 
 from baramFlow.base.graphic.graphic import Graphic, StreamlineType
-from baramFlow.base.field import CollateralField, Field, FieldType, getAvailableFields
+from baramFlow.base.field import CollateralField, Field, FieldType
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.base.graphic.graphics_db import GraphicsDB
-from baramFlow.base.field import FIELD_TEXTS
 from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.openfoam.solver_field import getSolverFieldName
+from baramFlow.openfoam.solver_field import getAvailableFields, getSolverFieldName
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.view.widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 from baramFlow.libbaram.collateral_fields import calculateCollateralField
@@ -46,15 +45,10 @@ class GraphicDialog(QDialog):
 
         self._fields: list[Field] = getAvailableFields()
         for f in self._fields:
-            if f in FIELD_TEXTS:
-                text = FIELD_TEXTS[f]
-            else:
-                text = f.codeName
-
-            self._ui.field.addItem(text, f)
+            self._ui.field.addItem(f.text, f)
 
             if f.type == FieldType.VECTOR:
-                self._ui.vectorField.addItem(text, f)
+                self._ui.vectorField.addItem(f.text, f)
 
         # Set Configured Field into combobox
         index = self._ui.field.findData(graphic.field)

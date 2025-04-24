@@ -17,7 +17,7 @@ from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb import coredb
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.base.field import FIELD_TEXTS, VECTOR_COMPONENT_TEXTS, VELOCITY, Field, FieldType, VectorComponent, getFieldInstance
+from baramFlow.base.field import VECTOR_COMPONENT_TEXTS, VELOCITY, Field, FieldCategory, FieldType, VectorComponent, getFieldInstance
 from baramFlow.base.graphic.color_scheme import ColormapScheme
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram.async_signal import AsyncSignal
@@ -114,7 +114,7 @@ class Graphic:
         uuid = UUID(e.find('uuid', namespaces=nsmap).text)
         name = e.find('name', namespaces=nsmap).text
 
-        fieldCategory = e.find('fieldCategory', namespaces=nsmap).text
+        fieldCategory = FieldCategory(e.find('fieldCategory', namespaces=nsmap).text)
         fieldCodeName = e.find('fieldCodeName', namespaces=nsmap).text
         field = getFieldInstance(fieldCategory, fieldCodeName)
 
@@ -136,7 +136,7 @@ class Graphic:
         customMaxColor = QColor.fromString(e.find('customMaxColor', namespaces=nsmap).text)
 
         includeVectors = True if e.find('includeVectors', namespaces=nsmap).text == 'true' else False
-        vectorFieldCategory = e.find('vectorFieldCategory', namespaces=nsmap).text
+        vectorFieldCategory = FieldCategory(e.find('vectorFieldCategory', namespaces=nsmap).text)
         vectorFieldCodeName = e.find('vectorFieldCodeName', namespaces=nsmap).text
         vectorField = getFieldInstance(vectorFieldCategory, vectorFieldCodeName)
         vectorScaleFactor = e.find('vectorScaleFactor', namespaces=nsmap).text
@@ -198,7 +198,7 @@ class Graphic:
         string =   ('<graphic xmlns="http://www.baramcfd.org/baram">'
                    f'    <uuid>{str(self.uuid)}</uuid>'
                    f'    <name>{self.name}</name>'
-                   f'    <fieldCategory>{self.field.category}</fieldCategory>'
+                   f'    <fieldCategory>{self.field.category.value}</fieldCategory>'
                    f'    <fieldCodeName>{self.field.codeName}</fieldCodeName>'
                    f'    <fieldComponent>{self.fieldComponent.value}</fieldComponent>'
                    f'    <time>{self.time}</time>'
@@ -215,7 +215,7 @@ class Graphic:
                    f'    <customMinColor>{self.customMinColor.name()}</customMinColor>'
                    f'    <customMaxColor>{self.customMaxColor.name()}</customMaxColor>'
                    f'    <includeVectors>{"true" if self.includeVectors else "false"}</includeVectors>'
-                   f'    <vectorFieldCategory>{self.vectorField.category}</vectorFieldCategory>'
+                   f'    <vectorFieldCategory>{self.vectorField.category.value}</vectorFieldCategory>'
                    f'    <vectorFieldCodeName>{self.vectorField.codeName}</vectorFieldCodeName>'
                    f'    <vectorScaleFactor>{self.vectorScaleFactor}</vectorScaleFactor>'
                    f'    <vectorNumMax>{str(self.vectorNumMax)}</vectorNumMax>'
@@ -308,6 +308,6 @@ class Graphic:
 
     def getDefaultFieldDisplayName(self) -> str:
         if self.field.type == FieldType.VECTOR:
-            return f'{FIELD_TEXTS[self.field]} ({VECTOR_COMPONENT_TEXTS[self.fieldComponent]})'
+            return f'{self.field.text} ({VECTOR_COMPONENT_TEXTS[self.fieldComponent]})'
         else:
-            return f'{FIELD_TEXTS[self.field]}'
+            return self.field.text

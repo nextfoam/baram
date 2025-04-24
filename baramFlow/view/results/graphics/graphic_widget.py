@@ -8,7 +8,6 @@ from PySide6.QtWidgets import QWidget
 from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.base.field import FIELD_TEXTS
 from widgets.async_message_box import AsyncMessageBox
 
 from .graphic_dialog import GraphicDialog
@@ -34,8 +33,7 @@ class GraphicWidget(QWidget):
     def load(self):
         self._ui.name.setText(self._graphic.name)
 
-        fieldName = FIELD_TEXTS[self._graphic.field]
-        self._ui.description.setText(f'Colored by {fieldName} at time {self._graphic.time}')
+        self._ui.description.setText(f'Colored by {self._graphic.field.text} at time {self._graphic.time}')
 
     async def edit(self):
         times = FileSystem.times()
