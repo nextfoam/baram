@@ -26,13 +26,13 @@ SOLVER_FIELDS = {
     DENSITY: 'rho',
     AGE: 'age',
     HEAT_TRANSFER_COEFF: 'heatTransferCoeff',
-    MACH_NUMBER: 'machNumber',
+    MACH_NUMBER: 'machNo',
     Q: 'Q',
     TOTAL_PRESSURE: 'totalPressure',
     VORTICITY: 'vorticity',
     WALL_HEAT_FLUX: 'wallHeatFlux',
     WALL_SHEAR_STRESS: 'wallShearStress',
-    WALL_Y_PLUS: 'wallYPlus'
+    WALL_Y_PLUS: 'yPlus'
 }
 
 def getSolverFieldName(field: Field) -> str:
@@ -91,8 +91,7 @@ def getAvailableFields() -> list[Field]:
         fields.append(TEMPERATURE)
         fields.append(DENSITY)
         fields.append(HEAT_TRANSFER_COEFF)
-        if not GeneralDB.isDensityBased():
-            fields.append(MACH_NUMBER)
+        fields.append(MACH_NUMBER)
 
     # Material fields on multiphase model
     if ModelsDB.isMultiphaseModelOn():

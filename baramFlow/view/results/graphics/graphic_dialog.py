@@ -206,6 +206,12 @@ class GraphicDialog(QDialog):
                                                 self.tr('Graphic Name already exists.'))
             return False
 
+        field: Field = self._ui.field.currentData()
+        if field is None:
+            await AsyncMessageBox().critical(self, self.tr('Input Error'),
+                                                self.tr('Please select valid Color-by field'))
+            return False
+
         stepSize = float(self._ui.stepSize.text())
         if stepSize <= 0:
             await AsyncMessageBox().critical(self, self.tr('Input Error'),
