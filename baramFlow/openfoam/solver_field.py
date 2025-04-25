@@ -26,7 +26,7 @@ SOLVER_FIELDS = {
     DENSITY: 'rho',
     AGE: 'age',
     HEAT_TRANSFER_COEFF: 'heatTransferCoeff',
-    MACH_NUMBER: 'machNo',
+    MACH_NUMBER: 'Mach',
     Q: 'Q',
     TOTAL_PRESSURE: 'totalPressure',
     VORTICITY: 'vorticity',
