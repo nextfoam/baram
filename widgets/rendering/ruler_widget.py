@@ -46,7 +46,7 @@ class RulerWidget:
 
     def _adjustPoint1(self):
         p = [0, 0, 0]  # position buffer
-        self._representation.GetPoint1Representation().GetDisplayPosition(p)
+        self._representation.GetPoint1DisplayPosition(p)
 
         pos = self._pickActorPoint(p[0], p[1])
         if pos is not None:  # snap to actor
@@ -58,7 +58,7 @@ class RulerWidget:
 
     def _adjustPoint2(self):
         p = [0, 0, 0]  # position buffer
-        self._representation.GetPoint2Representation().GetDisplayPosition(p)
+        self._representation.GetPoint2DisplayPosition(p)
 
         pos = self._pickActorPoint(p[0], p[1])
         if pos is not None:  # snap to actor
