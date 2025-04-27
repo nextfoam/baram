@@ -81,7 +81,7 @@ class Baram(QObject):
             openedProject = Project.open(path.resolve(), openType)
 
             if (openedProject.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value) is not None
-                    and platform.system() == 'Windows' and ctypes.windll.shell32.IsUserAnAdmin()):
+                    and platform.system() == 'Windows' and not ctypes.windll.shell32.IsUserAnAdmin()):
                 # Symbolic link requires administrator permission on Windows platform
                 openedProject = None
                 await AsyncMessageBox().warning(
