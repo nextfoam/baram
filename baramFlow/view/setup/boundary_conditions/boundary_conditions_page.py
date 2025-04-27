@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QTreeWidgetItem, QMessageBox
+import qasync
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QTreeWidgetItem
 
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from baramFlow.view.widgets.content_page import ContentPage
+from widgets.async_message_box import AsyncMessageBox
 from .ABL_inlet_dialog import ABLInletDialog
 from .boundary_conditions_page_ui import Ui_BoundaryConditionsPage
 from .boundary_type_picker import BoundaryTypePicker
@@ -60,6 +62,27 @@ DIALOGS = {
 }
 
 
+class BoundaryItem(QTreeWidgetItem):
+    def __init__(self, parent, widget):
+        super().__init__(parent, widget.bcid)
+        
+        self._widget = widget
+        
+        self.setFlags(self.flags() | Qt.ItemIsUserCheckable)
+        self.setCheckState(0, Qt.Checked)
+        
+        self.treeWidget().setItemWidget(self, 1, widget)
+    
+    def __lt__(self, other):
+        return self._widget.bcname().lower() < other._widget.bcname().lower()
+        
+    def bctype(self):
+        return self._widget.type()
+
+    def reloadType(self):
+        self._widget.setType(BoundaryDB.getBoundaryType(self.type()))
+    
+    
 class BoundaryConditionsPage(ContentPage):
     def __init__(self, parent):
         super().__init__(parent)
@@ -70,6 +93,9 @@ class BoundaryConditionsPage(ContentPage):
 
         self._dialog = None
         self._typePicker = None
+        
+        self._ui.boundaries.setSortingEnabled(True)
+        self._ui.boundaries.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
         self._connectSignalsSlots()
         self._load()
@@ -118,26 +144,21 @@ class BoundaryConditionsPage(ContentPage):
             for j in range(0, bnum):
                 childItem = item.child(j)
                 boundaryWidget = self._ui.boundaries.itemWidget(childItem, 1)
-                childItem.setHidden(filterText not in boundaryWidget.bcname.lower())
+                childItem.setHidden(filterText not in boundaryWidget.bcname().lower())
 
     def _addBoundaryItems(self, parent, rname):
         db = coredb.CoreDB()
         boundaries = db.getBoundaryConditions(rname)
         for bcid, bcname, bctype in boundaries:
-            item = QTreeWidgetItem(parent, bcid)
-            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-            item.setCheckState(0, Qt.Checked)
-            self._boundaries[bcid] = BoundaryWidget(rname, bcid, bcname, bctype, item)
-            self._boundaries[bcid].rightClicked.connect(self._showTypePicker)
-            self._ui.boundaries.setItemWidget(item, 1, self._boundaries[bcid])
+            widget = BoundaryWidget(rname, bcid, bcname, bctype)
+            widget.rightClicked.connect(self._showTypePicker)
+            self._boundaries[bcid] = BoundaryItem(parent, widget)
 
     def _updateEditEnabled(self):
-        bcid = self._ui.boundaries.currentItem().type()
-        if bcid:
-            bctype = self._boundaries[bcid].bctype
-            if bctype and DIALOGS[bctype]:
-                self._ui.edit.setEnabled(True)
-                return
+        bctype = self._ui.boundaries.currentItem().bctype()
+        if bctype and DIALOGS[bctype]:
+            self._ui.edit.setEnabled(True)
+            return
 
         self._ui.edit.setEnabled(False)
 
@@ -153,7 +174,8 @@ class BoundaryConditionsPage(ContentPage):
         if column:
             self._edit()
 
-    def _changeBoundaryType(self, bcid, bctype):
+    @qasync.asyncSlot()
+    async def _changeBoundaryType(self, bcid, bctype):
         db = coredb.CoreDB()
         currentType = BoundaryDB.getBoundaryType(bcid)
         if currentType != bctype:
@@ -168,7 +190,7 @@ class BoundaryConditionsPage(ContentPage):
                 db.setValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary', '0')
 
             if BoundaryDB.needsCoupledBoundary(bctype):
-                QMessageBox.information(
+                await AsyncMessageBox().information(
                     self, self.tr('Need to edit boundary condition'),
                     self.tr(f'The {BoundaryDB.dbBoundaryTypeToText(bctype)} boundary needs a coupled boundary.'))
 
@@ -187,7 +209,7 @@ class BoundaryConditionsPage(ContentPage):
         if item:
             bcid = item.type()
             if bcid:
-                bctype = self._boundaries[bcid].bctype
+                bctype = self._boundaries[bcid].bctype()
                 dialogClass = DIALOGS[bctype]
                 if dialogClass:
                     self._dialog = dialogClass(self, str(bcid))
@@ -205,7 +227,7 @@ class BoundaryConditionsPage(ContentPage):
 
     def _selectPickedBoundary(self):
         if app.vtkMesh().currentId():
-            self._ui.boundaries.setCurrentItem(self._boundaries[app.vtkMesh().currentId()].parent)
+            self._ui.boundaries.setCurrentItem(self._boundaries[app.vtkMesh().currentId()])
         else:
             self._ui.boundaries.clearSelection()
 

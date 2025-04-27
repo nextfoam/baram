@@ -29,7 +29,7 @@ class SetFieldsDict(DictionaryFile):
         db = CoreDBReader()
 
         rname = self._region.rname
-        sectionNames: [str] = db.getList(f'.//regions/region[name="{rname}"]/initialization/advanced/sections/section/name')
+        sectionNames: list[str] = db.getList(f'.//regions/region[name="{rname}"]/initialization/advanced/sections/section/name')
         if len(sectionNames) == 0:
             return self
 
@@ -59,7 +59,7 @@ class SetFieldsDict(DictionaryFile):
                     defaultFieldValues.append(('volScalarFieldValue', 'T', db.getValue(ivPath + '/temperature')))
 
             if db.getAttribute(sPath+'/volumeFractions', 'disabled') == 'false':
-                materials: [str] = db.getList(sPath + f'/volumeFractions/volumeFraction/material')
+                materials: list[str] = db.getList(sPath + f'/volumeFractions/volumeFraction/material')
                 defaultPrimaryFraction = 1
                 sectionPrimaryFraction = 1
                 for mid in materials:

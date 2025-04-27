@@ -11,7 +11,7 @@ from widgets.async_message_box import AsyncMessageBox
 
 
 class SpeciesWidget(QGroupBox):
-    def __init__(self, mid, species=None, optional=False):
+    def __init__(self, mid, optional=False):
         super().__init__()
 
         self._mid = mid
@@ -28,7 +28,7 @@ class SpeciesWidget(QGroupBox):
         if MaterialDB.getType(self._mid) == MaterialType.MIXTURE:
             self._on = True
             self._layout = QFormLayout(self)
-            for mid, name in species or MaterialDB.getSpecies(mid).items():
+            for mid, name in MaterialDB.getSpecies(mid).items():
                 editor = QLineEdit()
                 self._layout.addRow(name, editor)
                 self._species[mid] = (name, editor)
