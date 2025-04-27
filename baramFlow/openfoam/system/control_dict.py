@@ -272,7 +272,7 @@ class ControlDict(DictionaryFile):
 
             mid = self._db.getValue(xpath + 'material')
             if mid != '0':
-                self._data['functions'][fieldName]['phase'] = MaterialDB.getName(mid)
+                self._data['functions'][fieldName]['phase'] = 'alpha.' + MaterialDB.getName(mid)
 
     def _appendMonitoringFunctionObjects(self):
         for name in self._db.getForceMonitors():
