@@ -5,7 +5,7 @@ from pathlib import Path
 
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_POLY_DATA, vtkDataArray, vtkFloatArray, vtkMath
 from vtkmodules.vtkCommonDataModel import vtkCompositeDataIterator, vtkCompositeDataSet, vtkDataSet, vtkDataSetAttributes, vtkMultiBlockDataSet, vtkPolyData, vtkUnstructuredGrid
-from vtkmodules.vtkFiltersCore import vtkAppendFilter, vtkAppendPolyData
+from vtkmodules.vtkFiltersCore import vtkAppendFilter, vtkAppendPolyData, vtkArrayCalculator, vtkPointDataToCellData
 
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedBoundaryDict, ParsedParameterFile
 
@@ -229,3 +229,40 @@ async def collectBoundaryMesh(mBlock: vtkMultiBlockDataSet, boundaries: list[tup
     await vtk_run_in_thread(appendFilter.Update)
 
     return appendFilter.GetOutput()
+
+
+async def addCoordinateVector(mBlock: vtkMultiBlockDataSet, name: str) -> vtkMultiBlockDataSet:
+    calculator = vtkArrayCalculator()
+    calculator.SetAttributeTypeToPointData()
+    calculator.AddCoordinateVectorVariable( "pCoords",  0, 1, 2)
+    calculator.SetFunction('pCoords')
+
+    calculator.SetInputData(mBlock)
+    calculator.SetResultArrayName(name)
+
+    await vtk_run_in_thread(calculator.Update)
+
+    return await pointDataToCellData(calculator.GetOutput(), [name])
+
+
+async def pointDataToCellData(mBlock: vtkMultiBlockDataSet, arrayNames: list[str]) -> vtkMultiBlockDataSet:
+    n = mBlock.GetNumberOfBlocks()
+
+    for i in range(n):
+        block = mBlock.GetBlock(i)
+
+        if isinstance(block, vtkDataSet):
+            conv = vtkPointDataToCellData()
+            conv.PassPointDataOn()
+            conv.SetInputData(block)
+            for name in arrayNames:
+                conv.AddPointDataArray(name)
+            await vtk_run_in_thread(conv.Update)
+            newBlock = conv.GetOutput()
+            mBlock.SetBlock(i, newBlock)
+        elif isinstance(block, vtkMultiBlockDataSet):
+            newBlock = await pointDataToCellData(block, arrayNames)
+            mBlock.SetBlock(i, newBlock)
+
+    return mBlock
+

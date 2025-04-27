@@ -17,11 +17,12 @@ from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.coredb import coredb
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.base.field import VECTOR_COMPONENT_TEXTS, VELOCITY, Field, FieldCategory, FieldType, VectorComponent, getFieldInstance
+from baramFlow.base.field import COORDINATE, VECTOR_COMPONENT_TEXTS, VELOCITY, Field, FieldCategory, FieldType, VectorComponent, getFieldInstance
 from baramFlow.base.graphic.color_scheme import ColormapScheme
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
+from baramFlow.openfoam.solver_field import getSolverFieldName
 from libbaram.async_signal import AsyncSignal
-from libbaram.openfoam.polymesh import collectInternalMesh
+from libbaram.openfoam.polymesh import addCoordinateVector, collectInternalMesh
 
 
 class StreamlineIntegratorType(Enum):
@@ -295,8 +296,9 @@ class Graphic:
             await reader.update()
             mBlock = reader.getOutput()
 
-        self.polyMesh = mBlock
-        self.internalMesh = await collectInternalMesh(mBlock)
+        coordsFieldName = getSolverFieldName(COORDINATE)
+        self.polyMesh = await addCoordinateVector(mBlock, coordsFieldName)
+        self.internalMesh = await collectInternalMesh(self.polyMesh)
 
         for item in self.displayItems.values():
             scaffold = ScaffoldsDB().getScaffold(item.scaffoldUuid)

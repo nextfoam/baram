@@ -83,65 +83,44 @@ class IsoSurface(Scaffold):
         values = self._getValues()
         mesh = await collectInternalMesh(mBlock)
 
-        if self.field == COORDINATE:
+        solverFieldName = getSolverFieldName(self.field)
+        contour = vtkContourFilter()
+        contour.ComputeNormalsOn()
+        contour.GenerateTrianglesOn()
+        if self.field.type == FieldType.VECTOR:
+            calc = vtkArrayCalculator()
+            calc.ReplaceInvalidValuesOn()
+            calc.SetReplacementValue(0.0)
+            calc.SetInputData(mesh)
+            calc.SetAttributeTypeToPointData()
             if self.fieldComponent == VectorComponent.MAGNITUDE:
-                cutFunction = vtkSphere()
-                cutFunction.SetCenter(0, 0, 0)
-                cutFunction.SetRadius(0)
+                calc.AddVectorArrayName(solverFieldName)
+                calc.SetFunction(f'mag({solverFieldName})')
             else:
-                cutFunction = vtkPlane()
-                cutFunction.SetOrigin(0, 0, 0)
                 if self.fieldComponent == VectorComponent.X:
-                    cutFunction.SetNormal(1, 0, 0)
+                    componentIndex = 0
                 elif self.fieldComponent == VectorComponent.Y:
-                    cutFunction.SetNormal(0, 1, 0)
+                    componentIndex = 1
                 elif self.fieldComponent == VectorComponent.Z:
-                    cutFunction.SetNormal(0, 0, 1)
-                else:  # ToDo: jake, How to handle this? Magnitude? Is it necessary?
-                    cutFunction.SetNormal(1, 0, 0)
-
-            vtkFilter = vtkCutter()
-            vtkFilter.SetInputData(mesh)
-            vtkFilter.SetCutFunction(cutFunction)
-        else:
-            solverFieldName = getSolverFieldName(self.field)
-            vtkFilter = vtkContourFilter()
-            vtkFilter.ComputeNormalsOn()
-            vtkFilter.GenerateTrianglesOn()
-            if self.field.type == FieldType.VECTOR:
-                calc = vtkArrayCalculator()
-                calc.ReplaceInvalidValuesOn()
-                calc.SetReplacementValue(0.0)
-                calc.SetInputData(mesh)
-                calc.SetAttributeTypeToPointData()
-                if self.fieldComponent == VectorComponent.MAGNITUDE:
-                    calc.AddVectorArrayName(solverFieldName)
-                    calc.SetFunction(f'mag({solverFieldName})')
+                    componentIndex = 2
                 else:
-                    if self.fieldComponent == VectorComponent.X:
-                        componentIndex = 0
-                    elif self.fieldComponent == VectorComponent.Y:
-                        componentIndex = 1
-                    elif self.fieldComponent == VectorComponent.Z:
-                        componentIndex = 2
-                    else:
-                        componentIndex = 0
-                    calc.AddScalarVariable('component', solverFieldName, componentIndex)
-                    calc.SetFunction('component')
+                    componentIndex = 0
+                calc.AddScalarVariable('component', solverFieldName, componentIndex)
+                calc.SetFunction('component')
 
-                calc.SetResultArrayName('isoScalar')
-                vtkFilter.SetInputConnection(calc.GetOutputPort())
-                vtkFilter.SetInputArrayToProcess(0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, 'isoScalar')
-            else:  # FieldType.SCALAR
-                vtkFilter.SetInputData(mesh)
-                vtkFilter.SetInputArrayToProcess(0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, solverFieldName)
+            calc.SetResultArrayName('isoScalar')
+            contour.SetInputConnection(calc.GetOutputPort())
+            contour.SetInputArrayToProcess(0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, 'isoScalar')
+        else:  # FieldType.SCALAR
+            contour.SetInputData(mesh)
+            contour.SetInputArrayToProcess(0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_POINTS, solverFieldName)
 
         for i, v in enumerate(values):
-            vtkFilter.SetValue(i, v)
+            contour.SetValue(i, v)
 
-        await vtk_run_in_thread(vtkFilter.Update)
+        await vtk_run_in_thread(contour.Update)
 
-        return vtkFilter.GetOutput()
+        return contour.GetOutput()
 
     def _getValues(self):
         values: list[float] = []

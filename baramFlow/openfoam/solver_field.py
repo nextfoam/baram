@@ -4,7 +4,7 @@
 from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.base.field import AGE, DENSITY, HEAT_TRANSFER_COEFF, MACH_NUMBER, MODIFIED_TURBULENT_VISCOSITY, PRESSURE, Q, SPECIFIC_DISSIPATION_RATE, TEMPERATURE, TOTAL_PRESSURE, TURBULENT_DISSIPATION_RATE, TURBULENT_KINETIC_ENERGY, VELOCITY, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS
+from baramFlow.base.field import AGE, COORDINATE, DENSITY, HEAT_TRANSFER_COEFF, MACH_NUMBER, MODIFIED_TURBULENT_VISCOSITY, PRESSURE, Q, SPECIFIC_DISSIPATION_RATE, TEMPERATURE, TOTAL_PRESSURE, TURBULENT_DISSIPATION_RATE, TURBULENT_KINETIC_ENERGY, VELOCITY, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS
 from baramFlow.base.field import BasicField, CollateralField, Field, GeometryField, PhaseField, SpecieField, UserScalarField
 from baramFlow.coredb.material_schema import Phase
 from baramFlow.coredb.models_db import ModelsDB
@@ -16,6 +16,7 @@ from baramFlow.openfoam.solver import usePrgh
 
 
 SOLVER_FIELDS = {
+    COORDINATE: 'coord',
     PRESSURE: 'p',
     VELOCITY: 'U',
     TURBULENT_KINETIC_ENERGY: 'k',
@@ -36,9 +37,7 @@ SOLVER_FIELDS = {
 }
 
 def getSolverFieldName(field: Field) -> str:
-    if isinstance(field, GeometryField):
-        return None
-    elif isinstance(field, BasicField) or isinstance(field, CollateralField):
+    if isinstance(field, GeometryField) or isinstance(field, BasicField) or isinstance(field, CollateralField):
         if field == PRESSURE:
             try:
                 if usePrgh():
@@ -59,6 +58,8 @@ def getAvailableFields() -> list[Field]:
     fields = []
 
     # Always available fields
+
+    fields.append(COORDINATE)
 
     fields.append(PRESSURE)
 
