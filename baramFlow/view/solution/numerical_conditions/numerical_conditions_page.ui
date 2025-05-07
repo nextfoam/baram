@@ -52,9 +52,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-664</y>
-        <width>332</width>
-        <height>1338</height>
+        <y>-454</y>
+        <width>338</width>
+        <height>1372</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -423,6 +423,16 @@
           <item row="1" column="1">
            <widget class="QLineEdit" name="numberOfCorrectors"/>
           </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_40">
+            <property name="text">
+             <string>Number of non-orthogonal Correctors (0~10)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="numberOfNonOrthogonalCorrectors"/>
+          </item>
          </layout>
         </widget>
        </item>
@@ -469,15 +479,15 @@
              <item row="0" column="1">
               <widget class="QLineEdit" name="multiphaseMaxIterationsPerTimeStep"/>
              </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="multiphaseNumberOfCorrectors"/>
+             </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_34">
                <property name="text">
                 <string>Number of Correctors</string>
                </property>
               </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="multiphaseNumberOfCorrectors"/>
              </item>
             </layout>
            </widget>
