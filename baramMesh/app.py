@@ -7,7 +7,7 @@ from PySide6.QtCore import QObject, QTranslator, QCoreApplication, QLocale, Sign
 from PySide6.QtWidgets import QApplication
 
 from baramMesh.db.project import Project
-from baramMesh.settings.app_settings import AppSettings
+from baramMesh.settings.app_settings import appSettings
 from baramMesh.settings.project_manager import ProjectManager
 from baramMesh.openfoam.file_system import FileSystem
 from resources import resource
@@ -72,7 +72,8 @@ class App(QObject):
 
     def setupApplication(self, properties):
         self._properties = properties
-        self._settings = AppSettings(properties.name)
+        appSettings.load(properties.name)
+        self._settings = appSettings
 
     def applyLanguage(self):
         QCoreApplication.removeTranslator(self._translator)
