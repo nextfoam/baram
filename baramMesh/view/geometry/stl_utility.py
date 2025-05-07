@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
 import sys
 from pathlib import Path
 
@@ -91,10 +92,10 @@ def composeVolume(surfaces):
 class StlImporter:
     def __init__(self):
         self._stringIndices = StringIndex()
-        self._solids: [StlSurface] = []
-        self._surfaceList: [StlSurface] = []
+        self._solids: list[StlSurface] = []
+        self._surfaceList: list[StlSurface] = []
 
-    def load(self, files: [Path]):
+    def load(self, files: list[Path]):
         self._stringIndices.clear()
         self._solids.clear()
         self._surfaceList.clear()
@@ -209,6 +210,15 @@ class StlImporter:
         return segments, regionedData, edges
 
     def _loadSTLFile(self, path: Path):
+        def sanitizeName(name):
+            if name =='':
+                return name
+            
+            sanitized = re.sub(r'\W+', '_', name, flags=re.ASCII)
+            first = '_' if sanitized[0].isdigit() else ''
+            
+            return first + sanitized
+            
         reader: vtkSTLReader = vtkSTLReader()
         reader.SetFileName(str(path))
         reader.ScalarTagsOn()
@@ -242,7 +252,7 @@ class StlImporter:
 
         numCells = stl.GetNumberOfCells()
 
-        fName = path.stem.replace(' ', '_')
+        fName = sanitizeName(path.stem)
         self._addArray(stl, 'fIndex', fName, numCells)
 
         if reader.GetBinaryHeader() is not None:  # BINARY STL
@@ -253,7 +263,7 @@ class StlImporter:
 
         # ASCII STL
         names = list(map(str.strip, reader.GetHeader().splitlines()))
-        names = ['_'.join(n.split()) for n in names]  # collapse multiple whitespaces into underscore
+        names = [sanitizeName(n) for n in names]  # collapse multiple whitespaces into underscore
 
         minSolid, maxSolid = stl.GetCellData().GetScalars('STLSolidLabeling').GetRange()
         if minSolid == maxSolid:
