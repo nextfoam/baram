@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="10">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="11">
 
     <!-- type definitions -->
     <xs:simpleType name="positive">
@@ -47,6 +47,13 @@
         <xs:restriction base="xs:double">
             <xs:minExclusive value="0"/>
             <xs:maxExclusive value="10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="inclusvie0-10">
+        <xs:restriction base="xs:double">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="10"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -116,6 +123,14 @@
     <xs:complexType name="inputExclusive0-10Type">
         <xs:simpleContent>
             <xs:extension base="exclusvie0-10">
+                <xs:attribute name="batchParameter" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="inputInclusive0-10Type">
+        <xs:simpleContent>
+            <xs:extension base="inclusvie0-10">
                 <xs:attribute name="batchParameter" type="xs:string"/>
             </xs:extension>
         </xs:simpleContent>
@@ -1827,6 +1842,7 @@
             </xs:element>
             <xs:element name="maxIterationsPerTimeStep" type="xs:positiveInteger" default="20"/>
             <xs:element name="numberOfCorrectors" type="xs:positiveInteger" default="4"/>
+            <xs:element name="numberOfNonOrthogonalCorrectors" type="inputInclusive0-10Type" default="0"/>
             <xs:element name="multiphase">
                 <xs:complexType>
                     <xs:sequence>
