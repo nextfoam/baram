@@ -3,6 +3,7 @@
 
 from enum import Enum
 
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtGui import QImage
 from matplotlib.backends.backend_qtagg import FigureCanvas
 import matplotlib.pyplot as plt
@@ -20,6 +21,18 @@ class ColormapScheme(Enum):
     Reds    = 'Reds'
     Turbo   = 'turbo'
     Viridis = 'viridis'
+
+
+colormapName = {
+    ColormapScheme.Gray:    QCoreApplication.translate('Colormap', u'Gray'),
+    ColormapScheme.Inferno: QCoreApplication.translate('Colormap', u'inferno'),
+    ColormapScheme.Jet:     QCoreApplication.translate('Colormap', u'jet'),
+    ColormapScheme.Plasma:  QCoreApplication.translate('Colormap', u'plasma'),
+    ColormapScheme.Rainbow: QCoreApplication.translate('Colormap', u'rainbow'),
+    ColormapScheme.Reds:    QCoreApplication.translate('Colormap', u'Reds'),
+    ColormapScheme.Turbo:   QCoreApplication.translate('Colormap', u'turbo'),
+    ColormapScheme.Viridis: QCoreApplication.translate('Colormap', u'viridis'),
+}
 
 
 def getColormapSchemeImage(scheme: ColormapScheme, width: int, height: int) -> QImage:

@@ -12,7 +12,7 @@ from baramFlow.base.field import VECTOR_COMPONENT_TEXTS, FieldType
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
-from baramFlow.view.results.graphics.colormap import colormapName
+from baramFlow.base.graphic.color_scheme import colormapName
 from .colormap_scheme_dialog import ColormapSchemeDialog
 from .colormap_dialog_ui import Ui_ColormapDialog
 
