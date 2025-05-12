@@ -8,7 +8,7 @@ from libbaram.simple_db.simple_db import elementToVector
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType, ThicknessModel, FeatureSnapType
-from baramMesh.db.configurations_schema import GapRefinementMode, VolumeRefinementType
+from baramMesh.db.configurations_schema import GapRefinementMode
 
 
 def boolToText(value):
@@ -279,30 +279,28 @@ class SnappyHexMeshDict(DictionaryFile):
         data = {}
         for group, refinement in groups.items():
             for volume in volumes[group]:
-                omnidirectional = refinement.element('omnidirectional')
-                
                 data[volume.value('name')] = {
                     'mode': 'inside',
-                    'levels': [[1E15, omnidirectional.value('volumeRefinementLevel')]],
+                    'levels': [[1E15, refinement.value('volumeRefinementLevel')]],
                 }
 
-                gapRefinement = omnidirectional.element('gapRefinement')
-                gapMode = gapRefinement.value('direction')
-                if gapMode != GapRefinementMode.NONE.value:
+                gapRefinement = refinement.element('gapRefinement')
+                gapMode = gapRefinement.enum('direction')
+                if gapMode != GapRefinementMode.NONE:
                     data[volume.value('name')]['gapLevel'] = [
                         gapRefinement.value('minCellLayers'),
                         gapRefinement.value('detectionStartLevel'),
                         gapRefinement.value('maxRefinementLevel')]
-                    data[volume.value('name')]['gapMode'] = gapMode
+                    data[volume.value('name')]['gapMode'] = gapMode.value
                     data[volume.value('name')]['gapSelf'] = 'true' if gapRefinement.value('gapSelf') else 'false'
-                    
-                if refinement.enum('refinementType') == VolumeRefinementType.DIRECTIONAL:
-                    directional = refinement.element('directional')
+
+                levelIncrement = refinement.element('levelIncrement')
+                if not levelIncrement.value('disabled'):
                     data[volume.value('name')]['levelIncrement'] = [
-                        directional.value('minLevel'), directional.value('maxLevel'), [
-                            directional.value('splitCountX'),
-                            directional.value('splitCountY'),
-                            directional.value('splitCountZ')]]
+                        levelIncrement.value('minLevel'), levelIncrement.value('maxLevel'), [
+                            levelIncrement.value('splitCountX'),
+                            levelIncrement.value('splitCountY'),
+                            levelIncrement.value('splitCountZ')]]
 
         return data
 

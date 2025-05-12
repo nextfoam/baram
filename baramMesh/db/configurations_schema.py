@@ -73,11 +73,6 @@ class FeatureSnapType(Enum):
     IMPLICIT = 'implicit'
 
 
-class VolumeRefinementType(Enum):
-    OMNIDIRECTIONAL = auto()
-    DIRECTIONAL = auto()
-
-
 class GapRefinementMode(Enum):
     NONE = 'none'
     INSIDE = 'inside'
@@ -126,18 +121,16 @@ surfaceRefinement = {
 
 volumeRefinement = {
     'groupName': TextType(),
-    'refinementType': EnumType(VolumeRefinementType),
-    'omnidirectional': {
-        'volumeRefinementLevel': IntType().setRange(1, 10).setDefault(1),
-        'gapRefinement': {
-            'minCellLayers': IntType().setLowLimit(3, False).setDefault(4),
-            'detectionStartLevel': IntType().setRange(0, 10).setDefault(1),
-            'maxRefinementLevel': IntType().setRange(1, 10).setDefault(1),
-            'direction': EnumType(GapRefinementMode),
-            'gapSelf': BoolType(True)
-        }
+    'volumeRefinementLevel': IntType().setRange(1, 10).setDefault(1),
+    'gapRefinement': {
+        'minCellLayers': IntType().setLowLimit(3, False).setDefault(4),
+        'detectionStartLevel': IntType().setRange(0, 10).setDefault(1),
+        'maxRefinementLevel': IntType().setRange(1, 10).setDefault(1),
+        'direction': EnumType(GapRefinementMode),
+        'gapSelf': BoolType(True)
     },
-    'directional': {
+    'levelIncrement': {
+        'disabled': BoolType(True),
         'splitCountX': IntType().setRange(0, 10).setDefault(1),
         'splitCountY': IntType().setRange(0, 10),
         'splitCountZ': IntType().setRange(0, 10),
