@@ -98,7 +98,7 @@ class LocalSettings:
         
         self._settings = {
             LocalSettingKey.PARALLEL_NP.value:      environment.np(),
-            LocalSettingKey.PARALLEL_TYPE.value:    environment.type().name,
+            LocalSettingKey.PARALLEL_TYPE.value:    environment.type().value,
             LocalSettingKey.PARALLEL_HOSTS.value:   environment.hosts()
         }
 
