@@ -155,7 +155,7 @@ class InitializationWidget(QWidget):
         self._volumeFractionWidget = None
         self._scalarsWidget = None
         self._speciesWidget = None
-        
+
         mid = RegionDB.getMaterial(self._rname)
         if MaterialDB.isFluid(mid):
             volumeFractionWidget = VolumeFractionWidget(rname)
@@ -177,8 +177,6 @@ class InitializationWidget(QWidget):
             self._ui.velocity.hide()
             self._ui.properties.layout().setRowVisible(self._ui.pressure, False)
             self._ui.turbulence.hide()
-
-        self._ui.scaleOfVelocity.setValidator(QDoubleValidator())
 
         self._connectSignalsSlots()
 
@@ -219,10 +217,10 @@ class InitializationWidget(QWidget):
 
         if self._volumeFractionWidget:
             self._volumeFractionWidget.load(self._initialValuesPath + '/volumeFractions')
-            
+
         if self._scalarsWidget:
             self._scalarsWidget.load(self._initialValuesPath + '/userDefinedScalars')
-            
+
         if self._speciesWidget:
             self._speciesWidget.load(f'{self._initialValuesPath}/species')
 
