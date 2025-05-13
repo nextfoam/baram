@@ -3,10 +3,9 @@
 
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QListWidgetItem, QHBoxLayout, QLabel, QWidget, QSizePolicy
+from PySide6.QtWidgets import QDialog, QListWidgetItem, QHBoxLayout, QLabel, QWidget, QSizePolicy
 
 from baramFlow.base.graphic.color_scheme import ColormapScheme, getColormapSchemeImage
-from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from baramFlow.base.graphic.color_scheme import colormapName
 from .colormap_scheme_dialog_ui import Ui_ColormapSchemeDialog
 
@@ -30,14 +29,14 @@ class ColorSchemeWidget(QWidget):
         self.title = QLabel()
         self.title.setText(colormapName[scheme])
         self.title.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
-        self.title.setMinimumSize(60, 20)
-        self.title.setMaximumSize(90, 20)
+        self.title.setMinimumSize(120, 20)
+        self.title.setMaximumSize(120, 20)
         layout.addWidget(self.title)
 
         self.scheme = scheme
 
 
-class ColormapSchemeDialog(ResizableDialog):
+class ColormapSchemeDialog(QDialog):
     schemeSelected = Signal(ColormapScheme)
 
     def __init__(self, parent, currentScheme):

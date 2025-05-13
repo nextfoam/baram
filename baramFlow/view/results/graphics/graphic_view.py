@@ -154,6 +154,7 @@ class VisualReportView(RenderingView):
 
         actor: vtkScalarBarActor = self._colormap.GetScalarBarActor()
         actor.SetTitle(graphic.fieldDisplayName+'\n')  # '\n' is added to set title apart from the bar
+        actor.SetMaximumNumberOfColors(graphic.numberOfLevels)
 
         if graphic.field.type == FieldType.VECTOR:
             if graphic.fieldComponent == VectorComponent.MAGNITUDE:
@@ -194,7 +195,7 @@ class VisualReportView(RenderingView):
         else:
             levels = graphic.numberOfLevels
             cmap = plt.cm.get_cmap(graphic.colorScheme.value)
-            if graphic.numberOfLevels > 1:
+            if levels > 1:
                 for i in range(0, levels):
                     rgb = cmap(i/(levels-1))[:3]  # Extract RGB values excluding Alpha
                     self._lookupTable.SetTableValue(i, *rgb)

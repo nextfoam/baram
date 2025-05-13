@@ -81,9 +81,9 @@ class Graphic:
     customRangeMax: str = '0.0'
     clipToRange: bool = False
     useCustomColorScheme: bool = False
-    colorScheme: ColormapScheme = ColormapScheme.Turbo
-    customMinColor: QColor = QColor.fromString('#000000')
-    customMaxColor: QColor = QColor.fromString('#ffffff')
+    colorScheme: ColormapScheme = ColormapScheme.BlueToRedRainbow
+    customMinColor: QColor = dataClassField(default_factory=lambda: QColor.fromString('#000000'))
+    customMaxColor: QColor = dataClassField(default_factory=lambda: QColor.fromString('#FFFFFF'))
 
     includeVectors: bool = False
     vectorField: Field = VELOCITY

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field as dataClassField
 from uuid import UUID
 
 from lxml import etree
@@ -20,7 +21,7 @@ from libbaram.async_signal import AsyncSignal
 
 @dataclass
 class DisplayItem:
-    instanceUpdated: AsyncSignal = field(init=False)
+    instanceUpdated: AsyncSignal = dataClassField(init=False)
 
     scaffoldUuid: UUID  = UUID(int = 0)
     dataSet: vtkDataSet = None
@@ -28,7 +29,7 @@ class DisplayItem:
     visibility: bool = True
     opacity: float = 1
     solidColor: bool = False
-    color: QColor = QColor.fromString('#FFFFFF')
+    color: QColor = dataClassField(default_factory=lambda: QColor.fromString('#FFFFFF'))
     edges: bool = False
     faces: bool = True
     vectorsOn: bool = False

@@ -26,6 +26,7 @@ from libbaram.process import getAvailablePhysicalCores
 from baramFlow.app import app
 from baramFlow.app_properties import AppProperties
 from baramFlow.app_plug_in import AppPlugIn
+from baramFlow.base.graphic.color_scheme import initializeBaramPresetColorSchemes
 from baramFlow.view.main_window.start_window import Baram
 from baramFlow.coredb.app_settings import AppSettings
 
@@ -104,6 +105,8 @@ def main():
     stream = QTextStream(file)
 
     #app.setStyleSheet(app.styleSheet() + '\n' + stream.readAll())
+
+    initializeBaramPresetColorSchemes()
 
     app.setLanguage(AppSettings.getLanguage())
     background_tasks = set()

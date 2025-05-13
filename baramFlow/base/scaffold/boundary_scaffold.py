@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field as dataClassField
 from uuid import UUID
 
 from lxml import etree
@@ -16,7 +17,7 @@ from libbaram.openfoam.polymesh import collectBoundaryMesh
 
 @dataclass
 class BoundaryScaffold(Scaffold):
-    boundaries: list[str] = field(default_factory=list)
+    boundaries: list[str] = dataClassField(default_factory=list)
 
     @classmethod
     def parseScaffolds(cls) -> dict[UUID, Scaffold]:

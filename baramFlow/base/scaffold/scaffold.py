@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field as dataClassField
 from enum import Enum
 from typing import ClassVar
 from uuid import UUID
@@ -25,7 +26,7 @@ class ScaffoldType(Enum):
 class Scaffold:
     SCAFFOLDS_PATH: ClassVar[str] = '/scaffolds'
 
-    instanceUpdated: AsyncSignal = field(init=False)
+    instanceUpdated: AsyncSignal = dataClassField(init=False)
 
     uuid: UUID
     name: str

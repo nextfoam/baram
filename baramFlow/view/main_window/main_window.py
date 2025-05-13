@@ -29,7 +29,6 @@ from widgets.progress_dialog import ProgressDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 from baramFlow.app import app
-from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.case_manager import CaseManager, LiveCase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.app_settings import AppSettings
