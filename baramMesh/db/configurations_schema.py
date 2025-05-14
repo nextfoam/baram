@@ -121,7 +121,7 @@ surfaceRefinement = {
 
 volumeRefinement = {
     'groupName': TextType(),
-    'volumeRefinementLevel': IntType().setRange(1, 10).setDefault(1),
+    'volumeRefinementLevel': IntType().setRange(0, 10).setDefault(1),
     'gapRefinement': {
         'minCellLayers': IntType().setLowLimit(3, False).setDefault(4),
         'detectionStartLevel': IntType().setRange(0, 10).setDefault(1),
