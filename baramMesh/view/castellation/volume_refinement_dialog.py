@@ -9,7 +9,7 @@ from libbaram.simple_db.simple_schema import DBError
 from widgets.async_message_box import AsyncMessageBox
 
 from baramMesh.app import app
-from baramMesh.db.configurations_schema import GeometryType, GapRefinementMode, VolumeRefinementType
+from baramMesh.db.configurations_schema import GeometryType, GapRefinementMode
 from baramMesh.view.widgets.multi_selector_dialog import MultiSelectorDialog
 from baramMesh.view.widgets.multi_selector_dialog import SelectorItem
 from .volume_refinement_dialog_ui import Ui_VolumeeRefinementDialog
@@ -48,9 +48,6 @@ class VolumeRefinementDialog(QDialog):
 
         self._connectSignalsSlots()
 
-        self._ui.refinementType.addItem(self.tr('Omnidirectional'), VolumeRefinementType.OMNIDIRECTIONAL)
-        self._ui.refinementType.addItem(self.tr('Directional'),     VolumeRefinementType.DIRECTIONAL)
-
         self._load()
 
     def dbElement(self):
@@ -83,48 +80,48 @@ class VolumeRefinementDialog(QDialog):
                 return
 
             self._dbElement.setValue('groupName', groupName, self.tr('Group Name'))
-            
-            refinementType = self._ui.refinementType.currentData()
-            self._dbElement.setValue('refinementType', refinementType)
-            if refinementType == VolumeRefinementType.OMNIDIRECTIONAL:
-                self._dbElement.setValue('omnidirectional/volumeRefinementLevel', self._ui.volumeRefinementLevel.text(),
-                                        self.tr('Volume Refinement Level'))
+            self._dbElement.setValue('volumeRefinementLevel', self._ui.volumeRefinementLevel.text(),
+                                     self.tr('Volume Refinement Level'))
 
-                if self._ui.gapRefinement.isChecked():
-                    try:
-                        startLevel = int(self._ui.detectionStartLevel.text())
-                        maxLevel = int(self._ui.maxRefinementLevel.text())
+            if self._ui.gapRefinement.isChecked():
+                try:
+                    startLevel = int(self._ui.detectionStartLevel.text())
+                    maxLevel = int(self._ui.maxRefinementLevel.text())
 
-                        if startLevel >= maxLevel:
-                            await AsyncMessageBox().information(
-                                self, self.tr('Input Error'),
-                                self.tr('Maximum Refinement Level must be greater than Gap Detection Start Level.'))
+                    if startLevel >= maxLevel:
+                        await AsyncMessageBox().information(
+                            self, self.tr('Input Error'),
+                            self.tr('Maximum Refinement Level must be greater than Gap Detection Start Level.'))
 
-                            return
-                    except ValueError:
-                        pass
+                        return
+                except ValueError:
+                    pass
 
-                    self._dbElement.setValue('omnidirectional/gapRefinement/minCellLayers', 
-                                             self._ui.minCellLayers.text(),  self.tr('Min. Cell Layers in a gap'))
-                    self._dbElement.setValue('omnidirectional/gapRefinement/detectionStartLevel',
-                                             self._ui.detectionStartLevel.text(), self.tr('Gap Detection Start Level'))
-                    self._dbElement.setValue('omnidirectional/gapRefinement/maxRefinementLevel',
-                                             self._ui.maxRefinementLevel.text(), self.tr('Max. Refinement Level'))
-                    self._dbElement.setValue('omnidirectional/gapRefinement/direction', self._ui.direction.currentData())
-                    self._dbElement.setValue('omnidirectional/gapRefinement/gapSelf', self._ui.gapSelf.isChecked())
-                else:
-                    self._dbElement.setValue('omnidirectional/gapRefinement/direction', GapRefinementMode.NONE)
-            elif refinementType == VolumeRefinementType.DIRECTIONAL:
-                self._dbElement.setValue('directional/splitCountX', self._ui.splitCountX.text(),
+                self._dbElement.setValue('gapRefinement/minCellLayers', self._ui.minCellLayers.text(),
+                                         self.tr('Min. Cell Layers in a gap'))
+                self._dbElement.setValue('gapRefinement/detectionStartLevel', self._ui.detectionStartLevel.text(),
+                                         self.tr('Gap Detection Start Level'))
+                self._dbElement.setValue('gapRefinement/maxRefinementLevel', self._ui.maxRefinementLevel.text(),
+                                         self.tr('Max. Refinement Level'))
+                self._dbElement.setValue('gapRefinement/direction', self._ui.direction.currentData())
+                self._dbElement.setValue('gapRefinement/gapSelf', self._ui.gapSelf.isChecked())
+            else:
+                self._dbElement.setValue('gapRefinement/direction', GapRefinementMode.NONE)
+
+            if self._ui.levelIncrement.isChecked():
+                self._dbElement.setValue('levelIncrement/disabled', False)
+                self._dbElement.setValue('levelIncrement/splitCountX', self._ui.splitCountX.text(),
                                          self.tr('Splict Count per Direction'))
-                self._dbElement.setValue('directional/splitCountY', self._ui.splitCountY.text(),
+                self._dbElement.setValue('levelIncrement/splitCountY', self._ui.splitCountY.text(),
                                          self.tr('Splict Count per Direction'))
-                self._dbElement.setValue('directional/splitCountZ', self._ui.splitCountZ.text(),
+                self._dbElement.setValue('levelIncrement/splitCountZ', self._ui.splitCountZ.text(),
                                          self.tr('Splict Count per Direction'))
-                self._dbElement.setValue('directional/minLevel', self._ui.directionalMinLevel.text(),
+                self._dbElement.setValue('levelIncrement/minLevel', self._ui.directionalMinLevel.text(),
                                          self.tr('Min. Level'))
-                self._dbElement.setValue('directional/maxLevel', self._ui.directionalMaxLevel.text(),
+                self._dbElement.setValue('levelIncrement/maxLevel', self._ui.directionalMaxLevel.text(),
                                          self.tr('Max. Level'))
+            else:
+                self._dbElement.setValue('levelIncrement/disabled', True)
 
             if self._groupId:
                 self._db.commit(self._dbElement)
@@ -146,7 +143,6 @@ class VolumeRefinementDialog(QDialog):
             await AsyncMessageBox().information(self, self.tr('Input Error'), error.toMessage())
 
     def _connectSignalsSlots(self):
-        self._ui.refinementType.currentIndexChanged.connect(self._refinementTypeChanged)
         self._ui.volumeRefinementLevel.editingFinished.connect(self._updateCellSize)
         self._ui.select.clicked.connect(self._selectVolumes)
         self._ui.ok.clicked.connect(self._accept)
@@ -161,24 +157,23 @@ class VolumeRefinementDialog(QDialog):
             name = f"{baseName}{self._db.getUniqueSeq('castellation/refinementVolumes', 'groupName', baseName, 1)}"
 
         self._ui.groupName.setText(name)
-        
-        self._ui.refinementType.setCurrentIndex(self._ui.refinementType.findData(self._dbElement.getEnum('refinementType')))
-        self._ui.volumeRefinementLevel.setText(self._dbElement.getValue('omnidirectional/volumeRefinementLevel'))
+        self._ui.volumeRefinementLevel.setText(self._dbElement.getValue('volumeRefinementLevel'))
 
-        direction = self._dbElement.getEnum('omnidirectional/gapRefinement/direction')
+        direction = self._dbElement.getEnum('gapRefinement/direction')
         self._ui.gapRefinement.setChecked(direction != GapRefinementMode.NONE)
-        self._ui.minCellLayers.setText(self._dbElement.getValue('omnidirectional/gapRefinement/minCellLayers'))
-        self._ui.detectionStartLevel.setText(self._dbElement.getValue('omnidirectional/gapRefinement/detectionStartLevel'))
-        self._ui.maxRefinementLevel.setText(self._dbElement.getValue('omnidirectional/gapRefinement/maxRefinementLevel'))
+        self._ui.minCellLayers.setText(self._dbElement.getValue('gapRefinement/minCellLayers'))
+        self._ui.detectionStartLevel.setText(self._dbElement.getValue('gapRefinement/detectionStartLevel'))
+        self._ui.maxRefinementLevel.setText(self._dbElement.getValue('gapRefinement/maxRefinementLevel'))
         if direction != GapRefinementMode.NONE:
             self._ui.direction.setCurrentIndex(self._ui.direction.findData(direction))
-        self._ui.gapSelf.setChecked(self._dbElement.getValue('omnidirectional/gapRefinement/gapSelf'))
-        
-        self._ui.splitCountX.setText(self._dbElement.getValue('directional/splitCountX'))
-        self._ui.splitCountY.setText(self._dbElement.getValue('directional/splitCountY'))
-        self._ui.splitCountZ.setText(self._dbElement.getValue('directional/splitCountZ'))
-        self._ui.directionalMinLevel.setText(self._dbElement.getValue('directional/minLevel'))
-        self._ui.directionalMaxLevel.setText(self._dbElement.getValue('directional/maxLevel'))
+        self._ui.gapSelf.setChecked(self._dbElement.getValue('gapRefinement/gapSelf'))
+
+        self._ui.levelIncrement.setChecked(not self._dbElement.getValue('levelIncrement/disabled'))
+        self._ui.splitCountX.setText(self._dbElement.getValue('levelIncrement/splitCountX'))
+        self._ui.splitCountY.setText(self._dbElement.getValue('levelIncrement/splitCountY'))
+        self._ui.splitCountZ.setText(self._dbElement.getValue('levelIncrement/splitCountZ'))
+        self._ui.directionalMinLevel.setText(self._dbElement.getValue('levelIncrement/minLevel'))
+        self._ui.directionalMaxLevel.setText(self._dbElement.getValue('levelIncrement/maxLevel'))
 
         self._volumes = []
         self._availableVolumes = []
@@ -201,14 +196,6 @@ class VolumeRefinementDialog(QDialog):
         self._oldVolumes = self._volumes
 
         self._updateCellSize()
-
-    def _refinementTypeChanged(self, index):
-        if self._ui.refinementType.currentData() == VolumeRefinementType.OMNIDIRECTIONAL:
-            self._ui.omnidirectional.show()
-            self._ui.directional.hide()
-        else:
-            self._ui.omnidirectional.hide()
-            self._ui.directional.show()
 
     def _updateCellSize(self):
         d = 2 ** int(self._ui.volumeRefinementLevel.text())

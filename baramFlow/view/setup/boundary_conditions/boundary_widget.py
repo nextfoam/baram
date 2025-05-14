@@ -12,19 +12,17 @@ from .boundary_widget_ui import Ui_BoundaryWidget
 class BoundaryWidget(QWidget):
     rightClicked = Signal(int, QPoint)
 
-    def __init__(self, rname, bcid, bcname, bctype, parent):
+    def __init__(self, rname, bcid, bcname, bctype):
         super().__init__()
         self._ui = Ui_BoundaryWidget()
         self._ui.setupUi(self)
 
         self._rname = rname
         self._bcid = bcid
-        self._bcname = bcname
         self._bctype = None
-        self._parent = parent
 
         self._ui.name.setText(bcname)
-        self._setType(bctype)
+        self.setType(bctype)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
@@ -35,21 +33,16 @@ class BoundaryWidget(QWidget):
         return self._rname
 
     @property
-    def bctype(self):
+    def bcid(self):
+        return self._bcid
+
+    def bcname(self):
+        return self._ui.name.text()
+
+    def type(self):
         return self._bctype
 
-    @property
-    def bcname(self):
-        return self._bcname
-
-    @property
-    def parent(self):
-        return self._parent
-
-    def reloadType(self):
-        self._setType(BoundaryDB.getBoundaryType(self._bcid))
-
-    def _setType(self, bctype):
+    def setType(self, bctype):
         self._bctype = bctype
         self._ui.type.setText(BoundaryDB.dbBoundaryTypeToText(bctype))
 

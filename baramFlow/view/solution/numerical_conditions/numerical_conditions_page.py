@@ -222,6 +222,7 @@ class NumericalConditionsPage(ContentPage):
 
         self._ui.maxIterationsPerTimeStep.setText(db.getValue(self._xpath + '/maxIterationsPerTimeStep'))
         self._ui.numberOfCorrectors.setText(db.getValue(self._xpath + '/numberOfCorrectors'))
+        self._ui.numberOfNonOrthogonalCorrectors.setText(db.getValue(self._xpath + '/numberOfNonOrthogonalCorrectors'))
 
         self._ui.multiphaseMaxIterationsPerTimeStep.setText(
             db.getValue(self._xpath + '/multiphase/maxIterationsPerTimeStep'))
@@ -356,6 +357,8 @@ class NumericalConditionsPage(ContentPage):
                       self._ui.maxIterationsPerTimeStep.text(), self.tr('Max Iterations per Time Step'))
         writer.append(self._xpath + '/numberOfCorrectors',
                       self._ui.numberOfCorrectors.text(), self.tr('Number of Correctors'))
+        writer.append(self._xpath + '/numberOfNonOrthogonalCorrectors',
+                      self._ui.numberOfNonOrthogonalCorrectors.text(), self.tr('Number of Non-orthogonal Correctors'))
 
         writer.append(self._xpath + '/multiphase/maxIterationsPerTimeStep',
                       self._ui.multiphaseMaxIterationsPerTimeStep.text(),

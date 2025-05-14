@@ -174,7 +174,7 @@ class FvSchemes(DictionaryFile):
 
         divSchemes = {
             'default': 'Gauss linear',
-            'div(phi,age)': 'Gauss linearUpwind momentumReconGrad'
+            'div(phi,age)': 'bounded Gauss linearUpwind momentumReconGrad'
         }
 
         if momentum == 'firstOrderUpwind':

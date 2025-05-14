@@ -144,7 +144,8 @@ class FvSolution(DictionaryFile):
             },
             'SIMPLE': {
                 'consistent': consistent,
-                'nNonOrthogonalCorrectors': '0',
+                'nNonOrthogonalCorrectors': 
+                    self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/numberOfNonOrthogonalCorrectors'),
                 # only for fluid
                 # 'pRefPoint': self._db.getVector(
                 #     ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/referencePressureLocation'),
@@ -173,7 +174,8 @@ class FvSolution(DictionaryFile):
                 'momentumPredictor': momentumPredictor,
                 # only for fluid
                 'turbOnFinalIterOnly': 'false',
-                'nNonOrthogonalCorrectors': '0',
+                'nNonOrthogonalCorrectors': 
+                    self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/numberOfNonOrthogonalCorrectors'),
                 # only for fluid
                 'nCorrectors': self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/numberOfCorrectors'),
                 # only in single region case

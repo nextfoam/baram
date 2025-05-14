@@ -521,7 +521,7 @@ class MainWindow(QMainWindow):
         progressDialog = ProgressDialog(self._dialog, self.tr('Case Redistribution'))
         progressDialog.open()
 
-        if numCores != oldNumCores:
+        if FileSystem.hasPolyMesh() and numCores != oldNumCores:
             progressDialog.setLabelText('Redistributing Case')
 
             try:

@@ -19,7 +19,7 @@ class SurfaceReportType(Enum):
 
 SURFACE_MONITOR_OPERATION = {
     SurfaceReportType.AREA_WEIGHTED_AVERAGE: 'areaAverage',
-    SurfaceReportType.MASS_WEIGHTED_AVERAGE: 'average',
+    SurfaceReportType.MASS_WEIGHTED_AVERAGE: 'weightedAverage',
     SurfaceReportType.INTEGRAL: 'areaIntegrate',
     SurfaceReportType.MASS_FLOW_RATE: 'sum',
     SurfaceReportType.VOLUME_FLOW_RATE: 'areaNormalIntegrate',

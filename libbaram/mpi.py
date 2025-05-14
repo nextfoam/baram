@@ -53,10 +53,10 @@ def checkMPI():
 
 
 class ParallelEnvironment:
-    def __init__(self, np, type_, hosts):
+    def __init__(self, np: int, type_: ParallelType, hosts: str):
         self._np: int = np
         self._type = type_
-        self._hosts = hosts
+        self._hosts = '' if hosts is None else hosts
 
     def np(self):
         return self._np
@@ -73,7 +73,7 @@ class ParallelEnvironment:
     def setNP(self, np: int):
         self._np = np
 
-    def setType(self, type_):
+    def setType(self, type_: ParallelType):
         self._type = type_
 
     def setHosts(self, hosts):

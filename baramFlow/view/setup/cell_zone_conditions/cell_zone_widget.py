@@ -31,6 +31,9 @@ class CellZoneWidget(QWidget):
 
     def czid(self):
         return self._czid
+    
+    def czname(self):
+        return self._ui.name.text()
 
     def load(self):
         self._ui.type.setText(self._types[CellZoneDB.getCellZoneType(self._czid)])

@@ -156,6 +156,7 @@
         </highOrderTermRelaxation>
         <maxIterationsPerTimeStep>20</maxIterationsPerTimeStep>
         <numberOfCorrectors>4</numberOfCorrectors>
+        <numberOfNonOrthogonalCorrectors>0</numberOfNonOrthogonalCorrectors>
         <multiphase>
             <maxIterationsPerTimeStep>2</maxIterationsPerTimeStep>
             <numberOfCorrectors>1</numberOfCorrectors>

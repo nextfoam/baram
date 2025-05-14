@@ -3,6 +3,7 @@
 
 from PySide6.QtCore import QObject
 
+from baramMesh.settings.app_settings import appSettings
 from baramMesh.settings.local_settings import LocalSettings, LocalSettingKey
 from baramMesh.db.configurations import Configurations
 from baramMesh.db.configurations_schema import schema
@@ -38,6 +39,7 @@ class Project(QObject):
 
     def setParallelEnvironment(self, environment):
         self._settings.setParallelEnvironment(environment)
+        appSettings.updateParallelEnvironment(environment)
 
     def parallelCores(self):
         return self._settings.get(LocalSettingKey.PARALLEL_NP, 1)
