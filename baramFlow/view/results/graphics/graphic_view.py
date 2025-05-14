@@ -3,7 +3,6 @@
 
 from uuid import UUID, uuid4
 
-from matplotlib import pyplot as plt
 from PySide6.QtGui import QAction
 
 from PySide6.QtCore import Qt
@@ -17,6 +16,7 @@ from vtkmodules.vtkRenderingCore import vtkActor
 
 from baramFlow.app import app
 
+from baramFlow.base.graphic.color_scheme import getColorTable
 from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.base.field import FieldType, VectorComponent
 from baramFlow.base.graphic.display_item import DisplayItem
@@ -53,7 +53,6 @@ class VisualReportView(RenderingView):
         self._dialog = None
 
         self._lookupTable = vtkLookupTable()
-
         self._view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
 
         self._overlayFrame = OverlayFrame(self._view)
@@ -151,10 +150,11 @@ class VisualReportView(RenderingView):
 
     def _updateLookupTable(self):
         graphic: Graphic = self._graphic
+        levels = graphic.numberOfLevels
 
         actor: vtkScalarBarActor = self._colormap.GetScalarBarActor()
         actor.SetTitle(graphic.fieldDisplayName+'\n')  # '\n' is added to set title apart from the bar
-        actor.SetMaximumNumberOfColors(graphic.numberOfLevels)
+        actor.SetMaximumNumberOfColors(levels)
 
         if graphic.field.type == FieldType.VECTOR:
             if graphic.fieldComponent == VectorComponent.MAGNITUDE:
@@ -174,17 +174,17 @@ class VisualReportView(RenderingView):
                     if self._lookupTable.GetVectorComponent() != 2:
                         self._lookupTable.SetVectorComponent(2)
 
-        self._lookupTable.SetNumberOfTableValues(graphic.numberOfLevels)
+        self._lookupTable.SetNumberOfTableValues(levels)
 
         if graphic.useCustomColorScheme:
             rMin, gMin, bMin, _ = graphic.customMinColor.getRgbF()
             rMax, gMax, bMax, _ = graphic.customMaxColor.getRgbF()
 
-            if graphic.numberOfLevels > 1:
-                rInc = (rMax - rMin) / (graphic.numberOfLevels-1)
-                gInc = (gMax - gMin) / (graphic.numberOfLevels-1)
-                bInc = (bMax - bMin) / (graphic.numberOfLevels-1)
-                for i in range(0, graphic.numberOfLevels):
+            if levels > 1:
+                rInc = (rMax - rMin) / (levels-1)
+                gInc = (gMax - gMin) / (levels-1)
+                bInc = (bMax - bMin) / (levels-1)
+                for i in range(0, levels):
                     r = rMin + i * rInc
                     g = gMin + i * gInc
                     b = bMin + i * bInc
@@ -193,15 +193,9 @@ class VisualReportView(RenderingView):
                 self._lookupTable.SetTableValue(0, rMin, gMin, bMin)
 
         else:
-            levels = graphic.numberOfLevels
-            cmap = plt.cm.get_cmap(graphic.colorScheme.value)
-            if levels > 1:
-                for i in range(0, levels):
-                    rgb = cmap(i/(levels-1))[:3]  # Extract RGB values excluding Alpha
-                    self._lookupTable.SetTableValue(i, *rgb)
-            else:
-                rgb = cmap(0)[:3]  # Extract RGB values excluding Alpha
-                self._lookupTable.SetTableValue(0, *rgb)
+            table = getColorTable(graphic.colorScheme, levels)
+            for i in range(0, levels):
+                self._lookupTable.SetTableValue(i, table[i*3], table[i*3+1], table[i*3+2])
 
         self._lookupTable.SetAboveRangeColor(0, 0, 0, 0)  # Transparent
         self._lookupTable.SetBelowRangeColor(0, 0, 0, 0)  # Transparent

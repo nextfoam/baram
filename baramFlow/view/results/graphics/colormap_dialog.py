@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtCore import QRegularExpression
-from PySide6.QtGui import QColor, QDoubleValidator, QIntValidator, QPixmap, QRegularExpressionValidator
-from PySide6.QtWidgets import QColorDialog
+from PySide6.QtGui import QColor, QDoubleValidator, QIntValidator, QRegularExpressionValidator
+from PySide6.QtWidgets import QColorDialog, QHBoxLayout
 import qasync
 
-from baramFlow.base.graphic.color_scheme import ColormapScheme, getColormapSchemeImage
+from baramFlow.base.graphic.color_scheme import ColorbarWidget, ColormapScheme
 from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.base.field import VECTOR_COMPONENT_TEXTS, FieldType
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
@@ -26,6 +26,10 @@ class ColormapDialog(ResizableDialog):
         self._graphic = graphic
 
         self._dialog = None
+        self._colorbarWidget = None
+
+        self._colorbarLayout = QHBoxLayout(self._ui.presetColorBar)
+        self._colorbarLayout.setContentsMargins(0, 0, 0, 0)
 
         self._ui.fieldDisplayName.setText(graphic.fieldDisplayName)
         self._ui.fieldDisplayName.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Za-z_][A-Za-z0-9_]*')))
@@ -172,9 +176,11 @@ class ColormapDialog(ResizableDialog):
     def _setPresetColorScheme(self, scheme: ColormapScheme):
         self._ui.presetColorScheme.setText(colormapName[scheme])
 
-        size = self._ui.presetColorBar.size()
-        image = getColormapSchemeImage(scheme, size.width(), size.height())
-        self._ui.presetColorBar.setPixmap(QPixmap(image))
+        if self._colorbarWidget is not None:
+            self._colorbarLayout.removeWidget(self._colorbarWidget)
+
+        self._colorbarWidget = ColorbarWidget(scheme, 240, 20)
+        self._colorbarLayout.addWidget(self._colorbarWidget)
 
         self._presetColorScheme = scheme
 

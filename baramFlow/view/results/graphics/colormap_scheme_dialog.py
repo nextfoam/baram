@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtCore import Signal
-from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QHBoxLayout, QLabel, QWidget, QSizePolicy
 
-from baramFlow.base.graphic.color_scheme import ColormapScheme, getColormapSchemeImage
+from baramFlow.base.graphic.color_scheme import ColorbarWidget, ColormapScheme
 from baramFlow.base.graphic.color_scheme import colormapName
 from .colormap_scheme_dialog_ui import Ui_ColormapSchemeDialog
 
@@ -18,19 +17,15 @@ class ColorSchemeWidget(QWidget):
         layout.setContentsMargins(9, 9, 9, 9)
         layout.setSpacing(9)
 
-        self.image = QLabel()
-        image = getColormapSchemeImage(scheme, 240, 20)
-        self.image.setPixmap(QPixmap(image))
-        self.image.setScaledContents(True)
-        self.image.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed))
-        self.image.setMinimumSize(240, 20)
-        layout.addWidget(self.image)
+        self._colorbarWidget = ColorbarWidget(scheme, 240, 20)
+        self._colorbarWidget.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed))
+        layout.addWidget(self._colorbarWidget)
 
         self.title = QLabel()
         self.title.setText(colormapName[scheme])
         self.title.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
-        self.title.setMinimumSize(120, 20)
-        self.title.setMaximumSize(120, 20)
+        self.title.setMinimumSize(150, 20)
+        self.title.setMaximumSize(150, 20)
         layout.addWidget(self.title)
 
         self.scheme = scheme

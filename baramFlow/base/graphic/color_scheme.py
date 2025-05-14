@@ -1,167 +1,113 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from colorsys import hsv_to_rgb, rgb_to_hsv
 from enum import Enum
-import io
 import json
 
-from PySide6.QtCore import QCoreApplication
-from PySide6.QtGui import QImage
-from matplotlib.colors import ListedColormap
-import matplotlib as mpl
-mpl.use('Agg')  # Use the 'Agg' backend, which is non-interactive. This line should come before "pyplot" is imported
-import matplotlib.pyplot as plt
-
-import numpy as np
+from PySide6.QtCore import QCoreApplication, QSize
+from PySide6.QtGui import QColor, QLinearGradient, QPainter
+from PySide6.QtWidgets import QWidget
+from vtkmodules.vtkRenderingCore import vtkColorTransferFunction
 
 from resources import resource
 
 
-# The value of enumeration corresponds to matplotlib "Colormap" name
+# The value of enumeration corresponds to VTK "ColorMaps.json" name
 class ColormapScheme(Enum):
     BlueToRedRainbow = 'Blue to Red Rainbow'
     CoolToWarm = 'Cool to Warm'
-    Gray    = 'gray'
-    Inferno = 'inferno'
-    Jet     = 'jet'
-    Plasma  = 'plasma'
+    Gray    = 'Grayscale'
+    Inferno = 'Inferno (matplotlib)'
+    Jet     = 'Jet'
+    Plasma  = 'Plasma (matplotlib)'
     RainbowBlendedWhite = 'Rainbow Blended White'
     Reds    = 'Reds'
-    Turbo   = 'turbo'
-    Viridis = 'viridis'
+    Turbo   = 'Turbo'
+    Viridis = 'Viridis (matplotlib)'
 
 
 colormapName = {
     ColormapScheme.BlueToRedRainbow: QCoreApplication.translate('Colormap', u'Blue to Red Rainbow'),
     ColormapScheme.CoolToWarm: QCoreApplication.translate('Colormap', u'Cool to Warm'),
     ColormapScheme.Gray:    QCoreApplication.translate('Colormap', u'Gray'),
-    ColormapScheme.Inferno: QCoreApplication.translate('Colormap', u'inferno'),
-    ColormapScheme.Jet:     QCoreApplication.translate('Colormap', u'jet'),
-    ColormapScheme.Plasma:  QCoreApplication.translate('Colormap', u'plasma'),
-    ColormapScheme.RainbowBlendedWhite:    QCoreApplication.translate('Colormap', u'Rainbow Blended White'),
+    ColormapScheme.Inferno: QCoreApplication.translate('Colormap', u'Inferno'),
+    ColormapScheme.Jet:     QCoreApplication.translate('Colormap', u'Jet'),
+    ColormapScheme.Plasma:  QCoreApplication.translate('Colormap', u'Plasma'),
+    ColormapScheme.RainbowBlendedWhite: QCoreApplication.translate('Colormap', u'Rainbow Blended White'),
     ColormapScheme.Reds:    QCoreApplication.translate('Colormap', u'Reds'),
-    ColormapScheme.Turbo:   QCoreApplication.translate('Colormap', u'turbo'),
-    ColormapScheme.Viridis: QCoreApplication.translate('Colormap', u'viridis'),
+    ColormapScheme.Turbo:   QCoreApplication.translate('Colormap', u'Turbo'),
+    ColormapScheme.Viridis: QCoreApplication.translate('Colormap', u'Viridis'),
 }
 
 
-def getColormapSchemeImage(scheme: ColormapScheme, width: int, height: int) -> QImage:
-    gradient = np.linspace(0, 1, 256)
-    gradient = np.vstack((gradient, gradient))
+vtkMaps = {}
 
-    fig, ax = plt.subplots(figsize=(width/100, height/100))  # Default DPI = 100
-    ax.imshow(gradient, aspect='auto', cmap = scheme.value)
-    ax.set_axis_off()
 
-    plt.tight_layout(pad=0)
+def getColorTable(scheme: ColormapScheme, numberOfValues: int):
 
-    buffer = io.BytesIO()
-    fig.savefig(buffer, format='png')
-    buffer.seek(0)
+    if scheme.value not in vtkMaps:
+            raise AssertionError
 
-    image_bytes = buffer.read()
-    buffer.close()
+    ctf = vtkColorTransferFunction()
+    ctf.HSVWrapOff()
 
-    image = QImage.fromData(image_bytes, 'PNG')
+    vtkSchemeInfo = vtkMaps[scheme.value]
+    if 'ColorSpace' not in vtkSchemeInfo:
+         raise AssertionError
 
-    plt.close(fig)
+    if vtkSchemeInfo['ColorSpace'] == 'RGB':
+        ctf.SetColorSpaceToRGB()
+    elif vtkSchemeInfo['ColorSpace'] == 'HSV':
+        ctf.SetColorSpaceToHSV()
+    elif vtkSchemeInfo['ColorSpace'] == 'Diverging':
+        ctf.SetColorSpaceToDiverging()
+    elif vtkSchemeInfo['ColorSpace'] == 'Lab':
+        ctf.SetColorSpaceToLab()
+    else:
+        raise AssertionError
 
-    return image
+    rgbPoints = vtkSchemeInfo['RGBPoints']
+
+    for i in range(0, len(rgbPoints), 4):
+        ctf.AddRGBPoint(rgbPoints[i], rgbPoints[i+1], rgbPoints[i+2], rgbPoints[i+3])
+
+    table = [0.0] * numberOfValues * 3
+    ctf.GetTable(0, 1, numberOfValues, table)
+
+    return table
+
+
+class ColorbarWidget(QWidget):
+    NUMBER_OF_VALUES = 256
+    def __init__(self, scheme: ColormapScheme, width: int, height: int, parent=None):
+        super().__init__(parent)
+        self._scheme = scheme
+        self._width = width
+        self._height = height
+        self._colorTable = getColorTable(scheme, self.NUMBER_OF_VALUES)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        rect = self.rect()
+        gradient = QLinearGradient(rect.topLeft(), rect.topRight())
+        for i in range(self.NUMBER_OF_VALUES):
+            gradient.setColorAt(i / (self.NUMBER_OF_VALUES-1), QColor.fromRgbF(self._colorTable[i*3], self._colorTable[i*3+1], self._colorTable[i*3+2]))
+
+        painter.fillRect(rect, gradient)
+
+        painter.end()
+
+    def sizeHint(self):
+        return self.minimumSizeHint()
+
+    def minimumSizeHint(self):
+        return QSize(self._width, self._height)
+
 
 def initializeBaramPresetColorSchemes():
     path = resource.file('ColorMaps.json')
     with open(path, "r") as file:
         maps = json.load(file)
 
-    vtkMaps = {}
     for cmap in maps:
          vtkMaps[cmap['Name']] = cmap
-
-    for scheme in ColormapScheme:
-        if scheme.value in mpl.colormaps:
-             continue
-
-        # Only the colormaps from matplotlib and VTK are supported for now
-        if scheme.value not in vtkMaps:
-             raise AssertionError
-
-        vtkScheme = vtkMaps[scheme.value]
-        if vtkScheme['ColorSpace'] == 'HSV':
-            newcmap = createColormapInHsv(scheme.value, vtkScheme['RGBPoints'])
-        elif vtkScheme['ColorSpace'] in ['RGB', 'Diverging']:
-            newcmap = createColormapInRgb(scheme.value, vtkScheme['RGBPoints'])
-        else:
-            raise AssertionError
-
-        mpl.colormaps.register(newcmap)
-
-
-def createColormapInRgb(name: str, rgbPoints: list) -> ListedColormap:
-    if len(rgbPoints) % 4 != 0:
-            raise AssertionError
-
-    N = 256
-    rgbArray = np.array(rgbPoints)
-
-    # Process HSV Colormap
-    xp = rgbArray[0::4]
-
-    rp = rgbArray[1::4]
-    gp = rgbArray[2::4]
-    bp = rgbArray[3::4]
-
-    x = np.linspace(0, 1, N)
-
-    r = np.interp(x, xp, rp)
-    g = np.interp(x, xp, gp)
-    b = np.interp(x, xp, bp)
-
-    colors = np.ones((N, 4))
-    colors[:, 0] = r
-    colors[:, 1] = g
-    colors[:, 2] = b
-
-    return ListedColormap(colors, name=name)
-
-
-def createColormapInHsv(name: str, rgbPoints: list) -> ListedColormap:
-    if len(rgbPoints) % 4 != 0:
-            raise AssertionError
-
-    N = 256
-    rgbArray = np.array(rgbPoints)
-
-    # Process HSV Colormap
-    xp = rgbArray[0::4]
-
-    r = rgbArray[1::4]
-    g = rgbArray[2::4]
-    b = rgbArray[3::4]
-    # rgb = np.dstack((r, g, b))
-    rgb = np.stack((r, g, b), axis=-1)
-
-    hsv = np.array([rgb_to_hsv(e[0], e[1], e[2]) for e in rgb])
-    hp = hsv[:, 0]
-    sp = hsv[:, 1]
-    vp = hsv[:, 2]
-
-    x = np.linspace(0, 1, N)
-
-    h = np.interp(x, xp, hp)
-    s = np.interp(x, xp, sp)
-    v = np.interp(x, xp, vp)
-
-    hsv = np.stack((h, s, v), axis=-1)
-    rgb = np.array([hsv_to_rgb(e[0], e[1], e[2]) for e in hsv])
-
-    colors = np.ones((N, 4))
-    colors[:, 0] = rgb[:, 0]
-    colors[:, 1] = rgb[:, 1]
-    colors[:, 2] = rgb[:, 2]
-
-    return ListedColormap(colors, name=name)
-
-
-if __name__ == '__main__':
-    initializeBaramPresetColorSchemes()
