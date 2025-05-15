@@ -88,6 +88,8 @@ class DisplayControl(QTreeWidgetItem):
                                                    displayItem.color.blueF())
         self._scaffoldActor.GetProperty().SetEdgeColor(vtkNamedColors().GetColor3d('Gray'))
         self._scaffoldActor.GetProperty().SetLineWidth(1.0)
+        if displayItem.frontFaceCulling:
+            self._scaffoldActor.GetProperty().FrontfaceCullingOn()
 
         self._vectorMask: vtkMaskPoints = None
         self._vectorArrow: vtkArrowSource = None
@@ -186,6 +188,10 @@ class DisplayControl(QTreeWidgetItem):
             raise AssertionError
 
     @property
+    def frontFaceCulling(self) -> bool:
+        return self._displayItem.frontFaceCulling
+
+    @property
     def vectorsOn(self) -> bool:
         return self._displayItem.vectorsOn
 
@@ -239,6 +245,16 @@ class DisplayControl(QTreeWidgetItem):
             self._scaffoldActor.GetProperty().SetRepresentationToSurface()
         else:
             self._scaffoldActor.GetProperty().SetRepresentationToWireframe()
+
+    async def cullFrontFace(self):
+        self._displayItem.frontFaceCulling = True
+        self._scaffoldActor.GetProperty().FrontfaceCullingOn()
+        await self._displayItem.markUpdated()
+
+    async def revealFrontFace(self):
+        self._displayItem.frontFaceCulling = False
+        self._scaffoldActor.GetProperty().FrontfaceCullingOff()
+        await self._displayItem.markUpdated()
 
     async def setOpacity(self, opacity):
         self._displayItem.opacity = opacity

@@ -270,6 +270,9 @@ class VisualReportView(RenderingView):
         self._surfaceDisplayAction.setChecked(all([control.displayMode == DisplayMode.SURFACE for control in controls]))
         self._surfaceEdgeDisplayAction.setChecked(all([control.displayMode == DisplayMode.SURFACE_EDGE for control in controls]))
 
+        self._cullFrontFaceAction.setVisible(not all([control.frontFaceCulling for control in controls]))
+        self._revealFrontFaceAction.setVisible(not all([not control.frontFaceCulling for control in controls]))
+
         self._showVectorsAction.setVisible(not all([control.vectorsOn for control in controls]))
         self._hideVectorsAction.setVisible(not all([not control.vectorsOn for control in controls]))
 
@@ -325,6 +328,20 @@ class VisualReportView(RenderingView):
     async def _displayWireSurfaceWithEdges(self):
         for control in self._selectedControls:
             await control.setDisplayMode(DisplayMode.SURFACE_EDGE)
+
+        self._view.refresh()
+
+    @qasync.asyncSlot()
+    async def _cullFrontFace(self):
+        for control in self._selectedControls:
+            await control.cullFrontFace()
+
+        self._view.refresh()
+
+    @qasync.asyncSlot()
+    async def _revealFrontFace(self):
+        for control in self._selectedControls:
+            await control.revealFrontFace()
 
         self._view.refresh()
 
@@ -466,7 +483,6 @@ class VisualReportView(RenderingView):
         self._displayItemDialog = DisplayItemDialog(self)
 
         self._showAction: QAction = menu.addAction(self.tr('Show'), self._showActors)
-
         self._hideAction: QAction = menu.addAction(self.tr('Hide'), self._hideActors)
 
         self._opacityAction: QAction = menu.addAction(self.tr('Opacity'), self._openOpacityDialog)
@@ -491,6 +507,9 @@ class VisualReportView(RenderingView):
 
         self._surfaceEdgeDisplayAction: QAction = self._displayModeMenu.addAction(self.tr('Surface with Edges'), self._displayWireSurfaceWithEdges)
         self._surfaceEdgeDisplayAction.setCheckable(True)
+
+        self._cullFrontFaceAction: QAction = menu.addAction(self.tr('Cull Front-face'), self._cullFrontFace)
+        self._revealFrontFaceAction: QAction = menu.addAction(self.tr('Reveal Front-face'), self._revealFrontFace)
 
         menu.addSeparator()
 

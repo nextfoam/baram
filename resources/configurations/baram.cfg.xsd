@@ -2700,12 +2700,13 @@
                                                         <xs:complexType>
                                                             <xs:sequence>
                                                                 <xs:element name="scaffoldUuid" type="uuidType"/>  <!-- For other type scaffolds -->
-                                                                <xs:element name="visibility" type="xs:boolean" default="false"/>
+                                                                <xs:element name="visibility" type="xs:boolean" default="true"/>
                                                                 <xs:element name="opacity" type="ratio" default="1"/>
                                                                 <xs:element name="solidColor" type="xs:boolean" default="false"/>
                                                                 <xs:element name="color" type="xs:string" default="#FFFFFF"/>  <!-- Can be #RRRGGGBBB in the future -->
                                                                 <xs:element name="edges" type="xs:boolean" default="false"/>
                                                                 <xs:element name="faces" type="xs:boolean" default="true"/>
+                                                                <xs:element name="frontFaceCulling" type="xs:boolean" default="false"/>
                                                                 <xs:element name="vectorsOn" type="xs:boolean" default="false"/>
                                                                 <xs:element name="streamlinesOn" type="xs:boolean" default="false"/>
                                                                 <xs:element name="maxNumberOfSamplePoints" type="xs:positiveInteger" default="100"/>

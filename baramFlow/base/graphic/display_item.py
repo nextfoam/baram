@@ -32,6 +32,7 @@ class DisplayItem:
     color: QColor = dataClassField(default_factory=lambda: QColor.fromString('#FFFFFF'))
     edges: bool = False
     faces: bool = True
+    frontFaceCulling: bool = False
     vectorsOn: bool = False
     streamlinesOn: bool = False
     maxNumberOfSamplePoints: int = 100
@@ -50,6 +51,7 @@ class DisplayItem:
         color = QColor.fromString(e.find('color', namespaces=nsmap).text)
         edges = (e.find('edges', namespaces=nsmap).text == 'true')
         faces = (e.find('faces', namespaces=nsmap).text == 'true')
+        frontFaceCulling = (e.find('frontFaceCulling', namespaces=nsmap).text == 'true')
         vectorsOn = (e.find('vectorsOn', namespaces=nsmap).text == 'true')
         streamlinesOn = (e.find('streamlinesOn', namespaces=nsmap).text == 'true')
         maxNumberOfSamplePoints = int(e.find('maxNumberOfSamplePoints', namespaces=nsmap).text)
@@ -63,6 +65,7 @@ class DisplayItem:
                            color=color,
                            edges=edges,
                            faces=faces,
+                           frontFaceCulling=frontFaceCulling,
                            vectorsOn=vectorsOn,
                            streamlinesOn=streamlinesOn,
                            maxNumberOfSamplePoints=maxNumberOfSamplePoints,
@@ -78,6 +81,7 @@ class DisplayItem:
                   f'    <color>{self.color.name()}</color>'
                   f'    <edges>{"true" if self.edges else "false"}</edges>'
                   f'    <faces>{"true" if self.faces else "false"}</faces>'
+                  f'    <frontFaceCulling>{"true" if self.frontFaceCulling else "false"}</frontFaceCulling>'
                   f'    <vectorsOn>{"true" if self.vectorsOn else "false"}</vectorsOn>'
                   f'    <streamlinesOn>{"true" if self.streamlinesOn else "false"}</streamlinesOn>'
                   f'    <maxNumberOfSamplePoints>{str(self.maxNumberOfSamplePoints)}</maxNumberOfSamplePoints>'
