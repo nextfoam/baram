@@ -924,7 +924,6 @@ _fTable = [
     _version_7,
     _version_8,
     _version_9,
-    _version_10,
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))
