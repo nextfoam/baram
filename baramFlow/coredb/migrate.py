@@ -826,7 +826,7 @@ def _version_8(root: etree.Element):
 def _version_9(root: etree.Element):
     logger.debug('  Upgrading to v10')
 
-    root.set('version', '10')
+    # root.set('version', '10')
 
     for p in root.findall(f'.//boundaryCondition/wall/velocity', namespaces=_nsmap):
         if p.find('wallMotion', namespaces=_nsmap) is None:
@@ -903,12 +903,6 @@ def _version_9(root: etree.Element):
         index = root.index(root.find('scaffolds', namespaces=_nsmap))
         p = etree.Element(f'{{{_ns}}}graphics')
         root.insert(index + 1, p)
-
-
-def _version_10(root: etree.Element):
-    logger.debug('  Upgrading to v11')
-
-    # root.set('version', '11')
 
     if (p := root.find('numericalConditions', namespaces=_nsmap)) is not None:
         if p.find('numberOfNonOrthogonalCorrectors', namespaces=_nsmap) is None:
