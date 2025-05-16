@@ -71,8 +71,9 @@ def getColorTable(scheme: ColormapScheme, numberOfValues: int):
     for i in range(0, len(rgbPoints), 4):
         ctf.AddRGBPoint(rgbPoints[i], rgbPoints[i+1], rgbPoints[i+2], rgbPoints[i+3])
 
+    rMin, rMax = ctf.GetRange()
     table = [0.0] * numberOfValues * 3
-    ctf.GetTable(0, 1, numberOfValues, table)
+    ctf.GetTable(rMin, rMax, numberOfValues, table)
 
     return table
 
