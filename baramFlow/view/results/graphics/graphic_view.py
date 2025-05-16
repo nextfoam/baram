@@ -100,8 +100,8 @@ class VisualReportView(RenderingView):
 
         graphic.rangeMin, graphic.rangeMax = graphic.getValueRange(graphic.useNodeValues, graphic.relevantScaffoldsOnly)
 
-        for item in self._graphic.displayItems.values():
-
+        for scaffoldUuid in self._graphic.getScaffolds():
+            item = self._graphic.getDisplayItem(scaffoldUuid)
             displayUuid = self._createDisplayControl(item)
 
             self._scaffold2displayControl[item.scaffoldUuid] = displayUuid
@@ -460,16 +460,16 @@ class VisualReportView(RenderingView):
 
             break
 
-    async def _displayItemAdded(self, uuid: UUID):
-        item = self._graphic.displayItems[uuid]
+    async def _displayItemAdded(self, scaffoldUuid: UUID):
+        item = self._graphic.getDisplayItem(scaffoldUuid)
         controlUuid = self._createDisplayControl(item)
 
         self._scaffold2displayControl[item.scaffoldUuid] = controlUuid
 
         self._view.refresh()
 
-    async def _displayItemRemoving(self, uuid: UUID):
-        item = self._graphic.displayItems[uuid]
+    async def _displayItemRemoving(self, scaffoldUuid: UUID):
+        item = self._graphic.getDisplayItem(scaffoldUuid)
         controlUuid = self._scaffold2displayControl[item.scaffoldUuid]
         self.removeDisplayControl(controlUuid)
 

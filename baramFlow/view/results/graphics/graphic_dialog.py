@@ -91,7 +91,7 @@ class GraphicDialog(QDialog):
 
         self._selectedScaffolds: list[UUID] = []
 
-        self._setScaffolds(list(self._graphic.displayItems.keys()))
+        self._setScaffolds(self._graphic.getScaffolds())
 
         self._connectSignalsSlots()
 
@@ -163,16 +163,14 @@ class GraphicDialog(QDialog):
         self._graphic.streamlineType = self._ui.lineStyle.currentData()
         self._graphic.lineWidth = self._ui.lineWidth.text()
 
-        current = set(self._graphic.displayItems.keys())
+        current = set(self._graphic.getScaffolds())
         selected = set(self._selectedScaffolds)
 
         removedScaffolds = current - selected
         addedScaffolds = selected - current
 
-        for uuid in removedScaffolds:
-            await self._graphic.notifyDisplayItemRemoving(uuid)
-            del self._graphic.displayItems[uuid]
-            await self._graphic.notifyDisplayItemRemoved(uuid)
+        for scaffoldUuid in removedScaffolds:
+            await self._graphic.removeDisplayItem(scaffoldUuid)
 
         progressDialog.setLabelText(self.tr('Updating Graphics...'))
 
@@ -182,12 +180,11 @@ class GraphicDialog(QDialog):
 
         await self._graphic.updatePolyMesh()
 
-        for uuid in addedScaffolds:
-            scaffold = ScaffoldsDB().getScaffold(uuid)
+        for scaffoldUuid in addedScaffolds:
+            scaffold = ScaffoldsDB().getScaffold(scaffoldUuid)
             dataSet = await scaffold.getDataSet(self._graphic.polyMesh)
-            item = DisplayItem(scaffoldUuid=uuid, dataSet=dataSet)
-            self._graphic.displayItems[uuid] = item
-            await self._graphic.notifyDisplayItemAdded(uuid)
+            item = DisplayItem(scaffoldUuid=scaffoldUuid, dataSet=dataSet)
+            await self._graphic.addDisplayItem(item)
 
         self._graphic.rangeMin, self._graphic.rangeMax = self._graphic.getValueRange(self._graphic.useNodeValues, self._graphic.relevantScaffoldsOnly)
 

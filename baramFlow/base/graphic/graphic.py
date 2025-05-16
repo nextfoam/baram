@@ -250,17 +250,6 @@ class Graphic:
     async def _displayItemUpdated(self, scaffold: UUID):
         self.saveToCoreDB()
 
-    async def notifyDisplayItemAdded(self, uuid: UUID):
-        await self.displayItemAdded.emit(uuid)
-        self.saveToCoreDB()
-
-    async def notifyDisplayItemRemoving(self, uuid: UUID):
-        await self.displayItemRemoving.emit(uuid)
-
-    async def notifyDisplayItemRemoved(self, uuid: UUID):
-        await self.displayItemRemoved.emit(uuid)
-        self.saveToCoreDB()
-
     async def notifyReportUpdated(self):
         self.saveToCoreDB()
         await self.instanceUpdated.emit(self.uuid)
@@ -313,3 +302,24 @@ class Graphic:
             return f'{self.field.text} ({VECTOR_COMPONENT_TEXTS[self.fieldComponent]})'
         else:
             return self.field.text
+
+    def hasScaffold(self, scaffoldUuid: UUID) -> bool:
+        return scaffoldUuid in self.displayItems
+
+    def getScaffolds(self) -> list[UUID]:
+        return list(self.displayItems.keys())
+
+    def getDisplayItem(self, scaffoldUuid: UUID) -> DisplayItem:
+        return self.displayItems[scaffoldUuid]
+
+    async def addDisplayItem(self, item: DisplayItem):
+        self.displayItems[item.scaffoldUuid] = item
+        item.instanceUpdated.asyncConnect(self._displayItemUpdated)
+        await self.displayItemAdded.emit(item.scaffoldUuid)
+        self.saveToCoreDB()
+
+    async def removeDisplayItem(self, scaffoldUuid: UUID):
+        await self.displayItemRemoving.emit(scaffoldUuid)
+        del self.displayItems[scaffoldUuid]
+        await self.displayItemRemoved.emit(scaffoldUuid)
+        self.saveToCoreDB()
