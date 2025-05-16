@@ -40,13 +40,14 @@ VTK_ORIENT_VERTICAL   = 1
 
 
 class VisualReportView(RenderingView):
-    def __init__(self, parent: QWidget = None, graphic: Graphic = None):
+    def __init__(self, parent: QWidget, graphic: Graphic):
         super().__init__(parent)
 
         # To Remove RenderingMode tool menu, which is not used in Visual Report
         layout = self._ui.renderingMode.parentWidget().layout()
         layout.removeWidget(self._ui.renderingMode)
 
+        # Remove the combobox for "Rendering Mode"
         self._ui.renderingMode.setParent(None)
         self._ui.renderingMode = None
 
