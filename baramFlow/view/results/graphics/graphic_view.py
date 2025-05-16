@@ -48,8 +48,8 @@ class VisualReportView(RenderingView):
         layout.removeWidget(self._ui.renderingMode)
 
         # Remove the combobox for "Rendering Mode"
-        self._ui.renderingMode.setParent(None)
-        self._ui.renderingMode = None
+        self._ui.renderingMode.setParent(None)  # type: ignore
+        self._ui.renderingMode = None           # type: ignore
 
         self._dialog = None
 
