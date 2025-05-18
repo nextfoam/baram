@@ -73,9 +73,9 @@ class CaseWizard(QWizard):
             raise AssertionError('Unknown Case Wizard Page')
 
     def accept(self):
-        generalXPath = './/general'
-        gravityXPath = './/general/operatingConditions/gravity'
-        modelsXPath = './/models'
+        generalXPath = '/general'
+        gravityXPath = '/general/operatingConditions/gravity'
+        modelsXPath = '/models'
 
         if self.field('solverTypePressureBased'):
             self._db.setValue(f'{generalXPath}/solverType', 'pressureBased')

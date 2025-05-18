@@ -25,19 +25,19 @@ class EditHostfileDialog(QDialog):
     def accept(self):
         text = self._ui.textEdit.toPlainText()
         # data = text.encode('utf-8')
-        # db.setValue('.//parallel/hostfile', base64.b64encode(data))
+        # db.setValue('/runCalculation/parallel/hostfile', base64.b64encode(data))
         db = coredb.CoreDB()
-        db.setValue('.//parallel/hostfile', text)
+        db.setValue('/runCalculation/parallel/hostfile', text)
         super().accept()
 
     def _connectSignalsSlots(self):
         self._ui.importButton.clicked.connect(self._selectHostfile)
 
     def _load(self):
-        # data = base64.b64decode(db.getValue('.//parallel/hostfile'))
+        # data = base64.b64decode(db.getValue('/runCalculation/parallel/hostfile'))
         # self._ui.textEdit.setPlainText(data.decode('utf-8'))
         db = coredb.CoreDB()
-        self._ui.textEdit.setPlainText(db.getValue('.//parallel/hostfile'))
+        self._ui.textEdit.setPlainText(db.getValue('/runCalculation/parallel/hostfile'))
 
     def _selectHostfile(self):
         self._dialog = QFileDialog(self, self.tr('Select hostfile'))

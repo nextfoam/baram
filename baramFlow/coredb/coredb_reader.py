@@ -50,7 +50,7 @@ class Region:
 
         if self.isFluid():
             p = (float(db.getValue(f'{self._initialValuesXpath}/pressure'))
-                 + float(db.getValue('.//operatingConditions/pressure')))
+                 + float(db.getValue('/general/operatingConditions/pressure')))
             v = float(db.getValue(f'{self._initialValuesXpath}/scaleOfVelocity'))
             i = (float(db.getValue(f'{self._initialValuesXpath}/turbulentIntensity')) / 100.0)
             b = float(db.getValue(f'{self._initialValuesXpath}/turbulentViscosity'))

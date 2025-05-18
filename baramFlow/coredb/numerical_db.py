@@ -37,4 +37,4 @@ class FluxType(Enum):
 
 
 class NumericalDB:
-    NUMERICAL_CONDITIONS_XPATH = './/numericalConditions'
+    NUMERICAL_CONDITIONS_XPATH = '/numericalConditions'

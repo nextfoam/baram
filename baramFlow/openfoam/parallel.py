@@ -10,7 +10,7 @@ from baramFlow.coredb.project import Project
 def getNP() -> int:
     numCoresStr = Project.instance().np
     if numCoresStr is None:  # ToDo: For compatibility. Remove this code block after 20240601
-        numCoresStr = coredb.CoreDB().getValue('.//parallel/numberOfCores')
+        numCoresStr = coredb.CoreDB().getValue('/runCalculation/parallel/numberOfCores')
 
     return int(numCoresStr)
 
@@ -18,7 +18,7 @@ def getNP() -> int:
 def getParallelType() -> ParallelType:
     ptypeStr = Project.instance().pType
     if ptypeStr is None:  # ToDo: For compatibility. Remove this code block after 20240601
-        if coredb.CoreDB().getValue('.//parallel/localhost') == 'true':
+        if coredb.CoreDB().getValue('/runCalculation/parallel/localhost') == 'true':
             ptypeStr = ParallelType.LOCAL_MACHINE.value
         else:
             ptypeStr = ParallelType.CLUSTER.value

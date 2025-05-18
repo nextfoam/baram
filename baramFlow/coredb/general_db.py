@@ -12,8 +12,8 @@ class SolverType(Enum):
 
 
 class GeneralDB:
-    GENERAL_XPATH = './/general'
-    OPERATING_CONDITIONS_XPATH = './/operatingConditions'
+    GENERAL_XPATH = '/general'
+    OPERATING_CONDITIONS_XPATH = '/general/operatingConditions'
 
     @classmethod
     def isTimeTransient(cls):

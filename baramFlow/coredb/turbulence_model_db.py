@@ -82,7 +82,7 @@ class TurbulenceFields(Enum):
 
 
 class TurbulenceModelsDB:
-    TURBULENCE_MODELS_XPATH = './/turbulenceModels'
+    TURBULENCE_MODELS_XPATH = '/models/turbulenceModels'
 
     _RANSToRASModelMap = {
         RANSModel.SPALART_ALLMARAS: TurbulenceModel.SPALART_ALLMARAS,
