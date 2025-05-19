@@ -14,9 +14,6 @@ class ExtrudeModel(Enum):
 
 @dataclass
 class ExtrudeOptions:
-    p1: str
-    p2: str
-
     model: ExtrudeModel
 
     thickness: str = None
@@ -30,13 +27,13 @@ class ExtrudeMeshDict(DictionaryFile):
     def __init__(self, fileSystem):
         super().__init__(fileSystem.caseRoot(), self.systemLocation(), 'extrudeMeshDict')
 
-    def build(self, options):
+    def build(self, p1, p2, options):
         self._data = {
             'constructFrom': 'patch',
             'sourceCase': '"."',
             # 'sourceCase': str(app.fileSystem.caseRoot()),
-            'sourcePatches': [options.p1],
-            'exposedPatchName': options.p2,
+            'sourcePatches': [p1],
+            'exposedPatchName': p2,
             'extrudeModel': options.model.value,
             'flipNormals': 'false',
             'mergeFaces': 'false',

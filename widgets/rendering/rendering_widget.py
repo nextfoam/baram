@@ -230,6 +230,7 @@ class RenderingWidget(QWidget):
 
     def clear(self):
         self._renderer.RemoveAllViewProps()
+        self._showLogo()
 
     def _turnCamera(self, orientation: tuple[float, float, float], up: tuple[float, float, float]):
         camera = self._renderer.GetActiveCamera()
