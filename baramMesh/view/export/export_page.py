@@ -163,13 +163,13 @@ class ExportPage(StepPage):
 
             if to2d:
                 progressDialog.setLabelText(self.tr('Extruding Mesh'))
-                
+
                 regionBoundaries, options = self._dialog.extrudeOptions()
                 if len(regions) > 1:
                     for rname, p1, p2 in regionBoundaries:
                         await baramSystem.createRegionSystemDirectory(rname)
                         ExtrudeMeshDict(baramSystem).build(p1, p2, options).write()
-                        cm = RunParallelUtility('extrudeMesh', '-region', rname, '-dict', 'system/extrudeMeshDict', 
+                        cm = RunParallelUtility('extrudeMesh', '-region', rname, '-dict', 'system/extrudeMeshDict',
                                                 cwd=baramSystem.caseRoot(), parallel=parallel)
                         cm.output.connect(console.append)
                         cm.errorOutput.connect(console.appendError)
@@ -187,14 +187,14 @@ class ExportPage(StepPage):
                     if rc != 0:
                         raise ProcessError(rc)
 
-                CollapseDict(baramSystem).create()
-                cm = RunParallelUtility('collapseEdges', '-overwrite', cwd=baramSystem.caseRoot(), parallel=parallel)
-                cm.output.connect(console.append)
-                cm.errorOutput.connect(console.appendError)
-                await cm.start()
-                rc = await cm.wait()
-                if rc != 0:
-                    raise ProcessError(rc)
+                    CollapseDict(baramSystem).create()
+                    cm = RunParallelUtility('collapseEdges', '-overwrite', cwd=baramSystem.caseRoot(), parallel=parallel)
+                    cm.output.connect(console.append)
+                    cm.errorOutput.connect(console.appendError)
+                    await cm.start()
+                    rc = await cm.wait()
+                    if rc != 0:
+                        raise ProcessError(rc)
 
             if parallel.isParallelOn():
                 redistributionTask = RedistributionTask(baramSystem)
