@@ -271,6 +271,9 @@ class _Project(QObject):
             # Save that configurations as new project.
             self._fileDB.saveCoreDB()
             self._coreDB = coredb.CoreDB()
+            
+            if route == ProjectOpenType.MESH:
+                self._settings.set(SettingKey.NP, 1)
         else:
             self._coreDB = self._fileDB.loadCoreDB()
 
