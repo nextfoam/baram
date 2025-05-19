@@ -16,9 +16,7 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
-from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.base.graphic.graphics_db import GraphicsDB
-from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.view.results.graphics.graphic_dock import GraphicDock
 from libbaram.exception import CanceledException
 from libbaram.openfoam.polymesh import removeVoidBoundaries
@@ -648,12 +646,6 @@ class MainWindow(QMainWindow):
         progressDialog.setLabelText(self.tr('Building Graphics Reports'))
 
         self._navigatorView.updateEnabled()
-
-        async with OpenFOAMReader() as reader:
-            await reader.setupReader()
-
-        ScaffoldsDB().load()
-        await GraphicsDB().load()
 
         progressDialog.close()
 
