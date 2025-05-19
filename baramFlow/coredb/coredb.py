@@ -522,7 +522,7 @@ class _CoreDB(object):
         if zone is not None:
             raise FileExistsError
 
-        idList = self._xmlTree.xpath(f'/x:regions/x:region/x:cellZones/x:cellZone/@czid', namespaces={'x': ns})
+        idList = self._xmlTree.xpath(f'/x:configuration/x:regions/x:region/x:cellZones/x:cellZone/@czid', namespaces={'x': ns})
 
         for index in range(1, self.CELL_ZONE_MAX_INDEX):
             if str(index) not in idList:
@@ -562,7 +562,7 @@ class _CoreDB(object):
         if bc is not None:
             raise FileExistsError
 
-        idList = self._xmlTree.xpath(f'/x:regions/x:region/x:boundaryConditions/x:boundaryCondition/@bcid', namespaces={'x': ns})
+        idList = self._xmlTree.xpath(f'/x:configuration/x:regions/x:region/x:boundaryConditions/x:boundaryCondition/@bcid', namespaces={'x': ns})
 
         for index in range(1, self.BOUNDARY_CONDITION_MAX_INDEX):
             if str(index) not in idList:
@@ -652,7 +652,7 @@ class _CoreDB(object):
         self._configCount += 1
 
     def getForceMonitors(self) -> list[str]:
-        names = self._xmlTree.xpath(f'/x:monitors/x:forces/x:forceMonitor/x:name/text()', namespaces={'x': ns})
+        names = self._xmlTree.xpath(f'/x:configuration/x:monitors/x:forces/x:forceMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
     def clearForceMonitors(self):
@@ -693,7 +693,7 @@ class _CoreDB(object):
         self._configCount += 1
 
     def getPointMonitors(self) -> list[str]:
-        names = self._xmlTree.xpath(f'/x:monitors/x:points/x:pointMonitor/x:name/text()', namespaces={'x': ns})
+        names = self._xmlTree.xpath(f'/x:configuration/x:monitors/x:points/x:pointMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
     def clearPointMonitors(self):
@@ -734,7 +734,7 @@ class _CoreDB(object):
         self._configCount += 1
 
     def getSurfaceMonitors(self) -> list[str]:
-        names = self._xmlTree.xpath(f'/x:monitors/x:surfaces/x:surfaceMonitor/x:name/text()', namespaces={'x': ns})
+        names = self._xmlTree.xpath(f'/x:configuration/x:monitors/x:surfaces/x:surfaceMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
     def clearSurfacesMonitors(self):
@@ -775,7 +775,7 @@ class _CoreDB(object):
         self._configCount += 1
 
     def getVolumeMonitors(self) -> list[str]:
-        names = self._xmlTree.xpath(f'/x:monitors/x:volumes/x:volumeMonitor/x:name/text()', namespaces={'x': ns})
+        names = self._xmlTree.xpath(f'/x:configuration/x:monitors/x:volumes/x:volumeMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
     def clearVolumeMonitors(self):
