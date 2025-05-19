@@ -40,15 +40,16 @@ VTK_ORIENT_VERTICAL   = 1
 
 
 class VisualReportView(RenderingView):
-    def __init__(self, parent: QWidget = None, graphic: Graphic = None):
+    def __init__(self, parent: QWidget, graphic: Graphic):
         super().__init__(parent)
 
         # To Remove RenderingMode tool menu, which is not used in Visual Report
         layout = self._ui.renderingMode.parentWidget().layout()
         layout.removeWidget(self._ui.renderingMode)
 
-        self._ui.renderingMode.setParent(None)
-        self._ui.renderingMode = None
+        # Remove the combobox for "Rendering Mode"
+        self._ui.renderingMode.setParent(None)  # type: ignore
+        self._ui.renderingMode = None           # type: ignore
 
         self._dialog = None
 
@@ -100,8 +101,8 @@ class VisualReportView(RenderingView):
 
         graphic.rangeMin, graphic.rangeMax = graphic.getValueRange(graphic.useNodeValues, graphic.relevantScaffoldsOnly)
 
-        for item in self._graphic.displayItems.values():
-
+        for scaffoldUuid in self._graphic.getScaffolds():
+            item = self._graphic.getDisplayItem(scaffoldUuid)
             displayUuid = self._createDisplayControl(item)
 
             self._scaffold2displayControl[item.scaffoldUuid] = displayUuid
@@ -460,16 +461,16 @@ class VisualReportView(RenderingView):
 
             break
 
-    async def _displayItemAdded(self, uuid: UUID):
-        item = self._graphic.displayItems[uuid]
+    async def _displayItemAdded(self, scaffoldUuid: UUID):
+        item = self._graphic.getDisplayItem(scaffoldUuid)
         controlUuid = self._createDisplayControl(item)
 
         self._scaffold2displayControl[item.scaffoldUuid] = controlUuid
 
         self._view.refresh()
 
-    async def _displayItemRemoving(self, uuid: UUID):
-        item = self._graphic.displayItems[uuid]
+    async def _displayItemRemoving(self, scaffoldUuid: UUID):
+        item = self._graphic.getDisplayItem(scaffoldUuid)
         controlUuid = self._scaffold2displayControl[item.scaffoldUuid]
         self.removeDisplayControl(controlUuid)
 

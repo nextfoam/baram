@@ -62,7 +62,7 @@ class GraphicsDB:
             c = Graphic.fromElement(e)
             reports[c.uuid] = c
 
-            if len(c.displayItems) == 0:
+            if len(c.getScaffolds()) == 0:
                 continue
 
             await c.updatePolyMesh()
@@ -71,9 +71,8 @@ class GraphicsDB:
 
     def isScaffoldUsed(self, scaffoldUuid: UUID) -> bool:
         for report in self._reports.values():
-            for item in report.displayItems.values():
-                if item.scaffoldUuid == scaffoldUuid:
-                    return True
+            if report.hasScaffold(scaffoldUuid):
+                return True
 
         return False
 

@@ -70,6 +70,12 @@ class FvSolution(DictionaryFile):
             ModelsDB.isSpeciesModelOn()
             and self._db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/species'))
 
+        scalarFields = [name for _, name in self._db.getUserDefinedScalars()]
+        if len(scalarFields) > 0:
+            scalarFieldNames = '|' + '|'.join(scalarFields)
+        else:
+            scalarFieldNames = ''
+
         self._data = {
             # For multiphase model
             'solvers': {
@@ -124,7 +130,7 @@ class FvSolution(DictionaryFile):
                     'maxIter': '5',
                 }),
                 'rhoFinal': rho,
-                f'"(U|k|epsilon|omega|nuTilda|scalar|Yi)"': (others := {
+                f'"(U|k|epsilon|omega|nuTilda|scalar|Yi{scalarFieldNames})"': (others := {
                     'solver': 'PBiCGStab',
                     'preconditioner': 'DILU',
                     'tolerance': '1e-16',
@@ -132,7 +138,7 @@ class FvSolution(DictionaryFile):
                     'minIter': '1',
                     'maxIter': '5',
                 }),
-                f'"(U|k|epsilon|omega|nuTilda|scalar|Yi)Final"': others,
+                f'"(U|k|epsilon|omega|nuTilda|scalar|Yi{scalarFieldNames})Final"': others,
                 'age': {  # no "ageFinal" because "age" supports only steady case
                     'solver': 'PBiCGStab',
                     'preconditioner': 'DILU',
@@ -144,7 +150,7 @@ class FvSolution(DictionaryFile):
             },
             'SIMPLE': {
                 'consistent': consistent,
-                'nNonOrthogonalCorrectors': 
+                'nNonOrthogonalCorrectors':
                     self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/numberOfNonOrthogonalCorrectors'),
                 # only for fluid
                 # 'pRefPoint': self._db.getVector(
@@ -174,7 +180,7 @@ class FvSolution(DictionaryFile):
                 'momentumPredictor': momentumPredictor,
                 # only for fluid
                 'turbOnFinalIterOnly': 'false',
-                'nNonOrthogonalCorrectors': 
+                'nNonOrthogonalCorrectors':
                     self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/numberOfNonOrthogonalCorrectors'),
                 # only for fluid
                 'nCorrectors': self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/numberOfCorrectors'),
