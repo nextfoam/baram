@@ -3,4 +3,4 @@
 
 
 class ReferenceValuesDB:
-    REFERENCE_VALUES_XPATH = './/referenceValues'
+    REFERENCE_VALUES_XPATH = '/referenceValues'

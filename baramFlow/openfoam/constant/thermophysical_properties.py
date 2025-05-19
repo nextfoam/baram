@@ -241,8 +241,8 @@ def _constructSolid(region: str):
     mix = {}
 
     db = CoreDBReader()
-    mid = db.getValue(f'.//region[name="{region}"]/material')
-    path = f'.//materials/material[@mid="{mid}"]'
+    mid = db.getValue(f'/regions/region[name="{region}"]/material')
+    path = f'/materials/material[@mid="{mid}"]'
 
     mix['specie'] = {  # This value is not used for solid. The values are fake.
         'nMoles': 1,
@@ -290,8 +290,8 @@ class ThermophysicalProperties(DictionaryFile):
 
         db = CoreDBReader()
 
-        mid = db.getValue(f'.//region[name="{self._rname}"]/material')
-        phase = db.getValue(f'.//materials/material[@mid="{mid}"]/phase')
+        mid = db.getValue(f'/regions/region[name="{self._rname}"]/material')
+        phase = db.getValue(f'/materials/material[@mid="{mid}"]/phase')
 
         if phase == 'solid':
             self._data = _constructSolid(self._rname)

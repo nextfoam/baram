@@ -7,7 +7,7 @@ from math import sqrt
 
 from PySide6.QtWidgets import QWidget, QMessageBox, QPushButton, QHBoxLayout
 from PySide6.QtWidgets import QSizePolicy
-from PySide6.QtGui import QDoubleValidator, QIcon
+from PySide6.QtGui import QIcon
 from PySide6.QtCore import Signal
 
 from libbaram.math import calucateDirectionsByRotation
@@ -91,7 +91,7 @@ class SectionRow(QWidget):
     def actor(self):
         if self._actor is None:
             db = coredb.CoreDB()
-            xpath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._name}"]'
+            xpath = f'/regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._name}"]'
 
             typeString = db.getValue(xpath + '/type')
             if typeString == 'hex':
@@ -224,7 +224,7 @@ class InitializationWidget(QWidget):
         if self._speciesWidget:
             self._speciesWidget.load(f'{self._initialValuesPath}/species')
 
-        sections: list[str] = db.getList(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section/name')
+        sections: list[str] = db.getList(f'/regions/region[name="{self._rname}"]/initialization/advanced/sections/section/name')
         for name in sections:
             if name in self._rows:
                 self._rows[name].displayOff()
@@ -291,7 +291,7 @@ class InitializationWidget(QWidget):
         if button == QMessageBox.StandardButton.No:
             return
 
-        sectionPath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._currentRow.name}"]'
+        sectionPath = f'/regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._currentRow.name}"]'
 
         writer = CoreDBWriter()
         writer.removeElement(sectionPath)

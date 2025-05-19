@@ -38,7 +38,7 @@ class TemporalProfileType(Enum):
 
 
 class CellZoneDB:
-    CELL_ZONE_CONDITIONS_XPATH = './/cellZones'
+    CELL_ZONE_CONDITIONS_XPATH = '/regions/region/cellZones'
 
     _cellzones = None
 

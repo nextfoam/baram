@@ -29,14 +29,14 @@ class SetFieldsDict(DictionaryFile):
         db = CoreDBReader()
 
         rname = self._region.rname
-        sectionNames: list[str] = db.getList(f'.//regions/region[name="{rname}"]/initialization/advanced/sections/section/name')
+        sectionNames: list[str] = db.getList(f'/regions/region[name="{rname}"]/initialization/advanced/sections/section/name')
         if len(sectionNames) == 0:
             return self
 
-        ivPath = f'.//regions/region[name="{rname}"]/initialization/initialValues'
+        ivPath = f'/regions/region[name="{rname}"]/initialization/initialValues'
 
         for name in sectionNames:
-            sPath = f'.//regions/region[name="{rname}"]/initialization/advanced/sections/section[name="{name}"]'
+            sPath = f'/regions/region[name="{rname}"]/initialization/advanced/sections/section[name="{name}"]'
 
             fieldValues = []
 

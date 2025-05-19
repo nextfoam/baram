@@ -189,8 +189,8 @@ class FvSolution(DictionaryFile):
                     self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/maxIterationsPerTimeStep'),
                 'nAlphaSpreadIter': 0,
                 'nAlphaSweepIter': 0,
-                'maxCo': self._db.getValue('.//runConditions/maxCourantNumber'),
-                'maxAlphaCo': self._db.getValue('.//runConditions/VoFMaxCourantNumber'),
+                'maxCo': self._db.getValue('/runCalculation/runConditions/maxCourantNumber'),
+                'maxAlphaCo': self._db.getValue('/runCalculation/runConditions/VoFMaxCourantNumber'),
                 'nonOrthogonalityThreshold': '80',
                 'skewnessThreshold': '0.95',
                 # only for fluid

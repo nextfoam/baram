@@ -154,8 +154,8 @@ DirectionSpecificationMethodTexts = {
 
 
 class BoundaryDB:
-    BOUNDARY_CONDITIONS_XPATH = './/boundaryConditions'
-    ABL_INLET_CONDITIONS_XPATH = './/atmosphericBoundaryLayer'
+    BOUNDARY_CONDITIONS_XPATH = '/regions/region/boundaryConditions'
+    ABL_INLET_CONDITIONS_XPATH = '/general/atmosphericBoundaryLayer'
 
     _coupledBoundaryType = {
         BoundaryType.THERMO_COUPLED_WALL.value,
@@ -194,7 +194,7 @@ class BoundaryDB:
     @classmethod
     def getBoundaryTypeByName(cls, rname, bcname):
         return coredb.CoreDB().getValue(
-            f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bcname}"]/physicalType')
+            f'/regions/region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bcname}"]/physicalType')
 
     @classmethod
     def needsCoupledBoundary(cls, bctype):
@@ -260,7 +260,7 @@ class BoundaryDB:
         return items
 
     @classmethod
-    def getBoundaryConditionsByType(cls, physicalType: BoundaryType, rname=None) -> list[(int, str, str)]:
+    def getBoundaryConditionsByType(cls, physicalType: BoundaryType, rname=None) -> list[tuple[int, str, str]]:
         """Returns list of boundary conditions in the region
 
         Returns list of boundary conditions for the type

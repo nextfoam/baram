@@ -38,13 +38,13 @@ def _version_1(root: etree.Element):
     # print(etree.tostring(root, xml_declaration=True, encoding='UTF-8'))
     root.set('version', '2')
 
-    for p in root.findall(f'.//material/density', namespaces=_nsmap):
+    for p in root.findall(f'materials/material/density', namespaces=_nsmap):
         if p.find('polynomial', namespaces=_nsmap) is None:
             logger.debug(f'    Adding polynomial to {p}')
             # Add "polynomial" at the end of child elements
             etree.SubElement(p, f'{{{_ns}}}polynomial').text = ''
 
-    for p in root.findall(f'.//cellZone/actuatorDisk', namespaces=_nsmap):
+    for p in root.findall(f'regions/region/cellZones/cellZone/actuatorDisk', namespaces=_nsmap):
         if p.find('upstreamPoint', namespaces=_nsmap) is None:
             e = etree.fromstring('''
                 <upstreamPoint xmlns="http://www.baramcfd.org/baram">
@@ -55,13 +55,13 @@ def _version_1(root: etree.Element):
             ''')
             p.insert(4, e)
 
-    for p in root.findall(f'.//monitors/forces/forceMonitor', namespaces=_nsmap):
+    for p in root.findall(f'monitors/forces/forceMonitor', namespaces=_nsmap):
         _addShowChartAndWriteIntervalV1(p)
 
-    for p in root.findall(f'.//monitors/points/pointMonitor', namespaces=_nsmap):
+    for p in root.findall(f'monitors/points/pointMonitor', namespaces=_nsmap):
         _addShowChartAndWriteIntervalV1(p)
 
-    for p in root.findall(f'.//monitors/surfaces/surfaceMonitor', namespaces=_nsmap):
+    for p in root.findall(f'monitors/surfaces/surfaceMonitor', namespaces=_nsmap):
         _addShowChartAndWriteIntervalV1(p)
 
         e = p.find('reportType', namespaces=_nsmap)
@@ -69,7 +69,7 @@ def _version_1(root: etree.Element):
             logger.debug(f'    Changing flowRate to massFlowRate in {p}')
             e.text = 'massFlowRate'
 
-    for p in root.findall(f'.//monitor/volumes/volumeMonitor', namespaces=_nsmap):
+    for p in root.findall(f'monitor/volumes/volumeMonitor', namespaces=_nsmap):
         _addShowChartAndWriteIntervalV1(p)
 
     # print(etree.tostring(root, xml_declaration=True, encoding='UTF-8'))
@@ -82,7 +82,7 @@ def _version_2(root: etree.Element):
 
     root.set('version', '3')
 
-    for p in root.findall(f'.//regions/region', namespaces=_nsmap):
+    for p in root.findall(f'regions/region', namespaces=_nsmap):
         if p.find('secondaryMaterials', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "secondaryMaterials" to {p}')
             e = etree.Element(f'{{{_ns}}}secondaryMaterials')
@@ -96,18 +96,18 @@ def _version_2(root: etree.Element):
             ''')
             p.insert(3, e)
 
-    for p in root.findall(f'.//cellZone/sourceTerms', namespaces=_nsmap):
+    for p in root.findall(f'regions/region/cellZones/cellZone/sourceTerms', namespaces=_nsmap):
         if p.find('materials', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "materials" to {p}')
             e = etree.Element(f'{{{_ns}}}materials')
             p.insert(1, e)
 
-    for p in root.findall(f'.//boundaryConditions/boundaryCondition', namespaces=_nsmap):
+    for p in root.findall(f'regions/region/boundaryConditions/boundaryCondition', namespaces=_nsmap):
         if p.find('volumeFractions', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "volumeFractions" to {p}')
             etree.SubElement(p, f'{{{_ns}}}volumeFractions')
 
-    for p in root.findall(f'.//boundaryCondition/wall', namespaces=_nsmap):
+    for p in root.findall(f'regions/region/boundaryConditions/boundaryCondition/wall', namespaces=_nsmap):
         if p.find('wallAdhesions', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "wallAdhesions" to {p}')
             e = etree.fromstring('''
@@ -118,13 +118,13 @@ def _version_2(root: etree.Element):
             ''')
             p.append(e)
 
-    for p in root.findall(f'.//numericalConditions/underRelaxationFactors', namespaces=_nsmap):
+    for p in root.findall(f'numericalConditions/underRelaxationFactors', namespaces=_nsmap):
         if p.find('volumeFraction', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "volumeFraction" to {p}')
             etree.SubElement(p, f'{{{_ns}}}volumeFraction').text = '0.7'
             etree.SubElement(p, f'{{{_ns}}}volumeFractionFinal').text = '1'
 
-    for p in root.findall(f'.//numericalConditions', namespaces=_nsmap):
+    for p in root.findall(f'numericalConditions', namespaces=_nsmap):
         if p.find('multiphase', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "multiphase" to {p}')
             e = etree.fromstring('''
@@ -138,7 +138,7 @@ def _version_2(root: etree.Element):
             ''')
             p.insert(7, e)
 
-    for p in root.findall(f'.//numericalConditions/convergenceCriteria', namespaces=_nsmap):
+    for p in root.findall(f'numericalConditions/convergenceCriteria', namespaces=_nsmap):
         if p.find('volumeFraction', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "volumeFraction" to {p}')
             e = etree.fromstring('''
@@ -182,14 +182,14 @@ def _version_2(root: etree.Element):
                 ''')
             p.append(e)
 
-    for p in root.findall(f'.//runConditions', namespaces=_nsmap):
+    for p in root.findall(f'runCalculation/runConditions', namespaces=_nsmap):
         if p.find('VoFMaxCourantNumber', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "VoFMaxCourantNumber" to {p}')
             e = etree.Element(f'{{{_ns}}}VoFMaxCourantNumber')
             e.text = '1'
             p.insert(4, e)
 
-    for p in root.findall(f'.//materials/material', namespaces=_nsmap):
+    for p in root.findall(f'materials/material', namespaces=_nsmap):
         if (e := p.find('surfaceTension', namespaces=_nsmap)) is not None:
             p.remove(e)
 
@@ -219,7 +219,7 @@ def _version_3(root: etree.Element):
             e.text = '10'
             p.append(e)
 
-    for p in root.findall(f'.//regions/region/phaseInteractions/surfaceTensions', namespaces=_nsmap):
+    for p in root.findall(f'regions/region/phaseInteractions/surfaceTensions', namespaces=_nsmap):
         e1 = p.find('material1', namespaces=_nsmap)
         if e1 is not None:
             logger.debug(f'    Splitting surface tensions in {p}')
@@ -270,7 +270,7 @@ def _version_4(root: etree.Element):
         logger.debug(f'    Replacing text of {e} to "pressure"')
         e.text = 'pressure'
 
-    for p in root.findall('.//boundaryConditions', namespaces=_nsmap):
+    for p in root.findall('regions/region/boundaryConditions', namespaces=_nsmap):
         for e in p.findall('boundaryCondition/subsonicInflow', namespaces=_nsmap):
             e.tag = '{http://www.baramcfd.org/baram}subsonicInlet'
 
@@ -283,7 +283,7 @@ def _version_4(root: etree.Element):
                 '</density>')
             p.insert(1, e)
 
-    for p in root.findall('.//boundaryCondition/farFieldRiemann', namespaces=_nsmap):
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition/farFieldRiemann', namespaces=_nsmap):
         if p.find('flowDirection/specificationMethod', namespaces=_nsmap) is None:
             logger.debug(f'    Updating "flowDirection" to {p}')
             e = p.find('flowDirection', namespaces=_nsmap)
@@ -365,7 +365,7 @@ def _version_5(root: etree.Element):
                 '</les>')
             p.insert(4, e)
 
-    for p in root.findall('.//boundaryCondition/turbulence', namespaces=_nsmap):
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition/turbulence', namespaces=_nsmap):
         if p.find('les', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "les" to {p}')
 
@@ -378,7 +378,7 @@ def _version_5(root: etree.Element):
                 '</les>')
             p.append(e)
 
-    for p in root.findall(f'.//monitors/points/pointMonitor', namespaces=_nsmap):
+    for p in root.findall(f'monitors/points/pointMonitor', namespaces=_nsmap):
         if p.find('region', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "region" to {p}')
             etree.SubElement(p, f'{{{_ns}}}region').text = ''
@@ -758,7 +758,7 @@ def _version_8(root: etree.Element):
 
     root.set('version', '9')
 
-    for p in root.findall(f'.//boundaryCondition/freeStream', namespaces=_nsmap):
+    for p in root.findall(f'regions/region/boundaryConditions/boundaryCondition/freeStream', namespaces=_nsmap):
         speed = '1'
         if p.find('flowDirection', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "flowDirection" to {p}')
@@ -791,7 +791,7 @@ def _version_8(root: etree.Element):
             child.text = speed
             p.insert(1, child)
 
-    for p in root.findall(f'.//boundaryCondition/farFieldRiemann/flowDirection', namespaces=_nsmap):
+    for p in root.findall(f'regions/region/boundaryConditions/boundaryCondition/farFieldRiemann/flowDirection', namespaces=_nsmap):
         if p.find('flowDirection', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "flowDirection" to {p}')
 
@@ -828,7 +828,7 @@ def _version_9(root: etree.Element):
 
     # root.set('version', '10')
 
-    for p in root.findall(f'.//boundaryCondition/wall/velocity', namespaces=_nsmap):
+    for p in root.findall(f'regions/region/boundaryConditions/boundaryCondition/wall/velocity', namespaces=_nsmap):
         if p.find('wallMotion', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "wallMotion" to {p}')
 
@@ -871,7 +871,7 @@ def _version_9(root: etree.Element):
                                  '</wallRoughness>')
             p.insert(2, e)
 
-    for p in root.findall(f'.//boundaryCondition/wall/temperature', namespaces=_nsmap):
+    for p in root.findall(f'regions/region/boundaryConditions/boundaryCondition/wall/temperature', namespaces=_nsmap):
         if p.find('externalEmissivity', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "externalEmissivity" to {p}')
 

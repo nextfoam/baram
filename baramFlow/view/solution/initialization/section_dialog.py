@@ -215,7 +215,7 @@ class SectionDialog(ResizableDialog):
                     </mixture>'''
 
                 # Create an element with given name and default values
-            writer.addElement(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections',
+            writer.addElement(f'/regions/region[name="{self._rname}"]/initialization/advanced/sections',
                               f'''
                                 <section xmlns="http://www.baramcfd.org/baram">
                                     <name>{self._sectionName}</name>

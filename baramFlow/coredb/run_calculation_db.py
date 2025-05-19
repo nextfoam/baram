@@ -15,4 +15,4 @@ class DataWriteFormat(Enum):
 
 
 class RunCalculationDB:
-    RUN_CALCULATION_XPATH = './/runCalculation'
+    RUN_CALCULATION_XPATH = '/runCalculation'

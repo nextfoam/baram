@@ -6,7 +6,7 @@ from baramFlow.coredb import coredb
 class TestAttribute(unittest.TestCase):
     def setUp(self):
         self.db = coredb.createDB()
-        self.path = './/operatingConditions/gravity'
+        self.path = '/general/operatingConditions/gravity'
 
     def tearDown(self) -> None:
         coredb.destroy()

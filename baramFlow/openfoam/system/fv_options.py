@@ -125,8 +125,8 @@ class FvOptions(DictionaryFile):
                     'type': 'limitTemperature',
                     'active': 'yes',
                     'selectionMode': 'all',
-                    'min': self._db.getValue('.//numericalConditions/advanced/limits/minimumStaticTemperature'),
-                    'max': self._db.getValue('.//numericalConditions/advanced/limits/maximumStaticTemperature')
+                    'min': self._db.getValue('/numericalConditions/advanced/limits/minimumStaticTemperature'),
+                    'max': self._db.getValue('/numericalConditions/advanced/limits/maximumStaticTemperature')
                 }
             }
 
@@ -257,7 +257,7 @@ class FvOptions(DictionaryFile):
 
         self._generateSourceFields(czname, xpath + '/energy', 'h')
 
-        modelsType = self._db.getValue('.//models/turbulenceModels/model')
+        modelsType = self._db.getValue('/models/turbulenceModels/model')
         if modelsType == 'spalartAllmaras':
             self._generateSourceFields(czname, xpath + '/modifiedTurbulentViscosity', 'nuTilda')
 
@@ -285,7 +285,7 @@ class FvOptions(DictionaryFile):
         self._generateFixedVelocity(czname, xpath + '/velocity')
         self._generateFixedTemperature(czname, xpath + '/temperature')
 
-        modelsType = self._db.getValue('.//models/turbulenceModels/model')
+        modelsType = self._db.getValue('/models/turbulenceModels/model')
         if modelsType == 'spalartAllmaras':
             self._generateFixedFields(czname, xpath + '/modifiedTurbulentViscosity', 'nuTilda')
 
