@@ -4,7 +4,7 @@
 from pathlib import Path
 
 import qasync
-from PySide6.QtWidgets import QDialog, QFileDialog
+from PySide6.QtWidgets import QDialog, QFileDialog, QWidget, QVBoxLayout
 
 from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog, SelectorItem
@@ -13,6 +13,7 @@ from baramMesh.app import app
 from baramMesh.db.configurations_schema import CFDType
 from baramMesh.openfoam.system.extrude_mesh_dict import ExtrudeOptions, ExtrudeModel
 from .export_2D_plane_dialog_ui import Ui_Export2DPlaneDialog
+from .export_2D_region_widgets import Export2DPlaneRegionWidget
 
 
 class Export2DPlaneDialog(QDialog):
@@ -22,10 +23,30 @@ class Export2DPlaneDialog(QDialog):
         self._ui = Ui_Export2DPlaneDialog()
         self._ui.setupUi(self)
 
+        self._regionWidgets = []
+        
+        self._boundaries = []
+        self._dialog = None
+
+        regionsWidget = QWidget()        
+        self._ui.parameters.layout().insertWidget(0, regionsWidget)
+
+        layout = QVBoxLayout(regionsWidget)
+        layout.setContentsMargins(0, -1, 0, 0)
+        
+        for region in app.db.getElements('region').values():
+            widget = Export2DPlaneRegionWidget(region.value('name'))
+            widget.boundarySelectClicked.connect(self._openBoundarySelectorDialog)
+            layout.addWidget(widget)
+            self._regionWidgets.append(widget)
+
         self._baseLocation = Path.home() if path is None else path
         self._updateProjectLocation()
 
-        self._dialog = None
+        for gId, geometry in app.db.getElements(
+                'geometry', lambda i, e: e['cfdType'] == CFDType.BOUNDARY.value).items():
+            name = geometry.value('name')
+            self._boundaries.append(SelectorItem(name, name, gId))
 
         self._connectSignalsSlots()
 
@@ -33,14 +54,15 @@ class Export2DPlaneDialog(QDialog):
         return Path(self._ui.projectLocation.text())
 
     def extrudeOptions(self):
-        return ExtrudeOptions(self._ui.boundary.text(), self._ui.boundary.text(), ExtrudeModel.PLANE,
-                              thickness=self._ui.thickness.text())
+        return ([(b.rname(), b.boundary(), b.boundary()) for b in self._regionWidgets], 
+                ExtrudeOptions(ExtrudeModel.PLANE, thickness=self._ui.thickness.text()))
 
     def _connectSignalsSlots(self):
         self._ui.projectName.textChanged.connect(self._updateProjectLocation)
         self._ui.locationSelect.clicked.connect(self._selectLocation)
-        self._ui.boundarySelect.clicked.connect(self._selectBoundary)
+        # self._ui.boundarySelect.clicked.connect(self._selectBoundary)
         self._ui.ok.clicked.connect(self._accept)
+
 
     def _selectLocation(self):
         self._dialog = QFileDialog(self, self.tr('Select Location'), str(self._baseLocation))
@@ -55,19 +77,13 @@ class Export2DPlaneDialog(QDialog):
         self._baseLocation = Path(dir).resolve()
         self._updateProjectLocation()
 
-    def _selectBoundary(self):
+    def _openBoundarySelectorDialog(self, widget):
         self._dialog = self._createBoundarySelector()
-        self._dialog.accepted.connect(lambda: self._ui.boundary.setText(self._dialog.selectedText()))
+        self._dialog.accepted.connect(lambda: widget.setText(self._dialog.selectedText()))
         self._dialog.open()
 
     def _createBoundarySelector(self):
-        items = []
-        for gId, geometry in app.db.getElements(
-                'geometry', lambda i, e: e['cfdType'] == CFDType.BOUNDARY.value).items():
-            name = geometry.value('name')
-            items.append(SelectorItem(name, name, gId))
-
-        return SelectorDialog(self, self.tr('Select Boundary'), self.tr('Select Boundary'), items)
+        return SelectorDialog(self, self.tr('Select Boundary'), self.tr('Select Boundary'), self._boundaries)
 
     @qasync.asyncSlot()
     async def _accept(self):
@@ -85,9 +101,11 @@ class Export2DPlaneDialog(QDialog):
                                                 self.tr(f'{self._ui.projectLocation.text()} already exists.'))
             return
 
-        if not self._ui.boundary.text():
-            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Boundary'))
-            return
+        for widget in self._regionWidgets:
+            if not widget.boundary():
+                await AsyncMessageBox().information(
+                    self, self.tr('Input Error'), self.tr('Select Boundary - ' + widget.rname()))
+                return
 
         try:
             float(self._ui.thickness.text())
