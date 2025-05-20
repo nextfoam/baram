@@ -41,7 +41,6 @@ class RegionItem(ListItem):
         super().__init__(parent, True)
     
     def __lt__(self, other):
-        print(self._widget.rname().lower(), other._widget.rname().lower())
         return self._widget.rname().lower() < other._widget.rname().lower()
 
     def rname(self):

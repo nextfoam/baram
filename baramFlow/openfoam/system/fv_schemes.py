@@ -24,8 +24,9 @@ class FvSchemes(DictionaryFile):
     def build(self):
         if self._data is not None:
             return self
-
-        if findSolver() == 'TSLAeroFoam':
+        
+        solver = findSolver()
+        if solver == 'TSLAeroFoam' or solver == 'UTSLAeroFoam':
             self._generateTSLAero()
         else:
             phase = MaterialDB.getPhase(self._mid)
@@ -39,7 +40,7 @@ class FvSchemes(DictionaryFile):
     def _generateTSLAero(self):
         self._data = {
             'ddtSchemes': {
-                'default': 'localEuler'
+                'default': 'backwardDualTime' if GeneralDB.isTimeTransient() else 'localEuler'
             },
             'gradSchemes': {
                 'default': 'Gauss linear',
