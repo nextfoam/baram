@@ -81,7 +81,7 @@ def cylinderPolyData(point1, point2, radius):
     cyl = vtkTubeFilter()
     cyl.SetInputConnection(line.GetOutputPort())
     cyl.SetRadius(float(radius))
-    cyl.SetNumberOfSides(32)
+    cyl.SetNumberOfSides(64)
     cyl.CappingOn()
 
     geometryFilter = vtkGeometryFilter()
