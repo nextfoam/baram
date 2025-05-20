@@ -52,10 +52,11 @@ class NumericalConditionsPage(ContentPage):
             FluxType.AUSM: self.tr('ASUM'),
             FluxType.AUSM_UP: self.tr('ASUM-up'),
         })
-        self._ui.discretizationSchemeTime.addEnumItems({
-            ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT: self.tr('First Order Implicit'),
-            ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT: self.tr('Second Order Implicit'),
-        })
+        self._ui.discretizationSchemeTime.addItem(self.tr('First Order Implicit'),
+                                                  ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT),
+        self._ui.discretizationSchemeTime.addItem(self.tr('Second Order Implicit'),
+                                                  ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT),
+        
         self._ui.discretizationSchemeMomentum.addEnumItems(self._upwindDiscretizationSchemes)
         self._ui.discretizationSchemeEnergy.addEnumItems(self._upwindDiscretizationSchemes)
         self._ui.discretizationSchemeTurbulence.addEnumItems(self._upwindDiscretizationSchemes)
@@ -83,13 +84,7 @@ class NumericalConditionsPage(ContentPage):
 
         self._ui.useMomentumPredictor.setVisible(timeIsTransient or allRoundSolver)
 
-        if compressibleDensity:
-            self._ui.pressureVelocity.hide()
-            self._ui.discretizationSchemesMomentumLabel.setText(self.tr('Flow'))
-        else:
-            self._ui.densityBasedSolverParameters.hide()
-
-        self._ui.discretizationSchemeTime.setEnabled(timeIsTransient)
+        self._ui.discretizationSchemeTime.setEnabled(timeIsTransient and not compressibleDensity)
         self._ui.discretizationSchemePressure.setEnabled(not compressibleDensity)
         self._ui.discretizationSchemeEnergy.setEnabled(energyOn and not compressibleDensity)
         self._ui.discretizationSchemeTurbulence.setEnabled(turbulenceOn)
@@ -120,7 +115,7 @@ class NumericalConditionsPage(ContentPage):
         self._ui.absolutePressure.setEnabled(not compressibleDensity)
         self._ui.relativePressure.setEnabled((timeIsTransient or allRoundSolver) and not compressibleDensity)
         self._ui.absoluteDensity.setEnabled(compressibleDensity)
-        self._ui.relativeDensity.setEnabled(False)
+        self._ui.relativeDensity.setEnabled(compressibleDensity and timeIsTransient)
         self._ui.relativeMomentum.setEnabled(timeIsTransient or allRoundSolver)
         self._ui.absoluteEnergy.setEnabled(energyOn)
         self._ui.relativeEnergy.setEnabled((timeIsTransient or allRoundSolver) and energyOn)
@@ -167,9 +162,19 @@ class NumericalConditionsPage(ContentPage):
         self._ui.cutOffMachNumber.setText(
             db.getValue(self._xpath + '/densityBasedSolverParameters/cutOffMachNumber'))
 
+        if compressibleDensity:
+            self._ui.pressureVelocity.hide()
+            self._ui.discretizationSchemesMomentumLabel.setText(self.tr('Flow'))
+            discretizationSchemeTime = (ImplicitDiscretizationScheme.SECOND_ORDER_IMPLICIT if timeIsTransient 
+                                        else ImplicitDiscretizationScheme.FIRST_ORDER_IMPLICIT)
+        else:
+            self._ui.densityBasedSolverParameters.hide()
+            discretizationSchemeTime = ImplicitDiscretizationScheme(
+                db.getValue(self._xpath + '/discretizationSchemes/time'))
+
         self._ui.useMomentumPredictor.setChecked(db.getValue(self._xpath + '/useMomentumPredictor') == 'true')
-        self._ui.discretizationSchemeTime.setCurrentData(
-            ImplicitDiscretizationScheme(db.getValue(self._xpath + '/discretizationSchemes/time')))
+        self._ui.discretizationSchemeTime.setCurrentIndex(
+            self._ui.discretizationSchemeTime.findData(discretizationSchemeTime))
         self._ui.discretizationSchemePressure.setCurrentData(
             InterpolationScheme(db.getValue(self._xpath + '/discretizationSchemes/pressure')))
         self._ui.discretizationSchemeMomentum.setCurrentData(
@@ -291,7 +296,7 @@ class NumericalConditionsPage(ContentPage):
                       'true' if self._ui.useMomentumPredictor.isChecked() else 'false', None)
 
         writer.append(self._xpath + '/discretizationSchemes/time',
-                      self._ui.discretizationSchemeTime.currentValue(), None)
+                      self._ui.discretizationSchemeTime.currentData().value, None)
         writer.append(self._xpath + '/discretizationSchemes/pressure',
                       self._ui.discretizationSchemePressure.currentValue(), None)
         writer.append(self._xpath + '/discretizationSchemes/momentum',
