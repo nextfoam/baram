@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import qasync
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit
 
-from baramFlow.coredb.coredb_writer import boolToDBText
 from widgets.async_message_box import AsyncMessageBox
+from widgets.enum_button_group import EnumButtonGroup
+from widgets.validation.validation import FormValidator, FloatValidator
 
 from baramFlow.coredb import coredb
+from baramFlow.coredb.coredb_writer import boolToDBText
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from baramFlow.coredb.boundary_db import BoundaryDB, WallTemperature, ContactAngleModel, ContactAngleLimit
 from baramFlow.coredb.boundary_db import WallMotion, ShearCondition, MovingWallMotion
@@ -16,9 +17,7 @@ from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
-from baramFlow.view.widgets.enum_button_group import EnumButtonGroup
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
-from widgets.validation.validation import FormValidator, FloatValidator
 from .wall_dialog_ui import Ui_WallDialog
 from .wall_layers_widget import WallLayersWidget
 
@@ -158,7 +157,7 @@ class WallDialog(ResizableDialog):
                                 self.tr('Wall Roughness Constant'))
 
                 if ModelsDB.isEnergyModelOn():
-                    temparatureType = WallTemperature(self._ui.temperatureType.currentData())
+                    temparatureType = self._ui.temperatureType.currentData()
                     db.setValue(xpath + '/temperature/type', temparatureType.value)
                     if temparatureType == WallTemperature.CONSTANT_TEMPERATURE:
                         db.setValue(xpath + '/temperature/temperature', self._ui.temperature.text(),
@@ -176,10 +175,10 @@ class WallDialog(ResizableDialog):
                             return
 
                 if self._ui.contactAngleGroup.isVisible():
-                    contactAngleModel = ContactAngleModel(self._ui.contactAngleModel.currentData())
+                    contactAngleModel = self._ui.contactAngleModel.currentData()
                     db.setValue(xpath + '/wallAdhesions/model', contactAngleModel.value)
                     if self._ui.contactAngleFormLayout.isRowVisible(self._ui.contactAngleLimit):
-                        contactAngleLimit = ContactAngleLimit(self._ui.contactAngleLimit.currentData())
+                        contactAngleLimit = self._ui.contactAngleLimit.currentData()
                         db.setValue(xpath + '/wallAdhesions/limit', contactAngleLimit.value)
 
                     if contactAngleModel == ContactAngleModel.CONSTANT:
@@ -352,7 +351,7 @@ class WallDialog(ResizableDialog):
 
     def _updateMovingWallParameters(self):
         if self._wallMotionRadios.checkedData() == WallMotion.MOVING_WALL:
-            movingMotion = MovingWallMotion(self._ui.movingWallMotion.currentData())
+            movingMotion = self._ui.movingWallMotion.currentData()
             self._ui.translationalMovingWall.setVisible(movingMotion == MovingWallMotion.TRANSLATIONAL_MOTION)
             self._ui.rotationalMovingWall.setVisible(movingMotion == MovingWallMotion.ROTATIONAL_MOTION)
         else:
@@ -369,14 +368,14 @@ class WallDialog(ResizableDialog):
             and self._ui.noSlip.isChecked())
 
     def _temperatureTypeChanged(self):
-        temparatureType = WallTemperature(self._ui.temperatureType.currentData())
+        temparatureType = self._ui.temperatureType.currentData()
 
         self._ui.constantTemperature.setVisible(temparatureType == WallTemperature.CONSTANT_TEMPERATURE)
         self._ui.constantHeatFlux.setVisible(temparatureType == WallTemperature.CONSTANT_HEAT_FLUX)
         self._ui.convection.setVisible(temparatureType == WallTemperature.CONVECTION)
 
     def _contactAngleTypeChanged(self):
-        contactAngleModel = ContactAngleModel(self._ui.contactAngleModel.currentData())
+        contactAngleModel = self._ui.contactAngleModel.currentData()
 
         self._ui.contactAngleFormLayout.setRowVisible(
             self._ui.contactAngleLimit, contactAngleModel != ContactAngleModel.DISABLE and self._phases == 2)
