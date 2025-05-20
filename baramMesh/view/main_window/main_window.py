@@ -86,6 +86,8 @@ class MainWindow(QMainWindow):
         layout.addWidget(self._dockManager)
 
         self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._consoleView)
+        
+        self._ui.regionValidationMessage.hide()
 
         geometry = app.settings.getLastMainWindowGeometry()
         display = app.qApplication.primaryScreen().availableVirtualGeometry()

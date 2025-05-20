@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .configurations_schema import CURRENT_CONFIGURATIONS_VERSION, CONFIGURATIONS_VERSION_KEY
-from .configurations_schema import FeatureSnapType, GapRefinementMode
+from .configurations_schema import FeatureSnapType, GapRefinementMode, BufferLayerPointSmoothingMethod
 
 
 def _to_v1(data):
@@ -52,6 +52,10 @@ def _to_v4(data):
 
 
 def _to_v5(data):
+    for geometry in data['geometry'].values():
+        if 'addBufferLayers' not in geometry:
+            geometry['addBufferLayers'] = False
+            
     for volumeRefinement in data['castellation']['refinementVolumes'].values():
         if 'levelIncrement' not in volumeRefinement:
             volumeRefinement['levelIncrement'] = {
@@ -62,6 +66,14 @@ def _to_v5(data):
                 'minLevel': 0,
                 'maxLevel': 10
             }
+            
+    if 'bufferLayer' not in data['snap']:
+        data['snap']['bufferLayer'] = {
+            'disabled': True,
+            'pointSmoothingMethod': BufferLayerPointSmoothingMethod.LAPLACIAN,
+            'numberOfPointSmoothingIteration': 10,
+            'GETMeTransformationParameter': 0.667
+        }
 
 
 _migrates = {

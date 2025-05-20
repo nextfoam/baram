@@ -4,6 +4,7 @@
 import qasync
 
 from widgets.async_message_box import AsyncMessageBox
+from widgets.enum_button_group import EnumButtonGroup
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
@@ -13,7 +14,6 @@ from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, RANSModel, ShieldingFunctions
 from baramFlow.coredb.turbulence_model_db import TurbulenceRasModels, KEpsilonModel, NearWallTreatment, KOmegaModel
 from baramFlow.coredb.turbulence_model_db import SubgridScaleModel, LengthScaleModel, TurbulenceModelsDB
-from baramFlow.view.widgets.enum_button_group import EnumButtonGroup
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .turbulence_dialog_ui import Ui_TurbulenceDialog
 
