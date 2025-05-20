@@ -7,11 +7,10 @@ from PySide6.QtWidgets import QDialog
 
 from libbaram.simple_db.simple_schema import DBError
 from widgets.async_message_box import AsyncMessageBox
+from widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, GapRefinementMode
-from baramMesh.view.widgets.multi_selector_dialog import MultiSelectorDialog
-from baramMesh.view.widgets.multi_selector_dialog import SelectorItem
 from .volume_refinement_dialog_ui import Ui_VolumeeRefinementDialog
 
 

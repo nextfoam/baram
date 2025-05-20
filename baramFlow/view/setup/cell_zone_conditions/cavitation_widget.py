@@ -4,10 +4,11 @@
 import qasync
 from PySide6.QtCore import QObject
 
+from widgets.async_message_box import AsyncMessageBox
+from widgets.enum_button_group import EnumButtonGroup
+
 from baramFlow.coredb import coredb
 from baramFlow.coredb.region_db import CavitationModel
-from baramFlow.view.widgets.enum_button_group import EnumButtonGroup
-from widgets.async_message_box import AsyncMessageBox
 from .cavitation_constants_widget import CavitationConstantsWidget
 
 

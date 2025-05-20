@@ -3,8 +3,9 @@
 
 from PySide6.QtWidgets import QWizardPage, QLineEdit
 
+from widgets.enum_button_group import EnumButtonGroup
+
 from baramFlow.coredb.models_db import MultiphaseModel
-from baramFlow.view.widgets.enum_button_group import EnumButtonGroup
 from .multiphase_model_page_ui import Ui_MultiphaseModelPage
 
 
