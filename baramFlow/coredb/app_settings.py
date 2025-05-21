@@ -190,14 +190,14 @@ class AppSettings:
         
         return ParallelEnvironment(
             settings.get(SettingKey.PARALLEL_NP.value, 1),
-            ParallelType.LOCAL_MACHINE if type_ is None else ParallelType(type_),
+            ParallelType.LOCAL_MACHINE if type_ is None else ParallelType[type_],
             settings.get(SettingKey.PARALLEL_HOSTFILE.value))
         
     @classmethod
     def setParallelEnvironment(cls, environment):
         settings = cls._load()
         settings[SettingKey.PARALLEL_NP.value] = environment.np()
-        settings[SettingKey.PARALLEL_TYPE.value] = environment.type().value
+        settings[SettingKey.PARALLEL_TYPE.value] = environment.type().name
         settings[SettingKey.PARALLEL_HOSTFILE.value] = environment.hosts()
         cls._save(settings)
 

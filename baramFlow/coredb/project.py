@@ -90,7 +90,7 @@ class _Project(QObject):
                 self._settings = {
                     SettingKey.FORMAT_VERSION.value : FORMAT_VERSION,
                     SettingKey.NP.value             : parallelEnvironment.np(),
-                    SettingKey.PARALLEL_TYPE.value  : parallelEnvironment.type().value,
+                    SettingKey.PARALLEL_TYPE.value  : parallelEnvironment.type().name,
                     SettingKey.HOSTFILE.value       : parallelEnvironment.hosts()
                 }
                 
@@ -176,7 +176,7 @@ class _Project(QObject):
     
     def setParallelEnvironment(self, environment):
         self._settings.set(SettingKey.NP, environment.np())
-        self._settings.set(SettingKey.PARALLEL_TYPE, environment.type().value)
+        self._settings.set(SettingKey.PARALLEL_TYPE, environment.type().name)
         self._settings.set(SettingKey.HOSTFILE, environment.hosts())
         AppSettings.setParallelEnvironment(environment)
 

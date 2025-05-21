@@ -49,13 +49,13 @@ class LocalSettings:
 
         return ParallelEnvironment(
             self.get(LocalSettingKey.PARALLEL_NP, 1),
-            ParallelType.LOCAL_MACHINE if type_ is None else ParallelType(type_),
+            ParallelType.LOCAL_MACHINE if type_ is None else ParallelType[type_],
             self.get(LocalSettingKey.PARALLEL_HOSTS, '')
         )
 
     def setParallelEnvironment(self, environment):
         self.set(LocalSettingKey.PARALLEL_NP, environment.np()),
-        self.set(LocalSettingKey.PARALLEL_TYPE, environment.type().value),
+        self.set(LocalSettingKey.PARALLEL_TYPE, environment.type().name),
         self.set(LocalSettingKey.PARALLEL_HOSTS, environment.hosts())
 
     def acquireLock(self, timeout):
@@ -98,7 +98,7 @@ class LocalSettings:
         
         self._settings = {
             LocalSettingKey.PARALLEL_NP.value:      environment.np(),
-            LocalSettingKey.PARALLEL_TYPE.value:    environment.type().value,
+            LocalSettingKey.PARALLEL_TYPE.value:    environment.type().name,
             LocalSettingKey.PARALLEL_HOSTS.value:   environment.hosts()
         }
 

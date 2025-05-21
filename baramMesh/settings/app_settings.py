@@ -60,18 +60,6 @@ class AppSettings:
             self._settingsPath.mkdir(exist_ok=True)
             self._settings = {SettingKey.FORMAT_VERSION.value: FORMAT_VERSION}
 
-    # def acquireLock(self, timeout):
-    #     try:
-    #         self._lock = FileLock(self._lockFile)
-    #         self._lock.acquire(timeout=timeout)
-
-    #         return True
-    #     except Timeout:
-    #         return False
-
-    # def releaseLock(self):
-    #     self._lock.release()
-
     def getRecentLocation(self):
         return self._get(SettingKey.RECENT_DIRECTORY, str(Path.home()))
 
@@ -118,12 +106,12 @@ class AppSettings:
         
         return ParallelEnvironment(
             1 if np is None else int(np),
-            ParallelType.LOCAL_MACHINE if type_ is None else ParallelType(type_),
+            ParallelType.LOCAL_MACHINE if type_ is None else ParallelType[type_],
             self._get(SettingKey.PARALLEL_HOSTFILE))
 
     def updateParallelEnvironment(self, environment):
         self._set(SettingKey.PARALLEL_NP, environment.np())
-        self._set(SettingKey.PARALLEL_TYPE, environment.type().value)
+        self._set(SettingKey.PARALLEL_TYPE, environment.type().name)
         self._set(SettingKey.PARALLEL_HOSTFILE, environment.hosts())
         self._save()
 

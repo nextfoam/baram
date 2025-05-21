@@ -19,11 +19,11 @@ def getParallelType() -> ParallelType:
     ptypeStr = Project.instance().pType
     if ptypeStr is None:  # ToDo: For compatibility. Remove this code block after 20240601
         if coredb.CoreDB().getValue('/runCalculation/parallel/localhost') == 'true':
-            ptypeStr = ParallelType.LOCAL_MACHINE.value
+            return ParallelType.LOCAL_MACHINE
         else:
-            ptypeStr = ParallelType.CLUSTER.value
-
-    return ParallelType(int(ptypeStr))
+            return ParallelType.CLUSTER
+        
+    return ParallelType(ptypeStr) if isinstance(ptypeStr, int) else ParallelType[ptypeStr]
 
 
 def getHostfile() -> str:
