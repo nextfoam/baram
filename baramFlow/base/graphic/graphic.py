@@ -91,9 +91,9 @@ class Graphic:
     vectorNumMax: int = 1000
     vectorFixedLength: bool = False
 
-    stepSize: str = '0.001'
+    stepSize: str = '0.1'
     maxSteps: int = 2000
-    maxLength: str = '1.0'
+    maxLength: str = '10.0'
     accuracyControl: bool = False
     tolerance: str = '1.0e-6'
     streamlineType: StreamlineType = StreamlineType.RIBBON

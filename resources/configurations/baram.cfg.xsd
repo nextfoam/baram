@@ -2679,9 +2679,9 @@
                                         <xs:element name="vectorScaleFactor" type="xs:double" default="1.0"/>
                                         <xs:element name="vectorNumMax" type="xs:positiveInteger" default="1000"/>
                                         <xs:element name="vectorFixedLength" type="xs:boolean" default="false"/>
-                                        <xs:element name="stepSize" type="xs:double" default="0.001"/>
+                                        <xs:element name="stepSize" type="xs:double" default="0.1"/>
                                         <xs:element name="maxSteps" type="xs:positiveInteger" default="2000"/>
-                                        <xs:element name="maxLength" type="xs:double" default="1.0"/>
+                                        <xs:element name="maxLength" type="xs:double" default="10.0"/>
                                         <xs:element name="accuracyControl" type="xs:boolean" default="false"/>
                                         <xs:element name="tolerance" type="xs:double" default="1e-6"/>
                                         <xs:element name="streamlineType" default="ribbon">
