@@ -74,6 +74,7 @@ class DisplayControl(QTreeWidgetItem):
 
         self._scaffoldMapper.SetColorModeToMapScalars()
         self._scaffoldMapper.UseLookupTableScalarRangeOn()
+        self._scaffoldMapper.InterpolateScalarsBeforeMappingOn()
         self._scaffoldMapper.SetLookupTable(lookupTable)
 
         self._scaffoldActor: vtkActor = vtkActor()
