@@ -94,4 +94,4 @@ class RenderingTool:
     def _updateBGButtonStyle(self, button, color):
         r, g, b, a = color.getRgb()
         button.setStyleSheet(
-            f'background: rgb({r}, {g}, {b}) border-style: solid border-color:black border-width: 1')
+            f'background: rgb({r}, {g}, {b}); border-style: solid; border-color:black; border-width: 1')
