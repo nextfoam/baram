@@ -68,7 +68,7 @@ class RunConditionsPage(ContentPage):
 
         self._ui.numberOfIterations.setText(db.getValue(self._xpath + '/numberOfIterations'))
 
-        if not isTimeTransient and GeneralDB.isCompressibleDensity():
+        if isTimeTransient and GeneralDB.isCompressibleDensity():
             self._ui.timeSteppingMethod.setCurrentIndex(self._ui.timeSteppingMethod.findData(TimeSteppingMethod.FIXED))
             self._ui.timeSteppingMethod.setEnabled(False)
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxCourantNumber, True)
