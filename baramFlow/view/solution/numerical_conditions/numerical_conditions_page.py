@@ -105,6 +105,9 @@ class NumericalConditionsPage(ContentPage):
 
         self._ui.maxIterationsPerTimeStep.setEnabled(timeIsTransient or allRoundSolver)
         self._ui.numberOfCorrectors.setEnabled(timeIsTransient or allRoundSolver)
+        if GeneralDB.isCompressibleDensity():
+            self._ui.numberOfCorrectors.setEnabled(False)
+            self._ui.numberOfNonOrthogonalCorrectors.setEnabled(False)
 
         if multiphaseOn:
             self._ui.multiphaseMaxIterationsPerTimeStep.setEnabled(True)

@@ -162,7 +162,8 @@ class ControlDict(DictionaryFile):
         adjustTimeStep = 'no'
         if GeneralDB.isTimeTransient():
             endTime = self._db.getValue(xpath + '/endTime')
-            timeSteppingMethod = self._db.getValue(xpath + '/timeSteppingMethod')
+            timeSteppingMethod = (TimeSteppingMethod.FIXED.value if GeneralDB.isCompressibleDensity 
+                                  else self._db.getValue(xpath + '/timeSteppingMethod'))
             self._writeInterval = self._db.getValue(xpath + '/reportIntervalSeconds')
             if timeSteppingMethod == TimeSteppingMethod.FIXED.value:
                 deltaT = self._db.getValue(xpath + '/timeStepSize')

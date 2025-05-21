@@ -111,7 +111,7 @@
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="EnumComboBox" name="timeSteppingMethod"/>
+              <widget class="PythonComboBox" name="timeSteppingMethod"/>
              </item>
              <item row="2" column="0">
               <widget class="QLabel" name="label_3">
@@ -268,7 +268,7 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="EnumComboBox" name="dataWriteFormat"/>
+              <widget class="PythonComboBox" name="dataWriteFormat"/>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_9">
@@ -319,9 +319,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>EnumComboBox</class>
+   <class>PythonComboBox</class>
    <extends>QComboBox</extends>
-   <header>widgets.enum_combo_box</header>
+   <header location="global">widgets.python_combo_box</header>
   </customwidget>
  </customwidgets>
  <tabstops>
