@@ -44,6 +44,11 @@ def handle_exception(eType, eValue, eTraceback):
 sys.excepthook = handle_exception
 
 
+def loop_exception(loop, context):
+    print("exception handling: ", context["exception"])
+    loop.stop()
+
+
 def main():
     application = QApplication(sys.argv)
 
@@ -77,6 +82,8 @@ def main():
 
     loop = qasync.QEventLoop(application)
     asyncio.set_event_loop(loop)
+
+    loop.set_exception_handler(loop_exception)
 
     app.applyLanguage()
 
