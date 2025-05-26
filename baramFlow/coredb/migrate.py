@@ -826,7 +826,7 @@ def _version_8(root: etree.Element):
 def _version_9(root: etree.Element):
     logger.debug('  Upgrading to v10')
 
-    # root.set('version', '10')
+    root.set('version', '10')
 
     for p in root.findall(f'regions/region/boundaryConditions/boundaryCondition/wall/velocity', namespaces=_nsmap):
         if p.find('wallMotion', namespaces=_nsmap) is None:
