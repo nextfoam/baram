@@ -8,7 +8,7 @@ from libbaram.simple_db.simple_schema import FloatType, IntKeyList, EnumType, In
 from libbaram.simple_db.simple_schema import VectorComposite
 
 
-CURRENT_CONFIGURATIONS_VERSION = 4
+CURRENT_CONFIGURATIONS_VERSION = 5
 CONFIGURATIONS_VERSION_KEY = 'version'
 
 
