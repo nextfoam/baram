@@ -27,10 +27,10 @@ class SnapPage(StepPage):
         self._cm = None
 
         self._smoothingMethod = EnumButtonGroup()
-        
+
         self._dialog = None
 
-        self._availableSurfaces = None        
+        self._availableSurfaces = None
         self._surfaces = None
         self._oldSurfaces = None
 
@@ -69,6 +69,12 @@ class SnapPage(StepPage):
             snap.setValue('minAreaRatio', self._ui.minAreaRatio.text(), self.tr('Min. Area Ratio'))
 
             if self._ui.bufferLayer.isChecked():
+                if not self._surfaces:
+                    await AsyncMessageBox().information(self._widget, self.tr('Input Error'),
+                                                        self.tr('Select Buffer Layer Surffaces.'))
+
+                    return False
+
                 snap.setValue('bufferLayer/disabled', False)
                 snap.setValue('bufferLayer/pointSmoothingMethod', self._smoothingMethod.checkedData())
                 snap.setValue('bufferLayer/numberOfPointSmoothingIteration',
@@ -86,12 +92,12 @@ class SnapPage(StepPage):
 
             db.commit(snap)
             app.db.commit(db)
-            
+
             self._oldSurfaces = self._surfaces
 
             return True
         except DBError as e:
-            await AsyncMessageBox().information(self._widget, self.tr("Input Error"), e.toMessage())
+            await AsyncMessageBox().information(self._widget, self.tr('Input Error'), e.toMessage())
 
             return False
 
@@ -114,7 +120,7 @@ class SnapPage(StepPage):
         self._ui.tolerance.setText(dbElement.getValue('tolerance'))
         self._ui.concaveAngle.setText(dbElement.getValue('concaveAngle'))
         self._ui.minAreaRatio.setText(dbElement.getValue('minAreaRatio'))
-        
+
         bufferLayer = dbElement.getElement('bufferLayer')
         self._ui.bufferLayer.setChecked(not bufferLayer.value('disabled'))
         self._smoothingMethod.setCheckedData(bufferLayer.enum('pointSmoothingMethod'))
@@ -130,11 +136,11 @@ class SnapPage(StepPage):
                 isInterface = geometry.enum('cfdType') == CFDType.INTERFACE
 
                 self._availableSurfaces.append(SelectorItem(name, name, gid, not isInterface))
-                
+
                 if geometry.value('addBufferLayers') or isInterface:
                     self._ui.bufferLayerSurfaces.addItem(name)
                     self._surfaces.append(gid)
-                    
+
         self._oldSurfaces = self._surfaces
 
         self._updateControlButtons()
