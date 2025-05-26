@@ -14954,7 +14954,7 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
     <message>
         <location filename="../../baramMesh/view/castellation/volume_refinement_dialog.ui" line="236"/>
         <source>Applied to the cells of refinement level in the range inclusive.</source>
-        <translation>다름 레벨 범위의 셀에만 적용됩니다.</translation>
+        <translation>다음 레벨 범위의 셀에만 적용됩니다.</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/castellation/volume_refinement_dialog.ui" line="246"/>
