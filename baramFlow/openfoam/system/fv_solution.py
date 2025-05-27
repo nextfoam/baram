@@ -165,7 +165,7 @@ class FvSolution(DictionaryFile):
                     'p_rgh': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/pressure/absolute'),
                     'U': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/momentum/absolute'),
                     'h': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/energy/absolute'),
-                    '"(k|epsilon|omega|nuTilda)"': 
+                    '"(k|epsilon|omega|nuTilda)"':
                         self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/turbulence/absolute'),
                     # For multiphase model
                     '"alpha.*"': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/volumeFraction/absolute'),
@@ -375,7 +375,7 @@ class FvSolution(DictionaryFile):
                 'minIter': '1',
                 'maxIter': '5',
             }
-            
+
     def _constructTransientSGS(self):
         return {
             'residualControl': {
@@ -383,11 +383,11 @@ class FvSolution(DictionaryFile):
                     'tolerance': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/density/absolute'),
                     'relTol': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/density/relative'),
                 },
-                'U': {
+                'rhoU': {
                     'tolerance': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/momentum/absolute'),
                     'relTol': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/momentum/relative'),
                 },
-                'h': {
+                'rhoE': {
                     'tolerance': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/energy/absolute'),
                     'relTol': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/energy/relative'),
                 },
@@ -399,7 +399,7 @@ class FvSolution(DictionaryFile):
             'nPseudoTimeIterations': self._db.getValue(
                 NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/maxIterationsPerTimeStep')
         }
-        
+
     def _constructSteadySGS(self):
         return {
             'residualControl': {
