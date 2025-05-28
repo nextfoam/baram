@@ -13,7 +13,6 @@ from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA, vtkCommand
 
 from baramFlow.base.graphic.graphics_db import GraphicsDB
-from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram.openfoam.constants import Directory
 
@@ -299,5 +298,4 @@ class PolyMeshLoader(QObject):
         async with OpenFOAMReader() as reader:
             await reader.setupReader()
 
-        ScaffoldsDB().load()
-        await GraphicsDB().load()
+        await GraphicsDB().updatePolyMeshAll()
