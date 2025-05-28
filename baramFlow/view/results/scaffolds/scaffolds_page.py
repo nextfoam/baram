@@ -94,7 +94,7 @@ class ScaffoldsPage(ContentPage):
     def _openAddBoundaryScaffoldDialog(self):
         uuid = uuid4()
         name = ScaffoldsDB().getNewBoundaryScaffoldName()
-        self._scaffold = BoundaryScaffold(uuid=uuid, name=name)
+        self._scaffold = BoundaryScaffold(uuid=uuid, name=name, boundaries=[])
         self._dialog = BoundaryScaffoldDialog(self, self._scaffold)
         self._dialog.accepted.connect(self._addBoundaryScaffold)
         self._dialog.open()

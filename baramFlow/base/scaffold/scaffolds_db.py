@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from threading import Lock
+from typing import cast
 from uuid import UUID, uuid4
 
 from PySide6.QtCore import QCoreApplication
@@ -178,3 +179,10 @@ class ScaffoldsDB:
             return QCoreApplication.translate('Scaffold', 'Sphere')
         else:
             return None
+
+
+    def rematchBoundaries(self):
+        for scaffold in self._scaffolds.values():
+            if isinstance(scaffold, BoundaryScaffold):
+                cast(BoundaryScaffold, scaffold).rematchBoundaries()
+

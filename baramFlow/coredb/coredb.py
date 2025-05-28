@@ -590,7 +590,7 @@ class _CoreDB(object):
 
         return index
 
-    def getBoundaryConditions(self, rname: str) -> list[(int, str, str)]:
+    def getBoundaryConditions(self, rname: str) -> list[tuple[int, str, str]]:
         """Returns list of boundary conditions in the region
 
         Returns list of boundary conditions in the region
