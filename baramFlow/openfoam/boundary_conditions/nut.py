@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallVelocityCondition, InterfaceMode
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode, WallMotion, ShearCondition
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, KEpsilonModel, NearWallTreatment, TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -87,6 +87,34 @@ class Nut(BoundaryCondition):
             'value': self._initialValueByTime()
         }
 
+    def _constructRoughWallFunctionByModel(self, xpath):
+        if self._model == TurbulenceModel.K_EPSILON:
+            # Wall type should be "nutUSpaldingWallFunction" for "realizableKEtwoLayer" model
+            subModel = self._db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/model')
+            if subModel == KEpsilonModel.REALIZABLE.value:
+                treatment = self._db.getValue(TurbulenceModelsDB.TURBULENCE_MODELS_XPATH + '/k-epsilon/realizable/nearWallTreatment')
+                if treatment == NearWallTreatment.ENHANCED_WALL_TREATMENT.value:
+                    return self._constructNutURoughWallFunction(xpath)
+
+            return self._constructNutkRoughWallFunctionn(xpath)
+        else:
+            return self._constructNutURoughWallFunction(xpath)
+
+    def _constructNutkRoughWallFunctionn(self, xpath):
+        return {
+            'type': 'nutkRoughWallFunction',
+            'Ks': self._db.getValue(xpath + '/wall/velocity/wallRoughness/height'),
+            'Cs': self._db.getValue(xpath + '/wall/velocity/wallRoughness/constant')
+        }
+
+    def _constructNutURoughWallFunction(self, xpath):
+        return {
+            'type': 'nutURoughWallFunction',
+            'roughnessHeight': self._db.getValue(xpath + '/wall/velocity/wallRoughness/height'),
+            'roughnessConstant': self._db.getValue(xpath + '/wall/velocity/wallRoughness/constant'),
+            'roughnessFactor': 1
+        }
+
     def _constructAtmNutkWallFunction(self):
         return {
             'type': 'atmNutkWallFunction',
@@ -101,9 +129,17 @@ class Nut(BoundaryCondition):
             return self._constructZeroGradient()
 
     def _constructWallNut(self, xpath):
-        spec = self._db.getValue(xpath + '/wall/velocity/type')
-        if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
-            return self._constructAtmNutkWallFunction()
+        isRoughWall = float(self._db.getValue(xpath + '/wall/velocity/wallRoughness/height')) > 0
+        wallMotion = WallMotion(self._db.getValue(xpath + '/wall/velocity/wallMotion/type'))
+        if wallMotion == WallMotion.STATIONARY_WALL:
+            if self._db.getBool(xpath + '/wall/velocity/wallMotion/stationaryWall/atmosphericWall'):
+                return self._constructAtmNutkWallFunction()
+
+            if self._db.getValue(xpath + '/wall/velocity/shearCondition') == ShearCondition.SLIP.value:
+                isRoughWall = False
+
+        if isRoughWall:
+            return self._constructRoughWallFunctionByModel(xpath)
         else:
             return self._constructWallFunctionByModel()
 

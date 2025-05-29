@@ -8,7 +8,7 @@ from libbaram.simple_db.simple_db import elementToVector
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType, ThicknessModel, FeatureSnapType
-from baramMesh.db.configurations_schema import GapRefinementMode
+from baramMesh.db.configurations_schema import GapRefinementMode, BufferLayerPointSmoothingMethod
 
 
 def boolToText(value):
@@ -28,6 +28,7 @@ class SnappyHexMeshDict(DictionaryFile):
             return self
 
         self._data = {
+            'type': None,
             'castellatedMesh': boolToText(self._casterllationMesh),
             'snap': boolToText(self._snap),
             'addLayers': boolToText(self._addLayers),
@@ -86,6 +87,22 @@ class SnappyHexMeshDict(DictionaryFile):
             'mergeTolerance': app.db.getValue('meshQuality/mergeTolerance')
         }
 
+        bufferLayer = app.db.getElement('snap/bufferLayer')
+        if self._snap and not bufferLayer.value('disabled'):
+            self._data['type'] = 'castellatedBufferLayer'
+            self._data['snapControls']['solver'] = 'displacementPointSmoothing'
+
+            pointSmoothingMethod = bufferLayer.enum('pointSmoothingMethod')
+            self._data['snapControls']['displacementPointSmoothingCoeffs'] = {
+                'pointSmoother': pointSmoothingMethod.value,
+                'nPointSmootherIter': bufferLayer.value('numberOfPointSmoothingIteration')
+            }
+
+            if bufferLayer.enum('pointSmoothingMethod') == BufferLayerPointSmoothingMethod.GETME:
+                self._data['snapControls']['displacementPointSmoothingCoeffs']['transformationParameter'] = bufferLayer.value('GETMeTransformationParameter'),
+        else:
+            self._data.pop('type')
+
         return self
 
     def updateForCellZoneInterfacesSnap(self):
@@ -96,6 +113,17 @@ class SnappyHexMeshDict(DictionaryFile):
                 'geometry', lambda i, e: e['cfdType'] == CFDType.INTERFACE.value and not e['interRegion']).values():
             self._data['castellatedMeshControls']['refinementSurfaces'][interface.value('name')]['faceType'] = (
                 'boundary' if interface.value('nonConformal') else 'baffle')
+
+        return self
+
+    def removeBufferLayers(self):
+        type_ = self._data.pop('type', None)
+        if type_:
+            self._data['snapControls'].pop('solver', None)
+            self._data['snapControls'].pop('displacementPointSmoothingCoeffs', None)
+
+        for surface in self._data['castellatedMeshControls']['refinementSurfaces'].values():
+            surface.pop('addBufferLayers', None)
 
         return self
 
@@ -245,6 +273,9 @@ class SnappyHexMeshDict(DictionaryFile):
                     'patchInfo': {'type': 'patch'}
                 }
 
+            if self._snap:
+                data[name]['addBufferLayers'] = boolToText(surface.value('addBufferLayers'))
+
             if group := surface.value('castellationGroup'):
                 refinement = refinements[group].element('surfaceRefinement')
                 data[name]['level'] = [int(refinement.value('minimumLevel')), int(refinement.value('maximumLevel'))]
@@ -285,14 +316,22 @@ class SnappyHexMeshDict(DictionaryFile):
                 }
 
                 gapRefinement = refinement.element('gapRefinement')
-                gapMode = gapRefinement.value('direction')
-                if gapMode != GapRefinementMode.NONE.value:
+                gapMode = gapRefinement.enum('direction')
+                if gapMode != GapRefinementMode.NONE:
                     data[volume.value('name')]['gapLevel'] = [
                         gapRefinement.value('minCellLayers'),
                         gapRefinement.value('detectionStartLevel'),
                         gapRefinement.value('maxRefinementLevel')]
-                    data[volume.value('name')]['gapMode'] = gapMode
+                    data[volume.value('name')]['gapMode'] = gapMode.value
                     data[volume.value('name')]['gapSelf'] = 'true' if gapRefinement.value('gapSelf') else 'false'
+
+                levelIncrement = refinement.element('levelIncrement')
+                if not levelIncrement.value('disabled'):
+                    data[volume.value('name')]['levelIncrement'] = [
+                        levelIncrement.value('minLevel'), levelIncrement.value('maxLevel'), [
+                            levelIncrement.value('splitCountX'),
+                            levelIncrement.value('splitCountY'),
+                            levelIncrement.value('splitCountZ')]]
 
         return data
 

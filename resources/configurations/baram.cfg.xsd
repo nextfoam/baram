@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="9">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="10">
 
     <!-- type definitions -->
-    <xs:simpleType name="positive">
+    <xs:simpleType name="uuidType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+   <xs:simpleType name="positive">
         <xs:restriction base="xs:double">
             <xs:minExclusive value="0"/>
         </xs:restriction>
@@ -47,6 +53,13 @@
         <xs:restriction base="xs:double">
             <xs:minExclusive value="0"/>
             <xs:maxExclusive value="10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="inclusvie0-10">
+        <xs:restriction base="xs:double">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="10"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -116,6 +129,14 @@
     <xs:complexType name="inputExclusive0-10Type">
         <xs:simpleContent>
             <xs:extension base="exclusvie0-10">
+                <xs:attribute name="batchParameter" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="inputInclusive0-10Type">
+        <xs:simpleContent>
+            <xs:extension base="inclusvie0-10">
                 <xs:attribute name="batchParameter" type="xs:string"/>
             </xs:extension>
         </xs:simpleContent>
@@ -235,6 +256,17 @@
             </xs:element>
         </xs:sequence>
     </xs:complexType>
+
+    <xs:simpleType name="fieldCategoryType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="geometry"/>
+            <xs:enumeration value="basic"/>
+            <xs:enumeration value="collateral"/>
+            <xs:enumeration value="phase"/>
+            <xs:enumeration value="specie"/>
+            <xs:enumeration value="userScalar"/>
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:complexType name="generalType">
         <xs:sequence>
@@ -1397,17 +1429,57 @@
             <xs:element name="velocity">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="type" default="noSlip">
+                        <xs:element name="wallMotion">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="type" default="stationaryWall">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="stationaryWall"/>
+                                                <xs:enumeration value="movingWall"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:element>
+                                    <xs:element name="stationaryWall">
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="atmosphericWall" type="xs:boolean" default="false"/>
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                    <xs:element name="movingWall">
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="motion" default="translationalMotion">
+                                                    <xs:simpleType>
+                                                        <xs:restriction base="xs:string">
+                                                            <xs:enumeration value="translationalMotion"/>
+                                                            <xs:enumeration value="rotationalMotion"/>
+                                                            <xs:enumeration value="meshMotion"/>
+                                                        </xs:restriction>
+                                                    </xs:simpleType>
+                                                </xs:element>
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="shearCondition" default="noSlip">
                             <xs:simpleType>
                                 <xs:restriction base="xs:string">
                                     <xs:enumeration value="noSlip"/>
                                     <xs:enumeration value="slip"/>
-                                    <xs:enumeration value="movingWall"/>
-                                    <xs:enumeration value="atmosphericWall"/>
-                                    <xs:enumeration value="translationalMovingWall"/>
-                                    <xs:enumeration value="rotationalMovingWall"/>
                                 </xs:restriction>
                             </xs:simpleType>
+                        </xs:element>
+                        <xs:element name="wallRoughness">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="height" type="inputNumberType"/>
+                                    <xs:element name="constant" type="inputNumberType"/>
+                                </xs:sequence>
+                            </xs:complexType>
                         </xs:element>
                         <xs:element name="translationalMovingWall">
                             <xs:complexType>
@@ -1445,6 +1517,7 @@
                         <xs:element name="heatFlux" type="inputNumberType" default="1000"/>
                         <xs:element name="heatTransferCoefficient" type="inputNumberType" default="100"/>
                         <xs:element name="freeStreamTemperature" type="inputNumberType" default="300"/>
+                        <xs:element name="externalEmissivity" type="inputRatioType" default="0"/>
                         <xs:element name="wallLayers">
                             <xs:complexType>
                                 <xs:sequence>
@@ -1786,6 +1859,7 @@
             </xs:element>
             <xs:element name="maxIterationsPerTimeStep" type="xs:positiveInteger" default="20"/>
             <xs:element name="numberOfCorrectors" type="xs:positiveInteger" default="4"/>
+            <xs:element name="numberOfNonOrthogonalCorrectors" type="inputInclusive0-10Type" default="0"/>
             <xs:element name="multiphase">
                 <xs:complexType>
                     <xs:sequence>
@@ -2420,6 +2494,230 @@
                                     <xs:sequence>
                                         <xs:element ref="volumeMonitor" minOccurs="0"
                                                     maxOccurs="unbounded"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <xs:element name="scaffolds">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="boundaries">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="boundary" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="boundaries">
+                                                        <xs:simpleType>
+                                                            <xs:list itemType="xs:positiveInteger"/>  <!-- boundary condition bcid -->
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="diskScaffolds">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="diskScaffold" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="center" type="vector"/>
+                                                    <xs:element name="normal" type="vector"/>
+                                                    <xs:element name="outerRadius" type="positive" default="1"/>
+                                                    <xs:element name="innerRadius" type="nonNegative" default="0"/>
+                                                    <xs:element name="radialSamples" type="xs:positiveInteger" default="10"/>
+                                                    <xs:element name="circumferentialSamples" type="xs:positiveInteger" default="20"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="isoSurfaces">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="surface" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="fieldCategory" type="fieldCategoryType"/>
+                                                    <xs:element name="fieldCodeName" type="xs:string"/>
+                                                    <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
+                                                    <xs:element name="isoValues" type="inputNumberListType"/>
+                                                    <xs:element name="surfacesPerValue" type="xs:positiveInteger" default="1"/>
+                                                    <xs:element name="spacing" type="inputPositiveNumberType"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="lineScaffolds">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="lineScaffold" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="point1" type="vector"/>
+                                                    <xs:element name="point2" type="vector"/>
+                                                    <xs:element name="numberOfSamples" type="xs:positiveInteger" default="10"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="parallelograms">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="parallelogram" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="origin" type="vector"/>
+                                                    <xs:element name="point1" type="vector"/>
+                                                    <xs:element name="point2" type="vector"/>
+                                                    <xs:element name="point1Samples" type="xs:positiveInteger" default="10"/>
+                                                    <xs:element name="point2Samples" type="xs:positiveInteger" default="10"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="planeScaffolds">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="planeScaffold" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="origin" type="vector"/>
+                                                    <xs:element name="normal" type="vector"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="sphereScaffolds">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="sphereScaffold" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="uuid" type="uuidType"/>
+                                                    <xs:element name="name" type="xs:string"/>
+                                                    <xs:element name="center" type="vector"/>
+                                                    <xs:element name="radius" type="positive" default="1"/>
+                                                    <xs:element name="longitudeSamples" type="xs:positiveInteger" default="40"/>
+                                                    <xs:element name="latitudeSamples" type="xs:positiveInteger" default="20"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <xs:element name="graphics">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="graphic" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="uuid" type="uuidType"/>
+                                        <xs:element name="name" type="xs:string"/>
+                                        <xs:element name="fieldCategory" type="fieldCategoryType"/>
+                                        <xs:element name="fieldCodeName" type="xs:string"/>
+                                        <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
+                                        <xs:element name="time" type="xs:string"/>
+                                        <!-- color map configuration begin -->
+                                        <xs:element name="fieldDisplayName" type="xs:string"/>
+                                        <xs:element name="numberOfLevels" type="xs:positiveInteger" default="256"/>
+                                        <xs:element name="useNodeValues" type="xs:boolean" default="true"/>
+                                        <xs:element name="relevantScaffoldsOnly" type="xs:boolean" default="false"/>
+                                        <xs:element name="useCustomRange" type="xs:boolean" default="false"/>
+                                        <xs:element name="customRangeMin" type="xs:double" default="0"/>
+                                        <xs:element name="customRangeMax" type="xs:double" default="0"/>
+                                        <xs:element name="clipToRange" type="xs:boolean" default="false"/>
+                                        <xs:element name="useCustomColorScheme" type="xs:boolean" default="false"/>
+                                        <xs:element name="colorScheme" type="xs:string" default="Blue to Red Rainbow"/>
+                                        <xs:element name="customMinColor" type="xs:string" default="#000000"/>
+                                        <xs:element name="customMaxColor" type="xs:string" default="#ffffff"/>
+                                        <!-- color map configuration end -->
+                                        <xs:element name="includeVectors" type="xs:boolean" default="false"/>
+                                        <xs:element name="vectorFieldCategory">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="basic"/>
+                                                    <xs:enumeration value="collateral"/>
+                                                    <xs:enumeration value="phase"/>
+                                                    <xs:enumeration value="specie"/>
+                                                    <xs:enumeration value="userScalar"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="vectorFieldCodeName" type="xs:string"/>
+                                        <xs:element name="vectorScaleFactor" type="xs:double" default="1.0"/>
+                                        <xs:element name="vectorNumMax" type="xs:positiveInteger" default="1000"/>
+                                        <xs:element name="vectorFixedLength" type="xs:boolean" default="false"/>
+                                        <xs:element name="stepSize" type="xs:double" default="0.1"/>
+                                        <xs:element name="maxSteps" type="xs:positiveInteger" default="2000"/>
+                                        <xs:element name="maxLength" type="xs:double" default="10.0"/>
+                                        <xs:element name="accuracyControl" type="xs:boolean" default="false"/>
+                                        <xs:element name="tolerance" type="xs:double" default="1e-6"/>
+                                        <xs:element name="streamlineType" default="ribbon">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="line"/>
+                                                    <xs:enumeration value="ribbon"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="lineWidth" type="xs:double" default="0.01"/>
+                                        <xs:element name="displayItems">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="displayItem" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="scaffoldUuid" type="uuidType"/>  <!-- For other type scaffolds -->
+                                                                <xs:element name="visibility" type="xs:boolean" default="true"/>
+                                                                <xs:element name="opacity" type="ratio" default="1"/>
+                                                                <xs:element name="solidColor" type="xs:boolean" default="false"/>
+                                                                <xs:element name="color" type="xs:string" default="#FFFFFF"/>  <!-- Can be #RRRGGGBBB in the future -->
+                                                                <xs:element name="edges" type="xs:boolean" default="false"/>
+                                                                <xs:element name="faces" type="xs:boolean" default="true"/>
+                                                                <xs:element name="frontFaceCulling" type="xs:boolean" default="false"/>
+                                                                <xs:element name="vectorsOn" type="xs:boolean" default="false"/>
+                                                                <xs:element name="streamlinesOn" type="xs:boolean" default="false"/>
+                                                                <xs:element name="maxNumberOfSamplePoints" type="xs:positiveInteger" default="100"/>
+                                                                <xs:element name="streamlinesIntegrateForward" type="xs:boolean" default="true"/>
+                                                                <xs:element name="streamlinesIntegrateBackward" type="xs:boolean" default="false"/>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>

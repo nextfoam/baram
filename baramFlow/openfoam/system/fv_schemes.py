@@ -24,8 +24,9 @@ class FvSchemes(DictionaryFile):
     def build(self):
         if self._data is not None:
             return self
-
-        if findSolver() == 'TSLAeroFoam':
+        
+        solver = findSolver()
+        if solver == 'TSLAeroFoam' or solver == 'UTSLAeroFoam':
             self._generateTSLAero()
         else:
             phase = MaterialDB.getPhase(self._mid)
@@ -39,7 +40,7 @@ class FvSchemes(DictionaryFile):
     def _generateTSLAero(self):
         self._data = {
             'ddtSchemes': {
-                'default': 'localEuler'
+                'default': 'backwardDualTime' if GeneralDB.isTimeTransient() else 'localEuler'
             },
             'gradSchemes': {
                 'default': 'Gauss linear',
@@ -62,7 +63,7 @@ class FvSchemes(DictionaryFile):
             }
         }
 
-        turbulentKineticEnergy = self._db.getValue('.//discretizationSchemes/turbulentKineticEnergy')
+        turbulentKineticEnergy = self._db.getValue('/numericalConditions/discretizationSchemes/turbulentKineticEnergy')
         if turbulentKineticEnergy == 'firstOrderUpwind':
             self._data['divSchemes'] = {
                 'default': 'Gauss linear',
@@ -108,8 +109,8 @@ class FvSchemes(DictionaryFile):
             'laplacianSchemes': self._constructLaplacianSchemes(),
             'interpolationSchemes': {
                 'default': 'linear',
-                'interpolate(p)':     self._db.getValue('.//numericalConditions/discretizationSchemes/pressure'),
-                'interpolate(p_rgh)': self._db.getValue('.//numericalConditions/discretizationSchemes/pressure'),
+                'interpolate(p)':     self._db.getValue('/numericalConditions/discretizationSchemes/pressure'),
+                'interpolate(p_rgh)': self._db.getValue('/numericalConditions/discretizationSchemes/pressure'),
                 'reconstruct(psi)': 'Minmod',
                 'reconstruct(p)':   'Minmod',
                 'reconstruct(U)':   'MinmodV',
@@ -124,7 +125,7 @@ class FvSchemes(DictionaryFile):
         }
 
     def _constructDdtSchemes(self):
-        time = self._db.getValue('.//discretizationSchemes/time')
+        time = self._db.getValue('/numericalConditions/discretizationSchemes/time')
 
         ddtSchemes = {}
         if GeneralDB.isTimeTransient():
@@ -157,14 +158,14 @@ class FvSchemes(DictionaryFile):
         }
 
     def _constructDivSchemes(self):
-        energyModel = self._db.getValue('.//models/energyModels')
-        multiphaseModel = self._db.getValue('.//models/multiphaseModels/model')
-        speciesModel = self._db.getValue('.//models/speciesModels')
+        energyModel = self._db.getValue('/models/energyModels')
+        multiphaseModel = self._db.getValue('/models/multiphaseModels/model')
+        speciesModel = self._db.getValue('/models/speciesModels')
 
-        momentum = self._db.getValue('.//discretizationSchemes/momentum')
-        energy = self._db.getValue('.//discretizationSchemes/energy')
-        turbulentKineticEnergy = self._db.getValue('.//discretizationSchemes/turbulentKineticEnergy')
-        volumeFraction = self._db.getValue('.//discretizationSchemes/volumeFraction')
+        momentum = self._db.getValue('/numericalConditions/discretizationSchemes/momentum')
+        energy = self._db.getValue('/numericalConditions/discretizationSchemes/energy')
+        turbulentKineticEnergy = self._db.getValue('/numericalConditions/discretizationSchemes/turbulentKineticEnergy')
+        volumeFraction = self._db.getValue('/numericalConditions/discretizationSchemes/volumeFraction')
 
         # prepend 'bounded' prefix for steady-only solvers
         if not GeneralDB.isTimeTransient() and not allRoundSolver():
@@ -174,7 +175,7 @@ class FvSchemes(DictionaryFile):
 
         divSchemes = {
             'default': 'Gauss linear',
-            'div(phi,age)': 'Gauss linearUpwind momentumReconGrad'
+            'div(phi,age)': 'bounded Gauss linearUpwind momentumReconGrad'
         }
 
         if momentum == 'firstOrderUpwind':
@@ -260,8 +261,8 @@ class FvSchemes(DictionaryFile):
     def _constructLaplacianSchemes(self):
         laplacianSchemes = {}
 
-        relaxationDisabled = self._db.getAttribute('.//numericalConditions/highOrderTermRelaxation', 'disabled')
-        relFactor = self._db.getValue('.//numericalConditions/highOrderTermRelaxation/relaxationFactor')
+        relaxationDisabled = self._db.getAttribute('/numericalConditions/highOrderTermRelaxation', 'disabled')
+        relFactor = self._db.getValue('/numericalConditions/highOrderTermRelaxation/relaxationFactor')
         if relaxationDisabled == 'true':
             laplacianSchemes['default'] = 'Gauss linear corrected'
         else:

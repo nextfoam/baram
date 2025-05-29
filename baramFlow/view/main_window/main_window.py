@@ -8,6 +8,7 @@ import subprocess
 from enum import Enum, auto
 from pathlib import Path
 import platform
+from uuid import UUID
 
 import qasync
 import asyncio
@@ -15,6 +16,9 @@ import asyncio
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
+from baramFlow.base.graphic.graphics_db import GraphicsDB
+from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
+from baramFlow.view.results.graphics.graphic_dock import GraphicDock
 from libbaram.exception import CanceledException
 from libbaram.openfoam.polymesh import removeVoidBoundaries
 from libbaram.run import hasUtility
@@ -58,7 +62,9 @@ from baramFlow.view.solution.monitors.monitors_page import MonitorsPage
 from baramFlow.view.solution.initialization.initialization_page import InitializationPage
 from baramFlow.view.solution.run_conditions.run_conditions_page import RunConditionsPage
 from baramFlow.view.solution.run.process_information_page import ProcessInformationPage
+from baramFlow.view.results.graphics.graphics_page import GraphicsPage
 from baramFlow.view.results.reports.reports_page import ReportsPage
+from baramFlow.view.results.scaffolds.scaffolds_page import ScaffoldsPage
 from .content_view import ContentView
 from .dock_view import DockView
 from .fluent_regions_dialog import FluentRegionsDialog
@@ -151,6 +157,8 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value: MenuPage(RunConditionsPage),
             MenuItem.MENU_SOLUTION_RUN.value: MenuPage(ProcessInformationPage),
 
+            MenuItem.MENU_RESULTS_SCAFFOLDS.value: MenuPage(ScaffoldsPage),
+            MenuItem.MENU_RESULTS_GRAPHICS.value: MenuPage(GraphicsPage),
             MenuItem.MENU_RESULTS_REPORTS.value: MenuPage(ReportsPage),
         }
 
@@ -169,6 +177,8 @@ class MainWindow(QMainWindow):
 
         self._ui.splitter.addWidget(self._dockView)
         self._ui.splitter.setStretchFactor(2, 1)
+
+        self._docks: dict[UUID, GraphicDock] = {}
 
     def consoleView(self):
         return self._consoleDock.widget()
@@ -195,11 +205,6 @@ class MainWindow(QMainWindow):
 
         self._caseManager.clear()
         Project.close()
-
-        self._consoleDock.widget().close()
-        self._renderingDock.widget().close()
-        self._chartDock.widget().close()
-        self._monitorDock.widget().close()
 
         if self._closeType == CloseType.CLOSE_PROJECT:
             app.restart()
@@ -266,11 +271,19 @@ class MainWindow(QMainWindow):
 
         self._caseManager.caseLoaded.connect(self._caseLoaded)
 
+        GraphicsDB().reportAdded.asyncConnect(self._reportAdded)
+        GraphicsDB().reportUpdated.asyncConnect(self._reportUpdated)
+        GraphicsDB().removingReport.asyncConnect(self._reportRemoving)
+
     def _disconnectSignalsSlots(self):
         self._project.projectOpened.disconnect(self._projectOpened)
         self._project.solverStatusChanged.disconnect(self._solverStatusChanged)
 
         self._caseManager.caseLoaded.disconnect(self._caseLoaded)
+
+        GraphicsDB().reportAdded.disconnect(self._reportAdded)
+        GraphicsDB().reportUpdated.disconnect(self._reportUpdated)
+        GraphicsDB().removingReport.disconnect(self._reportRemoving)
 
     @qasync.asyncSlot()
     async def _save(self):
@@ -353,6 +366,8 @@ class MainWindow(QMainWindow):
                 await self._save()
             elif confirm == QMessageBox.StandardButton.Cancel:
                 return
+
+        await GraphicsDB().close()
 
         self._dockView.close()
         logging.getLogger().removeHandler(self._handler)
@@ -505,7 +520,7 @@ class MainWindow(QMainWindow):
         progressDialog = ProgressDialog(self._dialog, self.tr('Case Redistribution'))
         progressDialog.open()
 
-        if numCores != oldNumCores:
+        if FileSystem.hasPolyMesh() and numCores != oldNumCores:
             progressDialog.setLabelText('Redistributing Case')
 
             try:
@@ -518,21 +533,6 @@ class MainWindow(QMainWindow):
                 progressDialog.finish(str(e))
 
         progressDialog.finish('Parallel Environment was Applied.')
-
-    async def _loadVtkMesh(self):
-        progressDialog = ProgressDialog(self, self.tr('Case Loading.'))
-        progressDialog.open()
-
-        # Workaround to give some time for QT to set up timer or event loop.
-        # This workaround is not necessary on Windows because BARAM for Windows
-        #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
-        await asyncio.sleep(0.1)
-
-        loader = PolyMeshLoader()
-        loader.progress.connect(progressDialog.setLabelText)
-        await loader.loadVtk()
-
-        progressDialog.close()
 
     @qasync.asyncSlot()
     async def _changeForm(self, currentMenu, previousMenu=-1):
@@ -612,13 +612,25 @@ class MainWindow(QMainWindow):
             self._navigatorView.setCurrentMenu(MenuItem.MENU_SETUP_GENERAL.value)
             self._renderingDock.raise_()
 
+        progressDialog = ProgressDialog(self, self.tr('Case Loading'))
+        progressDialog.open()
+
         db = coredb.CoreDB()
         if db.hasMesh():
-            await self._loadVtkMesh()
+            ScaffoldsDB().load()
+            await GraphicsDB().load()
+
+            # Workaround to give some time for QT to set up timer or event loop.
+            # This workaround is not necessary on Windows because BARAM for Windows
+            #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
+            await asyncio.sleep(0.1)
+
+            loader = PolyMeshLoader()
+            loader.progress.connect(progressDialog.setLabelText)
+            await loader.loadVtk()
+
         elif FileSystem.hasPolyMesh():
             # BaramMesh Project is opened
-            progressDialog = ProgressDialog(self, self.tr('Mesh Loading'))
-            progressDialog.open()
 
             # Workaround to give some time for QT to set up timer or event loop.
             # This workaround is not necessary on Windows because BARAM for Windows
@@ -630,13 +642,16 @@ class MainWindow(QMainWindow):
                 loader.progress.connect(progressDialog.setLabelText)
                 await loader.loadMesh()
 
-                progressDialog.close()
             except Exception as ex:
                 progressDialog.finish(self.tr('Error occurred:\n' + str(ex)))
 
             self._project.fileDB().saveCoreDB()
 
+        progressDialog.setLabelText(self.tr('Building Graphics Reports'))
+
         self._navigatorView.updateEnabled()
+
+        progressDialog.close()
 
     @qasync.asyncSlot()
     async def _caseLoaded(self, name=None):
@@ -896,3 +911,23 @@ class MainWindow(QMainWindow):
         db.clearMonitors()
         FileSystem.deleteMesh()
         self.meshUpdated()
+
+    async def _reportAdded(self, uuid: UUID):
+        report = GraphicsDB().getVisualReport(uuid)
+        dockWidget = GraphicDock(report)
+        self._dockView.addDockWidget(dockWidget)
+        self._docks[uuid] = dockWidget
+
+    async def _reportUpdated(self, uuid: UUID):
+        if uuid in self._docks:
+            report = GraphicsDB().getVisualReport(uuid)
+            dockWidget = self._docks[uuid]
+            dockWidget.setWindowTitle(report.name)
+
+    async def _reportRemoving(self, uuid: UUID):
+        if uuid in self._docks:
+            dockWidget = self._docks[uuid]
+            self._dockView.removeDockWidget(dockWidget)
+            dockWidget.close()
+
+            del self._docks[uuid]

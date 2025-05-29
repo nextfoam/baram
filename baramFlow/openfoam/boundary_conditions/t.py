@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallVelocityCondition, WallTemperature
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, FlowRateInletSpecification, WallTemperature
 from baramFlow.coredb.boundary_db import TemperatureProfile, TemperatureTemporalDistribution, InterfaceMode
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
@@ -121,8 +121,7 @@ class T(BoundaryCondition):
             return self._constructCyclicAMI()
 
     def _constructWallT(self, xpath, constant):
-        spec = self._db.getValue(xpath + '/wall/velocity/type')
-        if spec == WallVelocityCondition.ATMOSPHERIC_WALL.value:
+        if self._isAtmosphericWall(xpath):
             return self._constructFixedValue(constant)
         else:
             spec = self._db.getValue(xpath + '/wall/temperature/type')
@@ -141,16 +140,15 @@ class T(BoundaryCondition):
                     'value': self._initialValueByTime()
                 }
             elif spec == WallTemperature.CONVECTION.value:
-                h = self._db.getValue(xpath + '/wall/temperature/heatTransferCoefficient')
-                ta = self._db.getValue(xpath + '/wall/temperature/freeStreamTemperature')
                 thicknessLayers = self._db.getValue(xpath + '/wall/temperature/wallLayers/thicknessLayers').split()
                 kappaLayers = self._db.getValue(xpath + '/wall/temperature/wallLayers/thermalConductivityLayers').split()
 
                 data = {
                     'type': 'externalWallHeatFluxTemperature',
                     'mode': 'coefficient',
-                    'h': ('uniform', h),
-                    'Ta': ('uniform', ta),
+                    'h': ('constant', self._db.getValue(xpath + '/wall/temperature/heatTransferCoefficient')),
+                    'Ta': ('constant', self._db.getValue(xpath + '/wall/temperature/freeStreamTemperature')),
+                    'emissivity': self._db.getValue(xpath + '/wall/temperature/externalEmissivity'),
                     'kappaMethod': 'fluidThermo' if self._region.isFluid() else 'solidThermo',
                     'value': self._initialValueByTime()
                 }

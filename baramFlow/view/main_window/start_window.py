@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
+import ctypes
 import logging
+import platform
 from pathlib import Path
 
 import qasync
@@ -9,9 +12,11 @@ import qasync
 from filelock import Timeout
 
 from PySide6.QtCore import Qt, QObject
-from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QDialog
 
 from libbaram.openfoam.constants import isBaramProject
+from widgets.async_message_box import AsyncMessageBox
+from libbaram import vtk_threads
 
 from baramFlow.app import app
 from baramFlow.coredb.app_settings import AppSettings
@@ -31,9 +36,10 @@ class Baram(QObject):
         self._applicationLock = None
 
         app.restarted.connect(self._restart)
-        app.projectCreated.connect(self._openNewProject)
+        app.projectCreated.connect(self._openProject)
 
     async def start(self):
+        vtk_threads.vtkThreadLock = asyncio.Lock()
         try:
             self._applicationLock = AppSettings.acquireLock(5)
         except Timeout:
@@ -42,11 +48,8 @@ class Baram(QObject):
         self._projectSelector = ProjectSelector()
         self._projectSelector.finished.connect(self._projectSelectorClosed, type=Qt.ConnectionType.QueuedConnection)
         self._projectSelector.actionNewSelected.connect(self._createProject)
-        self._projectSelector.projectSelected.connect(self._openExistingProject)
+        self._projectSelector.projectSelected.connect(self._projectSelected)
         self._projectSelector.open()
-
-    def _createProject(self):
-        app.plug.createProject(self._projectSelector)
 
     def _projectSelectorClosed(self, result):
         self._applicationLock.release()
@@ -58,33 +61,50 @@ class Baram(QObject):
     async def _restart(self):
         await self.start()
 
-    def _openExistingProject(self, directory):
-        self._openProject(Path(directory), ProjectOpenType.EXISTING)
+    # Create a BaramFlow project by generating a CoreDB.
+    # path: None for project creation, or an exported BaramMesh project path for conversion.
+    def _createProject(self, path=None):
+        app.plug.createProject(self._projectSelector, path)
 
-    def _openNewProject(self, path, openType):
-        self._openProject(path, openType)
+    # A BaramFlow project or an exported BaramMesh project directory is selected.
+    @qasync.asyncSlot()
+    async def _projectSelected(self, directory):
+        path = Path(directory)
+        if not FileDB.exists(path) and isBaramProject(path):
+            # Start Case Wizard if a project exported from baramMesh
+            self._createProject(path)
+        else:
+            await self._openProject(path, ProjectOpenType.EXISTING)
 
-    def _openProject(self, path, openType):
-        # Start Case Wizard if a project exported from baramMesh
-        if openType == ProjectOpenType.EXISTING and not FileDB.exists(path) and isBaramProject(path):
-            app.plug.createProject(self._projectSelector, path)
-
-            return
+    @qasync.asyncSlot()
+    async def _openProject(self, path, openType):
+        openedProject = None
 
         try:
-            Project.open(path.resolve(), openType)
-            self._projectSelector.accept()  # To close project selector dialog
-            app.openMainWindow()
+            openedProject = Project.open(path.resolve(), openType)
 
-            return
+            if (openedProject.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value) is not None
+                    and platform.system() == 'Windows' and not ctypes.windll.shell32.IsUserAnAdmin()):
+                # Symbolic link requires administrator permission on Windows platform
+                openedProject = None
+                await AsyncMessageBox().warning(
+                    self._projectSelector, self.tr('Permission Error'),
+                    self.tr('Run BARAM as administrator to use batch mode'))
         except FileNotFoundError:
-            QMessageBox.critical(self._projectSelector, self.tr('Project Open Error'),
-                                 self.tr(f'{path.name} is not a baram project.'))
+            await AsyncMessageBox().warning(self._projectSelector, self.tr('Project Open Error'),
+                                            self.tr(f'{path.name} is not a baram project.'))
         except Timeout:
-            QMessageBox.critical(self._projectSelector, self.tr('Project Open Error'),
-                                 self.tr(f'{path.name} is open in another program.'))
+            await AsyncMessageBox().warning(self._projectSelector, self.tr('Project Open Error'),
+                                            self.tr(f'{path.name} is open in another program.'))
         except Exception as ex:
-            QMessageBox.critical(self._projectSelector, self.tr('Project Open Error'),
-                                 self.tr('Fail to open case\n' + str(ex)))
+            await AsyncMessageBox().warning(self._projectSelector, self.tr('Project Open Error'),
+                                            self.tr('Fail to open case\n' + str(ex)))
 
-        Project.close()
+        if openedProject is None:
+            Project.close()
+            return
+
+        self._projectSelector.accept()  # To close project selector dialog
+        app.openMainWindow()
+
+

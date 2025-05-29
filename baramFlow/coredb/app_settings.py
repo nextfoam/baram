@@ -8,11 +8,11 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-from PySide6.QtCore import QLocale, QRect
-
 import yaml
 from filelock import FileLock
+from PySide6.QtCore import QLocale, QRect
 
+from libbaram.mpi import ParallelEnvironment, ParallelType
 
 FORMAT_VERSION = 1
 RECENT_PROJECTS_NUMBER = 100
@@ -28,6 +28,9 @@ class SettingKey(Enum):
     LAST_START_WINDOW_GEOMETRY = 'last_start_window_position'
     LAST_MAIN_WINDOW_GEOMETRY = 'last_main_window_position'
     PARAVIEW_INSTALLED_PATH = 'paraview_installed_path'
+    PARALLEL_NP = 'parallel_np'
+    PARALLEL_TYPE = 'parallel_type'
+    PARALLEL_HOSTFILE = 'parallel_hostfile'
 
 
 class AppSettings:
@@ -35,6 +38,7 @@ class AppSettings:
     _casesPath = None
     _settingsFile = None
     _applicationLockFile = None
+    _settings = None
 
     @classmethod
     def setup(cls, name):
@@ -178,6 +182,24 @@ class AppSettings:
                     return path
 
         return None
+    
+    @classmethod
+    def getParallenEnvironment(cls):
+        settings = cls._load()
+        type_ = settings.get(SettingKey.PARALLEL_TYPE.value)
+        
+        return ParallelEnvironment(
+            settings.get(SettingKey.PARALLEL_NP.value, 1),
+            ParallelType.LOCAL_MACHINE if type_ is None else ParallelType[type_],
+            settings.get(SettingKey.PARALLEL_HOSTFILE.value))
+        
+    @classmethod
+    def setParallelEnvironment(cls, environment):
+        settings = cls._load()
+        settings[SettingKey.PARALLEL_NP.value] = environment.np()
+        settings[SettingKey.PARALLEL_TYPE.value] = environment.type().name
+        settings[SettingKey.PARALLEL_HOSTFILE.value] = environment.hosts()
+        cls._save(settings)
 
     @classmethod
     def _load(cls):

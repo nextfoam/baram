@@ -39,7 +39,7 @@ def _foMachNumberBase():
         'type': 'MachNo',
         'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
 
-        'result': 'machNo'
+        'result': 'Mach'
     }
 
     return data

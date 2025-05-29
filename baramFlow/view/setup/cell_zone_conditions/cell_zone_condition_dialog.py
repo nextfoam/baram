@@ -88,13 +88,8 @@ class CellZoneConditionDialog(QDialog):
             self._materialsWidget = MaterialsWidget(self._rname)
             layout.addWidget(self._materialsWidget)
 
-            if self._rname:
-                self._ui.zoneName.setText(self._rname)
-            else:
-                self._ui.zoneName.setText(DEFAULT_REGION_NAME)
+            self._ui.zoneName.setText(self._rname if self._rname else DEFAULT_REGION_NAME)
         else:
-            self._rname = CellZoneDB.getCellZoneRegion(self._czid)
-
             self._ui.zoneName.setText(self._name)
 
             self._MRFZone = MRFWidget(self._xpath)
@@ -113,6 +108,10 @@ class CellZoneConditionDialog(QDialog):
             layout.addWidget(self._actuatorDiskZone)
 
             self._ui.zoneTypeRadioGroup.idToggled.connect(self._zoneTypeChanged)
+
+        if GeneralDB.isCompressibleDensity():
+            self._ui.zoneType.setEnabled(False)
+
         layout.addStretch()
 
         layout = self._ui.sourceTerms.layout()
@@ -249,6 +248,8 @@ class CellZoneConditionDialog(QDialog):
     def _load(self):
         db = coredb.CoreDB()
         self._getZoneTypeRadio(db.getValue(self._xpath + '/zoneType')).setChecked(True)
+        if GeneralDB.isCompressibleDensity():
+            self._ui.none.setChecked(True)
 
         if CellZoneDB.isRegion(self._name):
             if self._materialsWidget:

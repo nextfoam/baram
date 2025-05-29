@@ -15,7 +15,10 @@ class SolverNotFound(Exception):
 
 def findSolver():
     if GeneralDB.isDensityBased():
-        return 'TSLAeroFoam'
+        if GeneralDB.isTimeTransient():
+            return 'UTSLAeroFoam'
+        else:
+            return 'TSLAeroFoam'
 
     db = CoreDB()
     if ModelsDB.getMultiphaseModel() == MultiphaseModel.VOLUME_OF_FLUID:

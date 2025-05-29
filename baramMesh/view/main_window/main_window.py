@@ -13,6 +13,7 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
 from PySide6.QtCore import Signal, QEvent, QMargins
 from PySide6QtAds import CDockManager, DockWidgetArea
 
+from libbaram.simple_db.simple_schema import DBError
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
 from widgets.new_project_dialog import NewProjectDialog
@@ -85,6 +86,8 @@ class MainWindow(QMainWindow):
         layout.addWidget(self._dockManager)
 
         self._dockManager.addDockWidget(DockWidgetArea.CenterDockWidgetArea, self._consoleView)
+        
+        self._ui.regionValidationMessage.hide()
 
         geometry = app.settings.getLastMainWindowGeometry()
         display = app.qApplication.primaryScreen().availableVirtualGeometry()
@@ -259,6 +262,9 @@ class MainWindow(QMainWindow):
         except Timeout:
             await AsyncMessageBox().information(self, self.tr('Project Open Error'),
                                     self.tr(f'{path.name} is already open in another program.'))
+        except DBError as e:
+            await AsyncMessageBox().information(self, self.tr('Project Open Error'),
+                                                self.tr(f'configurations error : {e.path} - {e.name}'))
 
     @qasync.asyncSlot()
     async def _saveAs(self, file):

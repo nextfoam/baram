@@ -167,10 +167,6 @@ class ConsoleView(QWidget):
 
     def closeEvent(self, event):
         self._textView = None
-
-        super().closeEvent(event)
-
-    def closeEvent(self, event):
         self._disconnectSignalsSlots()
 
         super().closeEvent(event)

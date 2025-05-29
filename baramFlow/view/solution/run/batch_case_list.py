@@ -10,6 +10,8 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QHeaderView, QMenu, QMessageBox
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel
 
+from baramFlow.base.graphic.graphics_db import GraphicsDB
+from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
@@ -279,10 +281,16 @@ class BatchCaseList(QObject):
     @qasync.asyncSlot()
     async def _loadCase(self, item):
         progressDialog = ProgressDialog(self._parent, self.tr('Case Loading'))
+        progressDialog.setLabelText(self.tr('Loading Batch Case...'))
         CaseManager().progress.connect(progressDialog.setLabelText)
         progressDialog.open()
 
         CaseManager().loadBatchCase(BatchCase(item.name(), self._cases[item.name()]))
+
+        async with OpenFOAMReader() as reader:
+            await reader.setupReader()
+
+        await GraphicsDB().updatePolyMeshAll()
 
         CaseManager().progress.disconnect(progressDialog.setLabelText)
         progressDialog.close()
@@ -303,7 +311,7 @@ class BatchCaseList(QObject):
             return
 
         if self._currentCase in [i.name() for i in items]:
-            CaseManager().loadLiveCase()
+            await CaseManager().loadLiveCase()
 
         for i in items:
             name = i.name()

@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import platform
-from enum import IntEnum
+import re
+import subprocess
+from enum import IntEnum, auto
 from pathlib import Path
 
 
@@ -12,20 +14,49 @@ class ParallelType(IntEnum):
     SLURM = 2
 
 
+class MPIStatus(IntEnum):
+    OK = 0
+    NOT_FOUND = auto()
+    LOW_VERSION = auto()
+
+
 HOST_FILE_NAME = 'hostfile'
 if platform.system() == 'Windows':
     MPICMD = 'mpiexec'
     HOST_FILE_OPTION = '-machinefile'
+    VERSION_CHECK_OPTION = '-help'
+    MAJOR_VERSION = 10
+    MINOR_VERSION = 1
 else:
     MPICMD = 'mpirun'
     HOST_FILE_OPTION = '-hostfile'
+    VERSION_CHECK_OPTION = '--version'
+    MAJOR_VERSION = 4
+    MINOR_VERSION = 1
+
+
+def checkMPI():
+    try:
+        process = subprocess.Popen([MPICMD, VERSION_CHECK_OPTION], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+        m = re.search('([0-9]+)\.([0-9]+)\.', stdout.decode())
+        major = int(m.group(1))
+        minor = int(m.group(2))
+
+        # if major < MAJOR_VERSION or (major == MAJOR_VERSION and minor < MINOR_VERSION):
+        if major < MAJOR_VERSION:
+            return MPIStatus.LOW_VERSION
+
+        return MPIStatus.OK
+    except FileNotFoundError:
+        return MPIStatus.NOT_FOUND
 
 
 class ParallelEnvironment:
-    def __init__(self, np, type_, hosts):
+    def __init__(self, np: int, type_: ParallelType, hosts: str):
         self._np: int = np
         self._type = type_
-        self._hosts = hosts
+        self._hosts = '' if hosts is None else hosts
 
     def np(self):
         return self._np
@@ -42,7 +73,7 @@ class ParallelEnvironment:
     def setNP(self, np: int):
         self._np = np
 
-    def setType(self, type_):
+    def setType(self, type_: ParallelType):
         self._type = type_
 
     def setHosts(self, hosts):

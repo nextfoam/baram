@@ -25,6 +25,7 @@ class Configurations(SimpleDB):
     def create(self, path):
         self._path = path / FILE_NAME
         self.createData()
+        self._save()
 
     def load(self, path):
         self._path = path / FILE_NAME

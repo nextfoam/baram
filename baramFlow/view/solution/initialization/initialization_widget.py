@@ -7,7 +7,7 @@ from math import sqrt
 
 from PySide6.QtWidgets import QWidget, QMessageBox, QPushButton, QHBoxLayout
 from PySide6.QtWidgets import QSizePolicy
-from PySide6.QtGui import QDoubleValidator, QIcon
+from PySide6.QtGui import QIcon
 from PySide6.QtCore import Signal
 
 from libbaram.math import calucateDirectionsByRotation
@@ -91,7 +91,7 @@ class SectionRow(QWidget):
     def actor(self):
         if self._actor is None:
             db = coredb.CoreDB()
-            xpath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._name}"]'
+            xpath = f'/regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._name}"]'
 
             typeString = db.getValue(xpath + '/type')
             if typeString == 'hex':
@@ -152,20 +152,31 @@ class InitializationWidget(QWidget):
         self._rows = {}
         self._currentRow: Optional[SectionRow] = None
 
-        self._volumeFractionWidget = VolumeFractionWidget(rname)
-        self._scalarsWidget = UserDefinedScalarsWidget(rname)
-        self._speciesWidget = SpeciesWidget(RegionDB.getMaterial(self._rname))
+        self._volumeFractionWidget = None
+        self._scalarsWidget = None
+        self._speciesWidget = None
 
-        if self._volumeFractionWidget.on():
-            self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
+        mid = RegionDB.getMaterial(self._rname)
+        if MaterialDB.isFluid(mid):
+            volumeFractionWidget = VolumeFractionWidget(rname)
+            scalarsWidget = UserDefinedScalarsWidget(rname)
+            speciesWidget = SpeciesWidget(mid)
 
-        if self._scalarsWidget.on():
-            self._ui.initialValuesLayout.addWidget(self._scalarsWidget)
+            if volumeFractionWidget.on():
+                self._volumeFractionWidget = volumeFractionWidget
+                self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
 
-        if self._speciesWidget.on():
-            self._ui.initialValuesLayout.addWidget(self._speciesWidget)
+            if scalarsWidget.on():
+                self._scalarsWidget = scalarsWidget
+                self._ui.initialValuesLayout.addWidget(self._scalarsWidget)
 
-        self._ui.scaleOfVelocity.setValidator(QDoubleValidator())
+            if speciesWidget.on():
+                self._speciesWidget = speciesWidget
+                self._ui.initialValuesLayout.addWidget(self._speciesWidget)
+        else:
+            self._ui.velocity.hide()
+            self._ui.properties.layout().setRowVisible(self._ui.pressure, False)
+            self._ui.turbulence.hide()
 
         self._connectSignalsSlots()
 
@@ -204,21 +215,27 @@ class InitializationWidget(QWidget):
             or TurbulenceModelsDB.isLESSpalartAllmarasModel()
         )
 
-        self._volumeFractionWidget.load(self._initialValuesPath + '/volumeFractions')
-        self._scalarsWidget.load(self._initialValuesPath + '/userDefinedScalars')
-        self._speciesWidget.load(f'{self._initialValuesPath}/species')
+        if self._volumeFractionWidget:
+            self._volumeFractionWidget.load(self._initialValuesPath + '/volumeFractions')
 
-        sections: [str] = db.getList(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section/name')
+        if self._scalarsWidget:
+            self._scalarsWidget.load(self._initialValuesPath + '/userDefinedScalars')
+
+        if self._speciesWidget:
+            self._speciesWidget.load(f'{self._initialValuesPath}/species')
+
+        sections: list[str] = db.getList(f'/regions/region[name="{self._rname}"]/initialization/advanced/sections/section/name')
         for name in sections:
             if name in self._rows:
                 self._rows[name].displayOff()
             else:
                 self._addSectionRow(name)
 
-    def validate(self) -> (bool, str):
-        valid, msg = self._volumeFractionWidget.validate()
-        if not valid:
-            return valid, msg
+    def validate(self) -> tuple[bool, str]:
+        if self._volumeFractionWidget:
+            valid, msg = self._volumeFractionWidget.validate()
+            if not valid:
+                return valid, msg
 
         # ToDo: Add validation for other parameters
         return True, ''
@@ -241,13 +258,17 @@ class InitializationWidget(QWidget):
         writer.append(self._initialValuesPath + '/turbulentViscosity', self._ui.turbulentViscosityRatio.text(),
                       self.tr('Turbulent Viscosity of region [{}]').format(self._rname))
 
-        if not await self._volumeFractionWidget.appendToWriter(writer, self._initialValuesPath + '/volumeFractions'):
+        if (self._volumeFractionWidget
+                and not await self._volumeFractionWidget.appendToWriter(
+                    writer, self._initialValuesPath + '/volumeFractions')):
             return False
 
-        if not self._scalarsWidget.appendToWriter(writer, self._initialValuesPath + '/userDefinedScalars'):
+        if (self._scalarsWidget
+                and not self._scalarsWidget.appendToWriter(writer, self._initialValuesPath + '/userDefinedScalars')):
             return False
 
-        if not await self._speciesWidget.appendToWriter(writer, f'{self._initialValuesPath}/species'):
+        if (self._speciesWidget
+                and not await self._speciesWidget.appendToWriter(writer, f'{self._initialValuesPath}/species')):
             return False
 
         return True
@@ -270,7 +291,7 @@ class InitializationWidget(QWidget):
         if button == QMessageBox.StandardButton.No:
             return
 
-        sectionPath = f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._currentRow.name}"]'
+        sectionPath = f'/regions/region[name="{self._rname}"]/initialization/advanced/sections/section[name="{self._currentRow.name}"]'
 
         writer = CoreDBWriter()
         writer.removeElement(sectionPath)
@@ -455,17 +476,17 @@ class InitializationWidget(QWidget):
 
         # volume fraction
         if bctype == BoundaryType.VELOCITY_INLET:
-            if self._volumeFractionWidget.on():
+            if self._volumeFractionWidget:
                 self._volumeFractionWidget.load(xpath + '/volumeFractions')
 
         # UDS
         if bctype in [BoundaryType.VELOCITY_INLET, BoundaryType.FREE_STREAM]:
-            if self._scalarsWidget.on():
+            if self._scalarsWidget:
                 self._scalarsWidget.load(xpath + '/userDefinedScalars')
 
         # species
         if bctype in [BoundaryType.VELOCITY_INLET, BoundaryType.FREE_STREAM]:
-            if self._speciesWidget.on():
+            if self._speciesWidget:
                 self._speciesWidget.load(xpath + '/species')
 
 

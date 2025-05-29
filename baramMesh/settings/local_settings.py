@@ -9,6 +9,9 @@ from filelock import FileLock
 
 from libbaram.mpi import ParallelEnvironment, ParallelType
 
+from baramMesh.settings.app_settings import appSettings
+
+
 FORMAT_VERSION = 1
 FILE_NAME = 'local.cfg'
 
@@ -25,10 +28,12 @@ class LocalSettings:
     def __init__(self, path):
         self._settingsFile = path / FILE_NAME
 
-        self._settings = {}
+        self._settings = None
         self._lock = None
 
         self._load()
+        if self._settings is None:
+            self._create()
 
         self.set(LocalSettingKey.PATH, str(path.resolve()))
 
@@ -40,9 +45,11 @@ class LocalSettings:
         return None
 
     def parallelEnvironment(self):
+        type_ = self.get(LocalSettingKey.PARALLEL_TYPE)
+
         return ParallelEnvironment(
             self.get(LocalSettingKey.PARALLEL_NP, 1),
-            ParallelType[self.get(LocalSettingKey.PARALLEL_TYPE, ParallelType.LOCAL_MACHINE.name)],
+            ParallelType.LOCAL_MACHINE if type_ is None else ParallelType[type_],
             self.get(LocalSettingKey.PARALLEL_HOSTS, '')
         )
 
@@ -59,10 +66,7 @@ class LocalSettings:
         self._lock.release()
 
     def get(self, key, default=None):
-        if self._settings and key.value in self._settings:
-            return self._settings[key.value]
-
-        return default
+        return self._settings.get(key.value, default)
 
     def set(self, key, value):
         if self.get(key) != value:
@@ -88,6 +92,15 @@ class LocalSettings:
                 self._settings = yaml.load(file, Loader=yaml.FullLoader)
                 self._save()
         # End
+
+    def _create(self):
+        environment = appSettings.getParallenEnvironment()
+        
+        self._settings = {
+            LocalSettingKey.PARALLEL_NP.value:      environment.np(),
+            LocalSettingKey.PARALLEL_TYPE.value:    environment.type().name,
+            LocalSettingKey.PARALLEL_HOSTS.value:   environment.hosts()
+        }
 
     def _save(self):
         self._settings[LocalSettingKey.FORMAT_VERSION.value] = FORMAT_VERSION

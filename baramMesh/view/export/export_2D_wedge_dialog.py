@@ -4,7 +4,7 @@
 from pathlib import Path
 
 import qasync
-from PySide6.QtWidgets import QDialog, QFileDialog
+from PySide6.QtWidgets import QDialog, QFileDialog, QWidget, QVBoxLayout
 
 from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog, SelectorItem
@@ -13,6 +13,7 @@ from baramMesh.app import app
 from baramMesh.db.configurations_schema import CFDType
 from baramMesh.openfoam.system.extrude_mesh_dict import ExtrudeOptions, ExtrudeModel
 from .export_2D_wedge_dialog_ui import Ui_Export2DWedgeDialog
+from .export_2D_region_widgets import Export2DWedgeRegionWidget
 
 
 class Export2DWedgeDialog(QDialog):
@@ -22,10 +23,31 @@ class Export2DWedgeDialog(QDialog):
         self._ui = Ui_Export2DWedgeDialog()
         self._ui.setupUi(self)
 
+        self._regionWidgets = []
+        
+        self._boundaries = []
+        self._dialog = None
+
+        regionsWidget = QWidget()        
+        self._ui.parameters.layout().insertWidget(0, regionsWidget)
+
+        layout = QVBoxLayout(regionsWidget)
+        layout.setContentsMargins(0, -1, 0, 0)
+        
+        for region in app.db.getElements('region').values():
+            widget = Export2DWedgeRegionWidget(region.value('name'))
+            widget.p1SelectClicked.connect(self._openBoundarySelectorDialog)
+            widget.p2SelectClicked.connect(self._openBoundarySelectorDialog)
+            layout.addWidget(widget)
+            self._regionWidgets.append(widget)
+
         self._baseLocation = Path.home() if path is None else path
         self._updateProjectLocation()
 
-        self._dialog = None
+        for gId, geometry in app.db.getElements(
+                'geometry', lambda i, e: e['cfdType'] == CFDType.BOUNDARY.value).items():
+            name = geometry.value('name')
+            self._boundaries.append(SelectorItem(name, name, gId))
 
         self._connectSignalsSlots()
 
@@ -33,16 +55,21 @@ class Export2DWedgeDialog(QDialog):
         return Path(self._ui.projectLocation.text())
 
     def extrudeOptions(self):
-        return ExtrudeOptions(self._ui.p1.text(), self._ui.p2.text(), ExtrudeModel.WEDGE,
-                              point=[self._ui.originX.text(), self._ui.originY.text(), self._ui.originZ.text()],
-                              axis=[self._ui.directionX.text(), self._ui.directionY.text(), self._ui.directionZ.text()],
-                              angle=self._ui.angle.text())
+        return ([(b.rname(), b.p1(), b.p2()) for b in self._regionWidgets], 
+                ExtrudeOptions(ExtrudeModel.WEDGE,
+                               point=[self._ui.originX.text(), self._ui.originY.text(), self._ui.originZ.text()],
+                               axis=[self._ui.directionX.text(), self._ui.directionY.text(), self._ui.directionZ.text()],
+                               angle=self._ui.angle.text()))
+        # return ExtrudeOptions(self._ui.p1.text(), self._ui.p2.text(), ExtrudeModel.WEDGE,
+        #                       point=[self._ui.originX.text(), self._ui.originY.text(), self._ui.originZ.text()],
+        #                       axis=[self._ui.directionX.text(), self._ui.directionY.text(), self._ui.directionZ.text()],
+        #                       angle=self._ui.angle.text())
 
     def _connectSignalsSlots(self):
         self._ui.projectName.textChanged.connect(self._updateProjectLocation)
         self._ui.locationSelect.clicked.connect(self._selectLocation)
-        self._ui.p1Select.clicked.connect(self._selectP1)
-        self._ui.p2Select.clicked.connect(self._selectP2)
+        # self._ui.p1Select.clicked.connect(self._selectP1)
+        # self._ui.p2Select.clicked.connect(self._selectP2)
         self._ui.ok.clicked.connect(self._accept)
 
     def _selectLocation(self):
@@ -58,24 +85,23 @@ class Export2DWedgeDialog(QDialog):
         self._baseLocation = Path(dir).resolve()
         self._updateProjectLocation()
 
-    def _selectP1(self):
+    def _openBoundarySelectorDialog(self, widget):
         self._dialog = self._createBoundarySelector()
-        self._dialog.accepted.connect(lambda: self._ui.p1.setText(self._dialog.selectedText()))
+        self._dialog.accepted.connect(lambda: widget.setText(self._dialog.selectedText()))
         self._dialog.open()
 
-    def _selectP2(self):
-        self._dialog = self._createBoundarySelector()
-        self._dialog.accepted.connect(lambda: self._ui.p2.setText(self._dialog.selectedText()))
-        self._dialog.open()
+    # def _selectP1(self):
+    #     self._dialog = self._createBoundarySelector()
+    #     self._dialog.accepted.connect(lambda: self._ui.p1.setText(self._dialog.selectedText()))
+    #     self._dialog.open()
+
+    # def _selectP2(self):
+    #     self._dialog = self._createBoundarySelector()
+    #     self._dialog.accepted.connect(lambda: self._ui.p2.setText(self._dialog.selectedText()))
+    #     self._dialog.open()
 
     def _createBoundarySelector(self):
-        items = []
-        for gId, geometry in app.db.getElements(
-                'geometry', lambda i, e: e['cfdType'] == CFDType.BOUNDARY.value).items():
-            name = geometry.value('name')
-            items.append(SelectorItem(name, name, gId))
-
-        return SelectorDialog(self, self.tr('Select Boundary'), self.tr('Select Boundary'), items)
+        return SelectorDialog(self, self.tr('Select Boundary'), self.tr('Select Boundary'), self._boundaries)
 
     @qasync.asyncSlot()
     async def _accept(self):
@@ -98,13 +124,16 @@ class Export2DWedgeDialog(QDialog):
                                                 self.tr(f'{self._ui.projectLocation.text()} already exists.'))
             return
 
-        if not self._ui.p1.text():
-            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select P1'))
-            return
+        for widget in self._regionWidgets:
+            if not widget.p1():
+                await AsyncMessageBox().information(
+                    self, self.tr('Input Error'), self.tr('Select P1 - ' + widget.rname()))
+                return
 
-        if not self._ui.p2.text():
-            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select P2'))
-            return
+            if not widget.p2():
+                await AsyncMessageBox().information(
+                    self, self.tr('Input Error'), self.tr('Select P2 - ' + widget.rname()))
+                return
 
         currentItem = None
         try:

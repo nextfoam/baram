@@ -26,6 +26,7 @@ def makeDir(parent, directory, clear=False) -> Path:
 class FileSystem:
     def __init__(self, path):
         self._casePath: Optional[Path] = None
+        self._systemPath: Optional[Path] = None
         self._constantPath: Optional[Path] = None
         self._triSurfacePath: Optional[Path] = None
 
@@ -55,7 +56,6 @@ class FileSystem:
         return path if not checkExistence or path.is_dir() else None
 
     def timePath(self, time, processorNo=None):
-        # print(time, processorNo, self.processorPath(processorNo))
         return self._casePath / str(time) if processorNo is None else self.processorPath(processorNo, False) / str(time)
 
     def timePathExists(self, time, parallel=False):
@@ -103,21 +103,16 @@ class FileSystem:
 
         shutil.copytree(src, self._casePath)
 
+        self._systemPath = self._casePath / Directory.SYSTEM_DIRECTORY_NAME
         self._constantPath = makeDir(self._casePath, Directory.CONSTANT_DIRECTORY_NAME)
         self._triSurfacePath = makeDir(self._constantPath, Directory.TRI_SURFACE_DIRECTORY_NAME)
 
         makeDir(self._casePath, Directory.BOUNDARY_CONDITIONS_DIRECTORY_NAME)
-
-    #
-    # def createBaramCase(self):
-    #     if self._casePath.exists():
-    #         rmtree(self._casePath)
-    #
-    #     shutil.copytree(src, self._casePath)
-    #
-    #     self._casePath.mkdir(exist_ok=True)
-    #     with open(self.foamFilePath(), 'a'):
-    #         pass
+        
+    async def createRegionSystemDirectory(self, rname):
+        path = makeDir(self._systemPath, rname)
+        await asyncio.to_thread(shutil.copyfile, self._systemPath / 'fvSchemes', path / 'fvSchemes')
+        await asyncio.to_thread(shutil.copyfile, self._systemPath / 'fvSolution', path / 'fvSolution')
 
     def saveAs(self, path):
         shutil.copytree(self._casePath, path / CASE_DIRECTORY_NAME, copy_function=shutil.copyfile)

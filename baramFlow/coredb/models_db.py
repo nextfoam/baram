@@ -37,10 +37,10 @@ class MultiphaseModel(Enum):
 
 
 class ModelsDB:
-    MODELS_XPATH = './/models'
-    MULTIPHASE_MODELS_XPATH = './/multiphaseModels'
-    SPECIES_MODELS_XPATH = './/speciesModels'
-    ENERGY_MODELS_XPATH = './/energyModels'
+    MODELS_XPATH = '/models'
+    MULTIPHASE_MODELS_XPATH = '/models/multiphaseModels'
+    SPECIES_MODELS_XPATH    = '/models/speciesModels'
+    ENERGY_MODELS_XPATH     = '/models/energyModels'
 
     @classmethod
     def getMultiphaseModel(cls):

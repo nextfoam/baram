@@ -8,6 +8,7 @@ from typing import Optional
 import qasync
 from PySide6.QtWidgets import QSizePolicy, QRadioButton, QGridLayout, QLabel, QCheckBox, QLineEdit, QGroupBox
 
+from baramFlow.coredb.material_db import MaterialDB
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
@@ -89,25 +90,33 @@ class SectionDialog(ResizableDialog):
         self._pageType = None
         self._volumeFractionWidget = None
         self._scalarsWidget = None
+        self._speciesWidget = None
 
         self._connectSignalsToSlots()
 
-        self._volumeFractionWidget = VolumeFractionWidget(self._rname)
-        if self._volumeFractionWidget.on():
-            self._volumeFractionWidget.setCheckable(True)
-            self._volumeFractionWidget.setChecked(False)
-            self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
-
-        db = coredb.CoreDB()
-        if scalars := db.getUserDefinedScalarsInRegion(self._rname):
-            self._scalarsWidget = UserDefinedScalarList(scalars)
-            self._ui.initialValuesLayout.addWidget(self._scalarsWidget)
-
         sectionPath = InitializationDB.getSectionXPath(rname, name)
+
         mid = RegionDB.getMaterial(self._rname)
-        self._speciesWidget = SpeciesWidget(mid, None, True)
-        if self._speciesWidget.on():
-            self._ui.initialValuesLayout.addWidget(self._speciesWidget)
+        if MaterialDB.isFluid(mid):
+            volumeFractionWidget = VolumeFractionWidget(self._rname)
+            if volumeFractionWidget.on():
+                self._volumeFractionWidget = volumeFractionWidget
+                self._volumeFractionWidget.setCheckable(True)
+                self._volumeFractionWidget.setChecked(False)
+                self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
+
+            db = coredb.CoreDB()
+            if scalars := db.getUserDefinedScalarsInRegion(self._rname):
+                self._scalarsWidget = UserDefinedScalarList(scalars)
+                self._ui.initialValuesLayout.addWidget(self._scalarsWidget)
+
+            speciesWidget = SpeciesWidget(mid, True)
+            if speciesWidget.on():
+                self._speciesWidget = speciesWidget
+                self._ui.initialValuesLayout.addWidget(self._speciesWidget)
+        else:
+            self._ui.velocityGroup.hide()
+            self._ui.properties.layout().setRowVisible(self._ui.pressure, False)
 
         if name is not None:  # Open Edit page with the parameters from coreDB
             self._pageType = PageType.EDIT
@@ -184,7 +193,7 @@ class SectionDialog(ResizableDialog):
         #
         # Validation check for parameters
         #
-        if self._volumeFractionWidget.on() and self._volumeFractionWidget.isChecked():
+        if self._volumeFractionWidget and self._volumeFractionWidget.isChecked():
             valid, msg = self._volumeFractionWidget.validate()
             if not valid:
                 await AsyncMessageBox().warning(self, self.tr('Warning'), msg)
@@ -195,7 +204,7 @@ class SectionDialog(ResizableDialog):
 
         if self._pageType == PageType.CREATE:
             speciesXML = ''
-            if self._speciesWidget.on():
+            if self._speciesWidget:
                 xml = ''
                 for specie in self._speciesWidget.species():
                     xml += f'<specie><mid>{specie}</mid><value>0</value></specie>'
@@ -206,7 +215,7 @@ class SectionDialog(ResizableDialog):
                     </mixture>'''
 
                 # Create an element with given name and default values
-            writer.addElement(f'.//regions/region[name="{self._rname}"]/initialization/advanced/sections',
+            writer.addElement(f'/regions/region[name="{self._rname}"]/initialization/advanced/sections',
                               f'''
                                 <section xmlns="http://www.baramcfd.org/baram">
                                     <name>{self._sectionName}</name>
@@ -356,7 +365,7 @@ class SectionDialog(ResizableDialog):
         else:
             writer.setAttribute(sectionPath + '/temperature', 'disabled', 'true')
 
-        if self._volumeFractionWidget.on():
+        if self._volumeFractionWidget:
             if self._volumeFractionWidget.isChecked():
                 writer.setAttribute(sectionPath + '/volumeFractions', 'disabled', 'false')
                 if not await self._volumeFractionWidget.appendToWriter(writer, sectionPath + '/volumeFractions'):
@@ -383,7 +392,7 @@ class SectionDialog(ResizableDialog):
                     else:
                         writer.setAttribute(xpath, 'disabled', 'true')
 
-        if self._speciesWidget and self._speciesWidget.on():
+        if self._speciesWidget:
             if not await self._speciesWidget.appendToWriter(writer, f'{sectionPath}/species'):
                 return
             parameterConfigured = parameterConfigured or self._speciesWidget.isChecked()
@@ -492,7 +501,7 @@ class SectionDialog(ResizableDialog):
         if db.getAttribute(sectionPath+'/temperature', 'disabled') == 'false':
             self._ui.temperatureCheckBox.setChecked(True)
 
-        if self._volumeFractionWidget.on():
+        if self._volumeFractionWidget:
             self._volumeFractionWidget.load(sectionPath + '/volumeFractions')
             if db.getAttribute(sectionPath + '/volumeFractions', 'disabled') == 'false':
                 self._volumeFractionWidget.setChecked(True)
@@ -505,7 +514,7 @@ class SectionDialog(ResizableDialog):
                     db.getAttribute(xpath, 'disabled') == 'false',
                     db.getValue(xpath))
 
-        if self._speciesWidget and self._speciesWidget.on():
+        if self._speciesWidget:
             self._speciesWidget.load(f'{sectionPath}/species')
 
         if db.getValue(sectionPath+'/overrideBoundaryValue') == 'true':

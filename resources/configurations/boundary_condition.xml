@@ -134,7 +134,20 @@
     </supersonicInflow>
     <wall>
         <velocity>
-            <type>noSlip</type>
+            <wallMotion>
+                <type>stationaryWall</type>
+                <stationaryWall>
+                    <atmosphericWall>false</atmosphericWall>
+                </stationaryWall>
+                <movingWall>
+                    <motion>translationalMotion</motion>
+                </movingWall>
+            </wallMotion>
+            <shearCondition>noSlip</shearCondition>
+            <wallRoughness>
+                <height>0</height>
+                <constant>0.5</constant>
+            </wallRoughness>
             <translationalMovingWall>
                 <velocity>
                     <x>1</x>
@@ -162,6 +175,7 @@
             <heatFlux>1000</heatFlux>
             <heatTransferCoefficient>100</heatTransferCoefficient>
             <freeStreamTemperature>300</freeStreamTemperature>
+            <externalEmissivity>0</externalEmissivity>
             <wallLayers disabled="true">
                 <thicknessLayers>0.001</thicknessLayers>
                 <thermalConductivityLayers>10</thermalConductivityLayers>

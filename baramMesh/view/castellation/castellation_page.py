@@ -5,6 +5,7 @@ from pathlib import Path
 
 import qasync
 from PySide6.QtGui import QIntValidator
+from PySide6.QtWidgets import QApplication
 from vtkmodules.vtkCommonDataModel import vtkPlane
 from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges, vtkPolyDataPlaneCutter, \
     vtkTriangleFilter

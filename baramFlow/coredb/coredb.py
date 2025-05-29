@@ -205,7 +205,7 @@ class _CoreDB(object):
             return '$' + parameter
 
         path = self._xmlTree.getelementpath(element)
-        schema = self._schema.find(".//" + path, namespaces=nsmap)
+        schema = self._schema.find('/{http://www.baramcfd.org/baram}configuration/' + path, namespaces=nsmap)
 
         if schema is None:
             raise LookupError
@@ -238,7 +238,7 @@ class _CoreDB(object):
         element = self.getElement(xpath)
 
         path = self._xmlTree.getelementpath(element)
-        schema = self._schema.find(".//" + path, namespaces=nsmap)
+        schema = self._schema.find('/{http://www.baramcfd.org/baram}configuration/' + path, namespaces=nsmap)
 
         if schema is None:
             raise LookupError
@@ -252,7 +252,7 @@ class _CoreDB(object):
         if schema.type.is_complex() and 'batchParameter' in schema.type.attributes:
             if value and value[0] == '$':
                 batchParameter = value[1:]
-                batchParameterXPath = f'.//runCalculation/batch/parameters/parameter[name="{batchParameter}"]'
+                batchParameterXPath = f'/runCalculation/batch/parameters/parameter[name="{batchParameter}"]'
                 batchParameterValue = self._xmlTree.findall(f'{batchParameterXPath}/value', namespaces=nsmap)
 
                 if len(batchParameterValue) == 1:
@@ -504,25 +504,25 @@ class _CoreDB(object):
         return text
 
     def getRegions(self) -> list[str]:
-        elements = self._xmlTree.findall(f'.//regions/region', namespaces=nsmap)
+        elements = self._xmlTree.findall(f'/regions/region', namespaces=nsmap)
         regions = [e.find('name', namespaces=nsmap).text for e in elements]
         if len(regions) == 1 and regions[0] is None:
-            self.setValue('.//regions/region/name', '')
+            self.setValue('/regions/region/name', '')
             return ['']
 
         return regions
 
     def clearRegions(self):
-        parent = self._xmlTree.find('.//regions', namespaces=nsmap)
+        parent = self._xmlTree.find('/regions', namespaces=nsmap)
         parent.clear()
 
     def addCellZone(self, rname: str, zname: str) -> int:
-        zone = self._xmlTree.find(f'.//region[name="{rname}"]/cellZones/cellZone[name="{zname}"]', namespaces=nsmap)
+        zone = self._xmlTree.find(f'/regions/region[name="{rname}"]/cellZones/cellZone[name="{zname}"]', namespaces=nsmap)
 
         if zone is not None:
             raise FileExistsError
 
-        idList = self._xmlTree.xpath(f'.//x:cellZones/x:cellZone/@czid', namespaces={'x': ns})
+        idList = self._xmlTree.xpath(f'/x:configuration/x:regions/x:region/x:cellZones/x:cellZone/@czid', namespaces={'x': ns})
 
         for index in range(1, self.CELL_ZONE_MAX_INDEX):
             if str(index) not in idList:
@@ -531,7 +531,7 @@ class _CoreDB(object):
             raise OverflowError
 
         # 'region' cannot be None because zoneTree lookup above succeeded
-        cellZones = self._xmlTree.find(f'.//region[name="{rname}"]/cellZones', namespaces=nsmap)
+        cellZones = self._xmlTree.find(f'/regions/region[name="{rname}"]/cellZones', namespaces=nsmap)
 
         zoneTree = etree.parse(resource.file(self.CELL_ZONE_PATH), self._xmlParser)
         zone = zoneTree.getroot()
@@ -547,22 +547,22 @@ class _CoreDB(object):
         return index
 
     def getCellZones(self, rname: str) -> list[(int, str)]:
-        elements = self._xmlTree.findall(f'.//region[name="{rname}"]/cellZones/cellZone', namespaces=nsmap)
+        elements = self._xmlTree.findall(f'/regions/region[name="{rname}"]/cellZones/cellZone', namespaces=nsmap)
         return [(int(e.attrib['czid']), e.find('name', namespaces=nsmap).text) for e in elements]
 
     def getCellZonesByType(self, rname: str, zoneType: str) -> list[int]:
-        elements = self._xmlTree.findall(f'.//region[name="{rname}"]/cellZones/cellZone[zoneType="{zoneType}"]',
+        elements = self._xmlTree.findall(f'/regions/region[name="{rname}"]/cellZones/cellZone[zoneType="{zoneType}"]',
                                          namespaces=nsmap)
         return [e.attrib['czid'] for e in elements]
 
     def addBoundaryCondition(self, rname: str, bname: str, geometricalType: str, physicalType: str) -> int:
-        bc = self._xmlTree.find(f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bname}"]',
+        bc = self._xmlTree.find(f'/regions/region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bname}"]',
                                 namespaces=nsmap)
 
         if bc is not None:
             raise FileExistsError
 
-        idList = self._xmlTree.xpath(f'.//x:boundaryConditions/x:boundaryCondition/@bcid', namespaces={'x': ns})
+        idList = self._xmlTree.xpath(f'/x:configuration/x:regions/x:region/x:boundaryConditions/x:boundaryCondition/@bcid', namespaces={'x': ns})
 
         for index in range(1, self.BOUNDARY_CONDITION_MAX_INDEX):
             if str(index) not in idList:
@@ -570,7 +570,7 @@ class _CoreDB(object):
         else:
             raise OverflowError
 
-        parent = self._xmlTree.find(f'.//region[name="{rname}"]/boundaryConditions', namespaces=nsmap)
+        parent = self._xmlTree.find(f'/regions/region[name="{rname}"]/boundaryConditions', namespaces=nsmap)
 
         bcTree = etree.parse(resource.file(self.BOUNDARY_CONDITION_PATH), self._xmlParser)
         bc = bcTree.getroot()
@@ -590,7 +590,7 @@ class _CoreDB(object):
 
         return index
 
-    def getBoundaryConditions(self, rname: str) -> list[(int, str, str)]:
+    def getBoundaryConditions(self, rname: str) -> list[tuple[int, str, str]]:
         """Returns list of boundary conditions in the region
 
         Returns list of boundary conditions in the region
@@ -602,7 +602,7 @@ class _CoreDB(object):
             List of boundary conditions in tuple, '(bcid, name, physicalType)'
         """
         elements = self._xmlTree.findall(
-            f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition', namespaces=nsmap)
+            f'/regions/region[name="{rname}"]/boundaryConditions/boundaryCondition', namespaces=nsmap)
         return [(int(e.attrib['bcid']),
                  e.find('name', namespaces=nsmap).text,
                  e.find('physicalType', namespaces=nsmap).text) for e in elements]
@@ -616,7 +616,7 @@ class _CoreDB(object):
         old.getparent().replace(old, new)
 
     def hasMesh(self):
-        return True if self._xmlTree.findall(f'.//regions/region', namespaces=nsmap) else False
+        return True if self._xmlTree.findall(f'/regions/region', namespaces=nsmap) else False
 
     def addForceMonitor(self) -> str:
         names = self.getForceMonitors()
@@ -628,7 +628,7 @@ class _CoreDB(object):
         else:
             raise OverflowError
 
-        parent = self._xmlTree.find(f'.//monitors/forces', namespaces=nsmap)
+        parent = self._xmlTree.find(f'/monitors/forces', namespaces=nsmap)
 
         forceTree = etree.parse(resource.file(self.FORCE_MONITOR_PATH), self._xmlParser)
         forceTree.find('name', namespaces=nsmap).text = monitorName
@@ -642,21 +642,21 @@ class _CoreDB(object):
         return monitorName
 
     def removeForceMonitor(self, name: str):
-        monitor = self._xmlTree.find(f'.//monitors/forces/forceMonitor[name="{name}"]', namespaces=nsmap)
+        monitor = self._xmlTree.find(f'/monitors/forces/forceMonitor[name="{name}"]', namespaces=nsmap)
         if monitor is None:
             raise LookupError
 
-        parent = self._xmlTree.find(f'.//monitors/forces', namespaces=nsmap)
+        parent = self._xmlTree.find(f'/monitors/forces', namespaces=nsmap)
         parent.remove(monitor)
 
         self._configCount += 1
 
     def getForceMonitors(self) -> list[str]:
-        names = self._xmlTree.xpath(f'.//x:monitors/x:forces/x:forceMonitor/x:name/text()', namespaces={'x': ns})
+        names = self._xmlTree.xpath(f'/x:configuration/x:monitors/x:forces/x:forceMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
     def clearForceMonitors(self):
-        parent = self._xmlTree.find('.//monitors/forces', namespaces=nsmap)
+        parent = self._xmlTree.find('/monitors/forces', namespaces=nsmap)
         parent.clear()
 
     def addPointMonitor(self) -> str:
@@ -669,7 +669,7 @@ class _CoreDB(object):
         else:
             raise OverflowError
 
-        parent = self._xmlTree.find(f'.//monitors/points', namespaces=nsmap)
+        parent = self._xmlTree.find(f'/monitors/points', namespaces=nsmap)
 
         pointTree = etree.parse(resource.file(self.POINT_MONITOR_PATH), self._xmlParser)
         pointTree.find('name', namespaces=nsmap).text = monitorName
@@ -683,21 +683,21 @@ class _CoreDB(object):
         return monitorName
 
     def removePointMonitor(self, name: str):
-        monitor = self._xmlTree.find(f'.//monitors/points/pointMonitor[name="{name}"]', namespaces=nsmap)
+        monitor = self._xmlTree.find(f'/monitors/points/pointMonitor[name="{name}"]', namespaces=nsmap)
         if monitor is None:
             raise LookupError
 
-        parent = self._xmlTree.find(f'.//monitors/points', namespaces=nsmap)
+        parent = self._xmlTree.find(f'/monitors/points', namespaces=nsmap)
         parent.remove(monitor)
 
         self._configCount += 1
 
     def getPointMonitors(self) -> list[str]:
-        names = self._xmlTree.xpath(f'.//x:monitors/x:points/x:pointMonitor/x:name/text()', namespaces={'x': ns})
+        names = self._xmlTree.xpath(f'/x:configuration/x:monitors/x:points/x:pointMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
     def clearPointMonitors(self):
-        parent = self._xmlTree.find('.//monitors/points', namespaces=nsmap)
+        parent = self._xmlTree.find('/monitors/points', namespaces=nsmap)
         parent.clear()
 
     def addSurfaceMonitor(self) -> str:
@@ -710,7 +710,7 @@ class _CoreDB(object):
         else:
             raise OverflowError
 
-        parent = self._xmlTree.find(f'.//monitors/surfaces', namespaces=nsmap)
+        parent = self._xmlTree.find(f'/monitors/surfaces', namespaces=nsmap)
 
         surfaceTree = etree.parse(resource.file(self.SURFACE_MONITOR_PATH), self._xmlParser)
         surfaceTree.find('name', namespaces=nsmap).text = monitorName
@@ -724,21 +724,21 @@ class _CoreDB(object):
         return monitorName
 
     def removeSurfaceMonitor(self, name: str):
-        monitor = self._xmlTree.find(f'.//monitors/surfaces/surfaceMonitor[name="{name}"]', namespaces=nsmap)
+        monitor = self._xmlTree.find(f'/monitors/surfaces/surfaceMonitor[name="{name}"]', namespaces=nsmap)
         if monitor is None:
             raise LookupError
 
-        parent = self._xmlTree.find(f'.//monitors/surfaces', namespaces=nsmap)
+        parent = self._xmlTree.find(f'/monitors/surfaces', namespaces=nsmap)
         parent.remove(monitor)
 
         self._configCount += 1
 
     def getSurfaceMonitors(self) -> list[str]:
-        names = self._xmlTree.xpath(f'.//x:monitors/x:surfaces/x:surfaceMonitor/x:name/text()', namespaces={'x': ns})
+        names = self._xmlTree.xpath(f'/x:configuration/x:monitors/x:surfaces/x:surfaceMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
     def clearSurfacesMonitors(self):
-        parent = self._xmlTree.find('.//monitors/surfaces', namespaces=nsmap)
+        parent = self._xmlTree.find('/monitors/surfaces', namespaces=nsmap)
         parent.clear()
 
     def addVolumeMonitor(self) -> str:
@@ -751,7 +751,7 @@ class _CoreDB(object):
         else:
             raise OverflowError
 
-        parent = self._xmlTree.find(f'.//monitors/volumes', namespaces=nsmap)
+        parent = self._xmlTree.find(f'/monitors/volumes', namespaces=nsmap)
 
         volumeTree = etree.parse(resource.file(self.VOLUME_MONITOR_PATH), self._xmlParser)
         volumeTree.find('name', namespaces=nsmap).text = monitorName
@@ -765,21 +765,21 @@ class _CoreDB(object):
         return monitorName
 
     def removeVolumeMonitor(self, name: str):
-        monitor = self._xmlTree.find(f'.//monitors/volumes/volumeMonitor[name="{name}"]', namespaces=nsmap)
+        monitor = self._xmlTree.find(f'/monitors/volumes/volumeMonitor[name="{name}"]', namespaces=nsmap)
         if monitor is None:
             raise LookupError
 
-        parent = self._xmlTree.find(f'.//monitors/volumes', namespaces=nsmap)
+        parent = self._xmlTree.find(f'/monitors/volumes', namespaces=nsmap)
         parent.remove(monitor)
 
         self._configCount += 1
 
     def getVolumeMonitors(self) -> list[str]:
-        names = self._xmlTree.xpath(f'.//x:monitors/x:volumes/x:volumeMonitor/x:name/text()', namespaces={'x': ns})
+        names = self._xmlTree.xpath(f'/x:configuration/x:monitors/x:volumes/x:volumeMonitor/x:name/text()', namespaces={'x': ns})
         return [str(r) for r in names]
 
     def clearVolumeMonitors(self):
-        parent = self._xmlTree.find('.//monitors/volumes', namespaces=nsmap)
+        parent = self._xmlTree.find('/monitors/volumes', namespaces=nsmap)
         parent.clear()
 
     def clearMonitors(self):
@@ -790,7 +790,7 @@ class _CoreDB(object):
 
     def getBatchParameters(self):
         parameters = {}
-        for e in self._xmlTree.findall('.//runCalculation/batch/parameters/parameter', namespaces=nsmap):
+        for e in self._xmlTree.findall('/runCalculation/batch/parameters/parameter', namespaces=nsmap):
             name = e.find('name', namespaces=nsmap).text
             parameters[name] = {'value': e.find('value', namespaces=nsmap).text, 'usages': 0}
 
@@ -801,10 +801,10 @@ class _CoreDB(object):
 
     def getBatchDefaults(self):
         return {e.find('name', namespaces=nsmap).text: e.find('value', namespaces=nsmap).text
-                for e in self._xmlTree.findall('.//runCalculation/batch/parameters/parameter', namespaces=nsmap)}
+                for e in self._xmlTree.findall('/runCalculation/batch/parameters/parameter', namespaces=nsmap)}
 
     def getSurfaceTensions(self, rname):
-        xpath = f'.//region[name="{rname}"]/phaseInteractions/surfaceTensions/surfaceTension'
+        xpath = f'/regions/region[name="{rname}"]/phaseInteractions/surfaceTensions/surfaceTension'
         elements = self._xmlTree.findall(xpath, namespaces=nsmap)
 
         surfaceTensions = []
@@ -816,12 +816,12 @@ class _CoreDB(object):
         return surfaceTensions
 
     def getUserDefinedScalars(self):
-        elements = self._xmlTree.findall(f'.//models/userDefinedScalars/scalar', namespaces=nsmap)
+        elements = self._xmlTree.findall(f'/models/userDefinedScalars/scalar', namespaces=nsmap)
         return [(int(e.attrib['scalarID']), e.find('fieldName', namespaces=nsmap).text)
                 for e in elements if e.attrib['scalarID'] != '0']
 
     def getUserDefinedScalarsInRegion(self, rname):
-        elements = self._xmlTree.findall(f'.//models/userDefinedScalars/scalar[region="{rname}"]', namespaces=nsmap)
+        elements = self._xmlTree.findall(f'/models/userDefinedScalars/scalar[region="{rname}"]', namespaces=nsmap)
         return [(int(e.attrib['scalarID']), e.find('fieldName', namespaces=nsmap).text)
                 for e in elements if e.attrib['scalarID'] != '0']
 
@@ -831,6 +831,17 @@ class _CoreDB(object):
             raise LookupError
 
         parent.append(etree.fromstring(text))
+
+        self._xmlSchema.assertValid(self._xmlTree)
+
+        self._configCount += 1
+
+    def addElement(self, xpath, element):
+        parent = self._xmlTree.find(xpath, namespaces=nsmap)
+        if parent is None:
+            raise LookupError
+
+        parent.append(element)
 
         self._xmlSchema.assertValid(self._xmlTree)
 

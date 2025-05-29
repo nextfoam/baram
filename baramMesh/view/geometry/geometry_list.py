@@ -4,14 +4,14 @@
 from enum import IntEnum, auto
 
 from PySide6.QtWidgets import QTreeWidgetItem, QHeaderView
-from PySide6.QtCore import Signal, QObject, QCoreApplication
+from PySide6.QtCore import Signal, QObject, QCoreApplication, Qt
 from PySide6.QtGui import QIcon
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import CFDType, GeometryType
 
-VOLUME_ICON_FILE = ':/icons/prism-outline.svg'
-SURFACE_ICON_FILE = ':/icons/prism.svg'
+VOLUME_ICON_FILE = ':/graphicsIcons/volume.svg'
+SURFACE_ICON_FILE = ':/graphicsIcons/face.svg'
 
 def cfdTypeToText(cfdType):
     return {
@@ -78,6 +78,8 @@ class GeometryList(QObject):
         self._items = None
 
         self._tree.header().setSectionResizeMode(Column.NAME_COLUMN, QHeaderView.ResizeMode.Stretch)
+        self._tree.setSortingEnabled(True)
+        self._tree.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
         self._connectSignalsSlots()
 

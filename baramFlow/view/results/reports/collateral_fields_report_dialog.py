@@ -1,31 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import uuid
-from pathlib import Path
 
 import qasync
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
-from baramFlow.coredb.coredb_reader import CoreDBReader
-from libbaram.run import runParallelUtility
+from baramFlow.libbaram.collateral_fields import calculateCollateralField
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
-from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.openfoam import parallel
+from baramFlow.base.field import AGE, HEAT_TRANSFER_COEFF, MACH_NUMBER, Q, TOTAL_PRESSURE, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS
 from baramFlow.openfoam.file_system import FileSystem
-from baramFlow.openfoam.function_objects.collateral_fields import foAgeReport, foHeatTransferCoefficientReport
-from baramFlow.openfoam.function_objects.collateral_fields import foMachNumberReport, foQReport
-from baramFlow.openfoam.function_objects.collateral_fields import foTotalPressureReport, foVorticityReport
-from baramFlow.openfoam.function_objects.collateral_fields import foWallHeatFluxReport, foWallShearStressReport
-from baramFlow.openfoam.function_objects.collateral_fields import foWallYPlusReport
-from baramFlow.openfoam.function_objects import FoDict
-from baramFlow.openfoam.solver import findSolver
+
 
 from .collateral_fields_report_dialog_ui import Ui_CollateralFieldsReportDialog
 
@@ -54,46 +42,36 @@ class CollateralFieldsReportDialog(QDialog):
 
     @qasync.asyncSlot()
     async def _compute(self):
-        functions = {}
+        fields = []
 
-        db = CoreDBReader()
-        for rname in db.getRegions():
+        if self._ui.heatTransferCoefficient.isChecked():
+            fields.append(HEAT_TRANSFER_COEFF)
 
-            if self._ui.heatTransferCoefficient.isChecked():
-                plainWalls  = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL, rname)]
-                thermowalls = [bcname for _, bcname in BoundaryDB.getBoundaryConditionsByType(BoundaryType.THERMO_COUPLED_WALL, rname)]
-                patches = plainWalls + thermowalls
-                functions[f'collateralHeatTransferCoefficient__{rname}'] = foHeatTransferCoefficientReport(rname, patches)
+        if self._ui.wallHeatFlux.isChecked():
+            fields.append(WALL_HEAT_FLUX)
 
-            if self._ui.wallHeatFlux.isChecked():
-                functions[f'collateralWallHeatFlux_{rname}'] = foWallHeatFluxReport(rname)
+        if self._ui.age.isChecked():
+            fields.append(AGE)
 
-            region = db.getRegionProperties(rname)
+        if self._ui.machNumber.isChecked():
+            fields.append(MACH_NUMBER)
 
-            if region.isFluid():
+        if self._ui.q.isChecked():
+            fields.append(Q)
 
-                if self._ui.age.isChecked():
-                    functions[f'collateralAge_{rname}'] = foAgeReport(rname)
+        if self._ui.totalPressure.isChecked():
+            fields.append(TOTAL_PRESSURE)
 
-                if self._ui.machNumber.isChecked():
-                    functions[f'collateralMachNumber_{rname}'] = foMachNumberReport(rname)
+        if self._ui.vorticity.isChecked():
+            fields.append(VORTICITY)
 
-                if self._ui.q.isChecked():
-                    functions[f'collateralQ_{rname}'] = foQReport(rname)
+        if self._ui.wallShearStress.isChecked():
+            fields.append(WALL_SHEAR_STRESS)
 
-                if self._ui.totalPressure.isChecked():
-                    functions[f'collateralTotalPressure_{rname}'] = foTotalPressureReport(rname)
+        if self._ui.wallYPlus.isChecked():
+            fields.append(WALL_Y_PLUS)
 
-                if self._ui.vorticity.isChecked():
-                    functions[f'collateralVorticity_{rname}'] = foVorticityReport(rname)
-
-                if self._ui.wallShearStress.isChecked():
-                    functions[f'collateralWallShearStress_{rname}'] = foWallShearStressReport(rname)
-
-                if self._ui.wallYPlus.isChecked():
-                    functions[f'collateralWallYPlus_{rname}'] = foWallYPlusReport(rname)
-
-        if not functions:
+        if len(fields) == 0:
             await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Fields.'))
             return
 
@@ -101,27 +79,10 @@ class CollateralFieldsReportDialog(QDialog):
         self._progressDialog.setLabelText(self.tr('Calculating Collateral Fields'))
         self._progressDialog.open()
 
-        data = {
-            'functions': functions
-        }
-
-        foDict = FoDict(f'delete_me_{str(uuid.uuid4())}').build(data)
-        foDict.write()
-
-        caseRoot = FileSystem.caseRoot()
-        solver = findSolver()
-        dictRelativePath = Path(os.path.relpath(foDict.fullPath(), caseRoot)).as_posix()  # "as_posix()": OpenFOAM cannot handle double backward slash separators in parallel processing
         if GeneralDB.isTimeTransient():
-            args = ['-postProcess', '-dict', str(dictRelativePath)]
+            rc = await calculateCollateralField(fields)
         else:
-            args = ['-postProcess', '-latestTime', '-dict', str(dictRelativePath)]
-        proc = await runParallelUtility(
-            solver, *args,
-            parallel=parallel.getEnvironment(), cwd=caseRoot)
-
-        rc = await proc.wait()
-
-        foDict.fullPath().unlink()
+            rc = await calculateCollateralField(fields, [FileSystem.latestTime()])
 
         if rc != 0:
             self._progressDialog.finish(self.tr('Computing failed'))

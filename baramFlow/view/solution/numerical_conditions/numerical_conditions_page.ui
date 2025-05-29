@@ -52,9 +52,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-664</y>
-        <width>332</width>
-        <height>1338</height>
+        <y>0</y>
+        <width>338</width>
+        <height>1366</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -180,7 +180,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="EnumComboBox" name="discretizationSchemeTime"/>
+           <widget class="PythonComboBox" name="discretizationSchemeTime"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="discretizationSchemesMomentumLabel">
@@ -423,6 +423,16 @@
           <item row="1" column="1">
            <widget class="QLineEdit" name="numberOfCorrectors"/>
           </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_40">
+            <property name="text">
+             <string>Number of non-orthogonal Correctors (0~10)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="numberOfNonOrthogonalCorrectors"/>
+          </item>
          </layout>
         </widget>
        </item>
@@ -469,15 +479,15 @@
              <item row="0" column="1">
               <widget class="QLineEdit" name="multiphaseMaxIterationsPerTimeStep"/>
              </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="multiphaseNumberOfCorrectors"/>
+             </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_34">
                <property name="text">
                 <string>Number of Correctors</string>
                </property>
               </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="multiphaseNumberOfCorrectors"/>
              </item>
             </layout>
            </widget>
@@ -729,6 +739,11 @@
    <class>EnumComboBox</class>
    <extends>QComboBox</extends>
    <header>widgets.enum_combo_box</header>
+  </customwidget>
+  <customwidget>
+   <class>PythonComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">widgets.python_combo_box</header>
   </customwidget>
  </customwidgets>
  <tabstops>

@@ -32,9 +32,6 @@ class GeneralPage(ContentPage):
 
         self._load()
 
-        if GeneralDB.getSolverType() == SolverType.DENSITY_BASED:
-            self._ui.transient_.setEnabled(False)
-
     @qasync.asyncSlot()
     async def save(self):
         writer = CoreDBWriter()

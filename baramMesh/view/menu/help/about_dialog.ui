@@ -90,11 +90,11 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>&lt;p&gt;&lt;b&gt;&lt;font size=&quot;4&quot;&gt;BaramMesh 25.1.0&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;
+         <string>&lt;p&gt;&lt;b&gt;&lt;font size=&quot;4&quot;&gt;BaramMesh 25.2.0&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;
 
 &lt;p&gt;Powered by open-source software&lt;/p&gt;
 
-&lt;p&gt;Copyright &amp;#169; 2024 nextfoam&lt;/p&gt;</string>
+&lt;p&gt;Copyright &amp;#169; 2025 nextfoam&lt;/p&gt;</string>
         </property>
        </widget>
       </item>

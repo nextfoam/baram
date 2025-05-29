@@ -37,4 +37,5 @@ class FluxType(Enum):
 
 
 class NumericalDB:
-    NUMERICAL_CONDITIONS_XPATH = './/numericalConditions'
+    NUMERICAL_CONDITIONS_XPATH = '/numericalConditions'
+    CONVERGENCE_CRITERIA_XPATH = NUMERICAL_CONDITIONS_XPATH + '/convergenceCriteria'

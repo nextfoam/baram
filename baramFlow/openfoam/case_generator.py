@@ -243,8 +243,8 @@ class CaseGenerator(QObject):
             self._cm.cancel()
 
     async def _initializeRegion(self, rname):
-        sectionNames: [str] = coredb.CoreDB().getList(
-            f'.//regions/region[name="{rname}"]/initialization/advanced/sections/section/name')
+        sectionNames: list[str] = coredb.CoreDB().getList(
+            f'/regions/region[name="{rname}"]/initialization/advanced/sections/section/name')
         if len(sectionNames) > 0:
             self.progress.emit(self.tr('Setting Section Values'))
 

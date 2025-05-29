@@ -17,6 +17,7 @@
     <file alias="cubeAxesOn.png">resources/graphicsIcons/cubeAxesOn.png</file>
     <file alias="cullingOff.png">resources/graphicsIcons/cullingOff.png</file>
     <file alias="cullingOn.png">resources/graphicsIcons/cullingOn.png</file>
+    <file alias="face.svg">resources/graphicsIcons/face.svg</file>
     <file alias="fit.png">resources/graphicsIcons/fit.png</file>
     <file alias="minusX.png">resources/graphicsIcons/minusX.png</file>
     <file alias="minusY.png">resources/graphicsIcons/minusY.png</file>
@@ -35,6 +36,7 @@
     <file alias="alignAxis.svg">resources/graphicsIcons/alignAxis.svg</file>
     <file alias="ruler.ico">resources/graphicsIcons/ruler.ico</file>
     <file alias="planeHandle.svg">resources/graphicsIcons/planeHandle.svg</file>
+    <file alias="volume.svg">resources/graphicsIcons/volume.svg</file>
   </qresource>
   <qresource prefix="icons">
     <file alias="accessibility.svg">resources/ionicons/accessibility.svg</file>

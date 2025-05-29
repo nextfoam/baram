@@ -5,6 +5,8 @@ from threading import Lock
 
 from PySide6.QtCore import Signal, QTimer, QObject
 
+from baramFlow.base.graphic.graphics_db import GraphicsDB
+from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram.utils import rmtree
 from libbaram.openfoam.constants import CASE_DIRECTORY_NAME
 from libbaram.run import launchSolver, runParallelUtility, STDOUT_FILE_NAME, STDERR_FILE_NAME
@@ -209,10 +211,10 @@ class BatchCase(Case):
             self._process = await runParallelUtility(findSolver(), parallel=parallel.getEnvironment(), cwd=self._path,
                                                      stdout=stdout, stderr=stderr)
             self._setStatus(SolverStatus.RUNNING)
-            result = await self._process.wait()
+            returncode = await self._process.wait()
             self._process = None
 
-            self._setStatus(SolverStatus.ENDED if result == 0 else SolverStatus.ERROR)
+            self._setStatus(SolverStatus.ENDED if returncode == 0 else SolverStatus.ERROR)
         except Exception as e:
             self._setStatus(SolverStatus.ERROR)
             raise e
@@ -248,7 +250,7 @@ class CaseManager(QObject):
         self._caseName = None
 
         self._liveCase = None
-        self._currentCase = None
+        self._currentCase: Case = None
 
         self._generator = None
         self._batchProcess = None
@@ -261,7 +263,7 @@ class CaseManager(QObject):
     def liveCase(self):
         return self._liveCase
 
-    def load(self, liveCase):
+    def load(self, liveCase: LiveCase):
         self._project = Project.instance()
         self._liveCase = liveCase
         liveCase.load()
@@ -276,15 +278,23 @@ class CaseManager(QObject):
         self._project = None
         self._caseName = None
 
-    def loadLiveCase(self):
+    async def loadLiveCase(self):
         if not self._currentCase.isLive():
             self._loadCase(self._liveCase)
+
+            async with OpenFOAMReader() as reader:
+                await reader.setupReader()
+
+            await GraphicsDB().updatePolyMeshAll()
 
         return self._currentCase
 
     def loadBatchCase(self, case):
         if self._currentCase.name != case.name:
             self._loadCase(case)
+            # "OpenFOAMReader.setupReader" and "ScaffoldDB().refreshAllScaffolds" in "loadLiveCase"
+            # is handled in a function calling "loadBatchCase" because of "batchRun".
+            # We don't need to update Graphics reports whenever a batch case is loaded during batchRun.
 
         return self._currentCase
 
@@ -307,7 +317,8 @@ class CaseManager(QObject):
         return self._liveCase.process()
 
     async def liveRun(self):
-        await self.loadLiveCase().run()
+        case = await self.loadLiveCase()
+        await case.run()
 
     async def batchRun(self, cases):
         self._batchStop = False
@@ -320,8 +331,14 @@ class CaseManager(QObject):
 
         self._batchRunning = False
 
+        async with OpenFOAMReader() as reader:
+            await reader.setupReader()
+
+        await GraphicsDB().updatePolyMeshAll()
+
     async def initialize(self):
-        await self.loadLiveCase().initialize()
+        case = await self.loadLiveCase()
+        await case.initialize()
 
     def saveAndStop(self):
         controlDict = ControlDict().build()
@@ -379,7 +396,7 @@ class CaseManager(QObject):
     def _batchPath(self, name):
         return self._batchRoot() / name
 
-    def _loadCase(self, case):
+    def _loadCase(self, case: Case):
         self._currentCase.close()
         case.load()
         self._setCurrentCase(case)

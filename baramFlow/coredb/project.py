@@ -9,6 +9,8 @@ import yaml
 from PySide6.QtCore import QObject, Signal
 from pathlib import Path
 
+from libbaram.mpi import ParallelEnvironment, ParallelType
+
 from baramFlow.solver_status import SolverStatus
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_reader import CoreDBReader
@@ -58,11 +60,8 @@ class _Project(QObject):
             else:
                 self._load()
 
-        def get(self, key):
-            if self._settings and key.value in self._settings:
-                return self._settings[key.value]
-
-            return None
+        def get(self, key, default=None):
+            return self._settings.get(key.value, default)
 
         def set(self, key, value):
             if self.get(key) != value:
@@ -86,9 +85,15 @@ class _Project(QObject):
                     self.save()
             # End
             else:
-                self._settings = {}
-
-            self._settings[SettingKey.FORMAT_VERSION.value] = FORMAT_VERSION
+                parallelEnvironment = AppSettings.getParallenEnvironment()
+                
+                self._settings = {
+                    SettingKey.FORMAT_VERSION.value : FORMAT_VERSION,
+                    SettingKey.NP.value             : parallelEnvironment.np(),
+                    SettingKey.PARALLEL_TYPE.value  : parallelEnvironment.type().name,
+                    SettingKey.HOSTFILE.value       : parallelEnvironment.hosts()
+                }
+                
 
     def __init__(self):
         super().__init__()
@@ -122,25 +127,13 @@ class _Project(QObject):
     def np(self):
         return self._settings.get(SettingKey.NP)
 
-    @np.setter
-    def np(self, np_):
-        self._settings.set(SettingKey.NP, np_)
-
     @property
     def pType(self):
         return self._settings.get(SettingKey.PARALLEL_TYPE)
-
-    @pType.setter
-    def pType(self, type_):
-        self._settings.set(SettingKey.PARALLEL_TYPE, type_)
-
+    
     @property
     def hostfile(self):
-        return self._settings.get(SettingKey.HOSTFILE)
-
-    @hostfile.setter
-    def hostfile(self, hostfile_):
-        self._settings.set(SettingKey.HOSTFILE, hostfile_)
+        return self._settings.get(SettingKey.HOSTFILE, '')
 
     @property
     def name(self):
@@ -180,6 +173,12 @@ class _Project(QObject):
 
     def opened(self):
         self.projectOpened.emit()
+    
+    def setParallelEnvironment(self, environment):
+        self._settings.set(SettingKey.NP, environment.np())
+        self._settings.set(SettingKey.PARALLEL_TYPE, environment.type().name)
+        self._settings.set(SettingKey.HOSTFILE, environment.hosts())
+        AppSettings.setParallelEnvironment(environment)
 
     def updateSolverStatus(self, name, status):
         if name:
@@ -272,6 +271,9 @@ class _Project(QObject):
             # Save that configurations as new project.
             self._fileDB.saveCoreDB()
             self._coreDB = coredb.CoreDB()
+            
+            if route == ProjectOpenType.MESH:
+                self._settings.set(SettingKey.NP, 1)
         else:
             self._coreDB = self._fileDB.loadCoreDB()
 

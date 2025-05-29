@@ -149,10 +149,10 @@ class FileSystem:
         if len(times) == 0:
             return '0'
 
-        return max(times, key=lambda x: float(x))
+        return times[-1]
 
     @classmethod
-    def times(cls, parent: Optional[Path] = None):
+    def times(cls, parent: Optional[Path] = None) -> list[str]:
         if parent is None:
             parent = cls.processorPath(0)
             if parent is None:
@@ -166,7 +166,24 @@ class FileSystem:
             if re.fullmatch(r'^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$', f.name):
                 times.append(f.name)
 
-        return times
+        return sorted(times, key=lambda x: float(x))
+
+    @classmethod
+    def fieldExists(cls, time: str, fieldStr: str) -> bool:
+        parent = cls.processorPath(0)
+        if parent is None:
+            parent = cls._casePath
+
+        path = parent / time / fieldStr
+        if path.is_file():
+            return True
+
+        # in case it is multi-region case
+        for path in parent.joinpath(time).glob(f'*/{fieldStr}'):
+            if path.is_file():
+                return True
+
+        return False
 
     @classmethod
     def polyMeshPath(cls, rname=''):

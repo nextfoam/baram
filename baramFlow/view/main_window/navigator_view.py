@@ -31,6 +31,8 @@ class MenuItem(Enum):
     MENU_SOLUTION_RUN = auto()
 
     # Results
+    MENU_RESULTS_SCAFFOLDS = auto()
+    MENU_RESULTS_GRAPHICS = auto()
     MENU_RESULTS_REPORTS = auto()
 
 
@@ -63,6 +65,8 @@ class NavigatorView(QObject):
             MenuItem.MENU_SOLUTION_RUN.value: lambda: self.tr('Run'),
 
             # Results
+            MenuItem.MENU_RESULTS_SCAFFOLDS.value: lambda: self.tr('Scaffolds'),
+            MenuItem.MENU_RESULTS_GRAPHICS.value: lambda: self.tr('Graphics'),
             MenuItem.MENU_RESULTS_REPORTS.value: lambda: self.tr('Reports'),
         }
 
@@ -84,6 +88,8 @@ class NavigatorView(QObject):
         self._addMenu(MenuItem.MENU_SOLUTION_RUN, solutionMenu)
 
         resultsMenu = self._addTopMenu(MenuItem.MENU_RESULTS)
+        self._addMenu(MenuItem.MENU_RESULTS_SCAFFOLDS, resultsMenu)
+        self._addMenu(MenuItem.MENU_RESULTS_GRAPHICS, resultsMenu)
         self._addMenu(MenuItem.MENU_RESULTS_REPORTS, resultsMenu)
 
         self._connectSignalsSlots()
@@ -116,6 +122,8 @@ class NavigatorView(QObject):
         self._menu[MenuItem.MENU_SOLUTION_MONITORS.value].setDisabled(CaseManager().isBatchRunning())
         self._menu[MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value].setDisabled(CaseManager().isBatchRunning())
 
+        self._menu[MenuItem.MENU_RESULTS_SCAFFOLDS.value].setDisabled(noMesh)
+        self._menu[MenuItem.MENU_RESULTS_GRAPHICS.value].setDisabled(noMesh)
         self._menu[MenuItem.MENU_RESULTS_REPORTS.value].setDisabled(solverActivated)
 
     def translate(self):

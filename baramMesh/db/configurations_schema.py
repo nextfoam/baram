@@ -8,7 +8,7 @@ from libbaram.simple_db.simple_schema import FloatType, IntKeyList, EnumType, In
 from libbaram.simple_db.simple_schema import VectorComposite
 
 
-CURRENT_CONFIGURATIONS_VERSION = 3
+CURRENT_CONFIGURATIONS_VERSION = 5
 CONFIGURATIONS_VERSION_KEY = 'version'
 
 
@@ -80,6 +80,11 @@ class GapRefinementMode(Enum):
     MIXED = 'mixed'
 
 
+class BufferLayerPointSmoothingMethod(Enum):
+    LAPLACIAN = 'laplacian'
+    GETME = 'geometricElementTransform'
+
+
 geometry = {
     'gType': EnumType(GeometryType),
     'volume': IntType().setOptional(),
@@ -94,7 +99,8 @@ geometry = {
     'radius': FloatType().setDefault(1),
     'castellationGroup': IntType().setOptional().setDefault(None),
     'layerGroup': IntType().setOptional().setDefault(None),
-    'slaveLayerGroup': IntType().setOptional().setDefault(None)
+    'slaveLayerGroup': IntType().setOptional().setDefault(None),
+    'addBufferLayers': BoolType(False)
 }
 
 region = {
@@ -121,13 +127,21 @@ surfaceRefinement = {
 
 volumeRefinement = {
     'groupName': TextType(),
-    'volumeRefinementLevel': IntType().setRange(1, 10).setDefault(1),
+    'volumeRefinementLevel': IntType().setRange(0, 10).setDefault(1),
     'gapRefinement': {
         'minCellLayers': IntType().setLowLimit(3, False).setDefault(4),
         'detectionStartLevel': IntType().setRange(0, 10).setDefault(1),
         'maxRefinementLevel': IntType().setRange(1, 10).setDefault(1),
         'direction': EnumType(GapRefinementMode),
         'gapSelf': BoolType(True)
+    },
+    'levelIncrement': {
+        'disabled': BoolType(True),
+        'splitCountX': IntType().setRange(0, 10).setDefault(1),
+        'splitCountY': IntType().setRange(0, 10),
+        'splitCountZ': IntType().setRange(0, 10),
+        'minLevel': IntType().setRange(0, 10),
+        'maxLevel': IntType().setRange(0, 10).setDefault(10),
     }
 }
 
@@ -178,7 +192,13 @@ schema = {
         'multiRegionFeatureSnap': BoolType(False),
         'tolerance': FloatType().setDefault(3),
         'concaveAngle': FloatType().setDefault(45),
-        'minAreaRatio': FloatType().setDefault(0.3)
+        'minAreaRatio': FloatType().setDefault(0.3),
+        'bufferLayer': {
+            'disabled': BoolType(True),
+            'pointSmoothingMethod': EnumType(BufferLayerPointSmoothingMethod),
+            'numberOfPointSmoothingIteration': IntType().setDefault(10).setLowLimit(10).setHighLimit(100),
+            'GETMeTransformationParameter': FloatType().setDefault(0.667).setLowLimit(0, False).setHighLimit(1),
+        }
     },
     'addLayers': {
         # 'thicknessModel': EnumType(ThicknessModel).setDefault(ThicknessModel.FINAL_AND_OVERALL),

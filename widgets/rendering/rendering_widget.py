@@ -10,33 +10,67 @@ from typing import Optional
 import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
 import vtkmodules.vtkRenderingOpenGL2
-from PySide6.QtCore import Qt, Signal, QObject
+from PySide6.QtCore import QTimer, Qt, Signal, QObject
+from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QWidget, QFileDialog, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkCommonCore import vtkCommand
 # load implementations for rendering and interaction factory classes
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleTrackballCamera
-from vtkmodules.vtkInteractionWidgets import vtkLogoRepresentation, vtkLogoWidget
+from vtkmodules.vtkInteractionWidgets import vtkLogoRepresentation, vtkLogoWidget, vtkOrientationMarkerWidget
 from vtkmodules.vtkIOImage import vtkPNGReader
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor, vtkCubeAxesActor
 from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderer, vtkPropPicker, vtkLightKit, vtkProp
 
+from libbaram.vtk_threads import isRenderingHold
+
 from resources import resource
 
-# To fix middle button issue in vtkmodules
-# Qt.MidButton that is not available in PySide6 is use in QVTKRenderWindowInteractor
-# Remove this line when vtk 9.2.2 or later is used
-Qt.MidButton = Qt.MiddleButton
 
 colors = vtkNamedColors()
 
+RENDER_RETRY_INTERVAL = 200
+
 
 class RenderWindowInteractor(QVTKRenderWindowInteractor):
+    def __init__(self, parent=None, **kw):
+        self._timer = QTimer()
+        self._timer.setInterval(RENDER_RETRY_INTERVAL)
+        self._timer.setSingleShot(True)
+        self._timer.timeout.connect(self._timeout)
+
+        super().__init__(parent=parent, **kw)
+
     def Finalize(self):
         if self._RenderWindow is not None:
             self._RenderWindow.Finalize()
             self._RenderWindow = None
+
+    def paintEvent(self, ev):
+        if isRenderingHold():
+            self._timer.start()
+            return
+
+        super().paintEvent(ev)
+
+    def _timeout(self):
+        self.Render()  # Render() just calls QWidget.update(), which just schedules repaint
+
+    def mouseDoubleClickEvent(self, ev: QMouseEvent):
+        ctrl, shift = self._GetCtrlShift(ev)
+
+        x, y = ev.position().x(), ev.position().y()
+
+        self._setEventInformation(x, y,
+                                  ctrl, shift, chr(0), 0, None)
+
+        if self._ActiveButton == Qt.MouseButton.LeftButton:
+            self._Iren.InvokeEvent(vtkCommand.LeftButtonDoubleClickEvent, None)
+        elif self._ActiveButton == Qt.MouseButton.RightButton:
+            self._Iren.InvokeEvent(vtkCommand.RightButtonDoubleClickEvent, None)
+        elif self._ActiveButton == Qt.MiddleButton:
+            self._Iren.InvokeEvent(vtkCommand.MiddleButtonDoubleClickEvent, None)
 
 
 class MouseHandler(QObject):
@@ -107,7 +141,7 @@ class RenderingWidget(QWidget):
 
         self._dialog: Optional[QFileDialog] = None
 
-        self._originActor: Optional[vtkAxesActor] = None
+        self._originAxes: Optional[vtkOrientationMarkerWidget] = None
         self._cubeAxesActor: Optional[vtkCubeAxesActor] = None
 
         self._actorPicker = vtkPropPicker()
@@ -150,12 +184,12 @@ class RenderingWidget(QWidget):
         self._style.AddObserver(vtkCommand.MouseMoveEvent, self._mouseMoveEvent)
 
         # To adjust origin axes size on zoom
-        self._style.AddObserver(vtkCommand.MouseWheelForwardEvent, self._mouseWheelForwardEvent)
-        self._style.AddObserver(vtkCommand.MouseWheelBackwardEvent, self._mouseWheelBackwardEvent)
-        self._style.AddObserver(vtkCommand.InteractionEvent, self._interactionEvent)
+        # self._style.AddObserver(vtkCommand.MouseWheelForwardEvent, self._mouseWheelForwardEvent)
+        # self._style.AddObserver(vtkCommand.MouseWheelBackwardEvent, self._mouseWheelBackwardEvent)
+        # self._style.AddObserver(vtkCommand.InteractionEvent, self._interactionEvent)
 
     def interactor(self):
-        return self._widget
+        return self._widget._Iren
 
     def renderer(self):
         return self._renderer
@@ -196,15 +230,16 @@ class RenderingWidget(QWidget):
 
     def clear(self):
         self._renderer.RemoveAllViewProps()
+        self._showLogo()
 
-    def _turnCamera(self, orientation: (float, float, float), up: (float, float, float)):
+    def _turnCamera(self, orientation: tuple[float, float, float], up: tuple[float, float, float]):
         camera = self._renderer.GetActiveCamera()
         d = camera.GetDistance()
         fx, fy, fz = camera.GetFocalPoint()
         camera.SetPosition(fx-orientation[0]*d, fy-orientation[1]*d, fz-orientation[2]*d)
         camera.SetViewUp(up[0], up[1], up[2])
 
-    def _getClosestAxis(self, u: (float, float, float)) -> (float, float, float):
+    def _getClosestAxis(self, u: tuple[float, float, float]) -> tuple[float, float, float]:
         axis = [0, 0, 0]
         i = u.index(max(u, key=abs))
         v = 1 if u[i] > 0 else -1
@@ -240,7 +275,7 @@ class RenderingWidget(QWidget):
         else:
             self._hideOriginAxes()
 
-        self._resizeOriginAxis()
+        # self._resizeOriginAxis()
         self._widget.Render()
 
     def setCubeAxisVisible(self, checked):
@@ -251,15 +286,7 @@ class RenderingWidget(QWidget):
         self._widget.Render()
 
     def getBounds(self):
-        if self._originActor is not None:
-            self._originActor.SetVisibility(False)
-
-        bounds = self._renderer.ComputeVisiblePropBounds()
-
-        if self._originActor is not None:
-            self._originActor.SetVisibility(True)
-
-        return bounds
+        return self._renderer.ComputeVisiblePropBounds()
 
     def setBackground1(self, r, g, b):
         self._renderer.SetBackground(r, g, b)
@@ -316,49 +343,32 @@ class RenderingWidget(QWidget):
             self._cubeAxesActor = None
 
     def _showOriginAxes(self):
-        if self._originActor is not None:
-            return
+        if self._originAxes is None:
+            self._originAxes = vtkOrientationMarkerWidget()
+            self._originAxes.SetViewport(0.0, 0.0, 0.2, 0.2)
+            self._originAxes.SetOrientationMarker(vtkAxesActor())
+            self._originAxes.SetInteractor(self._widget)
 
-        self._originActor = vtkAxesActor()
-
-        self._originActor.SetVisibility(True)
-        self._originActor.UseBoundsOff()
-        self._originActor.SetConeRadius(0.2)
-        self._originActor.SetShaftTypeToLine()
-        self._originActor.SetNormalizedShaftLength(0.9, 0.9, 0.9)
-        self._originActor.SetNormalizedTipLength(0.1, 0.1, 0.1)
-        self._originActor.SetNormalizedLabelPosition(1.0, 1.0, 1.0)
-
-        actor = self._originActor.GetXAxisCaptionActor2D()
-        actor.SetPosition2(0.25, 0.05)
-
-        actor = self._originActor.GetYAxisCaptionActor2D()
-        actor.SetPosition2(0.25, 0.05)
-
-        actor = self._originActor.GetZAxisCaptionActor2D()
-        actor.SetPosition2(0.25, 0.05)
-
-        self._renderer.AddActor(self._originActor)
+        self._originAxes.EnabledOn()
 
     def _hideOriginAxes(self):
-        if self._originActor is not None:
-            self._renderer.RemoveActor(self._originActor)
-            self._originActor = None
+        if self._originAxes is not None:
+            self._originAxes.EnabledOff()
 
-    def _resizeOriginAxis(self):
-        if self._originActor:
-            camera = self._renderer.GetActiveCamera()
+    # def _resizeOriginAxis(self):
+    #     if self._originActor:
+    #         camera = self._renderer.GetActiveCamera()
 
-            d = camera.GetDirectionOfProjection()
-            p = camera.GetPosition()
-            distance = abs(-p[0]*d[0]-p[1]*d[1]-p[2]*d[2])
+    #         d = camera.GetDirectionOfProjection()
+    #         p = camera.GetPosition()
+    #         distance = abs(-p[0]*d[0]-p[1]*d[1]-p[2]*d[2])
 
-            degree = camera.GetViewAngle()
-            radian = math.radians(degree/3.0)
-            length = distance * math.tan(radian)
+    #         degree = camera.GetViewAngle()
+    #         radian = math.radians(degree/3.0)
+    #         length = distance * math.tan(radian)
 
-            # length = self._style.getOriginActorLength()
-            self._originActor.SetTotalLength(length, length, length)
+    #         # length = self._style.getOriginActorLength()
+    #         self._originActor.SetTotalLength(length, length, length)
 
     def _leftButtonPressEvent(self, obj, event):
         self._mouseObserver.leftButtonPressed(obj, event)
@@ -372,25 +382,25 @@ class RenderingWidget(QWidget):
     def _mouseClicked(self, x, y, controlKeyPressed):
         self.actorPicked.emit(self.pickActor(x, y), controlKeyPressed)
 
-    def _mouseWheelForwardEvent(self, obj, event):
-        # The style does not run its own handler if observer is registered
-        self._style.OnMouseWheelForward()
+    # def _mouseWheelForwardEvent(self, obj, event):
+    #     # The style does not run its own handler if observer is registered
+    #     self._style.OnMouseWheelForward()
 
-        self._resizeOriginAxis()
-        self._widget.Render()
+    #     self._resizeOriginAxis()
+    #     self._widget.Render()
 
-    def _mouseWheelBackwardEvent(self, obj, event):
-        # The style does not run its own handler if observer is registered
-        self._style.OnMouseWheelBackward()
+    # def _mouseWheelBackwardEvent(self, obj, event):
+    #     # The style does not run its own handler if observer is registered
+    #     self._style.OnMouseWheelBackward()
 
-        self._resizeOriginAxis()
-        self._widget.Render()
+    #     self._resizeOriginAxis()
+    #     self._widget.Render()
 
-    # This is a true observer calling.
-    # No need to call style's method
-    def _interactionEvent(self, obj, event):
-        self._resizeOriginAxis()
-        self._widget.Render()
+    # # This is a true observer calling.
+    # # No need to call style's method
+    # def _interactionEvent(self, obj, event):
+    #     self._resizeOriginAxis()
+    #     self._widget.Render()
 
     def _showLogo(self):
         reader = vtkPNGReader()

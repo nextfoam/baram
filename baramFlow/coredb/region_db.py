@@ -50,7 +50,7 @@ class RegionDB:
 
     @classmethod
     def getPhase(cls, rname):
-        return MaterialDB.getPhase(coredb.CoreDB().getValue(cls.getXPath(rname) + '/material'))
+        return MaterialDB.getPhase(cls.getMaterial(rname))
 
     @classmethod
     def getMaterial(cls, rname):

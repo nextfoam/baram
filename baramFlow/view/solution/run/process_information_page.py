@@ -207,13 +207,13 @@ class ProcessInformationPage(ContentPage):
     async def _toLiveMode(self):
         self._setRunningMode(RunningMode.LIVE_RUNNING_MODE)
 
-        # progressDialog = ProgressDialog(self, self.tr('Case Loading'))
-        # app.case.progress.connect(progressDialog.setLabelText)
-        # progressDialog.open()
-        #
-        self._caseManager.loadLiveCase()
-        #
-        # progressDialog.close()
+        progressDialog = ProgressDialog(self, self.tr('Case Loading'))
+        progressDialog.setLabelText(self.tr('Loading Live Case...'))
+        progressDialog.open()
+
+        await self._caseManager.loadLiveCase()
+
+        progressDialog.close()
 
     @qasync.asyncSlot()
     async def _toBatchMode(self):
@@ -317,7 +317,8 @@ class ProcessInformationPage(ContentPage):
         if self._dialog.isClearChecked():
             self._batchCaseList.clear()
 
-        self._caseManager.loadLiveCase()
+        await self._caseManager.loadLiveCase()
+
         self._batchCaseList.importFromDataFrame(self._dialog.cases())
 
     def closeEvent(self, event):

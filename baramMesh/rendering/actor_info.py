@@ -90,7 +90,6 @@ class ActorInfo(QObject):
         self._actor = vtkActor()
         self._actor.SetMapper(self._mapper)
         self._actor.GetProperty().SetDiffuse(0.3)
-        self._actor.GetProperty().SetOpacity(0.9)
         self._actor.GetProperty().SetAmbient(0.3)
         self._actor.SetObjectName(self._id)
 
@@ -339,6 +338,8 @@ class BoundaryActor(ActorInfo):
 class GeometryActor(ActorInfo):
     def __init__(self, dataSet, id_, name):
         super().__init__(dataSet, id_, name, ActorType.GEOMETRY)
+        
+        self.setOpacity(0.9)
 
     def _initMapper(self) -> vtkPolyDataMapper:
         return vtkPolyDataMapper()

@@ -92,7 +92,10 @@ def mergeDataFrames(data: [pd.DataFrame]):
             left_on = {'Time', *(merged.columns.values.tolist())}
             right_on = {'Time', *(df.columns.values.tolist())}
             on = list(left_on.intersection(right_on))
+
+            # "merge" rather than "concat" should be used because of multi-region cases
             merged = pd.merge(merged, df, how='outer', on=on)
+            merged = merged.sort_values(by='Time')
 
     return merged
 

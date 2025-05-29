@@ -12,6 +12,7 @@ from PySide6.QtWidgets import QDialog
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.monitor_db import DirectionSpecificationMethod
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
@@ -257,10 +258,12 @@ class ForceReportDialog(QDialog):
         for bcid in self._boundaries:
             boundaries.append(BoundaryDB.getBoundaryName(bcid))
 
-        aRef = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/area'))
-        lRef = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/length'))
-        magUInf = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/velocity'))
-        rhoInf = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/density'))
+        db = CoreDBReader()  # Not "coredb" because Parsed data is required rather than raw USER PARAMETERS
+
+        aRef = float(db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/area'))
+        lRef = float(db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/length'))
+        magUInf = float(db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/velocity'))
+        rhoInf = float(db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/density'))
         dragDir = [float(self._ui.dragDirectionX.text()),
                    float(self._ui.dragDirectionY.text()),
                    float(self._ui.dragDirectionZ.text())]
@@ -280,8 +283,8 @@ class ForceReportDialog(QDialog):
         if GeneralDB.isDensityBased():
             pRef = None
         else:
-            referencePressure = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'))
-            operatingPressure = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
+            referencePressure = float(db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'))
+            operatingPressure = float(db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
             pRef = referencePressure + operatingPressure
 
         data = foForceCoeffsReport(boundaries, aRef, lRef, magUInf, rhoInf, dragDir, liftDir, cofr, pRef, self._rname)

@@ -73,13 +73,20 @@ class FlowRateInletSpecification(Enum):
     MASS_FLOW_RATE = 'massFlowRate'
 
 
-class WallVelocityCondition(Enum):
+class WallMotion(Enum):
+    STATIONARY_WALL = 'stationaryWall'
+    MOVING_WALL = 'movingWall'
+
+
+class MovingWallMotion(Enum):
+    TRANSLATIONAL_MOTION = 'translationalMotion'
+    ROTATIONAL_MOTION = 'rotationalMotion'
+    MESH_MOTION = 'meshMotion'
+
+
+class ShearCondition(Enum):
     NO_SLIP = 'noSlip'
     SLIP = 'slip'
-    MOVING_WALL = 'movingWall'
-    ATMOSPHERIC_WALL = 'atmosphericWall'
-    TRANSLATIONAL_MOVING_WALL = 'translationalMovingWall'
-    ROTATIONAL_MOVING_WALL = 'rotationalMovingWall'
 
 
 class WallTemperature(Enum):
@@ -147,8 +154,8 @@ DirectionSpecificationMethodTexts = {
 
 
 class BoundaryDB:
-    BOUNDARY_CONDITIONS_XPATH = './/boundaryConditions'
-    ABL_INLET_CONDITIONS_XPATH = './/atmosphericBoundaryLayer'
+    BOUNDARY_CONDITIONS_XPATH = '/regions/region/boundaryConditions'
+    ABL_INLET_CONDITIONS_XPATH = '/general/atmosphericBoundaryLayer'
 
     _coupledBoundaryType = {
         BoundaryType.THERMO_COUPLED_WALL.value,
@@ -187,7 +194,7 @@ class BoundaryDB:
     @classmethod
     def getBoundaryTypeByName(cls, rname, bcname):
         return coredb.CoreDB().getValue(
-            f'.//region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bcname}"]/physicalType')
+            f'/regions/region[name="{rname}"]/boundaryConditions/boundaryCondition[name="{bcname}"]/physicalType')
 
     @classmethod
     def needsCoupledBoundary(cls, bctype):
@@ -226,7 +233,7 @@ class BoundaryDB:
         }.get(dbText)
 
     @classmethod
-    def getBoundarySelectorItems(cls):
+    def getBoundarySelectorItems(cls) -> list[SelectorItem]:
         db = coredb.CoreDB()
 
         items = []
@@ -253,7 +260,7 @@ class BoundaryDB:
         return items
 
     @classmethod
-    def getBoundaryConditionsByType(cls, physicalType: BoundaryType, rname=None) -> list[(int, str, str)]:
+    def getBoundaryConditionsByType(cls, physicalType: BoundaryType, rname=None) -> list[tuple[int, str, str]]:
         """Returns list of boundary conditions in the region
 
         Returns list of boundary conditions for the type
@@ -273,6 +280,7 @@ class BoundaryDB:
             for e
             in coredb.CoreDB().getElements(
                 f'{regionXPath}/boundaryConditions/boundaryCondition[physicalType="{physicalType.value}"]')]
+
 
 def getBoundaryElements(rname):
     return coredb.CoreDB().getElements(f'{RegionDB.getXPath(rname)}/boundaryConditions/boundaryCondition')

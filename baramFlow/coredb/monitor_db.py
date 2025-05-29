@@ -42,10 +42,10 @@ class MonitorDBSignals(QObject):
 
 
 class MonitorDB:
-    FORCE_MONITORS_XPATH = './/monitors/forces'
-    POINT_MONITORS_XPATH = './/monitors/points'
-    SURFACE_MONITORS_XPATH = './/monitors/surfaces'
-    VOLUME_MONITORS_XPATH = './/monitors/volumes'
+    FORCE_MONITORS_XPATH   = '/monitors/forces'
+    POINT_MONITORS_XPATH   = '/monitors/points'
+    SURFACE_MONITORS_XPATH = '/monitors/surfaces'
+    VOLUME_MONITORS_XPATH  = '/monitors/volumes'
 
     signals = MonitorDBSignals()
 
