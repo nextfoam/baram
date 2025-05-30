@@ -299,5 +299,6 @@ class PolyMeshLoader(QObject):
         async with OpenFOAMReader() as reader:
             await reader.setupReader()
 
-        ScaffoldsDB().load()
-        await GraphicsDB().load()
+        ScaffoldsDB().rematchBoundaries()
+
+        await GraphicsDB().updatePolyMeshAll()

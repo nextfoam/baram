@@ -17,6 +17,7 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
 from baramFlow.base.graphic.graphics_db import GraphicsDB
+from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.view.results.graphics.graphic_dock import GraphicDock
 from libbaram.exception import CanceledException
 from libbaram.openfoam.polymesh import removeVoidBoundaries
@@ -616,6 +617,9 @@ class MainWindow(QMainWindow):
 
         db = coredb.CoreDB()
         if db.hasMesh():
+            ScaffoldsDB().load()
+            await GraphicsDB().load()
+
             # Workaround to give some time for QT to set up timer or event loop.
             # This workaround is not necessary on Windows because BARAM for Windows
             #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS

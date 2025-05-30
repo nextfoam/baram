@@ -41,14 +41,28 @@ class RunConditionsPage(ContentPage):
         self._connectSignalsSlots()
 
     def _load(self):
+        db = coredb.CoreDB()
+
         isTimeTransient = GeneralDB.isTimeTransient()
         if isTimeTransient:
+            if GeneralDB.isCompressibleDensity():
+                self._ui.timeSteppingMethod.setEnabled(False)
+                method = TimeSteppingMethod.FIXED
+            else:
+                method = TimeSteppingMethod(db.getValue(self._xpath + '/timeSteppingMethod'))
+
+            index = self._ui.timeSteppingMethod.findData(method)
+            self._ui.timeSteppingMethod.setCurrentIndex(index)
+
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.numberOfIterations, False)
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.timeSteppingMethod, True)
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.endTime, True)
+            self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxDi, RegionDB.isMultiRegion())
+
+            self._updateVisibleStateOfIterationConditionsLayout(method)
+
             self._ui.steadyReportInterval.setVisible(False)
             self._ui.transientReportInterval.setVisible(True)
-            self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxDi, RegionDB.isMultiRegion())
         else:
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.numberOfIterations, True)
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.timeSteppingMethod, False)
@@ -64,18 +78,7 @@ class RunConditionsPage(ContentPage):
             self._ui.steadyReportInterval.setVisible(True)
             self._ui.transientReportInterval.setVisible(False)
 
-        db = coredb.CoreDB()
-
         self._ui.numberOfIterations.setText(db.getValue(self._xpath + '/numberOfIterations'))
-
-        if isTimeTransient and GeneralDB.isCompressibleDensity():
-            self._ui.timeSteppingMethod.setCurrentIndex(self._ui.timeSteppingMethod.findData(TimeSteppingMethod.FIXED))
-            self._ui.timeSteppingMethod.setEnabled(False)
-            self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxCourantNumber, True)
-        else:
-            self._ui.timeSteppingMethod.setCurrentIndex(
-                self._ui.timeSteppingMethod.findData(TimeSteppingMethod(db.getValue(self._xpath + '/timeSteppingMethod'))))
-            
         self._ui.maxCourantNumber.setText(db.getValue(self._xpath + '/maxCourantNumber'))
         self._ui.maxCourantNumberForVoF.setText(db.getValue(self._xpath + '/VoFMaxCourantNumber'))
         self._ui.maxDi.setText(db.getValue(self._xpath + '/maxDiffusionNumber'))
@@ -151,14 +154,19 @@ class RunConditionsPage(ContentPage):
     def _timeSteppingMethodChanged(self, index):
         if not GeneralDB.isTimeTransient():
             return
-        
-        method = self._ui.timeSteppingMethod.itemData(index)
 
+        method = self._ui.timeSteppingMethod.itemData(index)
+        self._updateVisibleStateOfIterationConditionsLayout(method)
+
+    def _updateVisibleStateOfIterationConditionsLayout(self, method: TimeSteppingMethod):
         if method == TimeSteppingMethod.FIXED:
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.timeStepSize, True)
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxCourantNumber, False)
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxCourantNumberForVoF, False)
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxDi, False)
+            if GeneralDB.isCompressibleDensity():  # exceptional for TSLAeroFoam
+                self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxCourantNumber, True)
+
         elif method == TimeSteppingMethod.ADAPTIVE:
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.timeStepSize, False)
             self._ui.iterationConditionsLayout.setRowVisible(self._ui.maxCourantNumber, True)

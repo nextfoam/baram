@@ -18,6 +18,14 @@ from libbaram.openfoam.polymesh import collectBoundaryMesh
 @dataclass
 class BoundaryScaffold(Scaffold):
     boundaries: list[str] = dataClassField(default_factory=list)
+    _boundaryNames: list[str] = dataClassField(init=False, repr=False)
+
+    def __setattr__(self, name: str, value):
+        if (name == "boundaries"):
+            # Boundary names are preserved.
+            # The names are used to rematch the boundaries to the new bcid after mesh importing.
+            super().__setattr__('_boundaryNames',  [BoundaryDB.getBoundaryText(bcid) for bcid in value])
+        super().__setattr__(name, value)
 
     @classmethod
     def parseScaffolds(cls) -> dict[UUID, Scaffold]:
@@ -67,3 +75,22 @@ class BoundaryScaffold(Scaffold):
             boundaries.append((rname, bcname))
 
         return await collectBoundaryMesh(mBlock, boundaries)
+
+    def rematchBoundaries(self):
+        bcids: dict[str, str] = {}
+        db = coredb.CoreDB()
+        for rname in db.getRegions():
+            boundaries = db.getBoundaryConditions(rname)
+            for id_, _, _ in boundaries:
+                bcid = str(id_)
+                bcids[BoundaryDB.getBoundaryText(bcid)] = bcid
+
+        boundaries = []
+        for name in self._boundaryNames:
+            if name in bcids:
+                boundaries.append(bcids[name])
+
+        if len(boundaries) > 0:
+            self.boundaries = boundaries
+        else:  # put all boundaries if no matching boundaries are found
+            self.boundaries = list(bcids.values())

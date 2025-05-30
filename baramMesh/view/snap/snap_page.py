@@ -71,7 +71,7 @@ class SnapPage(StepPage):
             if self._ui.bufferLayer.isChecked():
                 if not self._surfaces:
                     await AsyncMessageBox().information(self._widget, self.tr('Input Error'),
-                                                        self.tr('Select Buffer Layer Surffaces.'))
+                                                        self.tr('Select Surface(s) for Buffer Layer.'))
 
                     return False
 

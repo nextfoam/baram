@@ -221,6 +221,9 @@ class VisualReportView(RenderingView):
         self._lookupTable.Build()
 
     async def _scaffoldUpdated(self, uuid: UUID):
+        if uuid not in self._scaffold2displayControl:
+            return  # Not my scaffold
+
         scaffold = ScaffoldsDB().getScaffold(uuid)
         dataSet = await scaffold.getDataSet(self._graphic.polyMesh)
 

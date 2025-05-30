@@ -2645,12 +2645,12 @@
     </message>
     <message>
         <location filename="../../baramMesh/view/export/export_2D_plane_dialog.ui" line="29"/>
-        <source>Projet Name</source>
+        <source>Project Name</source>
         <translation>프로젝트 이름</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/export/export_2D_plane_dialog.ui" line="43"/>
-        <source>Projet Location</source>
+        <source>Project Location</source>
         <translation>프로젝트 위치</translation>
     </message>
     <message>
@@ -2777,12 +2777,12 @@
     </message>
     <message>
         <location filename="../../baramMesh/view/export/export_2D_wedge_dialog.ui" line="29"/>
-        <source>Projet Name</source>
+        <source>Project Name</source>
         <translation>프로젝트 이름</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/export/export_2D_wedge_dialog.ui" line="43"/>
-        <source>Projet Location</source>
+        <source>Project Location</source>
         <translation>프로젝트 위치</translation>
     </message>
     <message>
@@ -8446,13 +8446,13 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../baramFlow/view/widgets/new_project_dialog.ui" line="29"/>
         <location filename="../../widgets/new_project_dialog.ui" line="32"/>
-        <source>Projet Name</source>
+        <source>Project Name</source>
         <translation>프로젝트 이름</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/widgets/new_project_dialog.ui" line="43"/>
         <location filename="../../widgets/new_project_dialog.ui" line="46"/>
-        <source>Projet Location</source>
+        <source>Project Location</source>
         <translation>폴더 위치</translation>
     </message>
     <message>
@@ -9275,7 +9275,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../baramFlow/view/results/scaffolds/parallelogram_dialog.ui" line="48"/>
         <source>Origin</source>
-        <translation>축의 중심</translation>
+        <translation>원점</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/results/scaffolds/parallelogram_dialog.ui" line="54"/>
@@ -9301,12 +9301,12 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../baramFlow/view/results/scaffolds/parallelogram_dialog.ui" line="87"/>
         <source>Point1</source>
-        <translation>점 1</translation>
+        <translation>방향벡터 1</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/results/scaffolds/parallelogram_dialog.ui" line="126"/>
         <source>Point2</source>
-        <translation>점 2</translation>
+        <translation>방향벡터 2</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/results/scaffolds/parallelogram_dialog.ui" line="165"/>
@@ -9367,7 +9367,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../baramFlow/view/results/scaffolds/plane_scaffold_dialog.ui" line="48"/>
         <source>Origin</source>
-        <translation>축의 중심</translation>
+        <translation>원점</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/results/scaffolds/plane_scaffold_dialog.ui" line="54"/>
@@ -11192,7 +11192,7 @@ Calculation stops as soon as possible</source>
     <message>
         <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="173"/>
         <source>Line</source>
-        <translation>선</translation>
+        <translation>직선</translation>
     </message>
     <message>
         <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="175"/>
@@ -12007,12 +12007,12 @@ It is being used in Graphics report</source>
     <message>
         <location filename="../../baramFlow/view/results/scaffolds/sphere_scaffold_dialog.ui" line="112"/>
         <source>Longitude</source>
-        <translation>길이 방향</translation>
+        <translation>경도 방향</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/results/scaffolds/sphere_scaffold_dialog.ui" line="122"/>
         <source>Latitude</source>
-        <translation>폭 방향</translation>
+        <translation>위도 방향</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/results/scaffolds/sphere_scaffold_dialog.ui" line="164"/>
@@ -14257,7 +14257,7 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
     <message>
         <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="495"/>
         <source>Solid</source>
-        <translation>고체</translation>
+        <translation>단색</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="498"/>

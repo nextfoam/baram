@@ -78,12 +78,16 @@ class BoundaryScaffoldWidget(ScaffoldWidget):
 
         self._ui.name.setText(scaffold.name)
 
-        bcNamesList = [BoundaryDB.getBoundaryText(bcid) for bcid in scaffold.boundaries]
-        bcNames = ', '.join(bcNamesList)
-        metrics = QFontMetrics(self._ui.type.font())
-        elidedText = metrics.elidedText(bcNames, Qt.TextElideMode.ElideRight, 100)
+        #
+        # Cannot find a way to update this information when boundary names are changed by importing mesh
+        #
+        # bcNamesList = [BoundaryDB.getBoundaryText(bcid) for bcid in scaffold.boundaries]
+        # bcNames = ', '.join(bcNamesList)
+        # metrics = QFontMetrics(self._ui.type.font())
+        # elidedText = metrics.elidedText(bcNames, Qt.TextElideMode.ElideRight, 100)
 
-        self._ui.type.setText(f'boundary scaffold for <b>{elidedText}</b>')
+        # self._ui.type.setText(f'boundary scaffold for <b>{elidedText}</b>')
+        self._ui.type.setText(f'boundary scaffold')
 
     def edit(self):
         self._dialog = BoundaryScaffoldDialog(self, self._scaffold)
