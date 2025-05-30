@@ -5,7 +5,6 @@ from enum import Enum
 from pathlib import Path
 
 import yaml
-from filelock import FileLock, Timeout
 from PySide6.QtCore import QLocale, QRect
 
 from libbaram.mpi import ParallelEnvironment, ParallelType
@@ -57,7 +56,7 @@ class AppSettings:
             with open(self._settingsFile) as file:
                 self._settings = yaml.load(file, Loader=yaml.FullLoader)
         else:
-            self._settingsPath.mkdir(exist_ok=True)
+            path.mkdir(exist_ok=True)
             self._settings = {SettingKey.FORMAT_VERSION.value: FORMAT_VERSION}
 
     def getRecentLocation(self):
