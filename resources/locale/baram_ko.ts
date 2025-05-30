@@ -941,8 +941,8 @@
     </message>
     <message>
         <location filename="../../baramFlow/view/results/scaffolds/boundary_scaffold_dialog.ui" line="63"/>
-        <source>Static Boundary</source>
-        <translation>셀 존 안의 움직이지 않는 경계면</translation>
+        <source>Boundary</source>
+        <translation>경계면</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/results/scaffolds/boundary_scaffold_dialog.ui" line="83"/>
