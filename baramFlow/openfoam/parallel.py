@@ -14,7 +14,10 @@ def getNP() -> int:
 
 def getParallelType() -> ParallelType:
     ptypeStr = Project.instance().pType
-    return ParallelType(ptypeStr) if isinstance(ptypeStr, int) else ParallelType[ptypeStr]
+    try:
+        return ParallelType(int(ptypeStr))
+    except ValueError:
+        return ParallelType[ptypeStr]
 
 
 def getHostfile() -> str:
