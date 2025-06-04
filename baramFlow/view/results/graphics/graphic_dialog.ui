@@ -623,9 +623,9 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="ok">
+       <widget class="QPushButton" name="update">
         <property name="text">
-         <string>Ok</string>
+         <string>Update</string>
         </property>
        </widget>
       </item>

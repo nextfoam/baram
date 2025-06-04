@@ -119,11 +119,10 @@ class OpenFOAMReader(QObject):
 
         time = self._reader.GetTimeValue()
         print(f'read {time} set {value}')
-        if time == value:
-            return
 
         self._reader.SetTimeValue(value)
-        self._reader.Modified()
+        if time != value:
+            self._reader.Modified()
 
     def getTimeValue(self):
         if not self._acquired:

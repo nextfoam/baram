@@ -9,7 +9,9 @@ from PySide6.QtWidgets import QListWidgetItem, QMessageBox
 from baramFlow.base.graphic.graphic import Graphic
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.base.graphic.graphics_db import GraphicsDB
+from baramFlow.coredb.project import Project
 from baramFlow.openfoam.file_system import FileSystem
+from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.view.results.graphics.graphic_dialog import GraphicDialog
 from baramFlow.view.results.graphics.graphic_widget import GraphicWidget
 from baramFlow.view.widgets.content_page import ContentPage
@@ -26,6 +28,8 @@ class GraphicsPage(ContentPage):
         self._ui = Ui_GraphicsPage()
         self._ui.setupUi(self)
 
+        self._project = Project.instance()
+
         self._report = None
         self._dialog = None
 
@@ -40,6 +44,21 @@ class GraphicsPage(ContentPage):
         self._ui.list.itemDoubleClicked.connect(self._edit)
         self._ui.edit.clicked.connect(self._edit)
         self._ui.delete_.clicked.connect(self._delete)
+
+        self._project.solverStatusChanged.connect(self._solverStatusChanged)
+
+    def _disconnectSignalsSlots(self):
+        self._project.solverStatusChanged.disconnect(self._solverStatusChanged)
+
+    def closeEvent(self, event):
+        self._disconnectSignalsSlots()
+
+        super().closeEvent(event)
+
+    @qasync.asyncSlot()
+    async def _solverStatusChanged(self, status, name, liveStatusChanged):
+        async with OpenFOAMReader() as reader:
+            await reader.refresh()
 
     def _load(self):
         self._ui.list.clear()
