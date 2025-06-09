@@ -131,14 +131,10 @@ class NumericalConditionsPage(ContentPage):
             self._ui.discretizationSchemeScalar.setEnabled(True)
             self._ui.underRelaxationFactorScalar.setEnabled(True)
             self._ui.underRelaxationFactorScalarFinal.setEnabled(timeIsTransient or allRoundSolver)
-            self._ui.absoluteScalar.setEnabled(True)
-            self._ui.relativeScalar.setEnabled(timeIsTransient or allRoundSolver)
         else:
             self._ui.discretizationSchemeScalar.setEnabled(False)
             self._ui.underRelaxationFactorScalar.setEnabled(False)
             self._ui.underRelaxationFactorScalarFinal.setEnabled(False)
-            self._ui.absoluteScalar.setEnabled(False)
-            self._ui.relativeScalar.setEnabled(False)
 
         if ModelsDB.isSpeciesModelOn():
             self._ui.discretizationSchemeSpecies.setEnabled(True)
