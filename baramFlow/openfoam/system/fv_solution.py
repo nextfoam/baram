@@ -265,7 +265,8 @@ class FvSolution(DictionaryFile):
                     **{
                         f'{specie}Final': self._db.getValue(underRelaxaitionFactorsXPath + '/speciesFinal')
                         for specie in self._species.values()
-                    }
+                    },
+                    'age': self._db.getValue(underRelaxaitionFactorsXPath + '/momentum'),
                 }
             },
             'LU-SGS': self._constructTransientSGS() if GeneralDB.isTimeTransient() else self._constructSteadySGS(),
