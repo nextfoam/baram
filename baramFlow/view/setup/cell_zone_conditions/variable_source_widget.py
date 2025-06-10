@@ -114,28 +114,16 @@ class VariableSourceWidget(QWidget):
         db = coredb.CoreDB()
         temporalProfileType = self._ui.temporalProfileType.currentData()
         if temporalProfileType == TemporalProfileType.PIECEWISE_LINEAR:
-            if self._ui.groupBox.title() == "Energy":
-                if self._piecewiseLinear is None:
-                    self._piecewiseLinear = [
-                        db.getValue(self._xpath + '/piecewiseLinear/t'),
-                        db.getValue(self._xpath + '/piecewiseLinear/v')
-                    ]
+            if self._piecewiseLinear is None:
+                self._piecewiseLinear = [
+                    db.getValue(self._xpath + '/piecewiseLinear/t'),
+                    db.getValue(self._xpath + '/piecewiseLinear/v')
+                ]
 
-                self._dialog = PiecewiseLinearDialog(self, self.tr("Piecewise Linear"),
-                                                     [self.tr("t"), self.tr("Energy")], self._piecewiseLinear)
-                self._dialog.accepted.connect(self._piecewiseLinearAccepted)
-                self._dialog.open()
-            else:
-                if self._piecewiseLinear is None:
-                    self._piecewiseLinear = [
-                        db.getValue(self._xpath + '/piecewiseLinear/t'),
-                        db.getValue(self._xpath + '/piecewiseLinear/v')
-                    ]
-
-                self._dialog = PiecewiseLinearDialog(self, self.tr("Piecewise Linear"),
-                                                     [self.tr("t"), self.tr("Flow Rate")], self._piecewiseLinear)
-                self._dialog.accepted.connect(self._piecewiseLinearAccepted)
-                self._dialog.open()
+            self._dialog = PiecewiseLinearDialog(self, self.tr("Piecewise Linear"),
+                                                    [self.tr("t"), self._title], self._piecewiseLinear)
+            self._dialog.accepted.connect(self._piecewiseLinearAccepted)
+            self._dialog.open()
         elif temporalProfileType == TemporalProfileType.POLYNOMIAL:
             if self._polynomial is None:
                 self._polynomial = db.getValue(self._xpath + '/polynomial')
