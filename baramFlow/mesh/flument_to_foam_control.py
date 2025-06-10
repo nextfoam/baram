@@ -92,7 +92,7 @@ class FluentMeshConverter(RunUtility):
         await super().start()
 
         waiter = self._control.future()
-        done, pending = await asyncio.wait([waiter, self._proc.wait()], return_when=asyncio.FIRST_COMPLETED)
+        done, pending = await asyncio.wait([waiter, asyncio.create_task(self._proc.wait())], return_when=asyncio.FIRST_COMPLETED)
 
         # If the process has exited, process exception and return
         if waiter not in done:
