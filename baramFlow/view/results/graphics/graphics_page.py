@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
 from uuid import uuid4
 import qasync
 
@@ -12,6 +13,7 @@ from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.coredb.project import Project
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
+from baramFlow.solver_status import SolverStatus
 from baramFlow.view.results.graphics.graphic_dialog import GraphicDialog
 from baramFlow.view.results.graphics.graphic_widget import GraphicWidget
 from baramFlow.view.widgets.content_page import ContentPage
@@ -32,6 +34,8 @@ class GraphicsPage(ContentPage):
 
         self._report = None
         self._dialog = None
+
+        self._background_tasks = set()
 
         self._connectSignalsSlots()
 
@@ -57,15 +61,23 @@ class GraphicsPage(ContentPage):
 
     @qasync.asyncSlot()
     async def _solverStatusChanged(self, status, name, liveStatusChanged):
-        async with OpenFOAMReader() as reader:
-            await reader.refresh()
+        if status in [SolverStatus.ENDED, SolverStatus.ERROR]:
+            await self.refreshReader()
 
     def _load(self):
         self._ui.list.clear()
 
+        task = asyncio.create_task(self.refreshReader())
+        self._background_tasks.add(task)
+        task.add_done_callback(self._background_tasks.discard)
+
         for s in GraphicsDB().getVisualReports().values():
             if isinstance(s, Graphic):
                 self._addItem(GraphicWidget(s))
+
+    async def refreshReader(self):
+        async with OpenFOAMReader() as reader:
+            await reader.refresh()
 
     @qasync.asyncSlot()
     async def _openAddGraphicDialog(self):

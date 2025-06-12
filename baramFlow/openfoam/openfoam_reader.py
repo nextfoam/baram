@@ -20,7 +20,7 @@ _mutex = Lock()
 
 
 class OpenFOAMReader(QObject):
-    _vtkReaderProgress = Signal(str)
+    readerProgressEvent = Signal(int)
 
     def __new__(cls, *args, **kwargs):
         with _mutex:
@@ -111,7 +111,7 @@ class OpenFOAMReader(QObject):
         await vtk_run_in_thread(self._reader.Update)
 
     def _readerProgressEvent(self, caller: vtkPOpenFOAMReader, ev):
-        self._vtkReaderProgress.emit(self.tr('Loading Mesh : ') + f'{int(float(caller.GetProgress()) * 100)}%')
+        self.readerProgressEvent.emit(int(float(caller.GetProgress()) * 100))
 
     def setTimeValue(self, value: float):
         if not self._acquired:
