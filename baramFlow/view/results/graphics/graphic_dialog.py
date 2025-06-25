@@ -98,11 +98,11 @@ class GraphicDialog(QDialog):
     def _connectSignalsSlots(self):
         self._ui.field.currentIndexChanged.connect(self._fieldChanged)
         self._ui.select.clicked.connect(self._selectClicked)
-        self._ui.ok.clicked.connect(self._okClicked)
+        self._ui.update.clicked.connect(self._updateClicked)
         self._ui.cancel.clicked.connect(self._cancelClicked)
 
     @qasync.asyncSlot()
-    async def _okClicked(self):
+    async def _updateClicked(self):
         if not await self._valid():
             return
 

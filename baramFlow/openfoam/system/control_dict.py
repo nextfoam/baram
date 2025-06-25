@@ -162,7 +162,7 @@ class ControlDict(DictionaryFile):
         adjustTimeStep = 'no'
         if GeneralDB.isTimeTransient():
             endTime = self._db.getValue(xpath + '/endTime')
-            timeSteppingMethod = (TimeSteppingMethod.FIXED.value if GeneralDB.isCompressibleDensity 
+            timeSteppingMethod = (TimeSteppingMethod.FIXED.value if GeneralDB.isCompressibleDensity()
                                   else self._db.getValue(xpath + '/timeSteppingMethod'))
             self._writeInterval = self._db.getValue(xpath + '/reportIntervalSeconds')
             if timeSteppingMethod == TimeSteppingMethod.FIXED.value:
@@ -248,7 +248,8 @@ class ControlDict(DictionaryFile):
                 'libs': [openfoamLibraryPath('libsolverFunctionObjects')],
                 'field': fieldName,
                 'schemesField': 'scalar',
-                'nCorr': 2,
+                'nCorr': '0' if not GeneralDB.isTimeTransient() else self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/numberOfCorrectors'),
+                'tolerance': self._db.getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/momentum/absolute'),
                 'writeControl': self._writeControl,
                 'writeInterval': self._writeInterval,
             }
@@ -259,14 +260,15 @@ class ControlDict(DictionaryFile):
             xpath = UserDefinedScalarsDB.getXPath(scalarID)
             specificationMethod = self._db.getValue(xpath + '/diffusivity/specificationMethod')
             if specificationMethod == ScalarSpecificationMethod.CONSTANT.value:
-                self._data['functions'][fieldName]['D'] = self._db.getValue(xpath + '/diffusivity/constant')
+                coeff = float(self._db.getValue(xpath + '/diffusivity/constant'))
+                self._data['functions'][fieldName]['D'] = coeff if coeff > 0 else '1e-10'
             # elif specificationMethod == ScalarSpecificationMethod.TURBULENT_VISCOSITY.value:
             #     self._data['functions'][fieldName]['nut'] = 'nut'
             elif specificationMethod == ScalarSpecificationMethod.LAMINAR_AND_TURBULENT_VISCOSITY.value:
-                self._data['functions'][fieldName]['alphaD'] = self._db.getValue(
-                    xpath + '/diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient')
-                self._data['functions'][fieldName]['alphaDt'] = self._db.getValue(
-                    xpath + '/diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient')
+                coeff = float(self._db.getValue(xpath + '/diffusivity/laminarAndTurbulentViscosity/laminarViscosityCoefficient'))
+                self._data['functions'][fieldName]['alphaD'] = coeff if coeff > 0 else '1e-10'
+                coeff = float(self._db.getValue(xpath + '/diffusivity/laminarAndTurbulentViscosity/turbulentViscosityCoefficient'))
+                self._data['functions'][fieldName]['alphaDt'] = coeff if coeff > 0 else '1e-10'
 
             if rname := self._db.getValue(xpath + '/region'):
                 self._data['functions'][fieldName]['region'] = rname

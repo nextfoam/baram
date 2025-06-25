@@ -1,5 +1,5 @@
 filelock==3.12.2
-h5py==3.13.0
+h5py==3.12.1
 lxml==4.9.4
 matplotlib==3.8.4
 numpy==1.25.0
@@ -12,5 +12,5 @@ PyYAML==6.0
 qasync==0.27.1
 superqt==0.6.1
 tables==3.10.2
-vtk==9.4.1
+vtk==9.4.2
 xmlschema==1.10.0

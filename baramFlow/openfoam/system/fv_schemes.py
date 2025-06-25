@@ -24,7 +24,7 @@ class FvSchemes(DictionaryFile):
     def build(self):
         if self._data is not None:
             return self
-        
+
         solver = findSolver()
         if solver == 'TSLAeroFoam' or solver == 'UTSLAeroFoam':
             self._generateTSLAero()
@@ -243,15 +243,15 @@ class FvSchemes(DictionaryFile):
                 })
 
         if self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/discretizationSchemes/scalar') == 'firstOrderUpwind':
-            divSchemes['div(phi,scalar)'] = f'Gauss upwind'
+            divSchemes['div(phi,scalar)'] = f'{bounded}Gauss upwind'
         else:
-            divSchemes['div(phi,scalar)'] = f'Gauss linearUpwind momentumReconGrad'
+            divSchemes['div(phi,scalar)'] = f'{bounded}Gauss linearUpwind momentumReconGrad'
 
         if ModelsDB.isSpeciesModelOn():
             if self._db.getValue(f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/discretizationSchemes/species') == 'firstOrderUpwind':
-                speciesDivSchemes = f'Gauss upwind'
+                speciesDivSchemes = f'{bounded}Gauss upwind'
             else:
-                speciesDivSchemes = f'Gauss linearUpwind momentumReconGrad'
+                speciesDivSchemes = f'{bounded}Gauss linearUpwind momentumReconGrad'
 
             for specie in MaterialDB.getSpecies(self._mid).values():
                 divSchemes[f'div(phi,{specie})'] = speciesDivSchemes

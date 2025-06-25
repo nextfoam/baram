@@ -638,7 +638,11 @@
            <widget class="QLineEdit" name="relativeEnergy"/>
           </item>
           <item row="7" column="1">
-           <widget class="QLineEdit" name="absoluteScalar"/>
+           <widget class="QLineEdit" name="absoluteScalar">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
           </item>
           <item row="6" column="0">
            <widget class="QLabel" name="label_28">
@@ -665,7 +669,11 @@
            </widget>
           </item>
           <item row="7" column="2">
-           <widget class="QLineEdit" name="relativeScalar"/>
+           <widget class="QLineEdit" name="relativeScalar">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
           </item>
           <item row="2" column="2">
            <widget class="QLineEdit" name="relativeDensity"/>

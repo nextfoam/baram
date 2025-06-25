@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 
+from baramFlow.coredb.numerical_db import NumericalDB
 from libbaram.openfoam.of_utils import openfoamLibraryPath
 
 
@@ -10,7 +12,7 @@ def _foAgeBase():
     data = {
         'type': 'age',
         'libs': [openfoamLibraryPath('libfieldFunctionObjects')],
-        'tolerance': 1e-4,
+        'tolerance': CoreDBReader().getValue(NumericalDB.CONVERGENCE_CRITERIA_XPATH + '/momentum/absolute'),
         'nCorr': 1000,
     }
 
