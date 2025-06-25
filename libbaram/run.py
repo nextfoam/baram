@@ -195,6 +195,11 @@ async def runUtility(program: str, *args, cwd=None, stdout=asyncio.subprocess.DE
 
 
 class RunUtility(RunSubprocess):
+    def __init__(self, program: str, *args, cwd: Path = None, useVenv=True, parallel: ParallelEnvironment = None):
+        super().__init__(program, *args, cwd=cwd, useVenv=useVenv)
+
+        self._parallel = parallel
+
     async def start(self):
         global creationflags
         global startupinfo

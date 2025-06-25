@@ -13,7 +13,6 @@ import subprocess
 from PySide6.QtCore import QObject, Signal
 
 from libbaram.exception import CanceledException
-from libbaram.mpi import ParallelEnvironment
 
 
 logger = logging.getLogger(__name__)
@@ -96,14 +95,13 @@ class RunSubprocess(QObject):
             raise TypeError(f"only children of '{cls.__name__}' may be instantiated")
         return super().__new__(cls)
 
-    def __init__(self, program: str, *args, cwd: Path = None, useVenv=True, parallel: ParallelEnvironment = None):
+    def __init__(self, program: str, *args, cwd: Path = None, useVenv=True):
         super().__init__()
 
         self._program = program
         self._args = args
         self._cwd = cwd
         self._useVenv = useVenv
-        self._parallel = parallel
 
         self._proc = None
         self._canceled = False

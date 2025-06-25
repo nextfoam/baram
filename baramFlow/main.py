@@ -57,7 +57,7 @@ def loop_exception(loop, context):
 def main():
     application = QApplication(sys.argv)
 
-    if mpiStatus := checkMPI():
+    if mpiStatus := asyncio.run(checkMPI()):
         if mpiStatus == MPIStatus.NOT_FOUND:
             message = QApplication.translate('main', 'MPI package NOT available in the system.')
         elif mpiStatus == MPIStatus.LOW_VERSION:
