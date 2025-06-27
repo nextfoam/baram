@@ -306,11 +306,19 @@ class MaterialDialog(ResizableDialog):
                     ]
                 )
             else:
-                self._setupSpecificationCombo(
-                    self._ui.densityType, [
-                        DensitySpecification.CONSTANT,
-                    ]
-                )
+                if self._phase == Phase.LIQUID and not ModelsDB.isMultiphaseModelOn():
+                    self._setupSpecificationCombo(
+                        self._ui.densityType, [
+                            DensitySpecification.CONSTANT,
+                            DensitySpecification.POLYNOMIAL,
+                        ]
+                    )
+                else:
+                    self._setupSpecificationCombo(
+                        self._ui.densityType, [
+                            DensitySpecification.CONSTANT,
+                        ]
+                    )
 
         self._ui.densityType.setCurrentData(spec)
 
