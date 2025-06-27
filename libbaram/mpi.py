@@ -45,7 +45,6 @@ async def checkMPI():
         m = re.search('([0-9]+)\.([0-9]+)\.', stdout.decode())
         major = int(m.group(1))
         minor = int(m.group(2))
-        print(major, minor)
 
         # if major < MAJOR_VERSION or (major == MAJOR_VERSION and minor < MINOR_VERSION):
         if major < MAJOR_VERSION:
