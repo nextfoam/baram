@@ -238,6 +238,7 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionTutorials"/>
    </widget>
    <widget class="QMenu" name="menuParallel">
     <property name="title">
@@ -383,6 +384,11 @@
   <action name="actionMultiplePolyMesh">
    <property name="text">
     <string>Multiple polyMesh</string>
+   </property>
+  </action>
+  <action name="actionTutorials">
+   <property name="text">
+    <string>Tutorials</string>
    </property>
   </action>
  </widget>

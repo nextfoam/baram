@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import asyncio
 import logging
 import os
+import webbrowser
 
 import qasync
 from filelock import Timeout
@@ -164,6 +166,7 @@ class MainWindow(QMainWindow):
         self._ui.actionScale.triggered.connect(self._actionScale)
         self._ui.actionLanguage.triggered.connect(self._actionLanguage)
         self._ui.actionAbout.triggered.connect(self._actionAbout)
+        self._ui.actionTutorials.triggered.connect(self._openTutorials)
 
         self._recentFilesMenu.projectSelected.connect(self._openRecent)
 
@@ -237,6 +240,9 @@ class MainWindow(QMainWindow):
     def _actionAbout(self):
         self._dialog = AboutDialog(self)
         self._dialog.open()
+
+    def _openTutorials(self):
+        webbrowser.open('https://baramcfd.org/en/tutorial/baram-mesh/tutorial-mesh-dashboard-en/')
 
     @qasync.asyncSlot()
     async def _createProject(self):

@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from logging.handlers import RotatingFileHandler
 import os
-import subprocess
-from enum import Enum, auto
-from pathlib import Path
 import platform
+import subprocess
+import webbrowser
+from enum import Enum, auto
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
 from uuid import UUID
 
 import qasync
@@ -261,6 +262,7 @@ class MainWindow(QMainWindow):
         self._ui.actionParaView.triggered.connect(self._paraViewActionTriggered)
 
         self._ui.actionAbout.triggered.connect(self._showAboutDialog)
+        self._ui.actionTutorials.triggered.connect(self._openTutorials)
 
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
 
@@ -556,6 +558,9 @@ class MainWindow(QMainWindow):
     def _showAboutDialog(self):
         self._dialog = AboutDialog(self)
         self._dialog.open()
+
+    def _openTutorials(self):
+        webbrowser.open('https://baramcfd.org/en/tutorial/baram-flow/tutorial-dashboard-en/')
 
     def meshUpdated(self):
         if RegionDB.isMultiRegion():
