@@ -5,6 +5,7 @@ import yaml
 
 from libbaram.simple_db.simple_db import SimpleDB
 
+from .configurations_schema import schema
 from .file_db import writeConfigurations, readConfigurations, FileGroup, newFiles
 from .migrate import migrate
 
@@ -21,6 +22,8 @@ class Configurations(SimpleDB):
 
         self._path = None
         self._files = newFiles()
+
+        self._defaults = None
 
     def create(self, path):
         self._path = path / FILE_NAME
@@ -72,3 +75,7 @@ class Configurations(SimpleDB):
     def _save(self):
         writeConfigurations(self._path, self.toYaml(), self._files)
         self._modified = False
+
+
+defaultsDB = Configurations(schema)
+defaultsDB.createData()
