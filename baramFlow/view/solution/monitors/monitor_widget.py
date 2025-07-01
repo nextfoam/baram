@@ -96,16 +96,19 @@ class SurfaceMonitorWidget(MonitorWidget):
         db = coredb.CoreDB()
         xpath = MonitorDB.getSurfaceMonitorXPath(self._name)
 
-        reportType = MonitorDB.surfaceReportTypeToText(SurfaceReportType(db.getValue(xpath + '/reportType')))
-        field = FieldHelper.DBFieldKeyToText(Field(db.getValue(xpath + '/field/field')),
-                                             db.getValue(xpath + '/field/fieldID'))
+        reportType = SurfaceReportType(db.getValue(xpath + '/reportType'))
+        title = MonitorDB.surfaceReportTypeToText(reportType)
+        if reportType not in (SurfaceReportType.MASS_FLOW_RATE, SurfaceReportType.VOLUME_FLOW_RATE):
+            title += (' '
+                      + FieldHelper.DBFieldKeyToText(Field(db.getValue(xpath + '/field/field')),
+                                                     db.getValue(xpath + '/field/fieldID')))
         bcid = db.getValue(xpath + '/surface')
         surface = BoundaryDB.getBoundaryName(bcid)
         region = BoundaryDB.getBoundaryRegion(bcid)
 
         region = f' ({region})' if region else ''
         self._ui.name.setText(f'{self._name}{region}')
-        self._ui.type.setText(f'{reportType} {field} on Surface {surface}')
+        self._ui.type.setText(f'{title} on Surface {surface}')
 
     def edit(self):
         self._dialog = SurfaceDialog(self, self._name)
