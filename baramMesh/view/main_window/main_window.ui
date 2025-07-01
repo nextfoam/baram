@@ -423,7 +423,7 @@
                   </sizepolicy>
                  </property>
                  <property name="currentIndex">
-                  <number>4</number>
+                  <number>5</number>
                  </property>
                  <widget class="QWidget" name="geometryPage">
                   <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -612,8 +612,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>100</width>
-                        <height>30</height>
+                        <width>449</width>
+                        <height>633</height>
                        </rect>
                       </property>
                      </widget>
@@ -915,16 +915,60 @@
                  <widget class="QWidget" name="castellationPage">
                   <layout class="QVBoxLayout" name="verticalLayout_6">
                    <item>
-                    <widget class="QLabel" name="label_18">
-                     <property name="font">
-                      <font>
-                       <pointsize>10</pointsize>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>Castellation</string>
-                     </property>
+                    <widget class="QWidget" name="widget_41" native="true">
+                     <layout class="QHBoxLayout" name="horizontalLayout_30">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_18">
+                        <property name="font">
+                         <font>
+                          <pointsize>10</pointsize>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>Castellation</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="FlatPushButton" name="loadCastellationDefaults">
+                        <property name="maximumSize">
+                         <size>
+                          <width>16</width>
+                          <height>16</height>
+                         </size>
+                        </property>
+                        <property name="toolTip">
+                         <string>Load Default Settings</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../../../resource.qrc">
+                          <normaloff>:/icons/arrow-undo-outline.svg</normaloff>:/icons/arrow-undo-outline.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>16</width>
+                          <height>16</height>
+                         </size>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                    <item>
@@ -950,8 +994,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>272</width>
-                        <height>592</height>
+                        <width>449</width>
+                        <height>708</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -1459,16 +1503,60 @@
                  <widget class="QWidget" name="snapPage">
                   <layout class="QVBoxLayout" name="verticalLayout_16">
                    <item>
-                    <widget class="QLabel" name="label_19">
-                     <property name="font">
-                      <font>
-                       <pointsize>10</pointsize>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>Snap</string>
-                     </property>
+                    <widget class="QWidget" name="widget_42" native="true">
+                     <layout class="QHBoxLayout" name="horizontalLayout_31">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_68">
+                        <property name="font">
+                         <font>
+                          <pointsize>10</pointsize>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>Snap</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="FlatPushButton" name="loadSnapDefaults">
+                        <property name="maximumSize">
+                         <size>
+                          <width>16</width>
+                          <height>16</height>
+                         </size>
+                        </property>
+                        <property name="toolTip">
+                         <string>Load Default Settings</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../../../resource.qrc">
+                          <normaloff>:/icons/arrow-undo-outline.svg</normaloff>:/icons/arrow-undo-outline.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>16</width>
+                          <height>16</height>
+                         </size>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                    <item>
@@ -1834,16 +1922,60 @@
                  <widget class="QWidget" name="boundaryLayerPage">
                   <layout class="QVBoxLayout" name="verticalLayout_18">
                    <item>
-                    <widget class="QLabel" name="label_29">
-                     <property name="font">
-                      <font>
-                       <pointsize>10</pointsize>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>Boundary Layer</string>
-                     </property>
+                    <widget class="QWidget" name="widget_43" native="true">
+                     <layout class="QHBoxLayout" name="horizontalLayout_32">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_19">
+                        <property name="font">
+                         <font>
+                          <pointsize>10</pointsize>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>Boundary Layer</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="FlatPushButton" name="loadBoundaryLayerDefaults">
+                        <property name="maximumSize">
+                         <size>
+                          <width>16</width>
+                          <height>16</height>
+                         </size>
+                        </property>
+                        <property name="toolTip">
+                         <string>Load Default Settings</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../../../resource.qrc">
+                          <normaloff>:/icons/arrow-undo-outline.svg</normaloff>:/icons/arrow-undo-outline.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>16</width>
+                          <height>16</height>
+                         </size>
+                        </property>
+                        <property name="checkable">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                    <item>
@@ -1869,8 +2001,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>263</width>
-                        <height>661</height>
+                        <width>449</width>
+                        <height>708</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_20">
@@ -3663,6 +3795,11 @@ QCheckBox::indicator:checked { image: url(:/images/toggle_on); padding: 0; }</st
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <family>휴먼옛체</family>
+                      </font>
                      </property>
                      <property name="contextMenuPolicy">
                       <enum>Qt::CustomContextMenu</enum>

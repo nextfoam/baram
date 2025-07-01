@@ -21,6 +21,7 @@ from baramMesh.view.step_page import StepPage
 
 from .boundary_setting_dialog import BoundarySettingDialog
 from .restore_cyclic_patch_names import RestoreCyclicPatchNames
+from ...db.configurations import defaultsDB
 
 
 class BoundaryLayerPage(StepPage):
@@ -85,6 +86,7 @@ class BoundaryLayerPage(StepPage):
             return False
 
     def _connectSignalsSlots(self):
+        self._ui.loadBoundaryLayerDefaults.clicked.connect(self._loadDefaults)
         self._ui.boundaryLayerConfigurationsAdd.clicked.connect(lambda: self._openLayerEditDialog())
         # self._ui.layers.itemDoubleClicked.connect(self._openLayerEditDialog)
         self._ui.boundaryLayerApply.clicked.connect(self._apply)
@@ -108,8 +110,19 @@ class BoundaryLayerPage(StepPage):
             else:
                 self._db.removeElement('addLayers/layers', groupId)
 
-        addLayer = self._db.getElement('addLayers')
+        self._setConfigurastions(self._db.getElement('addLayers'))
 
+        self._loaded = True
+        self._updateControlButtons()
+
+    @qasync.asyncSlot()
+    async def _loadDefaults(self):
+        if await AsyncMessageBox().confirm(
+                self._widget, self.tr('Reset Settings'),
+                self.tr('Would you like to reset all Boundary Layer settings to default,excluding the Layer Groups?')):
+            self._setConfigurastions(defaultsDB.getElement('addLayers'))
+
+    def _setConfigurastions(self, addLayer):
         self._ui.nGrow.setText(addLayer.value('nGrow'))
         self._ui.featureAngleThreshold.setText(addLayer.value('featureAngle'))
         self._ui.maxFaceThicknessRatio.setText(addLayer.value('maxFaceThicknessRatio'))
@@ -122,9 +135,6 @@ class BoundaryLayerPage(StepPage):
         self._ui.nBufferCellsNoExtrude.setText(addLayer.value('nBufferCellsNoExtrude'))
         self._ui.nLayerIter.setText(addLayer.value('nLayerIter'))
         self._ui.nRelaxedIter.setText(addLayer.value('nRelaxedIter'))
-
-        self._loaded = True
-        self._updateControlButtons()
 
     def _openLayerEditDialog(self, groupId=None):
         self._dialog = BoundarySettingDialog(self._widget, self._db, groupId)
@@ -290,11 +300,13 @@ class BoundaryLayerPage(StepPage):
         self._ui.boundaryLayerButtons.setEnabled(False)
 
     def _enableEdit(self):
+        self._ui.loadBoundaryLayerDefaults.setEnabled(True)
         self._ui.boundaryLayerConfigurationsAdd.setEnabled(True)
         self._ui.boundaryLayerConfigurations.enableEdit()
         self._ui.boundaryLayerAdvancedConfiguration.setEnabled(True)
 
     def _disableEdit(self):
+        self._ui.loadBoundaryLayerDefaults.setEnabled(False)
         self._ui.boundaryLayerConfigurationsAdd.setEnabled(False)
         self._ui.boundaryLayerConfigurations.disableEdit()
         self._ui.boundaryLayerAdvancedConfiguration.setEnabled(False)

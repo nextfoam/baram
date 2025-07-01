@@ -12,6 +12,7 @@ from widgets.enum_button_group import EnumButtonGroup
 from widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 
 from baramMesh.app import app
+from baramMesh.db.configurations import defaultsDB
 from baramMesh.db.configurations_schema import CFDType, FeatureSnapType, BufferLayerPointSmoothingMethod, GeometryType
 from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramMesh.openfoam.system.topo_set_dict import TopoSetDict
@@ -102,6 +103,7 @@ class SnapPage(StepPage):
             return False
 
     def _connectSignalsSlots(self):
+        self._ui.loadSnapDefaults.clicked.connect(self._loadDefaults)
         self._ui.snap.clicked.connect(self._snap)
         self._ui.snapReset.clicked.connect(self._reset)
         self._ui.featureSnapType.currentDataChanged.connect(self._featureSnapTypeChanged)
@@ -109,23 +111,9 @@ class SnapPage(StepPage):
         self._ui.bufferLayerSurfacesSelect.clicked.connect(self._selectSurfaces)
 
     def _load(self):
-        dbElement = app.db.checkout('snap')
-        self._ui.smoothingForSurface.setText(dbElement.getValue('nSmoothPatch'))
-        self._ui.smoothingForInternal.setText(dbElement.getValue('nSmoothInternal'))
-        self._ui.meshDisplacementRelaxation.setText(dbElement.getValue('nSolveIter'))
-        self._ui.globalSnappingRelaxation.setText(dbElement.getValue('nRelaxIter'))
-        self._ui.featureSnappingRelaxation.setText(dbElement.getValue('nFeatureSnapIter'))
-        self._ui.featureSnapType.setCurrentData(FeatureSnapType(dbElement.getValue('featureSnapType')))
-        self._ui.multiSurfaceFeatureSnap.setChecked(dbElement.getValue('multiRegionFeatureSnap'))
-        self._ui.tolerance.setText(dbElement.getValue('tolerance'))
-        self._ui.concaveAngle.setText(dbElement.getValue('concaveAngle'))
-        self._ui.minAreaRatio.setText(dbElement.getValue('minAreaRatio'))
+        dbElement = app.db.checkout()
 
-        bufferLayer = dbElement.getElement('bufferLayer')
-        self._ui.bufferLayer.setChecked(not bufferLayer.value('disabled'))
-        self._smoothingMethod.setCheckedData(bufferLayer.enum('pointSmoothingMethod'))
-        self._ui.bufferLayerNumberOfPointSmootherIteration.setText(bufferLayer.value('numberOfPointSmoothingIteration'))
-        self._ui.bufferLayerGETMeTransformationParameter.setText(bufferLayer.value('GETMeTransformationParameter'))
+        self._setConfigurastions(dbElement.getElement('snap'))
 
         self._availableSurfaces = []
         self._surfaces = []
@@ -146,6 +134,31 @@ class SnapPage(StepPage):
         self._updateControlButtons()
 
     @qasync.asyncSlot()
+    async def _loadDefaults(self):
+        if await AsyncMessageBox().confirm(
+                self._widget, self.tr('Reset Settings'),
+                self.tr('Would you like to reset all Snap settings to default, excluding the Buffer Layer Surfaces?')):
+            self._setConfigurastions(defaultsDB.getElement('snap'))
+
+    def _setConfigurastions(self, snap):
+        self._ui.smoothingForSurface.setText(snap.value('nSmoothPatch'))
+        self._ui.smoothingForInternal.setText(snap.value('nSmoothInternal'))
+        self._ui.meshDisplacementRelaxation.setText(snap.value('nSolveIter'))
+        self._ui.globalSnappingRelaxation.setText(snap.value('nRelaxIter'))
+        self._ui.featureSnappingRelaxation.setText(snap.value('nFeatureSnapIter'))
+        self._ui.featureSnapType.setCurrentData(FeatureSnapType(snap.value('featureSnapType')))
+        self._ui.multiSurfaceFeatureSnap.setChecked(snap.value('multiRegionFeatureSnap'))
+        self._ui.tolerance.setText(snap.value('tolerance'))
+        self._ui.concaveAngle.setText(snap.value('concaveAngle'))
+        self._ui.minAreaRatio.setText(snap.value('minAreaRatio'))
+
+        bufferLayer = snap.element('bufferLayer')
+        self._ui.bufferLayer.setChecked(not bufferLayer.value('disabled'))
+        self._smoothingMethod.setCheckedData(bufferLayer.enum('pointSmoothingMethod'))
+        self._ui.bufferLayerNumberOfPointSmootherIteration.setText(bufferLayer.value('numberOfPointSmoothingIteration'))
+        self._ui.bufferLayerGETMeTransformationParameter.setText(bufferLayer.value('GETMeTransformationParameter'))
+
+    @qasync.asyncSlot()
     async def _snap(self):
         if self._cm:
             self._cm.cancel()
@@ -157,7 +170,7 @@ class SnapPage(StepPage):
             if not await self.save():
                 return
 
-            self._ui.snapContents.setEnabled(False)
+            self._disableEdit()
             self._disableControlsForRunning()
             self._ui.snap.setText(self.tr('Cancel'))
 
@@ -222,7 +235,7 @@ class SnapPage(StepPage):
             await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
                                                 self.tr('Snapping has been canceled.'))
         finally:
-            self._ui.snapContents.setEnabled(True)
+            self._enableEdit()
             self._enableControlsForSettings()
             self._ui.snap.setText(buttonText)
             self._cm = None
@@ -260,3 +273,19 @@ class SnapPage(StepPage):
             self._ui.snap.show()
             self._ui.snapReset.hide()
             self._setNextStepEnabled(False)
+
+    def _enableStep(self):
+        super()._enableStep()
+        self._enableEdit()
+
+    def _disableStep(self):
+        super()._disableStep()
+        self._disableEdit()
+
+    def _enableEdit(self):
+        self._ui.loadSnapDefaults.setEnabled(True)
+        self._ui.snapContents.setEnabled(True)
+
+    def _disableEdit(self):
+        self._ui.loadSnapDefaults.setEnabled(False)
+        self._ui.snapContents.setEnabled(False)
