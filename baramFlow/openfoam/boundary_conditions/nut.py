@@ -103,8 +103,9 @@ class Nut(BoundaryCondition):
     def _constructNutkRoughWallFunctionn(self, xpath):
         return {
             'type': 'nutkRoughWallFunction',
-            'Ks': self._db.getValue(xpath + '/wall/velocity/wallRoughness/height'),
-            'Cs': self._db.getValue(xpath + '/wall/velocity/wallRoughness/constant')
+            'Ks': ('uniform', self._db.getValue(xpath + '/wall/velocity/wallRoughness/height')),
+            'Cs': ('uniform', self._db.getValue(xpath + '/wall/velocity/wallRoughness/constant')),
+            'value': self._initialValueByTime()
         }
 
     def _constructNutURoughWallFunction(self, xpath):
@@ -112,7 +113,8 @@ class Nut(BoundaryCondition):
             'type': 'nutURoughWallFunction',
             'roughnessHeight': self._db.getValue(xpath + '/wall/velocity/wallRoughness/height'),
             'roughnessConstant': self._db.getValue(xpath + '/wall/velocity/wallRoughness/constant'),
-            'roughnessFactor': 1
+            'roughnessFactor': 1,
+            'value': self._initialValueByTime()
         }
 
     def _constructAtmNutkWallFunction(self):

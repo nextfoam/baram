@@ -105,6 +105,8 @@ class WallDialog(ResizableDialog):
         try:
             validator = FormValidator()
             validator.addCustomValidation(
+                FloatValidator(self._ui.roughnessHeight, self.tr('Wall Roughness Height')).setLowLimit(0))
+            validator.addCustomValidation(
                 FloatValidator(self._ui.roughnessConstant, self.tr('Wall Roughness Constant')).setRange(0.5, 1))
 
             valid, msg = validator.validate()

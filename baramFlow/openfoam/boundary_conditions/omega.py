@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, KOmegaSpecification, InterfaceMode
+from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, KOmegaSpecification, InterfaceMode, ShearCondition
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 
@@ -113,6 +113,9 @@ class Omega(BoundaryCondition):
     def _constructWallOmega(self, xpath):
         if self._isAtmosphericWall(xpath):
             return self._constructAtmOmegaWallFunction()
+        elif (self._db.getValue(xpath + '/wall/velocity/shearCondition') == ShearCondition.NO_SLIP.value
+              and float(self._db.getValue(xpath + '/wall/velocity/wallRoughness/height')) > 0):
+            return self._constructOmegaWallFunction()
         else:
             return self._constructNEXTOmegaBlendedWallFunction()
 
@@ -122,3 +125,10 @@ class Omega(BoundaryCondition):
             return self._constructNEXTOmegaBlendedWallFunction()
         else:
             return self._constructCyclicAMI()
+
+    def _constructOmegaWallFunction(self):
+        return {
+            'type': 'omegaWallFunction',
+            'blending': 'tanh',
+            'value': self._initialValueByTime()
+        }
