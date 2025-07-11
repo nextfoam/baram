@@ -225,6 +225,8 @@ class MainWindow(QMainWindow):
 
     def _openParallelEnvironmentDialog(self):
         self._dialog = ParallelEnvironmentDialog(self, app.project.parallelEnvironment())
+        if app.fileSystem.timePathExists(1, app.project.parallelCores() > 1):
+            self._dialog.setReadOnly()
         self._dialog.accepted.connect(self._updateParallelEnvironment)
         self._dialog.open()
 
