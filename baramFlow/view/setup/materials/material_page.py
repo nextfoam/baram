@@ -5,12 +5,14 @@ import qasync
 from PySide6.QtWidgets import QVBoxLayout
 from PySide6.QtCore import Signal
 
-from baramFlow.coredb.configuraitions import ConfigurationException
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
+from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.material_schema import MaterialType
+from baramFlow.coredb.project import Project
 from baramFlow.view.widgets.content_page import ContentPage
 from .material_add_dialog import MaterialAddDialog
 from .material_card import MaterialCard
@@ -33,6 +35,7 @@ class MaterialPage(ContentPage):
         self._addDialog = None
 
         self._connectSignalsSlots()
+        self._updateEnabled()
         self._load()
 
     def showEvent(self, ev):
@@ -62,11 +65,16 @@ class MaterialPage(ContentPage):
             await AsyncMessageBox().information(self, self.tr('Material Removal Failed'), str(ex))
 
     def _connectSignalsSlots(self):
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+
         self._ui.add.clicked.connect(self._add)
 
     def _load(self):
         for mid, name, formula, phase in MaterialDB.getMaterials():
             self._addCard(mid)
+
+    def _updateEnabled(self):
+        self._ui.add.setEnabled(not CaseManager().isActive())
 
     def _add(self):
         self._addDialog = MaterialAddDialog(self)
@@ -93,4 +101,3 @@ class MaterialPage(ContentPage):
         type_, added = self._addDialog.result()
         for mid in added:
             self._addCard(mid, type_)
-

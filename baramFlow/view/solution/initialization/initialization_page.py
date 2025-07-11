@@ -13,6 +13,7 @@ from baramFlow.app import app
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
+from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from baramFlow.openfoam.solver import SolverNotFound
 from baramFlow.view.widgets.content_page import ContentPage
@@ -26,15 +27,12 @@ class InitializationPage(ContentPage):
         self._ui = Ui_InitializationPage()
         self._ui.setupUi(self)
 
-        self._connectSignalsSlots()
-
         self._sectionActors = {}
         self._dbConfigCount = None
 
+        self._connectSignalsSlots()
+        self._updateEnabled()
         self._load()
-
-    def _connectSignalsSlots(self):
-        self._ui.initialize.clicked.connect(self._initialize)
 
     def showEvent(self, ev):
         if not ev.spontaneous():
@@ -59,29 +57,6 @@ class InitializationPage(ContentPage):
                 self._sectionActors = {}
 
         return super().hideEvent(ev)
-
-    def _load(self):
-        self._ui.tabWidget.clear()
-
-        regions = coredb.CoreDB().getRegions()
-        if len(regions) == 1 and not regions[0]:
-            widget = InitializationWidget('')
-            widget.displayChecked.connect(self._showSectionActor)
-            widget.displayUnchecked.connect(self._hideSectionActor)
-            self._ui.tabWidget.addTab(widget, DEFAULT_REGION_NAME)
-            widget.load()
-        else:
-            for rname in regions:
-                widget = InitializationWidget(rname)
-                widget.displayChecked.connect(self._showSectionActor)
-                widget.displayUnchecked.connect(self._hideSectionActor)
-                self._ui.tabWidget.addTab(widget, rname)
-                widget.load()
-        #
-        # for i in range(self._ui.tabWidget.count()):
-        #     widget: InitializationWidget = self._ui.tabWidget.widget(i)
-
-        self._dbConfigCount = coredb.CoreDB().configCount
 
     def clear(self):
         for i in range(self._ui.tabWidget.count()):
@@ -127,6 +102,37 @@ class InitializationPage(ContentPage):
                 return False
 
         return True
+
+    def _connectSignalsSlots(self):
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+
+        self._ui.initialize.clicked.connect(self._initialize)
+
+    def _load(self):
+        self._ui.tabWidget.clear()
+
+        regions = coredb.CoreDB().getRegions()
+        if len(regions) == 1 and not regions[0]:
+            widget = InitializationWidget('')
+            widget.displayChecked.connect(self._showSectionActor)
+            widget.displayUnchecked.connect(self._hideSectionActor)
+            self._ui.tabWidget.addTab(widget, DEFAULT_REGION_NAME)
+            widget.load()
+        else:
+            for rname in regions:
+                widget = InitializationWidget(rname)
+                widget.displayChecked.connect(self._showSectionActor)
+                widget.displayUnchecked.connect(self._hideSectionActor)
+                self._ui.tabWidget.addTab(widget, rname)
+                widget.load()
+        #
+        # for i in range(self._ui.tabWidget.count()):
+        #     widget: InitializationWidget = self._ui.tabWidget.widget(i)
+
+        self._dbConfigCount = coredb.CoreDB().configCount
+
+    def _updateEnabled(self):
+        self._ui.initialize.setEnabled(not CaseManager().isActive())
 
     @qasync.asyncSlot()
     async def _initialize(self):

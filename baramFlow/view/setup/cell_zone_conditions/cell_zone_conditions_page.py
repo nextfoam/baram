@@ -5,9 +5,11 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTreeWidgetItem
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.cell_zone_db import CellZoneDB
+from baramFlow.coredb.project import Project
 from baramFlow.view.widgets.content_page import ContentPage
 from .cell_zone_conditions_page_ui import Ui_CellZoneConditionsPage
 from .cell_zone_condition_dialog import CellZoneConditionDialog
@@ -77,6 +79,8 @@ class CellZoneConditionsPage(ContentPage):
 
         self._actor = None
 
+        self._connectSignalsSlots()
+        self._updateEnabled()
         self._load()
 
     def hideEvent(self, ev):
@@ -91,6 +95,13 @@ class CellZoneConditionsPage(ContentPage):
 
         return super().hideEvent(ev)
 
+    def _connectSignalsSlots(self):
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+
+        self._ui.cellZones.doubleClicked.connect(self._edit)
+        self._ui.cellZones.itemClicked.connect(self._cellZoneSelected)
+        self._ui.edit.clicked.connect(self._edit)
+
     def _load(self):
         regions = coredb.CoreDB().getRegions()
         if len(regions) == 1 and not regions[0]:
@@ -101,12 +112,13 @@ class CellZoneConditionsPage(ContentPage):
 
         self._ui.cellZones.expandAll()
 
-    def _connectSignalsSlots(self):
-        self._ui.cellZones.doubleClicked.connect(self._edit)
-        self._ui.cellZones.itemClicked.connect(self._cellZoneSelected)
-        self._ui.edit.clicked.connect(self._edit)
+    def _updateEnabled(self):
+        self._ui.edit.setEnabled(not CaseManager().isActive())
 
     def _edit(self):
+        if CaseManager().isActive():
+            return
+
         item = self._ui.cellZones.currentItem()
         self._dialog = CellZoneConditionDialog(self, item.czid(), item.rname())
         self._dialog.accepted.connect(item.update)

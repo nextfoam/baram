@@ -15,91 +15,116 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>Limits</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Minimum Static Temperature (K)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="minimumStaticTemperature"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Maximum Static Temperature (K)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="maximumStaticTemperature"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Maximum Viscosity Ratio</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="maximumViscosityRatio"/>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Equations</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+    <widget class="QWidget" name="dialogContents" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item>
-       <widget class="QCheckBox" name="equationFlow">
-        <property name="text">
-         <string>Flow</string>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>Limits</string>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="equationEnergy">
-        <property name="text">
-         <string>Energy</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="energyTerms" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QCheckBox" name="includeViscousDissipationTerms">
+        <layout class="QFormLayout" name="formLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
            <property name="text">
-            <string>Include Viscous Dissipation Terms</string>
+            <string>Minimum Static Temperature (K)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="minimumStaticTemperature"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Maximum Static Temperature (K)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="maximumStaticTemperature"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Maximum Viscosity Ratio</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="maximumViscosityRatio"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="title">
+         <string>Equations</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QCheckBox" name="equationFlow">
+           <property name="text">
+            <string>Flow</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="includeKineticEnergyTerms">
+          <widget class="QCheckBox" name="equationEnergy">
            <property name="text">
-            <string>Include Kinetic Energy Terms</string>
+            <string>Energy</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="includePressureWorkTerms">
+          <widget class="QWidget" name="energyTerms" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QCheckBox" name="includeViscousDissipationTerms">
+              <property name="text">
+               <string>Include Viscous Dissipation Terms</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="includeKineticEnergyTerms">
+              <property name="text">
+               <string>Include Kinetic Energy Terms</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="includePressureWorkTerms">
+              <property name="text">
+               <string>Include Pressure Work Terms</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="equationUDS">
            <property name="text">
-            <string>Include Pressure Work Terms</string>
+            <string>User-defined Scalar</string>
            </property>
           </widget>
          </item>
@@ -107,92 +132,85 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="equationUDS">
-        <property name="text">
-         <string>User-defined Scalar</string>
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="title">
+         <string>Collateral Fields</string>
         </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="groupBox_3">
-     <property name="title">
-      <string>Collateral Fields</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <widget class="QCheckBox" name="collateralAge">
-        <property name="text">
-         <string>Age</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="collateralHeatTransferCoefficient">
-        <property name="text">
-         <string>Heat Transfer Coefficient</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="collateralMachNumber">
-        <property name="text">
-         <string>Mach Number</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="collateralQ">
-        <property name="text">
-         <string>Q</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="collateralTotalPressure">
-        <property name="text">
-         <string>Total Pressure</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="collateralVorticity">
-        <property name="text">
-         <string>Vorticity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="collateralWallHeatFlux">
-        <property name="text">
-         <string>Wall Heat Flux</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="collateralWallShearStress">
-        <property name="text">
-         <string>Wall Shear Stress</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="collateralWallYPlus">
-        <property name="text">
-         <string>Wall y plus</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Selected field values will be written into time folders during calcuation, yet only the last time folder will have values in steady cases.</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QCheckBox" name="collateralAge">
+           <property name="text">
+            <string>Age</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="collateralHeatTransferCoefficient">
+           <property name="text">
+            <string>Heat Transfer Coefficient</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="collateralMachNumber">
+           <property name="text">
+            <string>Mach Number</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="collateralQ">
+           <property name="text">
+            <string>Q</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="collateralTotalPressure">
+           <property name="text">
+            <string>Total Pressure</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="collateralVorticity">
+           <property name="text">
+            <string>Vorticity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="collateralWallHeatFlux">
+           <property name="text">
+            <string>Wall Heat Flux</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="collateralWallShearStress">
+           <property name="text">
+            <string>Wall Shear Stress</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="collateralWallYPlus">
+           <property name="text">
+            <string>Wall y plus</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Selected field values will be written into time folders during calcuation, yet only the last time folder will have values in steady cases.</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>

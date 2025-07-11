@@ -5,6 +5,7 @@ import qasync
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.material_db import MaterialDB
@@ -57,6 +58,11 @@ class MaterialDialog(ResizableDialog):
             self._ui.thermalConductivity.hide()
 
         self._connectSignalsSlots()
+
+        if CaseManager().isActive():
+            self._ui.dialogContents.setEnabled(False)
+            self._ui.ok.setEnabled(False)
+
         self._load()
 
     def _load(self):

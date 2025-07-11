@@ -6,8 +6,10 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTreeWidgetItem
 
 from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB
+from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from baramFlow.view.widgets.content_page import ContentPage
 from widgets.async_message_box import AsyncMessageBox
@@ -98,7 +100,20 @@ class BoundaryConditionsPage(ContentPage):
         self._ui.boundaries.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
         self._connectSignalsSlots()
+        self._updateEnabled()
         self._load()
+
+    def _connectSignalsSlots(self):
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+
+        # app.meshUpdated.connect(self._meshUpdated)
+        self._ui.filter.textChanged.connect(self._filterChanged)
+        self._ui.boundaries.currentItemChanged.connect(self._updateEditEnabled)
+        self._ui.boundaries.itemDoubleClicked.connect(self._doubleClicked)
+        self._ui.boundaries.itemChanged.connect(self._itemChanged)
+        self._ui.boundaries.currentItemChanged.connect(self._currentBoundaryChanged)
+        self._ui.copy.clicked.connect(self._copy)
+        self._ui.edit.clicked.connect(self._edit)
 
     def _load(self):
         db = coredb.CoreDB()
@@ -120,15 +135,10 @@ class BoundaryConditionsPage(ContentPage):
             self._selectPickedBoundary()
             self._meshUpdated()
 
-    def _connectSignalsSlots(self):
-        # app.meshUpdated.connect(self._meshUpdated)
-        self._ui.filter.textChanged.connect(self._filterChanged)
-        self._ui.boundaries.currentItemChanged.connect(self._updateEditEnabled)
-        self._ui.boundaries.itemDoubleClicked.connect(self._doubleClicked)
-        self._ui.boundaries.itemChanged.connect(self._itemChanged)
-        self._ui.boundaries.currentItemChanged.connect(self._currentBoundaryChanged)
-        self._ui.copy.clicked.connect(self._copy)
-        self._ui.edit.clicked.connect(self._edit)
+    def _updateEnabled(self):
+        caseManager = CaseManager()
+        self._ui.copy.setEnabled(not caseManager.isActive())
+        self._ui.edit.setEnabled(not caseManager.isActive())
 
     def _meshUpdated(self):
         app.vtkMesh().currentActorChanged.connect(self._selectPickedBoundary)
@@ -171,7 +181,7 @@ class BoundaryConditionsPage(ContentPage):
                 app.vtkMesh().hideActor(bcid)
 
     def _doubleClicked(self, item, column):
-        if column:
+        if column and not CaseManager().isActive():
             self._edit()
 
     @qasync.asyncSlot()

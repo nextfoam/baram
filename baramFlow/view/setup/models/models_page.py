@@ -4,9 +4,11 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QListWidgetItem
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.models_db import Models, ModelsDB, MultiphaseModel
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.general_db import GeneralDB, SolverType
+from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.view.widgets.content_page import ContentPage
@@ -18,7 +20,6 @@ from .user_defined_scalars_dialog import UserDefinedScalarsDialog
 
 
 class ModelItem(QListWidgetItem):
-
     def __init__(self, parent, model: Models, title, loadFunction, dialogClass = None):
         super().__init__(parent)
         self._model: Models = model
@@ -116,18 +117,25 @@ class ModelsPage(ContentPage):
                            lambda: self.tr('Defined') if UserDefinedScalarsDB.hasDefined() else self.tr('Not Defined'),
                            UserDefinedScalarsDialog if GeneralDB.isPressureBased() else None)
 
-        self._connectSignalsSlots()
-
         for i in range(self._ui.list.count()):
             self._ui.list.item(i).load()
 
+        self._connectSignalsSlots()
+        self._updateEnabled()
+
     def _connectSignalsSlots(self):
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
         # app.meshUpdated.connect(self._meshUpdated)
 
         self._ui.list.itemSelectionChanged.connect(self._selectionChanged)
         self._ui.list.itemDoubleClicked.connect(self._edit)
 
         self._ui.edit.clicked.connect(self._edit)
+
+    def _updateEnabled(self):
+        caseManager = CaseManager()
+        self._ui.list.setEnabled(not caseManager.isActive())
+        self._ui.edit.setEnabled(not caseManager.isActive())
 
     def _selectionChanged(self):
         if len(self._ui.list.selectedItems()) > 0:
@@ -136,6 +144,9 @@ class ModelsPage(ContentPage):
             self._ui.edit.setEnabled(False)
 
     def _edit(self):
+        if CaseManager().isActive():
+            return
+
         self._dialog = self._ui.list.currentItem().openDialog(self)
 
     def _addModelItem(self, model, title, loadFunction, dialogClass=None):

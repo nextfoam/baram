@@ -7,12 +7,14 @@ from PySide6.QtCore import Signal
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.material_schema import MaterialType
 from baramFlow.coredb.material_schema import DensitySpecification, Specification, ViscositySpecification
 from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.project import Project
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from .material_add_dialog import MaterialAddDialog
 from .material_card import MaterialCard
@@ -44,6 +46,7 @@ class MixtureCard(QWidget):
         self._ui.frame.layout().addWidget(widget)
 
         self._connectSignalsSlots()
+        self._updateEnabled()
 
         for mid in MaterialDB.getSpecies(self._mid):
             self._addCard(mid)
@@ -97,9 +100,17 @@ class MixtureCard(QWidget):
         self.show()
 
     def _connectSignalsSlots(self):
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+
         self._ui.edit.clicked.connect(self._edit)
         self._ui.remove.clicked.connect(self._remove)
         self._ui.addSpecies.clicked.connect(self._addSpecies)
+
+    def _updateEnabled(self):
+        caseManager = CaseManager()
+        self._ui.edit.setEnabled(not caseManager.isActive())
+        self._ui.remove.setEnabled(not caseManager.isActive())
+        self._ui.addSpecies.setEnabled(not caseManager.isActive())
 
     def _edit(self):
         self._dialog = MixtureDialog(self, self._mid)

@@ -311,7 +311,7 @@ class CaseManager(QObject):
         return self._currentCase.status()
 
     def isBatchRunning(self):
-        return self._batchRunning
+        return self._batchRunning and self.isRunning()
 
     def liveProcess(self):
         return self._liveCase.process()

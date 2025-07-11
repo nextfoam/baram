@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QSizePolicy
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import Signal
 
+from baramFlow.case_manager import CaseManager
 from libbaram.math import calucateDirectionsByRotation
 from resources import resource
 from widgets.flat_push_button import FlatPushButton
@@ -23,6 +24,7 @@ from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.material_db import UNIVERSAL_GAS_CONSTANT, MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB, RANSModel
 from baramFlow.mesh.vtk_loader import hexActor, cylinderActor, sphereActor
@@ -178,13 +180,8 @@ class InitializationWidget(QWidget):
             self._ui.properties.layout().setRowVisible(self._ui.pressure, False)
             self._ui.turbulence.hide()
 
+        self._updateEnabled()
         self._connectSignalsSlots()
-
-    def _connectSignalsSlots(self):
-        self._ui.computeFrom.currentIndexChanged.connect(self._computeFromChanged)
-        self._ui.create.clicked.connect(self._createOption)
-        self._ui.delete_.clicked.connect(self._deleteOption)
-        self._ui.edit.clicked.connect(self._editOption)
 
     def load(self):
         db = coredb.CoreDB()
@@ -272,6 +269,18 @@ class InitializationWidget(QWidget):
             return False
 
         return True
+
+    def _connectSignalsSlots(self):
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+
+        self._ui.computeFrom.currentIndexChanged.connect(self._computeFromChanged)
+        self._ui.create.clicked.connect(self._createOption)
+        self._ui.delete_.clicked.connect(self._deleteOption)
+        self._ui.edit.clicked.connect(self._editOption)
+
+    def _updateEnabled(self):
+        self._ui.initialValues.setEnabled(not CaseManager().isActive())
+        self._ui.advanced.setEnabled(not CaseManager().isActive())
 
     def _computeFromChanged(self):
         bcid = self._ui.computeFrom.currentData()

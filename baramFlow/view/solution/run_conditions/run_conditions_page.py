@@ -5,10 +5,12 @@ from enum import Enum, auto
 
 import qasync
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from baramFlow.coredb.models_db import ModelsDB, MultiphaseModel
+from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.run_calculation_db import TimeSteppingMethod, DataWriteFormat, RunCalculationDB
 from baramFlow.view.widgets.content_page import ContentPage
@@ -39,6 +41,64 @@ class RunConditionsPage(ContentPage):
         self._xpath = RunCalculationDB.RUN_CALCULATION_XPATH + '/runConditions'
 
         self._connectSignalsSlots()
+        self._updateEnabled()
+
+    @qasync.asyncSlot()
+    async def save(self):
+        try:
+            with coredb.CoreDB() as db:
+                if GeneralDB.isTimeTransient():
+                    timeSteppingMethod = self._ui.timeSteppingMethod.currentData()
+                    db.setValue(self._xpath + '/timeSteppingMethod', timeSteppingMethod.value)
+                    if timeSteppingMethod == TimeSteppingMethod.FIXED:
+                        db.setValue(self._xpath + '/timeStepSize', self._ui.timeStepSize.text(),
+                                    self.tr('Time Step Size'))
+
+                    db.setValue(self._xpath + '/endTime', self._ui.endTime.text(), self.tr('End Time'))
+
+                    db.setValue(self._xpath + '/reportIntervalSeconds', self._ui.reportIntervalSeconds.text(),
+                                self.tr('Report Interval Seconds'))
+                else:
+                    db.setValue(self._xpath + '/numberOfIterations', self._ui.numberOfIterations.text(),
+                                self.tr('Number of Iteration'))
+
+                    db.setValue(self._xpath + '/reportIntervalSteps', self._ui.reportIntervalIterationSteps.text(),
+                                self.tr('Report Interval Interation Steps'))
+
+                db.setValue(self._xpath + '/maxCourantNumber', self._ui.maxCourantNumber.text(),
+                            self.tr('Courant Number'))
+                db.setValue(self._xpath + '/VoFMaxCourantNumber', self._ui.maxCourantNumberForVoF.text(),
+                            self.tr('Courant Number For VoF'))
+                db.setValue(self._xpath + '/maxDiffusionNumber', self._ui.maxDi.text(), self.tr('Max Diffusion Number'))
+
+                if self._ui.retainOnlyTheMostRecentFiles.isChecked():
+                    db.setValue(self._xpath + '/retainOnlyTheMostRecentFiles', 'true')
+                    db.setValue(self._xpath + '/maximumNumberOfDataFiles', self._ui.maximumNumberODataFiles.text(),
+                                self.tr('Maximum Number of Data Files'))
+                else:
+                    db.setValue(self._xpath + '/retainOnlyTheMostRecentFiles', 'false')
+
+                db.setValue(self._xpath + '/dataWriteFormat', self._ui.dataWriteFormat.currentData().value,
+                              self.tr('Data Write Format'))
+                db.setValue(self._xpath + '/dataWritePrecision', self._ui.dataWritePrecision.text(),
+                              self.tr('Data Write Precision'))
+                db.setValue(self._xpath + '/timePrecision', self._ui.timePrecision.text(), self.tr('Time Precision'))
+
+                return True
+        except ValueException as ve:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
+            return False
+
+    def showEvent(self, ev):
+        if not ev.spontaneous():
+            self._load()
+
+        return super().showEvent(ev)
+
+    def _connectSignalsSlots(self):
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+
+        self._ui.timeSteppingMethod.currentIndexChanged.connect(self._timeSteppingMethodChanged)
 
     def _load(self):
         db = coredb.CoreDB()
@@ -96,60 +156,8 @@ class RunConditionsPage(ContentPage):
         self._ui.dataWritePrecision.setText(db.getValue(self._xpath + '/dataWritePrecision'))
         self._ui.timePrecision.setText(db.getValue(self._xpath + '/timePrecision'))
 
-    @qasync.asyncSlot()
-    async def save(self):
-        try:
-            with coredb.CoreDB() as db:
-                if GeneralDB.isTimeTransient():
-                    timeSteppingMethod = self._ui.timeSteppingMethod.currentData()
-                    db.setValue(self._xpath + '/timeSteppingMethod', timeSteppingMethod.value)
-                    if timeSteppingMethod == TimeSteppingMethod.FIXED:
-                        db.setValue(self._xpath + '/timeStepSize', self._ui.timeStepSize.text(),
-                                    self.tr('Time Step Size'))
-
-                    db.setValue(self._xpath + '/endTime', self._ui.endTime.text(), self.tr('End Time'))
-
-                    db.setValue(self._xpath + '/reportIntervalSeconds', self._ui.reportIntervalSeconds.text(),
-                                self.tr('Report Interval Seconds'))
-                else:
-                    db.setValue(self._xpath + '/numberOfIterations', self._ui.numberOfIterations.text(),
-                                self.tr('Number of Iteration'))
-
-                    db.setValue(self._xpath + '/reportIntervalSteps', self._ui.reportIntervalIterationSteps.text(),
-                                self.tr('Report Interval Interation Steps'))
-
-                db.setValue(self._xpath + '/maxCourantNumber', self._ui.maxCourantNumber.text(),
-                            self.tr('Courant Number'))
-                db.setValue(self._xpath + '/VoFMaxCourantNumber', self._ui.maxCourantNumberForVoF.text(),
-                            self.tr('Courant Number For VoF'))
-                db.setValue(self._xpath + '/maxDiffusionNumber', self._ui.maxDi.text(), self.tr('Max Diffusion Number'))
-
-                if self._ui.retainOnlyTheMostRecentFiles.isChecked():
-                    db.setValue(self._xpath + '/retainOnlyTheMostRecentFiles', 'true')
-                    db.setValue(self._xpath + '/maximumNumberOfDataFiles', self._ui.maximumNumberODataFiles.text(),
-                                self.tr('Maximum Number of Data Files'))
-                else:
-                    db.setValue(self._xpath + '/retainOnlyTheMostRecentFiles', 'false')
-
-                db.setValue(self._xpath + '/dataWriteFormat', self._ui.dataWriteFormat.currentData().value,
-                              self.tr('Data Write Format'))
-                db.setValue(self._xpath + '/dataWritePrecision', self._ui.dataWritePrecision.text(),
-                              self.tr('Data Write Precision'))
-                db.setValue(self._xpath + '/timePrecision', self._ui.timePrecision.text(), self.tr('Time Precision'))
-
-                return True
-        except ValueException as ve:
-            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
-            return False
-
-    def showEvent(self, ev):
-        if not ev.spontaneous():
-            self._load()
-
-        return super().showEvent(ev)
-
-    def _connectSignalsSlots(self):
-        self._ui.timeSteppingMethod.currentIndexChanged.connect(self._timeSteppingMethodChanged)
+    def _updateEnabled(self):
+        self.setEnabled(not CaseManager().isBatchRunning())
 
     def _timeSteppingMethodChanged(self, index):
         if not GeneralDB.isTimeTransient():

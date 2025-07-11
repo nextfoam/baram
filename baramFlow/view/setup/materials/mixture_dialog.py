@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QDialog
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from baramFlow.coredb.material_db import MaterialDB
@@ -31,7 +32,11 @@ class MixtureDialog(QDialog):
         self._setupSpecifications()
 
         self._connectSignalsSlots()
+        self._updateEnabled()
         self._load()
+
+    def _connectSignalsSlots(self):
+        self._ui.ok.clicked.connect(self._accept)
 
     def _load(self):
         db = coredb.CoreDB()
@@ -69,6 +74,11 @@ class MixtureDialog(QDialog):
             self._ui.primarySpecie.addItem(name, mid)
             if mid == primarySpecie:
                 self._ui.primarySpecie.setCurrentText(name)
+
+    def _updateEnabled(self):
+        caseManager = CaseManager()
+        self._ui.dialogContents.setEnabled(not caseManager.isActive())
+        self._ui.ok.setEnabled(not caseManager.isActive())
 
     @qasync.asyncSlot()
     async def _accept(self):
@@ -168,6 +178,3 @@ class MixtureDialog(QDialog):
     def _setupSpecificationCombo(self, combo, types):
         for t in types:
             combo.addItem(MaterialDB.specificationToText(t), t)
-
-    def _connectSignalsSlots(self):
-        self._ui.ok.clicked.connect(self._accept)

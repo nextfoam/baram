@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>270</width>
-    <height>561</height>
+    <width>278</width>
+    <height>579</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -205,241 +205,34 @@
         </widget>
        </item>
        <item>
-        <widget class="QStackedWidget" name="sectionStack">
-         <property name="font">
-          <font>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <widget class="QWidget" name="page_0">
-          <layout class="QVBoxLayout" name="verticalLayout_6">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QGroupBox" name="hexGroup">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="title">
-              <string>Hex Geometry</string>
-             </property>
-             <layout class="QGridLayout" name="gridLayout">
+        <widget class="QWidget" name="editForm" native="true">
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QStackedWidget" name="sectionStack">
+            <property name="font">
+             <font>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="page_0">
+             <layout class="QVBoxLayout" name="verticalLayout_6">
               <property name="leftMargin">
-               <number>9</number>
+               <number>0</number>
               </property>
               <property name="topMargin">
-               <number>9</number>
+               <number>0</number>
               </property>
               <property name="rightMargin">
-               <number>9</number>
+               <number>0</number>
               </property>
               <property name="bottomMargin">
-               <number>9</number>
+               <number>0</number>
               </property>
-              <item row="5" column="0">
-               <widget class="QLabel" name="label_4">
-                <property name="text">
-                 <string>Y</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1">
-               <widget class="QLineEdit" name="minPointY"/>
-              </item>
-              <item row="6" column="0">
-               <widget class="QLabel" name="label_9">
-                <property name="text">
-                 <string>Z</string>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="2">
-               <widget class="QLineEdit" name="maxPointZ"/>
-              </item>
-              <item row="5" column="2">
-               <widget class="QLineEdit" name="maxPointY"/>
-              </item>
-              <item row="4" column="1">
-               <widget class="QLineEdit" name="minPointX"/>
-              </item>
-              <item row="1" column="2">
-               <widget class="QLabel" name="label_13">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Max</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLabel" name="label_2">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Min</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="1">
-               <widget class="QLineEdit" name="minPointZ"/>
-              </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="label_3">
-                <property name="text">
-                 <string>X</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="2">
-               <widget class="QLineEdit" name="maxPointX"/>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="page_1">
-          <layout class="QVBoxLayout" name="verticalLayout_5">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QGroupBox" name="cylinderGroup">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="title">
-              <string>Cylinder Geometry</string>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_3">
               <item>
-               <widget class="QWidget" name="horizontalWidget" native="true">
-                <layout class="QHBoxLayout" name="horizontalLayout_3">
-                 <item>
-                  <widget class="QGroupBox" name="axisPoint1">
-                   <property name="title">
-                    <string>Axis Point 1</string>
-                   </property>
-                   <layout class="QFormLayout" name="formLayout_2">
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="xLabel">
-                      <property name="text">
-                       <string>X</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="1">
-                     <widget class="QLineEdit" name="p1x"/>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QLabel" name="yLabel">
-                      <property name="text">
-                       <string>Y</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="QLineEdit" name="p1y"/>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QLabel" name="zLabel">
-                      <property name="text">
-                       <string>Z</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="QLineEdit" name="p1z"/>
-                    </item>
-                   </layout>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QGroupBox" name="axisPoint2">
-                   <property name="title">
-                    <string>Axis Point 2</string>
-                   </property>
-                   <layout class="QFormLayout" name="formLayout">
-                    <item row="1" column="0">
-                     <widget class="QLabel" name="yLabel_2">
-                      <property name="text">
-                       <string>Y</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="QLineEdit" name="p2y"/>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QLabel" name="zLabel_2">
-                      <property name="text">
-                       <string>Z</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="QLineEdit" name="p2z"/>
-                    </item>
-                    <item row="0" column="1">
-                     <widget class="QLineEdit" name="p2x"/>
-                    </item>
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="xLabel_2">
-                      <property name="text">
-                       <string>X</string>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QGroupBox" name="radiousGroup">
+               <widget class="QGroupBox" name="hexGroup">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -447,94 +240,113 @@
                  </sizepolicy>
                 </property>
                 <property name="title">
-                 <string>Radius</string>
+                 <string>Hex Geometry</string>
                 </property>
-                <layout class="QFormLayout" name="formLayout_6">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="radiusLabel">
-                   <property name="text">
-                    <string>R</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="cylinderRadius"/>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="page_2">
-          <layout class="QVBoxLayout" name="verticalLayout_7">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QGroupBox" name="sphereGroup">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="title">
-              <string>Sphere Geometry</string>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_2">
-              <item>
-               <widget class="QGroupBox" name="centerGroup">
-                <property name="title">
-                 <string>Center Point</string>
-                </property>
-                <layout class="QFormLayout" name="formLayout_7">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="xLabel_4">
-                   <property name="text">
-                    <string>X</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="cx"/>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="yLabel_4">
+                <layout class="QGridLayout" name="gridLayout">
+                 <property name="leftMargin">
+                  <number>9</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>9</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>9</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>9</number>
+                 </property>
+                 <item row="5" column="0">
+                  <widget class="QLabel" name="label_4">
                    <property name="text">
                     <string>Y</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="cy"/>
+                 <item row="5" column="1">
+                  <widget class="QLineEdit" name="minPointY"/>
                  </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="zLabel_4">
+                 <item row="6" column="0">
+                  <widget class="QLabel" name="label_9">
                    <property name="text">
                     <string>Z</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
-                  <widget class="QLineEdit" name="cz"/>
+                 <item row="6" column="2">
+                  <widget class="QLineEdit" name="maxPointZ"/>
+                 </item>
+                 <item row="5" column="2">
+                  <widget class="QLineEdit" name="maxPointY"/>
+                 </item>
+                 <item row="4" column="1">
+                  <widget class="QLineEdit" name="minPointX"/>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QLabel" name="label_13">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>Max</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLabel" name="label_2">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>Min</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="1">
+                  <widget class="QLineEdit" name="minPointZ"/>
+                 </item>
+                 <item row="4" column="0">
+                  <widget class="QLabel" name="label_3">
+                   <property name="text">
+                    <string>X</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="2">
+                  <widget class="QLineEdit" name="maxPointX"/>
                  </item>
                 </layout>
                </widget>
               </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="page_1">
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <item>
-               <widget class="QGroupBox" name="radiousGroup_2">
+               <widget class="QGroupBox" name="cylinderGroup">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -542,71 +354,247 @@
                  </sizepolicy>
                 </property>
                 <property name="title">
-                 <string>Radius</string>
+                 <string>Cylinder Geometry</string>
                 </property>
-                <layout class="QFormLayout" name="formLayout_8">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="radiusLabel_2">
-                   <property name="text">
-                    <string>R</string>
-                   </property>
+                <layout class="QVBoxLayout" name="verticalLayout_3">
+                 <item>
+                  <widget class="QWidget" name="horizontalWidget" native="true">
+                   <layout class="QHBoxLayout" name="horizontalLayout_3">
+                    <item>
+                     <widget class="QGroupBox" name="axisPoint1">
+                      <property name="title">
+                       <string>Axis Point 1</string>
+                      </property>
+                      <layout class="QFormLayout" name="formLayout_2">
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="xLabel">
+                         <property name="text">
+                          <string>X</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="0" column="1">
+                        <widget class="QLineEdit" name="p1x"/>
+                       </item>
+                       <item row="1" column="0">
+                        <widget class="QLabel" name="yLabel">
+                         <property name="text">
+                          <string>Y</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="p1y"/>
+                       </item>
+                       <item row="2" column="0">
+                        <widget class="QLabel" name="zLabel">
+                         <property name="text">
+                          <string>Z</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="2" column="1">
+                        <widget class="QLineEdit" name="p1z"/>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QGroupBox" name="axisPoint2">
+                      <property name="title">
+                       <string>Axis Point 2</string>
+                      </property>
+                      <layout class="QFormLayout" name="formLayout">
+                       <item row="1" column="0">
+                        <widget class="QLabel" name="yLabel_2">
+                         <property name="text">
+                          <string>Y</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="p2y"/>
+                       </item>
+                       <item row="2" column="0">
+                        <widget class="QLabel" name="zLabel_2">
+                         <property name="text">
+                          <string>Z</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="2" column="1">
+                        <widget class="QLineEdit" name="p2z"/>
+                       </item>
+                       <item row="0" column="1">
+                        <widget class="QLineEdit" name="p2x"/>
+                       </item>
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="xLabel_2">
+                         <property name="text">
+                          <string>X</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                   </layout>
                   </widget>
                  </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="sphereRadius"/>
+                 <item>
+                  <widget class="QGroupBox" name="radiousGroup">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="title">
+                    <string>Radius</string>
+                   </property>
+                   <layout class="QFormLayout" name="formLayout_6">
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="radiusLabel">
+                      <property name="text">
+                       <string>R</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="QLineEdit" name="cylinderRadius"/>
+                    </item>
+                   </layout>
+                  </widget>
                  </item>
                 </layout>
                </widget>
               </item>
              </layout>
             </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="page_3">
-          <layout class="QVBoxLayout" name="verticalLayout_8">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QGroupBox" name="cellZoneGroup">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="title">
-              <string>Cell Zone</string>
-             </property>
-             <layout class="QVBoxLayout" name="cellZoneGroupLayout"/>
+            <widget class="QWidget" name="page_2">
+             <layout class="QVBoxLayout" name="verticalLayout_7">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QGroupBox" name="sphereGroup">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="title">
+                 <string>Sphere Geometry</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_2">
+                 <item>
+                  <widget class="QGroupBox" name="centerGroup">
+                   <property name="title">
+                    <string>Center Point</string>
+                   </property>
+                   <layout class="QFormLayout" name="formLayout_7">
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="xLabel_4">
+                      <property name="text">
+                       <string>X</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="QLineEdit" name="cx"/>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QLabel" name="yLabel_4">
+                      <property name="text">
+                       <string>Y</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QLineEdit" name="cy"/>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QLabel" name="zLabel_4">
+                      <property name="text">
+                       <string>Z</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="QLineEdit" name="cz"/>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QGroupBox" name="radiousGroup_2">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="title">
+                    <string>Radius</string>
+                   </property>
+                   <layout class="QFormLayout" name="formLayout_8">
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="radiusLabel_2">
+                      <property name="text">
+                       <string>R</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="QLineEdit" name="sphereRadius"/>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
             </widget>
-           </item>
-          </layout>
-         </widget>
-        </widget>
-       </item>
-       <item>
-        <widget class="QWidget" name="widget_10" native="true">
-         <layout class="QVBoxLayout" name="initialValuesLayout">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
+            <widget class="QWidget" name="page_3">
+             <layout class="QVBoxLayout" name="verticalLayout_8">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QGroupBox" name="cellZoneGroup">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="title">
+                 <string>Cell Zone</string>
+                </property>
+                <layout class="QVBoxLayout" name="cellZoneGroupLayout"/>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
           <item>
            <widget class="QGroupBox" name="velocityGroup">
             <property name="title">
@@ -692,14 +680,14 @@
             </layout>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="overrideBoundaryValue">
+            <property name="text">
+             <string>Override Boundary Value</string>
+            </property>
+           </widget>
+          </item>
          </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="overrideBoundaryValue">
-         <property name="text">
-          <string>Override Boundary Value</string>
-         </property>
         </widget>
        </item>
        <item>
@@ -783,7 +771,6 @@
   <tabstop>cy</tabstop>
   <tabstop>cz</tabstop>
   <tabstop>sphereRadius</tabstop>
-  <tabstop>velocityGroup</tabstop>
   <tabstop>ux</tabstop>
   <tabstop>uy</tabstop>
   <tabstop>uz</tabstop>
@@ -791,7 +778,6 @@
   <tabstop>pressure</tabstop>
   <tabstop>temperatureCheckBox</tabstop>
   <tabstop>temperature</tabstop>
-  <tabstop>overrideBoundaryValue</tabstop>
   <tabstop>nextButton</tabstop>
   <tabstop>cancelButton</tabstop>
  </tabstops>

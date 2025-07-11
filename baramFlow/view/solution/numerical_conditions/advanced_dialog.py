@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QDialog
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter, boolToDBText
 from baramFlow.coredb.general_db import GeneralDB
@@ -39,6 +40,10 @@ class AdvancedDialog(QDialog):
         self._ui.collateralAge.setEnabled(not GeneralDB.isTimeTransient() and not isDensityBased)
         self._ui.collateralHeatTransferCoefficient.setEnabled(isEnergeOn)
         self._ui.collateralMachNumber.setEnabled(isEnergeOn and not isDensityBased)
+
+        if CaseManager().isBatchRunning():
+            self._ui.dialogContents.setEnabled(False)
+            self._ui.ok.setEnabled(False)
 
         self._connectSignalsSlots()
         self._load()

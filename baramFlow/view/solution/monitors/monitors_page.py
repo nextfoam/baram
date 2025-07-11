@@ -3,10 +3,13 @@
 import qasync
 from PySide6.QtWidgets import QMenu, QListWidgetItem, QMessageBox
 
+from widgets.async_message_box import AsyncMessageBox
+
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.monitor_db import MonitorDB
+from baramFlow.coredb.project import Project
 from baramFlow.view.widgets.content_page import ContentPage
-from widgets.async_message_box import AsyncMessageBox
 from .monitors_page_ui import Ui_MonitorsPage
 from .force_dialog import ForceDialog
 from .point_dialog import PointDialog
@@ -31,6 +34,7 @@ class MonitorsPage(ContentPage):
         self._dialog = None
 
         self._connectSignalsSlots()
+        self._updateEnabled()
         self._load()
 
     def _load(self):
@@ -47,6 +51,8 @@ class MonitorsPage(ContentPage):
             self._addItem(VolumeMonitorWidget(m))
 
     def _connectSignalsSlots(self):
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+
         self._forcesAdd.triggered.connect(self._openForcesAddDialog)
         self._pointsAdd.triggered.connect(self._openPointsAddDialog)
         self._surfacesAdd.triggered.connect(self._openSurfacesAddDialog)
@@ -57,6 +63,9 @@ class MonitorsPage(ContentPage):
         self._ui.delete_.clicked.connect(self._delete)
 
         MonitorDB.signals.monitorChanged.connect(self._load)
+
+    def _updateEnabled(self):
+        self.setEnabled(not CaseManager().isBatchRunning())
 
     def _openForcesAddDialog(self):
         self._dialog = ForceDialog(self)
@@ -104,7 +113,8 @@ class MonitorsPage(ContentPage):
         self._ui.delete_.setEnabled(True)
 
     def _edit(self):
-        self._currentWidget().edit()
+        if not CaseManager().isBatchRunning():
+            self._currentWidget().edit()
 
     @qasync.asyncSlot()
     async def _delete(self):

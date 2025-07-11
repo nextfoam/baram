@@ -48,7 +48,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QGroupBox" name="groupBox_1">
+        <widget class="QGroupBox" name="initialValues">
          <property name="title">
           <string>Initial Values</string>
          </property>

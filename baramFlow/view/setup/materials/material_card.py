@@ -4,11 +4,13 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.material_schema import Phase, MaterialType
 from baramFlow.coredb.material_schema import Specification, DensitySpecification, ViscositySpecification
 from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.project import Project
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from .material_card_ui import Ui_MaterialCard
 from .material_dialog import MaterialDialog
@@ -28,6 +30,7 @@ class MaterialCard(QWidget):
         self._xpath = MaterialDB.getXPath(mid)
 
         self._connectSignalsSlots()
+        self._updateEnabled()
 
     @property
     def type(self):
@@ -93,6 +96,17 @@ class MaterialCard(QWidget):
             self._ui.specificHeatWidget.hide()
             self._ui.thermalConductivityWidget.hide()
 
+    def _connectSignalsSlots(self):
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+
+        self._ui.edit.clicked.connect(self._edit)
+        self._ui.remove.clicked.connect(self._remove)
+
+    def _updateEnabled(self):
+        caseManager = CaseManager()
+        self._ui.edit.setEnabled(not caseManager.isActive())
+        self._ui.remove.setEnabled(not caseManager.isActive())
+
     def _edit(self):
         self._dialog = MaterialDialog(self, self._mid)
         self._dialog.accepted.connect(self.load)
@@ -100,7 +114,3 @@ class MaterialCard(QWidget):
 
     def _remove(self):
         self.removeClicked.emit(self)
-
-    def _connectSignalsSlots(self):
-        self._ui.edit.clicked.connect(self._edit)
-        self._ui.remove.clicked.connect(self._remove)

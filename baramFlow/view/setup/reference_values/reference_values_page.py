@@ -4,8 +4,10 @@
 import qasync
 from PySide6.QtWidgets import QMessageBox
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
+from baramFlow.coredb.project import Project
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
 from baramFlow.view.widgets.content_page import ContentPage
 from .reference_values_page_ui import Ui_ReferenceValuesPage
@@ -17,6 +19,8 @@ class ReferenceValuesPage(ContentPage):
         self._ui = Ui_ReferenceValuesPage()
         self._ui.setupUi(self)
 
+        self._connectSignalsSlots()
+        self._updateEnabled()
         self._load()
 
     @qasync.asyncSlot()
@@ -37,6 +41,9 @@ class ReferenceValuesPage(ContentPage):
 
         return True
 
+    def _connectSignalsSlots(self):
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+
     def _load(self):
         db = coredb.CoreDB()
 
@@ -46,3 +53,6 @@ class ReferenceValuesPage(ContentPage):
         self._ui.length.setText(db.getValue(xpath + '/length'))
         self._ui.velocity.setText(db.getValue(xpath + '/velocity'))
         self._ui.pressure.setText(db.getValue(xpath + '/pressure'))
+
+    def _updateEnabled(self):
+        self.setEnabled(not CaseManager().isActive())

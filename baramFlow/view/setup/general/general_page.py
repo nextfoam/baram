@@ -8,9 +8,11 @@ from PySide6.QtWidgets import QMessageBox
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
-from baramFlow.coredb.general_db import GeneralDB, SolverType
+from baramFlow.coredb.general_db import GeneralDB
+from baramFlow.coredb.project import Project
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.view.widgets.content_page import ContentPage
@@ -30,6 +32,8 @@ class GeneralPage(ContentPage):
 
         self._timeTransient = None
 
+        self._connectSignalsSlots()
+        self._updateEnabled()
         self._load()
 
     @qasync.asyncSlot()
@@ -70,6 +74,9 @@ class GeneralPage(ContentPage):
 
         return True
 
+    def _connectSignalsSlots(self):
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+
     def _load(self):
         db = coredb.CoreDB()
 
@@ -92,3 +99,5 @@ class GeneralPage(ContentPage):
             self._ui.gravityZ.setText(db.getValue(GRAVITY_XPATH + '/direction/z'))
             self._ui.operatingPressure.setText(db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
 
+    def _updateEnabled(self):
+        self.setEnabled(not CaseManager().isActive())
