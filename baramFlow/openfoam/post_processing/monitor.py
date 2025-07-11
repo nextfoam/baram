@@ -14,6 +14,8 @@ from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMethod
+from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
+from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
 from baramFlow.openfoam.post_processing.post_file_reader import PostFileReader
 
 
@@ -202,6 +204,9 @@ class PointMonitor(Monitor):
         self._rname = db.getValue(self._xpath + '/region')
         self._chart = chart
 
+        self._legend = FieldHelper.DBFieldKeyToText(Field(db.getValue(self._xpath + '/field/field')),
+                                                    db.getValue(self._xpath + '/field/fieldID'))
+
         self._chart.setTitle(name)
 
     @property
@@ -215,6 +220,7 @@ class PointMonitor(Monitor):
         return ''
 
     def _updateChart(self, data):
+        data.columns = [self._legend]
         self._chart.dataAppended(data)
 
     def _fitChart(self):
@@ -232,6 +238,14 @@ class SurfaceMonitor(Monitor):
         self._rname = BoundaryDB.getBoundaryRegion(db.getValue(xpath + '/surface'))
         self._chart = chart
 
+        self._legend = None
+
+        reportType = SurfaceReportType(db.getValue(xpath + '/reportType'))
+        self._legend = MonitorDB.surfaceReportTypeToText(reportType)
+        if reportType not in (SurfaceReportType.MASS_FLOW_RATE, SurfaceReportType.VOLUME_FLOW_RATE):
+            self._legend += ' ' + FieldHelper.DBFieldKeyToText(Field(db.getValue(xpath + '/field/field')),
+                                                               db.getValue(xpath + '/field/fieldID'))
+
         self._chart.setTitle(name)
 
     @property
@@ -239,6 +253,7 @@ class SurfaceMonitor(Monitor):
         return 'surfaceFieldValue'
 
     def _updateChart(self, data):
+        data.columns = [self._legend]
         self._chart.dataAppended(data)
 
     def _fitChart(self):
@@ -256,6 +271,9 @@ class VolumeMonitor(Monitor):
         self._rname = CellZoneDB.getCellZoneRegion(db.getValue(xpath + '/volume'))
         self._chart = chart
 
+        self._legend = (f"{MonitorDB.volumeReportTypeToText(VolumeReportType(db.getValue(xpath + '/reportType')))}"
+                        f" {FieldHelper.DBFieldKeyToText(Field(db.getValue(xpath + '/field/field')), db.getValue(xpath + '/field/fieldID'))}")
+
         self._chart.setTitle(name)
 
     @property
@@ -263,6 +281,7 @@ class VolumeMonitor(Monitor):
         return 'volFieldValue'
 
     def _updateChart(self, data):
+        data.columns = [self._legend]
         self._chart.dataAppended(data)
 
     def _fitChart(self):
