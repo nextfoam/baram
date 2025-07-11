@@ -39,6 +39,14 @@ class ParallelEnvironmentDialog(QDialog):
     def environment(self):
         return self._environment
 
+    def setReadOnly(self, readOnly=True):
+        if readOnly:
+            self._ui.dialogContents.setEnabled(False)
+            self._ui.applyButton.setEnabled(False)
+        else:
+            self._ui.dialogContents.setEnabled(True)
+            self._ui.applyButton.setEnabled(True)
+
     def _connectSignalsSlots(self):
         self._ui.editHostFile.clicked.connect(self._editHostFileClicked)
 
