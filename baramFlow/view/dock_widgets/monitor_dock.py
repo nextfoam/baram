@@ -70,7 +70,7 @@ class MonitorView(QWidget):
             self._clear()
         elif status == SolverStatus.RUNNING:
             self._startMonitor()
-        elif status == SolverStatus.ENDED:
+        elif status == SolverStatus.ENDED or status == SolverStatus.ERROR:
             self._stopMonitor()
 
     def _clear(self):
