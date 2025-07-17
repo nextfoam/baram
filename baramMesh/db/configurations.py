@@ -3,7 +3,7 @@
 
 import yaml
 
-from libbaram.simple_db.simple_db import SimpleDB
+from libbaram.simple_db import SimpleDB
 
 from .configurations_schema import schema
 from .file_db import writeConfigurations, readConfigurations, FileGroup, newFiles

@@ -5,7 +5,6 @@ from pathlib import Path
 
 import qasync
 from PySide6.QtGui import QIntValidator
-from PySide6.QtWidgets import QApplication
 from vtkmodules.vtkCommonDataModel import vtkPlane
 from vtkmodules.vtkFiltersCore import vtkAppendPolyData, vtkCleanPolyData, vtkFeatureEdges, vtkPolyDataPlaneCutter, \
     vtkTriangleFilter
@@ -14,7 +13,7 @@ from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
 from libbaram.exception import CanceledException
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
-from libbaram.simple_db.simple_schema import DBError
+from libbaram.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItemWithButtons
 from widgets.progress_dialog import ProgressDialog
@@ -145,7 +144,7 @@ class CastellationPage(StepPage):
             self._db = app.db.checkout()
 
             return True
-        except DBError as e:
+        except ValidationError as e:
             await AsyncMessageBox().information(self._widget, self.tr('Input Error'), e.toMessage())
             return False
 

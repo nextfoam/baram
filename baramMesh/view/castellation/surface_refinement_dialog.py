@@ -5,7 +5,7 @@ import qasync
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import QDialog
 
-from libbaram.simple_db.simple_schema import DBError
+from libbaram.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 from widgets.validation.validation import FormValidator, NotGreaterValidator
@@ -135,7 +135,7 @@ class SurfaceRefinementDialog(QDialog):
                 self._db.setValue(f'geometry/{gId}/castellationGroup', group)
 
             super().accept()
-        except DBError as error:
+        except ValidationError as error:
             await AsyncMessageBox().information(self, self.tr('Input Error'), error.toMessage())
 
     def _load(self):

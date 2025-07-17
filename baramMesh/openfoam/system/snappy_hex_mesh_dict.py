@@ -4,7 +4,7 @@
 from math import log2
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
-from libbaram.simple_db.simple_db import elementToVector
+from libbaram.simple_db import elementToVector
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType, ThicknessModel, FeatureSnapType

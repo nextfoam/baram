@@ -3,7 +3,7 @@
 
 from PySide6.QtWidgets import QDialog, QMessageBox
 
-from libbaram.simple_db.simple_schema import DBError
+from libbaram.simple_schema import ValidationError
 
 from baramMesh.app import app
 from .mesh_quality_parameters_dialog_ui import Ui_MeshQualityParametersDialog
@@ -67,5 +67,5 @@ class MeshQualityParametersDialog(QDialog):
             app.db.commit(self._dbElement)
 
             super().accept()
-        except DBError as e:
+        except ValidationError as e:
             QMessageBox.information(self, self.tr("Input Error"), e.toMessage())

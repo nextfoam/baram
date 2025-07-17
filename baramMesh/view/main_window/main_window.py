@@ -15,7 +15,7 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
 from PySide6.QtCore import Signal, QEvent, QMargins
 from PySide6QtAds import CDockManager, DockWidgetArea
 
-from libbaram.simple_db.simple_schema import DBError
+from libbaram.simple_schema import ValidationError
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
 from widgets.new_project_dialog import NewProjectDialog
@@ -270,7 +270,7 @@ class MainWindow(QMainWindow):
         except Timeout:
             await AsyncMessageBox().information(self, self.tr('Project Open Error'),
                                     self.tr(f'{path.name} is already open in another program.'))
-        except DBError as e:
+        except ValidationError as e:
             await AsyncMessageBox().information(self, self.tr('Project Open Error'),
                                                 self.tr(f'configurations error : {e.path} - {e.name}'))
 

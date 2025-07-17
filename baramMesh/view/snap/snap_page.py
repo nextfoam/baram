@@ -6,7 +6,7 @@ import qasync
 from libbaram.exception import CanceledException
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
-from libbaram.simple_db.simple_schema import DBError
+from libbaram.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.enum_button_group import EnumButtonGroup
 from widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
@@ -97,7 +97,7 @@ class SnapPage(StepPage):
             self._oldSurfaces = self._surfaces
 
             return True
-        except DBError as e:
+        except ValidationError as e:
             await AsyncMessageBox().information(self._widget, self.tr('Input Error'), e.toMessage())
 
             return False

@@ -5,7 +5,7 @@ import qasync
 from PySide6.QtWidgets import QMessageBox
 
 from libbaram.run import RunUtility, RunParallelUtility
-from libbaram.simple_db.simple_schema import DBError
+from libbaram.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 
@@ -63,7 +63,7 @@ class BaseGridPage(StepPage):
             app.db.commit(db)
 
             return True
-        except DBError as e:
+        except ValidationError as e:
             QMessageBox.information(self._widget, self.tr("Input Error"), e.toMessage())
 
             return False

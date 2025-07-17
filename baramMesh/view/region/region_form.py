@@ -4,7 +4,7 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QMessageBox
 
-from libbaram.simple_db.simple_schema import DBError
+from libbaram.simple_schema import ValidationError
 from widgets.radio_group import RadioGroup
 from widgets.rendering.point_widget import PointWidget
 
@@ -141,5 +141,5 @@ class RegionForm(QWidget):
                 self.regionAdded.emit(id_)
 
             self._pointWidget.off()
-        except DBError as e:
+        except ValidationError as e:
             QMessageBox.information(self, self.tr("Input Error"), e.toMessage())

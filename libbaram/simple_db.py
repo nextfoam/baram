@@ -5,7 +5,7 @@ import copy
 
 import yaml
 
-from .simple_schema import SimpleSchema, SchemaList, PrimitiveType, EnumType, DBError, ErrorType
+from .simple_schema import SimpleSchema, SchemaList, PrimitiveType, EnumType, ValidationError, ErrorType
 
 
 def elementToVector(element):
@@ -184,7 +184,7 @@ class SimpleDB(SimpleSchema):
             self.setValue(path, text, name)
             return True
 
-        raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', name)
+        raise ValidationError(ErrorType.EmptyError, 'Empty value is not allowed', name)
 
     def newElement(self, path):
         schema, _, = _getField(self._get(path))

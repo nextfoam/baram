@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import QEvent, QTimer
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
-from libbaram.simple_db.simple_schema import DBError
+from libbaram.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.radio_group import RadioGroup
 
@@ -320,7 +320,7 @@ class VolumeDialog(QDialog):
                 app.db.commit(self._dbElement)
 
             super().accept()
-        except DBError as e:
+        except ValidationError as e:
             await AsyncMessageBox().information(self, self.tr("Input Error"), e.toMessage())
 
     def _validateHex(self):

@@ -3,11 +3,6 @@
 
 import pandas as pd
 
-from resources import resource
-
-
-MATERIALS_PATH = 'materials.csv'
-
 
 class MaterialsBase:
     _materials = None
@@ -33,9 +28,13 @@ class MaterialsBase:
     }
 
     @classmethod
-    def load(cls):
-        df = pd.read_csv(resource.file(MATERIALS_PATH), header=0, index_col=0).transpose()
+    def load(cls, file):
+        df = pd.read_csv(file, header=0, index_col=0, dtype=str).transpose()
         cls._materials = df.where(pd.notnull(df), None).to_dict()
+
+    @classmethod
+    def update(cls, materials):
+        cls._materials = materials
 
     @classmethod
     def getMaterial(cls, name):
@@ -46,18 +45,5 @@ class MaterialsBase:
         return cls._mixture
 
     @classmethod
-    def getMaterials(cls, phase=None) -> list[(str, str, str)]:
-        """Returns available materials from material database
-
-        Returns available materials with name, chemicalFormula and phase from material database
-
-        Returns:
-            List of materials in tuple, '(name, chemicalFormula, phase)'
-        """
-        if phase:
-            return [(k, v['chemicalFormula'], v['phase']) for k, v in cls._materials.items() if v['phase'] == phase]
-
-        return [(k, v['chemicalFormula'], v['phase']) for k, v in cls._materials.items()]
-
-
-MaterialsBase.load()
+    def getMaterials(cls):
+        return cls._materials

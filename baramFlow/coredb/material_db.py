@@ -7,7 +7,6 @@ import baramFlow.coredb.libdb as xml
 from baramFlow.coredb import coredb
 from .configuraitions import ConfigurationException
 from .material_schema import Phase, MaterialType, Specification, DensitySpecification, ViscositySpecification
-from .materials_base import MaterialsBase
 from .material_schema import MaterialSchema
 from .turbulence_model_db import ITurbulenceModelObserver, TurbulenceModelsDB, TurbulenceModel
 
@@ -19,8 +18,6 @@ NON_NEWTONIAN_VISCOSITY_SPECIFICATIONS = [ViscositySpecification.CROSS_POWER_LAW
                                           ViscositySpecification.HERSCHEL_BULKLEY,
                                           ViscositySpecification.BIRD_CARREAU,
                                           ViscositySpecification.POWER_LAW]
-
-_materialsBase = MaterialsBase()
 
 
 class IMaterialObserver(QObject):
@@ -173,10 +170,6 @@ class MaterialDB(object):
     @classmethod
     def getMixture(cls, mid: str):
         return xml.getText(coredb.CoreDB().getElement(MaterialDB.getXPath(mid) + '/specie'), 'mixture')
-    #
-    # @classmethod
-    # def getMaterialBases(cls, phase):
-    #     return _materialsBase.getBases(phase)
 
     @classmethod
     def getMaterials(cls, type_=None) -> list[(str, str, str, str)]:

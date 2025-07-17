@@ -11,6 +11,7 @@ from baramFlow.coredb.materials_base import MaterialsBase
 from baramFlow.coredb.models_db import ModelsDB
 from widgets.async_message_box import AsyncMessageBox
 from .material_add_dialog_ui import Ui_MaterialAddDialog
+from .material_database_dialog import MaterialDatabaseDialog
 
 
 class MaterialItem(QListWidgetItem):
@@ -41,22 +42,28 @@ class MaterialAddDialog(QDialog):
         self._mixture = mixture
         self._added = None
 
-        for name, formula, phase in MaterialsBase.getMaterials(
-                None if mixture is None else MaterialDB.getPhase(mixture).value):
-            MaterialItem(self._ui.list, name, Phase(phase))
-
         self._ui.createMixture.setVisible(ModelsDB.isSpeciesModelOn() and self._type != MaterialType.SPECIE)
 
         self._connectSignalsSlots()
+        self._load()
 
     def result(self):
         return self._type, self._added
 
     def _connectSignalsSlots(self):
+        self._ui.manageDatabase.clicked.connect(self._openMaterialDatabaseDialog)
         self._ui.filter.textChanged.connect(self._filterChanged)
         self._ui.list.itemSelectionChanged.connect(self._selectionChanged)
         self._ui.createMixture.clicked.connect(self._createMixture)
         self._ui.addMaterials.clicked.connect(self._addMaterials)
+
+    def _load(self):
+        phase = None if self._mixture is None else MaterialDB.getPhase(self._mixture).value
+
+        self._ui.list.clear()
+        for name, values in MaterialsBase.getMaterials().items():
+            if phase is None or values['phase'] == phase:
+                MaterialItem(self._ui.list, name, Phase(values['phase']))
 
     def _selectionChanged(self):
         if self._ui.list.selectedItems():
@@ -65,6 +72,11 @@ class MaterialAddDialog(QDialog):
         else:
             self._ui.createMixture.setEnabled(False)
             self._ui.addMaterials.setEnabled(False)
+
+    def _openMaterialDatabaseDialog(self):
+        self._dialog = MaterialDatabaseDialog(self)
+        self._dialog.accepted.connect(self._load)
+        self._dialog.open()
 
     def _filterChanged(self):
         filterText = self._ui.filter.text().lower()

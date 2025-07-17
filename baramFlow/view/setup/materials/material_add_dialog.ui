@@ -15,10 +15,41 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Select material to add</string>
-     </property>
+    <widget class="QWidget" name="widget_2" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Select material to add</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="manageDatabase">
+        <property name="text">
+         <string>Manage Database</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
@@ -42,6 +73,9 @@
       </property>
       <item>
        <widget class="QPushButton" name="createMixture">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Create Mixture</string>
         </property>
@@ -62,6 +96,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="addMaterials">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Add Material(s)</string>
         </property>

@@ -8,14 +8,20 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
+import pandas as pd
 import yaml
 from filelock import FileLock
 from PySide6.QtCore import QLocale, QRect
 
 from libbaram.mpi import ParallelEnvironment, ParallelType
+from resources import resource
+
+from baramFlow.coredb.materials_base import MaterialsBase
 
 FORMAT_VERSION = 1
 RECENT_PROJECTS_NUMBER = 100
+
+MATERIALS_FILE_NAME = 'materials.csv'
 
 
 class SettingKey(Enum):
@@ -46,6 +52,7 @@ class AppSettings:
         cls._casesPath = cls._settingsPath / 'cases'
         cls._settingsFile = cls._settingsPath / 'baram.cfg.yaml'
         cls._applicationLockFile = cls._settingsPath / 'baram.lock'
+        cls._materialsDBFile = cls._settingsPath / MATERIALS_FILE_NAME
 
         # ToDo: For compatibility. Remove this code block after 20241201
         # Migration from previous name of "BaramFlow"
@@ -58,6 +65,10 @@ class AppSettings:
 
         cls._settingsPath.mkdir(exist_ok=True)
         cls._casesPath.mkdir(exist_ok=True)
+
+        if not cls._materialsDBFile.exists():
+            shutil.copy(resource.file(MATERIALS_FILE_NAME), cls._materialsDBFile)
+        MaterialsBase.load(cls._materialsDBFile)
 
     @classmethod
     def casesPath(cls):
@@ -231,3 +242,10 @@ class AppSettings:
         if project[num] in recentCases:
             recentCases.remove(project[num])
         cls._save(settings)
+
+    @classmethod
+    def updateMaterialsDB(cls, materials):
+        df = pd.DataFrame.from_dict(materials, orient='index')
+        df.to_csv(cls._materialsDBFile, index_label='name')
+
+        MaterialsBase.update(materials)

@@ -36,7 +36,7 @@ def validateData(data, schema, path='', fillWithDefault=False):
             elif fillWithDefault:
                 configuration[key] = {}
             else:
-                raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', key, subPath)
+                raise ValidationError(ErrorType.EmptyError, 'Empty value is not allowed', key, subPath)
         elif isinstance(schema[key], SchemaList):
             if key in data:
                 configuration[key] = schema[key].validate(data[key], subPath, fillWithDefault=fillWithDefault)
@@ -45,23 +45,23 @@ def validateData(data, schema, path='', fillWithDefault=False):
         else:
             try:
                 if key in data:
-                    configuration[key] = schema[key].validate(data[key])
+                    configuration[key] = schema[key].validate(data[key], key)
                 elif not schema[key].isRequired():
                     configuration[key] = None
                 elif fillWithDefault:
                     configuration[key] = schema[key].default()
                 else:
-                    raise DBError(ErrorType.EmptyError, 'Empty value is not allowed', key, subPath)
-            except DBError as ce:
+                    raise ValidationError(ErrorType.EmptyError, 'Empty value is not allowed', key, subPath)
+            except ValidationError as ce:
                 ce.setPath(subPath)
                 raise ce
             except KeyError as ke:
-                raise DBError(ErrorType.EmptyError, repr(ke), None, subPath)
+                raise ValidationError(ErrorType.EmptyError, repr(ke), None, subPath)
 
     return configuration
 
 
-class DBError(ValueError):
+class ValidationError(ValueError):
     def __init__(self, type_, message, name=None, path=None):
         super().__init__(message)
         self._message = message
@@ -118,7 +118,7 @@ class PrimitiveType(QObject):
     def validate(self, value, name=None):
         validated = None if value is None else str(value).strip()
         if self._required and (validated is None or validated == ''):
-            raise DBError(ErrorType.EmptyError, self.tr('Empty value is not allowed'), name)
+            raise ValidationError(ErrorType.EmptyError, self.tr('Empty value is not allowed'), name)
 
         return validated
 
@@ -143,7 +143,7 @@ class EnumType(PrimitiveType):
         if value in self._cls.__members__:
             return value
 
-        raise DBError(ErrorType.EnumError, self.tr('Only {} are allowed.').format(self._cls), name)
+        raise ValidationError(ErrorType.EnumError, self.tr('Only {} are allowed.').format(self._cls), name)
 
     def toEnum(self, value):
         return self._values.get(value) or self._cls[value]
@@ -200,20 +200,20 @@ class FloatType(PrimitiveType):
 
         value = super().validate(value, name)
 
-        if value is None:
+        if value is None or value == '':
             return None
 
         try:
             v = float(value)
         except Exception as e:
-            raise DBError(ErrorType.TypeError, repr(e), name)
+            raise ValidationError(ErrorType.TypeError, repr(e), name)
 
         if self._lowLimit is not None:
             if v < self._lowLimit or (v == self._lowLimit and not self._lowLimitInclusive):
-                raise DBError(ErrorType.RangeError, self.tr('Out of Range') + rangeToText(), name)
+                raise ValidationError(ErrorType.RangeError, self.tr('Out of Range') + rangeToText(), name)
         if self._highLimit is not None:
             if v > self._highLimit or (v == self._highLimit and not self._highLimitInclusive):
-                raise DBError(ErrorType.RangeError, self.tr('Out of Range') + rangeToText(), name)
+                raise ValidationError(ErrorType.RangeError, self.tr('Out of Range') + rangeToText(), name)
 
         return value
 
@@ -232,9 +232,9 @@ class IntType(FloatType):
         try:
             f = float(value)
             if int(f) != f:
-                raise DBError(ErrorType.TypeError, self.tr('Only integers are allowed'), name)
+                raise ValidationError(ErrorType.TypeError, self.tr('Only integers are allowed'), name)
         except Exception as e:
-            raise DBError(ErrorType.TypeError, repr(e), name)
+            raise ValidationError(ErrorType.TypeError, repr(e), name)
 
         return value
 
@@ -305,7 +305,7 @@ class IntKeyList(SchemaList):
             try:
                 int(key)
             except KeyError as ke:
-                raise DBError(ErrorType.TypeError, repr(ke), self.tr('Key of List'))
+                raise ValidationError(ErrorType.TypeError, repr(ke), self.tr('Key of List'))
 
         return str(key)
 
@@ -361,7 +361,7 @@ class ArrayType(PrimitiveType):
 
     def validate(self, value, name=None):
         if not isinstance(value, list):
-            raise DBError(ErrorType.TypeError, self.tr('A list is required'), name)
+            raise ValidationError(ErrorType.TypeError, self.tr('A list is required'), name)
 
         for i in range(len(value)):
             value[i] = self._validatElement(value[i])
@@ -371,7 +371,7 @@ class ArrayType(PrimitiveType):
     def _validatElement(self, value, name=None):
         validated = str(value).strip()
         if value is None or validated == '':
-            raise DBError(ErrorType.EmptyError, self.tr('Empty value is not allowed'), name)
+            raise ValidationError(ErrorType.EmptyError, self.tr('Empty value is not allowed'), name)
 
         return validated
 
@@ -385,8 +385,8 @@ class IntArray(ArrayType):
         try:
             f = float(value)
             if int(f) != f:
-                raise DBError(ErrorType.TypeError, self.tr('Only integers allowed'), name)
+                raise ValidationError(ErrorType.TypeError, self.tr('Only integers allowed'), name)
         except Exception as e:
-            raise DBError(ErrorType.TypeError, repr(e), name)
+            raise ValidationError(ErrorType.TypeError, repr(e), name)
 
         return value
