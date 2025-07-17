@@ -5,7 +5,7 @@ import qasync
 from PySide6.QtWidgets import QMessageBox
 
 from libbaram.run import RunUtility, RunParallelUtility
-from libbaram.simple_schema import ValidationError
+from libbaram.validation import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 

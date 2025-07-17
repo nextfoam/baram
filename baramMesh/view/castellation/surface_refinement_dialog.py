@@ -5,7 +5,7 @@ import qasync
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import QDialog
 
-from libbaram.simple_schema import ValidationError
+from libbaram.validation import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 from widgets.validation.validation import FormValidator, NotGreaterValidator

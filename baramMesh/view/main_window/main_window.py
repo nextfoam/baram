@@ -15,7 +15,7 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
 from PySide6.QtCore import Signal, QEvent, QMargins
 from PySide6QtAds import CDockManager, DockWidgetArea
 
-from libbaram.simple_schema import ValidationError
+from libbaram.validation import ValidationError
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
 from widgets.new_project_dialog import NewProjectDialog

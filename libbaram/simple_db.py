@@ -5,7 +5,7 @@ import copy
 
 import yaml
 
-from .simple_schema import SimpleSchema, SchemaList, PrimitiveType, EnumType, ValidationError, ErrorType
+from .validation import SimpleSchema, SchemaList, PrimitiveType, EnumType, ValidationError, ErrorType
 
 
 def elementToVector(element):
