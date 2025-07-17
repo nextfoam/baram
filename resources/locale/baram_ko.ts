@@ -132,12 +132,12 @@
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/menu/help/about_dialog.ui" line="93"/>
-        <source>&lt;p&gt;&lt;b&gt;&lt;font size=&quot;4&quot;&gt;BaramFlow 25.2.0&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;
+        <source>&lt;p&gt;&lt;b&gt;&lt;font size=&quot;4&quot;&gt;BaramFlow 25.2.3&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;
 
 &lt;p&gt;Powered by open-source software&lt;/p&gt;
 
 &lt;p&gt;Copyright &amp;#169; 2022-2025 nextfoam&lt;/p&gt;</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/menu/help/about_dialog.ui" line="149"/>
@@ -153,12 +153,12 @@
     </message>
     <message>
         <location filename="../../baramMesh/view/menu/help/about_dialog.ui" line="93"/>
-        <source>&lt;p&gt;&lt;b&gt;&lt;font size=&quot;4&quot;&gt;BaramMesh 25.2.0&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;
+        <source>&lt;p&gt;&lt;b&gt;&lt;font size=&quot;4&quot;&gt;BaramMesh 25.2.3&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;
 
 &lt;p&gt;Powered by open-source software&lt;/p&gt;
 
 &lt;p&gt;Copyright &amp;#169; 2025 nextfoam&lt;/p&gt;</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -280,23 +280,23 @@
 <context>
     <name>AdvancedDialog</name>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.py" line="55"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.py" line="60"/>
         <source>Minimum Static Temperature</source>
         <translation>최소 온도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.py" line="57"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.py" line="62"/>
         <source>Maximum Static Temperature</source>
         <translation>최대 온도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.py" line="59"/>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="46"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.py" line="64"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="61"/>
         <source>Maximum Viscosity Ratio</source>
         <translation>최대 점도 비율</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.py" line="92"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.py" line="97"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
@@ -306,117 +306,117 @@
         <translation>고급 수치 기법 설정</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="20"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="35"/>
         <source>Limits</source>
         <translation>값의 제한</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="26"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="41"/>
         <source>Minimum Static Temperature (K)</source>
         <translation>최소 온도 (K)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="36"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="51"/>
         <source>Maximum Static Temperature (K)</source>
         <translation>최대 온도 (K)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="59"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="74"/>
         <source>Equations</source>
         <translation>방정식</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="65"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="80"/>
         <source>Flow</source>
         <translation>유동</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="72"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="87"/>
         <source>Energy</source>
         <translation>에너지</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="88"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="103"/>
         <source>Include Viscous Dissipation Terms</source>
         <translation>점성가열</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="95"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="110"/>
         <source>Include Kinetic Energy Terms</source>
         <translation>운동에너지</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="102"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="117"/>
         <source>Include Pressure Work Terms</source>
         <translation>압력에의한 일(Pressure Work)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="112"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="127"/>
         <source>User-defined Scalar</source>
         <translation>사용자 정의 스칼라</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="122"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="137"/>
         <source>Collateral Fields</source>
         <translation>필드 추가</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="128"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="143"/>
         <source>Age</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="135"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="150"/>
         <source>Heat Transfer Coefficient</source>
         <translation>열전달계수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="142"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="157"/>
         <source>Mach Number</source>
         <translation>마하수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="149"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="164"/>
         <source>Q</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="156"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="171"/>
         <source>Total Pressure</source>
         <translation>전압력</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="163"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="178"/>
         <source>Vorticity</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="170"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="185"/>
         <source>Wall Heat Flux</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="177"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="192"/>
         <source>Wall Shear Stress</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="184"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="199"/>
         <source>Wall y plus</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="191"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="206"/>
         <source>Selected field values will be written into time folders during calcuation, yet only the last time folder will have values in steady cases.</source>
         <translation>선택된 필드들은 데이터가 저장될 때 생성됩니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="220"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="238"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="227"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/advanced_dialog.ui" line="245"/>
         <source>Cancel</source>
         <translation>취소</translation>
     </message>
@@ -656,7 +656,7 @@
         <translation type="vanished">편집</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/boundary_conditions_page.py" line="194"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/boundary_conditions_page.py" line="204"/>
         <source>Need to edit boundary condition</source>
         <translation>경계조건 수정이 필요합니다</translation>
     </message>
@@ -796,108 +796,118 @@
 <context>
     <name>BoundaryLayerPage</name>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="59"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="60"/>
         <source>Number of Grow</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="60"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="61"/>
         <source>Feature Angle Threshold</source>
         <translation>특징 각도 임계값</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="62"/>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="68"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="63"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="69"/>
         <source>Max. Thickness Ratio</source>
         <translation>최대 두께 비율</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="64"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="65"/>
         <source>Number of Iterations</source>
         <translation>반복계산 회수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="65"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="66"/>
         <source>Smooth Layer Thickness</source>
         <translation>레이어 두께 스무딩</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="66"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="67"/>
         <source>Min. Axis Angle</source>
         <translation>최소 축 각도</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="69"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="70"/>
         <source>Number of Smoothing Iter.</source>
         <translation>스무딩 반복계산 회수.</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="70"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="71"/>
         <source>Max. Snapping Relaxation Iter.</source>
         <translation>최대 스내핑 완화 반복회수.</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="72"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="73"/>
         <source>Num. of Buffer Cells</source>
         <translation>버퍼 셀의 개수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="73"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="74"/>
         <source>Max. Layer Addition Iter.</source>
         <translation>최대 레이어 추가 반복회수.</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="74"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="75"/>
         <source>Max. Iter. Before Relax</source>
         <translation>완화 전 최대 반복회수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="83"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="84"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="150"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="121"/>
+        <source>Reset Settings</source>
+        <translation>설정 초기화</translation>
+    </message>
+    <message>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="122"/>
+        <source>Would you like to reset all Boundary Layer settings to default,excluding the Layer Groups?</source>
+        <translation>그룹을 제외한 경계층 격자의 모든 설정을 초기화 하겠습니까?</translation>
+    </message>
+    <message>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="160"/>
         <source>Cancel</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="162"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="172"/>
         <source>Boundary Layers Applying</source>
         <translation>경계층격자 생성 중</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="163"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="173"/>
         <source>Updating Configurations</source>
         <translation>설정 업데이트</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="230"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="240"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="231"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="241"/>
         <source>Boundary layers are applied.</source>
         <translation>경계층격자가 만들어졌습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="234"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="244"/>
         <source>Error</source>
         <translation>오류</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="235"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="245"/>
         <source>Failed to apply boundary layers. [</source>
         <translation>경계층 격자 생성 실패</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="238"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="248"/>
         <source>Canceled</source>
         <translation>취소 되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="239"/>
+        <location filename="../../baramMesh/view/boundaryLayer/boundary_layer_page.py" line="249"/>
         <source>Boundary layers application has been canceled.</source>
         <translation>경계층 격자 생성이 취소 되었습니다.</translation>
     </message>
@@ -1325,92 +1335,102 @@
 <context>
     <name>CastellationPage</name>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="128"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="129"/>
         <source>Number of Cells between Levels</source>
         <translation>레벨 사이의 격자 개수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="130"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="131"/>
         <source>Feature Angle Threshold</source>
         <translation>특징 각도 임계값</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="134"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="135"/>
         <source>Max. Global Cell Count</source>
         <translation>최대 글로벌 셀 수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="135"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="136"/>
         <source>Max. Local Cell Count</source>
         <translation>최대 로컬 셀 수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="137"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="138"/>
         <source>Min.Refinement Cell Count</source>
         <translation>분할된 셀 개수의 최소값</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="138"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="139"/>
         <source>Max. Load Unbalance</source>
         <translation>최대 부하 불균형</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="148"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="149"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="223"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="195"/>
+        <source>Reset Settings</source>
+        <translation>설정 초기화</translation>
+    </message>
+    <message>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="197"/>
+        <source>Would you like to reset all Castallation settings to default, excluding the Refinement Groups?</source>
+        <translation>그룹을 제외한 격자 세분화 관련 모든 설정을 초기화 하겠습니까?</translation>
+    </message>
+    <message>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="236"/>
         <source>Invalid Parameter</source>
         <translation>잘못된 파라미터</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="223"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="236"/>
         <source>&quot;Number of Cells between Levels&quot; should be bigger than or equal to 1</source>
         <translation>레벨 사이의 격자 개수는 1보다 커야합니다</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="236"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="249"/>
         <source>Castellation Refinement</source>
         <translation>격자 세분화</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="237"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="250"/>
         <source>Updating Configurations</source>
         <translation>설정 업데이트 중</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="240"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="253"/>
         <source>Writing Geometry Files</source>
         <translation>형상파일 저장 중</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="272"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="285"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="272"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="285"/>
         <source>Castellation refinement is completed.</source>
         <translation>격자 세분화가  완료 되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="275"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="288"/>
         <source>Error</source>
         <translation>오류</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="276"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="289"/>
         <source>Castellation refinement Failed. [</source>
         <translation>격자 세분화에 실패했습니다. [</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="279"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="292"/>
         <source>Canceled</source>
         <translation>취소되었음</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="280"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="293"/>
         <source>Castellation refinement has been canceled.</source>
         <translation>격자세분화가 취소되었습니다.</translation>
     </message>
@@ -1451,7 +1471,7 @@
         <translation type="vanished">추가</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="234"/>
+        <location filename="../../baramMesh/view/castellation/castellation_page.py" line="247"/>
         <source>Cancel</source>
         <translation>취소</translation>
     </message>
@@ -3929,42 +3949,42 @@
 <context>
     <name>GeneralPage</name>
     <message>
-        <location filename="../../baramFlow/view/setup/general/general_page.py" line="42"/>
+        <location filename="../../baramFlow/view/setup/general/general_page.py" line="46"/>
         <source>Gravity X</source>
         <translation>중력 벡터 X</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/general/general_page.py" line="43"/>
+        <location filename="../../baramFlow/view/setup/general/general_page.py" line="47"/>
         <source>Gravity Y</source>
         <translation>중력 벡터 Y</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/general/general_page.py" line="44"/>
+        <location filename="../../baramFlow/view/setup/general/general_page.py" line="48"/>
         <source>Gravity Z</source>
         <translation>중력 벡터 Z</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/general/general_page.py" line="46"/>
+        <location filename="../../baramFlow/view/setup/general/general_page.py" line="50"/>
         <source>Operating Pressure</source>
         <translation>작동압력</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/general/general_page.py" line="57"/>
+        <location filename="../../baramFlow/view/setup/general/general_page.py" line="61"/>
         <source>Change to Transient Mode</source>
         <translation>비정상상태로 전환</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/general/general_page.py" line="58"/>
+        <location filename="../../baramFlow/view/setup/general/general_page.py" line="62"/>
         <source>Use the final result for the initial value of transient calculation?</source>
         <translation>마지막 저장된 결과를 비정상상태 계산의 초기값으로 사용할까요?</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/general/general_page.py" line="64"/>
+        <location filename="../../baramFlow/view/setup/general/general_page.py" line="68"/>
         <source>Configurations Not Available</source>
         <translation>사용할 수 없는 설정입니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/general/general_page.py" line="65"/>
+        <location filename="../../baramFlow/view/setup/general/general_page.py" line="69"/>
         <source>Steady mode is not available on LES/DES models.</source>
         <translation>정상상태 계산에서 LES/DES를 사용할 수 없습니다.</translation>
     </message>
@@ -3981,7 +4001,7 @@
         <translation type="vanished">기준압력위치 Z</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/general/general_page.py" line="50"/>
+        <location filename="../../baramFlow/view/setup/general/general_page.py" line="54"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
@@ -4183,89 +4203,89 @@
 <context>
     <name>GraphicDialog</name>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="116"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="118"/>
         <source>Graphics Parameters</source>
         <translation>그래픽 파라미터</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="117"/>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="133"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="119"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="136"/>
         <source>Applying Graphics parameters...</source>
         <translation>그래픽 파라미터 적용...</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="123"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="125"/>
         <source>Calculating Collateral Field...</source>
         <translation>필드를 만들고 있습니다...</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="128"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="130"/>
         <source>Calculation failed</source>
         <translation>필드 생성 중</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="175"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="178"/>
         <source>Updating Graphics...</source>
         <translation>그래픽 업데이트 중...</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="202"/>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="208"/>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="214"/>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="220"/>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="226"/>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="232"/>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="238"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="207"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="213"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="219"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="225"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="231"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="237"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="243"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="203"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="208"/>
         <source>Graphic Name already exists.</source>
         <translation>그래픽 이름이 이미 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="209"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="214"/>
         <source>Please select valid Color-by field</source>
         <translation>색을 표시할 필드를 잘못 선택했습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="215"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="220"/>
         <source>Step Size should be greater than zero.</source>
         <translation>스텝 간격은 0보다 커야 됩니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="221"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="226"/>
         <source>Steps should be greater than zero.</source>
         <translation>최대 스텝 수는 0보다 커야 합니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="227"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="232"/>
         <source>Maximum Length should be greater than zero.</source>
         <translation>최대 길이는 0보다 커야 합니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="233"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="238"/>
         <source>Tolerance should be greater than zero.</source>
         <translation>허용오차는 0보다 커야 합니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="239"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="244"/>
         <source>Line width should be greater than zero.</source>
         <translation>선의 굵기는 0보다 커야 합니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="256"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="261"/>
         <source>Select Scaffolds</source>
         <translation>스캐폴드 선택</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="274"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="279"/>
         <source>Line</source>
         <translation>선</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="275"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_dialog.py" line="280"/>
         <source>Ribbon</source>
         <translation>리본</translation>
     </message>
@@ -4373,8 +4393,12 @@
     </message>
     <message>
         <location filename="../../baramFlow/view/results/graphics/graphic_dialog.ui" line="628"/>
+        <source>Update</source>
+        <translation>업데이트</translation>
+    </message>
+    <message>
         <source>Ok</source>
-        <translation>확인</translation>
+        <translation type="vanished">확인</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/results/graphics/graphic_dialog.ui" line="635"/>
@@ -4404,24 +4428,24 @@
 <context>
     <name>GraphicsPage</name>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphics_page.py" line="54"/>
+        <location filename="../../baramFlow/view/results/graphics/graphics_page.py" line="85"/>
         <source>Warning</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphics_page.py" line="55"/>
+        <location filename="../../baramFlow/view/results/graphics/graphics_page.py" line="86"/>
         <source>There is no Scaffold.
 At least one scaffold is required to configure Graphics Report</source>
         <translation>스캐폴드가 없습니다.
 하나 이상의 스캐폴드가 필요합니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphics_page.py" line="93"/>
+        <location filename="../../baramFlow/view/results/graphics/graphics_page.py" line="124"/>
         <source>Remove Visual Report item</source>
         <translation>그래픽 아이템 삭제</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphics_page.py" line="94"/>
+        <location filename="../../baramFlow/view/results/graphics/graphics_page.py" line="125"/>
         <source>Remove &quot;{}&quot;?</source>
         <translation>&quot;{}&quot;을 삭제할까요?</translation>
     </message>
@@ -4544,7 +4568,7 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="136"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="142"/>
         <location filename="../../baramFlow/view/solution/initialization/initialization_page.ui" line="26"/>
         <source>Initialization</source>
         <translation>초기화</translation>
@@ -4558,42 +4582,42 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation type="vanished">초기화</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="101"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="76"/>
         <source>Warning</source>
         <translation>주의</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="113"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="88"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="121"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="96"/>
         <source>Changed Not Applied</source>
         <translation>변경내용이 적용되지 않았습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="123"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="98"/>
         <source>Initialization configuration has changed but &quot;Initialization&quot; button was not clicked. Proceed?</source>
         <translation>초기화 설정이 바뀌었지만 &quot;초기화&quot; 버튼을 실행하지 않았습니다. 계속할까요?</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="136"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="142"/>
         <source>All saved data will be deleted. OK?</source>
         <translation>모든 저장된 데이터가 지워집니다. 계속하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="138"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="144"/>
         <source>Case Initialization</source>
         <translation>초기화</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="149"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="155"/>
         <source>Case generating fail. - </source>
         <translation>케이스 생성에 실패했습니다. - </translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="151"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="157"/>
         <source>Calculation cancelled</source>
         <translation>계산이 취소되었습니다</translation>
     </message>
@@ -4610,7 +4634,7 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation type="vanished">섹션 값 설정에 실패했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="144"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_page.py" line="150"/>
         <source>Initialization Completed</source>
         <translation>초기화가 완료되었습니다</translation>
     </message>
@@ -4650,69 +4674,69 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation type="vanished">난류점도비율</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="301"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="310"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="287"/>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="314"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="296"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="323"/>
         <source>Warning</source>
         <translation>주의</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="245"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="242"/>
         <source>X-Velocity of region [{}]</source>
         <translation>영역 [{}] 의 X 방향 속도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="247"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="244"/>
         <source>Y-Velocity of region [{}]</source>
         <translation>영역 [{}] 의 Y 방향 속도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="249"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="246"/>
         <source>Z-Velocity of region [{}]</source>
         <translation>영역 [{}] 의 Z 방향 속도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="251"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="248"/>
         <source>Pressure of region [{}]</source>
         <translation>영역 [{}] 의 압력</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="253"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="250"/>
         <source>Temperature of region [{}]</source>
         <translation>영역 [{}] 의 온도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="255"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="252"/>
         <source>Scale of Velocity of region [{}]</source>
         <translation>영역 [{}] 의 속도 크기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="257"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="254"/>
         <source>Turbulent Intensity of region [{}]</source>
         <translation>영역 [{}] 의 난류 강도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="259"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="256"/>
         <source>Turbulent Viscosity of region [{}]</source>
         <translation>영역 [{}] 의 난류 점성</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="287"/>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="314"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="296"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="323"/>
         <source>Please select a section to edit</source>
         <translation>편집할 섹션을 선택하세요</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="290"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="299"/>
         <source>Alert</source>
         <translation>알림</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="290"/>
+        <location filename="../../baramFlow/view/solution/initialization/initialization_widget.py" line="299"/>
         <source>Delete selected section?</source>
         <translation>선택한 섹션을 지울까요?</translation>
     </message>
@@ -5358,7 +5382,7 @@ At least one scaffold is required to configure Graphics Report</source>
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/main_window.ui" line="193"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3677"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3838"/>
         <source>&amp;File</source>
         <translation>&amp;파일</translation>
     </message>
@@ -5369,13 +5393,13 @@ At least one scaffold is required to configure Graphics Report</source>
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/main_window.ui" line="216"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3715"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3877"/>
         <source>&amp;View</source>
         <translation>&amp;보기</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/main_window.ui" line="221"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3702"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3863"/>
         <source>&amp;Settings</source>
         <translation>&amp;설정</translation>
     </message>
@@ -5386,68 +5410,74 @@ At least one scaffold is required to configure Graphics Report</source>
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/main_window.ui" line="238"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3709"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3870"/>
         <source>&amp;Help</source>
         <translation>&amp;도움말</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="244"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3720"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="245"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3882"/>
         <source>&amp;Parallel</source>
         <translation>&amp;병렬연산</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="250"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="251"/>
         <source>External &amp;Tools</source>
         <translation>&amp;외부 프로그램</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="265"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="266"/>
         <source>&amp;Close Project</source>
         <translation>&amp;프로젝트 닫기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="270"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3744"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="271"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3906"/>
         <source>&amp;Save</source>
         <translation>&amp;저장</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="275"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="276"/>
         <source>Save &amp;As</source>
         <translation>&amp;다른 이름으로 저장</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="323"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="324"/>
         <source>Fluent (ASCII)</source>
         <translation>Fluent (ASCII)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="357"/>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="372"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="358"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="373"/>
         <source>&amp;ParaView</source>
         <translation>&amp;ParaView</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="367"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3794"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="368"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3956"/>
         <source>&amp;Environment</source>
         <translation>&amp;환경설정</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="377"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="378"/>
         <source>&amp;Info.</source>
         <translation>&amp;정보.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="380"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="381"/>
         <source>Mesh Info.</source>
         <translation>격자 정보.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="385"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="386"/>
         <source>Multiple polyMesh</source>
         <translation>다중 polyMesh</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="391"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3961"/>
+        <source>Tutorials</source>
+        <translation>튜토리얼</translation>
     </message>
     <message>
         <source>File</source>
@@ -5486,62 +5516,62 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation type="vanished">저장</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="280"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="281"/>
         <source>Preference</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="285"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3764"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="286"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3926"/>
         <source>&amp;Exit</source>
         <translation>&amp;종료</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="290"/>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="300"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3774"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="291"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="301"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3936"/>
         <source>&amp;Scale</source>
         <translation>&amp;해상도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="295"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3779"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="296"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3941"/>
         <source>&amp;Language</source>
         <translation>&amp;언어</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="305"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="306"/>
         <source>&amp;Translate</source>
         <translation>&amp;이동</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="310"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="311"/>
         <source>&amp;Rotate</source>
         <translation>&amp;회전</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="315"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="316"/>
         <source>OpenFOAM</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="339"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="340"/>
         <source>Gmsh (ASCII)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="344"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="345"/>
         <source>I-deas Universal (ASCII)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="352"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="353"/>
         <source>PLOT3D GRID (ASCII)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="362"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3784"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="363"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3946"/>
         <source>About</source>
         <translation>정보</translation>
     </message>
@@ -5550,8 +5580,8 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation type="vanished">병렬 환경</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="359"/>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="313"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="362"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="321"/>
         <source>Save Changed</source>
         <translation>변경사항 저장</translation>
     </message>
@@ -5560,148 +5590,148 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation type="vanished">변경사항을 저장하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="295"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="298"/>
         <source>Save as a new project</source>
         <translation>새로운 프로젝트로 저장</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="296"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="299"/>
         <source>Only configuration and mesh are saved. (Calculation results are not copied)</source>
         <translation>설정과 격자만 저장됩니다.(계산결과는 저장되지 않습니다.)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="298"/>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="200"/>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="212"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="301"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="203"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="215"/>
         <source>Select Project Directory</source>
         <translation>프로젝트 폴더 선택</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="332"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="335"/>
         <source>Fluent (*.cas *.msh)</source>
         <translation>Fluent (*.cas *.msh)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="336"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="339"/>
         <source>StarCCM+ (*.ccm)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="339"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="342"/>
         <source>Mesh Convert</source>
         <translation>격자 변환</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="345"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="348"/>
         <source>Gmsh (*.msh)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="348"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="351"/>
         <source>Ideas (*.unv)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="351"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="354"/>
         <source>Plot3d (*.unv)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="360"/>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="314"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="363"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="322"/>
         <source>Do you want to save your changes?</source>
         <translation>바꾼 것을 저장할까요?</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="414"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="449"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="484"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="884"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="417"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="452"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="487"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="893"/>
         <source>Permission Denied</source>
         <translation>권한이 없습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="415"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="450"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="485"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="885"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="418"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="453"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="488"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="894"/>
         <source>The project directory is open by another program.</source>
         <translation>프로젝트 폴더가 다른 곳에서 열려 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="418"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="421"/>
         <source>Mesh Scaling</source>
         <translation>격자 축소/확대</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="422"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="425"/>
         <source>Scaling the mesh.</source>
         <translation>격자 축소/확대 중입니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="424"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="427"/>
         <source>Mesh scaling failed.</source>
         <translation>격자 축소/확대에 실패했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="436"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="439"/>
         <source>Mesh scaling is complete</source>
         <translation>격자 축소/확대가 완료되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="439"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="474"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="509"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="642"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="855"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="442"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="477"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="512"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="651"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="864"/>
         <source>Error occurred:
 </source>
         <translation>오류가 발생했습니다:
 </translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="453"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="456"/>
         <source>Mesh Translation</source>
         <translation>격자 위치 이동</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="457"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="460"/>
         <source>Translating the mesh.</source>
         <translation>격자 위치를 이동하고 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="459"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="462"/>
         <source>Mesh translation failed.</source>
         <translation>격자 위치 이동에 실패했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="471"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="474"/>
         <source>Mesh translation is complete</source>
         <translation>격자 위치 이동이 완료되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="488"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="491"/>
         <source>Mesh Rotation</source>
         <translation>격자 회전</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="492"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="495"/>
         <source>Rotating the mesh.</source>
         <translation>격자를 회전하고 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="494"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="497"/>
         <source>Mesh rotation failed.</source>
         <translation>격자 회전에 실패했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="506"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="509"/>
         <source>Mesh rotation is complete</source>
         <translation>격자 회전이 완료되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="519"/>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="339"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="522"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="347"/>
         <source>Case Redistribution</source>
         <translation>케이스 재분할</translation>
     </message>
@@ -5710,62 +5740,62 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation type="vanished">케이스를 읽고 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="600"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="606"/>
         <source>Calculation Terminated</source>
         <translation>계산이 중단 되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="601"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="607"/>
         <source>Calculation is terminated.</source>
         <translation>계산이 중단 되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="838"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="847"/>
         <source>Mesh Loading</source>
         <translation>격자를 읽고 있습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="692"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="696"/>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="275"/>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="279"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="701"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="705"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="283"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="287"/>
         <source>Project Directory Error</source>
         <translation>프로젝트 폴더 에러</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="614"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="620"/>
         <source>Case Loading</source>
         <translation>케이스 읽어오기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="646"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="655"/>
         <source>Building Graphics Reports</source>
         <translation>그래픽을 구성 중</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="704"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="713"/>
         <source>Saving project</source>
         <translation>프로젝트 저장중</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="870"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="879"/>
         <source>This action will overwrite current mesh, related configurations, and calculation data.
 It cannot be recovered, and changed configurations will be saved automatically.</source>
         <translation>지금의 격자와 설정과 계산결과가 모두 지워집니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="892"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="898"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="901"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="907"/>
         <source>Invalid mesh</source>
         <translation>격자에 문제가 있습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="893"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="902"/>
         <source>Multi-region cases cannot be computed under multi-phase conditions.</source>
         <translation>복합영역 문제는 다상유동을 지원하지 않습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="899"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="908"/>
         <source>Multi-region cases cannot be computed under density-based conditions.</source>
         <translation>복합영역 문제는 밀도기반 솔버를 지원하지 않습니다.</translation>
     </message>
@@ -5774,8 +5804,8 @@ It cannot be recovered, and changed configurations will be saved automatically.<
         <translation type="vanished">경계면 정보를 읽고 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="679"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="681"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="688"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="690"/>
         <source>Select ParaView Executable</source>
         <translation>ParaView 실행파일을 선택하세요</translation>
     </message>
@@ -5784,9 +5814,9 @@ It cannot be recovered, and changed configurations will be saved automatically.<
         <translation type="vanished">케이스 폴더 오류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="701"/>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="284"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3749"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="710"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="292"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3911"/>
         <source>Save As</source>
         <translation>다른 이름으로 저장</translation>
     </message>
@@ -5795,61 +5825,61 @@ It cannot be recovered, and changed configurations will be saved automatically.<
         <translation type="vanished">저장하고 있습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="730"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="752"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="777"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="739"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="761"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="786"/>
         <source>Mesh Importing</source>
         <translation>격자 불러오기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="735"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="757"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="744"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="766"/>
         <source>Copying files.</source>
         <translation>파일 복사중.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="745"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="767"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="811"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="754"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="776"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="820"/>
         <source>Mesh import failed:
 </source>
         <translation>격자를 불러오지 못했습니다:
 </translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="782"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="791"/>
         <source>Converting the mesh.</source>
         <translation>격자를 변환하는 중.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="800"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="809"/>
         <source>Failed to extract cell zones.</source>
         <translation>모든 셀존을 가져오지 못했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="815"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="824"/>
         <source>Mesh Converting</source>
         <translation>격자 변환</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="816"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="825"/>
         <source>Converting the mesh</source>
         <translation>격자 변환 중</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="829"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="838"/>
         <source>Failed to convert mesh.</source>
         <translation>격자변환에 실패했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="833"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="842"/>
         <source>Mesh Convert failed:
 </source>
         <translation>격자변환에 실패했습니다:
 </translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="868"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="877"/>
         <source>Load Mesh</source>
         <translation>격자 불러오기</translation>
     </message>
@@ -5860,8 +5890,8 @@ Would you like to load another mesh?</source>
 새로운 격자를 읽겠습니까?</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="313"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="711"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="316"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="720"/>
         <source>Select Mesh Directory</source>
         <translation>격자 폴더 선택</translation>
     </message>
@@ -5890,7 +5920,7 @@ Would you like to load another mesh?</source>
         <translation type="vanished">오픈폼</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.ui" line="331"/>
+        <location filename="../../baramFlow/view/main_window/main_window.ui" line="332"/>
         <source>StarCCM+</source>
         <translation></translation>
     </message>
@@ -5899,7 +5929,7 @@ Would you like to load another mesh?</source>
         <translation type="vanished">파라뷰</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="195"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="198"/>
         <source>New Project</source>
         <translation>새 프로젝트</translation>
     </message>
@@ -5908,24 +5938,24 @@ Would you like to load another mesh?</source>
         <translation type="vanished">케이스 열기 실패</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="260"/>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="263"/>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="266"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="268"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="271"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="274"/>
         <source>Project Open Error</source>
         <translation>프로젝트 열기 오류</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="287"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="295"/>
         <source>Saving Project</source>
         <translation>프로젝트 저장중</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="355"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="363"/>
         <source>Change Scale</source>
         <translation>스케일 변경</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.py" line="355"/>
+        <location filename="../../baramMesh/view/main_window/main_window.py" line="363"/>
         <source>Application restart is required.</source>
         <translation>프로그램을 다시 시작해야 됩니다.</translation>
     </message>
@@ -5969,13 +5999,13 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="475"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3240"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3396"/>
         <source>Name</source>
         <translation>이름</translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="480"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3245"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3401"/>
         <source>Type</source>
         <translation>유형</translation>
     </message>
@@ -6018,7 +6048,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="686"/>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="853"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2951"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3107"/>
         <source>Z</source>
         <translation></translation>
     </message>
@@ -6030,14 +6060,14 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="721"/>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="839"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2946"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3102"/>
         <source>Y</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="735"/>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="825"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2941"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3097"/>
         <source>X</source>
         <translation></translation>
     </message>
@@ -6053,7 +6083,7 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="806"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2956"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3112"/>
         <source>None</source>
         <translation>없음</translation>
     </message>
@@ -6066,11 +6096,11 @@ Would you like to load another mesh?</source>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="832"/>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="846"/>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="860"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2692"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2778"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2864"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2991"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3539"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2848"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2934"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3020"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3147"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3695"/>
         <source>0</source>
         <translation></translation>
     </message>
@@ -6083,68 +6113,68 @@ Would you like to load another mesh?</source>
         <translation type="vanished">초기화</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="926"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="941"/>
         <source>Castellation</source>
         <translation>격자세분화</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="990"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1034"/>
         <source>Configuration</source>
         <translation>설정</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1031"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1075"/>
         <source>Number of Cells between Levels</source>
         <translation>레벨 사이의 격자 개수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1041"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2063"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1085"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2219"/>
         <source>Feature Angle Threshold</source>
         <translation>특징 각도 임계값</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1066"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1110"/>
         <source>Keep Non-Manifold Edges</source>
         <translation>비매니폴드(non-manifold) 엣지 유지</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1073"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1117"/>
         <source>Keep Open Edges</source>
         <translation>열린 엣지(open edge) 유지</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1106"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1150"/>
         <source>Advanced</source>
         <translation>고급설정</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1141"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1185"/>
         <source>Max. Global Cell Count</source>
         <translation>최대 글로벌 셀 수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1151"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1195"/>
         <source>Max. Local Cell Count</source>
         <translation>최대 로컬 셀 수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1161"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1205"/>
         <source>Min. Refinement Cell Count</source>
         <translation>최소 세분화 셀 수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1171"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1215"/>
         <source>Max. Load Unbalance</source>
         <translation>최대 부하 불균형</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1184"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1228"/>
         <source>Allow Free Standing Zone Faces</source>
         <translation>독립적인(free standing) 존 페이스 허용</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1226"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1270"/>
         <source>Surface/Feature Refinement</source>
         <translation>Surface/Feature 세분화</translation>
     </message>
@@ -6153,14 +6183,14 @@ Would you like to load another mesh?</source>
         <translation type="vanished">레벨</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1274"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1385"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1957"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1318"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1429"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2113"/>
         <source>Group</source>
         <translation>그룹</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1340"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1384"/>
         <source>Volume Refinement</source>
         <translation>공간 세분화</translation>
     </message>
@@ -6169,17 +6199,17 @@ Would you like to load another mesh?</source>
         <translation type="vanished">격자 세분화</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1470"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1529"/>
         <source>Snap</source>
         <translation>형상구현(스냅)</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1487"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1608"/>
         <source>Global Configuration</source>
         <translation>전역 설정</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1501"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1622"/>
         <source>Iteration Count</source>
         <translation>반복 회수</translation>
     </message>
@@ -6192,63 +6222,63 @@ Would you like to load another mesh?</source>
         <translation type="vanished">내부 스무딩</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1527"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1648"/>
         <source>Mesh Displacement Relaxation</source>
         <translation>격자 이동 완화</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1537"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1571"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1658"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1692"/>
         <source>Snapping Relaxation</source>
         <translation>스내핑 완화</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1550"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1671"/>
         <source>Feature Snapping</source>
         <translation>특징(feature) 스내핑</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1594"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1715"/>
         <source>Multi-Surface Feature Snap</source>
         <translation>다중 표면 특징(feature) 스내핑</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1607"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1728"/>
         <source>Tolerance</source>
         <translation>허용 오차</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1617"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1738"/>
         <source>Concave Angle (degree)</source>
         <translation>오목한(concave) 각도</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1627"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1748"/>
         <source>Min. Area Ratio</source>
         <translation>최소 면적비</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1821"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1948"/>
         <source>Boundary Layer</source>
         <translation>경계층 격자</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1897"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2053"/>
         <source>Configurations</source>
         <translation>설정</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1945"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2101"/>
         <source>Layers</source>
         <translation>레이어</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1999"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2155"/>
         <source>Advanced Configuration</source>
         <translation>고급 설정</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2034"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2190"/>
         <source>Number of Grow</source>
         <translation></translation>
     </message>
@@ -6257,42 +6287,42 @@ Would you like to load another mesh?</source>
         <translation type="vanished">시작전 분석</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2053"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2209"/>
         <source>Max. Thickness Ratio</source>
         <translation>최대 두께 비율</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2076"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2232"/>
         <source>Patch Displacement Smoothing</source>
         <translation>경계면 변위 스무딩</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2082"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2238"/>
         <source>Number of Iterations</source>
         <translation>반복계산 회수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2092"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2248"/>
         <source>Smooth Layer Thickness</source>
         <translation>레이어 두께 스무딩</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2105"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2261"/>
         <source>Medial Axis</source>
         <translation>중심축(medial axis)</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2111"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2267"/>
         <source>Min. Axis Angle</source>
         <translation>최소 축 각도</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2121"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2277"/>
         <source>max Thickness Ratio</source>
         <translation>최대 두께 비율</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2131"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2287"/>
         <source>Number of Smoothing Iter.</source>
         <translation>스무딩 반복계산 회수.</translation>
     </message>
@@ -6301,39 +6331,39 @@ Would you like to load another mesh?</source>
         <translation type="obsolete">미쓰럼 특징(feature) 각도</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2141"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2297"/>
         <source>Max. Snapping Relaxation Iter.</source>
         <translation>최대 스내핑 완화 반복회수.</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2154"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2310"/>
         <source>Mesh Shrinking</source>
         <translation>격자축소(shrinking)</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2160"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2316"/>
         <source>Num. of Buffer Cells</source>
         <translation>버퍼 셀의 개수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2170"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2326"/>
         <source>Max. Layer Addition Iter.</source>
         <translation>최대 레이어 추가 반복회수.</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2180"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2336"/>
         <source>Max. Iter. Before Relax</source>
         <translation>완화 전 최대 반복회수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3043"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3202"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3199"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3358"/>
         <source>Apply</source>
         <translation>적용</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2262"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3754"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2418"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3916"/>
         <source>Export</source>
         <translation>내보내기</translation>
     </message>
@@ -6399,266 +6429,273 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="893"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1450"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1788"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2239"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1494"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1913"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2395"/>
         <source>&amp;Reset</source>
         <translation>&amp;재설정</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1286"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="954"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1542"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1961"/>
+        <source>Load Default Settings</source>
+        <translation>디폴트 설정 불러오기</translation>
+    </message>
+    <message>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1330"/>
         <source>Min. Level</source>
         <translation>최소 레벨</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1298"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1342"/>
         <source>Max. Level</source>
         <translation>최대 레벨</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1397"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1441"/>
         <source>Level / Split</source>
         <translation>레벨 / 나누기</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1443"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1487"/>
         <source>&amp;Refine</source>
         <translation>&amp;분할</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1507"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1628"/>
         <source>Smoothing for Surface</source>
         <translation>표면 스무딩</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1517"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1638"/>
         <source>Smoothing for Internal</source>
         <translation>내부의 스무딩</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1581"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1702"/>
         <source>Feature Snap Type</source>
         <translation>피처 스냅 방법</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1643"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1764"/>
         <source>Buffer Layer</source>
         <translation>버퍼 레이어</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1655"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1776"/>
         <source>Point Smoothing Method</source>
         <translation>포인트 스무딩 방법</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1661"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1782"/>
         <source>Laplacian</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1668"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1789"/>
         <source>GETMe (Geometrical Element Transformation Method)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1681"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1802"/>
         <source>Number of Point Smoother Iterations per Timestep</source>
         <translation>시간당 포인트 스무딩 계산 회수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1691"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1812"/>
         <source>GETMe Transformation Parameter</source>
         <translation>GETMe 파라미터</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1722"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1843"/>
         <source>Surfaces</source>
         <translation>면</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1742"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1863"/>
         <source>Select</source>
         <translation>선택</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1781"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="1906"/>
         <source>S&amp;nap</source>
         <translation>&amp;형상구현</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2047"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2203"/>
         <source>Static Analysis of Starting Mesh</source>
         <translation>시작격자의 정적 분석</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2232"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2388"/>
         <source>&amp;Apply</source>
         <translation>&amp;적용</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2299"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2455"/>
         <source> 2D Exports</source>
         <translation> 2차원 격자 내보내기</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2332"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2488"/>
         <source>2D Plane</source>
         <translation>2차원 격자</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2339"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2495"/>
         <source>Axi-Symmetry</source>
         <translation>축대칭 격자</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2349"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2505"/>
         <source>&quot;2D exports&quot; exports generated mesh as BaramFlow project yet in 2D. It is implemented using OpenFOAM &quot;extrudeMesh&quot; utility. &quot;2D Plane&quot; uses &quot;plane&quot; extrudeModel and &quot;Axi-Symmetry&quot; uses &quot;wedge&quot;. This is for the users who are familiar with the operation of &quot;extrudeMesh&quot;.</source>
         <translation>&quot;2D exports&quot; 3차원 격자를 2차원 혹은 축대칭 격자로 내보냅니다&quot;.</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2368"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2524"/>
         <source>Export as BaramFlow project</source>
         <translation>BaramFlow 프로젝트로 내보내기</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2411"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2567"/>
         <source>Unlock</source>
         <translation>잠금해제</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2421"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2577"/>
         <source>Next</source>
         <translation>다음 단계</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2493"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2649"/>
         <source>Display Control</source>
         <translation>디스플레이 설정</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2582"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2738"/>
         <source>Cut</source>
         <translation>축단면으로 자르기</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2604"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2760"/>
         <source>Clip</source>
         <translation>잘라내기</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2614"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2770"/>
         <source>Slice</source>
         <translation>단면</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2643"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2799"/>
         <source>X Plane</source>
         <translation>X 축 단면</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2719"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2805"/>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2891"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2875"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2961"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3047"/>
         <source>Invert</source>
         <translation>반대 방향</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2729"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2885"/>
         <source>Y Plane</source>
         <translation>Y 축 단면</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2815"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="2971"/>
         <source>Z Plane</source>
         <translation>Z 축 단면</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3123"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3279"/>
         <source>Index</source>
         <translation>인덱스</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3130"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3286"/>
         <source>Range</source>
         <translation>범위</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3316"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3472"/>
         <source> Set the axis direction based on the origin</source>
         <translation> 축의 방향 설정</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3345"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3501"/>
         <source> Display x,y and z axis coordinates</source>
         <translation> x,y,z 축의 좌표계 표시</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3371"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3527"/>
         <source>Ruler</source>
         <translation>거리측정기</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3397"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3553"/>
         <source> Toggle between Perspective and Orthogonal views</source>
         <translation> 투시(Perspective) 혹은 직교(Orthogonal)를 선택</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3423"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3579"/>
         <source> Show the entire model in the windows to fit the view</source>
         <translation> 해석 모델을 그래픽창에 전체 모습이 나오게 보여준다</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3446"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3602"/>
         <source> View the model from cross-section of the closest-axis, aligning with current state</source>
         <translation> 현재 상태에 가장 근접한 축 단면에서 모델을 보여준다</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3469"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3625"/>
         <source> Rotate the model by 90 degrees</source>
         <translation> 해석 모델을 90도 회전한다</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3492"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3648"/>
         <source>Rotation Center</source>
         <translation>회전 중심</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3546"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3702"/>
         <source>cells</source>
         <translation>셀 개수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3599"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3755"/>
         <source>BG</source>
         <translation>배경색</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3681"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3842"/>
         <source>Open Recent</source>
         <translation>최근 작업 열기</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3696"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3857"/>
         <source>&amp;Mesh Quality</source>
         <translation>&amp;격자 품질</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3734"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3896"/>
         <source>&amp;New</source>
         <translation>&amp;새 프로젝트</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3739"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3901"/>
         <source>&amp;Open</source>
         <translation>&amp;열기</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3769"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3931"/>
         <source>&amp;Parameters</source>
         <translation>&amp;파라미터</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3088"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3244"/>
         <source>Mesh Quality</source>
         <translation>격자 품질 조건</translation>
     </message>
@@ -6675,7 +6712,7 @@ Would you like to load another mesh?</source>
         <translation type="vanished">열기</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3759"/>
+        <location filename="../../baramMesh/view/main_window/main_window.ui" line="3921"/>
         <source>Close</source>
         <translation>닫기</translation>
     </message>
@@ -6858,254 +6895,254 @@ Would you like to load another mesh?</source>
         <translation>물성값</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="148"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="23"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="154"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="47"/>
         <source>Name</source>
         <translation>물질 이름</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="36"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="57"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="60"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="81"/>
         <source>Density</source>
         <translation>밀도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="76"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="194"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="267"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="354"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="100"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="218"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="291"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="378"/>
         <source>Edit</source>
         <translation>편집</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="85"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="109"/>
         <source>Value (kg/m&lt;sup&gt;3&lt;/sup&gt;)</source>
         <translation>값 (kg/m&lt;sup&gt;3&lt;/sup&gt;)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="98"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="122"/>
         <source>Peng-Robinson Parameters</source>
         <translation>Peng-Robinson 파라미터</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="104"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="128"/>
         <source>Critical Temperature (K)</source>
         <translation>임계 온도 (K)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="111"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="135"/>
         <source>Critical Pressure (Pa)</source>
         <translation>임계 압력 (Pa)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="121"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="145"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Critical Specific Volume (m&lt;span style=&quot; vertical-align:super;&quot;&gt;3&lt;/span&gt;/kg)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;임계 비체적 (m&lt;span style=&quot; vertical-align:super;&quot;&gt;3&lt;/span&gt;/kg)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="150"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="174"/>
         <source>Specific Heat</source>
         <translation>정압비열</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="156"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="180"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specific Heat, C&lt;span style=&quot; vertical-align:sub;&quot;&gt;P&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>정압비열, C&lt;sub&gt;p&lt;/sub&gt;</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="204"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="228"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Value (J/kg·K)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>값 (j/kg K)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="217"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="223"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="241"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="247"/>
         <source>Viscosity</source>
         <translation>점성계수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="277"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="301"/>
         <source>Value (kg/m·s)</source>
         <translation>값 (kg/m s)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="287"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="311"/>
         <source>Sutherland Coefficient, C&lt;sub&gt;1&lt;/sub&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="297"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="321"/>
         <source>Sutherland Temperature, S (K)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="310"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="316"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="334"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="340"/>
         <source>Thermal Conductivity</source>
         <translation>열전도도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="364"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="388"/>
         <source>Value (W/m·K)</source>
         <translation>값 (W/m K)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="442"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="469"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="452"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="479"/>
         <source>Cancel</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="142"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="160"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="194"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="257"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="274"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="148"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="166"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="200"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="263"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="280"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="154"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="165"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="160"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="171"/>
         <source>Density Value</source>
         <translation>밀도 값</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="158"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="164"/>
         <source>Density Polynomial</source>
         <translation>밀도 다항식</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="161"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="167"/>
         <source>Edit Density Polynomial.</source>
         <translation>밀도 다항식 편집.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="251"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="257"/>
         <source>Specific Heat Value</source>
         <translation>정압비열 값</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="255"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="261"/>
         <source>Specific Heat Polynomial</source>
         <translation>정압비열 다항식</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="258"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="264"/>
         <source>Edit Specific Heat Polynomial.</source>
         <translation>정압비열 다항식 편집.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="181"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="187"/>
         <source>Viscosity Value</source>
         <translation>점성계수 값</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="167"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="173"/>
         <source>Critical Temperature</source>
         <translation>임계온도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="169"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="175"/>
         <source>Critical Pressure</source>
         <translation>임계압력</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="171"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="177"/>
         <source>Critical Specific Volume</source>
         <translation>임계 비체적</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="173"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="131"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="179"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="155"/>
         <source>Acentric Factor</source>
         <translation>Acentric Factor</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="184"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="190"/>
         <source>Sutherland Coefficient</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="186"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="192"/>
         <source>Sutherland Temperature</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="192"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="198"/>
         <source>Viscosity Polynomial</source>
         <translation>점성계수 다항식</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="195"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="201"/>
         <source>Edit Viscosity Polynomial.</source>
         <translation>점성계수 다항식 편집.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="267"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="273"/>
         <source>Thermal Conductivity Value</source>
         <translation>열전도도 값</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="272"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="278"/>
         <source>Thermal Conductivity Polynomial</source>
         <translation>열전도도 다항식</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="275"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="281"/>
         <source>Edit Thermal Conductivity Polynomial.</source>
         <translation>열전도도 다항식 편집.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="279"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="410"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="285"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="434"/>
         <source>Emissivity</source>
         <translation>흡수율</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="282"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="380"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="288"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="404"/>
         <source>Molecular Weight</source>
         <translation>분자량</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="285"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="390"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="291"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="414"/>
         <source>Absorption Coefficient</source>
         <translation>흡수계수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="288"/>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="400"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="294"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.ui" line="424"/>
         <source>Saturation Pressure</source>
         <translation>포화중기압</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="292"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="298"/>
         <source>Model Change Failed</source>
         <translation>모델 변경에 실패했습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="432"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="446"/>
         <source>Polynomial Density</source>
         <translation>밀도 다항식</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="441"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="455"/>
         <source>Polynomial Specific Heat</source>
         <translation>정압비열 다항식</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="452"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="466"/>
         <source>Polynomial Viscosity</source>
         <translation>점성계수 다항식</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="470"/>
+        <location filename="../../baramFlow/view/setup/materials/material_dialog.py" line="484"/>
         <source>Polynomial Thermal Conductivity</source>
         <translation>열전도도 다항식</translation>
     </message>
@@ -7136,23 +7173,23 @@ Would you like to load another mesh?</source>
         <translation>물질</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_page.py" line="48"/>
-        <location filename="../../baramFlow/view/setup/materials/material_page.py" line="53"/>
+        <location filename="../../baramFlow/view/setup/materials/material_page.py" line="51"/>
+        <location filename="../../baramFlow/view/setup/materials/material_page.py" line="56"/>
         <source>Remove material</source>
         <translation>삭제</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_page.py" line="49"/>
+        <location filename="../../baramFlow/view/setup/materials/material_page.py" line="52"/>
         <source>At least one material is required and cannot be removed.</source>
         <translation>최소하나의 물질이 필요하기 때문에 삭제할 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_page.py" line="53"/>
+        <location filename="../../baramFlow/view/setup/materials/material_page.py" line="56"/>
         <source>Remove material &quot;{}&quot;</source>
         <translation>물질 &quot;{}&quot;이 삭제 되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/material_page.py" line="62"/>
+        <location filename="../../baramFlow/view/setup/materials/material_page.py" line="65"/>
         <source>Material Removal Failed</source>
         <translation>물질을 삭제하는데 실패했습니다</translation>
     </message>
@@ -7772,23 +7809,23 @@ Would you like to load another mesh?</source>
 <context>
     <name>MixtureCard</name>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_card.py" line="120"/>
-        <location filename="../../baramFlow/view/setup/materials/mixture_card.py" line="125"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_card.py" line="131"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_card.py" line="136"/>
         <source>Remove specie</source>
         <translation>화학종 삭제</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_card.py" line="121"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_card.py" line="132"/>
         <source>At least one specie is required and cannot be removed.</source>
         <translation>최소 한개의 화학종이 필요합니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_card.py" line="125"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_card.py" line="136"/>
         <source>Remove specie &quot;{}&quot;</source>
         <translation>화학종 &quot;{}&quot; 삭제</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_card.py" line="132"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_card.py" line="143"/>
         <source>Remove Specie Failed</source>
         <translation>화학종 삭제 실패</translation>
     </message>
@@ -7846,19 +7883,19 @@ Would you like to load another mesh?</source>
 <context>
     <name>MixtureDialog</name>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.py" line="77"/>
-        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.py" line="119"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.py" line="87"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.py" line="129"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.py" line="84"/>
-        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="23"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.py" line="94"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="38"/>
         <source>Name</source>
         <translation>이름</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.py" line="103"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.py" line="113"/>
         <source>Mass Diffusivity</source>
         <translation>물질확산계수</translation>
     </message>
@@ -7868,37 +7905,37 @@ Would you like to load another mesh?</source>
         <translation>물질</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="39"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="54"/>
         <source>Density Spec.</source>
         <translation>밀도계산방법.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="56"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="71"/>
         <source>Specific Heat, Spec.</source>
         <translation>정압비열 계산 방법.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="73"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="88"/>
         <source>Transport Spec.</source>
         <translation>전달 물성값 계산 방법.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="96"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="111"/>
         <source>Mass Diffusivity, D (m&lt;sup&gt;2&lt;/sup&gt;/s)</source>
         <translation>물질확산계수, D (m&lt;sup&gt;2&lt;/sup&gt;/s)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="106"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="121"/>
         <source>Primary Specie</source>
         <translation>주 화학종</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="145"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="163"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="155"/>
+        <location filename="../../baramFlow/view/setup/materials/mixture_dialog.ui" line="173"/>
         <source>Cancel</source>
         <translation>취소</translation>
     </message>
@@ -7925,94 +7962,94 @@ Would you like to load another mesh?</source>
         <translation type="vanished">편집</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="73"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="74"/>
         <source>Off</source>
         <translation>단상유동</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="74"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="75"/>
         <source>Volume of Fluid</source>
         <translation>자유수면</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="78"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="79"/>
         <source>Inviscid</source>
         <translation>비점성(Inviscid)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="79"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="80"/>
         <source>Laminar</source>
         <translation>층류(Laminar)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="80"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="81"/>
         <source>Spalart-Allmaras</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="81"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="82"/>
         <source>k-epsilon</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="82"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="83"/>
         <source>k-omega</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="83"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="84"/>
         <source>DES</source>
         <translation>DES</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="84"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="85"/>
         <source>LES</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="88"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="89"/>
         <source>Pressure-based</source>
         <translation>압력기반</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="89"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="90"/>
         <source>Density-based</source>
         <translation>밀도 기반</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="93"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="94"/>
         <source>Turbulence</source>
         <translation>난류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="97"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="98"/>
         <source>Energy</source>
         <translation>에너지</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="98"/>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="111"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="99"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="112"/>
         <source>Include</source>
         <translation>포함</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="98"/>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="111"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="99"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="112"/>
         <source>Not Include</source>
         <translation>포함하지 않음</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="115"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="116"/>
         <source>User-defined Scalars</source>
         <translation>사용자 정의 스칼라</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="116"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="117"/>
         <source>Defined</source>
         <translation>계산</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="116"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="117"/>
         <source>Not Defined</source>
         <translation>없음</translation>
     </message>
@@ -8029,17 +8066,17 @@ Would you like to load another mesh?</source>
         <translation type="vanished">비압축성</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="102"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="103"/>
         <source>Multiphase</source>
         <translation>다상유동</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="106"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="107"/>
         <source>Solver Type</source>
         <translation>솔버 유형</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/models/models_page.py" line="110"/>
+        <location filename="../../baramFlow/view/setup/models/models_page.py" line="111"/>
         <source>Species</source>
         <translation>화학종 혼합</translation>
     </message>
@@ -8225,32 +8262,32 @@ Would you like to load another mesh?</source>
         <translation type="vanished">삭제</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="25"/>
+        <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="28"/>
         <source>&amp;Forces</source>
         <translation>&amp;힘</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="26"/>
+        <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="29"/>
         <source>&amp;Points</source>
         <translation>&amp;점</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="27"/>
+        <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="30"/>
         <source>&amp;Surfaces</source>
         <translation>&amp;면</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="28"/>
+        <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="31"/>
         <source>&amp;Volumes</source>
         <translation>&amp;체적</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="112"/>
+        <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="122"/>
         <source>Remove monitor item</source>
         <translation>모니터 항목 삭제</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="113"/>
+        <location filename="../../baramFlow/view/solution/monitors/monitors_page.py" line="123"/>
         <source>Remove &quot;{}&quot;?</source>
         <translation>&quot;{}&quot; 삭제?</translation>
     </message>
@@ -8565,7 +8602,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="218"/>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="306"/>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="646"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="650"/>
         <source>Volume Fraction</source>
         <translation>체적분율</translation>
     </message>
@@ -8580,7 +8617,7 @@ Would you like to load another mesh?</source>
         <translation>수렴조건 (range of values: 0~1)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="728"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="736"/>
         <source>&amp;Advanced</source>
         <translation>&amp;고급설정</translation>
     </message>
@@ -8610,7 +8647,7 @@ Would you like to load another mesh?</source>
     <message>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="248"/>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="374"/>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="679"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="687"/>
         <source>Species</source>
         <translation>화학종 혼합</translation>
     </message>
@@ -8621,7 +8658,7 @@ Would you like to load another mesh?</source>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="287"/>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="653"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="657"/>
         <source>Density</source>
         <translation>밀도</translation>
     </message>
@@ -8651,14 +8688,14 @@ Would you like to load another mesh?</source>
         <translation>준 내재적기법(semi-implicit)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="365"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="364"/>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="409"/>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="475"/>
         <source>Max Iterations per Time Step</source>
         <translation>시간당 반복계산 회수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="367"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="366"/>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="419"/>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="488"/>
         <source>Number of Correctors</source>
@@ -8669,7 +8706,7 @@ Would you like to load another mesh?</source>
         <translation type="vanished">수렴 판정 기준</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="660"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="664"/>
         <source>Absolute</source>
         <translation>절대값</translation>
     </message>
@@ -8683,280 +8720,280 @@ Would you like to load another mesh?</source>
         <translation type="vanished">고급설정</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="43"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="45"/>
         <source>SIMPLE</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="44"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="46"/>
         <source>SIMPLEC</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="55"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="57"/>
         <source>First Order Implicit</source>
         <translation>1차 음해법</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="57"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="59"/>
         <source>Second Order Implicit</source>
         <translation>2차 음해법</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="38"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="40"/>
         <source>First Order Upwind</source>
         <translation>1차 상류기법</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="39"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="41"/>
         <source>Second Order Upwind</source>
         <translation>2차 상류기법</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="47"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="49"/>
         <source>Implicit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="51"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="53"/>
         <source>Roe-FDS</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="52"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="54"/>
         <source>ASUM</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="53"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="55"/>
         <source>ASUM-up</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="65"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="67"/>
         <source>Linear</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="66"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="68"/>
         <source>Momentum Weighted Reconstruct</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="67"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="69"/>
         <source>Momentum Weighted</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="170"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="169"/>
         <source>Flow</source>
         <translation>유동</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="294"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="293"/>
         <source>Entropy Fix Coefficient</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="296"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="295"/>
         <source>Cut-off Mach Number</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="319"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="318"/>
         <source>Under-Relaxation Factor Pressure</source>
         <translation>완화계수-압력</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="322"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="321"/>
         <source>Under-Relaxation Factor Pressure Final</source>
         <translation>완화계수-압력 최종</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="324"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="323"/>
         <source>Under-Relaxation Factor Momentum</source>
         <translation>완화계수-운동량</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="327"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="326"/>
         <source>Under-Relaxation Factor Momentum Final</source>
         <translation>완화계수-운동량 최종</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="329"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="328"/>
         <source>Under-Relaxation Factor Energy</source>
         <translation>완화계수-에너지</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="331"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="330"/>
         <source>Under-Relaxation Factor Energy Final</source>
         <translation>완화계수-에너지 최종</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="333"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="332"/>
         <source>Under-Relaxation Factor Turbulence</source>
         <translation>완화계수-난류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="336"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="335"/>
         <source>Under-Relaxation Factor Turbulence Final</source>
         <translation>완화계수-난류 최종</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="338"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="337"/>
         <source>Under-Relaxation Factor Density</source>
         <translation>완화계수-밀도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="341"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="340"/>
         <source>Under-Relaxation Factor Density Final</source>
         <translation>완화계수-밀도 최종</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="344"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="343"/>
         <source>Under-Relaxation Factor Volume Fraction</source>
         <translation>완화계수-체적분율</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="347"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="346"/>
         <source>Under-Relaxation Factor Volume Fraction Final</source>
         <translation>완화계수-체적분율 최종</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="349"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="348"/>
         <source>Under-Relaxation Scalar</source>
         <translation>완화계수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="351"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="350"/>
         <source>Under-Relaxation Scalar Final</source>
         <translation>사용자 정의 함수-최종</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="353"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="352"/>
         <source>Under-Relaxation Species</source>
         <translation>사용자 정의 함수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="355"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="354"/>
         <source>Under-Relaxation Species Final</source>
         <translation>완화계수-최종</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="359"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="358"/>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="393"/>
         <source>Limiting Factor</source>
         <translation>제한 계수(limiting factor)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="369"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="368"/>
         <source>Number of Non-orthogonal Correctors</source>
         <translation>비직교성 보정 회수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="373"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="372"/>
         <source>Multiphase Max Iterations per Time Step</source>
         <translation>체적분율의 시간당 서브사이클 회수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="375"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="374"/>
         <source>Multiphase Number of Correctors</source>
         <translation>체적분율의 솔루션 단계별 계산 회수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="379"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="378"/>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="536"/>
         <source>Phase Interface Compression Factor</source>
         <translation>상 경계면 압축계수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="381"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="380"/>
         <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.ui" line="546"/>
         <source>Number of MULES iterations over the limiter</source>
         <translation>제한자에 대한 MULES 반복 회수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="384"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="383"/>
         <source>Convergence Criteria Absolute Pressure</source>
         <translation>수렴판정기준 절대값-압력</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="386"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="385"/>
         <source>Convergence Criteria Relative Pressure</source>
         <translation>수렴판정기준 상대값-압력</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="388"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="387"/>
         <source>Convergence Criteria Absolute Density</source>
         <translation>수렴조건 절대값 밀도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="390"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="389"/>
         <source>Convergence Criteria Relative Density</source>
         <translation>수렴조건 상대값 밀도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="392"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="391"/>
         <source>Convergence Criteria Absolute Moment</source>
         <translation>수렴판정기준 절대값-운동량</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="394"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="393"/>
         <source>Convergence Criteria Relative Moment</source>
         <translation>수렴판정기준 싱대값-운동량</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="396"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="395"/>
         <source>Convergence Criteria Absolute Energy</source>
         <translation>수렴판정기준 절대값-에너지</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="398"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="397"/>
         <source>Convergence Criteria Relative Energy</source>
         <translation>수렴판정기준 상대값-에너지</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="400"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="399"/>
         <source>Convergence Criteria Absolute Turbulence</source>
         <translation>수렴판정기준 절대값-난류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="402"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="401"/>
         <source>Convergence Criteria Relative Turbulence</source>
         <translation>수렴판정기준 상대값-난류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="404"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="403"/>
         <source>Convergence Criteria Absolute Volume Fraction</source>
         <translation>수렴판정기준 절대값-체적분율</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="406"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="405"/>
         <source>Convergence Criteria Relative Volume Fraction</source>
         <translation>수렴판정기준 상대값-체적분율</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="408"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="407"/>
         <source>Convergence Criteria Absolute Scalar</source>
         <translation>수렴조건 절대값 스칼라</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="410"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="409"/>
         <source>Convergence Criteria Relative Scalar</source>
         <translation>수렴조건 상대값 스칼라</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="412"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="411"/>
         <source>Convergence Criteria Absolute Species</source>
         <translation>수렴조건 절대값 화학종</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="414"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="413"/>
         <source>Convergence Criteria Relative Species</source>
         <translation>수렴조건 상대값 화학종</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="418"/>
+        <location filename="../../baramFlow/view/solution/numerical_conditions/numerical_conditions_page.py" line="417"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
@@ -9061,9 +9098,8 @@ Would you like to load another mesh?</source>
 <context>
     <name>OpenFOAMReader</name>
     <message>
-        <location filename="../../baramFlow/openfoam/openfoam_reader.py" line="114"/>
         <source>Loading Mesh : </source>
-        <translation>격자 불러오는 중 : </translation>
+        <translation type="vanished">격자 불러오는 중 : </translation>
     </message>
 </context>
 <context>
@@ -9228,18 +9264,18 @@ Would you like to load another mesh?</source>
 <context>
     <name>ParallelEnvironmentDialog</name>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.py" line="55"/>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.py" line="59"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.py" line="63"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.py" line="67"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.py" line="55"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.py" line="63"/>
         <source>Error in Number of Cores</source>
         <translation>코어수 오류</translation>
     </message>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.py" line="59"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.py" line="67"/>
         <source>Number of Cores should be greater than 0</source>
         <translation>코어수는 0보다 커야합니다</translation>
     </message>
@@ -9634,13 +9670,13 @@ Would you like to load another mesh?</source>
 <context>
     <name>PolyMeshLoader</name>
     <message>
-        <location filename="../../baramFlow/openfoam/polymesh/polymesh_loader.py" line="108"/>
-        <location filename="../../baramFlow/openfoam/polymesh/polymesh_loader.py" line="118"/>
+        <location filename="../../baramFlow/openfoam/polymesh/polymesh_loader.py" line="104"/>
+        <location filename="../../baramFlow/openfoam/polymesh/polymesh_loader.py" line="114"/>
         <source>Loading Mesh...</source>
         <translation>격자 불러오는 중...</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/openfoam/polymesh/polymesh_loader.py" line="162"/>
+        <location filename="../../baramFlow/openfoam/polymesh/polymesh_loader.py" line="155"/>
         <location filename="../../baramMesh/openfoam/poly_mesh/poly_mesh_loader.py" line="181"/>
         <source>Loading Mesh : </source>
         <translation>격자 불러오는 중 : </translation>
@@ -10363,7 +10399,7 @@ Calculation stops as soon as possible</source>
     <message>
         <location filename="../../widgets/progress_dialog.ui" line="93"/>
         <source>Cancel</source>
-        <translation>최소</translation>
+        <translation>취소</translation>
     </message>
 </context>
 <context>
@@ -10551,32 +10587,32 @@ Calculation stops as soon as possible</source>
 <context>
     <name>ReferenceValuesPage</name>
     <message>
-        <location filename="../../baramFlow/view/setup/reference_values/reference_values_page.py" line="27"/>
+        <location filename="../../baramFlow/view/setup/reference_values/reference_values_page.py" line="31"/>
         <source>Area</source>
         <translation>면적</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/reference_values/reference_values_page.py" line="28"/>
+        <location filename="../../baramFlow/view/setup/reference_values/reference_values_page.py" line="32"/>
         <source>Density</source>
         <translation>밀도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/reference_values/reference_values_page.py" line="29"/>
+        <location filename="../../baramFlow/view/setup/reference_values/reference_values_page.py" line="33"/>
         <source>Length</source>
         <translation>길이</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/reference_values/reference_values_page.py" line="30"/>
+        <location filename="../../baramFlow/view/setup/reference_values/reference_values_page.py" line="34"/>
         <source>Velocity</source>
         <translation>속도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/reference_values/reference_values_page.py" line="31"/>
+        <location filename="../../baramFlow/view/setup/reference_values/reference_values_page.py" line="35"/>
         <source>Pressure</source>
         <translation>압력</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/reference_values/reference_values_page.py" line="35"/>
+        <location filename="../../baramFlow/view/setup/reference_values/reference_values_page.py" line="39"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
@@ -11015,22 +11051,22 @@ Calculation stops as soon as possible</source>
 <context>
     <name>RunConditionsPage</name>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="33"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="35"/>
         <source>Fixed</source>
         <translation>일정</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="34"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="36"/>
         <source>Adaptive</source>
         <translation>적응 시간기법(adaptive)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="36"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="38"/>
         <source>Binary</source>
         <translation>바이너리</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="37"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="39"/>
         <source>ASCII</source>
         <translation>아스키</translation>
     </message>
@@ -11039,12 +11075,12 @@ Calculation stops as soon as possible</source>
         <translation type="vanished">VOF의 최대 CFL 수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="113"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="63"/>
         <source>Number of Iteration</source>
         <translation>반복계산 회수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="105"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="55"/>
         <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.ui" line="119"/>
         <source>Time Step Size</source>
         <translation>시간 전진 간격</translation>
@@ -11054,18 +11090,18 @@ Calculation stops as soon as possible</source>
         <translation type="vanished">최대 CFL 수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="107"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="57"/>
         <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.ui" line="146"/>
         <source>End Time</source>
         <translation>종료 시간</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="116"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="66"/>
         <source>Report Interval Interation Steps</source>
         <translation>저장 간격-반복계산 단계</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="110"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="60"/>
         <source>Report Interval Seconds</source>
         <translation>저장 간격-시간(초)</translation>
     </message>
@@ -11075,46 +11111,46 @@ Calculation stops as soon as possible</source>
         <translation>가장 최근 파일만 저장</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="119"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="69"/>
         <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.ui" line="129"/>
         <source>Courant Number</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="121"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="71"/>
         <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.ui" line="139"/>
         <source>Courant Number For VoF</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="122"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="72"/>
         <source>Max Diffusion Number</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="127"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="77"/>
         <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.ui" line="241"/>
         <source>Maximum Number of Data Files</source>
         <translation>최대 저장 개수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="132"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="82"/>
         <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.ui" line="266"/>
         <source>Data Write Format</source>
         <translation>데이터 저장 포맷</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="134"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="84"/>
         <source>Data Write Precision</source>
         <translation>데이터 저장 유효숫자</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="135"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="85"/>
         <source>Time Precision</source>
         <translation>시간 유효숫자</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="139"/>
+        <location filename="../../baramFlow/view/solution/run_conditions/run_conditions_page.py" line="89"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
@@ -11175,37 +11211,37 @@ Calculation stops as soon as possible</source>
 <context>
     <name>Scaffold</name>
     <message>
-        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="167"/>
+        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="168"/>
         <source>Boundary</source>
         <translation>경계면</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="169"/>
+        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="170"/>
         <source>Disk</source>
         <translation>디스크</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="171"/>
+        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="172"/>
         <source>Iso-surface</source>
         <translation>같은 값의 면</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="173"/>
+        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="174"/>
         <source>Line</source>
         <translation>직선</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="175"/>
+        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="176"/>
         <source>Parallelogram</source>
         <translation>평행사변형</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="177"/>
+        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="178"/>
         <source>Plane</source>
         <translation>평면</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="179"/>
+        <location filename="../../baramFlow/base/scaffold/scaffolds_db.py" line="180"/>
         <source>Sphere</source>
         <translation>구</translation>
     </message>
@@ -11325,199 +11361,199 @@ It is being used in Graphics report</source>
 <context>
     <name>SectionDialog</name>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="141"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="155"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="170"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="199"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="248"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="252"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="273"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="277"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="296"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="300"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="331"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="346"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="359"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="401"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="153"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="167"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="182"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="211"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="260"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="264"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="285"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="289"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="308"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="312"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="343"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="358"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="371"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="413"/>
         <source>Warning</source>
         <translation>경고</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="142"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="154"/>
         <source>Section name can only contain letters, numbers, and underscores</source>
         <translation>섹션 이름은 문자, 숫자, 언더바만 사용할 수 있습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="155"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="167"/>
         <source>Section with same name already exists</source>
         <translation>같은 이름의 섹션이 있습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="170"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="182"/>
         <source>No Cell Zone found in the region</source>
         <translation>region에 셀 존이 없습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="248"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="252"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="273"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="277"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="296"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="300"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="260"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="264"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="285"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="289"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="308"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="312"/>
         <source>Invalid Geometry parameter</source>
         <translation>형상 파라미터가 유효하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="255"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="280"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="303"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="310"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="267"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="292"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="315"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="322"/>
         <source>Section Type</source>
         <translation>영역 형태</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="256"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="268"/>
         <source>Min X</source>
         <translation>최소 X</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="257"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="269"/>
         <source>Min Y</source>
         <translation>최소 Y</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="258"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="270"/>
         <source>Min Z</source>
         <translation>최소 Z</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="259"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="271"/>
         <source>Max X</source>
         <translation>최대 X</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="260"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="272"/>
         <source>Max Y</source>
         <translation>최대 Y</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="261"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="273"/>
         <source>Max Z</source>
         <translation>최대 Z</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="281"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="293"/>
         <source>Axis Point1 X</source>
         <translation>축의 좌표 1 X</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="282"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="294"/>
         <source>Axis Point1 Y</source>
         <translation>축의 좌표 1 Y</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="283"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="295"/>
         <source>Axis Point1 Z</source>
         <translation>축의 좌표 1 Z</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="284"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="296"/>
         <source>Axis Point2 X</source>
         <translation>축의 좌표 2 X</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="285"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="297"/>
         <source>Axis Point2 Y</source>
         <translation>Axis Point2 Y</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="286"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="298"/>
         <source>Axis Point2 Z</source>
         <translation>Axis Point2 Z</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="287"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="299"/>
         <source>Cylinder Radius</source>
         <translation>실린더 반지름</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="304"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="316"/>
         <source>Center X</source>
         <translation>중심좌표 X</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="305"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="317"/>
         <source>Center Y</source>
         <translation>중심좌표 Y</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="306"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="318"/>
         <source>Center Z</source>
         <translation>중심좌표 Z</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="307"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="319"/>
         <source>Sphere Radius</source>
         <translation>구의 반지름</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="313"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="325"/>
         <source>Cell Zone</source>
         <translation>셀 존</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="317"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="319"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="329"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="331"/>
         <source>Override Boundary Value</source>
         <translation>경계면의 값 포함</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="331"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="343"/>
         <source>Invalid velocity parameter</source>
         <translation>잘못된 속도 파라미터</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="335"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="347"/>
         <source>X-Velocity</source>
         <translation>X 속도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="336"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="348"/>
         <source>Y-Velocity</source>
         <translation>Y 속도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="337"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="349"/>
         <source>Z-Velocity</source>
         <translation>Z 속도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="346"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="358"/>
         <source>Invalid pressure parameter</source>
         <translation>잘못된 압력 파라미터</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="350"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="362"/>
         <source>Pressure</source>
         <translation>압력</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="359"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="371"/>
         <source>Invalid temperature parameter</source>
         <translation>잘못된 온도 파라미터</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="363"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="375"/>
         <source>Temperature</source>
         <translation>온도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="402"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="414"/>
         <source>At least one parameter should be configured</source>
         <translation>최소 하나의 파라미터가 필요합니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="407"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="419"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
@@ -11678,107 +11714,123 @@ It is being used in Graphics report</source>
 <context>
     <name>SnapPage</name>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="38"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="39"/>
         <source>explicit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="40"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="41"/>
         <source>implicit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="58"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="59"/>
         <source>Smoothing for Surface</source>
         <translation>표면 스무딩</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="59"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="60"/>
         <source>Smoothing for Internal</source>
         <translation>내부의 스무딩</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="61"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="62"/>
         <source>Mesh Displacement Relaxation</source>
         <translation>격자 이동 완화</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="62"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="63"/>
         <source>Global Snapping Relaxation</source>
         <translation>전역 스내핑 완화</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="65"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="66"/>
         <source>Feature Snapping Relaxation</source>
         <translation>특징(feature) 스내핑 완화</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="67"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="68"/>
         <source>Tolerance</source>
         <translation>허용 오차</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="68"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="69"/>
         <source>Concave Angle</source>
         <translation>오목한(concave) 각도</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="69"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="70"/>
         <source>Min. Area Ratio</source>
         <translation>최소 면적비</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="76"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="75"/>
+        <source>Select Surface(s) for Buffer Layer.</source>
+        <translation>버퍼 레이어 면 선택.</translation>
+    </message>
+    <message>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="83"/>
         <source>Number of Point Smoothing Iteration</source>
         <translation>포인트 스무딩 계산 회수</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="78"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="85"/>
         <source>GETMe Transformation parameter</source>
         <translation>GETMe 파라미터</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="94"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="74"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="101"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="156"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="139"/>
+        <source>Reset Settings</source>
+        <translation>설정 초기화</translation>
+    </message>
+    <message>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="140"/>
+        <source>Would you like to reset all Snap settings to default, excluding the Buffer Layer Surfaces?</source>
+        <translation>버퍼 레이어를 제외한 스냅 관련 모든 설정을 초기화 하겠습니까?</translation>
+    </message>
+    <message>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="175"/>
         <source>Cancel</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="209"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="228"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="209"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="228"/>
         <source>Snapping is completed.</source>
         <translation>스내핑이 완료되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="212"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="231"/>
         <source>Error</source>
         <translation>오류</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="213"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="232"/>
         <source>Snapping Failed. [</source>
         <translation>스내핑이 실패했습니다. [</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="216"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="235"/>
         <source>Canceled</source>
         <translation>취소되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="217"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="236"/>
         <source>Snapping has been canceled.</source>
         <translation>형상구현이 취소 되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramMesh/view/snap/snap_page.py" line="236"/>
+        <location filename="../../baramMesh/view/snap/snap_page.py" line="255"/>
         <source>Select Surfaces</source>
         <translation>면 선택</translation>
     </message>
@@ -13492,7 +13544,7 @@ It is being used in Graphics report</source>
 <context>
     <name>UserDefinedScalarList</name>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="45"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.py" line="47"/>
         <source>User-defined Scalars</source>
         <translation>사용자 정의 스칼라</translation>
     </message>
@@ -13687,14 +13739,13 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/cell_zone_conditions/variable_source_widget.py" line="33"/>
-        <location filename="../../baramFlow/view/setup/cell_zone_conditions/variable_source_widget.py" line="124"/>
-        <location filename="../../baramFlow/view/setup/cell_zone_conditions/variable_source_widget.py" line="135"/>
+        <location filename="../../baramFlow/view/setup/cell_zone_conditions/variable_source_widget.py" line="123"/>
         <source>Piecewise Linear</source>
         <translation>조각별 선형 함수</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/cell_zone_conditions/variable_source_widget.py" line="34"/>
-        <location filename="../../baramFlow/view/setup/cell_zone_conditions/variable_source_widget.py" line="143"/>
+        <location filename="../../baramFlow/view/setup/cell_zone_conditions/variable_source_widget.py" line="131"/>
         <source>Polynomial</source>
         <translation>다항식</translation>
     </message>
@@ -13705,20 +13756,17 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
         <translation>입력 오류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/cell_zone_conditions/variable_source_widget.py" line="125"/>
-        <location filename="../../baramFlow/view/setup/cell_zone_conditions/variable_source_widget.py" line="136"/>
+        <location filename="../../baramFlow/view/setup/cell_zone_conditions/variable_source_widget.py" line="124"/>
         <source>t</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/cell_zone_conditions/variable_source_widget.py" line="125"/>
         <source>Energy</source>
-        <translation>에너지</translation>
+        <translation type="vanished">에너지</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/cell_zone_conditions/variable_source_widget.py" line="136"/>
         <source>Flow Rate</source>
-        <translation>유량</translation>
+        <translation type="vanished">유량</translation>
     </message>
 </context>
 <context>
@@ -14200,122 +14248,122 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
 <context>
     <name>VisualReportView</name>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="65"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="67"/>
         <source>Name</source>
         <translation>이름</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="66"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="68"/>
         <source>Type</source>
         <translation>유형</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="397"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="411"/>
         <source>Vectors</source>
         <translation>벡터</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="398"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="412"/>
         <source>Setting up Vectors...</source>
         <translation>벡터 설정 중...</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="416"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="430"/>
         <source>Streamlines</source>
         <translation>스트림라인</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="417"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="431"/>
         <source>Setting up Streamlines...</source>
         <translation>스트림라인 설정 중...</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="486"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="500"/>
         <source>Show</source>
         <translation>보이기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="487"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="501"/>
         <source>Hide</source>
         <translation>숨기기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="489"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="503"/>
         <source>Opacity</source>
         <translation>투명도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="491"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="505"/>
         <source>Color</source>
         <translation>색깔</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="493"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="507"/>
         <source>Color Mode</source>
         <translation>색상 모드</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="495"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="509"/>
         <source>Solid</source>
         <translation>단색</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="498"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="512"/>
         <source>Field</source>
         <translation>유동 변수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="501"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="515"/>
         <source>Display Mode</source>
         <translation>디스플레이 모드</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="503"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="517"/>
         <source>Wireframe</source>
         <translation>격자선</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="506"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="520"/>
         <source>Surface</source>
         <translation>면</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="509"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="523"/>
         <source>Surface with Edges</source>
         <translation>면과 격자</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="512"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="526"/>
         <source>Cull Front-face</source>
         <translation>앞면 제거</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="513"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="527"/>
         <source>Reveal Front-face</source>
         <translation>앞면 표시</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="517"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="531"/>
         <source>Show Vectors</source>
         <translation>벡터 보이기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="518"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="532"/>
         <source>Hide Vectors</source>
         <translation>벡터 숨기기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="522"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="536"/>
         <source>Show Streamlines</source>
         <translation>스트림라인 보이기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="523"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="537"/>
         <source>Hide Streamlines</source>
         <translation>스트림라인 숨기기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="527"/>
+        <location filename="../../baramFlow/view/results/graphics/graphic_view.py" line="541"/>
         <source>More...</source>
         <translation>기타...</translation>
     </message>
@@ -15033,17 +15081,17 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
         <translation type="vanished">회전 속도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="315"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="317"/>
         <source>Adiabatic</source>
         <translation>단열</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="316"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="318"/>
         <source>Constant Temperature</source>
         <translation>일정 온도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="317"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="319"/>
         <source>Constant Heat Flux</source>
         <translation>일정 열유속</translation>
     </message>
@@ -15052,90 +15100,90 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
         <translation type="vanished">외부로 대류열전달</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="129"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="131"/>
         <source>X-Velocity</source>
         <translation>X 속도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="131"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="133"/>
         <source>Y-Velocity</source>
         <translation>Y 속도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="133"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="135"/>
         <source>Z-Velocity</source>
         <translation>Z 속도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="136"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="138"/>
         <source>Speed</source>
         <translation>속도 크기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="138"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="140"/>
         <source>Rotation-Axis Origin X</source>
         <translation>회전 축 중심 좌표 X</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="140"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="142"/>
         <source>Rotation-Axis Origin Y</source>
         <translation>회전 축 중심 좌표 Y</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="142"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="144"/>
         <source>Rotation-Axis Origin Z</source>
         <translation>회전 축 중심 좌표 Z</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="144"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="146"/>
         <source>Rotation-Axis Direction X</source>
         <translation>회전 축 방향 X</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="146"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="148"/>
         <source>Rotation-Axis Direction Y</source>
         <translation>회전 축 방향 Y</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="148"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="150"/>
         <source>Rotation-Axis Direction Z</source>
         <translation>회전 축 방향 Z</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="164"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="166"/>
         <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.ui" line="433"/>
         <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.ui" line="454"/>
         <source>Temperature</source>
         <translation>온도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="166"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="168"/>
         <source>Heat Flux</source>
         <translation>열유속</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="169"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="171"/>
         <source>Heat Transfer Coefficient</source>
         <translation>열전달계수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="171"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="173"/>
         <source>Free Stream Temperature</source>
         <translation>자유류 온도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="203"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="205"/>
         <source>Wall Emissivity</source>
         <translation>벽면 흡수율</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="205"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="207"/>
         <source>Radiative Flux Relaxation</source>
         <translation>복사 열유속 완화</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="112"/>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="208"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="114"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="210"/>
         <source>Input Error</source>
         <translation>입력 오류</translation>
     </message>
@@ -15155,87 +15203,88 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
         <translation>격자 운동</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="108"/>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="157"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="110"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="159"/>
         <source>Wall Roughness Constant</source>
         <translation>벽면 거칠기 상수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="155"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="108"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="157"/>
         <source>Wall Roughness Height</source>
         <translation>벽면 거칠기 높이</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="173"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="175"/>
         <source>External Emissivity</source>
         <translation>외부로 방사율</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="295"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="297"/>
         <source>Constant Angle (degree)</source>
         <translation>접촉각(contact angle)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="297"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="299"/>
         <source>Equilibrium CA
  (deg)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="298"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="300"/>
         <source>Advancing CA
  (deg)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="299"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="301"/>
         <source>Receding CA
  (deg)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="300"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="302"/>
         <source>Characteristic Velocity Scale
  (m/s)</source>
         <translation>특성속도크기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="318"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="320"/>
         <source>Convection and Radiation</source>
         <translation>대류와 복사</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="321"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="323"/>
         <source>Disable</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="322"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="324"/>
         <source>Constant</source>
         <translation>상수</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="323"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="325"/>
         <source>Dynamic</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="326"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="328"/>
         <source>None</source>
         <translation>없음</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="327"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="329"/>
         <source>Gradient</source>
         <translation>구배</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="328"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="330"/>
         <source>Zero Gradient</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="329"/>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="331"/>
         <source>Alpha</source>
         <translation></translation>
     </message>
@@ -15599,52 +15648,52 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
         <translation>병렬연산 환경</translation>
     </message>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="23"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="38"/>
         <source>Number of Cores</source>
         <translation>코어 수</translation>
     </message>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="36"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="51"/>
         <source>Parallel Type</source>
         <translation>병렬연산 방법</translation>
     </message>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="51"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="66"/>
         <source>Local Machine</source>
         <translation>SMP</translation>
     </message>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="64"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="79"/>
         <source>Cluster</source>
         <translation>클러스터</translation>
     </message>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="77"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="92"/>
         <source>Slurm</source>
         <translation>슬럼(Slurm)</translation>
     </message>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="125"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="140"/>
         <source>Cluster Parameter</source>
         <translation>클러스터 설정</translation>
     </message>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="131"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="146"/>
         <source>Node List (hostfile)</source>
         <translation>노드 리스트(hostfile)</translation>
     </message>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="151"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="166"/>
         <source>View/Edit</source>
         <translation>View/Edit</translation>
     </message>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="207"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="225"/>
         <source>Apply</source>
         <translation>적용</translation>
     </message>
     <message>
-        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="214"/>
+        <location filename="../../widgets/parallel/parallel_environment_dialog.ui" line="232"/>
         <source>Close</source>
         <translation>닫기</translation>
     </message>
@@ -15790,7 +15839,7 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="90"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="586"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="589"/>
         <source>Cell Zone</source>
         <translation>셀 존</translation>
     </message>
@@ -15801,7 +15850,7 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="142"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="750"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="738"/>
         <source>Cancel</source>
         <translation>최소</translation>
     </message>
@@ -15811,118 +15860,118 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="240"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="243"/>
         <source>Hex Geometry</source>
         <translation>육면체 형상</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="258"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="379"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="408"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="516"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="261"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="382"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="411"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="519"/>
         <source>Y</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="268"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="389"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="418"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="526"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="271"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="392"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="421"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="529"/>
         <source>Z</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="290"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="293"/>
         <source>Max</source>
         <translation>최대</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="306"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="309"/>
         <source>Min</source>
         <translation>최소</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="319"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="369"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="431"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="506"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="322"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="372"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="434"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="509"/>
         <source>X</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="354"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="357"/>
         <source>Cylinder Geometry</source>
         <translation>실린더 형상</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="363"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="366"/>
         <source>Axis Point 1</source>
         <translation>축 좌표 1</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="402"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="405"/>
         <source>Axis Point 2</source>
         <translation>축 좌표 2</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="450"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="545"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="453"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="548"/>
         <source>Radius</source>
         <translation>반지름</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="456"/>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="551"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="459"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="554"/>
         <source>R</source>
         <translation>반지름</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="494"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="497"/>
         <source>Sphere Geometry</source>
         <translation>구 형상</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="500"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="503"/>
         <source>Center Point</source>
         <translation>중심 좌표</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="613"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="601"/>
         <source>Velocity</source>
         <translation>속도</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="625"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="613"/>
         <source>X-Velocity (m/s)</source>
         <translation>X-속도 (m/s)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="635"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="623"/>
         <source>Y-Velocity (m/s)</source>
         <translation>Y-속도 (m/s)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="645"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="633"/>
         <source>Z-Velocity (m/s)</source>
         <translation>Z-속도 (m/s)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="667"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="655"/>
         <source>Pressure (Pa)</source>
         <translation>압력 (Pa)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="681"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="669"/>
         <source>Temperature (K)</source>
         <translation>온도 (K)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="701"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="686"/>
         <source>Override Boundary Value</source>
         <translation>경계면도 포함</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="743"/>
+        <location filename="../../baramFlow/view/solution/initialization/section_dialog.ui" line="731"/>
         <source>OK</source>
         <translation></translation>
     </message>
