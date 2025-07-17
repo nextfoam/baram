@@ -155,6 +155,7 @@ class PolyMeshLoader(QObject):
             self.progress.emit(self.tr('Loading Mesh : ') + str(progress) +'%')
 
         async with OpenFOAMReader() as reader:
+            await reader.refresh()
             reader.setTimeValue(0)
             reader.readerProgressEvent.connect(readerProgressEvent)
             await reader.update()
