@@ -10,9 +10,9 @@ from PySide6.QtWidgets import QColorDialog, QHeaderView, QMenu, QWidget
 
 import qasync
 
-from vtkmodules.vtkCommonCore import vtkLookupTable, vtkScalarsToColors
+from vtkmodules.vtkCommonCore import VTK_FONT_FILE, vtkLookupTable, vtkScalarsToColors
 from vtkmodules.vtkRenderingAnnotation import vtkScalarBarActor
-from vtkmodules.vtkRenderingCore import vtkActor
+from vtkmodules.vtkRenderingCore import vtkActor, vtkTextProperty
 
 from baramFlow.app import app
 
@@ -28,6 +28,8 @@ from baramFlow.view.results.graphics.opacity_dialog import OpacityDialog
 from baramFlow.view.results.graphics.display_item_dialog import DisplayItemDialog
 from baramFlow.view.results.graphics.scalar_bar_widget import ScalarBarWidget
 from baramFlow.view.widgets.rendering_view import RenderingView
+
+from resources import resource
 
 from widgets.overlay_frame import OverlayFrame
 
@@ -84,8 +86,17 @@ class VisualReportView(RenderingView):
         actor.SetLookupTable(self._lookupTable)
         actor.UnconstrainedFontSizeOn()
 
-        actor.GetTitleTextProperty().SetLineSpacing(1.5)
-        actor.SetTitle(graphic.fieldDisplayName+'\n')  # '\n' is added to set title apart from the bar
+        actor.SetTitle(graphic.fieldDisplayName)
+
+        titleTextProp: vtkTextProperty = actor.GetTitleTextProperty()
+        titleTextProp.SetFontFamily(VTK_FONT_FILE)
+        titleTextProp.SetFontFile(str(resource.file('Pretendard-Bold.ttf')))
+        titleTextProp.SetFontSize(15)
+
+        labelTextProp: vtkTextProperty = actor.GetLabelTextProperty()
+        labelTextProp.SetFontFamily(VTK_FONT_FILE)
+        labelTextProp.SetFontFile(str(resource.file('PretendardVariable.ttf')))
+        labelTextProp.SetFontSize(13)
 
         representation = self._colormap.GetScalarBarRepresentation()
         representation.SetOrientation(VTK_ORIENT_HORIZONTAL)

@@ -32,7 +32,7 @@ class ColormapDialog(ResizableDialog):
         self._colorbarLayout.setContentsMargins(0, 0, 0, 0)
 
         self._ui.fieldDisplayName.setText(graphic.fieldDisplayName)
-        self._ui.fieldDisplayName.setValidator(QRegularExpressionValidator(QRegularExpression('^[A-Za-z_][A-Za-z0-9_]*')))
+        self._ui.fieldDisplayName.setValidator(QRegularExpressionValidator(QRegularExpression(r'(^\p{L}$)|(^\p{L}[\p{L}\p{N}\p{Z}_\(\)]*[\p{L}\p{N}_\)]$)')))
 
         self._ui.numberOfLevels.setText(str(graphic.numberOfLevels))
         self._ui.numberOfLevels.setValidator(QIntValidator(1, 256))
@@ -99,7 +99,7 @@ class ColormapDialog(ResizableDialog):
         if not await self._valid():
             return
 
-        self._graphic.fieldDisplayName = self._ui.fieldDisplayName.text()
+        self._graphic.fieldDisplayName = self._ui.fieldDisplayName.text().strip()
         self._graphic.numberOfLevels = int(self._ui.numberOfLevels.text())
         self._graphic.useNodeValues = True if self._ui.useNodeValues.isChecked() else False
         self._graphic.relevantScaffoldsOnly = True if self._ui.relevantScaffoldsOnly.isChecked() else False
