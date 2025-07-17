@@ -103,7 +103,9 @@ class GraphicDialog(QDialog):
 
     @qasync.asyncSlot()
     async def _updateClicked(self):
+        self._ui.update.setEnabled(False)
         if not await self._valid():
+            self._ui.update.setEnabled(True)
             return
 
         fieldValueNeedUpdate = False
@@ -126,6 +128,7 @@ class GraphicDialog(QDialog):
 
                 if rc != 0:
                     progressDialog.finish(self.tr('Calculation failed'))
+                    self._ui.update.setEnabled(True)
                     return
 
                 fieldValueNeedUpdate = True
@@ -189,6 +192,8 @@ class GraphicDialog(QDialog):
         self._graphic.rangeMin, self._graphic.rangeMax = self._graphic.getValueRange(self._graphic.useNodeValues, self._graphic.relevantScaffoldsOnly)
 
         progressDialog.close()
+
+        self._ui.update.setEnabled(True)
 
         super().accept()
 
