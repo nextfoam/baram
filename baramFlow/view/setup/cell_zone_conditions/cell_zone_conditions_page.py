@@ -41,7 +41,7 @@ class ListItem(QTreeWidgetItem):
 class RegionItem(ListItem):
     def __init__(self, parent):
         super().__init__(parent, True)
-    
+
     def __lt__(self, other):
         return self._widget.rname().lower() < other._widget.rname().lower()
 
@@ -55,7 +55,7 @@ class RegionItem(ListItem):
 class CellZoneItem(ListItem):
     def __init_(self, parent):
         super().__init__(parent)
-    
+
     def __lt__(self, other):
         return self._widget.czname().lower() < other._widget.czname().lower()
 
@@ -79,7 +79,6 @@ class CellZoneConditionsPage(ContentPage):
 
         self._actor = None
 
-        self._connectSignalsSlots()
         self._updateEnabled()
         self._load()
 
@@ -96,11 +95,19 @@ class CellZoneConditionsPage(ContentPage):
         return super().hideEvent(ev)
 
     def _connectSignalsSlots(self):
-        Project.instance().solverStatusChanged.connect(self._updateEnabled)
-
         self._ui.cellZones.doubleClicked.connect(self._edit)
         self._ui.cellZones.itemClicked.connect(self._cellZoneSelected)
         self._ui.edit.clicked.connect(self._edit)
+
+        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+
+    def _disconnectSignalsSlots(self):
+        Project.instance().solverStatusChanged.disconnect(self._updateEnabled)
+
+    def closeEvent(self, event):
+        self._disconnectSignalsSlots()
+
+        super().closeEvent(event)
 
     def _load(self):
         regions = coredb.CoreDB().getRegions()
