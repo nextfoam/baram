@@ -913,6 +913,25 @@ def _version_9(root: etree.Element):
             p.insert(8, e)
 
 
+def _version_10(root: etree.Element):
+    logger.debug('  Upgrading to v11')
+
+    root.set('version', '11')
+
+    if (p := root.find('materials/material/specificHeat', namespaces=_nsmap)) is not None:
+        if p.find('piecewisePolynomial', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "piecewisePolynomial" to {p}')
+
+            e = etree.fromstring('<piecewisePolynomial xmlns="http://www.baramcfd.org/baram">'
+                                 f' <lowTemperature>200</lowTemperature>'
+                                 f' <commonTemperature>1000</commonTemperature>'
+                                 f' <highTemperature>6000</highTemperature>'
+                                 f' <lowCoefficients>0 0 0 0 0 0 0</lowCoefficients>'
+                                 f' <highCoefficients>0 0 0 0 0 0 0</highCoefficients>'
+                                 '</piecewisePolynomial>')
+            p.append(e)
+
+
 _fTable = [
     None,
     _version_1,
@@ -924,6 +943,7 @@ _fTable = [
     _version_7,
     _version_8,
     _version_9,
+    _version_10,
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))

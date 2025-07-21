@@ -6,7 +6,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import MaterialType, DensitySpecification, ViscositySpecification
+from baramFlow.coredb.material_schema import MaterialType, DensitySpecification, ViscositySpecification, Specification
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
@@ -24,6 +24,13 @@ EQUATION_OF_STATES = {
 }
 
 
+THERMO = {
+    Specification.CONSTANT              : 'hConst',
+    Specification.POLYNOMIAL            : 'hPolynomial',
+    Specification.PIECEWISE_POLYNOMIAL  : 'janaf'
+}
+
+
 def _constructFluid(region: str):
     db = CoreDBReader()
     mid = RegionDB.getMaterial(region)
@@ -32,7 +39,7 @@ def _constructFluid(region: str):
 
     tModel = TurbulenceModelsDB.getModel()
     viscositySpec = ViscositySpecification(db.getValue(path + '/viscosity/specification'))
-    specificHeatSpec = db.getValue(path + '/specificHeat/specification')
+    specificHeatSpec = Specification(db.getValue(path + '/specificHeat/specification'))
     densitySpec = db.getValue(path + '/density/specification')
 
     thermo = {
@@ -42,7 +49,7 @@ def _constructFluid(region: str):
                                  or viscositySpec == ViscositySpecification.CONSTANT
                                  or MaterialDB.isNonNewtonianSpecification(viscositySpec)
                       else viscositySpec.value),
-        'thermo': 'hConst' if specificHeatSpec == 'constant' else 'hPolynomial',
+        'thermo': THERMO[specificHeatSpec],
         'equationOfState': EQUATION_OF_STATES[densitySpec],
         'specie': 'specie',
         'energy': 'sensibleEnthalpy'
@@ -121,7 +128,7 @@ def _mixtureEquationOfState(spec, db, path):
 def _mixtureThermodynamics(spec, db, path):
     data = None
 
-    if spec == 'constant':
+    if spec == Specification.CONSTANT:
         cp = db.getValue(path + '/specificHeat/constant')
         data = {
             'Cp': cp,
@@ -130,7 +137,7 @@ def _mixtureThermodynamics(spec, db, path):
 
         if GeneralDB.isDensityBased():
             data['Tref'] = 0
-    elif spec == 'polynomial':
+    elif spec == Specification.POLYNOMIAL:
         cpCoeffs: list[float] = [0] * 8  # To make sure that cpCoeffs has length of 8
         for i, n in enumerate(db.getValue(path + '/specificHeat/polynomial').split()):
             cpCoeffs[i] = float(n)
@@ -138,6 +145,14 @@ def _mixtureThermodynamics(spec, db, path):
             'Hf': 0,
             'Sf': 0,
             'CpCoeffs<8>': cpCoeffs
+        }
+    elif spec == Specification.PIECEWISE_POLYNOMIAL:
+        data = {
+            'Tlow': db.getValue(path + '/specificHeat/piecewisePolynomial/lowTemperature'),
+            'Thign': db.getValue(path + '/specificHeat/piecewisePolynomial/highTemperature'),
+            'Tcommon': db.getValue(path + '/specificHeat/piecewisePolynomial/commonTemperature'),
+            'highCpCoeffs': db.getValue(path + '/specificHeat/piecewisePolynomial/highCoefficients').split(),
+            'lowCpCoeffs': db.getValue(path + '/specificHeat/piecewisePolynomial/lowCoefficients').split()
         }
 
     return data

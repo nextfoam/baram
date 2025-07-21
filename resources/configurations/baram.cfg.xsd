@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="10">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="11">
 
     <!-- type definitions -->
     <xs:simpleType name="uuidType">
@@ -387,11 +387,23 @@
                                 <xs:restriction base="xs:string">
                                     <xs:enumeration value="constant"/>
                                     <xs:enumeration value="polynomial"/>
+                                    <xs:enumeration value="piecewisePolynomial"/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
                         <xs:element name="constant" type="inputNumberType"/>
                         <xs:element name="polynomial" type="inputNumberListType"/>
+                        <xs:element name="piecewisePolynomial">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="lowTemperature" type="inputNumberType" default="200"/>
+                                    <xs:element name="commonTemperature" type="inputNumberType" default="1000"/>
+                                    <xs:element name="highTemperature" type="inputNumberType" default="6000"/>
+                                    <xs:element name="lowCoefficients" type="inputNumberListType"/>
+                                    <xs:element name="highCoefficients" type="inputNumberListType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -825,12 +837,10 @@
                                                     <xs:element name="specification" default="constant">
                                                         <xs:simpleType>
                                                             <xs:restriction base="xs:string">
-                                                                <xs:enumeration
-                                                                        value="constant"/>
-                                                                <xs:enumeration
-                                                                        value="piecewiseLinear"/>
-                                                                <xs:enumeration
-                                                                        value="polynomial"/>
+                                                                <xs:enumeration value="constant"/>
+                                                                <xs:enumeration value="piecewiseLinear"/>
+                                                                <xs:enumeration value="polynomial"/>
+                                                                <xs:enumeration value="piecewisePolynomial"/>
                                                             </xs:restriction>
                                                         </xs:simpleType>
                                                     </xs:element>
