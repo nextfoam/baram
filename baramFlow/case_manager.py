@@ -24,6 +24,7 @@ from .solver_status import SolverStatus, RunType, SolverProcess
 
 SOLVER_CHECK_INTERVAL = 500
 BATCH_DIRECTORY_NAME = 'batch'
+POD_DIRECTORY_NAME = 'pod'
 
 _mutex = Lock()
 
@@ -224,6 +225,122 @@ class BatchCase(Case):
             self._process.terminate()
 
 
+class PODCase(Case):
+    def __init__(self):
+        super().__init__()
+
+        self._path = self._project.path / POD_DIRECTORY_NAME
+
+        self._process = None
+
+    def process(self) -> SolverProcess:
+        return self._process
+
+    def kill(self):
+        if self._process:
+            self._process.kill()
+
+    async def initializeGenerateROM(self, cases):
+        import os
+        from pathlib import Path
+        import shutil
+        dir_pod = str(self._project.path / POD_DIRECTORY_NAME)
+        # if os.path.exists(dir_pod): rmtree(dir_pod)
+        if os.path.exists(dir_pod): shutil.rmtree(dir_pod)
+        os.makedirs(dir_pod, exist_ok=True)
+        link_constant = self._path / "constant"
+        if not link_constant.exists(): link_constant.symlink_to(self._project.path / "case/constant")
+        link_system = self._path / "system"
+        if not link_system.exists(): link_system.symlink_to(self._project.path / "case/system")
+
+        # reconstructed case
+        for iCase, case in enumerate(cases):
+            nameCase = case[0]
+            snapshotPath = str(self._project.path) + "/%s/"%BATCH_DIRECTORY_NAME + nameCase
+            subfolders = [f for f in os.listdir(snapshotPath) if os.path.isdir(os.path.join(snapshotPath, f)) and f.isdigit()]
+            if len(subfolders) > 0:
+                largest_subfolder = max(subfolders, key=lambda x: int(x))
+                pathLink = str(self._project.path / POD_DIRECTORY_NAME) + "/%d"%iCase
+                pathTarget = snapshotPath + "/%s"%largest_subfolder
+                Path(pathLink).symlink_to(pathTarget)
+        
+        # decomposed case
+        for iCase, case in enumerate(cases):
+            nameCase = case[0]
+            snapshotPath = str(self._project.path) + "/%s/"%BATCH_DIRECTORY_NAME + nameCase
+            subfoldersProcessor = [f for f in os.listdir(snapshotPath) if os.path.isdir(os.path.join(snapshotPath, f)) and "processor" in f]
+            for pProc in subfoldersProcessor:
+                processorPath = os.path.join(snapshotPath, pProc)
+                # polyMesh
+                if iCase == 0:
+                    pathLink = str(self._project.path / POD_DIRECTORY_NAME) + "/%s/constant"%(pProc)
+                    pathTarget = processorPath + "/constant"
+                    os.makedirs(str(self._project.path / POD_DIRECTORY_NAME) + "/%s"%(pProc), exist_ok=True)
+                    Path(pathLink).symlink_to(pathTarget)
+                # time
+                subfolders = [f for f in os.listdir(processorPath) if os.path.isdir(os.path.join(processorPath, f)) and f.isdigit()]
+                largest_subfolder = max(subfolders, key=lambda x: int(x))
+                pathLink = str(self._project.path / POD_DIRECTORY_NAME) + "/%s/%d"%(pProc, iCase)
+                pathTarget = processorPath + "/%s"%largest_subfolder
+                os.makedirs(str(self._project.path / POD_DIRECTORY_NAME) + "/%s"%(pProc), exist_ok=True)
+                Path(pathLink).symlink_to(pathTarget)
+
+    async def initializeReconstruct(self, listSnapshot, caseToReconstruct):
+        ### temp input format
+        with open(str(self._project.path) + "/%s/Vinput.dat"%POD_DIRECTORY_NAME, 'w') as f:
+            f.write("%d %d\n"%(len(listSnapshot), len(caseToReconstruct)))
+            for iCase, (nameCase, case) in enumerate(listSnapshot.items()):
+                f.write("%s\n"%(" ".join(list(case.values()))))
+        
+        with open(str(self._project.path) + "/%s/CurrentInput.dat"%POD_DIRECTORY_NAME, 'w') as f:
+            f.write("1 %d\n"%len(caseToReconstruct))
+            f.write("%s\n"%(" ".join(list(map(str, caseToReconstruct)))))
+
+    async def runGenerateROM(self, cases):
+        try:
+            await self.initializeGenerateROM(cases)
+
+            stdout = open(self._path / STDOUT_FILE_NAME, 'w')
+            stderr = open(self._path / STDERR_FILE_NAME, 'w')
+
+            self._process = await runParallelUtility('baramPODbuildROM', parallel=parallel.getEnvironment(), cwd=self._path,
+                                                     stdout=stdout, stderr=stderr)
+            self._setStatus(SolverStatus.RUNNING)
+            result = await self._process.wait()
+            self._process = None
+
+            self._setStatus(SolverStatus.ENDED if result == 0 else SolverStatus.ERROR)
+        except Exception as e:
+            self._setStatus(SolverStatus.ERROR)
+            raise e
+
+    async def runReconstruct(self, listSnapshot, caseToReconstruct):
+        try:
+            await self.initializeReconstruct(listSnapshot, caseToReconstruct)
+
+            stdout = open(self._path / STDOUT_FILE_NAME, 'w')
+            stderr = open(self._path / STDERR_FILE_NAME, 'w')
+
+            self._process = await runParallelUtility('baramPODreconstruct', parallel=parallel.getEnvironment(), cwd=self._path,
+                                                     stdout=stdout, stderr=stderr)
+            self._setStatus(SolverStatus.RUNNING)
+            result = await self._process.wait()
+            self._process = None
+
+            if result == 0:
+                self._setStatus(SolverStatus.ENDED)
+                self.setReconstructedCase()
+            else:
+                self._setStatus(SolverStatus.ERROR)
+        except Exception as e:
+            self._setStatus(SolverStatus.ERROR)
+            raise e
+
+    async def setReconstructedCase(self):
+        ### transfer reconstructed field from pod case to batch case
+        return
+
+
 class CaseManager(QObject):
     progress = Signal(str)
     caseLoaded = Signal(str)
@@ -335,6 +452,14 @@ class CaseManager(QObject):
             await reader.setupReader()
 
         await GraphicsDB().updatePolyMeshAll()
+
+    async def podRunGenerateROM(self, cases):
+        tempPodCase = PODCase()
+        await tempPodCase.runGenerateROM(cases)
+
+    async def podRunReconstruct(self, listSnapshot, caseToReconstruct):
+        tempPodCase = PODCase()
+        await tempPodCase.runReconstruct(listSnapshot, caseToReconstruct)
 
     async def initialize(self):
         case = await self.loadLiveCase()

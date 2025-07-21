@@ -18,6 +18,7 @@ from widgets.progress_dialog import ProgressDialog
 from baramFlow.case_manager import CaseManager, BatchCase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.coredb.filedb import FileDB
 from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.openfoam.case_generator import CanceledException
 from baramFlow.openfoam.constant.turbulence_properties import TurbulenceProperties
@@ -29,6 +30,7 @@ from baramFlow.openfoam.system.fv_solution import FvSolution
 from baramFlow.view.widgets.content_page import ContentPage
 from .batch_case_list import BatchCaseList
 from .batch_cases_import_dialog import BatchCasesImportDialog
+from .snapshot_case_list import SnapshotCaseList
 from .process_information_page_ui import Ui_ProcessInformationPage
 from .user_parameters_dialog import UserParametersDialog
 
@@ -88,6 +90,7 @@ class ProcessInformationPage(ContentPage):
         self._ui.toBatchMode.clicked.connect(self._toBatchMode)
         self._ui.exportBatchCase.clicked.connect(self._openExportDialog)
         self._ui.importBatchCases.clicked.connect(self._openImportDialog)
+        self._ui.buildROM.clicked.connect(self._buildROM)
 
         self._project.solverStatusChanged.connect(self._statusChanged)
         self._caseManager.caseLoaded.connect(self._caseLoaded)
@@ -102,11 +105,13 @@ class ProcessInformationPage(ContentPage):
             self._ui.batchCases.hide()
             self._ui.toBatchMode.show()
             self._ui.toLiveMode.hide()
+            self._ui.buildROM.hide()
         else:
             self._ui.updateConfiguration.hide()
             self._ui.batchCases.show()
             self._ui.toBatchMode.hide()
             self._ui.toLiveMode.show()
+            self._ui.buildROM.show()
 
         self._runningMode = mode
 
@@ -326,3 +331,32 @@ class ProcessInformationPage(ContentPage):
         self._batchCaseList.close()
 
         super().closeEvent(event)
+
+    @qasync.asyncSlot()
+    async def _buildROM(self):
+        progressDialog = ProgressDialog(self, self.tr('Build ROM'), True)
+        self._caseManager.progress.connect(progressDialog.setLabelText)
+        progressDialog.cancelClicked.connect(self._caseManager.cancel)
+        progressDialog.open()
+
+        listSelectedCase = [(name, self._batchCaseList._cases[name]) for name, item in self._batchCaseList._items.items() if item in self._batchCaseList._list.selectedItems()]
+        statuses = self._project.loadBatchStatuses()
+        listIncompleteCase = []
+        for iCase, cCase in enumerate(listSelectedCase):
+            nameCase = cCase[0]
+            if statusName := statuses.get(nameCase):
+                status = SolverStatus[statusName]
+                if status != SolverStatus.ENDED:
+                    listIncompleteCase.append(nameCase)
+        if len(listIncompleteCase) > 0:
+            progressDialog.finish(self.tr('Calculation of the following cases has not been completed.\n\n') + ", ".join(listIncompleteCase))
+            return
+
+        self._project.fileDB().putDataFrame(FileDB.Key.SNAPSHOT_CASES.value, pd.DataFrame.from_dict(dict(listSelectedCase), orient='index'))
+        try:
+            await self._caseManager.podRunGenerateROM(listSelectedCase)
+            progressDialog.finish(self.tr('Calculation started'))
+        except Exception as e:
+            progressDialog.finish(self.tr('POD run error : ') + str(e))
+        finally:
+            self._caseManager.progress.disconnect(progressDialog.setLabelText)

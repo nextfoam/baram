@@ -6,7 +6,7 @@ import logging
 from PySide6.QtCore import QObject, Signal
 
 from baramFlow.app import app
-from baramFlow.case_manager import BATCH_DIRECTORY_NAME
+from baramFlow.case_manager import BATCH_DIRECTORY_NAME, POD_DIRECTORY_NAME
 from baramFlow.coredb.project import Project
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram import utils
@@ -37,6 +37,7 @@ class RedistributionTask(QObject):
 
         liveCaseFolder = Project.instance().path.joinpath(CASE_DIRECTORY_NAME)
         batchRoot      = Project.instance().path.joinpath(BATCH_DIRECTORY_NAME)  # noqa: E221
+        podRoot        = Project.instance().path.joinpath(POD_DIRECTORY_NAME)  # noqa: E221
         caseFolders = list(batchRoot.iterdir()) if batchRoot.exists() else []
         caseFolders.insert(0, liveCaseFolder)
 
@@ -116,6 +117,8 @@ class RedistributionTask(QObject):
 
             async with OpenFOAMReader() as reader:
                 await reader.setupReader()
+
+            utils.rmtree(podRoot)
 
             loader = PolyMeshLoader()
             loader.progress.connect(self.progress)
