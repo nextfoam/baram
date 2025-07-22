@@ -19,6 +19,7 @@ from PySide6.QtCore import Qt, QEvent, QTimer, Signal
 
 from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
+from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.view.results.graphics.graphic_dock import GraphicDock
 from libbaram.exception import CanceledException
 from libbaram.openfoam.polymesh import removeVoidBoundaries
@@ -629,6 +630,9 @@ class MainWindow(QMainWindow):
             # This workaround is not necessary on Windows because BARAM for Windows
             #     uses custom-built VTK that is compiled with VTK_ALLOWTHREADS
             await asyncio.sleep(0.1)
+
+            async with OpenFOAMReader() as reader:
+                await reader.setupReader()
 
             loader = PolyMeshLoader()
             loader.progress.connect(progressDialog.setLabelText)

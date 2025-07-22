@@ -21,7 +21,7 @@ class App(QObject):
         super().__init__()
 
         self._window = None
-        self._vtkMesh = None
+        self._meshModel = None
         self._cellZoneActors = None
         self._internalMeshActors = None
         self._translator = None
@@ -63,8 +63,8 @@ class App(QObject):
     def qApplication(self, application):
         self._qApplication = application
 
-    def vtkMesh(self):
-        return self._vtkMesh
+    def meshModel(self):
+        return self._meshModel
 
     def cellZoneActor(self, czid):
         return self._cellZoneActors[czid].face
@@ -77,11 +77,11 @@ class App(QObject):
         self._window.load()
         self._window.show()
 
-    def updateVtk(self, mesh, cellZoneActors, internalMeshActors):
-        if self._vtkMesh:
-            self._vtkMesh.deactivate()
+    def updateMeshModel(self, meshModel, cellZoneActors, internalMeshActors):
+        if self._meshModel:
+            self._meshModel.deactivate()
 
-        self._vtkMesh = mesh
+        self._meshModel = meshModel
         self._cellZoneActors = cellZoneActors
         self._internalMeshActors = internalMeshActors
         self.showMesh()
@@ -90,12 +90,12 @@ class App(QObject):
         self._window.meshUpdated()
 
     def showMesh(self):
-        if self._vtkMesh:
-            self._vtkMesh.activate()
+        if self._meshModel:
+            self._meshModel.activate()
 
     def hideMesh(self):
-        if self._vtkMesh:
-            self._vtkMesh.deactivate()
+        if self._meshModel:
+            self._meshModel.deactivate()
 
     def quit(self):
         self._window = None
