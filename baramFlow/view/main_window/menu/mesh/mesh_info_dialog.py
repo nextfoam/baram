@@ -26,7 +26,7 @@ class MeshInfoDialog(QDialog):
         QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.CursorShape.WaitCursor))
 
         try:
-            mesh: MeshModel = app.vtkMesh()
+            mesh: MeshModel = app.meshModel()
 
             xMin, xMax, yMin, yMax, zMin, zMax = await mesh.getBounds()
 

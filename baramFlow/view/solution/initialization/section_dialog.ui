@@ -207,6 +207,18 @@
        <item>
         <widget class="QWidget" name="editForm" native="true">
          <layout class="QVBoxLayout" name="verticalLayout_4">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
           <item>
            <widget class="QStackedWidget" name="sectionStack">
             <property name="font">
@@ -596,85 +608,103 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="velocityGroup">
-            <property name="title">
-             <string>Velocity</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-            <layout class="QFormLayout" name="formLayout_4">
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_1">
-               <property name="text">
-                <string>X-Velocity (m/s)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="ux"/>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>Y-Velocity (m/s)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QLineEdit" name="uy"/>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="label_6">
-               <property name="text">
-                <string>Z-Velocity (m/s)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QLineEdit" name="uz"/>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QWidget" name="properties" native="true">
-            <layout class="QFormLayout" name="formLayout_3">
+           <widget class="QWidget" name="widget_10" native="true">
+            <layout class="QVBoxLayout" name="initialValuesLayout">
              <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
               <number>0</number>
              </property>
              <property name="rightMargin">
               <number>0</number>
              </property>
-             <item row="0" column="0">
-              <widget class="QCheckBox" name="pressureCheckBox">
-               <property name="text">
-                <string>Pressure (Pa)</string>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QGroupBox" name="velocityGroup">
+               <property name="title">
+                <string>Velocity</string>
                </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="pressure">
-               <property name="enabled">
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="checked">
                 <bool>false</bool>
                </property>
+               <layout class="QFormLayout" name="formLayout_4">
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_1">
+                  <property name="text">
+                   <string>X-Velocity (m/s)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="ux"/>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_5">
+                  <property name="text">
+                   <string>Y-Velocity (m/s)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QLineEdit" name="uy"/>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_6">
+                  <property name="text">
+                   <string>Z-Velocity (m/s)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QLineEdit" name="uz"/>
+                </item>
+               </layout>
               </widget>
              </item>
-             <item row="1" column="0">
-              <widget class="QCheckBox" name="temperatureCheckBox">
-               <property name="text">
-                <string>Temperature (K)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="temperature">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
+             <item>
+              <widget class="QWidget" name="properties" native="true">
+               <layout class="QFormLayout" name="formLayout_3">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="pressureCheckBox">
+                  <property name="text">
+                   <string>Pressure (Pa)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="pressure">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QCheckBox" name="temperatureCheckBox">
+                  <property name="text">
+                   <string>Temperature (K)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="temperature">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>
@@ -771,6 +801,7 @@
   <tabstop>cy</tabstop>
   <tabstop>cz</tabstop>
   <tabstop>sphereRadius</tabstop>
+  <tabstop>velocityGroup</tabstop>
   <tabstop>ux</tabstop>
   <tabstop>uy</tabstop>
   <tabstop>uz</tabstop>
@@ -778,6 +809,7 @@
   <tabstop>pressure</tabstop>
   <tabstop>temperatureCheckBox</tabstop>
   <tabstop>temperature</tabstop>
+  <tabstop>overrideBoundaryValue</tabstop>
   <tabstop>nextButton</tabstop>
   <tabstop>cancelButton</tabstop>
  </tabstops>
