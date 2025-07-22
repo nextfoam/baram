@@ -6,8 +6,7 @@ from enum import Enum, IntEnum, auto
 from typing import Optional
 
 import qasync
-from PySide6.QtWidgets import QSizePolicy, QRadioButton, QGridLayout, QLabel, QCheckBox, QLineEdit, QGroupBox, QWidget
-from PySide6.QtWidgets import QVBoxLayout
+from PySide6.QtWidgets import QSizePolicy, QRadioButton, QGridLayout, QLabel, QCheckBox, QLineEdit, QGroupBox
 
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.material_db import MaterialDB
@@ -94,12 +93,6 @@ class SectionDialog(ResizableDialog):
         self._scalarsWidget = None
         self._speciesWidget = None
 
-        self._initialValuesLayout = None
-
-        widget = QWidget(self)
-        self._ui.editForm.layout().addWidget(widget)
-        self._initialValuesLayout = QVBoxLayout()
-
         if CaseManager().isActive():
             self._ui.editForm.setEnabled(False)
             self._ui.ok.setEnabled(False)
@@ -115,17 +108,17 @@ class SectionDialog(ResizableDialog):
                 self._volumeFractionWidget = volumeFractionWidget
                 self._volumeFractionWidget.setCheckable(True)
                 self._volumeFractionWidget.setChecked(False)
-                self._initialValuesLayout.addWidget(self._volumeFractionWidget)
+                self._ui.initialValuesLayout.addWidget(self._volumeFractionWidget)
 
             db = coredb.CoreDB()
             if scalars := db.getUserDefinedScalarsInRegion(self._rname):
                 self._scalarsWidget = UserDefinedScalarList(scalars)
-                self._initialValuesLayout.addWidget(self._scalarsWidget)
+                self._ui.initialValuesLayout.addWidget(self._scalarsWidget)
 
             speciesWidget = SpeciesWidget(mid, True)
             if speciesWidget.on():
                 self._speciesWidget = speciesWidget
-                self._initialValuesLayout.addWidget(self._speciesWidget)
+                self._ui.initialValuesLayout.addWidget(self._speciesWidget)
         else:
             self._ui.velocityGroup.hide()
             self._ui.properties.layout().setRowVisible(self._ui.pressure, False)
