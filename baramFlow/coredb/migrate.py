@@ -916,9 +916,9 @@ def _version_9(root: etree.Element):
 def _version_10(root: etree.Element):
     logger.debug('  Upgrading to v11')
 
-    root.set('version', '11')
+    # root.set('version', '11')
 
-    if (p := root.find('materials/material/specificHeat', namespaces=_nsmap)) is not None:
+    for p in root.findall('materials/material/specificHeat', namespaces=_nsmap):
         if p.find('piecewisePolynomial', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "piecewisePolynomial" to {p}')
 
@@ -930,7 +930,6 @@ def _version_10(root: etree.Element):
                                  f' <highCoefficients>0 0 0 0 0 0 0</highCoefficients>'
                                  '</piecewisePolynomial>')
             p.append(e)
-
 
 _fTable = [
     None,
