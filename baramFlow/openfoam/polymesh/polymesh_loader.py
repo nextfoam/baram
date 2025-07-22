@@ -104,16 +104,19 @@ class PolyMeshLoader(QObject):
         self.progress.emit(self.tr("Loading Mesh..."))
         boundaries = self._loadBoundaries()
 
+        async with OpenFOAMReader() as reader:
+            await reader.setupReader()
+
         vtkMesh = await self._getVtkMesh()
         updated = self._updateDB(vtkMesh, boundaries)
-        await self._updateVtkMesh(vtkMesh)
+        await self._updateMeshModel(vtkMesh)
         if updated:
             app.updateMesh()
 
     async def loadVtk(self):
         self.progress.emit(self.tr("Loading Mesh..."))
         vtkMesh = await self._getVtkMesh()
-        await self._updateVtkMesh(vtkMesh)
+        await self._updateMeshModel(vtkMesh)
 
     def _loadBoundaries(self):
         boundaries = {}
@@ -254,15 +257,15 @@ class PolyMeshLoader(QObject):
 
         return True
 
-    async def _updateVtkMesh(self, vtkMesh):
+    async def _updateMeshModel(self, vtkMesh):
         db = coredb.CoreDB()
 
-        viewModel = MeshModel()
+        meshModel = MeshModel()
         cellZones = {}
         internalMeshes = {}
         for rname in db.getRegions():
             for bcid, bcname, _ in db.getBoundaryConditions(rname):
-                viewModel.setActorInfo(bcid, vtkMesh[rname]['boundary'][bcname])
+                meshModel.setActorInfo(bcid, vtkMesh[rname]['boundary'][bcname])
 
             for czid, czname in db.getCellZones(rname):
                 if not CellZoneDB.isRegion(czname):
@@ -270,10 +273,7 @@ class PolyMeshLoader(QObject):
 
             internalMeshes[rname] = vtkMesh[rname]['internalMesh']
 
-        app.updateVtk(viewModel, cellZones, internalMeshes)
-
-        async with OpenFOAMReader() as reader:
-            await reader.setupReader()
+        app.updateMeshModel(meshModel, cellZones, internalMeshes)
 
         ScaffoldsDB().rematchBoundaries()
 

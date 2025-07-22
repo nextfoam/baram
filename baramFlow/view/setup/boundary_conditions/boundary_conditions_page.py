@@ -67,24 +67,24 @@ DIALOGS = {
 class BoundaryItem(QTreeWidgetItem):
     def __init__(self, parent, widget):
         super().__init__(parent, widget.bcid)
-        
+
         self._widget = widget
-        
+
         self.setFlags(self.flags() | Qt.ItemIsUserCheckable)
         self.setCheckState(0, Qt.Checked)
-        
+
         self.treeWidget().setItemWidget(self, 1, widget)
-    
+
     def __lt__(self, other):
         return self._widget.bcname().lower() < other._widget.bcname().lower()
-        
+
     def bctype(self):
         return self._widget.type()
 
     def reloadType(self):
         self._widget.setType(BoundaryDB.getBoundaryType(self.type()))
-    
-    
+
+
 class BoundaryConditionsPage(ContentPage):
     def __init__(self, parent):
         super().__init__(parent)
@@ -95,7 +95,7 @@ class BoundaryConditionsPage(ContentPage):
 
         self._dialog = None
         self._typePicker = None
-        
+
         self._ui.boundaries.setSortingEnabled(True)
         self._ui.boundaries.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
@@ -131,7 +131,7 @@ class BoundaryConditionsPage(ContentPage):
         self._ui.boundaries.expandAll()
         self._ui.boundaries.resizeColumnToContents(0)
 
-        if app.vtkMesh():
+        if app.meshModel():
             self._selectPickedBoundary()
             self._meshUpdated()
 
@@ -141,7 +141,7 @@ class BoundaryConditionsPage(ContentPage):
         self._ui.edit.setEnabled(not caseManager.isActive())
 
     def _meshUpdated(self):
-        app.vtkMesh().currentActorChanged.connect(self._selectPickedBoundary)
+        app.meshModel().currentActorChanged.connect(self._selectPickedBoundary)
 
     def _filterChanged(self):
         filterText = self._ui.filter.text().lower()
@@ -176,9 +176,9 @@ class BoundaryConditionsPage(ContentPage):
         bcid = item.type()
         if bcid:
             if item.checkState(column) == Qt.CheckState.Checked:
-                app.vtkMesh().showActor(bcid)
+                app.meshModel().showActor(bcid)
             else:
-                app.vtkMesh().hideActor(bcid)
+                app.meshModel().hideActor(bcid)
 
     def _doubleClicked(self, item, column):
         if column and not CaseManager().isActive():
@@ -233,11 +233,11 @@ class BoundaryConditionsPage(ContentPage):
         self._typePicker.open(bcid, point)
 
     def _currentBoundaryChanged(self, current):
-        app.vtkMesh().setCurrentId(current.type())
+        app.meshModel().setCurrentId(current.type())
 
     def _selectPickedBoundary(self):
-        if app.vtkMesh().currentId():
-            self._ui.boundaries.setCurrentItem(self._boundaries[app.vtkMesh().currentId()])
+        if app.meshModel().currentId():
+            self._ui.boundaries.setCurrentItem(self._boundaries[app.meshModel().currentId()])
         else:
             self._ui.boundaries.clearSelection()
 

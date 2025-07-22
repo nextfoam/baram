@@ -39,6 +39,7 @@ class OpenFOAMReader(QObject):
         super().__init__()
 
         self._acquired = False
+        self._readerSetUpOnEnter = False
 
         self._reader: Optional[vtkPOpenFOAMReader] = None
 
@@ -49,6 +50,7 @@ class OpenFOAMReader(QObject):
 
         if self._reader is None:
             await self.setupReader()
+            self._readerSetUpOnEnter = True
 
         return self
 
@@ -56,6 +58,7 @@ class OpenFOAMReader(QObject):
         _mutex.release()
 
         self._acquired = False
+        self._readerSetUpOnEnter = False
 
         logger.debug('exit without error')
         return None
@@ -74,6 +77,10 @@ class OpenFOAMReader(QObject):
         if caseRoot is None:
             return
 
+        if self._readerSetUpOnEnter:
+            return
+
+        self._caseRoot = caseRoot
         self._reader = vtkPOpenFOAMReader()
 
         self._reader.EnableAllCellArrays()
