@@ -45,7 +45,45 @@
         </referencePressureLocation>
     </referenceValues>
 
-    <materials/>
+    <materials>
+        <material mid="1">
+            <name>air</name>
+            <type>nonmixture</type>
+            <phase>gas</phase>
+            <molecularWeight>28.966</molecularWeight>
+            <absorptionCoefficient>0</absorptionCoefficient>
+            <density>
+                <specification>constant</specification>
+                <constant>1.225</constant>
+                <polynomial>0</polynomial>
+                <pengRobinsonParameters>
+                    <criticalTemperature>132.531</criticalTemperature>
+                    <criticalPressure>3.79E+06</criticalPressure>
+                    <criticalSpecificVolume>0.0029</criticalSpecificVolume>
+                    <acentricFactor>0.0335</acentricFactor>
+                </pengRobinsonParameters>
+            </density>
+            <specificHeat>
+                <specification>constant</specification>
+                <constant>1006</constant>
+                <polynomial>0</polynomial>
+            </specificHeat>
+            <viscosity>
+                <specification>constant</specification>
+                <constant>1.79E-05</constant>
+                <polynomial>0</polynomial>
+                <sutherland>
+                    <coefficient>1.46E-06</coefficient>
+                    <temperature>110.4</temperature>
+                </sutherland>
+            </viscosity>
+            <thermalConductivity>
+                <specification>constant</specification>
+                <constant>0.0245</constant>
+                <polynomial>0</polynomial>
+            </thermalConductivity>
+        </material>
+    </materials>
 
     <models>
         <multiphaseModels>
