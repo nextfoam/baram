@@ -20,12 +20,12 @@ from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import GeometryType, Shape, CFDType
+from baramMesh.db.configurations import defaultsDB
 from baramMesh.openfoam.system.snappy_hex_mesh_dict import SnappyHexMeshDict
 from baramMesh.view.main_window.main_window_ui import Ui_MainWindow
 from baramMesh.view.step_page import StepPage
 from .surface_refinement_dialog import SurfaceRefinementDialog
 from .volume_refinement_dialog import VolumeRefinementDialog
-from ...db.configurations import defaultsDB
 
 
 def Plane(ox, oy, oz, nx, ny, nz):
@@ -176,14 +176,14 @@ class CastellationPage(StepPage):
                     groupId, element.value('groupName'),
                     surfaceRefinement.value('minimumLevel'), surfaceRefinement.value('maximumLevel'))
             else:
-                self._.removeElement('castellation/refinementSurfaces', groupId)
+                self._db.removeElement('castellation/refinementSurfaces', groupId)
 
         for groupId, element in castellation.elements('refinementVolumes').items():
             if groupId in groups[GeometryType.VOLUME.value]:
                 self._addVolumeRefinementItem(groupId,
                                               element.value('groupName'), element.value('volumeRefinementLevel'))
             else:
-                self._.removeElement('castellation/refinementVolumes', groupId)
+                self._db.removeElement('castellation/refinementVolumes', groupId)
 
         self._loaded = True
         self._updateControlButtons()
