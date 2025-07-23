@@ -16,11 +16,13 @@ from baramFlow.openfoam.file_system import FileSystem
 
 
 EQUATION_OF_STATES = {
-    DensitySpecification.CONSTANT.value                     : 'rhoConst',
-    DensitySpecification.PERFECT_GAS.value                  : 'perfectGas',
-    DensitySpecification.POLYNOMIAL.value                   : 'icoPolynomial',
-    DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS.value   : 'incompressiblePerfectGas',
-    DensitySpecification.REAL_GAS_PENG_ROBINSON.value       : 'PengRobinsonGas'
+    DensitySpecification.CONSTANT                   : 'rhoConst',
+    DensitySpecification.PERFECT_GAS                : 'perfectGas',
+    DensitySpecification.POLYNOMIAL                 : 'icoPolynomial',
+    DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS : 'incompressiblePerfectGas',
+    DensitySpecification.REAL_GAS_PENG_ROBINSON     : 'PengRobinsonGas',
+    DensitySpecification.BOUSSINESQ                 : 'Boussinesq',
+    DensitySpecification.PERFECT_FLUID              : 'perfectFluid'
 }
 
 
@@ -40,7 +42,7 @@ def _constructFluid(region: str):
     tModel = TurbulenceModelsDB.getModel()
     viscositySpec = ViscositySpecification(db.getValue(path + '/viscosity/specification'))
     specificHeatSpec = Specification(db.getValue(path + '/specificHeat/specification'))
-    densitySpec = db.getValue(path + '/density/specification')
+    densitySpec = DensitySpecification(db.getValue(path + '/density/specification'))
 
     thermo = {
         'type': 'heRhoThermo',
@@ -101,26 +103,40 @@ def _constructFluid(region: str):
 def _mixtureEquationOfState(spec, db, path):
     data = None
 
-    if spec == 'constant':
+    if spec == DensitySpecification.CONSTANT:
         rho = db.getValue(path + '/density/constant')
         data = {
             'rho': rho
         }
-    elif spec == 'polynomial':
+    elif spec == DensitySpecification.POLYNOMIAL:
         rhoCoeffs: list[float] = [0] * 8  # To make sure that rhoCoeffs has length of 8
         for i, n in enumerate(db.getValue(path + '/density/polynomial').split()):
             rhoCoeffs[i] = float(n)
         data = {
             'rhoCoeffs<8>': rhoCoeffs
         }
-    elif spec == 'incompressiblePerfectGas':
+    elif spec == DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS:
         referencePressure = float(db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'))
         operatingPressure = float(db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
         data = {
             'pRef': referencePressure + operatingPressure
         }
-    elif spec == 'perfectGas':
+    elif spec == DensitySpecification.PERFECT_GAS:
         data = None
+    elif spec == DensitySpecification.BOUSSINESQ:
+        data = {
+            'rho0': db.getValue(path + '/density/boussinesq/rho0'),
+            'T0': db.getValue(path + '/density/boussinesq/T0'),
+            'beta': db.getValue(path + '/density/boussinesq/beta')
+        }
+    elif spec == DensitySpecification.PERFECT_FLUID:
+        rho0 = float(db.getValue(path + '/density/perfectFluid/rho0'))
+        data = {
+            'rho0': rho0,
+            'R': 1 / (rho0
+                      * float(db.getValue(path + '/density/perfectFluid/T'))
+                      * float(db.getValue(path + '/density/perfectFluid/beta')))
+        }
 
     return data
 

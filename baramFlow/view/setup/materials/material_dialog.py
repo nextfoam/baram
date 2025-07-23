@@ -8,6 +8,7 @@ from widgets.async_message_box import AsyncMessageBox
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
+from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.material_schema import Phase, MaterialType
 from baramFlow.coredb.material_schema import Specification, ViscositySpecification, DensitySpecification
@@ -121,6 +122,14 @@ class MaterialDialog(ResizableDialog):
             self._ui.acentricFactor.setText(
                 db.getValue(self._xpath + '/density/pengRobinsonParameters/acentricFactor'))
 
+            self._ui.boussinesqRho0.setText(db.getValue(self._xpath + '/density/boussinesq/rho0'))
+            self._ui.boussinesqT0.setText(db.getValue(self._xpath + '/density/boussinesq/T0'))
+            self._ui.boussinesqBeta.setText(db.getValue(self._xpath + '/density/boussinesq/beta'))
+        elif self._phase == Phase.LIQUID:
+            self._ui.perfectFluidRho0.setText(db.getValue(self._xpath + '/density/perfectFluid/rho0'))
+            self._ui.perfectFluidT.setText(db.getValue(self._xpath + '/density/perfectFluid/T'))
+            self._ui.perfectFluidBeta.setText(db.getValue(self._xpath + '/density/perfectFluid/beta'))
+
         if self._phase != Phase.SOLID:
             self._setupViscositySpecification(viscositySpecification)
             self._ui.constantViscosity.setText(db.getValue(self._xpath + '/viscosity/constant'))
@@ -182,6 +191,20 @@ class MaterialDialog(ResizableDialog):
                                   self._ui.criticalSpecificVolume.text(), self.tr('Critical Specific Volume'))
                     db.setValue(self._xpath + '/density/pengRobinsonParameters/acentricFactor',
                                   self._ui.acentricFactor.text(), self.tr('Acentric Factor'))
+                elif specification == DensitySpecification.BOUSSINESQ:
+                    db.setValue(self._xpath + '/density/boussinesq/rho0', self._ui.boussinesqRho0.text(),
+                                self.tr('Reference Density'))
+                    db.setValue(self._xpath + '/density/boussinesq/T0', self._ui.boussinesqT0.text(),
+                                self.tr('Reference Temperature'))
+                    db.setValue(self._xpath + '/density/boussinesq/beta', self._ui.boussinesqBeta.text(),
+                                self.tr('Thermal Expansion Coefficient'))
+                elif specification == DensitySpecification.PERFECT_FLUID:
+                    db.setValue(self._xpath + '/density/perfectFluid/rho0', self._ui.perfectFluidRho0.text(),
+                                self.tr('Reference Density'))
+                    db.setValue(self._xpath + '/density/perfectFluid/T', self._ui.perfectFluidT.text(),
+                                self.tr('Reference Temperature'))
+                    db.setValue(self._xpath + '/density/perfectFluid/beta', self._ui.perfectFluidBeta.text(),
+                                self.tr('Compressibility'))
 
                 viscositySpecification = None
                 if self._phase != Phase.SOLID:
@@ -322,28 +345,27 @@ class MaterialDialog(ResizableDialog):
             self._ui.densityType.setEnabled(False)
         else:
             if self._phase == Phase.GAS:
-                self._setupSpecificationCombo(
-                    self._ui.densityType, [
-                        DensitySpecification.CONSTANT,
-                        DensitySpecification.PERFECT_GAS,
-                        DensitySpecification.POLYNOMIAL,
-                        DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS,
-                    ]
-                )
+                densityTypes = [
+                    DensitySpecification.CONSTANT,
+                    DensitySpecification.PERFECT_GAS,
+                    DensitySpecification.POLYNOMIAL,
+                    DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS
+                ]
+
+                if ModelsDB.isEnergyModelOn() and GeneralDB.isPressureBased() and not ModelsDB().isMultiphaseModelOn():
+                    densityTypes.append(DensitySpecification.BOUSSINESQ)
             else:
+                densityTypes = [
+                    DensitySpecification.CONSTANT
+                ]
+
                 if self._phase == Phase.LIQUID and not ModelsDB.isMultiphaseModelOn():
-                    self._setupSpecificationCombo(
-                        self._ui.densityType, [
-                            DensitySpecification.CONSTANT,
-                            DensitySpecification.POLYNOMIAL,
-                        ]
-                    )
-                else:
-                    self._setupSpecificationCombo(
-                        self._ui.densityType, [
-                            DensitySpecification.CONSTANT,
-                        ]
-                    )
+                    densityTypes.append(DensitySpecification.POLYNOMIAL)
+
+                    if ModelsDB.isEnergyModelOn() and GeneralDB.isPressureBased():
+                        densityTypes.append(DensitySpecification.PERFECT_FLUID)
+
+            self._setupSpecificationCombo(self._ui.densityType, densityTypes)
 
         self._ui.densityType.setCurrentData(spec)
 
@@ -422,6 +444,8 @@ class MaterialDialog(ResizableDialog):
         self._ui.densityEdit.setEnabled(specification == DensitySpecification.POLYNOMIAL)
         self._ui.constantDensity.setEnabled(specification == DensitySpecification.CONSTANT)
         self._ui.pengRobinsonParameters.setVisible(specification == DensitySpecification.REAL_GAS_PENG_ROBINSON)
+        self._ui.boussinesq.setVisible(specification == DensitySpecification.BOUSSINESQ)
+        self._ui.perfectFluid.setVisible(specification == DensitySpecification.PERFECT_FLUID)
 
     def _specificHeatTypeChanged(self, specification):
         self._ui.specificHeatEdit.setEnabled(specification != Specification.CONSTANT)

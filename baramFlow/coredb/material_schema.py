@@ -30,6 +30,8 @@ class DensitySpecification(Enum):
     POLYNOMIAL = 'polynomial'
     INCOMPRESSIBLE_PERFECT_GAS = 'incompressiblePerfectGas'
     REAL_GAS_PENG_ROBINSON = 'PengRobinsonGas'
+    BOUSSINESQ = 'boussinesq'
+    PERFECT_FLUID = 'perfectFluid'
 
 
 class ViscositySpecification(Enum):
@@ -171,6 +173,22 @@ def _pengRobinsonXML(values):
             "</pengRobinsonParameters>")
 
 
+def _boussinesqXML():
+    return ('<boussinesq xmlns="http://www.baramcfd.org/baram">'
+            '   <rho0>1</rho0>'
+            '   <T0>300</T0>'
+            '   <beta>3e-03</beta>'
+            '</boussinesq>')
+
+
+def _perfectFluidXML():
+    return ('<perfectFluid xmlns="http://www.baramcfd.org/baram">'
+            '   <rho0>1</rho0>'
+            '   <T>300</T>'
+            '   <beta>3e-03</beta>'
+            '</perfectFluid>')
+
+
 def _viscosityXML(phase, specification, values, viscosityProperties):
     def sutherland(values_):
         return ("<sutherland>"
@@ -228,6 +246,8 @@ def _materialXML(mid: str, name: str, base: dict, defaults: MaterialDefaults, ty
                 <constant>{base['density']}</constant>
                 <polynomial>0</polynomial>
                 {_pengRobinsonXML(base) if type_ != MaterialType.MIXTURE and phase == 'gas' else ''}
+                {_boussinesqXML() if type_ != MaterialType.MIXTURE and phase == 'gas' else ''}
+                {_perfectFluidXML() if type_ != MaterialType.MIXTURE and phase == 'liquid' else ''}
             </density>
             <specificHeat>
                 <specification>{specifications.specificHeat}</specification>

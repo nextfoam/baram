@@ -361,6 +361,8 @@
                                     <xs:enumeration value="polynomial"/>
                                     <xs:enumeration value="incompressiblePerfectGas"/>
                                     <xs:enumeration value="PengRobinsonGas"/>
+                                    <xs:enumeration value="boussinesq"/>
+                                    <xs:enumeration value="perfectFluid"/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
@@ -373,6 +375,24 @@
                                     <xs:element name="criticalPressure" type="inputNumberType"/>
                                     <xs:element name="criticalSpecificVolume" type="inputNumberType"/>
                                     <xs:element name="acentricFactor" type="inputNumberType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="boussinesq" minOccurs="0">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="rho0" type="inputNumberType"/>
+                                    <xs:element name="T0" type="inputNumberType"/>
+                                    <xs:element name="beta" type="inputNumberType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="perfectFluid" minOccurs="0">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="rho0" type="inputNumberType"/>
+                                    <xs:element name="T" type="inputNumberType"/>
+                                    <xs:element name="beta" type="inputNumberType"/>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>

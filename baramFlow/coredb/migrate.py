@@ -931,6 +931,31 @@ def _version_10(root: etree.Element):
                                  '</piecewisePolynomial>')
             p.append(e)
 
+    for p in root.findall('materials/material', namespaces=_nsmap):
+        phase = p.find('phase', namespaces=_nsmap).text
+        density = p.find('density', namespaces=_nsmap)
+
+        if phase == 'gas' and density.find('boussinesq', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "boussinesq" to {p}')
+
+            e = etree.fromstring('<boussinesq xmlns="http://www.baramcfd.org/baram">'
+                                 f' <rho0>1</rho0>' 
+                                 f' <T0>300</T0>'
+                                 f' <beta>3e-03</beta>'
+                                 '</boussinesq>')
+            density.append(e)
+
+        if phase == 'liquid' and density.find('perfectFluid', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "perfectFluid" to {p}')
+
+            e = etree.fromstring('<perfectFluid xmlns="http://www.baramcfd.org/baram">'
+                                 f' <rho0>1</rho0>'
+                                 f' <T>300</T>'
+                                 f' <beta>3e-03</beta>'
+                                 '</perfectFluid>')
+            density.append(e)
+
+
 _fTable = [
     None,
     _version_1,
