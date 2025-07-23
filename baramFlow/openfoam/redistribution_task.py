@@ -8,6 +8,7 @@ from PySide6.QtCore import QObject, Signal
 from baramFlow.app import app
 from baramFlow.case_manager import BATCH_DIRECTORY_NAME
 from baramFlow.coredb.project import Project
+from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram import utils
 from libbaram.openfoam.constants import CASE_DIRECTORY_NAME
 from libbaram.run import RunUtility
@@ -112,6 +113,9 @@ class RedistributionTask(QObject):
                         utils.rmtree(caseRoot / time)
 
                 self.progress.emit(self.tr(f'Decomposition done.'))
+
+            async with OpenFOAMReader() as reader:
+                await reader.setupReader()
 
             loader = PolyMeshLoader()
             loader.progress.connect(self.progress)
