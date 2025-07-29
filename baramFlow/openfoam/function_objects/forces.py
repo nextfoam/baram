@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from libbaram.openfoam.of_utils import openfoamLibraryPath
-
 
 def _foForcesBase(boundaries: [str], cofr: [float, float, float], rname: str) -> dict:
     data = {
         'type': 'forces',
-        'libs': [openfoamLibraryPath('libforces')],
+        'libs': ['forces'],
 
         'patches': boundaries,
         'CofR': cofr,

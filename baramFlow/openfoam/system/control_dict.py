@@ -36,7 +36,6 @@ from baramFlow.openfoam.solver import findSolver, usePrgh
 
 from libbaram.math import calucateDirectionsByRotation
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
-from libbaram.openfoam.of_utils import openfoamLibraryPath
 
 from .fv_options import generateSourceTermField, generateFixedValueField
 
@@ -209,7 +208,7 @@ class ControlDict(DictionaryFile):
         if (BoundaryDB.getBoundaryConditionsByType(BoundaryType.ABL_INLET)
                 or any([isAtmosphericWall(bcid)
                         for bcid, _ in BoundaryDB.getBoundaryConditionsByType(BoundaryType.WALL)])):
-            self._data['libs'] = [openfoamLibraryPath('libatmosphericModels')]
+            self._data['libs'] = ['atmosphericModels']
 
         # calling order is important for these three function objects
         # scalar transport FO should be called first so that monitoring and residual can refer the scalar fields
@@ -245,7 +244,7 @@ class ControlDict(DictionaryFile):
 
             self._data['functions'][fieldName] = {
                 'type': 'scalarTransport',
-                'libs': [openfoamLibraryPath('libsolverFunctionObjects')],
+                'libs': ['solverFunctionObjects'],
                 'field': fieldName,
                 'schemesField': 'scalar',
                 'nCorr': '0' if not GeneralDB.isTimeTransient() else self._db.getValue(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/numberOfCorrectors'),
@@ -316,7 +315,7 @@ class ControlDict(DictionaryFile):
 
             self._data['functions'][residualsName] = {
                 'type': 'solverInfo',
-                'libs': [openfoamLibraryPath('libutilityFunctionObjects')],
+                'libs': ['utilityFunctionObjects'],
                 'executeControl': 'timeStep',
                 'executeInterval': '1',
                 'writeResidualFields': 'no',

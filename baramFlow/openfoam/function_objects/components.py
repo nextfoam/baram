@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from libbaram.openfoam.of_utils import openfoamLibraryPath
-
 
 def _foComponentsBase(field: str):
     data = {
         'type':            'components',
-        'libs':            [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs':            ['fieldFunctionObjects'],
 
         'field':           field,
 
