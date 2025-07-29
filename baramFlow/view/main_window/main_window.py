@@ -167,6 +167,7 @@ class MainWindow(QMainWindow):
         self._dialog = None
 
         self._closeType = None
+        self._backgroundTasks = set()
 
         self._setupShortcuts()
 
@@ -203,18 +204,31 @@ class MainWindow(QMainWindow):
             event.ignore()
             return
 
+        task = asyncio.create_task(self._finishMainWindow())
+        self._backgroundTasks.add(task)
+        task.add_done_callback(self._backgroundTasks.discard)
+
+        super().closeEvent(event)
+
+    async def _finishMainWindow(self):
+        await GraphicsDB().close()
+
+        logging.getLogger().removeHandler(self._handler)
+        self._handler.close()
+
+        AppSettings.updateLastMainWindowGeometry(self.geometry())
+
         self._disconnectSignalsSlots()
 
         self._caseManager.clear()
         Project.close()
 
+        self._dockView.close()
+
         if self._closeType == CloseType.CLOSE_PROJECT:
             app.restart()
         else:
             app.quit()
-
-        super().closeEvent(event)
-
     def changeEvent(self, event):
         if event.type() == QEvent.Type.LanguageChange:
             self._ui.retranslateUi(self)
@@ -369,14 +383,6 @@ class MainWindow(QMainWindow):
                 await self._save()
             elif confirm == QMessageBox.StandardButton.Cancel:
                 return
-
-        await GraphicsDB().close()
-
-        self._dockView.close()
-        logging.getLogger().removeHandler(self._handler)
-        self._handler.close()
-
-        AppSettings.updateLastMainWindowGeometry(self.geometry())
 
         self._closeType = closeType
         self.close()
