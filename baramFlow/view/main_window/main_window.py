@@ -229,6 +229,7 @@ class MainWindow(QMainWindow):
             app.restart()
         else:
             app.quit()
+
     def changeEvent(self, event):
         if event.type() == QEvent.Type.LanguageChange:
             self._ui.retranslateUi(self)
