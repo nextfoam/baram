@@ -8,6 +8,7 @@ from widgets.async_message_box import AsyncMessageBox
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
+from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.material_schema import Phase, MaterialType
 from baramFlow.coredb.material_schema import Specification, ViscositySpecification, DensitySpecification
@@ -16,6 +17,7 @@ from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceMode
 from baramFlow.view.widgets.number_input_dialog import PolynomialDialog
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .material_dialog_ui import Ui_MaterialDialog
+from .piecewise_polynomial_dialog import PiecewisePolynomialDialog
 from .viscosity_carreau_dialog import ViscosityCarreauDialog
 from .viscosity_cross_dialog import ViscosityCrossDialog
 from .viscosity_herschel_bulkley_dialog import ViscosityHerschelBulkleyDialog
@@ -35,7 +37,7 @@ class MaterialDialog(ResizableDialog):
         db = coredb.CoreDB()
         self._phase = Phase(db.getValue(self._xpath + '/phase'))
         self._polynomialDensity = None
-        self._polynomialSpecificHeat = None
+        self._specificHeats = None
         self._polynomialThermalConductivity = None
         self._polynomialDialog = None
         self._viscosities = None
@@ -120,6 +122,14 @@ class MaterialDialog(ResizableDialog):
             self._ui.acentricFactor.setText(
                 db.getValue(self._xpath + '/density/pengRobinsonParameters/acentricFactor'))
 
+            self._ui.boussinesqRho0.setText(db.getValue(self._xpath + '/density/boussinesq/rho0'))
+            self._ui.boussinesqT0.setText(db.getValue(self._xpath + '/density/boussinesq/T0'))
+            self._ui.boussinesqBeta.setText(db.getValue(self._xpath + '/density/boussinesq/beta'))
+        elif self._phase == Phase.LIQUID:
+            self._ui.perfectFluidRho0.setText(db.getValue(self._xpath + '/density/perfectFluid/rho0'))
+            self._ui.perfectFluidT.setText(db.getValue(self._xpath + '/density/perfectFluid/T'))
+            self._ui.perfectFluidBeta.setText(db.getValue(self._xpath + '/density/perfectFluid/beta'))
+
         if self._phase != Phase.SOLID:
             self._setupViscositySpecification(viscositySpecification)
             self._ui.constantViscosity.setText(db.getValue(self._xpath + '/viscosity/constant'))
@@ -130,7 +140,11 @@ class MaterialDialog(ResizableDialog):
                     db.getValue(self._xpath + '/viscosity/sutherland/temperature'))
 
         self._polynomialDensity = None
-        self._polynomialSpecificHeat = None
+        self._specificHeats = {
+            Specification.POLYNOMIAL: None,
+            Specification.PIECEWISE_POLYNOMIAL: None
+        }
+        self._piecewisePolynomialSpecificHeat = None
         self._viscosities = {
             ViscositySpecification.POLYNOMIAL: None,
             ViscositySpecification.CROSS_POWER_LAW: None,
@@ -177,6 +191,20 @@ class MaterialDialog(ResizableDialog):
                                   self._ui.criticalSpecificVolume.text(), self.tr('Critical Specific Volume'))
                     db.setValue(self._xpath + '/density/pengRobinsonParameters/acentricFactor',
                                   self._ui.acentricFactor.text(), self.tr('Acentric Factor'))
+                elif specification == DensitySpecification.BOUSSINESQ:
+                    db.setValue(self._xpath + '/density/boussinesq/rho0', self._ui.boussinesqRho0.text(),
+                                self.tr('Reference Density'))
+                    db.setValue(self._xpath + '/density/boussinesq/T0', self._ui.boussinesqT0.text(),
+                                self.tr('Reference Temperature'))
+                    db.setValue(self._xpath + '/density/boussinesq/beta', self._ui.boussinesqBeta.text(),
+                                self.tr('Thermal Expansion Coefficient'))
+                elif specification == DensitySpecification.PERFECT_FLUID:
+                    db.setValue(self._xpath + '/density/perfectFluid/rho0', self._ui.perfectFluidRho0.text(),
+                                self.tr('Reference Density'))
+                    db.setValue(self._xpath + '/density/perfectFluid/T', self._ui.perfectFluidT.text(),
+                                self.tr('Reference Temperature'))
+                    db.setValue(self._xpath + '/density/perfectFluid/beta', self._ui.perfectFluidBeta.text(),
+                                self.tr('Compressibility'))
 
                 viscositySpecification = None
                 if self._phase != Phase.SOLID:
@@ -255,14 +283,28 @@ class MaterialDialog(ResizableDialog):
                     if specification == Specification.CONSTANT:
                         db.setValue(self._xpath + '/specificHeat/constant',
                                       self._ui.constantSpecificHeat.text(), self.tr('Specific Heat Value'))
-                    elif specification == Specification.POLYNOMIAL:
-                        if self._polynomialSpecificHeat:
-                            db.setValue(self._xpath + '/specificHeat/polynomial',
-                                          self._polynomialSpecificHeat, self.tr('Specific Heat Polynomial'))
-                        elif db.getValue(self._xpath + '/specificHeat/polynomial') == '':
-                            await AsyncMessageBox().information(self, self.tr('Input Error'),
-                                                                self.tr('Edit Specific Heat Polynomial.'))
-                            return
+                    else:
+                        specificHeat = self._specificHeats[specification]
+                        if specification == Specification.POLYNOMIAL:
+                            if specificHeat:
+                                db.setValue(self._xpath + '/specificHeat/polynomial', specificHeat,
+                                            self.tr('Specific Heat Polynomial'))
+                            elif db.getValue(self._xpath + '/specificHeat/polynomial') == '':
+                                await AsyncMessageBox().information(self, self.tr('Input Error'),
+                                                                    self.tr('Edit Specific Heat Polynomial.'))
+                                return
+                        elif specification == Specification.PIECEWISE_POLYNOMIAL:
+                            if specificHeat:
+                                db.setValue(self._xpath + '/specificHeat/piecewisePolynomial/lowTemperature',
+                                            specificHeat.lowTemperature)
+                                db.setValue(self._xpath + '/specificHeat/piecewisePolynomial/commonTemperature',
+                                            specificHeat.commonTemperature)
+                                db.setValue(self._xpath + '/specificHeat/piecewisePolynomial/highTemperature',
+                                            specificHeat.highTemperature)
+                                db.setValue(self._xpath + '/specificHeat/piecewisePolynomial/lowCoefficients',
+                                            specificHeat.lowCoefficients)
+                                db.setValue(self._xpath + '/specificHeat/piecewisePolynomial/highCoefficients',
+                                            specificHeat.highCoefficients)
 
                     if viscositySpecification != ViscositySpecification.SUTHERLAND:
                         specification = self._ui.thermalConductivityType.currentData()
@@ -303,28 +345,27 @@ class MaterialDialog(ResizableDialog):
             self._ui.densityType.setEnabled(False)
         else:
             if self._phase == Phase.GAS:
-                self._setupSpecificationCombo(
-                    self._ui.densityType, [
-                        DensitySpecification.CONSTANT,
-                        DensitySpecification.PERFECT_GAS,
-                        DensitySpecification.POLYNOMIAL,
-                        DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS,
-                    ]
-                )
+                densityTypes = [
+                    DensitySpecification.CONSTANT,
+                    DensitySpecification.PERFECT_GAS,
+                    DensitySpecification.POLYNOMIAL,
+                    DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS
+                ]
+
+                if ModelsDB.isEnergyModelOn() and GeneralDB.isPressureBased() and not ModelsDB().isMultiphaseModelOn():
+                    densityTypes.append(DensitySpecification.BOUSSINESQ)
             else:
+                densityTypes = [
+                    DensitySpecification.CONSTANT
+                ]
+
                 if self._phase == Phase.LIQUID and not ModelsDB.isMultiphaseModelOn():
-                    self._setupSpecificationCombo(
-                        self._ui.densityType, [
-                            DensitySpecification.CONSTANT,
-                            DensitySpecification.POLYNOMIAL,
-                        ]
-                    )
-                else:
-                    self._setupSpecificationCombo(
-                        self._ui.densityType, [
-                            DensitySpecification.CONSTANT,
-                        ]
-                    )
+                    densityTypes.append(DensitySpecification.POLYNOMIAL)
+
+                    if ModelsDB.isEnergyModelOn() and GeneralDB.isPressureBased():
+                        densityTypes.append(DensitySpecification.PERFECT_FLUID)
+
+            self._setupSpecificationCombo(self._ui.densityType, densityTypes)
 
         self._ui.densityType.setCurrentData(spec)
 
@@ -336,7 +377,8 @@ class MaterialDialog(ResizableDialog):
             self._setupSpecificationCombo(
                 self._ui.specificHeatType, [
                     Specification.CONSTANT,
-                    Specification.POLYNOMIAL
+                    Specification.POLYNOMIAL,
+                    Specification.PIECEWISE_POLYNOMIAL
                 ]
             )
 
@@ -402,9 +444,11 @@ class MaterialDialog(ResizableDialog):
         self._ui.densityEdit.setEnabled(specification == DensitySpecification.POLYNOMIAL)
         self._ui.constantDensity.setEnabled(specification == DensitySpecification.CONSTANT)
         self._ui.pengRobinsonParameters.setVisible(specification == DensitySpecification.REAL_GAS_PENG_ROBINSON)
+        self._ui.boussinesq.setVisible(specification == DensitySpecification.BOUSSINESQ)
+        self._ui.perfectFluid.setVisible(specification == DensitySpecification.PERFECT_FLUID)
 
     def _specificHeatTypeChanged(self, specification):
-        self._ui.specificHeatEdit.setEnabled(specification == Specification.POLYNOMIAL)
+        self._ui.specificHeatEdit.setEnabled(specification != Specification.CONSTANT)
         self._ui.constantSpecificHeat.setEnabled(specification == Specification.CONSTANT)
 
     @qasync.asyncSlot()
@@ -449,11 +493,17 @@ class MaterialDialog(ResizableDialog):
 
     def _editSpecificHeat(self):
         db = coredb.CoreDB()
-        if self._polynomialSpecificHeat is None:
-            self._polynomialSpecificHeat = db.getValue(self._xpath + '/specificHeat/polynomial')
+        specification = self._ui.specificHeatType.currentData()
+        if specification == Specification.POLYNOMIAL:
+            if self._specificHeats[specification] is None:
+                self._specificHeats[specification] = db.getValue(self._xpath + '/specificHeat/polynomial')
 
-        self._dialog = PolynomialDialog(self, self.tr('Polynomial Specific Heat'), self._polynomialSpecificHeat)
-        self._dialog.accepted.connect(self._polynomialSpeicificHeatAccepted)
+            self._dialog = PolynomialDialog(self, self.tr('Polynomial Specific Heat'),
+                                            self._specificHeats[specification])
+        elif specification == Specification.PIECEWISE_POLYNOMIAL:
+            self._dialog = PiecewisePolynomialDialog(self, self.tr('Piecewise-polynomial Specific Heat'),
+                                                     self._xpath, self._specificHeats[specification])
+        self._dialog.accepted.connect(lambda: self._speicificHeatEditAccepted(specification))
         self._dialog.open()
 
     def _editViscosity(self):
@@ -489,8 +539,8 @@ class MaterialDialog(ResizableDialog):
     def _polynomialDensityAccepted(self):
         self._polynomialDensity = self._dialog.getValues()
 
-    def _polynomialSpeicificHeatAccepted(self):
-        self._polynomialSpecificHeat = self._dialog.getValues()
+    def _speicificHeatEditAccepted(self, specification):
+        self._specificHeats[specification] = self._dialog.getValues()
 
     def _viscosityEditAccepted(self, specification):
         self._viscosities[specification] = self._dialog.getValues()

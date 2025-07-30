@@ -14,7 +14,7 @@ from .coredb import ValueException, DBError, _CoreDB
 from .general_db import GeneralDB
 from .initialization_db import InitializationDB
 from .material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
-from .material_schema import Phase, ViscositySpecification
+from .material_schema import Phase, ViscositySpecification, DensitySpecification
 from .reference_values_db import ReferenceValuesDB
 from .region_db import RegionDB
 from .turbulence_model_db import TurbulenceModelsDB
@@ -189,8 +189,8 @@ class CoreDBReader(_CoreDB):
     def getDensity(self, materials, t: float, p: float) -> float:  # kg / m^3
         def density(mid_):
             xpath = MaterialDB.getXPath(mid_)
-            spec = self.getValue(xpath + '/density/specification')
-            if spec == 'constant':
+            spec = DensitySpecification(self.getValue(xpath + '/density/specification'))
+            if spec == DensitySpecification.CONSTANT:
                 return float(self.getValue(xpath + '/density/constant'))
             elif spec == 'perfectGas':
                 r'''
@@ -199,13 +199,13 @@ class CoreDBReader(_CoreDB):
                 operatingPressure = float(self.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
                 mw = float(self.getValue(xpath + '/molecularWeight'))
                 return (p + operatingPressure) * mw / (UNIVERSAL_GAS_CONSTANT * t)
-            elif spec == 'polynomial':
+            elif spec == DensitySpecification.POLYNOMIAL:
                 coeffs = list(map(float, self.getValue(xpath + '/density/polynomial').split()))
                 rho = 0.0
                 for exp, c in enumerate(coeffs):
                     rho += c * t ** exp
                 return rho
-            elif spec == 'incompressiblePerfectGas':
+            elif spec == DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS:
                 r'''
                 .. math:: \rho = \frac{MW \times P_{ref}}{R \times T}
                 '''
@@ -213,6 +213,10 @@ class CoreDBReader(_CoreDB):
                 operatingPressure = float(self.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
                 mw = float(self.getValue(xpath + '/molecularWeight'))
                 return (referencePressure + operatingPressure) * mw / (UNIVERSAL_GAS_CONSTANT * t)
+            elif spec == DensitySpecification.BOUSSINESQ:
+                return float(self.getValue(xpath + '/density/boussinesq/rho0'))
+            elif spec == DensitySpecification.PERFECT_FLUID:
+                return float(self.getValue(xpath + '/density/perfectFluid/rho0'))
             else:
                 raise KeyError
 

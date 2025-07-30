@@ -150,7 +150,8 @@ class MixtureDialog(QDialog):
         self._setupSpecificationCombo(
             self._ui.specificHeatSpec, [
                 Specification.CONSTANT,
-                Specification.POLYNOMIAL
+                Specification.POLYNOMIAL,
+                Specification.PIECEWISE_POLYNOMIAL
             ]
         )
 

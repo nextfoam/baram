@@ -6,7 +6,7 @@ from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import MaterialType, DensitySpecification, ViscositySpecification
+from baramFlow.coredb.material_schema import MaterialType, DensitySpecification, ViscositySpecification, Specification
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
@@ -16,11 +16,20 @@ from baramFlow.openfoam.file_system import FileSystem
 
 
 EQUATION_OF_STATES = {
-    DensitySpecification.CONSTANT.value                     : 'rhoConst',
-    DensitySpecification.PERFECT_GAS.value                  : 'perfectGas',
-    DensitySpecification.POLYNOMIAL.value                   : 'icoPolynomial',
-    DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS.value   : 'incompressiblePerfectGas',
-    DensitySpecification.REAL_GAS_PENG_ROBINSON.value       : 'PengRobinsonGas'
+    DensitySpecification.CONSTANT                   : 'rhoConst',
+    DensitySpecification.PERFECT_GAS                : 'perfectGas',
+    DensitySpecification.POLYNOMIAL                 : 'icoPolynomial',
+    DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS : 'incompressiblePerfectGas',
+    DensitySpecification.REAL_GAS_PENG_ROBINSON     : 'PengRobinsonGas',
+    DensitySpecification.BOUSSINESQ                 : 'Boussinesq',
+    DensitySpecification.PERFECT_FLUID              : 'perfectFluid'
+}
+
+
+THERMO = {
+    Specification.CONSTANT              : 'hConst',
+    Specification.POLYNOMIAL            : 'hPolynomial',
+    Specification.PIECEWISE_POLYNOMIAL  : 'janaf'
 }
 
 
@@ -32,8 +41,8 @@ def _constructFluid(region: str):
 
     tModel = TurbulenceModelsDB.getModel()
     viscositySpec = ViscositySpecification(db.getValue(path + '/viscosity/specification'))
-    specificHeatSpec = db.getValue(path + '/specificHeat/specification')
-    densitySpec = db.getValue(path + '/density/specification')
+    specificHeatSpec = Specification(db.getValue(path + '/specificHeat/specification'))
+    densitySpec = DensitySpecification(db.getValue(path + '/density/specification'))
 
     thermo = {
         'type': 'heRhoThermo',
@@ -42,7 +51,7 @@ def _constructFluid(region: str):
                                  or viscositySpec == ViscositySpecification.CONSTANT
                                  or MaterialDB.isNonNewtonianSpecification(viscositySpec)
                       else viscositySpec.value),
-        'thermo': 'hConst' if specificHeatSpec == 'constant' else 'hPolynomial',
+        'thermo': THERMO[specificHeatSpec],
         'equationOfState': EQUATION_OF_STATES[densitySpec],
         'specie': 'specie',
         'energy': 'sensibleEnthalpy'
@@ -94,26 +103,40 @@ def _constructFluid(region: str):
 def _mixtureEquationOfState(spec, db, path):
     data = None
 
-    if spec == 'constant':
+    if spec == DensitySpecification.CONSTANT:
         rho = db.getValue(path + '/density/constant')
         data = {
             'rho': rho
         }
-    elif spec == 'polynomial':
+    elif spec == DensitySpecification.POLYNOMIAL:
         rhoCoeffs: list[float] = [0] * 8  # To make sure that rhoCoeffs has length of 8
         for i, n in enumerate(db.getValue(path + '/density/polynomial').split()):
             rhoCoeffs[i] = float(n)
         data = {
             'rhoCoeffs<8>': rhoCoeffs
         }
-    elif spec == 'incompressiblePerfectGas':
+    elif spec == DensitySpecification.INCOMPRESSIBLE_PERFECT_GAS:
         referencePressure = float(db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'))
         operatingPressure = float(db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
         data = {
             'pRef': referencePressure + operatingPressure
         }
-    elif spec == 'perfectGas':
+    elif spec == DensitySpecification.PERFECT_GAS:
         data = None
+    elif spec == DensitySpecification.BOUSSINESQ:
+        data = {
+            'rho0': db.getValue(path + '/density/boussinesq/rho0'),
+            'T0': db.getValue(path + '/density/boussinesq/T0'),
+            'beta': db.getValue(path + '/density/boussinesq/beta')
+        }
+    elif spec == DensitySpecification.PERFECT_FLUID:
+        rho0 = float(db.getValue(path + '/density/perfectFluid/rho0'))
+        data = {
+            'rho0': rho0,
+            'R': 1 / (rho0
+                      * float(db.getValue(path + '/density/perfectFluid/T'))
+                      * float(db.getValue(path + '/density/perfectFluid/beta')))
+        }
 
     return data
 
@@ -121,7 +144,7 @@ def _mixtureEquationOfState(spec, db, path):
 def _mixtureThermodynamics(spec, db, path):
     data = None
 
-    if spec == 'constant':
+    if spec == Specification.CONSTANT:
         cp = db.getValue(path + '/specificHeat/constant')
         data = {
             'Cp': cp,
@@ -130,7 +153,7 @@ def _mixtureThermodynamics(spec, db, path):
 
         if GeneralDB.isDensityBased():
             data['Tref'] = 0
-    elif spec == 'polynomial':
+    elif spec == Specification.POLYNOMIAL:
         cpCoeffs: list[float] = [0] * 8  # To make sure that cpCoeffs has length of 8
         for i, n in enumerate(db.getValue(path + '/specificHeat/polynomial').split()):
             cpCoeffs[i] = float(n)
@@ -138,6 +161,14 @@ def _mixtureThermodynamics(spec, db, path):
             'Hf': 0,
             'Sf': 0,
             'CpCoeffs<8>': cpCoeffs
+        }
+    elif spec == Specification.PIECEWISE_POLYNOMIAL:
+        data = {
+            'Tlow': db.getValue(path + '/specificHeat/piecewisePolynomial/lowTemperature'),
+            'Thign': db.getValue(path + '/specificHeat/piecewisePolynomial/highTemperature'),
+            'Tcommon': db.getValue(path + '/specificHeat/piecewisePolynomial/commonTemperature'),
+            'highCpCoeffs': db.getValue(path + '/specificHeat/piecewisePolynomial/highCoefficients').split(),
+            'lowCpCoeffs': db.getValue(path + '/specificHeat/piecewisePolynomial/lowCoefficients').split()
         }
 
     return data
