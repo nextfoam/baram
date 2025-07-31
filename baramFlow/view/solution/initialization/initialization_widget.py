@@ -459,7 +459,10 @@ class InitializationWidget(QWidget):
         material = MaterialDB.getMaterialComposition(xpath + '/species', RegionDB.getMaterial(self._rname))
         rho = db.getDensity(material, t, p)  # Density
         mu = db.getViscosity(material, t)  # Viscosity
-        nu = mu / rho  # Kinetic Viscosity
+        if rho > 0:
+            nu = mu / rho  # Kinetic Viscosity
+        else:  # To prevent device-by-zero exception. Some configurations may be inconsistent.
+            nu = mu
 
         if turbulenceModel := TurbulenceModelsDB.getRASModel():
             if turbulenceModel == TurbulenceModel.K_EPSILON:
