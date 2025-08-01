@@ -330,7 +330,14 @@ class ControlDict(DictionaryFile):
         rname = self._db.getValue(xpath + '/region')
         interval = int(self._db.getValue(xpath + '/writeInterval'))
 
-        data = foForcesMonitor(patches, cofr, rname, interval)
+        if GeneralDB.isDensityBased():
+            pRef = None
+        else:
+            referencePressure = float(self._db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'))
+            operatingPressure = float(self._db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
+            pRef = referencePressure + operatingPressure
+
+        data = foForcesMonitor(patches, cofr, pRef, rname, interval)
 
         return data
 
