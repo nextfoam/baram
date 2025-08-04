@@ -79,7 +79,7 @@ class PiecewiseLinearDialog(QDialog):
 
             self.changed.emit(text)
 
-    def __init__(self, parent, title, columns, data, prefix=""):
+    def __init__(self, parent, title, columns, data, prefix="", maxRows=0):
         """Constructs a dialog for piecewise linear values.
 
         Args:
@@ -98,6 +98,8 @@ class PiecewiseLinearDialog(QDialog):
         self._prefix = prefix
         self._no = 0
         self._rowFields = []
+
+        self._maxRows = maxRows
 
         self._dialog = None
 
@@ -141,7 +143,7 @@ class PiecewiseLinearDialog(QDialog):
         self._layout = self._ui.polynomialWidget.layout()
         self._layout.addRow("", self.RowWidget(headers, emptyButton))
         self._ui.editArea.setMinimumWidth(self._columnCount * 80 + 100)
-        self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
 
     def _setData(self, data):
         values = [d.split() if d else [] for d in data]
@@ -160,12 +162,15 @@ class PiecewiseLinearDialog(QDialog):
         row.removeClicked.connect(self._removeAt)
         row.changed.connect(self._valueChanged)
 
+        if self._no >= self._maxRows > 0:
+            self._ui.add.setEnabled(False)
+
         return row
 
     def _addFocusedRow(self):
         row = self._addRow()
         row.setFocus()
-        self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
 
     def _loadFile(self):
         self._dialog = QFileDialog(self, self.tr('Select CSV File'), '', 'CSV (*.csv)')
@@ -182,25 +187,26 @@ class PiecewiseLinearDialog(QDialog):
         self._layout.removeRow(count)
         self._no = self._no - 1
 
+        self._ui.add.setEnabled(True)
         self._updateSubmitEnabled()
 
     def _valueChanged(self, text):
         if text.strip() == "":
-            self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+            self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
         else:
             self._updateSubmitEnabled()
 
     def _updateSubmitEnabled(self):
         if len(self._rowFields) == 0:
-            self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+            self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
             return
 
         for field in self._rowFields:
             if not field.isFilled():
-                self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+                self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
                 return
 
-        self._ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+        self._ui.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(True)
 
     def _fileSelected(self):
         if files := self._dialog.selectedFiles():
@@ -223,8 +229,10 @@ class PolynomialDialog(PiecewiseLinearDialog):
             data: Space-separated column data. "value1 value2 ..."
             prefix: The prefix of index
         """
-        super().__init__(parent, title, [self.tr("Coefficient")], [data], prefix)
+        super().__init__(parent, title, [self.tr("Coefficient")], [data], prefix, 8)
         self._ui.file.hide()
+
+        self.resize(self.size().width(), 382)
 
     def getValues(self):
         values = ''
@@ -232,3 +240,6 @@ class PolynomialDialog(PiecewiseLinearDialog):
             values = values + field.value(0) + ' '
 
         return values[:-1]
+
+    def resizeEvent(self, arg__1):
+        print(self.size())
