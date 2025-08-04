@@ -273,7 +273,10 @@ class BoundaryCondition(DictionaryFile):
         rho = self._db.getDensity(materials, t, p)  # Density
         mu = self._db.getViscosity(materials, t)  # Viscosity
 
-        nu = mu / rho  # Kinetic Viscosity
+        if rho > 0:
+            nu = mu / rho  # Kinetic Viscosity
+        else:  # To prevent device-by-zero exception. Some configurations may be inconsistent.
+            nu = mu
 
         nut = b * nu
 
