@@ -49,7 +49,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="source"/>
+          <widget class="QLineEdit" name="sourceFilter"/>
+         </item>
+         <item>
+          <widget class="QListWidget" name="source">
+           <property name="sortingEnabled">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -74,9 +81,15 @@
           </widget>
          </item>
          <item>
+          <widget class="QLineEdit" name="targetFilter"/>
+         </item>
+         <item>
           <widget class="QListWidget" name="targets">
            <property name="selectionMode">
-            <enum>QAbstractItemView::ExtendedSelection</enum>
+            <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
+           </property>
+           <property name="sortingEnabled">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -95,7 +108,7 @@
       <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
