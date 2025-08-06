@@ -213,6 +213,8 @@ class P(BoundaryCondition):
             if df is not None:
                 fanCurve = df.values.tolist()
 
+        # ToDo: What if fanCurve is not available?
+
         fanCurveFileName = f'fanCurve_{bcid}'
 
         path = FileSystem.constantPath() / fanCurveFileName
