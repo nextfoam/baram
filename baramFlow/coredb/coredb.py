@@ -338,8 +338,14 @@ class _CoreDB(object):
         # For now, string value is set only by VIEW code not by user.
         # Therefore, raising exception(not returning value) is reasonable.
         else:
-            if schema.type.is_restriction() and value not in schema.type.enumeration:
-                raise ValueError
+            if schema.type.is_restriction():
+                if schema.type.enumeration is not None and value not in schema.type.enumeration:
+                    raise ValueError
+
+                if schema.type.patterns is not None:
+                    for p in schema.type.patterns.patterns:
+                        if p.match(value) is None:
+                            raise ValueError
 
             return element, value, None
 
