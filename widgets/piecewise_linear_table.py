@@ -80,7 +80,7 @@ class PiecewiseLinearTable(QTableWidget):
             if colIndex >= colCount:
                 break
             for rowIndex, cellData in enumerate(colData):
-                item = QTableWidgetItem(str(cellData).rstrip('0').rstrip('.'))
+                item = QTableWidgetItem(f'{cellData:g}')
                 self.setItem(rowIndex, colIndex, item)
 
         self.verticalScrollBar().valueChanged.connect(self._handleValueChanged)
