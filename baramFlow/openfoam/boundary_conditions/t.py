@@ -41,6 +41,7 @@ class T(BoundaryCondition):
                     BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFlowRateInletT(xpath, constant)),
                     BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletTotalTemperature(xpath, constant)),
                     BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletT(xpath)),
+                    BoundaryType.INTAKE_FAN.value:          (lambda: self._constructFixedValue(constant)),
                     BoundaryType.ABL_INLET.value:           (lambda: self._constructFixedValue(constant)),
                     BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructFixedValue(constant)),
                     BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructFixedValue(constant)),

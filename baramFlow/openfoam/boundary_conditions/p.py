@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from uuid import UUID
+
+from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
+
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from baramFlow.coredb.coredb_reader import Region
@@ -14,6 +18,7 @@ TYPE_MAP = {
     BoundaryType.VELOCITY_INLET.value: 'calculated',
     BoundaryType.FLOW_RATE_INLET.value: 'calculated',
     BoundaryType.PRESSURE_INLET.value: 'calculated',
+    BoundaryType.INTAKE_FAN.value: 'calculated',
     BoundaryType.ABL_INLET.value: 'calculated',
     BoundaryType.OPEN_CHANNEL_INLET.value: 'calculated',
     BoundaryType.FREE_STREAM.value: 'calculated',
@@ -43,12 +48,12 @@ class P(BoundaryCondition):
     def __init__(self, region: Region, time, processorNo, field):
         super().__init__(region, time, processorNo, field)
 
-        self._operatingPressure = None
+        self._operatingPressure = 0
 
         self._field = field
         self._usePrgh = False
 
-        self._initialValue = None
+        self._initialValue = 0
 
     def build0(self):
         self._data = None
@@ -107,6 +112,7 @@ class P(BoundaryCondition):
                     BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructZeroGradient()),
                     BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructTotalPressure(self._operatingPressure + float(self._db.getValue(xpath + '/pressureInlet/pressure')))),
                     BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletP(xpath)),
+                    BoundaryType.INTAKE_FAN.value:          (lambda: self._constructFanPressure(xpath, bcid)),
                     BoundaryType.ABL_INLET.value:           (lambda: self._constructZeroGradient()),
                     BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructZeroGradient()),
@@ -197,5 +203,32 @@ class P(BoundaryCondition):
                 'mergeSeparators': 'no',
                 'file': f'<constant>/{fanCurveFileName}'
             },
+            'value': self._initialValueByTime()
+        }
+
+    def _constructFanPressure(self, xpath, bcid):
+        fanCurveName = UUID(self._db.getValue(xpath + '/fanCurveName'))
+        if fanCurveName.int != 0:
+            df = Project.instance().fileDB().getDataFrame(str(fanCurveName))
+            if df is not None:
+                fanCurve = df.values.tolist()
+
+        fanCurveFileName = f'fanCurve_{bcid}'
+
+        path = FileSystem.constantPath() / fanCurveFileName
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, 'w') as f:
+            f.write(str(FoamFileGenerator(fanCurve)))
+
+        p0 = self._operatingPressure + float(self._db.getValue(xpath + '/pressure'))
+        return {
+            'type': 'fanPressure',
+            'direction': 'in',
+            'fanCurve': {
+                'type': 'table',
+                'file': f'constant/{fanCurveFileName}',
+                'outOfBounds': 'clamp'
+            },
+            'p0': ('uniform', p0),
             'value': self._initialValueByTime()
         }

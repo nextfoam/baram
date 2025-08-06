@@ -21,6 +21,7 @@ class BoundaryType(Enum):
     VELOCITY_INLET	    = 'velocityInlet'
     FLOW_RATE_INLET	    = 'flowRateInlet'
     PRESSURE_INLET	    = 'pressureInlet'
+    INTAKE_FAN          = 'intakeFan'
     ABL_INLET	        = 'ablInlet'
     OPEN_CHANNEL_INLET  = 'openChannelInlet'
     FREE_STREAM	        = 'freeStream'
@@ -207,6 +208,7 @@ class BoundaryDB:
             BoundaryType.VELOCITY_INLET.value: QCoreApplication.translate('BoundaryDB', 'Velocity Inlet'),
             BoundaryType.FLOW_RATE_INLET.value: QCoreApplication.translate('BoundaryDB', 'Flow Rate Inlet'),
             BoundaryType.PRESSURE_INLET.value: QCoreApplication.translate('BoundaryDB', 'Pressure Inlet'),
+            BoundaryType.INTAKE_FAN.value: QCoreApplication.translate('BoundaryDB', 'Intake Fan'),
             BoundaryType.ABL_INLET.value: QCoreApplication.translate('BoundaryDB', 'ABL Inlet'),
             BoundaryType.OPEN_CHANNEL_INLET.value: QCoreApplication.translate('BoundaryDB', 'Open Channel Inlet'),
             BoundaryType.FREE_STREAM.value: QCoreApplication.translate('BoundaryDB', 'Free Stream'),

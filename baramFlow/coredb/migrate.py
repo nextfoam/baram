@@ -5,6 +5,7 @@ from __future__ import annotations
 from math import sqrt
 
 import logging
+from uuid import UUID
 
 from lxml import etree
 import pandas as pd
@@ -939,7 +940,7 @@ def _version_10(root: etree.Element):
             logger.debug(f'    Adding "boussinesq" to {p}')
 
             e = etree.fromstring('<boussinesq xmlns="http://www.baramcfd.org/baram">'
-                                 f' <rho0>1</rho0>' 
+                                 f' <rho0>1</rho0>'
                                  f' <T0>300</T0>'
                                  f' <beta>3e-03</beta>'
                                  '</boussinesq>')
@@ -954,6 +955,21 @@ def _version_10(root: etree.Element):
                                  f' <beta>3e-03</beta>'
                                  '</perfectFluid>')
             density.append(e)
+
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition', namespaces=_nsmap):
+        if p.find('pressure', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "pressure" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}pressure')
+            e.text = '0'
+            p.append(e)
+
+        if p.find('fanCurveName', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "fanCurveName" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}fanCurveName')
+            e.text = str(UUID(int = 0))
+            p.append(e)
 
 
 _fTable = [

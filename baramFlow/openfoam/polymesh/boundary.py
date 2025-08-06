@@ -13,6 +13,7 @@ TYPE_MAP = {
     BoundaryType.VELOCITY_INLET.value       : GeometricalType.PATCH,
     BoundaryType.FLOW_RATE_INLET.value      : GeometricalType.PATCH,
     BoundaryType.PRESSURE_INLET.value       : GeometricalType.PATCH,
+    BoundaryType.INTAKE_FAN.value           : GeometricalType.PATCH,
     BoundaryType.ABL_INLET.value            : GeometricalType.PATCH,
     BoundaryType.OPEN_CHANNEL_INLET.value   : GeometricalType.PATCH,
     BoundaryType.FREE_STREAM.value          : GeometricalType.PATCH,

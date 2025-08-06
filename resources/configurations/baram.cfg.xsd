@@ -1668,6 +1668,7 @@
                             <xs:enumeration value="flowRateInlet"/>
                             <xs:enumeration value="pressureInlet"/>
                             <xs:enumeration value="pressureOutlet"/>
+                            <xs:enumeration value="intakeFan"/>
                             <xs:enumeration value="ablInlet"/>
                             <xs:enumeration value="openChannelInlet"/>
                             <xs:enumeration value="openChannelOutlet"/>
@@ -1745,6 +1746,8 @@
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="species" type="speciesListType"/>
+                <xs:element name="pressure" type="inputNumberType" default="0"/>
+                <xs:element name="fanCurveName" type="uuidType"/>
             </xs:sequence>
             <xs:attribute name="bcid" type="xs:positiveInteger" use="required"/>
         </xs:complexType>

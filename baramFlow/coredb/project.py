@@ -86,14 +86,14 @@ class _Project(QObject):
             # End
             else:
                 parallelEnvironment = AppSettings.getParallenEnvironment()
-                
+
                 self._settings = {
                     SettingKey.FORMAT_VERSION.value : FORMAT_VERSION,
                     SettingKey.NP.value             : parallelEnvironment.np(),
                     SettingKey.PARALLEL_TYPE.value  : parallelEnvironment.type().name,
                     SettingKey.HOSTFILE.value       : parallelEnvironment.hosts()
                 }
-                
+
 
     def __init__(self):
         super().__init__()
@@ -105,7 +105,7 @@ class _Project(QObject):
         self._projectSettings: Optional[ProjectSettings] = None
         self._projectLock = None
 
-        self._fileDB: Optional[FileDB] = None
+        self._fileDB: FileDB  # This is set when the project is open, and a project is open as soon as it's constructed.
         self._coreDB = None
 
         self._timer = None
@@ -130,7 +130,7 @@ class _Project(QObject):
     @property
     def pType(self):
         return self._settings.get(SettingKey.PARALLEL_TYPE)
-    
+
     @property
     def hostfile(self):
         return self._settings.get(SettingKey.HOSTFILE, '')
@@ -173,7 +173,7 @@ class _Project(QObject):
 
     def opened(self):
         self.projectOpened.emit()
-    
+
     def setParallelEnvironment(self, environment):
         self._settings.set(SettingKey.NP, environment.np())
         self._settings.set(SettingKey.PARALLEL_TYPE, environment.type().name)
@@ -271,7 +271,7 @@ class _Project(QObject):
             # Save that configurations as new project.
             self._fileDB.saveCoreDB()
             self._coreDB = coredb.CoreDB()
-            
+
             if route == ProjectOpenType.MESH:
                 self._settings.set(SettingKey.NP, 1)
         else:
