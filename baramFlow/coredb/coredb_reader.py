@@ -192,7 +192,7 @@ class CoreDBReader(_CoreDB):
             spec = DensitySpecification(self.getValue(xpath + '/density/specification'))
             if spec == DensitySpecification.CONSTANT:
                 return float(self.getValue(xpath + '/density/constant'))
-            elif spec == 'perfectGas':
+            elif spec == DensitySpecification.PERFECT_GAS:
                 r'''
                 .. math:: \rho = \frac{MW \times P}{R \times T}
                 '''
