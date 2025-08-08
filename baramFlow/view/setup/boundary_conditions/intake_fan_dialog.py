@@ -86,7 +86,7 @@ class IntakeFanDialog(ResizableDialog):
             self._temperatureWidget.rollbackWriting()
             await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
-            df = pd.DataFrame({"Q": self._fanCurve[0], "P": self._fanCurve[1]})
+            df = pd.DataFrame(self._fanCurve)
             Project.instance().fileDB().putDataFrame(str(self._fanCurveName), df)
 
             self._temperatureWidget.completeWriting()
@@ -100,7 +100,7 @@ class IntakeFanDialog(ResizableDialog):
         if self._fanCurveName.int != 0:
             df = Project.instance().fileDB().getDataFrame(str(self._fanCurveName))
             if df is not None:
-                self._fanCurve = df.transpose().values.tolist()
+                self._fanCurve = df.values.tolist()
 
         self._turbulenceWidget.load()
         self._temperatureWidget.load()

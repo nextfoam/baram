@@ -54,6 +54,7 @@ class PiecewiseLinearDialog(QDialog):
 
     def _updateChart(self):
         data = self._ui.tableWidget.getData()
+        data = [list(x) for x in zip(*data)]  # transpose the data to use it in pyqtgraph
         for i in range(len(data)-1):
             self._plotDataItems[i].setData(data[0], data[i+1])
 

@@ -38,14 +38,12 @@ class PiecewiseLinearTable(QTableWidget):
     dataUpdated = Signal()
 
     def setup(self, indexName: str, indexUnit: str, dataNames: list[str], dataUnit: str, data: Optional[list[list[float]]] = None):
-        colCount = 1 + len(dataNames)
 
         if data is None:
             data = []
-            for _ in range(colCount):
-                data.append([])
 
-        rowCount = max(len(data[0]), self.MINIMUM_ROW_COUNT)
+        rowCount = max(len(data), self.MINIMUM_ROW_COUNT)
+        colCount = 1 + len(dataNames)
 
         self.setRowCount(rowCount)
         self.setColumnCount(colCount)
@@ -76,10 +74,8 @@ class PiecewiseLinearTable(QTableWidget):
             }
         """)
 
-        for colIndex, colData in enumerate(data):
-            if colIndex >= colCount:
-                break
-            for rowIndex, cellData in enumerate(colData):
+        for rowIndex, rowData in enumerate(data):
+            for colIndex, cellData in enumerate(rowData):
                 item = QTableWidgetItem(f'{cellData:g}')
                 self.setItem(rowIndex, colIndex, item)
 
@@ -130,15 +126,12 @@ class PiecewiseLinearTable(QTableWidget):
 
         Returns:
             the values in the table
-            list of column data list
+            list of row data
         """
         previousX = None
         stopCollection = False
 
         data: list[list[float]] = []
-        for col in range(self.columnCount()):
-            data.append([])
-
         for row in range(self.rowCount()):
             for col in range(self.columnCount()):
                 item = self.item(row, col)
@@ -155,11 +148,13 @@ class PiecewiseLinearTable(QTableWidget):
                 break
 
             previousX = x
-            data[0].append(x)
 
-            for col in range(1, self.columnCount()):
+            rowData: list[float] = []
+            for col in range(self.columnCount()):
                 y = float(self.item(row, col).text())
-                data[col].append(y)
+                rowData.append(y)
+
+            data.append(rowData)
 
         return data
 
