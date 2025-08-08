@@ -212,6 +212,8 @@ class P(BoundaryCondition):
             df = Project.instance().fileDB().getDataFrame(str(fanCurveName))
             if df is not None:
                 fanCurve = df.values.tolist()
+                if len(fanCurve) > 2:  # it it includes vector values
+                    fanCurve = [[row[0], row[1:]] for row in fanCurve]
 
         # ToDo: What if fanCurve is not available?
 
