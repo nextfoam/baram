@@ -15,10 +15,12 @@ from PySide6.QtCore import Qt
 from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItem
 from widgets.progress_dialog import ProgressDialog
+from widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 
 from baramFlow.case_manager import CaseManager, BatchCase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.coredb.filedb import FileDB
 from baramFlow.coredb.project import Project, SolverStatus
 from baramFlow.openfoam.case_generator import CanceledException
 from baramFlow.openfoam.constant.turbulence_properties import TurbulenceProperties
@@ -31,7 +33,6 @@ from baramFlow.view.widgets.content_page import ContentPage
 from .batch_case_list import BatchCaseList
 from .snapshot_case_list import SnapshotCaseList
 from .pod_rom_page_ui import Ui_PODROMPage
-from .user_parameters_dialog import UserParametersDialog
 
 
 logger = logging.getLogger(__name__)
@@ -45,8 +46,7 @@ class PODROMPage(ContentPage):
         self._ui = Ui_PODROMPage()
         self._ui.setupUi(self)
 
-        ### batchCaseList를 참조할 수 없는 상태
-        # self._batchCaseList = BatchCaseList(self, self._ui.batchCaseList)
+        self._listSelectorItemBatchCase = []
         self._snapshotCaseList = SnapshotCaseList(self, self._ui.snapshotCaseList)
 
         self._project = Project.instance()
@@ -76,6 +76,7 @@ class PODROMPage(ContentPage):
         self.generateSliders()
 
     def _connectSignalsSlots(self):
+        self._ui.buildROM.clicked.connect(self._selectCasesToBuildROM)
         self._ui.ROMReconstruct.clicked.connect(self._ROMReconstruct)
         return
 
@@ -84,8 +85,47 @@ class PODROMPage(ContentPage):
         # self._caseManager.caseLoaded.disconnect(self._caseLoaded)
         return
 
+    def _selectCasesToBuildROM(self):
+        self._listSelectorItemBatchCase = []
+        batchCasesDataFrame = self._project.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value)
+        batchCasesDict = batchCasesDataFrame.to_dict(orient='index')
+        for idx, (key, value) in enumerate(batchCasesDict.items()):
+            self._listSelectorItemBatchCase.append(SelectorItem(key, key, idx))
+
+        self._dialog = MultiSelectorDialog(self, self.tr('Select Snapshot Cases'), self._listSelectorItemBatchCase, [])
+        self._dialog.itemsSelected.connect(self._runBuildROM)
+        self._dialog.open()
+
+    def _runBuildROM(self, items):
+        self._buildROM(items)
+
+    @qasync.asyncSlot()
+    async def _buildROM(self, itemsFromDialog):
+        progressDialog = ProgressDialog(self, self.tr('Build ROM'), True)
+        self._caseManager.progress.connect(progressDialog.setLabelText)
+        progressDialog.cancelClicked.connect(self._caseManager.cancel)
+        progressDialog.open()
+
+        batchCasesDataFrame = self._project.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value)
+        batchCasesDict = batchCasesDataFrame.to_dict(orient='index')
+        listSelectedName = [name for _, name in itemsFromDialog]
+        listSelectedCase = [(name, batchCasesDict[name]) for name in batchCasesDict if name in listSelectedName]
+
+        self._project.fileDB().putDataFrame(FileDB.Key.SNAPSHOT_CASES.value, pd.DataFrame.from_dict(dict(listSelectedCase), orient='index'))
+        self.loadSnapshotCases()
+
+        try:
+            await self._caseManager.podRunGenerateROM(listSelectedCase)
+            progressDialog.finish(self.tr('Calculation started'))
+        except Exception as e:
+            progressDialog.finish(self.tr('POD run error : ') + str(e))
+        finally:
+            self._caseManager.progress.disconnect(progressDialog.setLabelText)
+
     def loadSnapshotCases(self):
+        self._snapshotCaseList.clear()
         self._snapshotCaseList.load()
+        self._ui.labelBuildROM.setText(self.tr('ROM Accuracy : ') + self._caseManager.podGetROMAccuracy())
         return
 
     def generateSliders(self):
@@ -101,7 +141,7 @@ class PODROMPage(ContentPage):
             valueMinParam = min(valuesParam)
             valueMaxParam = max(valuesParam)
             new_widget = self.generateSingleSlider(iParam, nameParam, valueMinParam, valueMaxParam)
-            self._ui.verticalLayout_PODROMpage.insertWidget(1+iParam, new_widget)
+            self._ui.verticalLayout_PODROMpage.insertWidget(2+iParam, new_widget)
         
         return
 
@@ -162,30 +202,31 @@ class PODROMPage(ContentPage):
 
     @qasync.asyncSlot()
     async def _ROMReconstruct(self):
+        import traceback
         progressDialog = ProgressDialog(self, self.tr('Reconstruct with ROM'), True)
         self._caseManager.progress.connect(progressDialog.setLabelText)
         progressDialog.cancelClicked.connect(self._caseManager.cancel)
         progressDialog.open()
         
         listSnapshotCase = self._snapshotCaseList._cases
-        caseToReconstruct = ()
+        paramsToReconstruct = {}
         listParam = self._snapshotCaseList._parameters.tolist()
         nParam = len(listParam)
         for iParam in range(nParam):
             valueParam = float(self.listLineEdit[iParam].text())
-            caseToReconstruct += (valueParam, )
-        
+            nameParam = listParam[iParam]
+            paramsToReconstruct[nameParam] = valueParam
+
         try:
-            await self._caseManager.loadBatchCase(caseToReconstruct)
-            await self._caseManager.podRunReconstruct(listSnapshotCase, caseToReconstruct)
-            ### batchCaseList를 참조할 수 없는 상태
-            self._batchCaseList._setCase("pod-reconstructed", caseToReconstruct, SolverStatus.ENDED)
-            self._batchCaseList._listChanged(True)
-            self._project.updateBatchStatuses(
-                {name: item.status().name for name, item in self._batchCaseList._items.items() if item.status()})
+            await self._caseManager.podRunReconstruct(listSnapshotCase, paramsToReconstruct)
+            # self._batchCaseList._setCase("pod-reconstructed", caseToReconstruct, SolverStatus.ENDED)
+            # self._batchCaseList._listChanged(True)
+            # self._project.updateBatchStatuses(
+                # {name: item.status().name for name, item in self._batchCaseList._items.items() if item.status()})
             progressDialog.finish(self.tr('Calculation started'))
         except Exception as e:
             progressDialog.finish(self.tr('POD run error : ') + str(e))
+            traceback.print_exc()  # 전체 traceback 출력
         finally:
             self._caseManager.progress.disconnect(progressDialog.setLabelText)
         return

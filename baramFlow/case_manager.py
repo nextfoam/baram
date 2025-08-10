@@ -14,6 +14,7 @@ from libbaram.run import launchSolver, runParallelUtility, STDOUT_FILE_NAME, STD
 from .coredb import coredb
 from .coredb.project import Project
 from .coredb.coredb_reader import CoreDBReader
+from .coredb.filedb import FileDB
 from .openfoam import parallel
 from .openfoam.case_generator import CaseGenerator
 from .openfoam.file_system import FileSystem
@@ -285,16 +286,16 @@ class PODCase(Case):
                 os.makedirs(str(self._project.path / POD_DIRECTORY_NAME) + "/%s"%(pProc), exist_ok=True)
                 Path(pathLink).symlink_to(pathTarget)
 
-    async def initializeReconstruct(self, listSnapshot, caseToReconstruct):
+    async def initializeReconstruct(self, listSnapshot, paramsToReconstruct):
         ### temp input format
         with open(str(self._project.path) + "/%s/Vinput.dat"%POD_DIRECTORY_NAME, 'w') as f:
-            f.write("%d %d\n"%(len(listSnapshot), len(caseToReconstruct)))
+            f.write("%d %d\n"%(len(listSnapshot), len(paramsToReconstruct)))
             for iCase, (nameCase, case) in enumerate(listSnapshot.items()):
                 f.write("%s\n"%(" ".join(list(case.values()))))
         
         with open(str(self._project.path) + "/%s/CurrentInput.dat"%POD_DIRECTORY_NAME, 'w') as f:
-            f.write("1 %d\n"%len(caseToReconstruct))
-            f.write("%s\n"%(" ".join(list(map(str, caseToReconstruct)))))
+            f.write("1 %d\n"%len(paramsToReconstruct))
+            f.write("%s\n"%(" ".join(list(map(str, paramsToReconstruct)))))
 
     async def runGenerateROM(self, cases):
         try:
@@ -314,31 +315,38 @@ class PODCase(Case):
             self._setStatus(SolverStatus.ERROR)
             raise e
 
-    async def runReconstruct(self, listSnapshot, caseToReconstruct):
+    async def runReconstruct(self, listSnapshot, paramsToReconstruct):
         try:
-            await self.initializeReconstruct(listSnapshot, caseToReconstruct)
+            await self.initializeReconstruct(listSnapshot, paramsToReconstruct)
 
+            print('opening', self._path)
             stdout = open(self._path / STDOUT_FILE_NAME, 'w')
             stderr = open(self._path / STDERR_FILE_NAME, 'w')
+            print('opened', self._path)
 
             self._process = await runParallelUtility('baramPODreconstruct', parallel=parallel.getEnvironment(), cwd=self._path,
                                                      stdout=stdout, stderr=stderr)
+            print('end podreconstruct')
             self._setStatus(SolverStatus.RUNNING)
             result = await self._process.wait()
             self._process = None
+            print('end pod process')
 
             if result == 0:
                 self._setStatus(SolverStatus.ENDED)
-                self.setReconstructedCase()
+                print('set pod status ended')
             else:
                 self._setStatus(SolverStatus.ERROR)
+                print('set pod status error')
         except Exception as e:
             self._setStatus(SolverStatus.ERROR)
+            print('error pod')
             raise e
 
-    async def setReconstructedCase(self):
-        ### transfer reconstructed field from pod case to batch case
-        return
+    def getROMAccuracy(self):
+        ### with open(str(self._project.path) + "/%s/Eigen   .dat"%POD_DIRECTORY_NAME, 'w') as f:
+            ### tbd
+        return "1e10"
 
 
 class CaseManager(QObject):
@@ -455,11 +463,39 @@ class CaseManager(QObject):
 
     async def podRunGenerateROM(self, cases):
         tempPodCase = PODCase()
+        self._setCurrentCase(tempPodCase)
         await tempPodCase.runGenerateROM(cases)
 
-    async def podRunReconstruct(self, listSnapshot, caseToReconstruct):
+    async def podRunReconstruct(self, listSnapshot, paramsToReconstruct):
         tempPodCase = PODCase()
-        await tempPodCase.runReconstruct(listSnapshot, caseToReconstruct)
+        self._setCurrentCase(tempPodCase)
+        print('start reconstruct', self._currentCase)
+        await tempPodCase.runReconstruct(listSnapshot, paramsToReconstruct.values())
+        print('end reconstruct', self._currentCase)
+
+        caseToReconstruct = BatchCase('podCase', paramsToReconstruct)
+        self.podSaveToBatchCase(caseToReconstruct)
+
+        batchStatuses = self._project.loadBatchStatuses()
+        print(batchStatuses)
+        batchDataFrame = self._project.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value)
+        print(batchDataFrame)
+        
+        ### modify batchStatuses
+        ### modify batchDataFrame
+        
+        # self._project.updateBatchStatuses(batchStatuses)
+        # self._project.fileDB().putDataFrame(FileDB.Key.BATCH_CASES.value, batchDataFrame)
+
+    def podSaveToBatchCase(self, case):
+        print('saving pod', case)
+        self.loadBatchCase(case)
+        print('saved pod', case)
+
+    def podGetROMAccuracy(self):
+        tempPodCase = PODCase()
+        self._setCurrentCase(tempPodCase)
+        return tempPodCase.getROMAccuracy()
 
     async def initialize(self):
         case = await self.loadLiveCase()

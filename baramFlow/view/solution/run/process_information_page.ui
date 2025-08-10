@@ -539,16 +539,6 @@ QGroupBox::indicator:checked {image: url(:icons/chevron-down.svg);}</string>
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="buildROM">
-            <property name="styleSheet">
-             <string notr="true">padding: 10px</string>
-            </property>
-            <property name="text">
-             <string>Build ROM</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="toBatchMode">
             <property name="styleSheet">
              <string notr="true">padding: 10px</string>

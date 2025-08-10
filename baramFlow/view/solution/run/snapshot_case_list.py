@@ -184,11 +184,11 @@ class SnapshotCaseList(QObject):
         self._cases = {}
         self._items = {}
 
-    def importFromDataFrame(self, df, loading=False):
+    def importFromDataFrame(self, df):
         if df is None:
             return
 
-        statuses = self._project.loadBatchStatuses() if loading else {}
+        statuses = self._project.loadBatchStatuses()
 
         if self._parameters is None or self._parameters.empty:
             self._parameters = df.columns
@@ -209,16 +209,14 @@ class SnapshotCaseList(QObject):
                     status = SolverStatus.ENDED
 
             self._setCase(name, case, status)
-            if not loading:
-                CaseManager().removeCase(name)
 
-        self._listChanged(not loading)
+        self._listChanged(False)
 
     def exportAsDataFrame(self):
         return pd.DataFrame.from_dict(self._cases, orient='index')
 
     def load(self):
-        self.importFromDataFrame(self._project.fileDB().getDataFrame(FileDB.Key.SNAPSHOT_CASES.value), True)
+        self.importFromDataFrame(self._project.fileDB().getDataFrame(FileDB.Key.SNAPSHOT_CASES.value))
 
     def setCurrentCase(self, name):
         if self._currentCase in self._items:
