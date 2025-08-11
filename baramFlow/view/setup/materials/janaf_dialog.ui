@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PiecewisePolynomialDialog</class>
- <widget class="QDialog" name="PiecewisePolynomialDialog">
+ <class>JanafDialog</class>
+ <widget class="QDialog" name="JanafDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -271,7 +271,7 @@
   <connection>
    <sender>cancel</sender>
    <signal>clicked()</signal>
-   <receiver>PiecewisePolynomialDialog</receiver>
+   <receiver>JanafDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

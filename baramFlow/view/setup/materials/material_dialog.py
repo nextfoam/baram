@@ -17,7 +17,7 @@ from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceMode
 from baramFlow.view.widgets.number_input_dialog import PolynomialDialog
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .material_dialog_ui import Ui_MaterialDialog
-from .piecewise_polynomial_dialog import PiecewisePolynomialDialog
+from .janaf_dialog import JanafDialog
 from .viscosity_carreau_dialog import ViscosityCarreauDialog
 from .viscosity_cross_dialog import ViscosityCrossDialog
 from .viscosity_herschel_bulkley_dialog import ViscosityHerschelBulkleyDialog
@@ -142,9 +142,8 @@ class MaterialDialog(ResizableDialog):
         self._polynomialDensity = None
         self._specificHeats = {
             Specification.POLYNOMIAL: None,
-            Specification.PIECEWISE_POLYNOMIAL: None
+            Specification.JANAF: None
         }
-        self._piecewisePolynomialSpecificHeat = None
         self._viscosities = {
             ViscositySpecification.POLYNOMIAL: None,
             ViscositySpecification.CROSS_POWER_LAW: None,
@@ -293,17 +292,17 @@ class MaterialDialog(ResizableDialog):
                                 await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                                     self.tr('Edit Specific Heat Polynomial.'))
                                 return
-                        elif specification == Specification.PIECEWISE_POLYNOMIAL:
+                        elif specification == Specification.JANAF:
                             if specificHeat:
-                                db.setValue(self._xpath + '/specificHeat/piecewisePolynomial/lowTemperature',
+                                db.setValue(self._xpath + '/specificHeat/janaf/lowTemperature',
                                             specificHeat.lowTemperature)
-                                db.setValue(self._xpath + '/specificHeat/piecewisePolynomial/commonTemperature',
+                                db.setValue(self._xpath + '/specificHeat/janaf/commonTemperature',
                                             specificHeat.commonTemperature)
-                                db.setValue(self._xpath + '/specificHeat/piecewisePolynomial/highTemperature',
+                                db.setValue(self._xpath + '/specificHeat/janaf/highTemperature',
                                             specificHeat.highTemperature)
-                                db.setValue(self._xpath + '/specificHeat/piecewisePolynomial/lowCoefficients',
+                                db.setValue(self._xpath + '/specificHeat/janaf/lowCoefficients',
                                             specificHeat.lowCoefficients)
-                                db.setValue(self._xpath + '/specificHeat/piecewisePolynomial/highCoefficients',
+                                db.setValue(self._xpath + '/specificHeat/janaf/highCoefficients',
                                             specificHeat.highCoefficients)
 
                     if viscositySpecification != ViscositySpecification.SUTHERLAND:
@@ -378,7 +377,7 @@ class MaterialDialog(ResizableDialog):
                 self._ui.specificHeatType, [
                     Specification.CONSTANT,
                     Specification.POLYNOMIAL,
-                    Specification.PIECEWISE_POLYNOMIAL
+                    Specification.JANAF
                 ]
             )
 
@@ -500,8 +499,8 @@ class MaterialDialog(ResizableDialog):
 
             self._dialog = PolynomialDialog(self, self.tr('Polynomial Specific Heat'),
                                             self._specificHeats[specification])
-        elif specification == Specification.PIECEWISE_POLYNOMIAL:
-            self._dialog = PiecewisePolynomialDialog(self, self.tr('Piecewise-polynomial Specific Heat'),
+        elif specification == Specification.JANAF:
+            self._dialog = JanafDialog(self, self.tr('JANAF Specific Heat'),
                                                      self._xpath, self._specificHeats[specification])
         self._dialog.accepted.connect(lambda: self._speicificHeatEditAccepted(specification))
         self._dialog.open()

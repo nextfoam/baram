@@ -9,20 +9,20 @@ from libbaram.validation import FloatType, ValidationError
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.material_schema import PiecewisePolynomialSpecificHeat
-from .piecewise_polynomial_dialog_ui import Ui_PiecewisePolynomialDialog
+from baramFlow.coredb.material_schema import JanafSpecificHeat
+from .janaf_dialog_ui import Ui_JanafDialog
 
 
-class PiecewisePolynomialDialog(QDialog):
+class JanafDialog(QDialog):
     def __init__(self, parent, title, xpath, data):
         super().__init__(parent)
-        self._ui = Ui_PiecewisePolynomialDialog()
+        self._ui = Ui_JanafDialog()
         self._ui.setupUi(self)
         self.setWindowTitle(title)
 
         self._connectSignalsSlots()
 
-        self._xpath = xpath + '/specificHeat/piecewisePolynomial'
+        self._xpath = xpath + '/specificHeat/janaf'
         self._data = data
 
         self._load()
@@ -71,7 +71,7 @@ class PiecewisePolynomialDialog(QDialog):
         anyFloat = FloatType()
 
         try:
-            data = PiecewisePolynomialSpecificHeat(
+            data = JanafSpecificHeat(
                 lowTemperature=FloatType().setLowLimit(200).validate(self._ui.tLow.text(), self.tr('T<sub>Low</sub>')),
                 commonTemperature=anyFloat.validate(self._ui.tCommon.text(), self.tr('T<sub>Common</sub>>')),
                 highTemperature=FloatType().setHighLimit(6000).validate(self._ui.tHigh.text(),

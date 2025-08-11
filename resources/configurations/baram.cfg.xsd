@@ -407,13 +407,13 @@
                                 <xs:restriction base="xs:string">
                                     <xs:enumeration value="constant"/>
                                     <xs:enumeration value="polynomial"/>
-                                    <xs:enumeration value="piecewisePolynomial"/>
+                                    <xs:enumeration value="janaf"/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
                         <xs:element name="constant" type="inputNumberType"/>
                         <xs:element name="polynomial" type="inputNumberListType"/>
-                        <xs:element name="piecewisePolynomial">
+                        <xs:element name="janaf">
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="lowTemperature" type="inputNumberType" default="200"/>
@@ -860,7 +860,7 @@
                                                                 <xs:enumeration value="constant"/>
                                                                 <xs:enumeration value="piecewiseLinear"/>
                                                                 <xs:enumeration value="polynomial"/>
-                                                                <xs:enumeration value="piecewisePolynomial"/>
+                                                                <xs:enumeration value="janaf"/>
                                                             </xs:restriction>
                                                         </xs:simpleType>
                                                     </xs:element>

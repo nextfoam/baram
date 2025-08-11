@@ -27,9 +27,9 @@ EQUATION_OF_STATES = {
 
 
 THERMO = {
-    Specification.CONSTANT              : 'hConst',
-    Specification.POLYNOMIAL            : 'hPolynomial',
-    Specification.PIECEWISE_POLYNOMIAL  : 'janaf'
+    Specification.CONSTANT    : 'hConst',
+    Specification.POLYNOMIAL  : 'hPolynomial',
+    Specification.JANAF       : 'janaf'
 }
 
 
@@ -162,13 +162,13 @@ def _mixtureThermodynamics(spec, db, path):
             'Sf': 0,
             'CpCoeffs<8>': cpCoeffs
         }
-    elif spec == Specification.PIECEWISE_POLYNOMIAL:
+    elif spec == Specification.JANAF:
         data = {
-            'Tlow': db.getValue(path + '/specificHeat/piecewisePolynomial/lowTemperature'),
-            'Thigh': db.getValue(path + '/specificHeat/piecewisePolynomial/highTemperature'),
-            'Tcommon': db.getValue(path + '/specificHeat/piecewisePolynomial/commonTemperature'),
-            'highCpCoeffs': db.getValue(path + '/specificHeat/piecewisePolynomial/highCoefficients').split(),
-            'lowCpCoeffs': db.getValue(path + '/specificHeat/piecewisePolynomial/lowCoefficients').split()
+            'Tlow': db.getValue(path + '/specificHeat/janaf/lowTemperature'),
+            'Thigh': db.getValue(path + '/specificHeat/janaf/highTemperature'),
+            'Tcommon': db.getValue(path + '/specificHeat/janaf/commonTemperature'),
+            'highCpCoeffs': db.getValue(path + '/specificHeat/janaf/highCoefficients').split(),
+            'lowCpCoeffs': db.getValue(path + '/specificHeat/janaf/lowCoefficients').split()
         }
 
     return data
