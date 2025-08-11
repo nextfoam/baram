@@ -165,7 +165,7 @@ def _mixtureThermodynamics(spec, db, path):
     elif spec == Specification.PIECEWISE_POLYNOMIAL:
         data = {
             'Tlow': db.getValue(path + '/specificHeat/piecewisePolynomial/lowTemperature'),
-            'Thign': db.getValue(path + '/specificHeat/piecewisePolynomial/highTemperature'),
+            'Thigh': db.getValue(path + '/specificHeat/piecewisePolynomial/highTemperature'),
             'Tcommon': db.getValue(path + '/specificHeat/piecewisePolynomial/commonTemperature'),
             'highCpCoeffs': db.getValue(path + '/specificHeat/piecewisePolynomial/highCoefficients').split(),
             'lowCpCoeffs': db.getValue(path + '/specificHeat/piecewisePolynomial/lowCoefficients').split()
