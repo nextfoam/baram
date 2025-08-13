@@ -34,6 +34,7 @@ class BoundaryTypePicker(QWidget):
             self._ui.velocityInlet:     BoundaryType.VELOCITY_INLET,
             self._ui.flowRateInlet:     BoundaryType.FLOW_RATE_INLET,
             self._ui.pressureInlet:     BoundaryType.PRESSURE_INLET,
+            self._ui.intakeFan:         BoundaryType.INTAKE_FAN,
             self._ui.ABLInlet:          BoundaryType.ABL_INLET,
             self._ui.openChannelInlet:  BoundaryType.OPEN_CHANNEL_INLET,
             self._ui.freeStream:        BoundaryType.FREE_STREAM,

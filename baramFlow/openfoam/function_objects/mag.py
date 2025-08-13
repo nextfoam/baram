@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from libbaram.openfoam.of_utils import openfoamLibraryPath
-
 
 def _foMagBase(field: str):
     data = {
         'type':            'mag',
-        'libs':            [openfoamLibraryPath('libfieldFunctionObjects')],
+        'libs':            ['fieldFunctionObjects'],
 
         'field':           field,
 

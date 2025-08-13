@@ -5,6 +5,7 @@ from __future__ import annotations
 from math import sqrt
 
 import logging
+from uuid import UUID
 
 from lxml import etree
 import pandas as pd
@@ -919,16 +920,19 @@ def _version_10(root: etree.Element):
     # root.set('version', '11')
 
     for p in root.findall('materials/material/specificHeat', namespaces=_nsmap):
-        if p.find('piecewisePolynomial', namespaces=_nsmap) is None:
-            logger.debug(f'    Adding "piecewisePolynomial" to {p}')
+        if (e := p.find('piecewisePolynomial', namespaces=_nsmap)) is not None:  # it was a temporary name, which has changed to "janaf"
+            p.remove(e)
 
-            e = etree.fromstring('<piecewisePolynomial xmlns="http://www.baramcfd.org/baram">'
+        if p.find('janaf', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "janaf" to {p}')
+
+            e = etree.fromstring('<janaf xmlns="http://www.baramcfd.org/baram">'
                                  f' <lowTemperature>200</lowTemperature>'
                                  f' <commonTemperature>1000</commonTemperature>'
                                  f' <highTemperature>6000</highTemperature>'
                                  f' <lowCoefficients>0 0 0 0 0 0 0</lowCoefficients>'
                                  f' <highCoefficients>0 0 0 0 0 0 0</highCoefficients>'
-                                 '</piecewisePolynomial>')
+                                 '</janaf>')
             p.append(e)
 
     for p in root.findall('materials/material', namespaces=_nsmap):
@@ -939,7 +943,7 @@ def _version_10(root: etree.Element):
             logger.debug(f'    Adding "boussinesq" to {p}')
 
             e = etree.fromstring('<boussinesq xmlns="http://www.baramcfd.org/baram">'
-                                 f' <rho0>1</rho0>' 
+                                 f' <rho0>1</rho0>'
                                  f' <T0>300</T0>'
                                  f' <beta>3e-03</beta>'
                                  '</boussinesq>')
@@ -955,7 +959,21 @@ def _version_10(root: etree.Element):
                                  '</perfectFluid>')
             density.append(e)
 
-    for p in root.findall(f'regions/region/boundaryConditions/boundaryCondition', namespaces=_nsmap):
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition', namespaces=_nsmap):
+        if p.find('pressure', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "pressure" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}pressure')
+            e.text = '0'
+            p.append(e)
+
+        if p.find('fanCurveName', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "fanCurveName" to {p}')
+
+            e = etree.Element(f'{{{_ns}}}fanCurveName')
+            e.text = str(UUID(int = 0))
+            p.append(e)
+
         if p.find('thermoCoupledWall', namespaces=_nsmap) is None:
             logger.debug(f'    Adding "thermoCoupledWall" to {p}')
             e = etree.fromstring('''

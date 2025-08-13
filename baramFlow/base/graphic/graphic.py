@@ -47,17 +47,17 @@ class StreamlineType(Enum):
     RIBBON = 'ribbon'
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Graphic:
     GRAPHICS_PATH: ClassVar[str] = '/graphics'
-
-    uuid: UUID
-    name: str
 
     instanceUpdated: AsyncSignal = dataClassField(init=False)
     displayItemAdded: AsyncSignal = dataClassField(init=False)
     displayItemRemoving: AsyncSignal = dataClassField(init=False)
     displayItemRemoved: AsyncSignal = dataClassField(init=False)
+
+    uuid: UUID
+    name: str
 
     time: str = '0'
 

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from libbaram.openfoam.of_utils import openfoamLibraryPath
-
 
 def _foForceCoeffsBase(boundaries: [str],
                       aRef: float,
@@ -16,7 +14,7 @@ def _foForceCoeffsBase(boundaries: [str],
                       rname: str):
     data = {
         'type': 'forceCoeffs',
-        'libs': [openfoamLibraryPath('libforces')],
+        'libs': ['forces'],
 
         'patches': boundaries,
         'coefficients': ['Cd', 'Cl', 'CmPitch'],

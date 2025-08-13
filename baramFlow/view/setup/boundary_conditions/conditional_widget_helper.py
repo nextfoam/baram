@@ -28,7 +28,7 @@ class EmptyWidget:
 
 class ConditionalWidgetHelper:
     @classmethod
-    def turbulenceWidget(cls, xpath, layout):
+    def turbulenceWidget(cls, xpath, layout) -> TurbulenceKEpsilonWidget | TurbulenceKOmegaWidget | TurbulenceSpalartAllmarasWidget | TurbulenceLESWidget | EmptyWidget:
         turbulenceModel = TurbulenceModelsDB.getModel()
 
         widget = None

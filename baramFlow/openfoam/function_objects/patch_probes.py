@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from libbaram.openfoam.of_utils import openfoamLibraryPath
-
 
 def _foPatchProbesBase(boundary: str, field: str, probeLocation: [float, float, float], rname: str) -> dict:
     data = {
         'type': 'patchProbes',
-        'libs': [openfoamLibraryPath('libsampling')],
+        'libs': ['sampling'],
 
         'patches': [boundary],
         'fields': [field],

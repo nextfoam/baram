@@ -37,6 +37,7 @@ class Omega(BoundaryCondition):
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletOmega(xpath)),
+                BoundaryType.INTAKE_FAN.value:          (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.ABL_INLET.value:           (lambda: self._constructAtmBoundaryLayerInletOmega()),
                 BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructInletOutletByModel(xpath)),

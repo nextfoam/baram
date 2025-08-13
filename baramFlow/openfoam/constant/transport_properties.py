@@ -250,7 +250,10 @@ class TransportProperties(DictionaryFile):
             }
 
         viscosity = self._db.getViscosity([(mid, 1)], 0)
-        nu = viscosity / density
+        if density > 0:
+            nu = viscosity / density
+        else:  # To prevent device-by-zero exception. Some configurations may be inconsistent.
+            nu = viscosity
 
         return {
             'transportModel': 'Newtonian',

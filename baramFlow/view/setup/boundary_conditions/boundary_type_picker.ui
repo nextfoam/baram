@@ -115,6 +115,25 @@
           </widget>
          </item>
          <item>
+          <widget class="FlatPushButton" name="intakeFan">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">text-align:left</string>
+           </property>
+           <property name="text">
+            <string>Intake Fan</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroup</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
           <widget class="FlatPushButton" name="ABLInlet">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">

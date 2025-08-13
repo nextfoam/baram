@@ -59,6 +59,7 @@ class Alpha(BoundaryCondition):
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFixedValue(volumeFraction)),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructFixedValue(volumeFraction)),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletAlpha(xpath, volumeFraction)),
+                BoundaryType.INTAKE_FAN.value:          (lambda: self._constructFixedValue(volumeFraction)),
                 BoundaryType.ABL_INLET.value:           (lambda: None),
                 BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructVariableHeightFlowRate()),
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructVariableHeightFlowRate()),

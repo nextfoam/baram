@@ -269,4 +269,6 @@
     <volumeFractions/>
     <userDefinedScalars/>
     <species/>
+    <pressure>0</pressure>
+    <fanCurveName>00000000-0000-0000-0000-000000000000</fanCurveName>
 </boundaryCondition>

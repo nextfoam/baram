@@ -13,6 +13,7 @@ TYPE_MAP = {
     BoundaryType.VELOCITY_INLET.value       : GeometricalType.PATCH,
     BoundaryType.FLOW_RATE_INLET.value      : GeometricalType.PATCH,
     BoundaryType.PRESSURE_INLET.value       : GeometricalType.PATCH,
+    BoundaryType.INTAKE_FAN.value           : GeometricalType.PATCH,
     BoundaryType.ABL_INLET.value            : GeometricalType.PATCH,
     BoundaryType.OPEN_CHANNEL_INLET.value   : GeometricalType.PATCH,
     BoundaryType.FREE_STREAM.value          : GeometricalType.PATCH,
@@ -100,7 +101,7 @@ class Boundary(DictionaryFile):
         self._removeEntry(bcname, 'separationVector')
 
         self._boundaryDict.content[bcname]['type'] = GeometricalType.MAPPED_WALL.value
-        self._boundaryDict.content[bcname]['sampleMode'] = 'nearestPatchFaceAMI'
+        self._boundaryDict.content[bcname]['sampleMode'] = 'nearestPatchFace'
         if self._rname:
             self._boundaryDict.content[bcname]['sampleRegion'] = BoundaryDB.getBoundaryRegion(cpid)
         else:

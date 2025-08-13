@@ -29,6 +29,7 @@ from .open_channel_outlet_dialog import OpenChannelOutletDialog
 from .porous_jump_dialog import PorousJumpDialog
 from .pressure_inlet_dialog import PressureInletDialog
 from .pressure_outlet_dialog import PressureOutletDialog
+from .intake_fan_dialog import IntakeFanDialog
 from .subsonic_inlet_dialog import SubsonicInletDialog
 from .subsonic_outflow_dialog import SubsonicOutflowDialog
 from .supersonic_inflow_dialog import SupersonicInflowDialog
@@ -41,6 +42,7 @@ DIALOGS = {
     BoundaryType.VELOCITY_INLET.value: VelocityInletDialog,
     BoundaryType.FLOW_RATE_INLET.value: FlowRateInletDialog,
     BoundaryType.PRESSURE_INLET.value: PressureInletDialog,
+    BoundaryType.INTAKE_FAN.value: IntakeFanDialog,
     BoundaryType.ABL_INLET.value: ABLInletDialog,
     BoundaryType.OPEN_CHANNEL_INLET.value: OpenChannelInletDialog,
     BoundaryType.FREE_STREAM.value: FreeStreamDialog,

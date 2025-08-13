@@ -249,7 +249,15 @@ class ForceReportDialog(QDialog):
                 float(self._ui.centerOfRotationY.text()),
                 float(self._ui.centerOfRotationZ.text())]
 
-        data = foForcesReport(boundaries, cofr, self._rname)
+        if GeneralDB.isDensityBased():
+            pRef = None
+        else:
+            db = CoreDBReader()  # Not "coredb" because Parsed data is required rather than raw USER PARAMETERS
+            referencePressure = float(db.getValue(ReferenceValuesDB.REFERENCE_VALUES_XPATH + '/pressure'))
+            operatingPressure = float(db.getValue(GeneralDB.OPERATING_CONDITIONS_XPATH + '/pressure'))
+            pRef = referencePressure + operatingPressure
+
+        data = foForcesReport(boundaries, cofr, pRef, self._rname)
 
         return data
 

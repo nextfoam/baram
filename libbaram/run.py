@@ -76,6 +76,7 @@ else:
 
     if platform.system() == 'Darwin':
         library += os.pathsep + '/opt/homebrew/lib'
+        library = str(APP_PATH) + os.pathsep + library  # APP_PATH should be at the front to get priority
 
     if platform.system() == 'Darwin':
         LIBRARY_PATH_NAME = 'DYLD_LIBRARY_PATH'
@@ -97,7 +98,8 @@ else:
         PATH = '/opt/homebrew/bin' + os.pathsep + os.environ['PATH']
         ENV.update({
             'PATH': PATH,
-            'DYLD_FALLBACK_LIBRARY_PATH': LIBRARY_PATH  # To find libraries for function objects
+            'DYLD_FALLBACK_LIBRARY_PATH': LIBRARY_PATH,  # To find libraries for function objects
+            'FOAM_LD_LIBRARY_PATH': library
         })
 
     MPI_OPTIONS = ['-x', 'WM_PROJECT_DIR', '-x', LIBRARY_PATH_NAME]
