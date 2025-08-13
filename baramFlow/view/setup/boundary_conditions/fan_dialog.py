@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
 from pathlib import Path
 
-from PySide6.QtWidgets import QFileDialog, QMessageBox
+from PySide6.QtWidgets import QFileDialog
 
+from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
+from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.filedb import BcFileRole
-from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from .fan_dialog_ui import Ui_FanDialog
 from .coupled_boundary_condition_dialog import CoupledBoundaryConditionDialog
@@ -36,43 +38,41 @@ class FanDialog(CoupledBoundaryConditionDialog):
         self._connectSignalsSlots()
         self._load()
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def accept(self):
         if not self._coupledBoundary:
-            QMessageBox.critical(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
             return
 
-        db = coredb.CoreDB()
-        xpath = self._xpath + self.RELATIVE_XPATH
-        fileDB = Project.instance().fileDB()
+        try:
+            xpath = self._xpath + self.RELATIVE_XPATH
+            fileDB = Project.instance().fileDB()
 
-        oldFanCurveFile = None
-        fanCurveFileKey = None
-        if self._pqCurveFile:
-            oldFanCurveFile = db.getValue(xpath + '/fanCurveFile')
-            fanCurveFileKey = fileDB.putBcFile(self._bcid, BcFileRole.BC_FAN_CURVE, self._pqCurveFile)
-        elif not self._pqCurveFileName:
-            QMessageBox.critical(self, self.tr("Input Error"), self.tr("Select Fan P-Q Curve File."))
-            return False
+            oldFanCurveFile = None
+            fanCurveFileKey = None
+            if self._pqCurveFile:
+                oldFanCurveFile = coredb.CoreDB().getValue(xpath + '/fanCurveFile')
+                fanCurveFileKey = fileDB.putBcFile(self._bcid, BcFileRole.BC_FAN_CURVE, self._pqCurveFile)
+            elif not self._pqCurveFileName:
+                await AsyncMessageBox().information(
+                    self, self.tr("Input Error"), self.tr("Select Fan P-Q Curve File."))
+                return False
 
-        writer = CoreDBWriter()
-        coupleTypeChanged = self._changeCoupledBoundary(writer, self._coupledBoundary, self.BOUNDARY_TYPE)
-        self._writeConditions(writer, xpath, fanCurveFileKey)
-        self._writeConditions(writer, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH, fanCurveFileKey)
+            with coredb.CoreDB() as db:
+                coupleTypeChanged = self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
 
-        errorCount = writer.write()
-        if errorCount > 0:
-            if fanCurveFileKey:
-                fileDB.delete(fanCurveFileKey)
+                self._writeConditions(db, xpath, fanCurveFileKey)
+                self._writeConditions(db, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH, fanCurveFileKey)
 
-            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
-        else:
-            if fanCurveFileKey and oldFanCurveFile:
-                fileDB.delete(oldFanCurveFile)
+                if fanCurveFileKey and oldFanCurveFile:
+                    fileDB.delete(oldFanCurveFile)
 
-            if coupleTypeChanged:
-                self.boundaryTypeChanged.emit(int(self._coupledBoundary))
+                super().accept()
+        except ValueException as ve:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
 
-            super().accept()
+        if coupleTypeChanged:
+            self.boundaryTypeChanged.emit(int(self._coupledBoundary))
 
     def _connectSignalsSlots(self):
         self._ui.fanPQCurveFileSelect.clicked.connect(self._selectFanPQCurveFile)
@@ -116,6 +116,6 @@ class FanDialog(CoupledBoundaryConditionDialog):
             self._coupledBoundary = 0
             self._ui.coupledBoundary.setText('')
 
-    def _writeConditions(self, writer, xpath, fanCurveFileKey):
+    def _writeConditions(self, db, xpath, fanCurveFileKey):
         if fanCurveFileKey:
-            writer.append(xpath + '/fanCurveFile', fanCurveFileKey, None)
+            db.setValue(xpath + '/fanCurveFile', fanCurveFileKey)

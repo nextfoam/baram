@@ -190,6 +190,14 @@
             <limit>none</limit>
         </wallAdhesions>
     </wall>
+    <thermoCoupledWall>
+        <temperature>
+            <wallLayers disabled="true">
+                <thicknessLayers>0.001</thicknessLayers>
+                <thermalConductivityLayers>10</thermalConductivityLayers>
+            </wallLayers>
+        </temperature>
+    </thermoCoupledWall>
     <interface>
         <mode>internalInterface</mode>
         <rotationAxisOrigin>

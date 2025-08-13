@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QMessageBox
+import qasync
 
+from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, InterfaceMode
 from baramFlow.coredb.general_db import GeneralDB
+from baramFlow.coredb.libdb import dbErrorToMessage, ValueException
 from baramFlow.coredb.models_db import ModelsDB
 from .interface_dialog_ui import Ui_InterfaceDialog
 from .coupled_boundary_condition_dialog import CoupledBoundaryConditionDialog
@@ -33,24 +34,25 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
         self._connectSignalsSlots()
         self._load()
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def accept(self):
         if not self._ui.coupledBoundary.text():
-            QMessageBox.critical(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
             return
 
-        writer = CoreDBWriter()
-        coupleTypeChanged = self._changeCoupledBoundary(writer, self._coupledBoundary, self.BOUNDARY_TYPE)
-        self._writeConditions(writer, self._xpath + self.RELATIVE_XPATH)
-        self._writeConditions(writer, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH, True)
+        try:
+            with coredb.CoreDB() as db:
+                coupleTypeChanged = self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
 
-        errorCount = writer.write()
-        if errorCount == 0:
-            if coupleTypeChanged:
-                self.boundaryTypeChanged.emit(int(self._coupledBoundary))
+                self._writeConditions(db, self._xpath + self.RELATIVE_XPATH)
+                self._writeConditions(db, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH, True)
 
-            super().accept()
-        else:
-            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
+                if coupleTypeChanged:
+                    self.boundaryTypeChanged.emit(int(self._coupledBoundary))
+
+                super().accept()
+        except ValueException as ve:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
 
     def _connectSignalsSlots(self):
         self._ui.mode.currentDataChanged.connect(self._modeChanged)
@@ -117,32 +119,32 @@ class InterfaceDialog(CoupledBoundaryConditionDialog):
             self._coupledBoundary = 0
             self._ui.coupledBoundary.setText('')
 
-    def _writeConditions(self, writer, xpath, couple=False):
+    def _writeConditions(self, db, xpath, couple=False):
         mode = self._ui.mode.currentData()
-        writer.append(xpath + '/mode', mode.value, None)
+        db.setValue(xpath + '/mode', mode.value, None)
 
         if mode == InterfaceMode.ROTATIONAL_PERIODIC:
-            writer.append(xpath + '/rotationAxisOrigin/x',
-                          self._ui.rotationAxisX.text(), self.tr('Rotation Axis Origin X'))
-            writer.append(xpath + '/rotationAxisOrigin/y',
-                          self._ui.rotationAxisY.text(), self.tr('Rotation Axis Origin Y'))
-            writer.append(xpath + '/rotationAxisOrigin/z',
-                          self._ui.rotationAxisZ.text(), self.tr('Rotation Axis Origin Z'))
-            writer.append(xpath + '/rotationAxisDirection/x',
-                          self._ui.rotationDirectionX.text(), self.tr('Rotation Axis Direction X'))
-            writer.append(xpath + '/rotationAxisDirection/y',
-                          self._ui.rotationDirectionY.text(), self.tr('Rotation Axis Direction Y'))
-            writer.append(xpath + '/rotationAxisDirection/z',
-                          self._ui.rotationDirectionZ.text(), self.tr('Rotation Axis Direction Z'))
+            db.setValue(xpath + '/rotationAxisOrigin/x',
+                        self._ui.rotationAxisX.text(), self.tr('Rotation Axis Origin X'))
+            db.setValue(xpath + '/rotationAxisOrigin/y',
+                        self._ui.rotationAxisY.text(), self.tr('Rotation Axis Origin Y'))
+            db.setValue(xpath + '/rotationAxisOrigin/z',
+                        self._ui.rotationAxisZ.text(), self.tr('Rotation Axis Origin Z'))
+            db.setValue(xpath + '/rotationAxisDirection/x',
+                        self._ui.rotationDirectionX.text(), self.tr('Rotation Axis Direction X'))
+            db.setValue(xpath + '/rotationAxisDirection/y',
+                        self._ui.rotationDirectionY.text(), self.tr('Rotation Axis Direction Y'))
+            db.setValue(xpath + '/rotationAxisDirection/z',
+                        self._ui.rotationDirectionZ.text(), self.tr('Rotation Axis Direction Z'))
         elif mode == InterfaceMode.TRANSLATIONAL_PERIODIC:
             if couple:
-                writer.append(xpath + '/translationVector/x', str(-float(self._ui.translationVectorX.text())), None)
-                writer.append(xpath + '/translationVector/y', str(-float(self._ui.translationVectorY.text())), None)
-                writer.append(xpath + '/translationVector/z', str(-float(self._ui.translationVectorZ.text())), None)
+                db.setValue(xpath + '/translationVector/x', str(-float(self._ui.translationVectorX.text())))
+                db.setValue(xpath + '/translationVector/y', str(-float(self._ui.translationVectorY.text())))
+                db.setValue(xpath + '/translationVector/z', str(-float(self._ui.translationVectorZ.text())))
             else:
-                writer.append(xpath + '/translationVector/x',
-                              self._ui.translationVectorX.text(), self.tr('Translation Vector X'))
-                writer.append(xpath + '/translationVector/y',
-                              self._ui.translationVectorY.text(), self.tr('Translation Vector Y'))
-                writer.append(xpath + '/translationVector/z',
-                              self._ui.translationVectorZ.text(), self.tr('Translation Vector Z'))
+                db.setValue(xpath + '/translationVector/x',
+                            self._ui.translationVectorX.text(), self.tr('Translation Vector X'))
+                db.setValue(xpath + '/translationVector/y',
+                            self._ui.translationVectorY.text(), self.tr('Translation Vector Y'))
+                db.setValue(xpath + '/translationVector/z',
+                            self._ui.translationVectorZ.text(), self.tr('Translation Vector Z'))

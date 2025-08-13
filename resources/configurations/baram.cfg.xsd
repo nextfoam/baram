@@ -1237,6 +1237,14 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="temperatureWallLayerType">
+        <xs:sequence>
+            <xs:element name="thicknessLayers" type="inputNumberListType"/>
+            <xs:element name="thermalConductivityLayers" type="inputNumberListType"/>
+        </xs:sequence>
+        <xs:attribute name="disabled" type="xs:boolean" use="required"/>
+    </xs:complexType>
+
     <xs:complexType name="volumeFractionListType">
         <xs:sequence>
             <xs:element name="volumeFraction" minOccurs="0" maxOccurs="unbounded">
@@ -1548,15 +1556,7 @@
                         <xs:element name="heatTransferCoefficient" type="inputNumberType" default="100"/>
                         <xs:element name="freeStreamTemperature" type="inputNumberType" default="300"/>
                         <xs:element name="externalEmissivity" type="inputRatioType" default="0"/>
-                        <xs:element name="wallLayers">
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="thicknessLayers" type="inputNumberListType"/>
-                                    <xs:element name="thermalConductivityLayers" type="inputNumberListType"/>
-                                </xs:sequence>
-                                <xs:attribute name="disabled" type="xs:boolean" use="required"/>
-                            </xs:complexType>
-                        </xs:element>
+                        <xs:element name="wallLayers" type="temperatureWallLayerType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1601,6 +1601,18 @@
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="thermoCoupledWallType">
+        <xs:sequence>
+            <xs:element name="temperature">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="wallLayers" type="temperatureWallLayerType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1713,7 +1725,7 @@
                 <!-- no setting for supersonicOutflow -->
                 <!-- <xs:element name="supersonicOutflow" type="supersonicOutflowType" /> -->
                 <xs:element name="wall" type="wallType"/>
-                <!-- no setting for thermoCoupledWall -->
+                <xs:element name="thermoCoupledWall" type="thermoCoupledWallType"/>
                 <!-- <xs:element name="thermoCoupledWall" type="thermoCoupledWallType" /> -->
                 <!-- no setting for symmetry -->
                 <!--  <xs:element name="symmetry" type="symmetryType" /> -->

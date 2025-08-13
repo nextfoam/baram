@@ -19,7 +19,6 @@ from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .wall_dialog_ui import Ui_WallDialog
-from .wall_layers_widget import WallLayersWidget
 
 
 class ContactAnglesWidget(QWidget):
@@ -35,7 +34,6 @@ class ContactAnglesWidget(QWidget):
         column = 2
         for label in labels:
             self._layout.addWidget(QLabel(label), 0, column)
-            # self._layout.setColumnStretch(column, 1)
             column += 1
 
     def addRow(self, mid1, mid2, name1, name2, values):
@@ -80,8 +78,6 @@ class WallDialog(ResizableDialog):
         self._constantContactAngles = None
         self._dynamicContactAngles = None
 
-        self._wallLayersWidget = None
-
         self._xpath = BoundaryDB.getXPath(bcid)
 
         self._wallMotionRadios.addEnumButton(self._ui.stationaryWall,   WallMotion.STATIONARY_WALL)
@@ -114,7 +110,7 @@ class WallDialog(ResizableDialog):
                 await AsyncMessageBox().information(self, self.tr('Input Error'), msg)
                 return
 
-            with (coredb.CoreDB() as db):
+            with coredb.CoreDB() as db:
                 xpath = self._xpath + self.RELATIVE_XPATH
 
                 wallMotion = self._wallMotionRadios.checkedData()
@@ -173,8 +169,7 @@ class WallDialog(ResizableDialog):
                                     self.tr('Free Stream Temperature'))
                         db.setValue(xpath + '/temperature/externalEmissivity', self._ui.externalEmissivity.text(),
                                     self.tr('External Emissivity'))
-                        if not await self._wallLayersWidget.updateDB(db):
-                            return
+                        await self._ui.wallLayers.updateDB(db, xpath + '/temperature/wallLayers')
 
                 if self._ui.contactAngleGroup.isVisible():
                     contactAngleModel = self._ui.contactAngleModel.currentData()
@@ -246,7 +241,6 @@ class WallDialog(ResizableDialog):
 
         if ModelsDB.isEnergyModelOn():
             self._setupTemperatureCombo()
-            self._wallLayersWidget = WallLayersWidget(self, self._ui, xpath + '/temperature/wallLayers')
             self._ui.temperatureType.setCurrentIndex(
                 self._ui.temperatureType.findData(WallTemperature(db.getValue(xpath + '/temperature/type'))))
             self._ui.temperature.setText(db.getValue(xpath + '/temperature/temperature'))
@@ -254,7 +248,7 @@ class WallDialog(ResizableDialog):
             self._ui.heatTransferCoefficient.setText(db.getValue(xpath + '/temperature/heatTransferCoefficient'))
             self._ui.freeStreamTemperature.setText(db.getValue(xpath + '/temperature/freeStreamTemperature'))
             self._ui.externalEmissivity.setText(db.getValue(xpath + '/temperature/externalEmissivity'))
-            self._wallLayersWidget.load()
+            self._ui.wallLayers.load(xpath + '/temperature/wallLayers')
             self._temperatureTypeChanged()
         else:
             self._ui.temperatureGroup.hide()

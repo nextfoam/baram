@@ -955,6 +955,21 @@ def _version_10(root: etree.Element):
                                  '</perfectFluid>')
             density.append(e)
 
+    for p in root.findall(f'regions/region/boundaryConditions/boundaryCondition', namespaces=_nsmap):
+        if p.find('thermoCoupledWall', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "thermoCoupledWall" to {p}')
+            e = etree.fromstring('''
+                <thermoCoupledWall xmlns="http://www.baramcfd.org/baram">
+                    <temperature>
+                        <wallLayers disabled="true">
+                            <thicknessLayers>0.001</thicknessLayers>
+                            <thermalConductivityLayers>10</thermalConductivityLayers>
+                        </wallLayers>
+                    </temperature>
+                </thermoCoupledWall>
+            ''')
+            p.insert(17, e)
+
 
 _fTable = [
     None,
