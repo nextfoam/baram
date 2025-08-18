@@ -13,6 +13,7 @@ from baramFlow.coredb.region_db import RegionDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import usePrgh, useGaugePressureInPrgh
+from libbaram.natural_name_uuid import uuidToNnstr
 
 TYPE_MAP = {
     BoundaryType.VELOCITY_INLET.value: 'calculated',
@@ -209,10 +210,10 @@ class P(BoundaryCondition):
     def _constructFanPressure(self, xpath, bcid):
         fanCurveName = UUID(self._db.getValue(xpath + '/fanCurveName'))
         if fanCurveName.int != 0:
-            df = Project.instance().fileDB().getDataFrame(str(fanCurveName))
+            df = Project.instance().fileDB().getDataFrame(uuidToNnstr(fanCurveName))
             if df is not None:
                 fanCurve = df.values.tolist()
-                if len(fanCurve) > 2:  # it it includes vector values
+                if len(fanCurve[0]) > 2:  # if it includes vector value
                     fanCurve = [[row[0], row[1:]] for row in fanCurve]
 
         # ToDo: What if fanCurve is not available?
