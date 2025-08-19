@@ -36,6 +36,7 @@ class Alphat(BoundaryCondition):
             field[name] = {
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructCalculated()),
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructCalculated()),
+                BoundaryType.FLOW_RATE_OUTLET.value:     (lambda: self._constructCalculated()),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructCalculated()),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletAlphat(xpath)),
                 BoundaryType.INTAKE_FAN.value:          (lambda: self._constructCalculated()),

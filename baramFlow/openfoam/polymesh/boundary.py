@@ -20,6 +20,7 @@ TYPE_MAP = {
     BoundaryType.FAR_FIELD_RIEMANN.value    : GeometricalType.PATCH,
     BoundaryType.SUBSONIC_INLET.value       : GeometricalType.PATCH,
     BoundaryType.SUPERSONIC_INFLOW.value    : GeometricalType.PATCH,
+    BoundaryType.FLOW_RATE_OUTLET.value     : GeometricalType.PATCH,
     BoundaryType.PRESSURE_OUTLET.value      : GeometricalType.PATCH,
     BoundaryType.OPEN_CHANNEL_OUTLET.value  : GeometricalType.PATCH,
     BoundaryType.OUTFLOW.value              : GeometricalType.PATCH,

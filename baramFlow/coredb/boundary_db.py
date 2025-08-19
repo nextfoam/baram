@@ -29,6 +29,7 @@ class BoundaryType(Enum):
     SUBSONIC_INLET	    = 'subsonicInlet'
     SUPERSONIC_INFLOW	= 'supersonicInflow'
     # Outlet
+    FLOW_RATE_OUTLET    = 'flowRateOutlet'
     PRESSURE_OUTLET	    = 'pressureOutlet'
     OPEN_CHANNEL_OUTLET = 'openChannelOutlet'
     OUTFLOW	            = 'outflow'
@@ -216,6 +217,7 @@ class BoundaryDB:
             BoundaryType.SUBSONIC_INLET.value: QCoreApplication.translate('BoundaryDB', 'Subsonic Inlet'),
             BoundaryType.SUPERSONIC_INFLOW.value: QCoreApplication.translate('BoundaryDB', 'Supersonic Inflow'),
             # Outlet
+            BoundaryType.FLOW_RATE_OUTLET.value: QCoreApplication.translate('BoundaryDB', 'Flow Rate Outlet'),
             BoundaryType.PRESSURE_OUTLET.value: QCoreApplication.translate('BoundaryDB', 'Pressure Outlet'),
             BoundaryType.OPEN_CHANNEL_OUTLET.value: QCoreApplication.translate('BoundaryDB', 'Open Channel Outlet'),
             BoundaryType.OUTFLOW.value: QCoreApplication.translate('BoundaryDB', 'Outflow'),

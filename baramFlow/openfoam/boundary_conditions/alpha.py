@@ -57,6 +57,7 @@ class Alpha(BoundaryCondition):
             field[name] = {
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(volumeFraction)),
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFixedValue(volumeFraction)),
+                BoundaryType.FLOW_RATE_OUTLET.value:    (lambda: self._constructZeroGradient()),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructFixedValue(volumeFraction)),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletAlpha(xpath, volumeFraction)),
                 BoundaryType.INTAKE_FAN.value:          (lambda: self._constructFixedValue(volumeFraction)),

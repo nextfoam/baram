@@ -22,6 +22,7 @@ from .cyclic_dialog import CyclicDialog
 from .fan_dialog import FanDialog
 from .farfield_riemann_dialog import FarfieldRiemannDialog
 from .flow_rate_inlet_dialog import FlowRateInletDialog
+from .flow_rate_outlet_dialog import FlowRateOutletDialog
 from .free_stream_dialog import FreeStreamDialog
 from .interface_dialog import InterfaceDialog
 from .open_channel_inlet_dialog import OpenChannelInletDialog
@@ -49,6 +50,7 @@ DIALOGS = {
     BoundaryType.FAR_FIELD_RIEMANN.value: FarfieldRiemannDialog,
     BoundaryType.SUBSONIC_INLET.value: SubsonicInletDialog,
     BoundaryType.SUPERSONIC_INFLOW.value: SupersonicInflowDialog,
+    BoundaryType.FLOW_RATE_OUTLET.value: FlowRateOutletDialog,
     BoundaryType.PRESSURE_OUTLET.value: PressureOutletDialog,
     BoundaryType.OPEN_CHANNEL_OUTLET.value: OpenChannelOutletDialog,
     BoundaryType.OUTFLOW.value: None,

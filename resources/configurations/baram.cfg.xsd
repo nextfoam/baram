@@ -243,7 +243,7 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="mid" type="xs:positiveInteger"/>
-                        <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">
+                        <xs:element name="specie" maxOccurs="unbounded">
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="mid" type="xs:positiveInteger"/>
@@ -1099,7 +1099,7 @@
                                             <xs:complexType>
                                                 <xs:sequence>
                                                     <xs:element name="mid" type="xs:positiveInteger"/>
-                                                    <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">
+                                                    <xs:element name="specie" maxOccurs="unbounded">
                                                         <xs:complexType>
                                                             <xs:sequence>
                                                                 <xs:element name="mid" type="xs:positiveInteger"/>
@@ -1678,6 +1678,7 @@
                         <xs:restriction base="xs:string">
                             <xs:enumeration value="velocityInlet"/>
                             <xs:enumeration value="flowRateInlet"/>
+                            <xs:enumeration value="flowRateOutlet"/>
                             <xs:enumeration value="pressureInlet"/>
                             <xs:enumeration value="pressureOutlet"/>
                             <xs:enumeration value="intakeFan"/>
@@ -1712,6 +1713,7 @@
 
                 <xs:element name="velocityInlet" type="velocityInletType"/>
                 <xs:element name="flowRateInlet" type="flowRateInletType"/>
+                <xs:element name="flowRateOutlet" type="flowRateInletType"/>
                 <xs:element name="pressureInlet" type="pressureInletType"/>
                 <xs:element name="pressureOutlet" type="pressureOutletType"/>
                 <xs:element name="openChannelInlet" type="openChannelInletType"/>
@@ -2470,7 +2472,7 @@
                                                                                                         <xs:complexType>
                                                                                                             <xs:sequence>
                                                                                                                 <xs:element name="mid" type="xs:positiveInteger"/>
-                                                                                                                <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">
+                                                                                                                <xs:element name="specie" maxOccurs="unbounded">
                                                                                                                     <xs:complexType>
                                                                                                                         <xs:sequence>
                                                                                                                             <xs:element name="mid" type="xs:positiveInteger"/>

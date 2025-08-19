@@ -47,6 +47,13 @@
             <massFlowRate>1</massFlowRate>
         </flowRate>
     </flowRateInlet>
+    <flowRateOutlet>
+        <flowRate>
+            <specification>massFlowRate</specification>
+            <volumeFlowRate>1</volumeFlowRate>
+            <massFlowRate>1</massFlowRate>
+        </flowRate>
+    </flowRateOutlet>
     <pressureInlet>
         <pressure>0</pressure>
     </pressureInlet>
