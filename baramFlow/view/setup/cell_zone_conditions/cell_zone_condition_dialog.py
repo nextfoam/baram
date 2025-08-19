@@ -110,9 +110,9 @@ class CellZoneConditionDialog(QDialog):
             self._ui.zoneTypeRadioGroup.idToggled.connect(self._zoneTypeChanged)
 
         if GeneralDB.isCompressibleDensity():
-            self._ui.zoneType.setEnabled(False)
-
-        layout.addStretch()
+            self._ui.MRF.setEnabled(False)
+            self._ui.porousZone.setEnabled(False)
+            self._ui.actuatorDisk.setEnabled(False)
 
         layout = self._ui.sourceTerms.layout()
         layout.addLayout(self._materialSourceTermsLayout)

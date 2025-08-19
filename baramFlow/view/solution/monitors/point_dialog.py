@@ -4,6 +4,8 @@
 import qasync
 from PySide6.QtWidgets import QDialog
 
+from baramFlow.case_manager import CaseManager
+from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from libbaram.mesh import Bounds
 from widgets.async_message_box import AsyncMessageBox
 from widgets.rendering.point_widget import PointWidget
@@ -11,7 +13,6 @@ from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.app import app
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
@@ -49,7 +50,7 @@ class PointDialog(QDialog):
             self._isNew = True
         else:
             self._ui.nameWidget.hide()
-            self._ui.groupBox.setTitle(name)
+            self._ui.monitor.setTitle(name)
 
         self._xpath = MonitorDB.getPointMonitorXPath(self._name)
 
@@ -58,6 +59,11 @@ class PointDialog(QDialog):
 
         self._connectSignalsSlots()
         self._load()
+
+        if CaseManager().isRunning():
+            self._ui.monitor.setEnabled(False)
+            self._ui.ok.hide()
+            self._ui.cancel.setText(self.tr('Close'))
 
     def getName(self):
         return self._name
@@ -129,32 +135,31 @@ class PointDialog(QDialog):
                 self.tr('The region where the scalar field is configured does not contain selected Point.'))
             return
 
-        writer = CoreDBWriter()
-        writer.append(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
-        writer.append(self._xpath + '/field/field', field.field.value, None)
-        writer.append(self._xpath + '/field/fieldID', field.id, None)
-        writer.append(self._xpath + '/coordinate/x', self._ui.coordinateX.text(), self.tr("Coordinate X"))
-        writer.append(self._xpath + '/coordinate/y', self._ui.coordinateY.text(), self.tr("Coordinate Y"))
-        writer.append(self._xpath + '/coordinate/z', self._ui.coordinateZ.text(), self.tr("Coordinate Z"))
-        writer.append(self._xpath + '/region', region, None)
-        if self._snapOntoBoundary:
-            writer.append(self._xpath + '/snapOntoBoundary', 'true', None)
-            writer.append(self._xpath + '/boundary', self._snapOntoBoundary, None)
-        else:
-            writer.append(self._xpath + '/snapOntoBoundary', 'false', None)
-            writer.append(self._xpath + '/boundary', '0', None)
+        try:
+            with coredb.CoreDB() as db:
+                db.setValue(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
+                db.setValue(self._xpath + '/field/field', field.field.value)
+                db.setValue(self._xpath + '/field/fieldID', field.id)
+                db.setValue(self._xpath + '/coordinate/x', self._ui.coordinateX.text(), self.tr("Coordinate X"))
+                db.setValue(self._xpath + '/coordinate/y', self._ui.coordinateY.text(), self.tr("Coordinate Y"))
+                db.setValue(self._xpath + '/coordinate/z', self._ui.coordinateZ.text(), self.tr("Coordinate Z"))
+                db.setValue(self._xpath + '/region', region)
+                if self._snapOntoBoundary:
+                    db.setValue(self._xpath + '/snapOntoBoundary', 'true')
+                    db.setValue(self._xpath + '/boundary', self._snapOntoBoundary)
+                else:
+                    db.setValue(self._xpath + '/snapOntoBoundary', 'false')
+                    db.setValue(self._xpath + '/boundary', '0')
 
-        if self._isNew:
-            writer.append(self._xpath + '/name', name, self.tr("Name"))
+                if self._isNew:
+                    db.setValue(self._xpath + '/name', name, self.tr("Name"))
+        except ValueException as ve:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
+            return False
 
-        errorCount = writer.write()
-        if errorCount > 0:
-            await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            if self._isNew:
-                self._name = name
+        self._name = name
 
-            self.accept()
+        self.accept()
 
     def _setSnapOntoBoundary(self, bcid):
         self._snapOntoBoundary = bcid

@@ -243,7 +243,7 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="mid" type="xs:positiveInteger"/>
-                        <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">
+                        <xs:element name="specie" maxOccurs="unbounded">
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="mid" type="xs:positiveInteger"/>
@@ -407,13 +407,13 @@
                                 <xs:restriction base="xs:string">
                                     <xs:enumeration value="constant"/>
                                     <xs:enumeration value="polynomial"/>
-                                    <xs:enumeration value="piecewisePolynomial"/>
+                                    <xs:enumeration value="janaf"/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
                         <xs:element name="constant" type="inputNumberType"/>
                         <xs:element name="polynomial" type="inputNumberListType"/>
-                        <xs:element name="piecewisePolynomial">
+                        <xs:element name="janaf">
                             <xs:complexType>
                                 <xs:sequence>
                                     <xs:element name="lowTemperature" type="inputNumberType" default="200"/>
@@ -860,7 +860,7 @@
                                                                 <xs:enumeration value="constant"/>
                                                                 <xs:enumeration value="piecewiseLinear"/>
                                                                 <xs:enumeration value="polynomial"/>
-                                                                <xs:enumeration value="piecewisePolynomial"/>
+                                                                <xs:enumeration value="janaf"/>
                                                             </xs:restriction>
                                                         </xs:simpleType>
                                                     </xs:element>
@@ -1099,7 +1099,7 @@
                                             <xs:complexType>
                                                 <xs:sequence>
                                                     <xs:element name="mid" type="xs:positiveInteger"/>
-                                                    <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">
+                                                    <xs:element name="specie" maxOccurs="unbounded">
                                                         <xs:complexType>
                                                             <xs:sequence>
                                                                 <xs:element name="mid" type="xs:positiveInteger"/>
@@ -1235,6 +1235,14 @@
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="temperatureWallLayerType">
+        <xs:sequence>
+            <xs:element name="thicknessLayers" type="inputNumberListType"/>
+            <xs:element name="thermalConductivityLayers" type="inputNumberListType"/>
+        </xs:sequence>
+        <xs:attribute name="disabled" type="xs:boolean" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="volumeFractionListType">
@@ -1548,15 +1556,7 @@
                         <xs:element name="heatTransferCoefficient" type="inputNumberType" default="100"/>
                         <xs:element name="freeStreamTemperature" type="inputNumberType" default="300"/>
                         <xs:element name="externalEmissivity" type="inputRatioType" default="0"/>
-                        <xs:element name="wallLayers">
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="thicknessLayers" type="inputNumberListType"/>
-                                    <xs:element name="thermalConductivityLayers" type="inputNumberListType"/>
-                                </xs:sequence>
-                                <xs:attribute name="disabled" type="xs:boolean" use="required"/>
-                            </xs:complexType>
-                        </xs:element>
+                        <xs:element name="wallLayers" type="temperatureWallLayerType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1601,6 +1601,18 @@
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="thermoCoupledWallType">
+        <xs:sequence>
+            <xs:element name="temperature">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="wallLayers" type="temperatureWallLayerType"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -1666,6 +1678,7 @@
                         <xs:restriction base="xs:string">
                             <xs:enumeration value="velocityInlet"/>
                             <xs:enumeration value="flowRateInlet"/>
+                            <xs:enumeration value="flowRateOutlet"/>
                             <xs:enumeration value="pressureInlet"/>
                             <xs:enumeration value="pressureOutlet"/>
                             <xs:enumeration value="intakeFan"/>
@@ -1700,6 +1713,7 @@
 
                 <xs:element name="velocityInlet" type="velocityInletType"/>
                 <xs:element name="flowRateInlet" type="flowRateInletType"/>
+                <xs:element name="flowRateOutlet" type="flowRateInletType"/>
                 <xs:element name="pressureInlet" type="pressureInletType"/>
                 <xs:element name="pressureOutlet" type="pressureOutletType"/>
                 <xs:element name="openChannelInlet" type="openChannelInletType"/>
@@ -1714,7 +1728,7 @@
                 <!-- no setting for supersonicOutflow -->
                 <!-- <xs:element name="supersonicOutflow" type="supersonicOutflowType" /> -->
                 <xs:element name="wall" type="wallType"/>
-                <!-- no setting for thermoCoupledWall -->
+                <xs:element name="thermoCoupledWall" type="thermoCoupledWallType"/>
                 <!-- <xs:element name="thermoCoupledWall" type="thermoCoupledWallType" /> -->
                 <!-- no setting for symmetry -->
                 <!--  <xs:element name="symmetry" type="symmetryType" /> -->
@@ -2458,7 +2472,7 @@
                                                                                                         <xs:complexType>
                                                                                                             <xs:sequence>
                                                                                                                 <xs:element name="mid" type="xs:positiveInteger"/>
-                                                                                                                <xs:element name="specie" minOccurs="1" maxOccurs="unbounded">
+                                                                                                                <xs:element name="specie" maxOccurs="unbounded">
                                                                                                                     <xs:complexType>
                                                                                                                         <xs:sequence>
                                                                                                                             <xs:element name="mid" type="xs:positiveInteger"/>

@@ -67,13 +67,13 @@
                 <specification>constant</specification>
                 <constant>1006</constant>
                 <polynomial>0</polynomial>
-                <piecewisePolynomial>
+                <janaf>
                     <lowTemperature>200</lowTemperature>
                     <commonTemperature>1000</commonTemperature>
                     <highTemperature>6000</highTemperature>
                     <lowCoefficients>0 0 0 0 0 0 0</lowCoefficients>
                     <highCoefficients>0 0 0 0 0 0 0</highCoefficients>
-                </piecewisePolynomial>
+                </janaf>
             </specificHeat>
             <viscosity>
                 <specification>constant</specification>

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>310</width>
-    <height>256</height>
+    <height>260</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,7 +43,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="monitor">
      <property name="title">
       <string>Volume Monitor</string>
      </property>
@@ -62,7 +62,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="writeInterval">
+          <widget class="FloatEdit" name="writeInterval">
            <property name="text">
             <string/>
            </property>
@@ -142,7 +142,7 @@
       <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -181,6 +181,11 @@
    <class>MonitorNameEdit</class>
    <extends>QLineEdit</extends>
    <header>widgets.typed_edit</header>
+  </customwidget>
+  <customwidget>
+   <class>FloatEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">widgets.typed_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>

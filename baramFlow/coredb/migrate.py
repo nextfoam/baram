@@ -920,16 +920,19 @@ def _version_10(root: etree.Element):
     # root.set('version', '11')
 
     for p in root.findall('materials/material/specificHeat', namespaces=_nsmap):
-        if p.find('piecewisePolynomial', namespaces=_nsmap) is None:
-            logger.debug(f'    Adding "piecewisePolynomial" to {p}')
+        if (e := p.find('piecewisePolynomial', namespaces=_nsmap)) is not None:  # it was a temporary name, which has changed to "janaf"
+            p.remove(e)
 
-            e = etree.fromstring('<piecewisePolynomial xmlns="http://www.baramcfd.org/baram">'
+        if p.find('janaf', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "janaf" to {p}')
+
+            e = etree.fromstring('<janaf xmlns="http://www.baramcfd.org/baram">'
                                  f' <lowTemperature>200</lowTemperature>'
                                  f' <commonTemperature>1000</commonTemperature>'
                                  f' <highTemperature>6000</highTemperature>'
                                  f' <lowCoefficients>0 0 0 0 0 0 0</lowCoefficients>'
                                  f' <highCoefficients>0 0 0 0 0 0 0</highCoefficients>'
-                                 '</piecewisePolynomial>')
+                                 '</janaf>')
             p.append(e)
 
     for p in root.findall('materials/material', namespaces=_nsmap):
@@ -970,6 +973,33 @@ def _version_10(root: etree.Element):
             e = etree.Element(f'{{{_ns}}}fanCurveName')
             e.text = str(UUID(int = 0))
             p.append(e)
+
+        if p.find('thermoCoupledWall', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "thermoCoupledWall" to {p}')
+            e = etree.fromstring('''
+                <thermoCoupledWall xmlns="http://www.baramcfd.org/baram">
+                    <temperature>
+                        <wallLayers disabled="true">
+                            <thicknessLayers>0.001</thicknessLayers>
+                            <thermalConductivityLayers>10</thermalConductivityLayers>
+                        </wallLayers>
+                    </temperature>
+                </thermoCoupledWall>
+            ''')
+            p.insert(17, e)
+
+        if p.find('flowRateOutlet', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "flowRateOutlet" to {p}')
+            e = etree.fromstring('''
+                <flowRateOutlet xmlns="http://www.baramcfd.org/baram">
+                    <flowRate>
+                        <specification>massFlowRate</specification>
+                        <volumeFlowRate>1</volumeFlowRate>
+                        <massFlowRate>1</massFlowRate>
+                    </flowRate>
+                </flowRateOutlet>
+            ''')
+            p.insert(7, e)
 
 
 _fTable = [

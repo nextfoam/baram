@@ -41,6 +41,7 @@ class BoundaryTypePicker(QWidget):
             self._ui.farFieldRiemann:   BoundaryType.FAR_FIELD_RIEMANN,
             self._ui.subsonicInlet:     BoundaryType.SUBSONIC_INLET,
             self._ui.supersonicInflow:  BoundaryType.SUPERSONIC_INFLOW,
+            self._ui.flowRateOutlet:    BoundaryType.FLOW_RATE_OUTLET,
             self._ui.pressureOutlet:    BoundaryType.PRESSURE_OUTLET,
             self._ui.openChannelOutlet: BoundaryType.OPEN_CHANNEL_OUTLET,
             self._ui.outflow:           BoundaryType.OUTFLOW,

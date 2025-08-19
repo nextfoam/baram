@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import qasync
+from PySide6.QtWidgets import QDialog
 
-from PySide6.QtWidgets import QDialog, QMessageBox
-
-from baramFlow.coredb.coredb_writer import CoreDBWriter
+from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.general_db import GeneralDB
+from widgets.async_message_box import AsyncMessageBox
 from .energy_dialog_ui import Ui_EnergyDialog
 
 
@@ -24,15 +25,17 @@ class EnergyDialog(QDialog):
 
         self._load()
 
-    def accept(self):
-        writer = CoreDBWriter()
-        writer.append(ModelsDB.ENERGY_MODELS_XPATH, 'on' if self._ui.include.isChecked() else 'off', None)
+    @qasync.asyncSlot()
+    async def accept(self):
+        coredb.CoreDB().setValue(ModelsDB.ENERGY_MODELS_XPATH, 'on' if self._ui.include.isChecked() else 'off')
 
-        errorCount = writer.write()
-        if errorCount > 0:
-            QMessageBox.critical(self, self.tr("Input Error"), writer.firstError().toMessage())
-        else:
-            super().accept()
+        super().accept()
+
+        if not self._ui.include.isChecked():
+            await AsyncMessageBox().information(
+                self, self.tr('Warning'),
+                self.tr('Available material properties or specifications might have changed. '
+                        'Please confirm the property values before continuing.'))
 
     def _load(self):
         if ModelsDB.isEnergyModelOn():

@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QMessageBox
+import qasync
 
+from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
+from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from .cyclic_dialog_ui import Ui_CyclicDialog
 from .coupled_boundary_condition_dialog import CoupledBoundaryConditionDialog
 
@@ -28,22 +29,22 @@ class CyclicDialog(CoupledBoundaryConditionDialog):
         self._connectSignalsSlots()
         self._load()
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def accept(self):
         if not self._coupledBoundary:
-            QMessageBox.critical(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
             return
 
-        writer = CoreDBWriter()
-        coupleTypeChanged = self._changeCoupledBoundary(writer, self._coupledBoundary, self.BOUNDARY_TYPE)
+        try:
+            with coredb.CoreDB() as db:
+                coupleTypeChanged = self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
 
-        errorCount = writer.write()
-        if errorCount == 0:
-            if coupleTypeChanged:
-                self.boundaryTypeChanged.emit(int(self._coupledBoundary))
+                if coupleTypeChanged:
+                    self.boundaryTypeChanged.emit(int(self._coupledBoundary))
 
-            super().accept()
-        else:
-            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
+                super().accept()
+        except ValueException as ve:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectCoupledBoundary)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FlowRateInletDialog</class>
- <widget class="QDialog" name="FlowRateInletDialog">
+ <class>FlowRateOutletDialog</class>
+ <widget class="QDialog" name="FlowRateOutletDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Flow Rate Inlet Boundary Condition</string>
+   <string>Flow Rate Outlet Boundary Condition</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
@@ -196,7 +196,7 @@
   <connection>
    <sender>cancel</sender>
    <signal>clicked()</signal>
-   <receiver>FlowRateInletDialog</receiver>
+   <receiver>FlowRateOutletDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

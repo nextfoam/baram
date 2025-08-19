@@ -15,6 +15,9 @@ from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
+
+from libbaram.natural_name_uuid import uuidToNnstr
+
 from .intake_fan_dialog_ui import Ui_IntakeFanDialog
 from .conditional_widget_helper import ConditionalWidgetHelper
 
@@ -87,7 +90,7 @@ class IntakeFanDialog(ResizableDialog):
             await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
             df = pd.DataFrame(self._fanCurve)
-            Project.instance().fileDB().putDataFrame(str(self._fanCurveName), df)
+            Project.instance().fileDB().putDataFrame(uuidToNnstr(self._fanCurveName), df)
 
             self._temperatureWidget.completeWriting()
             super().accept()
@@ -98,7 +101,7 @@ class IntakeFanDialog(ResizableDialog):
 
         self._fanCurveName = UUID(db.getValue(self._xpath + '/fanCurveName'))
         if self._fanCurveName.int != 0:
-            df = Project.instance().fileDB().getDataFrame(str(self._fanCurveName))
+            df = Project.instance().fileDB().getDataFrame(uuidToNnstr(self._fanCurveName))
             if df is not None:
                 self._fanCurve = df.values.tolist()
 

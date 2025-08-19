@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QMessageBox
+import qasync
 
+from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
+from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
+from baramFlow.coredb.models_db import ModelsDB
 from .thermo_coupled_wall_dialog_ui import Ui_ThermoCoupledWallDailog
 from .coupled_boundary_condition_dialog import CoupledBoundaryConditionDialog
 
@@ -28,22 +30,38 @@ class ThermoCoupledWallDialog(CoupledBoundaryConditionDialog):
         self._connectSignalsSlots()
         self._load()
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def accept(self):
+        def reverse(layers):
+            return ' '.join(layers.split()[::-1])
+
         if not self._coupledBoundary:
-            QMessageBox.critical(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
             return
 
-        writer = CoreDBWriter()
-        coupleTypeChanged = self._changeCoupledBoundary(writer, self._coupledBoundary, self.BOUNDARY_TYPE)
+        try:
+            with coredb.CoreDB() as db:
+                coupleTypeChanged = self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
 
-        errorCount = writer.write()
-        if errorCount == 0:
-            if coupleTypeChanged:
-                self.boundaryTypeChanged.emit(int(self._coupledBoundary))
+                if ModelsDB.isEnergyModelOn():
+                    wallLayersXpath = self._xpath + '/thermoCoupledWall/temperature/wallLayers'
+                    await self._ui.wallLayers.updateDB(db, wallLayersXpath)
 
-            super().accept()
-        else:
-            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
+                    coupleWallLayersXPath = (BoundaryDB.getXPath(self._coupledBoundary)
+                                             + '/thermoCoupledWall/temperature/wallLayers')
+                    db.setAttribute(coupleWallLayersXPath, 'disabled', 'true')
+                    if self._ui.wallLayers.isChecked():
+                        db.setValue(coupleWallLayersXPath + '/thicknessLayers',
+                                    reverse(db.getValue(wallLayersXpath + '/thicknessLayers')))
+                        db.setValue(coupleWallLayersXPath + '/thermalConductivityLayers',
+                                    reverse(db.getValue(wallLayersXpath + '/thermalConductivityLayers')))
+
+                super().accept()
+        except ValueException as ve:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
+
+        if coupleTypeChanged:
+            self.boundaryTypeChanged.emit(int(self._coupledBoundary))
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectCoupledBoundary)
@@ -51,6 +69,15 @@ class ThermoCoupledWallDialog(CoupledBoundaryConditionDialog):
     def _load(self):
         db = coredb.CoreDB()
         self._setCoupledBoundary(db.getValue(self._xpath + '/coupledBoundary'))
+
+        if ModelsDB.isEnergyModelOn():
+            self._ui.wallLayers.load(self._xpath + '/thermoCoupledWall/temperature/wallLayers')
+
+            if (self._coupledBoundary
+                and db.getAttribute(BoundaryDB.getXPath(self._coupledBoundary) + '/thermoCoupledWall/temperature/wallLayers', 'disabled') == 'false'):
+                self._ui.wallLayers.setChecked(True)
+        else:
+            self._ui.temperatureGroup.hide()
 
     def _selectCoupledBoundary(self):
         if not self._dialog:
@@ -68,5 +95,5 @@ class ThermoCoupledWallDialog(CoupledBoundaryConditionDialog):
             self._coupledBoundary = str(bcid)
             self._ui.coupledBoundary.setText(BoundaryDB.getBoundaryText(bcid))
         else:
-            self._coupledBoundary = 0
+            self._coupledBoundary = None
             self._ui.coupledBoundary.setText('')

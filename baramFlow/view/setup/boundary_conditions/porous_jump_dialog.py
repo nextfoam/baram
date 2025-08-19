@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QMessageBox
+import qasync
 
+
+from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
+from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from .porous_jump_dialog_ui import Ui_PorousJumpDialog
 from .coupled_boundary_condition_dialog import CoupledBoundaryConditionDialog
 
@@ -28,24 +30,25 @@ class PorousJumpDialog(CoupledBoundaryConditionDialog):
         self._connectSignalsSlots()
         self._load()
 
-    def accept(self):
+    @qasync.asyncSlot()
+    async def accept(self):
         if not self._coupledBoundary:
-            QMessageBox.critical(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Coupled Boundary'))
             return
 
-        writer = CoreDBWriter()
-        coupleTypeChanged = self._changeCoupledBoundary(writer, self._coupledBoundary, self.BOUNDARY_TYPE)
-        self._writeConditions(writer, self._xpath + self.RELATIVE_XPATH)
-        self._writeConditions(writer, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH)
+        try:
+            with coredb.CoreDB() as db:
+                coupleTypeChanged = self._changeCoupledBoundary(db, self._coupledBoundary, self.BOUNDARY_TYPE)
 
-        errorCount = writer.write()
-        if errorCount == 0:
-            if coupleTypeChanged:
-                self.boundaryTypeChanged.emit(int(self._coupledBoundary))
+                self._writeConditions(db, self._xpath + self.RELATIVE_XPATH)
+                self._writeConditions(db, BoundaryDB.getXPath(self._coupledBoundary) + self.RELATIVE_XPATH)
 
-            super().accept()
-        else:
-            QMessageBox.critical(self, self.tr('Input Error'), writer.firstError().toMessage())
+                super().accept()
+        except ValueException as ve:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
+
+        if coupleTypeChanged:
+            self.boundaryTypeChanged.emit(int(self._coupledBoundary))
 
     def _connectSignalsSlots(self):
         self._ui.select.clicked.connect(self._selectCoupledBoundary)
@@ -78,9 +81,8 @@ class PorousJumpDialog(CoupledBoundaryConditionDialog):
             self._coupledBoundary = 0
             self._ui.coupledBoundary.setText('')
 
-    def _writeConditions(self, writer, xpath):
-        writer.append(xpath + '/darcyCoefficient', self._ui.darcyCoefficient.text(), self.tr('Darcy Coefficient'))
-        writer.append(xpath + '/inertialCoefficient',
-                      self._ui.inertialCoefficient.text(), self.tr('Inertial Coefficient'))
-        writer.append(xpath + '/porousMediaThickness',
-                      self._ui.porousMedieThickness.text(), self.tr('Porous Media Thickness'))
+    def _writeConditions(self, db, xpath):
+        db.setValue(xpath + '/darcyCoefficient', self._ui.darcyCoefficient.text(), self.tr('Darcy Coefficient'))
+        db.setValue(xpath + '/inertialCoefficient', self._ui.inertialCoefficient.text(), self.tr('Inertial Coefficient'))
+        db.setValue(xpath + '/porousMediaThickness',
+                    self._ui.porousMedieThickness.text(), self.tr('Porous Media Thickness'))

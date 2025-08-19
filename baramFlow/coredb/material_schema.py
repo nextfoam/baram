@@ -21,7 +21,7 @@ class Specification(Enum):
     PERFECT_GAS = 'perfectGas'
     SUTHERLAND = 'sutherland'
     POLYNOMIAL = 'polynomial'
-    PIECEWISE_POLYNOMIAL = 'piecewisePolynomial'
+    JANAF = 'janaf'
 
 
 class DensitySpecification(Enum):
@@ -60,7 +60,7 @@ class Specifications:
 
 
 @dataclass
-class PiecewisePolynomialSpecificHeat:
+class JanafSpecificHeat:
     lowTemperature: str = '200'
     commonTemperature: str = '1000'
     highTemperature: str = '6000'
@@ -253,13 +253,13 @@ def _materialXML(mid: str, name: str, base: dict, defaults: MaterialDefaults, ty
                 <specification>{specifications.specificHeat}</specification>
                 <constant>{base['specificHeat']}</constant>
                 <polynomial>0</polynomial>
-                <piecewisePolynomial>
+                <janaf>
                     <lowTemperature>200</lowTemperature>
                     <commonTemperature>1000</commonTemperature>
                     <highTemperature>6000</highTemperature>
                     <lowCoefficients>0 0 0 0 0 0 0</lowCoefficients>
                     <highCoefficients>0 0 0 0 0 0 0</highCoefficients>
-                </piecewisePolynomial>
+                </janaf>
             </specificHeat>
             {_viscosityXML(phase, specifications.viscosity, base, defaults.viscosityProperties)}
             <thermalConductivity>

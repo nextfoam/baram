@@ -5,12 +5,14 @@ from enum import IntEnum, auto
 
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QLabel
+from PySide6.QtWidgets import QLabel, QGroupBox, QWidget, QVBoxLayout
 
-from baramFlow.coredb import coredb
 from widgets.async_message_box import AsyncMessageBox
 from widgets.flat_push_button import FlatPushButton
 from widgets.typed_edit import FloatEdit
+
+from baramFlow.coredb import coredb
+from baramFlow.view.setup.boundary_conditions.wall_layers_widget_ui import Ui_WallLayersWidget
 
 
 class Column(IntEnum):
@@ -79,21 +81,19 @@ class WallLayerItem(QObject):
         return True, None
 
 
-class WallLayersWidget(QObject):
+class WallLayersWidget(QWidget):
     _removeIcon = QIcon(':/icons/trash-outline.svg')
 
-    def __init__(self, parent, ui, xpath):
+    def __init__(self):
         super().__init__()
+        self._ui = Ui_WallLayersWidget()
+        self._ui.setupUi(self)
 
-        self._parent = parent
-        self._groupBox = ui.wallLayers
-        self._layout = ui.wallLayersTable.layout()
-
-        self._xpath = xpath
+        self._layout = self._ui.wallLayersTable.layout()
 
         self._rows = []
-
-        ui.addWallLayer.clicked.connect(self.addRow)
+        
+        self._connectSignalsSlots()
 
     def addRow(self, thickness='', thermalConductivity=''):
         index = len(self._rows)
@@ -111,18 +111,16 @@ class WallLayersWidget(QObject):
         for c in range(self._layout.columnCount()):
             self._layout.addWidget(item.widget(c), row, c)
 
-    def load(self):
+    def load(self, xpath):
         db = coredb.CoreDB()
 
-        thicknessLayers = db.getValue(self._xpath + '/thicknessLayers').split()
-        thermalConductivityLayers = db.getValue(self._xpath + '/thermalConductivityLayers').split()
-
-        self._groupBox.setChecked(db.getAttribute(self._xpath, 'disabled') == 'false')
+        thicknessLayers = db.getValue(xpath + '/thicknessLayers').split()
+        thermalConductivityLayers = db.getValue(xpath + '/thermalConductivityLayers').split()
 
         for i in range(len(thicknessLayers)):
             self.addRow(thicknessLayers[i], thermalConductivityLayers[i])
 
-    async def updateDB(self, db):
+    async def updateDB(self, db, xpath):
         thicknessLayers = ''
         thermalConductivityLayers = ''
 
@@ -130,19 +128,45 @@ class WallLayersWidget(QObject):
             if not row.isHidden():
                 valid, msg = row.validate()
                 if not valid:
-                    await AsyncMessageBox().information(self._parent, self.tr('Input Error'), msg)
-                    return False
+                    await AsyncMessageBox().information(self, self.tr('Input Error'), msg)
+                    raise coredb.Cancel
 
                 thicknessLayers += row.thickness() + ' '
                 thermalConductivityLayers += row.thermalConductivity() + ' '
 
-        db.setAttribute(self._xpath, 'disabled', 'false' if self._groupBox.isChecked() else 'true')
-        db.setValue(self._xpath + '/thicknessLayers', thicknessLayers, self.tr('Thickness'))
-        db.setValue(self._xpath + '/thermalConductivityLayers', thermalConductivityLayers, self.tr('Thermal Conductivity'))
+        db.setValue(xpath + '/thicknessLayers', thicknessLayers, self.tr('Thickness'))
+        db.setValue(xpath + '/thermalConductivityLayers', thermalConductivityLayers, self.tr('Thermal Conductivity'))
 
-        return True
+    def _connectSignalsSlots(self):
+        self._ui.addWallLayer.clicked.connect(self.addRow)
 
     def _removeRow(self, index):
         self._rows[index].hide()
         for i in range(index + 1, len(self._rows)):
             self._rows[i].decreaseNO()
+
+
+class WallLayersBox(QGroupBox):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self._layers = WallLayersWidget()
+
+        layout = QVBoxLayout()
+        layout.addWidget(self._layers)
+        self.setLayout(layout)
+
+    def isChecked(self):
+        return super().isChecked() or not super().isCheckable()
+
+    def load(self, xpath):
+        self.setChecked(coredb.CoreDB().getAttribute(xpath, 'disabled') == 'false')
+        self._layers.load(xpath)
+
+    async def updateDB(self, db, xpath):
+        if self.isChecked():
+            db.setAttribute(xpath, 'disabled', 'false')
+            await self._layers.updateDB(db, xpath)
+        else:
+            db.setAttribute(xpath, 'disabled', 'true')
+
