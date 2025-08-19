@@ -17,6 +17,7 @@ from baramFlow.openfoam.solver import usePrgh, useGaugePressureInPrgh
 TYPE_MAP = {
     BoundaryType.VELOCITY_INLET.value: 'calculated',
     BoundaryType.FLOW_RATE_INLET.value: 'calculated',
+    BoundaryType.FLOW_RATE_OUTLET.value: 'calculated',
     BoundaryType.PRESSURE_INLET.value: 'calculated',
     BoundaryType.INTAKE_FAN.value: 'calculated',
     BoundaryType.ABL_INLET.value: 'calculated',
@@ -110,6 +111,7 @@ class P(BoundaryCondition):
                 field[name] = {
                     BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructZeroGradient()),
                     BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructZeroGradient()),
+                    BoundaryType.FLOW_RATE_OUTLET.value:    (lambda: self._constructZeroGradient()),
                     BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructTotalPressure(self._operatingPressure + float(self._db.getValue(xpath + '/pressureInlet/pressure')))),
                     BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletP(xpath)),
                     BoundaryType.INTAKE_FAN.value:          (lambda: self._constructFanPressure(xpath, bcid)),

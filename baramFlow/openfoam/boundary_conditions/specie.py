@@ -38,6 +38,7 @@ class Specie(BoundaryCondition):
             field[name] = {
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructFixedValue(value)),
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFixedValue(value)),
+                BoundaryType.FLOW_RATE_OUTLET.value:    (lambda: self._constructZeroGradient()),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructFixedValue(value)),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletSpecie(xpath, value)),
                 BoundaryType.INTAKE_FAN.value:          (lambda: self._constructFixedValue(value)),

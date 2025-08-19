@@ -40,6 +40,7 @@ class U(BoundaryCondition):
             field[name] = {
                 BoundaryType.VELOCITY_INLET.value:      (lambda: self._constructVelocityInletU(xpath, name)),
                 BoundaryType.FLOW_RATE_INLET.value:     (lambda: self._constructFlowRateInletVelocity(xpath + '/flowRateInlet')),
+                BoundaryType.FLOW_RATE_OUTLET.value:    (lambda: self._constructFlowRateInletVelocity(xpath + '/flowRateOutlet', True)),
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructPressureInletOutletVelocity()),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletU(xpath)),
                 BoundaryType.INTAKE_FAN.value:          (lambda: self._constructPressureInletOutletVelocity()),
@@ -66,17 +67,19 @@ class U(BoundaryCondition):
 
         return field
 
-    def _constructFlowRateInletVelocity(self, xpath):
+    def _constructFlowRateInletVelocity(self, xpath, outlet=False):
         spec = self._db.getValue(xpath + '/flowRate/specification')
         if spec == FlowRateInletSpecification.VOLUME_FLOW_RATE.value:
             return {
                 'type': 'flowRateInletVelocity',
-                'volumetricFlowRate': self._db.getValue(xpath + '/flowRate/volumeFlowRate')
+                'volumetricFlowRate': (-float(self._db.getValue(xpath + '/flowRate/volumeFlowRate')) if outlet
+                                       else self._db.getValue(xpath + '/flowRate/volumeFlowRate'))
             }
         elif spec == FlowRateInletSpecification.MASS_FLOW_RATE.value:
             return {
                 'type': 'flowRateInletVelocity',
-                'massFlowRate': self._db.getValue(xpath + '/flowRate/massFlowRate'),
+                'massFlowRate': (-float(self._db.getValue(xpath + '/flowRate/massFlowRate')) if outlet
+                                 else self._db.getValue(xpath + '/flowRate/massFlowRate')),
                 'rhoInlet': self._region.density
             }
 

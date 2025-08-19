@@ -988,6 +988,19 @@ def _version_10(root: etree.Element):
             ''')
             p.insert(17, e)
 
+        if p.find('flowRateOutlet', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "flowRateOutlet" to {p}')
+            e = etree.fromstring('''
+                <flowRateOutlet xmlns="http://www.baramcfd.org/baram">
+                    <flowRate>
+                        <specification>massFlowRate</specification>
+                        <volumeFlowRate>1</volumeFlowRate>
+                        <massFlowRate>1</massFlowRate>
+                    </flowRate>
+                </flowRateOutlet>
+            ''')
+            p.insert(7, e)
+
 
 _fTable = [
     None,
