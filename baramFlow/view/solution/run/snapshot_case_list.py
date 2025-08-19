@@ -109,34 +109,6 @@ class CaseItem(QTreeWidgetItem):
         self._statusWidget.setStatus(status)
 
 
-class ContextMenu(QMenu):
-    loadActionTriggered = Signal(CaseItem)
-    scheduleActionTriggered = Signal(list)
-    cancelScheduleActionTriggered = Signal(list)
-    deleteActionTriggered = Signal(list)
-
-    def __init__(self, parent):
-        super().__init__(parent)
-
-        self._targets = None
-
-        self._loadAction = self.addAction(
-            self.tr('Load'), lambda: self.loadActionTriggered.emit(self._targets[0]))
-        self._scheduleAction = self.addAction(
-            self.tr('Schedule Calculation'), lambda: self.scheduleActionTriggered.emit(self._targets))
-        self._cancelScheduleAction = self.addAction(
-            self.tr('Cancel Schedule'), lambda: self.cancelScheduleActionTriggered.emit(self._targets))
-        self._deleteAction = self.addAction(
-            self.tr('Delete'), lambda: self.deleteActionTriggered.emit(self._targets))
-
-    def execute(self, pos, items):
-        self._targets = items
-
-        self._loadAction.setVisible(len(items) == 1)
-
-        self.exec(pos)
-
-
 class SnapshotCaseList(QObject):
     def __init__(self, parent, tree: QTreeWidget):
         super().__init__()
@@ -147,14 +119,10 @@ class SnapshotCaseList(QObject):
         self._cases = {}
         self._items = {}
         self._parameters = None
-        self._menu = ContextMenu(self._list)
         self._currentCase = None
         self._project = Project.instance()
 
-        self._list.setColumnWidth(Column.LOADED_ICON, 20)
-        self._list.header().setSectionResizeMode(Column.CASE_NAME, QHeaderView.ResizeMode.ResizeToContents)
-        self._list.header().setSectionResizeMode(Column.CALCULATION, QHeaderView.ResizeMode.ResizeToContents)
-        self._list.header().setSectionResizeMode(Column.RESULT, QHeaderView.ResizeMode.ResizeToContents)
+        self._hideColumns()
 
         self._connectSignalsSlots()
 
@@ -162,12 +130,6 @@ class SnapshotCaseList(QObject):
         self._disconnectSignalsSlots()
 
     def _connectSignalsSlots(self):
-        self._list.customContextMenuRequested.connect(self._showContextMenu)
-        self._menu.loadActionTriggered.connect(self._loadCase)
-        self._menu.scheduleActionTriggered.connect(self._scheduleCalculation)
-        self._menu.cancelScheduleActionTriggered.connect(self._cancelSchedule)
-        self._menu.deleteActionTriggered.connect(self._delete)
-
         CaseManager().batchCleared.connect(self._clearStatuses)
 
     def _disconnectSignalsSlots(self):
@@ -211,6 +173,7 @@ class SnapshotCaseList(QObject):
             self._setCase(name, case, status)
 
         self._listChanged(False)
+        self._hideColumns()
 
     def exportAsDataFrame(self):
         return pd.DataFrame.from_dict(self._cases, orient='index')
@@ -259,14 +222,6 @@ class SnapshotCaseList(QObject):
             i += 1
 
         self._items[name].setStatus(status)
-
-    def _showContextMenu(self, pos):
-        items = self._list.selectedItems()
-
-        if not items:
-            return
-
-        self._menu.execute(self._list.mapToGlobal(pos), items)
 
     @qasync.asyncSlot()
     async def _loadCase(self, item):
@@ -322,3 +277,7 @@ class SnapshotCaseList(QObject):
         if save:
             self._project.fileDB().putDataFrame(FileDB.Key.SNAPSHOT_CASES.value, self.exportAsDataFrame())
 
+    def _hideColumns(self):
+        for jCol in [0, 2, 3]:
+            self._list.setColumnHidden(jCol, True)
+            self._list.header().setSectionHidden(jCol, True)

@@ -958,5 +958,5 @@ class _CoreDB(object):
         self._xmlSchema.assertValid(self._xmlTree)
         self._configCount += 1
 
-    def hasPODROM(self):
+    def hasBatchCases(self):
         return True # if tbd else False

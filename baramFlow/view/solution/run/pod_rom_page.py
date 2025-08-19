@@ -73,7 +73,7 @@ class PODROMPage(ContentPage):
 
     def _load(self):
         self.loadSnapshotCases()
-        self.generateSliders()
+        self.generateSliders(overwrite=False)
 
     def _connectSignalsSlots(self):
         self._ui.buildROM.clicked.connect(self._selectCasesToBuildROM)
@@ -81,13 +81,18 @@ class PODROMPage(ContentPage):
         return
 
     def _disconnectSignalsSlots(self):
-        # self._project.solverStatusChanged.disconnect(self._statusChanged)
-        # self._caseManager.caseLoaded.disconnect(self._caseLoaded)
+        self._project.solverStatusChanged.disconnect(self._statusChanged)
+        self._caseManager.caseLoaded.disconnect(self._caseLoaded)
         return
 
     def _selectCasesToBuildROM(self):
         self._listSelectorItemBatchCase = []
         batchCasesDataFrame = self._project.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value)
+        if len(batchCasesDataFrame) == 0:
+            AsyncMessageBox().warning(self, self.tr('Reduced Order Model'),
+                                            self.tr('Batch cases are required to build a reduced order model.'))
+            return
+
         batchCasesDict = batchCasesDataFrame.to_dict(orient='index')
         for idx, (key, value) in enumerate(batchCasesDict.items()):
             self._listSelectorItemBatchCase.append(SelectorItem(key, key, idx))
@@ -101,8 +106,9 @@ class PODROMPage(ContentPage):
 
     @qasync.asyncSlot()
     async def _buildROM(self, itemsFromDialog):
-        progressDialog = ProgressDialog(self, self.tr('Build ROM'), True)
+        progressDialog = ProgressDialog(self, self.tr('Reduced Order Model'), True)
         self._caseManager.progress.connect(progressDialog.setLabelText)
+        progressDialog.setLabelText(self.tr('Build ROM'))
         progressDialog.cancelClicked.connect(self._caseManager.cancel)
         progressDialog.open()
 
@@ -113,36 +119,69 @@ class PODROMPage(ContentPage):
 
         self._project.fileDB().putDataFrame(FileDB.Key.SNAPSHOT_CASES.value, pd.DataFrame.from_dict(dict(listSelectedCase), orient='index'))
         self.loadSnapshotCases()
+        self.generateSliders(overwrite=True)
 
         try:
             await self._caseManager.podRunGenerateROM(listSelectedCase)
-            progressDialog.finish(self.tr('Calculation started'))
+            ROMdate = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime())
+            ROMaccuracy = self._caseManager.podGetROMAccuracy()
+            self._project.fileDB().putText("ROMdate", ROMdate)
+            self._project.fileDB().putText("ROMaccuracy", ROMaccuracy)
+            progressDialog.finish(self.tr('ROM build finished'))
+            self._ui.groupBox_Reconstruction.setEnabled(True);
         except Exception as e:
-            progressDialog.finish(self.tr('POD run error : ') + str(e))
+            progressDialog.finish(self.tr('ROM build error : ') + str(e))
         finally:
             self._caseManager.progress.disconnect(progressDialog.setLabelText)
 
     def loadSnapshotCases(self):
         self._snapshotCaseList.clear()
         self._snapshotCaseList.load()
-        self._ui.labelBuildROM.setText(self.tr('ROM Accuracy : ') + self._caseManager.podGetROMAccuracy())
+
+        ROMdate = self._project.fileDB().getText("ROMdate")
+
+        if ROMdate:
+            ROMaccuracy = "{:.3e}".format(self._project.fileDB().getText("ROMaccuracy"))
+            textROMstatus = self.tr('ROM created on ') + ROMdate.decode("utf-8")
+            textROMstatus += "\n" + self.tr('Accuracy: ') + ROMaccuracy
+            self._ui.labelBuildROM.setText(textROMstatus)
+            self._ui.groupBox_Reconstruction.setEnabled(True);
+        else:
+            self._ui.labelBuildROM.setText(self.tr('ROM status: not created'))
+            self._ui.groupBox_Reconstruction.setEnabled(False);
+
         return
 
-    def generateSliders(self):
-        if len(self.listLineEdit) > 0: return
-        
+    def generateSliders(self, overwrite=True):
+        if self._snapshotCaseList._parameters is None: return
+
+        layout = self._ui.verticalLayout_ReconstructGroup
+
+        count = layout.count()
+        if not overwrite and count > 1: return
+
+        while count > 1:
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
+            count -= 1
+
+        self.listLineEdit = []
+
         listParam = self._snapshotCaseList._parameters.tolist()
         nParam = len(listParam)
         listCases = self._snapshotCaseList._cases
-        
+
         for iParam in range(nParam):
             nameParam = listParam[iParam]
             valuesParam = [float(entry[nameParam]) for entry in listCases.values()]
             valueMinParam = min(valuesParam)
             valueMaxParam = max(valuesParam)
             new_widget = self.generateSingleSlider(iParam, nameParam, valueMinParam, valueMaxParam)
-            self._ui.verticalLayout_PODROMpage.insertWidget(2+iParam, new_widget)
-        
+            layout.insertWidget(layout.count() - 1, new_widget)
+
         return
 
     def generateSingleSlider(self, sliderIndex, nameParam, valueMinParam, valueMaxParam):
@@ -179,7 +218,8 @@ class PODROMPage(ContentPage):
             try:
                 user_val = float(lineedit.text())
                 user_val = max(min(user_val, valueMaxParam), valueMinParam)
-                ratio = (user_val - valueMinParam) / (valueMaxParam - valueMinParam)
+                lengthSlider = max(valueMaxParam - valueMinParam, 1.e-16)
+                ratio = (user_val - valueMinParam) / (lengthSlider)
                 slider_val = int(round(ratio * 100.))
                 slider.blockSignals(True)
                 slider.setValue(slider_val)
@@ -202,12 +242,18 @@ class PODROMPage(ContentPage):
 
     @qasync.asyncSlot()
     async def _ROMReconstruct(self):
-        import traceback
-        progressDialog = ProgressDialog(self, self.tr('Reconstruct with ROM'), True)
+        caseName = self._ui.nameCaseToReconstruct.text()
+        if len(caseName) == 0:
+            AsyncMessageBox().warning(self, self.tr('Reduced Order Model'),
+                                            self.tr('Please specify a case name to reconstruct.'))
+            return
+
+        progressDialog = ProgressDialog(self, self.tr('Reduced Order Model'), True)
         self._caseManager.progress.connect(progressDialog.setLabelText)
+        progressDialog.setLabelText(self.tr('Reconstruct from ROM'))
         progressDialog.cancelClicked.connect(self._caseManager.cancel)
         progressDialog.open()
-        
+
         listSnapshotCase = self._snapshotCaseList._cases
         paramsToReconstruct = {}
         listParam = self._snapshotCaseList._parameters.tolist()
@@ -219,14 +265,11 @@ class PODROMPage(ContentPage):
 
         try:
             await self._caseManager.podRunReconstruct(listSnapshotCase, paramsToReconstruct)
-            # self._batchCaseList._setCase("pod-reconstructed", caseToReconstruct, SolverStatus.ENDED)
-            # self._batchCaseList._listChanged(True)
-            # self._project.updateBatchStatuses(
-                # {name: item.status().name for name, item in self._batchCaseList._items.items() if item.status()})
-            progressDialog.finish(self.tr('Calculation started'))
+            await self._caseManager.podSaveToBatchCase(caseName, paramsToReconstruct)
+            await self._caseManager.podAddToBatchList(caseName, paramsToReconstruct)
+            progressDialog.finish(self.tr('Reconstruction Finished'))
         except Exception as e:
-            progressDialog.finish(self.tr('POD run error : ') + str(e))
-            traceback.print_exc()  # 전체 traceback 출력
+            progressDialog.finish(self.tr('ROM reconstruction error : ') + str(e))
         finally:
             self._caseManager.progress.disconnect(progressDialog.setLabelText)
         return
