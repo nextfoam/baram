@@ -297,7 +297,6 @@ class PODCase(Case):
                     target = processorPath / "constant"
                     if not source.exists():
                         source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
-                    constant_link_done = True
 
                 # time
                 subfolders = [f for f in processorPath.iterdir() if f.is_dir() and f.name.isdigit()]
@@ -310,6 +309,7 @@ class PODCase(Case):
                         source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
                     self.writeFieldList(proc_dir)
             case_index += 1
+            constant_link_done = True
 
     async def initializeReconstruct(self, listSnapshot, paramsToReconstruct):
         with open(str(self._project.path) + "/%s/Vinput.dat"%POD_DIRECTORY_NAME, 'w') as f:
