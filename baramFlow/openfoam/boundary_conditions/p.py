@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from enum import Enum
 from uuid import UUID
 
 from PyFoam.Basics.FoamFileGenerator import FoamFileGenerator
@@ -15,12 +16,14 @@ from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import usePrgh, useGaugePressureInPrgh
 from libbaram.natural_name_uuid import uuidToNnstr
 
+
 TYPE_MAP = {
     BoundaryType.VELOCITY_INLET.value: 'calculated',
     BoundaryType.FLOW_RATE_INLET.value: 'calculated',
     BoundaryType.FLOW_RATE_OUTLET.value: 'calculated',
     BoundaryType.PRESSURE_INLET.value: 'calculated',
     BoundaryType.INTAKE_FAN.value: 'calculated',
+    BoundaryType.EXHAUST_FAN.value: 'calculated',
     BoundaryType.ABL_INLET.value: 'calculated',
     BoundaryType.OPEN_CHANNEL_INLET.value: 'calculated',
     BoundaryType.FREE_STREAM.value: 'calculated',
@@ -42,6 +45,11 @@ TYPE_MAP = {
     BoundaryType.CYCLIC.value: 'cyclic',
     BoundaryType.WEDGE.value: 'wedge',
 }
+
+
+class FanPressureDirection(Enum):
+    IN = 'in'
+    OUT = 'out'
 
 
 class P(BoundaryCondition):
@@ -115,7 +123,8 @@ class P(BoundaryCondition):
                     BoundaryType.FLOW_RATE_OUTLET.value:    (lambda: self._constructZeroGradient()),
                     BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructTotalPressure(self._operatingPressure + float(self._db.getValue(xpath + '/pressureInlet/pressure')))),
                     BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletP(xpath)),
-                    BoundaryType.INTAKE_FAN.value:          (lambda: self._constructFanPressure(xpath, bcid)),
+                    BoundaryType.INTAKE_FAN.value:          (lambda: self._constructFanPressure(xpath, bcid, FanPressureDirection.IN)),
+                    BoundaryType.EXHAUST_FAN.value:         (lambda: self._constructFanPressure(xpath, bcid, FanPressureDirection.OUT)),
                     BoundaryType.ABL_INLET.value:           (lambda: self._constructZeroGradient()),
                     BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructZeroGradient()),
                     BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructZeroGradient()),
@@ -209,8 +218,9 @@ class P(BoundaryCondition):
             'value': self._initialValueByTime()
         }
 
-    def _constructFanPressure(self, xpath, bcid):
+    def _constructFanPressure(self, xpath, bcid, direction):
         fanCurveName = UUID(self._db.getValue(xpath + '/fanCurveName'))
+        fanCurve = None
         if fanCurveName.int != 0:
             df = Project.instance().fileDB().getDataFrame(uuidToNnstr(fanCurveName))
             if df is not None:
@@ -230,7 +240,7 @@ class P(BoundaryCondition):
         p0 = self._operatingPressure + float(self._db.getValue(xpath + '/pressure'))
         return {
             'type': 'fanPressure',
-            'direction': 'in',
+            'direction': direction.value,
             'fanCurve': {
                 'type': 'table',
                 'file': f'constant/{fanCurveFileName}',

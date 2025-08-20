@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>308</width>
-    <height>451</height>
+    <height>499</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -313,6 +313,25 @@
            </property>
            <property name="text">
             <string>Pressure Outlet</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroup</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
+          <widget class="FlatPushButton" name="exhaustFan">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">text-align:left</string>
+           </property>
+           <property name="text">
+            <string>Exuast Fan</string>
            </property>
            <attribute name="buttonGroup">
             <string notr="true">buttonGroup</string>

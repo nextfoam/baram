@@ -5,6 +5,8 @@ import qasync
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTreeWidgetItem
 
+from widgets.async_message_box import AsyncMessageBox
+
 from baramFlow.app import app
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
@@ -12,13 +14,13 @@ from baramFlow.coredb.boundary_db import BoundaryType, BoundaryDB
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME
 from baramFlow.view.widgets.content_page import ContentPage
-from widgets.async_message_box import AsyncMessageBox
 from .ABL_inlet_dialog import ABLInletDialog
 from .boundary_conditions_page_ui import Ui_BoundaryConditionsPage
 from .boundary_type_picker import BoundaryTypePicker
 from .boundary_widget import BoundaryWidget
 from .copy_dialog import CopyDialog
 from .cyclic_dialog import CyclicDialog
+from .exhaust_fan_dialog import ExhaustFanDialog
 from .fan_dialog import FanDialog
 from .farfield_riemann_dialog import FarfieldRiemannDialog
 from .flow_rate_inlet_dialog import FlowRateInletDialog
@@ -52,6 +54,7 @@ DIALOGS = {
     BoundaryType.SUPERSONIC_INFLOW.value: SupersonicInflowDialog,
     BoundaryType.FLOW_RATE_OUTLET.value: FlowRateOutletDialog,
     BoundaryType.PRESSURE_OUTLET.value: PressureOutletDialog,
+    BoundaryType.EXHAUST_FAN.value: ExhaustFanDialog,
     BoundaryType.OPEN_CHANNEL_OUTLET.value: OpenChannelOutletDialog,
     BoundaryType.OUTFLOW.value: None,
     BoundaryType.SUBSONIC_OUTFLOW.value: SubsonicOutflowDialog,

@@ -45,6 +45,7 @@ class K(BoundaryCondition):
                 BoundaryType.PRESSURE_INLET.value:      (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.PRESSURE_OUTLET.value:     (lambda: self._constructPressureOutletK(xpath)),
                 BoundaryType.INTAKE_FAN.value:          (lambda: self._constructInletOutletByModel(xpath)),
+                BoundaryType.EXHAUST_FAN.value:         (lambda: self._constructZeroGradient()),
                 BoundaryType.ABL_INLET.value:           (lambda: self._constructAtmBoundaryLayerInletK()),
                 BoundaryType.OPEN_CHANNEL_INLET.value:  (lambda: self._constructInletOutletByModel(xpath)),
                 BoundaryType.OPEN_CHANNEL_OUTLET.value: (lambda: self._constructInletOutletByModel(xpath)),

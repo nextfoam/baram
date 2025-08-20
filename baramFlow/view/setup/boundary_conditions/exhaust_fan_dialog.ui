@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Intake FAN Boundary Condition</string>
+   <string>Exhaust FAN Boundary Condition</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -99,7 +99,7 @@
        <number>0</number>
       </property>
       <item>
-       <spacer name="horizontalSpace">
+       <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
         </property>

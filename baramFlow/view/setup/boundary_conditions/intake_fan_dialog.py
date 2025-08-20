@@ -30,7 +30,7 @@ class IntakeFanDialog(ResizableDialog):
 
         self._dialog: PiecewiseLinearDialog
         self._fanCurveName: UUID
-        self._fanCurve: list[list[float]] = [[1], [1]]
+        self._fanCurve: list[list[float]] = []
 
         self._xpath = BoundaryDB.getXPath(bcid)
 
@@ -47,10 +47,15 @@ class IntakeFanDialog(ResizableDialog):
         self._load()
 
     @qasync.asyncSlot()
-    async def accept(self):
+    async def _accept(self):
         #
         # Validation check for parameters
         #
+        df = pd.DataFrame(self._fanCurve)
+        if df.empty:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Edit Fan Curve'))
+            return
+
         valid, msg = self._volumeFractionWidget.validate()
         if not valid:
             await AsyncMessageBox().warning(self, self.tr('Warning'), msg)
@@ -95,6 +100,13 @@ class IntakeFanDialog(ResizableDialog):
             self._temperatureWidget.completeWriting()
             super().accept()
 
+    @qasync.asyncSlot()
+    async def _reject(self):
+        if self._fanCurveName.int == 0:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Be sure to edit Fan Curve'))
+        else:
+            self.reject()
+
     def _load(self):
         db = coredb.CoreDB()
         self._ui.totalPressure.setText(db.getValue(self._xpath + '/pressure'))
@@ -114,6 +126,8 @@ class IntakeFanDialog(ResizableDialog):
 
     def _connectSignalsSlots(self):
         self._ui.editFanCurve.clicked.connect(self._editFanCurve)
+        self._ui.ok.clicked.connect(self._accept)
+        self._ui.cancel.clicked.connect(self._reject)
 
     def _editFanCurve(self):
         self._dialog = PiecewiseLinearDialog(self, self.tr('Fan Curve'), 'Q', 'm3/s', ['P'], 'Pa', self._fanCurve)
