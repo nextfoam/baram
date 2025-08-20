@@ -259,41 +259,53 @@ def _mixtureSpecie(db, path):
 
 
 def _constructSolid(region: str):
+    db = CoreDBReader()
+    mid = db.getValue(f'/regions/region[name="{region}"]/material')
+    path = f'/materials/material[@mid="{mid}"]'
+
+    specificHeatSpec = Specification(db.getValue(path + '/specificHeat/specification'))
+
     thermo = {
         'type': 'heSolidThermo',
         'mixture': 'pureMixture',
         'transport': 'constIso',
-        'thermo': 'hConst',
+        'thermo': THERMO[specificHeatSpec],
         'equationOfState': 'rhoConst',
         'specie': 'specie',
         'energy': 'sensibleEnthalpy'
     }
 
     mix = {}
-
-    db = CoreDBReader()
-    mid = db.getValue(f'/regions/region[name="{region}"]/material')
-    path = f'/materials/material[@mid="{mid}"]'
-
     mix['specie'] = {  # This value is not used for solid. The values are fake.
         'nMoles': 1,
         'molWeight': 100
     }
 
-    spec = db.getValue(path + '/specificHeat/specification')
-    if spec == 'constant':
+    if specificHeatSpec == 'constant':
         cp = db.getValue(path + '/specificHeat/constant')
         mix['thermodynamics'] = {
             'Cp': cp,
             'Hf': 0,
             'Sf': 0
         }
+    else:
+        mix['thermodynamics'] = _mixtureThermodynamics(specificHeatSpec, db, path)
 
     spec = db.getValue(path + '/thermalConductivity/specification')
     if spec == 'constant':
         kk = db.getValue(path + '/thermalConductivity/constant')
         mix['transport'] = {
             'kappa': kk,
+        }
+    elif spec == 'polynomial':
+        thermo['transport'] = 'polynomial'
+
+        kkCoeffs: list[float] = [0] * 8  # To make sure that kkCoeffs has length of 8
+        for i, n in enumerate(db.getValue(path + '/thermalConductivity/polynomial').split()):
+            kkCoeffs[i] = float(n)
+
+        mix['transport'] = {
+            'kappaCoeffs<8>': kkCoeffs
         }
 
     spec = db.getValue(path + '/density/specification')
