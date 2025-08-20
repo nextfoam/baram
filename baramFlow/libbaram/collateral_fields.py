@@ -15,7 +15,7 @@ from baramFlow.openfoam.solver import findSolver
 from libbaram.run import runParallelUtility
 
 
-def _buildDict(fields: list[Field]) -> dict:
+def collateralFieldDict(fields: list[Field]) -> dict:
     functions = {}
 
     db = CoreDBReader()
@@ -58,11 +58,11 @@ def _buildDict(fields: list[Field]) -> dict:
         if WALL_Y_PLUS in fields:
             functions[f'collateralWallYPlus_{rname}'] = foWallYPlusReport(rname)
 
-    return {'functions': functions}
+    return functions
 
 
 async def _calculateAgeField(times: list[str] = None):
-    data = _buildDict([AGE])
+    data = {'functions': collateralFieldDict([AGE])}
 
     foDict = FoDict(f'delete_me_{str(uuid.uuid4())}').build(data)
     foDict.write()
@@ -100,7 +100,7 @@ async def calculateCollateralField(fields: list[Field], times: list[str] = None)
         await _calculateAgeField(times)
         fields.remove(AGE)
 
-    data = _buildDict(fields)
+    data = {'functions': collateralFieldDict(fields)}
 
     foDict = FoDict(f'delete_me_{str(uuid.uuid4())}').build(data)
     foDict.write()

@@ -34,7 +34,7 @@ class IsoSurfaceDialog(QDialog):
 
         self._surface = surface
 
-        self._fields = getAvailableFields()
+        self._fields = getAvailableFields(includeCoordinate=True)
 
         for f in self._fields:
             self._ui.field.addItem(f.text, f)

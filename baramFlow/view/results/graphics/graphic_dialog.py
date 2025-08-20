@@ -43,7 +43,7 @@ class GraphicDialog(QDialog):
         self._timeSlider.updateTimeValues(times)
         self._timeSlider.setCurrentTime(graphic.time)
 
-        self._fields: list[Field] = getAvailableFields()
+        self._fields: list[Field] = getAvailableFields(includeCoordinate=True)
         for f in self._fields:
             self._ui.field.addItem(f.text, f)
 
@@ -127,7 +127,7 @@ class GraphicDialog(QDialog):
                 rc = await calculateCollateralField([field], [time])
 
                 if rc != 0:
-                    progressDialog.finish(self.tr('Calculation failed'))
+                    progressDialog.abort(self.tr('Calculation failed'))
                     self._ui.update.setEnabled(True)
                     return
 
