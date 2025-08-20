@@ -4,15 +4,17 @@
 import qasync
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.case_manager import CaseManager
-from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
 
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
-from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
+from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
+from baramFlow.coredb.material_schema import Phase
 from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
+from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
 from .surface_dialog_ui import Ui_SurfaceDialog
 
@@ -34,11 +36,15 @@ class SurfaceDialog(QDialog):
         self._xpath = None
         self._surface = None
 
+        self._flowRateFieldIndexInCombo = 0
+
         for t in SurfaceReportType:
             self._ui.reportType.addEnumItem(t, MonitorDB.surfaceReportTypeToText(t))
 
         for f in FieldHelper.getAvailableFields():
             self._ui.fieldVariable.addItem(f.text, f.key)
+            if f.key.field == Field.SPEED:
+                self._flowRateFieldIndexInCombo = self._ui.fieldVariable.count() - 1
 
         if name is None:
             db = coredb.CoreDB()
@@ -99,8 +105,15 @@ class SurfaceDialog(QDialog):
             return
 
         field = self._ui.fieldVariable.currentData()
+        region = BoundaryDB.getBoundaryRegion(self._surface)
+
+        if RegionDB.getPhase(region) == Phase.SOLID and field.field != Field.TEMPERATURE:
+            await AsyncMessageBox().information(self, self.tr('Input Error'),
+                                                self.tr('Only temperature field can be configured for Solid Region.'))
+            return
+
         if (field.field == Field.SCALAR
-                and BoundaryDB.getBoundaryRegion(self._surface) != UserDefinedScalarsDB.getRegion(field.id)):
+                and region != UserDefinedScalarsDB.getRegion(field.id)):
             await AsyncMessageBox().information(
                 self, self.tr('Input Error'),
                 self.tr('The region where the scalar field is configured does not contain selected Surface.'))
@@ -138,5 +151,8 @@ class SurfaceDialog(QDialog):
         self._setSurface(self._dialog.selectedItem())
 
     def _reportTypeChanged(self, reportType):
-        self._ui.fieldVariable.setDisabled(
-            reportType == SurfaceReportType.MASS_FLOW_RATE or reportType == SurfaceReportType.VOLUME_FLOW_RATE)
+        if reportType == SurfaceReportType.MASS_FLOW_RATE or reportType == SurfaceReportType.VOLUME_FLOW_RATE:
+            self._ui.fieldVariable.setEnabled(False)
+            self._ui.fieldVariable.setCurrentIndex(self._flowRateFieldIndexInCombo)
+        else:
+            self._ui.fieldVariable.setEnabled(True)

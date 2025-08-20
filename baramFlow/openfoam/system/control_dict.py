@@ -375,23 +375,25 @@ class ControlDict(DictionaryFile):
         coordinate = self._db.getVector(xpath + '/coordinate')
         interval = int(self._db.getValue(xpath + '/writeInterval'))
         region = self._db.getValue(xpath + '/region')
+        snapOntoBoundary = self._db.getValue(xpath + '/snapOntoBoundary') == 'true'
 
-        if self._db.getValue(xpath + '/snapOntoBoundary') == 'true':
+        if snapOntoBoundary:
             field = self._getMonitorField(xpath, region)
             if not field:
                 return None
 
             boundary = BoundaryDB.getBoundaryName(self._db.getValue(xpath + '/boundary'))
+            region = BoundaryDB.getBoundaryRegion(boundary)
             data = foPatchProbesMonitor(boundary, field, coordinate, region, interval)
         else:
             if not region:
-                regions = self._db.getRegions()
-                if len(regions) > 1:
-                    for rname in regions:
-                        if isPointInDataSet(coordinate, app.internalMeshActor(rname).dataSet):
-                            self._db.setValue(xpath + '/region', rname)
-                            region = rname
-                            break
+                for rname in self._db.getRegions():
+                    if isPointInDataSet(coordinate, app.internalMeshActor(rname).dataSet):
+                        self._db.setValue(xpath + '/region', rname)
+                        region = rname
+                        break
+                else:
+                    return None
 
             field = self._getMonitorField(xpath, region)
             if not field:
