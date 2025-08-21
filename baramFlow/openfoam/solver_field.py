@@ -5,7 +5,7 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.base.field import AGE, COORDINATE, DENSITY, HEAT_TRANSFER_COEFF, MACH_NUMBER, MODIFIED_TURBULENT_VISCOSITY, PRESSURE, Q, SPECIFIC_DISSIPATION_RATE, TEMPERATURE, TOTAL_PRESSURE, TURBULENT_DISSIPATION_RATE, TURBULENT_KINETIC_ENERGY, VELOCITY, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS
-from baramFlow.base.field import BasicField, CollateralField, Field, GeometryField, PhaseField, SpecieField, UserScalarField
+from baramFlow.base.field import BasicField, CollateralField, Field, GeometryField, PhaseField, SpecieField, UserScalarField, VectorComponent
 from baramFlow.coredb.material_schema import Phase
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
@@ -54,12 +54,27 @@ def getSolverFieldName(field: Field) -> str:
         return UserDefinedScalarsDB.getFieldName(field.codeName)
 
 
-def getAvailableFields() -> list[Field]:
+def getSolverComponentName(field: Field, component: VectorComponent) -> str:
+    solverFieldName = getSolverFieldName(field)
+    if component == VectorComponent.MAGNITUDE:
+        return f'mag({solverFieldName})'
+    elif component == VectorComponent.X:
+        return f'{solverFieldName}x'
+    elif component == VectorComponent.Y:
+        return f'{solverFieldName}y'
+    elif component == VectorComponent.Z:
+        return f'{solverFieldName}z'
+    else:  # No way to reach here
+        return ''
+
+
+def getAvailableFields(includeCoordinate=False) -> list[Field]:
     fields = []
 
     # Always available fields
 
-    fields.append(COORDINATE)
+    if includeCoordinate:
+        fields.append(COORDINATE)
 
     fields.append(PRESSURE)
 
@@ -113,7 +128,7 @@ def getAvailableFields() -> list[Field]:
                 fields.append(SpecieField(sid))
 
     for sid, _ in coredb.CoreDB().getUserDefinedScalars():
-        fields.append(UserScalarField(sid))
+        fields.append(UserScalarField(str(sid)))
 
     return fields
 

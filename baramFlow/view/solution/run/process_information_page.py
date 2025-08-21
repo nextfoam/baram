@@ -115,7 +115,7 @@ class ProcessInformationPage(ContentPage):
     @qasync.asyncSlot()
     async def _startCalculationClicked(self):
         if self._runningMode == RunningMode.LIVE_RUNNING_MODE:
-            progressDialog = ProgressDialog(self, self.tr('Calculation Run.'), True)
+            progressDialog = ProgressDialog(self, self.tr('Calculation Run.'), cancelable=True)
 
             self._caseManager.progress.connect(progressDialog.setLabelText)
             progressDialog.cancelClicked.connect(self._caseManager.cancel)

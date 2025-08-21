@@ -6,6 +6,8 @@ from PySide6.QtWidgets import QDialog
 
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
+from baramFlow.coredb.material_schema import Phase
+from baramFlow.coredb.region_db import RegionDB
 from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
 
@@ -98,8 +100,15 @@ class VolumeDialog(QDialog):
             return
 
         field = self._ui.fieldVariable.currentData()
+        region = CellZoneDB.getCellZoneRegion(self._volume)
+
+        if RegionDB.getPhase(region) == Phase.SOLID and field.field != Field.TEMPERATURE:
+            await AsyncMessageBox().information(self, self.tr('Input Error'),
+                                                self.tr('Only temperature field can be configured for Solid Region.'))
+            return
+
         if (field.field == Field.SCALAR
-                and CellZoneDB.getCellZoneRegion(self._volume) != UserDefinedScalarsDB.getRegion(field.id)):
+                and region != UserDefinedScalarsDB.getRegion(field.id)):
             await AsyncMessageBox().information(
                 self, self.tr('Input Error'),
                 self.tr('The region where the scalar field is configured does not contain selected Volume.'))

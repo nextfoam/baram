@@ -4,18 +4,20 @@
 import qasync
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.case_manager import CaseManager
-from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from libbaram.mesh import Bounds
 from widgets.async_message_box import AsyncMessageBox
 from widgets.rendering.point_widget import PointWidget
 from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.app import app
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
-from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
+from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
+from baramFlow.coredb.material_schema import Phase
 from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
+from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.mesh.vtk_loader import isPointInDataSet
 from .point_dialog_ui import Ui_PointDialog
 
@@ -117,8 +119,10 @@ class PointDialog(QDialog):
 
         db = coredb.CoreDB()
         regions = db.getRegions()
-        region = ''
-        if len(regions) > 1:
+        region = None
+        if self._snapOntoBoundary:
+            region = BoundaryDB.getBoundaryRegion(self._snapOntoBoundary)
+        else:
             coordinate = (float(self._ui.coordinateX.text()),
                           float(self._ui.coordinateY.text()),
                           float(self._ui.coordinateZ.text()))
@@ -128,7 +132,17 @@ class PointDialog(QDialog):
                     region = rname
                     break
 
+        if region is None:
+            await AsyncMessageBox().information(self, self.tr('Input Erropr'), self.tr('Select Point in a region'))
+            return
+
         field = self._ui.field.currentData()
+
+        if RegionDB.getPhase(region) == Phase.SOLID and field.field != Field.TEMPERATURE:
+            await AsyncMessageBox().information(self, self.tr('Input Error'),
+                                                self.tr('Only temperature field can be configured for Solid Region.'))
+            return
+
         if field.field == Field.SCALAR and region != UserDefinedScalarsDB.getRegion(field.id):
             await AsyncMessageBox().information(
                 self, self.tr('Input Error'),

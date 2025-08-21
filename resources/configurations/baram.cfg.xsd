@@ -1682,6 +1682,7 @@
                             <xs:enumeration value="pressureInlet"/>
                             <xs:enumeration value="pressureOutlet"/>
                             <xs:enumeration value="intakeFan"/>
+                            <xs:enumeration value="exhaustFan"/>
                             <xs:enumeration value="ablInlet"/>
                             <xs:enumeration value="openChannelInlet"/>
                             <xs:enumeration value="openChannelOutlet"/>

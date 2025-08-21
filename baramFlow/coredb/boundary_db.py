@@ -31,6 +31,7 @@ class BoundaryType(Enum):
     # Outlet
     FLOW_RATE_OUTLET    = 'flowRateOutlet'
     PRESSURE_OUTLET	    = 'pressureOutlet'
+    EXHAUST_FAN         = 'exhaustFan'
     OPEN_CHANNEL_OUTLET = 'openChannelOutlet'
     OUTFLOW	            = 'outflow'
     SUBSONIC_OUTFLOW	= 'subsonicOutflow'
@@ -219,6 +220,7 @@ class BoundaryDB:
             # Outlet
             BoundaryType.FLOW_RATE_OUTLET.value: QCoreApplication.translate('BoundaryDB', 'Flow Rate Outlet'),
             BoundaryType.PRESSURE_OUTLET.value: QCoreApplication.translate('BoundaryDB', 'Pressure Outlet'),
+            BoundaryType.EXHAUST_FAN.value: QCoreApplication.translate('BoundaryDB', 'Exhaust Fan'),
             BoundaryType.OPEN_CHANNEL_OUTLET.value: QCoreApplication.translate('BoundaryDB', 'Open Channel Outlet'),
             BoundaryType.OUTFLOW.value: QCoreApplication.translate('BoundaryDB', 'Outflow'),
             BoundaryType.SUBSONIC_OUTFLOW.value: QCoreApplication.translate('BoundaryDB', 'Subsonic Outflow'),
@@ -264,7 +266,7 @@ class BoundaryDB:
         return items
 
     @classmethod
-    def getBoundaryConditionsByType(cls, physicalType: BoundaryType, rname=None) -> list[tuple[int, str, str]]:
+    def getBoundaryConditionsByType(cls, physicalType: BoundaryType, rname=None) -> list[tuple[int, str]]:
         """Returns list of boundary conditions in the region
 
         Returns list of boundary conditions for the type

@@ -43,6 +43,7 @@ class BoundaryTypePicker(QWidget):
             self._ui.supersonicInflow:  BoundaryType.SUPERSONIC_INFLOW,
             self._ui.flowRateOutlet:    BoundaryType.FLOW_RATE_OUTLET,
             self._ui.pressureOutlet:    BoundaryType.PRESSURE_OUTLET,
+            self._ui.exhaustFan:        BoundaryType.EXHAUST_FAN,
             self._ui.openChannelOutlet: BoundaryType.OPEN_CHANNEL_OUTLET,
             self._ui.outflow:           BoundaryType.OUTFLOW,
             self._ui.subsonicOutflow:   BoundaryType.SUBSONIC_OUTFLOW,
