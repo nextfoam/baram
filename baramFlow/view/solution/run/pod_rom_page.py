@@ -1,36 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import ctypes
-import platform
 import time
 import qasync
 import logging
-from enum import Enum, auto
 
 import pandas as pd
 from PySide6.QtWidgets import QFileDialog, QWidget, QHBoxLayout, QLabel, QSlider, QLineEdit, QSizePolicy
 from PySide6.QtCore import Qt
 
 from widgets.async_message_box import AsyncMessageBox
-from widgets.list_table import ListItem
 from widgets.progress_dialog import ProgressDialog
 from widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem
 
-from baramFlow.case_manager import CaseManager, BatchCase
-from baramFlow.coredb import coredb
-from baramFlow.coredb.coredb_reader import CoreDBReader
+from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.filedb import FileDB
-from baramFlow.coredb.project import Project, SolverStatus
-from baramFlow.openfoam.case_generator import CanceledException
-from baramFlow.openfoam.constant.turbulence_properties import TurbulenceProperties
-from baramFlow.openfoam.solver import SolverNotFound
-from baramFlow.openfoam.system.control_dict import ControlDict
-from baramFlow.openfoam.system.fv_options import FvOptions
-from baramFlow.openfoam.system.fv_schemes import FvSchemes
-from baramFlow.openfoam.system.fv_solution import FvSolution
+from baramFlow.coredb.project import Project
 from baramFlow.view.widgets.content_page import ContentPage
-from .batch_case_list import BatchCaseList
 from .snapshot_case_list import SnapshotCaseList
 from .pod_rom_page_ui import Ui_PODROMPage
 
@@ -81,8 +67,6 @@ class PODROMPage(ContentPage):
         return
 
     def _disconnectSignalsSlots(self):
-        self._project.solverStatusChanged.disconnect(self._statusChanged)
-        self._caseManager.caseLoaded.disconnect(self._caseLoaded)
         return
 
     def _selectCasesToBuildROM(self):
@@ -98,37 +82,32 @@ class PODROMPage(ContentPage):
             self._listSelectorItemBatchCase.append(SelectorItem(key, key, idx))
 
         self._dialog = MultiSelectorDialog(self, self.tr('Select Snapshot Cases'), self._listSelectorItemBatchCase, [])
-        self._dialog.itemsSelected.connect(self._runBuildROM)
+        self._dialog.itemsSelected.connect(self._buildROM)
         self._dialog.open()
-
-    def _runBuildROM(self, items):
-        self._buildROM(items)
 
     @qasync.asyncSlot()
     async def _buildROM(self, itemsFromDialog):
-        progressDialog = ProgressDialog(self, self.tr('Reduced Order Model'), True)
+        progressDialog = ProgressDialog(self, self.tr('Reduced Order Model'), cancelable=True)
         self._caseManager.progress.connect(progressDialog.setLabelText)
         progressDialog.setLabelText(self.tr('Build ROM'))
         progressDialog.cancelClicked.connect(self._caseManager.cancel)
         progressDialog.open()
 
         batchCasesDataFrame = self._project.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value)
-        batchCasesDict = batchCasesDataFrame.to_dict(orient='index')
         listSelectedName = [name for _, name in itemsFromDialog]
-        listSelectedCase = [(name, batchCasesDict[name]) for name in batchCasesDict if name in listSelectedName]
+        snapshotCasesDataFrame = batchCasesDataFrame.loc[listSelectedName]
 
-        self._project.fileDB().putDataFrame(FileDB.Key.SNAPSHOT_CASES.value, pd.DataFrame.from_dict(dict(listSelectedCase), orient='index'))
-        self.loadSnapshotCases()
-        self.generateSliders(overwrite=True)
+        self._project.fileDB().putDataFrame(FileDB.Key.SNAPSHOT_CASES.value, snapshotCasesDataFrame)
 
         try:
-            await self._caseManager.podRunGenerateROM(listSelectedCase)
+            await self._caseManager.podRunGenerateROM(listSelectedName)
             ROMdate = time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime())
             ROMaccuracy = self._caseManager.podGetROMAccuracy()
             self._project.fileDB().putText("ROMdate", ROMdate)
             self._project.fileDB().putText("ROMaccuracy", ROMaccuracy)
+            self.loadSnapshotCases()
+            self.generateSliders(overwrite=True)
             progressDialog.finish(self.tr('ROM build finished'))
-            self._ui.groupBox_Reconstruction.setEnabled(True);
         except Exception as e:
             progressDialog.finish(self.tr('ROM build error : ') + str(e))
         finally:
@@ -145,9 +124,11 @@ class PODROMPage(ContentPage):
             textROMstatus = self.tr('ROM created on ') + ROMdate.decode("utf-8")
             textROMstatus += "\n" + self.tr('Accuracy: ') + ROMaccuracy
             self._ui.labelBuildROM.setText(textROMstatus)
+            self._ui.snapshotCases.setVisible(True);
             self._ui.groupBox_Reconstruction.setEnabled(True);
         else:
             self._ui.labelBuildROM.setText(self.tr('ROM status: not created'))
+            self._ui.snapshotCases.setVisible(False);
             self._ui.groupBox_Reconstruction.setEnabled(False);
 
         return
@@ -248,7 +229,7 @@ class PODROMPage(ContentPage):
                                             self.tr('Please specify a case name to reconstruct.'))
             return
 
-        progressDialog = ProgressDialog(self, self.tr('Reduced Order Model'), True)
+        progressDialog = ProgressDialog(self, self.tr('Reduced Order Model'), cancelable=True)
         self._caseManager.progress.connect(progressDialog.setLabelText)
         progressDialog.setLabelText(self.tr('Reconstruct from ROM'))
         progressDialog.cancelClicked.connect(self._caseManager.cancel)
@@ -273,3 +254,9 @@ class PODROMPage(ContentPage):
         finally:
             self._caseManager.progress.disconnect(progressDialog.setLabelText)
         return
+
+    def closeEvent(self, event):
+        self._disconnectSignalsSlots()
+        self._snapshotCaseList.close()
+
+        super().closeEvent(event)

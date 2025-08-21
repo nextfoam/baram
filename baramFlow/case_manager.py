@@ -245,12 +245,10 @@ class PODCase(Case):
             self._process.kill()
 
     async def rmtreePodDirectory(self):
-        dir_pod = self._project.path / POD_DIRECTORY_NAME
-        if dir_pod.exists(): shutil.rmtree(dir_pod)
+        if self._path.exists(): rmtree(self._path)
 
-    async def initializeGenerateROM(self, cases):
-        dir_pod = self._project.path / POD_DIRECTORY_NAME
-        dir_pod.mkdir(parents=True, exist_ok=True)
+    async def initializeGenerateROM(self, listCaseName):
+        self._path.mkdir(parents=True, exist_ok=True)
 
         link_constant = self._path / "constant"
         if not link_constant.exists():
@@ -266,29 +264,27 @@ class PODCase(Case):
 
         # reconstructed case
         case_index = 0
-        for case in cases:
-            nameCase = case[0]
-            snapshotPath = self._project.path / BATCH_DIRECTORY_NAME / nameCase
+        for caseName in listCaseName:
+            snapshotPath = self._project.path / BATCH_DIRECTORY_NAME / caseName
             subfolders = [f for f in snapshotPath.iterdir() if f.is_dir() and f.name.isdigit()]
             if subfolders:
                 largest_subfolder = max(subfolders, key=lambda x: int(x.name))
-                source = dir_pod / f"{case_index}"
+                source = self._path / f"{case_index}"
                 target = largest_subfolder
                 if not source.exists():
                     source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
             case_index += 1
-        self.writeFieldList(dir_pod)
+        self.writeFieldList(self._path)
 
         # decomposed case
         case_index = 0
         constant_link_done = False
-        for case in cases:
-            nameCase = case[0]
-            snapshotPath = self._project.path / BATCH_DIRECTORY_NAME / nameCase
+        for caseName in listCaseName:
+            snapshotPath = self._project.path / BATCH_DIRECTORY_NAME / caseName
             subfoldersProcessor = [f for f in snapshotPath.iterdir() if f.is_dir() and "processor" in f.name]
             for pProc in subfoldersProcessor:
                 processorPath = pProc
-                proc_dir = dir_pod / pProc.name
+                proc_dir = self._path / pProc.name
 
                 # polyMesh (최초 1회만)
                 if not constant_link_done:
@@ -314,17 +310,17 @@ class PODCase(Case):
     async def initializeReconstruct(self, listSnapshot, paramsToReconstruct):
         with open(str(self._project.path) + "/%s/Vinput.dat"%POD_DIRECTORY_NAME, 'w') as f:
             f.write("%d %d\n"%(len(listSnapshot), len(paramsToReconstruct)))
-            for nameCase, case in listSnapshot.items():
+            for _, case in listSnapshot.items():
                 f.write("%s\n"%(" ".join(list(case.values()))))
 
         with open(str(self._project.path) + "/%s/CurrentInput.dat"%POD_DIRECTORY_NAME, 'w') as f:
             f.write("1 %d\n"%len(paramsToReconstruct))
             f.write("%s\n"%(" ".join(list(map(str, paramsToReconstruct)))))
 
-    async def runGenerateROM(self, cases):
+    async def runGenerateROM(self, listCaseName):
         try:
             await self.rmtreePodDirectory()
-            await self.initializeGenerateROM(cases)
+            await self.initializeGenerateROM(listCaseName)
 
             stdout = open(self._path / STDOUT_FILE_NAME, 'w')
             stderr = open(self._path / STDERR_FILE_NAME, 'w')
@@ -371,7 +367,10 @@ class PODCase(Case):
             with file.open("r") as f:
                 lines = [float(line.strip()) for line in f if line.strip()]
                 if not lines: continue
-                ratio = lines[0] / lines[-1]
+                eps = 1.e-16
+                maxEigenvalue = lines[0]
+                minEigenvalue = next((val for val in reversed(lines) if abs(val) > eps), eps)
+                ratio = abs(maxEigenvalue / minEigenvalue)
                 ratios.append(ratio)
 
         return sum(ratios) / len(ratios)
@@ -389,7 +388,7 @@ class PODCase(Case):
         dir_reconstructed_pod = dir_pod / "10001"
         if dir_reconstructed_pod.exists():
             dir_reconstructed_batch = dir_batch / "1"
-            if dir_reconstructed_batch.exists(): shutil.rmtree(dir_reconstructed_batch)
+            if dir_reconstructed_batch.exists(): rmtree(dir_reconstructed_batch)
             shutil.copytree(dir_reconstructed_pod, dir_reconstructed_batch)
 
         # decomposed case
@@ -402,7 +401,7 @@ class PODCase(Case):
             dir_reconstructed_pod = pProc / "10001"
             if dir_reconstructed_pod.exists():
                 dir_reconstructed_batch = dir_processor_batch / "1"
-                if dir_reconstructed_batch.exists(): shutil.rmtree(dir_reconstructed_batch)
+                if dir_reconstructed_batch.exists(): rmtree(dir_reconstructed_batch)
                 shutil.copytree(dir_reconstructed_pod, dir_reconstructed_batch)
 
 
@@ -518,11 +517,11 @@ class CaseManager(QObject):
 
         await GraphicsDB().updatePolyMeshAll()
 
-    async def podRunGenerateROM(self, cases):
+    async def podRunGenerateROM(self, listCaseName):
         tempPodCase = PODCase()
         tempPodCase.load()
         self._setCurrentCase(tempPodCase)
-        await tempPodCase.runGenerateROM(cases)
+        await tempPodCase.runGenerateROM(listCaseName)
 
     async def podRunReconstruct(self, listSnapshot, paramsToReconstruct):
         tempPodCase = PODCase()

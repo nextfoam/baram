@@ -133,7 +133,6 @@ class SnapshotCaseList(QObject):
         CaseManager().batchCleared.connect(self._clearStatuses)
 
     def _disconnectSignalsSlots(self):
-        print('Disconnecting signals in BatchCaseList')
         CaseManager().batchCleared.disconnect(self._clearStatuses)
 
     def parameters(self):
