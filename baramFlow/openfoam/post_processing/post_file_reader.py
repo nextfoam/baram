@@ -26,7 +26,7 @@ def readPostFile(path) -> pd.DataFrame:
             names.append(path.stem)
 
         f.seek(p)
-        df = pd.read_csv(f, sep=r'\s+', names=names, skiprows=0)
+        df = pd.read_csv(f, sep=r'\s+', names=names, skiprows=0, engine='python')
         df.set_index('Time', inplace=True)
 
         return df
