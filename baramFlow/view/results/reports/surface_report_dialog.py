@@ -8,6 +8,13 @@ from pathlib import Path
 import qasync
 from PySide6.QtWidgets import QDialog
 
+from libbaram import utils
+from libbaram.natural_name_uuid import uuidToNnstr
+from libbaram.run import runParallelUtility
+from widgets.async_message_box import AsyncMessageBox
+from widgets.progress_dialog import ProgressDialog
+from widgets.selector_dialog import SelectorDialog
+
 from baramFlow.base.field import VELOCITY, CollateralField, Field, FieldType, SpecieField, UserScalarField, VectorComponent
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.monitor_db import MonitorDB
@@ -23,14 +30,8 @@ from baramFlow.openfoam.function_objects.read_fields import foReadFieldsReport
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType, foSurfaceFieldValueReport
 from baramFlow.openfoam.post_processing.post_file_reader import readPostFile
 from baramFlow.openfoam.solver import findSolver
-from baramFlow.openfoam.solver_field import getAvailableFields, getSolverComponentName, getSolverFieldName
-
-from libbaram import utils
-from libbaram.natural_name_uuid import uuidToNnstr
-from libbaram.run import runParallelUtility
-from widgets.async_message_box import AsyncMessageBox
-from widgets.progress_dialog import ProgressDialog
-from widgets.selector_dialog import SelectorDialog
+from baramFlow.openfoam.solver_field import getSolverComponentName, getSolverFieldName
+from baramFlow.view.widgets.post_field_selector import loadFieldsComboBox, connectFieldsToComponents
 
 from .surface_report_dialog_ui import Ui_SurfaceReportDialog
 
@@ -48,8 +49,7 @@ class SurfaceReportDialog(QDialog):
             text: str = MonitorDB.surfaceReportTypeToText(t) or ''
             self._ui.reportType.addItem(text, t)
 
-        for field in getAvailableFields():
-            self._ui.field.addItem(field.text, field)
+        loadFieldsComboBox(self._ui.field)
 
         self._ui.field.setCurrentIndex(0)
 
@@ -70,6 +70,8 @@ class SurfaceReportDialog(QDialog):
         self._ui.field.currentIndexChanged.connect(self._updateInputFields)
         self._ui.compute.clicked.connect(self._compute)
         self._ui.close.clicked.connect(self._accept)
+
+        connectFieldsToComponents(self._ui.field, self._ui.fieldComponent)
 
     def _load(self):
         pass

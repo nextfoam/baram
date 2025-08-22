@@ -62,6 +62,11 @@
                     <criticalSpecificVolume>0.0029</criticalSpecificVolume>
                     <acentricFactor>0.0335</acentricFactor>
                 </pengRobinsonParameters>
+                <boussinesq>
+                    <rho0>1</rho0>
+                    <T0>300</T0>
+                    <beta>3e-03</beta>
+                </boussinesq>
             </density>
             <specificHeat>
                 <specification>constant</specification>

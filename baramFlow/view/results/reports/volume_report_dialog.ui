@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>310</width>
-    <height>258</height>
+    <height>292</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,7 +34,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="EnumComboBox" name="reportType"/>
+          <widget class="PythonComboBox" name="reportType"/>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_2">
@@ -44,7 +44,17 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QComboBox" name="fieldVariable"/>
+          <widget class="PythonComboBox" name="fieldVariable"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Component</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="VectorComponentComboBox" name="fieldComponent"/>
          </item>
         </layout>
        </widget>
@@ -128,7 +138,7 @@
       <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -159,9 +169,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>EnumComboBox</class>
+   <class>PythonComboBox</class>
    <extends>QComboBox</extends>
-   <header>widgets.enum_combo_box</header>
+   <header>widgets.python_combo_box</header>
+  </customwidget>
+  <customwidget>
+   <class>VectorComponentComboBox</class>
+   <extends>QComboBox</extends>
+   <header>baramFlow.view.widgets.vector_component_combo_box</header>
   </customwidget>
  </customwidgets>
  <resources/>
