@@ -183,9 +183,9 @@ def _boussinesqXML():
 
 def _perfectFluidXML():
     return ('<perfectFluid xmlns="http://www.baramcfd.org/baram">'
-            '   <rho0>1</rho0>'
-            '   <T>300</T>'
-            '   <beta>3e-03</beta>'
+            '   <rho0>997</rho0>'
+            '   <T>288</T>'
+            '   <beta>4.609e-10</beta>'
             '</perfectFluid>')
 
 

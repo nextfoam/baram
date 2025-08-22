@@ -953,9 +953,9 @@ def _version_10(root: etree.Element):
             logger.debug(f'    Adding "perfectFluid" to {p}')
 
             e = etree.fromstring('<perfectFluid xmlns="http://www.baramcfd.org/baram">'
-                                 f' <rho0>1</rho0>'
-                                 f' <T>300</T>'
-                                 f' <beta>3e-03</beta>'
+                                 f' <rho0>998</rho0>'
+                                 f' <T>288</T>'
+                                 f' <beta>4.609e-10</beta>'
                                  '</perfectFluid>')
             density.append(e)
 
