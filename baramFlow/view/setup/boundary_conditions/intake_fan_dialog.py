@@ -5,21 +5,20 @@ from uuid import UUID, uuid4
 import qasync
 
 import pandas as pd
+from PySide6.QtCore import Qt
 
-from baramFlow.coredb.project import Project
-from baramFlow.view.widgets.piecewise_linear_dialog import PiecewiseLinearDialog
+from libbaram.natural_name_uuid import uuidToNnstr
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.boundary_db import BoundaryDB
+from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
-
-from libbaram.natural_name_uuid import uuidToNnstr
-
-from .intake_fan_dialog_ui import Ui_IntakeFanDialog
+from baramFlow.view.widgets.piecewise_linear_dialog import PiecewiseLinearDialog
 from .conditional_widget_helper import ConditionalWidgetHelper
+from .intake_fan_dialog_ui import Ui_IntakeFanDialog
 
 
 class IntakeFanDialog(ResizableDialog):
@@ -45,6 +44,16 @@ class IntakeFanDialog(ResizableDialog):
         self._connectSignalsSlots()
 
         self._load()
+
+    def closeEvent(self, event):
+        self._ui.cancel.click()
+        event.ignore()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            event.ignore()
+        else:
+            super().keyPressEvent(event)
 
     @qasync.asyncSlot()
     async def _accept(self):

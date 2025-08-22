@@ -140,7 +140,7 @@ class P(BoundaryCondition):
                     BoundaryType.SYMMETRY.value:            (lambda: self._constructSymmetry()),
                     BoundaryType.INTERFACE.value:           (lambda: self._constructInterfacePressure(self._db.getValue(xpath + '/interface/mode'))),
                     BoundaryType.POROUS_JUMP.value:         (lambda: self._constructPorousBafflePressure(xpath + '/porousJump')),
-                    BoundaryType.FAN.value:                 (lambda: self._constructFan(xpath + '/fan', bcid)),
+                    BoundaryType.FAN.value:                 (lambda: self._constructFan(xpath, bcid)),
                     BoundaryType.EMPTY.value:               (lambda: self._constructEmpty()),
                     BoundaryType.CYCLIC.value:              (lambda: self._constructCyclic()),
                     BoundaryType.WEDGE.value:               (lambda: self._constructWedge())
@@ -198,44 +198,24 @@ class P(BoundaryCondition):
         }
 
     def _constructFan(self, xpath, bcid):
-        fanCurveFileName = f'UvsPressure{bcid}'
-        Project.instance().fileDB().getFileContents(self._db.getValue(xpath + '/fanCurveFile')).to_csv(
-            FileSystem.constantPath() / fanCurveFileName, sep=',', header=False, index=False
-        )
+        fanCurveFileName = f'fanCurve_{bcid}'
+        self._writeFanCurveFile(fanCurveFileName, xpath)
 
         return {
             'type': 'fan',
             'patchType': 'cyclic',
-            'jumpTable': 'csvFile',
-            'jumpTableCoeffs': {
-                'nHeaderLine': 0,
-                'refColumn': 0,
-                'componentColumns': [1],
-                'separator': '","',
-                'mergeSeparators': 'no',
-                'file': f'<constant>/{fanCurveFileName}'
+            'mode': 'volumeFlowRate',
+            'jumpTable': {
+                'type': 'table',
+                'file': f'constant/{fanCurveFileName}',
+                'outOfBounds': 'clamp'
             },
             'value': self._initialValueByTime()
         }
 
     def _constructFanPressure(self, xpath, bcid, direction):
-        fanCurveName = UUID(self._db.getValue(xpath + '/fanCurveName'))
-        fanCurve = None
-        if fanCurveName.int != 0:
-            df = Project.instance().fileDB().getDataFrame(uuidToNnstr(fanCurveName))
-            if df is not None:
-                fanCurve = df.values.tolist()
-                if len(fanCurve[0]) > 2:  # if it includes vector value
-                    fanCurve = [[row[0], row[1:]] for row in fanCurve]
-
-        # ToDo: What if fanCurve is not available?
-
         fanCurveFileName = f'fanCurve_{bcid}'
-
-        path = FileSystem.constantPath() / fanCurveFileName
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, 'w') as f:
-            f.write(str(FoamFileGenerator(fanCurve)))
+        self._writeFanCurveFile(fanCurveFileName, xpath)
 
         p0 = self._operatingPressure + float(self._db.getValue(xpath + '/pressure'))
         return {
@@ -249,3 +229,20 @@ class P(BoundaryCondition):
             'p0': ('uniform', p0),
             'value': self._initialValueByTime()
         }
+
+    def _writeFanCurveFile(self, fileName, xpath):
+        fanCurveName = UUID(self._db.getValue(xpath + '/fanCurveName'))
+        fanCurve = None
+        if fanCurveName.int != 0:
+            df = Project.instance().fileDB().getDataFrame(uuidToNnstr(fanCurveName))
+            if df is not None:
+                fanCurve = df.values.tolist()
+                if len(fanCurve[0]) > 2:  # if it includes vector value
+                    fanCurve = [[row[0], row[1:]] for row in fanCurve]
+
+        # ToDo: What if fanCurve is not available?
+
+        path = FileSystem.constantPath() / fileName
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, 'w') as f:
+            f.write(str(FoamFileGenerator(fanCurve)))

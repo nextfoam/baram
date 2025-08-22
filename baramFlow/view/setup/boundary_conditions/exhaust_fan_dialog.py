@@ -4,6 +4,7 @@
 from uuid import UUID, uuid4
 import qasync
 
+from PySide6.QtCore import Qt
 import pandas as pd
 
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
@@ -34,6 +35,16 @@ class ExhaustFanDialog(ResizableDialog):
         self._connectSignalsSlots()
 
         self._load()
+
+    def closeEvent(self, event):
+        self._ui.cancel.click()
+        event.ignore()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            event.ignore()
+        else:
+            super().keyPressEvent(event)
 
     @qasync.asyncSlot()
     async def _accept(self):
@@ -85,4 +96,3 @@ class ExhaustFanDialog(ResizableDialog):
 
     def _fanCurveAccepted(self):
         self._fanCurve = self._dialog.getData()
-

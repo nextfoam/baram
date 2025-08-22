@@ -1001,6 +1001,13 @@ def _version_10(root: etree.Element):
             ''')
             p.insert(7, e)
 
+        if (e := p.find('fan', namespaces=_nsmap)) is not None:
+            p.remove(e)
+
+            type_ = p.find('physicalType', namespaces=_nsmap)
+            if type_.text == 'fan':
+                type_.text = 'cyclic'
+
 
 _fTable = [
     None,

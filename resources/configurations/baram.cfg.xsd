@@ -1735,7 +1735,7 @@
                 <!--  <xs:element name="symmetry" type="symmetryType" /> -->
                 <xs:element name="interface" type="interfaceType"/>
                 <xs:element name="porousJump" type="porousJumpType"/>
-                <xs:element name="fan" type="fanType"/>
+                <!-- <xs:element name="fan" type="fanType"/> -->
                 <!-- no setting for empty -->
                 <!-- <xs:element name="empty" type="emptyType" /> -->
                 <!-- xs:element name="cyclic" type="cyclicType"/> -->
