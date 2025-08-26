@@ -3,7 +3,6 @@
 
 import asyncio
 import logging
-import os
 import webbrowser
 
 import qasync
@@ -15,7 +14,7 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
 from PySide6.QtCore import Signal, QEvent, QMargins
 from PySide6QtAds import CDockManager, DockWidgetArea
 
-from libbaram.validation import ValidationError
+from libbaram.simple_db.validation import ValidationError
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
 from widgets.new_project_dialog import NewProjectDialog
@@ -69,7 +68,7 @@ class MainWindow(QMainWindow):
         self._meshManager = None
         self._stepManager = StepManager(self._navigationView, self._ui)
 
-        self._startDialog = ProjectDialog()
+        self._startDialog = ProjectDialog(self)
         self._dialog = None
 
         self._readyToQuit = False
@@ -195,9 +194,10 @@ class MainWindow(QMainWindow):
         self._openProject(path)
 
     def _actionNew(self):
-        self._dialog = NewProjectDialog(self, self.tr('New Project'), Path(app.settings.getRecentLocation()).resolve())
+        self._dialog = NewProjectDialog(self, self.tr('New Project'), Path(app.settings.getRecentLocation()).resolve(),
+                                        app.properties.projectSuffix)
         self._dialog.accepted.connect(self._createProject)
-        self._dialog.show()
+        self._dialog.open()
 
     def _actionOpen(self):
         self._dialog = QFileDialog(self, self.tr('Select Project Directory'), app.settings.getRecentLocation())
@@ -210,13 +210,10 @@ class MainWindow(QMainWindow):
         if await self._stepManager.saveCurrentPage():
             app.project.save()
 
-    @qasync.asyncSlot()
-    async def _actionSaveAs(self):
-        self._dialog = QFileDialog(self, self.tr('Select Project Directory'), app.settings.getRecentLocation())
-        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        self._dialog.fileSelected.connect(self._saveAs)
-        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
-        self._dialog.finished.connect(self._ui.menubar.repaint)
+    def _actionSaveAs(self):
+        self._dialog = NewProjectDialog(self, self.tr('Save as new project'),
+                                        Path(app.settings.getRecentLocation()).resolve(), app.properties.projectSuffix)
+        self._dialog.pathSelected.connect(self._saveAs)
         self._dialog.open()
 
     def _actionParameters(self):
@@ -251,7 +248,7 @@ class MainWindow(QMainWindow):
         await self._closeProject()
         self._clear()
 
-        if app.createProject(self._dialog.projectLocation()):
+        if app.createProject(self._dialog.projectPath()):
             self._recentFilesMenu.addRecentest(app.project.path)
             self._projectOpened()
 
@@ -275,19 +272,7 @@ class MainWindow(QMainWindow):
                                                 self.tr(f'configurations error : {e.path} - {e.name}'))
 
     @qasync.asyncSlot()
-    async def _saveAs(self, file):
-        path = Path(file).resolve()
-
-        if path.exists():
-            if not path.is_dir():
-                await AsyncMessageBox().information(self, self.tr('Project Directory Error'),
-                                                    self.tr(f'{file} is not a directory.'))
-                return
-            elif os.listdir(path):
-                await AsyncMessageBox().information(self, self.tr('Project Directory Error'),
-                                                    self.tr(f'{file} is not empty.'))
-                return
-
+    async def _saveAs(self, path):
         if await self._stepManager.saveCurrentPage():
             progressDialog = ProgressDialog(self, self.tr('Save As'))
             progressDialog.open()

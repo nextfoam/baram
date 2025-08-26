@@ -5,7 +5,7 @@ import qasync
 
 from PySide6.QtWidgets import QDialog
 
-from libbaram.validation import FloatType, ValidationError
+from libbaram.simple_db.validation import FloatType, ValidationError
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb

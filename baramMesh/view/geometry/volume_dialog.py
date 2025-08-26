@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import QEvent, QTimer
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
-from libbaram.validation import ValidationError
+from libbaram.simple_db.validation import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.radio_group import RadioGroup
 

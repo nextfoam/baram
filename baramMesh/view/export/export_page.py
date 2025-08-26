@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import shutil
-from pathlib import Path
 
 import qasync
 
@@ -47,8 +46,9 @@ class ExportPage(StepPage):
 
     @qasync.asyncSlot()
     async def _openFileDialog(self):
-        self._dialog = NewProjectDialog(self._widget, self.tr('Export Baram Project'))
-        self._dialog.accepted.connect(self._export)
+        self._dialog = NewProjectDialog(self._widget, self.tr('Export Baram Project'),
+                                        suffix=app.properties.exportSuffix)
+        self._dialog.pathSelected.connect(self._export)
         self._dialog.rejected.connect(self._ui.menubar.repaint)
         self._dialog.open()
 
@@ -67,9 +67,7 @@ class ExportPage(StepPage):
         self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _export(self, to2d=False):
-        path = Path(self._dialog.projectLocation())
-
+    async def _export(self, path, to2d=False):
         progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
         progressDialog.setLabelText(self.tr('Preparing'))
         progressDialog.open()
@@ -216,4 +214,4 @@ class ExportPage(StepPage):
 
     @qasync.asyncSlot()
     async def _export2D(self):
-        await self._export(True)
+        await self._export(self._dialog.projectPath(), True)

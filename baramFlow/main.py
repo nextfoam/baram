@@ -66,12 +66,13 @@ def main():
         QMessageBox.information(None, QApplication.translate('main', 'Check MPI'), message)
         return
 
-    app.setupApplication(AppProperties({
-        'name': 'BaramFlow',
-        'fullName': QApplication.translate('Main', 'BaramFlow'),
-        'iconResource': 'baramFlow.ico',
-        'logoResource': 'baramFlow.ico',
-    }))
+    app.setupApplication(AppProperties(
+        name='BaramFlow',
+        fullName=QApplication.translate('Main', 'BaramFlow'),
+        iconResource='baramFlow.ico',
+        logoResource='baramFlow.ico',
+        projectSuffix='.baramFlow'
+    ))
     app.setPlug(AppPlugIn())
 
     os.environ['LC_NUMERIC'] = 'C'

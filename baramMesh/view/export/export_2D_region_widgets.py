@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from PySide6.QtWidgets import QWidget, QGroupBox, QFormLayout, QLineEdit, QLabel, QHBoxLayout, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QGroupBox, QFormLayout, QLineEdit, QLabel, QHBoxLayout, QPushButton
 from PySide6.QtCore import Signal
 
 class BoundaryWidget(QWidget):
@@ -14,7 +14,7 @@ class BoundaryWidget(QWidget):
         self._boundary.setEnabled(False)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, -1, 0, 0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         layout.addWidget(self._boundary)
 

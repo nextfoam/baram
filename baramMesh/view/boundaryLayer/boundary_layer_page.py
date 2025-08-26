@@ -6,7 +6,7 @@ import qasync
 from libbaram.exception import CanceledException
 from libbaram.run import RunParallelUtility
 from libbaram.process import ProcessError
-from libbaram.validation import ValidationError
+from libbaram.simple_db.validation import ValidationError
 from libbaram.utils import copyOrLink
 
 from widgets.async_message_box import AsyncMessageBox

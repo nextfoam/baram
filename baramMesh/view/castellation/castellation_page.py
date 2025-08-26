@@ -13,7 +13,7 @@ from vtkmodules.vtkIOGeometry import vtkSTLWriter, vtkOBJWriter
 from libbaram.exception import CanceledException
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
-from libbaram.validation import ValidationError
+from libbaram.simple_db.validation import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItemWithButtons
 from widgets.progress_dialog import ProgressDialog

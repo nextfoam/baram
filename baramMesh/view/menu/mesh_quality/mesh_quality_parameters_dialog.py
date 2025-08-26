@@ -3,7 +3,7 @@
 
 from PySide6.QtWidgets import QDialog, QMessageBox
 
-from libbaram.validation import ValidationError
+from libbaram.simple_db.validation import ValidationError
 
 from baramMesh.app import app
 from .mesh_quality_parameters_dialog_ui import Ui_MeshQualityParametersDialog

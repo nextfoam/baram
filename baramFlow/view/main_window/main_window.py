@@ -26,6 +26,7 @@ from libbaram.openfoam.polymesh import removeVoidBoundaries
 from libbaram.run import hasUtility
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
+from widgets.new_project_dialog import NewProjectDialog
 from widgets.progress_dialog import ProgressDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
@@ -314,11 +315,9 @@ class MainWindow(QMainWindow):
             self, self.tr('Save as a new project'),
             self.tr('Only configuration and mesh are saved. (Calculation results are not copied)'))
 
-        self._dialog = QFileDialog(self, self.tr('Select Project Directory'), AppSettings.getRecentLocation())
-        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        self._dialog.fileSelected.connect(self._projectDirectorySelected)
-        # On Windows, finishing a dialog opened with the open method does not redraw the menu bar. Force repaint.
-        self._dialog.finished.connect(self._ui.menubar.repaint)
+        self._dialog = NewProjectDialog(self, self.tr('Save as new project'),
+                                        Path(AppSettings.getRecentLocation()).resolve(), app.properties.projectSuffix)
+        self._dialog.pathSelected.connect(self._projectDirectorySelected)
         self._dialog.open()
 
     async def _saveCurrentPage(self):
@@ -704,19 +703,7 @@ class MainWindow(QMainWindow):
         self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _projectDirectorySelected(self, file):
-        path = Path(file).resolve()
-
-        if path.exists():
-            if not path.is_dir():
-                await AsyncMessageBox().information(self, self.tr('Project Directory Error'),
-                                                    self.tr(f'{path} is not a directory.'))
-                return
-            elif os.listdir(path):
-                AsyncMessageBox().information(self, self.tr('Project Directory Error'),
-                                              self.tr(f'{path} is not empty.'))
-                return
-
+    async def _projectDirectorySelected(self, path):
         if await self._saveCurrentPage():
             progressDialog = ProgressDialog(self, self.tr('Save As'))
             progressDialog.open()

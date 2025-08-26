@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
+
 from PySide6.QtWidgets import QWizard
 
 from baramFlow.coredb import coredb
@@ -29,7 +31,7 @@ LAST_PAGE = 7
 
 
 class CaseWizard(QWizard):
-    def __init__(self, parent, path=None):
+    def __init__(self, parent, path: Path=None):
         super(CaseWizard, self).__init__(parent)
 
         self._meshProject = path is not None
@@ -46,6 +48,10 @@ class CaseWizard(QWizard):
         self.setPage(SPECIES_MODEL, SpeciesModelPage(self))
         self.setPage(LAST_PAGE, LastPage(self))
         self.setStartId(WORKSPACE)
+
+        self.setSizeGripEnabled(True)
+        self.setMaximumSize(800, 600)
+        self.resize(620, 300)
 
     def isMeshProject(self):
         return self._meshProject
