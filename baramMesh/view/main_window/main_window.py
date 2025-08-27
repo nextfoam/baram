@@ -10,7 +10,7 @@ from filelock import Timeout
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QVBoxLayout, QApplication
 from PySide6.QtCore import Signal, QEvent, QMargins
 from PySide6QtAds import CDockManager, DockWidgetArea
 
@@ -290,7 +290,7 @@ class MainWindow(QMainWindow):
 
     def _startDialogClosed(self):
         if app.project is None:
-            self.close()
+            QApplication.instance().quit()
 
         self._ui.menubar.repaint()
 
