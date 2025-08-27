@@ -4,7 +4,7 @@
 
 from enum import Enum, auto, IntEnum
 
-from libbaram.simple_db.validation import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, VectorComposite
+from libbaram.simple_db.simple_schema import FloatType, IntKeyList, EnumType, IntType, TextType, BoolType, VectorComposite
 
 
 CURRENT_CONFIGURATIONS_VERSION = 5

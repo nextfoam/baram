@@ -5,7 +5,7 @@ import pandas as pd
 import qasync
 from PySide6.QtWidgets import QDialog, QTreeWidgetItem, QFileDialog
 
-from libbaram.simple_db.validation import TextType, EnumType, FloatType, validateData, ValidationError
+from libbaram.simple_db.simple_schema import TextType, EnumType, FloatType, validateData, ValidationError
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb.app_settings import AppSettings

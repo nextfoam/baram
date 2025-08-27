@@ -6,7 +6,7 @@ import qasync
 from libbaram.exception import CanceledException
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
-from libbaram.simple_db.validation import ValidationError
+from libbaram.simple_db.simple_schema import ValidationError
 from widgets.async_message_box import AsyncMessageBox
 from widgets.enum_button_group import EnumButtonGroup
 from widgets.multi_selector_dialog import MultiSelectorDialog, SelectorItem

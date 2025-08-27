@@ -5,7 +5,7 @@ import copy
 
 import yaml
 
-from libbaram.simple_db.validation import SimpleSchema, SchemaList, PrimitiveType, EnumType, ValidationError, ErrorType
+from libbaram.simple_db.simple_schema import SimpleSchema, SchemaList, PrimitiveType, EnumType, ValidationError, ErrorType
 
 
 def elementToVector(element):
