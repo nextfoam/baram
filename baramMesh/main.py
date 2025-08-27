@@ -66,8 +66,8 @@ def main():
         fullName=QApplication.translate('Main', 'BaramMesh'),
         iconResource='baramMesh.ico',
         logoResource='baramMesh.ico',
-        projectSuffix='.baramMesh',
-        exportSuffix='.baramFlow'
+        projectSuffix='.bm',
+        exportSuffix='.bf'
     ))
 
     os.environ['LC_NUMERIC'] = 'C'

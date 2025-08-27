@@ -71,7 +71,7 @@ def main():
         fullName=QApplication.translate('Main', 'BaramFlow'),
         iconResource='baramFlow.ico',
         logoResource='baramFlow.ico',
-        projectSuffix='.baramFlow'
+        projectSuffix='.bf'
     ))
     app.setPlug(AppPlugIn())
 
