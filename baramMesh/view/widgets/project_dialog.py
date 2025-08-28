@@ -3,12 +3,14 @@
 
 from pathlib import Path
 
+import qasync
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QDialog, QListWidgetItem, QMessageBox
+from PySide6.QtWidgets import QDialog, QListWidgetItem
 
 from libbaram.utils import getFit
 
 from baramMesh.app import app
+from widgets.async_message_box import AsyncMessageBox
 from .project_dialog_ui import Ui_ProjectSelector
 from .project_widget import ProjectWidget
 
@@ -47,7 +49,7 @@ class ProjectDialog(QDialog):
             item.setSizeHint(widget.sizeHint())
             self._ui.recentCases.addItem(item)
             self._ui.recentCases.setItemWidget(item, widget)
-            widget.removeClicked.connect(self._remove)
+            widget.removeClicked.connect(lambda: self._remove(widget))
 
     def getProjectDirectory(self):
         return self._projectDirectory
@@ -58,9 +60,8 @@ class ProjectDialog(QDialog):
         self._ui.recentCases.itemClicked.connect(self._openRecentProject)
         self.finished.connect(self._finished)
 
-    def _remove(self):
-        widget = self.sender()
-
+    @qasync.asyncSlot()
+    async def _remove(self, widget):
         path = widget.getProjectPath()
         total = self._ui.recentCases.count()
         selectedPos = -1
@@ -70,14 +71,8 @@ class ProjectDialog(QDialog):
             if widget == self._ui.recentCases.itemWidget(item):
                 selectedPos = i
 
-        msgBox = QMessageBox()
-        msgBox.setWindowTitle(self.tr("Remove from list"))
-        msgBox.setText(self.tr(f"Do you want to remove selected path from list?\n{path}"))
-        msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
-        msgBox.setDefaultButton(QMessageBox.Yes)
-
-        result = msgBox.exec()
-        if result == QMessageBox.Yes:
+        if await AsyncMessageBox().confirm(self, self.tr('Remove from list'),
+                                           self.tr('Do you want to remove project "{}"" from list?'.format(path))):
             self._ui.recentCases.takeItem(selectedPos)
             app.settings.removeProject(selectedPos)
 

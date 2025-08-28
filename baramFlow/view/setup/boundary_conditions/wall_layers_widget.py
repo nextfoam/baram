@@ -70,15 +70,8 @@ class WallLayerItem(QObject):
             self._widgets[Column.NO].setText(str(self.no() - 1))
 
     def validate(self):
-        if not self.thickness():
-            self.widget(Column.THICKNESS).setFocus()
-            return False, self.tr('Wall Layer Thickness cannot be empty.')
-
-        if not self.thermalConductivity():
-            self.widget(Column.THERMAL_CONDUCTIVITY).setFocus()
-            return False, self.tr('Wall Layer Thermal Conductivity cannot be empty.')
-
-        return True, None
+        self.widget(Column.THICKNESS).validate(self.tr('Wall Layer Thickness'))
+        self.widget(Column.THERMAL_CONDUCTIVITY).validate(self.tr('Wall Layer Thermal Conductivity'))
 
 
 class WallLayersWidget(QWidget):
@@ -124,18 +117,23 @@ class WallLayersWidget(QWidget):
         thicknessLayers = ''
         thermalConductivityLayers = ''
 
-        for row in self._rows:
-            if not row.isHidden():
-                valid, msg = row.validate()
-                if not valid:
-                    await AsyncMessageBox().information(self, self.tr('Input Error'), msg)
-                    raise coredb.Cancel
+        try:
+            for row in self._rows:
+                if not row.isHidden():
 
-                thicknessLayers += row.thickness() + ' '
-                thermalConductivityLayers += row.thermalConductivity() + ' '
+                    thicknessLayers += row.thickness() + ' '
+                    thermalConductivityLayers += row.thermalConductivity() + ' '
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
+            raise coredb.Cancel
 
         db.setValue(xpath + '/thicknessLayers', thicknessLayers, self.tr('Thickness'))
         db.setValue(xpath + '/thermalConductivityLayers', thermalConductivityLayers, self.tr('Thermal Conductivity'))
+
+    def validate(self):
+        for row in self._rows:
+            if not row.isHidden():
+                row.validate()
 
     def _connectSignalsSlots(self):
         self._ui.addWallLayer.clicked.connect(self.addRow)
@@ -170,3 +168,6 @@ class WallLayersBox(QGroupBox):
         else:
             db.setAttribute(xpath, 'disabled', 'true')
 
+    def validate(self):
+        if self.isChecked():
+            self._layers.validate()

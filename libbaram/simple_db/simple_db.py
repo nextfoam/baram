@@ -5,7 +5,7 @@ import copy
 
 import yaml
 
-from .validation import SimpleSchema, SchemaList, PrimitiveType, EnumType, ValidationError, ErrorType
+from libbaram.simple_db.simple_schema import SimpleSchema, SchemaList, PrimitiveType, EnumType, ValidationError, ErrorType
 
 
 def elementToVector(element):
@@ -52,7 +52,6 @@ class Element:
     
     def enum(self, field):
         return self._schema[field].toEnum(self.value(field))
-
 
     def elements(self, field):
         if not isinstance(self._schema[field], SchemaList):

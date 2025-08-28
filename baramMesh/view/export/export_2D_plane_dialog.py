@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
-
 import qasync
-from PySide6.QtWidgets import QDialog, QFileDialog, QWidget, QVBoxLayout
+from PySide6.QtWidgets import QDialog, QWidget, QVBoxLayout
 
 from widgets.async_message_box import AsyncMessageBox
+from widgets.new_project_widget import NewProjectWidget
 from widgets.selector_dialog import SelectorDialog, SelectorItem
 
 from baramMesh.app import app
@@ -17,16 +16,22 @@ from .export_2D_region_widgets import Export2DPlaneRegionWidget
 
 
 class Export2DPlaneDialog(QDialog):
-    def __init__(self, parent, path=None):
+    def __init__(self, parent):
         super().__init__(parent)
 
         self._ui = Ui_Export2DPlaneDialog()
         self._ui.setupUi(self)
 
+        self._pathWidget = NewProjectWidget(self._ui.path, suffix=app.properties.exportSuffix)
+
         self._regionWidgets = []
         
         self._boundaries = []
         self._dialog = None
+
+        layout = QVBoxLayout(self._ui.path)
+        layout.addWidget(self._pathWidget)
+        self._pathWidget.hideValidationMessage()
 
         regionsWidget = QWidget()        
         self._ui.parameters.layout().insertWidget(0, regionsWidget)
@@ -40,9 +45,6 @@ class Export2DPlaneDialog(QDialog):
             layout.addWidget(widget)
             self._regionWidgets.append(widget)
 
-        self._baseLocation = Path.home() if path is None else path
-        self._updateProjectLocation()
-
         for gId, geometry in app.db.getElements(
                 'geometry', lambda i, e: e['cfdType'] == CFDType.BOUNDARY.value).items():
             name = geometry.value('name')
@@ -50,32 +52,15 @@ class Export2DPlaneDialog(QDialog):
 
         self._connectSignalsSlots()
 
-    def projectLocation(self):
-        return Path(self._ui.projectLocation.text())
+    def projectPath(self):
+        return self._pathWidget.projectPath()
 
     def extrudeOptions(self):
         return ([(b.rname(), b.boundary(), b.boundary()) for b in self._regionWidgets], 
                 ExtrudeOptions(ExtrudeModel.PLANE, thickness=self._ui.thickness.text()))
 
     def _connectSignalsSlots(self):
-        self._ui.projectName.textChanged.connect(self._updateProjectLocation)
-        self._ui.locationSelect.clicked.connect(self._selectLocation)
-        # self._ui.boundarySelect.clicked.connect(self._selectBoundary)
         self._ui.ok.clicked.connect(self._accept)
-
-
-    def _selectLocation(self):
-        self._dialog = QFileDialog(self, self.tr('Select Location'), str(self._baseLocation))
-        self._dialog.setFileMode(QFileDialog.FileMode.Directory)
-        self._dialog.fileSelected.connect(self._locationParentSelected)
-        self._dialog.open()
-
-    def _updateProjectLocation(self):
-        self._ui.projectLocation.setText(str(self._baseLocation / self._ui.projectName.text()))
-
-    def _locationParentSelected(self, dir):
-        self._baseLocation = Path(dir).resolve()
-        self._updateProjectLocation()
 
     def _openBoundarySelectorDialog(self, widget):
         self._dialog = self._createBoundarySelector()
@@ -87,19 +72,14 @@ class Export2DPlaneDialog(QDialog):
 
     @qasync.asyncSlot()
     async def _accept(self):
-        if not self._ui.projectName.text().strip():
-            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Enter Project Name'))
-            return
-
-        if not self._baseLocation.exists():
-            await AsyncMessageBox().information(self, self.tr('Input Error'),
-                                                self.tr(f'{self._baseLocation} is not a directory.'))
-            return
-
-        if Path(self._ui.projectLocation.text()).exists():
-            await AsyncMessageBox().information(self, self.tr('Input Error'),
-                                                self.tr(f'{self._ui.projectLocation.text()} already exists.'))
-            return
+        path = self._pathWidget.projectPath()
+        if path is None:
+            if self._pathWidget.validationMessage():
+                await AsyncMessageBox().information(self, self.tr('Input Error'), self._pathWidget.validationMessage())
+                return
+            else:
+                await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Enter Project Name'))
+                return
 
         for widget in self._regionWidgets:
             if not widget.boundary():
@@ -108,9 +88,9 @@ class Export2DPlaneDialog(QDialog):
                 return
 
         try:
-            float(self._ui.thickness.text())
-        except ValueError:
-            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Thickness must be a float'))
+            self._ui.thickness.validate(self.tr('Thickness'))
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
 
         super().accept()

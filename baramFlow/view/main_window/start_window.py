@@ -81,7 +81,7 @@ class Baram(QObject):
         openedProject = None
 
         try:
-            openedProject = Project.open(path.resolve(), openType)
+            openedProject = await Project.open(path.resolve(), openType)
 
             if (openedProject.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value) is not None
                     and platform.system() == 'Windows' and not ctypes.windll.shell32.IsUserAnAdmin()):
@@ -101,7 +101,7 @@ class Baram(QObject):
                                             self.tr('Fail to open case\n' + str(ex)))
 
         if openedProject is None:
-            Project.close()
+            await Project.close()
             return
 
         self._projectSelector.accept()  # To close project selector dialog

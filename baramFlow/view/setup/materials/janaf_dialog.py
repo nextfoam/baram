@@ -5,7 +5,6 @@ import qasync
 
 from PySide6.QtWidgets import QDialog
 
-from libbaram.validation import FloatType, ValidationError
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
@@ -68,32 +67,29 @@ class JanafDialog(QDialog):
 
     @qasync.asyncSlot()
     async def _accept(self):
-        anyFloat = FloatType()
-
         try:
             data = JanafSpecificHeat(
-                lowTemperature=FloatType().setLowLimit(200).validate(self._ui.tLow.text(), self.tr('T<sub>Low</sub>')),
-                commonTemperature=anyFloat.validate(self._ui.tCommon.text(), self.tr('T<sub>Common</sub>>')),
-                highTemperature=FloatType().setHighLimit(6000).validate(self._ui.tHigh.text(),
-                                                                        self.tr('T<sub>High</sub>')),
-                lowCoefficients=f"{anyFloat.validate(self._ui.a0Low.text(), self.tr('Low Coefficient a0'))} "
-                                f"{anyFloat.validate(self._ui.a1Low.text(), self.tr('Low Coefficient a1'))} "
-                                f"{anyFloat.validate(self._ui.a2Low.text(), self.tr('Low Coefficient a2'))} "
-                                f"{anyFloat.validate(self._ui.a3Low.text(), self.tr('Low Coefficient a3'))} "
-                                f"{anyFloat.validate(self._ui.a4Low.text(), self.tr('Low Coefficient a4'))} "
-                                f"{anyFloat.validate(self._ui.a5Low.text(), self.tr('Low Coefficient a5'))} "
-                                f"{anyFloat.validate(self._ui.a6Low.text(), self.tr('Low Coefficient a6'))}",
-                highCoefficients=f"{anyFloat.validate(self._ui.a0High.text(), self.tr('High Coefficient a0'))} "
-                                 f"{anyFloat.validate(self._ui.a1High.text(), self.tr('High Coefficient a1'))} "
-                                 f"{anyFloat.validate(self._ui.a2High.text(), self.tr('High Coefficient a2'))} "
-                                 f"{anyFloat.validate(self._ui.a3High.text(), self.tr('High Coefficient a3'))} "
-                                 f"{anyFloat.validate(self._ui.a4High.text(), self.tr('High Coefficient a4'))} "
-                                 f"{anyFloat.validate(self._ui.a5High.text(), self.tr('High Coefficient a5'))} "
-                                 f"{anyFloat.validate(self._ui.a6High.text(), self.tr('High Coefficient a6'))}"
+                lowTemperature=self._ui.tLow.validate(self.tr('T<sub>Low</sub>'), low=200).text(),
+                commonTemperature=self._ui.tCommon.validate(self.tr('T<sub>Common</sub>>')).text(),
+                highTemperature=self._ui.tHigh.validate(self.tr('T<sub>High</sub>'), high=6000).text(),
+                lowCoefficients=f"{self._ui.a0Low.validate(self.tr('Low Coefficient a0')).text()} "
+                                f"{self._ui.a1Low.validate(self.tr('Low Coefficient a1')).text()} "
+                                f"{self._ui.a2Low.validate(self.tr('Low Coefficient a2')).text()} "
+                                f"{self._ui.a3Low.validate(self.tr('Low Coefficient a3')).text()} "
+                                f"{self._ui.a4Low.validate(self.tr('Low Coefficient a4')).text()} "
+                                f"{self._ui.a5Low.validate(self.tr('Low Coefficient a5')).text()} "
+                                f"{self._ui.a6Low.validate(self.tr('Low Coefficient a6')).text()}",
+                highCoefficients=f"{self._ui.a0High.validate(self.tr('High Coefficient a0')).text()} "
+                                 f"{self._ui.a1High.validate(self.tr('High Coefficient a1')).text()} "
+                                 f"{self._ui.a2High.validate(self.tr('High Coefficient a2')).text()} "
+                                 f"{self._ui.a3High.validate(self.tr('High Coefficient a3')).text()} "
+                                 f"{self._ui.a4High.validate(self.tr('High Coefficient a4')).text()} "
+                                 f"{self._ui.a5High.validate(self.tr('High Coefficient a5')).text()} "
+                                 f"{self._ui.a6High.validate(self.tr('High Coefficient a6')).text()}"
             )
 
-        except ValidationError as e:
-            await AsyncMessageBox().information(self, self.tr('Input Error'), f'{e.name} - {e.message}')
+        except ValueError as e:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
 
         commonTemperature = float(data.commonTemperature)
