@@ -110,7 +110,6 @@ class NavigatorView(QObject):
     def updateEnabled(self):
         noMesh = not coredb.CoreDB().hasMesh()
         solverActivated = CaseManager().isActive()
-        noBatchCases = not coredb.CoreDB().hasBatchCases()
         #
         # self._menu[MenuItem.MENU_SETUP_GENERAL.value].setDisabled(solverActivated)
         # self._menu[MenuItem.MENU_SETUP_MODELS.value].setDisabled(solverActivated)
@@ -125,7 +124,7 @@ class NavigatorView(QObject):
         # self._menu[MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value].setDisabled(CaseManager().isBatchRunning())
         # self._menu[MenuItem.MENU_SOLUTION_MONITORS.value].setDisabled(CaseManager().isBatchRunning())
         # self._menu[MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value].setDisabled(CaseManager().isBatchRunning())
-        self._menu[MenuItem.MENU_SOLUTION_PODROM.value].setDisabled(noBatchCases)
+        self._menu[MenuItem.MENU_SOLUTION_PODROM.value].setDisabled(noMesh)
 
         self._menu[MenuItem.MENU_RESULTS_SCAFFOLDS.value].setDisabled(noMesh)
         self._menu[MenuItem.MENU_RESULTS_GRAPHICS.value].setDisabled(noMesh)

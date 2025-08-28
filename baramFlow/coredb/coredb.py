@@ -957,6 +957,3 @@ class _CoreDB(object):
     def increaseConfigCount(self):
         self._xmlSchema.assertValid(self._xmlTree)
         self._configCount += 1
-
-    def hasBatchCases(self):
-        return True # if tbd else False

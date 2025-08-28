@@ -245,77 +245,83 @@ class PODCase(Case):
             self._process.kill()
 
     async def rmtreePodDirectory(self):
-        if self._path.exists(): rmtree(self._path)
+        if self._path.exists(): shutil.rmtree(self._path)
 
     async def initializeGenerateROM(self, listCaseName):
         self._path.mkdir(parents=True, exist_ok=True)
 
-        link_constant = self._path / "constant"
-        if not link_constant.exists():
-            source = link_constant
+        source = self._path / "constant"
+        if not source.exists():
             target = self._project.path / "case" / "constant"
             source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
 
-        link_system = self._path / "system"
-        if not link_system.exists():
-            source = link_system
+        source = self._path / "system"
+        if not source.exists():
             target = self._project.path / "case" / "system"
             source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
 
         # reconstructed case
-        case_index = 0
+        caseIndex = 0
+        fieldListDone = False
         for caseName in listCaseName:
             snapshotPath = self._project.path / BATCH_DIRECTORY_NAME / caseName
             subfolders = [f for f in snapshotPath.iterdir() if f.is_dir() and f.name.isdigit()]
             if subfolders:
-                largest_subfolder = max(subfolders, key=lambda x: int(x.name))
-                source = self._path / f"{case_index}"
-                target = largest_subfolder
+                time = FileSystem.latestTime(snapshotPath)
+                source = self._path / f"{caseIndex}"
+                target = snapshotPath / time
                 if not source.exists():
                     source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
-            case_index += 1
-        self.writeFieldList(self._path)
+                if not fieldListDone:
+                    self.writeFieldList(self._path)
+                    fieldListDone = True
+            caseIndex += 1
 
         # decomposed case
-        case_index = 0
-        constant_link_done = False
+        caseIndex = 0
+        fieldListDone = False
         for caseName in listCaseName:
             snapshotPath = self._project.path / BATCH_DIRECTORY_NAME / caseName
-            subfoldersProcessor = [f for f in snapshotPath.iterdir() if f.is_dir() and "processor" in f.name]
+            subfoldersProcessor = FileSystem.processorFolders(snapshotPath)
             for pProc in subfoldersProcessor:
-                processorPath = pProc
-                proc_dir = self._path / pProc.name
+                procPathBatch = pProc
+                procPathPod = self._path / pProc.name
+                procPathPod.mkdir(parents=True, exist_ok=True)
 
-                # polyMesh (최초 1회만)
-                if not constant_link_done:
-                    proc_dir.mkdir(parents=True, exist_ok=True)
-                    source = proc_dir / "constant"
-                    target = processorPath / "constant"
-                    if not source.exists():
-                        source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
+                # constant (polyMesh)
+                source = procPathPod / "constant"
+                target = procPathBatch / "constant"
+                if not source.exists():
+                    source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
 
                 # time
-                subfolders = [f for f in processorPath.iterdir() if f.is_dir() and f.name.isdigit()]
+                subfolders = [f for f in procPathBatch.iterdir() if f.is_dir() and f.name.isdigit()]
                 if subfolders:
-                    largest_subfolder = max(subfolders, key=lambda x: int(x.name))
-                    proc_dir.mkdir(parents=True, exist_ok=True)
-                    source = proc_dir / f"{case_index}"
-                    target = largest_subfolder
+                    time = FileSystem.latestTime(procPathBatch)
+                    source = procPathPod / f"{caseIndex}"
+                    target = procPathBatch / time
                     if not source.exists():
                         source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
-                    self.writeFieldList(proc_dir)
-            case_index += 1
-            constant_link_done = True
+
+                self.writeFieldList(procPathPod)
+                if not fieldListDone:
+                    source = self._path / "listField.dat"
+                    target = procPathPod / "listField.dat"
+                    if not source.exists():
+                        source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=False)
+                    fieldListDone = True
+
+            caseIndex += 1
 
     async def initializeReconstruct(self, listSnapshot, paramsToReconstruct):
-        with open(str(self._project.path) + "/%s/Vinput.dat"%POD_DIRECTORY_NAME, 'w') as f:
-            f.write("%d %d\n"%(len(listSnapshot), len(paramsToReconstruct)))
+        with open(self._path / "constant" / "Vinput.dat", 'w') as f:
+            f.write(f"{len(listSnapshot)} {len(paramsToReconstruct)}\n")
             for _, case in listSnapshot.items():
-                f.write("%s\n"%(" ".join(list(case.values()))))
+                f.write(f"{' '.join(case.values())}\n")
 
-        with open(str(self._project.path) + "/%s/CurrentInput.dat"%POD_DIRECTORY_NAME, 'w') as f:
-            f.write("1 %d\n"%len(paramsToReconstruct))
-            f.write("%s\n"%(" ".join(list(map(str, paramsToReconstruct)))))
+        with open(self._path / "constant" / "CurrentInput.dat", 'w') as f:
+            f.write(f"1 {len(paramsToReconstruct)}\n")
+            f.write(f"{' '.join(map(str, paramsToReconstruct))}\n")
 
     async def runGenerateROM(self, listCaseName):
         try:
@@ -358,13 +364,14 @@ class PODCase(Case):
             raise e
 
     def getROMAccuracy(self):
-        constant_dir = self._project.path / POD_DIRECTORY_NAME / "constant"
-        filesEigenvalue = [f for f in constant_dir.iterdir() if f.is_file() and f.name.startswith("EigenValues_") and f.name.endswith(".dat")]
+        dirConstant = self._project.path / POD_DIRECTORY_NAME / "constant"
+        filesEigenvalue = [f for f in dirConstant.iterdir() if f.is_file() and f.name.startswith("EigenValues_") and f.name.endswith(".dat")]
 
         ratios = []
 
         for file in filesEigenvalue:
             with file.open("r") as f:
+                header = f.readline()
                 lines = [float(line.strip()) for line in f if line.strip()]
                 if not lines: continue
                 eps = 1.e-16
@@ -376,33 +383,76 @@ class PODCase(Case):
         return sum(ratios) / len(ratios)
 
     def writeFieldList(self, fieldPath):
+        entries = []
+        zeroDir = fieldPath / "0"
+
+        def isNotVolumeField(name: str) -> bool:
+            lower = name.lower()
+            return (
+                lower in ("phi", "phi0", "phif")
+                or lower.startswith("face")
+                or lower.startswith("point")
+            )
+
+        # single region
+        for fp in zeroDir.iterdir():
+            if not fp.is_file(): continue
+            fieldName = fp.name[:-3] if fp.name.endswith(".gz") else fp.name
+            if isNotVolumeField(fieldName): continue
+            kind = "vector" if fieldName == "U" else "scalar"
+            entries.append(f"{fieldName} {kind} -")
+
+        # multi region
+        for fp2 in zeroDir.iterdir():
+            if fp2.is_file(): continue
+            if fp2.name in ("uniform", "polyMesh", "sets"):
+                continue
+            regionDir = fp2
+            for fp in regionDir.iterdir():
+                if not fp.is_file(): continue
+                fieldName = fp.name[:-3] if fp.name.endswith(".gz") else fp.name
+                if isNotVolumeField(fieldName): continue
+                kind = "vector" if fieldName == "U" else "scalar"
+                entries.append(f"{fieldName} {kind} {regionDir.name}")
+
         with open(str(fieldPath / "listField.dat"), 'w') as f:
-            for field in [["U", "vector"], ["p", "scalar"]]:
-                f.write("%s\n"%(" ".join(field)))
+            f.write("\n".join(entries))
 
     def saveToBatchCase(self, caseName):
-        dir_pod = self._project.path / POD_DIRECTORY_NAME
-        dir_batch = self._project.path / BATCH_DIRECTORY_NAME / caseName
+        batchPath = self._project.path / BATCH_DIRECTORY_NAME / caseName
+        casePath = self._project.path / "case"
+
+        # modify later for restart calculation
+        # constantPath = casePath / "constant"
+        # for f in constantPath.iterdir():
+        #     if f.name == "polyMesh": continue
+        #     if f.name.endswith(".dat"): continue
+        #     shutil.copy(f, batchPath / "constant" / f.name)
+		# 
+        # systemPath = casePath / "system"
+        # for f in systemPath.iterdir():
+        #     if f.name == "decomposeParDict": continue
+        #     shutil.copy(f, batchPath / "system" / f.name)
 
         # reconstructed case
-        dir_reconstructed_pod = dir_pod / "10001"
-        if dir_reconstructed_pod.exists():
-            dir_reconstructed_batch = dir_batch / "1"
-            if dir_reconstructed_batch.exists(): rmtree(dir_reconstructed_batch)
-            shutil.copytree(dir_reconstructed_pod, dir_reconstructed_batch)
+        pathReconPod = self._path / "10001"
+        if pathReconPod.exists():
+            pathReconBatch = batchPath / "1"
+            if pathReconBatch.exists(): rmtree(pathReconBatch)
+            shutil.copytree(pathReconPod, pathReconBatch)
 
         # decomposed case
-        dir_processor_pod = [f for f in dir_pod.iterdir() if f.is_dir() and "processor" in f.name]
-        for pProc in dir_processor_pod:
-            dir_processor_batch = dir_batch / pProc.name
-            if not dir_processor_batch.exists():
-                dir_processor_batch.mkdir(parents=True, exist_ok=True)
+        subfoldersProcPod = [f for f in self._path.iterdir() if f.is_dir() and f.name.startswith("processor")]
+        for pProc in subfoldersProcPod:
+            subfoldersProcBatch = batchPath / pProc.name
+            if not subfoldersProcBatch.exists():
+                subfoldersProcBatch.mkdir(parents=True, exist_ok=True)
 
-            dir_reconstructed_pod = pProc / "10001"
-            if dir_reconstructed_pod.exists():
-                dir_reconstructed_batch = dir_processor_batch / "1"
-                if dir_reconstructed_batch.exists(): rmtree(dir_reconstructed_batch)
-                shutil.copytree(dir_reconstructed_pod, dir_reconstructed_batch)
+            pathReconPod = pProc / "10001"
+            if pathReconPod.exists():
+                pathReconBatch = subfoldersProcBatch / "1"
+                if pathReconBatch.exists(): rmtree(pathReconBatch)
+                shutil.copytree(pathReconPod, pathReconBatch)
 
 
 class CaseManager(QObject):
