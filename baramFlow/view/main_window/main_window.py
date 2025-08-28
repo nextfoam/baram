@@ -209,10 +209,9 @@ class MainWindow(QMainWindow):
             self._closeState = CloseState.POSTED
             event.ignore()
 
-            task = asyncio.create_task(self._asyncClose(CloseType.EXIT_APP))
+            task = asyncio.create_task(self._asyncClose())
             self._backgroundTasks.add(task)
             task.add_done_callback(self._backgroundTasks.discard)
-
 
         elif self._closeState == CloseState.POSTED:
             event.ignore()
@@ -367,7 +366,7 @@ class MainWindow(QMainWindow):
     async def _exitActionHandler(self):
         await self._asyncClose(CloseType.EXIT_APP)
 
-    async def _asyncClose(self, closeType):
+    async def _asyncClose(self, closeType=CloseType.EXIT_APP):
         if not await self._saveCurrentPage():
             self._closeState = CloseState.NONE
             return
