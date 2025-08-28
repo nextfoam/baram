@@ -15,7 +15,7 @@ import qasync
 import asyncio
 
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
-from PySide6.QtCore import Qt, QEvent, QTimer, Signal
+from PySide6.QtCore import Qt, QEvent, QTimer
 
 from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
@@ -89,6 +89,12 @@ class CloseType(Enum):
     CLOSE_PROJECT = auto()
 
 
+class CloseState(Enum):
+    NONE   = auto()
+    POSTED = auto()
+    CLOSING   = auto()
+
+
 class MenuPage:
     def __init__(self, pageClass=None):
         self._pageClass = pageClass
@@ -110,8 +116,6 @@ class MenuPage:
 
 
 class MainWindow(QMainWindow):
-    _closeTriggered = Signal(CloseType)
-
     def __init__(self):
         super().__init__()
         self._ui = Ui_MainWindow()
@@ -167,7 +171,8 @@ class MainWindow(QMainWindow):
 
         self._dialog = None
 
-        self._closeType = None
+        self._closeState = CloseState.NONE
+
         self._backgroundTasks = set()
 
         self._setupShortcuts()
@@ -200,36 +205,24 @@ class MainWindow(QMainWindow):
         self._project.opened()
 
     def closeEvent(self, event):
-        if self._closeType is None:
-            self._closeTriggered.emit(CloseType.EXIT_APP)
+        if self._closeState == CloseState.NONE:
+            self._closeState = CloseState.POSTED
             event.ignore()
-            return
 
-        task = asyncio.create_task(self._finishMainWindow())
-        self._backgroundTasks.add(task)
-        task.add_done_callback(self._backgroundTasks.discard)
+            task = asyncio.create_task(self._asyncClose(CloseType.EXIT_APP))
+            self._backgroundTasks.add(task)
+            task.add_done_callback(self._backgroundTasks.discard)
 
-        super().closeEvent(event)
 
-    async def _finishMainWindow(self):
-        await GraphicsDB().close()
+        elif self._closeState == CloseState.POSTED:
+            event.ignore()
 
-        logging.getLogger().removeHandler(self._handler)
-        self._handler.close()
+        elif self._closeState == CloseState.CLOSING:
+            self._closeState = CloseState.NONE
+            super().closeEvent(event)
 
-        AppSettings.updateLastMainWindowGeometry(self.geometry())
-
-        self._disconnectSignalsSlots()
-
-        self._caseManager.clear()
-        Project.close()
-
-        self._dockView.close()
-
-        if self._closeType == CloseType.CLOSE_PROJECT:
-            app.restart()
         else:
-            app.quit()
+            raise AssertionError
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.LanguageChange:
@@ -262,8 +255,8 @@ class MainWindow(QMainWindow):
         self._ui.actionGmsh.triggered.connect(self._importGmsh)
         self._ui.actionIdeas.triggered.connect(self._importIdeas)
         self._ui.actionNasaPlot3d.triggered.connect(self._importNasaPlot3D)
-        self._ui.actionCloseProject.triggered.connect(lambda: self._closeProject(CloseType.CLOSE_PROJECT))
-        self._ui.actionExit.triggered.connect(lambda: self._closeProject(CloseType.EXIT_APP))
+        self._ui.actionCloseProject.triggered.connect(self._closeProjectActionHandler)
+        self._ui.actionExit.triggered.connect(self._exitActionHandler)
 
         self._ui.actionMeshInfo.triggered.connect(self._openMeshInfoDialog)
         self._ui.actionMeshScale.triggered.connect(self._openMeshScaleDialog)
@@ -282,8 +275,6 @@ class MainWindow(QMainWindow):
         self._ui.actionTutorials.triggered.connect(self._openTutorials)
 
         self._navigatorView.currentMenuChanged.connect(self._changeForm)
-
-        self._closeTriggered.connect(self._closeProject)
 
         self._project.projectOpened.connect(self._projectOpened)
         self._project.solverStatusChanged.connect(self._solverStatusChanged)
@@ -317,7 +308,7 @@ class MainWindow(QMainWindow):
 
         self._dialog = NewProjectDialog(self, self.tr('Save as new project'),
                                         Path(AppSettings.getRecentLocation()).resolve(), app.properties.projectSuffix)
-        self._dialog.pathSelected.connect(self._projectDirectorySelected)
+        self._dialog.pathSelected.connect(self._saveAsDirectorySelected)
         self._dialog.open()
 
     async def _saveCurrentPage(self):
@@ -369,8 +360,16 @@ class MainWindow(QMainWindow):
         self._openMeshSelectionDialog(MeshType.NAMS_PLOT3D, self.tr('Plot3d (*.unv)'))
 
     @qasync.asyncSlot()
-    async def _closeProject(self, closeType):
+    async def _closeProjectActionHandler(self):
+        await self._asyncClose(CloseType.CLOSE_PROJECT)
+
+    @qasync.asyncSlot()
+    async def _exitActionHandler(self):
+        await self._asyncClose(CloseType.EXIT_APP)
+
+    async def _asyncClose(self, closeType):
         if not await self._saveCurrentPage():
+            self._closeState = CloseState.NONE
             return
 
         if self._project.isModified:
@@ -382,10 +381,28 @@ class MainWindow(QMainWindow):
             if confirm == QMessageBox.StandardButton.Ok:
                 await self._save()
             elif confirm == QMessageBox.StandardButton.Cancel:
+                self._closeState = CloseState.NONE
                 return
 
-        self._closeType = closeType
-        self.close()
+        logging.getLogger().removeHandler(self._handler)
+        self._handler.close()
+
+        AppSettings.updateLastMainWindowGeometry(self.geometry())
+
+        self._disconnectSignalsSlots()
+
+        self._caseManager.clear()
+        await Project.close()
+
+        self._dockView.close()
+
+        self._closeState = CloseState.CLOSING
+
+        if closeType == CloseType.CLOSE_PROJECT:
+            self.close()
+            app.restart()
+        else:
+            app.quit()
 
     def _openMeshInfoDialog(self):
         self._dialog = MeshInfoDialog(self)
@@ -703,7 +720,7 @@ class MainWindow(QMainWindow):
         self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _projectDirectorySelected(self, path):
+    async def _saveAsDirectorySelected(self, path):
         if await self._saveCurrentPage():
             progressDialog = ProgressDialog(self, self.tr('Save As'))
             progressDialog.open()
@@ -711,7 +728,7 @@ class MainWindow(QMainWindow):
             progressDialog.setLabelText(self.tr('Saving project'))
 
             await asyncio.to_thread(FileSystem.saveAs, self._project.path, path, coredb.CoreDB().getRegions())
-            self._project.saveAs(path)
+            await self._project.saveAs(path)
             progressDialog.close()
 
     def _openMeshSelectionDialog(self, meshType, fileFilter=None):

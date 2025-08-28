@@ -9,7 +9,7 @@ import yaml
 from PySide6.QtCore import QObject, Signal
 from pathlib import Path
 
-from libbaram.mpi import ParallelEnvironment, ParallelType
+from baramFlow.base.graphic.graphics_db import GraphicsDB
 
 from baramFlow.solver_status import SolverStatus
 from baramFlow.coredb import coredb
@@ -165,10 +165,10 @@ class _Project(QObject):
     def save(self):
         self._fileDB.save()
 
-    def saveAs(self, directory):
+    async def saveAs(self, directory):
         self._fileDB.saveAs(directory)
-        self._close()
-        self._open(directory, ProjectOpenType.SAVE_AS)
+        await self._close()
+        await self._open(directory, ProjectOpenType.SAVE_AS)
         self.projectOpened.emit()
 
     def opened(self):
@@ -224,7 +224,7 @@ class _Project(QObject):
     def clearBatchStatuses(self):
         self.updateBatchStatuses({})
 
-    def _open(self, path: Path, route=ProjectOpenType.EXISTING):
+    async def _open(self, path: Path, route=ProjectOpenType.EXISTING):
         self._settings = self.LocalSettings(path, self._settings)
         if route != ProjectOpenType.SAVE_AS:
             self._projectSettings = ProjectSettings()
@@ -279,8 +279,11 @@ class _Project(QObject):
 
         CoreDBReader().reloadCoreDB()
 
-    def _close(self):
+    async def _close(self):
         coredb.destroy()
+
+        await GraphicsDB().close()
+
         self.projectClosed.emit()
         if self._projectLock:
             self._projectLock.release()
@@ -290,16 +293,16 @@ class Project:
     _instance: Optional[_Project] = None
 
     @classmethod
-    def open(cls, directory, openType):
+    async def open(cls, directory, openType):
         assert(cls._instance is None)
         cls._instance = _Project()
-        cls._instance._open(directory, openType)
+        await cls._instance._open(directory, openType)
         return cls._instance
 
     @classmethod
-    def close(cls):
+    async def close(cls):
         if cls._instance:
-            cls._instance._close()
+            await cls._instance._close()
 
         cls._instance = None
 
