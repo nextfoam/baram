@@ -265,9 +265,8 @@ class PODCase(Case):
         fieldListDone = False
         for caseName in listCaseName:
             snapshotPath = self._project.path / BATCH_DIRECTORY_NAME / caseName
-            subfolders = [f for f in snapshotPath.iterdir() if f.is_dir() and f.name.isdigit()]
-            if subfolders:
-                time = FileSystem.latestTime(snapshotPath)
+            time = FileSystem.latestTime(snapshotPath)
+            if time != '0':
                 source = self._path / f"{caseIndex}"
                 target = snapshotPath / time
                 if not source.exists():
@@ -295,9 +294,8 @@ class PODCase(Case):
                     source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
 
                 # time
-                subfolders = [f for f in procPathBatch.iterdir() if f.is_dir() and f.name.isdigit()]
-                if subfolders:
-                    time = FileSystem.latestTime(procPathBatch)
+                time = FileSystem.latestTime(procPathBatch)
+                if time != '0':
                     source = procPathPod / f"{caseIndex}"
                     target = procPathBatch / time
                     if not source.exists():
@@ -337,7 +335,11 @@ class PODCase(Case):
             result = await self._process.wait()
             self._process = None
 
-            self._setStatus(SolverStatus.ENDED if result == 0 else SolverStatus.ERROR)
+            if result == 0:
+                self._setStatus(SolverStatus.ENDED)
+            else:
+                self._setStatus(SolverStatus.ERROR)
+                raise Exception(f"Process failed with return code {result}")
         except Exception as e:
             self._setStatus(SolverStatus.ERROR)
             raise e
@@ -359,6 +361,7 @@ class PODCase(Case):
                 self._setStatus(SolverStatus.ENDED)
             else:
                 self._setStatus(SolverStatus.ERROR)
+                raise Exception(f"Process failed with return code {result}")
         except Exception as e:
             self._setStatus(SolverStatus.ERROR)
             raise e
