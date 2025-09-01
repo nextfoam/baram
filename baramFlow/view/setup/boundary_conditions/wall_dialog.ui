@@ -103,7 +103,7 @@
                    </widget>
                   </item>
                   <item row="0" column="1">
-                   <widget class="FloatEdit" name="xVelocity">
+                   <widget class="BatchableFloatEdit" name="xVelocity">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -120,7 +120,7 @@
                    </widget>
                   </item>
                   <item row="1" column="1">
-                   <widget class="FloatEdit" name="yVelocity">
+                   <widget class="BatchableFloatEdit" name="yVelocity">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -137,7 +137,7 @@
                    </widget>
                   </item>
                   <item row="2" column="1">
-                   <widget class="FloatEdit" name="zVelocity">
+                   <widget class="BatchableFloatEdit" name="zVelocity">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -181,7 +181,7 @@
                    </widget>
                   </item>
                   <item row="0" column="1">
-                   <widget class="FloatEdit" name="speed">
+                   <widget class="BatchableFloatEdit" name="speed">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -213,7 +213,7 @@
                       </widget>
                      </item>
                      <item row="0" column="1">
-                      <widget class="FloatEdit" name="rotationAxisOriginX">
+                      <widget class="BatchableFloatEdit" name="rotationAxisOriginX">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                          <horstretch>0</horstretch>
@@ -230,7 +230,7 @@
                       </widget>
                      </item>
                      <item row="1" column="1">
-                      <widget class="FloatEdit" name="rotationAxisOriginY">
+                      <widget class="BatchableFloatEdit" name="rotationAxisOriginY">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                          <horstretch>0</horstretch>
@@ -247,7 +247,7 @@
                       </widget>
                      </item>
                      <item row="2" column="1">
-                      <widget class="FloatEdit" name="rotationAxisOriginZ">
+                      <widget class="BatchableFloatEdit" name="rotationAxisOriginZ">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                          <horstretch>0</horstretch>
@@ -273,7 +273,7 @@
                       </widget>
                      </item>
                      <item row="0" column="1">
-                      <widget class="FloatEdit" name="rotationDirectionX">
+                      <widget class="BatchableFloatEdit" name="rotationDirectionX">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                          <horstretch>0</horstretch>
@@ -290,7 +290,7 @@
                       </widget>
                      </item>
                      <item row="1" column="1">
-                      <widget class="FloatEdit" name="rotationDirectionY">
+                      <widget class="BatchableFloatEdit" name="rotationDirectionY">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                          <horstretch>0</horstretch>
@@ -307,7 +307,7 @@
                       </widget>
                      </item>
                      <item row="2" column="1">
-                      <widget class="FloatEdit" name="rotationDirectionZ">
+                      <widget class="BatchableFloatEdit" name="rotationDirectionZ">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                          <horstretch>0</horstretch>
@@ -389,7 +389,7 @@
                    </widget>
                   </item>
                   <item row="0" column="1">
-                   <widget class="FloatEdit" name="roughnessHeight">
+                   <widget class="BatchableFloatEdit" name="roughnessHeight">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -406,7 +406,7 @@
                    </widget>
                   </item>
                   <item row="1" column="1">
-                   <widget class="FloatEdit" name="roughnessConstant">
+                   <widget class="BatchableFloatEdit" name="roughnessConstant">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -478,7 +478,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="FloatEdit" name="temperature">
+             <widget class="BatchableFloatEdit" name="temperature">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -507,7 +507,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="FloatEdit" name="heatFlux">
+             <widget class="BatchableFloatEdit" name="heatFlux">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -551,7 +551,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="FloatEdit" name="heatTransferCoefficient">
+                <widget class="BatchableFloatEdit" name="heatTransferCoefficient">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -568,7 +568,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="FloatEdit" name="freeStreamTemperature">
+                <widget class="BatchableFloatEdit" name="freeStreamTemperature">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -585,7 +585,7 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="FloatEdit" name="externalEmissivity">
+                <widget class="BatchableFloatEdit" name="externalEmissivity">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -677,7 +677,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="FloatEdit" name="wallEmissivity">
+          <widget class="BatchableFloatEdit" name="wallEmissivity">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -694,7 +694,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="FloatEdit" name="radiativeFluxRelaxation">
+          <widget class="BatchableFloatEdit" name="radiativeFluxRelaxation">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -754,9 +754,9 @@
    <header location="global">widgets.python_combo_box</header>
   </customwidget>
   <customwidget>
-   <class>FloatEdit</class>
+   <class>BatchableFloatEdit</class>
    <extends>QLineEdit</extends>
-   <header>widgets.typed_edit</header>
+   <header location="global">baramFlow.view.widgets.batchable_float_edit</header>
   </customwidget>
   <customwidget>
    <class>WallLayersBox</class>

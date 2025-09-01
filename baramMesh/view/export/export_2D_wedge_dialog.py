@@ -102,14 +102,17 @@ class Export2DWedgeDialog(QDialog):
             self._ui.originX.validate(self.tr('Oring X'))
             self._ui.originY.validate(self.tr('Oring Y'))
             self._ui.originZ.validate(self.tr('Oring Z'))
-            dx = self._ui.directionX.validate(self.tr('Direction X')).float()
-            dy = self._ui.directionY.validate(self.tr('Direction Y')).float()
-            dz = self._ui.directionZ.validate(self.tr('Direction Y')).float()
+            self._ui.directionX.validate(self.tr('Direction X'))
+            self._ui.directionY.validate(self.tr('Direction Y'))
+            self._ui.directionZ.validate(self.tr('Direction Y'))
         except ValueError as e:
             await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
 
-        if dx == dy == dz == 0:
+
+        if (0   == float(self._ui.directionX.text())
+                == float(self._ui.directionY.text())
+                == float(self._ui.directionZ.text())):
             await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                 self.tr('Direction cannot be a zero vector.'))
             return

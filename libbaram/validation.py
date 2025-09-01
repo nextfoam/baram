@@ -6,6 +6,11 @@ from typing import Optional
 from PySide6.QtCore import QCoreApplication
 
 
+FLOAT_PATTERN = '[-+]?\d*\.?\d+([eE][-+]?\d+)?'
+
+FLOAT_EXPRESSION = f'^{FLOAT_PATTERN}$'
+
+
 class ValidationResult:
     def __init__(self, text):
         self._text = text

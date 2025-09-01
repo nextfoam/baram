@@ -16,8 +16,8 @@ from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
+from baramFlow.view.widgets.batchable_float_edit import BatchableFloatEdit
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
-from widgets.typed_edit import FloatEdit
 from .wall_dialog_ui import Ui_WallDialog
 
 
@@ -47,7 +47,7 @@ class ContactAnglesWidget(QWidget):
         editors = []
         column = 2
         for v in values:
-            e = FloatEdit(v)
+            e = BatchableFloatEdit(v)
             editors.append(e)
             self._layout.addWidget(e, row, column)
             column += 1

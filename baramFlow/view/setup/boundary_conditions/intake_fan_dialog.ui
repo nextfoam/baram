@@ -61,7 +61,7 @@
              </widget>
             </item>
             <item>
-             <widget class="FloatEdit" name="totalPressure"/>
+             <widget class="BatchableFloatEdit" name="totalPressure"/>
             </item>
            </layout>
           </widget>
@@ -132,9 +132,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>FloatEdit</class>
+   <class>BatchableFloatEdit</class>
    <extends>QLineEdit</extends>
-   <header location="global">widgets.typed_edit</header>
+   <header location="global">baramFlow.view.widgets.batchable_float_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>
