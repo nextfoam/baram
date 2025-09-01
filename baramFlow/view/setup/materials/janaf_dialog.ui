@@ -51,13 +51,13 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="FloatEdit" name="tLow"/>
+          <widget class="BatchableFloatEdit" name="tLow"/>
          </item>
          <item row="1" column="1">
-          <widget class="FloatEdit" name="tCommon"/>
+          <widget class="BatchableFloatEdit" name="tCommon"/>
          </item>
          <item row="1" column="2">
-          <widget class="FloatEdit" name="tHigh"/>
+          <widget class="BatchableFloatEdit" name="tHigh"/>
          </item>
         </layout>
        </widget>
@@ -90,7 +90,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="FloatEdit" name="a0Low"/>
+          <widget class="BatchableFloatEdit" name="a0Low"/>
          </item>
          <item row="1" column="2">
           <widget class="QLabel" name="label_7">
@@ -100,7 +100,7 @@
           </widget>
          </item>
          <item row="1" column="3">
-          <widget class="FloatEdit" name="a0High"/>
+          <widget class="BatchableFloatEdit" name="a0High"/>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="label_9">
@@ -110,7 +110,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="FloatEdit" name="a1Low"/>
+          <widget class="BatchableFloatEdit" name="a1Low"/>
          </item>
          <item row="2" column="2">
           <widget class="QLabel" name="label_8">
@@ -120,7 +120,7 @@
           </widget>
          </item>
          <item row="2" column="3">
-          <widget class="FloatEdit" name="a1High"/>
+          <widget class="BatchableFloatEdit" name="a1High"/>
          </item>
          <item row="3" column="0">
           <widget class="QLabel" name="label_11">
@@ -130,7 +130,7 @@
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="FloatEdit" name="a2Low"/>
+          <widget class="BatchableFloatEdit" name="a2Low"/>
          </item>
          <item row="3" column="2">
           <widget class="QLabel" name="label_10">
@@ -140,7 +140,7 @@
           </widget>
          </item>
          <item row="3" column="3">
-          <widget class="FloatEdit" name="a2High"/>
+          <widget class="BatchableFloatEdit" name="a2High"/>
          </item>
          <item row="4" column="0">
           <widget class="QLabel" name="label_13">
@@ -150,7 +150,7 @@
           </widget>
          </item>
          <item row="4" column="1">
-          <widget class="FloatEdit" name="a3Low"/>
+          <widget class="BatchableFloatEdit" name="a3Low"/>
          </item>
          <item row="4" column="2">
           <widget class="QLabel" name="label_12">
@@ -160,7 +160,7 @@
           </widget>
          </item>
          <item row="4" column="3">
-          <widget class="FloatEdit" name="a3High"/>
+          <widget class="BatchableFloatEdit" name="a3High"/>
          </item>
          <item row="5" column="0">
           <widget class="QLabel" name="label_15">
@@ -170,7 +170,7 @@
           </widget>
          </item>
          <item row="5" column="1">
-          <widget class="FloatEdit" name="a4Low"/>
+          <widget class="BatchableFloatEdit" name="a4Low"/>
          </item>
          <item row="5" column="2">
           <widget class="QLabel" name="label_14">
@@ -180,7 +180,7 @@
           </widget>
          </item>
          <item row="5" column="3">
-          <widget class="FloatEdit" name="a4High"/>
+          <widget class="BatchableFloatEdit" name="a4High"/>
          </item>
          <item row="6" column="0">
           <widget class="QLabel" name="label_17">
@@ -190,7 +190,7 @@
           </widget>
          </item>
          <item row="6" column="1">
-          <widget class="FloatEdit" name="a5Low"/>
+          <widget class="BatchableFloatEdit" name="a5Low"/>
          </item>
          <item row="6" column="2">
           <widget class="QLabel" name="label_16">
@@ -200,7 +200,7 @@
           </widget>
          </item>
          <item row="6" column="3">
-          <widget class="FloatEdit" name="a5High"/>
+          <widget class="BatchableFloatEdit" name="a5High"/>
          </item>
          <item row="7" column="0">
           <widget class="QLabel" name="label_18">
@@ -210,7 +210,7 @@
           </widget>
          </item>
          <item row="7" column="1">
-          <widget class="FloatEdit" name="a6Low"/>
+          <widget class="BatchableFloatEdit" name="a6Low"/>
          </item>
          <item row="7" column="2">
           <widget class="QLabel" name="label_19">
@@ -220,7 +220,7 @@
           </widget>
          </item>
          <item row="7" column="3">
-          <widget class="FloatEdit" name="a6High"/>
+          <widget class="BatchableFloatEdit" name="a6High"/>
          </item>
         </layout>
        </widget>
@@ -268,9 +268,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>FloatEdit</class>
+   <class>BatchableFloatEdit</class>
    <extends>QLineEdit</extends>
-   <header location="global">widgets.typed_edit</header>
+   <header location="global">baramFlow.view.widgets.batchable_float_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>

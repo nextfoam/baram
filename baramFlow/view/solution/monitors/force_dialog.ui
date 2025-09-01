@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>364</width>
-    <height>642</height>
+    <height>647</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -211,7 +211,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="FloatEdit" name="AoA"/>
+             <widget class="BatchableFloatEdit" name="AoA"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_23">
@@ -221,7 +221,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="FloatEdit" name="AoS"/>
+             <widget class="BatchableFloatEdit" name="AoS"/>
             </item>
            </layout>
           </widget>
@@ -391,6 +391,11 @@
    <class>FloatEdit</class>
    <extends>QLineEdit</extends>
    <header location="global">widgets.typed_edit</header>
+  </customwidget>
+  <customwidget>
+   <class>BatchableFloatEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">baramFlow.view.widgets.batchable_float_edit</header>
   </customwidget>
  </customwidgets>
  <tabstops>

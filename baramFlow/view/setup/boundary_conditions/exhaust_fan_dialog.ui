@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>IntakeFanDialog</class>
- <widget class="QDialog" name="IntakeFanDialog">
+ <class>ExhaustFanDialog</class>
+ <widget class="QDialog" name="ExhaustFanDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -61,7 +61,7 @@
              </widget>
             </item>
             <item>
-             <widget class="FloatEdit" name="totalPressure"/>
+             <widget class="BatchableFloatEdit" name="totalPressure"/>
             </item>
            </layout>
           </widget>
@@ -132,9 +132,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>FloatEdit</class>
+   <class>BatchableFloatEdit</class>
    <extends>QLineEdit</extends>
-   <header location="global">widgets.typed_edit</header>
+   <header location="global">baramFlow.view.widgets.batchable_float_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>

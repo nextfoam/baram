@@ -17,13 +17,13 @@ from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.view.widgets.piecewise_linear_dialog import PiecewiseLinearDialog
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 
-from .intake_fan_dialog_ui import Ui_IntakeFanDialog
+from .exhaust_fan_dialog_ui import Ui_ExhaustFanDialog
 
 
 class ExhaustFanDialog(ResizableDialog):
     def __init__(self, parent, bcid):
         super().__init__(parent)
-        self._ui = Ui_IntakeFanDialog()
+        self._ui = Ui_ExhaustFanDialog()
         self._ui.setupUi(self)
 
         self._dialog: PiecewiseLinearDialog

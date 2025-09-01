@@ -9,10 +9,10 @@ from PySide6.QtWidgets import QLabel, QGroupBox, QWidget, QVBoxLayout
 
 from widgets.async_message_box import AsyncMessageBox
 from widgets.flat_push_button import FlatPushButton
-from widgets.typed_edit import FloatEdit
 
 from baramFlow.coredb import coredb
 from baramFlow.view.setup.boundary_conditions.wall_layers_widget_ui import Ui_WallLayersWidget
+from baramFlow.view.widgets.batchable_float_edit import BatchableFloatEdit
 
 
 class Column(IntEnum):
@@ -41,8 +41,8 @@ class WallLayerItem(QObject):
 
         self._widgets = [
             QLabel(str(no)),
-            FloatEdit(thickness),
-            FloatEdit(thermalConductivity),
+            BatchableFloatEdit(thickness),
+            BatchableFloatEdit(thermalConductivity),
             removeButton]
 
     def thickness(self):

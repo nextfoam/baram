@@ -105,7 +105,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="FloatEdit" name="volumeFlowRate">
+             <widget class="BatchableFloatEdit" name="volumeFlowRate">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -128,7 +128,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="FloatEdit" name="massFlowRate">
+             <widget class="BatchableFloatEdit" name="massFlowRate">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -186,9 +186,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>FloatEdit</class>
+   <class>BatchableFloatEdit</class>
    <extends>QLineEdit</extends>
-   <header location="global">widgets.typed_edit</header>
+   <header location="global">baramFlow.view.widgets.batchable_float_edit</header>
   </customwidget>
  </customwidgets>
  <resources/>
