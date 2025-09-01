@@ -261,8 +261,9 @@ class PODCase(Case):
             source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=True)
 
         # reconstructed case
-        caseIndex = 0
+        caseIndex = 1
         fieldListDone = False
+        firstCaseDone = False
         for caseName in listCaseName:
             snapshotPath = self._project.path / BATCH_DIRECTORY_NAME / caseName
             time = FileSystem.latestTime(snapshotPath)
@@ -274,11 +275,17 @@ class PODCase(Case):
                 if not fieldListDone:
                     self.writeFieldList(self._path)
                     fieldListDone = True
+                if not firstCaseDone:
+                    source = self._path / "1"
+                    target = self._path / "0"
+                    shutil.copytree(source, target)
+                    firstCaseDone = True
             caseIndex += 1
 
         # decomposed case
-        caseIndex = 0
+        caseIndex = 1
         fieldListDone = False
+        firstCaseDone = False
         for caseName in listCaseName:
             snapshotPath = self._project.path / BATCH_DIRECTORY_NAME / caseName
             subfoldersProcessor = FileSystem.processorFolders(snapshotPath)
@@ -308,10 +315,15 @@ class PODCase(Case):
                     if not source.exists():
                         source.symlink_to(os.path.relpath(target, source.parent), target_is_directory=False)
                     fieldListDone = True
+                if not firstCaseDone:
+                    source = procPathPod / "1"
+                    target = procPathPod / "0"
+                    shutil.copytree(source, target)
 
             caseIndex += 1
+            firstCaseDone = True
 
-    async def initializeReconstruct(self, listSnapshot, paramsToReconstruct):
+    async def initializeReconstruct(self, caseName, listSnapshot, paramsToReconstruct):
         with open(self._path / "constant" / "Vinput.dat", 'w') as f:
             f.write(f"{len(listSnapshot)} {len(paramsToReconstruct)}\n")
             for _, case in listSnapshot.items():
@@ -320,6 +332,24 @@ class PODCase(Case):
         with open(self._path / "constant" / "CurrentInput.dat", 'w') as f:
             f.write(f"1 {len(paramsToReconstruct)}\n")
             f.write(f"{' '.join(map(str, paramsToReconstruct))}\n")
+
+        # reconstructed case
+        pathZeroBatch = self._project.path / BATCH_DIRECTORY_NAME / caseName / "0"
+        pathZeroPod = self._path / "0"
+        if pathZeroPod.exists():
+            shutil.rmtree(pathZeroPod)
+        if pathZeroBatch.exists():
+            shutil.copytree(pathZeroBatch, pathZeroPod)
+
+        # decomposed case
+        subfoldersProcessor = FileSystem.processorFolders(self._path)
+        for pProc in subfoldersProcessor:
+            pathZeroBatch = self._project.path / BATCH_DIRECTORY_NAME / caseName / pProc.name / "0"
+            pathZeroPod = pProc / "0"
+            if pathZeroPod.exists():
+                shutil.rmtree(pathZeroPod)
+            if pathZeroBatch.exists():
+                shutil.copytree(pathZeroBatch, pathZeroPod)
 
     async def runGenerateROM(self, listCaseName):
         try:
@@ -344,9 +374,9 @@ class PODCase(Case):
             self._setStatus(SolverStatus.ERROR)
             raise e
 
-    async def runReconstruct(self, listSnapshot, paramsToReconstruct):
+    async def runReconstruct(self, caseName, listSnapshot, paramsToReconstruct):
         try:
-            await self.initializeReconstruct(listSnapshot, paramsToReconstruct)
+            await self.initializeReconstruct(caseName, listSnapshot, paramsToReconstruct)
 
             stdout = open(self._path / STDOUT_FILE_NAME, 'w')
             stderr = open(self._path / STDERR_FILE_NAME, 'w')
@@ -387,7 +417,7 @@ class PODCase(Case):
 
     def writeFieldList(self, fieldPath):
         entries = []
-        zeroDir = fieldPath / "0"
+        oneDir = fieldPath / "1"
 
         def isNotVolumeField(name: str) -> bool:
             lower = name.lower()
@@ -398,7 +428,7 @@ class PODCase(Case):
             )
 
         # single region
-        for fp in zeroDir.iterdir():
+        for fp in oneDir.iterdir():
             if not fp.is_file(): continue
             fieldName = fp.name[:-3] if fp.name.endswith(".gz") else fp.name
             if isNotVolumeField(fieldName): continue
@@ -406,7 +436,7 @@ class PODCase(Case):
             entries.append(f"{fieldName} {kind} -")
 
         # multi region
-        for fp2 in zeroDir.iterdir():
+        for fp2 in oneDir.iterdir():
             if fp2.is_file(): continue
             if fp2.name in ("uniform", "polyMesh", "sets"):
                 continue
@@ -576,16 +606,19 @@ class CaseManager(QObject):
         self._setCurrentCase(tempPodCase)
         await tempPodCase.runGenerateROM(listCaseName)
 
-    async def podRunReconstruct(self, listSnapshot, paramsToReconstruct):
+    async def podInitReconstructedCase(self, caseName, paramsToReconstructFloat):
+        paramsToReconstruct = {key: str(value) for key, value in paramsToReconstructFloat.items()}
+        caseToReconstruct = BatchCase(caseName, paramsToReconstruct)
+        caseToReconstruct.load()
+        await caseToReconstruct.initialize()
+
+    async def podRunReconstruct(self, caseName, listSnapshot, paramsToReconstruct):
         tempPodCase = PODCase()
         tempPodCase.load()
         self._setCurrentCase(tempPodCase)
-        await tempPodCase.runReconstruct(listSnapshot, paramsToReconstruct.values())
+        await tempPodCase.runReconstruct(caseName, listSnapshot, paramsToReconstruct.values())
 
-    async def podSaveToBatchCase(self, caseName, paramsToReconstruct):
-        caseToReconstruct = BatchCase(caseName, paramsToReconstruct)
-        caseToReconstruct.load()
-
+    async def podSaveToBatchCase(self, caseName):
         tempPodCase = PODCase()
         tempPodCase.load()
         self._setCurrentCase(tempPodCase)

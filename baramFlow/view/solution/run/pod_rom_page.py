@@ -264,8 +264,9 @@ class PODROMPage(ContentPage):
             paramsToReconstruct[nameParam] = valueParam
 
         try:
-            await self._caseManager.podRunReconstruct(listSnapshotCase, paramsToReconstruct)
-            await self._caseManager.podSaveToBatchCase(caseName, paramsToReconstruct)
+            await self._caseManager.podInitReconstructedCase(caseName, paramsToReconstruct)
+            await self._caseManager.podRunReconstruct(caseName, listSnapshotCase, paramsToReconstruct)
+            await self._caseManager.podSaveToBatchCase(caseName)
             await self._caseManager.podAddToBatchList(caseName, paramsToReconstruct)
             progressDialog.finish(self.tr('Reconstruction Finished'))
         except Exception as e:
