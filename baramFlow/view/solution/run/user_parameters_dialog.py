@@ -105,7 +105,7 @@ class UserParametersDialog(QDialog):
             self.accept()
 
     def _connectSignalsSlots(self):
-        self._ui.add.clicked.connect(self._addItem)
+        self._ui.add.clicked.connect(lambda: self._addItem())
         self._ui.ok.clicked.connect(self._accept)
         self._ui.cancel.clicked.connect(self.close)
 
