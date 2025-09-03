@@ -102,7 +102,7 @@ class WallDialog(ResizableDialog):
         self._connectSignalsSlots()
 
         self._load()
-    
+
     @qasync.asyncSlot()
     async def _accept(self):
         wallMotion = self._wallMotionRadios.checkedData()
@@ -149,7 +149,7 @@ class WallDialog(ResizableDialog):
 
             if ModelsDB.isRadiationModelOn():
                 self._ui.wallEmissivity.validate(self.tr('Wall Emissivity'), low=0, high=1)
-                self._ui.radiativeFluxRelaxation.validate(self.tr('Radiative Flux Relation'), low=0, high=1)
+                self._ui.radiativeFluxRelaxation.validate(self.tr('Radiative Flux Relaxation'), low=0, high=1)
         except ValueError as e:
             await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
