@@ -79,7 +79,7 @@ class Case(QObject):
         self._setStatus(SolverStatus.NONE)
         FileSystem.deleteCalculationResults()
         await self._generator.setupCase()
-        await self._generator.initialize()
+        # await self._generator.initialize()
         self._generator = None
 
     def cancel(self):
@@ -203,7 +203,7 @@ class BatchCase(Case):
             if FileSystem.caseRoot() != self._path:
                 raise RuntimeError
 
-            await self.initialize()
+            await self._generateCase()
 
             stdout = open(self._path / STDOUT_FILE_NAME, 'w')
             stderr = open(self._path / STDERR_FILE_NAME, 'w')

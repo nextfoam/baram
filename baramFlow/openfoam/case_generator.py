@@ -200,6 +200,11 @@ class CaseGenerator(QObject):
         if errors := self._gatherFiles():
             raise RuntimeError(errors)
 
+        hasInitiailied = False
+        boundaryConditionsPath = FileSystem.boundaryConditionsPath(self._db.getRegions()[0])
+        if boundaryConditionsPath.is_dir() and any(boundaryConditionsPath.iterdir()):
+            hasInitiailied = True
+
         errors = await asyncio.to_thread(self._generateFiles)
         if self._canceled:
             raise CanceledException
@@ -227,6 +232,10 @@ class CaseGenerator(QObject):
 
             for time in FileSystem.times(parent=caseRoot):
                 utils.rmtree(caseRoot / time)
+
+        if not hasInitiailied:
+            self.progress.emit(self.tr('Initialize Case...'))
+            await self.initialize()
 
     async def initialize(self):
         self._canceled = False
