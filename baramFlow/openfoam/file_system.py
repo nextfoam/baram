@@ -236,8 +236,9 @@ class FileSystem:
                 or cls.constantPath().joinpath(Directory.REGION_PROPERTIES_FILE_NAME).is_file())
 
     @classmethod
-    def processorFolders(cls):
-        return list(cls._casePath.glob('processor[0-9]*'))
+    def processorFolders(cls, parent: Optional[Path] = None):
+        base = parent if parent is not None else cls._casePath
+        return list(base.glob('processor[0-9]*'))
 
     @classmethod
     def numberOfProcessorFolders(cls):

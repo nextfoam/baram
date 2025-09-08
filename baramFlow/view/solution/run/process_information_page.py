@@ -74,6 +74,8 @@ class ProcessInformationPage(ContentPage):
         return super().showEvent(ev)
 
     def _load(self):
+        self._batchCaseList.clear()
+        self._batchCaseList.load()
         self._statusChanged(self._caseManager.status(), None, False)
         self._updateUserParameters()
 

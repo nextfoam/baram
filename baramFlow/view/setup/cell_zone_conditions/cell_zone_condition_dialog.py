@@ -248,8 +248,6 @@ class CellZoneConditionDialog(QDialog):
     def _load(self):
         db = coredb.CoreDB()
         self._getZoneTypeRadio(db.getValue(self._xpath + '/zoneType')).setChecked(True)
-        if GeneralDB.isCompressibleDensity():
-            self._ui.none.setChecked(True)
 
         if CellZoneDB.isRegion(self._name):
             if self._materialsWidget:

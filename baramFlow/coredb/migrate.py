@@ -917,7 +917,7 @@ def _version_9(root: etree.Element):
 def _version_10(root: etree.Element):
     logger.debug('  Upgrading to v11')
 
-    # root.set('version', '11')
+    root.set('version', '11')
 
     for p in root.findall('materials/material/specificHeat', namespaces=_nsmap):
         if (e := p.find('piecewisePolynomial', namespaces=_nsmap)) is not None:  # it was a temporary name, which has changed to "janaf"
@@ -1007,6 +1007,12 @@ def _version_10(root: etree.Element):
             type_ = p.find('physicalType', namespaces=_nsmap)
             if type_.text == 'fan':
                 type_.text = 'cyclic'
+
+
+def _version_11(root: etree.Element):
+    logger.debug('  Upgrading to v12')
+
+    #root.set('version', '12')
 
 
 _fTable = [

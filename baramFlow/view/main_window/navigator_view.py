@@ -29,6 +29,7 @@ class MenuItem(Enum):
     MENU_SOLUTION_INITIALIZATION = auto()
     MENU_SOLUTION_RUN_CONDITIONS = auto()
     MENU_SOLUTION_RUN = auto()
+    MENU_SOLUTION_PODROM = auto()
 
     # Results
     MENU_RESULTS_SCAFFOLDS = auto()
@@ -63,6 +64,7 @@ class NavigatorView(QObject):
             MenuItem.MENU_SOLUTION_INITIALIZATION.value: lambda: self.tr('Initialization'),
             MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value: lambda: self.tr('Run Conditions'),
             MenuItem.MENU_SOLUTION_RUN.value: lambda: self.tr('Run'),
+            MenuItem.MENU_SOLUTION_PODROM.value: lambda: self.tr('Reduced Order Model'),
 
             # Results
             MenuItem.MENU_RESULTS_SCAFFOLDS.value: lambda: self.tr('Scaffolds'),
@@ -86,6 +88,7 @@ class NavigatorView(QObject):
         self._addMenu(MenuItem.MENU_SOLUTION_INITIALIZATION, solutionMenu)
         self._addMenu(MenuItem.MENU_SOLUTION_RUN_CONDITIONS, solutionMenu)
         self._addMenu(MenuItem.MENU_SOLUTION_RUN, solutionMenu)
+        self._addMenu(MenuItem.MENU_SOLUTION_PODROM, solutionMenu)
 
         resultsMenu = self._addTopMenu(MenuItem.MENU_RESULTS)
         self._addMenu(MenuItem.MENU_RESULTS_SCAFFOLDS, resultsMenu)
@@ -121,6 +124,7 @@ class NavigatorView(QObject):
         # self._menu[MenuItem.MENU_SOLUTION_NUMERICAL_CONDITIONS.value].setDisabled(CaseManager().isBatchRunning())
         # self._menu[MenuItem.MENU_SOLUTION_MONITORS.value].setDisabled(CaseManager().isBatchRunning())
         # self._menu[MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value].setDisabled(CaseManager().isBatchRunning())
+        self._menu[MenuItem.MENU_SOLUTION_PODROM.value].setDisabled(noMesh)
 
         self._menu[MenuItem.MENU_RESULTS_SCAFFOLDS.value].setDisabled(noMesh)
         self._menu[MenuItem.MENU_RESULTS_GRAPHICS.value].setDisabled(noMesh)

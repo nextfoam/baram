@@ -65,6 +65,7 @@ from baramFlow.view.solution.monitors.monitors_page import MonitorsPage
 from baramFlow.view.solution.initialization.initialization_page import InitializationPage
 from baramFlow.view.solution.run_conditions.run_conditions_page import RunConditionsPage
 from baramFlow.view.solution.run.process_information_page import ProcessInformationPage
+from baramFlow.view.solution.run.pod_rom_page import PODROMPage
 from baramFlow.view.results.graphics.graphics_page import GraphicsPage
 from baramFlow.view.results.reports.reports_page import ReportsPage
 from baramFlow.view.results.scaffolds.scaffolds_page import ScaffoldsPage
@@ -163,6 +164,7 @@ class MainWindow(QMainWindow):
             MenuItem.MENU_SOLUTION_INITIALIZATION.value: MenuPage(InitializationPage),
             MenuItem.MENU_SOLUTION_RUN_CONDITIONS.value: MenuPage(RunConditionsPage),
             MenuItem.MENU_SOLUTION_RUN.value: MenuPage(ProcessInformationPage),
+            MenuItem.MENU_SOLUTION_PODROM.value: MenuPage(PODROMPage),
 
             MenuItem.MENU_RESULTS_SCAFFOLDS.value: MenuPage(ScaffoldsPage),
             MenuItem.MENU_RESULTS_GRAPHICS.value: MenuPage(GraphicsPage),
