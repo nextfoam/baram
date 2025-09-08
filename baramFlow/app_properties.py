@@ -13,7 +13,7 @@ class AppProperties:
     fullName: str
     iconResource: str
     logoResource: str
-    projectSuffix: str
+    projectSuffix: str = None
 
     def icon(self):
         return QIcon(str(resource.file(self.iconResource)))
