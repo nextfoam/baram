@@ -327,11 +327,12 @@ class PODCase(Case):
         with open(self._path / "constant" / "Vinput.dat", 'w') as f:
             f.write(f"{len(listSnapshot)} {len(paramsToReconstruct)}\n")
             for _, case in listSnapshot.items():
-                f.write(f"{' '.join(case.values())}\n")
+                valueActive = [case[param] for param in paramsToReconstruct if param in case]
+                f.write(f"{' '.join(valueActive)}\n")
 
         with open(self._path / "constant" / "CurrentInput.dat", 'w') as f:
             f.write(f"1 {len(paramsToReconstruct)}\n")
-            f.write(f"{' '.join(map(str, paramsToReconstruct))}\n")
+            f.write(f"{' '.join(map(str, paramsToReconstruct.values()))}\n")
 
         # reconstructed case
         pathZeroBatch = self._project.path / BATCH_DIRECTORY_NAME / caseName / "0"
@@ -616,7 +617,7 @@ class CaseManager(QObject):
         tempPodCase = PODCase()
         tempPodCase.load()
         self._setCurrentCase(tempPodCase)
-        await tempPodCase.runReconstruct(caseName, listSnapshot, paramsToReconstruct.values())
+        await tempPodCase.runReconstruct(caseName, listSnapshot, paramsToReconstruct)
 
     async def podSaveToBatchCase(self, caseName):
         tempPodCase = PODCase()

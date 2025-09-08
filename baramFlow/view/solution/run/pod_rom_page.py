@@ -4,6 +4,7 @@
 import time
 import qasync
 import logging
+import numpy as np
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QSlider, QLineEdit, QSizePolicy, QMessageBox
 from PySide6.QtCore import Qt
@@ -42,6 +43,8 @@ class PODROMPage(ContentPage):
 
         self._runningMode = None
         self._userParameters = None
+        self._paramActive = {}
+        self._selectedSnapshotCases = []
 
         self._caseManager = CaseManager()
 
@@ -90,21 +93,46 @@ class PODROMPage(ContentPage):
         self._listSelectorItemBatchCase = [SelectorItem(name, name, i) for i, name in enumerate(listEndedCase)]
 
         self._dialog = MultiSelectorDialog(self, self.tr('Select Snapshot Cases'), self._listSelectorItemBatchCase, [])
-        self._dialog.itemsSelected.connect(self._buildROM)
+        self._dialog.itemsSelected.connect(self._onSnapshotCasesSelected)
         self._dialog.open()
+
+    def _onSnapshotCasesSelected(self, itemsFromDialog):
+        self._selectedSnapshotCases = [name for _, name in itemsFromDialog]
+        batchCasesDF = self._project.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value)
+        if batchCasesDF is None or batchCasesDF.empty:
+            return
+        paramNames = batchCasesDF.columns.tolist()
+
+        self._paramActive = {p: True for p in paramNames}
+        items = [SelectorItem(p, p, i) for i, p in enumerate(paramNames)]
+
+        self._dialog = MultiSelectorDialog(self, self.tr('Select Parameters to Use'), items, [])
+        self._dialog.itemsSelected.connect(self._onParamsSelected)
+        self._dialog.open()
+
+    def _onParamsSelected(self, itemsFromDialog):
+        active = [name for _, name in itemsFromDialog]
+        batchCasesDF = self._project.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value)
+        allParams = batchCasesDF.columns.tolist() if batchCasesDF is not None else active
+        self._paramActive = {p: (p in active) for p in allParams}
+        self._buildROM(self._selectedSnapshotCases)
 
     @qasync.asyncSlot()
     async def _buildROM(self, itemsFromDialog):
         batchCasesDataFrame = self._project.fileDB().getDataFrame(FileDB.Key.BATCH_CASES.value)
 
+        if itemsFromDialog and isinstance(itemsFromDialog[0], tuple):
+            listSelectedName = [name for _, name in itemsFromDialog]
+        else:
+            listSelectedName = list(itemsFromDialog)
+
         nParam = len(batchCasesDataFrame.columns)
-        if len(itemsFromDialog) < nParam + 1:
+        if len(listSelectedName) < nParam + 1:
             confirm = await AsyncMessageBox().question(
                 self, self.tr('Not enough snapshots'), self.tr('Snapshot cases seem insufficient for the given parameters, which may cause low ROM accuracy. Continue?'))
             if confirm != QMessageBox.StandardButton.Yes:
                 return
 
-        listSelectedName = [name for _, name in itemsFromDialog]
         snapshotCasesDataFrame = batchCasesDataFrame.loc[listSelectedName]
 
         progressDialog = ProgressDialog(self, self.tr('Reduced Order Model'), cancelable=True)
@@ -121,6 +149,8 @@ class PODROMPage(ContentPage):
             ROMaccuracy = self._caseManager.podGetROMAccuracy()
             self._project.fileDB().putText("ROMdate", ROMdate)
             self._project.fileDB().putText("ROMaccuracy", ROMaccuracy)
+            activeNames = [p for p, v in self._paramActive.items() if v]
+            self._project.fileDB().putText("ROMparams", "\n".join(activeNames))
             self.loadSnapshotCases(overwriteSlider=True)
             progressDialog.finish(self.tr('ROM build finished'))
         except Exception as e:
@@ -140,6 +170,8 @@ class PODROMPage(ContentPage):
             if ROMaccuracy < 1.e6: strROMaccuracy += " (low accuracy)"
             textROMstatus = self.tr('ROM created on ') + ROMdate.decode("utf-8")
             textROMstatus += "\n" + self.tr('Accuracy: ') + strROMaccuracy
+            activeNames = self._project.fileDB().getText("ROMparams").decode("utf-8").split("\n")
+            self._paramActive = {name: True for name in activeNames}
             self._ui.labelBuildROM.setText(textROMstatus)
             self._ui.snapshotCases.setVisible(True);
             self.generateSliders(overwriteSlider)
@@ -170,6 +202,8 @@ class PODROMPage(ContentPage):
         self.listLineEdit = []
 
         listParam = self._snapshotCaseList.parameters().tolist()
+        if not self._paramActive:
+            self._paramActive = {p: True for p in listParam}
         nParam = len(listParam)
         listCases = self._snapshotCaseList._cases
 
@@ -178,15 +212,17 @@ class PODROMPage(ContentPage):
             valuesParam = [float(entry[nameParam]) for entry in listCases.values()]
             valueMinParam = min(valuesParam)
             valueMaxParam = max(valuesParam)
-            new_widget = self.generateSingleSlider(iParam, nameParam, valueMinParam, valueMaxParam)
+            isActive = bool(self._paramActive.get(nameParam, False))
+            new_widget = self.generateSingleSlider(iParam, nameParam, valueMinParam, valueMaxParam, visible=isActive)
             layout.insertWidget(layout.count() - 1, new_widget)
 
         return
 
-    def generateSingleSlider(self, sliderIndex, nameParam, valueMinParam, valueMaxParam):
+    def generateSingleSlider(self, sliderIndex, nameParam, valueMinParam, valueMaxParam, visible=True):
         container = QWidget()
         h_layout = QHBoxLayout()
         container.setLayout(h_layout)
+        container.setVisible(visible)
 
         label = QLabel(nameParam)
         label.setObjectName(f"labelPODParam{sliderIndex}")
@@ -259,13 +295,26 @@ class PODROMPage(ContentPage):
         listSnapshotCase = self._snapshotCaseList._cases
         paramsToReconstruct = {}
         listParam = self._snapshotCaseList.parameters().tolist()
+
         for iParam, nameParam in enumerate(listParam):
-            valueParam = float(self.listLineEdit[iParam].text())
-            paramsToReconstruct[nameParam] = valueParam
+            if self._paramActive.get(nameParam, False):
+                valueParam = float(self.listLineEdit[iParam].text())
+                paramsToReconstruct[nameParam] = valueParam
+
+        inferred = self._inferInactiveParamsLinear(
+            listSnapshotCase=listSnapshotCase,
+            allParams=listParam,
+            activeMask=self._paramActive,
+            userActiveValues=paramsToReconstruct
+        )
+        paramsToReconstruct.update(inferred)
+
+        activeNames = [p for p,v in self._paramActive.items() if v]
+        paramsActive = {p: paramsToReconstruct[p] for p in activeNames}
 
         try:
             await self._caseManager.podInitReconstructedCase(caseName, paramsToReconstruct)
-            await self._caseManager.podRunReconstruct(caseName, listSnapshotCase, paramsToReconstruct)
+            await self._caseManager.podRunReconstruct(caseName, listSnapshotCase, paramsActive)
             await self._caseManager.podSaveToBatchCase(caseName)
             await self._caseManager.podAddToBatchList(caseName, paramsToReconstruct)
             progressDialog.finish(self.tr('Reconstruction Finished'))
@@ -273,6 +322,82 @@ class PODROMPage(ContentPage):
             progressDialog.finish(self.tr('ROM reconstruction error : ') + str(e))
         finally:
             self._caseManager.progress.disconnect(progressDialog.setLabelText)
+
+    def _inferInactiveParamsLinear(self, listSnapshotCase, allParams, activeMask, userActiveValues, k=None):
+        """
+        listSnapshotCase: dict[caseName] -> {paramName: value}
+        allParams: [paramName,...]
+        activeMask: {paramName: bool}
+        userActiveValues: {activeParamName: float}
+        returns: {inactiveParamName: float}
+        """
+        activeNames = [p for p in allParams if activeMask.get(p, False)]
+        inactiveNames = [p for p in allParams if not activeMask.get(p, False)]
+        if not inactiveNames:
+            return {}
+
+        rows = list(listSnapshotCase.values())
+        n = len(rows)
+        d = len(activeNames)
+
+        # Build feature matrix (active params)
+        if d > 0:
+            X = np.array([[float(r[p]) for p in activeNames] for r in rows], dtype=float)
+            mu = X.mean(axis=0)
+            std = X.std(axis=0)
+            std[std == 0.0] = 1.0
+            Xs = (X - mu) / std
+            x_t = np.array([float(userActiveValues[p]) for p in activeNames], dtype=float)
+            xs = (x_t - mu) / std
+            # distances & neighbor selection
+            dist = np.linalg.norm(Xs - xs, axis=1)
+            if k is None:
+                k = min(max(2*max(d,1), 8), n)
+            nn_idx = np.argsort(dist)[:k]
+            Xk = Xs[nn_idx, :]             # (k x d)
+        else:
+            # no active features -> intercept-only model; use first k or all
+            if k is None:
+                k = min(8, n)
+            nn_idx = np.arange(min(k, n))
+            Xk = np.zeros((len(nn_idx), 0))
+
+        inferred = {}
+        for p in inactiveNames:
+            y_all = np.array([float(r[p]) for r in rows], dtype=float)
+            yk = y_all[nn_idx]             # (k,)
+
+            if Xk.shape[1] == 0:
+                # mean of neighbors (intercept only)
+                y_pred = float(np.mean(yk)) if yk.size else float(np.mean(y_all))
+            else:
+                # Try OLS with intercept
+                A = np.hstack([Xk, np.ones((Xk.shape[0], 1))])  # (k x (d+1))
+                rank = np.linalg.matrix_rank(A)
+                if rank >= min(A.shape):
+                    beta, _, _, _ = np.linalg.lstsq(A, yk, rcond=None)
+                    y_pred = float(np.dot(np.append(xs, 1.0), beta))
+                else:
+                    # PCA reduction on neighbors, then linear regression with intercept
+                    Xc = Xk - Xk.mean(axis=0, keepdims=True)
+                    U, S, Vt = np.linalg.svd(Xc, full_matrices=False)
+                    tol = 1e-8
+                    r = int(np.sum(S > tol))
+                    r = max(1, min(r, Xk.shape[0]-1, Xk.shape[1]))
+                    Z = U[:, :r] * S[:r]              # (k x r)
+                    B = np.hstack([Z, np.ones((Z.shape[0], 1))])  # add intercept
+                    beta, _, _, _ = np.linalg.lstsq(B, yk, rcond=None)
+                    x_center = xs - Xk.mean(axis=0)
+                    z_t = x_center @ Vt[:r].T         # (r,)
+                    y_pred = float(np.dot(np.append(z_t, 1.0), beta))
+
+            # clamp to observed range for stability
+            vmin, vmax = float(y_all.min()), float(y_all.max())
+            if y_pred < vmin: y_pred = vmin
+            if y_pred > vmax: y_pred = vmax
+            inferred[p] = str(y_pred)
+
+        return inferred
 
     def closeEvent(self, event):
         self._disconnectSignalsSlots()
