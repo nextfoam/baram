@@ -2,6 +2,129 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ko_KR">
 <context>
+    <name></name>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="77"/>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="81"/>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="89"/>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="138"/>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="279"/>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="289"/>
+        <source>Reduced Order Model</source>
+        <translation>차수축소모델</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="78"/>
+        <source>Batch cases are required to build a reduced order model.</source>
+        <translation>차수축소모델 제작을 위해서는 일괄 계산 결과가 필요합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="82"/>
+        <source>ROM generation from transient simulation results is not yet supported.</source>
+        <translation>현재 비정상상태 문제에서는 ROM 제작이 지원되지 않습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="90"/>
+        <source>At least one completed case is required to build a reduced order model.</source>
+        <translation>ROM 제작을 위해 최소 1개 이상의 계산된 결과가 필요합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="95"/>
+        <source>Select Snapshot Cases</source>
+        <translation>스냅샷 케이스를 선택하세요</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="109"/>
+        <source>Select Parameters to Use</source>
+        <translation>사용할 파라미터를 선택하세요</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="132"/>
+        <source>Not enough snapshots</source>
+        <translation>스냅샷이 충분하지 않습니다</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="132"/>
+        <source>Snapshot cases seem insufficient for the given parameters, which may cause low ROM accuracy. Continue?</source>
+        <translation>주어진 파라미터에 대해 스냅샷이 부족해서 ROM의 정확도가 낮아질 수 있습니다. 계속할까요?</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="140"/>
+        <source>Build ROM</source>
+        <translation>ROM 제작</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="155"/>
+        <source>ROM build finished</source>
+        <translation>ROM 제작 완료</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="157"/>
+        <source>ROM build error : </source>
+        <translation>ROM 제작 오류 : </translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="171"/>
+        <source>ROM created on </source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="172"/>
+        <source>Accuracy: </source>
+        <translation>정확도: </translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="180"/>
+        <source>ROM status: not created</source>
+        <translation>ROM 상황:만들어지지 않았음</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="280"/>
+        <source>Please specify a case name to reconstruct.</source>
+        <translation>재건할 케이스의 이름을 써 주세요.</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="285"/>
+        <source>Outdated ROM</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="285"/>
+        <source>The current ROM model is an outdated version based on steady simulation results. Continue?</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="291"/>
+        <source>Reconstruct from ROM</source>
+        <translation>ROM으로부터 결과 재건</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="320"/>
+        <source>Reconstruction Finished</source>
+        <translation>결과 재건 완료</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.py" line="322"/>
+        <source>ROM reconstruction error : </source>
+        <translation>ROM 결과 재건 오류 : </translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/snapshot_case_list.py" line="227"/>
+        <source>Case Loading</source>
+        <translation>케이스 읽어오기</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/snapshot_case_list.py" line="252"/>
+        <source>Delete Case</source>
+        <translation>케이스 삭제</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/snapshot_case_list.py" line="252"/>
+        <source>Are you sure you want to delete the selected cases?</source>
+        <translation>선택한 케이스를 지우겠습니까?</translation>
+    </message>
+</context>
+<context>
     <name>ABLInletDialog</name>
     <message>
         <location filename="../../baramFlow/view/setup/boundary_conditions/ABL_inlet_dialog.py" line="41"/>
@@ -132,7 +255,7 @@
     </message>
     <message>
         <location filename="../../baramFlow/view/main_window/menu/help/about_dialog.ui" line="93"/>
-        <source>&lt;p&gt;&lt;b&gt;&lt;font size=&quot;4&quot;&gt;BaramFlow 25.2.5&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;
+        <source>&lt;p&gt;&lt;b&gt;&lt;font size=&quot;4&quot;&gt;BaramFlow 25.3.0rc1&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;
 
 &lt;p&gt;Powered by open-source software&lt;/p&gt;
 
@@ -153,7 +276,7 @@
     </message>
     <message>
         <location filename="../../baramMesh/view/menu/help/about_dialog.ui" line="93"/>
-        <source>&lt;p&gt;&lt;b&gt;&lt;font size=&quot;4&quot;&gt;BaramMesh 25.2.5&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;
+        <source>&lt;p&gt;&lt;b&gt;&lt;font size=&quot;4&quot;&gt;BaramMesh 25.3.0rc1&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;
 
 &lt;p&gt;Powered by open-source software&lt;/p&gt;
 
@@ -509,22 +632,32 @@
 <context>
     <name>BatchCaseList</name>
     <message>
-        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="283"/>
+        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="292"/>
         <source>Case Loading</source>
         <translation>케이스 읽어오기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="284"/>
+        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="293"/>
         <source>Loading Batch Case...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="309"/>
+        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="317"/>
+        <source>Case Initializing</source>
+        <translation>케이스 초기화</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="318"/>
+        <source>Initializing Batch Case...</source>
+        <translation>일괄 계산 초기화 중...</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="335"/>
         <source>Delete Case</source>
         <translation>케이스 삭제</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="309"/>
+        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="335"/>
         <source>Are you sure you want to delete the selected cases?</source>
         <translation>선택한 케이스를 지우겠습니까?</translation>
     </message>
@@ -596,9 +729,13 @@
         <translation>중복된 케이스 이름 - , </translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/batch_cases_import_dialog.ui" line="14"/>
         <source>Import Batce Cases</source>
-        <translation>일괄계산 케이스 읽어오기</translation>
+        <translation type="vanished">일괄계산 케이스 읽어오기</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/batch_cases_import_dialog.ui" line="14"/>
+        <source>Import Batch Cases</source>
+        <translation>일괄 계산 조건 불러오기</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/run/batch_cases_import_dialog.ui" line="32"/>
@@ -607,8 +744,12 @@
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/run/batch_cases_import_dialog.ui" line="46"/>
-        <source>Slelect</source>
+        <source>Select</source>
         <translation>선택</translation>
+    </message>
+    <message>
+        <source>Slelect</source>
+        <translation type="vanished">선택</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/solution/run/batch_cases_import_dialog.ui" line="56"/>
@@ -1334,22 +1475,27 @@
         <translation>유동변수 데이터를 합치는데 실패했습니다. 0</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/openfoam/case_generator.py" line="207"/>
+        <location filename="../../baramFlow/openfoam/case_generator.py" line="212"/>
         <source>Case generating fail. - </source>
         <translation>케이스 생성에 실패했습니다. - </translation>
     </message>
     <message>
-        <location filename="../../baramFlow/openfoam/case_generator.py" line="210"/>
+        <location filename="../../baramFlow/openfoam/case_generator.py" line="215"/>
         <source>Decomposing Field Data...</source>
         <translation>유동변수 데이터 분할 중...</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/openfoam/case_generator.py" line="224"/>
+        <location filename="../../baramFlow/openfoam/case_generator.py" line="229"/>
         <source>Decomposing Field Data failed.</source>
         <translation>유동변수 데이터 분할에 실패했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/openfoam/case_generator.py" line="249"/>
+        <location filename="../../baramFlow/openfoam/case_generator.py" line="237"/>
+        <source>Initialize Case...</source>
+        <translation>케이스 초기화...</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/openfoam/case_generator.py" line="258"/>
         <source>Setting Section Values</source>
         <translation>섹션값 설정</translation>
     </message>
@@ -2214,22 +2360,27 @@
         <translation>편집/보기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="124"/>
+        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="125"/>
         <source>Load</source>
         <translation>불러오기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="126"/>
+        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="127"/>
         <source>Schedule Calculation</source>
         <translation>계산 목록</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="128"/>
+        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="129"/>
         <source>Cancel Schedule</source>
         <translation>목록 취소</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="130"/>
+        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="131"/>
+        <source>Initialize Case</source>
+        <translation>케이스 초기화</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/batch_case_list.py" line="133"/>
         <source>Delete</source>
         <translation>삭제</translation>
     </message>
@@ -6099,7 +6250,7 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation type="vanished">병렬 환경</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="375"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="377"/>
         <location filename="../../baramMesh/view/main_window/main_window.py" line="306"/>
         <source>Save Changed</source>
         <translation>변경사항 저장</translation>
@@ -6109,12 +6260,12 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation type="vanished">변경사항을 저장하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="305"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="307"/>
         <source>Save as a new project</source>
         <translation>새로운 프로젝트로 저장</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="306"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="308"/>
         <source>Only configuration and mesh are saved. (Calculation results are not copied)</source>
         <translation>설정과 격자만 저장됩니다.(계산결과는 저장되지 않습니다.)</translation>
     </message>
@@ -6124,136 +6275,136 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation>프로젝트 폴더 선택</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="308"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="310"/>
         <location filename="../../baramMesh/view/main_window/main_window.py" line="214"/>
         <source>Save as new project</source>
         <translation>다른 이름으로 프로젝트 저장</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="340"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="342"/>
         <source>Fluent (*.cas *.msh)</source>
         <translation>Fluent (*.cas *.msh)</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="344"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="346"/>
         <source>StarCCM+ (*.ccm)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="347"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="349"/>
         <source>Mesh Convert</source>
         <translation>격자 변환</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="353"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="355"/>
         <source>Gmsh (*.msh)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="356"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="358"/>
         <source>Ideas (*.unv)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="359"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="361"/>
         <source>Plot3d (*.unv)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="376"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="378"/>
         <location filename="../../baramMesh/view/main_window/main_window.py" line="307"/>
         <source>Do you want to save your changes?</source>
         <translation>바꾼 것을 저장할까요?</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="440"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="475"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="510"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="907"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="442"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="477"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="512"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="909"/>
         <source>Permission Denied</source>
         <translation>권한이 없습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="441"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="476"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="511"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="908"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="443"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="478"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="513"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="910"/>
         <source>The project directory is open by another program.</source>
         <translation>프로젝트 폴더가 다른 곳에서 열려 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="444"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="446"/>
         <source>Mesh Scaling</source>
         <translation>격자 축소/확대</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="448"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="450"/>
         <source>Scaling the mesh.</source>
         <translation>격자 축소/확대 중입니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="450"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="452"/>
         <source>Mesh scaling failed.</source>
         <translation>격자 축소/확대에 실패했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="462"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="464"/>
         <source>Mesh scaling is complete</source>
         <translation>격자 축소/확대가 완료되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="465"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="500"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="535"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="677"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="878"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="467"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="502"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="537"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="679"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="880"/>
         <source>Error occurred:
 </source>
         <translation>오류가 발생했습니다:
 </translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="479"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="481"/>
         <source>Mesh Translation</source>
         <translation>격자 위치 이동</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="483"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="485"/>
         <source>Translating the mesh.</source>
         <translation>격자 위치를 이동하고 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="485"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="487"/>
         <source>Mesh translation failed.</source>
         <translation>격자 위치 이동에 실패했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="497"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="499"/>
         <source>Mesh translation is complete</source>
         <translation>격자 위치 이동이 완료되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="514"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="516"/>
         <source>Mesh Rotation</source>
         <translation>격자 회전</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="518"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="520"/>
         <source>Rotating the mesh.</source>
         <translation>격자를 회전하고 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="520"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="522"/>
         <source>Mesh rotation failed.</source>
         <translation>격자 회전에 실패했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="532"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="534"/>
         <source>Mesh rotation is complete</source>
         <translation>격자 회전이 완료되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="545"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="547"/>
         <location filename="../../baramMesh/view/main_window/main_window.py" line="332"/>
         <source>Case Redistribution</source>
         <translation>케이스 재분할</translation>
@@ -6263,17 +6414,17 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation type="vanished">케이스를 읽고 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="629"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="631"/>
         <source>Calculation Terminated</source>
         <translation>계산이 중단 되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="630"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="632"/>
         <source>Calculation is terminated.</source>
         <translation>계산이 중단 되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="861"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="863"/>
         <source>Mesh Loading</source>
         <translation>격자를 읽고 있습니다</translation>
     </message>
@@ -6282,39 +6433,39 @@ At least one scaffold is required to configure Graphics Report</source>
         <translation type="vanished">프로젝트 폴더 에러</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="643"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="645"/>
         <source>Case Loading</source>
         <translation>케이스 읽어오기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="681"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="683"/>
         <source>Building Graphics Reports</source>
         <translation>그래픽을 구성 중</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="727"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="729"/>
         <source>Saving project</source>
         <translation>프로젝트 저장중</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="893"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="895"/>
         <source>This action will overwrite current mesh, related configurations, and calculation data.
 It cannot be recovered, and changed configurations will be saved automatically.</source>
         <translation>지금의 격자와 설정과 계산결과가 모두 지워집니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="915"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="921"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="917"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="923"/>
         <source>Invalid mesh</source>
         <translation>격자에 문제가 있습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="916"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="918"/>
         <source>Multi-region cases cannot be computed under multi-phase conditions.</source>
         <translation>복합영역 문제는 다상유동을 지원하지 않습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="922"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="924"/>
         <source>Multi-region cases cannot be computed under density-based conditions.</source>
         <translation>복합영역 문제는 밀도기반 솔버를 지원하지 않습니다.</translation>
     </message>
@@ -6323,8 +6474,8 @@ It cannot be recovered, and changed configurations will be saved automatically.<
         <translation type="vanished">경계면 정보를 읽고 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="714"/>
         <location filename="../../baramFlow/view/main_window/main_window.py" line="716"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="718"/>
         <source>Select ParaView Executable</source>
         <translation>ParaView 실행파일을 선택하세요</translation>
     </message>
@@ -6333,7 +6484,7 @@ It cannot be recovered, and changed configurations will be saved automatically.<
         <translation type="vanished">케이스 폴더 오류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="724"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="726"/>
         <location filename="../../baramMesh/view/main_window/main_window.py" line="277"/>
         <location filename="../../baramMesh/view/main_window/main_window.ui" line="3911"/>
         <source>Save As</source>
@@ -6344,61 +6495,61 @@ It cannot be recovered, and changed configurations will be saved automatically.<
         <translation type="vanished">저장하고 있습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="753"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="775"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="800"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="755"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="777"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="802"/>
         <source>Mesh Importing</source>
         <translation>격자 불러오기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="758"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="780"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="760"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="782"/>
         <source>Copying files.</source>
         <translation>파일 복사중.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="768"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="790"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="834"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="770"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="792"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="836"/>
         <source>Mesh import failed:
 </source>
         <translation>격자를 불러오지 못했습니다:
 </translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="805"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="807"/>
         <source>Converting the mesh.</source>
         <translation>격자를 변환하는 중.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="823"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="825"/>
         <source>Failed to extract cell zones.</source>
         <translation>모든 셀존을 가져오지 못했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="838"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="840"/>
         <source>Mesh Converting</source>
         <translation>격자 변환</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="839"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="841"/>
         <source>Converting the mesh</source>
         <translation>격자 변환 중</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="852"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="854"/>
         <source>Failed to convert mesh.</source>
         <translation>격자변환에 실패했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="856"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="858"/>
         <source>Mesh Convert failed:
 </source>
         <translation>격자변환에 실패했습니다:
 </translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="891"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="893"/>
         <source>Load Mesh</source>
         <translation>격자 불러오기</translation>
     </message>
@@ -6409,8 +6560,8 @@ Would you like to load another mesh?</source>
 새로운 격자를 읽겠습니까?</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="321"/>
-        <location filename="../../baramFlow/view/main_window/main_window.py" line="734"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="323"/>
+        <location filename="../../baramFlow/view/main_window/main_window.py" line="736"/>
         <source>Select Mesh Directory</source>
         <translation>격자 폴더 선택</translation>
     </message>
@@ -9095,87 +9246,92 @@ Would you like to load another mesh?</source>
 <context>
     <name>NavigatorView</name>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="48"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="49"/>
         <source>Setup</source>
         <translation>셋업</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="49"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="50"/>
         <source>Solution</source>
         <translation>솔루션</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="50"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="51"/>
         <source>Results</source>
         <translation>결과</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="53"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="54"/>
         <source>General</source>
         <translation>일반</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="54"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="55"/>
         <source>Models</source>
         <translation>모델</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="55"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="56"/>
         <source>Materials</source>
         <translation>물질</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="56"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="57"/>
         <source>Cell Zone Conditions</source>
         <translation>셀 존 조건</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="57"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="58"/>
         <source>Boundary Conditions</source>
         <translation>경계조건</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="58"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="59"/>
         <source>Reference Values</source>
         <translation>기준 값</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="61"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="62"/>
         <source>Numerical Conditions</source>
         <translation>수치해석 기법</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="62"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="63"/>
         <source>Monitors</source>
         <translation>모니터</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="63"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="64"/>
         <source>Initialization</source>
         <translation>초기화</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="64"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="65"/>
         <source>Run Conditions</source>
         <translation>계산 조건</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="65"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="66"/>
         <source>Run</source>
         <translation>실행</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="68"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="67"/>
+        <source>Reduced Order Model</source>
+        <translation>차수축소모델</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="70"/>
         <source>Scaffolds</source>
         <translation>스캐폴드</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="69"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="71"/>
         <source>Graphics</source>
         <translation>그래픽</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="70"/>
+        <location filename="../../baramFlow/view/main_window/navigator_view.py" line="72"/>
         <source>Reports</source>
         <translation>데이터 추출</translation>
     </message>
@@ -9991,6 +10147,69 @@ Would you like to load another mesh?</source>
         <location filename="../../baramFlow/view/solution/initialization/option_dialog.ui" line="478"/>
         <source>Override Boundary Value</source>
         <translation>경계면에도 적용</translation>
+    </message>
+</context>
+<context>
+    <name>PODROMPage</name>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.ui" line="14"/>
+        <source>Form</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.ui" line="30"/>
+        <source>Reduced Order Model</source>
+        <translation>차수축소모델</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.ui" line="74"/>
+        <source>Build Model</source>
+        <translation>ROM 제작</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.ui" line="86"/>
+        <source>ROM Status</source>
+        <translation>ROM 현황</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.ui" line="109"/>
+        <source>Build ROM</source>
+        <translation>ROM 제작</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.ui" line="119"/>
+        <source>Snapshot Cases</source>
+        <translation>스냅샷 케이스</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.ui" line="158"/>
+        <source>Case</source>
+        <translation>케이스</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.ui" line="163"/>
+        <source>Calc.</source>
+        <translation>계산.</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.ui" line="168"/>
+        <source>Result</source>
+        <translation>결과</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.ui" line="182"/>
+        <source>Reconstruct from Model</source>
+        <translation>결과 재건</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.ui" line="197"/>
+        <source>Case name</source>
+        <translation>케이스 이름</translation>
+    </message>
+    <message>
+        <location filename="../../baramFlow/view/solution/run/pod_rom_page.ui" line="220"/>
+        <source>Reconstruct case with ROM</source>
+        <translation>ROM으로 결과 재건</translation>
     </message>
 </context>
 <context>
@@ -10961,12 +11180,12 @@ Would you like to load another mesh?</source>
         <translation>상태 :</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="116"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="118"/>
         <source>Calculation Run.</source>
         <translation>계산 시작.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="126"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="128"/>
         <source>Case generating fail. - </source>
         <translation>케이스 생성에 실패했습니다. - </translation>
     </message>
@@ -10979,106 +11198,106 @@ Would you like to load another mesh?</source>
         <translation type="vanished">솔버 실행에 실패했거나 종료되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="124"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="126"/>
         <source>Calculation started</source>
         <translation>계산이 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="178"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="180"/>
         <source>Waiting for the solver to stop after final calculation. You can &quot;Force Stop&quot;,
 yet it could corrupt the final iteration result.</source>
         <translation>지금 계산중인 단계가 끝나기를 기다리고 있습니다. &quot;강제 중지&quot; 할 수 있습니다.,
 그러나 강제로 중지하면 마지막 결과는 없어집니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="173"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="175"/>
         <source>Calculation Canceling</source>
         <translation>계산을 취소하고 있습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="128"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="130"/>
         <source>Calculation cancelled</source>
         <translation>계산이 취소되었습니다</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="137"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="139"/>
         <source>Batch Calculation</source>
         <translation>일괄계산</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="138"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="140"/>
         <source>No case is scheduled.</source>
         <translation>계산할 조건이 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="147"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="149"/>
         <source>Calculation Error</source>
         <translation>계산 오류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="148"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="150"/>
         <source>Error occurred:
 </source>
         <translation>에러 발생:
 </translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="179"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="181"/>
         <source>Force Stop</source>
         <translation>강제 종료</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="210"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="212"/>
         <source>Case Loading</source>
         <translation>케이스 읽어오기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="211"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="213"/>
         <source>Loading Live Case...</source>
         <translation>현재 케이스 불러오는 중...</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="223"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="225"/>
         <source>Permission Error</source>
         <translation>권한 오류</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="223"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="225"/>
         <source>Run BARAM as administrator to enter batch mode</source>
         <translation>일괄계산을 위해서는 관리자 권한으로 BARAM을 실행하세요</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="232"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="234"/>
         <source>Export Batch Cases</source>
         <translation>일괄계산 목록 내보내기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="232"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="234"/>
         <source>No batch parameter is defined.</source>
         <translation>일괄계산 파라미터가 정의되지 않았습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="235"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="237"/>
         <source>Export Batch Parameters</source>
         <translation>일괄계산 파라미터 내보내기</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="235"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="237"/>
         <source>Excel (*.xlsx);; CSV (*.csv)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="255"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="257"/>
         <source>Waiting</source>
         <translation>대기중</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="257"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="259"/>
         <source>Running</source>
         <translation>계산중</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="259"/>
+        <location filename="../../baramFlow/view/solution/run/process_information_page.py" line="261"/>
         <location filename="../../baramFlow/view/solution/run/process_information_page.ui" line="171"/>
         <source>Not Running</source>
         <translation>대기중</translation>
@@ -11210,9 +11429,8 @@ Calculation stops as soon as possible</source>
 <context>
     <name>ProgressDialogSimple</name>
     <message>
-        <location filename="../../baramFlow/view/widgets/progress_dialog_simple.py" line="45"/>
         <source>Close</source>
-        <translation>닫기</translation>
+        <translation type="vanished">닫기</translation>
     </message>
 </context>
 <context>
@@ -11352,22 +11570,22 @@ Calculation stops as soon as possible</source>
 <context>
     <name>RedistributionTask</name>
     <message>
-        <location filename="../../baramFlow/openfoam/redistribution_task.py" line="58"/>
+        <location filename="../../baramFlow/openfoam/redistribution_task.py" line="59"/>
         <source>Reconstructing the case.</source>
         <translation>병렬연산을 위해 분할된 케이스를 모으고 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/openfoam/redistribution_task.py" line="72"/>
+        <location filename="../../baramFlow/openfoam/redistribution_task.py" line="73"/>
         <source>Reconstruction failed.</source>
         <translation>데이터 병합에 실패했습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/openfoam/redistribution_task.py" line="80"/>
+        <location filename="../../baramFlow/openfoam/redistribution_task.py" line="81"/>
         <source>Decomposing the case.</source>
         <translation>병렬연산을 위해 케이스를 분할하고 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/openfoam/redistribution_task.py" line="105"/>
+        <location filename="../../baramFlow/openfoam/redistribution_task.py" line="106"/>
         <location filename="../../baramMesh/openfoam/redistribution_task.py" line="95"/>
         <location filename="../../baramMesh/openfoam/redistribution_task.py" line="108"/>
         <source>Decomposition failed.</source>
@@ -16053,8 +16271,9 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
         <translation>벽면 흡수율</translation>
     </message>
     <message>
+        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="152"/>
         <source>Radiative Flux Relaxation</source>
-        <translation type="vanished">복사 열유속 완화</translation>
+        <translation>복사 열유속 완화</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="154"/>
@@ -16111,9 +16330,8 @@ Parameter name should be prefixed with a dollar sign ($) when it is used.</sourc
         <translation>외부로 방사율</translation>
     </message>
     <message>
-        <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="152"/>
         <source>Radiative Flux Relation</source>
-        <translation>복사열유속 완롸 계수</translation>
+        <translation type="vanished">복사열유속 완롸 계수</translation>
     </message>
     <message>
         <location filename="../../baramFlow/view/setup/boundary_conditions/wall_dialog.py" line="319"/>
