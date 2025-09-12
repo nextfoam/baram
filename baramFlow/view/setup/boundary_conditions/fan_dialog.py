@@ -60,7 +60,9 @@ class FanDialog(CoupledBoundaryConditionDialog):
     def _load(self):
         db = coredb.CoreDB()
 
+        self._setCoupledBoundary(db.getValue(self._xpath + '/coupledBoundary'))
         self._fanCurveName = UUID(db.getValue(self._xpath + '/fanCurveName'))
+
         if self._fanCurveName.int != 0:
             df = Project.instance().fileDB().getDataFrame(uuidToNnstr(self._fanCurveName))
             if df is not None:
