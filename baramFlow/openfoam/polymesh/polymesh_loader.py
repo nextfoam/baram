@@ -58,12 +58,21 @@ outletSearchPattern = re.compile('([^a-zA-Z]|^)outlet', re.IGNORECASE)
 
 emptyBoundaryName ='frontAndBackPlanes'
 
+typesByName = {
+    'symmetry':             BoundaryType.SYMMETRY,
+    'empty':                BoundaryType.EMPTY,
+    'wedge':                BoundaryType.WEDGE
+}
+
 
 def defaultBoundaryType(name, geometricalType):
     if name == emptyBoundaryName:
         return BoundaryType.EMPTY
 
     if geometricalType == GeometricalType.PATCH or geometricalType == GeometricalType.WALL:
+        if type_ := typesByName.get(name):
+            return type_
+
         if inMatchPattern.match(name) or inletSearchPattern.search(name):
             return BoundaryType.VELOCITY_INLET
 
@@ -119,6 +128,12 @@ class PolyMeshLoader(QObject):
         await self._updateMeshModel(vtkMesh)
 
     def _loadBoundaries(self):
+        def toTypedBoundaryConditions(dictBoundaries):
+            for name, boundary in dictBoundaries.items():
+                boundary['bctype'] = defaultBoundaryType(name, GeometricalType(boundary['type']))
+
+            return dictBoundaries
+
         boundaries = {}
 
         path = FileSystem.constantPath()
@@ -127,10 +142,10 @@ class PolyMeshLoader(QObject):
             regions = RegionProperties.loadRegions(path)
             for rname in regions:
                 boundaryDict = self.loadBoundaryDict(path / rname / Directory.POLY_MESH_DIRECTORY_NAME / 'boundary')
-                boundaries[rname] = boundaryDict.content
+                boundaries[rname] = toTypedBoundaryConditions(boundaryDict.content)
         else:
             boundaryDict = self.loadBoundaryDict(path / 'polyMesh' / 'boundary')
-            boundaries[''] = boundaryDict.content
+            boundaries[''] = toTypedBoundaryConditions(boundaryDict.content)
 
         return boundaries
 
@@ -211,6 +226,34 @@ class PolyMeshLoader(QObject):
 
             return None
 
+        def getCouplePatchByName(bcname: str):
+            masterName = bcname[:-6] if bcname.endswith('_slave') else None
+            slaveName = bcname + '_slave'
+            slave2Name = slaveName + '_slave'
+
+            hasSlave = False
+            notMaster = False
+            slave = None
+            master = None
+            for region in boundaries:
+                for name, b in boundaries[region].items():
+                    if b['bctype'] == BoundaryType.WALL:
+                        if name == slaveName:
+                            hasSlave = True
+                            slave = region, name
+                        elif name == slave2Name:
+                            notMaster = True
+                        elif name == masterName:
+                            master = region, name
+
+            if hasSlave:            # {bcname} is a master boundary when {bcname}_slave exists
+                if not notMaster:   # {bcname} cannot be a master when {bcname}_slave has slave {bcname}_slave_slave.
+                    return slave
+            elif masterName is not None:    # {bcname} is slave when {bcname} is {master}_slave and has no slave.
+                return master
+
+            return None
+
         db = coredb.CoreDB()
         if set(db.getRegions()) == set(r for r in vtkMesh if 'boundary' in vtkMesh[r]) and \
                 all(oldBoundaries(rname) == newBoundareis(rname) and oldCellZones(rname) == newCellZones(rname)
@@ -233,11 +276,10 @@ class PolyMeshLoader(QObject):
             for bcname in vtkMesh[rname]['boundary']:
                 boundary = boundaries[rname][bcname]
                 geometricalType = GeometricalType(boundary['type'])
-                boundaryType = defaultBoundaryType(bcname, geometricalType)
-                boundary['bcid'] = str(db.addBoundaryCondition(rname, bcname, boundary['type'], boundaryType.value))
+                boundaryType = boundary['bctype']
 
+                coupledBoundary = None
                 if BoundaryDB.needsCoupledBoundary(boundaryType.value):
-                    coupledBoundary = None
                     if geometricalType == GeometricalType.MAPPED_WALL and 'samplePatch' in boundary:
                         sampleRegion, samplePatch = getSamplePatch(rname, bcname)
                         if samplePatch and getSamplePatch(sampleRegion, samplePatch) == (rname, bcname):
@@ -246,10 +288,19 @@ class PolyMeshLoader(QObject):
                         neighbourPatch = getNeighbourPatch(rname, bcname)
                         if neighbourPatch and getNeighbourPatch(rname, neighbourPatch) == bcname:
                             coupledBoundary = boundaries[rname][neighbourPatch]
+                elif boundaryType == BoundaryType.WALL:     # Geometrica type is patch or wall.
+                    if couple := getCouplePatchByName(bcname):
+                        coupleRegion, coupleName = couple
+                        coupledBoundary = boundaries[coupleRegion][coupleName]
+                        if coupleRegion == rname:
+                            boundaryType = BoundaryType.INTERFACE
+                        else:
+                            boundaryType = BoundaryType.THERMO_COUPLED_WALL
 
-                    if coupledBoundary and 'bcid' in coupledBoundary:
-                        db.setValue(BoundaryDB.getXPath(boundary['bcid']) + '/coupledBoundary', coupledBoundary['bcid'])
-                        db.setValue(BoundaryDB.getXPath(coupledBoundary['bcid']) + '/coupledBoundary', boundary['bcid'])
+                boundary['bcid'] = str(db.addBoundaryCondition(rname, bcname, boundary['type'], boundaryType.value))
+                if coupledBoundary and 'bcid' in coupledBoundary:
+                    db.setValue(BoundaryDB.getXPath(boundary['bcid']) + '/coupledBoundary', coupledBoundary['bcid'])
+                    db.setValue(BoundaryDB.getXPath(coupledBoundary['bcid']) + '/coupledBoundary', boundary['bcid'])
 
             if 'zones' in vtkMesh[rname] and 'cellZones' in vtkMesh[rname]['zones']:
                 for czname in vtkMesh[rname]['zones']['cellZones']:

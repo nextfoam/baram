@@ -14,6 +14,7 @@ from baramFlow.view.widgets.content_page import ContentPage
 from .cell_zone_conditions_page_ui import Ui_CellZoneConditionsPage
 from .cell_zone_condition_dialog import CellZoneConditionDialog
 from .cell_zone_widget import CellZoneWidget, RegionWidget
+from .copy_dialog import CopyDialog
 
 
 class ListItem(QTreeWidgetItem):
@@ -75,6 +76,8 @@ class CellZoneConditionsPage(ContentPage):
         self._ui.cellZones.setSortingEnabled(True)
         self._ui.cellZones.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
+        self._items = {}
+
         self._connectSignalsSlots()
 
         self._actor = None
@@ -97,6 +100,7 @@ class CellZoneConditionsPage(ContentPage):
     def _connectSignalsSlots(self):
         self._ui.cellZones.doubleClicked.connect(self._edit)
         self._ui.cellZones.itemClicked.connect(self._cellZoneSelected)
+        self._ui.copy.clicked.connect(self._copy)
         self._ui.edit.clicked.connect(self._edit)
 
         Project.instance().solverStatusChanged.connect(self._updateEnabled)
@@ -148,6 +152,11 @@ class CellZoneConditionsPage(ContentPage):
 
         view.refresh()
 
+    def _copy(self):
+        self._dialog = CopyDialog(self)
+        self._dialog.cellZonesCopied.connect(self._refresh)
+        self._dialog.open()
+
     def _addRegion(self, rname=''):
         item = RegionItem(self._ui.cellZones)
 
@@ -155,6 +164,12 @@ class CellZoneConditionsPage(ContentPage):
         for czid, czname in cellZones:
             if CellZoneDB.isRegion(czname):
                 item.setRegion(czid, rname)
+                self._items[czid] = item
             else:
                 child = CellZoneItem(item)
                 child.setCellZone(czid, czname)
+                self._items[czid] = child
+
+    def _refresh(self, cellZones):
+        for czid in cellZones:
+            self._items[czid].update()

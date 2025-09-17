@@ -203,10 +203,17 @@ class BoundaryConditionsPage(ContentPage):
 
             cpid = db.getValue(xpath + '/coupledBoundary')
             if cpid != '0':
-                db.setValue(xpath + '/coupledBoundary', '0')
-                db.setValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary', '0')
-
-            if BoundaryDB.needsCoupledBoundary(bctype):
+                if (BoundaryDB.needsCoupledBoundary(bctype)
+                        and BoundaryDB.getBoundaryType(cpid) == currentType
+                        and bcid == int(db.getValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary'))):
+                    db.setValue(BoundaryDB.getXPath(cpid) + '/physicalType', bctype)
+                    self._boundaries[int(cpid)].reloadType()
+                else:
+                    db.setValue(xpath + '/coupledBoundary', '0')
+                    db.setValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary', '0')
+                    cpid = '0'
+                
+            if cpid == '0'and BoundaryDB.needsCoupledBoundary(bctype):
                 await AsyncMessageBox().information(
                     self, self.tr('Need to edit boundary condition'),
                     self.tr(f'The {BoundaryDB.dbBoundaryTypeToText(bctype)} boundary needs a coupled boundary.'))
