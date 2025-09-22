@@ -76,6 +76,10 @@ class ProcessInformationPage(ContentPage):
     def _load(self):
         self._batchCaseList.clear()
         self._batchCaseList.load()
+        name = self._caseManager.currentCaseName()
+        if name:
+            self._batchCaseList.setCurrentCase(name)
+
         self._statusChanged(self._caseManager.status(), None, False)
         self._updateUserParameters()
 

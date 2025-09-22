@@ -523,7 +523,7 @@ class CaseManager(QObject):
         self._batchStop = False
 
     def currentCaseName(self):
-        return self._caseName
+        return self._currentCase.name if self._currentCase else None
 
     def liveCase(self):
         return self._liveCase
