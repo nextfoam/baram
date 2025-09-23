@@ -331,7 +331,7 @@
             <string notr="true">text-align:left</string>
            </property>
            <property name="text">
-            <string>Exuast Fan</string>
+            <string>Exhaust Fan</string>
            </property>
            <attribute name="buttonGroup">
             <string notr="true">buttonGroup</string>
