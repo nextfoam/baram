@@ -88,10 +88,22 @@ def getCellZoneElements(rname=None):
 def copyCellZoneConditions(sourceID, targetID):
     db = coredb.CoreDB()
     old = db.getElement(CellZoneDB.getXPath(targetID))
+    parent = old.getparent()
+    name = old.find('name', namespaces=xml.nsmap).text
+
     new = copy.deepcopy(db.getElement(CellZoneDB.getXPath(sourceID)))
     new.set('czid', str(targetID))
-    new.find('name', namespaces=xml.nsmap).text = old.find('name', namespaces=xml.nsmap).text
-    old.getparent().replace(old, new)
+    new.find('name', namespaces=xml.nsmap).text = name
+    parent.replace(old, new)
+    
+    if CellZoneDB.isRegion(name):
+        sourceRegion = db.getElement(RegionDB.getXPath(CellZoneDB.getCellZoneRegion(sourceID)))
+        targetRegion = parent.getparent()
+
+        for item in ['material', 'secondaryMaterials', 'phaseInteractions']:
+            old = targetRegion.find(item, namespaces=xml.nsmap)
+            new = copy.deepcopy(sourceRegion.find(item, namespaces=xml.nsmap))
+            targetRegion.replace(old, new)
 
 
 def _addMaterialSourceTerm(parent, mid):

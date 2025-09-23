@@ -223,14 +223,26 @@ class BoundaryConditionsPage(ContentPage):
     def _boundaryTypeChanged(self, bcid):
         self._boundaries[bcid].reloadType()
 
-    def _copy(self):
-        self._dialog = CopyDialog(self)
-        self._dialog.boundariesCopied.connect(self._refresh)
-        self._dialog.open()
+    @qasync.asyncSlot()
+    async def _copy(self):
+        if CaseManager().isActive():
+            return
+
+        if item := self._ui.boundaries.currentItem():
+            bcid = item.type()
+            bctype = self._boundaries[bcid].bctype()
+            if BoundaryDB.needsCoupledBoundary(bctype):
+                await AsyncMessageBox().information(
+                    self, self.tr('Input Error'),
+                    self.tr('{} boundary conditions cannot be copied.'.format(BoundaryDB.dbBoundaryTypeToText(bctype))))
+                return
+
+            self._dialog = CopyDialog(self, bcid)
+            self._dialog.boundariesCopied.connect(self._refresh)
+            self._dialog.open()
 
     def _edit(self):
-        item = self._ui.boundaries.currentItem()
-        if item:
+        if item := self._ui.boundaries.currentItem():
             bcid = item.type()
             if bcid:
                 bctype = self._boundaries[bcid].bctype()

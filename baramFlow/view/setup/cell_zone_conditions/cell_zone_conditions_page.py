@@ -14,7 +14,7 @@ from baramFlow.view.widgets.content_page import ContentPage
 from .cell_zone_conditions_page_ui import Ui_CellZoneConditionsPage
 from .cell_zone_condition_dialog import CellZoneConditionDialog
 from .cell_zone_widget import CellZoneWidget, RegionWidget
-from .copy_dialog import CopyDialog
+from .copy_dialog import CopyDialog, CopyMode
 
 
 class ListItem(QTreeWidgetItem):
@@ -130,11 +130,10 @@ class CellZoneConditionsPage(ContentPage):
         if CaseManager().isActive():
             return
 
-        item = self._ui.cellZones.currentItem()
-        self._dialog = CellZoneConditionDialog(self, item.czid(), item.rname())
-        self._dialog.accepted.connect(item.update)
-
-        self._dialog.open()
+        if item := self._ui.cellZones.currentItem():
+            self._dialog = CellZoneConditionDialog(self, item.czid(), item.rname())
+            self._dialog.accepted.connect(item.update)
+            self._dialog.open()
 
     def _cellZoneSelected(self, item):
         view = app.renderingView
@@ -153,9 +152,13 @@ class CellZoneConditionsPage(ContentPage):
         view.refresh()
 
     def _copy(self):
-        self._dialog = CopyDialog(self)
-        self._dialog.cellZonesCopied.connect(self._refresh)
-        self._dialog.open()
+        if CaseManager().isActive():
+            return
+
+        if item := self._ui.cellZones.currentItem():
+            self._dialog = CopyDialog(self, item.czid(), CopyMode.REGION if item.isRegion() else CopyMode.CELL_ZONE)
+            self._dialog.cellZonesCopied.connect(self._refresh)
+            self._dialog.open()
 
     def _addRegion(self, rname=''):
         item = RegionItem(self._ui.cellZones)
