@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import qasync
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTreeWidgetItem
 from vtkmodules.vtkCommonColor import vtkNamedColors
@@ -11,6 +12,7 @@ from baramFlow.coredb import coredb
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.project import Project
 from baramFlow.view.widgets.content_page import ContentPage
+from widgets.async_message_box import AsyncMessageBox
 from .cell_zone_conditions_page_ui import Ui_CellZoneConditionsPage
 from .cell_zone_condition_dialog import CellZoneConditionDialog
 from .cell_zone_widget import CellZoneWidget, RegionWidget
@@ -77,12 +79,10 @@ class CellZoneConditionsPage(ContentPage):
         self._ui.cellZones.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
         self._items = {}
-
-        self._connectSignalsSlots()
-
         self._actor = None
 
-        self._updateEnabled()
+        self._connectSignalsSlots()
+        self._updateCopyEnabled()
         self._load()
 
     def hideEvent(self, ev):
@@ -97,21 +97,21 @@ class CellZoneConditionsPage(ContentPage):
 
         return super().hideEvent(ev)
 
-    def _connectSignalsSlots(self):
-        self._ui.cellZones.doubleClicked.connect(self._edit)
-        self._ui.cellZones.itemClicked.connect(self._cellZoneSelected)
-        self._ui.copy.clicked.connect(self._copy)
-        self._ui.edit.clicked.connect(self._edit)
-
-        Project.instance().solverStatusChanged.connect(self._updateEnabled)
-
-    def _disconnectSignalsSlots(self):
-        Project.instance().solverStatusChanged.disconnect(self._updateEnabled)
-
     def closeEvent(self, event):
         self._disconnectSignalsSlots()
 
         super().closeEvent(event)
+
+    def _connectSignalsSlots(self):
+        self._ui.cellZones.itemDoubleClicked.connect(self._edit)
+        self._ui.cellZones.currentItemChanged.connect(self._cellZoneSelected)
+        self._ui.copy.clicked.connect(self._copy)
+        self._ui.edit.clicked.connect(self._edit)
+
+        Project.instance().solverStatusChanged.connect(self._updateCopyEnabled)
+
+    def _disconnectSignalsSlots(self):
+        Project.instance().solverStatusChanged.disconnect(self._updateCopyEnabled)
 
     def _load(self):
         regions = coredb.CoreDB().getRegions()
@@ -123,13 +123,10 @@ class CellZoneConditionsPage(ContentPage):
 
         self._ui.cellZones.expandAll()
 
-    def _updateEnabled(self):
+    def _updateCopyEnabled(self):
         self._ui.edit.setEnabled(not CaseManager().isActive())
 
     def _edit(self):
-        if CaseManager().isActive():
-            return
-
         if item := self._ui.cellZones.currentItem():
             self._dialog = CellZoneConditionDialog(self, item.czid(), item.rname())
             self._dialog.accepted.connect(item.update)
@@ -151,14 +148,15 @@ class CellZoneConditionsPage(ContentPage):
 
         view.refresh()
 
-    def _copy(self):
-        if CaseManager().isActive():
-            return
-
+    @qasync.asyncSlot()
+    async def _copy(self):
         if item := self._ui.cellZones.currentItem():
             self._dialog = CopyDialog(self, item.czid(), CopyMode.REGION if item.isRegion() else CopyMode.CELL_ZONE)
             self._dialog.cellZonesCopied.connect(self._refresh)
             self._dialog.open()
+        else:
+            await AsyncMessageBox().information(
+                self, self.tr('Input Error'), self.tr('Select a source region or cell zone to copy its conditions'))
 
     def _addRegion(self, rname=''):
         item = RegionItem(self._ui.cellZones)
