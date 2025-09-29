@@ -4,8 +4,9 @@
 
 from PySide6.QtWidgets import QWidget
 
+from baramFlow.base.monitor.monitor import getMonitorField
 from baramFlow.coredb import coredb
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
+from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
 from baramFlow.coredb.boundary_db import BoundaryDB
@@ -69,12 +70,10 @@ class PointMonitorWidget(MonitorWidget):
         db = coredb.CoreDB()
         xpath = MonitorDB.getPointMonitorXPath(self._name)
 
-        field = FieldHelper.DBFieldKeyToText(Field(db.getValue(xpath + '/field/field')),
-                                             db.getValue(xpath + '/field/fieldID'))
+        field = getMonitorField(MonitorDB.getPointMonitorXPath(self._name)).displayText()
         coordinateX = db.getValue(xpath + '/coordinate/x')
         coordinateY = db.getValue(xpath + '/coordinate/y')
         coordinateZ = db.getValue(xpath + '/coordinate/z')
-        snapOntoBoundary = db.getValue(xpath + '/snapOntoBoundary')
 
         self._ui.name.setText(f'{self._name}')
         self._ui.type.setText(f'{field} on Point ({coordinateX}, {coordinateY}, {coordinateZ})')
@@ -99,9 +98,8 @@ class SurfaceMonitorWidget(MonitorWidget):
         reportType = SurfaceReportType(db.getValue(xpath + '/reportType'))
         title = MonitorDB.surfaceReportTypeToText(reportType)
         if reportType not in (SurfaceReportType.MASS_FLOW_RATE, SurfaceReportType.VOLUME_FLOW_RATE):
-            title += (' '
-                      + FieldHelper.DBFieldKeyToText(Field(db.getValue(xpath + '/field/field')),
-                                                     db.getValue(xpath + '/field/fieldID')))
+            title += ' ' + getMonitorField(MonitorDB.getSurfaceMonitorXPath(self._name)).displayText()
+
         bcid = db.getValue(xpath + '/surface')
         surface = BoundaryDB.getBoundaryName(bcid)
         region = BoundaryDB.getBoundaryRegion(bcid)
@@ -128,8 +126,7 @@ class VolumeMonitorWidget(MonitorWidget):
         xpath = MonitorDB.getVolumeMonitorXPath(self._name)
 
         reportType = MonitorDB.volumeReportTypeToText(VolumeReportType(db.getValue(xpath + '/reportType')))
-        field = FieldHelper.DBFieldKeyToText(Field(db.getValue(xpath + '/field/field')),
-                                             db.getValue(xpath + '/field/fieldID'))
+        field = getMonitorField(MonitorDB.getVolumeMonitorXPath(self._name)).displayText()
         czid = db.getValue(xpath + '/volume')
         volume = CellZoneDB.getCellZoneName(czid)
         region = CellZoneDB.getCellZoneRegion(czid)

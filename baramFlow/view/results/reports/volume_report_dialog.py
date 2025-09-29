@@ -15,7 +15,8 @@ from widgets.async_message_box import AsyncMessageBox
 from widgets.progress_dialog import ProgressDialog
 from widgets.selector_dialog import SelectorDialog
 
-from baramFlow.base.field import CollateralField, Field, FieldType, SpecieField, UserScalarField, VectorComponent
+from baramFlow.base.constants import FieldType, VectorComponent
+from baramFlow.base.field import CollateralField, Field, SpecieField, UserScalarField
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.coredb.region_db import RegionDB

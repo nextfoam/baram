@@ -3,7 +3,6 @@
 
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
-
 from baramFlow.coredb.numerical_db import NumericalDB
 
 
@@ -116,14 +115,14 @@ def _foWallYPlusBase():
 def _additionalEntriesForMonitor(rname: str, interval):
     if GeneralDB.isTimeTransient():
         data =  {
-            'executeControl': 'writeTime',
+            'executeControl': 'timeStep',
             'executeInterval': interval,
-            'writeControl': 'writeTime',
+            'writeControl': 'timeStep',
             'writeInterval': interval,
         }
     else:
         data = {
-            'executeControl': 'onEnd',
+            'executeControl': 'timeStep',
             'writeControl': 'onEnd',
         }
 

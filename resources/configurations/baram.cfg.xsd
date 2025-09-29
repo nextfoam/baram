@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="11">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="12">
 
     <!-- type definitions -->
     <xs:simpleType name="uuidType">
@@ -175,31 +175,6 @@
             <xs:element name="x" type="inputNumberListType"/>
             <xs:element name="y" type="inputNumberListType"/>
             <xs:element name="z" type="inputNumberListType"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="scalarFieldType">
-        <xs:sequence>
-            <xs:element name="field" default="pressure">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:enumeration value="pressure"/>
-                        <xs:enumeration value="speed"/>
-                        <xs:enumeration value="xVelocity"/>
-                        <xs:enumeration value="yVelocity"/>
-                        <xs:enumeration value="zVelocity"/>
-                        <xs:enumeration value="turbulentKineticEnergy"/>
-                        <xs:enumeration value="turbulentDissipationRate"/>
-                        <xs:enumeration value="specificDissipationRate"/>
-                        <xs:enumeration value="modifiedTurbulentViscosity"/>
-                        <xs:enumeration value="temperature"/>
-                        <xs:enumeration value="density"/>
-                        <xs:enumeration value="material"/>
-                        <xs:enumeration value="scalar"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:element>
-            <xs:element name="fieldID" type="xs:positiveInteger" default="1"/>  <!-- set if "field" is "material" or "scalar" -->
         </xs:sequence>
     </xs:complexType>
 
@@ -2119,7 +2094,9 @@
                 <xs:element name="name" type="xs:string"/>
                 <xs:element name="showChart" type="xs:boolean" default="true"/>
                 <xs:element name="writeInterval" type="inputNumberType"/>
-                <xs:element name="field" type="scalarFieldType"/>
+                <xs:element name="fieldCategory" type="fieldCategoryType"/>
+                <xs:element name="fieldCodeName" type="xs:string"/>
+                <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
                 <xs:element name="interval" type="xs:positiveInteger" default="1"/>
                 <xs:element name="coordinate" type="vector"/>
                 <xs:element name="snapOntoBoundary" type="xs:boolean" default="false"/>
@@ -2150,7 +2127,9 @@
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:element>
-                <xs:element name="field" type="scalarFieldType"/>
+                <xs:element name="fieldCategory" type="fieldCategoryType"/>
+                <xs:element name="fieldCodeName" type="xs:string"/>
+                <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
                 <xs:element name="surface" type="xs:nonNegativeInteger"/>  <!-- boundary condition bcid -->
             </xs:sequence>
         </xs:complexType>
@@ -2173,7 +2152,9 @@
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:element>
-                <xs:element name="field" type="scalarFieldType"/>
+                <xs:element name="fieldCategory" type="fieldCategoryType"/>
+                <xs:element name="fieldCodeName" type="xs:string"/>
+                <xs:element name="fieldComponent" type="xs:nonNegativeInteger" default="0"/>
                 <xs:element name="volume" type="xs:nonNegativeInteger"/>   <!-- cellZone czid -->
             </xs:sequence>
         </xs:complexType>

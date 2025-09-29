@@ -7,6 +7,7 @@ from enum import Enum
 from PySide6.QtCore import QObject
 
 import baramFlow.coredb.libdb as xml
+from baramFlow.base.constants import FieldCategory
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.material_db import IMaterialObserver, MaterialDB
@@ -143,7 +144,9 @@ class UserDefinedScalarsDB:
 
     @classmethod
     def isReferenced(cls, scalarID):
-        return int(scalarID) and coredb.CoreDB().exists(f'monitors/*/*/field[field="scalar"][fieldID="{scalarID}"]')
+        return (int(scalarID)
+                and coredb.CoreDB().exists(
+                    f'monitors/*/*[fieldCategory="{FieldCategory.USER_SCALAR.value}"][fieldCodeName="{scalarID}"]'))
 
 
 class MaterialObserver(IMaterialObserver):

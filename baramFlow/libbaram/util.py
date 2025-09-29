@@ -6,7 +6,8 @@ from vtkmodules.vtkCommonCore import vtkDataArray, vtkMath
 from vtkmodules.vtkCommonDataModel import vtkDataSet
 from vtkmodules.vtkFiltersCore import vtkArrayCalculator
 
-from baramFlow.base.field import Field, VectorComponent
+from baramFlow.base.constants import VectorComponent
+from baramFlow.base.field import Field
 from baramFlow.openfoam.solver_field import getSolverFieldName
 
 

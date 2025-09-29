@@ -1014,6 +1014,54 @@ def _version_11(root: etree.Element):
 
     #root.set('version', '12')
 
+    for e in root.findall('monitors/*/*/field', namespaces=_nsmap):
+        logger.debug(f'    Replacing text of {e} to "fieldCategory", "fieldCodeName' and "fieldComponent")
+
+        p = e.getparent()
+        fieldCategory = 'basic'
+        fieldCodeName = e.find('field', namespaces=_nsmap).text
+        fieldID = e.find('fieldID', namespaces=_nsmap).text
+        fieldComponent = '1'
+
+        if fieldCodeName == 'speed':
+            fieldCodeName = 'Velocity'
+        elif fieldCodeName == 'xVelocity':
+            fieldCodeName = 'Velocity'
+            fieldComponent = '2'
+        elif fieldCodeName == 'yVelocity':
+            fieldCodeName = 'Velocity'
+            fieldComponent = '4'
+        elif fieldCodeName == 'zVelocity':
+            fieldCodeName = 'Velocity'
+            fieldComponent = '8'
+        elif fieldCodeName == 'material':
+            if root.find('/models/multiphaseModels/model', namespaces=_nsmap).text != 'off':
+                fieldCategory = 'phase'
+                fieldCodeName = fieldID
+            elif root.find('/models/speciesModels', namespaces=_nsmap).text == 'on':
+                fieldCategory = 'specie'
+                fieldCodeName = fieldID
+        elif fieldCodeName == 'scalar':
+            fieldCategory = 'userScalar'
+            fieldCodeName = fieldID
+
+        categoryElement = etree.Element(f'{{{_ns}}}fieldCategory')
+        categoryElement.text = fieldCategory
+
+        codeNameElement = etree.Element(f'{{{_ns}}}fieldCodeName')
+        codeNameElement.text = fieldCodeName
+
+        componentElement = etree.Element(f'{{{_ns}}}fieldComponent')
+        componentElement.text = fieldComponent
+
+        p.remove(e)
+
+        index = 3 if p.find('reportType', namespaces=_nsmap) is None else 4
+
+        for child in [categoryElement, codeNameElement, componentElement]:
+            p.insert(index, child)
+            index += 1
+
 
 _fTable = [
     None,
@@ -1027,6 +1075,7 @@ _fTable = [
     _version_8,
     _version_9,
     _version_10,
+    _version_11
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))

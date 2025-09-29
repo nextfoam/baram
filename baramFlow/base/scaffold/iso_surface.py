@@ -6,13 +6,13 @@ from uuid import UUID
 
 from lxml import etree
 
-from vtkmodules.vtkCommonDataModel import vtkDataObject, vtkMultiBlockDataSet, vtkPlane, vtkPolyData, vtkSphere
-from vtkmodules.vtkFiltersCore import vtkArrayCalculator, vtkContourFilter, vtkCutter
+from vtkmodules.vtkCommonDataModel import vtkDataObject, vtkMultiBlockDataSet, vtkPolyData
+from vtkmodules.vtkFiltersCore import vtkArrayCalculator, vtkContourFilter
 
+from baramFlow.base.constants import FieldCategory, FieldType, VectorComponent
+from baramFlow.base.field import Field, getFieldInstance, VELOCITY
 from baramFlow.coredb import coredb
 from baramFlow.coredb.libdb import nsmap
-from baramFlow.base.field import COORDINATE, Field, FieldCategory, FieldType, VectorComponent, getFieldInstance
-from baramFlow.base.field import VELOCITY
 from baramFlow.base.scaffold.scaffold import Scaffold
 from baramFlow.openfoam.solver_field import getSolverFieldName
 from libbaram.openfoam.polymesh import collectInternalMesh
