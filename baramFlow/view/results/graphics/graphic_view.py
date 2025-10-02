@@ -87,6 +87,7 @@ class VisualReportView(RenderingView):
         actor.UnconstrainedFontSizeOn()
 
         actor.SetTitle(graphic.fieldDisplayName)
+        actor.SetLabelFormat('%-#6.5g')  # VTK default is "%-#6.3g". Now change the number of significant digits to "5"
 
         titleTextProp: vtkTextProperty = actor.GetTitleTextProperty()
         titleTextProp.SetFontFamily(VTK_FONT_FILE)
