@@ -6,10 +6,10 @@ from PySide6.QtWidgets import QDialog
 
 from baramFlow.base.constants import FieldCategory
 from baramFlow.base.field import TEMPERATURE
+from baramFlow.base.material.material import Phase
 from baramFlow.base.monitor.monitor import getMonitorField
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
-from baramFlow.coredb.material_schema import Phase
 from baramFlow.coredb.region_db import RegionDB
 from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog

@@ -7,11 +7,12 @@ from PySide6.QtWidgets import QDialog
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.base.material.material import Phase
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import Specification, Phase, DensitySpecification, ViscositySpecification
+from baramFlow.coredb.material_schema import Specification, DensitySpecification, ViscositySpecification
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from .mixture_dialog_ui import Ui_MixtureDialog

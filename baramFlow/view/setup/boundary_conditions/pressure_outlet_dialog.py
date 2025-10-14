@@ -5,11 +5,12 @@ import qasync
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.base.material.material import Phase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb_writer import CoreDBWriter
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import Phase, Specification
+from baramFlow.coredb.material_schema import Specification
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog

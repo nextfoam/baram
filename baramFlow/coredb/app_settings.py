@@ -8,20 +8,18 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-import pandas as pd
 import yaml
 from filelock import FileLock
 from PySide6.QtCore import QLocale, QRect
 
+from baramFlow.base.material.database import materialsBase
 from libbaram.mpi import ParallelEnvironment, ParallelType
 from resources import resource
-
-from baramFlow.coredb.materials_base import MaterialsBase
 
 FORMAT_VERSION = 1
 RECENT_PROJECTS_NUMBER = 100
 
-MATERIALS_FILE_NAME = 'materials.csv'
+MATERIALS_FILE_NAME = 'materials.yaml'
 
 
 class SettingKey(Enum):
@@ -68,7 +66,7 @@ class AppSettings:
 
         if not cls._materialsDBFile.exists():
             shutil.copy(resource.file(MATERIALS_FILE_NAME), cls._materialsDBFile)
-        MaterialsBase.load(cls._materialsDBFile)
+        materialsBase.load(cls._materialsDBFile)
 
     @classmethod
     def casesPath(cls):
@@ -242,10 +240,3 @@ class AppSettings:
         if project[num] in recentCases:
             recentCases.remove(project[num])
         cls._save(settings)
-
-    @classmethod
-    def updateMaterialsDB(cls, materials):
-        df = pd.DataFrame.from_dict(materials, orient='index')
-        df.to_csv(cls._materialsDBFile, index_label='name')
-
-        MaterialsBase.update(materials)
