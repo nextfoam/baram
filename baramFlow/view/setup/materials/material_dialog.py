@@ -5,12 +5,13 @@ import qasync
 
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.base.material.material import Phase
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import Phase, MaterialType
+from baramFlow.coredb.material_schema import MaterialType
 from baramFlow.coredb.material_schema import Specification, ViscositySpecification, DensitySpecification
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB

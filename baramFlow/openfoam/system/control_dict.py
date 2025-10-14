@@ -8,6 +8,7 @@ from baramFlow.app import app
 from baramFlow.base.constants import FieldType, VectorComponent, FieldCategory
 from baramFlow.base.field import HEAT_TRANSFER_COEFF, WALL_HEAT_FLUX, AGE, MACH_NUMBER, Q, TOTAL_PRESSURE, VORTICITY
 from baramFlow.base.field import WALL_SHEAR_STRESS, WALL_Y_PLUS
+from baramFlow.base.material.material import Phase
 from baramFlow.base.monitor.monitor import getMonitorField
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, WallMotion, DirectionSpecificationMethod
@@ -15,7 +16,6 @@ from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import Phase
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.coredb.numerical_db import NumericalDB

@@ -13,11 +13,11 @@ from widgets.rendering.point_widget import PointWidget
 from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.app import app
+from baramFlow.base.material.material import Phase
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
-from baramFlow.coredb.material_schema import Phase
 from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB

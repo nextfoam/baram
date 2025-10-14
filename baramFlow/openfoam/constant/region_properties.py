@@ -6,9 +6,9 @@ from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 from libbaram.openfoam.constants import Directory
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
+from baramFlow.base.material.material import Phase
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.region_db import RegionDB
-from baramFlow.coredb.material_schema import Phase
 from baramFlow.openfoam.file_system import FileSystem, FileLoadingError
 from libbaram.openfoam.polymesh import isPolyMesh
 
