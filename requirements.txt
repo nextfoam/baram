@@ -8,7 +8,7 @@ pandas==2.2.3
 psutil==5.9.5
 PySide6-Essentials==6.4.3
 python-dateutil==2.8.2
-PyYAML==6.0
+PyYAML==6.0.3
 qasync==0.27.1
 superqt==0.6.1
 tables==3.10.2
