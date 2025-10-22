@@ -129,12 +129,13 @@ class LiveCase(Case):
         self._status = SolverStatus.NONE
         FileSystem.createCase(self._path)
 
-    async def run(self):
+    async def run(self, skipCaseGeneration=False):
         if FileSystem.caseRoot() != self._path:
             raise RuntimeError
 
         try:
-            await self._generateCase()
+            if not skipCaseGeneration:
+                await self._generateCase()
 
             process = launchSolver(findSolver(), self._path, self._project.uuid, parallel.getEnvironment())
             if process:
@@ -203,7 +204,7 @@ class BatchCase(Case):
 
         super().load()
 
-    async def run(self):
+    async def run(self, skipCaseGeneration=False):
         try:
             if FileSystem.caseRoot() != self._path:
                 raise RuntimeError
@@ -462,7 +463,7 @@ class PODCase(Case):
         #     if f.name == "polyMesh": continue
         #     if f.name.endswith(".dat"): continue
         #     shutil.copy(f, batchPath / "constant" / f.name)
-		# 
+		#
         # systemPath = casePath / "system"
         # for f in systemPath.iterdir():
         #     if f.name == "decomposeParDict": continue
@@ -581,9 +582,9 @@ class CaseManager(QObject):
     def liveProcess(self):
         return self._liveCase.process()
 
-    async def liveRun(self):
+    async def liveRun(self, skipCaseGeneration=False):
         case = await self.loadLiveCase()
-        await case.run()
+        await case.run(skipCaseGeneration)
 
     async def batchRun(self, cases):
         self._batchStop = False
@@ -624,7 +625,7 @@ class CaseManager(QObject):
         tempPodCase.load()
         self._setCurrentCase(tempPodCase)
         tempPodCase.saveToBatchCase(caseName)
-		
+
     async def podAddToBatchList(self, caseName, paramsToReconstruct):
         batchStatuses = self._project.loadBatchStatuses()
         batchStatuses[caseName] = 'ENDED'

@@ -11,19 +11,21 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from uuid import UUID
 
+from PySide6.QtGui import QAction
 import qasync
 import asyncio
 
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
-from PySide6.QtCore import Qt, QEvent, QTimer
+from PySide6.QtCore import QCoreApplication, Qt, QEvent, QTimer
 
+from baramFlow.base import expert_mode
 from baramFlow.base.graphic.graphics_db import GraphicsDB
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from baramFlow.view.results.graphics.graphic_dock import GraphicDock
 from libbaram.exception import CanceledException
 from libbaram.openfoam.polymesh import removeVoidBoundaries
-from libbaram.run import hasUtility
+from libbaram.run import hasUtility, openTerminal
 from libbaram.utils import getFit
 from widgets.async_message_box import AsyncMessageBox
 from widgets.new_project_dialog import NewProjectDialog
@@ -116,7 +118,7 @@ class MenuPage:
         return self._widget or not self._pageClass
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
     def __init__(self):
         super().__init__()
         self._ui = Ui_MainWindow()
@@ -172,7 +174,7 @@ class MainWindow(QMainWindow):
         }
 
         self._dialog = None
-
+        self._actionTerminal = None
         self._closeState = CloseState.NONE
 
         self._backgroundTasks = set()
@@ -229,6 +231,7 @@ class MainWindow(QMainWindow):
         if event.type() == QEvent.Type.LanguageChange:
             self._ui.retranslateUi(self)
             self._navigatorView.translate()
+            self._retranslateUi()
 
             for page in self._menuPages.values():
                 if page.isCreated():
@@ -285,6 +288,8 @@ class MainWindow(QMainWindow):
         GraphicsDB().reportAdded.asyncConnect(self._reportAdded)
         GraphicsDB().reportUpdated.asyncConnect(self._reportUpdated)
         GraphicsDB().removingReport.asyncConnect(self._reportRemoving)
+
+        expert_mode.registerObserver(self)
 
     def _disconnectSignalsSlots(self):
         self._project.projectOpened.disconnect(self._projectOpened)
@@ -952,3 +957,26 @@ class MainWindow(QMainWindow):
             dockWidget.close()
 
             del self._docks[uuid]
+
+    def _enableTerminalMenu(self):
+        self._actionTerminal = QAction(self)
+        self._actionTerminal.setText(QCoreApplication.translate("MainWindow", u"&Terminal", None))
+        self._actionTerminal.triggered.connect(self._actionTerminalTriggered)
+
+        self._ui.menuExternal_Tools.addAction(self._actionTerminal)
+
+    def _actionTerminalTriggered(self):
+        path = FileSystem.caseRoot()
+        if path is None or not path.is_dir():
+            return
+
+        task = asyncio.create_task(openTerminal(path))
+        self._backgroundTasks.add(task)
+        task.add_done_callback(self._backgroundTasks.discard)
+
+    def expertModeAtivated(self):
+        self._enableTerminalMenu()
+
+    def _retranslateUi(self):
+        if self._actionTerminal is not None:
+            self._actionTerminal.setText(QCoreApplication.translate("MainWindow", u"&Terminal", None))

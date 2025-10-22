@@ -172,10 +172,16 @@ class RunSubprocess(QObject):
 
 class RunExternalScript(RunSubprocess):
     async def start(self):
-        ENV = os.environ.copy()
+        env = os.environ.copy()
+        paths = env['PATH'].split(os.pathsep)
         if not self._useVenv:
-            excluding = [os.path.join('venv', 'bin'), os.path.join('venv', 'Lib'), os.path.join('venv', 'Scripts')]
-            ENV['PATH'] = os.pathsep.join([path for path in ENV['PATH'].split(os.pathsep) if not any([pattern in path for pattern in excluding])])
+            if 'VIRTUAL_ENV' in env:
+                vpath = env['VIRTUAL_ENV']
+                env['PATH'] = os.pathsep.join([p for p in paths if not p.startswith(vpath)])
+
+            vvars = ['VIRTUAL_ENV', 'PYTHONHOME', 'CONDA_PREFIX', 'CONDA_DEFAULT_ENV']
+            for var in vvars:
+                env.pop(var, None)
 
         creationflags = 0
         startupinfo = None
@@ -188,7 +194,7 @@ class RunExternalScript(RunSubprocess):
             )
 
         self._proc = await asyncio.create_subprocess_exec(self._program, *self._args,
-                                                          env=ENV, cwd=str(self._cwd),
+                                                          env=env, cwd=str(self._cwd),
                                                           creationflags=creationflags,
                                                           startupinfo=startupinfo,
                                                           stdout=asyncio.subprocess.PIPE,
