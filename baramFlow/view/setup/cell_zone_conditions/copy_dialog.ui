@@ -44,7 +44,7 @@
          <item>
           <widget class="QLabel" name="label">
            <property name="text">
-            <string>Source Cell Zone</string>
+            <string>Source</string>
            </property>
           </widget>
          </item>
@@ -76,7 +76,7 @@
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Target Cell Zones</string>
+            <string>Targets</string>
            </property>
           </widget>
          </item>

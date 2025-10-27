@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 
 from pathlib import Path
+from functools import partial
 
 import qasync
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QListWidgetItem
 
 from libbaram.utils import getFit
+from widgets.async_message_box import AsyncMessageBox
 
 from baramMesh.app import app
-from widgets.async_message_box import AsyncMessageBox
 from .project_dialog_ui import Ui_ProjectSelector
 from .project_widget import ProjectWidget
 
@@ -49,7 +50,7 @@ class ProjectDialog(QDialog):
             item.setSizeHint(widget.sizeHint())
             self._ui.recentCases.addItem(item)
             self._ui.recentCases.setItemWidget(item, widget)
-            widget.removeClicked.connect(lambda: self._remove(widget))
+            widget.removeClicked.connect(partial(self._remove, widget))
 
     def getProjectDirectory(self):
         return self._projectDirectory

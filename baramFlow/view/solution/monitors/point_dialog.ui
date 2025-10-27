@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>374</width>
-    <height>368</height>
+    <height>398</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -73,7 +73,17 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QComboBox" name="field"/>
+          <widget class="PythonComboBox" name="field"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Component</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="VectorComponentComboBox" name="fieldComponent"/>
          </item>
         </layout>
        </widget>
@@ -210,6 +220,16 @@
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>PythonComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widgets.python_combo_box</header>
+  </customwidget>
+  <customwidget>
+   <class>VectorComponentComboBox</class>
+   <extends>QComboBox</extends>
+   <header>baramFlow.view.widgets.vector_component_combo_box</header>
+  </customwidget>
   <customwidget>
    <class>MonitorNameEdit</class>
    <extends>QLineEdit</extends>

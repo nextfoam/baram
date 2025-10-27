@@ -4,21 +4,25 @@
 import qasync
 from PySide6.QtWidgets import QDialog
 
+from baramFlow.base.constants import FieldCategory
+from baramFlow.base.field import TEMPERATURE
+from baramFlow.base.monitor.monitor import getMonitorField
 from libbaram.mesh import Bounds
 from widgets.async_message_box import AsyncMessageBox
 from widgets.rendering.point_widget import PointWidget
 from widgets.selector_dialog import SelectorDialog
 
 from baramFlow.app import app
+from baramFlow.base.material.material import Phase
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
-from baramFlow.coredb.material_schema import Phase
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
+from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.mesh.vtk_loader import isPointInDataSet
+from baramFlow.view.widgets.post_field_selector import loadFieldsComboBox, connectFieldsToComponents
 from .point_dialog_ui import Ui_PointDialog
 
 
@@ -44,7 +48,7 @@ class PointDialog(QDialog):
         self._bounds = Bounds(*self._renderingView.getBounds())
         self._pointWidget = PointWidget(self._renderingView)
 
-        self._setupFieldCombo(FieldHelper.getAvailableFields())
+        loadFieldsComboBox(self._ui.field)
 
         if name is None:
             db = coredb.CoreDB()
@@ -89,13 +93,17 @@ class PointDialog(QDialog):
         self._ui.coordinateZ.editingFinished.connect(self._movePointWidget)
         self._ui.ok.clicked.connect(self._accept)
 
+        connectFieldsToComponents(self._ui.field, self._ui.fieldComponent)
+
     def _load(self):
         db = coredb.CoreDB()
         self._ui.name.setText(self._name)
         self._ui.writeInterval.setText(db.getValue(self._xpath + '/writeInterval'))
-        self._ui.field.setCurrentText(
-            FieldHelper.DBFieldKeyToText(Field(db.getValue(self._xpath + '/field/field')),
-                                         db.getValue(self._xpath + '/field/fieldID')))
+
+        field = getMonitorField(MonitorDB.getPointMonitorXPath(self._name))
+        self._ui.field.setCurrentIndex(self._ui.field.findData(field.field))
+        self._ui.fieldComponent.setCurrentIndex(self._ui.fieldComponent.findData(field.component))
+
         self._ui.coordinateX.setText(db.getValue(self._xpath + '/coordinate/x'))
         self._ui.coordinateY.setText(db.getValue(self._xpath + '/coordinate/y'))
         self._ui.coordinateZ.setText(db.getValue(self._xpath + '/coordinate/z'))
@@ -117,6 +125,11 @@ class PointDialog(QDialog):
                 await AsyncMessageBox().information(self, self.tr("Input Error"), self.tr("Enter Monitor Name."))
                 return
 
+        field = self._ui.field.currentData()
+        if field is None:
+            await AsyncMessageBox().information(self, self.tr("Input Error"), self.tr("Select Field."))
+            return
+
         db = coredb.CoreDB()
         regions = db.getRegions()
         region = None
@@ -136,14 +149,12 @@ class PointDialog(QDialog):
             await AsyncMessageBox().information(self, self.tr('Input Erropr'), self.tr('Select Point in a region'))
             return
 
-        field = self._ui.field.currentData()
-
-        if RegionDB.getPhase(region) == Phase.SOLID and field.field != Field.TEMPERATURE:
+        if RegionDB.getPhase(region) == Phase.SOLID and field != TEMPERATURE:
             await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                 self.tr('Only temperature field can be configured for Solid Region.'))
             return
 
-        if field.field == Field.SCALAR and region != UserDefinedScalarsDB.getRegion(field.id):
+        if field.category == FieldCategory.USER_SCALAR and region != UserDefinedScalarsDB.getRegion(field.codeName):
             await AsyncMessageBox().information(
                 self, self.tr('Input Error'),
                 self.tr('The region where the scalar field is configured does not contain selected Point.'))
@@ -152,8 +163,9 @@ class PointDialog(QDialog):
         try:
             with coredb.CoreDB() as db:
                 db.setValue(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
-                db.setValue(self._xpath + '/field/field', field.field.value)
-                db.setValue(self._xpath + '/field/fieldID', field.id)
+                db.setValue(self._xpath + '/fieldCategory', field.category.value)
+                db.setValue(self._xpath + '/fieldCodeName', field.codeName)
+                db.setValue(self._xpath + '/fieldComponent', str(self._ui.fieldComponent.currentData().value))
                 db.setValue(self._xpath + '/coordinate/x', self._ui.coordinateX.text(), self.tr("Coordinate X"))
                 db.setValue(self._xpath + '/coordinate/y', self._ui.coordinateY.text(), self.tr("Coordinate Y"))
                 db.setValue(self._xpath + '/coordinate/z', self._ui.coordinateZ.text(), self.tr("Coordinate Z"))
@@ -190,10 +202,6 @@ class PointDialog(QDialog):
 
     def _snapOntoBoundaryChanged(self):
         self._setSnapOntoBoundary(self._dialog.selectedItem())
-
-    def _setupFieldCombo(self, fields):
-        for f in fields:
-            self._ui.field.addItem(f.text, f.key)
 
     def _movePointWidget(self):
         try:

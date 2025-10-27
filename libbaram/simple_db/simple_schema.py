@@ -11,6 +11,7 @@ class ErrorType(Enum):
     EnumError = auto()
     TypeError = auto()
     RangeError = auto()
+    SizeError = auto()
 
 
 def generateData(schema):
@@ -34,7 +35,7 @@ def validateData(data, schema, path='', fillWithDefault=False):
             if key in data:
                 configuration[key] = validateData(data[key], schema[key], subPath, fillWithDefault=fillWithDefault)
             elif fillWithDefault:
-                configuration[key] = {}
+                configuration[key] = validateData({}, schema[key], subPath, fillWithDefault=fillWithDefault)
             else:
                 raise ValidationError(ErrorType.EmptyError, 'Empty value is not allowed', key, subPath)
         elif isinstance(schema[key], SchemaList):
@@ -89,7 +90,7 @@ class ValidationError(ValueError):
         self._path = path
 
     def toMessage(self):
-        return f'{self._name} - {self._message}'
+        return f'{self._path} - {self._message}'
 
 
 class PrimitiveType(QObject):
@@ -339,6 +340,31 @@ class VectorComposite(SchemaComposite):
         return self
 
 
+class SimpleArray(PrimitiveType):
+    def __init__(self, type_, size=0):
+        super().__init__()
+
+        self._type: PrimitiveType = type_
+        self._value = []
+        self._size = size
+
+    def default(self):
+        return [self._type.default()] * self._size
+
+    def validate(self, value, name=None, fillWithDefault=False):
+        if not isinstance(value, list):
+            raise ValidationError(ErrorType.TypeError, self.tr('A list is required'), name)
+
+        if self._size and len(value) != self._size:
+            raise ValidationError(ErrorType.SizeError, self.tr('Length must be {}'.format(self._size)), name)
+
+        validated = [None] * len(value)
+        for i in range(len(value)):
+            validated[i] = self._type.validate(value[i], f'{name}[{i}]')
+
+        return validated
+
+
 class SimpleSchema:
     def __init__(self, schema):
         self._schema = schema
@@ -351,42 +377,3 @@ class SimpleSchema:
 
     def validateData(self, data, fillWithDefault=False):
         return validateData(data, self._schema, fillWithDefault=fillWithDefault)
-
-
-class ArrayType(PrimitiveType):
-    def __init__(self):
-        super().__init__()
-        self._value = []
-        self._default = []
-
-    def validate(self, value, name=None):
-        if not isinstance(value, list):
-            raise ValidationError(ErrorType.TypeError, self.tr('A list is required'), name)
-
-        for i in range(len(value)):
-            value[i] = self._validatElement(value[i])
-
-        return value
-
-    def _validatElement(self, value, name=None):
-        validated = str(value).strip()
-        if value is None or validated == '':
-            raise ValidationError(ErrorType.EmptyError, self.tr('Empty value is not allowed'), name)
-
-        return validated
-
-
-class IntArray(ArrayType):
-    def __init__(self):
-        super().__init__()
-
-    def _validatElement(self, value, name=None):
-        value = super()._validatElement(value, name)
-        try:
-            f = float(value)
-            if int(f) != f:
-                raise ValidationError(ErrorType.TypeError, self.tr('Only integers allowed'), name)
-        except Exception as e:
-            raise ValidationError(ErrorType.TypeError, repr(e), name)
-
-        return value

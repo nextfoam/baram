@@ -4,9 +4,12 @@
 import qasync
 from PySide6.QtWidgets import QDialog
 
+from baramFlow.base.constants import FieldCategory
+from baramFlow.base.field import TEMPERATURE
+from baramFlow.base.material.material import Phase
+from baramFlow.base.monitor.monitor import getMonitorField
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
-from baramFlow.coredb.material_schema import Phase
 from baramFlow.coredb.region_db import RegionDB
 from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
@@ -14,8 +17,9 @@ from widgets.selector_dialog import SelectorDialog
 from baramFlow.coredb import coredb
 from baramFlow.coredb.cell_zone_db import CellZoneDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
-from baramFlow.coredb.monitor_db import MonitorDB, FieldHelper, Field
+from baramFlow.coredb.monitor_db import MonitorDB
 from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
+from baramFlow.view.widgets.post_field_selector import loadFieldsComboBox, connectFieldsToComponents
 from .volume_dialog_ui import Ui_VolumeDialog
 
 
@@ -37,10 +41,9 @@ class VolumeDialog(QDialog):
         self._volume = None
 
         for t in VolumeReportType:
-            self._ui.reportType.addEnumItem(t, MonitorDB.volumeReportTypeToText(t))
+            self._ui.reportType.addItem(MonitorDB.volumeReportTypeToText(t), t)
 
-        for f in FieldHelper.getAvailableFields():
-            self._ui.fieldVariable.addItem(f.text, f.key)
+        loadFieldsComboBox(self._ui.field)
 
         if name is None:
             db = coredb.CoreDB()
@@ -74,14 +77,19 @@ class VolumeDialog(QDialog):
         self._ui.select.clicked.connect(self._selectVolumes)
         self._ui.ok.clicked.connect(self._accept)
 
+        connectFieldsToComponents(self._ui.field, self._ui.fieldComponent)
+
     def _load(self):
         db = coredb.CoreDB()
         self._ui.name.setText(self._name)
         self._ui.writeInterval.setText(db.getValue(self._xpath + '/writeInterval'))
-        self._ui.reportType.setCurrentData(VolumeReportType(db.getValue(self._xpath + '/reportType')))
-        self._ui.fieldVariable.setCurrentText(
-            FieldHelper.DBFieldKeyToText(Field(db.getValue(self._xpath + '/field/field')),
-                                         db.getValue(self._xpath + '/field/fieldID')))
+        self._ui.reportType.setCurrentIndex(
+            self._ui.reportType.findData(VolumeReportType(db.getValue(self._xpath + '/reportType'))))
+
+        field = getMonitorField(MonitorDB.getVolumeMonitorXPath(self._name))
+        self._ui.field.setCurrentIndex(self._ui.field.findData(field.field))
+        self._ui.fieldComponent.setCurrentIndex(self._ui.fieldComponent.findData(field.component))
+
         volume = db.getValue(self._xpath + '/volume')
         if volume != '0':
             self._setVolume(volume)
@@ -95,20 +103,23 @@ class VolumeDialog(QDialog):
                 await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Enter Monitor Name.'))
                 return
 
+        field = self._ui.field.currentData()
+        if field is None:
+            await AsyncMessageBox().information(self, self.tr("Input Error"), self.tr("Select Field."))
+            return
+
         if not self._volume:
             await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Volume.'))
             return
 
-        field = self._ui.fieldVariable.currentData()
         region = CellZoneDB.getCellZoneRegion(self._volume)
 
-        if RegionDB.getPhase(region) == Phase.SOLID and field.field != Field.TEMPERATURE:
+        if RegionDB.getPhase(region) == Phase.SOLID and field != TEMPERATURE:
             await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                 self.tr('Only temperature field can be configured for Solid Region.'))
             return
 
-        if (field.field == Field.SCALAR
-                and region != UserDefinedScalarsDB.getRegion(field.id)):
+        if field.category == FieldCategory.USER_SCALAR and region != UserDefinedScalarsDB.getRegion(field.codeName):
             await AsyncMessageBox().information(
                 self, self.tr('Input Error'),
                 self.tr('The region where the scalar field is configured does not contain selected Volume.'))
@@ -117,9 +128,10 @@ class VolumeDialog(QDialog):
         try:
             with coredb.CoreDB() as db:
                 db.setValue(self._xpath + '/writeInterval', self._ui.writeInterval.text(), self.tr("Write Interval"))
-                db.setValue(self._xpath + '/reportType', self._ui.reportType.currentValue())
-                db.setValue(self._xpath + '/field/field', field.field.value)
-                db.setValue(self._xpath + '/field/fieldID', field.id)
+                db.setValue(self._xpath + '/reportType', self._ui.reportType.currentData().value)
+                db.setValue(self._xpath + '/fieldCategory', field.category.value)
+                db.setValue(self._xpath + '/fieldCodeName', field.codeName)
+                db.setValue(self._xpath + '/fieldComponent', str(self._ui.fieldComponent.currentData().value))
                 db.setValue(self._xpath + '/volume', self._volume, self.tr('Volumes'))
         
                 if self._isNew:

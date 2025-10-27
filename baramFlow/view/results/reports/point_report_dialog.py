@@ -9,7 +9,8 @@ from typing import Optional
 import qasync
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.base.field import VectorComponent, CollateralField, SpecieField, UserScalarField, FieldType
+from baramFlow.base.constants import VectorComponent, FieldType
+from baramFlow.base.field import CollateralField, SpecieField, UserScalarField, Field
 from baramFlow.libbaram.collateral_fields import collateralFieldDict
 from baramFlow.openfoam.function_objects.read_fields import foReadFieldsReport
 from baramFlow.openfoam.solver_field import getSolverFieldName, getSolverComponentName
@@ -24,7 +25,6 @@ from widgets.selector_dialog import SelectorDialog
 from baramFlow.app import app
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
-from baramFlow.coredb.monitor_db import Field
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.mesh.vtk_loader import isPointInDataSet

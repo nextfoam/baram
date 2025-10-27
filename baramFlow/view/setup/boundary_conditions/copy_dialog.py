@@ -46,13 +46,13 @@ class Filter:
 class CopyDialog(QDialog):
     boundariesCopied = Signal(set)
 
-    def __init__(self, parent):
+    def __init__(self, parent, bcid):
         super().__init__(parent)
         self._ui = Ui_CopyDialog()
         self._ui.setupUi(self)
 
         self._items = {}
-        self._sourceId = None
+        self._sourceId = bcid
         self._copied = set()
 
         self._sourceFilter = Filter(self._ui.sourceFilter, self._ui.source)
@@ -70,9 +70,16 @@ class CopyDialog(QDialog):
         db = coredb.CoreDB()
         for rname in db.getRegions():
             for bcid, bcname, bctype in db.getBoundaryConditions(rname):
-                if not BoundaryDB.needsCoupledBoundary(bctype):
-                    BoundaryListItem(self._ui.source, bcid, bcname, rname)
                 self._items[bcid] = BoundaryListItem(self._ui.targets, bcid, bcname, rname)
+
+                if not BoundaryDB.needsCoupledBoundary(bctype):
+                    item = BoundaryListItem(self._ui.source, bcid, bcname, rname)
+
+                    if bcid == self._sourceId:
+                        item.setSelected(True)
+                        self._items[bcid].setFlags(self._items[bcid].flags() & ~Qt.ItemFlag.ItemIsEnabled)
+                    else:
+                        item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
 
     def _sourceChanged(self, item):
         if self._sourceId is not None:
@@ -83,14 +90,19 @@ class CopyDialog(QDialog):
 
     @qasync.asyncSlot()
     async def _copy(self):
+        targets = self._ui.targets.selectedItems()
+        if not targets:
+            await AsyncMessageBox().information(self, self.tr('Input Error'), self.tr('Select Target Boundaries'))
+            return
+
         if not await AsyncMessageBox().confirm(
-                self, self.tr('Copy Bonudary Conditions'),
+                self, self.tr('Copy Boundary Conditions'),
                 self.tr('Copy {} to ({})?'.format(
-                    self._ui.source.currentItem().text(),
+                    self._ui.source.selectedItems()[0].text(),
                     ', '.join([item.text() for item in self._ui.targets.selectedItems()])))):
             return
 
-        for item in self._ui.targets.selectedItems():
+        for item in targets:
             self._copied.add(item.bcid())
             db = coredb.CoreDB()
             db.copyBoundaryConditions(self._sourceId, item.bcid())

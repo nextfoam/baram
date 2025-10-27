@@ -2,33 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-from enum import Enum, IntFlag
-
 from PySide6.QtCore import QCoreApplication
 
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
-
-
-class FieldCategory(Enum):
-    GEOMETRY    = 'geometry'
-    BASIC       = 'basic'
-    COLLATERAL  = 'collateral'
-    PHASE       = 'phase'
-    SPECIE      = 'specie'
-    USER_SCALAR = 'userScalar'
-
-
-class FieldType(Enum):
-    VECTOR = 'vector'
-    SCALAR = 'scalar'
-
-
-class VectorComponent(IntFlag):
-    MAGNITUDE = 1
-    X         = 2
-    Y         = 4
-    Z         = 8
+from .constants import FieldCategory, FieldType, VectorComponent
 
 
 class Field:
@@ -51,7 +29,7 @@ class Field:
 
     @property
     def text(self) -> str:
-        return NotImplementedError
+        raise NotImplementedError
 
     # To make all Field instances with same category and codeName equal
     def __hash__(self):
@@ -59,6 +37,9 @@ class Field:
 
     # To make all Field instances with same category and codeName equal
     def __eq__(self, other):
+        if other is None:
+            return False
+
         return (self._category, self._codeName) == (other._category, other._codeName)
 
 
@@ -79,8 +60,11 @@ class BasicField(Field):
         return _getPredefinedFieldText(self)
 
 class CollateralField(Field):
+    fields = []
+
     def __init__(self, codeName: str, type_: FieldType = FieldType.SCALAR):
         super().__init__(FieldCategory.COLLATERAL, codeName, type_)
+        self.fields.append(self)
 
     @property
     def text(self) -> str:
@@ -205,7 +189,3 @@ def getFieldInstance(categoryStr: str, codeName: str):
         return UserScalarField(codeName)
     else:
         raise AssertionError
-
-
-
-

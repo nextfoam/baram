@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.base.field import VECTOR_COMPONENT_TEXTS, VectorComponent
+from baramFlow.base.constants import VectorComponent
+from baramFlow.base.field import VECTOR_COMPONENT_TEXTS
 from widgets.python_combo_box import PythonComboBox
 
 

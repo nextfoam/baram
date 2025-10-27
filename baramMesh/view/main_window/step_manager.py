@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import qasync
 from PySide6.QtCore import QObject, Signal
+from PySide6.QtWidgets import QMessageBox
+
+import qasync
 
 from libbaram.utils import rmtree
 
@@ -154,9 +156,17 @@ class StepManager(QObject):
     def _unlockCurrentStep(self):
         currentStep = self._navigation.currentStep()
 
-        for step in range(currentStep + 1, self._openedStep + 1):
-            self._navigation.disableStep(step)
-            self._pages[Step(step)].clearResult()
+        try:
+            for step in range(currentStep + 1, self._openedStep + 1):
+                self._navigation.disableStep(step)
+                self._pages[Step(step)].clearResult()
+        except PermissionError:
+            QMessageBox.information(
+                self._contentStack,
+                self.tr('Permission Error'),
+                self.tr(f'Permission Error:\nA file in the project folder might be open in another program.\nClose the file and try again.'))
+
+            return
 
         self._setOpendedStep(currentStep)
 

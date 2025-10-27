@@ -8,8 +8,9 @@ from PySide6.QtWidgets import QDialog
 
 import qasync
 
+from baramFlow.base.constants import FieldType
+from baramFlow.base.field import CollateralField, Field
 from baramFlow.base.graphic.graphic import Graphic, StreamlineType
-from baramFlow.base.field import CollateralField, Field, FieldType
 from baramFlow.base.graphic.display_item import DisplayItem
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.base.graphic.graphics_db import GraphicsDB

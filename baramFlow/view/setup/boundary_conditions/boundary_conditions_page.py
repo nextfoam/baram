@@ -106,21 +106,29 @@ class BoundaryConditionsPage(ContentPage):
         self._ui.boundaries.setSortingEnabled(True)
         self._ui.boundaries.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
+        self._ui.edit.setEnabled(False)
+
         self._connectSignalsSlots()
-        self._updateEnabled()
+        self._updateCopyEnabled()
         self._load()
 
-    def _connectSignalsSlots(self):
-        Project.instance().solverStatusChanged.connect(self._updateEnabled)
+    def closeEvent(self, event):
+        self._disconnectSignalsSlots()
 
-        # app.meshUpdated.connect(self._meshUpdated)
+        super().closeEvent(event)
+
+    def _connectSignalsSlots(self):
         self._ui.filter.textChanged.connect(self._filterChanged)
-        self._ui.boundaries.currentItemChanged.connect(self._updateEditEnabled)
         self._ui.boundaries.itemDoubleClicked.connect(self._doubleClicked)
         self._ui.boundaries.itemChanged.connect(self._itemChanged)
         self._ui.boundaries.currentItemChanged.connect(self._currentBoundaryChanged)
         self._ui.copy.clicked.connect(self._copy)
         self._ui.edit.clicked.connect(self._edit)
+
+        Project.instance().solverStatusChanged.connect(self._updateCopyEnabled)
+
+    def _disconnectSignalsSlots(self):
+        Project.instance().solverStatusChanged.disconnect(self._updateCopyEnabled)
 
     def _load(self):
         db = coredb.CoreDB()
@@ -142,10 +150,16 @@ class BoundaryConditionsPage(ContentPage):
             self._selectPickedBoundary()
             self._meshUpdated()
 
-    def _updateEnabled(self):
-        caseManager = CaseManager()
-        self._ui.copy.setEnabled(not caseManager.isActive())
-        self._ui.edit.setEnabled(not caseManager.isActive())
+    def _updateCopyEnabled(self):
+        self._ui.copy.setEnabled(not CaseManager().isActive())
+
+    def _updateEditEnabled(self):
+        bctype = self._ui.boundaries.currentItem().bctype()
+        if bctype and DIALOGS[bctype]:
+            self._ui.edit.setEnabled(True)
+            return
+
+        self._ui.edit.setEnabled(False)
 
     def _meshUpdated(self):
         app.meshModel().currentActorChanged.connect(self._selectPickedBoundary)
@@ -171,14 +185,6 @@ class BoundaryConditionsPage(ContentPage):
             widget.rightClicked.connect(self._showTypePicker)
             self._boundaries[bcid] = BoundaryItem(parent, widget)
 
-    def _updateEditEnabled(self):
-        bctype = self._ui.boundaries.currentItem().bctype()
-        if bctype and DIALOGS[bctype]:
-            self._ui.edit.setEnabled(True)
-            return
-
-        self._ui.edit.setEnabled(False)
-
     def _itemChanged(self, item, column):
         bcid = item.type()
         if bcid:
@@ -188,7 +194,7 @@ class BoundaryConditionsPage(ContentPage):
                 app.meshModel().hideActor(bcid)
 
     def _doubleClicked(self, item, column):
-        if column and not CaseManager().isActive():
+        if column:
             self._edit()
 
     @qasync.asyncSlot()
@@ -223,14 +229,27 @@ class BoundaryConditionsPage(ContentPage):
     def _boundaryTypeChanged(self, bcid):
         self._boundaries[bcid].reloadType()
 
-    def _copy(self):
-        self._dialog = CopyDialog(self)
-        self._dialog.boundariesCopied.connect(self._refresh)
-        self._dialog.open()
+    @qasync.asyncSlot()
+    async def _copy(self):
+        if item := self._ui.boundaries.currentItem():
+            bcid = item.type()
+            bctype = self._boundaries[bcid].bctype()
+            if BoundaryDB.needsCoupledBoundary(bctype):
+                await AsyncMessageBox().information(
+                    self, self.tr('Input Error'),
+                    self.tr('{} boundary conditions cannot be copied.'.format(BoundaryDB.dbBoundaryTypeToText(bctype))))
+                return
+
+            self._dialog = CopyDialog(self, bcid)
+            self._dialog.boundariesCopied.connect(self._refresh)
+            self._dialog.open()
+        else:
+            await AsyncMessageBox().information(
+                self, self.tr('Input Error'), self.tr('Select a source boundary to copy its conditions'))
+
 
     def _edit(self):
-        item = self._ui.boundaries.currentItem()
-        if item:
+        if item := self._ui.boundaries.currentItem():
             bcid = item.type()
             if bcid:
                 bctype = self._boundaries[bcid].bctype()
@@ -247,6 +266,7 @@ class BoundaryConditionsPage(ContentPage):
         self._typePicker.open(bcid, point)
 
     def _currentBoundaryChanged(self, current):
+        self._updateEditEnabled()
         app.meshModel().setCurrentId(current.type())
 
     def _selectPickedBoundary(self):

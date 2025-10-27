@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from baramFlow.base.field import Field, FieldType
+from baramFlow.base.constants import FieldType
+from baramFlow.base.field import Field
 from baramFlow.openfoam.solver_field import getAvailableFields
 
 
@@ -13,7 +14,7 @@ def loadFieldsComboBox(fieldComboBox, includeCoordinate=False):
 def connectFieldsToComponents(fieldComboBox, componentComboBox):
     def updateComponentComboBox():
         field: Field = fieldComboBox.currentData()
-        if field.type == FieldType.VECTOR:
+        if field and field.type == FieldType.VECTOR:
             componentComboBox.setEnabled(True)
             componentComboBox.setCurrentIndex(0)
         else:

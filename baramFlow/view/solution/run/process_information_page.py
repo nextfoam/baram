@@ -15,6 +15,7 @@ from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItem
 from widgets.progress_dialog import ProgressDialog
 
+from baramFlow.base import expert_mode
 from baramFlow.case_manager import CaseManager, BatchCase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_reader import CoreDBReader
@@ -74,6 +75,8 @@ class ProcessInformationPage(ContentPage):
         return super().showEvent(ev)
 
     def _load(self):
+        self._ui.runSolverOnlyWidget.setVisible(expert_mode.isExpertModeActivated())
+
         self._batchCaseList.clear()
         self._batchCaseList.load()
         name = self._caseManager.currentCaseName()
@@ -104,11 +107,16 @@ class ProcessInformationPage(ContentPage):
 
     def _setRunningMode(self, mode):
         if mode == RunningMode.LIVE_RUNNING_MODE:
+            self._ui.runSolverOnlyWidget.setVisible(expert_mode.isExpertModeActivated())
+
             self._ui.updateConfiguration.show()
             self._ui.batchCases.hide()
             self._ui.toBatchMode.show()
             self._ui.toLiveMode.hide()
+
         else:
+            self._ui.runSolverOnlyWidget.hide()
+
             self._ui.updateConfiguration.hide()
             self._ui.batchCases.show()
             self._ui.toBatchMode.hide()
@@ -125,8 +133,17 @@ class ProcessInformationPage(ContentPage):
             progressDialog.cancelClicked.connect(self._caseManager.cancel)
             progressDialog.open()
 
+            if self._ui.runSolverOnlyWidget.isVisible() and self._ui.runSolverOnly.isChecked():
+                skipCaseGeneration = True
+                controlDict = ControlDict().build()
+                controlDict.asDict()['stopAt'] = 'endTime'
+                controlDict.writeAtomic()
+
+            else:
+                skipCaseGeneration = False
+
             try:
-                await self._caseManager.liveRun()
+                await self._caseManager.liveRun(skipCaseGeneration=skipCaseGeneration)
                 progressDialog.finish(self.tr('Calculation started'))
             except SolverNotFound as e:
                 progressDialog.finish(self.tr('Case generating fail. - ') + str(e))

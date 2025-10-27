@@ -3,10 +3,9 @@
     <name>default</name>
     <showChart>true</showChart>
     <writeInterval>1</writeInterval>
-    <field>
-        <field>pressure</field>
-        <fieldID>1</fieldID>
-    </field>
+    <fieldCategory>basic</fieldCategory>
+    <fieldCodeName>pressure</fieldCodeName>
+    <fieldComponent>1</fieldComponent>
     <interval>1</interval>
     <coordinate>
         <x>0</x>

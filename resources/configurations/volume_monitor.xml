@@ -4,9 +4,8 @@
     <showChart>true</showChart>
     <writeInterval>1</writeInterval>
     <reportType>volumeAverage</reportType>
-    <field>
-        <field>pressure</field>
-        <fieldID>1</fieldID>
-    </field>
+    <fieldCategory>basic</fieldCategory>
+    <fieldCodeName>pressure</fieldCodeName>
+    <fieldComponent>1</fieldComponent>
     <volume>0</volume>
 </volumeMonitor>

@@ -7,6 +7,7 @@ from PySide6.QtCore import QCoreApplication
 
 from libbaram.math import calucateDirectionsByRotation
 
+from baramFlow.base.material.material import Phase
 from baramFlow.libbaram.calculation import AverageCalculator
 from . import coredb
 from .boundary_db import DirectionSpecificationMethod
@@ -14,7 +15,7 @@ from .coredb import ValueException, DBError, _CoreDB
 from .general_db import GeneralDB
 from .initialization_db import InitializationDB
 from .material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
-from .material_schema import Phase, ViscositySpecification, DensitySpecification
+from .material_schema import ViscositySpecification, DensitySpecification
 from .reference_values_db import ReferenceValuesDB
 from .region_db import RegionDB
 from .turbulence_model_db import TurbulenceModelsDB

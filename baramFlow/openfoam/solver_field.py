@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from baramFlow.base.constants import VectorComponent
+from baramFlow.base.field import AGE, COORDINATE, DENSITY, HEAT_TRANSFER_COEFF, MACH_NUMBER, MODIFIED_TURBULENT_VISCOSITY, PRESSURE, Q, SPECIFIC_DISSIPATION_RATE, TEMPERATURE, TOTAL_PRESSURE, TURBULENT_DISSIPATION_RATE, TURBULENT_KINETIC_ENERGY, VELOCITY, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS
+from baramFlow.base.field import BasicField, CollateralField, Field, GeometryField, PhaseField, SpecieField, UserScalarField
+from baramFlow.base.material.material import Phase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.base.field import AGE, COORDINATE, DENSITY, HEAT_TRANSFER_COEFF, MACH_NUMBER, MODIFIED_TURBULENT_VISCOSITY, PRESSURE, Q, SPECIFIC_DISSIPATION_RATE, TEMPERATURE, TOTAL_PRESSURE, TURBULENT_DISSIPATION_RATE, TURBULENT_KINETIC_ENERGY, VELOCITY, VORTICITY, WALL_HEAT_FLUX, WALL_SHEAR_STRESS, WALL_Y_PLUS
-from baramFlow.base.field import BasicField, CollateralField, Field, GeometryField, PhaseField, SpecieField, UserScalarField, VectorComponent
-from baramFlow.coredb.material_schema import Phase
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
-from baramFlow.openfoam.file_system import FileSystem
 from baramFlow.openfoam.solver import usePrgh
 
 
@@ -116,10 +116,10 @@ def getAvailableFields(includeCoordinate=False) -> list[Field]:
                 continue
 
             field = PhaseField(mid)
-            solverFieldName = getSolverFieldName(field)
-            if not FileSystem.fieldExists('0', solverFieldName):
-                continue
-
+            # solverFieldName = getSolverFieldName(field)
+            # if not FileSystem.fieldExists('0', solverFieldName):
+            #     continue
+            #
             fields.append(field)
 
     elif ModelsDB.isSpeciesModelOn():
