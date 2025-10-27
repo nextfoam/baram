@@ -155,6 +155,7 @@ class Database:
     def _parse(self, rawData):
         materials = {}
         for key, m in rawData.items():
+            m.pop('name')
             liquid = m.pop('liquid', None)
             gas = m.pop('gas', None)
             solid = m.pop('solid', None)
