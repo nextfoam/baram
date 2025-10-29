@@ -18,6 +18,7 @@ from baramFlow.coredb.run_calculation_db import RunCalculationDB, TimeSteppingMe
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
 from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType
 from baramFlow.openfoam.post_processing.post_file_reader import PostFileReader
+from baramFlow.view.widgets.chart_wigdet import ChartWidget
 
 
 def calculateMaxX():
@@ -163,7 +164,7 @@ class Monitor(QObject):
 
 
 class ForceMonitor(Monitor):
-    def __init__(self, name, chart1, chart2, chart3):
+    def __init__(self, name, chart1: ChartWidget, chart2: ChartWidget, chart3: ChartWidget):
         super().__init__(name)
 
         db = coredb.CoreDB()
@@ -195,7 +196,7 @@ class ForceMonitor(Monitor):
 
 
 class PointMonitor(Monitor):
-    def __init__(self, name, chart):
+    def __init__(self, name, chart: ChartWidget):
         super().__init__(name)
 
         db = coredb.CoreDB()
@@ -231,7 +232,7 @@ class PointMonitor(Monitor):
 
 
 class SurfaceMonitor(Monitor):
-    def __init__(self, name, chart):
+    def __init__(self, name, chart: ChartWidget):
         super().__init__(name)
 
         db = coredb.CoreDB()
@@ -261,7 +262,7 @@ class SurfaceMonitor(Monitor):
 
 
 class VolumeMonitor(Monitor):
-    def __init__(self, name, chart):
+    def __init__(self, name, chart: ChartWidget):
         super().__init__(name)
 
         db = coredb.CoreDB()
