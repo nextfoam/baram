@@ -154,10 +154,14 @@ class BoundaryConditionsPage(ContentPage):
         self._ui.copy.setEnabled(not CaseManager().isActive())
 
     def _updateEditEnabled(self):
-        bctype = self._ui.boundaries.currentItem().bctype()
-        if bctype and DIALOGS[bctype]:
-            self._ui.edit.setEnabled(True)
-            return
+        item = self._ui.boundaries.currentItem()
+        index = self._ui.boundaries.indexOfTopLevelItem(item)
+
+        if index == -1:  # Not Top level item
+            bctype = item.bctype()
+            if bctype and DIALOGS[bctype]:
+                self._ui.edit.setEnabled(True)
+                return
 
         self._ui.edit.setEnabled(False)
 
@@ -218,7 +222,7 @@ class BoundaryConditionsPage(ContentPage):
                     db.setValue(xpath + '/coupledBoundary', '0')
                     db.setValue(BoundaryDB.getXPath(cpid) + '/coupledBoundary', '0')
                     cpid = '0'
-                
+
             if cpid == '0'and BoundaryDB.needsCoupledBoundary(bctype):
                 await AsyncMessageBox().information(
                     self, self.tr('Need to edit boundary condition'),
