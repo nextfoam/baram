@@ -71,7 +71,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="PiecewiseLinearTable" name="tableWidget"/>
+     <widget class="SimpleExcelSheet" name="tableWidget"/>
     </widget>
    </item>
    <item>
@@ -113,14 +113,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PiecewiseLinearTable</class>
-   <extends>QTableWidget</extends>
-   <header>widgets.piecewise_linear_table</header>
-  </customwidget>
-  <customwidget>
    <class>PlotWidget</class>
    <extends>QGraphicsView</extends>
    <header>pyqtgraph</header>
+  </customwidget>
+  <customwidget>
+   <class>SimpleExcelSheet</class>
+   <extends>QTableWidget</extends>
+   <header>widgets.simple_excel_sheet</header>
   </customwidget>
  </customwidgets>
  <resources>

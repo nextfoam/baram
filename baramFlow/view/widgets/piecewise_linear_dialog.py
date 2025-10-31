@@ -20,7 +20,9 @@ class PiecewiseLinearDialog(QDialog):
         self._ui = Ui_PiecewiseLinearDialog()
         self._ui.setupUi(self)
 
-        self._ui.tableWidget.setup(indexName, indexUnit, dataNames, dataUnit, data)
+        labels = [f'{indexName} ({indexUnit})'] + [f'{name} ({dataUnit})' for name in dataNames]
+
+        self._ui.tableWidget.setup(labels, data)
 
         plotWidget = self._ui.plotWidget
         plotWidget.setTitle(chartTitle, color='#5f5f5f', size='12pt')
