@@ -48,7 +48,7 @@ class BatchableFloatEdit(QLineEdit):
         self._validated = True
 
     def validatedFloat(self):
-        assert not self._validated
+        assert self._validated
         return float(self._batchDefault) if self._batchParameter else float(self.text())
 
     def _clearValidation(self):
