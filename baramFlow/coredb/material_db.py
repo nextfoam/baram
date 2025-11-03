@@ -4,10 +4,10 @@
 from PySide6.QtCore import QCoreApplication, QObject
 
 import baramFlow.coredb.libdb as xml
-from baramFlow.base.material.material import Phase
+from baramFlow.base.material.material import Phase, MaterialType
 from baramFlow.coredb import coredb
 from .configuraitions import ConfigurationException
-from .material_schema import MaterialType, Specification, DensitySpecification, ViscositySpecification
+from .material_schema import Specification, DensitySpecification, ViscositySpecification
 from .material_schema import MaterialSchema
 from .turbulence_model_db import ITurbulenceModelObserver, TurbulenceModelsDB, TurbulenceModel
 
