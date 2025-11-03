@@ -6,8 +6,8 @@ from enum import Enum
 from PySide6.QtCore import QCoreApplication, QObject, Signal
 
 from baramFlow.base.constants import FieldCategory
+from baramFlow.base.material.material import MaterialType
 from baramFlow.coredb.material_db import MaterialDB, IMaterialObserver
-from baramFlow.coredb.material_schema import MaterialType
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.openfoam.function_objects.surface_field_value import SurfaceReportType
 from baramFlow.openfoam.function_objects.vol_field_value import VolumeReportType

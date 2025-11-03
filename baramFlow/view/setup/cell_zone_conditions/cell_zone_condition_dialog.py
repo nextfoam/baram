@@ -7,12 +7,12 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QWidget
 from baramFlow.coredb.configuraitions import ConfigurationException
 from widgets.async_message_box import AsyncMessageBox
 
+from baramFlow.base.material.material import MaterialType
 from baramFlow.coredb import coredb
 from baramFlow.coredb.cell_zone_db import CellZoneDB, ZoneType, SpecificationMethod
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import MaterialType
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import DEFAULT_REGION_NAME, RegionDB
 from .actuator_disk_widget import ActuatorDiskWidget
