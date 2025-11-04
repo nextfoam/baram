@@ -51,11 +51,3 @@ class ModelsDB:
     @classmethod
     def isEnergyModelOn(cls):
         return coredb.CoreDB().getValue(ModelsDB.ENERGY_MODELS_XPATH) == 'on'
-
-    @classmethod
-    def EnergyModelOn(cls):
-        coredb.CoreDB().setValue(ModelsDB.ENERGY_MODELS_XPATH, 'on')
-
-    @classmethod
-    def EnergyModelOff(cls):
-        coredb.CoreDB().setValue(ModelsDB.ENERGY_MODELS_XPATH, 'off')

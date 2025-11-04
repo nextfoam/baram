@@ -5,7 +5,11 @@ from enum import Enum, auto
 
 from PySide6.QtCore import QCoreApplication
 
+from baramFlow.coredb import coredb
+
+
 MODELS_XPATH = '/models'
+ENERGY_MODELS_XPATH     = '/models/energyModels'
 
 
 class Models(Enum):
@@ -110,3 +114,9 @@ DPM_INJECTION_TYPE_TEXTS = {
     DPMInjectionType.SURFACE    : QCoreApplication.translate('DPM', 'Surface'),
     DPMInjectionType.CONE       : QCoreApplication.translate('DPM', 'Cone')
 }
+
+
+class ModelManager:
+    @staticmethod
+    def energyModelOff():
+        coredb.CoreDB().setValue(ENERGY_MODELS_XPATH, 'off')
