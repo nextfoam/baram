@@ -4,15 +4,16 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QListWidgetItem
 
-from baramFlow.base.model.model import Models
+from baramFlow.base.model.DPM_model import DPMModelManager
+from baramFlow.base.model.model import Models, DPMParticleType
 from baramFlow.case_manager import CaseManager
 from baramFlow.coredb.models_db import ModelsDB, MultiphaseModel
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.general_db import GeneralDB, SolverType
 from baramFlow.coredb.project import Project
-from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel, TurbulenceModelsDB
 from baramFlow.view.widgets.content_page import ContentPage
+from .DPM.DPM_dialog import DPMDialog
 from .energy_dialog import EnergyDialog
 from .models_page_ui import Ui_ModelsPage
 from .species_dialog import SpeciesDialog
@@ -91,6 +92,13 @@ class ModelsPage(ContentPage):
             SolverType.DENSITY_BASED: self.tr('Density-based'),
         }
 
+        DPMParticleTypeTexts = {
+            DPMParticleType.NONE        : self.tr('None'),
+            DPMParticleType.INERT       : self.tr('Inert'),
+            DPMParticleType.DROPLET     : self.tr('Droplet'),
+            DPMParticleType.COMBUSTING  : self.tr('Combusting')
+        }
+
         self._addModelItem(Models.TURBULENCE,
                            self.tr('Turbulence'),
                            lambda: turbulenceModelTexts[TurbulenceModelsDB.getModel()], TurbulenceModelDialog)
@@ -98,7 +106,7 @@ class ModelsPage(ContentPage):
         self._addModelItem(Models.ENERGY,
                            self.tr('Energy'),
                            lambda: self.tr('Include') if ModelsDB.isEnergyModelOn() else self.tr('Not Include'),
-                           EnergyDialog if not RegionDB.isMultiRegion() else None)
+                           EnergyDialog)
 
         self._addModelItem(Models.MULTIPHASE,
                            self.tr('Multiphase'),
@@ -117,6 +125,11 @@ class ModelsPage(ContentPage):
                            self.tr('User-defined Scalars'),
                            lambda: self.tr('Defined') if UserDefinedScalarsDB.hasDefined() else self.tr('Not Defined'),
                            UserDefinedScalarsDialog if GeneralDB.isPressureBased() else None)
+
+        self._addModelItem(Models.DPM,
+                           self.tr('DPM'),
+                           lambda: DPMParticleTypeTexts[DPMModelManager.particleType()],
+                           DPMDialog if not ModelsDB.isMultiphaseModelOn() else None)
 
         for i in range(self._ui.list.count()):
             self._ui.list.item(i).load()

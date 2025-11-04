@@ -3,6 +3,7 @@
 
 from typing import Optional
 
+from baramFlow.base.base import BatchableNumber
 from libbaram.validation import validateFloat, FLOAT_EXPRESSION
 
 from PySide6.QtCore import QRegularExpression
@@ -50,6 +51,12 @@ class BatchableFloatEdit(QLineEdit):
     def validatedFloat(self):
         assert self._validated
         return float(self._batchDefault) if self._batchParameter else float(self.text())
+
+    def batchableNumber(self):
+        return BatchableNumber(self.text(), self._batchDefault)
+
+    def setBatchableNumber(self, number: BatchableNumber):
+        self.setText(number.text)
 
     def _clearValidation(self):
         self._validate = False
