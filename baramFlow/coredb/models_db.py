@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from enum import Enum, auto
+from enum import Enum
 
 from baramFlow.coredb import coredb
 
@@ -19,16 +19,6 @@ class IndexedEnum(Enum):
                 return member
 
         raise KeyError(index)
-
-
-class Models(Enum):
-    TURBULENCE  = auto()
-    ENERGY      = auto()
-    FLOW_TYPE   = auto()
-    MULTIPHASE  = auto()
-    SOLVER_TYPE = auto()
-    SPECIES     = auto()
-    SCALARS     = auto()
 
 
 class MultiphaseModel(Enum):

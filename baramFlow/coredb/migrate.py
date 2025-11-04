@@ -1076,7 +1076,13 @@ def _version_12(root: etree.Element):
                 <DPMModels xmlns="http://www.baramcfd.org/baram">
                     <properties>
                         <particleType>none</particleType>
-                        <material/>
+                        <inert>
+                            <inertParticle>0</inertParticle>
+                        </inert>
+                        <droplet>
+                            <composition/>
+                            <temperature>300</temperature>
+                        </droplet>
                         <numericalConditions>
                             <interactionWithContinuousPhase>true</interactionWithContinuousPhase>
                             <maxParticleCourantNumber>0.3</maxParticleCourantNumber>

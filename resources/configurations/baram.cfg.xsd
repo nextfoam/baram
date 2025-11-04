@@ -2364,17 +2364,31 @@
                                                             </xs:restriction>
                                                         </xs:simpleType>
                                                     </xs:element>
-                                                    <xs:element name="material">
+                                                    <xs:element name="inert">
                                                         <xs:complexType>
                                                             <xs:sequence>
-                                                                <xs:element name="material" minOccurs="0" maxOccurs="unbounded">
+                                                                <xs:element name="inertParticle" type="xs:nonNegativeInteger"/>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="droplet">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="composition">
                                                                     <xs:complexType>
                                                                         <xs:sequence>
-                                                                            <xs:element name="mid" type="xs:positiveInteger"/>
-                                                                            <xs:element name="composition" type="inputNumberType"/>
+                                                                            <xs:element name="material" minOccurs="0" maxOccurs="unbounded">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="mid" type="xs:positiveInteger"/>
+                                                                                        <xs:element name="composition" type="inputNumberType"/>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
                                                                         </xs:sequence>
                                                                     </xs:complexType>
                                                                 </xs:element>
+                                                                <xs:element name="temperature" type="inputNumberType"/>
                                                             </xs:sequence>
                                                         </xs:complexType>
                                                     </xs:element>
@@ -2530,7 +2544,7 @@
                                                                                         <xs:element name="positions">
                                                                                             <xs:complexType>
                                                                                                 <xs:sequence>
-                                                                                                    <xs:element name="position" type="vector" minOccurs="1" maxOccurs="unbounded"/>
+                                                                                                    <xs:element name="position" type="vector" minOccurs="0" maxOccurs="unbounded"/>
                                                                                                 </xs:sequence>
                                                                                             </xs:complexType>
                                                                                         </xs:element>

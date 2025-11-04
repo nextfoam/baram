@@ -5,9 +5,11 @@ from typing import Optional
 
 import asyncio
 
+import qasync
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog
 
+from .async_message_box import AsyncMessageBox
 from .simple_sheet_dialog_ui import Ui_SimpleSheetDialog
 
 
@@ -40,8 +42,14 @@ class SimpleSheetDialog(QDialog):
 
         return self._future
 
-    def _okClicked(self):
+    @qasync.asyncSlot()
+    async def _okClicked(self):
         if not self._future.done():
+            if not self._ui.sheet.isDataComplete():
+                await AsyncMessageBox().information(self, self.tr('Input Error'),
+                                                    self.tr('Empty cells are not allowed within the data range.'))
+                return
+
             data = self._ui.sheet.getData()
             self._future.set_result(data)
 

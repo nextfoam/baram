@@ -132,7 +132,7 @@ class SimpleExcelSheet(QTableWidget):
             the values in the table
             list of row data
         """
-        previousX = None
+        # previousX = None
         stopCollection = False
 
         data: list[list[float]] = []
@@ -147,11 +147,11 @@ class SimpleExcelSheet(QTableWidget):
                 break
 
             x = float(self.item(row, 0).text())
-
-            if previousX is not None and x < previousX:
-                break
-
-            previousX = x
+            #
+            # if previousX is not None and x < previousX:
+            #     break
+            #
+            # previousX = x
 
             rowData: list[float] = []
             for col in range(self.columnCount()):
@@ -162,7 +162,7 @@ class SimpleExcelSheet(QTableWidget):
 
         return data
 
-    def isDataComplete(self) -> bool:
+    def isDataComplete(self, ascendingFirstColumn=False) -> bool:
         lastRow = -1
         # Iterate backwards from the last row to find the first one with content
         for row in range(self.rowCount() - 1, -1, -1):
@@ -184,7 +184,7 @@ class SimpleExcelSheet(QTableWidget):
                     continue
 
                 value = float(item.text())
-                if value <= maxValue:
+                if ascendingFirstColumn and value <= maxValue:
                     return False
 
                 maxValue = value
