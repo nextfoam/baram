@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import qasync
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QListWidgetItem
 
@@ -148,8 +148,7 @@ class ModelsPage(ContentPage):
         else:
             self._ui.edit.setEnabled(False)
 
-    @qasync.asyncSlot()
-    async def _edit(self):
+    def _edit(self):
         if CaseManager().isActive():
             return
 
