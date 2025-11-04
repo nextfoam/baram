@@ -5,6 +5,7 @@ import qasync
 
 from PySide6.QtWidgets import QDialog
 
+from libbaram.pfloat import PFloat
 from widgets.async_message_box import AsyncMessageBox
 
 from baramFlow.coredb import coredb
@@ -40,6 +41,7 @@ class JanafDialog(QDialog):
             self._ui.tHigh.setText(db.getValue(self._xpath + '/highTemperature'))
             lowCoefficients = db.getValue(self._xpath + '/lowCoefficients')
             highCoefficients = db.getValue(self._xpath + '/highCoefficients')
+
         else:
             self._ui.tLow.setText(self._data.lowTemperature)
             self._ui.tCommon.setText(self._data.commonTemperature)
@@ -68,58 +70,58 @@ class JanafDialog(QDialog):
     @qasync.asyncSlot()
     async def _accept(self):
         try:
-            self._ui.tLow.validate(self.tr('T<sub>Low</sub>'), low=200)
-            self._ui.tCommon.validate(self.tr('T<sub>Common</sub>>'))
-            self._ui.tHigh.validate(self.tr('T<sub>High</sub>'), high=6000)
+            tLow    = PFloat(self._ui.tLow.text(),    self.tr('T<sub>Low</sub>'), low=200)
+            tCommon = PFloat(self._ui.tCommon.text(), self.tr('T<sub>Common</sub>>'))
+            tHigh   = PFloat(self._ui.tHigh.text(),   self.tr('T<sub>High</sub>'), high=6000)
 
-            self._ui.a0Low.validate(self.tr('Low Coefficient a0'))
-            self._ui.a1Low.validate(self.tr('Low Coefficient a1'))
-            self._ui.a2Low.validate(self.tr('Low Coefficient a2'))
-            self._ui.a3Low.validate(self.tr('Low Coefficient a3'))
-            self._ui.a4Low.validate(self.tr('Low Coefficient a4'))
-            self._ui.a5Low.validate(self.tr('Low Coefficient a5'))
-            # self._ui.a6Low.validate(self.tr('Low Coefficient a6'))
+            a0Low = PFloat(self._ui.a0Low.text(), self.tr('Low Coefficient a0'))
+            a1Low = PFloat(self._ui.a1Low.text(), self.tr('Low Coefficient a1'))
+            a2Low = PFloat(self._ui.a2Low.text(), self.tr('Low Coefficient a2'))
+            a3Low = PFloat(self._ui.a3Low.text(), self.tr('Low Coefficient a3'))
+            a4Low = PFloat(self._ui.a4Low.text(), self.tr('Low Coefficient a4'))
+            a5Low = PFloat(self._ui.a5Low.text(), self.tr('Low Coefficient a5'))
+            a6Low = PFloat(self._ui.a6Low.text(), self.tr('Low Coefficient a6'))
 
-            self._ui.a0High.validate(self.tr('High Coefficient a0'))
-            self._ui.a1High.validate(self.tr('High Coefficient a1'))
-            self._ui.a2High.validate(self.tr('High Coefficient a2'))
-            self._ui.a3High.validate(self.tr('High Coefficient a3'))
-            self._ui.a4High.validate(self.tr('High Coefficient a4'))
-            self._ui.a5High.validate(self.tr('High Coefficient a5'))
-            self._ui.a6High.validate(self.tr('High Coefficient a6'))
+            a0High = PFloat(self._ui.a0High.text(), self.tr('High Coefficient a0'))
+            a1High = PFloat(self._ui.a1High.text(), self.tr('High Coefficient a1'))
+            a2High = PFloat(self._ui.a2High.text(), self.tr('High Coefficient a2'))
+            a3High = PFloat(self._ui.a3High.text(), self.tr('High Coefficient a3'))
+            a4High = PFloat(self._ui.a4High.text(), self.tr('High Coefficient a4'))
+            a5High = PFloat(self._ui.a5High.text(), self.tr('High Coefficient a5'))
+            a6High = PFloat(self._ui.a6High.text(), self.tr('High Coefficient a6'))
+
         except ValueError as e:
             await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
 
-        commonTemperature = self._ui.tCommon.validatedFloat()
-        if self._ui.tLow.validatedFloat() >= commonTemperature:
+        if tLow >= tCommon:
             await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                 self.tr('T<sub>Common</sub> must be greater than T<sub>Low</sub>.'))
             return
 
-        if self._ui.tHigh.validatedFloat() <= commonTemperature:
+        if tHigh <= tCommon:
             await AsyncMessageBox().information(self, self.tr('Input Error'),
                                                 self.tr('T<sub>Common</sub> must be less than T<sub>High</sub>.'))
             return
 
         self._data = JanafSpecificHeat(
-            lowTemperature=self._ui.tLow.text(),
-            commonTemperature=self._ui.tCommon.text(),
-            highTemperature=self._ui.tHigh.text(),
-            lowCoefficients=f"{self._ui.a0Low.text()} "
-                            f"{self._ui.a1Low.text()} "
-                            f"{self._ui.a2Low.text()} "
-                            f"{self._ui.a3Low.text()} "
-                            f"{self._ui.a4Low.text()} "
-                            f"{self._ui.a5Low.text()} "
-                            f"{self._ui.a6Low.text()}",
-            highCoefficients=f"{self._ui.a0High.text()} "
-                             f"{self._ui.a1High.text()} "
-                             f"{self._ui.a2High.text()} "
-                             f"{self._ui.a3High.text()} "
-                             f"{self._ui.a4High.text()} "
-                             f"{self._ui.a5High.text()} "
-                             f"{self._ui.a6High.text()}"
+            lowTemperature=str(tLow),
+            commonTemperature=str(tCommon),
+            highTemperature=str(tHigh),
+            lowCoefficients=f"{str(a0Low)} "
+                            f"{str(a1Low)} "
+                            f"{str(a2Low)} "
+                            f"{str(a3Low)} "
+                            f"{str(a4Low)} "
+                            f"{str(a5Low)} "
+                            f"{str(a6Low)}",
+            highCoefficients=f"{str(a0High)} "
+                             f"{str(a1High)} "
+                             f"{str(a2High)} "
+                             f"{str(a3High)} "
+                             f"{str(a4High)} "
+                             f"{str(a5High)} "
+                             f"{str(a6High)}"
         )
 
         self.accept()
