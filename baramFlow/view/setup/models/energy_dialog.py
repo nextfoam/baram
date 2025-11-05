@@ -21,15 +21,15 @@ class EnergyDialog(QDialog):
         self._includeDeniedMessage = None
         self._notIncludeDeniedMessage = None
 
-        if RegionDB.isMultiRegion():
-            self._includeDeniedMessage = self.tr('Energy Model is unavailable in Multi-region mode.')
-        elif ModelsDB.isMultiphaseModelOn():
+        if ModelsDB.isMultiphaseModelOn():
             self._includeDeniedMessage = self.tr('Energy Model is unavailable in Multiphase model.')
 
         if GeneralDB.isCompressible():
             self._notIncludeDeniedMessage = self.tr('Energy Model must be included in Compressible model.')
         elif DPMModelManager.isModelOn():
             self._notIncludeDeniedMessage = self.tr('Energy Model must be included when DPM Model is active.')
+        elif RegionDB.isMultiRegion():
+            self._notIncludeDeniedMessage = self.tr('Energy Model must be included in Multi-region mode.')
 
         self._connectSignalsSlots()
 
