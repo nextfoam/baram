@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from decimal import Decimal
+
 import qasync
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtGui import QIcon, QDoubleValidator
@@ -95,7 +97,7 @@ class PhaseNode(QTreeWidgetItem):
         self.signals.changed.emit()
 
     def total(self):
-        return sum(float(self.child(i).composition()) for i in range(self.childCount()))
+        return sum(Decimal(self.child(i).composition()) for i in range(self.childCount()))
 
 
 class DropletCompositionList(QObject):

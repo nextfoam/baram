@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import qasync
+from PySide6.QtWidgets import QDialog
 
 from baramFlow.base.material.material import MaterialManager, Phase
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
-from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from widgets.async_message_box import AsyncMessageBox
 from widgets.enum_button_group import EnumButtonGroup
 from widgets.selector_dialog import SelectorDialog, SelectorItem
@@ -22,7 +22,7 @@ from .injection_list_dialog import InjectionListDialog
 from .droplet_compsition_list import DropletCompositionList
 
 
-class DPMDialog(ResizableDialog):
+class DPMDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self._ui = Ui_DPMdialog()
