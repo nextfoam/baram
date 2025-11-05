@@ -595,7 +595,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
 
     def meshUpdated(self):
         if RegionDB.isMultiRegion():
-            ModelManager.energyModelOff()
+            ModelManager.energyModelOn()
 
         self._project.save()
         # self._ui.menuMesh.setEnabled(True)

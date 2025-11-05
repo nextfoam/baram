@@ -118,5 +118,9 @@ DPM_INJECTION_TYPE_TEXTS = {
 
 class ModelManager:
     @staticmethod
+    def energyModelOn():
+        coredb.CoreDB().setValue(ENERGY_MODELS_XPATH, 'on')
+
+    @staticmethod
     def energyModelOff():
         coredb.CoreDB().setValue(ENERGY_MODELS_XPATH, 'off')
