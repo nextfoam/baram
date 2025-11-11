@@ -165,6 +165,9 @@ class CoreDBReader(_CoreDB):
         if arguments:
             self._arguments.update(arguments)
 
+    def parameters(self):
+        return self._arguments
+
     def getValue(self, xpath):
         value = super().getValue(xpath)
         if value == '' or value[0] != '$':

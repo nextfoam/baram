@@ -239,14 +239,15 @@ class BoundaryDB:
         }.get(dbText)
 
     @classmethod
-    def getBoundarySelectorItems(cls) -> list[SelectorItem]:
+    def getBoundarySelectorItems(cls, types=None) -> list[SelectorItem]:
         db = coredb.CoreDB()
 
         items = []
         for rname in db.getRegions():
             r = '' if rname == '' else rname + ':'
             for bcid, bcname, ptype in db.getBoundaryConditions(rname):
-                items.append(SelectorItem(f'{r}{bcname}', bcname, str(bcid)))
+                if types is None or BoundaryType(ptype) in types:
+                    items.append(SelectorItem(f'{r}{bcname}', bcname, str(bcid)))
 
         return items
 

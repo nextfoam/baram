@@ -201,6 +201,20 @@
                  </widget>
                 </item>
                 <item>
+                 <widget class="QPushButton" name="cancelCalculation">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>60</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Cancel Calculation
+Calculation stops as soon as possible</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QWidget" name="runSolverOnlyWidget" native="true">
                   <layout class="QHBoxLayout" name="horizontalLayout_5">
                    <property name="leftMargin">
@@ -236,20 +250,6 @@
                     </widget>
                    </item>
                   </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="cancelCalculation">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>60</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Cancel Calculation
-Calculation stops as soon as possible</string>
-                  </property>
                  </widget>
                 </item>
                 <item>

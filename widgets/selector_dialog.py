@@ -24,7 +24,7 @@ class SelectorItem:
 
 
 class SelectorDialog(QDialog):
-    def __init__(self, parent, title, label, items, labelForNone=None):
+    def __init__(self, parent, title, label, items, labelForNone=None, exclude=None):
         """Constructs a new SelectorDialog
 
         Args:
@@ -48,10 +48,11 @@ class SelectorDialog(QDialog):
             self._ui.list.addItem(item)
 
         for data in items:
-            item = QListWidgetItem(data.label)
-            item.setData(ListDataRole.USER_DATA, data.data)
-            item.setData(ListDataRole.FILTERING_TEXT, data.text.lower())
-            self._ui.list.addItem(item)
+            if exclude is None or data.data != exclude:
+                item = QListWidgetItem(data.label)
+                item.setData(ListDataRole.USER_DATA, data.data)
+                item.setData(ListDataRole.FILTERING_TEXT, data.text.lower())
+                self._ui.list.addItem(item)
 
         self._connectSignalsSlots()
 

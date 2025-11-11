@@ -148,6 +148,9 @@
         <property name="text">
          <string>Third-party Softwares</string>
         </property>
+        <property name="autoDefault">
+         <bool>false</bool>
+        </property>
        </widget>
       </item>
       <item>

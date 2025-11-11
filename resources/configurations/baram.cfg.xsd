@@ -2415,16 +2415,16 @@
                                                                 <xs:element name="dragForce">
                                                                     <xs:complexType>
                                                                         <xs:sequence>
-                                                                            <xs:element name="specification" default="spherical">
+                                                                            <xs:element name="specification" default="sphereDrag">
                                                                                 <xs:simpleType>
                                                                                     <xs:restriction base="xs:string">
-                                                                                        <xs:enumeration value="spherical"/>
-                                                                                        <xs:enumeration value="nonSpherical"/>
-                                                                                        <xs:enumeration value="distortedSphere"/>
-                                                                                        <xs:enumeration value="wenAndYu"/>
-                                                                                        <xs:enumeration value="gidaspow"/>
-                                                                                        <xs:enumeration value="duPlessisAndMasliyah"/>
-                                                                                        <xs:enumeration value="tomiyama"/>
+                                                                                        <xs:enumeration value="sphereDrag"/>
+                                                                                        <xs:enumeration value="nonSphereDrag"/>
+                                                                                        <xs:enumeration value="distortedSphereDrag"/>
+                                                                                        <xs:enumeration value="WenYuDrag"/>
+                                                                                        <xs:enumeration value="ErgunWenYuDrag"/>
+                                                                                        <xs:enumeration value="PlessisMasliyahDrag"/>
+                                                                                        <xs:enumeration value="TomiyamaDrag"/>
                                                                                     </xs:restriction>
                                                                                 </xs:simpleType>
                                                                             </xs:element>
@@ -2442,8 +2442,8 @@
                                                                     <xs:simpleType>
                                                                         <xs:restriction base="xs:string">
                                                                             <xs:enumeration value="none"/>
-                                                                            <xs:enumeration value="saffmanMei"/>
-                                                                            <xs:enumeration value="tomiyama"/>
+                                                                            <xs:enumeration value="SaffmanMeiLiftForce"/>
+                                                                            <xs:enumeration value="TomiyamaLift"/>
                                                                         </xs:restriction>
                                                                     </xs:simpleType>
                                                                 </xs:element>
@@ -2455,6 +2455,7 @@
                                                                             <xs:element name="molecularFreePathLength" type="inputNonNegativeNumberType" default="0.9"/>
                                                                             <xs:element name="useTurbulence" type="xs:boolean" default="false"/>
                                                                         </xs:sequence>
+                                                                        <xs:attribute name="disabled" type="xs:boolean" default="false"/>
                                                                     </xs:complexType>
                                                                 </xs:element>
                                                             </xs:sequence>
@@ -2464,8 +2465,8 @@
                                                         <xs:simpleType>
                                                             <xs:restriction base="xs:string">
                                                                 <xs:enumeration value="none"/>
-                                                                <xs:enumeration value="stochasticDispersion"/>
-                                                                <xs:enumeration value="gradientDispersion"/>
+                                                                <xs:enumeration value="stochasticDispersionRAS"/>
+                                                                <xs:enumeration value="gradientDispersionRAS"/>
                                                             </xs:restriction>
                                                         </xs:simpleType>
                                                     </xs:element>
@@ -2476,7 +2477,7 @@
                                                                     <xs:simpleType>
                                                                         <xs:restriction base="xs:string">
                                                                             <xs:enumeration value="none"/>
-                                                                            <xs:enumeration value="ranzMarshall"/>
+                                                                            <xs:enumeration value="RanzMarshall"/>
                                                                         </xs:restriction>
                                                                     </xs:simpleType>
                                                                 </xs:element>

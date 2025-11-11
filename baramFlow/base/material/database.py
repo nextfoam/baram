@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
 import yaml
+from PySide6.QtCore import QCoreApplication
 
 from libbaram.simple_db.simple_schema import TextType, FloatType, EnumType, SimpleArray
 from libbaram.simple_db.simple_schema import validateData
@@ -84,6 +86,10 @@ def loadDatabase(path):
         data = yaml.load(file, Loader=yaml.FullLoader)
 
     for name, values in data.items():
+        if re.search(r'\s', name):
+            raise ValueError(
+                QCoreApplication.translate('MaterialBase', 'Material Name cannot include spaces - {}').format(name))
+
         validateData(values, commonSchema, name)
 
         if liquid := values.get('liquid'):
