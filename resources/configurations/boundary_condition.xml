@@ -205,7 +205,7 @@
                 </coefficientOfRestitution>
             </reflect>
             <recycle>
-                <recycleBoundary>1</recycleBoundary>
+                <recycleBoundary>0</recycleBoundary>
                 <recycleFraction>1</recycleFraction>
             </recycle>
         </wallInteraction>

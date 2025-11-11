@@ -23,10 +23,12 @@ class DataClass(Enum):
     CLASS_DICTIONARY = 'dictionary'
     CLASS_VOL_SCALAR_FIELD = 'volScalarField'
     CLASS_VOL_VECTOR_FIELD = 'volVectorField'
+    CLASS_VECTOR_FIELD = 'vectorField'
 
 
 class DictionaryFile:
-    def __init__(self, casePath, location, objectName, class_=DataClass.CLASS_DICTIONARY, format_=Format.FORMAT_ASCII):
+    def __init__(self, casePath, location, objectName,
+                 class_=DataClass.CLASS_DICTIONARY, format_=Format.FORMAT_ASCII, data=None):
         self._header = {
             'version': VERSION,
             'format': format_.value,
@@ -34,7 +36,7 @@ class DictionaryFile:
             'location': str(location),
             'object': objectName
         }
-        self._data = None
+        self._data = data
         self._casePath = casePath
 
     def isBuilt(self):

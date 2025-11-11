@@ -1091,7 +1091,7 @@ def _version_12(root: etree.Element):
                         </numericalConditions>
                         <kinematicModel>
                             <dragForce>
-                                <specification>spherical</specification>
+                                <specification>sphereDrag</specification>
                                 <nonSpherical>
                                     <shapeFactor>0.9</shapeFactor>
                                 </nonSpherical>
@@ -1135,7 +1135,7 @@ def _version_12(root: etree.Element):
                         </coefficientOfRestitution>
                     </reflect>
                     <recycle>
-                        <recycleBoundary>1</recycleBoundary>
+                        <recycleBoundary>0</recycleBoundary>
                         <recycleFraction>1</recycleFraction>
                     </recycle>
                 </wallInteraction>

@@ -178,7 +178,7 @@
                 </numericalConditions>
                 <kinematicModel>
                     <dragForce>
-                        <specification>spherical</specification>
+                        <specification>sphereDrag</specification>
                         <nonSpherical>
                             <shapeFactor>0.9</shapeFactor>
                         </nonSpherical>
