@@ -93,12 +93,14 @@ class DragForce:
 
 @dataclass
 class BrownianMotionForce:
+    disabled: bool
     molecularFreePathLength: BatchableNumber
     useTurbulence: bool
 
     @staticmethod
     def fromElement(e):
         return BrownianMotionForce(
+            disabled=dbTextToBool(e.get('disabled')),
             molecularFreePathLength=BatchableNumber.fromElement(e.find('molecularFreePathLength', namespaces=nsmap)),
             useTurbulence=dbTextToBool(e.find('useTurbulence', namespaces=nsmap).text))
 
@@ -209,7 +211,7 @@ class DPMModelProperties:
                     <liftForce>{self.kinematicModel.liftForce.value}</liftForce>
                     <gravity>{boolToDBText(self.kinematicModel.gravity)}</gravity>
                     <pressureGradient>{boolToDBText(self.kinematicModel.pressureGradient)}</pressureGradient>
-                    <brownianMotionForce>
+                    <brownianMotionForce{' disabled="true"' if self.kinematicModel.brownianMotionForce.disabled else ''}>
                         {self.kinematicModel.brownianMotionForce.molecularFreePathLength.toXML('molecularFreePathLength')}
                         <useTurbulence>{boolToDBText(self.kinematicModel.brownianMotionForce.useTurbulence)}</useTurbulence>
                     </brownianMotionForce>

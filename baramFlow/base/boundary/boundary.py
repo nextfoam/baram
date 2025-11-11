@@ -34,13 +34,13 @@ class CoefficientOfRestitution:
 
 @dataclass
 class RecycleProperties:
-    recycleBoundary: BatchableNumber
+    recycleBoundary: str
     recycleFraction: BatchableNumber
 
     @staticmethod
     def fromElement(e):
         return RecycleProperties(
-            recycleBoundary=BatchableNumber.fromElement(e.find('recycleBoundary', namespaces=nsmap)),
+            recycleBoundary=e.find('recycleBoundary', namespaces=nsmap).text,
             recycleFraction=BatchableNumber.fromElement(e.find('recycleFraction', namespaces=nsmap)))
 
 
@@ -69,7 +69,7 @@ class WallInteraction:
                         </coefficientOfRestitution>
                     </reflect>
                     <recycle>
-                        {self.recycle.recycleBoundary.toXML('recycleBoundary')}
+                        <recycleBoundary>{self.recycle.recycleBoundary}</recycleBoundary>
                         {self.recycle.recycleFraction.toXML('recycleFraction')}
                     </recycle>
                 </wallInteraction>

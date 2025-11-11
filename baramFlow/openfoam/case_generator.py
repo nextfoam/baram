@@ -11,6 +11,8 @@ from libbaram.exception import CanceledException
 from libbaram.run import RunUtility, RunParallelUtility
 
 from baramFlow.app import app
+from baramFlow.base.model.DPM_model import DPMModelManager
+from baramFlow.base.model.model import DPMParticleType
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB
 from baramFlow.coredb.coredb_reader import CoreDBReader
@@ -20,8 +22,10 @@ from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.openfoam import parallel
 from baramFlow.openfoam.constant.dynamic_mesh_dict import DynamicMeshDict
 from baramFlow.openfoam.constant.g import G
+from baramFlow.openfoam.constant.kinematic_cloud_properties import KinematicCloudProperties
 from baramFlow.openfoam.constant.MRF_properties import MRFProperties
 from baramFlow.openfoam.constant.operating_conditions import OperatingConditions
+from baramFlow.openfoam.constant.reacting_cloud1_properties import ReactingCloud1Properties
 from baramFlow.openfoam.constant.region_properties import RegionProperties
 from baramFlow.openfoam.constant.thermophysical_properties import ThermophysicalProperties
 from baramFlow.openfoam.constant.transport_properties import TransportProperties
@@ -100,6 +104,11 @@ class CaseGenerator(QObject):
             self._files.append(FvSolution(rname))
             self._files.append(FvOptions(rname))
             self._files.append(SetFieldsDict(region))
+
+            if DPMModelManager.particleType() == DPMParticleType.INERT:
+                self._files.append(KinematicCloudProperties())
+            elif DPMModelManager.particleType() == DPMParticleType.DROPLET:
+                self._files.append(ReactingCloud1Properties())
 
         # Files that should be created in case root folder in addition to the region folders.
 

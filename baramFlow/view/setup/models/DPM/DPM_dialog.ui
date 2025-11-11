@@ -237,6 +237,12 @@
                <item>
                 <widget class="QWidget" name="widget_2" native="true">
                  <layout class="QFormLayout" name="formLayout_4">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
                   <item row="0" column="0">
                    <widget class="QLabel" name="label_7">
                     <property name="text">
@@ -260,6 +266,12 @@
                <item>
                 <widget class="QWidget" name="widget_4" native="true">
                  <layout class="QFormLayout" name="formLayout_5">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
                   <item row="0" column="0">
                    <widget class="QLabel" name="label_8">
                     <property name="text">
@@ -330,7 +342,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="kinematicTab">
       <attribute name="title">
@@ -510,9 +522,12 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_6">
+        <widget class="QGroupBox" name="brownianMotionForce">
          <property name="title">
           <string>Brownian Motion Force</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_13">
           <item>

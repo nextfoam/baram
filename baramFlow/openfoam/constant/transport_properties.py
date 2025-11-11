@@ -40,7 +40,8 @@ class TransportProperties(DictionaryFile):
 
         # TransportProperties file is not used for now.
         # It may be used for Non-Newtonian fluid in the future
-        return self
+        if solver != 'kinematicParcelFoam':
+            return self
 
         self._data = {}
 
@@ -55,6 +56,8 @@ class TransportProperties(DictionaryFile):
 
             nu = float(viscosity) / float(density)
             self._data['nu'] = f'[ 0 2 -1 0 0 0 0 ] {nu}'
+
+        self._data['rhoInf'] = 1.2
 
         return self
 

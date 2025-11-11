@@ -18,6 +18,7 @@ class  MaterialObserver(IMaterialObserver):
 
             DPMModelManager.removeInertParticle(db)
 
+    def specieRemoving(self, db, mid: str, primarySpecie: str):
         if mid in DPMModelManager.dropletCompositionMaterials():
             if DPMModelManager.particleType() == DPMParticleType.DROPLET:
                 raise ConfigurationException(

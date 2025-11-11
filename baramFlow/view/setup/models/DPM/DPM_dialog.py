@@ -4,19 +4,20 @@
 import qasync
 from PySide6.QtWidgets import QDialog
 
-from baramFlow.base.material.material import MaterialManager, Phase
-from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.models_db import ModelsDB
-from baramFlow.coredb.region_db import RegionDB
 from widgets.async_message_box import AsyncMessageBox
 from widgets.enum_button_group import EnumButtonGroup
 from widgets.selector_dialog import SelectorDialog, SelectorItem
 
-from baramFlow.coredb import coredb
+from baramFlow.base.material.material import MaterialManager, Phase
 from baramFlow.base.model.DPM_model import DPMModelManager
 from baramFlow.base.model.model import DPMParticleType, DPMTrackingScheme, DPMDragForce, DPMLiftForce
 from baramFlow.base.model.model import DPMTurbulentDispersion, DPMHeatTransferSpeicification
 from baramFlow.base.model.model import DPMEvaporationModel, DPMEnthalpyTransferType
+from baramFlow.coredb import coredb
+from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.models_db import ModelsDB
+from baramFlow.coredb.region_db import RegionDB
+from baramFlow.coredb.turbulence_model_db import TurbulenceModelsDB, TurbulenceModel
 from .DPM_dialog_ui import Ui_DPMdialog
 from .injection_list_dialog import InjectionListDialog
 from .droplet_compsition_list import DropletCompositionList
@@ -37,18 +38,22 @@ class DPMDialog(QDialog):
         self._evaporationModelRadios = EnumButtonGroup()
         self._enthalpyTransferTypeRadios = EnumButtonGroup()
 
+        self._heatTransferTabIndex = self._ui.tabWidget.indexOf(self._ui.heatTransfreTab)
+        self._evaporationTabIndex = self._ui.tabWidget.indexOf(self._ui.evaporationTab)
+
         self._properties = None
         self._injections = None
 
+        self._particleType = None
         self._inertParticle = None
         self._coreMaterials = MaterialManager.loadMaterials()
         self._selectableSolids = None
+        self._turbulentDispersion = None
 
         self._dialog = None
 
         self._inertDeniedMessage = None
         self._dropletDeniedMessage = None
-        self._particleType = None
 
         self._particleTypeRadios.addEnumButton(self._ui.none, DPMParticleType.NONE)
         self._particleTypeRadios.addEnumButton(self._ui.inert, DPMParticleType.INERT)
@@ -73,7 +78,7 @@ class DPMDialog(QDialog):
         self._turbulentDispersionRadios.addEnumButton(self._ui.noneDispersion,
                                                       DPMTurbulentDispersion.NONE)
         self._turbulentDispersionRadios.addEnumButton(self._ui.stochasticDispersion,
-                                                      DPMTurbulentDispersion.STOCHASTIC_DISPEDRSION)
+                                                      DPMTurbulentDispersion.STOCHASTIC_DISPERSION)
         self._turbulentDispersionRadios.addEnumButton(self._ui.gradientDispersion,
                                                       DPMTurbulentDispersion.GRADIENT_DISPERSION)
 
@@ -146,6 +151,7 @@ class DPMDialog(QDialog):
         self._dropletComposition.changed.connect(self._updateDropletTotalComposition)
         self._ui.injections.clicked.connect(self._openInjectionListDialog)
         self._dragForceRadios.dataChecked.connect(self._dragForceChanged)
+        self._turbulentDispersionRadios.dataChecked.connect(self._turbulentDispersionChanged)
         self._heatTransferRadios.dataChecked.connect(self._heatTransferChanged)
         self._ui.ok.clicked.connect(self._accept)
 
@@ -183,11 +189,15 @@ class DPMDialog(QDialog):
         self._liftForceRadios.setCheckedData(self._properties.kinematicModel.liftForce)
         self._ui.gravity.setChecked(self._properties.kinematicModel.gravity)
         self._ui.pressureGradient.setChecked(self._properties.kinematicModel.pressureGradient)
+        self._ui.brownianMotionForce.setChecked(not self._properties.kinematicModel.brownianMotionForce.disabled)
         self._ui.molecularFreePathLength.setBatchableNumber(
             self._properties.kinematicModel.brownianMotionForce.molecularFreePathLength)
         self._ui.useTurtulence.setChecked(self._properties.kinematicModel.brownianMotionForce.useTurbulence)
 
-        self._turbulentDispersionRadios.setCheckedData(self._properties.turbulentDispersion)
+        self._turbulentDispersion = (
+            DPMTurbulentDispersion.NONE if TurbulenceModelsDB.getModel() == TurbulenceModel.SPALART_ALLMARAS
+            else self._properties.turbulentDispersion)
+        self._turbulentDispersionRadios.setCheckedData(self._turbulentDispersion)
         self._heatTransferRadios.setCheckedData(self._properties.heatTransfer.specification)
         self._ui.birdCorrection.setChecked(self._properties.heatTransfer.ranzMarsahll.birdCorrection)
 
@@ -197,6 +207,7 @@ class DPMDialog(QDialog):
     @qasync.asyncSlot()
     async def _accept(self):
         dragForce = self._dragForceRadios.checkedData()
+        brownianMotionForceChecked = self._ui.brownianMotionForce.isChecked()
 
         if self._particleType != DPMParticleType.NONE:
             try:
@@ -206,7 +217,8 @@ class DPMDialog(QDialog):
                 if dragForce == DPMDragForce.NON_SPHERICAL:
                     self._ui.shapeFactor.validate(self.tr('Shape Factor'), low=0, high=1, lowInclusive=False)
 
-                self._ui.molecularFreePathLength.validate(self.tr('Molecular Free Path Length'), low=0)
+                if brownianMotionForceChecked:
+                    self._ui.molecularFreePathLength.validate(self.tr('Molecular Free Path Length'), low=0)
 
                 if self._particleType == DPMParticleType.INERT:
                     if self._inertParticle == '0':
@@ -247,17 +259,21 @@ class DPMDialog(QDialog):
             self._properties.kinematicModel.liftForce = self._liftForceRadios.checkedData()
             self._properties.kinematicModel.gravity = self._ui.gravity.isChecked()
             self._properties.kinematicModel.pressureGradient = self._ui.pressureGradient.isChecked()
-            self._properties.kinematicModel.brownianMotionForce.molecularFreePathLength = self._ui.molecularFreePathLength.batchableNumber()
-            self._properties.kinematicModel.brownianMotionForce.useTurbulence = self._ui.useTurtulence.isChecked()
+            self._properties.kinematicModel.brownianMotionForce.disabled = not brownianMotionForceChecked
+            if brownianMotionForceChecked:
+                self._properties.kinematicModel.brownianMotionForce.molecularFreePathLength = self._ui.molecularFreePathLength.batchableNumber()
+                self._properties.kinematicModel.brownianMotionForce.useTurbulence = self._ui.useTurtulence.isChecked()
 
-            self._properties.turbulentDispersion = self._turbulentDispersionRadios.checkedData()
-            heatTransfer = self._heatTransferRadios.checkedData()
-            self._properties.heatTransfer.specification = heatTransfer
-            if heatTransfer == DPMHeatTransferSpeicification.RANZ_MARHALL:
-                self._properties.heatTransfer.ranzMarsahll.birdCorrection = self._ui.birdCorrection.isChecked()
+            self._properties.turbulentDispersion = self._turbulentDispersion
 
-            self._properties.evaporation.model = self._evaporationModelRadios.checkedData()
-            self._properties.evaporation.enthalpyTransferType = self._enthalpyTransferTypeRadios.checkedData()
+            if self._particleType == DPMParticleType.DROPLET:
+                heatTransfer = self._heatTransferRadios.checkedData()
+                self._properties.heatTransfer.specification = heatTransfer
+                if heatTransfer == DPMHeatTransferSpeicification.RANZ_MARHALL:
+                    self._properties.heatTransfer.ranzMarsahll.birdCorrection = self._ui.birdCorrection.isChecked()
+
+                self._properties.evaporation.model = self._evaporationModelRadios.checkedData()
+                self._properties.evaporation.enthalpyTransferType = self._enthalpyTransferTypeRadios.checkedData()
 
         with coredb.CoreDB() as db:
             DPMModelManager.updateDPMModel(db, self._properties, self._injections)
@@ -286,14 +302,34 @@ class DPMDialog(QDialog):
 
             return
 
-        self._ui.inertParticleGroup.setVisible(type_ == DPMParticleType.INERT)
-        self._ui.dropletGroup.setVisible(type_ == DPMParticleType.DROPLET)
+        if type_ == DPMParticleType.INERT:
+            self._ui.inertParticleGroup.setVisible(True)
+            self._ui.dropletGroup.setVisible(False)
+            self._ui.tabWidget.setTabEnabled(self._heatTransferTabIndex, False)
+            self._ui.tabWidget.setTabEnabled(self._evaporationTabIndex, False)
+        elif type_ == DPMParticleType.DROPLET:
+            self._ui.inertParticleGroup.setVisible(False)
+            self._ui.dropletGroup.setVisible(True)
+            self._ui.tabWidget.setTabEnabled(self._heatTransferTabIndex, True)
+            self._ui.tabWidget.setTabEnabled(self._evaporationTabIndex, True)
 
         self._ui.properties.setEnabled(True)
         self._ui.tabWidget.setEnabled(True)
 
     def _dragForceChanged(self, dragForce):
         self._ui.shapeFactor.setEnabled(dragForce == DPMDragForce.NON_SPHERICAL)
+
+    @qasync.asyncSlot()
+    async def _turbulentDispersionChanged(self, dispersion):
+        if (dispersion != DPMTurbulentDispersion.NONE
+                and TurbulenceModelsDB().getModel() == TurbulenceModel.SPALART_ALLMARAS):
+            self._turbulentDispersionRadios.setCheckedData(self._turbulentDispersion)
+            await AsyncMessageBox().information(
+                self, self.tr('Input Error'),
+                self.tr('Turbulent dispersion of particles cannot be included'
+                        ' if the Spalart-Allmaras turbulence model is used.'))
+        else:
+            self._turbulentDispersion = dispersion
 
     def _heatTransferChanged(self, heatTransfer):
         self._ui.birdCorrection.setEnabled(heatTransfer == DPMHeatTransferSpeicification.RANZ_MARHALL)

@@ -105,7 +105,7 @@ class WallDialog(ResizableDialog):
         self._shearConditionRadios.addEnumButton(self._ui.slip,     ShearCondition.SLIP)
 
         if DPMModelManager.isModelOn():
-            self._wallInteractionWidget = WallInteractionWidget()
+            self._wallInteractionWidget = WallInteractionWidget(self._bcid)
             self._ui.dialogContents.layout().addWidget(self._wallInteractionWidget)
 
         self._connectSignalsSlots()
