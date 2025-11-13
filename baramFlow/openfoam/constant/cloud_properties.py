@@ -51,6 +51,15 @@ class CloudProperties(DictionaryFile):
                     'schemes': {
                     }
                 },
+                'interpolationSchemes' : {
+                    'rho': 'cell',
+                    'U': 'cellPoint',
+                    '"thermo.mu"':  'cell',
+                    'T': 'cell',
+                    'Cp':  'cell',
+                    'kappa': 'cell',
+                    'p':  'cell',
+                },
                 'integrationSchemes': {
                     'U': integrationScheme,
                     'T': integrationScheme
@@ -67,6 +76,9 @@ class CloudProperties(DictionaryFile):
                 'surfaceFilmModel': 'none',
                 'stochasticCollisionModel': 'none',
                 'multiInteractionCoeffs': self._constructMultiInteractionCoeff(),
+                'phaseChangeModel' : 'none',
+                'devolatilisationModel': 'none',
+                'surfaceReactionModel': 'none',
             },
             'cloudFunctions': {}
         }
@@ -114,6 +126,7 @@ class CloudProperties(DictionaryFile):
                 'parcelBasisType': 'fixed',
                 'parcelsPerSecond': self._helper.pFloatValue(flowRate.particleCount.parcelPerSecond),
                 'nParticle': self._helper.pFloatValue(flowRate.particleCount.numberOfParticlesPerParcel),
+                'massTotal': '0',
                 'flowRateProfile': self._helper.function1ScalarValue(flowRate.particleVolume.volumeFlowRate),
                 'SOI': startTime,
                 'duration': duration
@@ -174,7 +187,7 @@ class CloudProperties(DictionaryFile):
                     'maxValue': self._helper.pFloatValue(distribution.maxDiameter)
                 }
             }
-    
+
     def _constructManualInjection(self, injection: PointInjection):
         positionsFileName = 'cloudPositions'
         positionsFile = DictionaryFile(self._casePath, self._header['location'], positionsFileName, DataClass.CLASS_VECTOR_FIELD,
@@ -184,12 +197,14 @@ class CloudProperties(DictionaryFile):
         return {
             'type': 'manualInjection',
             'parcelBasisType': 'fixed',
-            'nParticle': self._helper.pFloatValue(injection.numberOfParticlesPerPoint),
+            'nParticle': '1',
+            'massTotal': '0',
+            'parcelsPerSecond': self._helper.pFloatValue(injection.numberOfParticlesPerPoint),
             'SOI': self._helper.pFloatValue(injection.injectionTime),
             'positionsFile': f'"{positionsFileName}"',
             'U0': self._helper.vectorValue(injection.particleVelocity)
         }
-    
+
     def _constructPatchInjection(self, injection: SurfaceInjection):
         return {
             'type': 'patchInjection',
