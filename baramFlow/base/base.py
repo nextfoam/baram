@@ -124,7 +124,7 @@ class Function1Scalar:
 class Function1Vector:
     type: Function1Type = Function1Type.CONSTANT
     constant: Vector = field(default_factory=lambda: Vector.new('1', '1', '1'))
-    table: list = None
+    table: list[Function1VectorRow] = field(default_factory=lambda: [])
 
     @staticmethod
     def fromElement(e):
