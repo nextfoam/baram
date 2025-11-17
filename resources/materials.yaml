@@ -2,7 +2,7 @@ air:
     name: air
     aliases:
         - Air
-    chemicalFormula: ''
+    chemicalFormula: 'Air'
     molecularWeight: 28.966
     tripleTemperature: 0.0
     triplePressure: 0.0
@@ -298,7 +298,7 @@ carbonMonoxide:
 concrete:
     name: concrete
     aliases: []
-    chemicalFormula: ''
+    chemicalFormula: 'Concrete'
     molecularWeight: 0.0
     tripleTemperature: 0.0
     triplePressure: 0.0
@@ -543,7 +543,7 @@ kerosene:
     name: kerosene
     aliases:
         - Kerosene
-    chemicalFormula: '-'
+    chemicalFormula: 'Kerosene'
     molecularWeight: 170.0
     tripleTemperature: 0.0
     triplePressure: 0.0
@@ -892,7 +892,7 @@ oxygen:
 steel:
     name: steel
     aliases: []
-    chemicalFormula: ''
+    chemicalFormula: 'Steel'
     molecularWeight: 0.0
     tripleTemperature: 0.0
     triplePressure: 0.0
@@ -940,7 +940,7 @@ water:
     name: water
     aliases:
         - Water
-    chemicalFormula: H<sub>2</sub>O
+    chemicalFormula: H2O
     molecularWeight: 18.0153
     tripleTemperature: 0.0
     triplePressure: 0.0
