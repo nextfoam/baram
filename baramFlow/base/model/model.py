@@ -51,6 +51,12 @@ class DPMLiftForce(Enum):
     TOMIYAMA    = 'TomiyamaLift'
 
 
+class Contamination(Enum):
+    NO_CONTAMINATION        = 'pure'
+    SLIGHT_CONTAMINATION    = 'slight'
+    FULL_CONTAMINATION      = 'full'
+
+
 class DPMTurbulentDispersion(Enum):
     NONE                    = 'none'
     STOCHASTIC_DISPERSION  = 'stochasticDispersionRAS'

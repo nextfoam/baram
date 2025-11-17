@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>645</width>
-    <height>926</height>
+    <height>1098</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -342,7 +342,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="kinematicTab">
       <attribute name="title">
@@ -446,6 +446,73 @@
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QWidget" name="dragTomiyama" native="true">
+               <layout class="QVBoxLayout" name="verticalLayout_22">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QWidget" name="widget_16" native="true">
+                  <layout class="QHBoxLayout" name="horizontalLayout_10">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="label_13">
+                     <property name="text">
+                      <string>Surface Tension (N/m)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="BatchableFloatEdit" name="dragTomiyamaSurfaceTension"/>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="groupBox_6">
+                  <property name="title">
+                   <string>Contamination</string>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_23">
+                   <item>
+                    <widget class="QRadioButton" name="noContamination">
+                     <property name="text">
+                      <string>No Contamination</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QRadioButton" name="slightContamination">
+                     <property name="text">
+                      <string>Slight Contamination</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QRadioButton" name="fullContamination">
+                     <property name="text">
+                      <string>Full Contamination</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
             </layout>
            </widget>
           </item>
@@ -455,7 +522,7 @@
              <item>
               <widget class="QGroupBox" name="groupBox_5">
                <property name="title">
-                <string>List Force</string>
+                <string>Lift Force</string>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_11">
                 <item>
@@ -477,6 +544,43 @@
                   <property name="text">
                    <string>Tomiyama</string>
                   </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QWidget" name="liftTomiyama" native="true">
+                  <layout class="QVBoxLayout" name="verticalLayout_24">
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QWidget" name="widget_18" native="true">
+                     <layout class="QHBoxLayout" name="horizontalLayout_11">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_14">
+                        <property name="text">
+                         <string>Surface Tension (N/m)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="BatchableFloatEdit" name="liftTomiyamaSurfaceTension"/>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
                </layout>

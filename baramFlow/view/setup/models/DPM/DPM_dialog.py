@@ -10,7 +10,7 @@ from widgets.selector_dialog import SelectorDialog, SelectorItem
 
 from baramFlow.base.material.material import MaterialManager, Phase
 from baramFlow.base.model.DPM_model import DPMModelManager
-from baramFlow.base.model.model import DPMParticleType, DPMTrackingScheme, DPMDragForce, DPMLiftForce
+from baramFlow.base.model.model import DPMParticleType, DPMTrackingScheme, DPMDragForce, DPMLiftForce, Contamination
 from baramFlow.base.model.model import DPMTurbulentDispersion, DPMHeatTransferSpeicification
 from baramFlow.base.model.model import DPMEvaporationModel, DPMEnthalpyTransferType
 from baramFlow.coredb import coredb
@@ -32,6 +32,7 @@ class DPMDialog(QDialog):
         self._particleTypeRadios = EnumButtonGroup()
         self._dropletComposition = None
         self._dragForceRadios = EnumButtonGroup()
+        self._contaminationRadios = EnumButtonGroup()
         self._liftForceRadios = EnumButtonGroup()
         self._turbulentDispersionRadios = EnumButtonGroup()
         self._heatTransferRadios = EnumButtonGroup()
@@ -47,7 +48,7 @@ class DPMDialog(QDialog):
         self._particleType = None
         self._inertParticle = None
         self._coreMaterials = MaterialManager.loadMaterials()
-        self._selectableSolids = None
+        self._selectableParticles = []
         self._turbulentDispersion = None
 
         self._dialog = None
@@ -70,6 +71,10 @@ class DPMDialog(QDialog):
         self._dragForceRadios.addEnumButton(self._ui.dragForceGidaspow,             DPMDragForce.GIDASPOW)
         self._dragForceRadios.addEnumButton(self._ui.dragForceDuPlesisAndMailyah,   DPMDragForce.DU_PIESSIS_AND_MASLIYAH)
         self._dragForceRadios.addEnumButton(self._ui.dragForceTomiyama,             DPMDragForce.TOMIYAMA)
+
+        self._contaminationRadios.addEnumButton(self._ui.noContamination,       Contamination.NO_CONTAMINATION)
+        self._contaminationRadios.addEnumButton(self._ui.slightContamination,   Contamination.SLIGHT_CONTAMINATION)
+        self._contaminationRadios.addEnumButton(self._ui.fullContamination,     Contamination.FULL_CONTAMINATION)
 
         self._liftForceRadios.addEnumButton(self._ui.liftForceNone,         DPMLiftForce.NONE)
         self._liftForceRadios.addEnumButton(self._ui.liftForceSaffmanMei,   DPMLiftForce.SAFFMAN_MEI)
@@ -99,8 +104,13 @@ class DPMDialog(QDialog):
         self._enthalpyTransferTypeRadios.addEnumButton(self._ui.latetHeat,
                                                        DPMEnthalpyTransferType.LATENT_HEAT)
 
-        solids = self._coreMaterials.getMaterials(phases=[Phase.SOLID])
-        self._selectableSolids = [SelectorItem(m.name, m.name, (m.mid, m.name)) for m in solids]
+        solids = []
+        particles = self._coreMaterials.getMaterials(phases=[Phase.SOLID, Phase.LIQUID])
+        for m in particles:
+            self._selectableParticles.append(SelectorItem(m.name, m.name, (m.mid, m.name)))
+
+            if m.phase == Phase.SOLID:
+                solids.append(SelectorItem(m.name, m.name, (m.mid, m.name)))
 
         mixtures = RegionDB.getMixturesInRegions()
         liquids = None
@@ -111,8 +121,7 @@ class DPMDialog(QDialog):
                 liquids = [SelectorItem(name, name, (mid, name))
                            for mid, name in MaterialDB.getSpecies(mixture.mid).items()]
 
-        self._dropletComposition = DropletCompositionList(self, self._ui.composition,
-                                                          self._selectableSolids, liquids)
+        self._dropletComposition = DropletCompositionList(self, self._ui.composition, solids, liquids)
 
         deniedMessage = None
         if ModelsDB.isMultiphaseModelOn():
@@ -123,10 +132,11 @@ class DPMDialog(QDialog):
             deniedMessage = self.tr('DPM Model requires Energy Model to be included.')
 
         if deniedMessage is None:
-            if not self._selectableSolids:
-                self._inertDeniedMessage = self.tr('Inert Particle Type requires at least one solid material.')
+            if not self._selectableParticles:
+                self._inertDeniedMessage = self.tr(
+                    'Inert Particle Type requires at least one solid or liquid material.')
             else:
-                self._setInertParticle(solids[0].mid, solids[0].name)
+                self._setInertParticle(particles[0].mid, particles[0].name)
 
             if not liquids:
                 self._dropletDeniedMessage = self.tr(
@@ -151,6 +161,7 @@ class DPMDialog(QDialog):
         self._dropletComposition.changed.connect(self._updateDropletTotalComposition)
         self._ui.injections.clicked.connect(self._openInjectionListDialog)
         self._dragForceRadios.dataChecked.connect(self._dragForceChanged)
+        self._liftForceRadios.dataChecked.connect(self._liftForceChanged)
         self._turbulentDispersionRadios.dataChecked.connect(self._turbulentDispersionChanged)
         self._heatTransferRadios.dataChecked.connect(self._heatTransferChanged)
         self._ui.ok.clicked.connect(self._accept)
@@ -185,8 +196,13 @@ class DPMDialog(QDialog):
 
         self._dragForceRadios.setCheckedData(self._properties.kinematicModel.dragForce.specification)
         self._ui.shapeFactor.setBatchableNumber(
-            self._properties.kinematicModel.dragForce.nonSphericalSettings.shapeFactor)
-        self._liftForceRadios.setCheckedData(self._properties.kinematicModel.liftForce)
+            self._properties.kinematicModel.dragForce.nonSphereDrag.shapeFactor)
+        self._ui.dragTomiyamaSurfaceTension.setBatchableNumber(
+            self._properties.kinematicModel.dragForce.tomyamaDrag.surfaceTension)
+        self._contaminationRadios.setCheckedData(self._properties.kinematicModel.dragForce.tomyamaDrag.contamination)
+        self._liftForceRadios.setCheckedData(self._properties.kinematicModel.liftForce.specification)
+        self._ui.liftTomiyamaSurfaceTension.setBatchableNumber(
+            self._properties.kinematicModel.liftForce.tomiyamaLift.surfaceTension)
         self._ui.gravity.setChecked(self._properties.kinematicModel.gravity)
         self._ui.pressureGradient.setChecked(self._properties.kinematicModel.pressureGradient)
         self._ui.brownianMotionForce.setChecked(not self._properties.kinematicModel.brownianMotionForce.disabled)
@@ -207,6 +223,7 @@ class DPMDialog(QDialog):
     @qasync.asyncSlot()
     async def _accept(self):
         dragForce = self._dragForceRadios.checkedData()
+        liftForce = self._liftForceRadios.checkedData()
         brownianMotionForceChecked = self._ui.brownianMotionForce.isChecked()
 
         if self._particleType != DPMParticleType.NONE:
@@ -216,6 +233,11 @@ class DPMDialog(QDialog):
 
                 if dragForce == DPMDragForce.NON_SPHERICAL:
                     self._ui.shapeFactor.validate(self.tr('Shape Factor'), low=0, high=1, lowInclusive=False)
+                elif dragForce == DPMDragForce.TOMIYAMA:
+                    self._ui.dragTomiyamaSurfaceTension.validate(self.tr('Surface Tension'), low=0)
+
+                if liftForce == DPMLiftForce.TOMIYAMA:
+                    self._ui.liftTomiyamaSurfaceTension.validate(self.tr('Surface Tension'), low=0)
 
                 if brownianMotionForceChecked:
                     self._ui.molecularFreePathLength.validate(self.tr('Molecular Free Path Length'), low=0)
@@ -255,8 +277,15 @@ class DPMDialog(QDialog):
 
             self._properties.kinematicModel.dragForce.specification = dragForce
             if dragForce == DPMDragForce.NON_SPHERICAL:
-                self._properties.kinematicModel.dragForce.nonSphericalSettings.shapeFactor = self._ui.shapeFactor.batchableNumber()
-            self._properties.kinematicModel.liftForce = self._liftForceRadios.checkedData()
+                self._properties.kinematicModel.dragForce.nonSphereDrag.shapeFactor = self._ui.shapeFactor.batchableNumber()
+            elif dragForce == DPMDragForce.TOMIYAMA:
+                self._properties.kinematicModel.dragForce.tomyamaDrag.surfaceTension = self._ui.dragTomiyamaSurfaceTension.batchableNumber()
+                self._properties.kinematicModel.dragForce.tomyamaDrag.contamination = self._contaminationRadios.checkedData()
+
+            self._properties.kinematicModel.liftForce.specification = liftForce
+            if liftForce == DPMLiftForce.TOMIYAMA:
+                self._properties.kinematicModel.liftForce.tomiyamaLift.surfaceTension = self._ui.liftTomiyamaSurfaceTension.batchableNumber()
+
             self._properties.kinematicModel.gravity = self._ui.gravity.isChecked()
             self._properties.kinematicModel.pressureGradient = self._ui.pressureGradient.isChecked()
             self._properties.kinematicModel.brownianMotionForce.disabled = not brownianMotionForceChecked
@@ -318,6 +347,10 @@ class DPMDialog(QDialog):
 
     def _dragForceChanged(self, dragForce):
         self._ui.shapeFactor.setEnabled(dragForce == DPMDragForce.NON_SPHERICAL)
+        self._ui.dragTomiyama.setEnabled(dragForce == DPMDragForce.TOMIYAMA)
+
+    def _liftForceChanged(self, liftForce):
+        self._ui.liftTomiyama.setEnabled(liftForce == DPMLiftForce.TOMIYAMA)
 
     @qasync.asyncSlot()
     async def _turbulentDispersionChanged(self, dispersion):
@@ -340,7 +373,7 @@ class DPMDialog(QDialog):
             self._setInertParticle(mid, name)
 
         self._dialog = SelectorDialog(self, self.tr("Select Material"), self.tr("Select Material"),
-                                      self._selectableSolids)
+                                      self._selectableParticles)
         self._dialog.accepted.connect(addSolids)
         self._dialog.open()
 

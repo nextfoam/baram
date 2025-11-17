@@ -8,9 +8,10 @@ from lxml import etree
 from baramFlow.base.base import BatchableNumber, Vector, Function1Scalar, Function1Vector
 from baramFlow.coredb import coredb
 from baramFlow.coredb.libdb import nsmap, dbTextToBool, boolToDBText, ns
-from .model import MODELS_XPATH, DPMParticleType, DPMTrackingScheme, DPMDragForce, DPMLiftForce, DPMConeInjectorType
+from .model import MODELS_XPATH, DPMParticleType, DPMTrackingScheme, DPMDragForce, DPMLiftForce, Contamination
 from .model import DPMTurbulentDispersion, DPMHeatTransferSpeicification, DPMEvaporationModel, DPMEnthalpyTransferType
 from .model import DPMInjectionType, DPMDiameterDistribution, DPMFlowRateSpec, DPMParticleSpeed, DPMParticleVelocityType
+from .model import DPMConeInjectorType
 
 DPM_MODELS_XPATH = f'{MODELS_XPATH}/DPMModels'
 
@@ -70,25 +71,61 @@ class NumericalConditions:
 
 
 @dataclass
-class NonSphericalSettings:
+class NonSphereDrag:
     shapeFactor: BatchableNumber
 
     @staticmethod
     def fromElement(e):
-        return NonSphericalSettings(
+        return NonSphereDrag(
             shapeFactor=BatchableNumber.fromElement(e.find('shapeFactor', namespaces=nsmap)))
+
+
+@dataclass
+class TomiyamaDrag:
+    surfaceTension: BatchableNumber
+    contamination: Contamination
+
+    @staticmethod
+    def fromElement(e):
+        return TomiyamaDrag(
+            surfaceTension=BatchableNumber.fromElement(e.find('surfaceTension', namespaces=nsmap)),
+            contamination=Contamination(e.find('contamination', namespaces=nsmap).text))
 
 
 @dataclass
 class DragForce:
     specification: DPMDragForce
-    nonSphericalSettings: NonSphericalSettings
+    nonSphereDrag: NonSphereDrag
+    tomyamaDrag: TomiyamaDrag
 
     @staticmethod
     def fromElement(e):
         return DragForce(
             specification=DPMDragForce(e.find('specification', namespaces=nsmap).text),
-            nonSphericalSettings=NonSphericalSettings.fromElement(e.find('nonSpherical', namespaces=nsmap)))
+            nonSphereDrag=NonSphereDrag.fromElement(e.find('nonSphereDrag', namespaces=nsmap)),
+            tomyamaDrag=TomiyamaDrag.fromElement(e.find('TomiyamaDrag', namespaces=nsmap)))
+
+
+@dataclass
+class TomiyamaLift:
+    surfaceTension: BatchableNumber
+
+    @staticmethod
+    def fromElement(e):
+        return TomiyamaLift(
+            surfaceTension=BatchableNumber.fromElement(e.find('surfaceTension', namespaces=nsmap)))
+
+
+@dataclass
+class LiftForce:
+    specification: DPMLiftForce
+    tomiyamaLift: TomiyamaLift
+
+    @staticmethod
+    def fromElement(e):
+        return LiftForce(
+            specification=DPMLiftForce(e.find('specification', namespaces=nsmap).text),
+            tomiyamaLift=TomiyamaLift.fromElement(e.find('TomiyamaLift', namespaces=nsmap)))
 
 
 @dataclass
@@ -108,7 +145,7 @@ class BrownianMotionForce:
 @dataclass
 class KinematicModel:
     dragForce: DragForce
-    liftForce: DPMLiftForce
+    liftForce: LiftForce
     gravity: bool
     pressureGradient: bool
     brownianMotionForce: BrownianMotionForce
@@ -117,7 +154,7 @@ class KinematicModel:
     def fromElement(e):
         return KinematicModel(
             dragForce=DragForce.fromElement(e.find('dragForce', namespaces=nsmap)),
-            liftForce=DPMLiftForce(e.find('liftForce', namespaces=nsmap).text),
+            liftForce=LiftForce.fromElement(e.find('liftForce', namespaces=nsmap)),
             gravity=dbTextToBool(e.find('gravity', namespaces=nsmap).text),
             pressureGradient=dbTextToBool(e.find('pressureGradient', namespaces=nsmap).text),
             brownianMotionForce=BrownianMotionForce.fromElement(e.find('brownianMotionForce', namespaces=nsmap)))
@@ -204,11 +241,20 @@ class DPMModelProperties:
                 <kinematicModel>
                     <dragForce>
                         <specification>{self.kinematicModel.dragForce.specification.value}</specification>
-                        <nonSpherical>
-                            {self.kinematicModel.dragForce.nonSphericalSettings.shapeFactor.toXML('shapeFactor')}
-                        </nonSpherical>
+                        <nonSphereDrag>
+                            {self.kinematicModel.dragForce.nonSphereDrag.shapeFactor.toXML('shapeFactor')}
+                        </nonSphereDrag>
+                        <TomiyamaDrag>
+                            {self.kinematicModel.dragForce.tomyamaDrag.surfaceTension.toXML('surfaceTension')}
+                            <contamination>{self.kinematicModel.dragForce.tomyamaDrag.contamination.value}</contamination>
+                        </TomiyamaDrag>
                     </dragForce>
-                    <liftForce>{self.kinematicModel.liftForce.value}</liftForce>
+                    <liftForce>
+                        <specification>{self.kinematicModel.liftForce.specification.value}</specification>
+                        <TomiyamaLift>
+                            {self.kinematicModel.liftForce.tomiyamaLift.surfaceTension.toXML('surfaceTension')}
+                        </TomiyamaLift>
+                    </liftForce>
                     <gravity>{boolToDBText(self.kinematicModel.gravity)}</gravity>
                     <pressureGradient>{boolToDBText(self.kinematicModel.pressureGradient)}</pressureGradient>
                     <brownianMotionForce{' disabled="true"' if self.kinematicModel.brownianMotionForce.disabled else ''}>

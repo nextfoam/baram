@@ -7,8 +7,8 @@ from baramFlow.base.boundary.boundary import BoundaryManager, WallInteractionTyp
 from baramFlow.base.model.DPM_model import DPMModelManager, KinematicModel, FlowRate, DiameterDistribution, Injection
 from baramFlow.base.model.DPM_model import ConeInjection, PointInjection, SurfaceInjection
 from baramFlow.base.model.model import DPMTrackingScheme, DPMParticleType, DPMTurbulentDispersion, DPMFlowRateSpec
-from baramFlow.base.model.model import DPMInjectionType, DPMDiameterDistribution
-from baramFlow.base.model.model import DPMParticleVelocityType, DPMParticleSpeed, DPMLiftForce
+from baramFlow.base.model.model import DPMDragForce, DPMLiftForce, DPMInjectionType, DPMDiameterDistribution
+from baramFlow.base.model.model import DPMParticleVelocityType, DPMParticleSpeed
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
@@ -92,22 +92,40 @@ class CloudProperties(DictionaryFile):
         return self
 
     def _constructParticleForce(self, model: KinematicModel):
+        def dragForceDict(specification):
+            if specification == DPMDragForce.NON_SPHERICAL:
+                return {
+                    'phi': self._helper.pFloatValue(model.dragForce.nonSphereDrag.shapeFactor)
+                }
+
+            if specification == DPMDragForce.TOMIYAMA:
+                return {
+                    'sigma': self._helper.pFloatValue(model.dragForce.tomyamaDrag.surfaceTension),
+                    'contamination': model.dragForce.tomyamaDrag.contamination.value
+                }
+
+            return ''
+
+        def liftForceDict(specification):
+            if specification == DPMLiftForce.TOMIYAMA:
+                return {
+                    'sigma': self._helper.pFloatValue(model.liftForce.tomiyamaLift.surfaceTension),
+                }
+
+            return ''
+
         data = {
-            model.dragForce.specification.value: ''
+            model.dragForce.specification.value: dragForceDict(model.dragForce.specification),
         }
 
-        if model.liftForce != DPMLiftForce.NONE:
-            data[model.liftForce.value] = ''
+        if model.liftForce.specification != DPMLiftForce.NONE:
+            data[model.liftForce.specification.value] = liftForceDict(model.liftForce.specification)
 
         if model.gravity:
             data['gravity'] = ''
 
         if model.pressureGradient:
             data['pressureGradient'] = ''
-
-        data['nonSphereDrag'] = {
-            'phi': self._helper.pFloatValue(model.dragForce.nonSphericalSettings.shapeFactor)
-        }
 
         if not model.brownianMotionForce.disabled:
             data['BrownianMotion'] = {
@@ -264,18 +282,19 @@ class CloudProperties(DictionaryFile):
             if ptype == BoundaryType.WALL.value:
                 interaction = BoundaryManager.wallInteraction(bcid)
                 type_ = interaction.type
-            else:
-                type_ = WallInteractionType.NONE
 
-            if type_ == WallInteractionType.RECYCLE:
-                data['model_' + name] = {
-                    'patchInteractionModel': 'recycleInteraction',
-                    'recycleInteractionCoeffs': {
-                        'recyclePatches': [[name, BoundaryDB.getBoundaryName(interaction.recycle.recycleBoundary)]],
-                        'recycleFraction': self._helper.pFloatValue(interaction.recycle.recycleFraction),
+                if type_ == WallInteractionType.RECYCLE:
+                    data['model_' + name] = {
+                        'patchInteractionModel': 'recycleInteraction',
+                        'recycleInteractionCoeffs': {
+                            'recyclePatches': [[name, BoundaryDB.getBoundaryName(interaction.recycle.recycleBoundary)]],
+                            'recycleFraction': self._helper.pFloatValue(interaction.recycle.recycleFraction),
+                        }
                     }
-                }
 
+                    type_ = WallInteractionType.NONE
+            else:
+                interaction = None
                 type_ = WallInteractionType.NONE
 
             localPatches.append(name)
