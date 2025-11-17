@@ -2428,24 +2428,53 @@
                                                                                     </xs:restriction>
                                                                                 </xs:simpleType>
                                                                             </xs:element>
-                                                                            <xs:element name="nonSpherical">
+                                                                            <xs:element name="nonSphereDrag">
                                                                                 <xs:complexType>
                                                                                     <xs:sequence>
                                                                                         <xs:element name="shapeFactor" type="inputNumberType" default="0.9"/>
                                                                                     </xs:sequence>
                                                                                 </xs:complexType>
                                                                             </xs:element>
+                                                                            <xs:element name="TomiyamaDrag">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="surfaceTension" type="inputNumberType" default="0.9"/>
+                                                                                        <xs:element name="contamination" default="pure">
+                                                                                            <xs:simpleType>
+                                                                                                <xs:restriction base="xs:string">
+                                                                                                    <xs:enumeration value="pure"/>
+                                                                                                    <xs:enumeration value="slight"/>
+                                                                                                    <xs:enumeration value="full"/>
+                                                                                                </xs:restriction>
+                                                                                            </xs:simpleType>
+                                                                                        </xs:element>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
                                                                         </xs:sequence>
                                                                     </xs:complexType>
                                                                 </xs:element>
-                                                                <xs:element name="liftForce" default="none">
-                                                                    <xs:simpleType>
-                                                                        <xs:restriction base="xs:string">
-                                                                            <xs:enumeration value="none"/>
-                                                                            <xs:enumeration value="SaffmanMeiLiftForce"/>
-                                                                            <xs:enumeration value="TomiyamaLift"/>
-                                                                        </xs:restriction>
-                                                                    </xs:simpleType>
+                                                                <xs:element name="liftForce">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="specification" default="none">
+                                                                                <xs:simpleType>
+                                                                                    <xs:restriction base="xs:string">
+                                                                                        <xs:enumeration value="none"/>
+                                                                                        <xs:enumeration value="SaffmanMeiLiftForce"/>
+                                                                                        <xs:enumeration value="TomiyamaLift"/>
+                                                                                    </xs:restriction>
+                                                                                </xs:simpleType>
+                                                                            </xs:element>
+                                                                            <xs:element name="TomiyamaLift">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="surfaceTension" type="inputNumberType" default="0.9"/>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
                                                                 </xs:element>
                                                                 <xs:element name="gravity" type="xs:boolean" default="false"/>
                                                                 <xs:element name="pressureGradient" type="xs:boolean" default="false"/>

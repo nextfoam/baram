@@ -1092,11 +1092,20 @@ def _version_12(root: etree.Element):
                         <kinematicModel>
                             <dragForce>
                                 <specification>sphereDrag</specification>
-                                <nonSpherical>
+                                <nonSphereDrag>
                                     <shapeFactor>0.9</shapeFactor>
-                                </nonSpherical>
+                                </nonSphereDrag>
+                                <TomiyamaDrag>
+                                    <surfaceTension>0.9</surfaceTension>
+                                    <contamination>pure</contamination>
+                                </TomiyamaDrag>
                             </dragForce>
-                            <liftForce>none</liftForce>
+                            <liftForce>
+                                <specification>none</specification>
+                                <TomiyamaLift>
+                                    <surfaceTension>0.9</surfaceTension>
+                                </TomiyamaLift>
+                            </liftForce>
                             <gravity>false</gravity>
                             <pressureGradient>false</pressureGradient>
                             <brownianMotionForce>
