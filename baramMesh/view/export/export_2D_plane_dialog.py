@@ -18,7 +18,6 @@ from .export_2D_region_widgets import Export2DPlaneRegionWidget
 class Export2DPlaneDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
-
         self._ui = Ui_Export2DPlaneDialog()
         self._ui.setupUi(self)
 
@@ -54,6 +53,9 @@ class Export2DPlaneDialog(QDialog):
 
     def projectPath(self):
         return self._pathWidget.projectPath()
+
+    def isRnBaramFlowChecked(self):
+        return self._ui.run.isChecked()
 
     def extrudeOptions(self):
         return ([(b.rname(), b.boundary(), b.boundary()) for b in self._regionWidgets], 

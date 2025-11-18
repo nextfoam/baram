@@ -11,26 +11,26 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Export as 2D Wedge Baram Project</string>
+   <string>Export as 2D Wedge BaramFlow Project</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QFrame" name="path">
      <property name="frameShape">
-      <enum>QFrame::Shape::Box</enum>
+      <enum>QFrame::Box</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Shadow::Raised</enum>
+      <enum>QFrame::Raised</enum>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QFrame" name="parameters">
      <property name="frameShape">
-      <enum>QFrame::Shape::Box</enum>
+      <enum>QFrame::Box</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Shadow::Raised</enum>
+      <enum>QFrame::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -192,13 +192,20 @@
     <widget class="QWidget" name="widget_2" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_6">
       <item>
+       <widget class="QCheckBox" name="run">
+        <property name="text">
+         <string>Run BaramFlow on Exported Project</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
+         <enum>Qt::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>217</width>
+          <width>40</width>
           <height>20</height>
          </size>
         </property>

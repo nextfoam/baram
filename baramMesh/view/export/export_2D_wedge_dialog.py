@@ -56,6 +56,9 @@ class Export2DWedgeDialog(QDialog):
     def projectPath(self):
         return self._pathWidget.projectPath()
 
+    def isRnBaramFlowChecked(self):
+        return self._ui.run.isChecked()
+
     def extrudeOptions(self):
         return ([(b.rname(), b.p1(), b.p2()) for b in self._regionWidgets], 
                 ExtrudeOptions(ExtrudeModel.WEDGE,
@@ -78,7 +81,6 @@ class Export2DWedgeDialog(QDialog):
     async def _accept(self):
         path = self._pathWidget.projectPath()
         if path is None:
-
             if self._pathWidget.validationMessage():
                 await AsyncMessageBox().information(self, self.tr('Input Error'), self._pathWidget.validationMessage())
                 return
