@@ -6,10 +6,10 @@ from enum import Enum
 from PySide6.QtCore import QObject
 
 import baramFlow.coredb.libdb as xml
+from baramFlow.base.material.material import MaterialType
 from baramFlow.coredb import coredb
 from baramFlow.coredb.configuraitions import ConfigurationException
 from baramFlow.coredb.material_db import MaterialDB, IMaterialObserver
-from baramFlow.coredb.material_schema import MaterialType
 from baramFlow.coredb.specie_model_db import ISpecieModelObserver
 
 REGION_XPATH = '/regions/region'

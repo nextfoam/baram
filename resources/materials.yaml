@@ -1,8 +1,8 @@
 air:
     name: air
     aliases:
-    - Air
-    chemicalFormula: ''
+        - Air
+    chemicalFormula: 'Air'
     molecularWeight: 28.966
     tripleTemperature: 0.0
     triplePressure: 0.0
@@ -17,21 +17,21 @@ air:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: gas
@@ -66,21 +66,21 @@ aluminum:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: solid
@@ -98,7 +98,7 @@ aluminum:
 argon:
     name: argon
     aliases:
-    - Argon
+        - Argon
     chemicalFormula: Ar
     molecularWeight: 39.948
     tripleTemperature: 0.0
@@ -114,21 +114,21 @@ argon:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: gas
@@ -148,7 +148,7 @@ argon:
 benzene:
     name: benzene
     aliases:
-    - Benzene
+        - Benzene
     chemicalFormula: C6H6
     molecularWeight: 78.11
     tripleTemperature: 0.0
@@ -164,21 +164,21 @@ benzene:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: liquid
@@ -198,7 +198,7 @@ benzene:
 carbonDioxide:
     name: carbonDioxide
     aliases:
-    - CarbonDioxide
+        - CarbonDioxide
     chemicalFormula: CO2
     molecularWeight: 44.01
     tripleTemperature: 0.0
@@ -214,21 +214,21 @@ carbonDioxide:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: gas
@@ -248,7 +248,7 @@ carbonDioxide:
 carbonMonoxide:
     name: carbonMonoxide
     aliases:
-    - CarbonMonoxide
+        - CarbonMonoxide
     chemicalFormula: CO
     molecularWeight: 28.0106
     tripleTemperature: 0.0
@@ -264,21 +264,21 @@ carbonMonoxide:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: gas
@@ -298,7 +298,7 @@ carbonMonoxide:
 concrete:
     name: concrete
     aliases: []
-    chemicalFormula: ''
+    chemicalFormula: 'Concrete'
     molecularWeight: 0.0
     tripleTemperature: 0.0
     triplePressure: 0.0
@@ -313,21 +313,21 @@ concrete:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: solid
@@ -360,21 +360,21 @@ copper:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: solid
@@ -392,7 +392,7 @@ copper:
 ethanol:
     name: ethanol
     aliases:
-    - Ethanol
+        - Ethanol
     chemicalFormula: C12H6O
     molecularWeight: 46.068
     tripleTemperature: 0.0
@@ -408,21 +408,21 @@ ethanol:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: liquid
@@ -442,7 +442,7 @@ ethanol:
 helium:
     name: helium
     aliases:
-    - Helium
+        - Helium
     chemicalFormula: He
     molecularWeight: 4.002602
     tripleTemperature: 0.0
@@ -458,21 +458,21 @@ helium:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: gas
@@ -492,7 +492,7 @@ helium:
 hydrogen:
     name: hydrogen
     aliases:
-    - Hydrogen
+        - Hydrogen
     chemicalFormula: H2
     molecularWeight: 2.01588
     tripleTemperature: 0.0
@@ -508,21 +508,21 @@ hydrogen:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: gas
@@ -542,8 +542,8 @@ hydrogen:
 kerosene:
     name: kerosene
     aliases:
-    - Kerosene
-    chemicalFormula: '-'
+        - Kerosene
+    chemicalFormula: 'Kerosene'
     molecularWeight: 170.0
     tripleTemperature: 0.0
     triplePressure: 0.0
@@ -558,21 +558,21 @@ kerosene:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: liquid
@@ -592,7 +592,7 @@ kerosene:
 mercury:
     name: mercury
     aliases:
-    - Mercury
+        - Mercury
     chemicalFormula: Hg
     molecularWeight: 200.59
     tripleTemperature: 0.0
@@ -608,21 +608,21 @@ mercury:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: liquid
@@ -642,7 +642,7 @@ mercury:
 methane:
     name: methane
     aliases:
-    - Methane
+        - Methane
     chemicalFormula: CH4
     molecularWeight: 16.043
     tripleTemperature: 0.0
@@ -658,21 +658,21 @@ methane:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: gas
@@ -692,7 +692,7 @@ methane:
 methanol:
     name: methanol
     aliases:
-    - Methanol
+        - Methanol
     chemicalFormula: CH3OH
     molecularWeight: 32.04
     tripleTemperature: 0.0
@@ -708,21 +708,21 @@ methanol:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: liquid
@@ -739,10 +739,10 @@ methanol:
     surfaceTension: 0.0226
     absorptionCoefficient: 0.0
     emissivity: 0.0
-molten steel:
-    name: molten steel
+moltenSteel:
+    name: moltenSteel
     aliases:
-    - Molten steel
+        - MoltenSteel
     chemicalFormula: Fe
     molecularWeight: 54.97
     tripleTemperature: 0.0
@@ -758,26 +758,26 @@ molten steel:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: liquid
     liquid:
-        name: molten steel
+        name: moltenSteel
         density: 7040.0
         viscosity: 0.003
         thermalConductivity: 31.0
@@ -792,7 +792,7 @@ molten steel:
 nitrogen:
     name: nitrogen
     aliases:
-    - Nitrogen
+        - Nitrogen
     chemicalFormula: N2
     molecularWeight: 28.0134
     tripleTemperature: 0.0
@@ -808,21 +808,21 @@ nitrogen:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: gas
@@ -842,7 +842,7 @@ nitrogen:
 oxygen:
     name: oxygen
     aliases:
-    - Oxygen
+        - Oxygen
     chemicalFormula: O2
     molecularWeight: 31.9988
     tripleTemperature: 0.0
@@ -858,21 +858,21 @@ oxygen:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: gas
@@ -892,7 +892,7 @@ oxygen:
 steel:
     name: steel
     aliases: []
-    chemicalFormula: ''
+    chemicalFormula: 'Steel'
     molecularWeight: 0.0
     tripleTemperature: 0.0
     triplePressure: 0.0
@@ -907,21 +907,21 @@ steel:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: solid
@@ -939,8 +939,8 @@ steel:
 water:
     name: water
     aliases:
-    - Water
-    chemicalFormula: H<sub>2</sub>O
+        - Water
+    chemicalFormula: H2O
     molecularWeight: 18.0153
     tripleTemperature: 0.0
     triplePressure: 0.0
@@ -955,21 +955,21 @@ water:
         commonTemperature: 0.0
         highTemperature: 0.0
         lowCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
         highCoefficients:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
     dipoleMoment: 0.0
     solubilityParameter: 0.0
     phase: liquid

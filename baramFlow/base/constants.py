@@ -24,3 +24,8 @@ class VectorComponent(IntFlag):
     X         = 2
     Y         = 4
     Z         = 8
+
+
+class Function1Type(Enum):
+    CONSTANT    = "constant"
+    TABLE       = "table"

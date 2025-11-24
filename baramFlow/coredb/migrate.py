@@ -1012,7 +1012,7 @@ def _version_10(root: etree.Element):
 def _version_11(root: etree.Element):
     logger.debug('  Upgrading to v12')
 
-    #root.set('version', '12')
+    root.set('version', '12')
 
     for e in root.findall('monitors/*/*/field', namespaces=_nsmap):
         logger.debug(f'    Replacing text of {e} to "fieldCategory", "fieldCodeName' and "fieldComponent")
@@ -1063,6 +1063,95 @@ def _version_11(root: etree.Element):
             index += 1
 
 
+def _version_12(root: etree.Element):
+    logger.debug('  Upgrading to v13')
+
+    #root.set('version', '13')
+
+    if (p := root.find('models', namespaces=_nsmap)) is not None:
+        if p.find('DPMModels', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "DPMModels" to {p}')
+
+            e = etree.fromstring('''
+                <DPMModels xmlns="http://www.baramcfd.org/baram">
+                    <properties>
+                        <particleType>none</particleType>
+                        <inert>
+                            <inertParticle>0</inertParticle>
+                        </inert>
+                        <droplet>
+                            <composition/>
+                            <temperature>300</temperature>
+                        </droplet>
+                        <numericalConditions>
+                            <interactionWithContinuousPhase>true</interactionWithContinuousPhase>
+                            <maxParticleCourantNumber>0.3</maxParticleCourantNumber>
+                            <nodeBasedAveraging>true</nodeBasedAveraging>
+                            <trackingScheme>implicit</trackingScheme>
+                        </numericalConditions>
+                        <kinematicModel>
+                            <dragForce>
+                                <specification>sphereDrag</specification>
+                                <nonSphereDrag>
+                                    <shapeFactor>0.9</shapeFactor>
+                                </nonSphereDrag>
+                                <TomiyamaDrag>
+                                    <surfaceTension>0.9</surfaceTension>
+                                    <contamination>pure</contamination>
+                                </TomiyamaDrag>
+                            </dragForce>
+                            <liftForce>
+                                <specification>none</specification>
+                                <TomiyamaLift>
+                                    <surfaceTension>0.9</surfaceTension>
+                                </TomiyamaLift>
+                            </liftForce>
+                            <gravity>false</gravity>
+                            <pressureGradient>false</pressureGradient>
+                            <brownianMotionForce>
+                                <molecularFreePathLength>0.9</molecularFreePathLength>
+                                <useTurbulence>false</useTurbulence>
+                            </brownianMotionForce>
+                        </kinematicModel>
+                        <turbulentDispersion>none</turbulentDispersion>
+                        <heatTransfer>
+                            <specification>none</specification>
+                            <ranzMarshall>
+                                <birdCorrection>true</birdCorrection>
+                            </ranzMarshall>
+                        </heatTransfer>
+                        <evaporation>
+                            <model>none</model>
+                            <enthalpyTransferType>enthalpyDifference</enthalpyTransferType>
+                        </evaporation>
+                    </properties>
+                    <injections/>
+                </DPMModels>
+            ''')
+            p.append(e)
+
+    for p in root.findall('regions/region/boundaryConditions/boundaryCondition/wall', namespaces=_nsmap):
+        if p.find('wallInteraction', namespaces=_nsmap) is None:
+            logger.debug(f'    Updating "wallInteraction" to {p}')
+
+            e = etree.fromstring('''
+                <wallInteraction xmlns="http://www.baramcfd.org/baram">
+                    <type>none</type>
+                    <reflect>
+                        <coefficientOfRestitution>
+                            <normal>1</normal>
+                            <tangential>1</tangential>
+                        </coefficientOfRestitution>
+                    </reflect>
+                    <recycle>
+                        <recycleBoundary>0</recycleBoundary>
+                        <recycleFraction>1</recycleFraction>
+                    </recycle>
+                </wallInteraction>
+            ''')
+            p.append(e)
+
+
 _fTable = [
     None,
     _version_1,
@@ -1075,7 +1164,8 @@ _fTable = [
     _version_8,
     _version_9,
     _version_10,
-    _version_11
+    _version_11,
+    _version_12
 ]
 
 currentVersion = int(etree.parse(resource.file('configurations/baram.cfg.xsd')).getroot().get('version'))

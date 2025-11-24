@@ -5,6 +5,7 @@ import asyncio
 import logging
 import os
 import sys
+from pathlib import Path
 
 import qasync
 from PySide6.QtCore import QFile, QTextStream, QIODevice
@@ -113,7 +114,7 @@ def main():
     background_tasks = set()
 
     baram = Baram()
-    task = loop.create_task(baram.start())
+    task = loop.create_task(baram.start(Path(sys.argv[1]) if len(sys.argv) > 1 else None))
     background_tasks.add(task)
     task.add_done_callback(background_tasks.discard)
 

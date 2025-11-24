@@ -4,8 +4,9 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QListWidgetItem
 
+from baramFlow.base.model.model import Models
 from baramFlow.case_manager import CaseManager
-from baramFlow.coredb.models_db import Models, ModelsDB, MultiphaseModel
+from baramFlow.coredb.models_db import ModelsDB, MultiphaseModel
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
 from baramFlow.coredb.general_db import GeneralDB, SolverType
 from baramFlow.coredb.project import Project
@@ -70,12 +71,12 @@ class ModelsPage(ContentPage):
 
         self._items = {}
 
-        multiphaseModelText = {
+        multiphaseModelTexts = {
             MultiphaseModel.OFF: self.tr('Off'),
             MultiphaseModel.VOLUME_OF_FLUID: self.tr('Volume of Fluid'),
         }
 
-        turbulenceModelText = {
+        turbulenceModelTexts = {
             TurbulenceModel.INVISCID: self.tr('Inviscid'),
             TurbulenceModel.LAMINAR: self.tr('Laminar'),
             TurbulenceModel.SPALART_ALLMARAS: self.tr('Spalart-Allmaras'),
@@ -85,14 +86,14 @@ class ModelsPage(ContentPage):
             TurbulenceModel.LES: self.tr('LES'),
         }
 
-        solverTypeText = {
+        solverTypeTexts = {
             SolverType.PRESSURE_BASED: self.tr('Pressure-based'),
             SolverType.DENSITY_BASED: self.tr('Density-based'),
         }
 
         self._addModelItem(Models.TURBULENCE,
                            self.tr('Turbulence'),
-                           lambda: turbulenceModelText[TurbulenceModelsDB.getModel()], TurbulenceModelDialog)
+                           lambda: turbulenceModelTexts[TurbulenceModelsDB.getModel()], TurbulenceModelDialog)
 
         self._addModelItem(Models.ENERGY,
                            self.tr('Energy'),
@@ -101,11 +102,11 @@ class ModelsPage(ContentPage):
 
         self._addModelItem(Models.MULTIPHASE,
                            self.tr('Multiphase'),
-                           lambda: multiphaseModelText[ModelsDB.getMultiphaseModel()])
+                           lambda: multiphaseModelTexts[ModelsDB.getMultiphaseModel()])
 
         self._addModelItem(Models.SOLVER_TYPE,
                            self.tr('Solver Type'),
-                           lambda: solverTypeText[GeneralDB.getSolverType()])
+                           lambda: solverTypeTexts[GeneralDB.getSolverType()])
 
         self._addModelItem(Models.SPECIES,
                            self.tr('Species'),
@@ -134,11 +135,15 @@ class ModelsPage(ContentPage):
 
     def _updateEnabled(self):
         caseManager = CaseManager()
-        self._ui.list.setEnabled(not caseManager.isActive())
-        self._ui.edit.setEnabled(not caseManager.isActive())
+        if caseManager.isActive():
+            self._ui.list.setEnabled(False)
+            self._ui.edit.setEnabled(False)
+        else:
+            self._ui.list.setEnabled(True)
+            self._selectionChanged()
 
     def _selectionChanged(self):
-        if len(self._ui.list.selectedItems()) > 0:
+        if self._ui.list.selectedItems():
             self._ui.edit.setEnabled(True)
         else:
             self._ui.edit.setEnabled(False)

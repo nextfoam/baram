@@ -8,7 +8,7 @@ from xml.sax.saxutils import escape
 
 import baramFlow.coredb.libdb as xml
 from baramFlow.base.material.database import materialsBase
-from baramFlow.base.material.material import Phase
+from baramFlow.base.material.material import Phase, MaterialType
 
 
 class Specification(Enum):
@@ -38,12 +38,6 @@ class ViscositySpecification(Enum):
     HERSCHEL_BULKLEY = 'herschelBulkley'
     BIRD_CARREAU = 'carreau'
     POWER_LAW = 'nonNewtonianPowerLaw'
-
-
-class MaterialType(Enum):
-    NONMIXTURE = 'nonmixture'
-    MIXTURE = 'mixture'
-    SPECIE = 'specie'
 
 
 @dataclass
@@ -328,9 +322,9 @@ class MaterialSchema:
             )
 
         return MaterialDefaults(specifications=Specifications(
-                                    density=xml.getText(mixture, 'density/specification'),
-                                    specificHeat=xml.getText(mixture, 'specificHeat/specification'),
-                                    thermalConductivity=xml.getText(mixture, 'thermalConductivity/specification'),
-                                    viscosity=xml.getText(mixture, 'viscosity/specification')
-                                ),
-                                viscosityProperties=viscosityProperties)
+            density=xml.getText(mixture, 'density/specification'),
+            specificHeat=xml.getText(mixture, 'specificHeat/specification'),
+            thermalConductivity=xml.getText(mixture, 'thermalConductivity/specification'),
+            viscosity=xml.getText(mixture, 'viscosity/specification')
+        ),
+            viscosityProperties=viscosityProperties)

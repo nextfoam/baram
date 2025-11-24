@@ -2,15 +2,22 @@
 # -*- coding: utf-8 -*-
 
 import ctypes
+from pathlib import Path
 import platform
+import tempfile
 import time
 import qasync
 import logging
 from enum import Enum, auto
 
 import pandas as pd
+
+from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
+
 from PySide6.QtWidgets import QFileDialog
 
+from baramFlow.openfoam.file_system import FileSystem
+from libbaram.openfoam.constants import Directory
 from widgets.async_message_box import AsyncMessageBox
 from widgets.list_table import ListItem
 from widgets.progress_dialog import ProgressDialog
@@ -135,9 +142,7 @@ class ProcessInformationPage(ContentPage):
 
             if self._ui.runSolverOnlyWidget.isVisible() and self._ui.runSolverOnly.isChecked():
                 skipCaseGeneration = True
-                controlDict = ControlDict().build()
-                controlDict.asDict()['stopAt'] = 'endTime'
-                controlDict.writeAtomic()
+                self._updateControlDict('stopAt', 'endTime')
 
             else:
                 skipCaseGeneration = False
@@ -173,9 +178,13 @@ class ProcessInformationPage(ContentPage):
                 self._updateStatus(SolverStatus.NONE)
 
     def _cancelCalculationClicked(self):
-        controlDict = ControlDict().build()
-        controlDict.asDict()['stopAt'] = 'noWriteNow'
-        controlDict.writeAtomic()
+        if self._ui.runSolverOnlyWidget.isVisible() and self._ui.runSolverOnly.isChecked():
+            self._updateControlDict('stopAt', 'noWriteNow')
+
+        else:
+            controlDict = ControlDict().build()
+            controlDict.asDict()['stopAt'] = 'noWriteNow'
+            controlDict.writeAtomic()
 
         if self._runningMode == RunningMode.BATCH_RUNNING_MODE:
             self._caseManager.stopBatchRun()
@@ -183,9 +192,13 @@ class ProcessInformationPage(ContentPage):
         self._waitingStop()
 
     def _saveAndStopCalculationClicked(self):
-        controlDict = ControlDict().build()
-        controlDict.asDict()['stopAt'] = 'writeNow'
-        controlDict.writeAtomic()
+        if self._ui.runSolverOnlyWidget.isVisible() and self._ui.runSolverOnly.isChecked():
+            self._updateControlDict('stopAt', 'writeNow')
+
+        else:
+            controlDict = ControlDict().build()
+            controlDict.asDict()['stopAt'] = 'writeNow'
+            controlDict.writeAtomic()
 
         if self._runningMode == RunningMode.BATCH_RUNNING_MODE:
             self._caseManager.stopBatchRun()
@@ -297,6 +310,7 @@ class ProcessInformationPage(ContentPage):
 
         if status == SolverStatus.WAITING or status == SolverStatus.RUNNING:
             self._ui.startCalculation.hide()
+            self._ui.runSolverOnlyWidget.setEnabled(False)
             self._ui.cancelCalculation.show()
             self._ui.saveAndStopCalculation.setEnabled(True)
             self._ui.updateConfiguration.setEnabled(True)
@@ -305,6 +319,7 @@ class ProcessInformationPage(ContentPage):
             self._ui.runningMode.setDisabled(True)
         else:
             self._ui.startCalculation.show()
+            self._ui.runSolverOnlyWidget.setEnabled(True)
             self._ui.cancelCalculation.hide()
             self._ui.saveAndStopCalculation.setDisabled(True)
             self._ui.updateConfiguration.setDisabled(True)
@@ -349,3 +364,19 @@ class ProcessInformationPage(ContentPage):
         self._batchCaseList.close()
 
         super().closeEvent(event)
+
+    def _updateControlDict(self, key: str, value: str):
+        root = FileSystem.caseRoot()
+        if root is None:
+            return
+
+        path = root / Directory.SYSTEM_DIRECTORY_NAME / 'controlDict'
+
+        controlDict = ParsedParameterFile(str(path), debug=False)
+        controlDict[key] = value
+
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, dir=path.parent) as f:
+            f.write(str(controlDict))
+            p = Path(f.name)
+
+        p.replace(path)

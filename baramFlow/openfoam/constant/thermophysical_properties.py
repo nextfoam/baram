@@ -3,10 +3,11 @@
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
+from baramFlow.base.material.material import MaterialType
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import MaterialType, DensitySpecification, ViscositySpecification, Specification
+from baramFlow.coredb.material_schema import DensitySpecification, ViscositySpecification, Specification
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB

@@ -196,6 +196,19 @@
             <model>none</model>
             <limit>none</limit>
         </wallAdhesions>
+        <wallInteraction>
+            <type>none</type>
+            <reflect>
+                <coefficientOfRestitution>
+                    <normal>1</normal>
+                    <tangential>1</tangential>
+                </coefficientOfRestitution>
+            </reflect>
+            <recycle>
+                <recycleBoundary>0</recycleBoundary>
+                <recycleFraction>1</recycleFraction>
+            </recycle>
+        </wallInteraction>
     </wall>
     <thermoCoupledWall>
         <temperature>

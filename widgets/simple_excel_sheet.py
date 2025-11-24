@@ -26,7 +26,7 @@ class RightAlignedDelegate(QStyledItemDelegate):
         super().paint(painter, option, index)
 
 
-class PiecewiseLinearTable(QTableWidget):
+class SimpleExcelSheet(QTableWidget):
     MINIMUM_ROW_COUNT = 50
     ROWS_TO_ADD_ON_SCROLL = 5
     BUFFER_BLANK_ROWS = 3  # Keep at least this many blank rows at the end.
@@ -37,18 +37,22 @@ class PiecewiseLinearTable(QTableWidget):
     # Signal emitted when data changes
     dataUpdated = Signal()
 
-    def setup(self, indexName: str, indexUnit: str, dataNames: list[str], dataUnit: str, data: Optional[list[list[float]]] = None):
+    def setup(self, labels: list[str], data: Optional[list[list[float]]] = None, readOnly: bool = False):
 
         if data is None:
             data = []
 
+        self._readOnly = readOnly
+
+        if readOnly:
+            self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+
         rowCount = max(len(data), self.MINIMUM_ROW_COUNT)
-        colCount = 1 + len(dataNames)
+        colCount = len(labels)
 
         self.setRowCount(rowCount)
         self.setColumnCount(colCount)
 
-        labels = [f'{indexName} ({indexUnit})'] + [f'{name} ({dataUnit})' for name in dataNames]
         self.setHorizontalHeaderLabels(labels)
 
         # Set center alignment for row headers (vertical header)
@@ -128,7 +132,7 @@ class PiecewiseLinearTable(QTableWidget):
             the values in the table
             list of row data
         """
-        previousX = None
+        # previousX = None
         stopCollection = False
 
         data: list[list[float]] = []
@@ -143,11 +147,11 @@ class PiecewiseLinearTable(QTableWidget):
                 break
 
             x = float(self.item(row, 0).text())
-
-            if previousX is not None and x < previousX:
-                break
-
-            previousX = x
+            #
+            # if previousX is not None and x < previousX:
+            #     break
+            #
+            # previousX = x
 
             rowData: list[float] = []
             for col in range(self.columnCount()):
@@ -158,7 +162,7 @@ class PiecewiseLinearTable(QTableWidget):
 
         return data
 
-    def isDataComplete(self) -> bool:
+    def isDataComplete(self, ascendingFirstColumn=False) -> bool:
         lastRow = -1
         # Iterate backwards from the last row to find the first one with content
         for row in range(self.rowCount() - 1, -1, -1):
@@ -180,7 +184,7 @@ class PiecewiseLinearTable(QTableWidget):
                     continue
 
                 value = float(item.text())
-                if value <= maxValue:
+                if ascendingFirstColumn and value <= maxValue:
                     return False
 
                 maxValue = value
@@ -314,6 +318,9 @@ class PiecewiseLinearTable(QTableWidget):
         clipboard.setText(text.getvalue())
 
     def _pasteData(self):
+        if self._readOnly:
+            return
+
         clipboard = QApplication.clipboard()
         text = clipboard.text()
         if not text:
@@ -349,6 +356,9 @@ class PiecewiseLinearTable(QTableWidget):
                         pass
 
     def _deleteData(self):
+        if self._readOnly:
+            return
+
         ranges = self.selectedRanges()
         if not ranges:
             return
@@ -361,23 +371,24 @@ class PiecewiseLinearTable(QTableWidget):
         QTimer.singleShot(10, self.dataUpdated.emit)
 
     def _showContextMenu(self, pos):
-        menu = QMenu(self)
+        menu = QMenu()  # Do not give parent so that stylesheet is not inherited
 
         action = menu.addAction("Copy")
         action.triggered.connect(self._copyData)
 
-        action = menu.addAction("Paste")
-        action.triggered.connect(self._pasteData)
+        if not self._readOnly:
+            action = menu.addAction("Paste")
+            action.triggered.connect(self._pasteData)
 
-        menu.addSeparator()
+            menu.addSeparator()
 
-        action = menu.addAction("Insert Row(s)")
-        action.triggered.connect(self._insertRows)
+            action = menu.addAction("Insert Row(s)")
+            action.triggered.connect(self._insertRows)
 
-        action = menu.addAction("Remove Row(s)")
-        action.triggered.connect(self._removeRows)
+            action = menu.addAction("Remove Row(s)")
+            action.triggered.connect(self._removeRows)
 
-        menu.exec(self.mapToGlobal(pos))
+        menu.exec(self.viewport().mapToGlobal(pos))
 
     def _insertRows(self):
         for row in self._selectedRows():

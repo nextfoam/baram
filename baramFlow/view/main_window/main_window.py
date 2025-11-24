@@ -33,6 +33,7 @@ from widgets.progress_dialog import ProgressDialog
 from widgets.parallel.parallel_environment_dialog import ParallelEnvironmentDialog
 
 from baramFlow.app import app
+from baramFlow.base.model.model import ModelManager
 from baramFlow.case_manager import CaseManager, LiveCase
 from baramFlow.coredb import coredb
 from baramFlow.coredb.app_settings import AppSettings
@@ -594,7 +595,7 @@ class MainWindow(QMainWindow, expert_mode.IExpertModeObserver):
 
     def meshUpdated(self):
         if RegionDB.isMultiRegion():
-            ModelsDB.EnergyModelOn()
+            ModelManager.energyModelOn()
 
         self._project.save()
         # self._ui.menuMesh.setEnabled(True)

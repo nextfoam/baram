@@ -5,10 +5,9 @@ import qasync
 from PySide6.QtWidgets import QDialog, QListWidgetItem
 
 from baramFlow.base.material.database import materialsBase
-from baramFlow.base.material.material import Phase
+from baramFlow.base.material.material import Phase, MaterialType
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import MaterialType
 from baramFlow.coredb.models_db import ModelsDB
 from widgets.async_message_box import AsyncMessageBox
 from .material_add_dialog_ui import Ui_MaterialAddDialog

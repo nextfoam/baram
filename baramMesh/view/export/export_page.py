@@ -2,28 +2,30 @@
 # -*- coding: utf-8 -*-
 
 import shutil
+import subprocess
+import sys
 
 import qasync
 
-from baramMesh.openfoam.system.collapse_dict import CollapseDict
-from baramMesh.openfoam.system.extrude_mesh_dict import ExtrudeMeshDict
-from baramMesh.view.export.export_2D_plane_dialog import Export2DPlaneDialog
-from baramMesh.view.export.export_2D_wedge_dialog import Export2DWedgeDialog
 from libbaram.openfoam.constants import Directory
 from libbaram.openfoam.polymesh import removeVoidBoundaries
 from libbaram.process import ProcessError
 from libbaram.run import RunParallelUtility
 from libbaram.utils import rmtree
 from resources import resource
-from widgets.new_project_dialog import NewProjectDialog
 from widgets.progress_dialog import ProgressDialog
 
 from baramMesh.app import app
 from baramMesh.openfoam.file_system import FileSystem
 from baramMesh.openfoam.constant.region_properties import RegionProperties
 from baramMesh.openfoam.redistribution_task import RedistributionTask
+from baramMesh.openfoam.system.collapse_dict import CollapseDict
+from baramMesh.openfoam.system.extrude_mesh_dict import ExtrudeMeshDict
 from baramMesh.openfoam.system.topo_set_dict import TopoSetDict
 from baramMesh.view.step_page import StepPage
+from .export_dialog import ExportDialog
+from .export_2D_plane_dialog import Export2DPlaneDialog
+from .export_2D_wedge_dialog import Export2DWedgeDialog
 
 
 class ExportPage(StepPage):
@@ -40,34 +42,29 @@ class ExportPage(StepPage):
         return False
 
     def _connectSignalsSlots(self):
-        self._ui.export_.clicked.connect(self._openFileDialog)
+        self._ui.export_.clicked.connect(self._openExport3DDialog)
         self._ui.export2DPlane.clicked.connect(self._openExport2DPlaneDialog)
         self._ui.export2DWedge.clicked.connect(self._openExport2DWedgeDialog)
 
-    @qasync.asyncSlot()
-    async def _openFileDialog(self):
-        self._dialog = NewProjectDialog(self._widget, self.tr('Export Baram Project'),
-                                        suffix=app.properties.exportSuffix)
-        self._dialog.pathSelected.connect(self._export)
+    def _openExport3DDialog(self):
+        self._openExportDialog(ExportDialog(self._widget))
+
+    def _openExport2DPlaneDialog(self):
+        self._openExportDialog(Export2DPlaneDialog(self._widget), True)
+
+    def _openExport2DWedgeDialog(self):
+        self._openExportDialog(Export2DWedgeDialog(self._widget), True)
+
+    def _openExportDialog(self, dialog, to2d=False):
+        self._dialog = dialog
+        self._dialog.accepted.connect(lambda: self._export(to2d))
         self._dialog.rejected.connect(self._ui.menubar.repaint)
         self._dialog.open()
 
     @qasync.asyncSlot()
-    async def _openExport2DPlaneDialog(self):
-        self._dialog = Export2DPlaneDialog(self._widget)
-        self._dialog.accepted.connect(self._export2D)
-        self._dialog.rejected.connect(self._ui.menubar.repaint)
-        self._dialog.open()
+    async def _export(self, to2d=False):
+        path = self._dialog.projectPath()
 
-    @qasync.asyncSlot()
-    async def _openExport2DWedgeDialog(self):
-        self._dialog = Export2DWedgeDialog(self._widget)
-        self._dialog.accepted.connect(self._export2D)
-        self._dialog.rejected.connect(self._ui.menubar.repaint)
-        self._dialog.open()
-
-    @qasync.asyncSlot()
-    async def _export(self, path, to2d=False):
         progressDialog = ProgressDialog(self._widget, self.tr('Mesh Exporting'))
         progressDialog.setLabelText(self.tr('Preparing'))
         progressDialog.open()
@@ -205,13 +202,13 @@ class ExportPage(StepPage):
 
             removeVoidBoundaries(baramSystem.caseRoot())
 
-            progressDialog.finish(self.tr('Export completed'))
+            if self._dialog.isRnBaramFlowChecked():
+                progressDialog.close()
+                subprocess.Popen([sys.executable, '-m', 'baramFlow.main', path])
+            else:
+                progressDialog.finish(self.tr('Export completed'))
         except ProcessError as e:
             self.clearResult()
             progressDialog.finish(self.tr('Export failed. [') + str(e.returncode) + ']')
         finally:
             self.unlock()
-
-    @qasync.asyncSlot()
-    async def _export2D(self):
-        await self._export(self._dialog.projectPath(), True)
