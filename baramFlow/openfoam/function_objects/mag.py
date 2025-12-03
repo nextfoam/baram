@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-def _foMagBase(field: str):
+def _foMagBase(field: str, rname: str | None) -> dict:
     data = {
         'type':            'mag',
         'libs':            ['fieldFunctionObjects'],
@@ -13,11 +13,14 @@ def _foMagBase(field: str):
         'log': 'false',
     }
 
+    if rname:
+        data['region'] = rname
+
     return data
 
 
-def foMagReport(field: str):
-    data = _foMagBase(field)
+def foMagReport(field: str, rname: str | None) -> dict:
+    data = _foMagBase(field, rname)
 
     data.update({
         'executeControl': 'onEnd',
@@ -28,8 +31,8 @@ def foMagReport(field: str):
     return data
 
 
-def foMagMonitor(field: str, interval: int):
-    data = _foMagBase(field)
+def foMagMonitor(field: str, rname: str | None, interval: int) -> dict:
+    data = _foMagBase(field, rname)
     data.update({
         'executeControl':  'timeStep',
         'executeInterval': interval,

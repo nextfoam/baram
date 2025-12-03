@@ -338,9 +338,9 @@ class ControlDict(DictionaryFile):
 
         if field.type == FieldType.VECTOR:
             if monitorField.component == VectorComponent.MAGNITUDE and 'mag1' not in self._data['functions']:
-                self._data['functions']['mag1'] = foMagMonitor('U', 1)
+                self._data['functions']['mag1'] = foMagMonitor('U', rname, 1)
             elif 'components1' not in self._data['functions']:
-                self._data['functions']['components1'] = foComponentsMonitor('U', 1)
+                self._data['functions']['components1'] = foComponentsMonitor('U', rname, 1)
 
             return
 
@@ -429,7 +429,7 @@ class ControlDict(DictionaryFile):
     def _generatePointMonitor(self, xpath):
         coordinate = self._db.getVector(xpath + '/coordinate')
         interval = int(self._db.getValue(xpath + '/writeInterval'))
-        region = self._db.getValue(xpath + '/region')
+        rname = self._db.getValue(xpath + '/region')
         snapOntoBoundary = self._db.getValue(xpath + '/snapOntoBoundary') == 'true'
         field = getMonitorField(xpath)
 
@@ -437,20 +437,20 @@ class ControlDict(DictionaryFile):
         if snapOntoBoundary:
             bcid = self._db.getValue(xpath + '/boundary')
             boundary = BoundaryDB.getBoundaryName(bcid)
-            region = BoundaryDB.getBoundaryRegion(bcid)
-            data = foPatchProbesMonitor(boundary, field.openfoamField(), coordinate, region, interval)
+            rname = BoundaryDB.getBoundaryRegion(bcid)
+            data = foPatchProbesMonitor(boundary, field.openfoamField(), coordinate, rname, interval)
         else:
-            if not region:
-                for rname in self._db.getRegions():
-                    if isPointInDataSet(coordinate, app.internalMeshActor(rname).dataSet):
-                        self._db.setValue(xpath + '/region', rname)
-                        region = rname
+            if not rname:
+                for name in self._db.getRegions():
+                    if isPointInDataSet(coordinate, app.internalMeshActor(name).dataSet):
+                        self._db.setValue(xpath + '/region', name)
+                        rname = name
                         break
                 else:
                     return None
 
-            self._appendAdditionalFO(field, region)
-            data = foProbesMonitor(field.openfoamField(), coordinate, region, interval)
+            self._appendAdditionalFO(field, rname)
+            data = foProbesMonitor(field.openfoamField(), coordinate, rname, interval)
 
         return data
 
@@ -458,7 +458,7 @@ class ControlDict(DictionaryFile):
         reportType = SurfaceReportType(self._db.getValue(xpath + 'reportType'))
         surface = self._db.getValue(xpath + '/surface')
         patchName = BoundaryDB.getBoundaryName(surface)
-        region = BoundaryDB.getBoundaryRegion(surface)
+        rname = BoundaryDB.getBoundaryRegion(surface)
         interval = int(self._db.getValue(xpath + '/writeInterval'))
         field = getMonitorField(xpath)
 
@@ -469,8 +469,8 @@ class ControlDict(DictionaryFile):
         else:
             fieldText = field.openfoamField()
 
-        self._appendAdditionalFO(field, region)
-        data = foSurfaceFieldValueMonitor(patchName, fieldText, reportType, region, interval)
+        self._appendAdditionalFO(field, rname)
+        data = foSurfaceFieldValueMonitor(patchName, fieldText, reportType, rname, interval)
 
         return data
 

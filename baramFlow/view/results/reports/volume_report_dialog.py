@@ -126,9 +126,9 @@ class VolumeReportDialog(QDialog):
 
         else:  # FieldType.VECTOR
             if fieldComponent == VectorComponent.MAGNITUDE:
-                functions['mag1'] = foMagReport(solverFieldName)
+                functions['mag1'] = foMagReport(solverFieldName, rname)
             else:
-                functions['components1'] = foComponentsReport(solverFieldName)
+                functions['components1'] = foComponentsReport(solverFieldName, rname)
 
             solverComponentName = getSolverComponentName(field, fieldComponent)
             functions[foName] = foVolFieldValueReport(volumeType, volumeName, solverComponentName, reportType, rname)
