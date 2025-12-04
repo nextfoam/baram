@@ -20,7 +20,7 @@ class ViscosityNonNewtonianPowerLawDialog(QDialog):
 
         self._connectSignalsSlots()
 
-        self._xpath = xpath + '/viscosity/nonNewtonianPowerLaw'
+        self._xpath = xpath + '/transport/nonNewtonianPowerLaw'
         self._load(data)
 
     def getValues(self):

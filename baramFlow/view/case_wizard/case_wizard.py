@@ -5,9 +5,9 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QWizard
 
+from baramFlow.base.material.material import DensitySpecification
 from baramFlow.coredb import coredb
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import Specification
 from baramFlow.coredb.models_db import MultiphaseModel
 from baramFlow.coredb.numerical_db import NumericalDB
 from .case_wizard_ui import Ui_CaseWizard
@@ -97,7 +97,7 @@ class CaseWizard(QWizard):
                 f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/advanced/equations/energy/includeKineticEnergyTerms', 'true')
             self._db.setValue(
                 f'{NumericalDB.NUMERICAL_CONDITIONS_XPATH}/advanced/equations/energy/includePressureWorkTerms', 'true')
-            self._db.setValue(f'{MaterialDB.getXPathByName("air")}/density/specification', Specification.PERFECT_GAS.value)
+            self._db.setValue(f'{MaterialDB.getXPathByName("air")}/density/specification', DensitySpecification.PERFECT_GAS.value)
 
         self._db.setValue(f'{modelsXPath}/multiphaseModels/model', self.field('multiphaseModel'))
 

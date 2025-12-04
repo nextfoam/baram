@@ -6,8 +6,8 @@ from baramFlow.openfoam.constant.cloud_properties import CloudProperties
 
 
 class KinematicCloudProperties(CloudProperties):
-    def __init__(self):
-        super().__init__('kinematicCloudProperties')
+    def __init__(self, rname: str):
+        super().__init__(rname, 'kinematicCloudProperties')
 
     def build(self):
         if self._data is not None:

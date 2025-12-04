@@ -6,7 +6,7 @@ from typing import Optional
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QPushButton
 
-from baramFlow.base.base import Function1VectorRow, Function1ScalarRow
+from baramFlow.base.base import Function1Scalar, Function1Vector, Function1VectorRow, Function1ScalarRow
 from baramFlow.view.setup.models.DPM.vector_widget import VectorWidget
 from baramFlow.view.widgets.batchable_float_edit import BatchableFloatEdit
 from baramFlow.view.widgets.piecewise_linear_dialog import PiecewiseLinearDialog
@@ -50,7 +50,7 @@ class Function1Widget(QWidget):
 
         self._inputs = {}
 
-        self._constant = None
+        self._constant: Optional[BatchableFloatEdit|VectorWidget] = None
 
         self._dialog = None
 
@@ -80,16 +80,19 @@ class Function1Widget(QWidget):
 
         self._typeChanged()
 
-    def setData(self, data):
-        self._type.setCurrentIndex(self._type.findData(data.type))
+    def setData(self, data: Function1Scalar|Function1Vector):
+        if data.type in self._inputs:
+            self._type.setCurrentIndex(self._type.findData(data.type))
+        else:
+            self._type.setCurrentIndex(0)
 
         if data.constant is not None:
             self._setConstantData(data.constant)
 
-        if Function1Type.TABLE in self._inputs is not None:
+        if Function1Type.TABLE in self._inputs:
             self._inputs[Function1Type.TABLE].setData([] if data.table is None else data.table)
 
-    def updateData(self, data):
+    def updateData(self, data: Function1Scalar|Function1Vector):
         data.type = self._type.currentData()
 
         if data.type == Function1Type.CONSTANT:

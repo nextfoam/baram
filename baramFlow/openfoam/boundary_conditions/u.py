@@ -3,11 +3,12 @@
 
 from math import sqrt
 
+from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType, VelocitySpecification, VelocityProfile
 from baramFlow.coredb.boundary_db import FlowRateInletSpecification, InterfaceMode
 from baramFlow.coredb.boundary_db import WallMotion, ShearCondition, MovingWallMotion
-from baramFlow.coredb.material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
+from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.openfoam.boundary_conditions.boundary_condition import BoundaryCondition
 from libbaram.openfoam.dictionary.dictionary_file import DataClass
 

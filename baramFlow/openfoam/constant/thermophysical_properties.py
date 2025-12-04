@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from baramFlow.base.base import Function1Scalar
+from baramFlow.base.model.DPM_model import DPMModelManager
+from baramFlow.base.model.model import DPMParticleType
+from baramFlow.openfoam.dictionary_helper import DictionaryHelper
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile
 
-from baramFlow.base.material.material import MaterialType
+from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT, MaterialType, DensitySpecification, Phase, SpecificHeatSpecification, TransportSpecification
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.general_db import GeneralDB
 from baramFlow.coredb.material_db import MaterialDB
-from baramFlow.coredb.material_schema import DensitySpecification, ViscositySpecification, Specification
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.numerical_db import NumericalDB
 from baramFlow.coredb.reference_values_db import ReferenceValuesDB
@@ -28,30 +31,81 @@ EQUATION_OF_STATES = {
 
 
 THERMO = {
-    Specification.CONSTANT    : 'hConst',
-    Specification.POLYNOMIAL  : 'hPolynomial',
-    Specification.JANAF       : 'janaf'
+    SpecificHeatSpecification.CONSTANT    : 'hConst',
+    SpecificHeatSpecification.POLYNOMIAL  : 'hPolynomial',
+    SpecificHeatSpecification.JANAF       : 'janaf',
 }
 
 
-def _constructFluid(region: str):
+TRANSPORT_FLUID = {
+    TransportSpecification.CONSTANT         : 'const',
+    TransportSpecification.SUTHERLAND       : 'sutherland',
+    TransportSpecification.POLYNOMIAL       : 'polynomial',
+    TransportSpecification.CROSS_POWER_LAW  : 'cross',
+    TransportSpecification.HERSCHEL_BULKLEY : 'herschelBulkley',
+    TransportSpecification.BIRD_CARREAU     : 'carreau',
+    TransportSpecification.POWER_LAW        : 'nonNewtonianPowerLaw',
+    TransportSpecification.TABLE            : 'tabulated',
+}
+
+
+TRANSPORT_SOLID = {
+    TransportSpecification.CONSTANT         : 'constIso',
+    TransportSpecification.POLYNOMIAL       : 'polynomial',
+    TransportSpecification.TABLE            : 'tabulated',
+}
+
+
+def _getEnthalpyValue(mid: str):
     db = CoreDBReader()
-    mid = RegionDB.getMaterial(region)
+    xpath = MaterialDB.getXPath(mid)
+
+    h0 = float(db.getValue(xpath + '/standardStateEnthalpy'))
+    T0 = float(db.getValue(xpath + '/referenceTemperature'))
+    spec = SpecificHeatSpecification(db.getValue(xpath + '/specificHeat/specification'))
+
+    if spec == SpecificHeatSpecification.CONSTANT:
+        Cp = float(db.getValue(xpath + '/specificHeat/constant'))
+
+        return ('polynomial', [
+            [h0 - Cp * T0, 0],
+            [Cp, 1]
+        ])
+
+    elif spec == SpecificHeatSpecification.POLYNOMIAL:
+        # Integration of polynomial: ∫(a_n * T^n) dT = a_n/(n+1) * T^(n+1)
+        # H(T) = h0 + ∫(T0 to T) Cp(T) dT
+        #      = h0 + [a0*T + a1*T^2/2 + a2*T^3/3 + ... + a7*T^8/8]
+        #          - [a0*T0 + a1*T0^2/2 + a2*T0^3/3 + ... + a7*T0^8/8]
+
+        coeffs = [float(a) for a in db.getValue(xpath + '/specificHeat/polynomial').split()]
+        b = [(a / (i + 1), i + 1) for i, a in enumerate(coeffs) if a != 0]
+        b0 = h0 - sum(n * (T0 ** e) for n, e in b)
+
+        return ('polynomial', [[b0, 0]] + [[n, e] for n, e in b])
+
+    else:
+        return ('constant', '0')
+
+
+def _constructFluid(rname: str):
+    db = CoreDBReader()
+    mid = RegionDB.getMaterial(rname)
     materialType = MaterialDB.getType(mid)
     path = MaterialDB.getXPath(mid)
 
     tModel = TurbulenceModelsDB.getModel()
-    viscositySpec = ViscositySpecification(db.getValue(path + '/viscosity/specification'))
-    specificHeatSpec = Specification(db.getValue(path + '/specificHeat/specification'))
+    transportSpec = TransportSpecification(db.getValue(path + '/transport/specification'))
+    specificHeatSpec = SpecificHeatSpecification(db.getValue(path + '/specificHeat/specification'))
     densitySpec = DensitySpecification(db.getValue(path + '/density/specification'))
 
     thermo = {
         'type': 'heRhoThermo',
         'mixture': 'pureMixture',
         'transport': ('const' if tModel == TurbulenceModel.INVISCID
-                                 or viscositySpec == ViscositySpecification.CONSTANT
-                                 or MaterialDB.isNonNewtonianSpecification(viscositySpec)
-                      else viscositySpec.value),
+                                 or transportSpec == TransportSpecification.CONSTANT
+                                 or MaterialDB.isNonNewtonianSpecification(transportSpec)
+                      else TRANSPORT_FLUID[transportSpec]),
         'thermo': THERMO[specificHeatSpec],
         'equationOfState': EQUATION_OF_STATES[densitySpec],
         'specie': 'specie',
@@ -76,7 +130,7 @@ def _constructFluid(region: str):
             data['species'].append(name)
             data[name] = {
                 'thermodynamics': _mixtureThermodynamics(specificHeatSpec, db, spath),
-                'transport': _mixtureTransport(tModel, viscositySpec, db, spath),
+                'transport': _mixtureTransport(tModel, transportSpec, db, spath),
                 'specie': _mixtureSpecie(db, spath)
             }
             if eos := _mixtureEquationOfState(densitySpec, db, spath):
@@ -87,7 +141,7 @@ def _constructFluid(region: str):
     elif materialType == MaterialType.NONMIXTURE:
         mix = {
             'thermodynamics': _mixtureThermodynamics(specificHeatSpec, db, path),
-            'transport': _mixtureTransport(tModel, viscositySpec, db, path),
+            'transport': _mixtureTransport(tModel, transportSpec, db, path),
             'specie': _mixtureSpecie(db, path)
         }
         if eos := _mixtureEquationOfState(densitySpec, db, path):
@@ -142,10 +196,10 @@ def _mixtureEquationOfState(spec, db, path):
     return data
 
 
-def _mixtureThermodynamics(spec, db, path):
+def _mixtureThermodynamics(specificHeatSpec, db, path):
     data = None
 
-    if spec == Specification.CONSTANT:
+    if specificHeatSpec == SpecificHeatSpecification.CONSTANT:
         cp = db.getValue(path + '/specificHeat/constant')
         data = {
             'Cp': cp,
@@ -154,7 +208,7 @@ def _mixtureThermodynamics(spec, db, path):
 
         if GeneralDB.isDensityBased():
             data['Tref'] = 0
-    elif spec == Specification.POLYNOMIAL:
+    elif specificHeatSpec == SpecificHeatSpecification.POLYNOMIAL:
         cpCoeffs: list[float] = [0] * 8  # To make sure that cpCoeffs has length of 8
         for i, n in enumerate(db.getValue(path + '/specificHeat/polynomial').split()):
             cpCoeffs[i] = float(n)
@@ -163,7 +217,7 @@ def _mixtureThermodynamics(spec, db, path):
             'Sf': 0,
             'CpCoeffs<8>': cpCoeffs
         }
-    elif spec == Specification.JANAF:
+    elif specificHeatSpec == SpecificHeatSpecification.JANAF:
         data = {
             'Tlow': db.getValue(path + '/specificHeat/janaf/lowTemperature'),
             'Thigh': db.getValue(path + '/specificHeat/janaf/highTemperature'),
@@ -175,15 +229,7 @@ def _mixtureThermodynamics(spec, db, path):
     return data
 
 
-def _mixtureTransport(tModel, viscositySpec, db, path):
-    spec = db.getValue(path + '/thermalConductivity/specification')
-    if spec == 'constant':
-        kk = db.getValue(path + '/thermalConductivity/constant')
-    elif spec == 'polynomial':
-        kkCoeffs: list[float] = [0] * 8  # To make sure that kkCoeffs has length of 8
-        for i, n in enumerate(db.getValue(path + '/thermalConductivity/polynomial').split()):
-            kkCoeffs[i] = float(n)
-
+def _mixtureTransport(tModel, transportSpec, db, path):
     if tModel == TurbulenceModel.INVISCID:
         mu = 0.0
         pr = 0.7
@@ -193,32 +239,37 @@ def _mixtureTransport(tModel, viscositySpec, db, path):
             'Pr': str(pr)
         }
 
-    if viscositySpec == ViscositySpecification.CONSTANT:
-        mu = float(db.getValue(path + '/viscosity/constant'))
+    if transportSpec == TransportSpecification.CONSTANT:
+        mu = float(db.getValue(path + '/transport/viscosity'))
+        kk = float(db.getValue(path + '/transport/thermalConductivity'))
         if mu == 0.0:
             pr = 0.7
         else:
-            cp = db.getValue(path + '/specificHeat/constant')
-            pr = float(cp) * mu / float(kk)  # If viscosity spec is constant, thermalConductivity spec should be constant too
+            cp = float(db.getValue(path + '/specificHeat/constant'))
+            pr = cp * mu / kk
 
         return {
             'mu': str(mu),
             'Pr': str(pr)
         }
 
-    if viscositySpec == ViscositySpecification.POLYNOMIAL:
+    elif transportSpec == TransportSpecification.POLYNOMIAL:
         muCoeffs: list[float] = [0] * 8  # To make sure that muCoeffs has length of 8
-        for i, n in enumerate(db.getValue(path + '/viscosity/polynomial').split()):
+        for i, n in enumerate(db.getValue(path + '/transport/polynomial/viscosity').split()):
             muCoeffs[i] = float(n)
+
+        kkCoeffs: list[float] = [0] * 8  # To make sure that kkCoeffs has length of 8
+        for i, n in enumerate(db.getValue(path + '/transport/polynomial/thermalConductivity').split()):
+            kkCoeffs[i] = float(n)
 
         return {
             'muCoeffs<8>': muCoeffs,
-            'kappaCoeffs<8>': kkCoeffs  # If viscosity spec is polynomial, thermalConductivity spec should be polynomial too
+            'kappaCoeffs<8>': kkCoeffs
         }
 
-    if viscositySpec == ViscositySpecification.SUTHERLAND:
-        as_ = db.getValue(path + '/viscosity/sutherland/coefficient')
-        ts  = db.getValue(path + '/viscosity/sutherland/temperature')
+    elif transportSpec == TransportSpecification.SUTHERLAND:
+        as_ = db.getValue(path + '/transport/sutherland/coefficient')
+        ts  = db.getValue(path + '/transport/sutherland/temperature')
 
         return {
             'As': as_,
@@ -226,27 +277,28 @@ def _mixtureTransport(tModel, viscositySpec, db, path):
         }
 
     rho = float(db.getValue(path + '/density/constant'))
-    if viscositySpec == ViscositySpecification.CROSS_POWER_LAW:
+
+    if transportSpec == TransportSpecification.CROSS_POWER_LAW:
         return {
-            'mu': rho * float(db.getValue(path + '/viscosity/cross/zeroShearViscosity')),
+            'mu': rho * float(db.getValue(path + '/transport/cross/zeroShearViscosity')),
             'Pr': 0.7
         }
 
-    if viscositySpec == ViscositySpecification.HERSCHEL_BULKLEY:
+    if transportSpec == TransportSpecification.HERSCHEL_BULKLEY:
         return {
-            'mu': rho * float(db.getValue(path + '/viscosity/herschelBulkley/zeroShearViscosity')),
+            'mu': rho * float(db.getValue(path + '/transport/herschelBulkley/zeroShearViscosity')),
             'Pr': 0.7
         }
 
-    if viscositySpec == ViscositySpecification.BIRD_CARREAU:
+    if transportSpec == TransportSpecification.BIRD_CARREAU:
         return {
-            'mu': rho * float(db.getValue(path + '/viscosity/carreau/zeroShearViscosity')),
+            'mu': rho * float(db.getValue(path + '/transport/carreau/zeroShearViscosity')),
             'Pr': 0.7
         }
 
-    if viscositySpec == ViscositySpecification.POWER_LAW:
+    if transportSpec == TransportSpecification.POWER_LAW:
         return {
-            'mu': rho * float(db.getValue(path + '/viscosity/nonNewtonianPowerLaw/consistencyIndex')),
+            'mu': rho * float(db.getValue(path + '/transport/nonNewtonianPowerLaw/consistencyIndex')),
             'Pr': 0.7
         }
 
@@ -259,19 +311,21 @@ def _mixtureSpecie(db, path):
     }
 
 
-def _constructSolid(region: str):
+def _constructSolid(rname: str):
     db = CoreDBReader()
-    mid = db.getValue(f'/regions/region[name="{region}"]/material')
+    mid = db.getValue(f'/regions/region[name="{rname}"]/material')
     path = f'/materials/material[@mid="{mid}"]'
 
-    specificHeatSpec = Specification(db.getValue(path + '/specificHeat/specification'))
+    transportSpec = TransportSpecification(db.getValue(path + '/transport/specification'))
+    specificHeatSpec = SpecificHeatSpecification(db.getValue(path + '/specificHeat/specification'))
+    densitySpec = DensitySpecification(db.getValue(path + '/density/specification'))
 
     thermo = {
         'type': 'heSolidThermo',
         'mixture': 'pureMixture',
-        'transport': 'constIso',
+        'transport': TRANSPORT_SOLID[transportSpec],
         'thermo': THERMO[specificHeatSpec],
-        'equationOfState': 'rhoConst',
+        'equationOfState': EQUATION_OF_STATES[densitySpec],
         'specie': 'specie',
         'energy': 'sensibleEnthalpy'
     }
@@ -282,44 +336,166 @@ def _constructSolid(region: str):
         'molWeight': 100
     }
 
-    if specificHeatSpec == 'constant':
+    if specificHeatSpec == SpecificHeatSpecification.CONSTANT:
         cp = db.getValue(path + '/specificHeat/constant')
         mix['thermodynamics'] = {
             'Cp': cp,
             'Hf': 0,
             'Sf': 0
         }
-    else:
-        mix['thermodynamics'] = _mixtureThermodynamics(specificHeatSpec, db, path)
 
-    spec = db.getValue(path + '/thermalConductivity/specification')
-    if spec == 'constant':
-        kk = db.getValue(path + '/thermalConductivity/constant')
+    elif specificHeatSpec == SpecificHeatSpecification.POLYNOMIAL:
+        cpCoeffs: list[float] = [0] * 8  # To make sure that cpCoeffs has length of 8
+        for i, n in enumerate(db.getValue(path + '/specificHeat/polynomial').split()):
+            cpCoeffs[i] = float(n)
+
+        mix['thermodynamics'] = {
+            'Hf': 0,
+            'Sf': 0,
+            'CpCoeffs<8>': cpCoeffs
+        }
+
+    if transportSpec == TransportSpecification.CONSTANT:
+        kk = db.getValue(path + '/transport/thermalConductivity')
         mix['transport'] = {
             'kappa': kk,
         }
-    elif spec == 'polynomial':
+
+    elif transportSpec == TransportSpecification.POLYNOMIAL:
         thermo['transport'] = 'polynomial'
 
         kkCoeffs: list[float] = [0] * 8  # To make sure that kkCoeffs has length of 8
-        for i, n in enumerate(db.getValue(path + '/thermalConductivity/polynomial').split()):
+        for i, n in enumerate(db.getValue(path + '/transport/polynomial/thermalConductivity').split()):
             kkCoeffs[i] = float(n)
 
         mix['transport'] = {
             'kappaCoeffs<8>': kkCoeffs
         }
 
-    spec = db.getValue(path + '/density/specification')
-    if spec == 'constant':
+    if densitySpec == DensitySpecification.CONSTANT:
         rho = db.getValue(path + '/density/constant')
         mix['equationOfState'] = {
             'rho': rho
+        }
+
+    elif densitySpec == DensitySpecification.POLYNOMIAL:
+        rhoCoeffs: list[float] = [0] * 8  # To make sure that rhoCoeffs has length of 8
+        for i, n in enumerate(db.getValue(path + '/density/polynomial').split()):
+            rhoCoeffs[i] = float(n)
+
+        mix['equationOfState'] = {
+            'rhoCoeffs<8>': rhoCoeffs
         }
 
     return {
         'thermoType': thermo,
         'mixture': mix
     }
+
+
+def _constructSLGThermo(rname: str) -> dict:
+    db = CoreDBReader()
+    dictHelper = DictionaryHelper()
+
+    data = {
+        'liquids': {},
+        'solids': {},
+    }
+
+    # Region property
+
+    mid = RegionDB.getMaterial(rname)
+    if MaterialDB.getType(mid) != MaterialType.MIXTURE:  # Requirement for SLG Thermo
+        return {}
+
+    diffusivity = db.getValue(MaterialDB.getXPath(mid) + '/mixture/massDiffusivity')
+
+    # Build species table to find a specie corresponding to liquids in the droplet
+    species: dict[str, str] = {}  # {<chemicalFormula>: <specieName>}
+    for specie, name in MaterialDB.getSpecies(mid).items():
+        chemicalFormula = str(db.getValue(MaterialDB.getXPath(specie) + '/chemicalFormula'))
+        species[chemicalFormula] = name
+
+    for mid in DPMModelManager.dropletCompositionMaterials():
+        phase = MaterialDB.getPhase(mid)
+        xpath = MaterialDB.getXPath(mid)
+
+        if phase == Phase.LIQUID:
+            chemicalFormula = db.getValue(xpath + '/chemicalFormula')
+            if chemicalFormula not in species:  # It should be in the fluid mixture
+                continue
+
+            name = species[chemicalFormula]  # use the name of corresponding specie in the fluid
+
+            rho = db.getValue(xpath + '/density/constant')       # support only constant spec for now
+            cp  = db.getValue(xpath + '/specificHeat/constant')  # support only constant spec for now
+            mu  = db.getValue(xpath + '/transport/viscosity')    # support only constant spec for now
+            kappa = db.getValue(xpath + '/transport/thermalConductivity')  # support only constant spec for now
+
+            molecularWeight          = db.getValue(xpath + '/molecularWeight')
+            criticalTemperature      = db.getValue(xpath + '/criticalTemperature')
+            criticalPressure         = db.getValue(xpath + '/criticalPressure')
+            criticalSpecificVolume   = db.getValue(xpath + '/criticalSpecificVolume')
+            tripleTemperature        = db.getValue(xpath + '/tripleTemperature')
+            triplePressure           = db.getValue(xpath + '/triplePressure')
+            normalBoilingTemperature = db.getValue(xpath + '/normalBoilingTemperature')
+            acentricFactor           = db.getValue(xpath + '/acentricFactor')
+            saturationPressure      = Function1Scalar.fromElement(db.getElement(xpath + '/saturationPressure'))
+            enthalpyOfVaporization  = Function1Scalar.fromElement(db.getElement(xpath + '/enthalpyOfVaporization'))
+            dropletSurfaceTension   = Function1Scalar.fromElement(db.getElement(xpath + '/dropletSurfaceTension'))
+
+            Zc = float(criticalPressure) * float(criticalSpecificVolume) / (UNIVERSAL_GAS_CONSTANT * float(criticalTemperature))
+
+            data['liquids'][name] = {
+                'type': 'liquid',
+                'W': molecularWeight,
+                'Tc': criticalTemperature,
+                'Pc': criticalPressure,
+                'Vc': criticalSpecificVolume,
+                'Zc': Zc,
+                'Tt': tripleTemperature,
+                'Pt': triplePressure,
+                'Tb': normalBoilingTemperature,
+                'dipm':  0,   # Not used for now
+                'omega': acentricFactor,
+                'delta': 0,  # Not used for now
+                'rho': ('constant', rho),
+                'pv': dictHelper.function1ScalarValue(saturationPressure),
+                'hl': dictHelper.function1ScalarValue(enthalpyOfVaporization),
+                'Cp': ('constant', cp),
+                'h': _getEnthalpyValue(mid),
+                'Cpg': ('constant', 0),  # Not used in the Sover
+                'B': ('constant', 0),   # Not used in the Sover
+                'mu': ('constant', mu),
+                'mug': ('constant', 0),  # Not used in the Sover
+                'kappa': ('constant', kappa),
+                'kappag': ('constant', 0),  # Not used in the Sover
+                'sigma': dictHelper.function1ScalarValue(dropletSurfaceTension),
+                'D': ('constant', diffusivity),
+            }
+
+        elif phase == Phase.SOLID:  # SOLID supports only constant spec
+            name = db.getValue(xpath + '/name')
+
+            rho   = db.getValue(xpath + '/density/constant')
+            cp    = db.getValue(xpath + '/specificHeat/constant')
+            kappa = db.getValue(xpath + '/transport/thermalConductivity')
+            molecularWeight = db.getValue(xpath + '/molecularWeight')
+            emissivity      = db.getValue(xpath + '/emissivity')
+
+            data['solids'][name] = {
+                'defaultCoeffs': 'no',
+                'rho': rho,
+                'Cp': cp,
+                'kappa': kappa,
+                'Hf': 0,  # Heat of formation, For chemical reaction. Not used for now
+                'emissivity': emissivity,  # Seems not used
+                'W': molecularWeight,
+                'nu': 0.3,  # Poisson's ratio. Seems not used. for Soot
+                'E': 7000000000,  # Young's modulus, Seems not used. 7GPa for Soot
+            }
+
+    return data
 
 
 class ThermophysicalProperties(DictionaryFile):
@@ -341,6 +517,9 @@ class ThermophysicalProperties(DictionaryFile):
             self._data = _constructSolid(self._rname)
         else:
             self._data = _constructFluid(self._rname)
+            if DPMModelManager.isModelOn():
+                if DPMModelManager.particleType() == DPMParticleType.DROPLET:
+                    self._data.update(_constructSLGThermo(self._rname))
 
         energyModelOn = ModelsDB.isEnergyModelOn()
         self._data.update({

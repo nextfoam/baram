@@ -16,13 +16,14 @@ from resources import resource
 from widgets.flat_push_button import FlatPushButton
 
 from baramFlow.app import app
+from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT
 from baramFlow.coredb import coredb
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
 from baramFlow.coredb.boundary_db import DirectionSpecificationMethod, TemperatureProfile, VelocitySpecification, VelocityProfile
 from baramFlow.coredb.boundary_db import KEpsilonSpecification, KOmegaSpecification, SpalartAllmarasSpecification
 from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.coredb_writer import CoreDBWriter
-from baramFlow.coredb.material_db import UNIVERSAL_GAS_CONSTANT, MaterialDB
+from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.project import Project
 from baramFlow.coredb.region_db import RegionDB

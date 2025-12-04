@@ -9,9 +9,10 @@ from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataClass
 
+from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT
 from baramFlow.coredb.boundary_db import WallMotion
 from baramFlow.coredb.coredb_reader import CoreDBReader, Region
-from baramFlow.coredb.material_db import UNIVERSAL_GAS_CONSTANT, MaterialDB
+from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel
 from baramFlow.openfoam.constant.boundary_data import BoundaryData
 from baramFlow.openfoam.file_system import FileSystem

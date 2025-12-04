@@ -1,16 +1,40 @@
 #!/usr/bin/env python
 # -*- coding: , # utf-8 -*-
 
-from baramFlow.base.material.material import Phase
+from baramFlow.base.material.material import MaterialType, Phase
 from baramFlow.base.model.DPM_model import DPMModelManager
 from baramFlow.base.model.model import DPMEvaporationModel
+from baramFlow.coredb.coredb_reader import CoreDBReader
 from baramFlow.coredb.material_db import MaterialDB
+from baramFlow.coredb.region_db import RegionDB
 from baramFlow.openfoam.constant.cloud_properties import CloudProperties
 
 
+def _getGasName(liquidMid: str, rname: str):
+    db = CoreDBReader()
+
+    mid = RegionDB.getMaterial(rname)
+    if MaterialDB.getType(mid) != MaterialType.MIXTURE:  # Requirement for SLG Thermo
+        return ''
+
+    # Build species table to find a specie corresponding to liquids in the droplet
+    species: dict[str, str] = {}  # {<chemicalFormula>: <specieName>}
+    for specie, name in MaterialDB.getSpecies(mid).items():
+        chemicalFormula = str(db.getValue(MaterialDB.getXPath(specie) + '/chemicalFormula'))
+        species[chemicalFormula] = name
+
+    xpath = MaterialDB.getXPath(liquidMid)
+    chemicalFormula = db.getValue(xpath + '/chemicalFormula')
+
+    if chemicalFormula in species:  # It should be in the fluid mixture
+        return species[chemicalFormula]  # use the name of corresponding specie in the fluid
+    else:
+        return ''
+
+
 class ReactingCloud1Properties(CloudProperties):
-    def __init__(self):
-        super().__init__('reactingCloud1Properties')
+    def __init__(self, rname: str):
+        super().__init__(rname, 'reactingCloud1Properties')
 
     def build(self):
         if self._data is not None:
@@ -31,7 +55,7 @@ class ReactingCloud1Properties(CloudProperties):
                 solid[MaterialDB.getName(material.mid)] = composition
                 solidTot += float(material.composition)
             elif phase == Phase.LIQUID:
-                liquid[MaterialDB.getName(material.mid)] = composition
+                liquid[_getGasName(material.mid, self._rname)] = composition
                 liquidTot += float(material.composition)
 
         subModels = {

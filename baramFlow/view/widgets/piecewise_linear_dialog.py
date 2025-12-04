@@ -20,17 +20,13 @@ class PiecewiseLinearDialog(QDialog):
         self._ui = Ui_PiecewiseLinearDialog()
         self._ui.setupUi(self)
 
-        labels = [f'{indexName} ({indexUnit})'] + [f'{name} ({dataUnit})' for name in dataNames]
-
-        self._ui.tableWidget.setup(labels, data)
-
-        indexUnitText = '' if indexUnit == '' else ' (indexUnit)'
-        dataUnitText = '' if dataUnit == '' else ' (dataUnit)'
+        indexLabel = f'{indexName} ({indexUnit})' if indexUnit else indexName
+        dataLabel  = f'{", ".join(dataNames)} ({dataUnit})' if dataUnit else f'{", ".join(dataNames)}'
 
         plotWidget = self._ui.plotWidget
         plotWidget.setTitle(chartTitle, color='#5f5f5f', size='12pt')
-        plotWidget.setLabel('left', f'{", ".join(dataNames)}{dataUnitText}')
-        plotWidget.setLabel('bottom', f'{indexName}{indexUnitText}')
+        plotWidget.setLabel('bottom', indexLabel)
+        plotWidget.setLabel('left', dataLabel)
         plotWidget.showGrid(x=True, y=True)
         plotWidget.setBackground('w')
         plotWidget.setMinimumHeight(150)
@@ -49,6 +45,9 @@ class PiecewiseLinearDialog(QDialog):
                 symbolBrush=pg.mkBrush(color=COLORS[i]),  # Fill color for markers
                 symbolPen={'color': COLORS[i], 'width': 1}  # Outline for markers
             ))
+
+        tableLabels = [indexLabel] + [f'{name} ({dataUnit})' if dataUnit else name for name in dataNames]
+        self._ui.tableWidget.setup(tableLabels, data)
 
         self._connectSignalsSlots()
 

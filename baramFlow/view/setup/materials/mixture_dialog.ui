@@ -56,7 +56,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QComboBox" name="densitySpec">
+          <widget class="PythonComboBox" name="densitySpec">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -73,7 +73,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QComboBox" name="specificHeatSpec">
+          <widget class="PythonComboBox" name="specificHeatSpec">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -90,7 +90,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QComboBox" name="transportSpec">
+          <widget class="PythonComboBox" name="transportSpec">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -179,6 +179,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PythonComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widgets.python_combo_box</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

@@ -106,9 +106,9 @@ class CaseGenerator(QObject):
             self._files.append(SetFieldsDict(region))
 
             if DPMModelManager.particleType() == DPMParticleType.INERT:
-                self._files.append(KinematicCloudProperties())
+                self._files.append(KinematicCloudProperties(rname))
             elif DPMModelManager.particleType() == DPMParticleType.DROPLET:
-                self._files.append(ReactingCloud1Properties())
+                self._files.append(ReactingCloud1Properties(rname))
 
         # Files that should be created in case root folder in addition to the region folders.
 

@@ -8,7 +8,7 @@ from widgets.async_message_box import AsyncMessageBox
 from widgets.enum_button_group import EnumButtonGroup
 from widgets.selector_dialog import SelectorDialog, SelectorItem
 
-from baramFlow.base.material.material import MaterialManager, Phase
+from baramFlow.base.material.material import MaterialManager, MaterialType, Materials, Phase
 from baramFlow.base.model.DPM_model import DPMModelManager
 from baramFlow.base.model.model import DPMParticleType, DPMTrackingScheme, DPMDragForce, DPMLiftForce, Contamination
 from baramFlow.base.model.model import DPMTurbulentDispersion, DPMHeatTransferSpeicification
@@ -21,6 +21,28 @@ from baramFlow.coredb.turbulence_model_db import TurbulenceModelsDB, TurbulenceM
 from .DPM_dialog_ui import Ui_DPMdialog
 from .injection_list_dialog import InjectionListDialog
 from .droplet_compsition_list import DropletCompositionList
+
+
+def _getAvailableDropletLiquids(materials: Materials):
+    availableDropletLiquids: list[tuple[str, str, str, str]] = []  # list of (<lmid>, <lname>, <gmid>, <gname>)
+
+    for mid, name in RegionDB.getMixturesInRegions():
+        if MaterialDB.getPhase(mid) == Phase.GAS:
+            break  # support only one mixture for now
+    else:
+        return availableDropletLiquids
+
+    species: dict[str, tuple[str, str]] = {}  # {<chemicalFormula>: (<mid>, <specieName>)}
+    for specie, name in MaterialDB.getSpecies(mid).items():
+        chemicalFormula = MaterialDB.getChemicalFormula(specie)
+        species[chemicalFormula] = name
+
+    for liquid in materials.getMaterials(types=[MaterialType.NONMIXTURE], phases=[Phase.LIQUID]):
+        chemicalFormula = MaterialDB.getChemicalFormula(liquid.mid)
+        if chemicalFormula in species:
+            availableDropletLiquids.append((liquid.mid, liquid.name))
+
+    return availableDropletLiquids
 
 
 class DPMDialog(QDialog):
@@ -112,14 +134,9 @@ class DPMDialog(QDialog):
             if m.phase == Phase.SOLID:
                 solids.append(SelectorItem(m.name, m.name, (m.mid, m.name)))
 
-        mixtures = RegionDB.getMixturesInRegions()
-        liquids = None
-        if len(mixtures) == 1:
-            mid, name = mixtures[0]
-            mixture = self._coreMaterials.getMaterial(mid)
-            if mixture.phase == Phase.LIQUID:
-                liquids = [SelectorItem(name, name, (mid, name))
-                           for mid, name in MaterialDB.getSpecies(mixture.mid).items()]
+
+        liquids = [SelectorItem(name, name, (mid, name))
+                   for mid, name in _getAvailableDropletLiquids(self._coreMaterials)]
 
         self._dropletComposition = DropletCompositionList(self, self._ui.composition, solids, liquids)
 
@@ -140,7 +157,7 @@ class DPMDialog(QDialog):
 
             if not liquids:
                 self._dropletDeniedMessage = self.tr(
-                    "Droplet Particle Type requires Liquid Mixture to bet set as Region's material.")
+                    "Droplet Particle Type requires Liquid Material and its Gas phase specie in the mixture of the region.")
         else:
             self._inertDeniedMessage = deniedMessage
             self._dropletDeniedMessage = deniedMessage

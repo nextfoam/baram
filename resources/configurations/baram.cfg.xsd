@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.baramcfd.org/baram"
-           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="13">
+           xmlns="http://www.baramcfd.org/baram" elementFormDefault="qualified" version="12">
 
     <!-- type definitions -->
     <xs:simpleType name="uuidType">
@@ -414,16 +414,6 @@
                         </xs:element>
                         <xs:element name="constant" type="inputNumberType"/>
                         <xs:element name="polynomial" type="inputNumberListType"/>
-                        <xs:element name="pengRobinsonParameters" minOccurs="0">
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="criticalTemperature" type="inputNumberType"/>
-                                    <xs:element name="criticalPressure" type="inputNumberType"/>
-                                    <xs:element name="criticalSpecificVolume" type="inputNumberType"/>
-                                    <xs:element name="acentricFactor" type="inputNumberType"/>
-                                </xs:sequence>
-                            </xs:complexType>
-                        </xs:element>
                         <xs:element name="boussinesq" minOccurs="0">
                             <xs:complexType>
                                 <xs:sequence>
@@ -473,7 +463,7 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="viscosity" minOccurs="0">
+            <xs:element name="transport">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="specification">
@@ -489,8 +479,16 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:element>
-                        <xs:element name="constant" type="inputPositiveNumberType"/>
-                        <xs:element name="polynomial" type="inputNumberListType"/>
+                        <xs:element name="viscosity" type="inputPositiveNumberType"/>
+                        <xs:element name="thermalConductivity" type="inputNumberType"/>
+                        <xs:element name="polynomial">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="viscosity" type="inputNumberListType"/>
+                                    <xs:element name="thermalConductivity" type="inputNumberListType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
                         <xs:element name="sutherland" minOccurs="0">
                             <xs:complexType>
                                 <xs:sequence>
@@ -543,25 +541,20 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="thermalConductivity">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="specification">
-                            <xs:simpleType>
-                                <xs:restriction base="xs:string">
-                                    <xs:enumeration value="constant"/>
-                                    <xs:enumeration value="polynomial"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:element>
-                        <xs:element name="constant" type="inputNumberType"/>
-                        <xs:element name="polynomial" type="inputNumberListType"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
             <xs:element name="molecularWeight" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="criticalTemperature" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="criticalPressure" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="criticalSpecificVolume" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="tripleTemperature" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="triplePressure" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="normalBoilingTemperature" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="standardStateEnthalpy" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="referenceTemperature" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="acentricFactor" type="inputNumberType" minOccurs="0"/>
+            <xs:element name="saturationPressure" type="function1ScalarType" minOccurs="0"/>
+            <xs:element name="enthalpyOfVaporization" type="function1ScalarType" minOccurs="0"/>
+            <xs:element name="dropletSurfaceTension" type="function1ScalarType" minOccurs="0"/>
             <xs:element name="absorptionCoefficient" type="inputNumberType" minOccurs="0"/>
-            <xs:element name="saturationPressure" type="inputNumberType" minOccurs="0"/>
             <xs:element name="emissivity" type="inputNumberType" minOccurs="0"/>
             <xs:element name="mixture" minOccurs="0">
                 <xs:complexType>

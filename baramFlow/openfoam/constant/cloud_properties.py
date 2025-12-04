@@ -19,8 +19,10 @@ from baramFlow.openfoam.file_system import FileSystem
 
 
 class CloudProperties(DictionaryFile):
-    def __init__(self, objectName):
-        super().__init__(FileSystem.caseRoot(), self.constantLocation(), objectName)
+    def __init__(self, rname: str, objectName: str):
+        super().__init__(FileSystem.caseRoot(), self.constantLocation(rname), objectName)
+
+        self._rname = rname
 
         self._helper = DictionaryHelper()
         self._db = CoreDBReader()
@@ -49,6 +51,11 @@ class CloudProperties(DictionaryFile):
                 'sourceTerms': {
                     'resetOnStartup': 'false',
                     'schemes': {
+                        'rho':       'explicit 1',
+                        'U':         'explicit 1',
+                        'Yi':        'explicit 1',
+                        'h':         'explicit 1',
+                        'radiation': 'explicit 1',
                     }
                 },
                 'interpolationSchemes' : {
@@ -125,7 +132,7 @@ class CloudProperties(DictionaryFile):
             data['gravity'] = ''
 
         if model.pressureGradient:
-            data['pressureGradient'] = ''
+            data['pressureGradient'] = {}
 
         if not model.brownianMotionForce.disabled:
             data['BrownianMotion'] = {
