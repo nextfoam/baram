@@ -67,6 +67,8 @@ class CloudProperties(DictionaryFile):
                     'kappa': 'cell',
                     'p':  'cell',
                     'muc':  'cell',
+                    'DUcDt': 'cell',
+                    'curlUcDt': 'cell',
                 },
                 'integrationSchemes': {
                     'U': integrationScheme,
