@@ -20,11 +20,10 @@ def _getGasName(liquidMid: str, rname: str):
     # Build species table to find a specie corresponding to liquids in the droplet
     species: dict[str, str] = {}  # {<chemicalFormula>: <specieName>}
     for specie, name in MaterialDB.getSpecies(mid).items():
-        chemicalFormula = str(db.getValue(MaterialDB.getXPath(specie) + '/chemicalFormula'))
+        chemicalFormula = MaterialDB.getChemicalFormula(specie)
         species[chemicalFormula] = name
 
-    xpath = MaterialDB.getXPath(liquidMid)
-    chemicalFormula = db.getValue(xpath + '/chemicalFormula')
+    chemicalFormula = MaterialDB.getChemicalFormula(liquidMid)
 
     if chemicalFormula in species:  # It should be in the fluid mixture
         return species[chemicalFormula]  # use the name of corresponding specie in the fluid
@@ -59,12 +58,7 @@ class ReactingCloud1Properties(CloudProperties):
                 liquidTot += float(material.composition)
 
         subModels = {
-            'heatTransferModel': properties.heatTransfer.specification.value,
             'compositionModel': 'singleMixtureFraction',
-            'radiation': 'off',
-            'RanzMarshallCoeffs': {
-                'BirdCorrection': self._helper.boolValue(properties.heatTransfer.ranzMarsahll.birdCorrection),
-            },
             'singleMixtureFractionCoeffs': {
                 'phases': [
                     'gas', {},

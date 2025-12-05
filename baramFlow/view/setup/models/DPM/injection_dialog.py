@@ -6,6 +6,7 @@ import qasync
 from PySide6.QtWidgets import QDialog
 
 from baramFlow.base.base import Vector
+from baramFlow.coredb.general_db import GeneralDB
 from widgets.async_message_box import AsyncMessageBox
 from widgets.selector_dialog import SelectorDialog
 
@@ -29,6 +30,11 @@ class InjectionDialog(QDialog):
         self._positions = None
         self._surface = None
 
+        if GeneralDB.isTimeTransient():
+            availableFunction1Types = [Function1Type.CONSTANT, Function1Type.TABLE]
+        else:
+            availableFunction1Types = [Function1Type.CONSTANT]
+
         self._ui.injectionType.addItem(DPM_INJECTION_TYPE_TEXTS[DPMInjectionType.POINT],    DPMInjectionType.POINT)
         self._ui.injectionType.addItem(DPM_INJECTION_TYPE_TEXTS[DPMInjectionType.SURFACE],  DPMInjectionType.SURFACE)
         self._ui.injectionType.addItem(DPM_INJECTION_TYPE_TEXTS[DPMInjectionType.CONE],     DPMInjectionType.CONE)
@@ -36,23 +42,23 @@ class InjectionDialog(QDialog):
         self._ui.flowRateSpec.addItem(self.tr('Particle Count'),    DPMFlowRateSpec.PARTICLE_COUNT)
         self._ui.flowRateSpec.addItem(self.tr('Particle Volume'),   DPMFlowRateSpec.PARTICLE_VOLUME)
 
-        self._ui.volumeFlowRate.setup([Function1Type.CONSTANT, Function1Type.TABLE])
+        self._ui.volumeFlowRate.setup(availableFunction1Types)
 
         self._ui.coneInjectorType.addItem(self.tr('Point'), DPMConeInjectorType.POINT)
         self._ui.coneInjectorType.addItem(self.tr('Disc'),  DPMConeInjectorType.DISC)
 
-        self._ui.conePosition.setup([Function1Type.CONSTANT, Function1Type.TABLE])
-        self._ui.coneAxis.setup([Function1Type.CONSTANT, Function1Type.TABLE])
-        self._ui.outerConeAngle.setup([Function1Type.CONSTANT, Function1Type.TABLE])
-        self._ui.innerConeAngle.setup([Function1Type.CONSTANT, Function1Type.TABLE])
-        self._ui.swirlVelocity.setup([Function1Type.CONSTANT, Function1Type.TABLE])
+        self._ui.conePosition.setup(availableFunction1Types)
+        self._ui.coneAxis.setup(availableFunction1Types)
+        self._ui.outerConeAngle.setup(availableFunction1Types)
+        self._ui.innerConeAngle.setup(availableFunction1Types)
+        self._ui.swirlVelocity.setup(availableFunction1Types)
 
         self._ui.coneParticleSpeed.addItem(self.tr('from Injection Speed'), DPMParticleSpeed.FROM_INJECTION_SPEED)
         self._ui.coneParticleSpeed.addItem(self.tr('from Pressure'),        DPMParticleSpeed.FROM_PRESSURE)
         self._ui.coneParticleSpeed.addItem(self.tr('from Discharge Coeff'), DPMParticleSpeed.FROM_DISCHARGE_COEFF)
 
-        self._ui.injectorPressure.setup([Function1Type.CONSTANT, Function1Type.TABLE])
-        self._ui.dischargeCoeff.setup([Function1Type.CONSTANT, Function1Type.TABLE])
+        self._ui.injectorPressure.setup(availableFunction1Types)
+        self._ui.dischargeCoeff.setup(availableFunction1Types)
 
         self._ui.surfaceParticleVelocityType.addItem(self.tr('Constant'),      DPMParticleVelocityType.CONSTANT)
         self._ui.surfaceParticleVelocityType.addItem(self.tr('Face-Value'),    DPMParticleVelocityType.FACE_VALUE)

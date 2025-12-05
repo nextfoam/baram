@@ -77,18 +77,24 @@ class CloudProperties(DictionaryFile):
             },
             'constantProperties': {
                 'rho0': self._db.getValue(MaterialDB.getXPath(mid) + '/density/constant'),
-                't0': self._helper.pFloatValue(properties.droplet.temperature)
+                'T0': self._helper.pFloatValue(properties.droplet.temperature),
+                'Cp0': self._db.getValue(MaterialDB.getXPath(mid) + '/specificHeat/constant'),
             },
             'subModels': {
                 'particleForces': self._constructParticleForce(properties.kinematicModel),
                 'injectionModels': self._constructInjections(DPMModelManager.injections()),
                 'patchInteractionModel': 'multiInteraction',
+                'heatTransferModel': properties.heatTransfer.specification.value,
+                'RanzMarshallCoeffs': {
+                    'BirdCorrection': self._helper.boolValue(properties.heatTransfer.ranzMarsahll.birdCorrection),
+                },
                 'surfaceFilmModel': 'none',
                 'stochasticCollisionModel': 'none',
                 'multiInteractionCoeffs': self._constructMultiInteractionCoeff(),
                 'phaseChangeModel' : 'none',
                 'devolatilisationModel': 'none',
                 'surfaceReactionModel': 'none',
+                'radiation': 'off',
             },
             'cloudFunctions': {}
         }

@@ -26,7 +26,7 @@ def findSolver():
 
     dpmModel = DPMModelManager.particleType()
     if dpmModel == DPMParticleType.INERT:
-        return 'kinematicParcelFoam'
+        return 'thermoParcelBuoyantSimpleNFoam'
 
     if dpmModel == DPMParticleType.DROPLET:
         return 'reactingParcelFoam'

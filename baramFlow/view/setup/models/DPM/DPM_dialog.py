@@ -24,7 +24,7 @@ from .droplet_compsition_list import DropletCompositionList
 
 
 def _getAvailableDropletLiquids(materials: Materials):
-    availableDropletLiquids: list[tuple[str, str, str, str]] = []  # list of (<lmid>, <lname>, <gmid>, <gname>)
+    availableDropletLiquids: list[tuple[str, str]] = []  # list of (<mid>, <name>)
 
     for mid, name in RegionDB.getMixturesInRegions():
         if MaterialDB.getPhase(mid) == Phase.GAS:
@@ -32,10 +32,10 @@ def _getAvailableDropletLiquids(materials: Materials):
     else:
         return availableDropletLiquids
 
-    species: dict[str, tuple[str, str]] = {}  # {<chemicalFormula>: (<mid>, <specieName>)}
-    for specie, name in MaterialDB.getSpecies(mid).items():
+    species: list[str] = []
+    for specie, _ in MaterialDB.getSpecies(mid).items():
         chemicalFormula = MaterialDB.getChemicalFormula(specie)
-        species[chemicalFormula] = name
+        species.append(chemicalFormula)
 
     for liquid in materials.getMaterials(types=[MaterialType.NONMIXTURE], phases=[Phase.LIQUID]):
         chemicalFormula = MaterialDB.getChemicalFormula(liquid.mid)
@@ -145,8 +145,6 @@ class DPMDialog(QDialog):
             deniedMessage = self.tr('DPM Model is unavailable in Multiphase model.')
         elif RegionDB.isMultiRegion():
             deniedMessage = self.tr('DPM Model is unavailable in Multi-region mode.')
-        elif not ModelsDB.isEnergyModelOn():
-            deniedMessage = self.tr('DPM Model requires Energy Model to be included.')
 
         if deniedMessage is None:
             if not self._selectableParticles:

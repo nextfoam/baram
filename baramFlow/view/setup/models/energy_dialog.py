@@ -4,6 +4,7 @@ import qasync
 from PySide6.QtWidgets import QDialog
 
 from baramFlow.base.model.DPM_model import DPMModelManager
+from baramFlow.base.model.model import DPMParticleType
 from baramFlow.coredb import coredb
 from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.general_db import GeneralDB
@@ -26,7 +27,7 @@ class EnergyDialog(QDialog):
 
         if GeneralDB.isCompressible():
             self._notIncludeDeniedMessage = self.tr('Energy Model must be included in Compressible model.')
-        elif DPMModelManager.isModelOn():
+        elif DPMModelManager.isModelOn() and DPMModelManager.particleType() == DPMParticleType.DROPLET:
             self._notIncludeDeniedMessage = self.tr('Energy Model must be included when DPM Model is active.')
         elif RegionDB.isMultiRegion():
             self._notIncludeDeniedMessage = self.tr('Energy Model must be included in Multi-region mode.')
