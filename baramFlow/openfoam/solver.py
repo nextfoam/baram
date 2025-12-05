@@ -16,8 +16,10 @@ class SolverNotFound(Exception):
 
 
 def findSolver():
+    isTimeTransient = GeneralDB.isTimeTransient()
+
     if GeneralDB.isDensityBased():
-        if GeneralDB.isTimeTransient():
+        if isTimeTransient:
             return 'UTSLAeroFoam'
         else:
             return 'TSLAeroFoam'
@@ -26,7 +28,10 @@ def findSolver():
 
     dpmModel = DPMModelManager.particleType()
     if dpmModel == DPMParticleType.INERT:
-        return 'thermoParcelBuoyantSimpleNFoam'
+        if isTimeTransient:
+            return 'thermoParcelBuoyantPimpleNFoam'
+        else:
+            return 'thermoParcelBuoyantSimpleNFoam'
 
     if dpmModel == DPMParticleType.DROPLET:
         return 'reactingParcelFoam'
@@ -46,8 +51,6 @@ def findSolver():
                     return 'interPhaseChangeFoam'
 
         return 'interFoam'
-
-    isTimeTransient = GeneralDB.isTimeTransient()
 
     if RegionDB.isMultiRegion():
         if isTimeTransient:

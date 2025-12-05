@@ -40,8 +40,7 @@ class TransportProperties(DictionaryFile):
 
         # TransportProperties file is not used for now.
         # It may be used for Non-Newtonian fluid in the future
-        if solver != 'thermoParcelBuoyantSimpleNFoam':
-            return self
+        return self
 
         self._data = {}
 

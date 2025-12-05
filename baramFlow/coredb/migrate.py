@@ -1130,7 +1130,7 @@ def _version_11(root: etree.Element):
 
             e = etree.fromstring(f'''
                 <wallInteraction xmlns="{_ns}">
-                    <type>none</type>
+                    <type>reflect</type>
                     <reflect>
                         <coefficientOfRestitution>
                             <normal>1</normal>
