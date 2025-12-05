@@ -14,6 +14,7 @@ from libbaram.run import OpenFOAMError
 from baramMesh.app import app
 from baramMesh.db.configurations_schema import CFDType, Shape, GeometryType
 from baramMesh.view.step_page import StepPage
+from widgets.async_message_box import AsyncMessageBox
 from .geometry import RESERVED_NAMES
 from .geometry_add_dialog import GeometryAddDialog
 from .geometry_import_dialog import ImportDialog
@@ -49,6 +50,8 @@ class ContextMenu(QMenu):
 
 
 class GeometryPage(StepPage):
+    geometryRemoved = Signal()
+
     def __init__(self, ui):
         super().__init__(ui, ui.geometryPage)
 
@@ -67,7 +70,7 @@ class GeometryPage(StepPage):
     def isNextStepAvailable(self):
         return app.db.elementCount('geometry') > 0
 
-    async def selected(self):
+    async def selected(self, isCurrentStep, batchRunning):
         if not self._loaded:
             self._geometryManager = app.window.geometryManager
             self._list.load()
@@ -78,10 +81,12 @@ class GeometryPage(StepPage):
 
         app.window.meshManager.unload()
 
-    def deselected(self):
+    async def deselect(self):
         self._geometryManager.disableSyncingToDisplay()
         self._list.clearSelection()
         self._geometryManager.enableSyncingToDisplay()
+
+        return True
 
     def retranslate(self):
         self._list.retranslate()
@@ -139,10 +144,10 @@ class GeometryPage(StepPage):
             self._surfaceDialog.setGIds([item.gId() for item in items])
             self._surfaceDialog.open()
 
-    def _removeGeometry(self):
-        confirm = QMessageBox.question(self._widget, self.tr("Remove Geometries"),
-                                       self.tr('Are you sure you want to remove the selected items?'))
-        if confirm != QMessageBox.StandardButton.Yes:
+    @qasync.asyncSlot()
+    async def _removeGeometry(self):
+        if not await AsyncMessageBox().question(self._widget, self.tr("Remove Geometries"),
+                                                self.tr('Are you sure you want to remove the selected items?')):
             return
 
         items = self._list.selectedItems()
@@ -154,8 +159,8 @@ class GeometryPage(StepPage):
         elif not any([item.geometry().value('volume') for item in items]):
             surfaces = {item.gId(): item.geometry() for item in items}
         else:
-            QMessageBox.information(self._widget, self.tr('Delete Surfaces'),
-                                    self.tr('Surfaces contained in a volume cannot be deleted.'))
+            await AsyncMessageBox().information(self._widget, self.tr('Delete Surfaces'),
+                                                self.tr('Surfaces contained in a volume cannot be deleted.'))
             return
 
         db = app.db.checkout()
@@ -174,6 +179,8 @@ class GeometryPage(StepPage):
         app.db.commit(db)
 
         self._updateNextStepAvailable()
+
+        self.geometryRemoved.emit()
 
     @qasync.asyncSlot()
     async def _importSTL(self):
