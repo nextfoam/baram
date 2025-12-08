@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from PySide6.QtCore import QTimer
 import qasync
 from PySide6.QtWidgets import QDialog
 
@@ -361,6 +362,8 @@ class DPMDialog(QDialog):
 
         self._ui.properties.setEnabled(True)
         self._ui.tabWidget.setEnabled(True)
+
+        QTimer.singleShot(0, self.adjustSize)
 
     def _dragForceChanged(self, dragForce):
         self._ui.shapeFactor.setEnabled(dragForce == DPMDragForce.NON_SPHERICAL)
