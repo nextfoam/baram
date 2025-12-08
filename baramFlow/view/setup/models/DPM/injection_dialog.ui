@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>1079</height>
+    <width>328</width>
+    <height>1093</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -202,7 +202,7 @@
                 <item row="1" column="0">
                  <widget class="QLabel" name="label_15">
                   <property name="text">
-                   <string>total Mass (kg)</string>
+                   <string>Total Mass (kg)</string>
                   </property>
                  </widget>
                 </item>
@@ -219,16 +219,26 @@
                 <item row="2" column="1">
                  <widget class="Function1ScalarWidget" name="volumeFlowRate" native="true"/>
                 </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_26">
+                  <property name="text">
+                   <string>Mass Flow Rate (kg/s)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="BatchableFloatEdit" name="massFlowRate"/>
+                </item>
                </layout>
               </widget>
              </item>
              <item>
-              <widget class="QWidget" name="widget_2" native="true">
+              <widget class="QWidget" name="startStopTime" native="true">
                <layout class="QFormLayout" name="formLayout_6">
                 <item row="0" column="0">
                  <widget class="QLabel" name="label_17">
                   <property name="text">
-                   <string>Start Tim (s)</string>
+                   <string>Start Time (s)</string>
                   </property>
                  </widget>
                 </item>

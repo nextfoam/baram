@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import asyncio
+from typing import cast
 
 import qasync
-from PySide6.QtWidgets import QDialog
+from PySide6.QtWidgets import QDialog, QFormLayout
 
 from baramFlow.base.base import Vector
 from baramFlow.coredb.general_db import GeneralDB
@@ -30,7 +31,8 @@ class InjectionDialog(QDialog):
         self._positions = None
         self._surface = None
 
-        if GeneralDB.isTimeTransient():
+        transient = GeneralDB.isTimeTransient()
+        if transient:
             availableFunction1Types = [Function1Type.CONSTANT, Function1Type.TABLE]
         else:
             availableFunction1Types = [Function1Type.CONSTANT]
@@ -41,6 +43,14 @@ class InjectionDialog(QDialog):
 
         self._ui.flowRateSpec.addItem(self.tr('Particle Count'),    DPMFlowRateSpec.PARTICLE_COUNT)
         self._ui.flowRateSpec.addItem(self.tr('Particle Volume'),   DPMFlowRateSpec.PARTICLE_VOLUME)
+
+        layout = cast(QFormLayout, self._ui.particleVolumeParameters.layout())
+        layout.setRowVisible(self._ui.totalMass,      transient)
+        layout.setRowVisible(self._ui.volumeFlowRate, transient)
+        layout.setRowVisible(self._ui.massFlowRate,   not transient)
+
+        if not transient:
+            self._ui.startStopTime.hide()
 
         self._ui.volumeFlowRate.setup(availableFunction1Types)
 
@@ -120,6 +130,7 @@ class InjectionDialog(QDialog):
             self._injection.injector.flowRate.particleVolume.parcelPerSecond)
         self._ui.totalMass.setBatchableNumber(self._injection.injector.flowRate.particleVolume.totalMass)
         self._ui.volumeFlowRate.setData(self._injection.injector.flowRate.particleVolume.volumeFlowRate)
+        self._ui.massFlowRate.setBatchableNumber(self._injection.injector.flowRate.particleVolume.massFlowRate)
         self._ui.startTime.setBatchableNumber(self._injection.injector.flowRate.startTime)
         self._ui.stopTime.setBatchableNumber(self._injection.injector.flowRate.stopTime)
 
@@ -185,6 +196,7 @@ class InjectionDialog(QDialog):
                     self._ui.volumeParcelPerSecond.validate(self.tr('Parcel per Second'), low=0, lowInclusive=False)
                     self._ui.totalMass.validate(self.tr('Total Mass'), low=0, lowInclusive=False)
                     self._ui.volumeFlowRate.validate(self.tr('Volume FlowRate'), low=0)
+                    self._ui.massFlowRate.validate(self.tr('Mass Flow Rate'), low=0, lowInclusive=False)
 
                 self._ui.startTime.validate(self.tr('Start Time'), low=0, lowInclusive=False)
                 self._ui.stopTime.validate(self.tr('Stop Time'))
@@ -264,6 +276,7 @@ class InjectionDialog(QDialog):
                 self._injection.injector.flowRate.particleVolume.parcelPerSecond = self._ui.volumeParcelPerSecond.batchableNumber()
                 self._injection.injector.flowRate.particleVolume.totalMass = self._ui.totalMass.batchableNumber()
                 self._ui.volumeFlowRate.updateData(self._injection.injector.flowRate.particleVolume.volumeFlowRate)
+                self._injection.injector.flowRate.particleVolume.massFlowRate = self._ui.massFlowRate.batchableNumber()
 
             self._injection.injector.flowRate.startTime = self._ui.startTime.batchableNumber()
             self._injection.injector.flowRate.stopTime = self._ui.stopTime.batchableNumber()

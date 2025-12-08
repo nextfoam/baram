@@ -2599,6 +2599,7 @@
                                                                                                     <xs:element name="parcelPerSecond" type="inputPositiveNumberType" default="100"/>
                                                                                                     <xs:element name="totalMass" type="inputPositiveNumberType" default="100"/>
                                                                                                     <xs:element name="volumeFlowRate" type="function1ScalarType"/>
+                                                                                                    <xs:element name="massFlowRate" type="inputPositiveNumberType" default="100"/>
                                                                                                 </xs:sequence>
                                                                                             </xs:complexType>
                                                                                         </xs:element>

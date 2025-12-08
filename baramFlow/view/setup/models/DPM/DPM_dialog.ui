@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>619</width>
-    <height>1105</height>
+    <width>583</width>
+    <height>931</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,6 +35,12 @@
          <string>Particle Type</string>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="topMargin">
+          <number>6</number>
+         </property>
+         <property name="bottomMargin">
+          <number>6</number>
+         </property>
          <item>
           <widget class="QRadioButton" name="none">
            <property name="text">
@@ -131,6 +137,15 @@
                <string>Droplet</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_3">
+               <property name="topMargin">
+                <number>6</number>
+               </property>
+               <property name="rightMargin">
+                <number>9</number>
+               </property>
+               <property name="bottomMargin">
+                <number>6</number>
+               </property>
                <item>
                 <widget class="QGroupBox" name="groupBox_2">
                  <property name="title">
@@ -163,7 +178,13 @@
                      <property name="leftMargin">
                       <number>0</number>
                      </property>
+                     <property name="topMargin">
+                      <number>0</number>
+                     </property>
                      <property name="rightMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="bottomMargin">
                       <number>0</number>
                      </property>
                      <item>
@@ -190,12 +211,18 @@
                 </widget>
                </item>
                <item>
-                <widget class="QWidget" name="widget_6" native="true">
+                <widget class="QWidget" name="temperatureWidget" native="true">
                  <layout class="QHBoxLayout" name="horizontalLayout_9">
                   <property name="leftMargin">
                    <number>0</number>
                   </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
                   <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
                    <number>0</number>
                   </property>
                   <item>
@@ -251,6 +278,9 @@
                <string>Numerical Conditions</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_4">
+               <property name="spacing">
+                <number>3</number>
+               </property>
                <item>
                 <widget class="QCheckBox" name="interactionWithContinuousPhase">
                  <property name="text">
@@ -264,7 +294,13 @@
                   <property name="leftMargin">
                    <number>0</number>
                   </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
                   <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
                    <number>0</number>
                   </property>
                   <item row="0" column="0">
@@ -293,7 +329,13 @@
                   <property name="leftMargin">
                    <number>0</number>
                   </property>
+                  <property name="topMargin">
+                   <number>6</number>
+                  </property>
                   <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
                    <number>0</number>
                   </property>
                   <item row="0" column="0">
@@ -316,7 +358,7 @@
              <widget class="QWidget" name="widget_5" native="true">
               <layout class="QHBoxLayout" name="horizontalLayout_5">
                <property name="rightMargin">
-                <number>0</number>
+                <number>9</number>
                </property>
                <item>
                 <spacer name="horizontalSpacer_2">
@@ -399,12 +441,18 @@
           <property name="rightMargin">
            <number>0</number>
           </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
           <item>
            <widget class="QGroupBox" name="groupBox_4">
             <property name="title">
              <string>Drag Force</string>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_9">
+             <property name="spacing">
+              <number>3</number>
+             </property>
              <item>
               <widget class="QRadioButton" name="dragForceSpherical">
                <property name="text">
@@ -422,7 +470,13 @@
              <item>
               <widget class="QWidget" name="widget_13" native="true">
                <layout class="QFormLayout" name="formLayout_6">
+                <property name="leftMargin">
+                 <number>27</number>
+                </property>
                 <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
                  <number>0</number>
                 </property>
                 <item row="0" column="0">
@@ -476,7 +530,16 @@
              <item>
               <widget class="QWidget" name="dragTomiyama" native="true">
                <layout class="QVBoxLayout" name="verticalLayout_22">
+                <property name="leftMargin">
+                 <number>27</number>
+                </property>
                 <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
                  <number>0</number>
                 </property>
                 <item>
@@ -513,6 +576,9 @@
                    <string>Contamination</string>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_23">
+                   <property name="spacing">
+                    <number>0</number>
+                   </property>
                    <item>
                     <widget class="QRadioButton" name="noContamination">
                      <property name="text">
@@ -552,6 +618,9 @@
                 <string>Lift Force</string>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_11">
+                <property name="spacing">
+                 <number>3</number>
+                </property>
                 <item>
                  <widget class="QRadioButton" name="liftForceNone">
                   <property name="text">
@@ -575,37 +644,25 @@
                 </item>
                 <item>
                  <widget class="QWidget" name="liftTomiyama" native="true">
-                  <layout class="QVBoxLayout" name="verticalLayout_24">
+                  <layout class="QHBoxLayout" name="horizontalLayout_4">
+                   <property name="leftMargin">
+                    <number>27</number>
+                   </property>
                    <property name="topMargin">
                     <number>0</number>
                    </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
                    <item>
-                    <widget class="QWidget" name="widget_18" native="true">
-                     <layout class="QHBoxLayout" name="horizontalLayout_11">
-                      <property name="leftMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>0</number>
-                      </property>
-                      <item>
-                       <widget class="QLabel" name="label_14">
-                        <property name="text">
-                         <string>Surface Tension (N/m)</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="BatchableFloatEdit" name="liftTomiyamaSurfaceTension"/>
-                      </item>
-                     </layout>
+                    <widget class="QLabel" name="label_14">
+                     <property name="text">
+                      <string>Surface Tension (N/m)</string>
+                     </property>
                     </widget>
+                   </item>
+                   <item>
+                    <widget class="BatchableFloatEdit" name="liftTomiyamaSurfaceTension"/>
                    </item>
                   </layout>
                  </widget>
@@ -616,6 +673,9 @@
              <item>
               <widget class="QWidget" name="widget_10" native="true">
                <layout class="QVBoxLayout" name="verticalLayout_12">
+                <property name="spacing">
+                 <number>3</number>
+                </property>
                 <item>
                  <widget class="QCheckBox" name="gravity">
                   <property name="text">
@@ -660,22 +720,40 @@
          <property name="checkable">
           <bool>true</bool>
          </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
          <layout class="QVBoxLayout" name="verticalLayout_13">
           <property name="leftMargin">
-           <number>0</number>
+           <number>9</number>
           </property>
           <property name="topMargin">
-           <number>0</number>
+           <number>9</number>
           </property>
           <property name="rightMargin">
-           <number>0</number>
+           <number>9</number>
           </property>
           <property name="bottomMargin">
-           <number>0</number>
+           <number>9</number>
           </property>
           <item>
            <widget class="QWidget" name="widget_11" native="true">
             <layout class="QFormLayout" name="formLayout_8">
+             <property name="horizontalSpacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item row="0" column="0">
               <widget class="QLabel" name="label_11">
                <property name="text">
@@ -712,6 +790,9 @@
           <string>Turbulent Dispersion</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_14">
+          <property name="spacing">
+           <number>3</number>
+          </property>
           <item>
            <widget class="QRadioButton" name="noneDispersion">
             <property name="text">
@@ -762,6 +843,9 @@
           <string>Heat Transfer</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_17">
+          <property name="spacing">
+           <number>3</number>
+          </property>
           <item>
            <widget class="QRadioButton" name="heatTransferNone">
             <property name="text">
@@ -779,7 +863,13 @@
           <item>
            <widget class="QWidget" name="widget_12" native="true">
             <layout class="QVBoxLayout" name="verticalLayout_16">
+             <property name="leftMargin">
+              <number>27</number>
+             </property>
              <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
               <number>0</number>
              </property>
              <item>
@@ -821,6 +911,9 @@
           <string>Evaporation</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_19">
+          <property name="spacing">
+           <number>3</number>
+          </property>
           <item>
            <widget class="QRadioButton" name="evaporationNone">
             <property name="text">
@@ -851,6 +944,9 @@
           <string>Enthalpy Transfer Type</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_20">
+          <property name="spacing">
+           <number>3</number>
+          </property>
           <item>
            <widget class="QRadioButton" name="enthalpyDiference">
             <property name="text">

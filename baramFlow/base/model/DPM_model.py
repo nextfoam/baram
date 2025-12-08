@@ -317,13 +317,15 @@ class ParticleVolumeParameters:
     parcelPerSecond: BatchableNumber    = field(default_factory=lambda: BatchableNumber('100'))
     totalMass: BatchableNumber          = field(default_factory=lambda: BatchableNumber('100'))
     volumeFlowRate: Function1Scalar     = field(default_factory=lambda: Function1Scalar(constant=BatchableNumber('100')))
+    massFlowRate: BatchableNumber       = field(default_factory=lambda: BatchableNumber('100'))
 
     @staticmethod
     def fromElement(e):
         return ParticleVolumeParameters(
             parcelPerSecond=BatchableNumber.fromElement(e.find('parcelPerSecond', namespaces=nsmap)),
             totalMass=BatchableNumber.fromElement(e.find('totalMass',namespaces=nsmap)),
-            volumeFlowRate=Function1Scalar.fromElement(e.find('volumeFlowRate',namespaces=nsmap)))
+            volumeFlowRate=Function1Scalar.fromElement(e.find('volumeFlowRate',namespaces=nsmap)),
+            massFlowRate=BatchableNumber.fromElement(e.find('massFlowRate',namespaces=nsmap)))
 
 
 @dataclass
@@ -421,12 +423,12 @@ class Injector:
 @dataclass
 class DiameterDistribution:
     type: DPMDiameterDistribution       = DPMDiameterDistribution.UNIFORM
-    diameter: BatchableNumber           = field(default_factory=lambda: BatchableNumber('0.3'))
-    minDiameter: BatchableNumber        = field(default_factory=lambda: BatchableNumber('0.3'))
-    maxDiameter: BatchableNumber        = field(default_factory=lambda: BatchableNumber('0.3'))
-    meanDiameter: BatchableNumber       = field(default_factory=lambda: BatchableNumber('0.3'))
-    spreadParameter: BatchableNumber    = field(default_factory=lambda: BatchableNumber('0.3'))
-    stdDeviation: BatchableNumber       = field(default_factory=lambda: BatchableNumber('0.3'))
+    diameter: BatchableNumber           = field(default_factory=lambda: BatchableNumber('5e-6'))
+    minDiameter: BatchableNumber        = field(default_factory=lambda: BatchableNumber('4e-6'))
+    maxDiameter: BatchableNumber        = field(default_factory=lambda: BatchableNumber('6e-6'))
+    meanDiameter: BatchableNumber       = field(default_factory=lambda: BatchableNumber('5e-6'))
+    spreadParameter: BatchableNumber    = field(default_factory=lambda: BatchableNumber('1e-6'))
+    stdDeviation: BatchableNumber       = field(default_factory=lambda: BatchableNumber('1e-6'))
 
     @staticmethod
     def fromElement(e):
@@ -478,6 +480,7 @@ class Injection:
                                     <type>constant</type>
                                     <constant>100</constant>
                                 </volumeFlowRate>
+                                <massFlowRate>100</massFlowRate>
                             </particleVolume>
                             <startTime>1</startTime>
                             <stopTime>100</stopTime>
@@ -584,6 +587,7 @@ class Injection:
                             {self.injector.flowRate.particleVolume.parcelPerSecond.toXML('parcelPerSecond')}
                             {self.injector.flowRate.particleVolume.totalMass.toXML('totalMass')}
                             <volumeFlowRate>{self.injector.flowRate.particleVolume.volumeFlowRate.toXML()}</volumeFlowRate>
+                            {self.injector.flowRate.particleVolume.massFlowRate.toXML('massFlowRate')}
                         </particleVolume>
                         {self.injector.flowRate.startTime.toXML('startTime')}
                         {self.injector.flowRate.stopTime.toXML('stopTime')}

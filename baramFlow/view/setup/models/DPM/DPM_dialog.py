@@ -86,6 +86,10 @@ class DPMDialog(QDialog):
         self._ui.trackingScheme.addItem(self.tr('Implicit'),    DPMTrackingScheme.IMPLICIT)
         self._ui.trackingScheme.addItem(self.tr('Analytic'),    DPMTrackingScheme.ANALYTIC)
 
+        energyOn = ModelsDB.isEnergyModelOn()
+        self._ui.tabWidget.setTabEnabled(self._heatTransferTabIndex, energyOn)
+        self._ui.temperatureWidget.setVisible(energyOn)
+
         self._dragForceRadios.addEnumButton(self._ui.dragForceSpherical,            DPMDragForce.SPHERICAL)
         self._dragForceRadios.addEnumButton(self._ui.dragForceNonSpherical,         DPMDragForce.NON_SPHERICAL)
         self._dragForceRadios.addEnumButton(self._ui.dragForceDistortedSphere,      DPMDragForce.DISTORTED_SPHERE)
@@ -349,12 +353,10 @@ class DPMDialog(QDialog):
         if type_ == DPMParticleType.INERT:
             self._ui.inertParticleGroup.setVisible(True)
             self._ui.dropletGroup.setVisible(False)
-            self._ui.tabWidget.setTabEnabled(self._heatTransferTabIndex, False)
             self._ui.tabWidget.setTabEnabled(self._evaporationTabIndex, False)
         elif type_ == DPMParticleType.DROPLET:
             self._ui.inertParticleGroup.setVisible(False)
             self._ui.dropletGroup.setVisible(True)
-            self._ui.tabWidget.setTabEnabled(self._heatTransferTabIndex, True)
             self._ui.tabWidget.setTabEnabled(self._evaporationTabIndex, True)
 
         self._ui.properties.setEnabled(True)

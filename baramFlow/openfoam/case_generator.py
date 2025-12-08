@@ -6,6 +6,7 @@ import logging
 
 from PySide6.QtCore import QCoreApplication, QObject, Signal
 
+from baramFlow.openfoam.constant.cloud_properties import CloudProperties
 from libbaram import utils
 from libbaram.exception import CanceledException
 from libbaram.run import RunUtility, RunParallelUtility
@@ -105,10 +106,8 @@ class CaseGenerator(QObject):
             self._files.append(FvOptions(rname))
             self._files.append(SetFieldsDict(region))
 
-            if DPMModelManager.particleType() == DPMParticleType.INERT:
-                self._files.append(KinematicCloudProperties(rname))
-            elif DPMModelManager.particleType() == DPMParticleType.DROPLET:
-                self._files.append(ReactingCloud1Properties(rname))
+            if DPMModelManager.particleType() != DPMParticleType.NONE:
+                self._files.append(CloudProperties(rname))
 
         # Files that should be created in case root folder in addition to the region folders.
 

@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding:, # utf-8 -*-
 
+from baramFlow.base.material.material import MaterialType, Phase
+from baramFlow.coredb.region_db import RegionDB
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataClass
 
 from baramFlow.base.boundary.boundary import BoundaryManager, WallInteractionType
 from baramFlow.base.model.DPM_model import DPMModelManager, KinematicModel, FlowRate, DiameterDistribution, Injection
 from baramFlow.base.model.DPM_model import ConeInjection, PointInjection, SurfaceInjection
-from baramFlow.base.model.model import DPMTrackingScheme, DPMParticleType, DPMTurbulentDispersion, DPMFlowRateSpec
+from baramFlow.base.model.model import DPMEvaporationModel, DPMTrackingScheme, DPMParticleType, DPMTurbulentDispersion, DPMFlowRateSpec
 from baramFlow.base.model.model import DPMDragForce, DPMLiftForce, DPMInjectionType, DPMDiameterDistribution
 from baramFlow.base.model.model import DPMParticleVelocityType, DPMParticleSpeed
 from baramFlow.coredb.boundary_db import BoundaryDB, BoundaryType
@@ -18,16 +20,42 @@ from baramFlow.openfoam.dictionary_helper import DictionaryHelper
 from baramFlow.openfoam.file_system import FileSystem
 
 
+def _getGasName(liquidMid: str, rname: str):
+    db = CoreDBReader()
+
+    mid = RegionDB.getMaterial(rname)
+    if MaterialDB.getType(mid) != MaterialType.MIXTURE:  # Requirement for SLG Thermo
+        return ''
+
+    # Build species table to find a specie corresponding to liquids in the droplet
+    species: dict[str, str] = {}  # {<chemicalFormula>: <specieName>}
+    for specie, name in MaterialDB.getSpecies(mid).items():
+        chemicalFormula = MaterialDB.getChemicalFormula(specie)
+        species[chemicalFormula] = name
+
+    chemicalFormula = MaterialDB.getChemicalFormula(liquidMid)
+
+    if chemicalFormula in species:  # It should be in the fluid mixture
+        return species[chemicalFormula]  # use the name of corresponding specie in the fluid
+    else:
+        return ''
+
+
 class CloudProperties(DictionaryFile):
-    def __init__(self, rname: str, objectName: str):
-        super().__init__(FileSystem.caseRoot(), self.constantLocation(rname), objectName)
+    def __init__(self, rname: str):
+        super().__init__(FileSystem.caseRoot(), self.constantLocation(rname), 'cloudProperties')
 
         self._rname = rname
 
         self._helper = DictionaryHelper()
         self._db = CoreDBReader()
 
-    def _buildBaseCloudProperties(self, properties):
+    def build(self):
+        if self._data is not None:
+            return self
+
+        properties = DPMModelManager.properties()
+
         integrationScheme = {
             DPMTrackingScheme.IMPLICIT: 'Euler',
             DPMTrackingScheme.ANALYTIC: 'analytical'
@@ -104,6 +132,10 @@ class CloudProperties(DictionaryFile):
             else properties.turbulentDispersion)
         self._data['subModels']['dispersionModel'] = turbulenceDispersion.value
 
+        if DPMModelManager.particleType() == DPMParticleType.DROPLET:
+            subModels = self._buildReactingSubmodels(properties)
+            self._data['subModels'].update(subModels)
+
         return self
 
     def _constructParticleForce(self, model: KinematicModel):
@@ -127,7 +159,7 @@ class CloudProperties(DictionaryFile):
                     'sigma': self._helper.pFloatValue(model.liftForce.tomiyamaLift.surfaceTension),
                 }
 
-            return ''
+            return {}
 
         data = {
             model.dragForce.specification.value: dragForceDict(model.dragForce.specification),
@@ -152,8 +184,12 @@ class CloudProperties(DictionaryFile):
         return data
 
     def _constructFlowRate(self, flowRate: FlowRate):
-        startTime = self._helper.pFloatValue(flowRate.startTime)
-        duration = float(self._helper.pFloatValue(flowRate.stopTime)) - float(startTime)
+        if GeneralDB.isTimeTransient():
+            startTime = self._helper.pFloatValue(flowRate.startTime)
+            duration = float(self._helper.pFloatValue(flowRate.stopTime)) - float(startTime)
+        else:
+            startTime = 0
+            duration = 1
 
         if flowRate.specification == DPMFlowRateSpec.PARTICLE_COUNT:
             return {
@@ -162,6 +198,7 @@ class CloudProperties(DictionaryFile):
                 'nParticle': self._helper.pFloatValue(flowRate.particleCount.numberOfParticlesPerParcel),
                 'massTotal': '0',
                 'flowRateProfile': self._helper.function1ScalarValue(flowRate.particleVolume.volumeFlowRate),
+                'massFlowRate': '0',
                 'SOI': startTime,
                 'duration': duration
             }
@@ -171,6 +208,7 @@ class CloudProperties(DictionaryFile):
                 'parcelsPerSecond': self._helper.pFloatValue(flowRate.particleVolume.parcelPerSecond),
                 'massTotal': self._helper.pFloatValue(flowRate.particleVolume.totalMass),
                 'flowRateProfile': self._helper.function1ScalarValue(flowRate.particleVolume.volumeFlowRate),
+                'massFlowRate': self._helper.pFloatValue(flowRate.particleVolume.massFlowRate),
                 'SOI': startTime,
                 'duration': duration
             }
@@ -282,7 +320,6 @@ class CloudProperties(DictionaryFile):
 
                 data[injection.name].update(self._constructFlowRate(injection.injector.flowRate))
 
-            data[injection.name]['massFlowRate'] = '0.8e-03'
             data[injection.name]['sizeDistribution'] = self._constructSizeDistribution(injection.diameterDistribution)
 
         return data
@@ -341,3 +378,44 @@ class CloudProperties(DictionaryFile):
             }
 
         return data
+
+    def _buildReactingSubmodels(self, properties):
+        solid = {}
+        liquid = {}
+        solidTot = 0
+        liquidTot = 0
+        for material in properties.droplet.composition:
+            phase = MaterialDB.getPhase(material.mid)
+            composition = float(material.composition)
+            if phase == Phase.SOLID:
+                solid[MaterialDB.getName(material.mid)] = composition
+                solidTot += float(material.composition)
+            elif phase == Phase.LIQUID:
+                liquid[_getGasName(material.mid, self._rname)] = composition
+                liquidTot += float(material.composition)
+
+        subModels = {
+            'compositionModel': 'singleMixtureFraction',
+            'singleMixtureFractionCoeffs': {
+                'phases': [
+                    'gas', {},
+                    'liquid', {material: round(composition / liquidTot, 6) for material, composition in liquid.items()},
+                    'solid', {material: round(composition / solidTot, 6) for material, composition in solid.items()}
+                ],
+                'YGasTot0': 0,
+                'YLiquidTot0': liquidTot,
+                'YSolidTot0': solidTot
+            },
+            'liquidEvaporationCoeffs': {
+                'enthalpyTransfer': properties.evaporation.enthalpyTransferType.value,
+                'activeLiquids': list(liquid.keys())
+            }
+        }
+
+        if properties.evaporation.model == DPMEvaporationModel.DIFFUSION_CONTROLLED:
+            subModels['phaseChangeModel'] = 'liquidEvaporation'
+        elif properties.evaporation.model == DPMEvaporationModel.CONVECTION_DIFFUSION_CONTROLLED:
+            subModels['phaseChangeModel'] = 'liquidEvaporationBoil'
+
+        return subModels
+
