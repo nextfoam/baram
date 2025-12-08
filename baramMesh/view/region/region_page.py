@@ -78,15 +78,17 @@ class RegionPage(StepPage):
         else:
             self._load()
 
-    async def selected(self):
+    async def show(self, isCurrentStep, batchRunning):
         if not self._loaded:
             self._load()
 
         app.window.meshManager.unload()
 
-    def deselected(self):
+    async def hide(self):
         self._form.cancel()
         self._ui.regionValidationMessage.hide()
+
+        return True
 
     def removeForm(self, form):
         self._ui.regionList.layout().removeWidget(self._form)
@@ -197,7 +199,7 @@ class RegionPage(StepPage):
     def _showForm(self):
         self._form.show()
         self._moveFocus(self._form)
-        self._setNextStepEnabled(False)
+        self.stepReset.emit()
 
     def _moveFocus(self, widget):
         self._focusing = widget

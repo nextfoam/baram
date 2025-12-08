@@ -38,8 +38,14 @@ class Baram(QObject):
         app.restarted.connect(self._restart)
         app.projectCreated.connect(self._openProject)
 
-    async def start(self):
+    async def start(self, path=None):
         vtk_threads.vtkThreadLock = asyncio.Lock()
+
+        if path is not None:
+            await self._projectSelected(path)
+
+            return
+
         try:
             self._applicationLock = AppSettings.acquireLock(5)
         except Timeout:
@@ -105,7 +111,8 @@ class Baram(QObject):
             await Project.close()
             return
 
-        self._projectSelector.accept()  # To close project selector dialog
+        if self._projectSelector is not None:
+            self._projectSelector.accept()  # To close project selector dialog
         app.openMainWindow()
 
 

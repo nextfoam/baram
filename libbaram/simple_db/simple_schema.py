@@ -90,7 +90,7 @@ class ValidationError(ValueError):
         self._path = path
 
     def toMessage(self):
-        return f'{self._path} - {self._message}'
+        return f'{self._path if self._name is None else self._name} - {self._message}'
 
 
 class PrimitiveType(QObject):
