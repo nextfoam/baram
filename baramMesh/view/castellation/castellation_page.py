@@ -47,7 +47,7 @@ class CastellationPage(StepPage):
 
         self._connectSignalsSlots()
 
-    async def selected(self, isCurrentStep, batchRunning):
+    async def show(self, isCurrentStep, batchRunning):
         self.load()
         self.updateWorkingStatus()
 

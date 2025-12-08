@@ -45,7 +45,7 @@ class SnapPage(StepPage):
 
         self._connectSignalsSlots()
 
-    async def selected(self, isCurrentStep, batchRunning):
+    async def show(self, isCurrentStep, batchRunning):
         self.load()
         self.updateWorkingStatus()
 
@@ -187,7 +187,7 @@ class SnapPage(StepPage):
 
             await AsyncMessageBox().information(self._widget, self.tr('Complete'), self.tr('Snapping is completed.'))
 
-        self._ui.snapContents.hide()
+        self._ui.snapCancel.hide()
         self.updateWorkingStatus()
 
     def _reset(self):
@@ -220,6 +220,7 @@ class SnapPage(StepPage):
         if self.isNextStepAvailable():
             self._ui.snap.hide()
             self._ui.snapReset.show()
+            print(self._locked)
         else:
             self._ui.snap.show()
             self._ui.snap.setEnabled(True)
@@ -238,6 +239,7 @@ class SnapPage(StepPage):
         self._ui.snapContents.setEnabled(True)
 
     def _disableEdit(self):
+        print('disabled')
         self._ui.loadSnapDefaults.setEnabled(False)
         self._ui.snapContents.setEnabled(False)
 

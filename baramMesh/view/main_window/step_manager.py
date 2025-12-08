@@ -4,7 +4,6 @@
 from enum import Enum, auto
 
 from PySide6.QtCore import QObject, Signal
-from PySide6.QtWidgets import QMessageBox
 
 import qasync
 
@@ -70,7 +69,7 @@ class StepControlButtons(QObject):
 
 
 class StepManager(QObject):
-    currentStepChanged = Signal(Step)
+    displayStepChanged = Signal(Step)
     workingStepChanged = Signal(Step)
 
     def __init__(self, navigation, ui):
@@ -177,19 +176,12 @@ class StepManager(QObject):
         if step == prev:
             return
 
-        if not await self._pages[prev].deselect():
+        if not await self._pages[prev].hide():
             self._navigation.setCurrentStep(prev)
             return
 
         page = self._pages[step]
-
-        # Move to next step without clicking "Next" button
-        if (step in (Step.SNAP, Step.BOUNDARY_LAYER)
-                and prev == self._workingStep and prev == step - 1 and self._pages[prev].isNextStepAvailable()):
-            self._pages[step].open()
-            self._setWorkingStep(step)
-
-        await page.selected(self._isWorkingStep(step), self._batchRunning)
+        await page.show(self._isWorkingStep(step), self._batchRunning)
         if step < self._workingStep or self._batchRunning or snappyHexMesh.isRunning():
             page.lock()
         else:
@@ -198,7 +190,7 @@ class StepManager(QObject):
         self._contentStack.setCurrentIndex(step)
 
         self._updateControlButtons(step)
-        self.currentStepChanged.emit(step)
+        self.displayStepChanged.emit(step)
 
     @qasync.asyncSlot()
     async def _finishSteps(self):
@@ -222,11 +214,15 @@ class StepManager(QObject):
         await AsyncMessageBox().information(self._contentStack, self.tr('Process Completed'),
                                             self.tr('All steps complete.'))
 
-        self._buttons.showButton(ButtonID.FINISH)
+        displayStep = self._navigation.currentStep()
+        self._updateControlButtons(displayStep)
+        if displayStep < self._workingStep:
+            self.currentPage().lock()
 
         self.currentPage().updateWorkingStatus()
 
-    def _unlockCurrentStep(self):
+    @qasync.asyncSlot()
+    async def _unlockCurrentStep(self):
         currentStep = self._navigation.currentStep()
 
         try:
@@ -234,10 +230,12 @@ class StepManager(QObject):
                 self._navigation.disableStep(step)
                 self._pages[Step(step)].clearResult()
         except PermissionError:
-            QMessageBox.information(
+            await AsyncMessageBox().information(
                 self._contentStack,
                 self.tr('Permission Error'),
-                self.tr(f'Permission Error:\nA file in the project folder might be open in another program.\nClose the file and try again.'))
+                self.tr('Permission Error:\n'
+                        'A file in the project folder might be open in another program.\n'
+                        'Close the file and try again.'))
 
             return
 

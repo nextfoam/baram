@@ -171,7 +171,7 @@ class MainWindow(QMainWindow):
         self._startDialog.finished.connect(self._startDialogClosed)
 
         self._stepManager.workingStepChanged.connect(self._displayControl.openedStepChanged)
-        self._stepManager.currentStepChanged.connect(self._displayControl.currentStepChanged)
+        self._stepManager.displayStepChanged.connect(self._displayControl.currentStepChanged)
 
         self._closeTriggered.connect(self._closeProject)
 

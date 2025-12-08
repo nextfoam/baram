@@ -42,10 +42,10 @@ class StepPage(QObject):
     def open(self):
         return
 
-    async def selected(self, isCurrentStep, batchRunning):
+    async def show(self, isCurrentStep, batchRunning):
         self.updateWorkingStatus()
 
-    async def deselect(self):
+    async def hide(self):
         if not self._loaded:
             return True
 
@@ -82,15 +82,6 @@ class StepPage(QObject):
 
     def _outputPath(self) -> Path:
         return app.fileSystem.timePath(self.OUTPUT_TIME)
-
-    def _setNextStepEnabledOfBatchStep(self, enabled):
-        if enabled:
-            self._ui.next.show()
-            self._ui.next.setEnabled(True)
-            self._ui.finishSteps.hide()
-        else:
-            self._ui.next.hide()
-            self._ui.finishSteps.show()
 
     def _updateNextStepAvailable(self):
         if self.isNextStepAvailable():

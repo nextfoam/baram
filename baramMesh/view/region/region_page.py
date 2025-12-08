@@ -78,13 +78,13 @@ class RegionPage(StepPage):
         else:
             self._load()
 
-    async def selected(self, isCurrentStep, batchRunning):
+    async def show(self, isCurrentStep, batchRunning):
         if not self._loaded:
             self._load()
 
         app.window.meshManager.unload()
 
-    async def deselect(self):
+    async def hide(self):
         self._form.cancel()
         self._ui.regionValidationMessage.hide()
 

@@ -70,7 +70,7 @@ class GeometryPage(StepPage):
     def isNextStepAvailable(self):
         return app.db.elementCount('geometry') > 0
 
-    async def selected(self, isCurrentStep, batchRunning):
+    async def show(self, isCurrentStep, batchRunning):
         if not self._loaded:
             self._geometryManager = app.window.geometryManager
             self._list.load()
@@ -81,7 +81,7 @@ class GeometryPage(StepPage):
 
         app.window.meshManager.unload()
 
-    async def deselect(self):
+    async def hide(self):
         self._geometryManager.disableSyncingToDisplay()
         self._list.clearSelection()
         self._geometryManager.enableSyncingToDisplay()
