@@ -30,7 +30,7 @@ class ExportDialog(QDialog):
     def projectPath(self):
         return self._pathWidget.projectPath()
 
-    def isRnBaramFlowChecked(self):
+    def isRunBaramFlowChecked(self):
         return self._ui.run.isChecked()
 
     def _connectSignalsSlots(self):

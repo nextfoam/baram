@@ -202,7 +202,7 @@ class ExportPage(StepPage):
 
             removeVoidBoundaries(baramSystem.caseRoot())
 
-            if self._dialog.isRnBaramFlowChecked():
+            if self._dialog.isRunBaramFlowChecked():
                 progressDialog.close()
                 subprocess.Popen([sys.executable, '-m', 'baramFlow.main', path])
             else:
