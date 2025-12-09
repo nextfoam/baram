@@ -1102,7 +1102,7 @@ def _version_11(root: etree.Element):
                             </liftForce>
                             <gravity>false</gravity>
                             <pressureGradient>false</pressureGradient>
-                            <brownianMotionForce>
+                            <brownianMotionForce disabled="true">
                                 <molecularFreePathLength>0.9</molecularFreePathLength>
                                 <useTurbulence>false</useTurbulence>
                             </brownianMotionForce>

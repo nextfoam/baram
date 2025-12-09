@@ -468,6 +468,9 @@
              </property>
              <item>
               <widget class="QRadioButton" name="dragForceSpherical">
+               <property name="toolTip">
+                <string>Particle-drag model wherein drag forces (per unit carrier-fluid velocity) are dynamically computed based on empirical expressions.</string>
+               </property>
                <property name="text">
                 <string>Spherical</string>
                </property>
@@ -475,6 +478,9 @@
              </item>
              <item>
               <widget class="QRadioButton" name="dragForceNonSpherical">
+               <property name="toolTip">
+                <string>Particle-drag model wherein drag forces (per unit carrier-fluid velocity) are dynamically computed based on empirical expressions using a four-parameter general drag correlation for non-spherical particles.</string>
+               </property>
                <property name="text">
                 <string>Non-Spherical Shape Factor</string>
                </property>
@@ -482,6 +488,9 @@
              </item>
              <item>
               <widget class="QWidget" name="widget_13" native="true">
+               <property name="toolTip">
+                <string>Ratio of surface area of sphere having samevolume as particle to actual surface area ofparticle</string>
+               </property>
                <layout class="QFormLayout" name="formLayout_6">
                 <property name="leftMargin">
                  <number>27</number>
@@ -541,7 +550,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QWidget" name="dragTomiyama" native="true">
+              <widget class="QWidget" name="dragForceTomiyamaParams" native="true">
                <layout class="QVBoxLayout" name="verticalLayout_22">
                 <property name="leftMargin">
                  <number>27</number>
@@ -625,6 +634,18 @@
           <item>
            <widget class="QWidget" name="widget_9" native="true">
             <layout class="QVBoxLayout" name="verticalLayout_10">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QGroupBox" name="groupBox_5">
                <property name="title">
@@ -643,6 +664,9 @@
                 </item>
                 <item>
                  <widget class="QRadioButton" name="liftForceSaffmanMei">
+                  <property name="toolTip">
+                   <string>Saffman-Mei particle lift force model applicable to spherical particles.</string>
+                  </property>
                   <property name="text">
                    <string>Saffman Mei</string>
                   </property>
@@ -656,7 +680,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QWidget" name="liftTomiyama" native="true">
+                 <widget class="QWidget" name="liftForceTomiyamaParams" native="true">
                   <layout class="QHBoxLayout" name="horizontalLayout_4">
                    <property name="leftMargin">
                     <number>27</number>
@@ -714,7 +738,7 @@
                <property name="sizeHint" stdset="0">
                 <size>
                  <width>20</width>
-                 <height>40</height>
+                 <height>0</height>
                 </size>
                </property>
               </spacer>
@@ -727,6 +751,13 @@
        </item>
        <item>
         <widget class="QGroupBox" name="brownianMotionForce">
+         <property name="toolTip">
+          <string>Calculates particle Brownian motion force.
+It is for laminar flow when energy model is turned on.</string>
+         </property>
+         <property name="toolTipDuration">
+          <number>-1</number>
+         </property>
          <property name="title">
           <string>Brownian Motion Force</string>
          </property>
@@ -815,6 +846,9 @@
           </item>
           <item>
            <widget class="QRadioButton" name="stochasticDispersion">
+            <property name="toolTip">
+             <string>The velocity is perturbed in random direction, with a Gaussian random number distribution with variance sigma.</string>
+            </property>
             <property name="text">
              <string>Stochastic Dispersion</string>
             </property>
@@ -822,6 +856,9 @@
           </item>
           <item>
            <widget class="QRadioButton" name="gradientDispersion">
+            <property name="toolTip">
+             <string>The velocity is perturbed in the direction of -grad(k), with a Gaussian random number distribution with variance sigma.</string>
+            </property>
             <property name="text">
              <string>Gradient Dispersion</string>
             </property>

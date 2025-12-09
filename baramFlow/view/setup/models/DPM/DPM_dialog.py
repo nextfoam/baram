@@ -91,6 +91,21 @@ class DPMDialog(QDialog):
         self._ui.tabWidget.setTabEnabled(self._heatTransferTabIndex, energyOn)
         self._ui.temperatureWidget.setVisible(energyOn)
 
+        #
+        # Temporary hiding until MPPICFoam is added
+        #
+
+        self._ui.dragForceDistortedSphere.hide()
+        self._ui.dragForceWenAndYu.hide()
+        self._ui.dragForceGidaspow.hide()
+        self._ui.dragForceDuPlesisAndMailyah.hide()
+        self._ui.dragForceTomiyama.hide()
+        self._ui.dragForceTomiyamaParams.hide()
+
+        self._ui.liftForceTomiyama.hide()
+        self._ui.liftForceTomiyamaParams.hide()
+
+
         self._dragForceRadios.addEnumButton(self._ui.dragForceSpherical,            DPMDragForce.SPHERICAL)
         self._dragForceRadios.addEnumButton(self._ui.dragForceNonSpherical,         DPMDragForce.NON_SPHERICAL)
         self._dragForceRadios.addEnumButton(self._ui.dragForceDistortedSphere,      DPMDragForce.DISTORTED_SPHERE)
@@ -106,6 +121,9 @@ class DPMDialog(QDialog):
         self._liftForceRadios.addEnumButton(self._ui.liftForceNone,         DPMLiftForce.NONE)
         self._liftForceRadios.addEnumButton(self._ui.liftForceSaffmanMei,   DPMLiftForce.SAFFMAN_MEI)
         self._liftForceRadios.addEnumButton(self._ui.liftForceTomiyama,     DPMLiftForce.TOMIYAMA)
+
+        isLaminar = (TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR)
+        self._ui.brownianMotionForce.setEnabled(isLaminar and energyOn)
 
         self._turbulentDispersionRadios.addEnumButton(self._ui.noneDispersion,
                                                       DPMTurbulentDispersion.NONE)
@@ -187,6 +205,9 @@ class DPMDialog(QDialog):
         self._ui.ok.clicked.connect(self._accept)
 
     def _load(self):
+        turbulenceModel = TurbulenceModelsDB.getModel()
+        energyOn = ModelsDB.isEnergyModelOn()
+
         self._properties = DPMModelManager.properties()
         self._particleType = self._properties.particleType
 
@@ -225,14 +246,19 @@ class DPMDialog(QDialog):
             self._properties.kinematicModel.liftForce.tomiyamaLift.surfaceTension)
         self._ui.gravity.setChecked(self._properties.kinematicModel.gravity)
         self._ui.pressureGradient.setChecked(self._properties.kinematicModel.pressureGradient)
-        self._ui.brownianMotionForce.setChecked(not self._properties.kinematicModel.brownianMotionForce.disabled)
+
+        if energyOn and turbulenceModel == TurbulenceModel.LAMINAR:
+            self._ui.brownianMotionForce.setChecked(not self._properties.kinematicModel.brownianMotionForce.disabled)
+
         self._ui.molecularFreePathLength.setBatchableNumber(
             self._properties.kinematicModel.brownianMotionForce.molecularFreePathLength)
+
         self._ui.useTurtulence.setChecked(self._properties.kinematicModel.brownianMotionForce.useTurbulence)
 
         self._turbulentDispersion = (
-            DPMTurbulentDispersion.NONE if TurbulenceModelsDB.getModel() == TurbulenceModel.SPALART_ALLMARAS
+            DPMTurbulentDispersion.NONE if turbulenceModel == TurbulenceModel.SPALART_ALLMARAS
             else self._properties.turbulentDispersion)
+
         self._turbulentDispersionRadios.setCheckedData(self._turbulentDispersion)
         self._heatTransferRadios.setCheckedData(self._properties.heatTransfer.specification)
         self._ui.birdCorrection.setChecked(self._properties.heatTransfer.ranzMarsahll.birdCorrection)
@@ -367,10 +393,10 @@ class DPMDialog(QDialog):
 
     def _dragForceChanged(self, dragForce):
         self._ui.shapeFactor.setEnabled(dragForce == DPMDragForce.NON_SPHERICAL)
-        self._ui.dragTomiyama.setEnabled(dragForce == DPMDragForce.TOMIYAMA)
+        self._ui.dragForceTomiyamaParams.setEnabled(dragForce == DPMDragForce.TOMIYAMA)
 
     def _liftForceChanged(self, liftForce):
-        self._ui.liftTomiyama.setEnabled(liftForce == DPMLiftForce.TOMIYAMA)
+        self._ui.liftForceTomiyamaParams.setEnabled(liftForce == DPMLiftForce.TOMIYAMA)
 
     @qasync.asyncSlot()
     async def _turbulentDispersionChanged(self, dispersion):

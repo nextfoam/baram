@@ -2,6 +2,7 @@
 # -*- coding:, # utf-8 -*-
 
 from baramFlow.base.material.material import MaterialType, Phase
+from baramFlow.coredb.models_db import ModelsDB
 from baramFlow.coredb.region_db import RegionDB
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataClass
 
@@ -151,7 +152,7 @@ class CloudProperties(DictionaryFile):
                     'contamination': model.dragForce.tomyamaDrag.contamination.value
                 }
 
-            return ''
+            return {}
 
         def liftForceDict(specification):
             if specification == DPMLiftForce.TOMIYAMA:
@@ -174,7 +175,9 @@ class CloudProperties(DictionaryFile):
         if model.pressureGradient:
             data['pressureGradient'] = {}
 
-        if not model.brownianMotionForce.disabled:
+        if not model.brownianMotionForce.disabled \
+            and TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR \
+                and ModelsDB.isEnergyModelOn():
             data['BrownianMotion'] = {
                 'lambda': self._helper.pFloatValue(model.brownianMotionForce.molecularFreePathLength),
                 'turbulence': self._helper.boolValue(model.brownianMotionForce.useTurbulence),
@@ -198,7 +201,7 @@ class CloudProperties(DictionaryFile):
                 'nParticle': self._helper.pFloatValue(flowRate.particleCount.numberOfParticlesPerParcel),
                 'massTotal': '0',
                 'flowRateProfile': self._helper.function1ScalarValue(flowRate.particleVolume.volumeFlowRate),
-                'massFlowRate': '0',
+                'massFlowRate': ('constant', '0'),
                 'SOI': startTime,
                 'duration': duration
             }
@@ -208,7 +211,7 @@ class CloudProperties(DictionaryFile):
                 'parcelsPerSecond': self._helper.pFloatValue(flowRate.particleVolume.parcelPerSecond),
                 'massTotal': self._helper.pFloatValue(flowRate.particleVolume.totalMass),
                 'flowRateProfile': self._helper.function1ScalarValue(flowRate.particleVolume.volumeFlowRate),
-                'massFlowRate': self._helper.pFloatValue(flowRate.particleVolume.massFlowRate),
+                'massFlowRate': ('constant', self._helper.pFloatValue(flowRate.particleVolume.massFlowRate)),
                 'SOI': startTime,
                 'duration': duration
             }

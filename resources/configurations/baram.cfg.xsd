@@ -2477,7 +2477,7 @@
                                                                             <xs:element name="molecularFreePathLength" type="inputNonNegativeNumberType" default="0.9"/>
                                                                             <xs:element name="useTurbulence" type="xs:boolean" default="false"/>
                                                                         </xs:sequence>
-                                                                        <xs:attribute name="disabled" type="xs:boolean" default="false"/>
+                                                                        <xs:attribute name="disabled" type="xs:boolean" default="true"/>
                                                                     </xs:complexType>
                                                                 </xs:element>
                                                             </xs:sequence>
