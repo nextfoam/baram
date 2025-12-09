@@ -351,12 +351,50 @@
             <xs:element name="atmosphericBoundaryLayer">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="flowDirection" type="vector"/>
+                        <xs:element name="flowDirection">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="specMethod" default="direct">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="direct"/>
+                                                <xs:enumeration value="surfaceNormal"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:element>
+                                    <xs:element name="value" type="vector"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
                         <xs:element name="groundNormalDirection" type="vector"/>
                         <xs:element name="referenceFlowSpeed" type="inputNumberType" default="10"/>
                         <xs:element name="referenceHeight" type="inputNumberType" default="10"/>
                         <xs:element name="surfaceRoughnessLength" type="inputNumberType" default="0.01"/>
                         <xs:element name="minimumZCoordinate" type="inputNumberType" default="0.0"/>
+                        <xs:element name="pasquillStability">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="stabilityClass" default="D">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="A"/>
+                                                <xs:enumeration value="B"/>
+                                                <xs:enumeration value="C"/>
+                                                <xs:enumeration value="D"/>
+                                                <xs:enumeration value="E"/>
+                                                <xs:enumeration value="F"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:element>
+                                    <xs:element name="latitude" type="inputNumberType" default="37"/>
+                                    <xs:element name="surfaceHeatFlux" type="inputNumberType" default="0"/>
+                                    <xs:element name="referenceDensity" type="inputNumberType" default="1.225"/>
+                                    <xs:element name="referenceSpecificHeat" type="inputNumberType" default="1006.0"/>
+                                    <xs:element name="referenceTemperature" type="inputNumberType" default="298.15"/>
+                                </xs:sequence>
+                                <xs:attribute name="disabled" type="xs:boolean" default="true"/>
+                            </xs:complexType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>

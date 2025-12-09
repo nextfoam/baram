@@ -16,9 +16,12 @@
         </operatingConditions>
         <atmosphericBoundaryLayer>
             <flowDirection>
-                <x>1</x>
-                <y>0</y>
-                <z>0</z>
+                <specMethod>direct</specMethod>
+                <value>
+                    <x>1</x>
+                    <y>0</y>
+                    <z>0</z>
+                </value>
             </flowDirection>
             <groundNormalDirection>
                 <x>0</x>
@@ -29,6 +32,14 @@
             <referenceHeight>10</referenceHeight>
             <surfaceRoughnessLength>0.01</surfaceRoughnessLength>
             <minimumZCoordinate>0.0</minimumZCoordinate>
+            <pasquillStability disabled="true">
+                <stabilityClass>D</stabilityClass>
+                <latitude>37</latitude>
+                <surfaceHeatFlux>0</surfaceHeatFlux>
+                <referenceDensity>1.225</referenceDensity>
+                <referenceSpecificHeat>1006.0</referenceSpecificHeat>
+                <referenceTemperature>298.15</referenceTemperature>
+            </pasquillStability>
         </atmosphericBoundaryLayer>
     </general>
 

@@ -10,7 +10,7 @@ from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 from libbaram.openfoam.dictionary.dictionary_file import DictionaryFile, DataClass
 
 from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT
-from baramFlow.coredb.boundary_db import WallMotion
+from baramFlow.coredb.boundary_db import WallMotion, BoundaryDB, FlowDirectionSpecificationMethod
 from baramFlow.coredb.coredb_reader import CoreDBReader, Region
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.turbulence_model_db import TurbulenceModel
@@ -246,6 +246,52 @@ class BoundaryCondition(DictionaryFile):
             'type': 'waveTransmissive',
             'gamma': self._calculateGamma(
                 MaterialDB.getMaterialComposition(xpath + '/species', self._region.mid), temperature)
+        }
+
+    def _constructPasquillAtmBoundaryLayerInlet(self, type):
+        flowDirectionSpecMethod = FlowDirectionSpecificationMethod(
+            self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection/specMethod'))
+        if flowDirectionSpecMethod == FlowDirectionSpecificationMethod.DIRECT:
+            flowDir = self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection/value')
+        else:
+            flowDir = [0, 0, 0]
+
+        return {
+            'type': type,
+            'kappa': 0.41,
+            'Cmu': 0.09,
+            'flowDir': flowDir,
+            'zDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/groundNormalDirection'),
+            'Uref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
+            'Zref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceHeight'),
+            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
+            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate'),
+
+            'stability': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/pasquillStability/stabilityClass'),
+            'latitude': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/pasquillStability/latitude'),
+
+            'surfaceHeatFlux': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/pasquillStability/surfaceHeatFlux'),
+            'Cp': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/pasquillStability/referenceSpecificHeat'),
+            'rho': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/pasquillStability/referenceDensity'),
+            'Tref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/pasquillStability/referenceTemperature')
+        }
+
+    def _constructAtmBoundaryLayerInlet(self, type):
+        flowDirectionSpecMethod = FlowDirectionSpecificationMethod(
+            self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection/specMethod'))
+        if flowDirectionSpecMethod == FlowDirectionSpecificationMethod.DIRECT:
+            flowDir = self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection/value')
+        else:
+            flowDir = [0, 0, 0]
+
+        return {
+            'type': type,
+            'flowDir': flowDir,
+            'zDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/groundNormalDirection'),
+            'Uref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
+            'Zref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceHeight'),
+            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
+            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
         }
 
     def _calculateFreeStreamTurbulentValues(self, xpath, region, model):

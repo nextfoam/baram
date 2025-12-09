@@ -103,15 +103,19 @@ class K(BoundaryCondition):
         }
 
     def _constructAtmBoundaryLayerInletK(self):
-        return {
-            'type': 'atmBoundaryLayerInletK',
-            'flowDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection'),
-            'zDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/groundNormalDirection'),
-            'Uref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
-            'Zref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceHeight'),
-            'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
-            'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
-        }
+        if self._db.getAttribute(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/pasquillStability', 'disabled') == 'true':
+            return self._constructAtmBoundaryLayerInlet('atmBoundaryLayerInletK')
+        else:
+            return self._constructPasquillAtmBoundaryLayerInlet('pasquillAtmBoundaryLayerInletK')
+        # return {
+        #     'type': 'atmBoundaryLayerInletK',
+        #     'flowDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/flowDirection'),
+        #     'zDir': self._db.getVector(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/groundNormalDirection'),
+        #     'Uref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceFlowSpeed'),
+        #     'Zref': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/referenceHeight'),
+        #     'z0': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/surfaceRoughnessLength'),
+        #     'd': self._db.getValue(BoundaryDB.ABL_INLET_CONDITIONS_XPATH + '/minimumZCoordinate')
+        # }
 
     def _constructKqRWallFunction(self):
         return {

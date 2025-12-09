@@ -1014,6 +1014,44 @@ def _version_11(root: etree.Element):
 
     # root.set('version', '12')
 
+    if (p := root.find('general/atmosphericBoundaryLayer', namespaces=_nsmap)) is not None:
+        e = p.find('flowDirection', namespaces=_nsmap)
+        if e.find('specMethod', namespaces=_nsmap) is None:
+            logger.debug(f'    Adding "specMethod" to {e}')
+
+            x = e.find('x', namespaces=_nsmap).text
+            y = e.find('y', namespaces=_nsmap).text
+            z = e.find('z', namespaces=_nsmap).text
+
+            p.remove(e)
+
+            e = etree.fromstring(f'''
+                <flowDirection xmlns="http://www.baramcfd.org/baram">
+                    <specMethod>direct</specMethod>
+                    <value>
+                        <x>{x}</x>
+                        <y>{y}</y>
+                        <z>{z}</z>
+                    </value>
+                </flowDirection>
+            ''')
+
+            p.insert(0, e)
+
+        if p.find('pasquillStability', namespaces=_nsmap) is None:
+            e = etree.fromstring('''
+                <pasquillStability xmlns="http://www.baramcfd.org/baram" disabled="true">
+                    <stabilityClass>D</stabilityClass>
+                    <latitude>37</latitude>
+                    <surfaceHeatFlux>0</surfaceHeatFlux>
+                    <referenceDensity>1.225</referenceDensity>
+                    <referenceSpecificHeat>1006.0</referenceSpecificHeat>
+                    <referenceTemperature>298.15</referenceTemperature>
+                </pasquillStability>
+            ''')
+
+            p.append(e)
+
     for e in root.findall('monitors/*/*/field', namespaces=_nsmap):
         logger.debug(f'    Replacing text of {e} to "fieldCategory", "fieldCodeName' and "fieldComponent")
 
