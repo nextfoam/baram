@@ -1193,8 +1193,8 @@ def _version_11(root: etree.Element):
                     '    <viscosity>1</viscosity>'
                     f'   <thermalConductivity>{conductivityConstantNode.text}</thermalConductivity>'
                     '    <polynomial>'
-                    '        <viscosity>1</viscosity>'
-                    f'       <thermalConductivity>{conductivityPolynomialNode.text}</thermalConductivity>'
+                    '        <viscosity>0</viscosity>'
+                    f'       <thermalConductivity>{conductivityPolynomialNode.text or "0"}</thermalConductivity>'
                     '    </polynomial>'
                     '</transport>'
                 ))
@@ -1207,8 +1207,8 @@ def _version_11(root: etree.Element):
                 viscosityNode.insert(2, etree.fromstring(f'<thermalConductivity xmlns="{_ns}">{conductivityConstantNode.text}</thermalConductivity>'))
                 viscosityNode.insert(3, etree.fromstring(
                     f'<polynomial xmlns="{_ns}">'
-                    f'    <viscosity>{viscosityPolynomicalNode.text}</viscosity>'
-                    f'   <thermalConductivity>{conductivityPolynomialNode.text}</thermalConductivity>'
+                    f'    <viscosity>{viscosityPolynomicalNode.text or "0"}</viscosity>'
+                    f'   <thermalConductivity>{conductivityPolynomialNode.text or "0"}</thermalConductivity>'
                     '</polynomial>'
                 ))
 
