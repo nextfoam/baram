@@ -55,6 +55,13 @@ class AdvancedDialog(QDialog):
 
     @qasync.asyncSlot()
     async def _accept(self):
+        if not any((self._ui.equationFlow.isEnabled() and self._ui.equationFlow.isChecked(),
+                    self._ui.equationEnergy.isEnabled() and self._ui.equationEnergy.isChecked(),
+                    self._ui.equationUDS.isEnabled() and self._ui.equationUDS.isChecked())):
+            await AsyncMessageBox().warning(self, self.tr('Input Error'), self.tr('At least one of the equations should be calculated'))
+            return
+
+
         writer = CoreDBWriter()
         writer.append(self._xpath + '/limits/minimumStaticTemperature', self._ui.minimumStaticTemperature.text(),
                       self.tr("Minimum Static Temperature"))
