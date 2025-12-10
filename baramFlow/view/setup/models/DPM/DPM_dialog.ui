@@ -49,21 +49,30 @@
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="inert">
+          <widget class="QRadioButton" name="inertButton">
+           <property name="toolTip">
+            <string>&quot;Inert&quot; Particle Type requires Liquid or Solid Material.
+It does not support multi-phase case nor multi-region case.</string>
+           </property>
            <property name="text">
             <string>Inert</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="droplet">
+          <widget class="QRadioButton" name="dropletButton">
+           <property name="toolTip">
+            <string>&quot;Droplet&quot; Particle Type requires Liquid Material and its Gas phase specie in the mixture of the region.
+It does not support multi-phase case nor multi-region case.
+Energy model should be included in calculation.</string>
+           </property>
            <property name="text">
             <string>Droplet</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="combusting">
+          <widget class="QRadioButton" name="combustingButton">
            <property name="text">
             <string>Combusting</string>
            </property>
@@ -110,8 +119,8 @@
               <layout class="QHBoxLayout" name="horizontalLayout_3">
                <item>
                 <widget class="QLineEdit" name="inertParticle">
-                 <property name="enabled">
-                  <bool>false</bool>
+                 <property name="readOnly">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -223,33 +232,33 @@
                  </layout>
                 </widget>
                </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QWidget" name="temperatureWidget" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_9">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
                <item>
-                <widget class="QWidget" name="temperatureWidget" native="true">
-                 <layout class="QHBoxLayout" name="horizontalLayout_9">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="label_12">
-                    <property name="text">
-                     <string>Temperature, T&lt;sub&gt;0&lt;m/sub&gt; (K)</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="BatchableFloatEdit" name="temperature"/>
-                  </item>
-                 </layout>
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>Temperature, T&lt;sub&gt;0&lt;m/sub&gt; (K)</string>
+                 </property>
                 </widget>
+               </item>
+               <item>
+                <widget class="BatchableFloatEdit" name="temperature"/>
                </item>
               </layout>
              </widget>
@@ -489,7 +498,7 @@
              <item>
               <widget class="QWidget" name="widget_13" native="true">
                <property name="toolTip">
-                <string>Ratio of surface area of sphere having samevolume as particle to actual surface area ofparticle</string>
+                <string>Ratio of surface area of sphere having samevolume as particle to actual surface area ofparticle</string>
                </property>
                <layout class="QFormLayout" name="formLayout_6">
                 <property name="leftMargin">

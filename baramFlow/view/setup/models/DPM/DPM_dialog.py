@@ -76,35 +76,13 @@ class DPMDialog(QDialog):
 
         self._dialog = None
 
-        self._inertDeniedMessage = None
-        self._dropletDeniedMessage = None
-
         self._particleTypeRadios.addEnumButton(self._ui.none, DPMParticleType.NONE)
-        self._particleTypeRadios.addEnumButton(self._ui.inert, DPMParticleType.INERT)
-        self._particleTypeRadios.addEnumButton(self._ui.droplet, DPMParticleType.DROPLET)
-        self._particleTypeRadios.addEnumButton(self._ui.combusting, DPMParticleType.COMBUSTING)
+        self._particleTypeRadios.addEnumButton(self._ui.inertButton, DPMParticleType.INERT)
+        self._particleTypeRadios.addEnumButton(self._ui.dropletButton, DPMParticleType.DROPLET)
+        self._particleTypeRadios.addEnumButton(self._ui.combustingButton, DPMParticleType.COMBUSTING)
 
         self._ui.trackingScheme.addItem(self.tr('Implicit'),    DPMTrackingScheme.IMPLICIT)
         self._ui.trackingScheme.addItem(self.tr('Analytic'),    DPMTrackingScheme.ANALYTIC)
-
-        energyOn = ModelsDB.isEnergyModelOn()
-        self._ui.tabWidget.setTabEnabled(self._heatTransferTabIndex, energyOn)
-        self._ui.temperatureWidget.setVisible(energyOn)
-
-        #
-        # Temporary hiding until MPPICFoam is added
-        #
-
-        self._ui.dragForceDistortedSphere.hide()
-        self._ui.dragForceWenAndYu.hide()
-        self._ui.dragForceGidaspow.hide()
-        self._ui.dragForceDuPlesisAndMailyah.hide()
-        self._ui.dragForceTomiyama.hide()
-        self._ui.dragForceTomiyamaParams.hide()
-
-        self._ui.liftForceTomiyama.hide()
-        self._ui.liftForceTomiyamaParams.hide()
-
 
         self._dragForceRadios.addEnumButton(self._ui.dragForceSpherical,            DPMDragForce.SPHERICAL)
         self._dragForceRadios.addEnumButton(self._ui.dragForceNonSpherical,         DPMDragForce.NON_SPHERICAL)
@@ -121,9 +99,6 @@ class DPMDialog(QDialog):
         self._liftForceRadios.addEnumButton(self._ui.liftForceNone,         DPMLiftForce.NONE)
         self._liftForceRadios.addEnumButton(self._ui.liftForceSaffmanMei,   DPMLiftForce.SAFFMAN_MEI)
         self._liftForceRadios.addEnumButton(self._ui.liftForceTomiyama,     DPMLiftForce.TOMIYAMA)
-
-        isLaminar = (TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR)
-        self._ui.brownianMotionForce.setEnabled(isLaminar and energyOn)
 
         self._turbulentDispersionRadios.addEnumButton(self._ui.noneDispersion,
                                                       DPMTurbulentDispersion.NONE)
@@ -149,42 +124,63 @@ class DPMDialog(QDialog):
         self._enthalpyTransferTypeRadios.addEnumButton(self._ui.latetHeat,
                                                        DPMEnthalpyTransferType.LATENT_HEAT)
 
-        solids = []
+        energyOn = ModelsDB.isEnergyModelOn()
+
+        isLaminar = (TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR)
+
+
+        selectableSolids = []
+
         particles = self._coreMaterials.getMaterials(phases=[Phase.SOLID, Phase.LIQUID])
         for m in particles:
             self._selectableParticles.append(SelectorItem(m.name, m.name, (m.mid, m.name)))
 
             if m.phase == Phase.SOLID:
-                solids.append(SelectorItem(m.name, m.name, (m.mid, m.name)))
+                selectableSolids.append(SelectorItem(m.name, m.name, (m.mid, m.name)))
+
+        selectableDropletLiquids = [SelectorItem(name, name, (mid, name)) for mid, name in _getAvailableDropletLiquids(self._coreMaterials)]
+
+        self._dropletComposition = DropletCompositionList(self, self._ui.composition, selectableSolids, selectableDropletLiquids)
 
 
-        liquids = [SelectorItem(name, name, (mid, name))
-                   for mid, name in _getAvailableDropletLiquids(self._coreMaterials)]
+        self._ui.inertButton.setEnabled(not ModelsDB.isMultiphaseModelOn()
+                                        and not RegionDB.isMultiRegion()
+                                        and len(self._selectableParticles) > 0)
 
-        self._dropletComposition = DropletCompositionList(self, self._ui.composition, solids, liquids)
+        self._ui.dropletButton.setEnabled(not ModelsDB.isMultiphaseModelOn()
+                                        and not RegionDB.isMultiRegion()
+                                        and energyOn
+                                        and len(selectableDropletLiquids) > 0)
 
-        deniedMessage = None
-        if ModelsDB.isMultiphaseModelOn():
-            deniedMessage = self.tr('DPM Model is unavailable in Multiphase model.')
-        elif RegionDB.isMultiRegion():
-            deniedMessage = self.tr('DPM Model is unavailable in Multi-region mode.')
+        if len(self._selectableParticles) > 0:
+            self._setInertParticle(particles[0].mid, particles[0].name)
 
-        if deniedMessage is None:
-            if not self._selectableParticles:
-                self._inertDeniedMessage = self.tr(
-                    'Inert Particle Type requires at least one solid or liquid material.')
-            else:
-                self._setInertParticle(particles[0].mid, particles[0].name)
 
-            if not liquids:
-                self._dropletDeniedMessage = self.tr(
-                    "Droplet Particle Type requires Liquid Material and its Gas phase specie in the mixture of the region.")
-        else:
-            self._inertDeniedMessage = deniedMessage
-            self._dropletDeniedMessage = deniedMessage
+        self._ui.combustingButton.hide()  # Combusting not supported yet
 
-        self._ui.combusting.hide()
         self._ui.dropletGroup.hide()
+
+        self._ui.temperatureWidget.setVisible(energyOn)
+
+        self._ui.tabWidget.setTabEnabled(self._heatTransferTabIndex, energyOn)
+
+        #
+        # Temporary hiding until MPPICFoam is added
+        # Begin
+
+        self._ui.dragForceDistortedSphere.hide()
+        self._ui.dragForceWenAndYu.hide()
+        self._ui.dragForceGidaspow.hide()
+        self._ui.dragForceDuPlesisAndMailyah.hide()
+        self._ui.dragForceTomiyama.hide()
+        self._ui.dragForceTomiyamaParams.hide()
+
+        self._ui.liftForceTomiyama.hide()
+        self._ui.liftForceTomiyamaParams.hide()
+
+        # End
+
+        self._ui.brownianMotionForce.setEnabled(isLaminar and energyOn)
 
         self._connectSignalsSlots()
 
@@ -358,17 +354,6 @@ class DPMDialog(QDialog):
     @qasync.asyncSlot()
     async def _particleTypeChanged(self):
         type_ = self._particleTypeRadios.checkedData()
-
-        if type_ == DPMParticleType.INERT and self._inertDeniedMessage is not None:
-            self._particleTypeRadios.setCheckedData(self._particleType)
-            await AsyncMessageBox().information(self, self.tr('Input Error'), self._inertDeniedMessage)
-
-            return
-        elif type_ == DPMParticleType.DROPLET and self._dropletDeniedMessage is not None:
-            self._particleTypeRadios.setCheckedData(self._particleType)
-            await AsyncMessageBox().information(self, self.tr('Input Error'), self._dropletDeniedMessage)
-
-            return
 
         self._particleType = type_
         if type_ == DPMParticleType.NONE:
