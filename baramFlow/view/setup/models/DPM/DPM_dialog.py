@@ -5,6 +5,7 @@ from PySide6.QtCore import QTimer
 import qasync
 from PySide6.QtWidgets import QDialog
 
+from baramFlow.coredb.general_db import GeneralDB
 from widgets.async_message_box import AsyncMessageBox
 from widgets.enum_button_group import EnumButtonGroup
 from widgets.selector_dialog import SelectorDialog, SelectorItem
@@ -124,6 +125,7 @@ class DPMDialog(QDialog):
         self._enthalpyTransferTypeRadios.addEnumButton(self._ui.latetHeat,
                                                        DPMEnthalpyTransferType.LATENT_HEAT)
 
+        transient = GeneralDB.isTimeTransient()
         energyOn = ModelsDB.isEnergyModelOn()
 
         isLaminar = (TurbulenceModelsDB.getModel() == TurbulenceModel.LAMINAR)
@@ -162,6 +164,9 @@ class DPMDialog(QDialog):
 
         self._ui.temperatureWidget.setVisible(energyOn)
 
+        self._ui.maxParticleCourantNumberWidget.setVisible(transient)
+        self._ui.DPMIterationIntervalWidget.setVisible(not transient)
+        
         self._ui.tabWidget.setTabEnabled(self._heatTransferTabIndex, energyOn)
 
         #
@@ -227,6 +232,8 @@ class DPMDialog(QDialog):
             self._properties.numericalConditions.interactionWithContinuousPhase)
         self._ui.maxParticleCourantNumber.setBatchableNumber(
             self._properties.numericalConditions.maxParticleCourantNumber)
+        self._ui.DPMIterationInterval.setBatchableNumber(
+            self._properties.numericalConditions.DPMIterationInterval)
         self._ui.nodeBasedAveraging.setChecked(self._properties.numericalConditions.nodeBasedAveraging)
         self._ui.trackingScheme.setCurrentIndex(
             self._ui.trackingScheme.findData(self._properties.numericalConditions.trackingScheme))
@@ -272,6 +279,8 @@ class DPMDialog(QDialog):
             try:
                 self._ui.maxParticleCourantNumber.validate(self.tr('Max. Particle Courant Number'),low=0,
                                                            lowInclusive=False)
+                self._ui.DPMIterationInterval.validate(self.tr('DPM Iteration Interval'),low=0,
+                                                           lowInclusive=False)
 
                 if dragForce == DPMDragForce.NON_SPHERICAL:
                     self._ui.shapeFactor.validate(self.tr('Shape Factor'), low=0, high=1, lowInclusive=False)
@@ -314,6 +323,7 @@ class DPMDialog(QDialog):
 
             self._properties.numericalConditions.interactionWithContinuousPhase = self._ui.interactionWithContinuousPhase.isChecked()
             self._properties.numericalConditions.maxParticleCourantNumber = self._ui.maxParticleCourantNumber.batchableNumber()
+            self._properties.numericalConditions.DPMIterationInterval = self._ui.DPMIterationInterval.batchableNumber()
             self._properties.numericalConditions.nodeBasedAveraging = self._ui.nodeBasedAveraging.isChecked()
             self._properties.numericalConditions.trackingScheme = self._ui.trackingScheme.currentData()
 

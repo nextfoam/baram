@@ -300,9 +300,6 @@ Energy model should be included in calculation.</string>
                <string>Numerical Conditions</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_4">
-               <property name="spacing">
-                <number>3</number>
-               </property>
                <item>
                 <widget class="QCheckBox" name="interactionWithContinuousPhase">
                  <property name="text">
@@ -311,7 +308,7 @@ Energy model should be included in calculation.</string>
                 </widget>
                </item>
                <item>
-                <widget class="QWidget" name="widget_2" native="true">
+                <widget class="QWidget" name="maxParticleCourantNumberWidget" native="true">
                  <layout class="QFormLayout" name="formLayout_4">
                   <property name="leftMargin">
                    <number>0</number>
@@ -334,6 +331,34 @@ Energy model should be included in calculation.</string>
                   </item>
                   <item row="0" column="1">
                    <widget class="BatchableFloatEdit" name="maxParticleCourantNumber"/>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QWidget" name="DPMIterationIntervalWidget" native="true">
+                 <layout class="QFormLayout" name="formLayout_7">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_15">
+                    <property name="text">
+                     <string>DPM Iteration Interval</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="BatchableFloatEdit" name="DPMIterationInterval"/>
                   </item>
                  </layout>
                 </widget>

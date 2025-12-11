@@ -58,6 +58,7 @@ class DropletProperties:
 class NumericalConditions:
     interactionWithContinuousPhase: bool
     maxParticleCourantNumber: BatchableNumber
+    DPMIterationInterval: BatchableNumber
     nodeBasedAveraging: bool
     trackingScheme: DPMTrackingScheme
 
@@ -66,6 +67,7 @@ class NumericalConditions:
         return NumericalConditions(
             interactionWithContinuousPhase=dbTextToBool(e.find('interactionWithContinuousPhase', namespaces=nsmap).text),
             maxParticleCourantNumber=BatchableNumber.fromElement(e.find('maxParticleCourantNumber', namespaces=nsmap)),
+            DPMIterationInterval=BatchableNumber.fromElement(e.find('DPMIterationInterval', namespaces=nsmap)),
             nodeBasedAveraging=dbTextToBool(e.find('nodeBasedAveraging', namespaces=nsmap).text),
             trackingScheme=DPMTrackingScheme(e.find('trackingScheme', namespaces=nsmap).text))
 
@@ -235,6 +237,7 @@ class DPMModelProperties:
                 <numericalConditions>
                     <interactionWithContinuousPhase>{boolToDBText(self.numericalConditions.interactionWithContinuousPhase)}</interactionWithContinuousPhase>
                     {self.numericalConditions.maxParticleCourantNumber.toXML('maxParticleCourantNumber')}
+                    {self.numericalConditions.DPMIterationInterval.toXML('DPMIterationInterval')}
                     <nodeBasedAveraging>{boolToDBText(self.numericalConditions.nodeBasedAveraging)}</nodeBasedAveraging>
                     <trackingScheme>{self.numericalConditions.trackingScheme.value}</trackingScheme>
                 </numericalConditions>

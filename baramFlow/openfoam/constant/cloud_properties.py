@@ -77,6 +77,7 @@ class CloudProperties(DictionaryFile):
                 'transient': self._helper.boolValue(GeneralDB.isTimeTransient()),
                 'cellValueSourceCorrection': self._helper.boolValue(properties.numericalConditions.nodeBasedAveraging),
                 'maxCo': self._helper.pFloatValue(properties.numericalConditions.maxParticleCourantNumber),
+                'calcFrequency': self._helper.pFloatValue(properties.numericalConditions.DPMIterationInterval),
                 'sourceTerms': {
                     'resetOnStartup': 'false',
                     'schemes': {
@@ -274,6 +275,7 @@ class CloudProperties(DictionaryFile):
             'parcelBasisType': 'fixed',
             'nParticle': '1',
             'massTotal': '0',
+            'massFlowRate': ('constant', '0'),
             'parcelsPerSecond': self._helper.pFloatValue(injection.numberOfParticlesPerPoint),
             'SOI': self._helper.pFloatValue(injection.injectionTime),
             'positionsFile': f'"{positionsFileName}"',

@@ -2427,7 +2427,8 @@
                                                         <xs:complexType>
                                                             <xs:sequence>
                                                                 <xs:element name="interactionWithContinuousPhase" type="xs:boolean" default="true"/>
-                                                                <xs:element name="maxParticleCourantNumber" type="inputNonNegativeNumberType" default="0.3"/>
+                                                                <xs:element name="maxParticleCourantNumber" type="inputNonNegativeNumberType" default="0.3"/>  <!-- For Transient Case -->
+                                                                <xs:element name="DPMIterationInterval" type="xs:positiveInteger" default="10"/>  <!-- For Steady Case -->
                                                                 <xs:element name="nodeBasedAveraging" type="xs:boolean" default="true"/>
                                                                 <xs:element name="trackingScheme" default="implicit">
                                                                     <xs:simpleType>
