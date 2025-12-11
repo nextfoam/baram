@@ -1008,7 +1008,7 @@ It is for laminar flow when energy model is turned on.</string>
           <item>
            <widget class="QRadioButton" name="evaporationDiffusionControlled">
             <property name="text">
-             <string>Diffusion-Controled</string>
+             <string>Diffusion-Controlled</string>
             </property>
            </widget>
           </item>
