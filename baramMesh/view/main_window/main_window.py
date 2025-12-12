@@ -287,8 +287,8 @@ class MainWindow(QMainWindow):
     def _startDialogClosed(self):
         if app.project is None:
             QApplication.instance().quit()
-
-        self._ui.menubar.repaint()
+        else:
+            self._ui.menubar.repaint()
 
     @qasync.asyncSlot()
     async def _closeProject(self, toQuit=False):

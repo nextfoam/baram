@@ -60,6 +60,10 @@ class Configurations(SimpleDB):
     def geometryPolyData(self, key):
         return self._files['geometry'][key]
 
+    def updateGeometryPolyData(self, key, pd):
+        self._files['geometry'][key] = pd
+        self._modified = True
+
     def commit(self, data):
         for key in data._files:
             self._files[key].update(data._files[key])
