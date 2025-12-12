@@ -426,12 +426,12 @@ class Injector:
 @dataclass
 class DiameterDistribution:
     type: DPMDiameterDistribution       = DPMDiameterDistribution.UNIFORM
-    diameter: BatchableNumber           = field(default_factory=lambda: BatchableNumber('5e-6'))
-    minDiameter: BatchableNumber        = field(default_factory=lambda: BatchableNumber('4e-6'))
-    maxDiameter: BatchableNumber        = field(default_factory=lambda: BatchableNumber('6e-6'))
-    meanDiameter: BatchableNumber       = field(default_factory=lambda: BatchableNumber('5e-6'))
-    spreadParameter: BatchableNumber    = field(default_factory=lambda: BatchableNumber('1e-6'))
-    stdDeviation: BatchableNumber       = field(default_factory=lambda: BatchableNumber('1e-6'))
+    diameter: BatchableNumber           = field(default_factory=lambda: BatchableNumber('0.0001'))
+    minDiameter: BatchableNumber        = field(default_factory=lambda: BatchableNumber('0.0001'))
+    maxDiameter: BatchableNumber        = field(default_factory=lambda: BatchableNumber('0.0001'))
+    meanDiameter: BatchableNumber       = field(default_factory=lambda: BatchableNumber('0.0001'))
+    spreadParameter: BatchableNumber    = field(default_factory=lambda: BatchableNumber('0.0001'))
+    stdDeviation: BatchableNumber       = field(default_factory=lambda: BatchableNumber('0.0001'))
 
     @staticmethod
     def fromElement(e):
@@ -462,7 +462,7 @@ class Injection:
                     <injectorProperties>
                         <pointInjection>
                             <numberOfParticlesPerPoint>100</numberOfParticlesPerPoint>
-                            <injectionTime>100</injectionTime>
+                            <injectionTime>1</injectionTime>
                             <particleVelocity>
                                 <x>1</x>
                                 <y>1</y>
@@ -478,15 +478,15 @@ class Injection:
                             </particleCount>
                             <particleVolume>
                                 <parcelPerSecond>100</parcelPerSecond>
-                                <totalMass>100</totalMass>
+                                <totalMass>1e-6</totalMass>
                                 <volumeFlowRate>
                                     <type>constant</type>
-                                    <constant>100</constant>
+                                    <constant>1e-6</constant>
                                 </volumeFlowRate>
-                                <massFlowRate>100</massFlowRate>
+                                <massFlowRate>1e-6</massFlowRate>
                             </particleVolume>
-                            <startTime>1</startTime>
-                            <stopTime>100</stopTime>
+                            <startTime>0.01</startTime>
+                            <stopTime>1</stopTime>
                         </flowRate>
                         <coneInjection>
                             <injectorType>disc</injectorType>
@@ -545,12 +545,12 @@ class Injection:
                     </injectorProperties>
                     <diameterDistribution>
                         <type>uniform</type>
-                        <diameter>0.3</diameter>
-                        <minDiameter>0.3</minDiameter>
-                        <maxDiameter>0.3</maxDiameter>
-                        <meanDiameter>0.3</meanDiameter>
-                        <spreadParameter>0.3</spreadParameter>
-                        <stdDeviation>0.3</stdDeviation>
+                        <diameter>0.0001</diameter>
+                        <minDiameter>0.0001</minDiameter>
+                        <maxDiameter>0.0001</maxDiameter>
+                        <meanDiameter>0.0001</meanDiameter>
+                        <spreadParameter>0.0001</spreadParameter>
+                        <stdDeviation>0.0001</stdDeviation>
                     </diameterDistribution>
                 </injection>
                 '''
