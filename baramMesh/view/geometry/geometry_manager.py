@@ -63,15 +63,17 @@ class GeometryManager(ActorManager):
 
         self.applyToDisplay()
 
-    def updateVolume(self, geometry, surfaces=None):
-        if surfaces and geometry.value('shape') != Shape.TRI_SURFACE_MESH.value:
-            for gId, surface in surfaces.items():
-                self.update(gId, self._surfaceToPolyData(surface, geometry))
+    def updateCustomSurfaces(self, volume, surfaces):
+        for gId, surface in surfaces.items():
+            self.update(gId, self._surfaceToPolyData(surface, volume))
 
         self.applyToDisplay()
 
-    def updateSurface(self, gId, surface):
+    def updateIndependentSurface(self, gId, surface):
         self._updateActorName(gId, surface.value('name'))
+        self.update(gId, self._surfaceToPolyData(surface))
+
+        self.applyToDisplay()
 
     def removeGeometry(self, gIds):
         for gId in gIds:
@@ -155,7 +157,7 @@ class GeometryManager(ActorManager):
         if geometry.value('gType') == GeometryType.SURFACE.value:
             self.add(GeometryActor(self._surfaceToPolyData(geometry, volume), gId, geometry.value('name')))
 
-    def _surfaceToPolyData(self, surface, volume):
+    def _surfaceToPolyData(self, surface, volume=None):
         shape = surface.value('shape')
 
         if shape == Shape.TRI_SURFACE_MESH.value:

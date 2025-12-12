@@ -60,10 +60,8 @@ class GeometryPage(StepPage):
         self._menu = None
 
         self._dialog = None
-        self._volumeDialog = VolumeDialog(self._widget, self._ui.renderingView)
-        self._surfaceDialog = SurfaceDialog(self._widget)
         self._menu = ContextMenu()
-        self._actorsBackup = None
+        self._actorsBackup = []
 
         self._connectSignalsSlots()
 
@@ -98,8 +96,6 @@ class GeometryPage(StepPage):
         self._ui.add.clicked.connect(self._addClicked)
         self._menu.editActionTriggered.connect(self._openEditDialog)
         self._menu.removeActionTriggered.connect(self._removeGeometry)
-        self._volumeDialog.finished.connect(self._volumeDialogFinished)
-        self._surfaceDialog.accepted.connect(self._updateSurfaces)
 
     def _executeContextMenu(self, pos):
         if self._locked:
@@ -120,34 +116,65 @@ class GeometryPage(StepPage):
 
     def _addClicked(self):
         self._dialog = GeometryAddDialog(self._widget)
-        self._dialog.accepted.connect(self._openAddDialog)
+        self._dialog.shapeSelected.connect(self._openAddDialog)
         self._dialog.open()
 
-    def _openAddDialog(self):
-        self._volumeDialog.setupForAdding(self._dialog.selectedShape())
-        self._volumeDialog.open()
+    def _openAddDialog(self, shape):
+        def addVolume():
+            self._addVolume(self._dialog.gId())
+
+        self._dialog = self._newVolumeDialog()
+        self._dialog.setupForAdding(shape)
+        self._dialog.accepted.connect(addVolume)
+        self._dialog.open()
 
     def _openEditDialog(self):
+        def updateVolume():
+            gId = self._dialog.gId()
+            volume = app.db.getElement('geometry',  gId)
+            self._list.update(gId, volume)
+            self._geometryManager.updateCustomSurfaces(volume, self._list.childSurfaces(gId))
+
+        def updateSurfaces():
+            gIds = self._dialog.gIds()
+            for gId, surface in app.db.getElements('geometry', lambda i, e: i in gIds).items():
+                self._list.update(gId, surface)
+                self._geometryManager.updateIndependentSurface(gId, surface)
+
         items = self._list.selectedItems()
 
+        sources = {}
         if len(items) == 1 and items[0].isVolume():
             gId = str(items[0].gId())
-            self._actorsBackup = []
-            for s in self._list.childSurfaces(gId):
-                actorInfo = self._geometryManager.actorInfo(s)
-                self._actorsBackup.append((actorInfo, actorInfo.properties().opacity))
-                actorInfo.setOpacity(0.1)
+            for sId in self._list.childSurfaces(gId):
+                actorInfo = self._geometryManager.actorInfo(sId)
+                self._backupActor(actorInfo)
+                sources[sId] = actorInfo.dataSet()
 
-            self._volumeDialog.setupForEdit(gId)
-            self._volumeDialog.open()
+            self._dialog = self._newVolumeDialog()
+            self._dialog.setupForEdit(gId, sources)
+            self._dialog.accepted.connect(updateVolume)
+            self._dialog.open()
         else:
-            self._surfaceDialog.setGIds([item.gId() for item in items])
-            self._surfaceDialog.open()
+            if len(items) == 1 and items[0].parent() is None:
+                gId = str(items[0].gId())
+                actorInfo = self._geometryManager.actorInfo(gId)
+                self._backupActor(actorInfo)
+                sources[gId] = actorInfo.dataSet()
+
+            self._dialog = SurfaceDialog(self._widget, self._ui.renderingView)
+            if not self._ui.geometryButtons.isEnabled():
+                self._dialog.disableEdit()
+
+            self._dialog.setData([item.gId() for item in items], sources)
+            self._dialog.finished.connect(self._restoreActors)
+            self._dialog.accepted.connect(updateSurfaces)
+            self._dialog.open()
 
     @qasync.asyncSlot()
     async def _removeGeometry(self):
-        if not await AsyncMessageBox().question(self._widget, self.tr("Remove Geometries"),
-                                                self.tr('Are you sure you want to remove the selected items?')):
+        if not await AsyncMessageBox().confirm(self._widget, self.tr("Remove Geometries"),
+                                               self.tr('Are you sure you want to remove the selected items?')):
             return
 
         items = self._list.selectedItems()
@@ -202,7 +229,8 @@ class GeometryPage(StepPage):
             volumes, surfaces = stlImporter.identifyVolumes()
 
         try:
-            added = []
+            addedVolumes = []
+            addedSurfaces = []
 
             db = app.db.checkout()
             seq = ''
@@ -216,7 +244,7 @@ class GeometryPage(StepPage):
                 element.setValue('shape', Shape.TRI_SURFACE_MESH.value)
                 element.setValue('cfdType', CFDType.NONE.value)
                 volumeId = db.addElement('geometry', element)
-                added.append(volumeId)
+                addedVolumes.append(volumeId)
 
                 sName = f'{volumeName}_surface'
                 sseq = ''
@@ -244,45 +272,30 @@ class GeometryPage(StepPage):
                 element.setValue('cfdType', CFDType.BOUNDARY.value)
                 element.setValue('path', db.addGeometryPolyData(surface.polyData))
                 gId = db.addElement('geometry', element)
-                added.append(gId)
+                addedSurfaces.append(gId)
 
             app.db.commit(db)
 
-            for gId in added:
-                self._geometryCreated(gId)
+            for gId in addedVolumes:
+                self._addVolume(gId)
+
+            for gId in addedSurfaces:
+                self._addSurface(gId)
         except OpenFOAMError as ex:
             code, message = ex.args
             QMessageBox.information(self._widget, self.tr('STL Loading Error'), f'{message} [{code}]')
 
-    def _volumeDialogFinished(self, result):
-        if result == self._volumeDialog.DialogCode.Accepted:
-            if self._volumeDialog.isForCreation():
-                self._geometryCreated(self._volumeDialog.gId())
-            else:
-                gId = self._volumeDialog.gId()
-                volume = app.db.getElement('geometry',  gId)
-                self._geometryManager.updateVolume(volume, self._list.childSurfaces(gId))
-                self._list.update(gId, volume)
+    def _addVolume(self, gId):
+        volume = app.db.getElement('geometry',  gId)
+        self._addGeometry(gId, volume)
 
-        if self._actorsBackup:
-            for actorInfo, opacity in self._actorsBackup:
-                actorInfo.setOpacity(opacity)
-            self._actorsBackup = None
+        surfaces = app.db.getElements('geometry', lambda i, e: e['volume'] == gId)
+        for surfaceId in surfaces:
+            self._addGeometry(surfaceId, surfaces[surfaceId], volume)
 
-    def _updateSurfaces(self):
-        gIds = self._surfaceDialog.gIds()
-        for gId, surface in app.db.getElements('geometry', lambda i, e: i in gIds).items():
-            self._geometryManager.updateSurface(gId, surface)
-            self._list.update(gId, surface)
-
-    def _geometryCreated(self, gId):
-        geometry = app.db.getElement('geometry',  gId)
-        self._addGeometry(gId, geometry)
-
-        if geometry.value('gType') == GeometryType.VOLUME.value:
-            surfaces = app.db.getElements('geometry', lambda i, e: e['volume'] == gId)
-            for surfaceId in surfaces:
-                self._addGeometry(surfaceId, surfaces[surfaceId], geometry)
+    def _addSurface(self, gId):
+        surface = app.db.getElement('geometry',  gId)
+        self._addGeometry(gId, surface, surface.value('volume'))
 
     def _addGeometry(self, gId, geometry, volume=None):
         self._geometryManager.addGeometry(gId, geometry, volume)
@@ -300,12 +313,27 @@ class GeometryPage(StepPage):
             self._geometryManager.startSyncingFromDisplay()
 
         # self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self._ui.buttons.setEnabled(True)
-        self._volumeDialog.enableEdit()
-        self._surfaceDialog.enableEdit()
+        self._ui.geometryButtons.setEnabled(True)
 
     def _disableStep(self):
         # self._ui.geometryList.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        self._ui.buttons.setEnabled(False)
-        self._volumeDialog.disableEdit()
-        self._surfaceDialog.disableEdit()
+        self._ui.geometryButtons.setEnabled(False)
+
+    def _newVolumeDialog(self):
+        dialog = VolumeDialog(self._widget, self._ui.renderingView)
+        if not self._ui.geometryButtons.isEnabled():
+            dialog.disableEdit()
+
+        dialog.finished.connect(self._restoreActors)
+
+        return dialog
+
+    def _backupActor(self, actorInfo):
+        self._actorsBackup.append((actorInfo, actorInfo.properties().opacity))
+        actorInfo.setOpacity(0.1)
+
+    def _restoreActors(self):
+        for actorInfo, opacity in self._actorsBackup:
+            actorInfo.setOpacity(opacity)
+
+        self._actorsBackup.clear()
