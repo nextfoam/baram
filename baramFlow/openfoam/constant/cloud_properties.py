@@ -126,7 +126,7 @@ class CloudProperties(DictionaryFile):
                 'surfaceReactionModel': 'none',
                 'radiation': 'off',
             },
-            'cloudFunctions': {}
+            'cloudFunctions': self._buildCloudFunctions()
         }
 
         turbulenceDispersion = (
@@ -424,3 +424,15 @@ class CloudProperties(DictionaryFile):
 
         return subModels
 
+    def _buildCloudFunctions(self)->dict:
+        if GeneralDB.isTimeTransient():
+            return {}
+        else:
+            return {
+                'particleTracks1': {
+                    'type': 'particleTracks',
+                    'trackInterval': '5',
+                    'maxSamples': '1000000',
+                    'resetOnWrite': 'yes'
+                }
+            }
