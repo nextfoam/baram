@@ -284,12 +284,12 @@ class CastellationPage(StepPage):
             result = True
         except ProcessError as e:
             await AsyncMessageBox().information(self._widget, self.tr('Error'),
-                                                self.tr('Castellation refinement Failed. [') + str(e.returncode) + ']')
+                                                self.tr('Castellation refinement Failed [') + str(e.returncode) + ']')
         except CanceledException:
             await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
                                                 self.tr('Castellation refinement has been canceled.'))
-
-        if not result:
-            await app.window.meshManager.load(self.OUTPUT_TIME)
+        except Exception as e:
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Castellation refinement Failed:') + str(e))
 
         return result

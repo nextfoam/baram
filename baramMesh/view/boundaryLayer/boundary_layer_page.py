@@ -237,10 +237,13 @@ class BoundaryLayerPage(StepPage):
             result = True
         except ProcessError as exc:
             await AsyncMessageBox().information(self._widget, self.tr('Error'),
-                                                self.tr('Failed to apply boundary layers. [') + str(exc.returncode) + ']')
+                                                self.tr('Failed to apply boundary layers [') + str(exc.returncode) + ']')
         except CanceledException:
             await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
                                                 self.tr('Boundary layers application has been canceled.'))
+        except Exception as e:
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Failed to apply boundary layers:') + str(e))
 
         if not result:
             self.clearResult()

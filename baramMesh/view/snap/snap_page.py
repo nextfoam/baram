@@ -239,7 +239,6 @@ class SnapPage(StepPage):
         self._ui.snapContents.setEnabled(True)
 
     def _disableEdit(self):
-        print('disabled')
         self._ui.loadSnapDefaults.setEnabled(False)
         self._ui.snapContents.setEnabled(False)
 
@@ -254,10 +253,13 @@ class SnapPage(StepPage):
             result = True
         except ProcessError as e:
             await AsyncMessageBox().information(self._widget, self.tr('Error'),
-                                                self.tr('Snapping Failed. [') + str(e.returncode) + ']')
+                                                self.tr('Snapping Failed [') + str(e.returncode) + ']')
         except CanceledException:
             await AsyncMessageBox().information(self._widget, self.tr('Canceled'),
                                                 self.tr('Snapping has been canceled.'))
+        except Exception as e:
+            await AsyncMessageBox().information(self._widget, self.tr('Error'),
+                                                self.tr('Snapping Failed:') + str(e))
 
         if not result:
             self.clearResult()
