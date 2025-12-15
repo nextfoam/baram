@@ -273,10 +273,10 @@ class CloudProperties(DictionaryFile):
         return {
             'type': 'manualInjection',
             'parcelBasisType': 'fixed',
-            'nParticle': '1',
+            'nParticle': self._helper.pFloatValue(injection.numberOfParticlesPerPoint),
             'massTotal': '0',
             'massFlowRate': ('constant', '0'),
-            'parcelsPerSecond': self._helper.pFloatValue(injection.numberOfParticlesPerPoint),
+            'parcelsPerSecond': '1',
             'SOI': self._helper.pFloatValue(injection.injectionTime),
             'positionsFile': f'"{positionsFileName}"',
             'U0': self._helper.vectorValue(injection.particleVelocity)
