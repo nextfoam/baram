@@ -245,12 +245,6 @@ class InjectionDialog(QDialog):
                     return
                 if diameterDistribution != DPMDiameterDistribution.LINEAR:
                     self._ui.meanDiameter.validate(self.tr('Mean Diameter'))
-                    if (self._ui.meanDiameter.validatedFloat() < self._ui.minDiameter.validatedFloat()
-                            or self._ui.meanDiameter.validatedFloat() > self._ui.maxDiameter.validatedFloat()):
-                        await AsyncMessageBox().information(
-                            self, self.tr('Input Error'),
-                            self.tr('Mean. Diameter must be Between Min. Diameter and Max. Diameter.'))
-                        return
                     if diameterDistribution in (
                             DPMDiameterDistribution.ROSIN_RAMMLER, DPMDiameterDistribution.MASS_ROSIN_RAMMLER):
                         self._ui.spreadParameter.validate(self.tr('Spread Parameter'), low=0, lowInclusive=False)
