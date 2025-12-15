@@ -68,8 +68,9 @@ class MainWindow(QMainWindow):
         self._meshManager = None
         self._stepManager = StepManager(self._navigationView, self._ui)
 
-        self._startDialog = ProjectDialog(self)
+        self._startDialog = ProjectDialog()
         self._dialog = None
+        self._currentWindow = self._startDialog
 
         self._readyToQuit = False
 
@@ -190,13 +191,13 @@ class MainWindow(QMainWindow):
         self._openProject(path)
 
     def _actionNew(self):
-        self._dialog = NewProjectDialog(self, self.tr('New Project'), Path(app.settings.getRecentLocation()).resolve(),
+        self._dialog = NewProjectDialog(self._currentWindow, self.tr('New Project'), Path(app.settings.getRecentLocation()).resolve(),
                                         app.properties.projectSuffix)
         self._dialog.accepted.connect(self._createProject)
         self._dialog.open()
 
     def _actionOpen(self):
-        self._dialog = QFileDialog(self, self.tr('Select Project Directory'), app.settings.getRecentLocation())
+        self._dialog = QFileDialog(self._currentWindow, self.tr('Select Project Directory'), app.settings.getRecentLocation())
         self._dialog.setFileMode(QFileDialog.FileMode.Directory)
         self._dialog.fileSelected.connect(self._openProject)
         self._dialog.open()
@@ -351,9 +352,11 @@ class MainWindow(QMainWindow):
         self._handler.setFormatter(logging.Formatter("[%(asctime)s][%(name)s] ==> %(message)s"))
         logging.getLogger().addHandler(self._handler)
 
-        if self._startDialog.isVisible():
+        if self._startDialog is not None:
             self._startDialog.close()
+            self._currentWindow = self
             self.show()
+            self._startDialog = None
 
         self.setWindowTitle(f'{app.properties.fullName} - {app.project.path}')
 
