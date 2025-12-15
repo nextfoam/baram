@@ -367,7 +367,7 @@ class InjectionDialog(QDialog):
 
     def _coneInjectorTypeChanged(self):
         type_ = self._ui.coneInjectorType.currentData()
-        layout = self._ui.coneInjection.layout()
+        layout = cast(QFormLayout, self._ui.coneInjection.layout())
         if type_ == DPMConeInjectorType.POINT:
             layout.setRowVisible(self._ui.outerRadius, False)
             layout.setRowVisible(self._ui.innerRadius, False)
@@ -377,14 +377,14 @@ class InjectionDialog(QDialog):
 
     def _coneParticleSpeedChanged(self):
         particleSpeed = self._ui.coneParticleSpeed.currentData()
-        layout = self._ui.coneInjection.layout()
+        layout = cast(QFormLayout, self._ui.coneInjection.layout())
         layout.setRowVisible(self._ui.injectionSpeed, particleSpeed == DPMParticleSpeed.FROM_INJECTION_SPEED)
         layout.setRowVisible(self._ui.injectorPressure, particleSpeed == DPMParticleSpeed.FROM_PRESSURE)
         layout.setRowVisible(self._ui.dischargeCoeff, particleSpeed == DPMParticleSpeed.FROM_DISCHARGE_COEFF)
 
     def _diameterDistributionChanged(self):
         distribution = self._ui.diameterDistribution.currentData()
-        layout = self._ui.diameterParameters.layout()
+        layout = cast(QFormLayout, self._ui.diameterParameters.layout())
         if distribution == DPMDiameterDistribution.UNIFORM:
             layout.setRowVisible(self._ui.diameter, True)
             layout.setRowVisible(self._ui.minDiameter, False)

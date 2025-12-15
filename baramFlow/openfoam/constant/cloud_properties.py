@@ -77,6 +77,7 @@ class CloudProperties(DictionaryFile):
                 'transient': self._helper.boolValue(GeneralDB.isTimeTransient()),
                 'cellValueSourceCorrection': self._helper.boolValue(properties.numericalConditions.nodeBasedAveraging),
                 'maxCo': self._helper.pFloatValue(properties.numericalConditions.maxParticleCourantNumber),
+                'calcFrequency': self._helper.pFloatValue(properties.numericalConditions.DPMIterationInterval),
                 'sourceTerms': {
                     'resetOnStartup': 'false',
                     'schemes': {
@@ -125,7 +126,7 @@ class CloudProperties(DictionaryFile):
                 'surfaceReactionModel': 'none',
                 'radiation': 'off',
             },
-            'cloudFunctions': {}
+            'cloudFunctions': self._buildCloudFunctions()
         }
 
         turbulenceDispersion = (
@@ -272,9 +273,10 @@ class CloudProperties(DictionaryFile):
         return {
             'type': 'manualInjection',
             'parcelBasisType': 'fixed',
-            'nParticle': '1',
+            'nParticle': self._helper.pFloatValue(injection.numberOfParticlesPerPoint),
             'massTotal': '0',
-            'parcelsPerSecond': self._helper.pFloatValue(injection.numberOfParticlesPerPoint),
+            'massFlowRate': ('constant', '0'),
+            'parcelsPerSecond': '1',
             'SOI': self._helper.pFloatValue(injection.injectionTime),
             'positionsFile': f'"{positionsFileName}"',
             'U0': self._helper.vectorValue(injection.particleVelocity)
@@ -422,3 +424,15 @@ class CloudProperties(DictionaryFile):
 
         return subModels
 
+    def _buildCloudFunctions(self)->dict:
+        if GeneralDB.isTimeTransient():
+            return {}
+        else:
+            return {
+                'particleTracks1': {
+                    'type': 'particleTracks',
+                    'trackInterval': '5',
+                    'maxSamples': '1000000',
+                    'resetOnWrite': 'yes'
+                }
+            }
