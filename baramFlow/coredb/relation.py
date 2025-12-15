@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from baramFlow.base.model import observer as model_observer
+
 from baramFlow.coredb import region_db, scalar_model_db, boundary_db, cell_zone_db, initialization_db, monitor_db
 from baramFlow.coredb import material_db
-
 from baramFlow.coredb.material_db import MaterialDB
 from baramFlow.coredb.region_db import RegionDB
 from baramFlow.coredb.scalar_model_db import UserDefinedScalarsDB
@@ -23,10 +24,12 @@ def registerObservers():
     MaterialDB.registerObserver(initialization_db.MaterialObserver())
     MaterialDB.registerObserver(monitor_db.MaterialObserver())
     MaterialDB.registerObserver(scalar_model_db.MaterialObserver())
+    MaterialDB.registerObserver(model_observer.MaterialObserver())
 
     RegionDB.registerMaterialObserver(boundary_db.RegionMaterialObserver())
     RegionDB.registerMaterialObserver(cell_zone_db.RegionMaterialObserver())
     RegionDB.registerMaterialObserver(initialization_db.RegionMaterialObserver())
+    RegionDB.registerMaterialObserver(model_observer.RegionMaterialObserver())
 
     # UserDefinedScalarsDB.registerObserver(general_db.ScalarObserver())
     UserDefinedScalarsDB.registerObserver(boundary_db.ScalarObserver())

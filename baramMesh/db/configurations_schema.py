@@ -171,7 +171,7 @@ schema = {
     'castellation': {
         'vtkNonManifoldEdges': BoolType(False),
         'vtkBoundaryEdges': BoolType(True),
-        'nCellsBetweenLevels': IntType().setDefault(3),
+        'nCellsBetweenLevels': IntType().setDefault(3).setLowLimit(1),
         'resolveFeatureAngle': FloatType().setDefault(30),
         'maxGlobalCells': IntType().setDefault('1e8'),
         'maxLocalCells': IntType().setDefault('1e7'),

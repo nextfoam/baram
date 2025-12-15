@@ -175,6 +175,9 @@ class FvSchemes(DictionaryFile):
 
         divSchemes = {
             'default': 'Gauss linear',
+            #'default': 'none',
+            'div(((rho*nuEff)*dev2(T(grad(U)))))': 'Gauss linear',
+            'div(phi,Yi_h)': 'Gauss upwind',
             'div(phi,age)': 'bounded Gauss linearUpwind momentumReconGrad'
         }
 

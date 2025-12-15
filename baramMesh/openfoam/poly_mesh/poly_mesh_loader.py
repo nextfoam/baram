@@ -108,6 +108,10 @@ class PolyMeshLoader(QObject):
 
         self._reader.UpdateInformation()
         self._reader.SetTimeValue(time)
+
+        if self._reader.GetTimeValue() != time:
+            return None
+
         self._reader.Modified()
 
         self._progress_range = [0, 50]

@@ -197,7 +197,7 @@
             <limit>none</limit>
         </wallAdhesions>
         <wallInteraction>
-            <type>none</type>
+            <type>reflect</type>
             <reflect>
                 <coefficientOfRestitution>
                     <normal>1</normal>

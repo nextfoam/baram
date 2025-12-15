@@ -7,6 +7,8 @@ from PySide6.QtWidgets import QWidget, QGridLayout, QLabel
 from widgets.async_message_box import AsyncMessageBox
 from widgets.enum_button_group import EnumButtonGroup
 
+from baramFlow.base.boundary.boundary import BoundaryManager
+from baramFlow.base.model.DPM_model import DPMModelManager
 from baramFlow.coredb import coredb
 from baramFlow.coredb.coredb_writer import boolToDBText
 from baramFlow.coredb.libdb import ValueException, dbErrorToMessage
@@ -19,6 +21,7 @@ from baramFlow.coredb.region_db import RegionDB
 from baramFlow.view.widgets.batchable_float_edit import BatchableFloatEdit
 from baramFlow.view.widgets.resizable_dialog import ResizableDialog
 from .wall_dialog_ui import Ui_WallDialog
+from .wall_interaction_widget import WallInteractionWidget
 
 
 class ContactAnglesWidget(QWidget):
@@ -85,6 +88,8 @@ class WallDialog(ResizableDialog):
         self._constantContactAngles = None
         self._dynamicContactAngles = None
 
+        self._wallInteractionWidget = None
+
         self._xpath = BoundaryDB.getXPath(bcid)
 
         self._wallMotionRadios.addEnumButton(self._ui.stationaryWall,   WallMotion.STATIONARY_WALL)
@@ -92,12 +97,16 @@ class WallDialog(ResizableDialog):
 
         self._ui.atmosphericWall.setEnabled(not GeneralDB.isCompressible() and not ModelsDB.isMultiphaseModelOn())
 
-        self._ui.movingWallMotion.addItem(self.tr('Translational Motion'), MovingWallMotion.TRANSLATIONAL_MOTION)
-        self._ui.movingWallMotion.addItem(self.tr('Rotational Motion'), MovingWallMotion.ROTATIONAL_MOTION)
-        self._ui.movingWallMotion.addItem(self.tr('Mesh Motion'), MovingWallMotion.MESH_MOTION)
+        self._ui.movingWallMotion.addItem(self.tr('Translational Motion'),  MovingWallMotion.TRANSLATIONAL_MOTION)
+        self._ui.movingWallMotion.addItem(self.tr('Rotational Motion'),     MovingWallMotion.ROTATIONAL_MOTION)
+        self._ui.movingWallMotion.addItem(self.tr('Mesh Motion'),           MovingWallMotion.MESH_MOTION)
 
         self._shearConditionRadios.addEnumButton(self._ui.noSlip,   ShearCondition.NO_SLIP)
         self._shearConditionRadios.addEnumButton(self._ui.slip,     ShearCondition.SLIP)
+
+        if DPMModelManager.isModelOn():
+            self._wallInteractionWidget = WallInteractionWidget(self._bcid)
+            self._ui.dialogContents.layout().addWidget(self._wallInteractionWidget)
 
         self._connectSignalsSlots()
 
@@ -150,6 +159,9 @@ class WallDialog(ResizableDialog):
             if ModelsDB.isRadiationModelOn():
                 self._ui.wallEmissivity.validate(self.tr('Wall Emissivity'), low=0, high=1)
                 self._ui.radiativeFluxRelaxation.validate(self.tr('Radiative Flux Relaxation'), low=0, high=1)
+
+            if self._wallInteractionWidget is not None:
+                self._wallInteractionWidget.validate()
         except ValueError as e:
             await AsyncMessageBox().information(self, self.tr('Input Error'), str(e))
             return
@@ -227,6 +239,9 @@ class WallDialog(ResizableDialog):
                     db.setValue(xpath + '/radiation/wallEmissivity', self._ui.wallEmissivity.text())
                     db.setValue(xpath + '/radiation/radiativeFluxRelaxation', self._ui.radiativeFluxRelaxation.text())
 
+                if self._wallInteractionWidget is not None:
+                    BoundaryManager.updateWallInteraction(db, self._bcid, self._wallInteractionWidget.updateData())
+
                 self.accept()
         except ValueException as ve:
             await AsyncMessageBox().information(self, self.tr('Input Error'), dbErrorToMessage(ve))
@@ -302,6 +317,10 @@ class WallDialog(ResizableDialog):
             self._ui.radiativeFluxRelaxation.setText(db.getValue(xpath + '/radiation/radiativeFluxRelaxation'))
         else:
             self._ui.radiation.hide()
+
+        if self._wallInteractionWidget is not None:
+            self._wallInteractionWidget.setData(BoundaryManager.wallInteraction(self._bcid))
+
 
     def _loadContactAngles(self, rname, secondaryMaterials):
         def addAdhesionRows(mid1, mid2):

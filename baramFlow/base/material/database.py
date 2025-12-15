@@ -1,20 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
 import re
 import yaml
+
+import pandas as pd
+
 from PySide6.QtCore import QCoreApplication
 
 from libbaram.simple_db.simple_schema import TextType, FloatType, EnumType, SimpleArray
 from libbaram.simple_db.simple_schema import validateData
 
-from .material import Phase
+from .material import DensitySpecification, MaterialType, Phase, SpecificHeatSpecification, TransportSpecification
 
 
 commonSchema = {
     'name': TextType(),
     'aliases': SimpleArray(TextType()),
-    'chemicalFormula': TextType().setOptional().setDefault(''),
+    'chemicalFormula': TextType(),
 
     # Constants
     'molecularWeight': FloatType(),
@@ -22,7 +26,8 @@ commonSchema = {
     'triplePressure': FloatType(),
     'criticalTemperature': FloatType(),
     'criticalPressure': FloatType(),
-    'criticalDensity': FloatType(),
+    'criticalSpecificVolume': FloatType(),
+    'normalBoilingTemperature': FloatType(),
     'acentricFactor': FloatType(),
 
     'sutherlandTemperature': FloatType(),
@@ -45,9 +50,8 @@ commonSchema = {
 
     'saturationPressure': FloatType(),
     'enthalpyOfVaporization': FloatType(),
-    'enthalpyLiquid': FloatType(),
 
-    'surfaceTension': FloatType(),
+    'dropletSurfaceTension': FloatType(),
     'absorptionCoefficient': FloatType(),
     'emissivity': FloatType(),
 }
@@ -56,20 +60,22 @@ commonSchema = {
 liquidSchema = {
     'name': TextType(),
     'density': FloatType(),
+    'specificHeat': FloatType(),
     'viscosity': FloatType(),
     'thermalConductivity': FloatType(),
-    'specificHeat': FloatType(),
-    'diffusivity': FloatType()
+    'standardStateEnthalpy': FloatType(),
+    'referenceTemperature': FloatType(),
 }
 
 
 gasSchema = {
     'name': TextType(),
     'density': FloatType(),
+    'specificHeat': FloatType(),
     'viscosity': FloatType(),
     'thermalConductivity': FloatType(),
-    'specificHeat': FloatType(),
-    'diffusivity': FloatType()
+    'standardStateEnthalpy': FloatType(),
+    'referenceTemperature': FloatType(),
 }
 
 
@@ -77,6 +83,7 @@ solidSchema = {
     'name': TextType(),
     'density': FloatType(),
     'specificHeat': FloatType(),
+    'viscosity': FloatType(),
     'thermalConductivity': FloatType(),
 }
 
@@ -126,13 +133,21 @@ class Database:
             'absorptionCoefficient': None,
             'sutherlandTemperature': 0,
             'sutherlandCoefficient': 0,
-            'surfaceTension': None,
-            'saturationPressure': None,
-            'criticalTemperature': None,
-            'criticalPressure': None,
-            'criticalDensity': None,
-            'acentricFactor': None
+            'criticalTemperature': 298.15,
+            'criticalPressure': 101325,
+            'criticalSpecificVolume': 1,
+            'tripleTemperature': 298.15,
+            'triplePressure': 101325,
+            'normalBoilingTemperature': 298.15,
+            'standardStateEnthalpy': 0,
+            'referenceTemperature': 298.15,
+            'acentricFactor': 0,
+            'saturationPressure': 101325,
+            'enthalpyOfVaporization': 0,
+            'dropletSurfaceTension': 0.00001,
         }
+
+        self._thermos: list[tuple[str, MaterialType, DensitySpecification, SpecificHeatSpecification, TransportSpecification]] = []
 
     def setPath(self, path):
         self._path = path
@@ -150,6 +165,9 @@ class Database:
         assert self._path is not None
         return loadDatabase(self._path)
 
+    def getThermos(self):
+        return self._thermos
+
     def load(self, path):
         self._path = path
         self._parse(loadDatabase(self._path))
@@ -157,6 +175,35 @@ class Database:
     def update(self, rawData):
         saveDatabase(self._path, rawData)
         self.load(self._path)
+
+    def validateThermos(
+        self,
+        materialType: MaterialType,
+        phase: Phase,
+        density: DensitySpecification,
+        specificHeat: SpecificHeatSpecification,
+        transport: TransportSpecification
+    ) -> bool:
+        if phase == Phase.SOLID:
+            return ('heSolidThermo', materialType, density, specificHeat, transport) in self._thermos
+        else:
+            return ('heRhoThermo',   materialType, density, specificHeat, transport) in self._thermos
+
+    def loadThermos(self, path: Path):
+        # Read CSV without headers
+        df = pd.read_csv(path, comment='#', header=None, names=['thermoType', 'mixture', 'equationOfState', 'thermo', 'transport'])
+
+        for _, row in df.iterrows():
+            try:
+                mtype = MaterialType(row['mixture'])
+                density = DensitySpecification(row['equationOfState'])
+                specificHeat = SpecificHeatSpecification(row['thermo'])
+                transport = TransportSpecification(row['transport'])
+
+                self._thermos.append((row['thermoType'], mtype, density, specificHeat, transport))
+
+            except ValueError as e:
+                print(f"Warning: Skipping invalid row {row.to_dict()}: {e}")
 
     def _parse(self, rawData):
         materials = {}

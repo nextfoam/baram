@@ -20,7 +20,7 @@ FORMAT_VERSION = 1
 RECENT_PROJECTS_NUMBER = 100
 
 MATERIALS_FILE_NAME = 'materials.yaml'
-
+THERMOS_FILE_NAME = 'thermos.csv'
 
 class SettingKey(Enum):
     FORMAT_VERSION = 'format_version'
@@ -67,6 +67,8 @@ class AppSettings:
         if not cls._materialsDBFile.exists():
             shutil.copy(resource.file(MATERIALS_FILE_NAME), cls._materialsDBFile)
         materialsBase.load(cls._materialsDBFile)
+        
+        materialsBase.loadThermos(resource.file(THERMOS_FILE_NAME))
 
     @classmethod
     def casesPath(cls):
@@ -191,17 +193,17 @@ class AppSettings:
                     return path
 
         return None
-    
+
     @classmethod
     def getParallenEnvironment(cls):
         settings = cls._load()
         type_ = settings.get(SettingKey.PARALLEL_TYPE.value)
-        
+
         return ParallelEnvironment(
             settings.get(SettingKey.PARALLEL_NP.value, 1),
             ParallelType.LOCAL_MACHINE if type_ is None else ParallelType[type_],
             settings.get(SettingKey.PARALLEL_HOSTFILE.value))
-        
+
     @classmethod
     def setParallelEnvironment(cls, environment):
         settings = cls._load()

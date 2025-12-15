@@ -20,3 +20,14 @@ class PythonComboBox(QComboBox):
 
         return -1
 
+    def setup(self, texts: list, items: list, currentItem):
+        assert(len(texts) == len(items))
+
+        for text, item in zip(texts, items):
+            self.addItem(text, item)
+
+        index = self.findData(currentItem)
+        if index >= 0:  # Found
+            self.setCurrentIndex(index)
+        else:
+            self.setCurrentIndex(0)

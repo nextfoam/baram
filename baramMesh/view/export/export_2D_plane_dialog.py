@@ -24,7 +24,7 @@ class Export2DPlaneDialog(QDialog):
         self._pathWidget = NewProjectWidget(self._ui.path, suffix=app.properties.exportSuffix)
 
         self._regionWidgets = []
-        
+
         self._boundaries = []
         self._dialog = None
 
@@ -32,12 +32,12 @@ class Export2DPlaneDialog(QDialog):
         layout.addWidget(self._pathWidget)
         self._pathWidget.hideValidationMessage()
 
-        regionsWidget = QWidget()        
+        regionsWidget = QWidget()
         self._ui.parameters.layout().insertWidget(0, regionsWidget)
 
         layout = QVBoxLayout(regionsWidget)
         layout.setContentsMargins(0, -1, 0, 0)
-        
+
         for region in app.db.getElements('region').values():
             widget = Export2DPlaneRegionWidget(region.value('name'))
             widget.boundarySelectClicked.connect(self._openBoundarySelectorDialog)
@@ -54,11 +54,11 @@ class Export2DPlaneDialog(QDialog):
     def projectPath(self):
         return self._pathWidget.projectPath()
 
-    def isRnBaramFlowChecked(self):
+    def isRunBaramFlowChecked(self):
         return self._ui.run.isChecked()
 
     def extrudeOptions(self):
-        return ([(b.rname(), b.boundary(), b.boundary()) for b in self._regionWidgets], 
+        return ([(b.rname(), b.boundary(), b.boundary()) for b in self._regionWidgets],
                 ExtrudeOptions(ExtrudeModel.PLANE, thickness=self._ui.thickness.text()))
 
     def _connectSignalsSlots(self):

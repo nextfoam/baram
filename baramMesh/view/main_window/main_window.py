@@ -59,7 +59,7 @@ class MainWindow(QMainWindow):
 
         self._dockManager = CDockManager(self._ui.dockContainer)
 
-        self._navigationView = NavigationView(self._ui.stepButtons)
+        self._navigationView = NavigationView(self._ui)
         self._displayControl = DisplayControl(self._ui)
         self._renderingTool = RenderingTool(self._ui)
         self._consoleView = ConsoleView()
@@ -94,10 +94,6 @@ class MainWindow(QMainWindow):
         display = app.qApplication.primaryScreen().availableVirtualGeometry()
         fit = getFit(geometry, display)
         self.setGeometry(fit)
-
-    @property
-    def stepManager(self):
-        return self._stepManager
 
     @property
     def renderingView(self):
@@ -174,8 +170,8 @@ class MainWindow(QMainWindow):
         self._startDialog.actionProjectSelected.connect(self._openProject)
         self._startDialog.finished.connect(self._startDialogClosed)
 
-        self._stepManager.openedStepChanged.connect(self._displayControl.openedStepChanged)
-        self._stepManager.currentStepChanged.connect(self._displayControl.currentStepChanged)
+        self._stepManager.workingStepChanged.connect(self._displayControl.openedStepChanged)
+        self._stepManager.displayStepChanged.connect(self._displayControl.currentStepChanged)
 
         self._closeTriggered.connect(self._closeProject)
 
@@ -291,8 +287,8 @@ class MainWindow(QMainWindow):
     def _startDialogClosed(self):
         if app.project is None:
             QApplication.instance().quit()
-
-        self._ui.menubar.repaint()
+        else:
+            self._ui.menubar.repaint()
 
     @qasync.asyncSlot()
     async def _closeProject(self, toQuit=False):

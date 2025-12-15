@@ -36,30 +36,36 @@ class DPMTrackingScheme(Enum):
 
 
 class DPMDragForce(Enum):
-    SPHERICAL               = 'spherical'
-    NON_SPHERICAL           = 'nonSpherical'
-    DISTORTED_SPHERE        = 'distortedSphere'
-    WEN_AND_YU              = 'wenAndYu'
-    GIDASPOW                = 'gidaspow'
-    DU_PIESSIS_AND_MASLIYAH = 'duPlessisAndMasliyah'
-    TOMIYAMA                = 'tomiyama'
+    SPHERICAL               = 'sphereDrag'
+    NON_SPHERICAL           = 'nonSphereDrag'
+    DISTORTED_SPHERE        = 'distortedSphereDrag'
+    WEN_AND_YU              = 'WenYuDrag'
+    GIDASPOW                = 'ErgunWenYuDrag'
+    DU_PIESSIS_AND_MASLIYAH = 'PlessisMasliyahDrag'
+    TOMIYAMA                = 'TomiyamaDrag'
 
 
 class DPMLiftForce(Enum):
     NONE        = 'none'
-    SAFFMAN_MEI = 'saffmanMei'
-    TOMIYAMA    = 'tomiyama'
+    SAFFMAN_MEI = 'SaffmanMeiLiftForce'
+    TOMIYAMA    = 'TomiyamaLift'
+
+
+class Contamination(Enum):
+    NO_CONTAMINATION        = 'pure'
+    SLIGHT_CONTAMINATION    = 'slight'
+    FULL_CONTAMINATION      = 'full'
 
 
 class DPMTurbulentDispersion(Enum):
     NONE                    = 'none'
-    STOCHASTIC_DISPEDRSION  = 'stochasticDispersion'
-    GRADIENT_DISPERSION     = 'gradientDispersion'
+    STOCHASTIC_DISPERSION  = 'stochasticDispersionRAS'
+    GRADIENT_DISPERSION     = 'gradientDispersionRAS'
 
 
 class DPMHeatTransferSpeicification(Enum):
     NONE            = 'none'
-    RANZ_MARHALL    = 'ranzMarshall'
+    RANZ_MARHALL    = 'RanzMarshall'
 
 
 class DPMEvaporationModel(Enum):

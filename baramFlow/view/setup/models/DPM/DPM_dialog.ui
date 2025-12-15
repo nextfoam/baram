@@ -1,0 +1,1137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DPMdialog</class>
+ <widget class="QDialog" name="DPMdialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>583</width>
+    <height>931</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>DPM Model</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_6">
+   <item>
+    <widget class="QWidget" name="dialogContents" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>Particle Type</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="topMargin">
+          <number>6</number>
+         </property>
+         <property name="bottomMargin">
+          <number>6</number>
+         </property>
+         <item>
+          <widget class="QRadioButton" name="none">
+           <property name="text">
+            <string>None</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="inertButton">
+           <property name="toolTip">
+            <string>&quot;Inert&quot; Particle Type requires Liquid or Solid Material.
+It does not support multi-phase case nor multi-region case.</string>
+           </property>
+           <property name="text">
+            <string>Inert</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="dropletButton">
+           <property name="toolTip">
+            <string>&quot;Droplet&quot; Particle Type requires Liquid Material and its Gas phase specie in the mixture of the region.
+It does not support multi-phase case nor multi-region case.
+Energy model should be included in calculation.</string>
+           </property>
+           <property name="text">
+            <string>Droplet</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="combustingButton">
+           <property name="text">
+            <string>Combusting</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="properties" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QWidget" name="widget_14" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QGroupBox" name="inertParticleGroup">
+              <property name="title">
+               <string>Inert Particle</string>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <item>
+                <widget class="QLineEdit" name="inertParticle">
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="inertParticleChange">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>Change</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="dropletGroup">
+              <property name="title">
+               <string>Droplet</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <property name="topMargin">
+                <number>6</number>
+               </property>
+               <property name="rightMargin">
+                <number>9</number>
+               </property>
+               <property name="bottomMargin">
+                <number>6</number>
+               </property>
+               <item>
+                <widget class="QGroupBox" name="groupBox_2">
+                 <property name="title">
+                  <string>Composition</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout">
+                  <item>
+                   <widget class="QTreeWidget" name="composition">
+                    <property name="minimumSize">
+                     <size>
+                      <width>280</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <column>
+                     <property name="text">
+                      <string>Material</string>
+                     </property>
+                    </column>
+                    <column>
+                     <property name="text">
+                      <string>Composition</string>
+                     </property>
+                    </column>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QWidget" name="widget" native="true">
+                    <layout class="QHBoxLayout" name="horizontalLayout_8">
+                     <property name="leftMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>0</number>
+                     </property>
+                     <item>
+                      <spacer name="horizontalSpacer_3">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="label_6">
+                       <property name="text">
+                        <string>Total</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLineEdit" name="totalComposition">
+                       <property name="enabled">
+                        <bool>false</bool>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QWidget" name="temperatureWidget" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_9">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>Temperature, T&lt;sub&gt;0&lt;m/sub&gt; (K)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="BatchableFloatEdit" name="temperature"/>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="widget_7" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QGroupBox" name="groupBox_3">
+              <property name="title">
+               <string>Numerical Conditions</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_4">
+               <item>
+                <widget class="QCheckBox" name="interactionWithContinuousPhase">
+                 <property name="text">
+                  <string>Interaction with Continuous Phase</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QWidget" name="maxParticleCourantNumberWidget" native="true">
+                 <layout class="QFormLayout" name="formLayout_4">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_7">
+                    <property name="text">
+                     <string>Max. Particle Courant Number</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="BatchableFloatEdit" name="maxParticleCourantNumber"/>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QWidget" name="DPMIterationIntervalWidget" native="true">
+                 <layout class="QFormLayout" name="formLayout_7">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_15">
+                    <property name="text">
+                     <string>DPM Iteration Interval</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="BatchableFloatEdit" name="DPMIterationInterval"/>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="nodeBasedAveraging">
+                 <property name="text">
+                  <string>Node Based Averaging</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QWidget" name="widget_4" native="true">
+                 <layout class="QFormLayout" name="formLayout_5">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>6</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_8">
+                    <property name="text">
+                     <string>Tracking Scheme</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="trackingScheme"/>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QWidget" name="widget_5" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_5">
+               <property name="rightMargin">
+                <number>9</number>
+               </property>
+               <item>
+                <spacer name="horizontalSpacer_2">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QPushButton" name="injections">
+                 <property name="text">
+                  <string>Injections</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>0</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="kinematicTab">
+      <attribute name="title">
+       <string>Kinematic</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <widget class="QLabel" name="label_10">
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+           <bold>true</bold>
+           <kerning>false</kerning>
+          </font>
+         </property>
+         <property name="text">
+          <string>Kinematic Model</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="widget_8" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QGroupBox" name="groupBox_4">
+            <property name="title">
+             <string>Drag Force</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_9">
+             <property name="spacing">
+              <number>3</number>
+             </property>
+             <item>
+              <widget class="QRadioButton" name="dragForceSpherical">
+               <property name="toolTip">
+                <string>Particle-drag model wherein drag forces (per unit carrier-fluid velocity) are dynamically computed based on empirical expressions.</string>
+               </property>
+               <property name="text">
+                <string>Spherical</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="dragForceNonSpherical">
+               <property name="toolTip">
+                <string>Particle-drag model wherein drag forces (per unit carrier-fluid velocity) are dynamically computed based on empirical expressions using a four-parameter general drag correlation for non-spherical particles.</string>
+               </property>
+               <property name="text">
+                <string>Non-Spherical Shape Factor</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QWidget" name="widget_13" native="true">
+               <property name="toolTip">
+                <string>Ratio of surface area of sphere having samevolume as particle to actual surface area ofparticle</string>
+               </property>
+               <layout class="QFormLayout" name="formLayout_6">
+                <property name="leftMargin">
+                 <number>27</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_9">
+                  <property name="text">
+                   <string>Shape Factor</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="BatchableFloatEdit" name="shapeFactor"/>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="dragForceDistortedSphere">
+               <property name="text">
+                <string>Distorted Sphere</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="dragForceWenAndYu">
+               <property name="text">
+                <string>Wen &amp;&amp; Yu</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="dragForceGidaspow">
+               <property name="text">
+                <string>Gidaspow</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="dragForceDuPlesisAndMailyah">
+               <property name="text">
+                <string>Du Plessis &amp;&amp; Masilyah</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="dragForceTomiyama">
+               <property name="text">
+                <string>Tomiyama</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QWidget" name="dragForceTomiyamaParams" native="true">
+               <layout class="QVBoxLayout" name="verticalLayout_22">
+                <property name="leftMargin">
+                 <number>27</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QWidget" name="widget_16" native="true">
+                  <layout class="QHBoxLayout" name="horizontalLayout_10">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="label_13">
+                     <property name="text">
+                      <string>Surface Tension (N/m)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="BatchableFloatEdit" name="dragTomiyamaSurfaceTension"/>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="groupBox_6">
+                  <property name="title">
+                   <string>Contamination</string>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_23">
+                   <property name="spacing">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QRadioButton" name="noContamination">
+                     <property name="text">
+                      <string>No Contamination</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QRadioButton" name="slightContamination">
+                     <property name="text">
+                      <string>Slight Contamination</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QRadioButton" name="fullContamination">
+                     <property name="text">
+                      <string>Full Contamination</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QWidget" name="widget_9" native="true">
+            <layout class="QVBoxLayout" name="verticalLayout_10">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QGroupBox" name="groupBox_5">
+               <property name="title">
+                <string>Lift Force</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_11">
+                <property name="spacing">
+                 <number>3</number>
+                </property>
+                <item>
+                 <widget class="QRadioButton" name="liftForceNone">
+                  <property name="text">
+                   <string>None</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="liftForceSaffmanMei">
+                  <property name="toolTip">
+                   <string>Saffman-Mei particle lift force model applicable to spherical particles.</string>
+                  </property>
+                  <property name="text">
+                   <string>Saffman Mei</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="liftForceTomiyama">
+                  <property name="text">
+                   <string>Tomiyama</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QWidget" name="liftForceTomiyamaParams" native="true">
+                  <layout class="QHBoxLayout" name="horizontalLayout_4">
+                   <property name="leftMargin">
+                    <number>27</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="label_14">
+                     <property name="text">
+                      <string>Surface Tension (N/m)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="BatchableFloatEdit" name="liftTomiyamaSurfaceTension"/>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QWidget" name="widget_10" native="true">
+               <layout class="QVBoxLayout" name="verticalLayout_12">
+                <property name="spacing">
+                 <number>3</number>
+                </property>
+                <item>
+                 <widget class="QCheckBox" name="gravity">
+                  <property name="text">
+                   <string>Gravity</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="pressureGradient">
+                  <property name="text">
+                   <string>Pressure Gradient</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="brownianMotionForce">
+         <property name="toolTip">
+          <string>Calculates particle Brownian motion force.
+It is for laminar flow when energy model is turned on.</string>
+         </property>
+         <property name="toolTipDuration">
+          <number>-1</number>
+         </property>
+         <property name="title">
+          <string>Brownian Motion Force</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_13">
+          <property name="leftMargin">
+           <number>9</number>
+          </property>
+          <property name="topMargin">
+           <number>9</number>
+          </property>
+          <property name="rightMargin">
+           <number>9</number>
+          </property>
+          <property name="bottomMargin">
+           <number>9</number>
+          </property>
+          <item>
+           <widget class="QWidget" name="widget_11" native="true">
+            <layout class="QFormLayout" name="formLayout_8">
+             <property name="horizontalSpacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>Molecular Free Path Length, lambda (m)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="BatchableFloatEdit" name="molecularFreePathLength"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="useTurtulence">
+            <property name="text">
+             <string>Use Turbulence</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="turbulentDispersionTab">
+      <attribute name="title">
+       <string>Turbulent Dispersion</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_15">
+       <item>
+        <widget class="QGroupBox" name="groupBox_7">
+         <property name="title">
+          <string>Turbulent Dispersion</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_14">
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <item>
+           <widget class="QRadioButton" name="noneDispersion">
+            <property name="text">
+             <string>None</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="stochasticDispersion">
+            <property name="toolTip">
+             <string>The velocity is perturbed in random direction, with a Gaussian random number distribution with variance sigma.</string>
+            </property>
+            <property name="text">
+             <string>Stochastic Dispersion</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="gradientDispersion">
+            <property name="toolTip">
+             <string>The velocity is perturbed in the direction of -grad(k), with a Gaussian random number distribution with variance sigma.</string>
+            </property>
+            <property name="text">
+             <string>Gradient Dispersion</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="heatTransfreTab">
+      <attribute name="title">
+       <string>Heat Transfer</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_18">
+       <item>
+        <widget class="QGroupBox" name="groupBox_8">
+         <property name="title">
+          <string>Heat Transfer</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_17">
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <item>
+           <widget class="QRadioButton" name="heatTransferNone">
+            <property name="text">
+             <string>None</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="heatTransferRanzMarshall">
+            <property name="text">
+             <string>Ranz-Marshall</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QWidget" name="widget_12" native="true">
+            <layout class="QVBoxLayout" name="verticalLayout_16">
+             <property name="leftMargin">
+              <number>27</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QCheckBox" name="birdCorrection">
+               <property name="text">
+                <string>Bird Correction</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="evaporationTab">
+      <attribute name="title">
+       <string>Evaporation</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_21">
+       <item>
+        <widget class="QGroupBox" name="groupBox_9">
+         <property name="title">
+          <string>Evaporation</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_19">
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <item>
+           <widget class="QRadioButton" name="evaporationNone">
+            <property name="text">
+             <string>None</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="evaporationDiffusionControlled">
+            <property name="text">
+             <string>Diffusion-Controlled</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="evaporationConvectionDdiffusionControlled">
+            <property name="text">
+             <string>Convection/Diffusion-Controlled</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_10">
+         <property name="title">
+          <string>Enthalpy Transfer Type</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_20">
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <item>
+           <widget class="QRadioButton" name="enthalpyDiference">
+            <property name="text">
+             <string>Enthalpy Difference</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="latetHeat">
+            <property name="text">
+             <string>Latent Heat</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget_3" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="ok">
+        <property name="text">
+         <string>OK</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cancel">
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>BatchableFloatEdit</class>
+   <extends>QLineEdit</extends>
+   <header>baramFlow.view.widgets.batchable_float_edit</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../../../../resource.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>cancel</sender>
+   <signal>clicked()</signal>
+   <receiver>DPMdialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>476</x>
+     <y>807</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>261</x>
+     <y>418</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

@@ -25,7 +25,7 @@ class Export2DWedgeDialog(QDialog):
         self._pathWidget = NewProjectWidget(self._ui.path, suffix=app.properties.exportSuffix)
 
         self._regionWidgets = []
-        
+
         self._boundaries = []
         self._dialog = None
 
@@ -33,12 +33,12 @@ class Export2DWedgeDialog(QDialog):
         layout.addWidget(self._pathWidget)
         self._pathWidget.hideValidationMessage()
 
-        regionsWidget = QWidget()        
+        regionsWidget = QWidget()
         self._ui.parameters.layout().insertWidget(0, regionsWidget)
 
         layout = QVBoxLayout(regionsWidget)
         layout.setContentsMargins(0, -1, 0, 0)
-        
+
         for region in app.db.getElements('region').values():
             widget = Export2DWedgeRegionWidget(region.value('name'))
             widget.p1SelectClicked.connect(self._openBoundarySelectorDialog)
@@ -56,11 +56,11 @@ class Export2DWedgeDialog(QDialog):
     def projectPath(self):
         return self._pathWidget.projectPath()
 
-    def isRnBaramFlowChecked(self):
+    def isRunBaramFlowChecked(self):
         return self._ui.run.isChecked()
 
     def extrudeOptions(self):
-        return ([(b.rname(), b.p1(), b.p2()) for b in self._regionWidgets], 
+        return ([(b.rname(), b.p1(), b.p2()) for b in self._regionWidgets],
                 ExtrudeOptions(ExtrudeModel.WEDGE,
                                point=[self._ui.originX.text(), self._ui.originY.text(), self._ui.originZ.text()],
                                axis=[self._ui.directionX.text(), self._ui.directionY.text(), self._ui.directionZ.text()],

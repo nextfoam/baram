@@ -105,7 +105,6 @@ class VelocityInletDialog(ResizableDialog):
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 if self._componentSpatialDistributionFile:
                     try:
-                        oldDistributionFileKey = db.getValue(xpath + '/velocity/component/spatialDistribution')
                         distributionFileKey = fileDB.putBcFile(self._bcid, BcFileRole.BC_VELOCITY_COMPONENT,
                                                                self._componentSpatialDistributionFile)
                         writer.append(xpath + '/velocity/component/spatialDistribution', distributionFileKey, None)
@@ -143,8 +142,6 @@ class VelocityInletDialog(ResizableDialog):
             elif profile == VelocityProfile.SPATIAL_DISTRIBUTION.value:
                 if self._magnitudeSpatialDistributionFile:
                     try:
-                        oldDistributionFileKey = db.getVale(
-                            xpath + '/velocity/magnitudeNormal/spatialDistribution')
                         distributionFileKey = fileDB.putBcFile(self._bcid, BcFileRole.BC_VELOCITY_MAGNITUDE,
                                                                self._magnitudeSpatialDistributionFile)
                         writer.append(xpath + '/velocity/magnitudeNormal/spatialDistribution',
@@ -193,10 +190,6 @@ class VelocityInletDialog(ResizableDialog):
             self._temperatureWidget.rollbackWriting()
             await AsyncMessageBox().information(self, self.tr("Input Error"), writer.firstError().toMessage())
         else:
-            ## For the copy boundary conditions feature, old key should not be deleted.
-            # if distributionFileKey and oldDistributionFileKey:
-            #     fileDB.delete(oldDistributionFileKey)
-            #
             self._temperatureWidget.completeWriting()
             self.accept()
 

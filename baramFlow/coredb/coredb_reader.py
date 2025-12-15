@@ -7,15 +7,15 @@ from PySide6.QtCore import QCoreApplication
 
 from libbaram.math import calucateDirectionsByRotation
 
-from baramFlow.base.material.material import Phase
+from baramFlow.base.material.material import UNIVERSAL_GAS_CONSTANT, Phase, DensitySpecification, TransportSpecification
 from baramFlow.libbaram.calculation import AverageCalculator
+
 from . import coredb
 from .boundary_db import DirectionSpecificationMethod
 from .coredb import ValueException, DBError, _CoreDB
 from .general_db import GeneralDB
 from .initialization_db import InitializationDB
-from .material_db import MaterialDB, UNIVERSAL_GAS_CONSTANT
-from .material_schema import ViscositySpecification, DensitySpecification
+from .material_db import MaterialDB
 from .reference_values_db import ReferenceValuesDB
 from .region_db import RegionDB
 from .turbulence_model_db import TurbulenceModelsDB
@@ -233,38 +233,39 @@ class CoreDBReader(_CoreDB):
     def getViscosity(self, materials: list, t: float) -> float:
         def viscosity(mid_):
             xpath = MaterialDB.getXPath(mid_)
-            spec = ViscositySpecification(self.getValue(xpath + '/viscosity/specification'))
-            if spec == ViscositySpecification.CONSTANT:
-                return float(self.getValue(xpath + '/viscosity/constant'))
+            spec = TransportSpecification(self.getValue(xpath + '/transport/specification'))
+            if spec == TransportSpecification.CONSTANT:
+                return float(self.getValue(xpath + '/transport/viscosity'))
 
-            if spec == ViscositySpecification.POLYNOMIAL:
-                coeffs = list(map(float, self.getValue(xpath + '/viscosity/polynomial').split()))
+            elif spec == TransportSpecification.POLYNOMIAL:
+                coeffs = list(map(float, self.getValue(xpath + '/transport/polynomial/viscosity').split()))
                 mu = 0.0
                 for exp, c in enumerate(coeffs):
                     mu += c * t ** exp
                 return mu
 
-            if spec == ViscositySpecification.SUTHERLAND:
+            elif spec == TransportSpecification.SUTHERLAND:
                 r'''
                 .. math:: \mu = \frac{C_1 T^{3/2}}{T+S}
                 '''
-                c1 = float(self.getValue(xpath + '/viscosity/sutherland/coefficient'))
-                s = float(self.getValue(xpath + '/viscosity/sutherland/temperature'))
+                c1 = float(self.getValue(xpath + '/transport/sutherland/coefficient'))
+                s = float(self.getValue(xpath + '/transport/sutherland/temperature'))
 
                 return c1 * t ** 1.5 / (t+s)
 
             rho = float(self.getValue(xpath + '/density/constant'))
-            if spec == ViscositySpecification.CROSS_POWER_LAW:
-                return rho * float(self.getValue(xpath + '/viscosity/cross/zeroShearViscosity'))
 
-            if spec == ViscositySpecification.HERSCHEL_BULKLEY:
-                return rho * float(self.getValue(xpath + '/viscosity/herschelBulkley/zeroShearViscosity'))
+            if spec == TransportSpecification.CROSS_POWER_LAW:
+                return rho * float(self.getValue(xpath + '/transport/cross/zeroShearViscosity'))
 
-            if spec == ViscositySpecification.BIRD_CARREAU:
-                return rho * float(self.getValue(xpath + '/viscosity/carreau/zeroShearViscosity'))
+            elif spec == TransportSpecification.HERSCHEL_BULKLEY:
+                return rho * float(self.getValue(xpath + '/transport/herschelBulkley/zeroShearViscosity'))
 
-            if spec == ViscositySpecification.POWER_LAW:
-                return rho * float(self.getValue(xpath + '/viscosity/nonNewtonianPowerLaw/consistencyIndex'))
+            elif spec == TransportSpecification.BIRD_CARREAU:
+                return rho * float(self.getValue(xpath + '/transport/carreau/zeroShearViscosity'))
+
+            elif spec == TransportSpecification.POWER_LAW:
+                return rho * float(self.getValue(xpath + '/transport/nonNewtonianPowerLaw/consistencyIndex'))
 
             raise KeyError
 

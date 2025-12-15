@@ -9,6 +9,7 @@ from vtkmodules.vtkCommonDataModel import vtkCompositeDataSet
 from vtkmodules.vtkCommonCore import VTK_MULTIBLOCK_DATA_SET, VTK_UNSTRUCTURED_GRID, VTK_POLY_DATA
 
 from baramFlow.base.graphic.graphics_db import GraphicsDB
+from baramFlow.base.model.DPM_model import DPMModelManager
 from baramFlow.base.scaffold.scaffolds_db import ScaffoldsDB
 from baramFlow.openfoam.openfoam_reader import OpenFOAMReader
 from libbaram.openfoam.constants import Directory
@@ -263,6 +264,7 @@ class PolyMeshLoader(QObject):
         UserDefinedScalarsDB.clearUserDefinedScalars(db)
         db.clearRegions()
         db.clearMonitors()
+        DPMModelManager.turnOff(meshUpdated=True)
 
         for rname in boundaries:
             RegionDB.addRegion(rname)

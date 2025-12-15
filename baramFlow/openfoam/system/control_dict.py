@@ -44,46 +44,62 @@ from baramFlow.openfoam.solver import findSolver, usePrgh
 from .fv_options import generateSourceTermField, generateFixedValueField
 
 
-def _getAvailableFields():
+def _getSolverInfoFields(rname: str)->list[str]:
+    db = coredb.CoreDB()
+
+    solveFlow = db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/flow')
+    solveEnergy = (db.getAttribute(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/energy', 'disabled') == 'false')
+    solveUDS = db.getBool(NumericalDB.NUMERICAL_CONDITIONS_XPATH + '/advanced/equations/UDS')
+
     compresibleDensity = GeneralDB.isCompressibleDensity()
-    if compresibleDensity:
-        fields = ['rhoU', 'rho']
-    else:
-        fields = ['U']
 
-    if usePrgh():
-        fields.append('p_rgh')
-    else:
-        fields.append('p')
+    mid = RegionDB.getMaterial(rname)
+    phase = MaterialDB.getPhase(mid)
 
-    # Fields depending on the turbulence model
-    rasModel = TurbulenceModelsDB.getRASModel()
-    if rasModel == TurbulenceModel.K_EPSILON or TurbulenceModelsDB.isLESKEqnModel():
-        fields.append('k')
-        fields.append('epsilon')
-    elif rasModel == TurbulenceModel.K_OMEGA:
-        fields.append('k')
-        fields.append('omega')
-    elif rasModel == TurbulenceModel.SPALART_ALLMARAS:
-        fields.append('nuTilda')
+    fields: list[str] = []
 
-    if ModelsDB.isEnergyModelOn():
+    if solveFlow and phase != Phase.SOLID:
         if compresibleDensity:
-            fields.append('rhoE')
+            fields.extend(['rhoU', 'rho'])
         else:
-            fields.append('h')
+            fields.append('U')
 
-    if ModelsDB.isMultiphaseModelOn():
-        for _, name, _, phase in MaterialDB.getMaterials():
-            if phase != Phase.SOLID.value:
-                fields.append(f'alpha.{name}')
-    elif ModelsDB.isSpeciesModelOn():
-        for mixture, _ in RegionDB.getMixturesInRegions():
-            for name in MaterialDB.getSpecies(mixture).values():
-                fields.append(name)
+        if usePrgh():
+            fields.append('p_rgh')
+        else:
+            fields.append('p')
 
-    for _, fieldName in CoreDBReader().getUserDefinedScalars():
-        fields.append(fieldName)
+        # Fields depending on the turbulence model
+        rasModel = TurbulenceModelsDB.getRASModel()
+        if rasModel == TurbulenceModel.K_EPSILON or TurbulenceModelsDB.isLESKEqnModel():
+            fields.append('k')
+            fields.append('epsilon')
+        elif rasModel == TurbulenceModel.K_OMEGA:
+            fields.append('k')
+            fields.append('omega')
+        elif rasModel == TurbulenceModel.SPALART_ALLMARAS:
+            fields.append('nuTilda')
+
+        if ModelsDB.isMultiphaseModelOn():
+            for _, name, _, phase in MaterialDB.getMaterials():
+                if phase != Phase.SOLID.value:
+                    fields.append(f'alpha.{name}')
+
+        if ModelsDB.isSpeciesModelOn():
+            for mixture, _ in RegionDB.getMixturesInRegions():
+                for name in MaterialDB.getSpecies(mixture).values():
+                    fields.append(name)
+
+    if solveEnergy:
+        if ModelsDB.isEnergyModelOn():
+            if compresibleDensity:
+                fields.append('rhoE')
+            else:
+                fields.append('h')
+
+    if solveUDS and phase != Phase.SOLID:
+        for _, fieldName in CoreDBReader().getUserDefinedScalars():
+            fields.append(fieldName)
 
     return fields
 
@@ -312,14 +328,10 @@ class ControlDict(DictionaryFile):
 
             residualsName = f'solverInfo_{rgid}'
 
-            mid = RegionDB.getMaterial(rname)
-            if MaterialDB.getPhase(mid) == Phase.SOLID:
-                if ModelsDB.isEnergyModelOn():
-                    fields = ['h']
-                else:
-                    continue  # 'h' is the only property solid has
-            else:
-                fields = _getAvailableFields()
+            fields = _getSolverInfoFields(rname)
+
+            if len(fields) == 0:
+                continue
 
             self._data['functions'][residualsName] = {
                 'type': 'solverInfo',
@@ -338,9 +350,9 @@ class ControlDict(DictionaryFile):
 
         if field.type == FieldType.VECTOR:
             if monitorField.component == VectorComponent.MAGNITUDE and 'mag1' not in self._data['functions']:
-                self._data['functions']['mag1'] = foMagMonitor('U', 1)
+                self._data['functions']['mag1'] = foMagMonitor('U', rname, 1)
             elif 'components1' not in self._data['functions']:
-                self._data['functions']['components1'] = foComponentsMonitor('U', 1)
+                self._data['functions']['components1'] = foComponentsMonitor('U', rname, 1)
 
             return
 
@@ -429,7 +441,7 @@ class ControlDict(DictionaryFile):
     def _generatePointMonitor(self, xpath):
         coordinate = self._db.getVector(xpath + '/coordinate')
         interval = int(self._db.getValue(xpath + '/writeInterval'))
-        region = self._db.getValue(xpath + '/region')
+        rname = self._db.getValue(xpath + '/region')
         snapOntoBoundary = self._db.getValue(xpath + '/snapOntoBoundary') == 'true'
         field = getMonitorField(xpath)
 
@@ -437,20 +449,20 @@ class ControlDict(DictionaryFile):
         if snapOntoBoundary:
             bcid = self._db.getValue(xpath + '/boundary')
             boundary = BoundaryDB.getBoundaryName(bcid)
-            region = BoundaryDB.getBoundaryRegion(bcid)
-            data = foPatchProbesMonitor(boundary, field.openfoamField(), coordinate, region, interval)
+            rname = BoundaryDB.getBoundaryRegion(bcid)
+            data = foPatchProbesMonitor(boundary, field.openfoamField(), coordinate, rname, interval)
         else:
-            if not region:
-                for rname in self._db.getRegions():
-                    if isPointInDataSet(coordinate, app.internalMeshActor(rname).dataSet):
-                        self._db.setValue(xpath + '/region', rname)
-                        region = rname
+            if not rname:
+                for name in self._db.getRegions():
+                    if isPointInDataSet(coordinate, app.internalMeshActor(name).dataSet):
+                        self._db.setValue(xpath + '/region', name)
+                        rname = name
                         break
                 else:
                     return None
 
-            self._appendAdditionalFO(field, region)
-            data = foProbesMonitor(field.openfoamField(), coordinate, region, interval)
+            self._appendAdditionalFO(field, rname)
+            data = foProbesMonitor(field.openfoamField(), coordinate, rname, interval)
 
         return data
 
@@ -458,7 +470,7 @@ class ControlDict(DictionaryFile):
         reportType = SurfaceReportType(self._db.getValue(xpath + 'reportType'))
         surface = self._db.getValue(xpath + '/surface')
         patchName = BoundaryDB.getBoundaryName(surface)
-        region = BoundaryDB.getBoundaryRegion(surface)
+        rname = BoundaryDB.getBoundaryRegion(surface)
         interval = int(self._db.getValue(xpath + '/writeInterval'))
         field = getMonitorField(xpath)
 
@@ -469,8 +481,8 @@ class ControlDict(DictionaryFile):
         else:
             fieldText = field.openfoamField()
 
-        self._appendAdditionalFO(field, region)
-        data = foSurfaceFieldValueMonitor(patchName, fieldText, reportType, region, interval)
+        self._appendAdditionalFO(field, rname)
+        data = foSurfaceFieldValueMonitor(patchName, fieldText, reportType, rname, interval)
 
         return data
 

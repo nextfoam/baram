@@ -183,9 +183,9 @@ class PointReportDialog(QDialog):
 
         else:  # FieldType.VECTOR
             if fieldComponent == VectorComponent.MAGNITUDE:
-                functions['mag1'] = foMagReport(solverFieldName)
+                functions['mag1'] = foMagReport(solverFieldName, rname)
             else:
-                functions['components1'] = foComponentsReport(solverFieldName)
+                functions['components1'] = foComponentsReport(solverFieldName, rname)
 
             reportFieldName = getSolverComponentName(field, fieldComponent)
 

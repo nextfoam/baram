@@ -20,11 +20,11 @@ class OptionDialog(ResizableDialog):
         self._ui = Ui_OptionDialog()
         self._ui.setupUi(self)
 
-        self._connectSignalsToSlots()
+        self._connectSignalsSlots()
 
         self._ui.type.setCurrentIndex(0)
 
-    def _connectSignalsToSlots(self):
+    def _connectSignalsSlots(self):
         self._ui.type.currentIndexChanged.connect(self._typeChanged)
 
     def _typeChanged(self):
