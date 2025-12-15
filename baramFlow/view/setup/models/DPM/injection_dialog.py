@@ -105,6 +105,7 @@ class InjectionDialog(QDialog):
         self._ui.injectionType.currentIndexChanged.connect(self._injectionTypeChanged)
         self._ui.editPosition.clicked.connect(self._opePositionEditor)
         self._ui.flowRateSpec.currentIndexChanged.connect(self._flowRateSpecChanged)
+        self._ui.surfaceParticleVelocityType.currentIndexChanged.connect(self._surfaceParticleVelocityTypeChanged)
         self._ui.surfaceSelect.clicked.connect(self._openSurfaceSelector)
         self._ui.coneInjectorType.currentIndexChanged.connect(self._coneInjectorTypeChanged)
         self._ui.coneParticleSpeed.currentIndexChanged.connect(self._coneParticleSpeedChanged)
@@ -355,6 +356,10 @@ class InjectionDialog(QDialog):
         else:
             self._ui.particleCountParameters.hide()
             self._ui.particleVolumeParameters.show()
+
+    def _surfaceParticleVelocityTypeChanged(self):
+        velocityType: DPMParticleVelocityType = self._ui.surfaceParticleVelocityType.currentData()
+        self._ui.surfaceParticleVelocity.setEnabled(velocityType == DPMParticleVelocityType.CONSTANT)
 
     def _openSurfaceSelector(self):
         def surfaceSelected():
