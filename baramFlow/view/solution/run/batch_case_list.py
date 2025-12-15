@@ -243,11 +243,11 @@ class BatchCaseList(QObject):
 
         self._currentCase = name
 
-        if self._currentCase:
+        if self._currentCase in self._items:
             self._items[self._currentCase].setLoaded(True)
 
     def updateStatus(self, status, name):
-        if name:
+        if name in self._items:
             self._items[name].setStatus(status)
 
     def _adjustSize(self):

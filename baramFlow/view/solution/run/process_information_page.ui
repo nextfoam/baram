@@ -487,6 +487,13 @@ QGroupBox::indicator:checked {image: url(:icons/chevron-down.svg);}</string>
               </spacer>
              </item>
              <item>
+              <widget class="QPushButton" name="generateSamples">
+               <property name="text">
+                <string>Generate</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="exportBatchCase">
                <property name="text">
                 <string>Export</string>

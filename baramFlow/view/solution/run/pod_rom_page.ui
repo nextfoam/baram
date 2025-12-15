@@ -228,6 +228,81 @@
          </widget>
        </item>
        <item>
+         <widget class="QGroupBox" name="groupBox_Enhance">
+           <property name="title">
+             <string>Model Enhancement</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_EnhanceGroup">
+             <item>
+               <widget class="QWidget" name="enhanceWidget" native="true">
+                <layout class="QHBoxLayout" name="horizontalLayout_333">
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <spacer name="horizontalSpacer_333">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="EvalNEnhanceROM">
+                   <property name="styleSheet">
+                    <string notr="true">padding: 10px</string>
+                   </property>
+                   <property name="text">
+                    <string>Evaluate / Enhance ROM</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+             </item>
+             <item>
+               <widget class="QWidget" name="EnhanceReport" native="true">
+                <layout class="QVBoxLayout" name="verticalLayout_33">
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QTableWidget" name="tblRomEval">
+                   <property name="visible">
+                    <bool>true</bool>
+                   </property>
+                   <property name="columnCount">
+                    <number>3</number>
+                   </property>
+                   <property name="rowCount">
+                    <number>6</number>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                     <horstretch>0</horstretch>
+                     <verstretch>1</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="editTriggers">
+                    <set>QAbstractItemView::NoEditTriggers</set>
+                   </property>
+                   <property name="minimumHeight">
+                     <number>200</number>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+             </item>
+           </layout>
+         </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>

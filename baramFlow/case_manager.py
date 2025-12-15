@@ -376,7 +376,7 @@ class PODCase(Case):
             self._setStatus(SolverStatus.ERROR)
             raise e
 
-    async def runReconstruct(self, caseName, listSnapshot, paramsToReconstruct):
+    async def runReconstruct(self, caseName, listSnapshot, paramsToReconstruct, isBatchRunning=False):
         try:
             await self.initializeReconstruct(caseName, listSnapshot, paramsToReconstruct)
 
@@ -390,6 +390,7 @@ class PODCase(Case):
             self._process = None
 
             if result == 0:
+                if isBatchRunning: self._name = "__POD__"
                 self._setStatus(SolverStatus.ENDED)
             else:
                 self._setStatus(SolverStatus.ERROR)
@@ -456,18 +457,6 @@ class PODCase(Case):
     def saveToBatchCase(self, caseName):
         batchPath = self._project.path / BATCH_DIRECTORY_NAME / caseName
         casePath = self._project.path / "case"
-
-        # modify later for restart calculation
-        # constantPath = casePath / "constant"
-        # for f in constantPath.iterdir():
-        #     if f.name == "polyMesh": continue
-        #     if f.name.endswith(".dat"): continue
-        #     shutil.copy(f, batchPath / "constant" / f.name)
-		#
-        # systemPath = casePath / "system"
-        # for f in systemPath.iterdir():
-        #     if f.name == "decomposeParDict": continue
-        #     shutil.copy(f, batchPath / "system" / f.name)
 
         # reconstructed case
         pathReconPod = self._path / "10001"
@@ -614,11 +603,11 @@ class CaseManager(QObject):
         caseToReconstruct.load()
         await caseToReconstruct.initialize()
 
-    async def podRunReconstruct(self, caseName, listSnapshot, paramsToReconstruct):
+    async def podRunReconstruct(self, caseName, listSnapshot, paramsToReconstruct, isBatchRunning=False):
         tempPodCase = PODCase()
         tempPodCase.load()
         self._setCurrentCase(tempPodCase)
-        await tempPodCase.runReconstruct(caseName, listSnapshot, paramsToReconstruct)
+        await tempPodCase.runReconstruct(caseName, listSnapshot, paramsToReconstruct, isBatchRunning)
 
     async def podSaveToBatchCase(self, caseName):
         tempPodCase = PODCase()

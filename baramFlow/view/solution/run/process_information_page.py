@@ -11,6 +11,7 @@ import logging
 from enum import Enum, auto
 
 import pandas as pd
+import re
 
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
@@ -37,6 +38,7 @@ from baramFlow.openfoam.system.fv_solution import FvSolution
 from baramFlow.view.widgets.content_page import ContentPage
 from .batch_case_list import BatchCaseList
 from .batch_cases_import_dialog import BatchCasesImportDialog
+from .doe_dialog import DoEDialog
 from .process_information_page_ui import Ui_ProcessInformationPage
 from .user_parameters_dialog import UserParametersDialog
 
@@ -102,6 +104,7 @@ class ProcessInformationPage(ContentPage):
         self._ui.editUserParametrer.clicked.connect(self._editUserParameters)
         self._ui.toLiveMode.clicked.connect(self._toLiveMode)
         self._ui.toBatchMode.clicked.connect(self._toBatchMode)
+        self._ui.generateSamples.clicked.connect(self._openDoEDialog)
         self._ui.exportBatchCase.clicked.connect(self._openExportDialog)
         self._ui.importBatchCases.clicked.connect(self._openImportDialog)
 
@@ -262,6 +265,27 @@ class ProcessInformationPage(ContentPage):
         self._setRunningMode(RunningMode.BATCH_RUNNING_MODE)
 
     @qasync.asyncSlot()
+    async def _openDoEDialog(self):
+        if not self._userParameters:
+            await AsyncMessageBox().information(self, self.tr('Generate Samples'),
+                                                self.tr('No batch parameter is defined.'))
+            return
+
+        maxDoeIndex = -1
+        if self._batchCaseList is not None:
+            for name in self._batchCaseList._cases.keys():
+                m = re.match(r"case_(\d+)$", str(name))
+                if not m:
+                    continue
+                idx = int(m.group(1))
+                if idx > maxDoeIndex:
+                    maxDoeIndex = idx
+
+        self._dialog = DoEDialog(self, self._userParameters, maxDoeIndex)
+        self._dialog.samplesGenerated.connect(self._onSamplesGenerated)
+        self._dialog.open()
+
+    @qasync.asyncSlot()
     async def _openExportDialog(self):
         if not self._userParameters:
             await AsyncMessageBox().information(
@@ -337,6 +361,12 @@ class ProcessInformationPage(ContentPage):
         self._ui.userParameterList.clear()
         for name, data in self._userParameters.items():
             self._ui.userParameterList.addItem(ListItem(name, [f'{name} ({data["usages"]})', data['value']]))
+
+    def _onSamplesGenerated(self, df):
+        if self._dialog.isClearChecked():
+            self._batchCaseList.clear()
+
+        self._batchCaseList.importFromDataFrame(df)
 
     def _exportBatchCase(self, file):
         df = self._batchCaseList.exportAsDataFrame()
